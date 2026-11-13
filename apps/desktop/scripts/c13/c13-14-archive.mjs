@@ -13,7 +13,7 @@
 //   node apps/desktop/scripts/c13/c13-14-archive.mjs apply
 //        moves every qualifying record of the working tree (which must match HEAD under scripts/harness/) into the archive, replacing
 //        each with one pointer line at its own indent. Deterministic: the same HEAD always gives the same result. Commits nothing.
-//   node apps/desktop/scripts/c13/c13-14-archive.mjs check [--base <rev>] [--strict] [--plant drop]
+//   node apps/desktop/scripts/c13/c13-14-archive.mjs check [--base <rev> [--keep <rev,...>]] [--strict] [--plant drop]
 //        STRUCTURE (always): every pointer names an archive record that exists, every archive record has exactly one pointer, each
 //        archived record says where it came from and its parking commit qualifies, and no archived record is also still live.
 //        With --base (the commit before apply; a lane passes its merge-base with main): the brief's proofs -
@@ -29,6 +29,8 @@
 //                   one removed since <base> is held, comment marks aside, by a live or archived record; a lane may ADD pok( calls.
 //        --strict (the apply commit itself): every line added to scripts/harness/*.mjs since <base> is a pointer.
 //        LIVENESS (always): the same check on an in-memory copy with one archived record dropped must fail.
+//        --keep <rev,...> (with --base; a trial merge passes the lane's tip and main's): every record live at each <rev> survives
+//          here - archived verbatim, held live, or SPLIT (one part archived verbatim, the rest held live). Identity only, no count.
 //        --plant drop: run the check itself on that dropped copy (it must exit red).
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -55,9 +57,10 @@ const noCR = (s) => s.replace(/\r\n/g, '\n');
 function recordsOf(lines) {
   const out = [];
   for (let i = 0; i < lines.length; i++) {
+    // a pointer line bounds a run: a park written right under a pointer (a lane's park beside an archived record) is a record of its own
     if (!(isComment(lines[i]) && MARK.test(lines[i]) && !POINTER.test(lines[i]))) continue;
-    if (i > 0 && isComment(lines[i - 1])) continue;
-    let j = i; while (j + 1 < lines.length && isComment(lines[j + 1])) j++;
+    if (i > 0 && isComment(lines[i - 1]) && !POINTER.test(lines[i - 1])) continue;
+    let j = i; while (j + 1 < lines.length && isComment(lines[j + 1]) && !POINTER.test(lines[j + 1])) j++;
     if (lines.slice(i, j + 1).some((l) => ASSERT.test(l))) out.push({ from: i, to: j });
     i = j;
   }
@@ -154,10 +157,29 @@ function readNow() {
 // a record's identity: its lines with comment marks and indent removed (a generation-2 park re-comments its original), blanks dropped
 const bare = (ls) => ls.map((l) => l.replace(/^\s*(\/\/\s?)*/, '').trim()).filter(Boolean);
 const holds = (big, small) => { let k = 0; for (const l of big) if (k < small.length && l === small[k]) k++; return small.length > 0 && k === small.length; };
+// where one record went: archived verbatim, held by a live record of its file, or SPLIT - one part archived verbatim and the rest held
+// live (a lane's park written beside a record that main archived: the merge leaves the pointer and the lane's lines). `arch` and `live`
+// are the candidate records of the same file; `used` (optional) makes archive matches one-to-one.
+function survives(rec, arch, live, used) {
+  const raw = rec.lines.join('\n');
+  const a = arch.find((r) => !(used && used.has(r)) && r.lines.join('\n') === raw);
+  if (a) return { kind: 'archived', arch: a };
+  const b = bare(rec.lines);
+  const host = live.find((r) => holds(bare(r.lines), b));
+  if (host) return { kind: 'live', host };
+  for (let k = 1; k < rec.lines.length; k++) {
+    for (const [ap, lp] of [[rec.lines.slice(0, k), rec.lines.slice(k)], [rec.lines.slice(k), rec.lines.slice(0, k)]]) {
+      const pa = arch.find((r) => !(used && used.has(r)) && r.lines.join('\n') === ap.join('\n'));
+      const ph = pa && live.find((r) => holds(bare(r.lines), bare(lp)));
+      if (pa && ph) return { kind: 'split', arch: pa, host: ph };
+    }
+  }
+  return null;
+}
 const lineBag = (lines) => { const m = new Map(); for (const l of lines) m.set(l, (m.get(l) || 0) + 1); return m; };
 const bagMinus = (a, b) => { const out = []; for (const [l, c] of a) { const d = c - (b.get(l) || 0); for (let k = 0; k < d; k++) out.push(l); } return out; };
 
-function check(state, baseRev, strict) {
+function check(state, baseRev, strict, keepRevs = []) {
   const fails = [];
   const { live, archives } = state;
   // STRUCTURE
@@ -210,11 +232,27 @@ function check(state, baseRev, strict) {
   const usedArch = new Set(), hosts = new Set(), lost = [];
   let heldLive = 0, archivedMatched = 0;
   for (const b of baseRecs) {
-    const arch = newArch.find((r) => !usedArch.has(r) && r.f === b.f && r.lines.join('\n') === b.lines.join('\n'));
-    if (arch) { usedArch.add(arch); archivedMatched++; continue; }
-    const host = nowRecs.find((r) => r.f === b.f && holds(bare(r.lines), bare(b.lines)));
-    if (host) { hosts.add(host); heldLive++; continue; }
-    lost.push(b);
+    const s = survives(b, newArch.filter((r) => r.f === b.f), nowRecs.filter((r) => r.f === b.f), usedArch);
+    if (!s) { lost.push(b); continue; }
+    if (s.arch) { usedArch.add(s.arch); archivedMatched++; } else heldLive++;
+    if (s.kind === 'live') hosts.add(s.host);   // a split's live part is the lane's own park: it counts as added
+  }
+  // --keep <rev,...>: every record live at each <rev> (a lane's own tip before a merge, main's tip) survives here too - archived
+  // (verbatim, at any time), held live, or split. No count: two parents' records do not close one equation. (ARBOR, Nov 12.)
+  const allArch = [...archives.entries()].flatMap(([a, recs]) => recs.filter((r) => !r.bad).map((r) => ({ f: `${HARNESS}/${r.file}`, lines: r.lines, a, n: r.n })));
+  const kept = [];
+  for (const rev of keepRevs) {
+    let n = 0; const gone = [];
+    for (const f of harnessFiles(rev)) {
+      const ls = showAt(rev, f).split('\n');
+      for (const r of recordsOf(ls)) {
+        n++;
+        const rec = { f, line: r.from + 1, lines: ls.slice(r.from, r.to + 1) };
+        if (!survives(rec, allArch.filter((x) => x.f === f), nowRecs.filter((x) => x.f === f))) gone.push(rec);
+      }
+    }
+    kept.push(`${rev}: ${n - gone.length}/${n} survive`);
+    if (gone.length) fails.push(`KEEP ${rev}: ${gone.length} of its ${n} records are neither live, archived nor split here (first: ${gone[0].f.replace(`${HARNESS}/`, '')}:${gone[0].line} ${JSON.stringify(gone[0].lines[0].trim().slice(0, 70))})`);
   }
   const addedRecs = nowRecs.filter((r) => !hosts.has(r));
   const strays = newArch.filter((r) => !usedArch.has(r));
@@ -247,7 +285,7 @@ function check(state, baseRev, strict) {
     const notPointer = added.filter((l) => l.trim() !== '' && !POINTER.test(l));
     if (notPointer.length) fails.push(`STRICT: ${notPointer.length} added lines are not pointers (first: ${JSON.stringify(notPointer[0].slice(0, 80))})`);
   }
-  return { ...out, recordsBase, recordsNow, movedSince, addedSince: addedRecs.length, heldLive, archivedMatched, lost: lost.length, pokBase, pokNow, removed: removed.length };
+  return { ...out, recordsBase, recordsNow, movedSince, addedSince: addedRecs.length, heldLive, archivedMatched, lost: lost.length, kept, pokBase, pokNow, removed: removed.length };
 }
 const dropOne = (state) => {
   const archives = new Map(state.archives);
@@ -267,28 +305,31 @@ if (mode === 'census') {
   apply();
 } else if (mode === 'check') {
   const baseRev = arg('--base');
+  const keepRevs = (arg('--keep') || '').split(',').filter(Boolean);
+  if (keepRevs.length && !baseRev) { console.error('--keep needs --base'); process.exit(2); }
   const strict = has('--strict');
   const now = readNow();
   if (has('--plant')) {
     const d = dropOne(now);
-    const r = check(d, baseRev, strict);
+    const r = check(d, baseRev, strict, keepRevs);
     console.log(`PLANTED: dropped ${d.dropped}`);
     for (const f of r.fails.slice(0, 6)) console.log(`FAIL  ${f}`);
     console.log(r.fails.length ? `C13-14 CHECK: FAIL (${r.fails.length})` : 'C13-14 CHECK: PASS');
     process.exit(r.fails.length ? 1 : 0);
   }
-  const r = check(now, baseRev, strict);
+  const r = check(now, baseRev, strict, keepRevs);
   // LIVENESS: one archived record dropped must be red (only meaningful once something is archived)
   const d = dropOne(now);
-  const live = d.dropped ? check(d, baseRev, strict).fails.length > 0 : true;
+  const live = d.dropped ? check(d, baseRev, strict, keepRevs).fails.length > 0 : true;
   if (!live) r.fails.push('LIVENESS: a dropped archive record was NOT caught');
   console.log(`STRUCTURE: ${r.pointers} pointers, ${r.archived} archived records`);
   if (baseRev) console.log(`AGAINST ${baseRev}: records ${r.recordsBase} at base (${r.heldLive} held live, ${r.archivedMatched} archived since, ${r.lost} lost) + ${r.addedSince} added = ${r.recordsNow} live + ${r.movedSince} archived since; pok( ${r.pokBase} -> ${r.pokNow}; ${r.removed} lines removed${strict ? ' (strict)' : ' (lane)'}`);
   console.log(`LIVENESS: ${d.dropped ? `dropping ${d.dropped} is ${live ? 'caught' : 'NOT caught'}` : 'nothing archived yet (no record to drop)'}`);
+  if (r.kept && r.kept.length) console.log(`KEEP: ${r.kept.join('; ')}`);
   for (const f of r.fails.slice(0, 12)) console.log(`FAIL  ${f}`);
   console.log(r.fails.length ? `\nC13-14 CHECK: FAIL (${r.fails.length})` : '\nC13-14 CHECK: PASS');
   process.exit(r.fails.length ? 1 : 0);
 } else {
-  console.error('usage: c13-14-archive.mjs census [--rev <rev>] [--list] | apply | check [--base <rev>] [--strict] [--plant drop]');
+  console.error('usage: c13-14-archive.mjs census [--rev <rev>] [--list] | apply | check [--base <rev> [--keep <rev,...>]] [--strict] [--plant drop]');
   process.exit(2);
 }
