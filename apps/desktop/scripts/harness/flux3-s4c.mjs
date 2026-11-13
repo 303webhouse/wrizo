@@ -115,15 +115,19 @@ try { await withHarness(async (app) => {
   const lStoodRight = (arm, on, stood) => !!stood && stood.flag === FLAG && (arm === 'J' && on ? stood.jacked && stood.zoom === 'true' : !stood.jacked && stood.zoom !== 'true');
   const doL = async () => {
   // ---- L: the Jacked In arm against the control (six interleaved rounds, TWO readings, scripts/lib/l-method.mjs) ---------------------------------------------
-  // J: Jacked In with the Corridor. C: the control (Flux's TEXT page in the same flag state; before Nov 12: Flux, flag off, the paper Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
+  // J: Jacked In with the Corridor. C: the control (Flux, flag off, the Typewriter on). On `main` (ONLY_L) the method runs alone: the control against itself, then the +5 / +10 ms mutants.
+  // Since Nov 12 (Wire In on its own) C is Flux's TEXT page in the same flag state as the arm under test; the control this line names is parked below (SUPERSEDED), its successor is lStoodRight with its own check and mutant.
   if (ON_BOX || process.env.FLUX3_L === '1') {
     const L = makeL({
       app, ev, sleep, cycle: CYCLE,
       prepare: async (arm, on) => {
         const id = await fresh(LAT_TEXT);
         const jacked = arm === 'J' && on;
-        // ARCHIVED PARK (#13 step 14): archive/flux3-s4c.mjs.parked.md record 1
-        // the control is Flux's TEXT page now (plain, no Typewriter, no Corridor), in the same flag state as the arm under test; lStoodRight (above) is its own check
+        // SUPERSEDED (Nov 12, Wire In on its own): the L control. The control was Flux with the flag OFF and the paper Typewriter ON; flag-off Flux's free-writing mode is Wire In now and the paper Typewriter is retired in Flux,
+        // so that open no longer produces a control (it lands in Wire In). The originals, verbatim (the C comment above is the third, kept as it was):
+        //   await open({ id, tone: 'dark', flag: jacked, prefs: jacked ? {} : { typewriter: true } });
+        //   stoodRight: (arm, on, stood) => !!stood && (arm === 'J' && on ? stood.flag && stood.jacked : !stood.flag) && stood.zoom === 'true',
+        // Successor: the open below (Flux's TEXT page as the control) and lStoodRight; its check L-CONTROL and the mutant MUT-L-CONTROL run in every leg. (Not in the archive: step 14 archives a record only after two green deploys.)
         await open({ id, tone: 'dark', flag: FLAG, mode: jacked ? null : 'drafting', prefs: {} });
         const s = await st();
         return { flag: s.flag, zoom: s.zoom, jacked: s.jacked };
