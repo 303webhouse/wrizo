@@ -94,6 +94,7 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
     const vertical = (e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.ctrlKey && !e.metaKey && !e.altKey;
     if (!vertical) { if (!MODIFIER_ONLY.has(e.key)) live.delete(el); return false; }
     if (e.isComposing) return false;
+    return false;   // mutant: the handler is off
     const R = rowsFor(el);
     const sel = window.getSelection();
     if (!R || !sel || !sel.rangeCount) return false;
