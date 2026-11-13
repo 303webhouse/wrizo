@@ -1,6 +1,6 @@
 // #79 - THE SYNC BASE. Two devices, one page, both edited since they last synced: neither saw the other's words, and a push replaced the server's whole text (last write wins), so one side's words vanished. To keep both, a pull merges
 // THREE texts (store/textMerge.ts, the #76 whole-line merge), and a three-way merge needs the BASE: the page's text as of this device's last sync. The client kept no such copy, so this is it.
-//   - written when a page FIRST goes dirty (the text it had before the edit: the clean cache is the server's state as this device last saw it)
+//   - written when a page FIRST goes dirty (the text it had before the edit: the clean copy is the server's state as this device last saw it)
 //   - after a push that landed while the writer typed on, it is the text that was pushed (the server now holds that)
 //   - dropped when the page is clean and synced; cleared at sign-out with every other local copy
 //   - bounded: at most MAX_ENTRIES pages and MAX_CHARS characters; the oldest go first (a page without a base is merged the old way: this device's text wins)

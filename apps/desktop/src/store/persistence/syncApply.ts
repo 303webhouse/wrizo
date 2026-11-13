@@ -1,4 +1,4 @@
-import { clearSyncBases, dropSyncBase, getSyncBase, setSyncBase } from './syncBase';
+import { clearSyncBases, getSyncBase, setSyncBase } from './syncBase';
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
 import { mergeBoxLists } from '../boxTombstones';
@@ -124,15 +124,6 @@ export function applyRemoteRecords(remote: RemoteRecords): void {
   announcePurged();
 }
 
-// #79 - for the sync engine (store/sync.ts reaches these through the namespace, so a stub of this module without them still loads): is there a page here with unsynced words AND a kept base, i.e. one a pull could merge?
-export function hasMergeBases(): boolean {
-  return (cache.journalEntries as JournalEntry[]).some((e) => dirty.journalEntries.has(e.id) && getSyncBase(e.id) !== null);
-}
-
-// #79 - after a push landed: a page that is clean again no longer needs its base; a page the writer kept typing in while the push was out still has unsynced words, and the server now holds the text that was pushed, which is its new base.
-export function settleSyncBases(pages: ReadonlyArray<{ id: string; text: string; stillDirty: boolean }>): void {
-  for (const p of pages) { if (p.stillDirty) setSyncBase(p.id, p.text); else dropSyncBase(p.id); }
-}
 
 // #76 PART 1 - REFRESH. Every window of the app on this computer shares one localStorage, and each keeps its own in-memory cache; nothing used to tell a window that another had written. Now the browser's `storage` event does:
 // when another window writes a collection, this window takes the records that are NEWER there (the same rules as a pull from the server: a record with an unsaved edit HERE is kept, and its board boxes merge; a clean one is replaced), and
