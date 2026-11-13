@@ -91,6 +91,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 // home-base door — a loose page, homing nowhere.
 const freshLoosePage = async (app, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(300);
@@ -322,6 +323,7 @@ await withHarness(async (app) => {
     })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after B3 seed' });
+    await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
     await app.evalJs("document.querySelector('.wz-arrival-write').click()");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'B3 scratch loose page mounted' });
     await sleep(300);

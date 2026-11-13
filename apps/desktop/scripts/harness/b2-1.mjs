@@ -301,6 +301,7 @@ await withHarness(async (app) => {
   // reads "drawer", never "project".
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (Plan panel spot-check)' });
   await sleep(300);
@@ -474,6 +475,7 @@ await withHarness(async (app) => {
 
   // A genuinely empty picker (no projects at all) proves the Binder wording.
   await freshDesk(app, LAPTOP_W, 900);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page (empty Pin sheet spot-check)' });
   await sleep(300);

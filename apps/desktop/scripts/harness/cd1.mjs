@@ -53,6 +53,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 // switch explicitly for their own, unrelated, S3 rail-content purposes).
 const freshLoosePage = async (app) => {
   await freshDesk(app);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(400);
