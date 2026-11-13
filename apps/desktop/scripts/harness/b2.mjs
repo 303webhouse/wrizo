@@ -979,6 +979,7 @@ await withHarness(async (app) => {
   // Page category opened fresh.
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (lexicon spot-check)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (lexicon spot-check)' });
   await sleep(300);

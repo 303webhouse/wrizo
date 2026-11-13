@@ -71,6 +71,7 @@ const freshProsePage = async (app, width = 1400, height = 900) => {
 // used for Plan's no-project state.
 const freshLoosePage = async (app, width = 1400, height = 900) => {
   await freshDesk(app, width, height);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(300);
