@@ -1,0 +1,6 @@
+healthz 200 {"ok":true,"build":"index-DZvHWA6q"}
+auth/me 401
+served index-DZvHWA6q.js 1004273 bytes md5 f8374aef2be1
+served index-CLrdYJHw.css 244464 bytes md5 9977ba4b3ff7
+tested build (build:web of 6d41dd95 in F:\wrizo-work\chat1-train-5): index-DZvHWA6q.js 1004273 bytes md5 f8374aef2be1; index-CLrdYJHw.css 244464 bytes md5 9977ba4b3ff7 (CSS unchanged). Served: both identical.
+railway deployment list: f222d83c-513c-41f4-9da7-e0286e256bf4 SUCCESS 2026-11-13 15:21:43 -07:00 (2026-11-13 22:21:43Z); 57b14ef8-f56c-4f9f-8ba7-1950822c77da (train 9) REMOVING.
