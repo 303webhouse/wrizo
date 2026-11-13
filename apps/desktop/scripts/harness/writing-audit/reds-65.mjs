@@ -4,7 +4,7 @@
 //   C  Up again goes to the line above (the one before the last): the browser takes over inside the paragraph
 //   D  Shift+Up from the start of the short paragraph extends the selection onto the last visual line (focus there, anchor where it was)
 //   E  control: Up into a ONE-line paragraph lands on that line (the browser already does this); and Up from the middle of a wrapped paragraph moves one line
-// "The last visual line" is read from the page: the line tops of the wrapped paragraph's own rows, the last one above the short paragraph. RED on main today for A, B, C and D (the caret lands on the first line); E stays green.
+// "The last visual line" is read from the page: the line tops of the wrapped paragraph's own row (the rectangles that start above the next row's first line), the last of them. RED on main today for A, B, C and D (the caret lands on the first line); E stays green.
 // Run: node scripts/harness/writing-audit/reds-65.mjs (from apps/desktop; on Actions via writing-audit.yml, script=reds-65.mjs; strict)
 import { withHarness } from '../../runtime-verify.mjs';
 import { makeDriver, sleep, THEMES } from './lib/driver.mjs';
@@ -24,7 +24,7 @@ await withHarness(async (app) => {
   await d.boot();
   const ev = d.ev;
   // the page, as the browser draws it: the wrapped (first) row's line tops, the caret's rectangle, the selection's ends
-  const read = () => ev(`(() => { const ed = document.querySelector('.forward-only-editor'); const rows = [...ed.querySelectorAll('.wz-row')]; const r0 = rows[0]; const lines = []; if (r0) { const g = document.createRange(); g.selectNodeContents(r0); for (const q of g.getClientRects()) { if (q.height <= 0) continue; const t = Math.round(q.top); if (!lines.length || Math.abs(lines[lines.length - 1] - t) > 3) lines.push(t); } }
+  const read = () => ev(`(() => { const ed = document.querySelector('.forward-only-editor'); const rows = [...ed.querySelectorAll('.wz-row')]; const r0 = rows[0]; const lines = []; let nextTop = null; if (rows[1]) { const g1 = document.createRange(); g1.selectNodeContents(rows[1]); const t1 = [...g1.getClientRects()].filter((q) => q.height > 0).map((q) => q.top); if (t1.length) nextTop = Math.min(...t1); } if (r0) { const g = document.createRange(); g.selectNodeContents(r0); for (const q of g.getClientRects()) { if (q.height <= 0) continue; const t = Math.round(q.top); if (nextTop !== null && t >= nextTop - 3) continue; if (!lines.length || Math.abs(lines[lines.length - 1] - t) > 3) lines.push(t); } }
     const s = getSelection(); const rectOf = (n, o) => { const g = document.createRange(); g.setStart(n, o); g.collapse(true); const q = [...g.getClientRects()].find((x) => x.height > 0) || g.getBoundingClientRect(); return q ? { top: Math.round(q.top), left: Math.round(q.left) } : null; };
     return { lines, focus: s.focusNode ? rectOf(s.focusNode, s.focusOffset) : null, anchor: s.anchorNode ? rectOf(s.anchorNode, s.anchorOffset) : null, collapsed: s.isCollapsed }; })()`);
   const open = async (text, at) => { await d.surface('.forward-only-editor', false); await d.openPage(text, 'drafting', { typewriter: 'off' }); await d.place(at); await sleep(300); };
@@ -35,7 +35,7 @@ await withHarness(async (app) => {
     console.log(`${fails.length ? 'FAIL' : 'PASS'}  ${id} ${name} [${TAG}]${fails.length ? ': ' + fails.join(' || ') : ''}`);
   };
   // the wrapped row's last line top and the one before it: the lines above the caret's own row
-  const lastAbove = (m, before) => { const above = m.lines.filter((t) => t < before.focus.top - 3); return { last: above[above.length - 1], prev: above[above.length - 2], n: above.length }; };
+  const lastAbove = (m, before) => { const above = m.lines; return { last: above[above.length - 1], prev: above[above.length - 2], n: above.length }; };
 
   for (const n of [2, 3]) {
     const p = para(n);
