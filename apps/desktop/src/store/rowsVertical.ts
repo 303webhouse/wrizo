@@ -1,11 +1,20 @@
 import { rowsFor } from './lineRows';
 import { revealCaret } from './caretInView';
 
-// #65 - ArrowUp INTO A WRAPPED PARAGRAPH. The page's rows (store/lineRows.ts) are inline-blocks, and the browser enters an inline-block from below at its FIRST line: Up from a short paragraph into a wrapped one above landed on that
-// paragraph's top line and skipped its lower lines (the probe: block or inline rows land on the last line, inline-block rows on the first; containment and baseline are not the cause). The rows' CSS carries the typing speed (contain),
-// so it stays; this one step is done here: when the caret is on a row's first visual line and the row above wraps over more than one line, Up puts the caret on that row's LAST visual line, at the column the caret came from.
-// Every other Up (inside a row, above a one-line row, a selection collapsing) is left to the browser. Shift+Up extends the selection the same way.
-const goal = new WeakMap<HTMLElement, { x: number; node: Node; offset: number }>();
+// THE PAGE'S ROWS AND THE VERTICAL KEYS (#65, #62). The page's rows (store/lineRows.ts) are inline-blocks, and the browser's Up and Down do not cross them the way they cross lines of one block:
+//   #65 - ArrowUp INTO A WRAPPED PARAGRAPH. The browser enters an inline-block from below at its FIRST line: Up from a short paragraph into a wrapped one above landed on that paragraph's top line and skipped its lower lines (the probe: block or inline
+//         rows land on the last line, inline-block rows on the first; containment and baseline are not the cause). The rows' CSS carries the typing speed (contain), so it stays; this one step is done here: when the caret is on a row's first visual
+//         line and the row above wraps over more than one line, Up puts the caret on that row's LAST visual line, at the writer's column. Every other Up (inside a row, above a one-line row, a selection collapsing) is left to the browser.
+//   #62 - THE COLUMN. A run of Up and Down keys keeps the column the first of them started from: Down through a SHORTER paragraph and back Up must return to the column the writer left, not the one the short line cut it to; the column is read once,
+//         when a run starts, and kept until any other key, a click, or the editor losing focus ends the run. And DOWN FROM AN EMPTY ROW: the browser cannot leave an empty inline-block row downward (the caret stays in it), so Down from an empty row
+//         puts the caret on the first line of the row below, at the column of the run.
+// Shift+Up and Shift+Down extend the selection the same way. Everything else (inside a row, a one-line neighbour, a selection collapsing, composing) is left to the browser; a caret that cannot be placed here is never an error into the writer's key.
+const live = new WeakMap<HTMLElement, { x: number }>();   // the column of the run of vertical keys in progress, per editor
+
+/** A click, a lost focus or any key that is not Up or Down ends the run: the next vertical key reads the column afresh. */
+export function clearVerticalGoal(el: HTMLElement): void { live.delete(el); }
+
+const MODIFIER_ONLY = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'NumLock', 'ScrollLock', 'AltGraph']);
 
 const lineRects = (node: Node): DOMRect[] => {
   const r = document.createRange();
@@ -13,56 +22,106 @@ const lineRects = (node: Node): DOMRect[] => {
   return [...r.getClientRects()].filter((q) => q.height > 0 && q.width >= 0);
 };
 
+interface Where { row: HTMLElement; at: number; atRowStart: boolean; fnode: Node; foff: number }
+
+/** The row the selection's focus is in (a caret at a row's START is often drawn in the separator BETWEEN rows, after its newline, or on the host itself: the row it starts is the one that follows). */
+function whereIs(el: HTMLElement, rows: HTMLElement[], sel: Selection): Where | null {
+  const fnode = sel.focusNode, foff = sel.focusOffset;
+  if (!fnode || !el.contains(fnode)) return null;
+  const fe = fnode.nodeType === 1 ? (fnode as Element) : fnode.parentElement;
+  let row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
+  let atRowStart = false;
+  if (!row) {
+    let next: Node | null = null;
+    if (fnode === el) next = el.childNodes[foff] ?? null;
+    else if (fnode.parentNode === el && fnode.nodeType === 3 && foff === (fnode as Text).length) next = fnode.nextSibling;
+    while (next && next.nodeType !== 1) next = next.nextSibling;
+    if (next && (next as Element).classList.contains('wz-row')) { row = next as HTMLElement; atRowStart = true; }
+  }
+  if (!row) return null;
+  const at = rows.indexOf(row);
+  return at < 0 ? null : { row, at, atRowStart, fnode, foff };
+}
+
+/** Where the caret is drawn: its top, left and height (a caret at a row's start: the row's first line). */
+function caretBox(w: Where): { top: number; left: number; height: number } | null {
+  const own = lineRects(w.row);
+  if (w.atRowStart) {
+    if (!own.length) return null;
+    const f = own.reduce((m, q) => (q.top < m.top ? q : m), own[0]);
+    return { top: f.top, left: f.left, height: f.height };
+  }
+  const here = document.createRange();
+  here.setStart(w.fnode, w.foff);
+  here.collapse(true);
+  const q = [...here.getClientRects()].find((x) => x.height > 0) ?? here.getBoundingClientRect();
+  if (q && q.height > 0) return { top: q.top, left: q.left, height: q.height };
+  // an empty row has no text to draw a rectangle from: its own box is where the caret stands
+  const rb = w.row.getBoundingClientRect();
+  return own.length === 0 && rb.height > 0 ? { top: rb.top, left: rb.left, height: rb.height } : null;
+}
+
+const pointToCaret = (x: number, y: number): { node: Node; offset: number } | null => {
+  const d = document as unknown as { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null; caretRangeFromPoint?: (x: number, y: number) => Range | null };
+  if (d.caretPositionFromPoint) { const p = d.caretPositionFromPoint(x, y); return p ? { node: p.offsetNode, offset: p.offset } : null; }
+  if (d.caretRangeFromPoint) { const r = d.caretRangeFromPoint(x, y); return r ? { node: r.startContainer, offset: r.startOffset } : null; }
+  return null;
+};
+
 /** Handles the key and returns true when it did (the caller has nothing more to do); false leaves it to the browser. */
-export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
+export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
   try {
-    if (e.key !== 'ArrowUp' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+    const vertical = (e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.ctrlKey && !e.metaKey && !e.altKey;
+    if (!vertical) { if (!MODIFIER_ONLY.has(e.key)) live.delete(el); return false; }
+    if (e.isComposing) return false;
     const R = rowsFor(el);
     const sel = window.getSelection();
-    if (!R || !sel || !sel.rangeCount || !sel.focusNode || !el.contains(sel.focusNode)) return false;
-    if (!e.shiftKey && !sel.isCollapsed) return false;   // Up over a selection collapses it: native
-    const fnode = sel.focusNode, foff = sel.focusOffset;
-    const fe = fnode.nodeType === 1 ? (fnode as Element) : fnode.parentElement;
-    let row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
-    // a caret at a row's START is often drawn in the separator BETWEEN rows (after its newline) or on the host itself, not inside the row: the row it starts is the one that follows
-    let atRowStart = false;
-    if (!row) {
-      let next: Node | null = null;
-      if (fnode === el) next = el.childNodes[foff] ?? null;
-      else if (fnode.parentNode === el && fnode.nodeType === 3 && foff === (fnode as Text).length) next = fnode.nextSibling;
-      while (next && next.nodeType !== 1) next = next.nextSibling;
-      if (next && (next as Element).classList.contains('wz-row')) { row = next as HTMLElement; atRowStart = true; }
+    if (!R || !sel || !sel.rangeCount) return false;
+    if (!e.shiftKey && !sel.isCollapsed) { live.delete(el); return false; }   // a vertical key over a selection collapses it: native (and the column is read afresh from the caret it leaves)
+    const w = whereIs(el, R.rows, sel);
+    if (!w) return false;
+    const box = caretBox(w);
+    // the run's column: read once, when the run starts, from where the caret is drawn
+    let g = live.get(el);
+    if (!g) { if (!box) return false; g = { x: box.left }; live.set(el, g); }
+    const own = lineRects(w.row);
+    const empty = own.length === 0;   // an empty row draws no text: nothing in it has a rectangle
+    let target: { node: Node; offset: number } | null = null;
+    if (e.key === 'ArrowDown') {
+      // DOWN FROM AN EMPTY ROW (#62): the browser leaves the caret where it is
+      if (!empty) return false;
+      const below = R.rows[w.at + 1];
+      if (!below) return false;
+      const bl = lineRects(below);
+      if (!bl.length) target = { node: below, offset: 0 };
+      else {
+        const first = bl.reduce((m, q) => (q.top < m.top ? q : m), bl[0]);
+        const p = pointToCaret(Math.max(g.x, first.left + 1.5), first.top + first.height / 2);
+        if (!p || !below.contains(p.node)) return false;
+        target = p;
+      }
+    } else {
+      // UP INTO A WRAPPED ROW (#65): only from the row's first visual line, and only when the row above wraps
+      if (w.at <= 0 || !box) return false;
+      if (!empty) {
+        if (!own.length) return false;
+        const ownTop = Math.min(...own.map((q) => q.top));
+        const ownLh = Math.min(...own.map((q) => q.height));
+        if (box.top > ownTop + ownLh * 0.6) return false;
+      }
+      const above = R.rows[w.at - 1];
+      const ar = lineRects(above);
+      if (!ar.length) return false;
+      const aboveTop = Math.min(...ar.map((q) => q.top));
+      const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
+      if (last.top - aboveTop < last.height * 0.6) return false;
+      // a point exactly on the row's left edge hits the row box, not its last line (the browser answers with the row's START, its first line): at the edge the column is nudged one and a half pixels into the text
+      const p = pointToCaret(Math.max(g.x, last.left + 1.5), last.top + last.height / 2);
+      if (!p || !above.contains(p.node)) return false;
+      target = p;
     }
-    const at = row ? R.rows.indexOf(row) : -1;
-    if (!row || at <= 0) return false;
-    // only from the row's first visual line: inside a wrapped row the browser moves by line correctly
-    const own = lineRects(row);
-    if (!own.length) return false;
-    let hr: { top: number; left: number; height: number };
-    if (atRowStart) { const f = own.reduce((m, q) => (q.top < m.top ? q : m), own[0]); hr = { top: f.top, left: f.left, height: f.height }; }
-    else { const here = document.createRange(); here.setStart(fnode, foff); here.collapse(true); const q = [...here.getClientRects()].find((x) => x.height > 0) ?? here.getBoundingClientRect(); if (!q || q.height <= 0) return false; hr = { top: q.top, left: q.left, height: q.height }; }
-    const ownTop = Math.min(...own.map((q) => q.top));
-    const ownLh = Math.min(...own.map((q) => q.height));
-    if (hr.top > ownTop + ownLh * 0.6) return false;
-    // the row above: only when it wraps (a one-line row is entered correctly by the browser)
-    const above = R.rows[at - 1];
-    const ar = lineRects(above);
-    if (!ar.length) return false;
-    const aboveTop = Math.min(...ar.map((q) => q.top));
-    const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
-    if (last.top - aboveTop < last.height * 0.6) return false;
-    const g = goal.get(el);
-    // a point exactly on the row's left edge hits the row box, not its last line (the browser answers with the row's START, its first line): at the edge the column is nudged one and a half pixels into the text
-    const x0 = g && g.node === fnode && g.offset === foff ? g.x : hr.left;
-    const x = Math.max(x0, last.left + 1.5);
-    const y = last.top + last.height / 2;
-    const d = document as unknown as { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null; caretRangeFromPoint?: (x: number, y: number) => Range | null };
-    let node: Node | null = null, offset = 0;
-    if (d.caretPositionFromPoint) { const p = d.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset; } }
-    else if (d.caretRangeFromPoint) { const r = d.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; offset = r.startOffset; } }
-    if (!node || !above.contains(node)) return false;
-    if (e.shiftKey) sel.extend(node, offset); else sel.collapse(node, offset);
-    goal.set(el, { x, node, offset });
+    if (!target) return false;
+    if (e.shiftKey) sel.extend(target.node, target.offset); else sel.collapse(target.node, target.offset);
     e.preventDefault();
     if (!e.shiftKey) revealCaret(el);
     return true;
