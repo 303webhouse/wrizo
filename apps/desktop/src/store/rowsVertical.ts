@@ -16,11 +16,11 @@ const lineRects = (node: Node): DOMRect[] => {
 /** Handles the key and returns true when it did (the caller has nothing more to do); false leaves it to the browser. */
 export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
   try {
-    if (e.key !== 'ArrowUp' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+    if (e.key !== 'ArrowUp' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) { (window as unknown as { __up65?: unknown }).__up65 = { r: 1, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     const R = rowsFor(el);
     const sel = window.getSelection();
-    if (!R || !sel || !sel.rangeCount || !sel.focusNode || !el.contains(sel.focusNode)) return false;
-    if (!e.shiftKey && !sel.isCollapsed) return false;   // Up over a selection collapses it: native
+    if (!R || !sel || !sel.rangeCount || !sel.focusNode || !el.contains(sel.focusNode)) { (window as unknown as { __up65?: unknown }).__up65 = { r: 2, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
+    if (!e.shiftKey && !sel.isCollapsed) { (window as unknown as { __up65?: unknown }).__up65 = { r: 3, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }   // Up over a selection collapses it: native
     const fnode = sel.focusNode, foff = sel.focusOffset;
     const fe = fnode.nodeType === 1 ? (fnode as Element) : fnode.parentElement;
     let row = fe ? (fe.closest('.wz-row') as HTMLElement | null) : null;
@@ -34,23 +34,23 @@ export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
       if (next && (next as Element).classList.contains('wz-row')) { row = next as HTMLElement; atRowStart = true; }
     }
     const at = row ? R.rows.indexOf(row) : -1;
-    if (!row || at <= 0) return false;
+    if (!row || at <= 0) { (window as unknown as { __up65?: unknown }).__up65 = { r: 4, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     // only from the row's first visual line: inside a wrapped row the browser moves by line correctly
     const own = lineRects(row);
-    if (!own.length) return false;
+    if (!own.length) { (window as unknown as { __up65?: unknown }).__up65 = { r: 5, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     let hr: { top: number; left: number; height: number };
     if (atRowStart) { const f = own.reduce((m, q) => (q.top < m.top ? q : m), own[0]); hr = { top: f.top, left: f.left, height: f.height }; }
-    else { const here = document.createRange(); here.setStart(fnode, foff); here.collapse(true); const q = [...here.getClientRects()].find((x) => x.height > 0) ?? here.getBoundingClientRect(); if (!q || q.height <= 0) return false; hr = { top: q.top, left: q.left, height: q.height }; }
+    else { const here = document.createRange(); here.setStart(fnode, foff); here.collapse(true); const q = [...here.getClientRects()].find((x) => x.height > 0) ?? here.getBoundingClientRect(); if (!q || q.height <= 0) { (window as unknown as { __up65?: unknown }).__up65 = { r: 6, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; } hr = { top: q.top, left: q.left, height: q.height }; }
     const ownTop = Math.min(...own.map((q) => q.top));
     const ownLh = Math.min(...own.map((q) => q.height));
-    if (hr.top > ownTop + ownLh * 0.6) return false;
+    if (hr.top > ownTop + ownLh * 0.6) { (window as unknown as { __up65?: unknown }).__up65 = { r: 7, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     // the row above: only when it wraps (a one-line row is entered correctly by the browser)
     const above = R.rows[at - 1];
     const ar = lineRects(above);
-    if (!ar.length) return false;
+    if (!ar.length) { (window as unknown as { __up65?: unknown }).__up65 = { r: 8, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     const aboveTop = Math.min(...ar.map((q) => q.top));
     const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
-    if (last.top - aboveTop < last.height * 0.6) return false;
+    if (last.top - aboveTop < last.height * 0.6) { (window as unknown as { __up65?: unknown }).__up65 = { r: 9, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     const g = goal.get(el);
     const x = g && g.node === fnode && g.offset === foff ? g.x : hr.left;
     const y = last.top + last.height / 2;
@@ -58,13 +58,14 @@ export function rowsUpKey(el: HTMLElement, e: KeyboardEvent): boolean {
     let node: Node | null = null, offset = 0;
     if (d.caretPositionFromPoint) { const p = d.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset; } }
     else if (d.caretRangeFromPoint) { const r = d.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; offset = r.startOffset; } }
-    if (!node || !above.contains(node)) return false;
+    if (!node || !above.contains(node)) { (window as unknown as { __up65?: unknown }).__up65 = { r: 10, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }
     if (e.shiftKey) sel.extend(node, offset); else sel.collapse(node, offset);
     goal.set(el, { x, node, offset });
+    (window as unknown as { __up65?: unknown }).__up65 = { r: 0, handled: true, x, y };
     e.preventDefault();
     if (!e.shiftKey) revealCaret(el);
     return true;
   } catch {
-    return false;   // a caret that cannot be placed here stays the browser's: never an error into the writer's key
+    { (window as unknown as { __up65?: unknown }).__up65 = { r: 11, fnode: String(sel && sel.focusNode && (sel.focusNode.nodeName + ':' + (sel.focusNode.nodeType === 3 ? JSON.stringify((sel.focusNode as Text).data.slice(0, 12)) : (sel.focusNode as Element).className))), foff: sel && sel.focusOffset }; return false; }   // a caret that cannot be placed here stays the browser's: never an error into the writer's key
   }
 }
