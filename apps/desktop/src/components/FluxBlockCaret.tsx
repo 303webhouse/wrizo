@@ -27,6 +27,11 @@ export const CARET_PLACE = { textEnd: true };
 // element directly, so a key costs no render [FluxBlockCaret §6]
 export const CARET_BLINK = { restMs: 600 };
 
+// #67: the caret's SOFT-WRAP side. A collapsed range at the point where a line wraps reports the END of the line above (the browser's upstream rectangle), though a caret that arrived by Down, Up or Home stands at the START of the next line;
+// End (and a click, and typing) leave it where the rectangle says. The last key that moved the caret is kept, with its time, for that one decision [FluxBlockCaret §7].
+const NAV_DOWNSTREAM = new Set(['ArrowDown', 'ArrowUp', 'Home', 'PageDown', 'PageUp']);
+let lastNav: { key: string; at: number } = { key: '', at: 0 };
+
 interface Rect { left: number; top: number; width: number; height: number }
 
 // JACKED IN's caret is a block as wide as an "n" (the spec's §6; the Wrizors' Corridor review). The width is read from the writing surface's own font, once per surface and line height (a font or
@@ -54,6 +59,7 @@ export function FluxBlockCaret() {
   const activeElRef = useRef<HTMLElement | null>(null);
   const caretElRef = useRef<HTMLDivElement | null>(null);
   const typingRef = useRef(false);
+  const downstream = useRef<{ node: Node; offset: number } | null>(null);
   const markTyping = (el: HTMLDivElement | null) => { if (!el) return; if (typingRef.current) el.setAttribute('data-typing', ''); else el.removeAttribute('data-typing'); };
 
   // [FluxBlockCaret §6] solid while keys land, blinking at rest
@@ -69,6 +75,16 @@ export function FluxBlockCaret() {
     };
     document.addEventListener('keydown', onKey, { capture: true, passive: true });
     return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearTimeout(rest); set(false); };
+  }, [theme]);
+
+  // [FluxBlockCaret §7] remember the key (and a click) that last moved the caret
+  useEffect(() => {
+    if (theme !== 'flux') return undefined;
+    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; };
+    const onPointer = () => { lastNav = { key: 'pointer', at: performance.now() }; };
+    document.addEventListener('keydown', onNav, { capture: true, passive: true });
+    document.addEventListener('pointerdown', onPointer, { capture: true, passive: true });
+    return () => { document.removeEventListener('keydown', onNav, { capture: true }); document.removeEventListener('pointerdown', onPointer, { capture: true }); };
   }, [theme]);
 
   useEffect(() => {
@@ -95,6 +111,20 @@ export function FluxBlockCaret() {
 
       const range = sel.getRangeAt(0).cloneRange();
       let r = range.getClientRects()[0];
+      // [FluxBlockCaret §7] at a soft wrap the rectangle is the line above's end: after Down, Up or Home the block stands on the START of the line the caret is on (the character after it). The choice is kept while the selection stays put, so a scroll or glide redraw does not undo it.
+      const wrapA = sel.anchorNode, wrapO = sel.anchorOffset;
+      if (r && wrapA && wrapA.nodeType === Node.TEXT_NODE && wrapO < (wrapA as Text).data.length) {
+        const ended = lastNav.key === 'End' && performance.now() - lastNav.at < 500;
+        const same = !ended && !!downstream.current && downstream.current.node === wrapA && downstream.current.offset === wrapO;
+        const fresh = NAV_DOWNSTREAM.has(lastNav.key) && performance.now() - lastNav.at < 500;
+        if (same || fresh) {
+          const one = document.createRange();
+          one.setStart(wrapA, wrapO); one.setEnd(wrapA, wrapO + 1);
+          const cr = [...one.getClientRects()].find((q) => q.height > 0);
+          if (cr && cr.top > r.top + r.height * 0.5) { r = new DOMRect(cr.left, cr.top, 0, cr.height); downstream.current = { node: wrapA, offset: wrapO }; }
+          else if (!same) downstream.current = null;
+        } else downstream.current = null;
+      } else downstream.current = null;
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
       const row0 = caretRow(sel, surface);
       // [FluxBlockCaret §5] an inline span HOLDING TEXT (the in-progress word) is never the caret's row: without a rect, the caret at an element
