@@ -13,8 +13,9 @@
 //   W10 OTHERS      Arbor and Machina are untouched: no Corridor, no marked root, and Arbor's Free Write Typewriter (its setting ON) still zooms the page
 //   W11 FLAG-ON     with ?flux3=1 the redesign's other pieces still arrive (data-flux3, the room ground in TEXT) AND the Corridor still mounts: the flag gates the rest, not Wire In
 //   W12 IDLE        the idle line shows after 4 s of rest (none at first; then KEEP THE SIGNAL · ANY WORD WILL DO, drawn: not display none, fixed, opaque once its fade is done, below the caret; the nudge's earliest is ~7.6 s after entry)
-//   MUT-*           seven landed mutants of the served bundle (a regex found exactly once, replaced in flight), each turning ITS OWN check RED and no other clause: the flag leaks on (W1), the marker never set (W3), the
-//                   toggles' rule gone (W4), Wire In mounting only when the flag says so (W2), the chrome rule not matching (W5), the idle line hidden by its rule (W12), the idle line's switch read as off (W12)
+//   W12b IDLE-PIN   the wait is 4.0 s after her LAST KEY (not after entry): a key typed once the entry line has gone, the line absent 3.3 s later, shown 3.9-4.9 s after that key (the nudge's own timer: NUDGE_MS = 4000)
+//   MUT-*           nine landed mutants of the served bundle (a regex found exactly once, replaced in flight), each turning ITS OWN check RED and no other clause: the flag leaks on (W1), the marker never set (W3), the
+//                   toggles' rule gone (W4), Wire In mounting only when the flag says so (W2), the chrome rule not matching (W5), the idle line hidden by its rule (W12), the idle line's switch read as off (W12), the wait made 2 s and 6 s (W12b)
 // FLUX_WIREIN_SHOTS=<dir> writes frames. Run: node scripts/harness/flux-wirein-flagoff.mjs   (from apps/desktop)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -57,6 +58,8 @@ const MUTANTS = {
   togglesBack: [/(:root\[data-wirein\]\[data-theme=flux\] \.typewriter-toggle)\{display:none!important\}/g, '$1{display:inline-flex}', 'css'],
   chromeStays: [/\[data-flux3-jacked\] :is\(\.desk-rail/g, '[data-flux3-jackedx] :is(.desk-rail', 'css'],
   idleHidden: [/(\.flux3-nudge)\{(transform:translate\(-50%,-50%\))/g, '$1{display:none;$2', 'css'],
+  idleSoon: [/([\w$]+)=4e3(?=[,;])/g, '$1=2e3', 'js'],
+  idleLate: [/([\w$]+)=4e3(?=[,;])/g, '$1=6e3', 'js'],
   idleOff: [/[\w$]+\(\)\.idle==="off"/g, '!0', 'js'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
@@ -162,6 +165,18 @@ try { await withHarness(async (app) => {
       const pass = early === null && !!n && /^KEEP THE SIGNAL/i.test(String(n.text).trim()) && n.disp !== 'none' && n.pos === 'fixed' && n.op >= 0.99 && n.w > 100 && n.below === true;
       return { pass, detail: JSON.stringify({ early, n }) };
     },
+    // W12b: the wait runs from her LAST KEY. A key once the entry line has gone (the count starts then), the line absent at 3.3 s, shown 3.9-4.9 s after the key.
+    async idlePin() {
+      await open({ id: pidMain, tone: 'dark' });
+      await ev("(() => { const P = window.__pin = { key: null, shown: null }; document.addEventListener('keydown', () => { if (P.shown === null) P.key = performance.now(); }, { capture: true }); new MutationObserver(() => { if (P.key !== null && P.shown === null && document.querySelector('.flux3-nudge')) P.shown = performance.now(); }).observe(document.body, { childList: true, subtree: true }); })()");
+      await sleep(4300);   // the entry line (3 s + 0.6 s fade) has gone, the first line has not come
+      await app.typeKeys('x');
+      await sleep(3300);
+      const mid = await ev("({ el: Math.round(performance.now() - window.__pin.key), has: !!document.querySelector('.flux3-nudge') })");
+      let d = null; for (let i = 0; i < 70 && d === null; i += 1) { await sleep(100); d = await ev('window.__pin.shown === null ? null : Math.round(window.__pin.shown - window.__pin.key)'); }
+      const pass = mid.has === false && mid.el < 3900 && d !== null && d >= 3900 && d <= 4900;
+      return { pass, detail: JSON.stringify({ mid, shownAfterKey: d }) };
+    },
   };
 
   { const r = await probes.flagOff(); ok('W1 FLAG-OFF without ?flux3=1: no data-flux3, the flag\'s chunk is never fetched, none of the redesign\'s own elements exists (Schema, doc gutter and ports, room ground, Glitch bar, idle glitch), and her words keep today\'s page face (no Crimson Pro default)', r.pass, r.detail); }
@@ -169,6 +184,7 @@ try { await withHarness(async (app) => {
   { const r = await probes.styled(); ok('W3 STYLED the Corridor is drawn by its own stylesheet: data-wirein on the root, the Corridor fixed to the window over the ground #020C10, the burst edge a fixed 2 px line', r.pass, r.detail); }
   { const r = await probes.toggles(); ok('W4 TOGGLES the paper Typewriter\'s toggles are not offered in Flux: a probe of the rule and every real one rendered compute display none', r.pass, r.detail); }
   { const r = await probes.chrome(); ok('W5 CHROME no rail, strip or corkboard while wired in (computed opacity 0, no pointer)', r.pass, r.detail); }
+  { const r = await probes.idlePin(); ok('W12b IDLE-PIN the wait is 4.0 s after her LAST KEY: a key once the entry line has gone, the line is absent 3.3 s later and shown 3.9-4.9 s after that key', r.pass, r.detail); }
   { const r = await probes.idle(); ok('W12 IDLE left alone the idle line shows after 4 s of rest: none at first, then KEEP THE SIGNAL · ANY WORD WILL DO below her writing line, drawn (not display none, fixed, opaque once its fade is done)', r.pass, r.detail); }
 
   // W6 / W7: leave with Esc, from a LIGHT page
@@ -244,6 +260,8 @@ try { await withHarness(async (app) => {
   await mutantRun('chromeStays', probes.chrome, 'the chrome rule no longer matches a wired-in page -> W5');
   await mutantRun('idleHidden', probes.idle, 'the idle line hidden by its own rule -> W12');
   await mutantRun('idleOff', probes.idle, 'the idle line\'s switch read as off -> W12');
+  await mutantRun('idleSoon', probes.idlePin, 'the wait made 2 s -> W12b');
+  await mutantRun('idleLate', probes.idlePin, 'the wait made 6 s -> W12b');
   mutant = null;
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }
 
