@@ -2,7 +2,7 @@
 // 4.5 floor (found by flux3-s4.mjs's INFO CARET-CONTROL, Nov 7; the flag's own fix is S4 r8's). The fix, in styles/06-flux-v2.css: on the light
 // page a solid, darker orange of the same family, #A84E00 (5.2:1 on the paper); the dark tone keeps its caret.
 //
-// THE PAGE, seeded through the app's seam (wrizoCreateJournalPage; never raw storage): a loose page, no flag.
+// THE PAGE, seeded through the app's seam (wrizoCreateJournalPage; never raw storage): a loose page, opened in Free Write, no flag.
 // WIRE IN ON ITS OWN (Nov 12, Fable's go): in Flux a loose page's free-writing mode (Free Write) is Wire In now, ALWAYS DARK with a solid #FF9800 caret on the Corridor's ground, so the LIGHT tone's
 // caret (and the dark tone's plain-page caret) lives on Flux's TEXT page. The fixture therefore opens the page in TEXT (the per-page preference wrizo-mode-page-<id> = 'drafting', a pref and not a collection,
 // set before the reload as the app reads it at mount) for the light/dark caret reads; every one of their sentences below still says exactly what it says, and CARET-THEME keeps its original Free Write open.
