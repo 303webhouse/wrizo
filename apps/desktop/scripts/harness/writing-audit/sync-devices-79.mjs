@@ -36,7 +36,6 @@ globalThis.localStorage = { getItem: (k) => (current.has(k) ? current.get(k) : n
 const noop = { addEventListener() {}, removeEventListener() {} };
 globalThis.window = { ...noop, setTimeout, clearTimeout, localStorage: globalThis.localStorage, location: { hash: '', href: 'http://x/' } };
 globalThis.document = { ...noop, visibilityState: 'visible', documentElement: { setAttribute() {}, getAttribute() { return null; } } };
-globalThis.navigator = globalThis.navigator || { userAgent: 'node' };
 
 // ---- the server double -------------------------------------------------------------------------------------------------
 const server = { rows: new Map() };
