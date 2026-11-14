@@ -71,7 +71,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
       {/* 1. where she is: her Project's box and name; it opens her Project's own list (Unfiled writing has no list: its door is UNFILED) */}
       <div className="wz-strip-section wz-reorg-where">
         <button type="button" className="wz-strip-item wz-reorg-where-item" data-reorg-where={here ?? 'unfiled'}
-          aria-disabled={here == null ? 'true' : undefined} aria-pressed={here == null ? undefined : listShown(here)} onClick={here == null ? undefined : () => openListOf(here)}
+          aria-disabled={here == null ? 'true' : undefined} aria-pressed={here == null ? undefined : listShown(here)} onClick={undefined}
           aria-label={fill(t('reorgWhereLabel'), hereName)} aria-current="location">
           <RailBox id={here} name={hereName} size="rail" />
           <span className="wz-strip-label wz-reorg-where-name">{hereName}</span>
