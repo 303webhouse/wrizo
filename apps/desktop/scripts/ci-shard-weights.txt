@@ -233,7 +233,7 @@ wa-red-64.mjs 300
 wa-red-65.mjs 150
 wa-red-67.mjs 150
 wa-red-69.mjs 150
-wa-red-72.mjs 90
+wa-red-72.mjs 170
 wa-red-74.mjs 60
 wa-red-76.mjs 240
 wa-red-79.mjs 120
