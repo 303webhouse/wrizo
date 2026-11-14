@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme, type ThemeId } from './theme';
+import { REORG } from '../reorg/flag';
 
 // TH1 Slice 1 — lexicon projection (canon §5). Display projection ONLY: data,
 // schema, routes, sync, and search keep the canonical nouns below forever — a
@@ -72,7 +73,8 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     drawer: { one: 'Project', many: 'Projects' },
     binder: { one: 'Folder', many: 'Folders' },
     box: { one: 'Block', many: 'Blocks' },
-    board: { one: 'Plan', many: 'Plans' },
+    // the reorg (?reorg=1 only; reorg-word-changes.md 2a, Nick Nov 14): Machina's surface is Board, written out so it never falls through
+    board: REORG ? { one: 'Board', many: 'Boards' } : { one: 'Plan', many: 'Plans' },
     journal: { one: 'Notebook', many: 'Notebooks' },
     milestone: { one: 'Deliverable', many: 'Deliverables' },
     freewrite: { one: 'Sprint', many: 'Sprints' },

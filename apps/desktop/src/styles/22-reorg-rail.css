@@ -1,0 +1,64 @@
+/* THE REORG'S RAIL (phase 2, behind ?reorg=1 in Machina; frames rail-1d R1 to R4). Every rule is scoped to Machina and to a .wz-reorg-* class
+   that only src/reorg/ renders, so with the switch off nothing here matches. The rail keeps the strip's own track (84 px), items and foot. */
+
+/* the four groups, set apart by the 2 px rule the Wrizors asked for (pass 3, B1: #727C86) */
+[data-theme='machina'] .wz-reorg-where,
+[data-theme='machina'] .wz-reorg-pins{ border-bottom:2px solid #727C86; padding-bottom:6px; margin-bottom:6px; }
+
+/* 1. where she is: her box over her name, the rail's where-you-are edge on the left */
+[data-theme='machina'] .wz-reorg-where-item{ border-left-color:var(--accent-rest); cursor:default; padding-top:8px; }
+[data-theme='machina'] .wz-reorg-where-item:hover{ background:none; }
+[data-theme='machina'] .wz-reorg-where-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; }
+
+/* a Project's box: two letters on its colour (RailBox.tsx sets the colour and the letters' ink) */
+[data-theme='machina'] .wz-reorg-box{ display:inline-flex; align-items:center; justify-content:center; flex:none; box-sizing:border-box;
+  font-family:var(--font-chromeLabel); letter-spacing:.06em; line-height:1; }
+[data-theme='machina'] .wz-reorg-box--rail{ width:38px; height:38px; font-size:12px; }
+[data-theme='machina'] .wz-reorg-box--pin{ width:34px; height:34px; font-size:11px; }
+[data-theme='machina'] .wz-reorg-box--row{ width:30px; height:30px; font-size:11px; border:1px solid #6A727B; }
+
+/* 2. her pins: two boxes a row (R1), or one a row with its name (R2); the small switch under them */
+[data-theme='machina'] .wz-reorg-pin-grid{ display:grid; grid-template-columns:repeat(2, 34px); gap:6px; justify-content:center; padding:6px 0 4px; }
+[data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-pin-grid{ grid-template-columns:1fr; gap:4px; }
+[data-theme='machina'] .wz-reorg-pin{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; background:none; border:0;
+  color:var(--text-hi); cursor:default; }
+[data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-box--pin{ width:24px; height:24px; font-size:9px; }
+[data-theme='machina'] .wz-reorg-pin-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-pin-view{ display:flex; justify-content:center; gap:8px; padding-top:2px; }
+[data-theme='machina'] .wz-reorg-pin-view-btn{ width:22px; height:18px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid transparent; color:var(--text-mid); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-pin-view-btn svg{ width:14px; height:14px; }
+[data-theme='machina'] .wz-reorg-pin-view-btn[aria-pressed='true']{ border-color:var(--text-hi); color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-pin-view-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+
+/* 3. a door that is not lit yet (DOCS in step 5, UNFILED in step 6): drawn, not pressable */
+[data-theme='machina'] .wz-reorg-rail .wz-strip-item[aria-disabled='true']{ cursor:default; opacity:.45; }
+[data-theme='machina'] .wz-reorg-rail .wz-strip-item[aria-disabled='true']:hover{ background:none; }
+[data-theme='machina'] .wz-reorg-rail .wz-reorg-where-item[aria-disabled='true']{ opacity:1; }
+[data-theme='machina'] .wz-reorg-rail .wz-strip-label{ text-transform:uppercase; }
+
+/* PROJECTS (R4): the head's count, + New project, the two groups, one row a Project */
+[data-theme='machina'] .wz-reorg-head-count{ margin-left:auto; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-projects{ padding:0; gap:0; }
+[data-theme='machina'] .wz-reorg-new{ display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:none; border:0;
+  border-bottom:1px solid var(--ink-border); color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-new:hover{ background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-new-input{ margin:8px 14px; font-family:var(--font-contentLabel); font-size:13px; }
+[data-theme='machina'] .wz-reorg-group-head{ display:flex; align-items:center; gap:6px; padding:12px 14px 4px; font-family:var(--font-chromeLabel);
+  font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-rows{ list-style:none; margin:0; padding:0; }
+[data-theme='machina'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
+[data-theme='machina'] .wz-reorg-row[aria-current='location']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
+  color:var(--text-hi); text-align:left; cursor:default; }
+[data-theme='machina'] .wz-reorg-row-text{ display:flex; flex-direction:column; min-width:0; gap:2px; }
+[data-theme='machina'] .wz-reorg-row-name{ font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-row[aria-current='location'] .wz-reorg-row-name{ font-weight:600; }
+[data-theme='machina'] .wz-reorg-row-meta{ font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-row-pin{ width:32px; height:32px; margin-right:8px; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:0; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-row-pin[aria-pressed='false']{ color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-row-pin:hover{ color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-row-pin:focus-visible,
+[data-theme='machina'] .wz-reorg-new:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }

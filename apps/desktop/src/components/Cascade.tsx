@@ -20,6 +20,10 @@ import { railReadout, railHint } from '../store/fluxReadouts';
 import { useThemePrefs } from '../store/themePrefs';
 import { useLastTouched } from '../flux3/lastTouched';
 import { nodeHex } from '../flux3/FluxNodeRecord';
+// THE REORG'S RAIL (phase 2): ?reorg=1 in Machina only; with the switch off, or in any other theme, the strip renders exactly as before
+import { REORG } from '../reorg/flag';
+import { ReorgRail } from '../reorg/ReorgRail';
+import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
 
 // PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
 // page carries its first line; neither is ever allowed to be blank, because the
@@ -116,6 +120,9 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
     case 'trash': return 'drawerPlaceTrash';
     case 'settings': return 'cascadeSettingsTitle';
     case 'theme': return 'cascadeThemeTitle';
+    case 'reorg-docs': return 'drawerPage';
+    case 'reorg-projects': return 'reorgAllProjects';
+    case 'reorg-unfiled': return 'reorgUnfiled';
   }
 }
 
@@ -169,6 +176,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // L2: the command-box readouts. TRUE counts of what is already stored (the pages and boards of where she is, the Journal's pages), read when the rail renders for a new place, page or
   // open category - never per key. Nothing new is stored. "Last" is the in-session last-touched node (lastTouched.ts) in orange, the same one the Schema's footer reads.
   const boxes = FLUX3 && useTheme() === 'flux';
+  // the reorg's one gate: the switch AND Machina (read once here; the same short-circuit as Flux's above, so with the switch off no new hook runs)
+  const reorg = REORG && useTheme() === 'machina';
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
   // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)
@@ -299,7 +308,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST) };
 
-  const strip = (
+  const strip = reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : (
     <div className="wz-strip">
       <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} reading={readouts ? readouts.place : null} />
       {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed', null, readouts, lastReadout)}
@@ -337,6 +346,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
       <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined}>
         <div className="wz-cascade-panel-head">
           <span className="wz-cascade-panel-title">{t(panelTitleTerm(view.category))}</span>
+          {reorg ? reorgHeadExtra(view.category) : null}
           <button
             type="button"
             className="wz-cascade-dock-btn"
@@ -346,7 +356,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
             ×
           </button>
         </div>
-        {renderCategoryPanel(view.category, ctx)}
+        {reorg ? renderReorgPanel(view.category, ctx) : renderCategoryPanel(view.category, ctx)}
       </div>
       {view.survey && (
         <CascadeSurvey
