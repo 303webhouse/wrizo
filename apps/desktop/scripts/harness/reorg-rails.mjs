@@ -46,7 +46,9 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const THEMES = ['plateau', 'flux', 'machina'];
 const CATEGORIES = ['page', 'plan', 'journal', 'drawers', 'settings', 'theme', 'trash'];
-const PAGE = "(() => { const p = document.querySelector('.mode-page, .mode-pagecol'); if (!p) return null; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 10) / 10).join(','); })()";
+// the page as the writer sees it, every layer of it: the column, the paper inside it and the editor on the paper (the first form read only the
+// first of '.mode-page, .mode-pagecol' in document order, the column, so a shove of the paper inside it went unseen: mutant page-shoved, run 43641519969)
+const PAGE = "(() => { const els = ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => document.querySelector(s)); if (!els[1] && !els[0]) return null; return els.map((p) => { if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 10) / 10).join(','); }).join(' | '); })()";
 const STORE = "JSON.stringify([localStorage, sessionStorage].map((s) => Object.keys(s).sort().map((k) => [k, s.getItem(k)])))";
 const q = (s) => JSON.stringify(s);
 
