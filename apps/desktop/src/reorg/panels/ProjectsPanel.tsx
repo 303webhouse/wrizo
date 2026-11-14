@@ -85,7 +85,7 @@ export function ProjectsPanel({ subject, openCategory }: CascadeContext) {
         {pinned.length > 0 && <div className="wz-reorg-group-head" aria-hidden="true"><PinIcon filled={false} /> {rest.length}</div>}
         <ul className="wz-reorg-rows">{rest.map(row)}</ul>
       </section>
-      <BoxSettings id={here} name={here == null ? '' : rows.find((r) => r.id === here)?.name ?? ''} />
+      <BoxSettings id={rows[0]?.id ?? null} name={here == null ? '' : rows.find((r) => r.id === here)?.name ?? ''} />
     </div>
   );
 }

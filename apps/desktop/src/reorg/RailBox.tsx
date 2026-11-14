@@ -9,7 +9,7 @@ import { useBoxes } from './railMemory';
 
 /** The ruled swatches (frame R5, sampled as drawn): pale, grey, blue, brass, orange. The first is every box's default. */
 export const SWATCHES = ['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800'] as const;
-const INKS = ['#1E262E', '#FFFFFF'] as const;
+const INKS = ['#1E262E', '#FFFFFF', '#000000'] as const;
 
 function luminance(hex: string): number {
   const n = parseInt(hex.slice(1), 16);
