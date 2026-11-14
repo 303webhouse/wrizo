@@ -2,7 +2,9 @@
 
 One line for each thing the brief does not state. Each is a best guess, tagged on screen (a corner tag, a chip beside it, or a note when it is pressed). Nothing here is decided.
 
-After milestone 3 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace).
+After milestone 4 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen).
+
+The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 78, 86, 94, 97) was answered by Fable and has moved to one of the two lists below. Lines 110 on are milestone 4's.
 
 ## Answered by Fable on Nov 14, so no longer on this list
 
@@ -10,11 +12,26 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 - Box settings act only on the Project she is in; there is no shortcut from the list. **Ruled.**
 - BOX SETTINGS keeps its words. The brass notch in the WRIZO mark stays. The fonts stay as they are. **Ruled.**
 - The rail's last item reads CONTROLS. **Ruled** (the brief's "SETTINGS" in 6 A is read as CONTROLS).
+- From the top bar and Ctrl+F the search starts on THIS DOC, whatever tab the Back menu is on. **Ruled.**
+- Replace is inside the Doc only. A Block's words cannot be replaced from the search. **Ruled.**
+- A found word on the page is marked at its own weight, not heavier. **Ruled.**
+- A Part's toggle shows only where something is connected. **Ruled** (it was on every Part).
+- Oldest or newest first is one choice for all Parts, shown once at the top of the Parts list. **Ruled** (it was shown inside each expanded Part).
+- A rail pop-out opens over the Front menu and does not close it. **Ruled.**
+- The lettered boxes on the Parts are their colour tags: the first letter of the Part's name on the Part's colour; no colour, no box. **Ruled.**
+- "New board" stays at the top of the Notebook's own list. **Ruled.**
+- With no Project, BOX SETTINGS is not shown. **Ruled** (it read "no project" and showed a note).
 
 ## PROPOSED (Fable's proposals, built and tagged PROPOSED)
 
 - **An Unfiled piece opens on the page like any Doc.** While she is in no Project, the rail's top box is an empty box labelled Unfiled.
 - **"Connect Doc" on a Board's row** in a Project's own list. It does nothing until milestone 5.
+- **The search's two rows of scope tabs are two separate choices.** The first row is how far she looks: THIS DOC, THIS PROJECT, EVERYTHING. The second is what she looks in: PLAN, ASSETS, FEEDBACK, or none of them for the words themselves. (I read "two separate choices" as two choices she makes side by side, and rebuilt the row so; before, the six were one choice. If Fable meant "leave it as it was", this is the thing to say.) What each pairing looks in is at 74 to 76.
+- **Find and Replace is a closed line** she opens, under the scope tabs, once the search has found something in her Doc.
+- **A replace keeps the capital.** A found word that starts with a capital gets a capital on what replaces it: "Tolls" becomes "Dues".
+- **A result in another Doc opens that Doc** at the found word, and the search stays open.
+- **A pressed marker, pressed again,** takes the filter off: ASSETS stays open on all eleven.
+- **The up arrow lands at the top of the Part before,** as every way of arriving in a Part does.
 
 ## The shell
 
@@ -34,7 +51,6 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 11. **A Project she is in that is not pinned** still sits at the top of the rail; the pins below never repeat it (the frames show this for a pinned one).
 12. **Opening a Doc from another Project moves her into that Project.** The rail's top box changes; her old Project shows among the pins if it is pinned.
 13. **Opening a Doc closes the pop-out.**
-14. **A rail pop-out over an open Front menu.** The pop-out is 84 to 372 across and the Front menu 127 to 415, so they overlap. The pop-out lies on top; a strip of the Front menu shows at its right. No frame shows both open.
 
 ## In no Project (an Unfiled piece on the page)
 
@@ -42,8 +58,7 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 16. **The top bar** reads UNFILED where the Project's name would be.
 17. **All her pinned Projects show on the rail** while she is in none of them.
 18. **A new Doc made from DOCS while she is in no Project** lands in Unfiled.
-19. **"Board" in DOCS while she is in no Project** only shows a note: the brief does not say where that Board would land.
-20. **BOX SETTINGS while she is in no Project** reads "no project" and only shows a note.
+19. **"Board" in DOCS while she is in no Project** only shows a note: the brief does not say where that Board would land. *(Fable, Nov 14: keeps its note, still NOT RULED.)*
 21. **Filing the piece she is in** moves her into that Project with it. **Sending it to the Trash** takes her back to the Doc she was in before.
 22. **RECENT in DOCS** lists an Unfiled piece too, marked "Unfiled".
 
@@ -79,7 +94,7 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 41. **Empty lists** say "No docs here yet." and "No boards here yet."
 42. **"New doc" here** makes the Doc in this Project, even if she is in another one.
 43. **A Board's row** only shows a note until milestone 5.
-44. **The Notebook's own list** has "New doc" and "New board" at its top and reads "DOCS · 4", because it opens "like any Project". Whether a Board belongs in the Notebook is not said.
+44. **The Notebook's own list** reads "DOCS · 4" over its pages, because it opens "like any Project".
 
 ## THEME and CONTROLS pop-outs
 
@@ -89,7 +104,6 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 ## B. Moving between Parts
 
 47. **Where the line at the Part's foot sits.** At the end of the Part's words, so she meets it when she reaches the end. (Frame P2-12D draws the Part scrolled to its end, with the line near the page's foot.)
-48. **Arriving in a Part,** by any of the three ways, lands at its top, also when she came up from the Part below.
 49. **The arrows at the ends:** on the first Part the up arrow is faint and dead; on the last Part the down arrow is. In a one-Part Doc both are.
 50. **A one-Part Doc** shows no line at its foot, and its place in the top bar reads "Part 1 of 1" with no name (as frame Ruled-3 draws it).
 51. **The Part's own scrollbar:** the thumb can be dragged, and a click on the track moves most of a page. It hides when the Part fits the page.
@@ -100,15 +114,11 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 ## C. The Front menu, Parts tab
 
 55. **The TEXT and INK tabs** are named in the frames. Each shows one line saying its content is milestone 6.
-56. **The toggle is on every Part,** also one with nothing connected; opened, that one says "No assets connected to this Part."
-57. **Oldest first or newest first is one choice for every Part,** not one per Part. The flip shows when a Part has two assets or more.
 58. **The date each asset was connected** shows at the right of its row, so the order can be seen.
-59. **Pressing an asset in an expanded Part,** or "Open" in the Back menu, only shows a note until milestone 4.
-60. **A pressed marker, pressed again,** takes the filter off: ASSETS stays open on all eleven.
+59. **Pressing an asset in an expanded Part** opens it beside the page, as "Open beside" in the Back menu does.
 61. **Pressing a Part's name in the Front menu** goes to that Part.
 62. **"New part"** adds "Untitled part" after the last Part and goes to it.
 63. **A Part with no name** (the one Part of a one-Part Doc) is listed as "Part 1".
-64. **The little coloured boxes on the Parts** (S, M, F, B) are lifted from frame P2-13A as drawn. The brief does not say what they are.
 65. **The Back menu's ASSETS tab with no filter:** all eleven, grouped by Part, then "CONNECTED TO NO PART".
 66. **Leaving a Doc** takes the ASSETS filter off and closes the list of Parts. The two side menus stay as they were.
 67. **Esc does not close a side menu;** its handle does. (Esc does close the search, which gives the Back menu back as it was.)
@@ -122,35 +132,30 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 ## D. The search
 
 71. **Where the search sits.** In the Back menu's place: 288 wide, flush against the page, as tall as the page. This is so also when it is opened from the top bar or with Ctrl+F. Frame P3-26A draws it as a 304 px panel hanging from the top bar's button; the brief says the whole menu becomes the search menu and that the bar and Ctrl+F open "the same search".
-72. **Which scope tabs there are.** Six, in two rows: the frame's THIS DOC · THIS PROJECT · EVERYTHING, then PLAN · ASSETS · FEEDBACK, one for each tab she can come from. The brief rules only that she starts on the scope of her tab, and that from ASSETS it is the assets in this Project.
-73. **A line under the scope tabs** says what the scope she is on searches.
-74. **What PLAN and FEEDBACK search:** the plan of the Doc she is in; the feedback on the Doc she is in.
-75. **What ASSETS searches:** the names of the Project's imported files and Boards, and the names and words of its Blocks. Not the inside of an imported file. The list is grouped IMPORTED, BOARDS, then one group for each Board.
-76. **What EVERYTHING lists:** every Project's Docs and Boards, then the Notebook, then Unfiled, under a head for each. The frame names the tab and draws nothing for it.
+73. **A line under the scope tabs** says what the two choices she has made look in.
+74. **What PLAN and FEEDBACK look in.** With THIS DOC: the plan of the Doc she is in; the feedback on it. With THIS PROJECT: the plans, or the feedback, of every Doc in the Project, a group for each Doc. With EVERYTHING: the same for every Project, the Notebook and Unfiled. From the PLAN tab the search starts on PLAN and THIS DOC; from FEEDBACK on FEEDBACK and THIS DOC.
+75. **What ASSETS looks in.** With THIS PROJECT (ruled): the names of the Project's imported files and Boards, and the names and words of its Blocks. Not the inside of an imported file. The list is grouped IMPORTED, BOARDS, then one group for each Board. With THIS DOC: the same, for the assets connected to the Doc she is in. With EVERYTHING: for every Project.
+76. **What EVERYTHING lists** with nothing pressed in the second row: every Project's Docs and Boards, then the Notebook, then Unfiled, under a head for each. The frame names the tab and draws nothing for it.
 77. **THIS PROJECT finds a Block by its name as well as its words.** So "toll" finds 13 in Thesis where frame P3-26A2 counts 12: the thirteenth is the Block "Toll totals by year".
-78. **From the top bar and Ctrl+F the search starts on THIS DOC,** whatever tab the Back menu is on (frame P3-26A's title says it starts in the Doc she is in).
-79. **Leaving the search:** the link at its head ("‹ ASSETS", the tab she came from, or "‹ Close"), Esc, the top bar's button again, or the Back menu's handle (which closes the menu too). The Back menu comes back as it was: on its tab, or closed. The word she searched is forgotten.
+79. **Leaving the search:** the link at its head ("‹ ASSETS", the tab she came from, or "‹ Close"), Esc, the top bar's button again, or the Back menu's handle (which closes the menu too). The Back menu comes back as it was: on its tab, or closed. The word she searched is forgotten. *(Fable, Nov 14: stays, still NOT RULED.)*
 80. **Ctrl+F while the search is open** puts the caret back in the field and keeps the scope.
 81. **The Tab key into a tab's search field** opens the search too, as a click does.
 82. **Two letters or more** before the search runs. Upper and lower case are alike. A word is found inside a longer one ("toll" in "tolls"), as the frame draws it.
 83. **The result she is on** (the brass bar in the list) is the one she pressed, or else the first in the Part she is in, as in frame P3-26A. On the page it has a thin dark outline.
-84. **Found words on the page** are marked `#F6ECBE` at their own weight. The frames draw them heavier; heavier letters are wider and would re-wrap her words. They are marked only on THIS DOC, THIS PROJECT and EVERYTHING.
+84. **Found words are marked on the page only while she looks in the words themselves** (nothing pressed in the second row).
 85. **Pressing a result in the Doc she is in** goes to its Part and brings the word into view. **Enter** in the field goes to the next result in her Doc, Shift+Enter to the one before.
-86. **Pressing a result in another Doc** opens that Doc at the found word, and the search stays open. This prototype has no way back to where she was but the RECENT list.
-87. **Pressing a Block, a Board, an imported file, a plan row or a line of feedback** only shows a note.
+87. **Pressing a Block, a Board, an imported file or a plan row** opens it beside the page (a Block opens its Board). A line of feedback only shows a note. After a result in another Doc opens that Doc, this prototype has no way back to where she was but the RECENT list.
 88. **Out in the Project, a Doc shows two rows** and "+ 5 more in this doc"; pressing that lists them all. The result she is on is one of the two.
-89. **"Not here? Widen to..."** goes from THIS DOC to THIS PROJECT and from there to EVERYTHING, as the frames draw. From PLAN and FEEDBACK it goes to THIS PROJECT; from ASSETS to EVERYTHING.
-90. **In no Project,** THIS PROJECT and ASSETS are greyed.
+89. **"Not here? Widen to..."** goes from THIS DOC to THIS PROJECT and from there to EVERYTHING, as the frames draw. It changes the first row only; the second row stays as she set it.
+90. **In no Project,** THIS PROJECT is greyed.
 91. **The top bar's search button, closed,** is dressed like the "Ctrl+." chip beside it. The frame draws it open only.
 92. **Esc, step by step:** the replace box first, then the search. A rail pop-out closes before the search unless the caret is in the search.
 93. **The Docs that only repeat the four filler paragraphs** (item 103) are not searched, except the one she is in.
 
 ## D. Find and Replace
 
-94. **How it is offered.** A closed line, "FIND AND REPLACE · in this doc", appears under the scope tabs once the search has found something in the Doc she is in. Opened, it shows a "Replace with" field, "Replace all 7 in this doc", and a greyed "Replace across Thesis" with "later" beside it. While it is open each result in her Doc has a "Replace" button.
-95. **Where it is not offered:** on PLAN, ASSETS and FEEDBACK, which hold none of her Doc's words. On THIS PROJECT and EVERYTHING only the rows of her Doc have "Replace", and "Replace all" counts her Doc only.
+95. **What the open replace box shows:** a "Replace with" field, "Replace all 7 in this doc", and a greyed "Replace across Thesis" with "later" beside it. While it is open each result in her Doc has a "Replace" button. It is not offered while PLAN, ASSETS or FEEDBACK is pressed. On THIS PROJECT and EVERYTHING only the rows of her Doc have "Replace", and "Replace all" counts her Doc only.
 96. **The Replace buttons are greyed until something is typed** in "Replace with". Replacing a word with nothing is not built.
-97. **The new word goes in exactly as typed.** Capitals are not matched ("Tolls" becomes "dues", not "Dues").
 98. **An "Undo" button** appears after a replace and takes back one press at a time (one "Replace all" is one step). Fable's note of Nov 14 says each replace must be one undo step; the button and its place are mine. The line stays while there is something to undo, even with nothing found.
 99. **The word counts** do not change after a replace.
 
@@ -163,9 +168,34 @@ After milestone 3 (the shell, the rail, a Project's own list; moving between Par
 104. **Three of the eleven assets:** "Tide tables, 1903 and 1904", "Eleven silent days", and "Plan of the north gate, 1889" (the one connected to no Part). The other eight are from frames P2-13A2 and P2-13B.
 105. **Every asset's date,** and "212 pages", "8 blocks", "9 blocks", "6 pages", "1 page".
 106. **The line under the page** is worked out from the word count (260 words to a page, 230 words a minute), which gives the frames' "412 words · 1.6 pages · ~2 min read".
-107. **The Blocks the search reads.** Eleven Blocks on four Boards have words. Frame P3-26A2 gives three of them and their found lines ("Left out", "North gate", "Lifeboat station"); the rest are invented. Not every Block of a Board is there (Method notes says 6 blocks and has 3 to search).
+107. **The Blocks.** Fifteen Blocks on four Boards have words. "Method notes" has the six of frame P3-23A and "Harbor map" the three of frame P3-NB-C, as drawn. "Ledger survey" and "Chart drafts" have three each, of the eight and nine they say; those six, and their colour tags, are invented but for the names of the BLOCK assets. Beside the page such a Board says "3 of its 9 blocks are drawn in this prototype."
 108. **Where "toll" is outside Thesis:** once each in "Fund narrative", "Notes on a toll gate" and one Notebook page, so EVERYTHING finds 16.
+109. **"Ledger sample sheet" is on the Board "Ledger survey".** Milestone 3 had it on "Method notes"; it moved so that "Method notes" has exactly the six Blocks frame P3-23A draws. Milestone 3's made-up Blocks "Every tenth page" and "South gate" are gone for the same reason (the frames give "Sampling rule" and "Customs shed").
+
+## E. The split screen
+
+110. **Three ways in.** "Open beside" on an asset's row in the Back menu's ASSETS tab (the frame says OPEN there; Machina's word table has both "Open" and "Open beside"); an asset in a Part expanded in the Front menu; a Block, a Board or an imported file found by the search. The brief says the asset "opens on the right" and not from where.
+111. **Half** is half of the room right of the rail: the asset's side starts at 725 in a 1366 window, as frame P3-23A draws it.
+112. **Where the page sits in a split.** In the middle of its own side, which runs from 16 px right of the rail to 5 px short of the asset's side. At half in a 1366 window that is left 100, as the frame draws it. When she drags the grip right, the page keeps to the middle of the wider side, so it moves as she drags. Its size and its top never change.
+113. **At 1366 wide, half is already the grip's stop.** The page's side is exactly 620 there, so the grip only goes right. In a wider window it goes both ways.
+114. **The grip's other stop:** the asset's side is never narrower than 336 px (one Block and its margins). The arrow keys move the grip 16 px.
+115. **The split is forgotten when it closes:** the next one starts at half again. Swapping the asset keeps where the grip was.
+116. **What the menus are after a split.** As she left them: a Back menu that was open on ASSETS is open on ASSETS again. The brief says "to get her tools back she closes either side" and not in what state.
+117. **The CLOSE over the page's right corner** closes the page's side. The brief says she can close either side and draws no control for the page's. What is left then is not said: with a second Doc beside the page, that Doc takes the page; with a Board, a Block or an imported file, it only shows a note in this milestone.
+118. **Opening another Doc ends the split.** The new Doc opens alone.
+119. **The faded stage buttons cannot be pressed.** A note on hover says she stays in her stage.
+120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it.
+121. **A double click on a Block's name** counts as its empty area and pops it out. A double click on its words selects a word, as anywhere.
+122. **The pop-out's look:** the Block larger, in the upper middle of the asset's side, the name of its Board and a CLOSE under it; the asset's side goes 50% dark behind it, its head too. A click on the dark closes it, as Esc does.
+123. **Esc in a split** closes the pop-out, then the list under the asset's name, then whatever else is open (the search, a rail pop-out). It never closes the split.
+124. **A Block asset beside the page** shows that one Block alone.
+125. **An imported file beside the page:** a white sheet with its name, "PAGE 1 OF 14" and grey bars for its lines. Its own pages are not drawn.
+126. **A second Doc beside the page:** all its Parts in one scroll on a white sheet, read-only. Where the button sits is mine: "Open beside" on each Doc's row in a Project's own list.
+127. **"The Part she is writing never opens twice."** The Doc she is in can be opened beside itself: its other Parts are there to read, and where the Part on the page would be a line says it is on the page. The line moves when she changes Part.
+128. **The list under the asset's name** (Fable's proposal): all the assets connected to the Doc she is in, each with its kind and its Part, the one beside her marked. With a second Doc beside her, it still lists the assets of the Doc on the page.
+129. **Where the search sits in a split** (Fable's proposal): the same menu, 288 wide, over the left of the asset's side, against the page, under the asset's head. It looks in the same things as out of a split; it does not look inside the asset beside her any more than before.
+130. **A Board found by the search that is not connected to her Doc** ("Harbor map") opens beside the page all the same; its head says "not connected to this doc".
 
 ## For checking only
 
-109. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with".
+131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with".

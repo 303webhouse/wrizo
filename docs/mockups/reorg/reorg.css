@@ -1,7 +1,7 @@
 /*
   Wrizo reorg prototype · Machina · mockup only.
   Values are lifted from Fable's frames (_sources/frames-html: Ruled-1 to Ruled-7,
-  P3-NB-A, P3-NB-B, P2-12C, P2-12D, P2-13A, P2-13A2, P2-13B, P3-26A, P3-26A2)
+  P3-NB-A, P3-NB-B, P2-12C, P2-12D, P2-13A, P2-13A2, P2-13B, P3-26A, P3-26A2, P3-23A)
   and from section 4 of the brief. The frames carry these as inline styles; here they are classes so
   the states can be switched.
 
@@ -11,7 +11,9 @@
     the Front menu is 288 wide at left 127, the Back menu 288 wide at left 1035,
     both flush against the page and exactly as tall.
   The page's rectangle is set once, on .page, and no state touches it. Only what
-  is inside the page scrolls (.part-scroll).
+  is inside the page scrolls (.part-scroll). The one exception is the split screen:
+  there the page keeps its size and its top, and sits in the middle of its own side
+  (left 100 at half, frame P3-23A). Closing either side puts it back at 415.
 */
 
 html, body { margin: 0; height: 100%; }
@@ -62,6 +64,9 @@ button:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
   color: #9AA1A8; border-bottom: 2px solid transparent;
 }
 .stage-btn.is-here { color: #E6E8EA; border-bottom-color: #FF9800; }
+/* In a split the stage buttons fade; the stage she is in stays readable (brief, section 6 E). */
+.stages.is-faded .stage-btn { color: #56616B; cursor: default; }
+.stages.is-faded .stage-btn.is-here { color: #E6E8EA; }
 .bar-cmd {
   display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; margin-left: 10px;
   border: 1px solid #2E3A46; font-family: var(--mono); font-size: 11px; color: #9AA1A8;
@@ -309,7 +314,6 @@ svg { display: block; }
   height: 26px; display: flex; align-items: center; justify-content: center; text-align: center;
   font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: #525A62;
 }
-.scope:nth-child(n+4) { border-top: 1px solid #6A727B; }
 .scope[aria-pressed="true"] { background: #3A4047; color: #F4F5F6; }
 .scope[disabled] { color: #9AA1A8; cursor: default; }
 .scope-line { display: flex; align-items: center; gap: 8px; min-height: 16px; font-family: var(--mono); font-size: 10px; color: #525A62; }
@@ -382,6 +386,10 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
   font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; color: #525A62;
 }
 .exp-head button { font-size: 10.5px; letter-spacing: 0; color: #3F6183; }
+/* Shown once, at the top of the Parts list: one oldest or newest choice for all Parts. */
+.menu-body > .exp-head { height: 28px; padding: 0 12px 0 16px; border-bottom: 1px solid #D2D6DA; }
+.row-chips { flex: 0 0 auto; display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.row-chips .chip-btn { text-align: center; }
 .exp-head button:hover, .exp-row:hover .exp-name, .filter-all:hover, .part-foot button:hover, .drop-row:hover .drop-name { text-decoration: underline; }
 /* Up to four rows show; more than four scroll behind a very thin scrollbar. */
 .exp-list { max-height: 96px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #6A727B #D2D6DA; }
@@ -473,6 +481,118 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
   display: flex; gap: 10px; align-items: center;
   font-family: var(--mono); font-size: 11px; color: #525A62;
 }
+
+/* ---------- the split screen (E, frame P3-23A) ---------- */
+/* The asset's side: from where the split is (half, or where she dragged the grip) to the right edge. */
+.beside {
+  position: absolute; left: var(--split-x, 725px); top: 40px; right: 0; bottom: 0; box-sizing: border-box;
+  background: #DDE0E3; border-left: 1px solid #6A727B;
+  display: flex; flex-direction: column;
+}
+.beside-head {
+  height: 36px; flex: 0 0 auto; padding: 0 12px 0 16px;
+  display: flex; align-items: center; gap: 10px; background: #F4F5F6; border-bottom: 1px solid #D2D6DA;
+}
+.beside-name {
+  flex: 0 1 auto; min-width: 0; height: 36px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: #3A4047;
+}
+.beside-name > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.beside-name:hover > span:first-child, .beside-row:hover .beside-row-name { text-decoration: underline; }
+.beside-v { font-family: var(--mono); font-size: 10px; font-weight: 400; color: #525A62; }
+.beside-meta {
+  flex: 1 1 0; min-width: 0; font-family: var(--mono); font-size: 10.5px; color: #525A62;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.beside-body { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.beside-body > .quiet-line { padding: 0 24px 20px; }
+.beside-body > .quiet-line:first-child { padding-top: 20px; }
+
+/* Blocks (frame P3-23A draws them 288 x 96, two to a row at half). */
+.blk-grid { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, 288px); gap: 16px; }
+.blk {
+  position: relative; min-height: 96px; box-sizing: border-box; background: #FBFBFA; border: 1px solid #D2D6DA;
+  padding: 12px 14px 12px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.blk-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+/* A yellow tag bar on a Block gets a 1 px #6A727B edge (brief, section 4). */
+.blk-bar.edged { box-shadow: 0 0 0 1px #6A727B; }
+.blk-title { font-size: 13px; font-weight: 600; color: #3A4047; }
+.blk-text {
+  min-height: 18px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.4; color: #525A62;
+  cursor: text; outline: 0; overflow-wrap: anywhere;
+}
+.blk-text:focus { color: #1C1C1C; box-shadow: 0 0 0 3px #FBFBFA, 0 0 0 4px #3F6183; }
+
+/* An imported file, or a second Doc, beside the page: a sheet to read. */
+.sheet {
+  width: min(520px, calc(100% - 48px)); min-height: 560px; margin: 24px auto; box-sizing: border-box;
+  background: #FBFBFA; border: 1px solid #D2D6DA; padding: 40px 44px;
+}
+.sheet h2 { margin: 0 0 14px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 600; color: #1C1C1C; }
+.sheet p { margin: 0 0 12px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 14px; line-height: 1.55; color: #1C1C1C; }
+.sheet.doc h2 { margin-top: 28px; }
+.sheet.doc > :first-child { margin-top: 0; }
+.sheet .sheet-empty { color: #525A62; }
+.sheet-kicker {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: #525A62;
+}
+.sheet-line { display: block; height: 8px; margin: 0 0 10px; background: #E6E8EA; }
+.sheet-gap { display: block; height: 14px; }
+.sheet-note { margin-top: 22px; font-size: 12.5px; line-height: 1.45; color: #525A62; }
+.sheet-held { margin: 20px 0; padding: 10px 12px; border: 1px dashed #6A727B; font-size: 12.5px; line-height: 1.45; color: #525A62; }
+
+/* The asset's name, pressed: the Doc's connected assets (Fable's proposal, not ruled). */
+.beside-drop {
+  position: absolute; left: 16px; top: 37px; width: 320px; max-height: calc(100% - 110px); box-sizing: border-box;
+  background: #F4F5F6; border: 1px solid #23272B; border-top: 0;
+  display: flex; flex-direction: column; z-index: 5;
+}
+.beside-drop-head {
+  flex: 0 0 auto; padding: 10px 14px 6px; display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: #525A62;
+}
+.beside-drop-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.beside-row {
+  width: 100%; min-height: 36px; padding: 4px 12px 4px 14px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; border-top: 1px solid #D2D6DA;
+}
+.beside-row.is-on { background: #E6E8EA; box-shadow: inset 3px 0 0 #23272B; }
+.beside-row.is-on .beside-row-name { font-weight: 600; }
+.beside-row-name { flex: 1 1 auto; min-width: 0; font-size: 13px; color: #3A4047; }
+
+/* A Block popped out: only the asset's side fades, the page stays lit. */
+.blk-scrim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(30, 38, 46, .5); z-index: 3; }
+.blk-pop {
+  position: absolute; left: 50%; top: 96px; transform: translateX(-50%); width: min(440px, calc(100% - 48px)); box-sizing: border-box;
+  background: #FBFBFA; border: 1px solid #23272B; display: flex; flex-direction: column; z-index: 4;
+}
+.blk-pop .blk { border: 0; background: none; min-height: 200px; padding: 22px 24px 18px 28px; gap: 10px; }
+.blk-pop .blk-title { font-size: 16px; }
+.blk-pop .blk-text { flex: 1 1 auto; font-size: 15px; line-height: 1.5; color: #1C1C1C; }
+.blk-pop .blk-text:focus { box-shadow: none; }
+.blk-pop-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px 8px 28px;
+  border-top: 1px solid #D2D6DA; font-family: var(--mono); font-size: 10.5px; color: #525A62;
+}
+
+/* The grip between the two sides: she drags it to change the split. */
+.grip {
+  position: absolute; left: calc(var(--split-x, 725px) - 5px); top: calc(50% - 14px); width: 10px; height: 44px; box-sizing: border-box;
+  background: #F4F5F6; border: 1px solid #6A727B; z-index: 4;
+  display: flex; align-items: center; justify-content: center; gap: 2px; cursor: col-resize; touch-action: none;
+}
+.grip::before { content: ''; position: absolute; left: -7px; right: -7px; top: -8px; bottom: -8px; }
+.grip span { width: 1px; height: 18px; background: #3A4047; }
+.grip:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
+/* The page's side closes from the band over the page's right corner (where it sits is a guess). */
+.side-close {
+  position: absolute; left: calc(var(--page-left) + 568px); top: 42px; width: 52px; box-sizing: border-box;
+  text-align: center; background: #F4F5F6;
+}
+/* In a split the search lies over the asset's side, against the page (Fable's proposal, not ruled). */
+.menu.over-beside { left: calc(var(--split-x, 725px) + 1px); top: 77px; height: auto; bottom: 64px; border-top: 0; z-index: 4; }
 
 /* ---------- marking: RULED, PROPOSED, NOT RULED ---------- */
 .tag {

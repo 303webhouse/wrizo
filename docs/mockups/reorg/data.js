@@ -308,40 +308,47 @@
       { id: 'a01', doc: 'harbor-tolls', part: null, kind: 'PDF', name: 'Plan of the north gate, 1889', meta: 'imported \u00b7 1 page', added: 'Aug 28', order: 1 },
       { id: 'a02', doc: 'harbor-tolls', part: 2, kind: 'PDF', name: 'Harbour board returns, 1890 to 1912', meta: 'imported \u00b7 212 pages', added: 'Sep 2', order: 2 },
       { id: 'a03', doc: 'harbor-tolls', part: 2, kind: 'BOARD', name: 'Ledger survey', meta: '8 blocks', added: 'Sep 9', order: 3 },
-      { id: 'a04', doc: 'harbor-tolls', part: 3, kind: 'BLOCK', name: 'Ledger sample sheet', meta: 'on the board Method notes', added: 'Sep 12', order: 4 },
+      { id: 'a04', doc: 'harbor-tolls', part: 3, kind: 'BLOCK', name: 'Ledger sample sheet', board: 'Ledger survey', meta: 'on the board Ledger survey', added: 'Sep 12', order: 4 },
       { id: 'a05', doc: 'harbor-tolls', part: 3, kind: 'PDF', name: 'Harbour board returns, 1903', meta: 'imported \u00b7 14 pages', added: 'Sep 16', order: 5 },
       { id: 'a06', doc: 'harbor-tolls', part: 3, kind: 'BOARD', name: 'Method notes', meta: '6 blocks', added: 'Sep 21', order: 6 },
-      { id: 'a07', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Toll totals by year', meta: 'on the board Chart drafts', added: 'Sep 28', order: 7 },
-      { id: 'a08', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Wet years', meta: 'on the board Chart drafts', added: 'Oct 3', order: 8 },
+      { id: 'a07', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Toll totals by year', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Sep 28', order: 7 },
+      { id: 'a08', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Wet years', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Oct 3', order: 8 },
       { id: 'a09', doc: 'harbor-tolls', part: 4, kind: 'BOARD', name: 'Chart drafts', meta: '9 blocks', added: 'Oct 5', order: 9 },
       { id: 'a10', doc: 'harbor-tolls', part: 4, kind: 'PDF', name: 'Tide tables, 1903 and 1904', meta: 'imported \u00b7 6 pages', added: 'Oct 11', order: 10 },
-      { id: 'a11', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Eleven silent days', meta: 'on the board Chart drafts', added: 'Oct 18', order: 11 }
+      { id: 'a11', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Eleven silent days', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Oct 18', order: 11 }
     ],
 
-    /* The Blocks the search can read, by Board. Frame P3-26A2 gives three ("Left out",
-       "North gate", "Lifeboat station") and their found lines; four carry the names of
-       the BLOCK assets above; the rest, and every other line, are invented. Not every
-       Block of a Board is listed (Method notes has six, Chart drafts nine, Ledger
-       survey eight). "toll" is in four of them. */
+    /* The Blocks, by Board: what the search reads, what a split shows beside the page,
+       and what a Board on its own shows. Method notes and Harbor map are whole, from
+       frames P3-23A and P3-NB-C. Ledger survey and Chart drafts carry the names of the
+       BLOCK assets above; their other Blocks and every line on them are invented, and
+       only three of each are here (they say eight and nine). "toll" is in four Blocks.
+       colour: the Block's colour tag (blue or yellow), or none. */
     blocks: {
       'Ledger survey': [
-        { title: 'Volumes', text: 'Nineteen, each of about two hundred pages.' },
-        { title: 'Missing years', text: '1896, 1899 and 1907. No note explains the gaps.' }
+        { title: 'Volumes', text: 'Nineteen, each of about two hundred pages.', colour: 'blue' },
+        { title: 'Missing years', text: '1896, 1899 and 1907. No note explains the gaps.' },
+        { title: 'Ledger sample sheet', text: 'One row for a vessel, one column for each thing the collector wrote.', colour: 'yellow' }
       ],
+      /* All six as frame P3-23A draws them: names, words and colour tags. */
       'Method notes': [
-        { title: 'Every tenth page', text: 'Count from the first written page, not from the cover.' },
-        { title: 'Left out', text: 'Lifeboat waivers, tolls in kind, and the eleven damaged pages.' },
-        { title: 'Ledger sample sheet', text: 'One row for a vessel, one column for each thing the collector wrote.' }
+        { title: 'Sampling rule', text: 'Every tenth page of each ledger.', colour: 'yellow' },
+        { title: 'Check against returns', text: 'Totals set beside the board\u2019s printed annual returns.', colour: 'yellow' },
+        { title: 'Left out', text: 'Lifeboat waivers, tolls in kind, pages damaged by water.', colour: 'yellow' },
+        { title: 'Wet years', text: '1903 and 1904: a smaller sample.', colour: 'blue' },
+        { title: 'Shilling rule', text: 'A gap over a shilling: read the whole month.' },
+        { title: 'Open question', text: 'Were waivers logged at every gate?' }
       ],
       'Chart drafts': [
-        { title: 'Toll totals by year', text: 'One bar for each year, 1890 to 1912.' },
-        { title: 'Wet years', text: 'November 1903 to March 1904, shaded.' },
+        { title: 'Toll totals by year', text: 'One bar for each year, 1890 to 1912.', colour: 'blue' },
+        { title: 'Wet years', text: 'November 1903 to March 1904, shaded.', colour: 'blue' },
         { title: 'Eleven silent days', text: 'January 1904. A collector on duty and nothing written.' }
       ],
+      /* All three as frame P3-NB-C draws them, with the places it gives them on the Board. */
       'Harbor map': [
-        { title: 'North gate', text: 'Tolls taken here from 1890.' },
-        { title: 'Lifeboat station', text: 'Its tolls were waived.' },
-        { title: 'South gate', text: 'No book of its own. Takings carried north each evening.' }
+        { title: 'North gate', text: 'Tolls taken here from 1890.', colour: 'blue', x: 80, y: 236 },
+        { title: 'Customs shed', text: 'The ledgers were kept in its loft.', colour: 'yellow', x: 484, y: 126 },
+        { title: 'Lifeboat station', text: 'Its tolls were waived.', x: 814, y: 266 }
       ]
     },
 
@@ -351,7 +358,7 @@
       'harbor-tolls': [
         { board: 'Ledger survey', block: 'Volumes' },
         { board: 'Ledger survey', block: 'Missing years' },
-        { board: 'Method notes', block: 'Every tenth page' },
+        { board: 'Method notes', block: 'Sampling rule' },
         { board: 'Method notes', block: 'Left out' },
         { board: 'Chart drafts', block: 'Toll totals by year' },
         { board: 'Chart drafts', block: 'Wet years' },

@@ -2,9 +2,9 @@
 
 Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The addresses in brackets open the same state directly.
 
-**After milestone 3, sections A, B, C and D are built.** E to G are listed so nothing is lost; each says which milestone builds it.
+**After milestone 4, sections A to E are built.** F and G are listed so nothing is lost; each says which milestone builds it.
 
-**None of it has been opened in a browser by this lane** (see `STATUS.md`). "Built" below means written and read through, not seen.
+**None of it has been opened in a browser by this lane** (see `STATUS.md`). "Built" below means written and read through, not seen. Fable opened milestones 1 to 3 and passed them; milestone 4, and the changes it makes to C and D, have been seen by no one yet.
 
 ## Mock content
 
@@ -29,7 +29,7 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 | DOCS pop-out: Recent | Press DOCS: under RECENT. Press a row to open that Doc |
 | DOCS pop-out: page defaults | Press DOCS: under PAGE DEFAULTS · EVERY DOC, two switches |
 | PROJECTS pop-out: every Project with a pin | Press PROJECTS (`#projects`). Press a pin: the Project moves between the pinned and unpinned groups and joins or leaves the rail |
-| PROJECTS pop-out: box settings in one closed drop-down at the foot | Press PROJECTS: the BOX SETTINGS line at the foot is closed and names the Project she is in. Press it to open (`#box`): letters, colour, picture. Changes show on the rail at once. They act on the Project she is in and no other (Fable, Nov 14) |
+| PROJECTS pop-out: box settings in one closed drop-down at the foot | Press PROJECTS: the BOX SETTINGS line at the foot is closed and names the Project she is in. Press it to open (`#box`): letters, colour, picture. Changes show on the rail at once. They act on the Project she is in and no other; in no Project the line is not shown (`#unfiled-piece`, then PROJECTS) (Fable, Nov 14) |
 | PROJECTS pop-out: the Notebook is listed last, pin off | Press PROJECTS: the last row. It is not counted in the "6". Its pin works. Press its name: its own list of four pages (`#list-notebook`) |
 | UNFILED pop-out: writing with no Project, each row with File and Trash | Press UNFILED (`#unfiled`). The first small button on a row files it (pick a Project); the second moves it to the Trash |
 | UNFILED pop-out: the Trash at the foot | Press UNFILED: the Trash line at the foot. Press it to look inside (NOT RULED) (`#trash`) |
@@ -53,9 +53,10 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 |---|---|
 | Each Part with connected assets shows a small marker with a count | Press the handle at the page's left edge (`#front`). Sources 2, Methods 3, Findings 5; Introduction and Bibliography have none |
 | Pressing it opens the Back menu's ASSETS tab filtered to that Part, with "Show all 11" | Press the marker on Methods (`#marker`): the Back menu opens on ASSETS, headed "Connected to" over "Part 3 · Methods", with three assets. "Show all 11" lists all eleven. The page has not moved |
-| A toggle on each Part that expands it in place: up to four, oldest first | Press the small "›" at the right of a Part's row (`#parts-expanded`). Its assets list under it, each with its date, the oldest at the top |
-| An option to flip to newest first | In an expanded Part, press "Newest first" at the right of the line that reads OLDEST FIRST. It flips every expanded Part |
+| A toggle on each Part that expands it in place: up to four, oldest first | Press the small "›" at the right of a Part's row (`#parts-expanded`). Its assets list under it, each with its date, the oldest at the top. Only Sources, Methods and Findings have the toggle: a Part with nothing connected has none (Fable, Nov 14). Pressing an asset there opens it beside the page |
+| An option to flip to newest first | At the top of the Parts list, under "New part": one line, CONNECTED ASSETS · OLDEST FIRST, with "Newest first" at its right. It is one choice for all Parts, shown once (Fable, Nov 14) |
 | A very thin scrollbar when there are more than four | Expand Findings (five assets): four show, and a 3 px scrollbar at the right brings the fifth |
+| Fable, Nov 14: the lettered boxes are the Parts' colour tags | In the Parts list: S, M, F and B are the first letter of each Part's name on that Part's colour. Introduction has no colour, so it has no box |
 
 ## D. The Back menu and search (built)
 
@@ -65,31 +66,33 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 |---|---|
 | Tabs: PLAN · ASSETS · FEEDBACK | Press the handle at the page's right edge. The three tabs are at the menu's head; it opens on ASSETS. Press PLAN (`#plan`) and FEEDBACK (`#feedback`). What PLAN and FEEDBACK list is made up (NOT RULED) |
 | A search field sits in every tab | Under the tabs, in each of the three: a field that reads "Search" |
-| The moment she clicks into it, the whole menu becomes the search menu, with scope tabs | Click into the field. The tabs give way to SEARCH, the field stays where it was with the caret in it, and six scope tabs sit under it. The page has not moved |
-| ...starting on the scope that matches the tab she came from (from ASSETS: assets in this Project) | From ASSETS the search starts on the scope ASSETS, and the line under the tabs reads "Assets in this Project: Thesis" (`#search-assets`). From PLAN it starts on PLAN, from FEEDBACK on FEEDBACK (both NOT RULED). The link "‹ ASSETS" at the head, or Esc, goes back to the tab |
-| The top bar's search button and Ctrl+F open the same search | Press the button at the far right of the top bar (a lens and "Ctrl+F"), or press Ctrl+F. The same menu opens at the page's right edge, on THIS DOC (`#search`). Type "toll": "7 in this doc", grouped by Part, each found word marked on the page. Press a row to go to that Part. THIS PROJECT shows its Docs and Boards (`#search-project`) |
+| The moment she clicks into it, the whole menu becomes the search menu, with scope tabs | Click into the field. The tabs give way to SEARCH, the field stays where it was with the caret in it, and two rows of scope tabs sit under it. The two rows are two separate choices (PROPOSED, Fable, Nov 14): the first is how far she looks (THIS DOC, THIS PROJECT, EVERYTHING), the second is what she looks in (PLAN, ASSETS, FEEDBACK; pressed again, the words themselves). The page has not moved |
+| ...starting on the scope that matches the tab she came from (from ASSETS: assets in this Project) | From ASSETS the search starts with ASSETS and THIS PROJECT both pressed, and the line under the tabs reads "Assets in this Project: Thesis" (`#search-assets`). From PLAN it starts with PLAN and THIS DOC, from FEEDBACK with FEEDBACK and THIS DOC (both NOT RULED). The link "‹ ASSETS" at the head, or Esc, goes back to the tab |
+| The top bar's search button and Ctrl+F open the same search | Press the button at the far right of the top bar (a lens and "Ctrl+F"), or press Ctrl+F. The same menu opens at the page's right edge, on THIS DOC with nothing pressed in the second row (`#search`). Type "toll": "7 in this doc", grouped by Part, each found word marked on the page. Press a row to go to that Part. THIS PROJECT shows its Docs and Boards (`#search-project`) |
 | Find and Replace: offered only once a search has results | With nothing typed, or nothing found, there is no replace line. Type "toll" on THIS DOC: the line FIND AND REPLACE appears under the scope tabs. Press it (`#replace`) |
-| Replace all | In the open replace box, type a word in "Replace with", then press "Replace all 7 in this doc". Every "toll" in the five Parts changes. "Undo" takes it back (NOT RULED) |
+| Replace all | In the open replace box, type a word in "Replace with", then press "Replace all 7 in this doc". Every "toll" in the five Parts changes. A found word that starts with a capital keeps it: "Tolls" becomes "Dues" (PROPOSED). "Undo" takes it back (NOT RULED) |
 | ...or one by one in the list | With the replace box open, each row of the list has a "Replace" button. It changes that one place and the list goes down by one |
 | It works inside the Doc she is in | On THIS PROJECT (`#search-project`, then open the replace line) only the rows of "Harbor Tolls" have "Replace"; the rows of "Committee memo, draft" and of the Boards do not |
 | Replace across a Project is shown greyed, labelled "later" | In the open replace box: a greyed "Replace across Thesis" with "later" beside it. It cannot be pressed |
 
-## E. Split screen (not built: milestone 4)
+## E. Split screen (built)
+
+Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in a Part expanded in the Front menu; a Block, a Board or an imported file found by the search. `#split` opens the Board "Method notes" beside the page directly.
 
 | The brief says | Where to click |
 |---|---|
-| The asset opens on the right, half and half, with a grip to drag | not built |
-| The page is never narrower than 620 px; the grip stops there | not built |
-| Both menu handles are gone in a split, on both sides | not built |
-| Closing either side returns the page exactly to its place | not built |
-| The stage buttons fade; the stage she is in stays readable | not built |
-| A click on a Block's text puts the caret there | not built |
-| A double click on a Block's empty area pops it out and fades only the asset's side | not built |
-| Esc closes the pop-out first, never the split | not built |
-| A second Doc beside the page is read-only | not built |
-| The Part she is writing never opens twice | not built |
-| NOT RULED: the asset side's name is a drop list of the Doc's connected assets | not built |
-| NOT RULED: Ctrl+F in a split opens the search over the asset's side | not built |
+| The asset opens on the right, half and half, with a grip to drag | Open the Back menu, press "Open beside" on "Method notes" (`#split`). The page is at left 100 and the asset's side runs from 725 to the right edge: half each of the room right of the rail, as frame P3-23A draws it. The grip is the small upright bar on the line between them; drag it, or put the keyboard on it and press the arrow keys |
+| The page is never narrower than 620 px; the grip stops there | Drag the grip left: it does not move. At 1366 wide, half is already the stop (84 + 16 + 620 + 5 = 725). Drag it right: the asset's side narrows, and the page, still 620 × 640, keeps to the middle of its own wider side. In a wider window the grip moves both ways and stops at 725 on the left |
+| Both menu handles are gone in a split, on both sides | In a split, look at the page's two edges: no handle, and no Front or Back menu, also if one was open before |
+| Closing either side returns the page exactly to its place | Press CLOSE at the right of the asset's head: the page is back at left 415, top 64, and both menus are as they were before the split. The other CLOSE, over the page's right corner, closes the page's side (what is left then is NOT RULED: see `NOT-RULED.md`) |
+| The stage buttons fade; the stage she is in stays readable | In a split, the top bar: SPRINT, EDIT and FINALIZE are faint and cannot be pressed; BUILD keeps its light letters and its brass line |
+| A click on a Block's text puts the caret there | In a split, click the words of a Block ("Every tenth page of each ledger."): the caret is there, and typing changes them. Enter ends the writing |
+| A double click on a Block's empty area pops it out and fades only the asset's side | Double click a Block away from its words (`#split-pop`): it opens larger over the asset's side, which goes dark behind it. The page stays lit. Its words can be written in there too |
+| Esc closes the pop-out first, never the split | With a Block popped out, press Esc: the pop-out closes and the split stays. Press Esc again: the split still stays |
+| A second Doc beside the page is read-only | Press the TH box, then "Open beside" on "Committee memo, draft" (`#split-doc`): it opens on the right, headed DOC and "read-only", and nothing in it takes a caret. How it looks there is NOT RULED |
+| The Part she is writing never opens twice | Press the TH box, then "Open beside" on "Harbor Tolls, 1890 to 1912" (`#split-same-doc`): Parts 1, 2, 4 and 5 are there to read; where Part 3 would be, a line says it is on the page. Go to another Part on the page: the line moves with her |
+| NOT RULED: the asset side's name is a drop list of the Doc's connected assets | In a split, press the asset's name in its head (`#split-drop`): the eleven connected assets, the one beside her marked. Press another: it takes the place, the split stays. `#split-block` and `#split-pdf` open a Block and an imported file directly |
+| NOT RULED: Ctrl+F in a split opens the search over the asset's side | In a split, press Ctrl+F or the top bar's button (`#split-search`): the same search menu opens over the asset's side, against the page. Found words are marked on the page as before |
 
 ## F. A Board on its own (not built: milestone 5)
 
@@ -118,4 +121,4 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 
 ## The page's rectangle
 
-At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left when the window is resized (415 at 1366 wide), as in milestone 1. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.
+At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left: 415 at 1366 wide, and, in a split only, the middle of the page's own side (left 100 at half). The page's width, height and top are the same in a split as out of it. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.

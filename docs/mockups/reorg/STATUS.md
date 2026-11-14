@@ -1,73 +1,62 @@
-# STATUS: milestone 3 (the Back menu, search, find and replace)
+# STATUS: milestone 4 (Fable's answers of Nov 14, and the split screen)
 
-Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestone 1 passed Fable's check. Milestone 2 (Fable's answers 1 to 4; brief 6 B and C) is the commit before this one. This commit builds milestone 3 (brief, section 6 D). Stopped here, waiting for Fable.
+Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1, 2 and 3 passed Fable's check (2 and 3 at `bcb63c1d`). This commit applies Fable's sixteen answers and builds milestone 4 (brief, section 6 E). Milestone 5 (a Board on its own) is the next commit.
 
 ## Not run, and no screenshots
 
-**I have not opened this page, for milestone 2 or for milestone 3.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Both milestones were written and read through line by line, never run. Treat every "built" below, and in `CHECKLIST.md`, as "written, not seen".
+**I have not opened this page.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Everything in this commit was written and read through, never run. Treat every "built" here and in `CHECKLIST.md` as "written, not seen". There are no screenshots in `shots/`.
 
 Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
-- **The caret in the search field.** Every letter typed redraws the menu and puts the caret back. If typing stutters or the caret jumps, that is where.
-- **Clicking into a tab's search field.** The menu is swapped a moment after the click. If the search opens without the caret in it, that is where.
-- **Ctrl+F.** The page asks the browser not to open its own find bar. I have not seen whether every browser obeys from a double-clicked file.
-- **Bringing a found word into view** on the page, and the thin scrollbar following it.
+- **The search was rewritten** to make its two rows two separate choices. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere; with ASSETS pressed, 4 in Thesis; with PLAN pressed, 2 in this doc; with FEEDBACK pressed, 1 in this doc.
+- **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
+- **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
+- **The grip.** At 1366 wide it should only move right.
 
-For the same reason there are **no screenshots** in `shots/`.
+## Fable's answers, applied
 
-## What milestone 3 adds
+Changed: the toggle shows only on a Part with something connected (9). Oldest or newest first is one line at the top of the Parts list (10). The Parts' lettered boxes take their letter from the Part's name (14). BOX SETTINGS is not shown in no Project (16). A replace keeps the capital (5). The search's two rows are two separate choices (1).
 
-- **The Back menu's three tabs.** PLAN and FEEDBACK now list something: seven made-up plan rows; "Ask the Consultant" and two made-up lines of feedback. Both are tagged NOT RULED. ASSETS is as milestone 2 left it.
-- **A search field in every tab,** under the tabs. Clicking into it turns the whole menu into the search menu: the field stays where it was, six scope tabs sit under it, and the search starts on the scope of the tab she came from. From ASSETS that is the assets in this Project.
-- **The top bar's search button and Ctrl+F** open the same search, in the same place, on THIS DOC.
-- **Results** look as frames P3-26A and P3-26A2 draw them: a grey head for each Part, Doc or Board, a few words either side of the found word, a brass bar on the result she is on. Found words are marked on the page. Pressing a result goes to its Part and brings the word into view.
-- **Find and Replace.** A closed line appears only once the search has found something in the Doc she is in. Opened: a "Replace with" field, "Replace all 7 in this doc", a "Replace" button on each row of her Doc, and a greyed "Replace across Thesis" labelled "later". Replacing really changes the mock words, until a reload.
-- **Content.** Eleven Blocks have words so the search can find them; "toll" is placed to match the frames' counts as far as it can (see below).
+Kept as built, now marked PROPOSED or ruled in `NOT-RULED.md`: 2, 3, 4, 6, 7, 8, 11, 12, 13, 15.
+
+**One answer I may have read wrongly: 1, "keep the two rows as two separate choices".** Before, the six scope tabs were one choice. I took the answer to mean two choices made side by side: how far she looks (THIS DOC, THIS PROJECT, EVERYTHING) and what she looks in (PLAN, ASSETS, FEEDBACK, or none for the words). So ASSETS with THIS PROJECT is "assets in this Project", and nine other pairings exist that the brief never names. If the answer meant "leave it as it was", say so and I will put it back.
+
+## What milestone 4 adds
+
+- **The split.** An asset opens on the right from half (725 in a 1366 window), with a grip between the sides. The page keeps its size and its top and sits in the middle of its own side: left 100 at half, as frame P3-23A draws it.
+- **Both menu handles are gone in a split,** and the menus with them. Closing the asset's side puts the page back at 415 and the menus back as they were.
+- **The stage buttons fade;** the stage she is in keeps its light letters and its brass line.
+- **Writing beside the page.** A click on a Block's words puts the caret there. A double click on its empty area pops it out and darkens the asset's side only. Esc closes the pop-out and never the split.
+- **A second Doc beside the page** is read-only. The Doc she is in can open beside itself; the Part on the page is left out, with a line saying so.
+- **Fable's two proposals:** the asset's name drops the Doc's connected assets, to swap without leaving the split; Ctrl+F in a split opens the search over the asset's side.
 
 ## What I read
 
-The brief again, the two feedback notes and the stage table. Of the frames' HTML, for this milestone: **P3-26A and P3-26A2 in full** (the two the brief names). **I did not read P3-26B or P3-26C.** They are the two options Nick did not pick; a narrow search of them returned only the top bar they share with 26A, and I left it there.
+The brief, the rules file, and of the frames' HTML **P3-23A in full**. I did not read P3-23A2, P3-23B or P3-23C: they are options Nick's ruling replaced (the menu over the split; the asset on the left; the page first).
 
-## Where the frames and the brief differ, and what I did
+## Where the frame and the brief differ, and what I did
 
-- **Where the search sits.** The frames hang a 304 px panel from the top bar's button, clear of the page. The brief says the Back menu itself becomes the search menu and that the bar and Ctrl+F open "the same search". So there is one search, in the Back menu's place, flush against the page. The frames are used for the look of the results only, as the brief says.
-- **Words.** The frames say "CARD" and "1 CARD". I used BLOCK and "1 block".
-- **The colour of a found word.** The frames use `#F1E3A0`; the brief says `#F6ECBE`. I used the brief's.
-- **A found word on the page is not made heavier.** The frames draw it at weight 600. Heavier letters are wider, so her words would re-wrap each time she searched. In the list it is heavier, as drawn.
-- **12 or 13 in Thesis.** Frame P3-26A2 counts 12. Mine finds 13, because the Block "Toll totals by year" (from frame P2-13B) has the word in its name and I search a Block's name as well as its words.
+- **The handles.** Frame P3-23A still draws both. Nick ruled them gone; they are gone.
+- **Words.** The frame says "6 cards · linked to Part 3". I used "6 blocks · connected to Part 3".
+- **"Open" or "Open beside".** Frame P2-13A2 puts OPEN on an asset's row. The split is what that button does, and Machina's word for it is "Open beside", so the row says that.
+- **The Blocks of "Method notes"** are now the six the frame draws. Milestone 3 had three made-up ones there; see `NOT-RULED.md`, 107 and 109.
 
 ## What I invented
 
-Everything is in `NOT-RULED.md` (109 lines; 68 to 99, 107 and 108 are this milestone's). The ones that shape what Nick sees:
+`NOT-RULED.md`, lines 110 to 130. The ones that shape what Nick sees:
 
-- **The six scope tabs.** The frame has three (THIS DOC, THIS PROJECT, EVERYTHING). The ruling needs one more at least (assets in this Project). I added a second row, PLAN · ASSETS · FEEDBACK, one for each tab she can come from.
-- **What PLAN, FEEDBACK and EVERYTHING search,** and how the ASSETS list is grouped.
-- **How Find and Replace is offered:** a closed line that she opens, not a field that is always there.
-- **An Undo button** after a replace.
-- **What the PLAN and FEEDBACK tabs list.**
-- **A result in another Doc opens that Doc,** and the search stays open.
+- **The page moves as she drags the grip,** because it keeps to the middle of its side.
+- **A CLOSE over the page's right corner** for the page's side, and what is left when it is pressed.
+- **How a second Doc and an imported file look** beside the page.
+- **Only a Block's words can be written in,** not its name.
+- **Where "Open beside" sits for a Doc:** on its row in a Project's own list.
 
 ## Questions for Fable
 
-From milestone 3:
-
-1. **The scope tabs.** Six in two rows (built), or the frame's three with the tab's own scope added some other way? And what should PLAN and FEEDBACK search?
-2. **From the top bar and Ctrl+F,** the search always starts on THIS DOC, even when the Back menu is open on ASSETS. Right, or should it follow the open tab?
-3. **Find and Replace as a closed line** she opens, or should the "Replace with" field simply appear once there are results?
-4. **Replace outside her Doc's words.** On PLAN, ASSETS and FEEDBACK nothing can be replaced (built). Should a Block's words be replaceable from here?
-5. **Capitals.** "Tolls" becomes "dues", not "Dues". Should a replace keep the capital?
-6. **A result in another Doc:** open that Doc (built), or only show where it is?
-7. **A found word on the page at its own weight** (built) or heavier, as the frames draw it?
-8. **The search forgets its word when closed.** Should it remember?
-
-Still open from milestone 2:
-
-9. **The toggle on a Part with nothing connected.** Keep it on Introduction and Bibliography, or show it only where there is something to list?
-10. **Oldest or newest first:** one choice for every Part, or one per Part?
-11. **A pressed marker, pressed again:** take the filter off (built), or close the Back menu?
-12. **The up arrow** lands at the top of the Part before. Should it land at that Part's end instead?
-13. **A rail pop-out and the Front menu overlap.** Should opening one close the other?
-14. **The little coloured boxes on the Parts** (S, M, F, B): I lifted them from frame P2-13A. What are they, and should Introduction have one?
-15. **The Notebook's own list** has "New board" at its top because it opens "like any Project". Does a Board belong in the Notebook?
-16. **In no Project:** "Board" in DOCS and BOX SETTINGS only show a note. Is that right, or should they be hidden?
+1. **Answer 1,** as above: two choices side by side (built), or the six tabs as one choice?
+2. **Closing the page's side.** What should be left: the asset alone? For a Board that would be the Board on its own; for a Block or an imported file the brief has no such screen.
+3. **The page in a split:** in the middle of its side, moving as she drags (built), or pinned at left 100 with the spare room between it and the asset?
+4. **After a split,** should the menus come back as they were (built), or closed?
+5. **A Block's name** beside the page: fixed (built), or can she write in it too?
+6. **"Open beside" for a Doc:** on its row in a Project's own list (built), or somewhere else?
