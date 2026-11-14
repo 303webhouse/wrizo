@@ -73,9 +73,13 @@ await withHarness(async (app) => {
     ok(`O [${name}]: ${opens}/${opens} opens left storage unchanged`, storedSame === opens, `${storedSame}/${opens}`);
 
     // F - the same on-screen heights whether the fonts came late or promptly, and nothing clipped
-    await open(1500); const late = await q(LIVE);
-    await open(0); const prompt = await q(LIVE);
-    ok(`F [${name}]: a card's on-screen height is the same with late fonts as with prompt ones`, late.length === 3 && late.every((l, i) => near(l.h, prompt[i].h)), `late ${late.map((l) => l.h.toFixed(4)).join(',')} / prompt ${prompt.map((l) => l.h.toFixed(4)).join(',')}`);
+    // #91: each open is read after it SETTLES (the heights unchanged across two reads 600 ms apart, up to 6 s), and each is described (the window, the fonts, each card's text box), so a red names its own cause instead of being a single bare number:
+    // the one red seen (train 3's first pair, Machina, a prompt open drew 0.1875 against 0.1434 everywhere else) could not be reproduced by held fonts, a busy machine or a window 20 px narrower or wider (probe runs, bug #91)
+    const settled = async () => { let prev = JSON.stringify(await q(LIVE)); for (let i = 0; i < 10; i += 1) { await sleep(600); const cur = JSON.stringify(await q(LIVE)); if (cur === prev) break; prev = cur; } return JSON.parse(prev); };
+    const DESCRIBE = `(() => { const cv = document.querySelector('.board-canvas'); const cw = cv ? cv.getBoundingClientRect().width : null; const faces = [...document.fonts].filter((f) => f.status !== 'unloaded').map((f) => f.family + ' ' + f.weight + ':' + f.status).slice(0, 6); const cards = [...document.querySelectorAll('.board-box[data-kind=text] .board-text')].map((t) => { const cs = getComputedStyle(t); return { w: Math.round(t.clientWidth * 10) / 10, sh: t.scrollHeight, ff: cs.fontFamily.split(',')[0], fs: cs.fontSize, lh: cs.lineHeight }; }); return { inner: innerWidth, canvas: cw, fontsStatus: document.fonts.status, faces, cards }; })()`;
+    await open(1500); const late = await settled(); const lateWhy = await q(DESCRIBE);
+    await open(0); const prompt = await settled(); const promptWhy = await q(DESCRIBE);
+    ok(`F [${name}]: a card's on-screen height is the same with late fonts as with prompt ones`, late.length === 3 && late.every((l, i) => near(l.h, prompt[i].h)), `late ${late.map((l) => l.h.toFixed(4)).join(',')} / prompt ${prompt.map((l) => l.h.toFixed(4)).join(',')}` + (late.length === 3 && late.every((l, i) => near(l.h, prompt[i].h)) ? '' : ` | late open: ${JSON.stringify(lateWhy)} | prompt open: ${JSON.stringify(promptWhy)}`));
     ok(`F [${name}]: every card shows all of its words`, prompt.every((l) => l.clipped <= 2), JSON.stringify(prompt.map((l) => l.clipped)));
   }
 

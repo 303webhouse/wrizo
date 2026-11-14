@@ -192,6 +192,15 @@
 }
 .wz-stale-banner-text { font-size: 1rem; line-height: 1.3; }
 
+/* #76 PART 2 - the quiet line while the same page is open in another window: small, muted, at the foot of the window, and inert (pointer-events:none, no focusable child), so it cannot block a key or a click. */
+/* #76: the "open in another window too" line stands LAST in the page's count row, in that row's own label colour: no brass, no icon, no motion, never takes a click. It hides with the row (a Typewriter hides the row). */
+.wz-same-page-line { color: inherit; font: inherit; letter-spacing: inherit; text-transform: none; white-space: nowrap; pointer-events: none; user-select: none; }
+.mode-pmeta > .wz-same-page-line { margin-left: 12px; }
+.machina-run > .wz-same-page-line { margin-left: 0; }
+/* a page with no count row to carry it: the same line, standing by itself under the page */
+.wz-same-page-line--alone { position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 90; max-width: calc(100vw - 32px); text-align: center; font-size: .75rem; line-height: 1.3; color: var(--color-text-muted); opacity: .85; }
+:root:has(.mode-scroll[data-typewriter='true']) .wz-same-page-line { display: none; }   /* in a Typewriter the line hides, with the row that carries it */
+
 /* THE SPLASH: the hand-drawn Wrizo over the live app. It cannot block writing: pointer-events:none on the container and both children, so input reaches whatever is underneath. z-index 400, above the whole stack (modals top out at 300). Its size is set inline by Splash.tsx from the asset's measured ink box, about a quarter of the screen [beginnings §10] */
 /* the drawing stays truly centred: the loading line is positioned absolutely, never a flex participant, so it cannot move the mark [beginnings §11] */
 .wz-splash{

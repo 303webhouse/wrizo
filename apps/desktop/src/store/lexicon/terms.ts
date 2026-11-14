@@ -113,6 +113,8 @@ export type DeskTermId =
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
+  // #76: the quiet line while the same page is open in another window (placeholder words until the Wrizors word it), and the line that says both versions were kept after a merge
+  | 'samePageElsewhere' | 'samePageKeptBoth'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'trashCardBadge'
   // the Grafts / Links tab: the selected card's connections, each with an X that asks first [deskLexicon §6]
   | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
@@ -132,7 +134,6 @@ export type DeskTermId =
   | 'tutorDockClose'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
-  | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
   // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
   // state, the add-input placeholder + button, and the per-fact
   // edit/delete/save/cancel affordances. All writer-facing chrome, all here.
@@ -285,9 +286,6 @@ export type DeskTermId =
   // title (a proper noun — not lexicon vocabulary).
   // the Drawer terms: key names stay (internal ids), string values carry the writer's word [deskLexicon §15]
   | 'createDrawerEyebrow' | 'createDrawerTitleLabel'
-  | 'drawerHomeTitleLabel' | 'backToDrawer'
-  | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
-  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer'
   // B3 S1 — the deck engine's own chrome (components/DeckWizard.tsx): the
   // two doors' own labels, the library step, the room headings, and the
   // "Start Here" hint (R6's own wayfinding mark). Every deck NAME/prompt/

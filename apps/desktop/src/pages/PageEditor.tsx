@@ -75,6 +75,9 @@ import { wordCount } from '../store/wordCount';
 import { useFirstRunGate, FIRST_RUN_WORD_TARGET } from './pageEditor/useFirstRunGate';
 import { usePageTypewriter } from './pageEditor/usePageTypewriter';
 import { usePageAutosave } from './pageEditor/usePageAutosave';
+import { useExternalPageText } from './pageEditor/useExternalPageText';
+import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
+import { mapCaretThrough, mergeText } from '../store/textMerge';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -179,6 +182,10 @@ function PageEditorView({ id }: { id: string }) {
   const initialText = entry?.text ?? '';
   const [text, setText] = useState(initialText);
   const [modeSeed, setModeSeed] = useState(initialText);
+  // #76 part 1: bumped when words another window saved are adopted; the editor is keyed on it, so it mounts again on the new text
+  const [remount, setRemount] = useState(0);
+  const caretAfterAdopt = useRef<{ start: number; end: number; focused: boolean } | null>(null);
+  const focusBeforeAdopt = useRef<HTMLElement | null>(null);
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
@@ -445,7 +452,70 @@ function PageEditorView({ id }: { id: string }) {
     return () => cancelAnimationFrame(raf);
   }, [mode]);
 
-  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text });
+  const reconcileRef = useRef<() => boolean>(() => false);
+  const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
+  const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text, reconcileRef });
+
+  // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
+  const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
+    const ed = editorRef.current;
+    const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
+    // her caret is kept whether or not the editor has focus (a window she is not in still has a caret in it); a merged text maps it to where the same character now is
+    const sel = ed && ed.isConnected ? getSelectionOffsets(ed) : null;
+    const through = how.mapCaret ?? ((o: number) => mapCaretThrough(textRef.current, next, o));   // textRef still holds what the editor showed
+    const place = sel ? { start: through(sel.start), end: through(sel.end) } : null;
+    caretAfterAdopt.current = place ? { ...place, focused: had } : had ? { start: next.length, end: next.length, focused: true } : null;
+    focusBeforeAdopt.current = !had && document.activeElement instanceof HTMLElement ? document.activeElement : null;   // a writer who was NOT in the page keeps her focus where it was
+    lastSavedRef.current = how.lastSaved;   // what was adopted from the other window: when the merged text differs from it, the editor's next save writes the merge
+    textRef.current = next;
+    setText(next);
+    setModeSeed(next);
+    setRemount((n) => n + 1);
+  };
+  // #76 - RECONCILE this page with its record. `base` is what this editor last saved or loaded (lastSavedRef), `mine` what it shows, `theirs` what the record holds now. The record is the same as either: nothing to do. Nothing unsaved here: show
+  // the record's words. Unsaved words here: the three are merged (store/textMerge.ts), the merge is SAVED at once and shown, and the page says so once. Never a save of `mine` over words `theirs` has that `mine` has not seen.
+  const reconcilingRef = useRef(false);   // saving the merge tells every screen (notify), this one included: that echo must not merge the merge again
+  const reconcile = (): boolean => {
+    if (unbornRef.current || reconcilingRef.current) return false;
+    reconcilingRef.current = true;
+    try { return reconcileNow(); } finally { reconcilingRef.current = false; }
+  };
+  const reconcileNow = (): boolean => {
+    const latest = getJournalEntry(id);
+    if (!latest) return false;
+    const theirs = latest.text ?? '', mine = textRef.current, base = lastSavedRef.current;
+    if (theirs === base || theirs === mine) return false;
+    if (mine === base) { noteMerge({ at: 'adopt', mine, theirs }); adoptOtherWindowText(theirs, { lastSaved: theirs }); return true; }
+    const r = mergeText(base, mine, theirs);
+    noteMerge({ at: 'merge', base, mine, theirs, out: r.text });
+    saveJournalEntry({ ...latest, text: r.text });
+    adoptOtherWindowText(r.text, { lastSaved: r.text, mapCaret: r.mapCaret });
+    if (r.kept) announceKeptBoth(id);
+    return true;
+  };
+  reconcileRef.current = reconcile;
+  useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef });
+  // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
+  useEffect(() => {
+    if (remount === 0) return;
+    const at = caretAfterAdopt.current, was = focusBeforeAdopt.current;
+    caretAfterAdopt.current = null; focusBeforeAdopt.current = null;
+    const ed = editorRef.current;
+    if (!ed || !ed.isConnected) return;
+    const n = editorPlainText(ed).length;
+    if (at && at.focused) {
+      ed.focus({ preventScroll: true });
+      setSelectionOffsets(ed, Math.min(at.start, n), Math.min(at.end, n));
+      return;
+    }
+    // she was not in the editor: the mount put focus there, so it goes back to where it was, and the caret stays where she left it
+    if (document.activeElement === ed) ed.blur();
+    if (at) {
+      const r = rangeFromPlainOffsets(ed, Math.min(at.start, n), Math.min(at.end, n)), s = window.getSelection();
+      if (r && s) { s.removeAllRanges(); s.addRange(r); }
+    }
+    if (was && was.isConnected && was !== document.body) was.focus({ preventScroll: true });
+  }, [remount]);
 
   // This hook sits ABOVE the early return below (the hooks-order guards enforce it); its body reads `applyFormatAt`, defined below, safely, since an effect runs after render, and its deps carry `!!realEntry` so the listener attaches once the editor mounts. Tab indents through draftFormat's own indent (a leading tab), the same formatter as the rail's arrows, so a key and a click cannot drift apart. It is a state machine (store/tabChord.ts): each Tab tap is one more first-line level, Shift+Tab one back, Tab held + 1 one whole-paragraph level per press; a tap applies on release, and a quick Tab-then-1 types its 1. Draft and Revise act everywhere; Free Write is forward-only, so it acts on a BLANK line only and never outdents. Capturing Tab costs a keyboard-only writer Tab-out; Escape leaves the surface (store/escapeExit.ts). While an Outline is in Draft it owns Tab and this machine stands aside (a ref, read at press time). [PageEditor §10]
   const outlineKeysRef = useRef(false);
@@ -709,13 +779,13 @@ function PageEditorView({ id }: { id: string }) {
           text={text}
           autoFocus={initialText.trim() === ''}
           onChange={onTextChange}
-          onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
+          onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
           onFocus={() => setFocused(true)}
           onBlur={() => { setFocused(false); flush(); }}
         />
       ) : (
       <ForwardOnlyEditor
-        key={`${id}-${mode}`}
+        key={`${id}-${mode}-${remount}`}
         ref={editorRef}
         insertMarkerRef={insertMarkerRef}
         initialText={modeSeed}
@@ -725,7 +795,7 @@ function PageEditorView({ id }: { id: string }) {
         onFormatKey={mode === 'drafting' ? applyRailFormat : undefined}
         lens={lensActive}
         onLensKey={applyLensKey}
-        onForward={() => { noteWrite(); warm.release(); noteSessionKeystroke(); }}
+        onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
         onFocus={() => setFocused(true)}
         onBlur={() => { setFocused(false); flush(); }}
         placeholder=""

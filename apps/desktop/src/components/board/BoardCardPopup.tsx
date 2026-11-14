@@ -5,6 +5,7 @@ import { applyFormat, formatShortcutAction, applyFontPick, fontFaceAt, clearFont
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText, revealAtCaret } from '../../store/draftDecoration';
 import { attachHiddenMarkEditing, hiddenMarkEditingFor } from '../../store/hiddenMarksEditing';
 import { placeCaret } from '../../store/hiddenMarksDom';
+import { revealCaret } from '../../store/caretInView';
 import { applyEmDash, findEmDashTrigger } from '../../store/emDash';
 import { classifyEditKind, createTextUndoStack, type EditKind, type TextUndoStack } from '../../store/textUndo';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../../store/voiceWall';
@@ -122,7 +123,7 @@ export function BoardCardPopup({
     const redecorate = (plain: string, caret: number | null) => {
       decorateEditorFor(el, plain, caret, setCaretOffset, text => decorateMarkdownForCard(text, caret));
       // ITEM 211 - the caret lands on the visible side of a hidden mark (store/hiddenMarksDom.ts), as on the page
-      if (caret !== null) placeCaret(el, caret);
+      if (caret !== null) { placeCaret(el, caret); revealCaret(el); }   // #64: a caret the app places is brought into view
     };
     const commit = (plain: string) => { textRef.current = plain; syncPrompt(plain); onCommit(plain); };
     // ITEM 211, THE CARD PORT - the page's editing rules for marks that never show, from the ONE controller the page uses

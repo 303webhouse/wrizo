@@ -149,7 +149,9 @@ async function lexicon(over = {}) {
   const T = (k, th) => { try { return M.deskTerm(k, th); } catch { return undefined; } };
   out.L1 = [T('walkWrite', 'plateau') === 'Write this' && T('walkPlace', 'plateau') === 'Place a page…' && T('graftPlaceThis', 'plateau') === 'Place this…', 'Arbor: Write this / Place a page… / Place this…'];
   out.L2 = [T('walkWrite', 'flux') === '[BOOT DOC]' && T('walkPlace', 'flux') === '[INPUT DOC]' && T('graftPlaceThis', 'flux') === 'PORT TO…', 'Flux: [BOOT DOC] / [INPUT DOC] / PORT TO…'];
-  out.L3 = [T('walkWrite', 'machina') === 'Draft File' && T('walkPlace', 'machina') === 'Attach File…' && !!T('graftPlaceThis', 'machina') && T('graftPlaceThis', 'machina') !== 'Place this…', 'Machina: Draft File / Attach File… / its own Place-this'];
+  // ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+  // out.L3 = [T('walkWrite', 'machina') === 'Draft File' && T('walkPlace', 'machina') === 'Attach File…' && !!T('graftPlaceThis', 'machina') && T('graftPlaceThis', 'machina') !== 'Place this…', 'Machina: Draft File / Attach File… / its own Place-this'];
+  out.L3 = [T('walkWrite', 'machina') === 'Draft Doc' && T('walkPlace', 'machina') === 'Attach Doc…' && !!T('graftPlaceThis', 'machina') && T('graftPlaceThis', 'machina') !== 'Place this…', 'Machina [doc successor]: Draft Doc / Attach Doc… / its own Place-this'];
   out.L4 = [['plateau', 'flux', 'machina'].every((th) => ['graftPlaceSearchPages', 'graftPlaceSearchSteps'].every((k) => !!T(k, th))) && T('graftPlaceSearchPages', 'flux') !== T('graftPlaceSearchPages', 'plateau'), "the filtered pickers' search words exist in every theme (Flux differs from Arbor)"];
   return out;
 }

@@ -162,31 +162,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshBoard(app, 'bg1-open-board', [], LAPTOP_W, 900);
   const openDoors = await doorLabels(app);
-  // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page" (Arbor's own word).
-  // ok('S1 (OPEN): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief's order — New Card · New Page Card · Load a Deck · Connect a Page', JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(openDoors));
-  // SUPERSEDED (item word-diet, Nick, HOLD resolved): "Graft a Page" ->
-  // "+ Filed Pages".
-  // ok('S1 (OPEN, arbor-quiet-brass successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · Graft a Page',
-  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(openDoors));
-  // SUPERSEDED (item word-diet, Nick, review fix) — beginNewPageCard reworks,
-  // "New Page Card" -> "New Pages Card" (pages-rename bucket (a)).
-  // ok('S1 (OPEN, word-diet successor): an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page Card · Load a Deck · + Filed Pages',
-  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the board starter words
-  // + the singular-exception rule): "New Pages Card" -> "New Page", "Load a
-  // Deck" -> "Templates", "+ Filed Pages" -> "Connect Pages".
-  // ok('S1 (OPEN) [word-diet successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Pages Card · Load a Deck · + Filed Pages',
-  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(openDoors));
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starters are New Card, Templates, Connect Pages.
-  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
-  //
-  // ok('S1 (OPEN) [word-diet-layouts successor]: an empty ordinary board renders the Beginnings row with exactly its four doors, in the brief\'s order — New Card · New Page · Templates · Connect Pages',
-  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // ok('S1 (OPEN) [big-projects-2 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Templates · Connect Pages (no New Page)',
-  //   JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(openDoors));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 1
   ok('S1 (OPEN) [guided-w3 successor]: an empty ordinary board renders the Beginnings row with exactly its three doors - New Card · Presets · Connect Pages (no New Page)',
     JSON.stringify(openDoors) === JSON.stringify(['New Card', 'Presets', 'Connect Pages']), JSON.stringify(openDoors));
 
@@ -198,11 +174,7 @@ await withHarness(async (app) => {
 
   // "No grid" — one row, one line: every door shares a top edge.
   const doorTops = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(b => Math.round(b.getBoundingClientRect().top))");
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): a board's starters are three doors (New Page left them; the sliver keeps that tool).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('S1: the doors sit on ONE line — a row, never a grid (identical top edge across all four)',
-  //   doorTops.length === 4 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 2
   ok('S1 [big-projects-2 successor]: the doors sit on ONE line - a row, never a grid (identical top edge across all three)',
     doorTops.length === 3 && new Set(doorTops).size === 1, JSON.stringify(doorTops));
 
@@ -214,39 +186,21 @@ await withHarness(async (app) => {
   const doorShape = await app.evalJs(`[...document.querySelectorAll('.wz-beginning')].map(b => ({
     glyph: !!b.querySelector('.wz-beginning-glyph svg'), label: (b.querySelector('.wz-beginning-label')?.textContent || '').trim(),
   }))`);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): three doors.
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('S1: every door is an icon+label door (a glyph and a word, per the brief)',
-  //   doorShape.length === 4 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 3
   ok('S1 [big-projects-2 successor]: every door is an icon+label door (a glyph and a word, per the brief) - all three',
     doorShape.length === 3 && doorShape.every((d) => d.glyph && d.label.length > 0), JSON.stringify(doorShape));
 
   // STORYBOARD's own three.
   await setBoardMode(app, 'storyboard');
   const sbDoors = await doorLabels(app);
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — beginLoadDeck reworks, "Load a Deck" -> "Templates" (both board modes that carry this door).
-  // ok('S1 (STORYBOARD): the row is Load a Deck · New Lane · New Card — the brief\'s own set for this mode, in order',
-  //   JSON.stringify(sbDoors) === JSON.stringify(['Load a Deck', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // ok('S1 (STORYBOARD) [word-diet-layouts successor]: the row is Templates · New Lane · New Card — the brief\'s own set for this mode, in order',
-  //   JSON.stringify(sbDoors) === JSON.stringify(['Templates', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 4
   ok('S1 (STORYBOARD) [guided-w3 successor]: the row is Presets · New Lane · New Card - the brief\'s own set for this mode, in order',
     JSON.stringify(sbDoors) === JSON.stringify(['Presets', 'New Lane', 'New Card']), JSON.stringify(sbDoors));
 
   // OUTLINE's own two.
   await setBoardMode(app, 'outline');
   const olDoors = await doorLabels(app);
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — same beginLoadDeck rework.
-  // ok('S1 (OUTLINE): the row is New Card · Load a Deck — the brief\'s own set for this mode, in order',
-  //   JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Load a Deck']), JSON.stringify(olDoors));
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // ok('S1 (OUTLINE) [word-diet-layouts successor]: the row is New Card · Templates — the brief\'s own set for this mode, in order',
-  //   JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Templates']), JSON.stringify(olDoors));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 5
   ok('S1 (OUTLINE) [guided-w3 successor]: the row is New Card · Presets - the brief\'s own set for this mode, in order',
     JSON.stringify(olDoors) === JSON.stringify(['New Card', 'Presets']), JSON.stringify(olDoors));
 
@@ -310,16 +264,7 @@ await withHarness(async (app) => {
     await app.evalJs("document.body.innerText.slice(0, 120)"));
 
   await freshBoard(app, 'bg1-pagecard-board', [], LAPTOP_W, 900);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starter row has no New Page door; the same act (a page born AND pinned to this board, travelled to) is the sliver's New Page tool.
-  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
-  //
-  // await clickDoor(app, 'newPageCard');
-  // const pageCardHash = await app.evalJs('location.hash');
-  // await sleep(400);
-  // const pageCardPin = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries')||'[]').find(e => e.id === 'bg1-pagecard-board')?.boxes || []).filter(b => b.kind === 'page-pin').length");
-  // ok('S1: New Page Card births a linked page and travels to it, pinning its card to this board in one act',
-  //   /^#\/page\/[^/]+$/.test(pageCardHash) && !pageCardHash.includes('bg1-pagecard-board') && pageCardPin === 1,
-  //   JSON.stringify({ pageCardHash, pageCardPin }));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 6
   const rowHasNewPage = await app.evalJs("!!document.querySelector('[data-beginning=\"newPageCard\"]')");
   const sliverNewPage = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-item-btn')].find(n => n.textContent.trim() === 'New Page'); if (!b) return false; b.click(); return true; })()");
   await sleep(500);
@@ -361,28 +306,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-canvas, .board-projection')", { label: 'paired plan board mounted' });
   await sleep(350);
   const planBoardDoors = await doorLabels(app);
-  // SUPERSEDED (item arbor-quiet-brass): "Connect a Page" -> "Graft a Page".
-  // ok('S1: a paired plan board takes OPEN's row — it is an ordinary board and gets the ordinary four doors', JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Connect a Page']), JSON.stringify(planBoardDoors));
-  // SUPERSEDED (item word-diet, Nick, HOLD resolved): "Graft a Page" -> "+ Filed Pages".
-  // ok('S1 (arbor-quiet-brass successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', 'Graft a Page']), JSON.stringify(planBoardDoors));
-  // SUPERSEDED (item word-diet, Nick, review fix) — beginNewPageCard reworks,
-  // "New Page Card" -> "New Pages Card".
-  // ok('S1 (word-diet successor): a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — the same OPEN-row rework as S1 (OPEN) above.
-  // ok('S1 [word-diet successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Pages Card', 'Load a Deck', '+ Filed Pages']), JSON.stringify(planBoardDoors));
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the starters are New Card, Templates, Connect Pages.
-  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
-  //
-  // ok('S1 [word-diet-layouts successor]: a paired plan board takes OPEN\'s row — it is an ordinary board and gets the ordinary four doors',
-  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'New Page', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
-  // ---- PARKED - SUPERSEDED by W3, guided paths (Nick / Fable, Oct 23): the board's load-a-deck door says Presets (Presets = decks, Templates = page dress - Nick, B1; W3 brief section 5).
-  // Kept VERBATIM below and no longer run; the live successor follows (scripts/harness/guided-w3.mjs carries the new law).
-  //
-  // ok('S1 [big-projects-2 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
-  //   JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Templates', 'Connect Pages']), JSON.stringify(planBoardDoors));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 7
   ok('S1 [guided-w3 successor]: a paired plan board takes OPEN\'s row - an ordinary board with the ordinary three doors',
     JSON.stringify(planBoardDoors) === JSON.stringify(['New Card', 'Presets', 'Connect Pages']), JSON.stringify(planBoardDoors));
 
@@ -393,32 +317,10 @@ await withHarness(async (app) => {
   await freshPage(app, 'bg1-type-now', '', LAPTOP_W, 900);
   const pageDoors = await doorLabels(app);
   pageDoorsSeen = pageDoors;
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps ONE door, Sprout, on a
-  // blank Free Write page; Screenplay is the Draft strip's live template; Plan stays on the PLAN bar only). Kept VERBATIM and
-  // no longer run. Parked record in the HARNESS_PARKED block below; the successor follows.
-  //
-  // ok('S2: a zero-word page renders the three start-words — Screenplay · Sprout · Plan (P1 amendment 2; "Sprout" supersedes "Start from a Spark")',
-  //   JSON.stringify(pageDoors) === JSON.stringify(['Screenplay', 'Sprout', 'Plan']), JSON.stringify(pageDoors));
-  // ------------------------------------------------------------------
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
-  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
-  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
-  // ok('S2 [page-templates successor]: a zero-word Free Write page renders ONE start-word, Sprout (Screenplay is the Draft strip\'s template, Plan is the PLAN bar\'s door)',
-  //   JSON.stringify(pageDoors) === JSON.stringify(['Sprout']), JSON.stringify(pageDoors));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 8
   ok('S2 [12f successor]: a zero-word Free Write page renders NO start-word (no row at all)', JSON.stringify(pageDoors) === '[]', JSON.stringify(pageDoors));
 
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
-  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
-  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
-  // const caretLive = await app.evalJs(`(() => {
-  //   const ed = document.querySelector('.forward-only-editor');
-  //   const active = document.activeElement;
-  //   return { focused: !!ed && (ed === active || ed.contains(active)), rowEvents: getComputedStyle(document.querySelector('.wz-beginnings')).pointerEvents };
-  // })()`);
-  // ok('S2: the caret is LIVE under the row from the first frame — the editor already holds focus with nothing clicked, and the row itself is pointer-events:none so it can never intercept it',
-  //   caretLive.focused === true && caretLive.rowEvents === 'none', JSON.stringify(caretLive));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 9
   const caretLive = await app.evalJs(`(() => {
     const ed = document.querySelector('.forward-only-editor');
     const active = document.activeElement;
@@ -445,12 +347,7 @@ await withHarness(async (app) => {
     (await rowPresent(app)) === false);
 
   const pageLang = await (async () => { await freshPage(app, 'bg1-lang', '', LAPTOP_W, 900); return rowLanguageClean(app); })();
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
-  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
-  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
-  // ok('S2/S3: the page row counts nothing and claims no completion either — same grammar, same silence',
-  //   pageLang.clean, pageLang.text);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 10
   bg1f.pageLang = pageLang;
   ok('S2/S3 [12f successor]: the blank page carries no row text at all - nothing counted, nothing claimed', pageLang.text === '', JSON.stringify(pageLang));
 
@@ -460,49 +357,7 @@ await withHarness(async (app) => {
   ok('S2: Esc dismisses the row (and the page is still a page — the editor is untouched)',
     (await rowPresent(app)) === false && (await app.evalJs("!!document.querySelector('.forward-only-editor')")) === true);
 
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
-  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
-  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
-  // // ==========================================================================
-  // // S2 — Sprout: deck-drawn, never model-drawn; never insertable.
-  // // ==========================================================================
-  // await freshPage(app, 'bg1-sprout', '', LAPTOP_W, 900);
-  // // Count every outbound request from this point on — page load included, since
-  // // the counters are installed before the door is pressed and the page has been
-  // // sitting mounted. The ratified disclosure sentence forbids a send on page
-  // // load; the deck is local (NUDGE_POOL), so a drawn line costs zero requests.
-  // await app.evalJs(`(() => {
-  //   window.__bg1Net = 0;
-  //   const f = window.fetch;
-  //   window.fetch = function (...a) { window.__bg1Net++; return f.apply(this, a); };
-  //   const open = XMLHttpRequest.prototype.open;
-  //   XMLHttpRequest.prototype.open = function (...a) { window.__bg1Net++; return open.apply(this, a); };
-  //   if (window.WebSocket) { const W = window.WebSocket; window.WebSocket = function (...a) { window.__bg1Net++; return new W(...a); }; }
-  // })()`);
-  // await clickDoor(app, 'sprout');
-  // const sprouted = await app.evalJs(`({
-  //   prompt: (document.querySelector('.fl-prompt')?.textContent || '').trim(),
-  //   row: !!document.querySelector('.wz-beginnings'),
-  //   net: window.__bg1Net,
-  //   editorText: (document.querySelector('.forward-only-editor')?.innerText || '').trim(),
-  //   insideEditor: !!document.querySelector('.forward-only-editor .fl-prompt'),
-  //   controls: [...document.querySelectorAll('.fl-invite button')].map(b => b.textContent.trim()),
-  // })`);
-  // ok('S2: Sprout draws a line on request — an invitation appears where nothing was offered unbidden',
-  //   sprouted.prompt.length > 0 && sprouted.row === false, JSON.stringify(sprouted));
-  // ok('S2 (the rail): deck-drawn, never model-drawn — drawing a line makes ZERO outbound requests (fetch/XHR/WebSocket all counted)',
-  //   sprouted.net === 0, String(sprouted.net));
-  // ok('S2 (the rail): the drawn line can never become the writer\'s text — it renders OUTSIDE the editable DOM, the page still holds zero words, and the only control offered is "don\'t offer again" (no accept, no insert, no tab-fill)',
-  //   sprouted.insideEditor === false && sprouted.editorText === '' &&
-  //   JSON.stringify(sprouted.controls) === JSON.stringify(['don’t offer again']), JSON.stringify(sprouted));
-  //
-  // // The writer's ink still wins the space: the first keystroke takes it back.
-  // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  // await app.typeKeys('Mine.');
-  // await sleep(300);
-  // ok('S2 (the rail): the first keystroke dismisses the drawn line — the writer\'s ink always wins the space',
-  //   (await app.evalJs("!document.querySelector('.fl-prompt')")) === true);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 11
   await freshPage(app, 'bg1-sprout', '', LAPTOP_W, 900);
   const noSprout = await app.evalJs(`({
     door: !!document.querySelector('[data-beginning="sprout"]'),
@@ -565,18 +420,9 @@ await withHarness(async (app) => {
   await freshBoard(app, 'bg1-grammar-board', [], LAPTOP_W, 900);
   const boardStyle = await app.evalJs(`(() => { const cs = getComputedStyle(document.querySelector('.wz-beginning'));
     return { font: cs.fontFamily, size: cs.fontSize, color: cs.color, opacity: cs.opacity }; })()`);
-  // ---- PARKED - SUPERSEDED by board-click-to-create (Nick's faint-starters ruling, Oct 14-15; merged 7b4a3826) ----
-  // The BOARD's starters are a thin square outline at 40% opacity now (the page row keeps full strength), so "identical ... resting weight" - compared through opacity - is no longer true.
-  // Quoted VERBATIM below. Successor: the two checks directly below (same component: identical type/size/colour, board faint at 0.4, page 1; the board starters fade on the first press).
-  // ok('S3: the board row and the page row ARE one component — identical computed type, size, color and resting weight on both surfaces',
-  //   JSON.stringify(pageStyle) === JSON.stringify(boardStyle), JSON.stringify({ pageStyle, boardStyle }));
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 12
   const noOpacity = (s) => ({ font: s.font, size: s.size, color: s.color });
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door (the page row's only door) and the first-line invite are
-  // deleted, everywhere, forever, so a blank page has no row. Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED
-  // block below (readings in bg1f); the successor follows (in full: c13-12f-sprout-invite.mjs).
-  // ok('S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1',
-  //   JSON.stringify(noOpacity(pageStyle)) === JSON.stringify(noOpacity(boardStyle)) && boardStyle.opacity === '0.4' && pageStyle.opacity === '1', JSON.stringify({ pageStyle, boardStyle }));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 13
   bg1f.grammar = { pageStyle, boardStyle };
   ok('S3 [12f successor]: the row is the board\'s alone now - a blank page renders no door, and the board starters still rest at opacity 0.4',
     pageStyle === null && !!boardStyle && boardStyle.opacity === '0.4', JSON.stringify({ pageStyle, boardStyle }));
@@ -661,13 +507,7 @@ if (process.env.HARNESS_PARKED === '1') {
         doorToken: doc.getPropertyValue('--accent-door').trim(),
         oldToken: doc.getPropertyValue('--accent-rest').trim() };
     })()`);
-    // ---- PARKED - SUPERSEDED by board-click-to-create (Nick's faint-starters ruling, Oct 14-15; merged 7b4a3826) ----
-    // The board door is still the house olive at --accent-door (#4F5730) but rests at opacity 0.4 now, not 1 (BG2 had retired the resting opacity; the faint-starters ruling restores a quiet one, on the BOARD row only).
-    // Quoted VERBATIM below. Successor: the pok directly below (generation 2).
-    // pok('PARKED (was "S1: the doors are painted in the house olive (--accent-rest #96a05a), quietly (resting opacity below full) — olive means \\"this is a door\\"") — BG2 S1 steps the SAME olive down in value to --accent-door (#4F5730) for legibility on cream and retires the resting opacity: the door is quiet by value now, not by fade; live successor: bg2.mjs',
-    //   paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 1 &&
-    //   paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
-    //   JSON.stringify(paintNow));
+    // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 14
     pok('PARKED, generation 2 [faint-starters successor] (was the BG2-S1 re-derivation asserting opacity 1) - the board door keeps the olive value --accent-door (#4F5730) and rests at opacity 0.4 by Nick\'s faint-starters ruling',
       paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 0.4 &&
       paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',

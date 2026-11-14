@@ -41,7 +41,9 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass, detail }); c
 
 const strip = src('components/ModeStrip.tsx');
 const pe = src('pages/PageEditor.tsx');
-const qs = src('pages/QuickSprint.tsx');
+// ---- PARKED - RETIRED by #13 step 12a: the read survives only where the file still exists (the retirement record reads it, never a live check).
+// const qs = src('pages/QuickSprint.tsx');
+const qs = existsSync(join(SRC, 'pages/QuickSprint.tsx')) ? src('pages/QuickSprint.tsx') : null;
 // ---- PARKED - RETIRED by #13 step 11: the read survives only where the file still exists (the retirement record reads it, never a live check).
 // const je = src('pages/JournalEntry.tsx');
 const je = existsSync(join(SRC, 'pages/JournalEntry.tsx')) ? src('pages/JournalEntry.tsx') : null;
@@ -57,9 +59,19 @@ ok('T1: ModeStrip\'s item list is freewrite / draft / revise / publish - no work
 
 // T2
 const peActions = actionsBlock(pe);
-const qsActions = actionsBlock(qs);
 ok('T2: PageEditor\'s ModeSwitcher actions carry Publish and no Workshop', /lex\('publish'\)/.test(peActions) && !/Workshop/i.test(peActions), peActions.replace(/\s+/g, ' '));
-ok('T2: QuickSprint\'s ModeSwitcher actions carry Publish and no Workshop', /lex\('publish'\)/.test(qsActions) && !/Workshop/i.test(qsActions), qsActions.replace(/\s+/g, ' '));
+// ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): pages/QuickSprint.tsx is deleted, so its actions are no surface any
+// more. Kept VERBATIM below and no longer run; its record is in the parked block. Successor: T2-ALL, every ModeSwitcher actions host in src.
+//
+// const qsActions = actionsBlock(qs);
+// ok('T2: QuickSprint\'s ModeSwitcher actions carry Publish and no Workshop', /lex\('publish'\)/.test(qsActions) && !/Workshop/i.test(qsActions), qsActions.replace(/\s+/g, ' '));
+const hostsOf = (files) => files.map(([p, s]) => [p, actionsBlock(s)]).filter(([, a]) => a);
+const t2All = (hosts) => hosts.length > 0 && hosts.every(([, a]) => /lex\('publish'\)/.test(a) && !/Workshop/i.test(a));
+const walk12a = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk12a(p) : [p]; });
+const srcFiles12a = walk12a(SRC).filter((p) => /\.tsx$/.test(p)).map((p) => [p.replace(SRC, ''), readFileSync(p, 'utf8').replace(/\r\n/g, '\n')]);
+const hosts12a = hostsOf(srcFiles12a);
+ok('T2-ALL [c13-12a successor]: every ModeSwitcher actions host in src carries Publish and no Workshop', t2All(hosts12a), JSON.stringify(hosts12a.map(([p]) => p)));
+ok('MUTANT: a ModeSwitcher actions host with Workshop - T2-ALL must go RED', !t2All([...hosts12a, ['planted.tsx', "actions={[ { label: 'Workshop' }, { label: lex('publish') } ]}"]]), '');
 
 // T3
 // ---- PARKED - RETIRED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx is deleted, so its tab row is no surface any more. Kept VERBATIM
@@ -87,11 +99,7 @@ ok('T5: the flash machinery SURVIVES for the other deferred postures (screenplay
   ok('MUTANT: Workshop re-added to ModeStrip - T1 must go RED', m1 !== strip && JSON.stringify(k1) !== JSON.stringify(['freewrite', 'draft', 'revise', 'publish']), JSON.stringify(k1));
   const m2 = pe.replace("            { label: lex('publish')", "            { label: 'Workshop', sub: 'coming soon', deferred: true },\n            { label: lex('publish')");
   ok('MUTANT: Workshop re-added to PageEditor\'s actions - T2 must go RED', m2 !== pe && /Workshop/i.test(actionsBlock(m2)), '');
-  // ---- PARKED - RETIRED by #13 step 11, with T3 (above): its subject, JournalEntry's row, is deleted. Kept VERBATIM and no longer run.
-  //
-  // const m3 = je.replace("['Draft', 'Format', lex('publish')]", "['Draft', 'Format', 'Workshop', lex('publish')]");
-  // ok('MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED', m3 !== je && /Workshop/i.test(journalRow(m3)), journalRow(m3));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/hide-workshop-source.mjs.parked.md record 1
 }
 
 // === PARKED - gated behind HARNESS_PARKED=1, skipped by default. #13 step 11 retires T3 and its mutant: the record holds what makes a
@@ -103,6 +111,13 @@ if (process.env.HARNESS_PARKED === '1') {
   for (const n of ['T3: the legacy JournalEntry tab row is Draft / Format / Publish - no Workshop', 'MUTANT: Workshop re-added to JournalEntry\'s row - T3 must go RED']) {
     parkedChecks.push({ name: `PARKED (was "${n}") - RETIRED by #13 step 11: pages/JournalEntry.tsx is unreachable (imported by no src file) and deleted`, pass: importers.length === 0, detail: JSON.stringify(rec) });
   }
+  // #13 step 12a: QuickSprint's T2 row. Before the delete the file exists and App routes /sprint to it; after, the file is gone and /sprint
+  // is the legacy redirect - either way /sprint is never left without a route (c13-12a-doors.mjs D3 lands it home).
+  const app12a = readFileSync(join(SRC, 'App.tsx'), 'utf8');
+  const sprintRoute = (/<Route path="\/sprint" element=\{<(QuickSprint|LegacyProjectRedirect) \/>\} \/>/.exec(app12a) || [])[1] || null;
+  const rec12a = { exists: qs !== null, sprintRoute };
+  parkedChecks.push({ name: 'PARKED (was "T2: QuickSprint\'s ModeSwitcher actions carry Publish and no Workshop") - RETIRED by #13 step 12a: QuickSprint is deleted; successor T2-ALL',
+    pass: (rec12a.exists && sprintRoute === 'QuickSprint') || (!rec12a.exists && sprintRoute === 'LegacyProjectRedirect'), detail: JSON.stringify(rec12a) });
   for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  ${c.detail}`);
   console.log(parkedChecks.every((c) => c.pass) ? `\nHIDE-WORKSHOP-SOURCE PARKED: PASS (${parkedChecks.length} records) - HARNESS_PARKED=1 armed; #13 step 11 retires T3 and its mutant`
     : `\nHIDE-WORKSHOP-SOURCE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length}`);

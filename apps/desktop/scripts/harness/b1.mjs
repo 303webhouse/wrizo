@@ -26,6 +26,13 @@
 // simple .click() needs no special fidelity disclosure, and none is made
 // here; said explicitly per this ticket's own standing discipline.
 import { withHarness } from '../runtime-verify.mjs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
+
+// #13 step 12c: the narrow rail's roster, read against DeskRail's own source (the Library stub is expected only while the source lists it)
+const LIB_SLOT_12C = /key: 'library'/.test(srcText(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src'), 'components/DeskRail.tsx'));
+const roster12c = (labels, lib) => JSON.stringify(labels) === JSON.stringify(lib ? ['Catch', 'Journal', 'Drawers', 'Library'] : ['Catch', 'Journal', 'Drawers']);
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -319,19 +326,10 @@ await withHarness(async (app) => {
   // to say so explicitly).
   await app.evalJs(POINTER_HELPER);
   await selectBox(app, trashCardAfterDelete.id);
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
-  // The selected-card action row is DELETED; a Trash card's Restore is the first item of its right-click menu.
-  // Quoted VERBATIM below. Successor: the right-click below (Restore, and no Delete on a deleted Page); the Restore act itself is unchanged.
-  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Trash card selected, action row present' });
-  // const restoreBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Restore')");
-  // ok('S4: a selected Trash card offers Restore in the action row (the FX5 action-row precedent)', restoreBtnPresent === true, String(restoreBtnPresent));
-  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Restore').click()");
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 1
   await rightClickAt(app, `[data-box-id="${trashCardAfterDelete.id}"]`);
   const trashMenuLabels = await app.evalJs("[...document.querySelectorAll('.wz-ctx-item')].map((b) => b.textContent.trim())");
-  // ---- PARKED - SUPERSEDED by DELETE FOR GOOD (docs/plans/delete-for-good.md, cleared Oct 18 - Nick chose a real Delete for good) ----
-  // A deleted Page CAN now be deleted for good from the Trash, so its menu offers Delete after Restore. Kept VERBATIM and no longer run.
-  // ok('S4 [context-menu successor]: a Trash card offers Restore in its right-click menu (and no Delete: a deleted Page is restored here, not purged)', trashMenuLabels.includes('Restore') && !trashMenuLabels.includes('Delete'), JSON.stringify(trashMenuLabels));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 2
   b1TrashMenu = trashMenuLabels;
   ok('S4 [delete-for-good successor]: a Trash card for a deleted Page offers Restore, then Delete - Delete for good, which always asks (delete-for-good.mjs H4 walks it); Restore is still first',
     JSON.stringify(trashMenuLabels) === JSON.stringify(['Restore', 'Delete']), JSON.stringify(trashMenuLabels));
@@ -368,26 +366,10 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const journalSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
-  // changed ("New page card" -> "New Pages Card"); checking the OLD text's
-  // absence would trivially pass once the text is simply different, without
-  // proving the NEW text is absent too. ORIGINAL claim parked verbatim:
-  // ok('S3: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New page card" are genuinely absent, not merely disabled',
-  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New page card'), JSON.stringify(journalSliverButtons));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard's
-  // text reworks again, "New Pages Card" -> "New Page"; same reasoning as
-  // above: checking the OLD text's absence would trivially pass once the
-  // text is simply different. ORIGINAL claim parked verbatim:
-  // ok('S3 [word-diet successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Pages Card" are genuinely absent, not merely disabled',
-  //   !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Pages Card'), JSON.stringify(journalSliverButtons));
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 3
   ok('S3 [word-diet-layouts successor]: the Journal Board\'s own sliver carries NO Add control at all — "Add card" and "New Page" are genuinely absent, not merely disabled',
     !journalSliverButtons.includes('Add card') && !journalSliverButtons.includes('New Page'), JSON.stringify(journalSliverButtons));
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on a system Board.
-  // Quoted VERBATIM below. Successor: the check directly below.
-  // const journalFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
-  // ok('S3: the connections-footer toggle STILL works on a system Board — arranging (including the footer) is the full FX5 hand, only Add/Delete are restricted',
-  //   journalFooterTogglePresent === true, String(journalFooterTogglePresent));
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 4
   ok('S3 [connector-a successor]: the connections-footer toggle is RETIRED on a system Board as on every board - arranging is the full hand, only Add/Delete are restricted, and the footers are simply on', (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0, '');
 
   // Delete on a derived card is an inert, quiet no-op.
@@ -470,13 +452,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const userBoardSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard's text itself
-  // changed, "New page card" -> "New Pages Card". ORIGINAL claim parked verbatim:
-  // ok('S3: an ORDINARY user Board still carries BOTH Add controls, byte-identical to before this ticket — the restriction is scoped to system Boards only',
-  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New page card'), JSON.stringify(userBoardSliverButtons));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard's text reworks again, "New Pages Card" -> "New Page".
-  // ok('S3 [word-diet successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
-  //   userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Pages Card'), JSON.stringify(userBoardSliverButtons));
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 5
   ok('S3 [word-diet-layouts successor]: an ORDINARY user Board still carries BOTH Add controls — the restriction is scoped to system Boards only',
     userBoardSliverButtons.includes('Add card') && userBoardSliverButtons.includes('New Page'), JSON.stringify(userBoardSliverButtons));
 
@@ -496,11 +472,7 @@ await withHarness(async (app) => {
   // A18 — a card deleted on a user Board is genuinely, fully removed; it
   // never surfaces on the Trash Board (A18 scopes to Pages, not cards).
   const trashAfterUserCardDelete = await trashBoardBoxes(app);
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
-  // A deleted CARD is a tombstone now and the Trash board LISTS it (Nick/Fable, Oct 15: "Trash lists them; restore clears the flag"); A18's "card/thread trash stays out of v1" is lifted. Page deletions are untouched.
-  // Quoted VERBATIM below. Successor: the check directly below.
-  // ok('S4/A18: a card removed from a user Board never appears on the Trash Board — A18 scopes to Pages only, verbatim; card/thread trash stays out of v1',
-  //   !pinIds(trashAfterUserCardDelete).some((id) => id === 'b1-user-card'), JSON.stringify(pinIds(trashAfterUserCardDelete)));
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 6
   ok('S4/A18 [context-menu successor]: a card deleted from a user Board DOES appear on the Trash Board now - as a trashed CARD (trashedFrom = the board and the box) beside the deleted pages',
     trashAfterUserCardDelete.some((b) => b.kind === 'page-pin' && !!b.trashedFrom && b.trashedFrom.boxId === 'b1-user-card'), JSON.stringify(trashAfterUserCardDelete.map((b) => b.trashedFrom || b.entryId)));
 
@@ -564,16 +536,7 @@ await withHarness(async (app) => {
   // now asserted here.
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Trash board)' });
-  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
-  // by Nick's word (2026-07-20): deskLexicon.ts's boardHomeLabelTrash
-  // STRING VALUE changes ("no project home" -> "no drawer home"). ORIGINAL:
-  //   const trashBoardHomeLabel = await app.evalJs("document.querySelector
-  //   ('.wz-pageface-home-label')?.textContent");
-  //   ok('S1/S3/S4: the Trash Board\'s own Page face names ITS home
-  //   truthfully ("no project home"), never "In the Journal" (flatly
-  //   false)', trashBoardHomeLabel === 'The Trash Board — has no project home', ...);
-  // Re-asserted against the new copy in this file's own PARKED section
-  // (same truth); a fresh live check lives in b2-1.mjs.
+  // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 7
 
   // ==========================================================================
   // S5 (a) — the Catch flow stays byte-identical: still writes a
@@ -720,12 +683,7 @@ await withHarness(async (app) => {
       stripCount: document.querySelectorAll('.wz-strip-item').length,
       boardCanvasPresent: !!document.querySelector('.board-canvas'),
     })`);
-    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the strip carries SEVEN categories.
-    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
-    //
-    // ok(`S6 @ ${width}px: the Journal Board mounts framed (DeskFrame + the 8-category strip, Trash included) — the same chrome any other Board already gets`,
-    //   framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 8 && framedShape.boardCanvasPresent,
-    //   JSON.stringify(framedShape));
+    // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 8
     ok(`S6 @ ${width}px [big-projects-1a successor]: the Journal Board mounts framed (DeskFrame + the 7-category strip, Trash included) - the same chrome any other Board already gets`,
       framedShape.deskFramePresent && framedShape.stripPresent && framedShape.stripCount === 7 && framedShape.boardCanvasPresent,
       JSON.stringify(framedShape));
@@ -757,9 +715,16 @@ await withHarness(async (app) => {
   // ok(`S6 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — no Trash item, no new legacy chrome`,
   //   JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
   //   JSON.stringify(legacyFloorShape.railLabels));
-  ok(`S6 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone (the Shelf is merged into the Journal) - no Trash item, no new legacy chrome`,
-    JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
-    JSON.stringify(legacyFloorShape.railLabels));
+  // ---- PARKED - SUPERSEDED by #13 step 12c (Nick's dormant answers, Oct 29: the narrow rail's Library slot is deleted): the roster loses its greyed Library stub.
+  // The big-projects-1a successor, kept VERBATIM below and no longer run; the live successor and its mutant follow.
+  //
+  // ok(`S6 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone (the Shelf is merged into the Journal) - no Trash item, no new legacy chrome`,
+  //   JSON.stringify(legacyFloorShape.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShape.railLabels));
+  ok(`S6 @ ${LEGACY_W}px [c13-12c successor]: DeskRail's roster is Catch, Journal, Drawers - the Library stub stands only while DeskRail's source still lists it (before the delete), never after - no Shelf, no Trash item, no new legacy chrome`,
+    roster12c(legacyFloorShape.railLabels, LIB_SLOT_12C), JSON.stringify({ labels: legacyFloorShape.railLabels, libSlotInSource: LIB_SLOT_12C }));
+  ok('S6 [c13-12c successor mutant]: the roster reader is red on a Library stub the source no longer lists, on a missing Drawers item and on a Shelf item, and green on Catch, Journal, Drawers',
+    !roster12c(['Catch', 'Journal', 'Drawers', 'Library'], false) && !roster12c(['Catch', 'Journal'], false) && !roster12c(['Catch', 'Journal', 'Shelf', 'Drawers'], false) && roster12c(['Catch', 'Journal', 'Drawers'], false), '');
 
   return checks;
 });
@@ -767,27 +732,7 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// B2 (2026-07-20) is the first tenant of this scaffold: this file's own S3
-// check —
-//
-//   await app.evalJs("document.querySelector('.wz-pageface-verb-movecopy').click()");
-//   ...
-//   ok('S3: Move/Copy is ALSO inert on the system Board\'s own Page face
-//   (a judgment call, disclosed in the build report: filing the Board
-//   into a project would break S1\'s own "no project home" invariant)',
-//     addSheetOpenedOnSystemBoard === false, ...);
-//
-// is falsified whole by B2 S4: `.wz-pageface-verb-movecopy` (and the
-// Move/Copy verb it fired) is GONE, superseded by the Places panel — see
-// this file's own live S3 section, above, for the re-derived claim
-// ("Places itself is absent on a system Board's own Page face").
-//
-// CD3 harness-discipline fix (2026-07-22) — a second tenant: this file's
-// own live "Trash joins the cascade at the FOOT of section C" check
-// (index 5) is superseded whole by Nick's own placement (Trash moved to
-// the strip's OWN foot, index 7) — parked verbatim below; live successor
-// stays in this file's own live S4 section.
+// ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 9
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
@@ -833,10 +778,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // re-asserted here against the new copy. Live successor: b2-1.mjs's
     // own "S6 lexicon + DOM" section.
     const trashBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelTrash shortens again,
-    // "The Trash Board — has no drawer home" -> "Trash"; ORIGINAL parked verbatim:
-    // pok('PARKED (was "S1/S3/S4: the Trash Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (flatly false)") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-    //   trashBoardHomeLabelNow === 'The Trash Board — has no drawer home', String(trashBoardHomeLabelNow));
+    // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 10
     pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Trash Board\'s own Page face now reads bare "Trash"; live successor: b2-1.mjs',
       trashBoardHomeLabelNow === 'Trash', String(trashBoardHomeLabelNow));
 
@@ -857,10 +799,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=page]').click()");
     await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'PARKED Page face (journal system board)' });
     const journalBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens again,
-    // "The Journal Board — has no drawer home" -> "Journal"; ORIGINAL parked verbatim:
-    // pok('PARKED (was "S1/S3: the Journal Board\'s own Page face names ITS home truthfully (\\"no project home\\"), never \\"In the Journal\\" (self-referential) or a project name it doesn\'t have") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-    //   journalBoardHomeLabelNow === 'The Journal Board — has no drawer home', String(journalBoardHomeLabelNow));
+    // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 11
     pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Journal Board\'s own Page face now reads bare "Journal"; live successor: b2-1.mjs',
       journalBoardHomeLabelNow === 'Journal', String(journalBoardHomeLabelNow));
 
@@ -884,20 +823,7 @@ if (process.env.HARNESS_PARKED === '1') {
       const items = [...document.querySelectorAll('.wz-strip-item')];
       return { count: items.length, labels: items.map(b => b.querySelector('.wz-strip-label')?.textContent) };
     })()`);
-    // ---- PARKED — SUPERSEDED by VW1 (item 134), 2026-09-17 --------------
-    // A GENERATION DEEPER. The live CD3 successor above is parked for the same
-    // reason; this is its GATED twin, and it pins the old order by index in
-    // exactly the same way (labels[3] Drawers, labels[5] Settings, labels[7]
-    // Trash). VW1 regroups the rail, so those positions move. The regroup is
-    // SUPPOSED to break it — parked verbatim, never edited.
-    //
-    // Worth naming: the gated lane held an INDEX assertion that no amount of
-    // converting DRIVERS could have reached. Only changing the order found it.
-    //
-    // pok('PARKED (was "S4/S5: the Trash joins the cascade at the FOOT of section C — after Drawers and Shelf, before the Settings/Change Theme foot section") — CD3: Trash left section C for the strip\'s OWN foot (index 7, below Settings/Themes) — live successor: this file\'s own live S4 section',
-    // stripShapeParkedTrash.labels[7] === 'Trash' && stripShapeParkedTrash.labels[3] === 'Drawers' && stripShapeParkedTrash.labels[4] === 'Shelf' && stripShapeParkedTrash.labels[5] === 'Settings',
-    // JSON.stringify(stripShapeParkedTrash));
-    // ----------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/b1.mjs.parked.md record 12
     pok('PARKED, generation 4 (was the CD3 gated re-assertion pinning Drawers at [3], Settings at [5] and Trash at [7]) — VW1 (item 134): the rail is grouped by kind, so those indices name different tabs. The surviving claim is that the Trash is LAST, asserted by name rather than by position',
       stripShapeParkedTrash.labels[stripShapeParkedTrash.labels.length - 1] === 'Trash',
       JSON.stringify(stripShapeParkedTrash));

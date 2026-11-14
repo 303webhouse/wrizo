@@ -178,18 +178,29 @@ ok('M5: CAST, run for real - default cool; neutral under Machina reflects data-c
 // M6 / M7 / M8 / M9 - the lexicons, run for real
 const { mod: L } = await load([], {});
 const D = (k) => L.deskLexicon.deskTerm(k, 'machina');
-const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Files', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Files', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
+//   stripSettings: 'Controls', footSettings: 'Controls', stripChangeTheme: 'Theme', cascadeThemeTitle: 'Theme', tutorTabTutor: 'Consultant', drawerLinks: 'Assets', sectionsHeading: 'Parts',
+//   sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Files', graftKnobTip: 'Drag to asset' };
+const locked = { modeFreeWrite: 'Sprint', modeDraft: 'Build', modeRevise: 'Edit', modePublish: 'Finalize', pagePlanDoor: 'Plan', drawerPage: 'Docs', stripPlan: 'Plans', drawerPlaceJournal: 'Notebook',
   stripSettings: 'Controls', footSettings: 'Controls', stripChangeTheme: 'Theme', cascadeThemeTitle: 'Theme', tutorTabTutor: 'Consultant', drawerLinks: 'Assets', sectionsHeading: 'Parts',
-  sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Files', graftKnobTip: 'Drag to asset' };
+  sectionsPresets: 'Forms', railTemplates: 'Forms', progressStyleRhizome: 'Run', placeRootName: 'Inbox', boardPageDoor: 'Docs', graftKnobTip: 'Drag to asset' };
 const wrong = Object.entries(locked).filter(([k, v]) => D(k) !== v).map(([k, v]) => `${k}: ${D(k)} != ${v}`);
-ok('M6: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Files, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M6: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Files, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
+ok('M6 [doc successor]: the locked words resolve under Machina (strip Sprint / Build / Edit / Finalize and the Plan door kept as "Plan"; Docs, Plans, Notebook, Controls, Theme, Consultant, Assets, Parts, Forms, Run, Inbox)', wrong.length === 0, JSON.stringify(wrong));
 ok('M6: ...and the same keys under Arbor are NOT these words (the override is Machina\'s alone, not a canonical edit)',
   L.deskLexicon.deskTerm('modeDraft', 'plateau') !== 'Build' && L.deskLexicon.deskTerm('stripPlan', 'plateau') !== 'Plans' && L.deskLexicon.deskTerm('tutorTabTutor', 'plateau') !== 'Consultant', '');
 const T = (k) => L.themeLexicon.formsFor('machina', k);
-const tl = { page: ['File', 'Files'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const tl = { page: ['File', 'Files'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
+//   freewrite: ['Sprint', 'Sprints'], home: ['HQ', 'HQ'], voicewall: ['Compliance', 'Compliance'], publish: ['Finalize', 'Finalize'] };
+const tl = { page: ['Doc', 'Docs'], drawer: ['Project', 'Projects'], binder: ['Folder', 'Folders'], box: ['Block', 'Blocks'], board: ['Plan', 'Plans'], journal: ['Notebook', 'Notebooks'], milestone: ['Deliverable', 'Deliverables'],
   freewrite: ['Sprint', 'Sprints'], home: ['HQ', 'HQ'], voicewall: ['Compliance', 'Compliance'], publish: ['Finalize', 'Finalize'] };
 const tlWrong = Object.entries(tl).filter(([k, [one, many]]) => T(k).one !== one || T(k).many !== many).map(([k]) => k);
-ok('M7: themeLexicon under Machina - Project / Folder / File / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M7: themeLexicon under Machina - Project / Folder / File / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
+ok('M7 [doc successor]: themeLexicon under Machina - Project / Folder / Doc / Plan / Block / Notebook / Deliverable / Sprint / HQ / Compliance / Finalize', tlWrong.length === 0, JSON.stringify(tlWrong));
 ok('M7: the Voice Wall chip reads COMPLIANCE (VoiceWallWhisper renders t(\'voicewall\').toUpperCase() + " ▪ PASTE BLOCKED")', L.themeLexicon.t('voicewall', 'machina').toUpperCase() === 'COMPLIANCE' && /\{t\('voicewall'\)\.toUpperCase\(\)\} ▪ PASTE BLOCKED/.test(src('components/VoiceWallWhisper.tsx')), '');
 ok('M7: \'notebook\' (a DIFFERENT concept from the journal) is left canonical - Machina\'s Notebook is the Journal word, and no word is invented for the other (hand-up item)', T('notebook').one === 'Notebook' && T('journal').one === 'Notebook', JSON.stringify([T('notebook'), T('journal')]));
 
@@ -198,11 +209,16 @@ const dsrc = src('store/deskLexicon.ts');
 const mStart = dsrc.indexOf('\n  machina: {');
 const mBlock = dsrc.slice(mStart, dsrc.indexOf('\n  },\n};', mStart));
 const mEntries = [...mBlock.matchAll(/^    ([A-Za-z0-9]+): '((?:[^'\\]|\\.)*)',/gm)].map((m) => [m[1], m[2]]);
-const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|docs?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|docs?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
+const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
 // reviewed keep-list: strings where the word is the CORRECT Machina word or a plain-English use, not an Arbor/Flux noun
 const KEEP = new Set(['journalRouteEmptyDrawers', 'journalRoutePromoteDrawer', 'journalRouteSendToDrawer', 'switcherJournals']);
 const leaks = mEntries.filter(([k, v]) => !KEEP.has(k) && LEAK.test(v)).map(([k, v]) => `${k}: ${v}`);
-ok('M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list',
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// ok('M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list',
+//   mEntries.length > 90 && leaks.length === 0, JSON.stringify({ entries: mEntries.length, leaks }));
+ok('M8 [doc successor]: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / operator (Doc is the Machina page word now: no leak) / tutor / link / track / section / set / preset) outside a reviewed keep-list',
   mEntries.length > 90 && leaks.length === 0, JSON.stringify({ entries: mEntries.length, leaks }));
 // M9
 ok('M9: Workshop has NO Machina word - modeWorkshop is not overridden (the tab is hidden in every theme until it is built, Nick Oct 23)', !/^    modeWorkshop:/m.test(mBlock), '');
@@ -332,13 +348,7 @@ const EMBER = [
   /\[data-theme='machina'\] \.desk-frame-goalflare\{ display:none; \}/,
   /\[data-theme='machina'\] body::after\{ z-index:-1; \}/,
 ];
-// ---- PARKED - SUPERSEDED by page-size (Fable, Oct 23: the grey-band rule existed three times - Flux, Machina, and page-size's all-theme rule -
-// and collapses into the ONE base rule): Machina's own `[data-theme='machina'] body::after{ z-index:-1; }` is gone, so EMBER's fifth pattern no longer
-// matches and M18 falls with it. Kept VERBATIM and no longer run; record in this file's parked section; successor below (EMBER's other four, plus
-// the base rule).
-//
-// ok('M18: the paper\'s resting and focused halos are plain dark shadows, the goal glow is dialled (the cap token) and recoloured to the live gray, and the celebration flare is not drawn - under Machina only', EMBER.every((r) => r.test(ccss)) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(ccss), JSON.stringify(EMBER.map((r) => r.test(ccss))));
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/th-machina-source.mjs.parked.md record 1
 const EMBER_PS = EMBER.filter((r) => !/body::after/.test(r.source));
 const VIGNETTE_BASE = (x) => /(^|\n)\s*body::after\s*\{[^}]*z-index:\s*-1;/.test(x) && /body\s*\{\s*isolation:\s*isolate;\s*\}/.test(x) && !/\[data-theme='[a-z]+'\] body::after\{[^}]*z-index:\s*(?!-)/.test(x);
 const M18PS = (x) => EMBER_PS.every((r) => r.test(x)) && VIGNETTE_BASE(x) && /\[data-theme='machina'\] \.wz-goal-glow\{ background:radial-gradient\(ellipse at center, color-mix\(in srgb, var\(--signal-live\)/.test(x);
@@ -349,11 +359,7 @@ ok('M18 [page-size successor]: the paper\'s halos are plain dark shadows, the go
 // M19 - Run is the ONLY progress instrument under Machina: the framed page draws no Arbor bar, and the style choice (Bar | Run) is not offered in either settings surface
 const di = src('components/DeskInstrument.tsx');
 const BAR_GATE = /\{settings\.progressStyle === 'bar' && theme !== 'machina' && \(\s*<ProgressBar/;
-// ---- PARKED - SUPERSEDED by #13 step 11 (Fable, Nov 5): pages/JournalEntry.tsx (unrouted since FX14) is deleted as dead code, so its bar
-// cannot be read. Kept VERBATIM below and no longer run; its record is in the parked block. The successor reads the legacy bar that stays.
-//
-// ok('M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched', BAR_GATE.test(di) && /<ProgressBar/.test(src('pages/JournalEntry.tsx')), '');
-// ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/th-machina-source.mjs.parked.md record 2
 const m19v2 = BAR_GATE.test(di) && /<ProgressBar/.test(src('components/ModeStage.tsx'));
 ok('M19 [step 11 successor]: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surface\'s bar (ModeStage) is untouched; JournalEntry\'s went with it in #13 step 11', m19v2, '');
 const SEG_GATES = [[/settings\.progress === 'words' && theme !== 'machina' && \(\s*<Seg label=\{t\('progressStyleLabel'\)\}/, src('components/Sliver.tsx')], [/framed && settings\.progress === 'words' && !machina;/, src('components/ModeStage.tsx')]];
@@ -439,16 +445,10 @@ ok('MUTANT: a Machina desk string re-introducing "Drawer" - M8 must go RED', LEA
   ok('MUTANT: an eager IBM Plex import added to ThemePicker - M20 must go RED (the mutation LANDED)', tp3 !== null && /^import .*@fontsource/m.test(tp3) && !/^import .*@fontsource/m.test(tp), '');
   const di2 = mut(di, "settings.progressStyle === 'bar' && theme !== 'machina' && (", "settings.progressStyle === 'bar' && (");
   ok('MUTANT: Arbor\'s bar drawn on the framed Machina page again (the theme gate dropped) - M19 must go RED (the mutation LANDED)', di2 !== null && !BAR_GATE.test(di2) && BAR_GATE.test(di), '');
-  // ---- PARKED - SUPERSEDED by page-size (Oct 23): the line this mutant deletes no longer exists (collapsed into the base rule); kept VERBATIM, no longer run.
-  // const css3 = mut(ccss, "[data-theme='machina'] body::after{ z-index:-1; }", '');
-  // ok('MUTANT: the vignette left ABOVE the page under Machina (the body::after rule deleted - the grey bands return) - M18 must go RED (the mutation LANDED)', css3 !== null && !EMBER.every((r) => r.test(css3)) && EMBER.every((r) => r.test(ccss)), '');
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/th-machina-source.mjs.parked.md record 3
   const css3b = mut(ccss, /(body::after\s*\{[^}]*?)z-index:\s*-1;/, '$1z-index: 2;');
   ok('MUTANT [page-size successor]: the vignette put back ABOVE the page by the BASE rule (z-index 2) - M18 [page-size successor] must go RED (the mutation LANDED)', css3b !== null && !M18PS(css3b) && M18PS(ccss), '');
-  // ---- PARKED - SUPERSEDED by page-size (Oct 23): it reads EMBER whole, and EMBER's vignette pattern no longer matches the real CSS; kept VERBATIM, no longer run.
-  // const css2 = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
-  // ok('MUTANT: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 must go RED (the mutation LANDED)', css2 !== null && !EMBER.every((r) => r.test(css2)) && EMBER.every((r) => r.test(ccss)), '');
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/th-machina-source.mjs.parked.md record 4
   const css2b = mut(ccss, "[data-theme='machina'] .desk-frame-goalflare{ display:none; }", '');
   ok('MUTANT [page-size successor]: Arbor\'s celebration flare left drawn under Machina (the display:none rule deleted) - M18 [page-size successor] must go RED (the mutation LANDED)', css2b !== null && !M18PS(css2b) && M18PS(ccss), '');
   // M21 mutants (Oct 24)

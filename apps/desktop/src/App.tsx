@@ -1,14 +1,10 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
 import { CreateProject } from './pages/CreateProject';
-import { ProjectHome } from './pages/ProjectHome';
-import { StructureWizard } from './pages/StructureWizard';
-import { BeatWizard } from './pages/BeatWizard';
-import { StructureBoard } from './pages/StructureBoard';
-import { QuickSprint } from './pages/QuickSprint';
+import { LegacyProjectRedirect } from './components/LegacyProjectRedirect';
 import { Spread } from './pages/Spread';
 // FX14 S2 — JournalEntry no longer routed (the /journal/:id redirect below replaces
 // it); the component + behavior-parity are J7's, so the file is left in place, unimported.
@@ -25,6 +21,7 @@ import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
 import { DestructiveConfirm } from './components/DestructiveConfirm';
 import { PurgedElsewhereNotice } from './components/PurgedElsewhereNotice';
+import { SamePageNotice } from './components/SamePageNotice';
 import { WritingSessionProvider, useWritingSession } from './components/WritingSession';
 import { subscribe, resetLocalData, getOrCreateSystemBoard, countDirtyRecords, getDirtyRecords } from './store/persistence';
 import { apiMe, apiLogout, type AuthUser } from './store/api';
@@ -39,7 +36,7 @@ import { useSigningOut } from './store/useSigningOut';
 import { flushAll } from './store/flushRegistry';
 import { LogoutBlockedSheet } from './components/LogoutBlockedSheet';
 import { StaleClientBanner } from './components/StaleClientBanner';
-import { isSignedOutHere, markSignedOutHere, clearSignedOutHere } from './store/signedOutHere';
+import { isSignedOutHere, markSignedOutHere, clearSignedOutHere, SIGNED_OUT_KEY } from './store/signedOutHere';
 import { clearLastPlace } from './store/lastPlace';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
 
@@ -133,7 +130,7 @@ function GlobalHeader({ onLogout, authed }: { onLogout: () => void; authed: bool
   // AB1 S4 — "top-bar orphans collapse to one corner glyph + gear." While a
   // DeskFrame is mounted (store/deskFrameActive.ts), these three previously
   // independent controls collapse behind one glyph + popover instead of
-  // sitting inline; every other route (Journal, Shelf, Drawers, QuickSprint,
+  // sitting inline; every other route (Journal, Shelf, Drawers,
   // any writing surface below the 1100px gate) renders exactly as it always
   // has — this flag is false there.
   const deskFrameActive = useDeskFrameMounted();
@@ -309,6 +306,29 @@ export function App() {
   // corner-cluster button already calls.
   useEffect(() => onLogoutRequested((force) => { void handleLogout(force); }), []);
 
+  // #81 - ANOTHER WINDOW of this device signed out. The flag it set is shared by every window and it wiped the store, but this window was never told: it kept the page open, took typing, and saved none of it (every write is refused while
+  // the flag is set). Now it hears the flag (the browser's `storage` event) and finishes the sign-out HERE the same way the signing-out window did, minus the server call (that window made it): the sync stops, this window's copy of the
+  // records goes (nothing of the old account can be written back from it), and the screen goes to the sign-in door at once, which takes the writer off the page. Words typed in the last moments are not carried over: the account was
+  // signed out of on purpose, and the writer was in the other window when they chose it.
+  const authStateRef = useRef<AuthState>('loading');
+  authStateRef.current = authState;
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      try {
+        if (e.storageArea !== window.localStorage || e.key !== SIGNED_OUT_KEY || e.newValue !== '1') return;
+        if (authStateRef.current === 'anon') return;   // this window is already at the door
+        window.location.hash = '#/';
+        stopSync();
+        clearLastSyncAt();
+        resetLocalData();
+        setCurrentUser(null);
+        setAuthState('anon');
+      } catch { /* a listener never breaks the app */ }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   // the router mounts regardless of auth state: Arrival (route '/') is both the boot screen and the front door; Write works local-first with no account, and the Journal, Drawers and Projects all run on local data, so only startSync() above is authed-only. Arrival's own boot bar (authState as a prop) carries the loading state. [App §4]
   return (
     <WritingSessionProvider>
@@ -330,6 +350,8 @@ export function App() {
             deleted for good on another device (Q3) - both portals or a toast line, mounted once, displacing nothing */}
         <DestructiveConfirm />
         <PurgedElsewhereNotice />
+        {/* #76 part 2: the one quiet line while this page is open in another window too. A line beside the routes, never inside one: it cannot move or resize the page. */}
+        <SamePageNotice />
         <SignedOutRouteGuard authState={authState} />
         {/* RESUME ON OPEN: remembers the open Page/board and, on the first signed-in boot, lands there instead of the front door. Renders nothing. */}
         <LandingGate authState={authState} />
@@ -346,14 +368,15 @@ export function App() {
         <Route path="/shelf" element={<Navigate to="/journal" replace />} />
         <Route path="/shelf-board" element={<ShelfBoardGate />} />
         <Route path="/project/new" element={<CreateProject />} />
-        <Route path="/project/:id" element={<ProjectHome />} />
+        {/* #13 step 12a: the old project screens are gone; their routes stay only as a redirect to a live surface (store/legacyProjectRoute.ts) */}
+        <Route path="/project/:id" element={<LegacyProjectRedirect />} />
         <Route path="/project/:id/import" element={<ImportDraft />} />
         <Route path="/import" element={<ImportDraft />} />
-        <Route path="/project/:id/sprint" element={<QuickSprint />} />
-        <Route path="/project/:id/wizard" element={<StructureWizard />} />
-        <Route path="/project/:id/beat" element={<BeatWizard />} />
-        <Route path="/project/:id/board" element={<StructureBoard />} />
-        <Route path="/sprint" element={<QuickSprint />} />
+        <Route path="/project/:id/sprint" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/wizard" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/beat" element={<LegacyProjectRedirect />} />
+        <Route path="/project/:id/board" element={<LegacyProjectRedirect />} />
+        <Route path="/sprint" element={<LegacyProjectRedirect />} />
         <Route path="/journal" element={<JournalBoardGate />} />
         <Route path="/trash" element={<TrashBoardGate />} />
         <Route path="/journal/spread" element={<Spread />} />

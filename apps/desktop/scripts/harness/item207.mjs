@@ -92,23 +92,17 @@ await withHarness(async (app) => {
   const fw = await typeShape(app);
   ok('FREE WRITE: the Type control is mounted', !!fw, JSON.stringify(fw));
   if (fw) {
-    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
-    // ok('FREE WRITE: EXACTLY the smallest form — a face button and a `-` `+` pair (3 buttons), NO number field', fw.buttons === 3 && fw.inputs === 0, JSON.stringify({ buttons: fw.buttons, inputs: fw.inputs }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 1
     ok('FREE WRITE [size-box successor]: the smallest form with the number between - and + (TOOLS #14) - a face button, a `-` `+` pair (3 buttons) and ONE number field', fw.buttons === 3 && fw.inputs === 1, JSON.stringify({ buttons: fw.buttons, inputs: fw.inputs }));
     ok('FREE WRITE: no visible caption or helper text — the control\'s text is the face name and the two step glyphs, nothing else', /^[A-Za-z0-9 ]+−\+$/.test(fw.text.replace(/\s+/g, ' ').trim().replace(/ (?=−)/, '')) || fw.text.length < 40, JSON.stringify(fw.text));
     await press(app, "document.querySelector('.wz-type-face')", 'the face button (Free Write roster)');
     await sleep(150);
     const open = await typeShape(app);
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
-    // ok('FREE WRITE: the roster lists the nine faces, in order, and has NO "Add a font…" row (his Q2)', open && JSON.stringify(open.rows) === JSON.stringify(NINE) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
-    // ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 2
     const ELEVEN = ['Crimson Pro', 'Lora', 'EB Garamond', 'Source Serif 4', 'Times New Roman', 'Figtree', 'Source Sans 3', 'Titillium Web', 'Atkinson Hyperlegible', 'Arial', 'Courier Prime'];
     ok('FREE WRITE [item-10 successor]: the list opens on "Default (<face>)", then the eleven faces in order, and has NO "Add a font..." row (his Q2)', open && /^Default \(.+\)$/.test(open.rows[0] || '') && JSON.stringify(open.rows.slice(1)) === JSON.stringify(ELEVEN) && !/add a font/i.test(open.text), JSON.stringify(open && open.rows));
     const rowFonts = await app.evalJs(`[...document.querySelectorAll('.wz-type-row')].map(r => [r.textContent, getComputedStyle(r).fontFamily])`);
-// ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the font list's first row is "Default (<face>)", and Source Sans 3 + Titillium Web join the roster). Kept VERBATIM below, no longer run; successor follows. ----
-    // ok('FREE WRITE: each roster row is SET IN ITS OWN FACE', Array.isArray(rowFonts) && rowFonts.length === 9 && rowFonts.every(([n, f]) => f.replace(/["']/g, '').includes(n === 'Crimson Pro' ? 'Crimson Pro' : n === 'Lora' ? 'Lora' : n === 'EB Garamond' ? 'EB Garamond' : n === 'Source Serif 4' ? 'Source Serif 4' : n)), JSON.stringify(rowFonts));
-    // ------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 3
     ok('FREE WRITE [item-10 successor]: each roster row is SET IN ITS OWN FACE (the Default row in the theme\'s own prose face)', Array.isArray(rowFonts) && rowFonts.length === 12 && rowFonts.slice(1).every(([n, f]) => f.replace(/["']/g, '').includes(n)) && /Garamond|Crimson|Titillium|Source Sans/.test(rowFonts[0][1].replace(/["']/g, '')), JSON.stringify(rowFonts));
     await app.key('Escape');
     await sleep(100);
@@ -117,18 +111,11 @@ await withHarness(async (app) => {
   await openPage(app, { id: 'i207-dr', mode: 'drafting' });
   await openDrawer(app);
   const dr = await typeShape(app);
-  // ---- PARKED - SUPERSEDED by font-span (Nick approved the font-choices mockup, cursor/font-choices @ 6cc5f529, 2026-10-15) ----
-  // Kept VERBATIM and no longer run. Draft is the mode with styling tools, so its Typeface section now carries the two scopes
-  // ("Selection" / "Whole document") over the roster SHOWN as a list - no face button. Record in this file's parked section.
-  // ok('DRAFT: the Type control is mounted, full form — a face button, `-` `+` (3 buttons) and ONE number field', !!dr && dr.buttons === 3 && dr.inputs === 1, JSON.stringify(dr && { buttons: dr.buttons, inputs: dr.inputs }));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 4
   const drScoped = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
   i207Parks.draftForm = drScoped;
-  // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the font list is collapsed by default): the scoped form now has a face button that opens the list. Kept VERBATIM, no longer run:
-  // ok('DRAFT [font-span successor]: the Typeface control is the scoped form - "Selection" / "Whole document" over the nine faces shown as a list, `-` `+` and ONE number field, no face button',
-  //   !!drScoped && drScoped.buttons === 4 && drScoped.inputs === 1 && !drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 9, JSON.stringify(drScoped));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 5
   ok('DRAFT [item-9 successor]: the Typeface control is the scoped form - "Selection" / "Whole document", a face button, Default + the eleven faces as a list COLLAPSED by default, `-` `+` and ONE number field',
     !!drScoped && drScoped.buttons === 5 && drScoped.inputs === 1 && drScoped.faceButton && JSON.stringify(drScoped.scopes) === JSON.stringify(['Selection', 'Whole document']) && drScoped.rows === 12, JSON.stringify(drScoped));
   const collapsed = await app.evalJs(`(() => { const t = document.querySelector('.wz-sliver .wz-type'); const ul = t.querySelector('.wz-type-list-inline'); const b = t.querySelector('.wz-type-face'); return { shown: !!ul && ul.getBoundingClientRect().height > 0, hidden: ul && ul.hidden, expanded: b && b.getAttribute('aria-expanded') }; })()`);
@@ -148,16 +135,7 @@ await withHarness(async (app) => {
   // ==== 2 · "11 = TODAY" — an untouched page's editor style is the prior build's two strings =======================
   await openPage(app, { id: 'i207-untouched', mode: 'drafting' });
   const untouched = await app.evalJs(`(() => { const w = document.querySelector('.forward-only-editor-wrap'); return w ? { ff: w.style.fontFamily, fs: w.style.fontSize } : null; })()`);
-  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
-  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
-  // every screen). An untouched page now writes `calc(12 * var(--wz-pt, 1.33333px))` and computes 16px. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
-  //
-  // ok('11 = TODAY: a page that never chose keeps the editor\'s two prior style strings (`var(--font-prose)` and `calc(17px * var(--paper-scale))`) byte-for-byte',
-  //   untouched && untouched.ff === 'var(--font-prose)' && untouched.fs === 'calc(17px * var(--paper-scale))', JSON.stringify(untouched));
-  // const scale = await scaleNow(app);
-  // const base = await sizeOfEditor(app);
-  // ok('11 = TODAY: the untouched editor renders at 17px x the paper scale (computed)', base !== null && Math.abs(base - 17 * scale) < 0.05, `${base}px at scale ${scale}`);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 6
   const scale = await scaleNow(app); void scale;   // (kept: the parked SIZE line below read it; the prose page no longer scales by --paper-scale)
   const base = await sizeOfEditor(app);
   i207Parks.untouched = { untouched, base };
@@ -173,22 +151,14 @@ await withHarness(async (app) => {
   const labelNow = await app.evalJs(`(() => { const b = document.querySelector('.wz-type-face'); const e = document.querySelector('.forward-only-editor'); if (!b || !e) return null;
     const first = getComputedStyle(e).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '');
     return { label: b.textContent, rendered: first, buttonFamily: getComputedStyle(b).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '') }; })()`);
-  // ---- PARKED - SUPERSEDED by font-span (the approved mockup, 2026-10-15): Draft has no face button now; the current face is the
-  // roster row in brass. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
-  // ok('LABEL: on a page that never chose, the face button names the face that ACTUALLY renders (the first family the editor computes) and is set in it',
-  //   labelNow && labelNow.label === labelNow.rendered && labelNow.buttonFamily === labelNow.rendered, JSON.stringify(labelNow));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 7
   void labelNow;
   const brassNow = await app.evalJs(`(() => { const r = document.querySelector('.wz-type-row[data-current="true"]'); const e = document.querySelector('.forward-only-editor'); if (!r || !e) return null;
     const first = getComputedStyle(e).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, '');
     return { label: r.textContent, rendered: first, rowFamily: getComputedStyle(r).fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').replace(/ Variable$/, ''), color: getComputedStyle(r).color,
       brass: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
   i207Parks.label = brassNow;
-  // ---- PARKED - SUPERSEDED by TOOLS #10 item 10 (Nick, Oct 24: the list's first row is "Default (<face>)"): on a page that never chose, the brass row is now the DEFAULT row, not a roster row.
-  // Kept VERBATIM below and no longer run; the successor follows, and the original is run as a PARKED RECORD (it must now fail, for exactly that reason).
-  // ok('LABEL [font-span successor]: on a page that never chose, the BRASS row of the roster names the face that ACTUALLY renders and is set in it',
-  // !!brassNow && brassNow.label === brassNow.rendered && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 8
   ok('LABEL [item-10 successor]: on a page that never chose, the BRASS row is the Default row, it reads "Default (<the face that ACTUALLY renders>)", and it is set in that face',
     !!brassNow && brassNow.label === `Default (${brassNow.rendered})` && brassNow.rowFamily === brassNow.rendered, JSON.stringify(brassNow));
   // Fable's ruling 1 (Oct 28): the label must NAME a face - never "Default ()". The line above builds its expectation from the DOM read, so a blank read would pass it; this pins the per-theme table (THEME_DEFAULT_FACE).
@@ -198,17 +168,7 @@ await withHarness(async (app) => {
   ok('LABEL [Oct 28 one line]: the Default row never wraps (nowrap, ellipsis, one line tall) and its full label is in title + aria-label',
     !!oneLine && oneLine.ws === 'nowrap' && oneLine.to === 'ellipsis' && oneLine.title === oneLine.text && oneLine.aria === oneLine.text && oneLine.h < oneLine.lh * 2 + 8 - 1, JSON.stringify(oneLine));
   ok('LABEL [parked record]: the ORIGINAL (the brass row\'s text IS the face name) now fails ONLY because the brass row is "Default (<face>)"', !!brassNow && brassNow.label !== brassNow.rendered && brassNow.label === `Default (${brassNow.rendered})`, JSON.stringify(brassNow));
-  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
-  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
-  // every screen). The field opens at 12; `+` goes to 13, drawn 13 x 4/3 px; 13 is written. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
-  //
-  // ok('SIZE: the number field opens at 11', (await numAt()) === '11', String(await numAt()));
-  // await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
-  // await sleep(300);
-  // ok('SIZE: `+` from 11 shows 12, and the editor renders 17 x 12/11 x the scale', (await numAt()) === '12' && Math.abs((await sizeOfEditor(app)) - 17 * (12 / 11) * scale) < 0.06, `${await numAt()} / ${await sizeOfEditor(app)}px`);
-  // const r12 = await entryRow(app, 'i207-untouched');
-  // ok('SIZE: choosing wrote pageSettings.size = 12 (points, not a step index) and NO face key', r12 && r12.pageSettings && r12.pageSettings.size === 12 && !('face' in r12.pageSettings), JSON.stringify(r12 && r12.pageSettings));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 9
   const opens = await numAt();
   ok('SIZE [page-size successor]: the number field opens at 12 (the page default)', opens === '12', String(opens));
   await press(app, "document.querySelectorAll('.wz-type-step')[1]", 'the `+` button');
@@ -254,12 +214,7 @@ await withHarness(async (app) => {
     await openPage(app, { id: 'i207-modes', mode, settings: dressed });
     inMode[mode] = { family: await familyOfEditor(app), size: await sizeOfEditor(app), scale: await scaleNow(app) };
   }
-  // ---- PARKED - SUPERSEDED by page-size (Fable's ruling a, Oct 23: the page's number is REAL POINTS IN PAGE UNITS - 12 = 16px at page scale 1, a NEW
-  // page defaults to 12, and the page LAYS OUT at scale 1 and is PAINTED at its scale by a transform, so the editor's computed size is n x 4/3 px at
-  // every screen). Lora at 14 computes 14 x 4/3 px in every mode. Kept VERBATIM and no longer run; record in this file's parked section, successor below.
-  //
-  // ok('EVERY MODE: a page dressed in Lora at 14 renders in Lora at 14 in Free Write, Draft and Revise — identically', Object.values(inMode).every((m) => /Lora/.test(m.family) && Math.abs(m.size - 17 * (14 / 11) * m.scale) < 0.06), JSON.stringify(inMode));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 10
   i207Parks.modes = inMode;
   ok('EVERY MODE [page-size successor]: a page dressed in Lora at 14 renders in Lora at 14 page points (14 x 4/3 px) in Free Write, Draft and Revise - identically',
     Object.values(inMode).every((m) => /Lora/.test(m.family) && Math.abs(m.size - 14 * 4 / 3) < 0.06), JSON.stringify(inMode));
@@ -317,22 +272,12 @@ await withHarness(async (app) => {
     if (!(await app.evalJs("!!document.querySelector('.board-popup-dock .wz-type')"))) await press(app, "document.querySelector('.board-popup-dock-grip')", "the card's styling dock grip");
     await sleep(300);
     const cs = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); return t ? { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length } : null; })()`);
-    // ---- PARKED - SUPERSEDED by font-span (the approved mockup's card scene, 2026-10-15): the dock's Typeface control carries the two
-    // scopes ("Selection" / "Whole card") over the roster shown as a list - no face button. Kept VERBATIM, no longer run.
-    // ok('CARD: the styling dock carries the smallest form — a face button and `-` `+` (3 buttons), no number field', cs && cs.buttons === 3 && cs.inputs === 0, JSON.stringify(cs));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 11
     void cs;
     const csScoped = await app.evalJs(`(() => { const t = document.querySelector('.board-popup-dock .wz-type'); if (!t) return null; return { buttons: t.querySelectorAll('button').length, inputs: t.querySelectorAll('input').length,
     faceButton: !!t.querySelector('.wz-type-face'), scopes: [...t.querySelectorAll('.wz-type-scope')].map(b => b.textContent), rows: t.querySelectorAll('.wz-type-list-inline .wz-type-row').length }; })()`);
     i207Parks.cardForm = csScoped;
-    // ---- PARKED - SUPERSEDED by TOOLS #10 item 9 (the list is collapsed by default; the scoped form has a face button). Kept VERBATIM, no longer run:
-    // ok('CARD [font-span successor]: the dock carries the scoped small form - "Selection" / "Whole card" over the nine faces, `-` `+`, no number field, no face button',
-    //   !!csScoped && csScoped.buttons === 4 && csScoped.inputs === 0 && !csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 9, JSON.stringify(csScoped));
-    // ------------------------------------------------------------------
-    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #14 (Fable, Nov 2: the size box sits between `-` and `+` in EVERY form, small included). Kept below, no longer run; the successor follows. ----
-    // ok('CARD [item-9 successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` `+`, no number field',
-    //   !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 0 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item207.mjs.parked.md record 12
     ok('CARD [size-box successor]: the dock carries the scoped small form - "Selection" / "Whole card", a face button (Default + the eleven faces COLLAPSED behind it), `-` [number] `+` (TOOLS #14)',
       !!csScoped && csScoped.buttons === 5 && csScoped.inputs === 1 && csScoped.faceButton && JSON.stringify(csScoped.scopes) === JSON.stringify(['Selection', 'Whole card']) && csScoped.rows === 12, JSON.stringify(csScoped));
     await press(app, "document.querySelectorAll('.board-popup-dock .wz-type-step')[1]", "the card's `+`");

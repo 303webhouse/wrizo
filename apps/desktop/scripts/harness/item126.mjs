@@ -81,17 +81,7 @@ const where = (app) => app.evalJs(`({ hash: location.hash,
   ink: (document.querySelector('${PAPER}') || {}).getAttribute
        ? document.querySelector('${PAPER}').getAttribute('data-ink') : null })`);
 
-// PARKED verbatim (polish #10 item 5, Oct 25 - page-r): the zoomed sheet now reaches over the scroller's paddings, so a fraction of the WHOLE sheet is no longer
-// a fraction of the text. Kept as written, no longer called; the successor below aims the same fractions at the sheet's TEXT box (as item121 did).
-// const safePen = async (app, sel, points, label) => {
-//   if (!(await present(app, sel))) {
-//     ok(`DRIVER: ${label} — ${sel} ABSENT, no pen stroke dispatched`, false, JSON.stringify(await where(app)));
-//     return false;
-//   }
-//   await app.penStroke(sel, points);
-//   return true;
-// };
-// SUCCESSOR: a pointer-transparent marker laid over the sheet's content box (the sheet less its paddings, at the painted scale); every press still lands on the sheet.
+// ARCHIVED PARK (#13 step 14): archive/item126.mjs.parked.md record 1
 const i126Aim = [];
 const aimAtText = async (app, sel) => {
   const box = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(sel)}); if (!s) return null; const r = s.getBoundingClientRect(); const cs = getComputedStyle(s);

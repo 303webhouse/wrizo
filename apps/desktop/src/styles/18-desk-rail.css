@@ -35,8 +35,6 @@
    at rest, so it wears --accent-rest, not brass (matching the mode strip's
    own S7 hairline treatment, not the evental/press orange). */
 .desk-rail-item.active{ color:var(--accent-rest); border-left-color:var(--accent-rest); }
-.desk-rail-item.deferred{ color:var(--ink-border-strong); cursor:not-allowed; }
-.desk-rail-item.deferred:hover{ color:var(--ink-border-strong); background:none; }
 .desk-rail-glyph{ font-size:18px; line-height:1; }
 .desk-rail-label{ font-size:9px; letter-spacing:.5px; font-family:var(--font-contentLabel); } /* canon §4 — "cache/rack item names" */
 /* F3 — Catch action at the top of the rail. Quiet tan, matching the rail items;
@@ -59,7 +57,7 @@
 [data-theme='machina'][data-cast='neutral'] .desk-rail-wayback{ color:var(--orange); }
 [data-theme='machina'] .desk-rail-wayback:hover{ color:var(--text-hi); border-left-color:var(--ink-border-strong); }
 [data-theme='machina'][data-cast='neutral'] .desk-rail-wayback:hover{ color:var(--orange); border-left-color:var(--orange); }
-.wz-cascade-cast > span{ margin-right:auto; }
+.wz-cascade-cast > span, .wz-cascade-turnsound > span{ margin-right:auto; }   /* #94: the Page-turn sound pair sits together like Cast's Cool and Neutral (8 px), label to the left */
 
 /* The file's navigation row. */
 .sprint-nav{ display:flex; align-items:center; gap:14px; flex-wrap:wrap;

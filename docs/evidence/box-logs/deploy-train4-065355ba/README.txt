@@ -1,0 +1,3 @@
+tested build (build:web of 065355ba in F:\wrizo-work\chat1-train-4): index-B4nQ7hia.js 995705 bytes md5 5b46c1a49553; index-mcGSlRf8.css 244437 bytes md5 30c3803b4fbb. Served: identical (verify.txt).
+railway deployment list: 58622c34-eda8-46af-9f68-08ebaa0ec67b SUCCESS 2026-11-12 17:36:29 -07:00 (2026-11-13 00:36:29Z); 6e18bfef-0772-4f9c-8951-efd99d75b26b (train 3) REMOVED.
+primary checkout at deploy: detached 065355bab726dac598ac77c1341411757bc54aae (tree a5e467d6), changes 0, railway status writer-studio / production / writer-studio-app, no box job (grant absent). Railway status page read first: no incident; next maintenance Nov 15 08:00-08:30Z. One railway up from PowerShell, exit 0, 91 s.

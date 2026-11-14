@@ -9,6 +9,8 @@ import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } fr
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
+import { revealCaret } from '../store/caretInView';
+import { rowsVerticalKey, clearVerticalGoal } from '../store/rowsVertical';
 import { escapeTyped } from '../store/hiddenMarks';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
 import { readEscapes } from '../store/markRuns';
@@ -288,7 +290,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // attached takes today's whole rewrite.
       const redecorate = (plain: string, caret: number | null) => {
         if (!writeRows(el, plain, caret)) decorateEditorFor(el, plain, caret, setPlainOffset);
-        if (caret !== null) placeCaret(el, caret);
+        if (caret !== null) { placeCaret(el, caret); revealCaret(el); }   // #64: a caret the app places is brought into view
       };
       // A native edit is read from the rows it touched (lineRows.readNativeEdit); today's whole-page innerText read is the fallback.
       const readNative = (keepHint = false) => readNativeEdit(el, { keepHint }) ?? readEditorPlainText(el.innerText, getPlainOffset(el));
@@ -454,6 +456,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       };
       // ITEM 211 rules 2 and 3 — the arrows move by visible characters, and Backspace and Delete never take a lone hidden mark.
       const onMarkKeyDraft = (e: KeyboardEvent) => { marks.markKey(e); };
+      // #65 - Up from a row's first line into a wrapped row above lands on that row's LAST line (the browser enters an inline-block row at its first); #62 - a run of Up and Down keeps its column, and Down leaves an empty row
+      const onUpKeyDraft = (e: KeyboardEvent) => { rowsVerticalKey(el, e); };
+      const onVerticalRunEnd = () => { clearVerticalGoal(el); };
       // TYPED-LITERAL: a composition's committed text is typed text too - captured at its start, escaped at its end
       const onCompStartDraft = () => { noteNativeEdit(el); marks.reset(); marks.noteComposition(); composingDraft = true; };
       const onCompEndDraft = () => {
@@ -498,6 +503,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       el.addEventListener('keydown', onUndoRedoKeyDraft);
       el.addEventListener('keydown', onFormatKeyDraft);
       el.addEventListener('keydown', onMarkKeyDraft);
+      el.addEventListener('keydown', onUpKeyDraft);
+      el.addEventListener('pointerdown', onVerticalRunEnd);
+      el.addEventListener('blur', onVerticalRunEnd);
       el.addEventListener('compositionstart', onCompStartDraft);
       el.addEventListener('compositionend', onCompEndDraft);
       el.addEventListener('paste', blockPaste);
@@ -511,6 +519,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         el.removeEventListener('keydown', onUndoRedoKeyDraft);
         el.removeEventListener('keydown', onFormatKeyDraft);
         el.removeEventListener('keydown', onMarkKeyDraft);
+        el.removeEventListener('keydown', onUpKeyDraft);
+        el.removeEventListener('pointerdown', onVerticalRunEnd);
+        el.removeEventListener('blur', onVerticalRunEnd);
         el.removeEventListener('compositionstart', onCompStartDraft);
         el.removeEventListener('compositionend', onCompEndDraft);
         el.removeEventListener('paste', blockPaste);

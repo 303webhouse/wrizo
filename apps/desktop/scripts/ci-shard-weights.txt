@@ -225,3 +225,14 @@ walk-open-select.mjs 30
 writing-r1.mjs 16
 writing-r2.mjs 47
 writing-r3.mjs 120
+wa-red-60.mjs 150
+wa-red-61.mjs 200
+wa-red-62.mjs 150
+wa-red-63.mjs 300
+wa-red-64.mjs 300
+wa-red-65.mjs 150
+wa-red-67.mjs 150
+wa-red-69.mjs 150
+wa-red-74.mjs 60
+wa-red-76.mjs 240
+wa-red-79.mjs 120

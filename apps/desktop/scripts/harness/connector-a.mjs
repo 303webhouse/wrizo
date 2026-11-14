@@ -56,26 +56,13 @@ const pins = (text) => ({
 });
 {
   const p = pins(be);
-  // ---- PARKED - SUPERSEDED by W3 (guided paths, Oct 23; train #6 red, Fable Oct 24): W3 widened the dblclick guard's selector so a double-click on the step question mark (or in its popover) opens nothing: `hitEl?.closest('.board-handle, .board-step-help, .board-step-pop')`. The pin's source regex named the exact old line.
-  // Kept VERBATIM below and no longer run; the live successor follows. The behaviour is intact (Fable read the diff): the dblclick-on-the-corner return still names .board-handle and the < 100 ms gesture guard still follows it.
-  //
-  // ok('S1: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return, the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
-  //   p.noTack && p.doubleDoor && p.rightDoor && p.relockKept, JSON.stringify(p));
-  // the relock guard, as W3 left it: the return's selector may be WIDENED but must still name .board-handle, and it must still be followed by the < 100 ms-after-a-gesture return; the selection clear before a resize and the native-drag refusal are unchanged
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 1
   const relockKept2 = (text) => /if \(hitEl\?\.closest\('\.board-handle(?:, [^']*)?'\)\) return;[^\n]*\n\s*if \(performance\.now\(\) - lastGestureEndRef\.current < 100\) return;/.test(text) && /clearBoardSelection\(\);\n\s*startX = e\.clientX; startY = e\.clientY; ptype = e\.pointerType; activePointerId = e\.pointerId;\n\s*try \{ canvas\.setPointerCapture/.test(text) && /const onDragStart/.test(text);
   ok('S1 [widened-selector successor]: the tack is gone from the component; the corner square has BOTH new doors (a second press at the same spot, soon, with nothing moved in between; a right-button press); the relock guard is KEPT (the dblclick-on-the-corner return - its selector may be widened but still names .board-handle - the <100ms-after-a-gesture return, the selection clear before a resize, the native-drag refusal)',
     p.noTack && p.doubleDoor && p.rightDoor && relockKept2(be), JSON.stringify({ ...p, relockKept2: relockKept2(be) }));
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
-  // `ctxScoped` is a SOURCE regex on the board's contextmenu handler as connector-a wrote it (`... ) e.preventDefault();`). board-context-menu rewrote that handler: the browser's menu is still suppressed in connection mode, on the corner square and for the beat after a right-drag lets go, and a right-click ANYWHERE ELSE on a card or on empty board now opens the board's own menu. The literal text is gone; the claim (the corner square, and only it, is connection mode; nothing but the app's own menu ever shows) stands.
-  // Quoted VERBATIM below. Successor: the check directly below (the new handler's shape) + board-context-menu.mjs K1/K2 (behaviour: a card right-click opens the menu, the corner square is connection mode with no menu).
-  // ok('S2: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the context menu is suppressed only on the square',
-  //   p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && p.ctxScoped && p.footersOn, JSON.stringify(p));
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 2
   const ctxNew = (text) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); return; \}/.test(text);
-  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
-  // The handler's literal text changed again (`{ e.preventDefault(); e.stopPropagation(); return; }`), so the context-menu successor's regex no longer matches. Kept VERBATIM below and no longer run; the successor pins the new shape.
-  //
-  // ok('S2 [context-menu successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s new shape)',
-  //   p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew(be) && p.footersOn, JSON.stringify({ ...p, ctxNew: ctxNew(be) }));
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 3
   const ctxNew2 = (text) => /if \(connect \|\| performance\.now\(\) < ctxQuietUntil \|\| t\?\.closest\?\.\('\.board-handle'\)\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); return; \}/.test(text);
   ok('S2 [stopPropagation successor]: a release on a linked card removes the connection, on an unlinked one makes the SAME connection box as ever (no new field - zero schema); a release on empty board after a drag cancels; lines are drawn only inside the mode; targets are same-board cards only; the browser\'s menu is suppressed AND STOPPED in connection mode, on the corner square and for the beat after a right-drag lets go (the handler\'s newest shape)',
     p.toggle && p.cancelOnEmpty && p.linesOnlyInMode && p.sameBoard && ctxNew2(be) && p.footersOn, JSON.stringify({ ...p, ctxNew2: ctxNew2(be) }));
@@ -87,24 +74,10 @@ const pins = (text) => ({
   const m5 = be.replace('if (existing) {', 'if (false) {');
   const m6 = be + '\nconst tack = <div className="board-pin-grab" />;\n';
   const m7 = be + '\n// a history comment naming board-pin-grab must NOT trip the pin\n';
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15; pair ledger 69) ----
-  // The suppress-the-menu-everywhere mutant (m2) and its pin were written against the handler's old text; the mutation no longer lands on the rewritten handler.
-  // Quoted VERBATIM below. Successor: the check directly below (the same mutants, m2 re-aimed at the new handler).
-  // ok('S (mutants): dropping "nothing moved in between", suppressing the menu everywhere, dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-  //   m1 !== be && !pins(m1).doubleDoor && m2 !== be && !pins(m2).ctxScoped && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 4
   const m2b = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); return; }", 'e.preventDefault();');
   const m2c = be.replace("if (connect || performance.now() < ctxQuietUntil || t?.closest?.('.board-handle')) { e.preventDefault(); e.stopPropagation(); return; }", 'e.preventDefault();');
-  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
-  // Its `m2b` mutation patches the PREVIOUS text of that very line, so it no longer lands (its "each mutation landed" cannot hold). Kept VERBATIM below and no longer run; the successor re-aims the mutation at the line as it now reads.
-  //
-  // ok('S (mutants) [context-menu successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the rewritten handler), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-  //   m1 !== be && !pins(m1).doubleDoor && m2b !== be && !ctxNew(m2b) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
-  // ---- PARKED - SUPERSEDED by W3 (guided paths, Oct 23; train #6 red, Fable Oct 24): the mutant m4 patches the old text of the dblclick-return line (`if (hitEl?.closest('.board-handle')) return;`), so it no longer lands (its "each mutation landed" cannot hold).
-  // Kept VERBATIM below and no longer run; the live successor follows. The behaviour is intact (Fable read the diff): the dblclick-on-the-corner return still names .board-handle and the < 100 ms gesture guard still follows it.
-  //
-  // ok('S (mutants) [stopPropagation successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
-  //   m1 !== be && !pins(m1).doubleDoor && m2c !== be && !ctxNew2(m2c) && m3 !== be && !pins(m3).cancelOnEmpty && m4 !== be && !pins(m4).relockKept && m5 !== be && !pins(m5).toggle && m6 !== be && !pins(m6).noTack && m7 !== be && pins(m7).noTack, '');
-  // m4 re-aimed at the line as it now reads (any selector list that starts with .board-handle), and a second mutant on the < 100 ms guard that follows it
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 5
   const m4b = be.replace(/if \(hitEl\?\.closest\('\.board-handle(?:, [^']*)?'\)\) return;/, '');
   const m4c = be.replace('if (performance.now() - lastGestureEndRef.current < 100) return;', '');
   ok('S (mutants) [widened-selector successor]: dropping "nothing moved in between", suppressing the menu everywhere (re-aimed at the handler as it now reads, stop included), dropping the cancel-on-empty, dropping the relock return (as it now reads), dropping the < 100 ms gesture guard, dropping the unlink branch, or putting the tack back each turn a pin RED, while a history COMMENT naming the tack does not (each mutation landed)',
@@ -274,20 +247,13 @@ await withHarness(async (app) => {
   const post9 = await conns(app); const ctx9 = await app.evalJs('window.__ctx.slice()');
   const ctx9E = await app.evalJs('window.__ctxE.map((x) => ({ prevented: x.ev.defaultPrevented, cls: x.cls }))');   // read AFTER the gesture: the event objects keep their defaultPrevented
   ok('C9: a right-button press on the square ENTERS the mode held; dragging to a card and letting go there LINKS it (A-B)', midArmed === 'true' && linked(post9, 'ca-a', 'ca-b') && post9.length === pre9.length + 1 && (await armed(app)) === 'false', JSON.stringify({ midArmed, pre: pre9.length, post: post9.length }));
-  // ---- PARKED - SUPERSEDED by ledger 92 (connector-b, Oct 17): the board's capture-phase contextmenu handler now also STOPS the event it suppresses (BoardEditor.tsx - so a held right-release over a rail thumbnail cannot reach the tile's own "Delete board" menu).
-  // Its observer (a bubble-phase listener on the window) sits DOWNSTREAM of that stop, so it never sees the event: it reads `[]` and the check goes blind. Kept VERBATIM below and no longer run; the successor observes from the window's CAPTURE phase, before the board.
-  //
-  // ok('C9: the browser\'s context menu is suppressed on the square AND for the beat after a right-drag lets go over another card (every contextmenu event in that gesture was default-prevented, and at least one arrived)', ctx9.length >= 1 && ctx9.every((e) => e.prevented), JSON.stringify(ctx9));
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 6
   ok('C9 [stopPropagation successor]: the browser\'s context menu is suppressed on the square AND for the beat after a right-drag lets go over another card (every contextmenu event in that gesture - seen by an observer registered EARLIER in the capture phase, so the board\'s stop cannot hide it - was default-prevented, and at least one arrived)', ctx9E.length >= 1 && ctx9E.every((e) => e.prevented), JSON.stringify({ ctx9E, bubbleObserver: ctx9 }));
   await sleep(700);
   await app.evalJs('window.__ctx.length = 0');
   const bm = centre(await boxRect(app, 'ca-d'));
   await rightDown(app, bm.x, bm.y); await rightUp(app, bm.x, bm.y); await sleep(250);
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
-  // A right-click on a card BODY opens that card's menu now (default-prevented, by design); only the corner square is connection mode. The browser's own menu is never what shows on the board.
-  // Quoted VERBATIM below. Successor: the check directly below (the card menu opens, prevented) and board-context-menu.mjs K1/K2.
-  // const ctx9b = await app.evalJs('window.__ctx.slice()');
-  // ok('C9: and a right-click anywhere else (a card body) is NOT suppressed - the menu rule is only on the square', ctx9b.length >= 1 && ctx9b.every((e) => e.prevented === false), JSON.stringify(ctx9b));
+  // ARCHIVED PARK (#13 step 14): archive/connector-a.mjs.parked.md record 7
   const ctx9b = await app.evalJs('window.__ctx.slice()');
   const menuOnCard = await app.evalJs("!!document.querySelector('.wz-ctx')");
   ok('C9 [context-menu successor]: a right-click on a card BODY is not connection mode and not the browser\'s menu - the board\'s own card menu opens (default-prevented); the corner square alone is connection mode', ctx9b.length >= 1 && ctx9b.every((e) => e.prevented === true) && menuOnCard, JSON.stringify({ ctx9b, menuOnCard }));

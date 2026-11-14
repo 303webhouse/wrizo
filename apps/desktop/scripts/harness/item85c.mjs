@@ -197,10 +197,39 @@ await withHarness(async (app) => {
     return JSON.stringify({ raw: es.some(e => e.id === '85c-raw'), seam: es.some(e => e.id === '85c-seam') });
   })()`);
   const after = JSON.parse(bothAfter);
-  ok('S2: THE RAW ROW IS GONE after one ordinary product write — the whole-cache re-serialisation, reproduced deliberately. This is the defect item 85 exists for, and it is what 54 harness files are still exposed to',
-    after.raw === false, bothAfter);
+  // #76 PART 1 (2026-11-11) — THE RAW HALF IS PARKED (SUPERSEDED, see the PARKED block at the foot of this file, where the original stands verbatim). A row that appears in the browser's store behind a window's back
+  // is another window's write now, and the window takes it in before its own write; the product no longer destroys it. The successor asserts that, and its MUTANT (next) shows the successor can fail.
+  ok('S2 (successor, #76): THE RAW ROW SURVIVES one ordinary product write — a row that appeared in the store without this window writing it is taken in before the window writes its whole collection, never written over. The old verdict (the row is gone) is parked below',
+    after.raw === true, bothAfter);
   ok('S2: THE SEAM ROW SURVIVES the identical write, in the same run on the same page — which is the entire argument for the seams, measured side by side rather than asserted',
     after.seam === true, bothAfter);
+
+  // S2 MUTANT (#76): the SAME sequence in a window that cannot see the row behind its back — its read of the store before a write has the raw row filtered out, which is the window as it was before #76 part 1. The successor's
+  // verdict must flip: the row is gone. If it survives here, the successor above proves nothing (the mutation did not land, or the row survived for some other reason).
+  await freshDesk(app);
+  await app.evalJs("window.wrizoCreateJournalPage({ id: '85c-seam', text: 'seeded through the seam', origin: 'loose' })");
+  await sleep(FLUSH);
+  await app.evalJs(`(() => {
+    window.__s2orig = Storage.prototype.getItem;
+    Storage.prototype.getItem = function (k) {
+      const v = window.__s2orig.call(this, k);
+      if (this === window.localStorage && k === 'writer-studio-journal-entries' && v) { try { return JSON.stringify(JSON.parse(v).filter((e) => e.id !== '85c-raw')); } catch (x) { /* unreadable: as it is */ } }
+      return v;
+    };
+    const now = new Date().toISOString();
+    const entries = JSON.parse(window.__s2orig.call(localStorage, 'writer-studio-journal-entries') || '[]');
+    entries.push({ id: '85c-raw', text: 'seeded raw', source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
+    localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+  })()`);
+  await app.evalJs("window.wrizoCreateJournalPage({ text: 'an ordinary product write' })");
+  await sleep(FLUSH);
+  const mutantAfter = await app.evalJs(`(() => {
+    Storage.prototype.getItem = window.__s2orig;
+    const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    return JSON.stringify({ raw: es.some(e => e.id === '85c-raw'), seam: es.some(e => e.id === '85c-seam') });
+  })()`);
+  ok('S2 (mutant): a window that cannot see the row behind its back still loses it to the same write — the successor above turns RED when adoption is absent (the mutation landed: the raw row is gone, the seam row is not)',
+    JSON.parse(mutantAfter).raw === false && JSON.parse(mutantAfter).seam === true, mutantAfter);
 
   // =========================================================================
   // S3 — THE COLLECTION SEAMS: the three that did not exist at all, which is
@@ -326,27 +355,7 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 
-  // === ITEM 85-C — SUPERSEDED (the seeded updatedAt) =========================
-  // ORIGINAL, verbatim:
-  //
-  //   ok('S1: the seven new seed fields all reach the row through the real birth path — script, starred, tags, shelved, orderIndex, and a createdAt/updatedAt that DIFFER (the one thing b2.mjs needs and the only reason updatedAt is in the list)',
-  //     s.starred === true && JSON.stringify(s.tags) === '["85c"]' && s.shelved === true
-  //     && s.orderIndex === 7 && s.hasScript === true
-  //     && s.createdAt === '2020-01-01T00:00:00.000Z' && s.updatedAt === '2021-02-03T00:00:00.000Z', seeded);
-  //
-  // WHY IT CANNOT STAND. `upsert` stamps `updatedAt` from the wall clock on
-  // every write — persistence.ts's single write path — so a seeded value was
-  // overwritten before the row reached storage. It was never true of STORAGE;
-  // it was true only of the object the seam returned, and the seam was
-  // returning its own input. Once the seam reported storage instead, the check
-  // went red, having passed for a day on a value nobody had written. Making
-  // `upsert` honour a supplied `updatedAt` was REFUSED (2026-09-15) as house
-  // work — it changes the write semantics of every product path — so the seed
-  // key was removed rather than the store bent to it, and b2.mjs establishes
-  // its recency order by TOUCHING (`wrizoTouchInOrder`) instead.
-  //
-  // Re-asserted below as the same experiment with its true verdict; the live
-  // successor is in S1 above.
+  // ARCHIVED PARK (#13 step 14): archive/item85c.mjs.parked.md record 1
   await withHarness(async (app) => {
     await freshDesk(app);
     const parkedSeed = await app.evalJs(`(() => {
@@ -363,24 +372,7 @@ if (process.env.HARNESS_PARKED === '1') {
       ps.createdAt === '2020-01-01T00:00:00.000Z' && ps.updatedAt !== '2021-02-03T00:00:00.000Z',
       parkedSeed);
 
-    // === ITEM 85-C — SUPERSEDED (the unseeded row's equal timestamps) ========
-    // ORIGINAL, verbatim:
-    //
-    //   ok('S1 (the control): an UNSEEDED call is untouched by the widening — none of the seven fields appears, source is still page, origin still journal, and updatedAt still equals createdAt. Zero behaviour change, demonstrated rather than asserted',
-    //     u.starred === undefined && u.tags === undefined && u.shelved === undefined
-    //     && u.orderIndex === undefined && u.script === undefined && u.sameTimes === true
-    //     && u.source === 'page' && u.origin === 'journal', unseeded);
-    //
-    // WHY IT CANNOT STAND. `createdAt` is stamped at createJournalPage's entry
-    // and `updatedAt` by `upsert` a few microseconds later: TWO clock reads.
-    // While the seam echoed its input the check compared the object it was
-    // handed, where both came from the same value, so it could not see them
-    // apart. Now that the seam reports STORAGE, the two agree only when both
-    // land in the same millisecond — nearly always, and not always. It was
-    // never falsified; it was made a check that can pass by luck of timing,
-    // which the house's empty known-flake list will not carry.
-    //
-    // Re-asserted as the ORDER it always meant. Live successor in S1 above.
+    // ARCHIVED PARK (#13 step 14): archive/item85c.mjs.parked.md record 2
     const parkedUnseeded = await app.evalJs(`(() => {
       const e = window.wrizoCreateJournalPage();
       return JSON.stringify({ createdAt: e.createdAt, updatedAt: e.updatedAt });
@@ -388,6 +380,36 @@ if (process.env.HARNESS_PARKED === '1') {
     const pu = JSON.parse(parkedUnseeded);
     pok('PARKED (was "S1 (the control): ... updatedAt still equals createdAt") — the SAME birth, asserted as an ORDER: updatedAt is not before createdAt. Two clock reads agree only within a millisecond, so equality was a coin the check kept winning',
       pu.updatedAt >= pu.createdAt, parkedUnseeded);
+    // === #76 PART 1 — SUPERSEDED (S2's raw half: the raw row is destroyed) ====
+    // ORIGINAL, verbatim:
+    //
+    //   ok('S2: THE RAW ROW IS GONE after one ordinary product write — the whole-cache re-serialisation, reproduced deliberately. This is the defect item 85 exists for, and it is what 54 harness files are still exposed to',
+    //     after.raw === false, bothAfter);
+    //
+    // WHY IT CANNOT STAND. It asserted the defect it reproduced: persistence.ts hydrated its cache once, a product write serialised the WHOLE cache back, and a row written to the store past the app was lost. #76 part 1
+    // (the writing batch, 2026-11-11) closes that for the case that matters to a writer: a row that appears in the store behind a window's back is another window's write, and the window takes it in before it writes its own
+    // collection (store/persistence/core.ts flush -> syncApply.ts applyOtherWindowWrite). Measured on Actions with this very sequence: main's product {raw:false, seam:true} (run 43132301194); #76 {raw:true, seam:true} (run 43132304288).
+    // The check did not go wrong; the premise it stood on was fixed on purpose. The seam row's half (S2 above) is untouched.
+    //
+    // Re-asserted below as the same experiment with its true verdict. Live successor and its mutant: S2 above.
+    await freshDesk(app);
+    await app.evalJs("window.wrizoCreateJournalPage({ id: '85c-seam', text: 'seeded through the seam', origin: 'loose' })");
+    await sleep(FLUSH);
+    await app.evalJs(`(() => {
+      const now = new Date().toISOString();
+      const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      entries.push({ id: '85c-raw', text: 'seeded raw', source: 'page', origin: 'loose', createdAt: now, updatedAt: now });
+      localStorage.setItem('writer-studio-journal-entries', JSON.stringify(entries));
+    })()`);
+    await app.evalJs("window.wrizoCreateJournalPage({ text: 'an ordinary product write' })");
+    await sleep(FLUSH);
+    const parkedRaw = await app.evalJs(`(() => {
+      const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+      return JSON.stringify({ raw: es.some(e => e.id === '85c-raw'), seam: es.some(e => e.id === '85c-seam') });
+    })()`);
+    const pr = JSON.parse(parkedRaw);
+    pok('PARKED (was "S2: THE RAW ROW IS GONE after one ordinary product write") — the SAME experiment, with the verdict the product now gives: the raw row SURVIVES the write (a window takes in a row that appeared behind its back), and so does the seam row',
+      pr.raw === true && pr.seam === true, parkedRaw);
     return parkedChecks;
   });
   // eslint-disable-next-line no-console

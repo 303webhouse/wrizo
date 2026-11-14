@@ -171,58 +171,45 @@ await withHarness(async (app) => {
       boardHomeLabelShelf: t('boardHomeLabelShelf'),
     };
   })()`);
-  // SUPERSEDED (#13 step 11, Fable Nov 5) — createDrawerOpensNote and the
-  // three journalRoute* terms name retired UI no source reads (journalRoute*
-  // only the deleted JournalEntry.tsx), and step 11 deletes them from the
-  // lexicon; see the successor just below. Kept VERBATIM and no longer run.
-  // ok('S6a: every NEW deskLexicon term this fold introduces resolves to its exact expected value',
-  //   lex.createDrawerEyebrow === 'NEW DRAWER'
-  //     && lex.createDrawerTitleLabel === 'Drawer title (optional)'
-  //     && lex.createDrawerOpensNote === 'Opens the Drawer home — shape it as you go.'
-  //     && lex.drawerHomeTitleLabel === 'Drawer title'
-  //     && lex.backToDrawer === 'Back to Drawer'
-  //     && lex.domainLabelCreative === 'Creative Drawer'
-  //     && lex.domainLabelAcademic === 'Academic Drawer'
-  //     && lex.domainLabelProfessional === 'Professional Drawer'
-  //     && lex.journalRouteSendToDrawer === 'Send to a Drawer'
-  //     && lex.journalRouteEmptyDrawers === 'No Drawers yet.'
-  //     && lex.journalRoutePromoteDrawer === 'Promote to a new Drawer',
-  //   JSON.stringify(lex));
-  // a term step 11 deletes reads its value while it exists and no value once it is gone (so this holds before the delete and after it)
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 1
   const s11 = (k, v) => lex[k] === v || lex[k] === undefined;
-  ok('S6a [step 11 successor]: every NEW deskLexicon term this fold introduces that is still in the lexicon resolves to its exact expected value; the four step 11 deletes (createDrawerOpensNote, journalRoute*) read theirs until they go',
+  // ---- PARKED - SUPERSEDED by #13 step 12a (Nick's dormant answers, Oct 29): the old project screens go, and with them the last readers of
+  // drawerHomeTitleLabel, backToDrawer and the three domainLabel* terms, which 12a deletes from the lexicon. The step 11 successor, kept
+  // VERBATIM below and no longer run; its 12a successor and mutant follow (the same reading: a term's word while it exists, none once gone).
+  // ok('S6a [step 11 successor]: every NEW deskLexicon term this fold introduces that is still in the lexicon resolves to its exact expected value; the four step 11 deletes (createDrawerOpensNote, journalRoute*) read theirs until they go',
+    // lex.createDrawerEyebrow === 'NEW DRAWER'
+      // && lex.createDrawerTitleLabel === 'Drawer title (optional)'
+      // && s11('createDrawerOpensNote', 'Opens the Drawer home — shape it as you go.')
+      // && lex.drawerHomeTitleLabel === 'Drawer title'
+      // && lex.backToDrawer === 'Back to Drawer'
+      // && lex.domainLabelCreative === 'Creative Drawer'
+      // && lex.domainLabelAcademic === 'Academic Drawer'
+      // && lex.domainLabelProfessional === 'Professional Drawer'
+      // && s11('journalRouteSendToDrawer', 'Send to a Drawer')
+      // && s11('journalRouteEmptyDrawers', 'No Drawers yet.')
+      // && s11('journalRoutePromoteDrawer', 'Promote to a new Drawer'),
+    // JSON.stringify(lex));
+  ok('S6a [c13-12a successor]: every NEW deskLexicon term this fold introduces that is still in the lexicon resolves to its exact expected value; the four step 11 deletes and the five step 12a deletes (drawerHomeTitleLabel, backToDrawer, domainLabel*) read theirs until they go',
     lex.createDrawerEyebrow === 'NEW DRAWER'
       && lex.createDrawerTitleLabel === 'Drawer title (optional)'
       && s11('createDrawerOpensNote', 'Opens the Drawer home — shape it as you go.')
-      && lex.drawerHomeTitleLabel === 'Drawer title'
-      && lex.backToDrawer === 'Back to Drawer'
-      && lex.domainLabelCreative === 'Creative Drawer'
-      && lex.domainLabelAcademic === 'Academic Drawer'
-      && lex.domainLabelProfessional === 'Professional Drawer'
+      && s11('drawerHomeTitleLabel', 'Drawer title')
+      && s11('backToDrawer', 'Back to Drawer')
+      && s11('domainLabelCreative', 'Creative Drawer')
+      && s11('domainLabelAcademic', 'Academic Drawer')
+      && s11('domainLabelProfessional', 'Professional Drawer')
       && s11('journalRouteSendToDrawer', 'Send to a Drawer')
       && s11('journalRouteEmptyDrawers', 'No Drawers yet.')
       && s11('journalRoutePromoteDrawer', 'Promote to a new Drawer'),
     JSON.stringify(lex));
-  // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal/Trash/Shelf
-  // shorten to the bare place name ("Journal"/"Trash"/"Shelf"); see the
-  // successor just below. cascadePlanNoProject is a word-diet MOCKUP row
-  // (stays untouched for now), so that conjunct is unaffected and carries
-  // over unchanged.
-  // ok('S6a: every PRE-EXISTING deskLexicon term this fold\'s word swap changes now reads "drawer", never "project" — b1.mjs/b2.mjs\'s own PARKED sections hold the quoted-verbatim OLD values',
-  //   lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
-  //     && lex.boardHomeLabelJournal === 'The Journal Board — has no drawer home'
-  //     && lex.boardHomeLabelTrash === 'The Trash Board — has no drawer home'
-  //     && lex.boardHomeLabelShelf === 'The Shelf Board — has no drawer home',
-  //   JSON.stringify(lex));
-  // SUPERSEDED (#13 step 11, Fable Nov 5) — cascadePlanNoProject (the old
-  // Plan panel's no-project lead, retired in big projects) is deleted from the
-  // lexicon; see the successor just below. Kept VERBATIM and no longer run.
-  // ok('S6a [word-diet successor]: cascadePlanNoProject (MOCKUP, unchanged) still reads "drawer", and boardHomeLabelJournal/Trash/Shelf are now the bare place name',
-  //   lex.cascadePlanNoProject === 'File this page to a drawer first to plan around it.'
-  //     && lex.boardHomeLabelJournal === 'Journal'
-  //     && lex.boardHomeLabelTrash === 'Trash'
-  //     && lex.boardHomeLabelShelf === 'Shelf',
-  //   JSON.stringify(lex));
+  {
+    const saved = lex.backToDrawer;
+    lex.backToDrawer = 'Back to project';
+    const red = !s11('backToDrawer', 'Back to Drawer');
+    lex.backToDrawer = saved;
+    ok('S6a [c13-12a successor mutant]: a deleted-later term that reads the WRONG word while it exists is red (only absence is excused)', red && s11('backToDrawer', 'Back to Drawer'), '');
+  }
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 2
   ok('S6a [step 11 successor]: boardHomeLabelJournal/Trash/Shelf are the bare place name, and cascadePlanNoProject reads "drawer" until step 11 deletes it',
     s11('cascadePlanNoProject', 'File this page to a drawer first to plan around it.')
       && lex.boardHomeLabelJournal === 'Journal'
@@ -242,10 +229,7 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Journal board)' });
   const journalHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  // SUPERSEDED (item word-diet, Nick) — boardHomeLabelJournal shortens to
-  // the bare place name.
-  // ok('S6b live successor (was b1.mjs\'s "no project home" check): the Journal Board\'s own Page face now reads "has no drawer home", never "In the Journal" (self-referential)',
-  //   journalHomeLabel === 'The Journal Board — has no drawer home', String(journalHomeLabel));
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 3
   ok('S6b [word-diet successor]: the Journal Board\'s own Page face now reads the bare place name, "Journal"',
     journalHomeLabel === 'Journal', String(journalHomeLabel));
 
@@ -255,9 +239,7 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Trash board)' });
   const trashHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  // SUPERSEDED (item word-diet, Nick).
-  // ok('S6b live successor (was b1.mjs\'s "no project home" check): the Trash Board\'s own Page face now reads "has no drawer home"',
-  //   trashHomeLabel === 'The Trash Board — has no drawer home', String(trashHomeLabel));
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 4
   ok('S6b [word-diet successor]: the Trash Board\'s own Page face now reads the bare place name, "Trash"',
     trashHomeLabel === 'Trash', String(trashHomeLabel));
 
@@ -267,9 +249,7 @@ await withHarness(async (app) => {
   await openPageCategory(app);
   await app.waitFor("!!document.querySelector('.wz-pageface-home-label')", { label: 'Page face (Shelf board)' });
   const shelfHomeLabel = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  // SUPERSEDED (item word-diet, Nick).
-  // ok('S6b live successor (was b2.mjs\'s "no project home" + S8 compound checks): the Shelf Board\'s own Page face now reads "has no drawer home"',
-  //   shelfHomeLabel === 'The Shelf Board — has no drawer home', String(shelfHomeLabel));
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 5
   ok('S6b [word-diet successor]: the Shelf Board\'s own Page face now reads the bare place name, "Shelf"',
     shelfHomeLabel === 'Shelf', String(shelfHomeLabel));
 
@@ -278,17 +258,13 @@ await withHarness(async (app) => {
   // reads "drawer", never "project".
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (Plan panel spot-check)' });
   await sleep(300);
   await app.emulateDpr(1, LAPTOP_W, 900);
   await openPlanCategory(app);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): the Boards tab has no no-project branch: a board is filed into wherever the writer is.
-  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
-  //
-  // const planNoProjectLine = await app.evalJs("document.querySelector('.wz-cascade-panel-body .wz-cascade-empty')?.textContent");
-  // ok('S6c: the Plan panel\'s own no-project branch now reads "File this page to a drawer first..." — never the word "project"',
-  //   planNoProjectLine === 'File this page to a drawer first to plan around it.', String(planNoProjectLine));
+  // ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 6
   const boardsPanelText = await app.evalJs("document.querySelector('.wz-cascade-panel-body')?.innerText ?? ''");
   ok('S6c [big-projects-2 successor]: the Boards tab has no no-project lead at all (the file-this-page-to-a-drawer-first line is gone) - and never the word project', !boardsPanelText.includes('File this page to a drawer first') && !/project/i.test(boardsPanelText), boardsPanelText.slice(0, 160));
 
@@ -306,64 +282,72 @@ await withHarness(async (app) => {
     createProjectShape.eyebrow === 'NEW DRAWER', JSON.stringify(createProjectShape));
   ok('S6e: CreateProject\'s own title input aria-label reads "Drawer title (optional)"',
     createProjectShape.titleAria === 'Drawer title (optional)', JSON.stringify(createProjectShape));
-  await app.evalJs("document.querySelector('.cp-else').click()");
-  const cpElseNote = await app.evalJs("document.querySelector('.cp-micro')?.textContent");
+  // ---- PARKED - RETIRED by #13 step 12a (Fable's ruling, Oct 29: "Something else" is dropped from New project): the option and its note are
+  // gone; the word-diet successor below (and the two lines that drove it) are kept VERBATIM and no longer run; record in the parked block.
+  // c13-12a-doors.mjs D4 asserts the option's absence.
+  // await app.evalJs("document.querySelector('.cp-else').click()");
+  // const cpElseNote = await app.evalJs("document.querySelector('.cp-micro')?.textContent");
   // SUPERSEDED (item word-diet, Nick) — createDrawerOpensNote's render site
   // RETIRES whole (REMOVE); the lexicon entry itself is untouched, simply
   // never rendered for this branch now. ORIGINAL claim parked verbatim:
   // ok('S6e: CreateProject\'s own "Something else" note reads "Opens the Drawer home..." — a genuine omission the prior S6 inventory missed, found and fixed in this fold',
   //   cpElseNote === 'Opens the Drawer home — shape it as you go.', String(cpElseNote));
-  ok('S6e [word-diet successor]: CreateProject\'s own "Something else" note is empty now (REMOVE)',
-    cpElseNote === '', String(cpElseNote));
+  // ok('S6e [word-diet successor]: CreateProject\'s own "Something else" note is empty now (REMOVE)',
+    // cpElseNote === '', String(cpElseNote));
 
   // ==========================================================================
   // S6e — ProjectHome.tsx: the rename input's aria-label + the domain eyebrow.
   // ==========================================================================
-  await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
-  await app.waitFor("document.querySelector('[data-kind=\"book\"]')?.getAttribute('aria-pressed') === 'true'", { label: 'book kind selected' });
-  await app.click('Start writing');
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fresh manuscript page (ProjectHome spot-check)' });
-  await sleep(300);
-  const homePageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
-  const projectIdForHome = await app.evalJs(`(() => {
-    const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
-    return entries.find(e => e.id === '${homePageId}')?.projectId ?? null;
-  })()`);
-  await app.goto(`/project/${projectIdForHome}`);
-  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome mounted' });
-  const domainEyebrow = await app.evalJs("document.querySelector('.eyebrow')?.textContent");
-  ok('S6e: ProjectHome\'s own domain eyebrow reads "Creative Drawer", never "Creative project"',
-    domainEyebrow === 'Creative Drawer', String(domainEyebrow));
-  await app.evalJs("document.querySelector('.project-title-editable').click()");
-  const renameAria = await app.evalJs("document.querySelector('.project-rename')?.getAttribute('aria-label')");
-  ok('S6e: ProjectHome\'s own rename input aria-label reads "Drawer title", never "Project title"',
-    renameAria === 'Drawer title', String(renameAria));
-  await app.key('Escape');
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): ProjectHome is deleted, with its domain eyebrow and its rename
+  // input (and the two lexicon terms they read). The block is kept VERBATIM below and no longer runs; records in the parked block. S6f
+  // (StructureWizard / StructureBoard / BeatWizard) and S6c/g (QuickSprint) below retire the same way: their screens are deleted.
+  // await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
+  // await app.waitFor("document.querySelector('[data-kind=\"book\"]')?.getAttribute('aria-pressed') === 'true'", { label: 'book kind selected' });
+  // await app.click('Start writing');
+  // await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'fresh manuscript page (ProjectHome spot-check)' });
+  // await sleep(300);
+  // const homePageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
+  // const projectIdForHome = await app.evalJs(`(() => {
+    // const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    // return entries.find(e => e.id === '${homePageId}')?.projectId ?? null;
+  // })()`);
+  // await app.goto(`/project/${projectIdForHome}`);
+  // await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome mounted' });
+  // const domainEyebrow = await app.evalJs("document.querySelector('.eyebrow')?.textContent");
+  // ok('S6e: ProjectHome\'s own domain eyebrow reads "Creative Drawer", never "Creative project"',
+    // domainEyebrow === 'Creative Drawer', String(domainEyebrow));
+  // await app.evalJs("document.querySelector('.project-title-editable').click()");
+  // const renameAria = await app.evalJs("document.querySelector('.project-rename')?.getAttribute('aria-label')");
+  // ok('S6e: ProjectHome\'s own rename input aria-label reads "Drawer title", never "Project title"',
+    // renameAria === 'Drawer title', String(renameAria));
+  // await app.key('Escape');
 
   // ==========================================================================
   // S6f — StructureWizard/StructureBoard/BeatWizard: "Back to Drawer".
   // ==========================================================================
-  await app.goto(`/project/${projectIdForHome}/wizard`);
-  await app.waitFor("!!document.querySelector('.page')", { label: 'StructureWizard mounted' });
-  await sleep(150);
-  const wizardBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
-  ok('S6f: StructureWizard\'s own back link reads "Back to Drawer", never "Back to project"',
-    !!wizardBack && wizardBack.includes('Back to Drawer'), String(wizardBack));
+  // ---- PARKED - RETIRED by #13 step 12a: the three screens are deleted (and backToDrawer with them). Kept VERBATIM below and no longer run;
+  // records in the parked block. The plan-project seed in between stays live: S6c below (the Pin sheet) still uses it.
+  // await app.goto(`/project/${projectIdForHome}/wizard`);
+  // await app.waitFor("!!document.querySelector('.page')", { label: 'StructureWizard mounted' });
+  // await sleep(150);
+  // const wizardBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
+  // ok('S6f: StructureWizard\'s own back link reads "Back to Drawer", never "Back to project"',
+    // !!wizardBack && wizardBack.includes('Back to Drawer'), String(wizardBack));
 
   const { projectId: planProjectId, pageId: planPageId } = await seedProjectWithPlan(app, 'b21-plan-check');
-  await app.evalJs(`location.hash = '#/project/${planProjectId}/board'`);
-  await app.waitFor("!!document.querySelector('.page-title')", { label: 'StructureBoard mounted' });
-  await sleep(150);
-  const boardBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
-  ok('S6f: StructureBoard\'s own back link reads "Back to Drawer", never "Back to project"',
-    !!boardBack && boardBack.includes('Back to Drawer'), String(boardBack));
-
-  await app.evalJs(`location.hash = '#/project/${planProjectId}/beat'`);
-  await app.waitFor("!!document.querySelector('.eyebrow')", { label: 'BeatWizard mounted' });
-  await sleep(150);
-  const beatBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
-  ok('S6f: BeatWizard\'s own back link reads "Back to Drawer", never "Back to project"',
-    !!beatBack && beatBack.includes('Back to Drawer'), String(beatBack));
+  // await app.evalJs(`location.hash = '#/project/${planProjectId}/board'`);
+  // await app.waitFor("!!document.querySelector('.page-title')", { label: 'StructureBoard mounted' });
+  // await sleep(150);
+  // const boardBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
+  // ok('S6f: StructureBoard\'s own back link reads "Back to Drawer", never "Back to project"',
+    // !!boardBack && boardBack.includes('Back to Drawer'), String(boardBack));
+//
+  // await app.evalJs(`location.hash = '#/project/${planProjectId}/beat'`);
+  // await app.waitFor("!!document.querySelector('.eyebrow')", { label: 'BeatWizard mounted' });
+  // await sleep(150);
+  // const beatBack = await app.evalJs("[...document.querySelectorAll('a, button')].find(el => el.textContent.includes('Back to Drawer'))?.textContent");
+  // ok('S6f: BeatWizard\'s own back link reads "Back to Drawer", never "Back to project"',
+    // !!beatBack && beatBack.includes('Back to Drawer'), String(beatBack));
 
   // ==========================================================================
   // S6c/S6g (Binder-vs-Drawer, concrete) — QuickSprint: the breadcrumb shows
@@ -398,24 +382,27 @@ await withHarness(async (app) => {
     window.wrizoSetProjectDrawer('${planProjectId}', drawer.id);
   })()`);
   await app.reload();
-  await app.evalJs(`location.hash = '#/project/${planProjectId}/sprint'`);
-  await app.waitFor("!!document.querySelector('.sprint-crumb')", { label: 'QuickSprint mounted (Binder-vs-Drawer proof)' });
-  await sleep(200);
-  const sprintShape = await app.evalJs(`(() => ({
-    crumbDrawerName: document.querySelector('.sprint-crumb .crumb-item')?.textContent,
-    toggleAria: document.querySelector('.sprint-toggle')?.getAttribute('aria-label'),
-  }))()`);
-  ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own breadcrumb shows the stored Drawer\'s real name ("Real Stored Drawer") — the OLDER entity, untouched by this fold',
-    sprintShape.crumbDrawerName === 'Real Stored Drawer', JSON.stringify(sprintShape));
-  ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own Pages/Plan toggle aria-label reads "Binder view" — the pre-existing themeLexicon term (predates this fold entirely, out of its scope), coexisting harmlessly beside the breadcrumb\'s proper-noun drawer name',
-    sprintShape.toggleAria === 'Binder view', JSON.stringify(sprintShape));
-  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  await app.typeKeys('A word. ');
-  await app.click('Finish');
-  await app.waitFor("!!document.querySelector('.card')", { label: 'finish card' });
-  const saveLabel = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
-  ok('S6g LIVE SUCCESSOR (review fix): QuickSprint\'s own Save button reads "Save to Drawer" — matches its own destination, ProjectHome.tsx, which always reads "Drawer" regardless of this project\'s drawerId; see the PARKED block above',
-    saveLabel === 'Save to Drawer', String(saveLabel));
+  // ---- PARKED - RETIRED by #13 step 12a: QuickSprint is deleted, with its breadcrumb, its Pages/Plan toggle and its Save button (and the
+  // sprintSave* terms). The block is kept VERBATIM below and no longer runs; records in the parked block. The Drawer seed above stays live:
+  // S6c below (the Pin sheet) still reads "Real Stored Drawer".
+  // await app.evalJs(`location.hash = '#/project/${planProjectId}/sprint'`);
+  // await app.waitFor("!!document.querySelector('.sprint-crumb')", { label: 'QuickSprint mounted (Binder-vs-Drawer proof)' });
+  // await sleep(200);
+  // const sprintShape = await app.evalJs(`(() => ({
+    // crumbDrawerName: document.querySelector('.sprint-crumb .crumb-item')?.textContent,
+    // toggleAria: document.querySelector('.sprint-toggle')?.getAttribute('aria-label'),
+  // }))()`);
+  // ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own breadcrumb shows the stored Drawer\'s real name ("Real Stored Drawer") — the OLDER entity, untouched by this fold',
+    // sprintShape.crumbDrawerName === 'Real Stored Drawer', JSON.stringify(sprintShape));
+  // ok('S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own Pages/Plan toggle aria-label reads "Binder view" — the pre-existing themeLexicon term (predates this fold entirely, out of its scope), coexisting harmlessly beside the breadcrumb\'s proper-noun drawer name',
+    // sprintShape.toggleAria === 'Binder view', JSON.stringify(sprintShape));
+  // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  // await app.typeKeys('A word. ');
+  // await app.click('Finish');
+  // await app.waitFor("!!document.querySelector('.card')", { label: 'finish card' });
+  // const saveLabel = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
+  // ok('S6g LIVE SUCCESSOR (review fix): QuickSprint\'s own Save button reads "Save to Drawer" — matches its own destination, ProjectHome.tsx, which always reads "Drawer" regardless of this project\'s drawerId; see the PARKED block above',
+    // saveLabel === 'Save to Drawer', String(saveLabel));
 
   // ==========================================================================
   // S6c (Binder-vs-Drawer, concrete) — PinToBoardSheet + PortToBoardSheet:
@@ -440,6 +427,7 @@ await withHarness(async (app) => {
 
   // A genuinely empty picker (no projects at all) proves the Binder wording.
   await freshDesk(app, LAPTOP_W, 900);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page (empty Pin sheet spot-check)' });
   await sleep(300);
@@ -580,10 +568,19 @@ await withHarness(async (app) => {
     const entries = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     return entries.find(e => e.id === '${gearPageId}')?.projectId ?? null;
   })()`);
+  // ---- PARKED - SUPERSEDED by #13 step 12a: two of the swept surfaces (ProjectHome at /project/:id, StructureWizard at /project/:id/wizard)
+  // are deleted. The list, kept VERBATIM below and no longer run; the successor sweeps every surface that remains, with the same reader
+  // (and a mutant for it, after the check).
+  // const sweepTargets = [
+  //   ['/project/new', "!!document.querySelector('[data-kind=\"book\"]')"],
+  //   [`/project/${sweepProjectId}`, "!!document.querySelector('.project-title-editable')"],
+  //   [`/project/${sweepProjectId}/wizard`, "!!document.querySelector('.page')"],
+  //   ['/drawers', "!!document.querySelector('.dz-new')"],
+  //   ['/import', "!!document.querySelector('.import-draft')"],
+  // ];
+  void sweepProjectId;
   const sweepTargets = [
     ['/project/new', "!!document.querySelector('[data-kind=\"book\"]')"],
-    [`/project/${sweepProjectId}`, "!!document.querySelector('.project-title-editable')"],
-    [`/project/${sweepProjectId}/wizard`, "!!document.querySelector('.page')"],
     ['/drawers', "!!document.querySelector('.dz-new')"],
     ['/import', "!!document.querySelector('.import-draft')"],
   ];
@@ -596,18 +593,28 @@ await withHarness(async (app) => {
     const hasBareProject = /\bProject\b/.test(bodyText);
     sweepResults.push({ route, hasBareProject });
   }
-  ok('S6h (Definition of Done): no bare "Project" word (case-sensitive, word-boundary) renders anywhere across every swept surface',
-    sweepResults.every(r => !r.hasBareProject), JSON.stringify(sweepResults));
+  ok('S6h (Definition of Done) [c13-12a successor]: no bare "Project" word (case-sensitive, word-boundary) renders anywhere across every swept surface that remains (New project, Drawers, Import)',
+    sweepResults.length === 3 && sweepResults.every(r => !r.hasBareProject), JSON.stringify(sweepResults));
+  ok('S6h [c13-12a successor mutant]: the sweep\'s reader is red on a bare "Project" and green on "project" and "Projects"',
+    /\bProject\b/.test('Back to Project') && !/\bProject\b/.test('a project') && !/\bProject\b/.test('Projects'), '');
 
   // ==========================================================================
   // S6i — the route-path boundary, held deliberately: /project/* routes are
   // completely UNTOUCHED (a conscious scope boundary, not an oversight).
   // ==========================================================================
-  await app.goto(`/project/${sweepProjectId}`);
-  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'route-boundary spot-check' });
-  const routeCheck = await app.evalJs('location.hash');
-  ok('S6i: route paths stay literally "/project/..." — deliberately untouched (a bigger structural call than Nick\'s word commissioned; flagged for a future explicit ruling)',
-    routeCheck.startsWith('#/project/'), routeCheck);
+  // ---- PARKED - SUPERSEDED by #13 step 12a (Fable's door ruling): /project/:id is now a redirect to the project's first page, so the
+  // address no longer STAYS on /project/ after it loads. Kept VERBATIM below and no longer run. The claim it held - the route PATHS are
+  // literally untouched (the rename never reached them) - is the successor, read where the paths are declared, with its mutant.
+  // await app.goto(`/project/${sweepProjectId}`);
+  // await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'route-boundary spot-check' });
+  // const routeCheck = await app.evalJs('location.hash');
+  // ok('S6i: route paths stay literally "/project/..." — deliberately untouched (a bigger structural call than Nick\'s word commissioned; flagged for a future explicit ruling)',
+  //   routeCheck.startsWith('#/project/'), routeCheck);
+  const routesKept = (appSrc) => ['/project/new', '/project/:id', '/project/:id/import'].every((p) => appSrc.includes(`<Route path="${p}"`));
+  const appSrc12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+  ok('S6i [c13-12a successor]: route paths stay literally "/project/..." (new, :id, :id/import are declared under that path) - the rename never reached the paths',
+    routesKept(appSrc12a), '');
+  ok('S6i [c13-12a successor mutant]: a /project path renamed to /drawer is red', !routesKept(appSrc12a.replace('<Route path="/project/:id"', '<Route path="/drawer/:id"')), '');
 
   return checks;
 });
@@ -615,52 +622,61 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// Review fix (independent re-verification of B2.1 S6) — the FIRST tenant
-// of this file's own scaffold: this file's own S6g check —
-//
-//   const saveLabel = await app.evalJs("[...document.querySelectorAll('button')]
-//     .find(b => b.textContent.includes('Save to Binder')
-//       || b.textContent.includes('Save as Binder'))?.textContent");
-//   ok('S6g: QuickSprint\'s own Save button reads "Save to Binder", never
-//   "Save to project"', saveLabel === 'Save to Binder', String(saveLabel));
-//
-// is falsified whole by the review fix: QuickSprint.tsx's Save button
-// reverted from "Binder" to "Drawer" — the build's own collision
-// reasoning for that button conflated a proper noun (`drawer.name` in the
-// breadcrumb) with the bare generic word "Drawer" (they don't collide),
-// while the button's own destination (ProjectHome.tsx) always reads
-// "Drawer" regardless — see QuickSprint.tsx's own updated comment and
-// deskLexicon.ts's header comment for the full account. Live successor:
-// this file's own live S6g section, above ("S6g LIVE SUCCESSOR (review
-// fix)").
+// ARCHIVED PARK (#13 step 14): archive/b2-1.mjs.parked.md record 7
 if (process.env.HARNESS_PARKED === '1') {
   const parkedChecks = [];
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
-    const { projectId: pProjectId } = await seedProjectWithPlan(app, 'b21-parked-plan-check');
-    await app.goto('/');
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'PARKED: Desk before seeding a real Drawer' });
-    await app.evalJs(`(() => {
-      const drawer = window.wrizoCreateDrawer('PARKED Real Stored Drawer');
-      window.wrizoSetProjectDrawer('${pProjectId}', drawer.id);
-    })()`);
-    await app.reload();
-    await app.evalJs(`location.hash = '#/project/${pProjectId}/sprint'`);
-    await app.waitFor("!!document.querySelector('.sprint-crumb')", { label: 'PARKED: QuickSprint mounted (pre-fix reproduction)' });
-    await sleep(200);
-    await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-    await app.typeKeys('A word. ');
-    await app.click('Finish');
-    await app.waitFor("!!document.querySelector('.card')", { label: 'PARKED: finish card' });
-    // Re-derived against the file's PRE-fix behavior (the historical claim,
-    // held true here on purpose — this block exists to prove the park is
-    // accurate history, not to re-validate current behavior).
-    const saveLabelNow = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
-    pok('PARKED (was "S6g: QuickSprint\'s own Save button reads \\"Save to Binder\\", never \\"Save to project\\"") — review fix: the button reverted to "Save to Drawer" (matches its own destination, ProjectHome.tsx, unconditionally); live successor: this file\'s own live S6g section',
-      saveLabelNow === 'Save to Drawer', String(saveLabelNow));
+    // ---- PARKED, generation 2 - RETIRED by #13 step 12a: this record re-drove QuickSprint to hold its history true, and QuickSprint is
+    // deleted. The drive is kept VERBATIM below and no longer runs; the record is restated after it on what makes the retirement true.
+    // const { projectId: pProjectId } = await seedProjectWithPlan(app, 'b21-parked-plan-check');
+    // await app.goto('/');
+    // await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'PARKED: Desk before seeding a real Drawer' });
+    // await app.evalJs(`(() => {
+      // const drawer = window.wrizoCreateDrawer('PARKED Real Stored Drawer');
+      // window.wrizoSetProjectDrawer('${pProjectId}', drawer.id);
+    // })()`);
+    // await app.reload();
+    // await app.evalJs(`location.hash = '#/project/${pProjectId}/sprint'`);
+    // await app.waitFor("!!document.querySelector('.sprint-crumb')", { label: 'PARKED: QuickSprint mounted (pre-fix reproduction)' });
+    // await sleep(200);
+    // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+    // await app.typeKeys('A word. ');
+    // await app.click('Finish');
+    // await app.waitFor("!!document.querySelector('.card')", { label: 'PARKED: finish card' });
+    // // Re-derived against the file's PRE-fix behavior (the historical claim,
+    // // held true here on purpose — this block exists to prove the park is
+    // // accurate history, not to re-validate current behavior).
+    // const saveLabelNow = await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('Save to Drawer') || b.textContent.includes('Save as Drawer'))?.textContent");
+    // pok('PARKED (was "S6g: QuickSprint\'s own Save button reads \\"Save to Binder\\", never \\"Save to project\\"") — review fix: the button reverted to "Save to Drawer" (matches its own destination, ProjectHome.tsx, unconditionally); live successor: this file\'s own live S6g section',
+      // saveLabelNow === 'Save to Drawer', String(saveLabelNow));
+    void app;
     return parkedChecks;
   });
+  // #13 step 12a: the records. What makes each retirement (not a loss) true: the old screen's route is never left without one - the screen
+  // before the delete, the legacy redirect after (c13-12a-doors.mjs D1/D3) - and "Something else" leaves CreateProject (D4).
+  {
+    const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+    const el = (p) => (new RegExp(`<Route path="${p.replace(/[/:]/g, (c) => `\\${c}`)}" element=\\{<(\\w+) \\/>\\} \\/>`).exec(app12a) || [])[1] || null;
+    const live = (p, screen) => { const e = el(p); return e === screen || e === 'LegacyProjectRedirect'; };
+    const cp = readFileSync(new URL('../../src/pages/CreateProject.tsx', import.meta.url), 'utf8');
+    pok('PARKED (was "S6g: QuickSprint\'s own Save button reads \\"Save to Binder\\", never \\"Save to project\\"") - generation 2, RETIRED by #13 step 12a: QuickSprint is deleted',
+      live('/project/:id/sprint', 'QuickSprint'), `sprint -> ${el('/project/:id/sprint')}`);
+    pok('PARKED (was "S6e [word-diet successor]: CreateProject\'s own \\"Something else\\" note is empty now (REMOVE)") - RETIRED by #13 step 12a: "Something else" is dropped from New project',
+      true, `cp-else in CreateProject: ${/cp-else/.test(cp)} (present before the delete, gone after; D4 asserts its absence)`);
+    for (const [n, p, s] of [
+      ['S6e: ProjectHome\'s own domain eyebrow reads "Creative Drawer", never "Creative project"', '/project/:id', 'ProjectHome'],
+      ['S6e: ProjectHome\'s own rename input aria-label reads "Drawer title", never "Project title"', '/project/:id', 'ProjectHome'],
+      ['S6f: StructureWizard\'s own back link reads "Back to Drawer", never "Back to project"', '/project/:id/wizard', 'StructureWizard'],
+      ['S6f: StructureBoard\'s own back link reads "Back to Drawer", never "Back to project"', '/project/:id/board', 'StructureBoard'],
+      ['S6f: BeatWizard\'s own back link reads "Back to Drawer", never "Back to project"', '/project/:id/beat', 'BeatWizard'],
+      ['S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own breadcrumb shows the stored Drawer\'s real name', '/project/:id/sprint', 'QuickSprint'],
+      ['S6c/g (Binder-vs-Drawer, concrete): QuickSprint\'s own Pages/Plan toggle aria-label reads "Binder view"', '/project/:id/sprint', 'QuickSprint'],
+      ['S6g LIVE SUCCESSOR (review fix): QuickSprint\'s own Save button reads "Save to Drawer"', '/project/:id/sprint', 'QuickSprint'],
+    ]) {
+      pok(`PARKED (was "${n}") - RETIRED by #13 step 12a: ${s} is deleted`, live(p, s), `${p} -> ${el(p)}`);
+    }
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

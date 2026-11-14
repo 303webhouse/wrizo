@@ -72,12 +72,3 @@ export function snippet(text: string, max = 140): string {
 export function substantialLines(text: string, minChars = 24): string[] {
   return plainLines(text).filter(l => l.length >= minChars);   // the echoed line is shown to the writer, so it is plain text [entryText §3]
 }
-
-// Pick one of the writer's own lines to echo at the finish moment, or null when
-// there isn't a substantial one (a graceful skip — no echo rather than a
-// fragment). Reflection only: the line is the writer's own, never generated.
-export function pickEchoLine(text: string, rand: () => number = Math.random): string | null {
-  const lines = substantialLines(text);
-  if (lines.length === 0) return null;
-  return lines[Math.floor(rand() * lines.length)] ?? lines[0];
-}

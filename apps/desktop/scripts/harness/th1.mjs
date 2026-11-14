@@ -90,12 +90,7 @@ await withHarness(async (app) => {
   ok('check 2: every canonical term ID maps to a non-empty display string', lexiconCheck.allNonEmpty, JSON.stringify(lexiconCheck.mapped));
   ok('check 2: an unregistered theme id falls through to the canonical noun (t/one)', lexiconCheck.fallThrough === 'Journal', String(lexiconCheck.fallThrough));
   ok('check 2 (R1): an unregistered theme id falls through to the canonical plural (tMany/many)', lexiconCheck.fallThroughMany === 'Drawers', String(lexiconCheck.fallThroughMany));
-  // SUPERSEDED (item word-diet, Nick) — 'page' itself went invariant
-  // ({one:'Pages', many:'Pages'}), so it can no longer DEMONSTRATE the
-  // distinct-forms mechanism; 'shelf' (Shelf/Shelves, untouched) takes
-  // over as the demonstration term, and 'page's own new invariance gets
-  // its own successor check instead of being folded into this one silently.
-  // ok('check 2 (R1): t() and tMany() resolve distinct, correct number forms for the same term', lexiconCheck.pageOne === 'Page' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
+  // ARCHIVED PARK (#13 step 14): archive/th1.mjs.parked.md record 1
   ok('check 2 (R1) [word-diet successor]: t() and tMany() resolve distinct, correct number forms for the same term (shelf)', lexiconCheck.shelfOne === 'Shelf' && lexiconCheck.shelfMany === 'Shelves', JSON.stringify(lexiconCheck));
   ok('check 2 (R1) [word-diet successor]: "page" itself is now invariant — t() and tMany() return the SAME form ("Pages"), the Pages-rename grammar ruling', lexiconCheck.pageOne === 'Pages' && lexiconCheck.pageMany === 'Pages', JSON.stringify(lexiconCheck));
 
@@ -119,12 +114,7 @@ await withHarness(async (app) => {
   const journalLexiconVal = await app.evalJs("window.wrizoLexicon.t('journal')");
   ok('check 2 [big-projects-1a successor]: DeskRail has a Journal item whose label is exactly the lexicon projection for its term - found by NAME, not by position', railLabelsByName.includes(journalLexiconVal), `${JSON.stringify(railLabelsByName)} vs ${journalLexiconVal}`);
 
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a + step 2 (Fable's rulings Oct 19; chat 1's ledger 114 routed this): the Drawers item is found by NAME (position 3 now holds Library).
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // const drawersRailLabel = await app.evalJs("document.querySelectorAll('.desk-rail-item .desk-rail-label')[3]?.textContent");
-  // const drawersLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('drawer')");
-  // ok('check 2 (R1): DeskRail\'s Drawers item now renders via tMany(\'drawer\') — matches the lexicon projection exactly', drawersRailLabel === drawersLexiconMany, `${drawersRailLabel} vs ${drawersLexiconMany}`);
+  // ARCHIVED PARK (#13 step 14): archive/th1.mjs.parked.md record 2
   const drawersLexiconMany = await app.evalJs("window.wrizoLexicon.tMany('drawer')");
   const drawersLexiconOne = await app.evalJs("window.wrizoLexicon.t('drawer')");
   ok('check 2 (R1) [big-projects-1a successor]: DeskRail\'s Drawers item renders via tMany(\'drawer\') - an item whose label is exactly the plural projection exists (found by NAME), and none renders the singular',
@@ -173,7 +163,9 @@ await withHarness(async (app) => {
 
   // -- check 4/5: the effects layer is mounted, empty (Plateau schedules zero
   // events), and contributes no layout size ------------------------------------
-  await app.goto('/sprint');
+  // #13 step 12a: /sprint (QuickSprint) is deleted; any ModeStage surface serves, so a fresh loose page through the seam. Was: goto('/sprint').
+  const th1Page12a = await app.evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+  await app.goto(`/page/${th1Page12a}`);
   await app.waitFor("!!document.querySelector('.mode-row')", { label: 'a ModeStage surface (fixed-track grid present)' });
   const fx = await app.evalJs(`(() => {
     const el = document.querySelector('.theme-fx-layer');

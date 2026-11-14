@@ -36,7 +36,7 @@ export async function main({ title }) {
     // ====================== TWO TABS ======================
     const stored = (id) => ev(`(() => { try { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); return r ? r.text : null; } catch (e) { return 'ERR ' + e.message; } })()`);
     const tabB = async () => {
-      await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:900px;height:700px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
+      await ev(`(() => { const f = document.createElement('iframe'); f.id = 'wa-tab-b'; f.src = location.href; f.style.cssText = 'position:fixed;right:0;top:0;width:1200px;height:760px;z-index:99999;background:#fff;border:0'; document.body.appendChild(f); return true; })()`);
       await app.waitFor(`(() => { const f = document.getElementById('wa-tab-b'); try { return !!f.contentDocument.querySelector('.forward-only-editor') && !!f.contentWindow.__wa; } catch (e) { return false; } })()`, { timeout: 25000, label: 'tab B' });
       await sleep(900);
     };
@@ -78,6 +78,99 @@ export async function main({ title }) {
     await tabsCase('TB1', 'tab A types, then tab B (opened before A typed) types; reload each', async ({ type, sleep: sl }) => { await type('A', 'Alpha one. '); await sl(1500); await type('B', 'Beta one. '); await sl(1500); });
     await tabsCase('TB2', 'both tabs type alternately at once, a word each way', async ({ type, sleep: sl }) => { await type('A', 'a1 '); await type('B', 'b1 '); await type('A', 'a2 '); await type('B', 'b2 '); await sl(1500); });
     await tabsCase('TB3', 'tab B types and the save settles; tab A (stale) types last', async ({ type, sleep: sl }) => { await type('B', 'Bee first. '); await sl(1500); await type('A', 'Ay second. '); await sl(1500); });
+
+    // ====================== #76 PART 2: THE QUIET LINE WHEN THE SAME PAGE IS OPEN IN TWO WINDOWS ======================
+    // Both windows show ONE quiet line ([data-same-page-elsewhere]): not a pop-up (no dialog, no button, nothing that takes focus), it never stops the writer typing, and it goes when the other window closes or leaves the page. It saves nothing: windows signal each other.
+    const LINE = '[data-same-page-elsewhere]';
+    const ROWS = '.mode-pmeta, .machina-run, .flux-readout-head';   // the count rows that carry the line: Arbor's under the page, Machina's Run row, Flux's header
+    const lineJs = (docExpr) => `(() => { const doc = ${docExpr}; const l = doc.querySelector(${JSON.stringify(LINE)}); if (!l) return null; const r = l.getBoundingClientRect(); const row = l.closest(${JSON.stringify(ROWS)}); const cs = doc.defaultView.getComputedStyle(l); const ps = doc.defaultView.getComputedStyle(l.parentElement); return { text: l.textContent.trim(), w: r.width, h: r.height, dialog: !!l.closest('[role=dialog],[role=alertdialog],dialog'), focusable: !!l.querySelector('button,input,a,select,textarea,[tabindex]') || l.hasAttribute('tabindex'), inRow: !!row, last: !!row && row.lastElementChild === l, rowsInPage: doc.querySelectorAll(${JSON.stringify(ROWS)}).length, sameColour: cs.color === ps.color, icon: !!l.querySelector('svg,img,i'), animated: cs.animationName !== 'none' || cs.transitionDuration.split(',').some((x) => parseFloat(x) > 0), events: cs.pointerEvents }; })()`;
+    const dropFrames = async () => { await ev(`document.querySelectorAll('#wa-tab-b').forEach((f) => f.remove())`); await sleep(600); };   // a window of an earlier case must not stay open and answer for this one
+    const lineIn = (w) => ev(lineJs(w === 'B' ? "document.getElementById('wa-tab-b').contentDocument" : 'document'));
+    const presence = (w) => ev(w === 'B' ? "JSON.stringify(document.getElementById('wa-tab-b').contentWindow.wrizoPresence && document.getElementById('wa-tab-b').contentWindow.wrizoPresence())" : 'JSON.stringify(window.wrizoPresence && window.wrizoPresence())');
+    const lineWait = async (w, want, ms) => { const t0 = Date.now(); let v = await lineIn(w); while ((!!v) !== want && Date.now() - t0 < ms) { await sleep(400); v = await lineIn(w); } return v; };
+    const mkPage = async (pid, text) => {
+      await dropFrames();   // BEFORE the page is made: a closing window writes its whole, older store over this one's, and would take the new page with it
+      await ev(`location.hash = '#/'`); await sleep(150);
+      await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: pid, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
+      await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${pid}', 'off')`);
+    };
+    const tabBd = async () => {   // tab B, and what B looked like if it never came up
+      try { await tabB(); } catch (e) {
+        const st = await ev(`(() => { const f = document.getElementById('wa-tab-b'); if (!f) return 'no frame'; try { const d = f.contentDocument, w = f.contentWindow; return JSON.stringify({ ready: d.readyState, hash: w.location.hash, editor: !!d.querySelector('.forward-only-editor'), wa: !!w.__wa, body: (d.body.innerText || '').slice(0, 160) }); } catch (x) { return 'ERR ' + x.message; } })()`);
+        throw new Error(`${e.message.split('; diag=')[0]}; B is ${st}`);
+      }
+    };
+    const openA = async (pid) => {
+      await dropFrames();
+      await ev(`location.hash = '#/page/${pid}'`);
+      await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'tab A' }); await sleep(700);
+    };
+    await run('TW1', '#76 part 2: the same page open in two windows - both show the quiet line, it takes no focus and never blocks typing', async (fails, notes) => {
+      const pid = `wa-warn-${Date.now().toString(36)}`;
+      await mkPage(pid, 'Base. ');
+      await openA(pid);
+      const alone = await lineIn('A');
+      if (alone) fails.push(`the line shows in a window that is the only one open: ${JSON.stringify(alone)}`);
+      await tabBd();
+      const a = await lineWait('A', true, 9000), b = await lineWait('B', true, 9000);
+      if (!a) fails.push('window A shows no quiet line though the same page is open in window B');
+      if (!b) fails.push('window B shows no quiet line though the same page is open in window A');
+      for (const [w, v] of [['A', a], ['B', b]]) {
+        if (!v) continue;
+        if (!(v.w > 0 && v.h > 0)) fails.push(`window ${w}'s line is not visible (${v.w}x${v.h})`);
+        if (v.dialog) fails.push(`window ${w}'s line is a dialog, it must be a quiet line`);
+        if (v.focusable) fails.push(`window ${w}'s line holds something that takes focus`);
+        if (!v.text) fails.push(`window ${w}'s line is empty`);
+        if (v.rowsInPage > 0 && !(v.inRow && v.last)) fails.push(`window ${w}: the page has a count row, but the line is not LAST in it (inRow ${v.inRow}, last ${v.last})`);
+        if (v.inRow && !v.sameColour) fails.push(`window ${w}: the line is not in its row's label colour`);
+        if (v.icon) fails.push(`window ${w}: the line carries an icon`);
+        if (v.animated) fails.push(`window ${w}: the line moves (animation or transition)`);
+        if (v.events !== 'none') fails.push(`window ${w}: the line takes pointer events (${v.events})`);
+      }
+      notes.push(`A says ${JSON.stringify(a && a.text)}; B says ${JSON.stringify(b && b.text)}`);
+      await tabFocusEnd('A'); await d.type('typed while warned ');
+      const inA = (await tabRead('A')).text;
+      if (!inA.includes('typed while warned')) fails.push(`typing in window A was blocked while the line showed: A reads ${JSON.stringify(inA)}`);
+      const focused = await ev(`!!document.activeElement && !!document.activeElement.closest('.forward-only-editor')`);
+      if (!focused) fails.push('the editor in window A lost focus while the line showed');
+    });
+    await run('TW4', '#76 part 2: in a Typewriter the line is hidden with its count row', async (fails, notes) => {
+      const pid = `wa-warn4-${Date.now().toString(36)}`;
+      await mkPage(pid, 'Base. ');
+      await ev(`localStorage.setItem('wrizo-typewriter-page-${pid}', 'on')`);
+      await openA(pid);
+      await tabBd();
+      await sleep(4500);
+      const v = await lineIn('A');
+      notes.push(`line in A: ${JSON.stringify(v && { text: v.text, w: v.w, h: v.h, inRow: v.inRow })}`);
+      if (v && v.w > 0 && v.h > 0) {
+        const hidden = await ev(`(() => { const l = document.querySelector(${JSON.stringify(LINE)}); let n = l; while (n && n !== document.body) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility === 'hidden' || parseFloat(c.opacity) === 0) return true; n = n.parentElement; } return false; })()`);
+        if (!hidden) fails.push('in a Typewriter the line is still visible; it must hide with its count row');
+      }
+    });
+    await run('TW2', '#76 part 2: the line goes when the other window closes', async (fails) => {
+      const pid = `wa-warn2-${Date.now().toString(36)}`;
+      await mkPage(pid, 'Base. ');
+      await openA(pid);
+      await tabBd();
+      if (!(await lineWait('A', true, 9000))) fails.push('no line to remove: window A never showed it');
+      await ev(`document.getElementById('wa-tab-b').remove()`);
+      if (await lineWait('A', false, 12000)) fails.push(`the line is still in window A twelve seconds after window B closed; A believes ${await presence('A')}`);
+    });
+    await run('TW3', '#76 part 2: a window on a DIFFERENT page shows no line; it shows once both are on the same page', async (fails) => {
+      const p1 = `wa-warn3a-${Date.now().toString(36)}`, p2 = `wa-warn3b-${Date.now().toString(36)}`;
+      await mkPage(p1, 'Page one. '); await mkPage(p2, 'Page two. ');
+      await openA(p1);
+      await tabBd();
+      await ev(`document.getElementById('wa-tab-b').contentWindow.location.hash = '#/page/${p2}'`); await sleep(3500);
+      const a = await lineIn('A'), b = await lineIn('B');
+      if (a || b) fails.push(`two windows on different pages show the line (A ${JSON.stringify(a && a.text)}, B ${JSON.stringify(b && b.text)}); A believes ${await presence('A')}; B believes ${await presence('B')}; B at ${await ev("document.getElementById('wa-tab-b').contentWindow.location.hash")}`);
+      await ev(`document.getElementById('wa-tab-b').contentWindow.location.hash = '#/page/${p1}'`);
+      if (!(await lineWait('A', true, 9000))) fails.push('window B came to the same page and window A shows no line');
+      if (!(await lineWait('B', true, 9000))) fails.push('window B came to the same page and shows no line');
+    });
+
+    await dropFrames();   // the second window of the last case must not stay on top of the page for the cases that follow (it covered the caret the next cases look for)
 
     // ====================== 10,000 WORDS ======================
     await run('BG', 'a 10,000-word page: typing, Enter, Ctrl+Home, Ctrl+End, PageDown, arrows, Backspace at the end', async (fails, notes) => {

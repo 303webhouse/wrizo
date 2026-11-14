@@ -43,13 +43,15 @@ globalThis.setTimeout = (fn, ms, ...rest) => { timersScheduled.push(ms); return 
 const transpile = (text) => ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
 
 // One isolated copy of the sync client (its own stubs, its own module state) per variant.
-async function loadClient(tag, syncSourceOverride) {
+// opts.base (#79): one dirty page that has a kept merge base, so the FIRST request is the pull-first one (push: {})
+async function loadClient(tag, syncSourceOverride, opts = {}) {
   const dir = path.join(ROOT, tag, 'store');
   fs.mkdirSync(dir, { recursive: true });
   const w = (name, text) => fs.writeFileSync(path.join(dir, name), text);
+  if (opts.base) lsMap.set('wrizo-sync-base:jb1', 'an older text of the page');
   w('persistence.mjs', [
     'export const calls = { applyRemote: 0, markClean: 0, backfill: 0 };',
-    'export function getDirtyRecords() { return { projects: [{ id: "p1", title: "P", type: "creative", createdAt: "x", updatedAt: "x" }], storyPlans: [], sessions: [], drafts: [], journalEntries: [], drawers: [] }; }',
+    'export function getDirtyRecords() { return { projects: [{ id: "p1", title: "P", type: "creative", createdAt: "x", updatedAt: "x" }], storyPlans: [], sessions: [], drafts: [], journalEntries: ' + (opts.base ? '[{ id: "jb1", text: "a page", createdAt: "x", updatedAt: "x" }]' : '[]') + ', drawers: [] }; }',
     'export function markClean() { calls.markClean += 1; }',
     'export function applyRemoteRecords() { calls.applyRemote += 1; }',
     // DELETE FOR GOOD (ledger 107) - sync.ts applies the server's acknowledgement of a refused push; this proof's responses carry none.
@@ -72,8 +74,11 @@ async function loadClient(tag, syncSourceOverride) {
   // B10.1 - the stale-client guard's two leaf modules, the real files. No build is known here, so the guard never trips.
   w('clientBuild.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/clientBuild.ts'), 'utf8')));
   w('staleClient.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/staleClient.ts'), 'utf8')));
+  // #79 - sync.ts reaches the device-local merge bases (persistence/syncBase.ts, no imports) directly: the real file, so a page with no kept base behaves as before
+  w('syncBase.mjs', transpile(fs.readFileSync(path.join(SRC, 'store/persistence/syncBase.ts'), 'utf8')));
   const syncText = (syncSourceOverride ?? fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8'));
   const syncOut = transpile(syncText)
+    .replace(/from (['"])\.\/persistence\/syncBase\1/g, "from './syncBase.mjs'")
     .replace(/from (['"])\.\/(persistence|api|entryText|guestState|storageHealth|clientBuild|staleClient)\1/g, "from './$2.mjs'");
   w('sync.mjs', syncOut);
   const url = (n) => 'file://' + path.join(dir, n).replace(/\\/g, '/');
@@ -108,15 +113,15 @@ const lsSnapshot = () => JSON.stringify([...lsMap.entries()].sort());
 // =============================================================================
 // S2 — A LATE PULL after a sign-out writes NOTHING.
 // =============================================================================
-async function lateSuccess(tag, source) {
-  const c = await loadClient(tag, source);
+async function lateSuccess(tag, source, opts = {}) {
+  const c = await loadClient(tag, source, opts);
   const before = lsSnapshot();
   const run = c.sync.syncOnce();
   await flush();
   c.sync.stopSync();                      // the sign-out (force) retires the stalled run
   const statusAfterStop = c.sync.getSyncStatus();
   c.api.pending[0].resolve(response('2026-10-07T01:00:00.000Z'));  // ...and then the network finally answers
-  await run;
+  if (opts.noWait) await flush(); else await run;   // a mutant that lets the run go on waits for the NEXT request, which never answers
   await flush();
   return { c, before, statusAfterStop };
 }
@@ -199,7 +204,9 @@ const syncSrc = fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8');
 {
   const awaits = [...syncSrc.matchAll(/await apiSync\(/g)].map((m) => m.index);
   const missing = awaits.filter((i) => !/live\(\);/.test(syncSrc.slice(i, i + 220)));
-  ok('(T1) every `await apiSync(` is followed by live() before any write', awaits.length === 3 && missing.length === 0, JSON.stringify({ awaits: awaits.length, missing }));
+  // SUPERSEDED (#79: the pull-first request is a FOURTH `await apiSync(`, followed by live() like the others) - by (T1b) below. Parked, not deleted: it pinned exactly three awaits. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(T1) every `await apiSync(` is followed by live() before any write', awaits.length === 3 && missing.length === 0, JSON.stringify({ awaits: awaits.length, missing }));
+  ok('(T1b) every `await apiSync(` (the pull-first request included) is followed by live() before any write', awaits.length === 4 && missing.length === 0, JSON.stringify({ awaits: awaits.length, missing }));
   ok('(T2) stopSync bumps the generation and releases the in-flight flag',
     /export function stopSync\(\): void \{\s*running = false;[\s\S]*?generation \+= 1;\s*inFlight = false;/.test(syncSrc), '');
   // SUPERSEDED (B10.1: runSync reports its outcome) — by (T3b) below. Parked, not deleted: it pinned a BARE `return;`, and the catch now
@@ -236,6 +243,17 @@ const syncSrc = fs.readFileSync(path.join(SRC, 'store/sync.ts'), 'utf8');
     '        resp = await apiSync({ lastSyncAt: cursor, push: payloadOf(chunks[0]) });\n'));
   ok('(M2) MUTATION KILLED: without the live() check after the main apiSync, the late pull DOES write records',
     m2.c.persistence.calls.applyRemote === 1, JSON.stringify(m2.c.persistence.calls));
+
+  // (S2d, M3) #79 - THE PULL-FIRST REQUEST (a page with unsynced words and a kept merge base is merged with the server's copy before its push). A late answer to it after a sign-out writes NOTHING; without the live() after it, it DOES.
+  const s2d = await lateSuccess('s2d', undefined, { base: true, noWait: true });
+  ok('(S2d) a late answer to the pull-first request after sign-out writes NO records into the wiped device (the request really was the pull-first one: push {})',
+    s2d.c.persistence.calls.applyRemote === 0 && JSON.stringify(s2d.c.api.pending[0].payload.push) === '{}', JSON.stringify({ calls: s2d.c.persistence.calls, push: s2d.c.api.pending[0].payload.push }));
+  const m3 = await lateSuccess('m3', mutate(
+    '      const pre = await apiSync({ lastSyncAt: cursor, push: {} });\n      live();\n',
+    '      const pre = await apiSync({ lastSyncAt: cursor, push: {} });\n'), { base: true, noWait: true });
+  ok('(M3) MUTATION KILLED: without the live() check after the pull-first request, the late pull DOES write records',
+    m3.c.persistence.calls.applyRemote >= 1, JSON.stringify(m3.c.persistence.calls));
+  lsMap.delete('wrizo-sync-base:jb1');
 }
 
 globalThis.setTimeout = realSetTimeout;

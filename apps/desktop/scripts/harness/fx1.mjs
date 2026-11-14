@@ -77,6 +77,7 @@ const freshScriptPage = async (app) => {
 // strip) before any rail content is read.
 const freshLoosePage = async (app) => {
   await freshDesk(app);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await sleep(500);
@@ -200,15 +201,7 @@ await withHarness(async (app) => {
   ok('S1: the fade is active once scrolled — the first rendered line\'s effective (mask-ramp) opacity is < 0.5',
     lastRow.scrolled === true && lastRow.firstOpacity !== null && lastRow.firstOpacity < 0.5,
     JSON.stringify(lastRow));
-  // ---- PARKED - SUPERSEDED by POLISH #10 item 17 (Nick, Oct 25: the typewriter pays Enter's line AT Enter, not at the next keystroke): the page opens
-  // zoomed with its first line AT the hold, so the empty row Enter makes is one line past it and is paid at once - row 0 has scrolled one line
-  // (24px on the train-11 bisect) and `scrolled` is true. What C2 guards - nothing fades before the writer has written past the hold - is unchanged:
-  // the first line is still at full strength (firstOpacity 1) and the move is the ONE line Enter owes. Kept VERBATIM and no longer run; record in the
-  // parked section (it re-reads this row from the live run).
-  //
-  // ok('S1 (C2): a fresh/short page never fades before it has actually scrolled',
-  //   rows[0].scrolled === false && rows[0].firstOpacity === 1, JSON.stringify(rows[0]));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 1
   fx1C2Seen = { row: rows[0], lineHeight };
   ok('S1 (C2) [item 17 successor]: a fresh/short page never FADES its first line before the writer has written past the hold - at the first Enter it has moved no more than the one line Enter owes',
     rows[0].firstOpacity === 1 && rows[0].scrollTop <= lineHeight * 1.25 + 0.5, JSON.stringify(fx1C2Seen));
@@ -353,9 +346,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]').click()"); // Journal
   await sleep(220);
   const stripItemRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-strip-item')).borderRadius");
-  // PARKED (#13 step 4b): the three S4 radius checks below asserted only square corners - law retired by Nick, Nov 1; no successor needed
-  // (a retired law, not a falsified check); design is covered by the Wrizors' imply-never-literal review. Kept VERBATIM, never run; the reads stay (the fixture walk is unchanged).
-  // ok('S4 (successor to "...border-radius is 0px on a drawer pull"): computed border-radius is 0px on a strip item', stripItemRadius === '0px', stripItemRadius);
+  // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 2
 
   const cascadeActionRadius = await app.evalJs("getComputedStyle(document.querySelector('.wz-cascade-action')).borderRadius");
   // ok('S4 (successor to "...border-radius is 0px on a place-face verb"): computed border-radius is 0px on a category panel\'s action button',
@@ -396,17 +387,7 @@ await withHarness(async (app) => {
   await freshScriptPage(app);
   await openSliver(app);
   await sleep(150);
-  // ---- PARKED — SUPERSEDED by item 83 M5 (DR3), 2026-08-25 ----------
-  // Kept VERBATIM and no longer run. DR3 retired the Prose|Screenplay
-  // tablist, so `.wz-sliver-structure-btn.active` no longer exists and
-  // getComputedStyle(null) THREW here rather than failing an assertion.
-  // The LAW it guarded is untouched and now stricter: R7 makes menus rest
-  // OLIVE, so no resting control in the sliver may be brass. The successor
-  // asserts that against the control that replaced the tablist.
-  //
-  // const structureBtnBg = await app.evalJs("getComputedStyle(document.querySelector('.wz-sliver-structure-btn.active')).backgroundColor");
-  // ok('CD1 S2 (was "S6: the active Structure button\'s computed background is not brass"): the active Structure button (in the sliver) is not brass', structureBtnBg !== 'rgb(255, 152, 0)', structureBtnBg);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 3
   const structureRowBg = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-cascade-action')].find(x => /^Convert to/.test(x.textContent)); return b ? getComputedStyle(b).backgroundColor : 'none'; })()");
   ok('CD1 S2 [DR3 successor, R7-strengthened]: the Structure control (now the Convert row) is not brass at rest - menus rest olive',
     structureRowBg !== 'rgb(255, 152, 0)', structureRowBg);
@@ -426,18 +407,7 @@ await withHarness(async (app) => {
   await freshProsePage(app);
   await openSliver(app);
   await sleep(200);
-  // ---- PARKED — SUPERSEDED by item 83 M4 (R5), 2026-08-25 ----------
-  // Kept VERBATIM and no longer run. R5 makes the foot exactly TYPEWRITER
-  // / PROGRESS / FULL SCREEN, and the Typewriter became a MENU-OPENING
-  // instrument with its own glyph - `.typewriter-toggle` no longer renders
-  // in the sliver at all, so getComputedStyle(null) THREW here. The LAW is
-  // unchanged and now stricter under R7 (menus rest olive, brass is press
-  // only); the successor asserts it against the instrument that replaced it.
-  //
-  // const typewriterGlyphColor = await app.evalJs("getComputedStyle(document.querySelector('.typewriter-toggle')).color");
-  // ok('SC1 S3 (was "S6: the Typewriter glyph\'s computed color is not brass", measured on a script page): the Typewriter glyph is not brass at rest — asserted on PROSE now, the surface that still carries it; S6\'s law is unchanged, only its address moved',
-  // typewriterGlyphColor !== 'rgb(255, 152, 0)', typewriterGlyphColor);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 4
   const typewriterInstrumentColor = await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-instruments-btn')].find(x => (x.getAttribute('aria-label')||'').startsWith('Typewriter')); return b ? getComputedStyle(b).color : 'absent'; })()");
   ok('SC1 S3 [R5 successor, R7-strengthened]: the Typewriter INSTRUMENT is not brass at rest - menus rest olive, brass is the press only',
     typewriterInstrumentColor !== 'rgb(255, 152, 0)', typewriterInstrumentColor);
@@ -580,19 +550,9 @@ if (process.env.HARNESS_PARKED === '1') {
       const ed = document.querySelector('.forward-only-editor').getBoundingClientRect();
       return (ed.top - stage.top) / stage.height;
     })()`);
-    // ---- RE-PARKED, generation 2, by page-size's park audit (Oct 24): a fresh prose page now opens in the Typewriter ZOOM (Arbor's default), where
-    // the writing line is held at the band's anchor - 60% of the column (Cursor's mockup, e3c4e462; pageScale.ts ZOOM_ANCHOR) - and the first line
-    // starts there (lane 3 read 0.6002). The gen-1 record, VERBATIM, no longer runs (its "double supersession" precedent is quoted above at S1 script).
-    //
-    // pok('PARKED (was "S1: a fresh prose page\'s first line starts within 40-55% of the stage height") — FX3 S3: the working value moved to a NEW 30-35% band',
-    //   startFracParked >= 0.28 && startFracParked <= 0.37, String(startFracParked));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 5
     const startZoomParked = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
-    // ---- RE-PARKED, generation 3: POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. The gen-2 record, VERBATIM, no longer runs.
-    //
-    // pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S1: a fresh prose page\'s first line starts within 40-55% of the stage height\') — FX3 S3: the working value moved to a NEW 30-35% band") — page-size: in the Typewriter zoom (Arbor\'s default) a fresh page\'s first line starts at the band\'s anchor, 60% of the column',
-    //   startZoomParked === 'true' && Math.abs(startFracParked - 0.6) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 6
     pok('PARKED, generation 3 (was gen-2 "PARKED, generation 2 (...) — page-size: in the Typewriter zoom a fresh page\'s first line starts at the band\'s anchor, 60% of the column") — polish #10 item 19: the anchor is the middle, 50%',
       startZoomParked === 'true' && Math.abs(startFracParked - 0.5) <= 0.05, JSON.stringify({ startFracParked, zoom: startZoomParked }));
 
@@ -654,15 +614,7 @@ if (process.env.HARNESS_PARKED === '1') {
       return { width: p.getBoundingClientRect().width, layoutW: p.offsetWidth, k: parseFloat(cs.getPropertyValue('--wz-k')) || 1, z: zoomed ? (parseFloat(cs.getPropertyValue('--wz-zoom')) || 1) : 1, zoomed }; })()`);
     await freshScriptPage(app);
     const scriptGeomRectParked = await app.evalJs(rectOf('.mode-pagecol'));
-    // ---- RE-PARKED, generation 2, by page-size's park audit (Oct 24): "prose's own band is unchanged" is falsified by page-size itself - prose is now
-    // a letter page too (8.5 page-inches, 620px laid out), painted at the stage's scale and, zoomed, stage-wide in its column (lane 3: 1320px). The
-    // gen-1 record, VERBATIM, no longer runs.
-    //
-    // pok('PARKED (was "S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value") — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged',
-    //   Math.abs(scriptGeomRectParked.width - 816) <= 1
-    //     && proseGeomRectParked.width >= 600 && proseGeomRectParked.width <= 800,
-    //   JSON.stringify({ proseGeomRectParked, scriptGeomRectParked }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx1.mjs.parked.md record 7
     pok('PARKED, generation 2 (was gen-1 "PARKED (was \'S2: the script paper\'s rect matches the prose paper\'s asserted width band [600,800], within 2px of the prose value\') — SC1 S1: script is a true 8.5in US Letter page and no longer shares prose\'s measure; prose\'s own band is unchanged") — page-size: script is still 816px; prose\'s PAPER is the ruled letter page (620px laid out) painted at k (x the zoom)',
       Math.abs(scriptGeomRectParked.width - 816) <= 1
         && !!prosePaperParked && Math.abs(prosePaperParked.layoutW - 620) <= 0.5 && Math.abs(prosePaperParked.width - prosePaperParked.layoutW * prosePaperParked.k * prosePaperParked.z) <= 1,

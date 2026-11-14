@@ -319,13 +319,7 @@ try { await withHarness(async (app) => {
   ok(`P2 the same surface in every arm (mode/typewriter: ${[...modes].join(' ')}), the Typewriter off`, modes.size === 1 && [...modes][0].endsWith('/false'), JSON.stringify([...modes]));
   ok('P2b that surface is Draft (the ordinary page)', modes.size === 1 && [...modes][0].startsWith('draft/'), JSON.stringify([...modes]));
   const loaded = [...res.T, ...res.M];
-  // PARKED 2026-10-31 (SUPERSEDED, first run, Actions 41247909453: the frame floor assumed the display's 60 fps, but an undamped layer at 1920 is
-  // what SLOWS the frames - 35-52 frames in 1.5 s on the runner, every one of them drawing - so the floor measured the layer's cost, not whether it
-  // animated). Original, verbatim:
-  // const animated = loaded.filter((r) => r.idle.n >= 45 && r.idle.drawFrames >= 0.8 * r.idle.n);
-  // ok(`P3 the stand-in really animated at rest (>= 45 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animated.length}/${loaded.length}`,
-  //   loaded.length > 0 && animated.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
-  // SUCCESSOR P3b: it animated (>= 80% of the rest frames drew) at any frame rate above 13 fps (>= 20 frames in 1.5 s); its cost is COST's to report.
+  // ARCHIVED PARK (#13 step 14): archive/flux3-latency.mjs.parked.md record 1
   const animatedB = loaded.filter((r) => r.idle.n >= 20 && r.idle.drawFrames >= 0.8 * r.idle.n);
   timing(`P3b the stand-in really animated at rest (>= 20 frames in ${IDLE_MS} ms, >= 80% of them drawing) in every loaded arm-round: ${animatedB.length}/${loaded.length}`,
     loaded.length > 0 && animatedB.length === loaded.length, JSON.stringify(loaded.map((r) => ({ arm: r.name, round: r.round, frames: r.idle.n, drew: r.idle.drawFrames }))));
@@ -342,13 +336,7 @@ try { await withHarness(async (app) => {
   const t = judge(res.C, res.T);
   timing(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
     t.lat, `C ${show(t.C)} | T ${show(t.X)} | C per round median/p95 ${cRounds}`);
-  // PARKED 2026-10-31 (SUPERSEDED, box turn 22:32-22:45Z and Actions 41248449604, e67e555a: D counted a draw on ANY canvas as the layer's. Every
-  // T round showed exactly 2 drawing frames: the one in flight at the first key (0 ms) and one ~3.1 s into the typing, in every round on both
-  // machines - not the stand-in, which was holding (90 ms between keys, 600 ms to resume). D could not say whose frame it was). Original, verbatim:
-  // ok(`D${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: ${t.xDraws} frame(s) drew while T's keys landed (control ${t.cDraws}; allowed control + ${res.T.length}, one in flight per round)`,
-  //   t.damp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, drewAtMsFromFirstKey: r.typing.drawAt, standin: r.standin }))));
-  // SUCCESSOR D2: the frames in which THE LAYER'S OWN canvas drew while the keys landed, at most the one in flight per round; every other canvas
-  // that drew is named in OTHER below.
+  // ARCHIVED PARK (#13 step 14): archive/flux3-latency.mjs.parked.md record 2
   ok(`D2${MUTANT_RUN ? ' (FLUX3_MUTANT=1)' : ''} the drawing layer damps while she types: its own canvas drew in ${t.xLayer} frame(s) while T's keys landed (allowed ${res.T.length}, the one in flight at the first key, per round)`,
     t.layerDamp, JSON.stringify(res.T.map((r) => ({ round: r.round, typingFrames: r.typing.n, layerDrew: r.typing.layerFrames, standin: r.standin }))));
   ok(`OTHER (information) canvases other than the layer that drew while the keys landed: C ${JSON.stringify(res.C.map((r) => r.typing.other))} | T ${JSON.stringify(res.T.map((r) => r.typing.other))}`, true, '');
@@ -360,10 +348,7 @@ try { await withHarness(async (app) => {
     const mLanded = res.M.length > 0 && res.M.every((r) => r.typing.n > 0 && r.typing.drawFrames >= 0.8 * r.typing.n);
     ok(`MUT premise: the mutant landed - with its damping skipped the layer drew through the typing (>= 80% of the frames while the keys landed, every round)`, mLanded,
       JSON.stringify(res.M.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames }))));
-    // PARKED 2026-10-31 (SUPERSEDED with D, whose any-canvas count it reused; see D's park above). Original, verbatim:
-    // ok(`MUT the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D: ${m.damp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, ${m.xDraws} drawing frame(s) while typing`,
-    //   mLanded && !(m.lat && m.damp), `C ${show(m.C)} | M ${show(m.X)}`);
-    // SUCCESSOR MUT-b: the mutant fails L or D2.
+    // ARCHIVED PARK (#13 step 14): archive/flux3-latency.mjs.parked.md record 3
     ok(`MUT-b the no-damping mutant FAILS the probe (caught by L: ${m.lat ? 'no' : 'YES'}; caught by D2: ${m.layerDamp ? 'no' : 'YES'}) - M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}, its layer drew in ${m.xLayer} frame(s) while typing`,
       mLanded && (ON_BOX ? !(m.lat && m.layerDamp) : !m.layerDamp), `C ${show(m.C)} | M ${show(m.X)}`);   // on Actions only the D2 half gates: the L half is a timing line
   }

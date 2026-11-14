@@ -94,8 +94,7 @@ await withHarness(async (app) => {
         }
         const gapsRect = await rectOf('.deck-gaps');
         const cs0 = await q("(() => { const b = document.querySelector('.deck-gap'); const s = getComputedStyle(b); return { shadow: s.boxShadow, radius: s.borderRadius, color: s.color }; })()");
-        // PARKED (#13 step 4b): law retired by Nick, Nov 1; no successor needed (a retired law, not a falsified check); design is covered by the Wrizors' imply-never-literal review. Kept VERBATIM, never run.
-        // ok(`[${T}] the names are flat, square, no shadow`, cs0.shadow === 'none' && /^0(px)?$/.test(cs0.radius), JSON.stringify(cs0));
+        // ARCHIVED PARK (#13 step 14): archive/guided-w5-part2.mjs.parked.md record 1
         const c0 = await contrast('.deck-gap');
         ok(`[${T}] the names meet the 4.5:1 label floor on their ground`, c0 >= 4.5, String(c0));
         await shot(`gaps-${tag}`);

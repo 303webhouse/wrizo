@@ -56,10 +56,7 @@ for (const m of MUTANTS) {
           : cost('hold') - cost('pre') >= 10 && cost('fade') - cost('fast') >= 10;
     ok(`${m.id} (landed): the injected regression is visible in the guard's own samples`, landed, JSON.stringify(info));
   }
-  // PARKED - SUPERSEDED by the reference-shift check (Fable, Nov 6; coarse-C stabilising). The line(s) that stood, verbatim (the successor is the line below this block):
-//   ok(`${m.id}: the verdict - ${m.red.length ? `${m.red.join(' and ')} RED` : 'all green'}${m.red.length && m.green.length ? ', ' : ''}${m.red.length && m.green.length ? `${m.green.join(' and ')} stay green` : ''}`,
-//     r.status === m.exit && m.red.every((p) => line(p).startsWith('FAIL')) && m.green.every((p) => line(p).startsWith('PASS')),
-//     `exit=${r.status} | ${[...m.red, ...m.green].map((p) => line(p).slice(0, 5) + p).join(' | ')}${m.id === 'M0' ? ' | ' + JSON.stringify(info) : ''}`);
+  // ARCHIVED PARK (#13 step 14): archive/rhizome-latency-mutant.mjs.parked.md record 1
   const redAny = m.redAny || null;   // at least one of these goes red (M4: the coarse C or the finer C2 - which one is not the point, that the fade's cost cannot slip through both is)
   ok(`${m.id}: the verdict - ${redAny ? `${redAny.join(' or ')} RED` : m.red.length ? `${m.red.join(' and ')} RED` : 'all green'}${(m.red.length || redAny) && m.green.length ? ', ' : ''}${(m.red.length || redAny) && m.green.length ? `${m.green.join(' and ')} stay green` : ''}`,
     r.status === m.exit && m.red.every((p) => line(p).startsWith('FAIL')) && (!redAny || redAny.some((p) => line(p).startsWith('FAIL'))) && m.green.every((p) => line(p).startsWith('PASS')),

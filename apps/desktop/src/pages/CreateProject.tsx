@@ -70,15 +70,13 @@ export function CreateProject() {
     if (!selected) return;
     const { domain } = KIND_META[selected];
     const project = createBinder(title.trim(), selected, drawerId, domain);
-    // 'Something else' opens the project overview (shape it as you go). Every real
-    // form is born as binder + first page and lands on the ink — the typed
+    // Every form is born as binder + first page and lands on the ink — the typed
     // pointer (domain + form + pageType) is set from birth, so the mirror card
     // speaks this project's language from day one. S1 — Screenplay is the one
     // kind whose first page isn't a manuscript chapter: it's a script page,
     // caret waiting in the scene-heading ghost (still no title demanded).
-    if (selected === 'other') {
-      navigate(`/project/${project.id}`);
-    } else if (selected === 'screenplay') {
+    // (#13 step 12a: 'Something else' and the project overview it opened are gone.)
+    if (selected === 'screenplay') {
       const page = createScriptPage(project.id);
       navigate(`/page/${page.id}`);
     } else {
@@ -109,10 +107,7 @@ export function CreateProject() {
 
   const note = !selected
     ? 'Pick a form to begin — no title required.'
-    : selected === 'other'
-      // the 'other' form carries no note [CreateProject §1]
-      ? ''
-      : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
+    : `${KIND_META[selected].label} starts on its first page, in Free write, with the caret waiting.`;
 
   return (
     <>
@@ -152,15 +147,6 @@ export function CreateProject() {
           </div>
         </div>
       ))}
-
-      <button
-        type="button"
-        className={`cp-else${selected === 'other' ? ' sel' : ''}`}
-        aria-pressed={selected === 'other'}
-        onClick={() => setSelected('other')}
-      >
-        Something else — start blank and shape it as you go
-      </button>
 
       {/* B3 S3 — door 1: "Start from a deck…", beneath Blank (this whole
           picker above, unconditionally first-listed and untouched). Opens

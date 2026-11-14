@@ -112,6 +112,7 @@ const freshProjectPage = async (app, marker) => {
   // asserted; live successor: pb1.mjs.)
 const freshLoosePage = async (app) => {
   await freshDesk(app);
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted, framed (loose)' });
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
@@ -271,13 +272,7 @@ await withHarness(async (app) => {
     outsideDrawerNote: !!document.querySelector('body > *:not(.desk-frame) .journal-autosave-note, .desk-frame-stagecol .journal-autosave-note'),
     inPageFace: document.querySelector('.wz-pageface-footer')?.textContent ?? null,
   })`);
-  // SUPERSEDED (item word-diet, Nick) — the saved-silently footer RETIRES
-  // whole (REMOVE); its premise — that it appears exactly once, inside the
-  // Page panel — no longer holds, since it appears NOWHERE now, panel
-  // included. ORIGINAL claim parked verbatim:
-  // ok('S3/S2: the saved-silently line appears nowhere outside the Page panel when framed',
-  //   !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === 'Saved automatically — even if you never file it to a Drawer or the Shelf.',
-  //   JSON.stringify(footerOnlyInDrawer));
+  // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 1
   ok('S3/S2 [word-diet successor]: the saved-silently line appears NOWHERE at all now (REMOVE) — not outside the Page panel, not inside it either',
     !footerOnlyInDrawer.outsideDrawerNote && footerOnlyInDrawer.inPageFace === null,
     JSON.stringify(footerOnlyInDrawer));
@@ -316,11 +311,7 @@ await withHarness(async (app) => {
 
   await openPageCategory(app);
   const projectHome = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole
-  // (bare "{drawer name}"); this fixture's project is never titled (F4's
-  // "no title required" door), so pageHome.ts's own fallback applies.
-  // ORIGINAL claim parked verbatim:
-  // ok('S4/S2: the Page category\'s Where-it-lives names the project by title (not the Journal)', projectHome?.startsWith('In ') && projectHome !== 'In the Journal', projectHome);
+  // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 2
   ok('S4/S2 [word-diet successor]: the Page category\'s Where-it-lives names the project by bare title ("Untitled" — not the Journal)', projectHome === 'Untitled', projectHome);
 
   // B1 park sweep — the retired Journal LIST's own row-count read is
@@ -376,9 +367,7 @@ await withHarness(async (app) => {
 
   await openPageCategory(app);
   const looseHomeText = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
-  // "Loose — belongs nowhere yet" -> "Unfiled"; the ORIGINAL claim parked verbatim:
-  // ok('S4/DoD: the loose page\'s Page category text reads exactly "Loose — belongs nowhere yet"', looseHomeText === 'Loose — belongs nowhere yet', looseHomeText);
+  // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 3
   ok('S4/DoD [word-diet successor]: the loose page\'s Page category text reads exactly "Unfiled"', looseHomeText === 'Unfiled', looseHomeText);
 
   // Anti-solicitation: no file-it-first prompt anywhere reachable from a
@@ -426,11 +415,27 @@ await withHarness(async (app) => {
   ok('B2 S7 successor of "B1: a journal page filed to a project STILL turns up in the Journal (forgets nothing)": filing now REMOVES its card from the Journal Board (S4\'s own DoD — "Journal unchecks itself and the page leaves the Journal Board")',
     !filedPinnedIds.includes(filedEntry.id), JSON.stringify({ filedPinnedIds, filedEntryId: filedEntry.id }));
 
+  // ---- PARKED - SUPERSEDED by #13 step 12a (Nick's dormant answers, Oct 29; Fable's door ruling): ProjectHome is deleted, and
+  // /project/:id is a redirect to the project's first page (c13-12a-doors.mjs D1). Kept VERBATIM below and no longer run; the live
+  // successor and its mutant follow, and hold before the delete (ProjectHome lists the page) and after it (the route opens it).
+  //
+  // await app.goto(`/project/${filedEntry.projectId}`);
+  // await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
+  // await sleep(200);
+  // const projectAlsoLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
+  // ok('S5 DoD: the filed page lists in its new project', projectAlsoLists);
+  const holds12a = (s, id) => !!s && ((s.hash === `#/page/${id}` && s.editor) || (s.hash.startsWith('#/project/') && s.text.includes('AB3FORGETSNOTHING')));
   await app.goto(`/project/${filedEntry.projectId}`);
-  await app.waitFor("!!document.querySelector('.page')", { label: 'ProjectHome (forgets-nothing check)' });
-  await sleep(200);
-  const projectAlsoLists = (await app.evalJs("document.querySelector('.page')?.innerText ?? ''")).includes('AB3FORGETSNOTHING');
-  ok('S5 DoD: the filed page lists in its new project', projectAlsoLists);
+  let projectRoute12a = null;
+  for (let i = 0; i < 50 && !holds12a(projectRoute12a, filedEntry.id); i += 1) {
+    await sleep(100);
+    projectRoute12a = await app.evalJs("({ hash: location.hash, editor: !!document.querySelector('.forward-only-editor'), text: document.querySelector('.page')?.innerText ?? '' })");
+  }
+  ok('S5 DoD [c13-12a successor]: the project holds the filed page - its route opens that page (its only page, so its first), or (before 12a) ProjectHome lists it',
+    holds12a(projectRoute12a, filedEntry.id), JSON.stringify({ hash: projectRoute12a?.hash, editor: projectRoute12a?.editor }));
+  ok('S5 [c13-12a successor mutant]: the reader is red on another page\'s route, on a page route with no editor, and on a project page that does not list it',
+    !holds12a({ hash: '#/page/not-it', editor: true, text: '' }, filedEntry.id) && !holds12a({ hash: `#/page/${filedEntry.id}`, editor: false, text: '' }, filedEntry.id)
+      && !holds12a({ hash: '#/project/x', editor: false, text: 'other' }, filedEntry.id) && holds12a({ hash: `#/page/${filedEntry.id}`, editor: true, text: '' }, filedEntry.id), '');
 
   // Where-it-lives, amended: /page/:id always renders PageEditor (its outer
   // component only branches on pageType for board/script) — this untyped-
@@ -443,12 +448,7 @@ await withHarness(async (app) => {
     home: document.querySelector('.wz-pageface-home-label')?.textContent,
     memberships: [...document.querySelectorAll('.wz-pageface-membership')].map(el => el.textContent),
   })`);
-  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole;
-  // this fixture filed the page to a drawer literally named "AB3 Drawer".
-  // ORIGINAL claim parked verbatim:
-  // ok('B2 S7 successor of "S5/S2: Where-it-lives tells BOTH truths — homed in the project, Also in the Journal.": the pinned law means dual membership no longer happens — homed in the project, NO "Also in the Journal." line (origin still \'journal\', per the check above — provenance stays, membership doesn\'t)',
-  //   bothTruths.home?.startsWith('In ') && bothTruths.home !== 'In the Journal' && !bothTruths.memberships.includes('Also in the Journal.'),
-  //   JSON.stringify(bothTruths));
+  // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 4
   ok('B2 S7 successor [word-diet successor]: Where-it-lives names the drawer bare ("AB3 Drawer", not "In the Journal") and NO "Also in the Journal." line (dual membership no longer happens)',
     bothTruths.home === 'AB3 Drawer' && !bothTruths.memberships.includes('Also in the Journal.'),
     JSON.stringify(bothTruths));
@@ -499,26 +499,7 @@ await withHarness(async (app) => {
     forwardLock: !!document.querySelector('.wz-sliver-forwardlock'),
     captureItems: [...document.querySelectorAll('.wz-sliver-item')].map(i => i.textContent),
   })`);
-  // ---- PARKED - SUPERSEDED by ITEM 121 I6 (R15), 2026-09-07 ----------
-  // Kept VERBATIM and no longer run. `legacyRail.ink` read the zone headed
-  // "Ink" in Free Write’s drawer - which was NOT ink: its three hardcoded
-  // hex swatches coloured the TYPED TEXT and caret (ForwardOnlyEditor’s own
-  // penColor), beside a "nib · fine" button that did nothing. Under R15’s
-  // analog law that is digital styling on a surface that does not decorate -
-  // the same class as the B/I/U removed alongside it, differing only in which
-  // property it set - so it RETIRES, on Nick’s word (2026-09-07), and "Ink"
-  // on this surface now names the pen’s real ink.
-  // A2’S GRANDFATHER CLAUSE IS NOT TOUCHED, which is why the successor keeps
-  // the other two clauses verbatim: A2’s law is that a NULL-origin row
-  // behaves exactly like every other page, and it still does. What changed is
-  // what EVERY Free Write page carries, not what a LEGACY one carries. A
-  // successor that dropped the whole check would have retired a live law
-  // along with a dead assertion.
-  //
-  // ok('CD1 S2/S7 (was "S4 A2 (grandfather clause): ..."): a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — ink/forward-lock/capture items all present (now in the sliver)',
-  // legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
-  // JSON.stringify(legacyRail));
-  // -------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 5
   ok('CD1 S2/S7 [ITEM 121 I6 / R15 successor]: a NULL-origin page (pre-AB3 data) keeps TODAY\'S furniture in Free Write — forward lock and capture items present, and the old text-colour "Ink" swatches now ABSENT on this page exactly as on every other (A2\'s grandfather clause is untouched: a legacy row still behaves like every other page; what moved is what ALL Free Write pages carry)',
     !legacyRail.ink && legacyRail.forwardLock && JSON.stringify(legacyRail.captureItems) === JSON.stringify(['Spark deck', 'Fragments', 'Send → Drawer']),
     JSON.stringify(legacyRail));
@@ -682,12 +663,7 @@ if (process.env.HARNESS_PARKED === '1') {
     await app.evalJs("document.querySelector('.forward-only-editor').focus()"); // FX14 S2 re-point: was .entry-edit (parked block now mounts on THE Page via the re-pointed freshJournalPage helper)
     await app.typeKeys('z');
     await sleep(150);
-    // ---- PARKED VERBATIM - SUPERSEDED by TOOLS #10 item 8 (Fable, Oct 28): the cascade's close is the Tools strip's slide-and-fade EXIT (~200 ms, --drawer-dur), so "gone" is true once the exit has played, not 150 ms after the keystroke.
-    // The record below is kept verbatim and no longer run; the successor follows, and the original is run as a PARKED RECORD (it holds once the exit has played).
-    // const panelGoneAfterTypeNow = await app.evalJs("!document.querySelector('.wz-cascade-panel')");
-    // pok('PARKED (was "S6: a keystroke dissolves the open place face back to the tools room...", then CD1 S3-superseded to "...the page room...") — CD2 S1/S5: a keystroke now closes the cascade\'s open category outright (successor: cd2.mjs\'s own keystroke-dissolve section)',
-    // panelGoneAfterTypeNow === true, String(panelGoneAfterTypeNow));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/ab3.mjs.parked.md record 6
     const panelExitStarted = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel'); return !p || p.dataset.leaving === 'true'; })()");
     // wait on the exit itself (the panel leaving the DOM), not a fixed time: up to 2 s, polled
     let panelGoneAfterExit = false;

@@ -118,28 +118,11 @@ await withHarness(async (app) => {
   await sleep(300);
   const draftMode = await activeModeTab(app);
   const structureInDraft = await structureVisible(app);
-  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the Structure zone is replaced by Templates), 2026-10-02 ----
-  // Kept VERBATIM and no longer run. The presets are gone from every mode, not hidden in Free Write only.
-  //
-  // ok('S2 (b) — and Draft still HAS them (the presets were hidden, not deleted)',
-  //   draftMode === 'Draft' && structureInDraft === true,
-  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft}`);
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 1
   const draftTemplates = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-btn').length");
   s2bTemplatesSeen = draftTemplates;
   s2bRowsSeen = await app.evalJs("document.querySelectorAll('.wz-sliver-templates .wz-template-row').length");
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08): the Templates row reads Screenplay (LIVE), then Outline, Title page, Bibliography and a NEW Custom placeholder, in that order: FOUR stand-ins now,
-  // not three. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-  //
-  // ok('S2 (b) [PR #7 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the three Template stand-ins, so the drawer itself is present',
-  //   draftMode === 'Draft' && structureInDraft === false && draftTemplates === 3,
-  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
-  // ------------------------------------------------------------------
-  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the four grayed stand-ins retire - the Templates section is a FIVE-row picker (Blank, Screenplay, Outline, Title Page, Bibliography), none disabled, Custom dropped. Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-  //
-  // ok('S2 (b) [page-templates successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FOUR Template stand-ins, so the drawer itself is present',
-  //   draftMode === 'Draft' && structureInDraft === false && draftTemplates === 4,
-  //   `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} templates=${draftTemplates}`);
+  // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 2
   ok('S2 (b) [page-templates-r2 successor]: Draft has no Structure presets either - the zone left the drawer; its place holds the FIVE picker rows, so the drawer itself is present',
     draftMode === 'Draft' && structureInDraft === false && s2bRowsSeen === 5 && draftTemplates === 0,
     `activeMode=${String(draftMode)} structureSectionPresent=${structureInDraft} rows=${s2bRowsSeen} standIns=${draftTemplates}`);
@@ -150,12 +133,7 @@ await withHarness(async (app) => {
   // at one point, not discarded).
   // ==========================================================================
   const freshTypewriter = await typewriterDom(app);
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (a NEW empty page takes its theme's default (Arbor ON, Flux OFF) and a page that holds text opens OFF - the empty-page-OFF amendment and the line-count rule it amended are both retired; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S3 (a) — a FRESH Draft page opens with the typewriter OFF [ITEM 87 CLAUSE 3]',
-  // freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 3
   ok('S5 successor to S3 (a) — a FRESH (empty) Draft page opens with the typewriter ON in the default theme (Arbor); Flux would open it OFF (typewriter-page.mjs runs both)',
     freshTypewriter === 'true', `data-typewriter=${String(freshTypewriter)}`);
 
@@ -188,15 +166,7 @@ await withHarness(async (app) => {
   await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a short Draft page' });
   await sleep(400);
   const shortTypewriter = await typewriterDom(app);
-  // ---- PARKED - SUPERSEDED by Phase 1 S5 (a NEW empty page takes its theme's default (Arbor ON, Flux OFF) and a page that holds text opens OFF - the empty-page-OFF amendment and the line-count rule it amended are both retired; Nick, Oct 11), 2026-10-11 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S3 (b) — CONTROL: a Draft page that already holds work (1 line-equivalent, under the 10 threshold) still opens with the typewriter ON — FX2 S2 amended at the EMPTY case only',
-  // shortTypewriter === 'true', `data-typewriter=${String(shortTypewriter)}`);
-  // ----------------------------------------------------------------------
-  // MEASURED, not assumed (Chat 1's run, 2026-10-12: this successor read data-typewriter=true). The fixture's page is created EMPTY and first opened EMPTY - so under S5 it took
-  // Arbor's default (ON) and SAVED it - and only then gets text. On the reopen the SAVED value wins over "has text": that is Nick's rule working, not a bug. The premise is read
-  // from the stored key itself, so the check cannot pass for the wrong reason. The other half - a page that ALREADY HAS TEXT the first time it is ever opened - is S3 (c) below.
+  // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 4
   const shortSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${shortId}')`);
   ok('S5 successor to S3 (b) — a Draft page that was EMPTY when first opened (it took Arbor\'s default and SAVED it) keeps that ON when it is reopened holding work: the saved value wins over "has text"',
     shortTypewriter === 'true' && shortSaved === 'on', `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);

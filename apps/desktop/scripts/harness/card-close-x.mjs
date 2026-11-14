@@ -105,11 +105,7 @@ await withHarness(async (app) => {
       const token = getComputedStyle(probe).color; probe.remove();
       return { x: getComputedStyle(x).color, token, card: getComputedStyle(pop).backgroundColor };
     })()`);
-    // ---- PARKED - SUPERSEDED by the Flux glass cards (Fable, Oct 22-23): the X paints in the CARD's own ink (--ink-on-card-low): the glass card's cyan, no longer the page ink --ink-on-paper-low (which is the dark light-page teal under Flux light). Arbor: the same two tokens resolve alike.
-    // Kept VERBATIM below and no longer run; the live successor follows.
-    //
-    // ok(`${T} X3: the X paints in the theme's card ink (--ink-on-paper-low), never the card's own background`,
-    //   !!paint && paint.x === paint.token && paint.x !== paint.card, JSON.stringify(paint));
+    // ARCHIVED PARK (#13 step 14): archive/card-close-x.mjs.parked.md record 1
     const cardLow = await app.evalJs("(() => { const p = document.createElement('span'); p.style.color = 'var(--ink-on-card-low)'; document.body.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return c; })()");
     ok(`${T} X3 [flux-inputs successor]: the X paints in the card's own ink (--ink-on-card-low), never the card's own background`,
       !!paint && paint.x === cardLow && paint.x !== paint.card, JSON.stringify({ paint, cardLow }));

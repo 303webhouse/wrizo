@@ -95,16 +95,7 @@ await withHarness(async (app) => {
     const tutorClosed = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
     ok("S1 (SV25): at rest, the LEFT (sliver) grip points left '‹' and the RIGHT (tutor) grip points right '›' — the right arrow no longer lies about its direction",
       sliverClosed === '‹' && tutorClosed === '›', JSON.stringify({ sliverClosed, tutorClosed }));
-    // ---- PARKED - SUPERSEDED by Phase 1 (Nick's one-drawer rule: opening the right drawer CLOSES the left, so the left grip correctly reads '‹' again - the arrow points the way its drawer will move), 2026-10-13 ----
-    // Kept VERBATIM and no longer run. The premise - BOTH drawers open at once - cannot hold. The successor opens each drawer ALONE and checks its open grip.
-    //
-    // await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(250);
-    // await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(250);
-    // const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver-grip-glyph')?.textContent ?? null");
-    // const tutorOpen = await app.evalJs("document.querySelector('.wz-tutor-grip-glyph')?.textContent ?? null");
-    // ok("S1: open, the grips still mirror — LEFT '›' (inward), RIGHT '‹' (inward) — a true mirror in both states",
-    // sliverOpen === '›' && tutorOpen === '‹', JSON.stringify({ sliverOpen, tutorOpen }));
-    // ----------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx18.mjs.parked.md record 1
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(450);   // the left drawer, alone
     const sliverOpen = await app.evalJs("document.querySelector('.wz-sliver-grip-glyph')?.textContent ?? null");
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(450);   // shut it
@@ -147,35 +138,7 @@ await withHarness(async (app) => {
       await s.setup(app, w, h);
       await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
       await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);
-      // ---- PARKED - SUPERSEDED by page-size (Fable's 1366 rule, Oct 23: a drawer NARROWS to fit beside the page down to DRAWER_MIN, 200px, and only
-      // below that overlays - the floor is 200, not FX18's 280; and the prose page is PAINTED by a transform, so the margin is the PAINTED page's).
-      // The regime branch below picked its law from 280 and the layout column; at Script @ 1366 (margin 235) it demanded the old overlay. Kept
-      // VERBATIM and no longer run; successor follows (the same three-regime law, floor 200, the painted page). Records in the parked section.
-      //
-      // const panel = await rectOf(app, '.wz-tutor-panel');
-      // const paper = await rectOf(app, writingPaperSel);
-      // const margin = await marginOf(app);
-      // const gd = await gripDiag(app); const grip = gd.reachable;
-      // const inRoom = inRoomOf(panel, w);
-      // const ow = openW(w);
-      // if (margin != null && margin >= USABLE_FLOOR) {
-      //   // Regime (1) — the WIDE LAW (the norm): occupy the margin, NEVER cover the paper.
-      //   ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}, margin ${margin}px >= ${USABLE_FLOOR}): the OPEN panel OCCUPIES the margin and NEVER covers the paper (panel.left >= paper.right), stays wholly in the room, grip reachable`,
-      //     !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
-      //     JSON.stringify({ panel, paper, margin, grip, gd, w }));
-      //   // SV26 — the wide regime has room, so the two open panels must not overlap.
-      //   const sliverPanel = await rectOf(app, '.wz-sliver-panel');
-      //   ok(`S2 WIDE LAW (${s.name} @ ${w}x${h}): the open left toolbar and the open right panel DO NOT overlap — every control under them stays reachable (SV26)`,
-      //     !!sliverPanel && !!panel && sliverPanel.r <= panel.l + 1,
-      //     JSON.stringify({ sliverPanel, tutorPanel: panel }));
-      // } else {
-      //   // Regime (2) — the DOCUMENTED NARROW-SCREEN DEGRADATION (not the norm): overlay the
-      //   // paper at natural open-w, "as before" — and the grip STAYS reachable atop it (z-lift).
-      //   ok(`S2 DEGRADATION (${s.name} @ ${w}x${h}, margin ${margin}px < ${USABLE_FLOOR} — the documented narrow-screen mode, NOT the norm): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
-      //     !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
-      //     JSON.stringify({ panel, paper, margin, expectedOpenW: ow, grip, gd, w }));
-      // }
-      // ------------------------------------------------------------------
+      // ARCHIVED PARK (#13 step 14): archive/fx18.mjs.parked.md record 2
       const panel = await rectOf(app, '.wz-tutor-panel');
       const paper = await app.evalJs(`(() => { const el = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('${writingPaperSel}'); if (!el) return null;
         const r = el.getBoundingClientRect(); return { l: Math.round(r.left), r: Math.round(r.right), w: Math.round(r.width) }; })()`);
@@ -237,12 +200,7 @@ await withHarness(async (app) => {
         navLeft: navRect ? Math.round(navRect.left) : null,
       };
     })()`);
-    // ---- PARKED - SUPERSEDED by W1 (the Walk, board kinds and "Show as"; Fable's clear of Oct 25, train #8 red): the Board's three text tabs became the "Show as" strip - icons first, the word on hover (Arbor: Open / Storyboard / Outline / Walk
-    // in the lexicon's own case, in Fable's frame 02-walk-showas-open; Flux: LIVE / SEQUENCE / SPINE / TRACE in its own uppercase). The words are no longer forced to ALL CAPS in Arbor.
-    // Kept VERBATIM below and no longer run; the live successor follows (the right-alignment check after it is untouched and still green).
-    //
-    // ok("S3 (SV27): the Board's mode tabs render ALL CAPS (computed text-transform: uppercase) — mirroring the Page's mode strip; the words/DOM text are unchanged",
-    //   s3.transform === 'uppercase', JSON.stringify(s3));
+    // ARCHIVED PARK (#13 step 14): archive/fx18.mjs.parked.md record 3
     ok("S3 (SV27) [W1 successor]: the Board's mode strip is the Show-as strip - its buttons carry the lexicon's words in the lexicon's own case (computed text-transform none; the DOM text is unchanged), still the .board-mode-tab / data-board-mode-tab the selectors know",
       s3.transform === 'none' && s3.shownAs === true, JSON.stringify(s3));
     ok("S3: the Board's mode bar is RIGHT-aligned (its left edge is past the nav's centre) while the crumb stays on the left — the two top menus read as siblings",

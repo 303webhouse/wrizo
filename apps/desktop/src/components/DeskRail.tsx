@@ -14,19 +14,16 @@ import { placeUid } from '../store/usePlace';
 // Writing-screen redesign (Slice 2) — the slim left rail of desk-area LOCATIONS,
 // replacing D1/D2's top-bar nav. Global nav and a WritingSession reader: it
 // carries the dissolve class, so a keystroke recedes it with the rest of the
-// navigation layer (edge / Esc / tap-off summons it back). Library is greyed
-// (stub for later); the rest are live. On the Desk (its own full-screen world)
-// the rail sits behind the overlay, exactly as the old header nav did.
+// navigation layer (edge / Esc / tap-off summons it back). On the Desk (its own
+// full-screen world) the rail sits behind the overlay, exactly as the old header nav did.
 
 // TH1 Slice 1 — 'journal' and 'shelf' route through the lexicon's singular
 // form; 'drawers' (R1 fold) through the plural form (tMany('drawer')) — the
 // lexicon now carries both number forms, so the plural label sweeps too.
-// 'library' isn't a canon §5 term at all (a separate future stub).
-interface RailItem { key: string; term?: TermId; plural?: boolean; label: string; glyph: string; to: string; live: boolean }
+interface RailItem { key: string; term?: TermId; plural?: boolean; label: string; glyph: string; to: string }
 const ITEMS: RailItem[] = [
-  { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal', live: true },
-  { key: 'drawers', term: 'drawer', plural: true, label: 'Drawers', glyph: '▥', to: '/drawers', live: true },
-  { key: 'library', label: 'Library', glyph: '▣', to: '/library', live: false },
+  { key: 'journal', term: 'journal', label: 'Journal', glyph: '❧', to: '/journal' },
+  { key: 'drawers', term: 'drawer', plural: true, label: 'Drawers', glyph: '▥', to: '/drawers' },
 ];
 
 // W2 — resolve a way back's preview text across the two persistence shapes it
@@ -57,8 +54,8 @@ export function DeskRail() {
   // routes that never mount a DeskFrame at all (Desk, Journal/Shelf/Drawers
   // lists) are equally untouched at any width. Places (Journal/Shelf/
   // Drawers) now live in the Drawer's own Places faces on a framed surface
-  // (AB3); Library's stub and Catch's rail entry (button + the 'n'
-  // shortcut, guarded below) leave WITH the rail — no empty doors, and
+  // (AB3); Catch's rail entry (button + the 'n' shortcut, guarded
+  // below) leaves WITH the rail — no empty doors, and
   // Catch's underlying route/model (useCatch/createJournalPage) is
   // untouched, just unreachable from here while framed. The resume
   // pointer's interim home is the drawer's Journal place face (already
@@ -135,12 +132,10 @@ export function DeskRail() {
           <button
             key={it.key}
             type="button"
-            className={`desk-rail-item${active ? ' active' : ''}${it.live ? '' : ' deferred'}`}
+            className={`desk-rail-item${active ? ' active' : ''}`}
             aria-current={active ? 'page' : undefined}
-            aria-disabled={!it.live}
-            title={it.live ? label : `${label} — coming soon`}
+            title={label}
             onClick={() => {
-              if (!it.live) return;
               // BIG PROJECTS 1a: the Journal item opens the Journal PLACE too (the narrow chrome has no switcher; this is how a writer there is "in" the Journal)
               if (it.key === 'journal') setPlace(placeUid(), { kind: 'journal', id: JOURNAL, setId: null });
               navigate(it.to);

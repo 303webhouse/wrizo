@@ -208,6 +208,8 @@
 
 .mode-pmeta{ display:flex; justify-content:space-between; align-items:center; font-size:11px;
   color:var(--text-low); letter-spacing:.3px; }
+/* bug #83: Arbor's count-row label under the page ("0 words") read 3.82:1 in --text-low; the Wrizors' colour reads 5.46:1 on #201B17 and 5.39:1 on #221C17. Arbor only: the token is untouched (scripts/harness/bug83-count-row.mjs) */
+:root[data-theme='plateau'] .mode-pmeta{ color:#9C9081; }
 .mode-pmetric{ display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:1.5px; font-size:9px; color:var(--brass-press); }
 .mode-pagenum{ color:var(--brass-press); font-family:var(--font-mono); letter-spacing:.3px; }
 
@@ -242,10 +244,7 @@
    exactly that, not a press/starred moment). */
 .typewriter-toggle.on{ color:var(--accent-rest); border-color:var(--accent-rest); }
 
-/* Page-turn (B5) — a subtle paper-feed flip on overflow; honors reduced-motion. */
-@keyframes mode-flip{ 0%{ transform:none; } 28%{ transform:translateY(-7px) scale(.997); } 100%{ transform:none; } }
-.mode-page.flipping{ animation:mode-flip .5s cubic-bezier(.3,.7,.3,1); }
-@media (prefers-reduced-motion:reduce){ .mode-page.flipping{ animation:none; } }
+/* Page-turn (B5): no animation in any theme (#63, Nick's ruling); the turn is a sound the writer can switch off, in ModeStage.tsx. The old mode-flip keyframes and .mode-page.flipping rule are gone. */
 
 /* Settings gear + popover (top-right of the stage). */
 .mode-gear-wrap{ position:absolute; top:-2px; right:0; z-index:5; display:flex; align-items:center; gap:8px; }

@@ -102,10 +102,7 @@ await withHarness(async (app) => {
   ok('fixture: the board opened with two cards and a nested board pinned on it; two more boards exist', f.there, JSON.stringify(f));
   await openDrawers(app);
   const tb2 = await tile(app, 'Research board');
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the entries are rows of the Pages pop-out, not tiles of the Drawers panel.
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('fixture: the rail\'s Drawers panel shows the other board as a thumbnail that declares its entry (data-link-entry)', !!tb2 && tb2.entry === f.b2, JSON.stringify(tb2));
+  // ARCHIVED PARK (#13 step 14): archive/connector-b.mjs.parked.md record 1
   ok('fixture [big-projects-1a successor]: the rail\'s Pages pop-out shows the other entry as a row that declares its entry (data-link-entry) - the connector\'s target', !!tb2 && tb2.entry === f.b2, JSON.stringify(tb2));
   if (!tb2) return;
   const cv0 = await R(app, '.board-canvas');
@@ -118,16 +115,7 @@ await withHarness(async (app) => {
   await glide(app, h, centre(tb2), 10); await sleep(300);
   const st1 = await tileState(app, f.b2); const arm1 = await armGeo(app); const cvR = await R(app, '.board-canvas');
   ok('B1: the thumbnail under the arm wears a circle - OPEN (not brass-filled), a 10px circle - and the arm LANDS on it', !!st1 && st1.target === 'true' && st1.circle && st1.radius === '50%' && st1.solid === null && st1.bg !== BR && !!arm1 && Math.abs(arm1.x2 - (tb2.l + 9)) <= 3 && Math.abs(arm1.y2 - (tb2.t + tb2.h / 2)) <= 3, JSON.stringify({ st1, arm1, tb2 }));
-  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 86): the original B1 assumed the rail is on the RIGHT of the board. It is on the LEFT. Kept VERBATIM below and no longer run; its successor reads the side.
-  //
-  // ok('B1: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board\'s right edge, over the rail', !!arm1 && arm1.inBody && arm1.display !== 'none' && arm1.x2 > cvR.r, JSON.stringify({ arm1, canvasRight: cvR.r }));
-  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 87): the rail-side successor compared the thumbnail's centre with the canvas rect's left edge, but the Drawers panel OVERLAYS the canvas (page primacy: the board does not
-  // move - B8 passes), so the thumbnail is INSIDE the canvas rect and the check cannot hold on this layout. Kept VERBATIM below and no longer run; its successor allows for the overlay.
-  //
-  // // the rail's side is READ from where the thumbnail is, never assumed
-  // const railLeft = centre(tb2).x < cvR.l;
-  // ok(`B1 [rail-side successor]: the arm is drawn in a viewport overlay (a portal on body), UNCLIPPED - it ends past the board's ${railLeft ? 'LEFT' : 'RIGHT'} edge, on the rail's side, over the rail`, !!arm1 && arm1.inBody && arm1.display !== 'none' && (railLeft ? arm1.x2 < cvR.l : arm1.x2 > cvR.r), JSON.stringify({ arm1, railLeft, canvas: { l: cvR.l, r: cvR.r } }));
-  // the rail's position is READ, never assumed: the panel overlays the canvas, so a thumbnail may lie inside the canvas rect (then the arm must END ON IT) or outside it (then the arm must also pass that edge)
+  // ARCHIVED PARK (#13 step 14): archive/connector-b.mjs.parked.md record 2
   const tcx = centre(tb2).x;
   const outsideCanvas = tcx < cvR.l || tcx > cvR.r;
   const onThumb = !!arm1 && arm1.x2 >= tb2.l - 3 && arm1.x2 <= tb2.l + tb2.w + 3 && arm1.y2 >= tb2.t - 3 && arm1.y2 <= tb2.t + tb2.h + 3;
@@ -191,10 +179,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700);
   await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(500);
   const list = await app.evalJs(`[...document.querySelectorAll('.wz-links-item')].map((li) => ({ via: li.dataset.linkVia, kind: li.dataset.linkKind, label: li.querySelector('.wz-links-label')?.textContent, x: !!li.querySelector('.wz-links-x') }))`);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the targets are pages, so the page-link's kind reads "page".
-  // Kept VERBATIM below and no longer run; the live successor follows.
-  //
-  // ok('B6: the Grafts / Links tab lists the selected card\'s connections - the page-link (a board) AND the same-board connection (the pinned nested board) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'board') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
+  // ARCHIVED PARK (#13 step 14): archive/connector-b.mjs.parked.md record 3
   ok('B6 [big-projects-1a successor]: the Grafts / Links tab lists the selected card\'s connections - the page-link (to a page) AND the same-board connection (the pinned nested page) - each with an X', list.length === 2 && list.every((i) => i.x) && list.some((i) => i.via === 'link' && i.label === 'Research board' && i.kind === 'page') && list.some((i) => i.via === 'card' && i.label === 'Nested board'), JSON.stringify(list));
   await app.evalJs("window.wrizoAskBeforeDelete.set(false)");   // an unlink keeps its OWN confirm, whatever the delete setting says
   await app.evalJs("[...document.querySelectorAll('.wz-links-item')].find((li) => li.dataset.linkVia === 'link')?.querySelector('.wz-links-x')?.click()"); await sleep(400);
@@ -237,35 +222,7 @@ await withHarness(async (app) => {
     ok('B7: the copy is a real card - selected, and its footer names its original', (await footer(app, copy ? copy.id : 'none')) !== null && /Research board/.test((await footer(app, copy.id)) || ''), String(copy && (await footer(app, copy.id))));
   }
 
-  // ---- PARKED - SUPERSEDED (Fable Oct 17, ledger 87): B9's driver pressed the corner square with the LEFT button and dragged - which is a RESIZE (held connection mode comes from a RIGHT press on the square, or a second press of a
-  // double-press). Kept VERBATIM below and no longer run; the successor drives the right button.
-  //
-  // // B9 - THE HELD PATH (Fable Oct 17, ledger 86): press the corner square, DRAG to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; the beat then
-  // // ends, so a later deliberate click on the same thumbnail still travels (the swallow is a beat, not a lock).
-  // await openDrawers(app);
-  // const tb9 = await tile(app, 'Research board');
-  // const hash9 = await app.evalJs('location.hash');
-  // if (!tb9) ok('B9 fixture: the Research board thumbnail is in the rail', false, 'absent');
-  // else if (!(await selectCard(app, 'cb-a'))) ok('B9 fixture: the card selected', false, JSON.stringify(await R(app, '[data-box-id="cb-a"]')));
-  // else {
-  //   const hr9 = await R(app, '[data-box-id="cb-a"] .board-handle');
-  //   if (!hr9) ok('B9 fixture: the card\'s corner square rendered', false, 'absent');
-  //   else {
-  //     const n9 = (await linksOf(app, f.id)).length;
-  //     const hp = centre(hr9);
-  //     await app.mouseMove(hp.x, hp.y); await mouse(app, 'mousePressed', hp.x, hp.y);
-  //     await glide(app, hp, centre(tb9), 12); await sleep(250);
-  //     const armed9 = await armed(app);
-  //     await mouse(app, 'mouseReleased', ...Object.values(centre(tb9))); await sleep(500);
-  //     const n9b = (await linksOf(app, f.id)).length;
-  //     ok('B9 [held path]: press the corner square, drag onto a rail thumbnail and release there toggles the link (one record more or fewer), the mode having been armed during the drag', armed9 === 'true' && Math.abs(n9b - n9) === 1, JSON.stringify({ armed9, before: n9, after: n9b }));
-  //     ok('B9 [held path]: and the writer is STILL ON THE BOARD (a release is not a click on the thumbnail)', (await app.evalJs('location.hash')) === hash9, String(await app.evalJs('location.hash')));
-  //     await sleep(400);
-  //     const tb9b = await tile(app, 'Research board');
-  //     if (tb9b) { await click(app, ...Object.values(centre(tb9b))); await waitSoft(app, `location.hash === '#/page/${f.b2}'`, { label: 'travel', timeout: 4000 }); }
-  //     ok('B9: after the beat, a deliberate click on the thumbnail travels as it always did (the swallow is a beat, not a lock)', (await app.evalJs('location.hash')) === `#/page/${f.b2}`, String(await app.evalJs('location.hash')));
-  //   }
-  // }
+  // ARCHIVED PARK (#13 step 14): archive/connector-b.mjs.parked.md record 4
 
   // B9 [right-button successor] - THE HELD PATH (Fable Oct 17, ledgers 86 and 87): RIGHT-press the corner square, drag to a rail thumbnail holding the button, release there. The release toggles the link and the writer STAYS on the board; no
   // menu opens under the pointer (the thumbnail has its own, with Delete board in it); and a deliberate click on the thumbnail a beat later still travels (the swallow is a beat, not a lock).
