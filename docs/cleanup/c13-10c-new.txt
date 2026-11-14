@@ -70,3 +70,17 @@ reorgSwatchGrey=Grey
 reorgSwatchBlue=Blue
 reorgSwatchBrass=Brass
 reorgSwatchOrange=Orange
+# THE REORG'S RAIL, step 5 (POLISH; Fable, Nov 14, 2:55 pm: "steps 3 and 4, then 5 and 6") - DOCS
+reorgNewDocHeading=New doc
+reorgKindBlank=Blank
+reorgKindScreenplay=Screenplay
+reorgKindResearch=Research paper
+reorgKindMore=More kinds
+reorgRecent=Recent
+reorgDefaults=Page defaults · every doc
+reorgTypewriter=Typewriter mode
+reorgProgressBars=Progress bars
+reorgOff=Off
+reorgOn=On
+reorgWordsOne={n} word
+reorgWordsMany={n} words

@@ -114,6 +114,8 @@ export type DeskTermId =
   // THE REORG'S RAIL, step 3 (a Project's own list) and step 4 (Box settings)
   | 'reorgListTitle' | 'reorgNewDoc' | 'reorgNewBoard' | 'reorgListDocs' | 'reorgBoardsNoDoc' | 'reorgListEmpty' | 'reorgUntitled' | 'reorgUntitledBoard' | 'reorgSketch'
   | 'reorgBoxSettings' | 'reorgLetters' | 'reorgNoLetters' | 'reorgColour' | 'reorgOwnColour' | 'reorgPicture' | 'reorgChoosePicture' | 'reorgRemovePicture' | 'reorgSwatchPale' | 'reorgSwatchGrey' | 'reorgSwatchBlue' | 'reorgSwatchBrass' | 'reorgSwatchOrange'
+  // THE REORG'S RAIL, step 5 (DOCS)
+  | 'reorgNewDocHeading' | 'reorgKindBlank' | 'reorgKindScreenplay' | 'reorgKindResearch' | 'reorgKindMore' | 'reorgRecent' | 'reorgDefaults' | 'reorgTypewriter' | 'reorgProgressBars' | 'reorgOff' | 'reorgOn' | 'reorgWordsOne' | 'reorgWordsMany'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]

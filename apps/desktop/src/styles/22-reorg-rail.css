@@ -107,3 +107,16 @@
 [data-theme='machina'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid var(--text-hi); outline-offset:2px; }
 [data-theme='machina'] .wz-reorg-chip:focus-visible, [data-theme='machina'] .wz-reorg-swatch:focus-visible,
 [data-theme='machina'] .wz-reorg-letters:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
+
+/* DOCS (step 5, frame R7): New doc's kinds, Recent (a title over its Project and words), the two Page defaults as OFF | ON switches */
+[data-theme='machina'] .wz-reorg-docs{ padding:0; gap:0; }
+[data-theme='machina'] .wz-reorg-kind{ border-bottom:0; padding:9px 14px; }
+[data-theme='machina'] .wz-reorg-two-line{ flex-direction:column; align-items:flex-start; gap:2px; }
+[data-theme='machina'] .wz-reorg-two-line .wz-reorg-list-title{ max-width:100%; }
+[data-theme='machina'] .wz-reorg-default{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px;
+  border-bottom:1px solid var(--ink-border); font-family:var(--font-contentLabel); font-size:13px; color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-toggle{ display:inline-flex; border:1px solid #6A727B; }
+[data-theme='machina'] .wz-reorg-toggle button{ min-width:34px; padding:4px 6px; background:none; border:0; color:var(--text-mid); cursor:pointer;
+  font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+[data-theme='machina'] .wz-reorg-toggle button[aria-pressed='true']{ background:var(--text-hi); color:var(--chrome-surface); }
+[data-theme='machina'] .wz-reorg-toggle button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
