@@ -205,8 +205,8 @@ try { await withHarness(async (app) => {
       const kd = () => { t0 = performance.now(); cur = { kd: t0, work: null }; window.__wk.push(cur); };
       const inp = () => { if (cur) cur.work = performance.now() - cur.kd; };
       const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const now = performance.now(); window.__lat.push({ ms: now - t, key: t, at: now }); })); };
-      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('input', inp, false);
-      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('input', inp, false); };
+      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('input', inp, false); document.addEventListener('beforeinput', inp, false);
+      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('input', inp, false); document.removeEventListener('beforeinput', inp, false); };
       return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[cursor % CYCLE.length]; cursor += 1; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
@@ -271,6 +271,7 @@ try { await withHarness(async (app) => {
 
   // COST reading, INFORMATION ONLY (Fable Nov 14, 12:24 pm: "add the cost reading to the Wire In probe as information only"). The clock (keydown -> the second frame) cannot see a cost smaller than a frame (the zoom probe's per-key print,
   // Actions run 43626167023: a 24 ms burn on every key LOWERED the clock); the reading that rises with a burn is WORK, the key's own synchronous work: keydown capture -> the `input` event's bubble at the document
+  // (stamped at the LAST of beforeinput / input: Wire In cancels the default insert, so no `input` event reaches the document there; Actions run 43634369387 read null in W and M with `input` alone)
   // (flux3-latency-zoom: +5 / +10 / +24 ms burns lift it +4.9 / +9.9 / +23.9, the control's per-round median spread 0.2). It gates nothing here; the lines print what it reads.
   {
     const wk = (rs) => rs.map((r) => ({ ...r, lat: r.work || [] }));
