@@ -245,7 +245,10 @@ await withHarness(async (app) => {
   const b3 = JSON.parse(before3), a3 = JSON.parse(after3);
   const pj3 = await app.evalJs(PROJECTS);
   ok('P3: New project "Thesis" adds one Drawer by that name, listed before the Notebook; no page and no set is touched',
-    a3.d === b3.d + 1 && a3.names.includes('Thesis') && a3.e === b3.e && a3.p === b3.p && !!pj3 && pj3.rows[pj3.rows.length - 1].notebook && pj3.rows.some((r) => r.name === 'Thesis'), JSON.stringify({ d: [b3.d, a3.d], names: a3.names }));
+    a3.d === b3.d + 1 && a3.names.includes('Thesis') && a3.e === b3.e && a3.p === b3.p && !!pj3 && pj3.rows[pj3.rows.length - 1].notebook && pj3.rows.some((r) => r.name === 'Thesis'),
+    JSON.stringify({ d: [b3.d, a3.d], names: a3.names, entriesSame: a3.e === b3.e, setsSame: a3.p === b3.p, rows: pj3 && pj3.rows.map((r) => r.name),
+      entriesChanged: a3.e === b3.e ? [] : JSON.parse(a3.e).filter((x) => !JSON.parse(b3.e).some((y) => JSON.stringify(y) === JSON.stringify(x))).map((x) => ({ id: x.id, text: String(x.text).slice(0, 40), u: x.updatedAt })),
+      setsChanged: a3.p === b3.p ? [] : JSON.parse(a3.p).filter((x) => !JSON.parse(b3.p).some((y) => JSON.stringify(y) === JSON.stringify(x))).map((x) => ({ id: x.id, title: x.title })) }));
 
   // N1c: a reload forgets the rail's memory
   await openPage(app, 'machina', true);
