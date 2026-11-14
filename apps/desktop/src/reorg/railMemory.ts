@@ -64,15 +64,16 @@ export interface BoxLook {
   /** A picture she chose, read into memory as a data: URL. Nothing uploads. */
   picture?: string;
 }
-let boxes: Readonly<Record<string, BoxLook>> = {};
-export function getBoxes(): Readonly<Record<string, BoxLook>> { return boxes; }
+// (named `looks`, not boxes: a board's boxes are another thing, and box-tombstones T11 counts every raw read of one)
+let looks: Readonly<Record<string, BoxLook>> = {};
+export function getBoxes(): Readonly<Record<string, BoxLook>> { return looks; }
 export function useBoxes(): Readonly<Record<string, BoxLook>> {
   return useSyncExternalStore(subscribeRail, getBoxes, getBoxes);
 }
 export function setBoxLook(id: string, patch: BoxLook): void {
-  const next: BoxLook = { ...(boxes[id] || {}), ...patch };
+  const next: BoxLook = { ...(looks[id] || {}), ...patch };
   for (const k of Object.keys(next) as (keyof BoxLook)[]) if (next[k] === undefined) delete next[k];
-  boxes = { ...boxes, [id]: next };
+  looks = { ...looks, [id]: next };
   listeners.forEach((fn) => { try { fn(); } catch { /* a listener never breaks the rail */ } });
 }
 

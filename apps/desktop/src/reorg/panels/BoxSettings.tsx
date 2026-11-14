@@ -36,7 +36,7 @@ export function BoxSettings({ id, name }: { id: string | null; name: string }) {
         <div className="wz-reorg-box-settings-body">
           <div className="wz-reorg-box-settings-row">
             <label className="wz-reorg-box-settings-label" htmlFor={`wz-reorg-letters-${id}`}>{t('reorgLetters')}</label>
-            <input id={`wz-reorg-letters-${id}`} className="wz-reorg-letters" data-box-letters="" maxLength={2} value={letters} spellCheck={false}
+            <input id={`wz-reorg-letters-${id}`} className="wz-reorg-letters" data-box-letters="" maxLength={2} value={letters}
               onChange={(ev) => setBoxLook(id, { letters: ev.target.value.toUpperCase().slice(0, 2) })} />
             <button type="button" className="wz-reorg-chip" data-box-no-letters="" aria-pressed={look.letters === ''} onClick={() => setBoxLook(id, { letters: '' })}>{t('reorgNoLetters')}</button>
           </div>

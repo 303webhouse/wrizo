@@ -286,7 +286,7 @@ export const CANONICAL_CHROME = {
   reorgWordsOne: '{n} word',
   reorgWordsMany: '{n} words',
   reorgNoProjectHeading: 'Writing with no project',
-  reorgFile: 'File {name}…',
+  reorgFile: 'Add {name} to a project…',
   reorgTrashOne: 'Trash {name}',
   reorgTrash: 'Trash',
   reorgUnfiledEmpty: 'Nothing unfiled.',
