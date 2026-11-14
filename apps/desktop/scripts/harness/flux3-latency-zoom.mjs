@@ -17,6 +17,10 @@
 // COST READING (Nov 14, Fable): the clock cannot see a cost smaller than a frame (the per-key print, Actions run 43626167023: a 24 ms burn on every key made the median FALL, 47.2 -> 29.3, the burn eating the frame wait),
 //   so each arm is ALSO judged on lib/l-method.mjs's second reading, per key BUSY + FRAME, against the control's spread CAPPED (CAP_MED / CAP_P95); a control over the cap makes the run VOID. The clock lines stay and still gate.
 //   MUT-z is judged on the cost reading (the two clock assertions are parked where they stood); MUT5 / MUT10 are l-method's +5 / +10 ms burns on the control page. DIAG / DIAG-KEYS / DIAG-COST print every key and every round (information).
+// RULED Nov 14, 12:24 pm (Fable): THE GATE is the zoom against Z100 (Z020 and Z400, the clock and the cost reading, the control's own spread, the cost capped at 8 / 12 ms, a control over the cap VOID); it gates flux-zoom-1's merge.
+//   The three Flux arms against the Arbor control (L-zoom@ / L-zoom-cost@ lines marked INFORMATION) are bug #102, Flux's own cost in the card editor: they gate nothing here.
+//   MUT5 / MUT10 / MUT24 are planted at the SAME place (the control page, a synchronous burn on beforeinput capture after the meter); MUTS-ORDER asserts their lifts of the cost median rise with the burn (else the run is not valid);
+//   PROBE-SEES prints the smallest burn the probe sees (caught, with a lift of at least twice the allowance; 5 ms only with a quiet control). MUT (24 ms at 4.00) is the zoom bar's own mutant, judged against Z100.
 // FLUX3_ROUNDS=<n> (default 4). Run: node scripts/harness/flux3-latency-zoom.mjs   (from apps/desktop; a box turn - this is a timing file; on Actions its timing lines are information)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,6 +40,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const ON_BOX = isOnBox();
+const info = (name, pass, detail = '') => ok(`${name} [INFORMATION, bug #102: the measure ${pass ? 'passed' : 'did NOT pass'}; this line gates nothing]`, true, detail);
 const timing = (name, pass, detail = '') => {
   const g = timingGate(ON_BOX, pass);
   checks.push({ name: g.info ? `${name} [INFORMATION on Actions: the measure ${g.actual ? 'PASSED' : 'did NOT pass'}; this line gates nothing here]` : name, pass: g.pass, detail });
@@ -117,6 +122,7 @@ const ARMS = {
   MUT: { theme: 'flux', flag: true, scale: 4, burn: BURN_MS },
   MUT5: { theme: 'plateau', flag: false, scale: null, burn: 5 },
   MUT10: { theme: 'plateau', flag: false, scale: null, burn: 10 },
+  MUT24: { theme: 'plateau', flag: false, scale: null, burn: BURN_MS },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -209,8 +215,8 @@ try { await withHarness(async (app) => {
 
   // warm-up (discarded), then the rounds, the arm order rotating each round
   await runArm('C', 0);
-  const order = ['C', 'Z100', 'Z020', 'Z400', 'MUT', 'MUT5', 'MUT10'];
-  const res = { C: [], Z100: [], Z020: [], Z400: [], MUT: [], MUT5: [], MUT10: [] };
+  const order = ['C', 'Z100', 'Z020', 'Z400', 'MUT', 'MUT5', 'MUT10', 'MUT24'];
+  const res = { C: [], Z100: [], Z020: [], Z400: [], MUT: [], MUT5: [], MUT10: [], MUT24: [] };
   for (let round = 1; round <= ROUNDS; round += 1) {
     const rot = order.slice((round - 1) % order.length).concat(order.slice(0, (round - 1) % order.length));
     for (const name of rot) res[name].push(await runArm(name, round));
@@ -254,7 +260,7 @@ try { await withHarness(async (app) => {
   const cRounds = res.C.map((r) => `${r1(stat(r.lat).median)}/${r1(stat(r.lat).p95)}`).join(' ');
   for (const [name, label] of [['Z100', '1.00'], ['Z020', '0.20'], ['Z400', '4.00']]) {
     const j = judge(res.C, res[name]);
-    timing(`L-zoom@${label} typing into a card at ${label} adds no latency beyond the control's own spread: ${name} median ${r1(j.X.median)} <= C ${r1(j.C.median)} + ${r1(j.spreadMed)}, p95 ${r1(j.X.p95)} <= C ${r1(j.C.p95)} + ${r1(j.spreadP95)}, no key over ${MAX_MS} ms (max ${r1(j.X.max)})`,
+    info(`L-zoom@${label} (Flux vs the Arbor control) typing into a card at ${label} adds no latency beyond the control's own spread: ${name} median ${r1(j.X.median)} <= C ${r1(j.C.median)} + ${r1(j.spreadMed)}, p95 ${r1(j.X.p95)} <= C ${r1(j.C.p95)} + ${r1(j.spreadP95)}, no key over ${MAX_MS} ms (max ${r1(j.X.max)})`,
       j.lat, `C ${show(j.C)} | ${name} ${show(j.X)} | C per round median/p95 ${cRounds}`);
     ok(`D2@${label} the real layer damps while she types at ${label}: its own canvas drew in ${j.xLayer} frame(s) while the keys landed (allowed ${res[name].length}, the one in flight at the first key, per round)`,
       j.layerDamp, JSON.stringify(res[name].map((r) => ({ round: r.round, typingFrames: r.frames, layerDrew: r.layerFrames }))));
@@ -280,14 +286,35 @@ try { await withHarness(async (app) => {
   timing(`VOID-check the control is quiet enough to judge anything: its cost spread (median ${r1(quietJ.spreadMed)}, p95 ${r1(quietJ.spreadP95)}) is within the cap (${CAP_MED} / ${CAP_P95}); over the cap the run is VOID`, quietJ.quiet, `C cost ${show(quietJ.C)} | per round ${costPerRound('C')}`);
   for (const [name, label] of [['Z100', '1.00'], ['Z020', '0.20'], ['Z400', '4.00']]) {
     const j = cj[name];
-    timing(`L-zoom-cost@${label} typing into a card at ${label} adds no main-thread cost beyond the control's own spread (capped): ${name} cost median ${r1(j.X.median)} <= C ${r1(j.C.median)} + ${r1(j.allowMed)}, p95 ${r1(j.X.p95)} <= C ${r1(j.C.p95)} + ${r1(j.allowP95)}`,
+    info(`L-zoom-cost@${label} (Flux vs the Arbor control) typing into a card at ${label} adds no main-thread cost beyond the control's own spread (capped): ${name} cost median ${r1(j.X.median)} <= C ${r1(j.C.median)} + ${r1(j.allowMed)}, p95 ${r1(j.X.p95)} <= C ${r1(j.C.p95)} + ${r1(j.allowP95)}`,
       j.pass, `C ${show(j.C)} | ${name} ${show(j.X)} | spread ${r1(j.spreadMed)}/${r1(j.spreadP95)} cap ${CAP_MED}/${CAP_P95} quiet ${j.quiet}`);
   }
+  // THE GATE (RULED Nov 14, 12:24 pm, Fable): the zoom is judged against Z100 (Flux at true size), so the zoom's OWN share is apart from Flux's; this gates flux-zoom-1's merge. The three Flux arms against the Arbor control
+  // (the lines above) are information: that gap is bug #102, the new Flux's own cost in the card editor.
+  const zq = judgeCost(res.Z100, res.Z100);
+  timing(`VOID-check Z100, the zoom's control, is quiet enough to judge anything: its cost spread (median ${r1(zq.spreadMed)}, p95 ${r1(zq.spreadP95)}) is within the cap (${CAP_MED} / ${CAP_P95}); over the cap the run is VOID`, zq.quiet, `Z100 cost ${show(zq.C)} | per round ${costPerRound('Z100')}`);
+  for (const [name, label] of [['Z020', '0.20'], ['Z400', '4.00']]) {
+    const jc = judge(res.Z100, res[name]);
+    timing(`L-zoom-gate@${label} the zoom adds no latency beyond Flux's own at true size (the clock): ${name} median ${r1(jc.X.median)} <= Z100 ${r1(jc.C.median)} + ${r1(jc.spreadMed)}, p95 ${r1(jc.X.p95)} <= Z100 ${r1(jc.C.p95)} + ${r1(jc.spreadP95)}, no key over ${MAX_MS} ms (max ${r1(jc.X.max)})`, jc.lat, `Z100 ${show(jc.C)} | ${name} ${show(jc.X)}`);
+    const k = judgeCost(res.Z100, res[name]);
+    timing(`L-zoom-cost-gate@${label} the zoom adds no main-thread cost beyond Flux's own at true size (capped): ${name} cost median ${r1(k.X.median)} <= Z100 ${r1(k.C.median)} + ${r1(k.allowMed)}, p95 ${r1(k.X.p95)} <= Z100 ${r1(k.C.p95)} + ${r1(k.allowP95)}`, k.pass, `Z100 ${show(k.C)} | ${name} ${show(k.X)} | spread ${r1(k.spreadMed)}/${r1(k.spreadP95)} cap ${CAP_MED}/${CAP_P95} quiet ${k.quiet}`);
+  }
+  const cz = judgeCost(res.Z100, res.MUT);   // the zoom bar's own mutant: the burn at 4.00, judged against Z100 as the gate judges
   const mutLanded = (k) => res[k].length > 0 && res[k].every((r) => r.burned >= MIN_KEYS);
-  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10]]) ok(`${k} premise: the ${ms} ms burn landed on every key of the control page (${res[k].map((r) => r.burned).join('/')} keys burned)`, mutLanded(k), JSON.stringify(res[k].map((r) => ({ round: r.round, burned: r.burned }))));
+  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10], ['MUT24', BURN_MS]]) ok(`${k} premise: the ${ms} ms burn landed on every key of the control page (${res[k].map((r) => r.burned).join('/')} keys burned)`, mutLanded(k), JSON.stringify(res[k].map((r) => ({ round: r.round, burned: r.burned }))));
   timing(`MUT-z effect (cost) the ${BURN_MS} ms burn lifted the cost median by >= 8 ms (MUT ${r1(costS.MUT.median)} vs Z400 ${r1(costS.Z400.median)}: +${r1(costS.MUT.median - costS.Z400.median)})`, costS.MUT.median >= costS.Z400.median + 8, JSON.stringify({ mut: show(costS.MUT), z400: show(costS.Z400) }));
-  timing(`MUT-z-cost the ${BURN_MS} ms burn FAILS the cost bar (caught: ${cj.MUT.caught ? 'YES' : 'no'}) - MUT cost median ${r1(cj.MUT.X.median)} p95 ${r1(cj.MUT.X.p95)}`, mutLanded('MUT') && cj.MUT.caught, `C ${show(cj.MUT.C)} | MUT ${show(cj.MUT.X)}`);
-  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10]]) timing(`${k}-cost a ${ms} ms burn on the control page FAILS the cost bar (caught: ${cj[k].caught ? 'YES' : 'no'}) - cost median ${r1(cj[k].X.median)} vs C ${r1(cj[k].C.median)} + ${r1(cj[k].allowMed)}, p95 ${r1(cj[k].X.p95)} vs C ${r1(cj[k].C.p95)} + ${r1(cj[k].allowP95)}`, mutLanded(k) && cj[k].caught, `C ${show(cj[k].C)} | ${k} ${show(cj[k].X)}`);
+  timing(`MUT-z-cost the ${BURN_MS} ms burn FAILS the zoom bar, judged against Z100 (caught: ${cz.caught ? 'YES' : 'no'}) - MUT cost median ${r1(cz.X.median)} p95 ${r1(cz.X.p95)}`, mutLanded('MUT') && cz.caught, `C ${show(cz.C)} | MUT ${show(cz.X)}`);
+  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10], ['MUT24', BURN_MS]]) timing(`${k}-cost a ${ms} ms burn on the control page FAILS the cost bar (caught: ${cj[k].caught ? 'YES' : 'no'}) - cost median ${r1(cj[k].X.median)} vs C ${r1(cj[k].C.median)} + ${r1(cj[k].allowMed)}, p95 ${r1(cj[k].X.p95)} vs C ${r1(cj[k].C.p95)} + ${r1(cj[k].allowP95)}`, mutLanded(k) && cj[k].caught, `C ${show(cj[k].C)} | ${k} ${show(cj[k].X)}`);
+  // the three mutants, PLANTED AT THE SAME PLACE (the control page, a synchronous burn on beforeinput capture, installed after the meter): their lifts of the control's cost median must come out in order, or the run is not valid
+  const lift = (k) => costS[k].median - costS.C.median;
+  const l5 = lift('MUT5'), l10 = lift('MUT10'), l24 = lift('MUT24');
+  timing(`MUTS-ORDER the three mutants lift the control's cost median in order, +5 ms -> +${r1(l5)}, +10 ms -> +${r1(l10)}, +${BURN_MS} ms -> +${r1(l24)} (the run is NOT VALID unless the lifts rise with the burn)`, l5 < l10 && l10 < l24,
+    JSON.stringify({ c: show(costS.C), m5: show(costS.MUT5), m10: show(costS.MUT10), m24: show(costS.MUT24) }));
+  // what the probe can see: a burn counts as SEEN when the bar catches it AND its lift is at least twice the allowance (so 5 ms is seen only with a quiet control)
+  const seen = [['MUT5', 5], ['MUT10', 10], ['MUT24', BURN_MS]].filter(([k]) => cj[k].caught && lift(k) >= 2 * cj[k].allowMed).map(([, ms]) => ms);
+  const seesLine = `PROBE-SEES this probe sees a burn of ${seen.length ? Math.min(...seen) + ' ms or more' : 'NOTHING'} on the card editor (seen = caught by the cost bar with a lift of at least twice the allowance; the control's spread is ${r1(cj.C.spreadMed)} / ${r1(cj.C.spreadP95)}, the allowance ${r1(cj.C.allowMed)} / ${r1(cj.C.allowP95)}; lifts +5 -> ${r1(l5)}, +10 -> ${r1(l10)}, +${BURN_MS} -> ${r1(l24)}; 5 ms counts only with a quiet control)`;
+  console.log(seesLine);
+  ok(`${seesLine} (information)`, true, '');
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
