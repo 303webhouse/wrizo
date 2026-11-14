@@ -57,10 +57,10 @@ Milestone 1 (the shell, the rail, a Project's own list).
 34. **"New doc" here** makes the Doc in this Project, even if she is in another one.
 35. **A Board's row** and its **CONNECT** button only show a note. CONNECT is drawn in frame P3-NB-B and is not in the brief; it is tagged PROPOSED when pressed.
 
-## THEME and SETTINGS pop-outs
+## THEME and CONTROLS pop-outs
 
 36. **THEME:** Machina (where she is), Arbor, Flux; two switches, Dark and Distraction free, that flip and change nothing. A guess from the vision note.
-37. **SETTINGS:** one switch, Full screen, which works. A guess from the vision note.
+37. **CONTROLS:** one switch, Full screen, which works. A guess from the vision note. (The word CONTROLS itself is ruled: correction to the brief, Nov 14.)
 
 ## Made-up content
 
@@ -70,4 +70,4 @@ Milestone 1 (the shell, the rail, a Project's own list).
 
 ## For checking only
 
-41. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#pins-list`, `#day-one`, `#theme`, `#settings` open one state directly.
+41. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#pins-list`, `#day-one`, `#theme`, `#controls` open one state directly.

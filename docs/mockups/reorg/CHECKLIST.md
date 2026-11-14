@@ -21,7 +21,7 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 |---|---|
 | Top to bottom: the Project she is in (a two-letter box and its name) | The rail at rest: the TH box with THESIS under it and the brass bar at its left |
 | Her pinned Projects, as boxes or as a list, a tiny switch under them | The rail at rest shows GR, ES, NP as boxes. Press the left half of the tiny switch for the list, the right half for boxes (`#pins-list`) |
-| DOCS, PROJECTS, UNFILED · THEME, SETTINGS | The rail, below the pins and at its foot. Each opens its pop-out; press it again, or Esc, to close |
+| DOCS, PROJECTS, UNFILED · THEME, SETTINGS (corrected Nov 14: in Machina the last item reads CONTROLS) | The rail, below the pins and at its foot. The last item reads CONTROLS. Each opens its pop-out; press it again, or Esc, to close |
 | The rail with no pins (frame Ruled-3) | PROJECTS, then press every filled pin until none is left (`#day-one` also puts her in New Project) |
 | DOCS pop-out: New (Blank, Screenplay, Research paper, More kinds, and Board) | Press DOCS (`#docs`). The first five rows. Each makes a Doc or a Board (NOT RULED: where it lands, its name) |
 | DOCS pop-out: Recent | Press DOCS: under RECENT. Press a row to open that Doc |

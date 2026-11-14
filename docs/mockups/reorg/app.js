@@ -39,7 +39,7 @@
     here: { project: 'thesis', doc: 'harbor-tolls' },
     stage: 'BUILD',
     pinView: 'boxes',          // 'boxes' | 'list'
-    pop: null,                 // null | { kind: 'docs' | 'projects' | 'unfiled' | 'theme' | 'settings' | 'list', id }
+    pop: null,                 // null | { kind: 'docs' | 'projects' | 'unfiled' | 'theme' | 'controls' | 'list', id }
     boxOpen: false,            // PROJECTS: the box settings drop-down
     boxFor: 'thesis',          // PROJECTS: whose box the settings edit
     trashOpen: false,          // UNFILED: inside the Trash
@@ -90,7 +90,7 @@
     projects: '<path d="M3.5 3.5h9v9h-9z"/><path d="M7.5 7.5h9v9h-9z"/>',
     unfiled: '<path d="M3 11.5l2-6h10l2 6v4.5h-14z"/><path d="M3 11.5h4l1 2h4l1-2h4"/>',
     theme: '<circle cx="10" cy="10" r="6.5"/><path d="M10 3.5v13"/>',
-    settings: '<path d="M3 6h14M3 14h14"/><circle cx="7" cy="6" r="2"/><circle cx="13" cy="14" r="2"/>',
+    controls: '<path d="M3 6h14M3 14h14"/><circle cx="7" cy="6" r="2"/><circle cx="13" cy="14" r="2"/>',
     list: '<path d="M3 5.5h14M3 10h14M3 14.5h14"/>',
     boxes: '<path d="M4 4h5v5h-5zM11 4h5v5h-5zM4 11h5v5h-5zM11 11h5v5h-5z"/>',
     file: '<path d="M4 4h12v12h-12z"/><path d="M10 7v6M7 10h6"/>',
@@ -178,7 +178,7 @@
     }
     h += railItem('docs', 'Docs', 58) + railItem('projects', 'Projects', 58) + railItem('unfiled', 'Unfiled', 58);
     h += '<div class="rail-spring"></div><div class="rail-rule"></div>';
-    h += railItem('theme', 'Theme', 54) + railItem('settings', 'Settings', 54);
+    h += railItem('theme', 'Theme', 54) + railItem('controls', 'Controls', 54);
     el.rail.innerHTML = h;
     paintPictures(el.rail);
   }
@@ -339,7 +339,8 @@
     return popShell(p.name, count, b);
   }
 
-  /* THEME and SETTINGS: the brief names them on the rail and says no more. Guesses, tagged. */
+  /* THEME and CONTROLS: the brief names them on the rail and says no more. Guesses, tagged.
+     CONTROLS is Machina's word for the rail's last item (correction to the brief, Nov 14). */
   function popTheme() {
     var b = groupHead('THEME', 'NOT RULED');
     b += '<div class="row is-here">' + hereBar(true) + '<div class="row-main"><span class="row-name">Machina</span><span class="row-meta">the theme you are in</span></div></div>';
@@ -351,14 +352,14 @@
     b += '<div class="quiet-line">A guess from the vision note (the rails, D). The two switches flip here and change nothing else.</div>';
     return popShell('THEME', '', b);
   }
-  function popSettings() {
+  function popControls() {
     var full = !!document.fullscreenElement;
     var b = groupHead('THE APP', 'NOT RULED');
     b += '<div class="set-row"><span>Full screen</span>' +
       '<button type="button" class="switch" role="switch" aria-checked="' + full + '" aria-label="Full screen" data-act="fullscreen">' +
       '<span' + (full ? '' : ' class="is-set"') + '>OFF</span><span' + (full ? ' class="is-set"' : '') + '>ON</span></button></div>';
     b += '<div class="quiet-line">A guess from the vision note (the rails, D): what belongs to the whole app sits here. Page defaults are in DOCS, as the brief rules.</div>';
-    return popShell('SETTINGS', '', b);
+    return popShell('CONTROLS', '', b);
   }
 
   function renderPop() {
@@ -369,7 +370,7 @@
         case 'projects': h = popProjects(); break;
         case 'unfiled': h = popUnfiled(); break;
         case 'theme': h = popTheme(); break;
-        case 'settings': h = popSettings(); break;
+        case 'controls': h = popControls(); break;
         case 'list': h = popList(proj(S.pop.id)); break;
       }
     }
@@ -422,7 +423,7 @@
           break;
         case 'list': text = 'A Project\u2019s own list (look from frame P3-NB-B)'; break;
         case 'theme': mark = 'NOT RULED'; text = 'THEME pop-out: the brief names it and no more'; break;
-        case 'settings': mark = 'NOT RULED'; text = 'SETTINGS pop-out: the brief names it and no more'; break;
+        case 'controls': mark = 'NOT RULED'; text = 'CONTROLS pop-out: the brief names it and no more'; break;
       }
     }
     if (docHere().isNew) { mark = 'NOT RULED'; text += ' \u00b7 A new Doc on the page: where it lands and its name are guesses'; }
@@ -633,7 +634,7 @@
       D.notebook.pinned = false;
       S.here = { project: 'new-project', doc: 'notes-on-the-ledgers' };
     }
-    else if (h === 'docs' || h === 'projects' || h === 'unfiled' || h === 'theme' || h === 'settings') { openPop({ kind: h }); }
+    else if (h === 'docs' || h === 'projects' || h === 'unfiled' || h === 'theme' || h === 'controls') { openPop({ kind: h }); }
     else if (h === 'box') { openPop({ kind: 'projects' }); S.boxOpen = true; }
     else if (h === 'trash') { openPop({ kind: 'unfiled' }); S.trashOpen = true; }
     else if (h === 'list') { openPop({ kind: 'list', id: S.here.project }); }
