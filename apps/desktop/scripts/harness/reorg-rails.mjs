@@ -94,7 +94,9 @@ async function openPage(app, theme, reorg) {
   await sleep(900);
 }
 
-const NORM = () => `(() => { const ids = ${q(ids)}; return (h) => { let s = h || ''; for (const [k, v] of Object.entries(ids)) if (v) s = s.split(v).join('{' + k + '}'); return s; }; })()`;
+// React's useId values (":r2:") count mounts, not what is drawn (two reads of main's own Pages pop-out differ only there, run 43639941602),
+// so each is replaced by its order of appearance in the surface; every other byte is held
+const NORM = () => `(() => { const ids = ${q(ids)}; return (h) => { let s = h || ''; for (const [k, v] of Object.entries(ids)) if (v) s = s.split(v).join('{' + k + '}'); const seen = new Map(); return s.replace(/:r[0-9a-z]+:/g, (m) => { if (!seen.has(m)) seen.set(m, ':useid' + (seen.size + 1) + ':'); return seen.get(m); }); }; })()`;
 // the strip at rest, then each of its pop-outs open (the anchor, once its slide has settled), each closed again before the next
 async function captureSurfaces(app) {
   const out = {};
@@ -129,6 +131,7 @@ await withHarness(async (app) => {
       // a second capture of the same surfaces: what differs between two reads of main is not a DOM main draws the same each time
       const again = await captureSurfaces(app);
       ok(`CAPTURE [${theme}]: two captures of main's switch-off surfaces agree (${Object.keys(s).length} surfaces)`, Object.keys(s).every((k) => s[k] === again[k]), Object.keys(s).filter((k) => s[k] !== again[k]).join(','));
+      for (const k of Object.keys(s).filter((x) => s[x] !== again[x])) console.log(`AGAIN ${theme}.${k} ${Buffer.from(String(again[k]), 'utf8').toString('base64')}`);
     }
     return checks;
   }
