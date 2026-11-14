@@ -39,7 +39,9 @@
 //           list; the two Unfiled entries are in none (UNFILED is step 6)
 //       L5  opening a Part is a departure with the return chip, and the rail comes back open on the same list
 //       L6  + New board and + New doc go through today's own route: an unborn board in Top Drawer's set; an unborn doc in Grants' first set
+//           [successor, (c) Fable 3:52 pm: a new Doc is always its own: in Grants (no app-made set) a NEW set made by today's "+ New set"]
 //       L7  browsing the lists changes nothing stored
+//       L8  + New board in Grants' list lands in a new set of boards only (a Board with no Doc); abandoned, it leaves that one empty set and no page
 // STEP 4, Box settings (frame R5):
 // BOX   B1  one closed drop-down at the foot of PROJECTS, for the Project she is in; open, it sets the letters (the rail's box and the row's
 //           read them), No letters, a swatch (brass), her own colour, and a picture (the box shows it), and Remove the picture
@@ -236,8 +238,11 @@ await withHarness(async (app) => {
   await sleep(600);
   const pj = await app.evalJs(PROJECTS);
   const want = [ids.topDrawer, ids.grants, ids.essays, 'notebook'];
-  ok('P1: PROJECTS opens All projects - the head counts its rows (4); the rows are Top Drawer, Grants, Essays, then the Notebook LAST; Docs 2, 1, 0, 1 by the read-time rule; no Unfiled writing is a row; the row she is in is marked',
-    opened && !!pj && pj.title === 'All projects' && pj.count === '4' && JSON.stringify(pj.rows.map((r) => r.id)) === JSON.stringify(want)
+  // SUPERSEDED (FIX 1, Fable, Nov 14, 3:52 pm: the count must NOT count the Notebook). The original, verbatim:
+  // ok('P1: PROJECTS opens All projects - the head counts its rows (4); the rows are Top Drawer, Grants, Essays, then the Notebook LAST; Docs 2, 1, 0, 1 by the read-time rule; no Unfiled writing is a row; the row she is in is marked',
+  //   opened && !!pj && pj.title === 'All projects' && pj.count === '4' && JSON.stringify(pj.rows.map((r) => r.id)) === JSON.stringify(want)
+  ok('P1 [successor]: PROJECTS opens All projects - the head counts its Projects (3: the Notebook is listed, not counted); the rows are Top Drawer, Grants, Essays, then the Notebook LAST; Docs 2, 1, 0, 1 by the read-time rule; no Unfiled writing is a row; the row she is in is marked',
+    opened && !!pj && pj.title === 'All projects' && pj.count === '3' && JSON.stringify(pj.rows.map((r) => r.id)) === JSON.stringify(want)
     && JSON.stringify(pj.rows.map((r) => r.docs)) === JSON.stringify([2, 1, 0, 1]) && pj.rows[1].meta === '1 doc' && pj.rows[0].meta === '2 docs'
     && pj.rows[3].notebook && pj.rows[3].name === 'Notebook' && pj.rows[0].current === 'location' && pj.rows.filter((r) => r.current).length === 1, JSON.stringify(pj));
 
@@ -392,8 +397,32 @@ await withHarness(async (app) => {
   await click(`[data-reorg-project="${ids.grants}"] .wz-reorg-row-open`); await sleep(600);
   await click('.wz-reorg-list [data-new="doc"]'); await sleep(900);
   const l6b = await app.evalJs('location.hash');
-  ok('L6: + New board in Top Drawer\'s list opens an unborn board in its set; + New doc in Grants\' opens an unborn doc in its first set (today\'s route)',
-    l6a === `#/page/new?kind=board&binder=${ids.topSet}` && l6b === `#/page/new?binder=${ids.budget}`, JSON.stringify({ l6a, l6b }));
+  // SUPERSEDED ((c), Fable, Nov 14, 3:52 pm: a new Doc is ALWAYS a Doc of its own; never into her first set). The original, verbatim:
+  // ok('L6: + New board in Top Drawer\'s list opens an unborn board in its set; + New doc in Grants\' opens an unborn doc in its first set (today\'s route)',
+  //   l6a === `#/page/new?kind=board&binder=${ids.topSet}` && l6b === `#/page/new?binder=${ids.budget}`, JSON.stringify({ l6a, l6b }));
+  const setsNow = () => app.evalJs(`JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').filter((p) => p.drawerId === ${q(ids.grants)} && !p.deletedAt).map((p) => ({ id: p.id, title: p.title }))`);
+  const grantsSets6 = await setsNow();
+  const newSet6 = (/[?&]binder=([^&]+)/.exec(l6b) || [])[1];
+  ok('L6 [successor]: + New board in Top Drawer\'s list opens an unborn board in its app-made set; + New doc in Grants\' (no app-made set) opens an unborn doc in a NEW set of Grants made by today\'s "+ New set" (titled Untitled), never in Budget, so the page is a Doc of its own',
+    l6a === `#/page/new?kind=board&binder=${ids.topSet}` && /^#\/page\/new\?binder=/.test(l6b) && !!newSet6 && ![ids.budget, ids.moods].includes(newSet6)
+    && grantsSets6.some((s) => s.id === newSet6 && s.title === 'Untitled'), JSON.stringify({ l6a, l6b, grantsSets6 }));
+  // L8: + New board in Grants' list lands as a Board with no Doc (a new set of boards only); a new Doc abandoned leaves just its one empty set
+  await openPage(app, 'machina', true);
+  const before8 = await setsNow();
+  const entries8 = await app.evalJs("localStorage.getItem('writer-studio-journal-entries')");
+  await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
+  await click(`[data-reorg-project="${ids.grants}"] .wz-reorg-row-open`); await sleep(600);
+  await click('.wz-reorg-list [data-new="board"]'); await sleep(900);
+  const l8 = await app.evalJs('location.hash');
+  await openPage(app, 'machina', true);   // she leaves the unborn board without a keystroke
+  await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()');
+  const after8 = await setsNow();
+  const entries8b = await app.evalJs("localStorage.getItem('writer-studio-journal-entries')");
+  const newSet8 = (/[?&]binder=([^&]+)/.exec(l8) || [])[1];
+  const added8 = after8.filter((s) => !before8.some((b) => b.id === s.id));
+  ok('L8: + New board in Grants\' list opens an unborn board in a NEW set (a set of boards only: a Board with no Doc); left without a keystroke, it leaves exactly that one empty set (titled Untitled) and no page',
+    /^#\/page\/new\?kind=board&binder=/.test(l8) && !!newSet8 && ![ids.budget, ids.moods, newSet6].includes(newSet8) && added8.length === 1 && added8[0].id === newSet8 && added8[0].title === 'Untitled' && entries8 === entries8b,
+    JSON.stringify({ l8, added8, entriesSame: entries8 === entries8b }));
 
   // ---- STEP 4: Box settings ----------------------------------------------------------------------------------------------------------
   await openPage(app, 'machina', true);

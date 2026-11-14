@@ -7,8 +7,9 @@ import { getDrawer, getSystemKind } from '../store/persistence';
 import { isDefaultRoot, JOURNAL, UNSORTED } from '../store/place';
 import { usePlace } from '../store/usePlace';
 import { NOTEBOOK, projectOfEntry } from './railData';
-import { setPinView, useRailMemory } from './railMemory';
+import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
+import { REORG } from './flag';
 
 // THE REORG'S RAIL (phase 2, behind ?reorg=1 in Machina; frames rail-1d R1 to R3). It replaces the strip's CONTENT only: it renders in the same
 // DeskFrame track (84 px), under the same `.wz-strip` root (so the Cascade's keystroke dissolve still knows its own DOM), and every door opens a
@@ -40,7 +41,15 @@ export function useWhereSheIs(entry: JournalEntry): string | null {
 
 const fill = (s: string, name: string): string => s.replace('{name}', name);
 
+// THE SPEED CHECK'S COUNTER (reorg-rails-speed.mjs): how many times the rail has rendered, read through a window seam that exists only under the
+// switch (the wrizoRailMemory pattern). The check holds it still while she types: the rail must not re-render on a keystroke.
+let railRenders = 0;
+if (REORG && typeof window !== 'undefined') {
+  (window as unknown as { wrizoRailRenders?: () => number }).wrizoRailRenders = () => railRenders;
+}
+
 export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void }) {
+  railRenders += 1;
   const { t } = useDeskLexicon();
   const lex = useLexicon();
   const nameOf = useProjectName();
@@ -49,10 +58,18 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
   // her pins, as she pinned them; a Project that is gone drops out, and the one she is in shows once, at the top
   const pins = memory.pins.filter((id) => id !== here && (id === NOTEBOOK || !!getDrawer(id)));
   const hereName = nameOf(here);
+  // step 3: a Project's box opens that Project's own list (the where-she-is box and every pin); pressing the box whose list is open closes it
+  const listOpen = useOpenList();
+  const listShown = (id: string | null) => open === 'reorg-list' && id != null && listOpen === id;
+  const openListOf = (id: string) => {
+    if (listShown(id)) { toggle('reorg-list'); return; }
+    setOpenList(id);
+    if (open !== 'reorg-list') toggle('reorg-list');
+  };
   const doors: Door[] = [
-    { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: false },          // step 5
+    { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: true },
     { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
-    { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: false },     // step 6
+    { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true },
   ];
   const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode }[] = [
     { id: 'theme', term: 'stripChangeTheme', icon: <ThemeIcon /> },
@@ -60,11 +77,12 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
   ];
   return (
     <div className="wz-strip wz-reorg-rail" data-reorg-rail="">
-      {/* 1. where she is: her Project's box and name. Its own list arrives in step 3 */}
+      {/* 1. where she is: her Project's box and name; it opens her Project's own list (Unfiled writing has no list: its door is UNFILED) */}
       <div className="wz-strip-section wz-reorg-where">
-        <button type="button" className="wz-strip-item wz-reorg-where-item" data-reorg-where={here ?? 'unfiled'} aria-disabled="true"
+        <button type="button" className="wz-strip-item wz-reorg-where-item" data-reorg-where={here ?? 'unfiled'}
+          aria-disabled={here == null ? 'true' : undefined} aria-pressed={here == null ? undefined : listShown(here)} onClick={here == null ? undefined : () => openListOf(here)}
           aria-label={fill(t('reorgWhereLabel'), hereName)} aria-current="location">
-          <RailBox name={hereName} size="rail" />
+          <RailBox id={here} name={hereName} size="rail" />
           <span className="wz-strip-label wz-reorg-where-name">{hereName}</span>
         </button>
       </div>
@@ -75,8 +93,8 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
             {pins.map((id) => {
               const name = nameOf(id);
               return (
-                <button key={id} type="button" className="wz-reorg-pin" data-reorg-pin={id} aria-disabled="true" aria-label={fill(t('reorgBoxOpen'), name)} title={name}>
-                  <RailBox name={name} size="pin" />
+                <button key={id} type="button" className="wz-reorg-pin" data-reorg-pin={id} aria-pressed={listShown(id)} aria-label={fill(t('reorgBoxOpen'), name)} title={name} onClick={() => openListOf(id)}>
+                  <RailBox id={id} name={name} size="pin" />
                   {memory.pinView === 'list' ? <span className="wz-strip-label wz-reorg-pin-name">{name}</span> : null}
                 </button>
               );
@@ -88,7 +106,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
           </div>
         </div>
       )}
-      {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (DOCS in step 5, UNFILED and the Trash in step 6) */}
+      {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (the Trash sits at the foot of UNFILED) */}
       <div className="wz-strip-section wz-reorg-doors">
         {doors.map((d) => (
           <button key={d.id} type="button" data-category={d.id} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}

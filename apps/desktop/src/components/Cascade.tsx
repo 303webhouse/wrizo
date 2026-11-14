@@ -123,6 +123,7 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
     case 'reorg-docs': return 'drawerPage';
     case 'reorg-projects': return 'reorgAllProjects';
     case 'reorg-unfiled': return 'reorgUnfiled';
+    case 'reorg-list': return 'reorgListTitle';
   }
 }
 
@@ -306,9 +307,10 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
   };
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST) };
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST),
+    ...(reorg ? { openCategory: (id: CategoryId) => setState({ category: id, survey: null, docked: false }) } : {}) };
 
-  const strip = reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : (
+  const strip = (
     <div className="wz-strip">
       <PlaceBlock active={state.category === 'drawers'} onToggle={() => toggleCategory('drawers')} drawerIcon={<DrawersIcon />} journalIcon={<JournalIcon />} reading={readouts ? readouts.place : null} />
       {renderSection(SECTION_A, state, toggleCategory, t, 'wz-strip-section--bracketed', null, readouts, lastReadout)}
@@ -368,7 +370,9 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     </>
   );
 
-  return { strip, layers };
+  // the reorg's rail takes the strip's track only under the gate; today's strip above stays exactly as it was written (big-projects-1a P1
+  // reads it from `const strip = (`: a gate written into that line hid it, train 14's pair, run 43643612187)
+  return { strip: reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : strip, layers };
 }
 
 function renderSection(
