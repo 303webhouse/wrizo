@@ -1,0 +1,13 @@
+2026-11-11T07:07:12.7705264Z   FILES_INPUT: helpers-survive.mjs
+2026-11-11T07:07:57.7541086Z   FILE_LIST: helpers-survive.mjs
+2026-11-11T07:08:16.5401258Z SUITE START HARNESS_PARKED=unset files=1 tree=342df47a bundle=index-B9fpcTSq.js/1001407b out=/home/runner/work/_temp/suite
+2026-11-11T07:08:16.5402306Z [01/1] OK        exit=0   15s helpers-survive.mjs :: HELPERS-SURVIVE VERIFY: PASS (4 checks)
+2026-11-11T07:08:16.5403150Z SUITE DONE HARNESS_PARKED=unset — 1/1 of 1 returned a passing verdict
+2026-11-11T07:08:16.5403917Z SUITE RESULT: CLEAN — tree=342df47a bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T07:07:54.8319730Z   FILE_LIST: helpers-survive.mjs
+2026-11-11T07:07:59.6184131Z SUITE START HARNESS_PARKED=1 files=1 tree=342df47a bundle=index-B9fpcTSq.js/1001407b out=/home/runner/work/_temp/suite
+2026-11-11T07:07:59.6185515Z [01/1] NOVERDICT exit=1    1s helpers-survive.mjs :: (no verdict — see /home/runner/work/_temp/suite/helpers-survive.mjs.parked.txt)
+2026-11-11T07:07:59.6186555Z SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict
+2026-11-11T07:07:59.6187440Z   NOVERDICT: helpers-survive.mjs — full output at /home/runner/work/_temp/suite/helpers-survive.mjs.parked.txt
+2026-11-11T07:07:59.6188257Z SUITE RESULT: NOT CLEAN — tree=342df47a bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T07:08:37.4518141Z | helpers-survive.mjs | NOVERDICT: (no verdict — see /home/runner/work/_temp/suite/helpers-survive.mjs.parked.txt) | `failed/parked/helpers-survive.mjs.parked.txt` |

@@ -32,7 +32,9 @@ const mouse = (app, type, x, y) => app.cdp('Input.dispatchMouseEvent', { type, x
 const click = async (app, x, y) => { await app.mouseMove(x, y); await mouse(app, 'mousePressed', x, y); await mouse(app, 'mouseReleased', x, y); };
 const pointOf = (app, expr) => app.evalJs(`(() => { const el = ${expr}; if (!el) return null; const r = el.getBoundingClientRect(); return r.width ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) } : null; })()`);
 const k5Park = [];   // the park record: each skin's K5 observation
-const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'File' }];   // the theme's own card / page words (themeLexicon)
+// ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+// const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'File' }];   // the theme's own card / page words (themeLexicon)
+const THEMES = [{ id: 'plateau', name: 'Arbor', card: 'Card', page: 'Page' }, { id: 'flux', name: 'Flux', card: 'Node', page: 'Doc' }, { id: 'machina', name: 'Machina', card: 'Block', page: 'Doc' }];   // the theme's own card / page words (themeLexicon)
 const CARD = 'Ada Lovelace\nCartographer of the Well. Fears deep water, keeps the map.';
 const SOURCE = 'Smith, J. (2020). The Well Under the Harbour. Harbour Press.';
 const PAGE = 'The rope was already there, and the well took the bucket back colder still.';
@@ -119,12 +121,7 @@ await withHarness(async (app) => {
     let pageNow = null; for (let i = 0; i < 32; i += 1) { await sleep(250); pageNow = await stored(app, P); if (pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well')) break; }
     ok(`${tag} K4: copyable into the page - the reader's stretch copies as its plain words ("${copied}") and pasted into the page it lands as those words`,
       copied === 'Cartographer of the Well' && !!pageNow && pageNow.text.trimEnd().endsWith('Cartographer of the Well'), J({ copied, page: pageNow && pageNow.text.slice(-60), whisper: await app.evalJs("(() => { const w = document.querySelector('.vw-whisper'); return w ? [w.textContent, w.getAttribute('data-shown')] : null; })()"), edTail: await app.evalJs("(document.querySelector('.forward-only-editor')?.innerText || '').slice(-50)") }));
-    // K5: one at a time. PARKED VERBATIM (Fable, Oct 28): docking the source REPLACES the card - the reader replaces the Grafts list, so a second Dock control never stands
-    // beside it; the rule is one item at a time, and a swap is Undock, then Dock. The check below is kept as written and no longer run; its successor follows.
-    //   const srcBtn = await pointOf(app, dockBtn(null, S));
-    //   if (srcBtn) { await click(app, srcBtn.x, srcBtn.y); await sleep(800); }
-    //   const r5 = await app.evalJs(READER);
-    //   ok(`${tag} K5: one at a time - docking the source replaces the card: one reader, the source's words`, !!srcBtn && !!r5 && r5.count === 1 && /Smith, J\. \(2020\)/.test(r5.text || '') && !/Cartographer/.test(r5.text || ''), J(r5));
+    // ARCHIVED PARK (#13 step 14): archive/polish10-linkdock.mjs.parked.md record 1
     const undock0 = await pointOf(app, "document.querySelector('.wz-link-dock-close')");
     if (undock0) { await click(app, undock0.x, undock0.y); await sleep(700); }
     const listBack = await app.evalJs("!document.querySelector('.wz-link-dock') && !!document.querySelector('.wz-graft-row')");

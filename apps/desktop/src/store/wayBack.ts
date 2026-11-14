@@ -46,8 +46,6 @@ export function clearWayBack(): void {
 // out of this ticket's scope and unverified against every other harness
 // file's own assumptions about it.
 export function isWritingRoute(pathname: string): boolean {
-  if (pathname === '/sprint') return true;
-  if (/^\/project\/[^/]+\/sprint$/.test(pathname)) return true;
   const pageMatch = pathname.match(/^\/page\/([^/]+)$/);
   if (pageMatch) return getSystemKind(getJournalEntry(pageMatch[1])) === undefined;
   if (pathname.startsWith('/journal/') && pathname !== '/journal/spread') return true;

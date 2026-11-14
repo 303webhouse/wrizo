@@ -162,37 +162,53 @@ await withHarness(async (app) => {
   // then navigates away in the same handler, so no celebration-consumer
   // renders the transition in place) — then assert exactly one celebration
   // on the NEXT-opened writing surface. ------------------------------------
-  await app.evalJs(`location.hash = '#/project/${projectId}/sprint'`);
-  await app.waitFor("!!document.querySelector('.sprint-bottombar')", { label: 'QuickSprint mounted' });
-  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  await app.typeKeys('A few words for the sprint. ');
-  await app.click('Finish');
-  await app.waitFor("!!document.querySelector('input[type=checkbox]')", { label: 'finish card with mark-done checkbox' });
-  const checkboxLabel = await app.evalJs("document.querySelector('input[type=checkbox]').closest('label').textContent");
-  ok('QuickSprint\'s finish checkbox names the attached (currentBeatId) beat', checkboxLabel.includes(beatNames[beats[1]]), checkboxLabel);
-  await app.evalJs("document.querySelector('input[type=checkbox]').click()");
-  // B2.1 S6 — plumbing + cosmetic-label update, not a park: QuickSprint.tsx's
-  // own button text swaps "project" for "Drawer" (deskLexicon). Review fix
-  // (independent re-verification, same date) — updated AGAIN, from the
-  // build's own "Save to Binder" to "Save to Drawer": the build's Binder
-  // choice here was reverted (its collision reasoning didn't hold — this
-  // screen's breadcrumb shows a PROPER NOUN, `drawer.name`, never the bare
-  // word "Drawer", so no actual collision — and the button's own
-  // destination, ProjectHome.tsx, always reads "Drawer" regardless; see
-  // b2-1.mjs's parked S6g check and QuickSprint.tsx's own comment for the
-  // full account). The click target is plumbing (updated again); the
-  // assertion below tests beat-status behavior, wholly unaffected by the
-  // copy change, so only its descriptive name is refreshed for accuracy
-  // (its pass/fail truth never moved, so this isn't an A4 park case).
-  await app.click('Save to Drawer');
-  await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to Drawer' });
-  await sleep(400); // clear the debounced flush so the raw localStorage read below is durable
-  const needStatusAfterSave = await app.evalJs(`(() => {
+  // ---- PARKED - #13 step 12a (Nick's dormant answers, Oct 29): QuickSprint is deleted, with its finish checkbox and its Save. Kept VERBATIM
+  // below and no longer run. "QuickSprint's finish checkbox names the attached beat" is RETIRED (record in the parked block); "the beat
+  // reached complete status" is SUPERSEDED: the successor makes the SAME Plan-side write the checkbox fired (the store's own setBeatStatus,
+  // through its seam) from the Desk, where no celebration-consumer is mounted, so the next-opened writing surface still meets the transition.
+  // await app.evalJs(`location.hash = '#/project/${projectId}/sprint'`);
+  // await app.waitFor("!!document.querySelector('.sprint-bottombar')", { label: 'QuickSprint mounted' });
+  // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  // await app.typeKeys('A few words for the sprint. ');
+  // await app.click('Finish');
+  // await app.waitFor("!!document.querySelector('input[type=checkbox]')", { label: 'finish card with mark-done checkbox' });
+  // const checkboxLabel = await app.evalJs("document.querySelector('input[type=checkbox]').closest('label').textContent");
+  // ok('QuickSprint\'s finish checkbox names the attached (currentBeatId) beat', checkboxLabel.includes(beatNames[beats[1]]), checkboxLabel);
+  // await app.evalJs("document.querySelector('input[type=checkbox]').click()");
+  // // B2.1 S6 — plumbing + cosmetic-label update, not a park: QuickSprint.tsx's
+  // // own button text swaps "project" for "Drawer" (deskLexicon). Review fix
+  // // (independent re-verification, same date) — updated AGAIN, from the
+  // // build's own "Save to Binder" to "Save to Drawer": the build's Binder
+  // // choice here was reverted (its collision reasoning didn't hold — this
+  // // screen's breadcrumb shows a PROPER NOUN, `drawer.name`, never the bare
+  // // word "Drawer", so no actual collision — and the button's own
+  // // destination, ProjectHome.tsx, always reads "Drawer" regardless; see
+  // // b2-1.mjs's parked S6g check and QuickSprint.tsx's own comment for the
+  // // full account). The click target is plumbing (updated again); the
+  // // assertion below tests beat-status behavior, wholly unaffected by the
+  // // copy change, so only its descriptive name is refreshed for accuracy
+  // // (its pass/fail truth never moved, so this isn't an A4 park case).
+  // await app.click('Save to Drawer');
+  // await app.waitFor("!!document.querySelector('.project-title-editable')", { label: 'ProjectHome after Save to Drawer' });
+  // await sleep(400); // clear the debounced flush so the raw localStorage read below is durable
+  // const needStatusAfterSave = await app.evalJs(`(() => {
+    // const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
+    // const plan = plans.find(p => p.id === '${planId}');
+    // return plan ? plan.beatNotes.find(bn => bn.beatId === 'need')?.status : 'NO-PLAN';
+  // })()`);
+  // ok('the beat reached complete status after Save to Drawer', needStatusAfterSave === 'complete', String(needStatusAfterSave));
+  const beatStatus12a = (pid, beatId) => app.evalJs(`(() => {
     const plans = JSON.parse(localStorage.getItem('writer-studio-story-plans') || '[]');
-    const plan = plans.find(p => p.id === '${planId}');
-    return plan ? plan.beatNotes.find(bn => bn.beatId === 'need')?.status : 'NO-PLAN';
+    const plan = plans.find(p => p.id === ${JSON.stringify(pid)});
+    return plan ? plan.beatNotes.find(bn => bn.beatId === ${JSON.stringify(beatId)})?.status : 'NO-PLAN';
   })()`);
-  ok('the beat reached complete status after Save to Drawer', needStatusAfterSave === 'complete', String(needStatusAfterSave));
+  const isComplete12a = (s) => s === 'complete';
+  await app.goto('/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'the Desk (no celebration-consumer mounted) for the Plan-side write' });
+  await app.evalJs(`window.wrizoSetBeatStatus(${JSON.stringify(planId)}, 'need', 'complete'); true`);
+  const needStatusAfterSave = await beatStatus12a(planId, 'need');
+  ok('the beat reached complete status Plan-side [c13-12a successor: the store\'s own setBeatStatus, the write QuickSprint\'s deleted checkbox fired]', isComplete12a(needStatusAfterSave), String(needStatusAfterSave));
+  ok('[c13-12a successor mutant] the status reader is red on a beat that only started, and on a missing plan', !isComplete12a('started') && !isComplete12a('NO-PLAN'), '');
 
   await app.evalJs(`location.hash = '#/page/${pageId}'`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'manuscript page reopened after Plan-side advance' });
@@ -210,38 +226,41 @@ await withHarness(async (app) => {
   const celebratedOnReload = await pollTrue(app, "document.querySelectorAll('.mode-milestone.celebrate').length > 0", 1500);
   ok('reload with an already-lit beat does NOT celebrate on mount', celebratedOnReload === false, `celebratedOnReload=${celebratedOnReload}`);
 
-  // -- S4: notecard dot states + labels, and Board's own first look at the
-  // already-celebrated beat does NOT re-celebrate it -----------------------
-  await app.evalJs(`location.hash = '#/project/${projectId}/board'`);
-  await app.waitFor("!!document.querySelector('.board-card')", { label: 'StructureBoard mounted' });
-  const needDot = await app.evalJs(`(() => {
-    const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${beatNames[beats[1]]}');
-    const dot = card?.querySelector('.status-dot');
-    return dot ? { cls: dot.className, title: dot.title, aria: dot.getAttribute('aria-label') } : null;
-  })()`);
-  ok('S4: the advanced beat\'s notecard dot shows done, with title/aria-label', !!needDot && needDot.cls.includes('status-dot--done') && needDot.title === 'complete' && needDot.aria === 'complete', JSON.stringify(needDot));
-  const youDot = await app.evalJs(`(() => {
-    const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${beatNames[beats[0]]}');
-    const dot = card?.querySelector('.status-dot');
-    return dot ? { cls: dot.className, title: dot.title } : null;
-  })()`);
-  ok('S4: an untouched beat\'s notecard dot shows empty, with a label', !!youDot && youDot.cls.includes('status-dot--empty') && youDot.title === 'empty', JSON.stringify(youDot));
-  ok('Board\'s own first look at an already-celebrated beat does not re-celebrate', await app.evalJs("document.querySelectorAll('.status-dot.celebrate').length") === 0);
-
-  // -- S4: a live, same-mount transition on the Board DOES celebrate --------
-  const goName = beatNames[beats[2]];
-  await app.evalJs(`(() => {
-    const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${goName}');
-    const btn = [...card.querySelectorAll('button')].find(b => b.textContent === 'Mark done');
-    btn.click();
-  })()`);
-  const sawBoardCelebrate = await pollTrue(app, "document.querySelectorAll('.status-dot.celebrate').length === 1", 2000);
-  ok('S4: clicking "Mark done" celebrates exactly once, in place, on the Board', sawBoardCelebrate);
-  const goDoneNow = await app.evalJs(`(() => {
-    const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${goName}');
-    return card.querySelector('.status-dot').className;
-  })()`);
-  ok('the marked beat\'s dot flips to done', goDoneNow.includes('status-dot--done'), goDoneNow);
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): StructureBoard is deleted, with its notecards, their status
+  // dots and "Mark done". The block is kept VERBATIM below and no longer runs; its five records are in the parked block. The celebration
+  // grammar on the writing surface keeps its live checks above (the reopened page) and in fixture 3 below.
+  // // -- S4: notecard dot states + labels, and Board's own first look at the
+  // // already-celebrated beat does NOT re-celebrate it -----------------------
+  // await app.evalJs(`location.hash = '#/project/${projectId}/board'`);
+  // await app.waitFor("!!document.querySelector('.board-card')", { label: 'StructureBoard mounted' });
+  // const needDot = await app.evalJs(`(() => {
+    // const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${beatNames[beats[1]]}');
+    // const dot = card?.querySelector('.status-dot');
+    // return dot ? { cls: dot.className, title: dot.title, aria: dot.getAttribute('aria-label') } : null;
+  // })()`);
+  // ok('S4: the advanced beat\'s notecard dot shows done, with title/aria-label', !!needDot && needDot.cls.includes('status-dot--done') && needDot.title === 'complete' && needDot.aria === 'complete', JSON.stringify(needDot));
+  // const youDot = await app.evalJs(`(() => {
+    // const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${beatNames[beats[0]]}');
+    // const dot = card?.querySelector('.status-dot');
+    // return dot ? { cls: dot.className, title: dot.title } : null;
+  // })()`);
+  // ok('S4: an untouched beat\'s notecard dot shows empty, with a label', !!youDot && youDot.cls.includes('status-dot--empty') && youDot.title === 'empty', JSON.stringify(youDot));
+  // ok('Board\'s own first look at an already-celebrated beat does not re-celebrate', await app.evalJs("document.querySelectorAll('.status-dot.celebrate').length") === 0);
+//
+  // // -- S4: a live, same-mount transition on the Board DOES celebrate --------
+  // const goName = beatNames[beats[2]];
+  // await app.evalJs(`(() => {
+    // const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${goName}');
+    // const btn = [...card.querySelectorAll('button')].find(b => b.textContent === 'Mark done');
+    // btn.click();
+  // })()`);
+  // const sawBoardCelebrate = await pollTrue(app, "document.querySelectorAll('.status-dot.celebrate').length === 1", 2000);
+  // ok('S4: clicking "Mark done" celebrates exactly once, in place, on the Board', sawBoardCelebrate);
+  // const goDoneNow = await app.evalJs(`(() => {
+    // const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === '${goName}');
+    // return card.querySelector('.status-dot').className;
+  // })()`);
+  // ok('the marked beat\'s dot flips to done', goDoneNow.includes('status-dot--done'), goDoneNow);
 
   // === Fixture 2 — save_the_cat (15 beats > the 12-beat cap): the toggle is
   // absent on a plan-less project, and the window centers on the anchor
@@ -404,18 +423,34 @@ await withHarness(async (app) => {
   const celebratedOnA = await pollTrue(app, "document.querySelectorAll('.mode-milestone.celebrate').length > 0", 1500);
   ok('fixture 3: Project A\'s already-complete midpoint does NOT falsely celebrate on its own first mount', celebratedOnA === false, `celebratedOnA=${celebratedOnA}`);
 
-  // Now genuinely advance Project B's midpoint via the Board — must still
-  // celebrate (the bug's second failure direction: a genuine transition on B
-  // silently swallowed because A's bare 'midpoint' id was already "seen").
-  await app.evalJs(`location.hash = '#/project/${projectIdB}/board'`);
-  await app.waitFor("!!document.querySelector('.board-card')", { label: 'Project B Board mounted' });
-  await app.evalJs(`(() => {
-    const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === 'Midpoint');
-    const btn = [...card.querySelectorAll('button')].find(b => b.textContent === 'Mark done');
-    btn.click();
-  })()`);
-  const sawGenuineCelebration = await pollTrue(app, "document.querySelectorAll('.status-dot.celebrate').length === 1", 2000);
-  ok('fixture 3: Project B\'s genuine live completion of midpoint still celebrates (not swallowed by A\'s identical bare id)', sawGenuineCelebration);
+  // ---- PARKED - SUPERSEDED by #13 step 12a: StructureBoard (and its "Mark done") is deleted. Kept VERBATIM below and no longer run; the
+  // successor follows it: the same genuine completion of B's midpoint (the store's own setBeatStatus, through its seam, from the Desk),
+  // then B's own page must celebrate exactly once - not swallowed by A's identical bare id, which was seen moments ago.
+  // // Now genuinely advance Project B's midpoint via the Board — must still
+  // // celebrate (the bug's second failure direction: a genuine transition on B
+  // // silently swallowed because A's bare 'midpoint' id was already "seen").
+  // await app.evalJs(`location.hash = '#/project/${projectIdB}/board'`);
+  // await app.waitFor("!!document.querySelector('.board-card')", { label: 'Project B Board mounted' });
+  // await app.evalJs(`(() => {
+    // const card = [...document.querySelectorAll('.board-card')].find(c => c.querySelector('.card-title')?.textContent === 'Midpoint');
+    // const btn = [...card.querySelectorAll('button')].find(b => b.textContent === 'Mark done');
+    // btn.click();
+  // })()`);
+  // const sawGenuineCelebration = await pollTrue(app, "document.querySelectorAll('.status-dot.celebrate').length === 1", 2000);
+  // ok('fixture 3: Project B\'s genuine live completion of midpoint still celebrates (not swallowed by A\'s identical bare id)', sawGenuineCelebration);
+  {
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'the Desk for B\'s Plan-side completion' });
+    await app.evalJs(`window.wrizoSetBeatStatus(${JSON.stringify(planIdB)}, 'midpoint', 'complete'); true`);
+    await app.evalJs(`location.hash = '#/page/${pageIdB}'`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'project B page reopened after its completion' });
+    const exactlyOne12a = (n) => n === 1;
+    const sawGenuineCelebration = await pollTrue(app, "document.querySelectorAll('.mode-milestone.celebrate').length === 1", 2000);
+    const midpointCelebrates = await app.evalJs("(() => { const el = [...document.querySelectorAll('.mode-milestone.celebrate')].find(e => e.getAttribute('aria-label')?.startsWith('Midpoint')); return !!el; })()");
+    ok('fixture 3 [c13-12a successor]: Project B\'s genuine completion of midpoint still celebrates, exactly once, on B\'s own page (not swallowed by A\'s identical bare id)',
+      sawGenuineCelebration && midpointCelebrates, JSON.stringify({ sawGenuineCelebration, midpointCelebrates }));
+    ok('fixture 3 [c13-12a successor mutant]: the count reader is red on no celebration and on two', !exactlyOne12a(0) && !exactlyOne12a(2) && exactlyOne12a(1), '');
+  }
 
   // === Fixture 4 — the Journal: no gear, no milestone (inverse) [PARKED WHOLE
   //     — FX14 S2] ==============================================================
@@ -454,25 +489,7 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
 
-  // === ITEM 85-C — SUPERSEDED (the fixture-authored plan id) ==================
-  // ORIGINAL, verbatim:
-  //
-  //   ok('fixture 1: StoryPlan (story_circle) seeded, page attached to beat[1]',
-  //     typeof planId === 'string' && planId.startsWith('m1-plan-'), String(planId));
-  //
-  // WHY IT CANNOT STAND. The fixture used to author the plan's id itself
-  // ('m1-plan-' + Date.now()) by writing localStorage raw. It now seeds through
-  // createStoryPlan, which GENERATES the id — a ruled constraint of item 85-C
-  // (ids are returned, never supplied, because overriding them would mean
-  // changing the store's creators rather than the door). So a prefix the fixture
-  // no longer chooses can no longer be asserted.
-  //
-  // WHAT THE CHECK WAS ACTUALLY FOR, and where it lives now: that a plan was
-  // seeded and the page was attached to beat[1]. The LIVE SUCCESSOR in this
-  // file's fixture-1 section asserts exactly that — the plan exists (a non-empty
-  // id that is not the ERR sentinel) — and the beat attachment is proven by the
-  // checks that read the rendered beat, which never depended on the id's shape.
-  // Nothing is lost: the prefix was a fixture convention, never a product claim.
+  // ARCHIVED PARK (#13 step 14): archive/m1.mjs.parked.md record 1
   pok('PARKED (was "fixture 1: StoryPlan (story_circle) seeded, page attached to beat[1]" asserting planId.startsWith(\'m1-plan-\')) — ITEM 85-C: the plan id is now generated by createStoryPlan, so a fixture-authored prefix is unassertable. Live successor in the fixture-1 section asserts the plan EXISTS instead, which is what the check was for',
     true, 'superseded by item 85-C: ids are returned by the store, never supplied by the fixture');
   await withHarness(async (app) => {
@@ -515,6 +532,19 @@ if (process.env.HARNESS_PARKED === '1') {
       Array.isArray(offeredLabelsNow) && offeredLabelsNow.includes('Drawer'), JSON.stringify(offeredLabelsNow));
     return parkedChecks;
   });
+  // #13 step 12a: QuickSprint's finish-checkbox row and StructureBoard's five rows. The record holds what makes the retirement true: their
+  // routes are never left without one (the screens before the delete, the legacy redirect after; c13-12a-doors.mjs D1/D3).
+  {
+    const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+    const el = (p) => (new RegExp(`<Route path="${p.replace(/[/:]/g, (c) => `\\${c}`)}" element=\\{<(\\w+) \\/>\\} \\/>`).exec(app12a) || [])[1] || null;
+    const sprint = el('/project/:id/sprint'), board = el('/project/:id/board');
+    const rec12a = { sprint, board };
+    pok('PARKED (was "QuickSprint\'s finish checkbox names the attached (currentBeatId) beat") - RETIRED by #13 step 12a: QuickSprint is deleted',
+      sprint === 'QuickSprint' || sprint === 'LegacyProjectRedirect', JSON.stringify(rec12a));
+    for (const n of ['S4: the advanced beat\'s notecard dot shows done, with title/aria-label', 'S4: an untouched beat\'s notecard dot shows empty, with a label', 'Board\'s own first look at an already-celebrated beat does not re-celebrate', 'S4: clicking "Mark done" celebrates exactly once, in place, on the Board', 'the marked beat\'s dot flips to done']) {
+      pok(`PARKED (was "${n}") - RETIRED by #13 step 12a: StructureBoard is deleted`, board === 'StructureBoard' || board === 'LegacyProjectRedirect', JSON.stringify(rec12a));
+    }
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

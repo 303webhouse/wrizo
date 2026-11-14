@@ -116,6 +116,20 @@ export interface TextUndoStack {
   canRedo(): boolean;
 }
 
+// #74: a step remembers the caret of the edit that MADE it (or the page's first caret), which is not where the edit it undoes was: an Enter in the middle of a line
+// undid to the end of the page. Undo and redo therefore keep a remembered caret only when it lies inside the span that changed; any other caret goes to that span:
+// its end when text came back (the caret sits after what returned), its start when nothing did (an insertion went away, the caret is where it was).
+function caretInChange(from: string, to: TextSnapshot): number | null {
+  let p = 0;
+  const max = Math.min(from.length, to.text.length);
+  while (p < max && from.charCodeAt(p) === to.text.charCodeAt(p)) p += 1;
+  let s = 0;
+  while (s < max - p && from.charCodeAt(from.length - 1 - s) === to.text.charCodeAt(to.text.length - 1 - s)) s += 1;
+  const end = to.text.length - s;
+  if (to.caret !== null && to.caret >= p && to.caret <= end) return to.caret;
+  return end > p ? end : p;
+}
+
 export function createTextUndoStack(initial: TextSnapshot): TextUndoStack {
   let current: TextSnapshot = initial;
   const past: TextSnapshot[] = [];
@@ -157,7 +171,9 @@ export function createTextUndoStack(initial: TextSnapshot): TextUndoStack {
     undo() {
       if (past.length === 0) return null;
       future.push(current);
+      const was = current.text;
       current = past.pop()!;
+      current = { text: current.text, caret: caretInChange(was, current) };
       pendingBoundary = true;
       lastKind = null;
       return current;
@@ -165,7 +181,9 @@ export function createTextUndoStack(initial: TextSnapshot): TextUndoStack {
     redo() {
       if (future.length === 0) return null;
       past.push(current);
+      const was = current.text;
       current = future.pop()!;
+      current = { text: current.text, caret: caretInChange(was, current) };
       pendingBoundary = true;
       lastKind = null;
       return current;

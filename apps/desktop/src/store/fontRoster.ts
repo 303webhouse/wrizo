@@ -1,6 +1,7 @@
 // the font roster: nine faces, one table, one resolver, one loader; Times New Roman and Arial are named, never shipped (metric-compatible open fallbacks keep line breaks identical); default faces eager, the rest load on choose [fontRoster §1]
 import { SIZE_DEFAULT, PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from './fontSize';
 import type { StoredFace, FaceGeneric, FaceSource } from '../types';
+import { FLUX3 } from '../flux3/flag';
 
 export type { StoredFace };
 
@@ -65,6 +66,8 @@ export const THEME_DEFAULT_FACE: Readonly<Record<string, { serif: string; sans: 
   machina: { serif: 'Source Sans 3', sans: 'Atkinson Hyperlegible' },
 };
 export function themeDefaultFaceName(theme: string | null | undefined, voice: string | null | undefined): string | null {
+  // FLUX3 (Nov 9): under ?flux3=1 Flux's default serif Voice is Crimson Pro (flux3/flux-v3.css sets the token); the table above stays the unflagged Flux's
+  if (FLUX3 && theme === 'flux' && voice !== 'sans') return DEFAULT_FACE_NAME;
   const t = theme ? THEME_DEFAULT_FACE[theme] : undefined;
   return t ? (voice === 'sans' ? t.sans : t.serif) : null;
 }

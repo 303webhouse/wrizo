@@ -6,6 +6,7 @@ import { requestLogout } from '../../store/logoutRequest';
 import { useSigningOut } from '../../store/useSigningOut';
 import { useTheme } from '../../store/theme';
 import { useCast, setCast } from '../../store/themeCast';
+import { useTurnSound, setTurnSound } from '../../store/pageTurnSound';
 import { FullscreenToggle, SyncIndicator } from '../ChromeControls';
 
 // ---------------------------------------------------------------------------
@@ -22,6 +23,7 @@ export function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction 
   const askBeforeDelete = useAskBeforeDelete();
   const theme = useTheme();
   const cast = useCast();
+  const turnSound = useTurnSound(theme);
   return (
     <div className="wz-cascade-panel-body">
       {/* the Cast row exists only under Machina: the stored value is kept across themes but means nothing outside it [CascadePanels §17] */}
@@ -35,6 +37,15 @@ export function CascadeSettingsPanel({ navigate }: { navigate: NavigateFunction 
           ))}
         </div>
       )}
+      {/* #63: the page's turn is a sound, never an animation; this is its switch, remembered per theme on this device (store/pageTurnSound.ts) */}
+      <div className="wz-cascade-row wz-cascade-turnsound" role="group" aria-label="Page-turn sound">
+        <span>Page-turn sound</span>
+        {(['on', 'off'] as const).map((v) => (
+          <button key={v} type="button" className={`wz-cascade-action${turnSound === v ? ' active' : ''}`} aria-pressed={turnSound === v} data-turn-sound-option={v} onClick={() => setTurnSound(theme, v)}>
+            {v === 'on' ? 'On' : 'Off'}
+          </button>
+        ))}
+      </div>
       <div className="wz-cascade-row"><FullscreenToggle /></div>
       <div className="wz-cascade-row"><SyncIndicator /></div>
       {/* BOARD CONTEXT MENU: the one setting for every delete - ticking "Don't ask me again" in the dialog turns it off; this turns it back on (per device) */}

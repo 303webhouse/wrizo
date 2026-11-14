@@ -60,6 +60,14 @@
 /* Flux marks a card's first line by colour only: capitals, spacing or another face would widen the line and make the card taller; a skin changes only the skin [flux-v2 §5] */
 [data-theme='flux'] .board-text::first-line{ color:var(--text-accent); }
 [data-theme='flux'] .board-canvas-blur-wrap{ position:relative; }
+/* LIVE BOARD LINKS (bug #57; Nick approved the colours, Flux spec §4 'Link colours', draft 27). A link in connection mode was drawn in Arbor's brass (--brass #ff9800 at .9) in every theme; read from drawn pixels under Flux
+   it fell under the graphics floor (3:1, law 3): dark resting 2.59, light resting 1.39, light selected 1.99. Flux draws it in its own blues, opacity 1 so the drawn colour IS the colour (a 1 px line at .9 mixes with the board):
+   dark - resting #3A8FA5, selected #00C2FF; light - resting #35859E, selected #00719C (every one 3:1 or better on its board). Arbor keeps its brass. The thread-drag preview arm is a different mark and keeps its own. */
+[data-theme='flux'] .board-connection-line{ stroke:#3A8FA5; opacity:1; }
+[data-theme='flux'] .board-connection-line[data-selected='true']{ stroke:#00C2FF; }
+[data-theme='flux'][data-page='light'] .board-connection-line{ stroke:#35859E; }
+[data-theme='flux'][data-page='light'] .board-connection-line[data-selected='true']{ stroke:#00719C; }
+
 .flux-board-frame .flux-frame{ padding:12px; }
 
 /* the Inputs panel (the right drawer's second tab), its picker and the board's knob: glass, cyan edges, the arrow-into-a-socket glyph */
@@ -176,6 +184,8 @@
 /* bug #50: on the light page the shared orange at .82 reads 1.79:1 against the paper (#F4F7F8), under the 4.5 floor. A solid, darker orange of
    the same family: 5.2:1 on the paper, 4.8:1 even on the dim paper. The dark tone keeps its caret (scripts/harness/bug50-flux-light-caret.mjs) */
 [data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
+/* solid while keys land, blinking only at rest: FluxBlockCaret marks the block data-typing on a key and lifts it after a short rest [flux-v2 §13] */
+.flux-block-caret[data-typing]{ animation:none; opacity:1; }
 
 /* ==========================================================================================================================================================
    POLISH - ARBOR'S MENUS (Nick, Oct 27). Arbor-scoped ([data-theme='plateau'] is Arbor), cosmetic only: no rect, track, token or behaviour changes.
@@ -286,21 +296,6 @@ h1, h2, h3 {
   padding: 2rem;
 }
 
-.page-title {
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1.75rem;
-  letter-spacing: -0.01em;
-  margin-bottom: 1.5rem;
-  color: var(--text-hi);
-}
-
-.page-subtitle {
-  font-size: 1rem;
-  color: var(--text-mid);
-  margin-bottom: 2rem;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -337,45 +332,6 @@ h1, h2, h3 {
   font-size: 1.25rem;
   margin-bottom: 0.5rem;
   color: var(--text-hi);
-}
-
-.card-description {
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.form-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 1rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  min-height: 150px;
-  resize: vertical;
-  font-family: var(--font-ui); /* structure notes = Figtree, never the prose serif */
-}
-
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-
-.button-group {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
 }
 
 .tag {

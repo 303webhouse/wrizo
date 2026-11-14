@@ -73,9 +73,9 @@ function check() {
   // successor: the same rule, but a row whose fixed target is a file #13 step 11 DELETED (docs/cleanup/c13-11-files.txt) may instead read a
   // permanent link to that same file and anchor at a commit where git holds it (the doc's line anchors stay true there, and claim (1)
   // still forbids any broken local link). A permanent link to a commit that does NOT hold the file fails (--plant perma).
-  const gone11 = fs.existsSync(path.join(ROOT, 'docs/cleanup/c13-11-files.txt'))
-    ? fs.readFileSync(path.join(ROOT, 'docs/cleanup/c13-11-files.txt'), 'utf8').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).map((l) => `apps/desktop/src/${l}`)
-    : [];
+  // #13 step 12a: the files it deletes join step 11's (docs/cleanup/c13-12a-files.txt) - the same rule, one more list
+  const gone11 = ['docs/cleanup/c13-11-files.txt', 'docs/cleanup/c13-12a-files.txt'].filter((f) => fs.existsSync(path.join(ROOT, f)))
+    .flatMap((f) => fs.readFileSync(path.join(ROOT, f), 'utf8').split(/\r?\n/)).map((l) => l.trim()).filter((l) => l && !l.startsWith('#')).map((l) => `apps/desktop/src/${l}`);
   const holds = (sha, p) => { try { execFileSync('git', ['cat-file', '-e', `${sha}:${p}`], { cwd: ROOT, stdio: 'ignore' }); return true; } catch { return false; } };
   if (plant === 'perma') {
     const f = [...texts.keys()].find((k) => /\]\(https:\/\/github\.com\/303webhouse\/wrizo\/blob\/[0-9a-f]{40}\//.test(texts.get(k)));
@@ -94,7 +94,7 @@ function check() {
     if (perma) { permanent++; continue; }
     fails.push(`not fixed: ${r.file} -> ${r.fixed}`);
   }
-  if (permanent) console.log(`rows read as a permanent link to a file #13 step 11 deleted: ${permanent}`);
+  if (permanent) console.log(`rows read as a permanent link to a file #13 step 11 or 12a deleted: ${permanent}`);
   console.log(`list ${rows.length}; live .md files ${texts.size}${plant ? `; PLANTED: ${plant}` : ''}`);
   for (const f of fails.slice(0, 10)) console.log('FAIL', f);
   console.log(fails.length ? `LINKS: FAIL (${fails.length})` : 'LINKS: PASS (no live markdown link points at a missing file)');

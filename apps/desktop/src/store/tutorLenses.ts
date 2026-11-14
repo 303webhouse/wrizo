@@ -42,8 +42,8 @@ export interface FragmentItem {
 
 const RECENT_CAPTURE_LIMIT = 5;
 
-// Exported — S4's nudges (tutorNudges.ts) reuse this exact title-reading
-// convention rather than re-deriving it a second way.
+// Exported: polish10-size-core's TITLES check reads it directly (the nudges
+// that also reused it were deleted in #13 step 12b).
 export function titleOf(e: JournalEntry): string {
   const line = withoutFontMarks(e.text).trim().split('\n')[0]?.trim();   // a title reads the words, never a style span's marks [tutorLenses §1]
   return line ? line.slice(0, 60) : 'Untitled';

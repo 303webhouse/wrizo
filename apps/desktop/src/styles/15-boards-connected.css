@@ -198,6 +198,8 @@
 .md-line{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; }
 /* the free-edit surface is one row per line (store/lineRows.ts) with the newline left as text between rows: inline-block, so textContent, innerText and copied text stay identical; contain:layout style keeps a row's layout inside it, and nothing in a row is positioned [boards-connected §7] */
 .forward-only-editor .wz-row{ display:inline-block; width:100%; box-sizing:border-box; vertical-align:top; contain:layout style; }
+/* #60: an EMPTY row has one line of height. Chrome puts a caret only in an empty block that has height; a row of height 0 sent the caret out to the line's right margin [boards-connected §7b] */
+.forward-only-editor .wz-row:empty{ min-height:1lh; }
 /* no content-visibility on the rows: a skipped row carries no text for innerText, and caret and scroll restores land on estimated rows [boards-connected §8] */
 /* PAGE TEMPLATES - THE LENS, on the rows (store/lineRows.ts applyOutlineLens; docs/plans/page-templates.md section 1). It is drawn through the editor's data-template
    and, for the Outline, two data attributes on the ROW element itself (never in the row's markup, so the kept-row compare and the shadow lines are untouched, and never as

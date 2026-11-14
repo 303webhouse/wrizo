@@ -52,7 +52,7 @@ const CANONICAL: Record<TermId, TermForms> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
   flux: {
     page: { one: 'Doc', many: 'Docs' },
-    drawer: { one: 'Rack', many: 'Racks' },
+    drawer: { one: 'Drive', many: 'Drives' },
     binder: { one: 'Cartridge', many: 'Cartridges' },
     box: { one: 'Node', many: 'Nodes' },
     board: { one: 'Circuit', many: 'Circuits' },
@@ -68,7 +68,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
   },
   // Machina's register; not overridden on purpose: 'plan' (already Machina's word), 'script', and 'notebook' (Machina's Notebook is the journal word) [themeLexicon §5]
   machina: {
-    page: { one: 'File', many: 'Files' },
+    page: { one: 'Doc', many: 'Docs' },
     drawer: { one: 'Project', many: 'Projects' },
     binder: { one: 'Folder', many: 'Folders' },
     box: { one: 'Block', many: 'Blocks' },

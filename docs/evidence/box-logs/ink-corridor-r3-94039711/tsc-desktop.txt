@@ -1,0 +1,1 @@
+.                                        |  WARN  Unsupported engine: wanted: {"node":"18.x"} (current: {"node":"v24.13.0","pnpm":"10.28.2"})

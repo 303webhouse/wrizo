@@ -133,16 +133,7 @@ await withHarness(async (app) => {
       tutorFn: ct.transitionTimingFunction, sliverFn: cs.transitionTimingFunction,
     };
   })()`);
-  // ---- PARKED - SUPERSEDED by the drawer ghost fix (a CLOSED panel's transition list now also carries `visibility`, delayed until its fade ends; the two panels' whole lists therefore differ by design while one is closed), 2026-10-12 ----
-  // Kept VERBATIM and no longer run. The successor (Fable's wording) follows.
-  //
-  // ok('S3: BOTH HANDS, ONE FADE — the Counsel and the tool pop-out resolve to the same transition DURATION (never a copied literal: both read var(--fade-dur))',
-  // !mirror.missing && mirror.tutorDur === mirror.sliverDur, JSON.stringify(mirror));
-  //
-  // ok('S3: the same transitioned PROPERTIES and the same timing FUNCTION on both hands — a divergence in either fails here rather than in a walkthrough',
-  // !mirror.missing && mirror.tutorProp === mirror.sliverProp && mirror.tutorFn === mirror.sliverFn,
-  // JSON.stringify(mirror));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/e3.mjs.parked.md record 1
   const fade = await app.evalJs(`(() => {
     const read = (sel) => { const el = document.querySelector(sel); if (!el) return null; const cs = getComputedStyle(el);
       const props = cs.transitionProperty.split(', '); const i = props.indexOf('opacity'); const v = props.indexOf('visibility');

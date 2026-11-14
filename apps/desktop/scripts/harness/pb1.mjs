@@ -187,6 +187,7 @@ await withHarness(async (app) => {
   // ==========================================================================
   await freshDesk(app, LAPTOP_W, 900);
   await app.waitFor("!!document.querySelector('.wz-arrival-write')", { label: 'Write door' });
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await sleep(600);
   const writeHash = await app.evalJs('location.hash');

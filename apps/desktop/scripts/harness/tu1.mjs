@@ -185,14 +185,7 @@ await withHarness(async (app) => {
     // The grip's own rect: 16px wide at the anchor's own left:0.
     const gripRect = { left: gripAnchor.left, right: gripAnchor.left + 16 };
     const paperTextRight = paperClosed.right - 38; // .mode-page{padding:30px 38px}
-    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23, rulings a-b and the zoom): the text's right edge is no longer the column's right minus
-    // 38px. The page is painted by a transform inside its column, its margins are page-inches (1in), and in the Typewriter zoom the column is the whole
-    // stage (lane 3: "paperTextRight" 1029 at 1100, while the real text ended ~909). The text measure is the editor itself; the successor reads it.
-    // Kept VERBATIM and no longer run; records in the parked section.
-    //
-    // ok(`S6 geometry @${width}: the grip never enters the paper's text measure`,
-    //   gripRect.left >= paperTextRight - 0.5, JSON.stringify({ gripRect, paperTextRight }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 1
     const textRect = await rectOf(app, '.forward-only-editor');
     tu1Ps.push({ width, gripRect, textRight: textRect && textRect.right });
     ok(`S6 geometry @${width} [page-size successor]: the grip never enters the paper's text measure - the editor's own right edge`,
@@ -328,12 +321,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-btn')?.click()");
   await sleep(150);
   const noteShown = await app.evalJs("document.querySelector('.wz-tutor-convo-row .wz-drawer-note-pop')?.textContent");
-  // SUPERSEDED (item word-diet, review fix) — the substring used a curly
-  // right single quote (U+2019); the actual lexicon value (deskLexicon.ts)
-  // is a plain straight apostrophe, so .includes() never matched.
-  // ok('S6 [word-diet successor]: pressed, it reveals the TRUST wording, every promise carried',
-  //   typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes('these Pages’ recent changes') && noteShown.includes('your Bible'),
-  //   String(noteShown));
+  // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 2
   ok('S6 [word-diet successor, apostrophe fix]: pressed, it reveals the TRUST wording, every promise carried',
     typeof noteShown === 'string' && noteShown.includes('Nothing leaves your desk unasked') && noteShown.includes("these Pages' recent changes") && noteShown.includes('your Bible'),
     String(noteShown));
@@ -373,11 +361,7 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureLoose = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  // SUPERSEDED (item word-diet, Nick) — pageHomeLoose's text itself changed,
-  // "Loose — belongs nowhere yet" -> "Unfiled" (no longer contains "loose").
-  // ORIGINAL claim parked verbatim:
-  // ok('S3 Structure: a loose page reads its own honest home label',
-  //   structureLoose.toLowerCase().includes('loose'), structureLoose);
+  // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 3
   ok('S3 Structure [word-diet successor]: a loose page reads its own honest home label ("Unfiled")',
     structureLoose.includes('Unfiled'), structureLoose);
 
@@ -410,28 +394,10 @@ await withHarness(async (app) => {
   await sleep(250);
   await openTutor(app);
   const structureFiled = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[1].innerText");
-  // SUPERSEDED (item word-diet, Nick) — pageHomeProject drops "In " whole;
-  // this fixture's project is never titled (F4's "no title required" door).
-  // ORIGINAL claim parked verbatim:
-  // ok('S3 Structure: a filed page names its project as home',
-  //   structureFiled.includes('In '), structureFiled);
+  // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 4
   ok('S3 Structure [word-diet successor]: a filed page names its project as home ("Untitled", bare)',
     structureFiled.includes('Untitled'), structureFiled);
-  // PW1 S3/PW27 + Fable's ruling 4 (2026-09-08) — SUPERSEDED IN PLACE, original
-  // quoted verbatim (A4). Item 125 separates MEMBERSHIP from DISPLAY: the
-  // pin-card is one display of the relation, and a page can be a member of a
-  // board while appearing on its canvas not at all. "Pinned" named the card, so
-  // the membership line stopped being able to say it — it now reads "Also
-  // connected to <board>.", the same connecting word the Plan panel's own
-  // "Boards connected" heading and the Places zone carry.
-  //
-  // The CLAIM is unchanged and still exactly as strong: the Structure lens tells
-  // the truth about where this page is connected. Only the true word changed.
-  //   ORIGINAL:
-  //   ok('S3 Structure: a page pinned to a board carries a truthful membership line',
-  //     structureFiled.toLowerCase().includes('pinned'), structureFiled);
-  // SUPERSEDED (item arbor-quiet-brass): "connected" renamed to Arbor's own "grafted".
-  // ok('S3 Structure: a page connected to a board carries a truthful membership line (PW1/ruling 4 successor of the same claim, when the word was "pinned")', structureFiled.toLowerCase().includes('connected to'), structureFiled);
+  // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 5
   ok('S3 Structure (arbor-quiet-brass successor): a page grafted to a board carries a truthful membership line',
     structureFiled.toLowerCase().includes('grafted to'), structureFiled);
   // FX12 S2 — the beats sentence dies (V3): the ORIGINAL check (parked VERBATIM in
@@ -475,11 +441,7 @@ await withHarness(async (app) => {
   ok('S3 Fragments: a recent capture is resurfaced', fragText.includes('A raw capture'), fragText);
   ok('S3 Fragments: a starred page sharing a tag is resurfaced', fragText.includes('A starred page sharing'), fragText);
   ok('S3 Fragments: a starred page with NO shared tag is correctly excluded', !fragText.includes('no shared tag'), fragText);
-  // SUPERSEDED (item word-diet, Nick) — tutorLensFragmentsNote moves behind
-  // a "?" (rule 3: explanations behind "?", one sentence); the panel no
-  // longer "plainly discloses" it standing — press the note instead.
-  // ok('S3 Fragments: the panel plainly discloses its own recency+tags-only simplicity',
-  //   fragText.toLowerCase().includes('recency') || fragText.toLowerCase().includes('tags only'), fragText);
+  // ARCHIVED PARK (#13 step 14): archive/tu1.mjs.parked.md record 6
   await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-btn')?.click()");
   await sleep(150);
   const fragNote = await app.evalJs("Array.from(document.querySelectorAll('.wz-tutor-section'))[2].querySelector('.wz-drawer-note-pop')?.textContent ?? null");

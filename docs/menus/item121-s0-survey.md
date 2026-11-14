@@ -428,7 +428,7 @@ means the true thing.
 `penColor` and `ModeStage`'s own unframed pen bar
 ([ModeStage.tsx:410-425](../../apps/desktop/src/components/ModeStage.tsx#L410-L425))
 stay for the **legacy/unframed** path and for **QuickSprint**
-([QuickSprint.tsx:486](../../apps/desktop/src/pages/QuickSprint.tsx#L486)), neither of
+([QuickSprint.tsx:486](https://github.com/303webhouse/wrizo/blob/73680bc286153f4cf3562a4d32b3ec368f31ef69/apps/desktop/src/pages/QuickSprint.tsx#L486)), neither of
 which is named by R15 and neither of which this wave touches. Disclosed
 rather than assumed, because "remove the ink zone" could very easily have
 been read as "delete `PEN_INKS`" and broken two other surfaces.

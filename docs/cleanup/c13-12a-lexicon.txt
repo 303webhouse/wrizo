@@ -1,0 +1,9 @@
+# #13 step 12a: the desk-lexicon keys the old project screens were the last to name (POLISH, measured at main e20382d8): ProjectHome's
+# title label and domain eyebrow (domainLabel), the four screens' back link, QuickSprint's two save buttons.
+drawerHomeTitleLabel
+backToDrawer
+domainLabelCreative
+domainLabelAcademic
+domainLabelProfessional
+sprintSaveToDrawer
+sprintSaveAsDrawer

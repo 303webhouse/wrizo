@@ -245,9 +245,11 @@ await withHarness(async (app) => {
 
   const projectsNow = await app.localJSON('writer-studio-projects');
   const untitled = projectsNow.find((p) => p.title === 'Untitled' && p.kind === 'other');
-  await app.goto(`/project/${untitled.id}`);
-  await app.waitFor("[...document.querySelectorAll('button')].some(b => b.textContent.includes('New chapter'))", { label: 'ProjectHome' });
-  await app.evalJs("[...document.querySelectorAll('button')].find(b => b.textContent.includes('New chapter')).click()");
+  // #13 step 12a: ProjectHome (and its "New chapter" button, this fixture's only use of it) is deleted. The chapter is seeded through the
+  // page seam instead, carrying createBinderPage's fields explicitly (origin 'project', source 'page', pageType 'manuscript'); the one
+  // difference is pageSettings (absent here, 11 pt there), which nothing below reads. Was: goto /project/:id, click "New chapter".
+  const chapter12a = await app.evalJs(`window.wrizoCreateJournalPage({ text: '', projectId: ${JSON.stringify(untitled.id)}, origin: 'project', source: 'page', pageType: 'manuscript' }).id`);
+  await app.goto(`/page/${chapter12a}`);
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'chapter editor' });
   await app.click('Draft');
   await sleep(200);

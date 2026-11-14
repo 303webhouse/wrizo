@@ -7,6 +7,7 @@
 // Run: node apps/desktop/scripts/harness/w2.mjs   (from apps/desktop, with
 // dist-web freshly built via `pnpm run build:web`).
 import { withHarness } from '../runtime-verify.mjs';
+import { readFileSync } from 'node:fs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -174,53 +175,56 @@ await withHarness(async (app) => {
 
   // === R1: QuickSprint depart/return (scroll + caret + mode) — same shape
   // as PageEditor's, now that QuickSprint is correctly keyed by draftId. ===
-  await app.goto('/');
-  await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
-  await app.reload();
-  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
-  await app.evalJs(CARET_HELPER);
-  await app.goto('/sprint');
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted' });
-  await app.click('Draft'); // a non-default mode, to prove mode survives the round trip too
-  await sleep(100);
-  await app.evalJs("document.querySelector('.forward-only-editor').focus()");
-  const sprintLines = Array.from({ length: 45 }, (_, i) => `Sprint line ${i} of the growing scratch draft, long enough to force real scroll.`).join('\n');
-  await app.typeKeys(sprintLines);
-  await sleep(2200);
-  await app.evalJs("document.querySelector('.mode-scroll').scrollTop = 250");
-  await sleep(150);
-  const sprintScrollBefore = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
-  await app.evalJs("window.__setCaretAt('.forward-only-editor', 20)");
-  const sprintTextBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
-  ok('QuickSprint: caret + scroll + Draft mode positioned pre-departure', sprintScrollBefore > 0, `scroll=${sprintScrollBefore}`);
-
-  await app.click('Journal');
-  await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed QuickSprint)' });
-  await sleep(150);
-  const sprintChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
-  ok('return chip present after departing QuickSprint', sprintChipPresent === true);
-
-  await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
-  await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint restored via chip' });
-  await sleep(500);
-  const sprintRouteAfter = await app.evalJs('location.hash');
-  const sprintScrollAfter = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
-  const sprintCaretAfter = await app.evalJs(`(() => {
-    const sel = window.getSelection();
-    const el = document.querySelector('.forward-only-editor');
-    if (!el.contains(sel.anchorNode)) return null;
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    let offset = 0, n;
-    while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
-    return null;
-  })()`);
-  const sprintTextAfter = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
-  const sprintModeAfter = await app.evalJs(`(() => { const tabs = [...document.querySelectorAll('.mode-tab')]; const active = tabs.find(t => t.classList.contains('active')); return active?.textContent ?? null; })()`);
-  ok('QuickSprint route restored', sprintRouteAfter === '#/sprint', sprintRouteAfter);
-  ok('QuickSprint scrollY restored within +/-4px', Math.abs(sprintScrollAfter - sprintScrollBefore) <= 4, `before=${sprintScrollBefore} after=${sprintScrollAfter}`);
-  ok('QuickSprint caret offset restored exactly', sprintCaretAfter === 20, `caret=${sprintCaretAfter}`);
-  ok('QuickSprint text byte-identical across the departure/return', sprintTextAfter === sprintTextBefore);
-  ok('QuickSprint mode (Draft) persisted across the departure/return', (sprintModeAfter || '').includes('Draft'), sprintModeAfter);
+  // ---- PARKED - RETIRED by #13 step 12a (Nick's dormant answers, Oct 29): QuickSprint (/sprint) is deleted, so R1's surface is gone. The
+  // block is kept VERBATIM below and no longer runs; its record is in the parked block. The mechanism it proved (depart, then one tap back
+  // to the exact route, scroll, caret and mode) keeps its live proof on THE Page, section 1 of this file (PageEditor: caret + scroll ...).
+  // await app.goto('/');
+  // await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
+  // await app.reload();
+  // await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
+  // await app.evalJs(CARET_HELPER);
+  // await app.goto('/sprint');
+  // await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint mounted' });
+  // await app.click('Draft'); // a non-default mode, to prove mode survives the round trip too
+  // await sleep(100);
+  // await app.evalJs("document.querySelector('.forward-only-editor').focus()");
+  // const sprintLines = Array.from({ length: 45 }, (_, i) => `Sprint line ${i} of the growing scratch draft, long enough to force real scroll.`).join('\n');
+  // await app.typeKeys(sprintLines);
+  // await sleep(2200);
+  // await app.evalJs("document.querySelector('.mode-scroll').scrollTop = 250");
+  // await sleep(150);
+  // const sprintScrollBefore = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  // await app.evalJs("window.__setCaretAt('.forward-only-editor', 20)");
+  // const sprintTextBefore = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  // ok('QuickSprint: caret + scroll + Draft mode positioned pre-departure', sprintScrollBefore > 0, `scroll=${sprintScrollBefore}`);
+//
+  // await app.click('Journal');
+  // await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board (departed QuickSprint)' });
+  // await sleep(150);
+  // const sprintChipPresent = await app.evalJs("!!document.querySelector('.desk-rail-wayback')");
+  // ok('return chip present after departing QuickSprint', sprintChipPresent === true);
+//
+  // await app.evalJs("document.querySelector('.desk-rail-wayback').click()");
+  // await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'QuickSprint restored via chip' });
+  // await sleep(500);
+  // const sprintRouteAfter = await app.evalJs('location.hash');
+  // const sprintScrollAfter = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
+  // const sprintCaretAfter = await app.evalJs(`(() => {
+    // const sel = window.getSelection();
+    // const el = document.querySelector('.forward-only-editor');
+    // if (!el.contains(sel.anchorNode)) return null;
+    // const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    // let offset = 0, n;
+    // while ((n = walker.nextNode())) { if (n === sel.anchorNode) return offset + sel.anchorOffset; offset += n.data.length; }
+    // return null;
+  // })()`);
+  // const sprintTextAfter = await app.evalJs("document.querySelector('.forward-only-editor').innerText");
+  // const sprintModeAfter = await app.evalJs(`(() => { const tabs = [...document.querySelectorAll('.mode-tab')]; const active = tabs.find(t => t.classList.contains('active')); return active?.textContent ?? null; })()`);
+  // ok('QuickSprint route restored', sprintRouteAfter === '#/sprint', sprintRouteAfter);
+  // ok('QuickSprint scrollY restored within +/-4px', Math.abs(sprintScrollAfter - sprintScrollBefore) <= 4, `before=${sprintScrollBefore} after=${sprintScrollAfter}`);
+  // ok('QuickSprint caret offset restored exactly', sprintCaretAfter === 20, `caret=${sprintCaretAfter}`);
+  // ok('QuickSprint text byte-identical across the departure/return', sprintTextAfter === sprintTextBefore);
+  // ok('QuickSprint mode (Draft) persisted across the departure/return', (sprintModeAfter || '').includes('Draft'), sprintModeAfter);
 
   // === 3. Board + script: route-restore only (no scroll/caret claim) ======
   await app.goto('/');
@@ -321,6 +325,15 @@ if (process.env.HARNESS_PARKED === '1') {
   // proof retire to J7's behavior-parity census.
   pok('PARKED (was "pager: B\'s scroll was never set BY the way-back mechanism (not A\'s captured 200)") — FX4 S1: Journal\'s new bottom scroll buffer makes B tall enough to genuinely hold the inherited (unrelated, pre-existing) scrollY=200; live successor (caret-based) in this file\'s own live pager section',
     true, 'FX14 S2: probe retired — the JournalEntry surface this re-verified on is unrouted (/journal/:id -> /page/:id); successor is J7 (journal pager retires with the surface)');
+  // #13 step 12a: R1's six QuickSprint rows. The record holds what makes the retirement true: /sprint is never left without a route (QuickSprint
+  // before the delete, the legacy redirect after; c13-12a-doors.mjs D3 lands it home), and the way-back chip no longer counts /sprint as writing.
+  {
+    const app12a = readFileSync(new URL('../../src/App.tsx', import.meta.url), 'utf8');
+    const sprint12a = (/<Route path="\/sprint" element=\{<(QuickSprint|LegacyProjectRedirect) \/>\} \/>/.exec(app12a) || [])[1] || null;
+    for (const n of ['QuickSprint: caret + scroll + Draft mode positioned pre-departure', 'return chip present after departing QuickSprint', 'QuickSprint route restored', 'QuickSprint scrollY restored within +/-4px', 'QuickSprint caret offset restored exactly', 'QuickSprint text byte-identical across the departure/return', 'QuickSprint mode (Draft) persisted across the departure/return']) {
+      pok(`PARKED (was "${n}") - RETIRED by #13 step 12a: QuickSprint is deleted; the depart/return mechanism keeps its live proof on THE Page (section 1)`, sprint12a !== null, `/sprint -> ${sprint12a}`);
+    }
+  }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);

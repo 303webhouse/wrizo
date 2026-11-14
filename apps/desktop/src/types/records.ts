@@ -115,9 +115,9 @@ export interface Project {
   sprintText?: string;
   // Drawers D1 — the Drawer this project lives in. Absent → "Unsorted".
   drawerId?: string;
-  // Creative-mode source of truth (DM1) — replaces sprintText's role. sprintText
-  // is kept as a derived mirror (concat of unstruck spine runs) so the existing
-  // UI and sync keep working untouched. Absent on legacy projects until migrated.
+  // stored legacy data: no code reads or writes it (Nick, Oct 29)
+  // (DM1's fragment substrate; its code was deleted in #13 step 12d. The field is kept as stored and travels whole with the record;
+  // the server has never stored it - bug #88.)
   fragments?: Fragment[];
   createdAt: string;
   updatedAt: string;

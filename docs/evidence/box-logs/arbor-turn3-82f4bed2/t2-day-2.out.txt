@@ -1,0 +1,11 @@
+BOX TURN: granted to lane "arbor" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn3-1000Z\t2-day-2
+[01/1] FAIL      exit=1  347s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/25 failed
+
+SUITE DONE HARNESS_PARKED=unset — 0/1 of 1 returned a passing verdict
+  FAIL: rhizome-latency.mjs — full output at F:\wrizo-work\arbor-turn3-1000Z\t2-day-2\rhizome-latency.mjs.default.txt
+SUITE RESULT: NOT CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+(node:38588) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

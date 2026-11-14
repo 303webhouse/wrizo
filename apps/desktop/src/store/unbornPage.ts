@@ -3,7 +3,7 @@ import { graftTo } from './grafts';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
-import { getUserPageDefaults, bornPageSettings, NEW_PAGE_SIZE } from './pageDefaults';
+import { getUserPageDefaults, bornPageSettings, newPageSize } from './pageDefaults';
 import { landingToken, landingFromToken, type HelpLanding } from '../decks/helpMeChoose';
 
 // born on the first word: the door's descriptor lives in the URL (/page/new + params), reload-safe by construction; nothing is written until `birth` [unbornPage §1]
@@ -127,7 +127,7 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   }
   // PAGE TEMPLATES - the lens is a page setting, so the unborn slot carries it (the lens can draw before the first word) and birth() keeps it
   // (it spreads this entry). A page with no settings starts from the writer's defaults or the app's floor, as patchPageSettings does.
-  if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? NEW_PAGE_SIZE, template: d.template };
+  if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? newPageSize(), template: d.template };
   // a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word; a board has no page size [unbornPage §3]
   else if (d.kind === 'prose') base.pageSettings = bornPageSettings();
   return base;

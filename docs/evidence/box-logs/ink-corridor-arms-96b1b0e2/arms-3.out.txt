@@ -1,0 +1,14 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+ARM control-vs-itself: the control against itself: clock [J median 18.3 <= C 18.6 + 2.6, J p95 31.6 <= C 32.2 + 3.3, J max 40.2 <= 100] cost [J median 33.7 <= C 34.8 + 4.2, J p95 42.7 <= C 44.8 + 14.9]
+ARM no-containment: clock J median 29.1 p95 53.4 max 69 | C median 20.8 p95 33.9 || cost J median 19.6 p95 47.5 | C median 35.8 p95 62.4 || J-C clock median 8.3 p95 19.5; cost median -16.2 p95 -14.9 || verdict RED (keys enough, arms stood)
+ARM frames-still: clock J median 26.6 p95 37.4 max 45.8 | C median 19.6 p95 32.5 || cost J median 17 p95 42.7 | C median 37 p95 47.5 || J-C clock median 7 p95 4.9; cost median -20 p95 -4.8 || verdict RED (keys enough, arms stood)
+ARM rails-and-frames-only: clock J median 27.1 p95 37.8 max 61.2 | C median 19.1 p95 32.8 || cost J median 17.7 p95 41.6 | C median 35.6 p95 42.7 || J-C clock median 8 p95 5; cost median -17.9 p95 -1.1 || verdict RED (keys enough, arms stood)
+PASS L-METHOD-GREEN the control against itself: clock [J median 18.3 <= C 18.6 + 2.6, J p95 31.6 <= C 32.2 + 3.3, J max 40.2 <= 100] cost [J median 33.7 <= C 34.8 + 4.2, J p95 42.7 <= C 44.8 + 14.9]
+PASS ARM no-containment stood and counted keys
+PASS ARM frames-still stood and counted keys
+PASS ARM rails-and-frames-only stood and counted keys
+PASS L-MUT-5 the method calls a key 5 ms slower RED on the cost reading (control + 5 ms mutant: clock [J median 24 <= C 19.1 + 1.5, J p95 33.3 <= C 32.9 + 1.8, J max 40.4 <= 100] cost [J median 41.5 <= C 35.2 + 3.8, J p95 49 <= C 43.2 + 4.8])
+PASS L-MUT-10 the method calls a key 10 ms slower RED on the cost reading (control + 10 ms mutant: clock [J median 28.8 <= C 19 + 1.8, J p95 35.3 <= C 33 + 2.9, J max 44.9 <= 100] cost [J median 47.1 <= C 35.8 + 3.4, J p95 59.4 <= C 44.5 + 9.4])
+
+FLUX3-S4C-ARMS: DONE (6 checks)

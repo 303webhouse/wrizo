@@ -156,22 +156,9 @@ await withHarness(async (app) => {
     const st5 = await settledBy(() => pageText(app, 'tl5'));
     const pasted = typeof st5 === 'string' && unz(st5).length > MINE.length + 1;
     ok('L5 (driver): the paste landed (the stored text grew past the typed space) - a driver that pastes nothing must not pass the checks below', pasted, JSON.stringify(st5));
-    // ---- PARKED - SUPERSEDED by in-app-copy-format's copy half (Fable, Oct 16; one deploy with typed-literal): a copy now writes the PLAIN
-    // characters, so the writer's own `**bold**` is copied as `bold` - there are no stars left to paste. Kept VERBATIM and no longer run;
-    // successors below (and L5b, which still pastes literal stars, from a page whose stars were TYPED).
-    // ok('L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched',
-    //   unz(st5) === `${MINE} Mine ${B}*${B}*bold${B}*${B}* words`, JSON.stringify(st5));
-    // ok('L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format',
-    //   !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine **bold** words', JSON.stringify(s5));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/typed-literal.mjs.parked.md record 1
     tlParks.l5 = { st5: unz(st5), s5 };
-    // ---- PARKED - SUPERSEDED by in-app-copy-format's paste half (Fable, Oct 16): the copy's Wrizo markup now comes back with the paste, so
-    // the writer's own `**bold**` pastes back bold. Kept VERBATIM and no longer run; successors below.
-    // ok('L5 [copy-half successor]: own words copied and pasted back arrive as their PLAIN characters - nothing to escape, and the saved bold before them untouched (the formatting comes back with the paste half)',
-    //   unz(st5) === `${MINE} Mine bold words`, JSON.stringify(st5));
-    // ok('L5 [copy-half successor]: ...so the page shows the words twice and still exactly one bold run (the original)',
-    //   !!s5 && s5.bold === 1 && s5.visible === 'Mine bold words Mine bold words', JSON.stringify(s5));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/typed-literal.mjs.parked.md record 2
     ok('L5 [paste-half successor]: own words copied and pasted back keep their formatting - the stored text holds the same markup twice, and the saved bold before them untouched',
       unz(st5) === `${MINE} ${MINE}`, JSON.stringify(st5));
     ok('L5 [paste-half successor]: ...so the page shows the words twice, bold twice, no mark shown',
@@ -244,14 +231,7 @@ await withHarness(async (app) => {
   }
   ok('L8 (setup): both runs opened and stored text', typeof results.burst === 'string' && typeof results.slow === 'string', JSON.stringify(results));
   ok('L8: the same keys give the same text at any speed (the caret settles synchronously)', !!results.burst && results.burst === results.slow, JSON.stringify(results));
-  // ---- PARKED - SUPERSEDED (ledger 87, Oct 17): the check was wrong, not the caret. The script types ` *three* ` (stored `\*three\* `), then
-  // two ArrowLefts - and the arrows move by VISIBLE characters (item 211 rule 2), the escape `\*` being ONE: past the trailing space, then
-  // past the closing `*`, which leaves the caret between `three` and `\*`. So `_y_` lands INSIDE the stars - `\*three\_y\_\*` - exactly
-  // as the combined pair stored it, at both speeds. The `\*three\*` substring could never hold for this script. Kept VERBATIM and no longer
-  // run; successor below: the whole text, exactly.
-  // ok('L8: ...and that text holds both the Ctrl+B bold and the escaped literals', typeof results.burst === 'string' && results.burst.includes('**two**')
-  //   && results.burst.includes(`${B}*three${B}*`) && results.burst.includes(`${B}_y${B}_`), JSON.stringify(results.burst));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/typed-literal.mjs.parked.md record 3
   const wantL8 = `Begin one **two** ${B}*three${B}_y${B}_${B}*  end`;
   tlParks.l8 = { burst: results.burst, wantL8 };
   ok('L8 [exact successor]: ...and that text is exactly what the keys make - the Ctrl+B bold, and the typed stars and underscores escaped, `_y_` where two visible-character ArrowLefts put the caret (inside the stars)',
@@ -281,13 +261,7 @@ if (process.env.HARNESS_PARKED === '1') {
   // IN-APP-COPY-FORMAT (2026-10-16) - TWO parks: L5's literal-paste readings of a copy of `**bold**`. Records frozen; each re-verifies the
   // new truth from the default leg's own readings (tlParks).
   const a = tlParks.l5 || {};
-  // ---- PARKED RECORDS - SUPERSEDED by in-app-copy-format's paste half: these re-verified the copy half's truth (a plain paste-back), which
-  // the paste half changes. Kept VERBATIM and no longer run; successor records directly below.
-  // pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters; live successor: L5 [copy-half successor] and L5b',
-  //   a.st5 === 'Mine **bold** words Mine bold words', JSON.stringify(a));
-  // pok('PARKED (was "L5: ...so the page shows the pasted stars and still exactly one bold run (the original): the in-app round trip loses formatting until in-app-copy-format") - live successor: L5 [copy-half successor]',
-  //   !!a.s5 && a.s5.bold === 1 && a.s5.visible === 'Mine bold words Mine bold words', JSON.stringify(a));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/typed-literal.mjs.parked.md record 4
   const full = 'Mine **bold** words Mine **bold** words';
   pok('PARKED (was "L5: a pasted `**` is LITERAL - the pasted copy is stored escaped and the saved bold before it is untouched") - the copy half writes plain characters, and the paste half brings the markup back; live successor: L5 [paste-half successor] and L5b',
     a.st5 === full, JSON.stringify(a));

@@ -46,7 +46,9 @@ await withHarness(async (app) => {
     const r = await app.evalJs(READ);
     await frame(app, `mark-${cast}`);
     if (cast === 'cool') {
-      ok('S1: Machina\'s board button reads "Start Files"', r.pair === 'Start Files', JSON.stringify(r));
+      // ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
+      // ok('S1: Machina\'s board button reads "Start Files"', r.pair === 'Start Files', JSON.stringify(r));
+      ok('S1 [doc successor]: Machina\'s board button reads "Start Docs"', r.pair === 'Start Docs', JSON.stringify(r));
       ok('M1: COOL - the wordmark block is steel (#7FA0BC)', r.border === 'rgb(127, 160, 188)', JSON.stringify(r));
     } else {
       ok('M2: NEUTRAL - the wordmark block is orange (#FF9800)', r.border === 'rgb(255, 152, 0)', JSON.stringify(r));

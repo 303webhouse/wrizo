@@ -1,0 +1,9 @@
+# DECLARED EDITS to the types since c13-10b's base (read by c13-10b-readers.mjs --changes). One line each, verbatim with its indent:
+# `- ` a line that was at the base and is gone, `+ ` a line that is new. An edit to the types not declared here is red.
+# #13 step 12d (POLISH, Nov 12): Project.fragments is marked as stored legacy data (Nick, Oct 29); its old comment called it the source of truth.
+-   // Creative-mode source of truth (DM1) — replaces sprintText's role. sprintText
+-   // is kept as a derived mirror (concat of unstruck spine runs) so the existing
+-   // UI and sync keep working untouched. Absent on legacy projects until migrated.
++   // stored legacy data: no code reads or writes it (Nick, Oct 29)
++   // (DM1's fragment substrate; its code was deleted in #13 step 12d. The field is kept as stored and travels whole with the record;
++   // the server has never stored it - bug #88.)

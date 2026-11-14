@@ -1,3 +1,4 @@
+import { dropSyncBase, getSyncBase, setSyncBase } from './persistence/syncBase';
 import { getDirtyRecords, markClean, applyRemoteRecords, markAllJournalEntriesDirty, getJournalEntries, getSystemKind, applyAcknowledgedPurged, type DirtyRecords } from './persistence';
 import { getClientBuild, buildIsStale } from './clientBuild';
 import { isStaleClient, markStaleClient } from './staleClient';
@@ -199,13 +200,20 @@ function pack(items: PushItem[]): PushItem[][] {
 // is new: a record the server refused is excluded here even though the
 // request itself succeeded (200), so it stays dirty and is sent again next
 // cycle instead of being marked clean and silently lost.
+
 function cleanBatch(batch: PushItem[], rejectedIds: ReadonlySet<string> = EMPTY_SET): void {
   const still = stampMap(getDirtyRecords());
+  const pages: Array<{ id: string; text: string; stillDirty: boolean }> = [];
   markClean(batch.filter(i => {
     const key = recordKey(i.coll, i.rec.id);
     if (rejectedIds.has(key)) return false;
-    const cur = still.get(key); return cur === undefined || cur === i.rec.updatedAt;
+    const cur = still.get(key);
+    const clean = cur === undefined || cur === i.rec.updatedAt;
+    if (i.coll === 'journalEntries') pages.push({ id: i.rec.id, text: String((i.rec as { text?: unknown }).text ?? ''), stillDirty: !clean });
+    return clean;
   }).map(i => ({ collection: i.coll, id: i.rec.id })));
+  // #79 - after a push landed: a page that is clean again no longer needs its base; a page the writer kept typing in while the push was out still has unsynced words, and the server now holds the text that was pushed, which is its new base
+  for (const p of pages) { if (p.stillDirty) setSyncBase(p.id, p.text); else dropSyncBase(p.id); }
 }
 const EMPTY_SET: ReadonlySet<string> = new Set();
 
@@ -328,7 +336,16 @@ async function runSync(fullPull: boolean): Promise<SyncRun> {
   const cursor = fullPull ? null : getLastSyncAt();
 
   try {
-    const items = collect(getDirtyRecords());
+    // #79: a page with unsynced words and a kept base is merged with the server's copy BEFORE it is pushed: the push replaces the server's whole text, so the other device's words must be pulled in first (the merged page is then what is pushed).
+    let dirtyNow = getDirtyRecords();
+    if ((dirtyNow.journalEntries ?? []).some(e => getSyncBase(e.id) !== null)) {
+      const pre = await apiSync({ lastSyncAt: cursor, push: {} });
+      live();
+      checkBuild(pre);
+      applyRemoteRecords(pre.pull);
+      dirtyNow = getDirtyRecords();   // the merge changed the pages: what is pushed is what they are now
+    }
+    const items = collect(dirtyNow);
     const big = items.filter(isTooLarge);
     const sendable = items.filter(i => !isTooLarge(i));
     // Named before any network: the writer is told even if this sync then fails for another reason.

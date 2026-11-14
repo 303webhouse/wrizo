@@ -233,6 +233,12 @@ export const CANONICAL_CHROME = {
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',
+  // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
+  // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
+  flux3JackedExit: 'Wired in · {key} to unplug',
+  flux3JackedNudge: 'Keep the signal · any word will do',
+  flux3JackedLeave: 'Unplug',
+  flux3JackedLeaveHint: 'Unplug ({key})',
   ctxDelete: 'Delete',
   ctxDeleteBoard: 'Delete board',
   ctxUngroup: 'Ungroup',
@@ -247,6 +253,9 @@ export const CANONICAL_CHROME = {
   emptyTrashQuestionOne: 'Delete 1 item for good?',
   emptyTrashQuestionMany: 'Delete {n} items for good?',
   purgedElsewhere: 'This page was deleted for good on another device.',
+  // #76 - the Wrizors' words, approved by Nick (Fable's relay, Nov 11): the "open in another window" line and the "both versions kept" line
+  samePageElsewhere: 'This page is open in another window too.',
+  samePageKeptBoth: 'Two windows changed this paragraph. Both versions are here.',
   destructiveTypeToGo: 'Type {phrase} to go on:',
   destructiveGo: 'Delete for good',
   settingsAskBeforeDelete: 'Ask before deleting',
@@ -299,8 +308,6 @@ export const CANONICAL_CHROME = {
   tutorLensFragmentsNote: 'Uses recency and shared tags only.',
   // FX12 S2 — tutorStructureNoBeat ("Not linked to a beat.") retired: the beats system
   // is dormant (CD4); the Structure lens no longer speaks that dead language.
-  tutorNudgesTitle: 'Waiting for you',
-  tutorNudgesEmpty: 'Nothing waiting right now.',
   tutorBibleTitle: "The book's Bible",
   tutorBibleEmpty: 'Nothing saved yet.',
   // ITEM word-diet.
@@ -572,12 +579,5 @@ export const CANONICAL_CHROME = {
   placesBoardsEmpty: 'No boards yet.',
   createDrawerEyebrow: 'NEW DRAWER',
   createDrawerTitleLabel: 'Drawer title (optional)',
-  drawerHomeTitleLabel: 'Drawer title',
-  backToDrawer: 'Back to Drawer',
-  domainLabelCreative: 'Creative Drawer',
-  domainLabelAcademic: 'Academic Drawer',
-  domainLabelProfessional: 'Professional Drawer',
-  sprintSaveToDrawer: 'Save to Drawer',
-  sprintSaveAsDrawer: 'Save as Drawer',
 
 } satisfies Partial<Record<DeskTermId, string>>;

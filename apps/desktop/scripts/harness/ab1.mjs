@@ -102,11 +102,7 @@ await withHarness(async (app) => {
 
   // -- S2: the unified mode strip, exact ratified strings, title case -------
   const stripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
-  // ---- PARKED - SUPERSEDED by hide-workshop (Nick, Oct 23 11:01 am: the Workshop tab is HIDDEN in every theme until it is built).
-  // Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-  // ok('S2: the mode strip reads exactly Free Write / Draft / Revise / Workshop / Publish',
-  //   JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
-  //   JSON.stringify(stripLabels));
+  // ARCHIVED PARK (#13 step 14): archive/ab1.mjs.parked.md record 1
   parkObs.strip = stripLabels;
   ok('S2 [hide-workshop successor]: the mode strip reads exactly Free Write / Draft / Revise / Publish - Workshop is absent, not greyed',
     JSON.stringify(stripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']),
@@ -249,11 +245,7 @@ await withHarness(async (app) => {
   await sleep(200);
   ok('Script mounts inside DeskFrame at >=1100px', await app.evalJs("!!document.querySelector('.desk-frame')"));
   const scriptStripLabels = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].map(b => b.textContent)");
-  // ---- PARKED - SUPERSEDED by hide-workshop (Oct 23): Workshop is hidden on every surface, the script's strip included.
-  // Kept VERBATIM and no longer run; its parked record is in the HARNESS_PARKED block, and its successor follows.
-  // ok('S6/finding-5: the mode strip is present on the script surface too, same five strings',
-  //   JSON.stringify(scriptStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Workshop', 'Publish']),
-  //   JSON.stringify(scriptStripLabels));
+  // ARCHIVED PARK (#13 step 14): archive/ab1.mjs.parked.md record 2
   parkObs.scriptStrip = scriptStripLabels;
   ok('S6/finding-5 [hide-workshop successor]: the mode strip is present on the script surface too, same four strings (Workshop absent)',
     JSON.stringify(scriptStripLabels) === JSON.stringify(['Free Write', 'Draft', 'Revise', 'Publish']),
@@ -261,9 +253,7 @@ await withHarness(async (app) => {
   const scriptActiveTab = await app.evalJs("document.querySelector('.desk-mode-tab.active')?.textContent");
   ok('Script: Draft is the only live/active posture (script Free-write is AB2)', scriptActiveTab === 'Draft', String(scriptActiveTab));
   const scriptDeferred = await app.evalJs("[...document.querySelectorAll('.desk-mode-tab.deferred')].map(b => b.textContent)");
-  // ---- PARKED - SUPERSEDED by hide-workshop (Oct 23): Workshop no longer renders, so it can no longer be deferred. Kept VERBATIM, not run;
-  // parked record in the HARNESS_PARKED block, successor follows.
-  // ok('Script: Free Write/Revise/Workshop are deferred (not silently live)', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise', 'Workshop']), JSON.stringify(scriptDeferred));
+  // ARCHIVED PARK (#13 step 14): archive/ab1.mjs.parked.md record 3
   parkObs.scriptDeferred = scriptDeferred;
   ok('Script [hide-workshop successor]: Free Write/Revise are deferred (not silently live) and no Workshop tab exists at all', JSON.stringify(scriptDeferred) === JSON.stringify(['Free Write', 'Revise']) && !scriptStripLabels.includes('Workshop'), JSON.stringify(scriptDeferred));
 
@@ -764,13 +754,7 @@ if (process.env.HARNESS_PARKED === '1') {
       pagecol: ${rectOf('.mode-pagecol')},
     })`);
     const stripRightNow = gateFloorRectsNow.strip.left + gateFloorRectsNow.strip.width;
-    // ---- RE-PARKED by page-size's park audit (Oct 24): this record's probe read .mode-pagecol, and its live successor (cd2.mjs S1/S5) is itself
-    // parked - the column is no longer the paper (the page is painted by a transform inside it; in the Typewriter zoom the column is stage-wide,
-    // under the strip that always stood over the stage's edge). The record, VERBATIM, no longer runs; its successor record reads the painted page.
-    //
-    // pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail) — CD2 S1/S5: the SAME non-overlap claim, .desk-frame-strip now, same truth',
-    //   gateFloorRectsNow.pagecol.left >= stripRightNow, JSON.stringify({ ...gateFloorRectsNow, stripRightNow }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/ab1.mjs.parked.md record 4
     const gateFloorPaperNow = await app.evalJs(`(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); return { left: r.left, right: r.right, width: r.width }; })()`);
     pok('PARKED (was "PAGE IS PRIMARY at the gate floor (1100px): the page column never overlaps the tool-rail", reading .desk-frame-toolrail, then .desk-frame-strip at CD2 S1/S5) — page-size: the column is not the paper; the PAINTED page never overlaps the strip; live successor: cd2.mjs S1/S5 [page-size successor]',
       !!gateFloorPaperNow && gateFloorPaperNow.left >= stripRightNow, JSON.stringify({ strip: gateFloorRectsNow.strip, paper: gateFloorPaperNow, stripRightNow }));

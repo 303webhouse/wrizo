@@ -25,7 +25,6 @@ const KNOWN = [
   ['store/wordCount.ts', 't.split(/\\s+/).length', 'THE counter (through withoutFontMarks)'],
   ['store/writingGoal.ts', 'removeMarkers(rest, readMarks(rest)).split(/\\s+/)', "countGoalWords: the goal's own definition (line tokens and lone marks are not words)"],
   ['components/tutor/assemble.ts', 'kept.trim().split(/\\s+/)', 'capSelection: the words of the slice actually SENT to the Tutor, not the page'],
-  ['pages/BeatWizard.tsx', 'trimmed.split(/\\s+/).length', 'isLikelySentence: a sentence test on one line (BeatWizard goes in step 12a)'],
   ['store/markRuns.ts', "for (const c of m[1].split(' ')) {", "readSpanClose: a font mark's class list ({.lora .size-14}), not words"],
 ];
 const SURFACES = ['components/FirstRunGate.tsx', 'components/HomeFlow.tsx', 'components/ScriptEditor.tsx', 'components/Sliver.tsx', 'pages/JournalEntry.tsx', 'pages/PageEditor.tsx', 'pages/QuickSprint.tsx'];

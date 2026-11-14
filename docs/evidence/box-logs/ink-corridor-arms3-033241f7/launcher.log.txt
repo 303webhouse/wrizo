@@ -1,0 +1,15 @@
+2026-11-10T07:55:50Z TURN PLAN: tree INK-maincontrol HEAD 033241f7 (main 23f8f721; dirty 0); step: the Corridor arms probe (3 steps)
+2026-11-10T07:55:50Z harness browsers at turn start: 0
+2026-11-10T07:55:50Z quiet check before the grant: Wow / OBS / streaming absent
+2026-11-10T07:55:51Z TAKE: granted to lane "ink" and bound to the process tree of pid 36800 - name this turn's start and end in your report
+WS_BOX_TURN=<drawn>   (drawn now, printed once, not stored - only its hash is in the grant file; export it in the shell or script that runs the harness)
+2026-11-10T07:55:51Z TURN START
+2026-11-10T07:55:51Z CPU load before arms3-1: 0%
+2026-11-10T07:55:52Z quiet check before arms3-1: Wow / OBS / streaming absent
+2026-11-10T08:07:12Z [arms3-1] exit 0
+2026-11-10T08:07:12Z CPU load before arms3-2: 0%
+2026-11-10T08:07:13Z quiet check before arms3-2: Wow / OBS / streaming absent
+2026-11-10T08:18:29Z [arms3-2] exit 0
+2026-11-10T08:18:29Z RELEASE: released  grant file now absent
+2026-11-10T08:18:29Z harness browsers at turn end: 0
+2026-11-10T08:18:29Z TURN END

@@ -1,0 +1,12 @@
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+ARM control-vs-itself: the control against itself: clock [J median 25.7 <= C 25.9 + 1.6, J p95 32.7 <= C 32.7 + 0.6, J max 42.9 <= 100] cost [J median 15 <= C 14.7 + 2.9, J p95 36.1 <= C 33.7 + 14.3]
+ARM full: clock J median 28.1 p95 42.3 max 64 | C median 25.9 p95 32.8 || cost J median 18 p95 46.3 | C median 15.6 p95 35.5 || J-C clock median 2.2 p95 9.5; cost median 2.4 p95 10.8 || verdict RED (keys enough, arms stood)
+ARM no-mask: clock J median 25.7 p95 33.9 max 51.5 | C median 26.3 p95 33.3 || cost J median 16 p95 37.8 | C median 15.6 p95 37 || J-C clock median -0.6 p95 0.6; cost median 0.4 p95 0.8 || verdict GREEN (keys enough, arms stood)
+ARM full: clock J median 27.1 p95 39.5 max 60.2 | C median 25.3 p95 32.6 || cost J median 17.5 p95 41.9 | C median 14.9 p95 34.8 || J-C clock median 1.8 p95 6.9; cost median 2.6 p95 7.1 || verdict RED (keys enough, arms stood)
+PASS L-METHOD-GREEN the control against itself: clock [J median 25.7 <= C 25.9 + 1.6, J p95 32.7 <= C 32.7 + 0.6, J max 42.9 <= 100] cost [J median 15 <= C 14.7 + 2.9, J p95 36.1 <= C 33.7 + 14.3]
+PASS ARM full stood and counted keys
+PASS ARM no-mask stood and counted keys
+PASS ARM full stood and counted keys
+
+FLUX3-S4C-ARMS2: DONE (4 checks)

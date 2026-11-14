@@ -1,0 +1,12 @@
+2026-11-11T08:04:16.4831982Z [01/4] OK        exit=0   35s flux3-s4b-l1.mjs :: ROWS-SHADOW VERIFY: PASS (50 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L1 VERIFY: PASS (15 checks)
+2026-11-11T08:04:16.4832970Z [02/4] OK        exit=0   21s flux3-s4b-l2.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L2 VERIFY: PASS (22 checks)
+2026-11-11T08:04:16.4833909Z [03/4] OK        exit=0  314s flux3-s4c.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; FLUX3-S4C VERIFY: PASS (76 checks)
+2026-11-11T08:04:16.4834891Z [04/4] OK        exit=0   14s helpers-survive.mjs :: HELPERS-SURVIVE VERIFY: PASS (4 checks)
+2026-11-11T08:04:16.4835637Z SUITE DONE HARNESS_PARKED=1 — 4/4 of 4 returned a passing verdict
+2026-11-11T08:04:16.4836147Z SUITE RESULT: CLEAN — tree=94039711 bundle=index-H13tydK-.js/1023337b
+2026-11-11T08:04:12.7504213Z [01/4] OK        exit=0   36s flux3-s4b-l1.mjs :: ROWS-SHADOW VERIFY: PASS (50 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L1 VERIFY: PASS (15 checks)
+2026-11-11T08:04:12.7505669Z [02/4] OK        exit=0   22s flux3-s4b-l2.mjs :: ROWS-SHADOW VERIFY: PASS (5 renders checked, shadow == DOM on every one) ;; FLUX3-S4B-L2 VERIFY: PASS (22 checks)
+2026-11-11T08:04:12.7507071Z [03/4] OK        exit=0  320s flux3-s4c.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; FLUX3-S4C VERIFY: PASS (76 checks)
+2026-11-11T08:04:12.7507923Z [04/4] OK        exit=0   14s helpers-survive.mjs :: HELPERS-SURVIVE VERIFY: PASS (4 checks)
+2026-11-11T08:04:12.7508707Z SUITE DONE HARNESS_PARKED=unset — 4/4 of 4 returned a passing verdict
+2026-11-11T08:04:12.7509643Z SUITE RESULT: CLEAN — tree=94039711 bundle=index-H13tydK-.js/1023337b

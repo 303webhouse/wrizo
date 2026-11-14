@@ -17,11 +17,16 @@
 //   --gone <file>   (a later step that DELETES keys, #13 step 11) the file lists one key per line. Each must be in the table at <base>
 //        and absent now (no key, no word in any theme); every other key is held to (1) as before, in order. (2) sets aside the gone
 //        keys from <base>'s text the way the delete makes them go: a union line keeps its indent and loses only the gone members (a
-//        line left with none goes), and each gone key's own entry line goes.
+//        line left with none goes), and each gone key's own entry line goes. Several steps' lists join with commas (step 12b,
+//        `--gone a.txt,b.txt`): each step keeps its own record and the check reads their union.
+//   docs/cleanup/c13-10c-words.txt   the STANDING WORD CHANGES (Nov 11, Fable: Rack became Drive): one `key@theme=word` per line (# starts a comment; theme none, plateau, flux or machina). A declared cell must read <word> now and have read
+//        something else at <base> (a stale declaration, whose word the base already had, is red: take it out); every OTHER cell of the table is held to the base exactly. For (2) a declared key's entry lines are set aside from both texts.
 //   docs/cleanup/c13-10c-new.txt   the STANDING declarations (TOOLS, Nov 5, Fable): one `key=word` per line (# starts a comment), read on every run, so
 //        a key a later step ADDED (FLUX3 S1/S2's words, 10e's progressDrawer) is declared once, in the open, and this tool is green on main
 //        without a flag. A declared key is held to the same rule as a --new key (new at <base>, in the table, <word> in every theme reading). The words
 //        a key's full-pass rename later gives it (a Flux override) leave this file in the same commit as that rename.
+//        A NEW key that reads differently in a theme (the quiet line's words, #76: the Wrizors' Flux and Machina strings) is declared by its default `key=word` plus one `key@theme=word` line per theme that differs
+//        (theme none, plateau, flux or machina); each cell must read its own word, the others the default. (c13-10c-words.txt is only for cells of keys that were already in the table at <base>.)
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,7 +41,7 @@ if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
 const ni = process.argv.indexOf('--new');
 const NEW = new Map(ni > 0 ? process.argv[ni + 1].split(',').map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }) : []);
 const gi = process.argv.indexOf('--gone');
-const GONE = new Set(gi > 0 ? fs.readFileSync(path.resolve(ROOT, process.argv[gi + 1]), 'utf8').split(/\r?\n/).map((s) => s.trim()).filter((s) => s && !s.startsWith('#')) : []);
+const GONE = new Set(gi > 0 ? process.argv[gi + 1].split(',').flatMap((f) => fs.readFileSync(path.resolve(ROOT, f), 'utf8').split(/\r?\n/)).map((s) => s.trim()).filter((s) => s && !s.startsWith('#')) : []);
 // <base>'s text with the gone keys taken out as step 11's delete takes them (see --gone above)
 const withoutGone = (t) => t.split('\n').flatMap((l) => {
   const m = /^(\s*)((?:\|\s*'[A-Za-z0-9_]+'\s*)+)(;?)\s*$/.exec(l);
@@ -50,13 +55,30 @@ const withoutGone = (t) => t.split('\n').flatMap((l) => {
   return e && GONE.has(e[1]) ? [] : [l];
 }).join('\n');
 // the standing declarations: docs/cleanup/c13-10c-new.txt (a --new on the command line names the same key again, and wins)
+const CELLS = new Map();   // a new key's per-theme words (key@theme=word lines of c13-10c-new.txt)
 const DECLARED = path.join(ROOT, 'docs/cleanup/c13-10c-new.txt');
 if (fs.existsSync(DECLARED)) for (const raw of fs.readFileSync(DECLARED, 'utf8').split(/\r?\n/)) {
   const line = raw.trim();
   if (!line || line.startsWith('#')) continue;
   const i = line.indexOf('=');
-  if (i > 0 && !NEW.has(line.slice(0, i))) NEW.set(line.slice(0, i), line.slice(i + 1));
+  if (i <= 0) continue;
+  const left = line.slice(0, i), at = left.indexOf('@');
+  if (at > 0) {   // key@theme=word: this theme's own word for a new key (see the header)
+    const k = left.slice(0, at);
+    CELLS.set(k, { ...(CELLS.get(k) || {}), [left.slice(at + 1)]: line.slice(i + 1) });
+    if (!NEW.has(k)) NEW.set(k, undefined);
+  } else if (!NEW.has(left) || NEW.get(left) === undefined) NEW.set(left, line.slice(i + 1));
 }
+// the standing word changes: docs/cleanup/c13-10c-words.txt, `key@theme=word`
+const WORDS = [];
+const WORDS_FILE = path.join(ROOT, 'docs/cleanup/c13-10c-words.txt');
+if (fs.existsSync(WORDS_FILE)) for (const raw of fs.readFileSync(WORDS_FILE, 'utf8').split(/\r?\n/)) {
+  const line = raw.trim();
+  if (!line || line.startsWith('#')) continue;
+  const m = /^([A-Za-z0-9_]+)@(none|plateau|flux|machina)=(.*)$/.exec(line);
+  if (m) WORDS.push({ key: m[1], theme: m[2], word: m[3] });
+}
+const WORD_KEYS = new Set(WORDS.map((w) => w.key));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 
@@ -101,10 +123,26 @@ try {
     ok(`GONE: all ${GONE.size} listed keys are in the table at ${base}, and none is in it now or reads a word in any theme`,
       notAtBase.length === 0 && stillHere.length === 0 && stillReads.length === 0, JSON.stringify({ notAtBase, stillHere, stillReads }));
   }
-  const before = { keys: beforeAll.keys.filter((k) => !GONE.has(k)), values: beforeAll.values };
+  const before = { keys: beforeAll.keys.filter((k) => !GONE.has(k)), values: structuredClone(beforeAll.values) };
+  // the declared word changes: each declared cell reads its word now and read something else at the base; the base's cell is then set to the declared word, so the DUMP below holds every OTHER cell to the base exactly
+  const THEME_AT = { none: 0, plateau: 1, flux: 2, machina: 3 };
+  const stale = [], wrong = [];
+  for (const w of WORDS) {
+    const at = THEME_AT[w.theme];
+    if (!nowAll.keys.includes(w.key) || !before.values[w.key]) { wrong.push(`${w.key}@${w.theme} (no such key)`); continue; }
+    if (nowAll.values[w.key][at] !== w.word) wrong.push(`${w.key}@${w.theme} reads ${JSON.stringify(nowAll.values[w.key][at])}`);
+    if (before.values[w.key][at] === w.word) stale.push(`${w.key}@${w.theme}`);
+    before.values[w.key][at] = w.word;
+  }
+  if (WORDS.length) ok(`WORDS: all ${WORDS.length} declared word changes (c13-10c-words.txt) read their word now, and each read something else at ${base}`, wrong.length === 0 && stale.length === 0, JSON.stringify({ wrong: wrong.slice(0, 4), stale: stale.slice(0, 4) }));
   // the named new keys are checked on their own and set aside; every other key is held to the base exactly
-  for (const [k, word] of NEW) ok(`NEW: '${k}' is new (absent at ${base}), in the table now, and reads '${word}' in all ${THEMES.length} theme readings`,
-    !before.keys.includes(k) && nowAll.keys.includes(k) && nowAll.values[k].every((v) => v === word), JSON.stringify(nowAll.values[k]));
+  const THEME_NAMES = ['none', 'plateau', 'flux', 'machina'];
+  for (const [k, word] of NEW) {
+    const cells = CELLS.get(k) || {};
+    const want = THEME_NAMES.map((t) => (cells[t] !== undefined ? cells[t] : word));
+    ok(`NEW: '${k}' is new (absent at ${base}), in the table now, and reads ${Object.keys(cells).length ? `its declared words (${Object.keys(cells).join(', ')} differ)` : `'${word}'`} in all ${THEMES.length} theme readings`,
+      !before.keys.includes(k) && nowAll.keys.includes(k) && want.every((w) => w !== undefined) && nowAll.values[k].every((v, n) => v === want[n]), JSON.stringify({ read: nowAll.values[k], want }));
+  }
   const now = { keys: nowAll.keys.filter((k) => !NEW.has(k)), values: nowAll.values };
   const differs = (a, b) => JSON.stringify(a.keys) !== JSON.stringify(b.keys) || a.keys.some((k) => JSON.stringify(a.values[k]) !== JSON.stringify(b.values[k]));
   const valueDiffs = before.keys.filter((k) => JSON.stringify(before.values[k]) !== JSON.stringify(now.values[k]));
@@ -115,6 +153,7 @@ try {
     beforeAll.keys.length >= 900 && before.keys.some((k) => before.values[k][2] !== before.values[k][1]) && before.keys.some((k) => before.values[k][3] !== before.values[k][1]), String(before.keys.length));
   const planted = JSON.parse(JSON.stringify(now)); planted.values[planted.keys[0]][2] += 'x';
   ok('LIVENESS: one value planted different reads as DIFFERENT', differs(before, planted));
+  if (WORDS.length) { const w0 = WORDS[0]; const pl = JSON.parse(JSON.stringify(now)); pl.values[w0.key][THEME_AT[w0.theme]] += 'x'; ok('LIVENESS: a declared word planted different reads as DIFFERENT from the declaration', pl.values[w0.key][THEME_AT[w0.theme]] !== w0.word); }
   const swapped = JSON.parse(JSON.stringify(now)); [swapped.keys[0], swapped.keys[1]] = [swapped.keys[1], swapped.keys[0]];
   ok('LIVENESS: two keys planted out of order read as DIFFERENT', differs(before, swapped));
 
@@ -122,9 +161,13 @@ try {
   const noImports = (t) => t.replace(/\r\n/g, '\n').split('\n').filter((l) => !/^import\s/.test(l)).join('\n');
   // <base> read the way a reader reads it: inline when <base> is already split (its parts exist), else its plain text (the split's parent)
   const baseSplit = fs.existsSync(path.join(baseSrc, 'store/lexicon/terms.ts'));
-  const was = withoutGone(noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8')));
+  let was = withoutGone(noImports(baseSplit ? srcText(baseSrc, 'store/deskLexicon.ts') : fs.readFileSync(path.join(baseSrc, 'store/deskLexicon.ts'), 'utf8')));
   let read = noImports(srcText(path.join(DESKTOP, 'src'), 'store/deskLexicon.ts'));
   // a comment line above a set-aside line is set aside with it only when the old text does not hold it (a note the declared keys brought, never one that was already there)
+  // a declared word change's entry lines are set aside from BOTH texts (the DUMP above holds every other cell to the base, and each declared cell to its word)
+  const asideWords = (t) => (WORD_KEYS.size ? t.split('\n').filter((l) => ![...WORD_KEYS].some((k) => new RegExp(`^\\s*${k}:`).test(l))).join('\n') : t);
+  was = asideWords(was);
+  read = asideWords(read);
   const wasLines = new Set(was.split('\n'));
   const NEW_NOTE = (l) => !wasLines.has(l);
   // a declared key's lines are set aside: its entry line, its token in a union line (a union line left holding nothing goes), and the comment lines

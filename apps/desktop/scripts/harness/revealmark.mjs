@@ -91,11 +91,7 @@ await withHarness(async (app) => {
     await click(app, testing);
     await app.key('Home'); await sleep(350);
     const e0 = await state(app);
-    // ---- PARKED - SUPERSEDED by item 211 (e79390c: marks never show), 2026-10-02 ----
-    // Kept VERBATIM and no longer run. The interim rule showed a run's markers at its edge; item 211 replaces that rule, as this file's header foretold.
-    //
-    // ok(`N4 [${mode}] a caret at the styled word's leading EDGE shows that word's own markers (what Delete would remove) and ONLY that word's - the italic word stays clean`, e0.off === 0 && JSON.stringify(e0.shown) === JSON.stringify(['**', '**']), JSON.stringify(e0));
-    // ----------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/revealmark.mjs.parked.md record 1
     ok(`N4 ITEM 211 [${mode}] a caret at the styled word's leading EDGE (line start) shows no markers either - marks never show`, e0.off === 0 && e0.shown.length === 0, JSON.stringify(e0));
     const pt2 = await midOf(app, 'THE');
     if (pt2) await click(app, pt2);

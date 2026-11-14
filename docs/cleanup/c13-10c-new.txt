@@ -20,3 +20,15 @@ flux3PortDisconnect=Disconnect
 flux3Checkpoint=Checkpoint
 # 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
 progressDrawer=Drawer
+# FLUX3 S4 Corridor r2 (INK) - Jacked In's exit line, the 4 s nudge and the leave button's name
+flux3JackedExit=Wired in · {key} to unplug
+flux3JackedNudge=Keep the signal · any word will do
+flux3JackedLeave=Unplug
+flux3JackedLeaveHint=Unplug ({key})
+# #76 part 2 and 3 (FIX, the Wrizors' words approved by Nick; Machina's word is Doc) - the quiet line "open in another window" and the kept-both line
+samePageElsewhere=This page is open in another window too.
+samePageElsewhere@flux=DOC OPEN IN ANOTHER WINDOW
+samePageElsewhere@machina=This doc is open in another window.
+samePageKeptBoth=Two windows changed this paragraph. Both versions are here.
+samePageKeptBoth@flux=TWO WINDOWS · SAME BLOCK · BOTH KEPT
+samePageKeptBoth@machina=Two windows changed this paragraph. Both versions kept.

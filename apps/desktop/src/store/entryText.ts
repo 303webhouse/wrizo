@@ -55,6 +55,12 @@ export function boardName(text: string | undefined, fallback: string): string {
   return first ? first.slice(0, 60) : fallback;
 }
 
+// #69 - the board's name AS STORED: the same line boardName cuts for display, whole. The rename box opens on THIS, and a rename is compared against it, so an
+// 81-character name is edited whole (the 60-character cut is how a name is DRAWN, never what is kept).
+export function fullBoardName(text: string | undefined, fallback: string): string {
+  return firstPlainLine(text ?? '') || fallback;
+}
+
 // A single-line preview: collapse whitespace and truncate with an ellipsis.
 export function snippet(text: string, max = 140): string {
   const flat = text.replace(/\s+/g, ' ').trim();
@@ -65,13 +71,4 @@ export function snippet(text: string, max = 140): string {
 // post-sprint echo never surfaces an awkward scrap.
 export function substantialLines(text: string, minChars = 24): string[] {
   return plainLines(text).filter(l => l.length >= minChars);   // the echoed line is shown to the writer, so it is plain text [entryText §3]
-}
-
-// Pick one of the writer's own lines to echo at the finish moment, or null when
-// there isn't a substantial one (a graceful skip — no echo rather than a
-// fragment). Reflection only: the line is the writer's own, never generated.
-export function pickEchoLine(text: string, rand: () => number = Math.random): string | null {
-  const lines = substantialLines(text);
-  if (lines.length === 0) return null;
-  return lines[Math.floor(rand() * lines.length)] ?? lines[0];
 }

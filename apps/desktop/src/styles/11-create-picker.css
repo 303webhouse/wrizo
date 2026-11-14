@@ -29,12 +29,7 @@
 .cp-k{ font-size:.85rem; font-weight:600; color:var(--cp-light); }
 .cp-kind.sel .cp-k{ color:var(--cp-accent); }
 .cp-d{ font-size:.7rem; color:var(--cp-tan-faint); line-height:1.45; }
-.cp-kind:focus-visible, .cp-else:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
-
-.cp-else{ width:100%; border:1px solid var(--cp-line); background:transparent; color:var(--cp-tan-mid);
-  font-size:.8rem; padding:.7rem; cursor:pointer; margin-bottom:1.9rem; font-family:var(--cp-ui); text-align:left; transition:border-color .2s, color .2s; }
-.cp-else:hover{ border-color:var(--cp-tan-mid); }
-.cp-else.sel{ border-color:var(--cp-accent); color:var(--cp-accent); }
+.cp-kind:focus-visible{ outline:2px solid var(--cp-accent); outline-offset:2px; }
 
 /* B3 S3 — door 1's own "Start from a deck…", quieter than .cp-else (no
    border at rest — this is an invitation ONE step further from Blank, not

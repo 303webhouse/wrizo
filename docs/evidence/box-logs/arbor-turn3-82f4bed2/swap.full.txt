@@ -1,0 +1,61 @@
+
+ROWS-SHADOW VERIFY: PASS (38 renders checked, shadow == DOM on every one)
+[
+  {
+    "name": "W1d at rest: the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer's strength)",
+    "pass": true,
+    "detail": "{\"wrap\":true,\"driftT\":null,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.02,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":null,\"running\":115,\"ls\":\"[[\\\"writer-studio-dirty-v1\\\",\\\"{\\\\\\\"projects\\\\\\\":[\\\\\\\"mwbzmel5mjh31wja7\\\\\\\"],\\\\\\\"storyPlans\\\\\\\":[],\\\\\\\"sessions\\\\\\\":[],\\\\\\\"drafts\\\\\\\":[],\\\\\\\"journalEntries\\\\\\\":[\\\\\\\"mwbzmel69450q8urw\\\\\\\"],\\\\\\\"drawers\\\\\\\":[]}\\\"],[\\\"writer-studio-journal-entries\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mwbzmel69450q8urw\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"projectId\\\\\\\":\\\\\\\"mwbzmel5mjh31wja7\\\\\\\",\\\\\\\"pageType\\\\\\\":\\\\\\\"manuscript\\\\\\\",\\\\\\\"source\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"origin\\\\\\\":\\\\\\\"project\\\\\\\",\\\\\\\"pageSettings\\\\\\\":{\\\\\\\"margins\\\\\\\":\\\\\\\"normal\\\\\\\",\\\\\\\"lineSpacing\\\\\\\":1.6,\\\\\\\"pageNumbers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"placement\\\\\\\":\\\\\\\"bottom-center\\\\\\\"},\\\\\\\"headers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"footers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"size\\\\\\\":11},\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-11T10:40:04.698Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-11T10:40:04.698Z\\\\\\\"}]\\\"],[\\\"writer-studio-journal-resync-v1\\\",\\\"1\\\"],[\\\"writer-studio-last-sync\\\",\\\"1970-01-01T00:00:00.000Z\\\"],[\\\"writer-studio-projects\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mwbzmel5mjh31wja7\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"Untitled\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"creative\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"book\\\\\\\",\\\\\\\"storyPlanId\\\\\\\":null,\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-11T10:40:04.697Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-11T10:40:04.698Z\\\\\\\",\\\\\\\"lastActivityAt\\\\\\\":\\\\\\\"2026-11-11T10:40:04.698Z\\\\\\\",\\\\\\\"lastActivityType\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"lastActivePageId\\\\\\\":\\\\\\\"mwbzmel69450q8urw\\\\\\\"}]\\\"],[\\\"wrizo-first-run-complete\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen-version\\\",\\\"4\\\"],[\\\"wz.lastPlace\\\",\\\"{\\\\\\\"v\\\\\\\":1,\\\\\\\"uid\\\\\\\":\\\\\\\"test-user\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"mwbzmel69450q8urw\\\\\\\",\\\\\\\"at\\\\\\\":1794393604706}\\\"],[\\\"wz.opens.test-user\\\",\\\"{\\\\\\\"mwbzmel69450q8urw\\\\\\\":1}\\\"],[\\\"wz.place.test-user\\\",\\\"{\\\\\\\"kind\\\\\\\":\\\\\\\"drawer\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"unsorted\\\\\\\",\\\\\\\"setId\\\\\\\":\\\\\\\"mwbzmel5mjh31wja7\\\\\\\"}\\\"]]\"}"
+  },
+  {
+    "name": "W2d the first key: within 100 ms the still stands at the layer's strength and the live drawing is at 0 and out of style work (and still so 320 ms on)",
+    "pass": true,
+    "detail": "{\"at100\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"page\":{\"shown\":false,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.02,\"stillA\":0.02,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"at320\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}"
+  },
+  {
+    "name": "W3d no drift (Nick, Nov 7): the room's wrapper is there at rest and on the first key, and no drift animation is on it",
+    "pass": true,
+    "detail": "{\"rest\":{\"wrap\":true,\"drift\":null},\"key\":{\"wrap\":true,\"drift\":null}}"
+  },
+  {
+    "name": "W4f the chrome's return: the live drawing back at full and in style work, the still picture at 0; the wrapper there and no drift on it (Nick, Nov 7)",
+    "pass": true,
+    "detail": "{\"wrap\":true,\"driftT\":null,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.02,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":null,\"running\":115}"
+  },
+  {
+    "name": "W5b the swap key within the guard's per-key budget: none of six swap keys over 100 ms (the shade-off first keys reported beside them)",
+    "pass": true,
+    "detail": "{\"on\":[22.8,25.9,24.8,23.8,26.7,24.7],\"off\":[16.8,32.7,19.9,25.5,30.6,22.1],\"median\":[24.8,23.8],\"p95\":[26.7,32.7]}"
+  },
+  {
+    "name": "W6c reduced motion: nothing on the shade animates at rest; the first key is a cut to the still picture; nothing animates after it",
+    "pass": true,
+    "detail": "{\"rest\":{\"running\":0},\"key\":{\"running\":0,\"room\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}}"
+  },
+  {
+    "name": "W9d her first keys mid-shiver: from 250 ms after the first key to the end of the burst nothing in the shade moves - the room beside the page shot at 250 / 700 / 1150 / 1600 / 1900 ms, each over 9 levels on no more than 0.01% of its pixels against the 250 ms shot (the fade pinned, the rhizome hidden)",
+    "pass": true,
+    "detail": "{\"mutant\":false,\"movingAtKey\":8,\"R\":{\"x0\":1050,\"x1\":1376,\"y0\":76,\"y1\":692,\"dpr\":1},\"pinned\":[\"1\",\"1\",\"1\",\"1\",\"1\"],\"shots\":[{\"at\":421,\"moving\":11,\"leafT\":16833,\"writing\":\"true\",\"off\":\"true\"},{\"at\":845,\"moving\":11,\"leafT\":16833,\"writing\":\"true\",\"off\":\"true\"},{\"at\":1309,\"moving\":11,\"leafT\":16833,\"writing\":\"true\",\"off\":\"true\"},{\"at\":1728,\"moving\":11,\"leafT\":16833,\"writing\":\"true\",\"off\":\"true\"},{\"at\":2046,\"moving\":11,\"leafT\":16833,\"writing\":\"true\",\"off\":\"true\"}],\"diffs\":[{\"n\":200816,\"over\":0,\"max\":0,\"pct\":0},{\"n\":200816,\"over\":0,\"max\":0,\"pct\":0},{\"n\":200816,\"over\":0,\"max\":0,\"pct\":0},{\"n\":200816,\"over\":0,\"max\":0,\"pct\":0}]}"
+  },
+  {
+    "name": "W9d-M (mutant, the leaves kept moving): it landed (the leaf animation clock ran on across the shots) and W9d's bar is RED on it",
+    "pass": true,
+    "detail": "{\"mutant\":true,\"movingAtKey\":11,\"R\":{\"x0\":1050,\"x1\":1376,\"y0\":76,\"y1\":692,\"dpr\":1},\"pinned\":[\"1\",\"1\",\"1\",\"1\",\"1\"],\"shots\":[{\"at\":494,\"moving\":33,\"leafT\":33432,\"writing\":\"true\",\"off\":\"true\"},{\"at\":897,\"moving\":54,\"leafT\":33832,\"writing\":\"true\",\"off\":\"true\"},{\"at\":1353,\"moving\":68,\"leafT\":34299,\"writing\":\"true\",\"off\":\"true\"},{\"at\":1848,\"moving\":83,\"leafT\":34782,\"writing\":\"true\",\"off\":\"true\"},{\"at\":2149,\"moving\":67,\"leafT\":35099,\"writing\":\"true\",\"off\":\"true\"}],\"diffs\":[{\"n\":200816,\"over\":0,\"max\":0,\"pct\":0},{\"n\":200816,\"over\":977,\"max\":22,\"pct\":0.4865},{\"n\":200816,\"over\":217,\"max\":13,\"pct\":0.1081},{\"n\":200816,\"over\":1,\"max\":10,\"pct\":0.0005}]}"
+  },
+  {
+    "name": "W10c the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)",
+    "pass": true,
+    "detail": "{\"want\":\"rest\",\"moving\":0,\"choice\":\"shared still\",\"zoom\":false,\"off\":\"true\",\"pinned\":[\"1\",\"1\",\"1\",\"1\",\"1\"],\"clockAtKey\":{\"asleep\":null,\"liveOff\":null,\"writing\":null,\"first\":{\"state\":\"running\",\"start\":80513,\"current\":39615,\"now\":120128}},\"vs\":{\"n\":1260000,\"over\":0,\"max\":4},\"overPct\":0,\"same\":{\"n\":1260000,\"over\":0,\"max\":0},\"samePct\":0,\"shade\":{\"n\":1260000,\"over\":210700,\"max\":39},\"shadePct\":16.7222,\"pageChoice\":\"shared still\"}"
+  },
+  {
+    "name": "W8b the flash copy's pre-rendered mask in use, its difference from the SVG mask within twice the accepted 0.02% (the walk judges the look)",
+    "pass": false,
+    "detail": "{\"maskWas\":\"bitmap\",\"w\":1400,\"h\":900,\"n\":1260000,\"diff\":1037,\"over\":530,\"max\":223,\"overPct\":0.0421}"
+  },
+  {
+    "name": "W7 nothing stored: localStorage holds no key or value naming the swap",
+    "pass": true,
+    "detail": 2529
+  }
+]
+
+ARBOR2-SWAP VERIFY: FAIL - 1/11 failed

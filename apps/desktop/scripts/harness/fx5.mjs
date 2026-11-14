@@ -293,16 +293,7 @@ await withHarness(async (app) => {
       Math.abs(fadeInfo.fadeStartPx - fadeInfo.lineHeight) <= 2, JSON.stringify(fadeInfo));
     fx5MaskSeen = fadeInfo.maskImage;
     fx5BandSeen = await app.evalJs("(() => { const col = document.querySelector('.mode-pagecol'); if (!col) return null; const cs = getComputedStyle(col); return { zoom: col.getAttribute('data-zoom'), mask: String(cs.webkitMaskImage || cs.maskImage || 'none').slice(0, 200) }; })()");
-    // ---- PARKED - SUPERSEDED by TYPEWRITER-FADE-ORDER (Nick's live bug, 2026-10-10: "lines fade out of order - a newer line
-    // dims while the older one above it stays dark"). Kept VERBATIM and no longer run. The "opaque lead-in" it names WAS the bug:
-    // it showed the oldest visible line whole above faint newer ones. The mask now holds the 15% floor through --tw-fade-start
-    // and ramps up (the band still starts one line lower; the check above, the token's size, is unchanged). Its assertion only
-    // tested for "linear-gradient", so it would have stayed green while claiming the opposite of the fix. Parked record below;
-    // live successor: typewriter-fade.mjs (the order, measured line by line from the computed mask).
-    //
-    // ok('S1 (b): the container mask genuinely carries a two-stage ramp now (opaque lead-in, then the fade) — the gradient string mentions both a #000/opaque leading stop and the fade-band length',
-    //   typeof fadeInfo.maskImage === 'string' && fadeInfo.maskImage.includes('linear-gradient'), fadeInfo.maskImage);
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 1
   }
 
   // (c) SCROLL FREEDOM: a manual scroll-up is never fought by the next
@@ -329,15 +320,7 @@ await withHarness(async (app) => {
     await sleep(350);
     const afterTypeScrollTop = await app.evalJs("document.querySelector('.mode-scroll').scrollTop");
     const lineHeightPx = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || 28");
-    // ---- PARKED - SUPERSEDED by page-size (rulings a-b, Oct 23: ~75 characters a line): the typed sentence (76 characters) now WRAPS, so with its Enter it
-    // adds TWO visual lines, and the engine pays exactly that advance, a line per glide - FIX's probe on 8d3673bd traced two 27px steps and nothing
-    // else (496 -> 523 -> 550), no snap toward the band (616). "About one line" was the fixture's single line; the claim - the box moves only by the
-    // writer's own new lines, never back toward the band - is the successor's. Kept VERBATIM and no longer run; record in the parked section.
-    //
-    // ok('S1 (c): typing after a manual scroll-up does NOT snap the page back to the band — the post-keystroke scrollTop stays within about one line of the writer\'s OWN manually-chosen position, not reset toward the (much larger) pre-scroll settled value',
-    //   Math.abs(afterTypeScrollTop - afterManualScroll) <= lineHeightPx * 1.6 && afterTypeScrollTop < settled - 40,
-    //   JSON.stringify({ settled, manualTarget, afterManualScroll, afterTypeScrollTop, lineHeightPx }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 2
     const linesAdded = (await visualLines()) - linesBeforeType;
     const twTrace = await app.evalJs(`(window.__wzTwTrace || []).slice(Math.max(0, ${trace0} - 40)).filter((t) => t.d !== 'wait').map((t) => t.d + (t.from != null ? ':' + t.from + '>' + t.to + '/' + t.maxTop + '@' + t.advance : t.top != null ? ':' + t.top : '')).join(' ').slice(0, 900)`);
     fx5FreeSeen = { settled, afterManualScroll, afterTypeScrollTop, lineHeightPx, linesAdded, twTrace };
@@ -365,20 +348,10 @@ await withHarness(async (app) => {
       const stageR = stage.getBoundingClientRect(), edR = ed.getBoundingClientRect();
       return { fraction: (edR.top - stageR.top) / stageR.height };
     })()`);
-    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23; Cursor's mockup e3c4e462): a fresh Arbor page opens in the Typewriter ZOOM, and the
-    // zoom holds the writing line at the band's anchor - 60% of the column (pageScale.ts ZOOM_ANCHOR) - so the first line starts there, not a quarter
-    // down (lane 3 read 0.6002). Kept VERBATIM and no longer run; record in the parked section; successor follows.
-    //
-    // ok('S1 (d): the start offset (25%) is unchanged — the visual start still reads as "about a quarter"',
-    //   proseInfo.fraction >= 0.20 && proseInfo.fraction <= 0.32, JSON.stringify(proseInfo));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 3
     const startZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
     fx5StartSeen = { ...proseInfo, zoom: startZoom };
-    // ---- PARKED - SUPERSEDED by POLISH #10 item 19 (Nick, Oct 25: "seems too low on the screen to start"): the writing line - and a fresh page's first line - is held at the MIDDLE of the visible page, 50% of the column (pageScale.ts ZOOM_ANCHOR), not 60%. Kept VERBATIM and no longer run; record in the parked section; successor follows.
-    //
-    // ok('S1 (d) [page-size successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - 60% of the column (within 5%)',
-    //   startZoom === 'true' && Math.abs(proseInfo.fraction - 0.6) <= 0.05, JSON.stringify(fx5StartSeen));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 4
     ok('S1 (d) [polish #10 item 19 successor]: a fresh prose page opens in the Typewriter zoom and its first line starts at the band\'s anchor - the MIDDLE, 50% of the column (within 5%)',
       startZoom === 'true' && Math.abs(proseInfo.fraction - 0.5) <= 0.05, JSON.stringify(fx5StartSeen));
   }
@@ -706,30 +679,7 @@ await withHarness(async (app) => {
     { id: 'fx5-s5t-b', kind: 'text', x: 0.5, y: 0.3, w: 0.2, h: 0.08, z: 2, text: 'Trusted B' },
   ], LAPTOP_W, 900);
   {
-    // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-    // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). The trusted pin-drag that minted a hairline no longer exists.
-    // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3/C5/C6 (a TRUSTED CDP double-click then a move and a release on a card links; a second one unlinks).
-    // const pinPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-a"] .board-pin-grab').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
-    // const targetPt = await app.evalJs(`(() => { const r = document.querySelector('[data-box-id="fx5-s5t-b"]').getBoundingClientRect(); return { x: r.left + r.width/2, y: r.top + r.height/2 }; })()`);
-    // // ITEM 151 (Shape A) -- verify the drag's START point only.
-    // await assertHittable(app, pinPt.x, pinPt.y, 'fx5 S5 pin-grab centre');
-    // await app.mouseDown(pinPt.x, pinPt.y);
-    // const steps = 6;
-    // for (let i = 1; i <= steps; i++) {
-    //   await app.mouseMove(
-    //     Math.round(pinPt.x + (targetPt.x - pinPt.x) * (i / steps)),
-    //     Math.round(pinPt.y + (targetPt.y - pinPt.y) * (i / steps)),
-    //   );
-    //   await sleep(40);
-    // }
-    // await app.mouseUp(targetPt.x, targetPt.y);
-    // await sleep(200);
-    // const linesAfterTrustedDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-    // const connAfterTrustedDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
-    // ok('S5: the fidelity gap CLOSED — a genuinely trusted (isTrusted, CDP, real incremental mouseMove) drag from the olive pin to another card mints the hairline, re-verifying the mechanism the checks below only ever exercise via synthetic dispatch (mirrors S4(a)\'s own real-press proof for the identical early-setPointerCapture mechanism)',
-    //   linesAfterTrustedDrag === 1 && !!connAfterTrustedDrag &&
-    //   ((connAfterTrustedDrag.connA === 'fx5-s5t-a' && connAfterTrustedDrag.connB === 'fx5-s5t-b') || (connAfterTrustedDrag.connA === 'fx5-s5t-b' && connAfterTrustedDrag.connB === 'fx5-s5t-a')),
-    //   JSON.stringify(connAfterTrustedDrag));
+    // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 5
   }
 
   // ==========================================================================
@@ -755,57 +705,19 @@ await withHarness(async (app) => {
   // the resize handle no longer arms anything.
   await app.evalJs('__pointerSeq(\'[data-box-id="fx5-s5-a"]\', 0, 0)');
   await sleep(100);
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // The corner square's double-click is the door INTO connection mode again (on its second pointerdown). This check's synthetic `dblclick` event would still arm nothing, but its CLAIM ("double-clicking the handle arms nothing") is no longer the product's - parked rather than left green about something else.
-  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (the real double-click enters the mode) and card-resize-relock.mjs (a resize followed by a corner press still enters nothing).
-  // await app.evalJs('document.querySelector(\'[data-box-id="fx5-s5-a"] .board-handle\').dispatchEvent(new MouseEvent("dblclick", {bubbles:true}))');
-  // await sleep(150);
-  // const armedByDeadGesture = await app.evalJs("document.querySelector('.board-canvas').dataset.threadArmed");
-  // ok('S5: the dead handle-double-click gesture is REMOVED, proven inert (double-clicking the resize handle arms nothing)',
-  //   armedByDeadGesture === 'false', armedByDeadGesture);
-  // That same dblclick BUBBLES to the canvas's own dblclick handler (the
-  // handle sits inside the card, and a hand-typed text card's own
-  // double-click still opens the edit popup) — close it before continuing,
-  // or every subsequent board gesture would silently stand down (onDown's
-  // own "the popup is open" guard).
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 6
   if (await app.evalJs("!!document.querySelector('.board-popup')")) {
     await app.evalJs("document.querySelector('.board-popup-done')?.click()");
     await sleep(200);
   }
 
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). There is no pin to be present or to be a circle.
-  // Quoted VERBATIM below. Successor: the check directly below (the tack is gone, and each card carries its own hidden connection circle); behaviour in connector-a.mjs C2.
-  // // The olive pin exists on every card, always (not selection-gated).
-  // const pinPresence = await app.evalJs(`({
-  //   onA: !!document.querySelector('[data-box-id="fx5-s5-a"] .board-pin-grab'),
-  //   onB: !!document.querySelector('[data-box-id="fx5-s5-b"] .board-pin-grab'),
-  // })`);
-  // ok('S5: the olive pin — the connection grab — is present on every card, always, not gated on selection (no pre-selection two-step the way the old gesture needed)',
-  //   pinPresence.onA && pinPresence.onB, JSON.stringify(pinPresence));
-  // const pinIsCircle = await app.evalJs("getComputedStyle(document.querySelector('[data-box-id=\"fx5-s5-a\"] .board-pin-grab')).borderRadius");
-  // ok('S5: the pin is a genuine circle (Nick\'s own ruling, quoted in the brief) — the one deliberate exception to square corners for this small state indicator',
-  //   pinIsCircle === '50%', pinIsCircle);
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 7
   ok('S5 [connector-a successor]: the green tack is RETIRED - no card carries a .board-pin-grab, and each card carries its own connection circle (.board-tcircle), hidden at rest',
     (await app.evalJs("document.querySelectorAll('.board-pin-grab').length")) === 0 &&
     (await app.evalJs("document.querySelectorAll('[data-box-id=\"fx5-s5-a\"] > .board-tcircle, [data-box-id=\"fx5-s5-b\"] > .board-tcircle').length")) === 2 &&
     (await app.evalJs("getComputedStyle(document.querySelector('[data-box-id=\"fx5-s5-a\"] > .board-tcircle')).display")) === 'none', '');
 
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // The green tack (.board-pin-grab) is RETIRED: a card is connected from its corner square (double-click / right-click -> connection mode). The mint-by-drag, Escape-mid-drag, empty-release and de-dupe checks were all pin gestures; the link they minted is SEEDED in this fixture now (the connection box the footer checks below need), because minting it is connector-a's job.
-  // Quoted VERBATIM below. Successor: scripts/harness/connector-a.mjs C3 (link), C7 (Esc cancels), C8 (release on empty board after a drag cancels), C6 (toggle: a second release on a linked card UNLINKS - the new de-dupe).
-  // // Drag-from-pin, release inside another card, mints a thread — ONE
-  // // continuous gesture, no separate arm step (the old two-step shape is
-  // // very likely why it read as "dead": a real double-click's timing is
-  // // far less reliable than a script's own).
-  // await app.evalJs('__pointerSeqTo(\'[data-box-id="fx5-s5-a"] .board-pin-grab\', \'[data-box-id="fx5-s5-b"]\', {steps:5})');
-  // await sleep(200);
-  // const linesAfterPinDrag = await app.evalJs("document.querySelectorAll('.board-connection-line').length");
-  // const connAfterPinDrag = (await app.evalJs('window.wrizoBoard()')).find(b => b.kind === 'connection');
-  // ok('S5: dragging from the olive pin and releasing inside another card mints the hairline, in ONE continuous gesture',
-  //   linesAfterPinDrag === 1 && !!connAfterPinDrag &&
-  //   ((connAfterPinDrag.connA === 'fx5-s5-a' && connAfterPinDrag.connB === 'fx5-s5-b') || (connAfterPinDrag.connA === 'fx5-s5-b' && connAfterPinDrag.connB === 'fx5-s5-a')),
-  //   JSON.stringify(connAfterPinDrag));
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 8
 
   // // Escape cancels a drag mid-gesture (pointer down on the pin, no release
   // // yet).
@@ -996,13 +908,7 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.board-popup-editor .md-mark')];
     return { anyRevealed: marks.some(m => !m.classList.contains('md-mark-hidden')) };
   })()`);
-  // ---- PARKED - SUPERSEDED by the 211 card port (2026-10-06): the popup now runs the page's editing rules, so it shows no mark at any caret, as the page ----
-  // Kept VERBATIM and no longer run. Item 211 (Nick's "A", 2026-09-25) retired reveal-at-caret; the card kept an interim form of it
-  // until it had the page's editing rules, and now it has them. Successor below; the parked record is in this file's PARKED section.
-  //
-  // ok('S6: reveal-adjacent-to-caret — once the caret sits inside/beside the bold run, its OWN markers become visible again (a real, working escape hatch to see/edit the raw syntax, per the brief\'s own named fallback)',
-  //   revealState.anyRevealed === true, JSON.stringify(revealState));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 9
   fx5CardReveal = revealState;
   ok('S6 [card-port successor]: with the caret inside the bold run\'s own markers the card shows NO marker - the escape hatch is the B button and Backspace/Delete, which never leave a lone mark',
     revealState.anyRevealed === false, JSON.stringify(revealState));
@@ -1021,19 +927,7 @@ await withHarness(async (app) => {
     const marks = [...document.querySelectorAll('.forward-only-editor .md-mark')];
     return { count: marks.length, anyHiddenClass: marks.some(m => m.classList.contains('md-mark-hidden')), opacity: marks[0] ? getComputedStyle(marks[0]).opacity : null };
   })()`);
-  // ---- PARKED - SUPERSEDED by PR #7 (e79390c: marks never show, item 211), 2026-10-02 ----
-  // Kept VERBATIM and no longer run. Draft no longer dims its syntax; it hides it like the card.
-  //
-  // ok('S6: Draft mode\'s own dimmed-syntax register is genuinely UNTOUCHED — its .md-mark spans NEVER carry the card-only .md-mark-hidden class, still just dimmed (opacity ~0.38), asterisks stay visible there (this is a card-surface-only change)',
-  //   draftMarkState.count > 0 && !draftMarkState.anyHiddenClass && Math.abs(parseFloat(draftMarkState.opacity) - 0.38) < 0.05,
-  //   JSON.stringify(draftMarkState));
-  // ----------------------------------------------------------------------
-  // ---- PARKED - SUPERSEDED by typed-literal (Nick's ruling, Oct 16: a hand-typed `**` is LITERAL, stored escaped) ----
-  // Kept VERBATIM and no longer run. Typed `**bold in draft**` makes no bold run now - its stars are escaped - so the hidden marks this
-  // counted are the escapes' backslashes, and the check would pass for the wrong reason. Bold comes from Ctrl+B: successor below.
-  // ok('S6 [PR #7 successor]: Draft mode hides its marks too - its .md-mark spans carry .md-mark-hidden (item 211 applies to every writing surface)',
-  //   draftMarkState.count > 0 && draftMarkState.anyHiddenClass, JSON.stringify(draftMarkState));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 10
   void draftMarkState;
   await app.keyCombo('a'); await sleep(150);
   await app.keyCombo('b'); await sleep(300);
@@ -1044,15 +938,7 @@ await withHarness(async (app) => {
       typewriter: tw ? tw.getAttribute('aria-pressed') : null };
   })()`;
   fx5TwBlocked = await app.evalJs(boldNow);
-  // ---- PARKED - SUPERSEDED (ledger 87, Oct 17): the check was wrong, not the product. This page is NEW and EMPTY, and a new Arbor page opens with
-  // the Typewriter ON (store/theme.ts THEME_CONFIG, Phase 1 S5); while the Typewriter is on, Format and its shortcuts are blocked (Phase 1 S4,
-  // PageEditor.tsx applyRailFormat) - so Ctrl+B rightly made NO bold here ({bold: 0, marks: 0} in the combined pair). typed-literal.mjs L3's
-  // page starts with text, so its Typewriter opens off and the same Ctrl+B bolds. Kept VERBATIM and no longer run; successor below: the
-  // Typewriter turned off first, the way a writer does (the foot's own toggle).
-  // ok('S6 [typed-literal successor]: Draft mode hides its marks too - a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
-  //   !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));
-  // ------------------------------------------------------------------
-  // the Typewriter off by its own foot toggle (the drawer opened first if it is shut); probed, never assumed
+  // ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 11
   await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (!(p && p.dataset.open === 'true')) document.querySelector('.wz-sliver-grip')?.click(); return true; })()");
   await sleep(500);
   await app.evalJs(`(() => { const tw = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (tw && tw.getAttribute('aria-pressed') === 'true') tw.click(); return true; })()`);
@@ -1315,37 +1201,7 @@ await withHarness(async (app) => {
 // eslint-disable-next-line no-console
 console.log(JSON.stringify(checks, null, 2));
 
-// === PARKED — gated behind HARNESS_PARKED=1, skipped by default. ===========
-// FX6 S1/S2 supersede two of this file's own checks. Quoted verbatim below
-// (the exact code that used to live in this file's own live sections,
-// before this park):
-//
-//   S7 (live, before FX6): "A second Ctrl+Z (nothing pending anymore) is a
-//   harmless no-op — proves this is genuinely "one step," not a repeatable
-//   toggle."
-//     await ctrlZ('.forward-only-editor');
-//     const afterSecondUndo = await app.evalJs("...innerText");
-//     ok('S7: a SECOND Ctrl/Cmd+Z (nothing pending) is a harmless no-op —
-//       genuinely one step, not a repeatable toggle',
-//       afterSecondUndo === afterOneUndo, ...);
-//   FX6 S1 replaces the single-shot em-dash shim with a REAL, walkable
-//   undo/redo stack (store/textUndo.ts) — a second Ctrl+Z no longer a
-//   no-op: it legitimately continues undoing further back (this IS the
-//   point of real undo — "Ctrl+Z's his way back out step by step," the
-//   brief's own DoD wording). Live successor: fx6.mjs's own S1 section
-//   covers the full walkable chain; the check below proves the OLD claim
-//   ("no-op") is now false, the same "prove the retirement itself"
-//   discipline fx4.mjs's own PARKED section established.
-//
-//   S5 (live, before FX6): "the board sliver carries EXACTLY two hand
-//   tools now — Add card + the footer toggle."
-//     const sliverBoardShape = await app.evalJs(`(() => { ... })()`);
-//     ok('S5: the board sliver carries EXACTLY two hand tools now...',
-//       sliverBoardShape.count === 2, ...);
-//   FX6 S2b adds a THIRD tool (New page card) — the board-side door Nick
-//   reached for and couldn't find. Live successor: fx6.mjs's own S2
-//   section proves New page card's own presence + function; the check
-//   below proves the OLD count ("exactly two") is now three.
+// ARCHIVED PARK (#13 step 14): archive/fx5.mjs.parked.md record 12
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });

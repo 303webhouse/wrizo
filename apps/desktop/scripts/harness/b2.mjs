@@ -30,6 +30,13 @@
 // `.click()` on a real <input> — no special fidelity claim beyond a click,
 // same standing discipline as B1's own Restore button.
 import { withHarness } from '../runtime-verify.mjs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
+
+// #13 step 12c: the narrow rail's roster, read against DeskRail's own source (the Library stub is expected only while the source lists it)
+const LIB_SLOT_12C = /key: 'library'/.test(srcText(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src'), 'components/DeskRail.tsx'));
+const roster12c = (labels, lib) => JSON.stringify(labels) === JSON.stringify(lib ? ['Catch', 'Journal', 'Drawers', 'Library'] : ['Catch', 'Journal', 'Drawers']);
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -252,13 +259,7 @@ await withHarness(async (app) => {
   const cardToPin = shelfBoxesBeforePin.find((b) => b.kind === 'page-pin' && b.entryId === 'b2-t3-qualifies');
   await app.evalJs(POINTER_HELPER); // re-inject — reload() wipes the page's own JS context
   await selectBox(app, cardToPin.id);
-  // ---- PARKED - SUPERSEDED by board-context-menu (Nick approved the mockup, Oct 15) ----
-  // The selected-card action row is DELETED; a Shelf card's "Pin to a Board…" is its right-click menu (the same PinToBoardSheet).
-  // Quoted VERBATIM below. Successor: the right-click below.
-  // await app.waitFor("!!document.querySelector('.board-action-row')", { label: 'Shelf card selected' });
-  // const pinBtnPresent = await app.evalJs("[...document.querySelectorAll('.board-action-row button')].some(b => b.textContent.trim() === 'Pin to a Board…')");
-  // ok('S2: a selected Shelf card offers "Pin to a Board…" in the action row (the existing PinToBoardSheet — nothing new invented)', pinBtnPresent === true, String(pinBtnPresent));
-  // await app.evalJs("[...document.querySelectorAll('.board-action-row button')].find(b => b.textContent.trim() === 'Pin to a Board…').click()");
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 1
   await rightClickAt(app, `[data-box-id="${cardToPin.id}"]`);
   const shelfMenuLabels = await app.evalJs("[...document.querySelectorAll('.wz-ctx-item')].map((b) => b.textContent.trim())");
   ok('S2 [context-menu successor]: a Shelf card offers "Pin to a Board…" in its right-click menu (the existing PinToBoardSheet - nothing new invented), and no Delete (a derived card)', shelfMenuLabels.includes('Pin to a Board…') && !shelfMenuLabels.includes('Delete'), JSON.stringify(shelfMenuLabels));
@@ -341,23 +342,10 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(200);
   const shelfSliverButtons = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].map(b => b.textContent.trim())");
-  // SUPERSEDED (item word-diet, Nick) — boardNewPageCard/boardAddExistingPage
-  // reword; checking the OLD text's absence would trivially pass once the
-  // text is simply different. ORIGINAL claim parked verbatim:
-  // ok('S1: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
-  //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New page card') && !shelfSliverButtons.includes('Existing page…'), JSON.stringify(shelfSliverButtons));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15) — boardNewPageCard
-  // reworks again; same reasoning as above: checking the OLD text's absence
-  // would trivially pass once the text is simply different. ORIGINAL claim parked verbatim:
-  // ok('S1 [word-diet successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
-  //   !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Pages Card') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 2
   ok('S1 [word-diet-layouts successor]: the Shelf Board\'s own sliver carries NO Add control at all — genuinely absent, the same B1 law inherited via the SAME `isSystemBoard` branch',
     !shelfSliverButtons.includes('Add card') && !shelfSliverButtons.includes('New Page') && !shelfSliverButtons.includes('+ Filed Pages'), JSON.stringify(shelfSliverButtons));
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // "Show grafts" is RETIRED on every board: there is no footer toggle to still work on the Shelf Board.
-  // Quoted VERBATIM below. Successor: the check directly below.
-  // const shelfFooterTogglePresent = await app.evalJs("!!document.querySelector('.wz-sliver-board-footer')");
-  // ok('S1: the connections-footer toggle STILL works on the Shelf Board — arranging is the full FX5 hand, only Add/Delete are restricted', shelfFooterTogglePresent === true, String(shelfFooterTogglePresent));
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 3
   ok('S1 [connector-a successor]: the connections-footer toggle is RETIRED on the Shelf Board as on every board - only Add/Delete are restricted', (await app.evalJs("document.querySelectorAll('.wz-sliver-board-footer').length")) === 0, '');
 
   // Delete inert on a derived card.
@@ -720,30 +708,7 @@ await withHarness(async (app) => {
     const pageFaceIndex = kids.findIndex(k => k.classList.contains('wz-pageface'));
     return { doorLabels, placesAfterPageFace: placesIndex > pageFaceIndex };
   })()`);
-  // S5 roster check [PARKED — FX15 S3]: the Page pop-out's "New Journal Entry" door was
-  // RETIRED (dead SV6 vocabulary — the Journal is a home, not a page kind; it was a
-  // redundant second entrance to journal-origin creation, which Catch + the Journal
-  // category's own button still perform, unchanged). The roster is now the single
-  // "New Page" door; the live ok below re-verifies the new one-door roster. Original ok,
-  // quoted verbatim (immutable):
-  //   PARKED (was "S5: the Page pop-out's roster reorders to New Journal Entry, New Page (in that order), before the Page face + Places")
-  // ---- PARKED — SUPERSEDED by item 83 M3 (R6) + M6 (R13.ii), 2026-08-25
-  // Kept VERBATIM and no longer run. The Page drawer's roster GREW by two
-  // founder rulings: R6 charters PAGE SETUP inside it ('general page options
-  // that govern the opened page ... margins, line spacing, page numbers'),
-  // and R13.ii adds Place-page-on-board on board surfaces. 'the single New
-  // Page door' is no longer the roster. What SURVIVES is the door's primacy:
-  // New Page still leads, before the Page face and Places.
-  //
-  // ok('S5 [FX15 S3]: the Page pop-out\'s roster is now the single "New Page" door, before the Page face + Places',
-  // JSON.stringify(rosterOrder.doorLabels) === JSON.stringify(['New Page']), JSON.stringify(rosterOrder));
-  // ------------------------------------------------------------------
-  // SUPERSEDED (item word-diet, Nick) — cascadePageNewPage reworks, "New Page" -> "New Pages".
-  // ok('S5 [R6+R13.ii successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
-  //   rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
-  // SUPERSEDED (item word-diet-layouts, Fable Oct 15 — the singular-exception rule) — cascadePageNewPage reworks back, "New Pages" -> "New Page".
-  // ok('S5 [word-diet successor]: the Page drawers roster still LEADS with the New Pages door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
-  //   rosterOrder.doorLabels[0] === 'New Pages', JSON.stringify(rosterOrder));
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 4
   ok('S5 [word-diet-layouts successor]: the Page drawers roster still LEADS with the New Page door - the roster grew beneath it (PAGE SETUP, Place-page), but the door stays first',
     rosterOrder.doorLabels[0] === 'New Page', JSON.stringify(rosterOrder));
   ok('S5: Places renders for the page underfoot, after the Page face', rosterOrder.placesAfterPageFace === true, JSON.stringify(rosterOrder));
@@ -790,10 +755,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(150);
   const existingPageBtnPresent = await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].some(b => b.textContent.trim() === '+ Filed Pages')");
-  // SUPERSEDED (item word-diet, Nick) — boardAddExistingPage/boardNewPageCard
-  // reword, "Existing page…"/"New page card" -> "+ Filed Pages" (the SAME
-  // door beginConnectPage already names)/"New Pages Card".
-  // ok('S5: the Board\'s own Add flow gains "Existing page…" beside New page card', existingPageBtnPresent === true, String(existingPageBtnPresent));
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 5
   ok('S5 [word-diet successor]: the Board\'s own Add flow gains "+ Filed Pages" beside New Pages Card', existingPageBtnPresent === true, String(existingPageBtnPresent));
   await app.evalJs("[...document.querySelectorAll('.wz-sliver-item-btn')].find(b => b.textContent.trim() === '+ Filed Pages').click()");
   await app.waitFor("!!document.querySelector('.board-sheet')", { label: 'Existing-page picker open' });
@@ -853,35 +815,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'framed page for Drawers panel' });
   await sleep(250);
   await app.waitFor("document.querySelectorAll('.wz-strip-item').length === 7", { label: 'strip mounted (Drawers seed)' });
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): S7 - the Drawers panel's large tiles (Shelf first, last-opened anchor, project clusters, loose docs, tile travel, no system boards as tiles).
-  // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
-  //
-  // await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers (index 3: A[0] + B[1,2] + C[3,4,5])
-  // await app.waitFor("!!document.querySelector('.wz-drawers-tiles')", { label: 'Drawers panel open' });
-  // await sleep(200);
-  // const drawersState = await app.evalJs(`(() => {
-  //   const tiles = [...document.querySelectorAll('.wz-drawers-tile')];
-  //   return {
-  //     firstTileTitle: tiles[0]?.querySelector('.wz-drawers-tile-title')?.textContent,
-  //     anchorTitle: document.querySelector('.wz-drawers-tile-anchor .wz-drawers-tile-title')?.textContent,
-  //     clusterTitles: [...document.querySelectorAll('.wz-drawers-cluster-title')].map(t => t.textContent),
-  //     allTileTitles: tiles.map(t => t.querySelector('.wz-drawers-tile-title')?.textContent),
-  //     bodyText: document.querySelector('.wz-cascade-panel-body')?.innerText ?? '',
-  //     manuscriptLeaked: [...document.querySelectorAll('.wz-drawers-tile-title')].some(t => t.textContent === 'Filed Manuscript'),
-  //   };
-  // })()`);
-  // ok('S7: the Shelf renders as the FIRST tile, always', drawersState.firstTileTitle === 'Shelf', JSON.stringify(drawersState.firstTileTitle));
-  // ok('S7: last-opened (most recently touched) anchors first — the loose doc, touched most recently of everything seeded, occupies the anchor slot',
-  //   drawersState.anchorTitle === 'Loose Doc', JSON.stringify(drawersState.anchorTitle));
-  // ok('S7: grouping is DERIVED by project — Zeta Project and Alpha Project both render as cluster headers, by their OWN titles (no new entity)',
-  //   drawersState.clusterTitles.includes('Zeta Project') && drawersState.clusterTitles.includes('Alpha Project'), JSON.stringify(drawersState.clusterTitles));
-  // ok('S7: clusters are ordered deterministically by project name — Alpha before Zeta',
-  //   drawersState.clusterTitles.indexOf('Alpha Project') < drawersState.clusterTitles.indexOf('Zeta Project'), JSON.stringify(drawersState.clusterTitles));
-  // ok('S7: within a cluster, boards are ordered deterministically by title — Yankee before Zulu',
-  //   drawersState.allTileTitles.indexOf('Yankee Board') < drawersState.allTileTitles.indexOf('Zulu Board'), JSON.stringify(drawersState.allTileTitles));
-  // ok('S7: a filed, non-board page NEVER renders as its own tile — only boards + loose docs do',
-  //   drawersState.manuscriptLeaked === false, JSON.stringify(drawersState.manuscriptLeaked));
-  // ok('S7: no digit anywhere in the Drawers panel\'s own text — zero counts/badges/timestamps', !/\d/.test(drawersState.bodyText), drawersState.bodyText);
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 6
 
   // // A tile tap travels (board tile) — same panel state as the checks above.
   // await app.evalJs("[...document.querySelectorAll('.wz-drawers-tile')].find(b => b.textContent.includes('Alpha Board')).click()");
@@ -943,35 +877,14 @@ await withHarness(async (app) => {
       boardsTitle: t('placesBoardsTitle'),
     };
   })()`);
-  // B2.1 S6 park sweep (A4, quoted verbatim, SUPERSEDED) — FALSIFIED whole
-  // by Nick's word (2026-07-20): `lexiconTerms.shelfHome` no longer equals
-  // its old value (deskLexicon.ts's boardHomeLabelShelf STRING VALUE
-  // changes, "no project home" -> "no drawer home"), which flips this
-  // 9-way compound assertion's overall truth even though the other 8
-  // sub-values are untouched. ORIGINAL:
-  //   ok('S8: every new B2 string resolves through deskLexicon
-  //   (window.wrizoDeskLexicon), the canonical Plateau values',
-  //     lexiconTerms.shelfHome === 'The Shelf Board — has no project home'
-  //       && lexiconTerms.shelfEmpty === 'Nothing waiting.'
-  //       && lexiconTerms.shelfOpen === 'Open the Shelf'
-  //       && lexiconTerms.newJournalEntry === 'New Journal Entry'
-  //       && lexiconTerms.addExisting === 'Existing page…'
-  //       && lexiconTerms.placesTitle === 'Places'
-  //       && lexiconTerms.placesLoose === 'Loose'
-  //       && lexiconTerms.newDrawer === '+ New Drawer'
-  //       && lexiconTerms.boardsTitle === 'Boards',
-  //     JSON.stringify(lexiconTerms));
-  // Re-asserted against the new copy (same 9-way comparison, shelfHome's
-  // new value) in b2.mjs's own PARKED section; a fresh live check lives
-  // in b2-1.mjs (which also covers this fold's OWN new lexicon terms).
-  // `lexiconTerms` itself stays fetched here (line 845 below still reads
-  // its .placesTitle field, untouched by this fold).
+  // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 7
 
   // The live DOM actually uses these values (no hardcoded drift) — an
   // ORDINARY page (not a system board, where Places is correctly absent),
   // Page category opened fresh.
   await app.goto('/');
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk (lexicon spot-check)' });
+  await app.waitFor("!!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled (#92: a click on a disabled door does nothing)' });
   await app.evalJs("document.querySelector('.wz-arrival-write').click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'loose page framed (lexicon spot-check)' });
   await sleep(300);
@@ -1002,23 +915,14 @@ await withHarness(async (app) => {
       stripCount: document.querySelectorAll('.wz-strip-item').length,
       boardCanvasPresent: !!document.querySelector('.board-canvas'),
     })`);
-    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the strip carries SEVEN categories.
-    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
-    //
-    // ok(`S8 @ ${width}px: the Shelf Board mounts framed (DeskFrame + the 8-category strip) — the same chrome any other Board already gets`,
-    //   shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 8 && shelfFramedShape.boardCanvasPresent,
-    //   JSON.stringify(shelfFramedShape));
+    // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 8
     ok(`S8 @ ${width}px [big-projects-1a successor]: the Shelf Board mounts framed (DeskFrame + the 7-category strip) - the same chrome any other Board already gets`,
       shelfFramedShape.deskFramePresent && shelfFramedShape.stripPresent && shelfFramedShape.stripCount === 7 && shelfFramedShape.boardCanvasPresent,
       JSON.stringify(shelfFramedShape));
 
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=drawers]').click()"); // Drawers
     await sleep(200);
-    // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the Drawers tab mounts the place switcher at both widths (no tiles).
-    // Kept VERBATIM below and no longer run; the live successor follows. The rail is seven tabs now (the place block first, no Shelf tab), the Drawers tab is the PLACE SWITCHER and its tiles retired (boards are listed by the Boards pop-out, step 2), and the Shelf is merged into the Journal.
-    //
-    // const drawersAtWidth = await app.evalJs("!!document.querySelector('.wz-drawers-tiles')");
-    // ok(`S8 @ ${width}px: the Drawers panel mounts correctly too (large tiles, same chrome at both reference widths)`, drawersAtWidth === true, String(drawersAtWidth));
+    // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 9
     const switcherAtWidth = await app.evalJs("!!document.querySelector('.wz-switcher')");
     ok(`S8 @ ${width}px [big-projects-1a successor]: the Drawers tab (the place switcher) mounts correctly too - same chrome at both reference widths`, switcherAtWidth === true, String(switcherAtWidth));
   }
@@ -1045,9 +949,16 @@ await withHarness(async (app) => {
   // ok(`S8 @ ${LEGACY_W}px: DeskRail's own roster is BYTE-IDENTICAL — Catch, Journal, Shelf, Drawers, Library — completely untouched by this ticket`,
   //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Shelf', 'Drawers', 'Library']),
   //   JSON.stringify(legacyFloorShapeB2.railLabels));
-  ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
-    JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
-    JSON.stringify(legacyFloorShapeB2.railLabels));
+  // ---- PARKED - SUPERSEDED by #13 step 12c (Nick's dormant answers, Oct 29: the narrow rail's Library slot is deleted): the roster loses its greyed Library stub.
+  // The big-projects-1a successor, kept VERBATIM below and no longer run; the live successor and its mutant follow.
+  //
+  // ok(`S8 @ ${LEGACY_W}px [big-projects-1a successor]: DeskRail's roster is Catch, Journal, Drawers, Library - the Shelf item is gone`,
+  //   JSON.stringify(legacyFloorShapeB2.railLabels) === JSON.stringify(['Catch', 'Journal', 'Drawers', 'Library']),
+  //   JSON.stringify(legacyFloorShapeB2.railLabels));
+  ok(`S8 @ ${LEGACY_W}px [c13-12c successor]: DeskRail's roster is Catch, Journal, Drawers - the Library stub stands only while DeskRail's source still lists it (before the delete), never after - the Shelf item is gone`,
+    roster12c(legacyFloorShapeB2.railLabels, LIB_SLOT_12C), JSON.stringify({ labels: legacyFloorShapeB2.railLabels, libSlotInSource: LIB_SLOT_12C }));
+  ok('S8 [c13-12c successor mutant]: the roster reader is red on a Library stub the source no longer lists, on a missing Drawers item and on a Shelf item, and green on Catch, Journal, Drawers',
+    !roster12c(['Catch', 'Journal', 'Drawers', 'Library'], false) && !roster12c(['Catch', 'Journal'], false) && !roster12c(['Catch', 'Journal', 'Shelf', 'Drawers'], false) && roster12c(['Catch', 'Journal', 'Drawers'], false), '');
 
   // DeskRail's own 'shelf' nav item still bridges correctly at the legacy
   // width too (it's a plain navigate('/shelf') call, untouched code).
@@ -1096,11 +1007,7 @@ if (process.env.HARNESS_PARKED === '1') {
     // home")', shelfBoardHomeLabel === 'The Shelf Board — has no project
     // home', ...);
     const shelfBoardHomeLabelNow = await app.evalJs("document.querySelector('.wz-pageface-home-label')?.textContent");
-    // SUPERSEDED (item word-diet, Nick, review fix) — boardHomeLabelShelf
-    // shortens again, "The Shelf Board — has no drawer home" -> "Shelf".
-    // ORIGINAL claim parked verbatim:
-    // pok('PARKED (was "S1: the Shelf Board\'s own Page face names ITS home truthfully (\\"no project home\\")") — B2.1 S6: the SAME truthful-label claim, "drawer home" now (the word swap changes only the copy); live successor: b2-1.mjs',
-    //   shelfBoardHomeLabelNow === 'The Shelf Board — has no drawer home', String(shelfBoardHomeLabelNow));
+    // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 10
     pok('PARKED [word-diet successor] (was the "drawer home" generation) — the Shelf Board\'s own Page face now reads bare "Shelf"; live successor: b2-1.mjs',
       shelfBoardHomeLabelNow === 'Shelf', String(shelfBoardHomeLabelNow));
 
@@ -1119,114 +1026,7 @@ if (process.env.HARNESS_PARKED === '1') {
         boardsTitle: t('placesBoardsTitle'),
       };
     })()`);
-    // ---- PARKED — SUPERSEDED by item 83 M7 (PP1/PP2/PP4), 2026-08-27 ----
-    // GENERATION 2, quoted VERBATIM and no longer asserted. B2.1 S6 re-made
-    // the 9-way lexicon comparison after the shelfHome copy change. M7
-    // supersedes two more of its conjuncts: Places now speaks in VERBS, so
-    // `newDrawer` reads 'File to a new drawer…' rather than the noun-plus-
-    // plus label '+ New Drawer', and `boardsTitle` reads 'Pinned to boards…'
-    // rather than the bare noun 'Boards'. Seven terms are untouched and are
-    // still pinned below — the point of the check is that NOTHING drifts
-    // silently, so the seven matter as much as the two. Generation 3 stands
-    // below. (Fable, 2026-08-27.)
-    //
-    // pok('PARKED (was "S8: every new B2 string resolves through deskLexicon (window.wrizoDeskLexicon), the canonical Plateau values") — B2.1 S6: the SAME 9-way comparison, shelfHome now "The Shelf Board — has no drawer home" (the word swap changes only that one conjunct); live successor: b2-1.mjs',
-    // lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
-    // && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-    // && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-    // // FX15 S3: cascadePageNewJournalEntry retired (dead SV6 vocabulary) — its
-    // // conjunct is dropped here; the probe follows current reality while the frozen
-    // // record name above (a "9-way comparison") is left unchanged per the codicil.
-    // && lexiconTermsNow.addExisting === 'Existing page…'
-    // && lexiconTermsNow.placesTitle === 'Places'
-    // && lexiconTermsNow.placesLoose === 'Loose'
-    // && lexiconTermsNow.newDrawer === '+ New Drawer'
-    // && lexiconTermsNow.boardsTitle === 'Boards',
-    // JSON.stringify(lexiconTermsNow));
-    // ---------------------------------------------------------------------
-    // ---- PARKED, GENERATION 3 — SUPERSEDED by PW1 S3/PW27, 2026-09-08 ------
-    // Quoted VERBATIM and no longer asserted. One conjunct flips:
-    // `boardsTitle` reads 'Also connected to…' rather than 'Pinned to boards…'.
-    //
-    // THE AUTHORITY, and the reason — Fable's ruling 4 on the PW1 lane, on item
-    // 125's own finding: MEMBERSHIP IS NOT DISPLAY. The pin-card is one DISPLAY
-    // of a membership, and a page can now be a member of a board without
-    // appearing on its canvas at all. So a heading over THIS checkbox — which
-    // makes MEMBERSHIP — could no longer say "pinned": it named a card that may
-    // not exist. ("Also appears on…" would have lied outright, for the same
-    // reason one step louder.) The new word matches the Plan panel's own
-    // "Boards connected" heading and the Page face's "Also connected to" —
-    // one connecting word, three faces.
-    //
-    // The other seven terms are untouched and are still pinned in generation 4
-    // below. The point of the check is that NOTHING drifts silently, so the
-    // seven matter as much as the one.
-    //
-    // pok('PARKED, generation 3 (was B2.1 S6 re-assertion of the 9-way deskLexicon comparison) — item 83 M7/PP1+PP2+PP4: Places speaks in verbs, so newDrawer and boardsTitle carry their new copy; the other seven terms are unchanged and still pinned',
-    //   lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
-    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-    //     && lexiconTermsNow.addExisting === 'Existing page…'
-    //     && lexiconTermsNow.placesTitle === 'Places'
-    //     && lexiconTermsNow.placesLoose === 'Loose'
-    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-    //     && lexiconTermsNow.boardsTitle === 'Pinned to boards…',
-    //   JSON.stringify(lexiconTermsNow));
-    // ------------------------------------------------------------------------
-    // GENERATION 4 (PW1 S3/PW27) — the SAME no-silent-drift claim, against the
-    // connecting word the membership ruling requires.
-    // SUPERSEDED, generation 5 (item arbor-quiet-brass): "Connected" renamed to Arbor's
-    // own "Grafted"; the other seven terms are unchanged and still pinned.
-    // pok('PARKED, generation 4 (was the generation-3 re-assertion of the 9-way deskLexicon comparison) — PW1 S3/PW27: membership is not display, so boardsTitle reads "Also connected to…"; the other seven terms are unchanged and still pinned', lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home' && lexiconTermsNow.shelfEmpty === 'Nothing waiting.' && lexiconTermsNow.shelfOpen === 'Open the Shelf' && lexiconTermsNow.addExisting === 'Existing page…' && lexiconTermsNow.placesTitle === 'Places' && lexiconTermsNow.placesLoose === 'Loose' && lexiconTermsNow.newDrawer === 'File to a new drawer…' && lexiconTermsNow.boardsTitle === 'Also connected to…', JSON.stringify(lexiconTermsNow));
-    // ---- PARKED, generation 5 — SUPERSEDED by item word-diet (Nick), 2026-10-13 ----
-    // Quoted VERBATIM and no longer asserted. One conjunct flips: `shelfHome`
-    // reads 'Shelf' rather than 'The Shelf Board — has no drawer home' (Nick's
-    // word-diet pick, boardHomeLabelShelf). The other seven terms are unchanged
-    // and are still pinned in generation 6 below.
-    //
-    // pok('PARKED, generation 5 (was generation 4\'s re-assertion ending in boardsTitle "Also connected to…") — arbor-quiet-brass: boardsTitle reads "Also grafted to…"; the other seven terms are unchanged and still pinned',
-    //   lexiconTermsNow.shelfHome === 'The Shelf Board — has no drawer home'
-    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-    //     && lexiconTermsNow.addExisting === 'Existing page…'
-    //     && lexiconTermsNow.placesTitle === 'Places'
-    //     && lexiconTermsNow.placesLoose === 'Loose'
-    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
-    //   JSON.stringify(lexiconTermsNow));
-    // ------------------------------------------------------------------------
-    // ---- PARKED, generation 6 — SUPERSEDED by item word-diet (Nick, review fix), 2026-10-13 ----
-    // Quoted VERBATIM. One conjunct flips: boardAddExistingPage "Existing
-    // page…" -> "+ Filed Pages" (the SAME door beginConnectPage already
-    // names — one picker, one name, caught on review).
-    //
-    // pok('PARKED, generation 6 (was generation 5\'s re-assertion with shelfHome "The Shelf Board — has no drawer home") — item word-diet: shelfHome reads "Shelf"; the other seven terms are unchanged and still pinned',
-    //   lexiconTermsNow.shelfHome === 'Shelf'
-    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-    //     && lexiconTermsNow.addExisting === 'Existing page…'
-    //     && lexiconTermsNow.placesTitle === 'Places'
-    //     && lexiconTermsNow.placesLoose === 'Loose'
-    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
-    //   JSON.stringify(lexiconTermsNow));
-    // ------------------------------------------------------------------------
-    // ---- PARKED, generation 7 — SUPERSEDED by #13 step 11 (Fable, Nov 5) ----
-    // Quoted VERBATIM. One conjunct goes: cascadeShelfOpen (the retired Shelf
-    // room's "Open the Shelf", named by no source) is deleted from the lexicon.
-    //
-    // pok('PARKED, generation 7 (was generation 6\'s re-assertion with addExisting "Existing page…") — item word-diet: addExisting reads "+ Filed Pages"; the other seven terms are unchanged and still pinned',
-    //   lexiconTermsNow.shelfHome === 'Shelf'
-    //     && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'
-    //     && lexiconTermsNow.shelfOpen === 'Open the Shelf'
-    //     && lexiconTermsNow.addExisting === '+ Filed Pages'
-    //     && lexiconTermsNow.placesTitle === 'Places'
-    //     && lexiconTermsNow.placesLoose === 'Loose'
-    //     && lexiconTermsNow.newDrawer === 'File to a new drawer…'
-    //     && lexiconTermsNow.boardsTitle === 'Also grafted to…',
-    //   JSON.stringify(lexiconTermsNow));
-    // ------------------------------------------------------------------------
-    // shelfOpen reads 'Open the Shelf' while it exists and no word once step 11 deletes it (so this holds before the delete and after it)
+    // ARCHIVED PARK (#13 step 14): archive/b2.mjs.parked.md record 11
     pok('PARKED, generation 8 (was generation 7\'s re-assertion with shelfOpen "Open the Shelf") — #13 step 11: cascadeShelfOpen is deleted from the lexicon; the other seven terms are unchanged and still pinned',
       lexiconTermsNow.shelfHome === 'Shelf'
         && lexiconTermsNow.shelfEmpty === 'Nothing waiting.'

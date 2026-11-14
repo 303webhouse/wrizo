@@ -89,6 +89,7 @@ const freshDesk = async (app) => {
   // PageEditor/JournalEntry/BoardEditor/ScriptEditor, never from Arrival itself. Open the Write
   // door first (the house convention - cd1.mjs's own freshLoosePage, ab3.mjs, b2.mjs, fx1.mjs,
   // fx2.mjs all do the same before touching data-category) so the rail actually exists.
+  await app.waitFor("!document.querySelector('.wz-arrival-write') || !!document.querySelector('.wz-arrival-write:not([disabled])')", { label: 'Write door enabled, or not on the Desk (#92)' });
   await app.evalJs("document.querySelector('.wz-arrival-write')?.click()");
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'PageEditor mounted' });
 };

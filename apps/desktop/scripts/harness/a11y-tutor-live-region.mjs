@@ -58,12 +58,7 @@ ok('A8: the writer\'s own message append (a separate line, earlier in the same f
 
 // ---- it lives where aria-hidden already silences it while closed ----------
 const panelOpenTag = tutorSrc.match(/<div className="wz-tutor-panel" aria-hidden=\{!open\}[^>]*>\r?\n(\s*\{\/\*[\s\S]*?\*\/\}\r?\n)?\s*<div className="wz-sr-only"/);
-// ---- PARKED - SUPERSEDED by Phase 1 (the Tutor panel's only child is now the sliding layer, <SideDrawer>, which holds the tab row and the bodies; "the FIRST thing inside .wz-tutor-panel" is no longer literal, the CLAIM it guarded is unchanged), 2026-10-12 ----
-// Kept VERBATIM and no longer run. The successor follows.
-//
-// ok('A8: the live region is the FIRST thing inside .wz-tutor-panel (aria-hidden={!open}) — an aria-hidden ancestor already keeps a live region silent while the Tutor is closed, so no new closed-state guard was needed',
-//   !!panelOpenTag, '');
-// ----------------------------------------------------------------------
+// ARCHIVED PARK (#13 step 14): archive/a11y-tutor-live-region.mjs.parked.md record 1
 const panelTagStart = tutorSrc.indexOf('<div className="wz-tutor-panel"');
 const panelTagLine = panelTagStart < 0 ? '' : tutorSrc.slice(panelTagStart, tutorSrc.indexOf('\n', panelTagStart));
 const sdStart = tutorSrc.indexOf('<SideDrawer side="right"');

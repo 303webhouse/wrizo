@@ -1,0 +1,10 @@
+# #13 step 12d: the fragments code (DM1's substrate), out of the persistence barrel (POLISH, at main e20382d8). No file named any of
+# them; the stored `fragments` field, its type and the server stay untouched (Nick, Oct 29). Proof: c13-12d-fragments-field.mjs.
+sprintTextOf
+getFragments
+appendText
+toggleStruck
+createFragment
+reorderSpine
+linkFragments
+setFragmentRole

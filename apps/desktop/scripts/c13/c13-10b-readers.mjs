@@ -17,6 +17,7 @@ const bi = process.argv.indexOf('--base');
 const base = bi > 0 ? process.argv[bi + 1] : null;
 if (!base) { console.error('usage: --base <rev>'); process.exit(2); }
 const noCR = (s) => s.replace(/\r\n?/g, '\n');
+const bad0 = [];
 const before = noCR(execFileSync('git', ['show', `${base}:apps/desktop/src/types/index.ts`], { cwd: ROOT, encoding: 'utf8' }));
 const after = noCR(srcText(SRC, 'types/index.ts'));
 const bare = noCR(fs.readFileSync(path.join(SRC, 'types/index.ts'), 'utf8'));
@@ -31,15 +32,38 @@ const readers = {
   'item204-proofing-merge-proof (the two constants)': (t) => { const d = t.match(/PROOFING_DEFAULT_DIALECT: ProofingDialect = '([^']+)'/), n = t.match(/PROOFING_TOMBSTONE_DAYS = (\d+)/); return d && n ? `${d[1]} ${n[1]}` : false; },
 };
 const lines = (t) => t.split('\n').filter((l) => l.trim() && !/^(import|export \* from) /.test(l)).sort();
-let bad = 0;
+// --changes <file> (#13 step 12d): the DECLARED edits a later step made to the types, one line each - `- <the old line, verbatim>` or
+// `+ <the new line, verbatim>` (# starts a comment). Each `-` line must have been at <base> and be gone now; each `+` line must be new and
+// present now. The line set is then held to <base>'s exactly, with only the declared lines swapped: an undeclared edit is still red.
+const ci = process.argv.indexOf('--changes');
+const CHANGES = ci > 0 ? fs.readFileSync(path.resolve(ROOT, process.argv[ci + 1]), 'utf8').split(/\r?\n/).filter((l) => /^[-+] /.test(l)).map((l) => ({ op: l[0], line: l.slice(2) })) : [];
+const applyChanges = (ls) => {
+  const out = ls.slice();
+  for (const c of CHANGES.filter((x) => x.op === '-')) { const i = out.indexOf(c.line); if (i >= 0) out.splice(i, 1); }
+  for (const c of CHANGES.filter((x) => x.op === '+')) out.push(c.line);
+  return out.sort();
+};
+if (CHANGES.length) {
+  const b = lines(before), a = lines(after);
+  const stale = CHANGES.filter((c) => (c.op === '-' ? !b.includes(c.line) || a.includes(c.line) : b.includes(c.line) || !a.includes(c.line)));
+  if (stale.length) bad0.push(...stale.map((c) => `${c.op} ${c.line.trim().slice(0, 80)}`));
+  console.log(`${stale.length ? 'FAIL' : 'PASS'}  CHANGES: ${CHANGES.length} declared line edits, each true (a removed line was at ${base} and is gone; an added line is new and present)${stale.length ? `  ${JSON.stringify(stale.map((c) => c.line.trim().slice(0, 60)))}` : ''}`);
+}
+let bad = bad0.length;
 for (const [name, f] of Object.entries(readers)) {
   const b = f(before), a = f(after);
   if (b !== a) bad++;
   console.log(`${b === a ? 'SAME' : 'DIFF'}  ${name}: before ${b}, joined ${a}  (a bare read of the barrel: ${f(bare)})`);
 }
-const same = JSON.stringify(lines(before)) === JSON.stringify(lines(after));
+const same = JSON.stringify(applyChanges(lines(before))) === JSON.stringify(lines(after));
 if (!same) bad++;
-console.log(`${same ? 'SAME' : 'DIFF'}  the joined text holds the same lines as the file before (${lines(before).length}), in part order`);
+console.log(`${same ? 'SAME' : 'DIFF'}  the joined text holds the same lines as the file before (${lines(before).length})${CHANGES.length ? `, with the ${CHANGES.length} declared line edits` : ''}, in part order`);
+// liveness of --changes: an UNDECLARED edit is still red
+if (CHANGES.length) {
+  const undeclared = JSON.stringify(applyChanges(lines(before))) !== JSON.stringify(lines(after.replace('sizedByHand?: true;', 'sizedByHand?: true; // an undeclared edit')));
+  if (!undeclared) bad++;
+  console.log(`${undeclared ? 'PASS' : 'FAIL'}  LIVENESS: an undeclared edit to the types is still red with the declared edits applied`);
+}
 // liveness: the joined read of a planted part must change a reader's answer
 const planted = after.replace('sizedByHand?: true;', 'sizedByHand?: boolean;');
 const live = readers['sized-by-hand-logic S5 (sizedByHand?: true)'](planted) === false;
