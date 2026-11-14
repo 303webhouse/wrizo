@@ -86,7 +86,19 @@ await withHarness(async (app) => {
       const g = await app.evalJs(GEOM);
       const theme = await app.evalJs("document.documentElement.getAttribute('data-theme')");
       const prem = !!g && g.zoom === 'true' && settled && theme === th.id && !!g.lh;
-      ok(`${tag} (premise): the theme is applied, the page is zoomed with its band, and the hold has settled`, prem, J({ theme, settled, g }));
+      // SUPERSEDED (Nov 12, Wire In: the paper Typewriter is retired in Flux, a Flux TEXT page is never zoomed and has no band whatever its stored per-page value says - measured: Flux light and dark data-zoom null, --tw-anchor and --tw-lh empty) | the original ran for all three themes | successors: (premise, successor) for Arbor and Machina, (premise, successor, Flux) for Flux, mutant MFG
+      // ok(`${tag} (premise): the theme is applied, the page is zoomed with its band, and the hold has settled`, prem, J({ theme, settled, g }));
+      if (th.id === 'flux') {
+        const premF = (gg) => !!gg && gg.zoom !== 'true' && !gg.anchor && settled && theme === th.id;
+        ok(`${tag} (premise, successor, Flux): the theme is applied, a Flux TEXT page runs NO Typewriter band even with its stored Typewriter value 'on' (data-zoom ${g && g.zoom}, anchor '${g && g.anchor}'), and the hold has settled`, premF(g), J({ theme, settled, g }));
+        // MFG (mutant, successor's): the column's zoom forced on - the Flux premise's read goes red. LANDED is checked; the attribute is restored.
+        await app.evalJs("(() => { const c = document.querySelector('.mode-pagecol'); if (c) c.setAttribute('data-zoom', 'true'); return !!c; })()");
+        const gm = await app.evalJs(GEOM);
+        await app.evalJs("document.querySelector('.mode-pagecol')?.removeAttribute('data-zoom')");
+        ok(`${tag} MFG (mutant): with the column's zoom forced on (LANDED: data-zoom ${gm && gm.zoom}), the Flux premise (successor) fails`, !!gm && gm.zoom === 'true' && !premF(gm), J({ theme, settled, gm }));
+        continue;   // a Flux TEXT page has no band, so there is no fade end to compare with the ground (G1/G2 are for the themes that run the paper Typewriter)
+      }
+      ok(`${tag} (premise, successor): the theme is applied, the page is zoomed with its band, and the hold has settled`, prem, J({ theme, settled, g }));
       if (!prem) continue;
       const ground = await app.evalJs('window.__p10gGround()');
       await app.evalJs(`window.__p10gLoad(${J(await app.screenshot())})`);

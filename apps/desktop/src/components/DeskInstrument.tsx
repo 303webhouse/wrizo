@@ -34,12 +34,12 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   return (
     <>
       <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
-      {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : <GlitchMeter text={text} />)}
+      {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : (jacked ? null : <GlitchMeter text={text} />))}   {/* WIRE IN without the flag: no glitch while wired in (the compile owns the lines above the writing line), as FluxIdleGlitch does under it */}
       {glitch && <RunStrip text={text} />}
       {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
       {FLUX3 && glitch && !jacked && <FluxRoomGround />}   {/* Jacked In is the whole window (the corridor covers the room): the room's ground and its drifting points are not drawn behind it */}
-      {FLUX3 && glitch && <FluxBurstEdge unitCount={unitCount} />}
-      {FLUX3 && glitch && <FluxCheckpointPop unitCount={unitCount} />}
+      {glitch && <FluxBurstEdge unitCount={unitCount} />}   {/* Wire In's own: self-gated on Flux and a running Wire In, no flag */}
+      {glitch && <FluxCheckpointPop unitCount={unitCount} />}   {/* likewise: the CHECKPOINT letters and the pop */}
       <DeskGoalLane unitCount={unitCount} />
     </>
   );

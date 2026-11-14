@@ -23,6 +23,8 @@ import '@fontsource/chakra-petch/500.css';
 import '@fontsource/silkscreen/400.css';
 import { App } from './App';
 import './index.css';
+// FLUX WIRE IN - the Corridor's stylesheet and its root marker (data-wirein), for every writer; every rule in it is scoped to the Flux theme (src/flux3/wireIn.ts)
+import './flux3/wireIn';
 import { initTheme } from './store/theme';
 import { initThemePrefs } from './store/themePrefs';
 import { initThemeCast } from './store/themeCast';

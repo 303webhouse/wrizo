@@ -155,6 +155,8 @@ function writePageTypewriter(id: string, on: boolean): void {
 
 // the pure read every Draft/Screenplay consumer asks: this page's saved value, else the theme's default for an empty page, else off; no side effect [writingSettings §3]
 export function typewriterForPage(id: string, empty: boolean): boolean {
+  // WIRE IN (Fable, Nov 12): the paper Typewriter is retired in Flux, so no page asks for it there; the stored value (read below, written by the toggles' own path) is kept as data and read again in any other theme
+  if (getTheme() === 'flux') return false;
   const saved = readPageTypewriter(id);
   return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
 }

@@ -100,9 +100,29 @@ await withHarness(async (app) => {
     await openPage(app, `sw-fw-${theme}`, 'journal');
     await openDrawer(app);
     const fb = (await app.evalJs(SIZES(E)))?.alpha;
+    // ---- PARKED - SUPERSEDED (Nov 12, Wire In: Fable's go "BUILD the Corridor on its own in today's Flux"): in FLUX a page's Free Write IS Wire In, the Corridor - the rail, the strip, the drawers' anchors and handles are dissolved
+    // (opacity 0, no pointer), so there is no size box to type into and the page keeps its size (every word stayed 16). Kept VERBATIM below and run for Arbor and Machina only (Free Write is unchanged there);
+    // Flux's successor follows, with its mutant. ----
+    // ok(`F [${name}] FREE WRITE: there is no Selection scope - the box sizes the whole page (every word, 12 -> 18)`, fs && WORDS.every((w) => Math.abs(fs[w] / fb - 18 / 12) < 0.03), JSON.stringify(fs));
+    // ------------------------------------------------------------------
+    if (theme !== 'flux') {
     await typeSize(app, '.wz-sliver .wz-type input.wz-type-num', 18);
     const fs = await app.evalJs(SIZES(E));
     ok(`F [${name}] FREE WRITE: there is no Selection scope - the box sizes the whole page (every word, 12 -> 18)`, fs && WORDS.every((w) => Math.abs(fs[w] / fb - 18 / 12) < 0.03), JSON.stringify(fs));
+    } else {
+      // the Sliver's anchor, read as the product draws it while jacked in (the page's own root carries data-flux3-jacked); the opacity eases for .6s, so the read waits for it to settle
+      const ANCHOR = "document.querySelector('.desk-frame-sliver-anchor')";
+      const wiRead = () => app.evalJs(`(() => { const a = ${ANCHOR}; if (!a) return null; const cs = getComputedStyle(a); return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), box: !!document.querySelector('.wz-sliver .wz-type input.wz-type-num'), op: parseFloat(cs.opacity), pe: cs.pointerEvents }; })()`);
+      const wiOk = (r) => !!r && r.jacked && r.box && r.op <= 0.05 && r.pe === 'none';
+      let wi = await wiRead();
+      for (let i = 0; i < 10 && !wiOk(wi); i += 1) { await sleep(300); wi = await wiRead(); }
+      ok(`F [${name}] FREE WRITE [Wire In successor]: Free Write is Wire In (the root is data-flux3-jacked) - the Sliver and its size box are dissolved (the anchor is at opacity 0 and takes no pointer), so there is no size box to size the page with`, wiOk(wi), JSON.stringify(wi));
+      // MUTANT: the dissolved anchor forced back to opacity 1 and pointer-events auto (inline !important beats the sheet's !important) - the SAME read must go RED
+      const landedF = await app.evalJs(`(() => { const a = ${ANCHOR}; if (!a) return null; a.style.setProperty('transition', 'none', 'important'); a.style.setProperty('opacity', '1', 'important'); a.style.setProperty('pointer-events', 'auto', 'important'); const cs = getComputedStyle(a); return { op: parseFloat(cs.opacity), pe: cs.pointerEvents }; })()`);
+      const wiM = await wiRead();
+      await app.evalJs(`(() => { const a = ${ANCHOR}; if (a) { a.style.removeProperty('transition'); a.style.removeProperty('opacity'); a.style.removeProperty('pointer-events'); } return true; })()`);
+      ok(`F [${name}] FREE WRITE [Wire In successor] MUTANT: with the dissolved Sliver anchor forced back to opacity 1 and pointer-events auto (LANDED: ${JSON.stringify(landedF)}), the dissolved-Sliver read FAILS`, !!landedF && landedF.op === 1 && landedF.pe === 'auto' && !wiOk(wiM), JSON.stringify(wiM));
+    }
 
     // ==== C - a card's dock ====
     await freshDesk(app, theme, cast);
