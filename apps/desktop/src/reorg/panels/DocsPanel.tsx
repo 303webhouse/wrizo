@@ -60,7 +60,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
-    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'library' }) },
+    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'research-paper' }) },
     { id: 'board', label: lex.t('board'), act: () => go({ kind: 'board' }) },
     { id: 'more', label: t('reorgKindMore'), act: () => go({ kind: 'board', deck: 'library' }), more: true },
   ];
@@ -97,7 +97,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
       <section className="wz-reorg-group" data-reorg-group="defaults" aria-label={t('reorgDefaults')}>
         <div className="wz-reorg-group-head">{t('reorgDefaults')}</div>
         <Toggle id="typewriter" label={t('reorgTypewriter')} on={settings.typewriter} onPick={(on) => setWritingSettings({ typewriter: on })} t={t} />
-        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
+        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on, progress: on ? 'words' : 'off' })} t={t} />
       </section>
     </div>
   );
