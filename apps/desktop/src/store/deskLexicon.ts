@@ -6,7 +6,7 @@ import { CANONICAL_DECKS } from './lexicon/canonical/decks';
 import { CANONICAL_SETTINGS } from './lexicon/canonical/settings';
 import { CANONICAL_HELP } from './lexicon/canonical/help';
 import { FLUX_OVERRIDES } from './lexicon/overrides/flux';
-import { MACHINA_OVERRIDES } from './lexicon/overrides/machina';
+import { MACHINA_OVERRIDES } from './lexicon/overrides/machinaReorg';
 
 // the desk lexicon: every user-facing zone/module/mode name, one flat map keyed by DeskTermId; a theme overrides only what it wants and the rest falls through; a sibling of themeLexicon so the two casings of Free Write never collide [deskLexicon §1]
 export type { DeskTermId } from './lexicon/terms';
