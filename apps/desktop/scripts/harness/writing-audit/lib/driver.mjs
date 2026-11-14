@@ -57,7 +57,7 @@ export function makeDriver(app, cfg) {
     /** a fresh page holding `text`, opened in `mode` ('drafting' = Draft, 'journal' = Free Write, 'revise'), the editor mounted and its rows in place */
     async openPage(text, mode = 'drafting', opts = {}) {
       const id = `wa-${Date.now().toString(36)}-${++n}`;
-      const row = { id, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page' };
+      const row = { id, text, createdAt: new Date().toISOString(), origin: 'journal', source: 'page', ...(opts.strokes ? { strokes: opts.strokes } : {}) };   // #101 probe: a page seeded WITH ink
       await ev(`location.hash = '#/'`);
       await sleep(150);
       await ev(`window.wrizoCreateJournalPage(${JSON.stringify(row)})`);
@@ -114,9 +114,9 @@ export function makeDriver(app, cfg) {
     /** which editor the reader reads: a CSS selector, and whether its geometry is the generic (row-less) kind */
     surface: (sel, generic = false) => ev(`window.__wa.surface(${JSON.stringify(sel)}, ${generic})`),
     /** a Free Write page (the forward-only editor): seeded with `text`, mounted */
-    async openFreeWrite(text = '') {
+    async openFreeWrite(text = '', opts = {}) {
       await d.surface('.forward-only-editor', true);
-      return d.openPage(text, 'journal', {});
+      return d.openPage(text, 'journal', opts);
     },
     /** a card on a board, opened in its pop-up with a real double-click; the reader reads the pop-up's editor */
     async openCard(text = '') {
