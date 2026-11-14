@@ -53,7 +53,7 @@ const MUTANT_RUN = process.env.FLUX3_MUTANT === '1';
 // THE STEADIER L (Nov 14, Fable: "more rounds, bar unchanged, a mutant"; bug #86 - L was red on one box run and green on three of three after, so the instrument, not the page): the allowance is the control's OWN
 // spread of per-round medians and p95s, an estimate read off the rounds; four rounds can make it tiny or huge by chance, so the bar wobbled while the page did not. Eight rounds steady the estimate. The BAR is unchanged.
 const STEADY_MIN = 8;
-const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || STEADY_MIN));
+const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || 4));
 const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BUSY_MS = 600;
 const VIEW = [1920, 1080];
 const LOAD = { traces: 300, electrons: 120, busyMs: BUSY_MS };
