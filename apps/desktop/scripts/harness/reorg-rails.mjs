@@ -572,6 +572,17 @@ await withHarness(async (app) => {
     ok(`G1 [${w}] [successor]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${off}); the editor is the same node throughout`,
       !!off && [rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === off) && same && boxOpen !== null,
       JSON.stringify({ off, rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
+    // G2 (steps 5 and 6): DOCS open, UNFILED open
+    await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+    const docsOpen = await app.evalJs(PAGE);
+    const docsDrawn = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-docs')");
+    await click('[data-reorg-rail] [data-category="reorg-unfiled"]'); await sleep(600);
+    const unfOpen = await app.evalJs(PAGE);
+    const unfDrawn = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-unfiled')");
+    await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(600);
+    ok(`G2 [${w}]: the page's rect is the same with DOCS open and with UNFILED open (${off}); the editor is still the same node`,
+      !!off && docsDrawn && unfDrawn && docsOpen === off && unfOpen === off && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+      JSON.stringify({ off, docsOpen, unfOpen, docsDrawn, unfDrawn }));
   }
   return checks;
 });
