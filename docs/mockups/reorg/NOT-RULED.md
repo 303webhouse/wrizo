@@ -22,6 +22,12 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 - "New board" stays at the top of the Notebook's own list. **Ruled.**
 - With no Project, BOX SETTINGS is not shown. **Ruled** (it read "no project" and showed a note).
 
+## Answered by Nick on Nov 14, looking at the mockup
+
+- **The WRIZO mark** has no lines above or below it, keeps its brass notch, and is centred over the rail's 84 px. (The frames draw the two lines and set the mark 16 px from the left edge.)
+- **The switch between pins as a list and as boxes** is smaller, left aligned and almost invisible. Built: two 10 px marks in a grey close to the rail's own, the one in use a shade lighter, with no box round it. That they light up under the pointer or the keyboard is mine.
+- **"Connect Doc"** stands on the left, after the Board's name and place; once the Board has a Doc it stays as a plus sign in a square box, and its list has recent Docs first on a scroll, then "A new doc" (133, 144).
+
 ## PROPOSED (Fable's proposals, built and tagged PROPOSED)
 
 - **An Unfiled piece opens on the page like any Doc.** While she is in no Project, the rail's top box is an empty box labelled Unfiled.

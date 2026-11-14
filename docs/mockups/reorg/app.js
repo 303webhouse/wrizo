@@ -239,7 +239,7 @@
   function boardBar() {
     var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name);
     var place = 'Board \u00b7 ' + (!docs.length ? 'no doc yet' : docs.length === 1 ? docs[0].name : docs.length + ' docs');
-    var h = '<span class="brand">WRIZO<span class="brand-mark"></span></span>' +
+    var h = '<span class="brand"><span class="brand-word">WRIZO<span class="brand-mark"></span></span></span>' +
       '<span class="bar-div" aria-hidden="true"></span>' +
       '<button type="button" class="crumb crumb-project" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(p.name) + '</button>' +
       '<span class="crumb-sep" aria-hidden="true">/</span>' +
@@ -267,7 +267,7 @@
     if (S.board) { el.bar.innerHTML = boardBar(); return; }
     var p = projHere(), d = docHere(), parts = partsOf(d), part = parts[d.partHere - 1];
     var place = 'Part ' + d.partHere + ' of ' + parts.length + (part.name ? ' \u00b7 ' + part.name : '');
-    var h = '<span class="brand">WRIZO<span class="brand-mark"></span></span>' +
+    var h = '<span class="brand"><span class="brand-word">WRIZO<span class="brand-mark"></span></span></span>' +
       '<span class="bar-div" aria-hidden="true"></span>' +
       '<button type="button" class="crumb crumb-project" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(p ? p.name : 'Unfiled') + '</button>' +
       '<span class="crumb-sep" aria-hidden="true">/</span>' +

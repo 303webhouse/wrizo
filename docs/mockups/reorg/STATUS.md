@@ -8,6 +8,8 @@ Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his 
 
 **Nick's answers of Nov 14, applied after that look:** Connect Doc stays on the left, after the Board's name and place, where the frames put it (question 7; it was moved beside the views for one commit and he kept the left). Once a Board has a Doc the button stays, as a plus sign in a square box; its list has recent Docs first, on a scroll, then "A new doc" (question 8).
 
+**Two more from Nick, same sitting:** the WRIZO mark loses the lines above and below it, keeps the brass notch, and is centred over the rail; the list-or-boxes switch under the pins is smaller, left aligned and almost invisible. Both differ from the frames on purpose.
+
 Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
