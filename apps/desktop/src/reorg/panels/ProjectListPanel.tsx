@@ -39,7 +39,7 @@ export function ProjectListPanel({ subject, navigate, travelFromCascade }: Casca
   const row = (e: JournalEntry, depth: 0 | 1, extra?: string | null, label?: string) => (
     <li key={e.id} className={`wz-reorg-list-row${depth ? ' wz-reorg-list-row--part' : ''}`} data-entry-id={e.id} data-depth={depth}
       data-kind={e.pageType === 'board' ? 'board' : 'page'} aria-current={e.id === here ? 'page' : undefined}>
-      <button type="button" className="wz-reorg-list-open" onClick={() => travelFromCascade(e)}>
+      <button type="button" className="wz-reorg-list-open" onClick={() => navigate(`/page/${e.id}`)}>
         <span className="wz-reorg-list-title">{label ?? titleOf(e, t)}</span>
         {extra ? <span className="wz-reorg-list-meta" data-set-name="">{extra}</span> : null}
       </button>
@@ -49,7 +49,7 @@ export function ProjectListPanel({ subject, navigate, travelFromCascade }: Casca
     const first = d.parts[0];
     // a set she made is one Doc under its own name; a one-Part Doc is its page
     const name = d.set ? d.set.title : titleOf(first, t);
-    const many = false;
+    const many = d.parts.length > 1 || d.boards.length > 0;
     return (
       <li key={d.set ? d.set.id : first.id} className="wz-reorg-doc" data-reorg-doc={d.set ? d.set.id : first.id} data-parts={d.parts.length}>
         <ul className="wz-reorg-rows">
