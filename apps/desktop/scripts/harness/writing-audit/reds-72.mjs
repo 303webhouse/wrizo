@@ -9,6 +9,6 @@ const { GROUPS } = await import('./lib/cases.mjs');
 const { GROUPS2 } = await import('./lib/cases2.mjs');
 await main({
   groupsDef: { ...GROUPS, ...GROUPS2 }, order: ['select', 'card72'], title: 'RED-72',
-  editorSel: '.board-popup-editor', pageSel: '.board-popup',
+  editorSel: '.board-popup-editor', pageSel: '.board-popup', fluxBlockCaret: false,   // a Flux card draws the thin native caret (#73): the reader proof's Flux block-caret mutant does not apply here (lib/runner.mjs)
   surfaceHook: async (d) => { d.openPage = (text) => d.openCard(text); },
 });
