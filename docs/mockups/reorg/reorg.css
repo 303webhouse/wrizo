@@ -609,19 +609,23 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 .back-chip { position: absolute; left: 116px; top: 43px; background: #F4F5F6; z-index: 1; }
 .back-chip:hover { text-decoration: underline; }
 
-/* Connect Doc, in the top bar in front of the view options. */
+/* Connect Doc, in the top bar just before the view options: a boxed button, so it is plainly not one of the views. */
 .connect-btn {
   flex: 0 0 auto; height: 24px; padding: 0 9px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px;
   border: 1px solid #9AA1A8; font-family: var(--mono); font-size: 11px; color: #E6E8EA; white-space: nowrap;
 }
 .connect-btn.is-open { border-color: #E6E8EA; background: #27323C; }
+/* Once the Board has a Doc, the button stays as a plus sign in a square box (Nick, Nov 14). */
+.connect-btn.is-icon { width: 24px; padding: 0; justify-content: center; font-size: 15px; line-height: 1; }
+/* The Docs in the Connect Doc list are on a scroll of their own: four rows show. */
+.connect-list { max-height: 176px; overflow-y: auto; scrollbar-width: thin; }
 /* A long line of Docs gives way before the bar's buttons do. */
 .on-board .crumb-part { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* The Board's view options stand where the stage buttons stand, written as the brief writes them. */
 .stages.views .stage-btn { letter-spacing: .06em; }
 .drop.connect { width: 320px; }
 .connect-row {
-  height: 44px; padding: 0 14px; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
+  width: 100%; height: 44px; padding: 0 14px; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
   border-bottom: 1px solid #D2D6DA;
 }
 .connect-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }

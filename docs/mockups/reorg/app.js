@@ -235,7 +235,8 @@
   /* The top bar on a Board (frames P3-NB-C, P3-NB-D). The frames still draw the four stages there and call
      the button "Connect to a doc"; the brief rules otherwise, and the brief wins: the writing stages belong
      to the page only, so the Board's view options stand in their place, and the button reads "Connect Doc".
-     It stands where the frames put it, after the Board's place in the bar and in front of the view options. */
+     The frames put the button on the left, after the Board's place in the bar; Nick moved it to just
+     before the views (Nov 14). */
   function boardBar() {
     var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name);
     var place = 'Board \u00b7 ' + (!docs.length ? 'no doc yet' : docs.length === 1 ? docs[0].name : docs.length + ' docs');
@@ -246,8 +247,12 @@
       '<button type="button" class="crumb crumb-doc" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(b.name) + '</button>' +
       '<span class="crumb-sep" aria-hidden="true">/</span>' +
       '<button type="button" class="crumb crumb-part" data-act="later" data-note="This line says which Docs the Board serves.">' + esc(place) + '</button>' +
-      '<button type="button" class="connect-btn' + (b.connect ? ' is-open' : '') + '" data-act="connect-drop" aria-expanded="' + !!b.connect + '">' + svg('link', 13, 1.5) + 'Connect Doc</button>' +
       '<span class="bar-spring"></span>' +
+      /* Connect Doc comes just before the views and is plainly not one of them: a boxed button, then a
+         divider (Nick, Nov 14). Once the Board has a Doc it stays, as a plus sign in a square box. */
+      '<button type="button" class="connect-btn' + (docs.length ? ' is-icon' : '') + (b.connect ? ' is-open' : '') + '" data-act="connect-drop" aria-expanded="' + !!b.connect + '"' +
+      (docs.length ? ' aria-label="Connect Doc" title="Connect Doc: connect this board to another doc">+' : '>' + svg('link', 13, 1.5) + 'Connect Doc') + '</button>' +
+      '<span class="bar-div" aria-hidden="true"></span>' +
       '<div class="stages views" role="group" aria-label="The Board\u2019s views">';
     VIEWS.forEach(function (v) {
       var id = v.toLowerCase();
@@ -1324,16 +1329,26 @@
   function connectList() {
     var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name), btn = el.bar.querySelector('.connect-btn');
     var left = btn ? Math.min(btn.offsetLeft, Math.max(shell.clientWidth, 1366) - 328) : 372;
+    /* The Docs she opened most lately come first (Nick, Nov 14); the rest follow in the Project's own order. */
+    var lately = [], rest;
+    D.recent.forEach(function (r) {
+      var d = r.project === p.id ? docIn(p, r.doc) : null;
+      if (d && lately.indexOf(d) === -1) { lately.push(d); }
+    });
+    rest = p.docs.filter(function (d) { return lately.indexOf(d) === -1; });
     var h = '<section class="drop connect" aria-label="Connect this board to a doc" style="left: ' + left + 'px">' +
       '<div class="drop-head">CONNECT THIS BOARD TO \u00b7 DOCS IN ' + esc(p.name.toUpperCase()) + '</div>';
     if (!p.docs.length) { h += '<div class="quiet-line">No docs here yet.</div>'; }
-    p.docs.forEach(function (d) {
+    /* The Docs are on a scroll of their own, so "A new doc" is always in reach under them. */
+    else { h += '<div class="connect-list" data-keep="connect-list">'; }
+    lately.concat(rest).forEach(function (d, k) {
       var on = docs.indexOf(d) !== -1;
       h += '<button type="button" class="connect-row' + (on ? ' is-on' : '') + '" data-act="connect-to" data-id="' + d.id + '"' + (on ? ' aria-disabled="true"' : '') + '>' +
         '<span class="connect-main"><span class="row-name">' + esc(d.name) + '</span>' +
         '<span class="row-meta">' + plural(partsOf(d).length, 'Part', 'Parts') + ' \u00b7 ' + plural(d.words, 'word', 'words') + '</span></span>' +
-        (on ? '<span class="row-meta">connected</span>' : '') + '</button>';
+        '<span class="row-meta">' + (on ? 'connected' : k < lately.length ? 'recent' : '') + '</span></button>';
     });
+    if (p.docs.length) { h += '</div>'; }
     return h + '<button type="button" class="new-row h38" data-act="connect-new"><span class="plus" aria-hidden="true">+</span>A new doc</button>' +
       '<div class="connect-foot">It becomes one of that doc\u2019s assets. The board stays in ' + esc(p.name) + ', and it can serve more than one doc.</div></section>';
   }
@@ -1439,9 +1454,9 @@
     }
     if (S.board) {
       p = proj(S.board.pid);
-      say('RULED', 'F \u00b7 A Board on its own: its view options stand where the stage buttons stand, Connect Doc in front of them (P3-NB-C, with the brief\u2019s words over the frame\u2019s)');
-      if (S.board.connect) { say('RULED', 'Connect Doc pressed: this Project\u2019s Docs, and \u201cA new doc\u201d (P3-NB-D)'); }
-      if (boardDocs(p, S.board.name).length) { say('NOT RULED', 'Connect Doc stays on a Board that has a Doc, so it can serve another: a guess'); }
+      say('RULED', 'F \u00b7 A Board on its own: its view options stand where the stage buttons stand, Connect Doc just before them and set apart (P3-NB-C, with the brief\u2019s words; the button\u2019s place by Nick, Nov 14)');
+      if (S.board.connect) { say('RULED', 'Connect Doc pressed: this Project\u2019s Docs, recent ones first on a scroll, and \u201cA new doc\u201d (P3-NB-D; Nick, Nov 14)'); }
+      if (boardDocs(p, S.board.name).length) { say('RULED', 'once the Board has a Doc, Connect Doc stays as a plus sign in a square box (Nick, Nov 14)'); }
       if (S.board.view !== 'open') { say('NOT RULED', 'what the ' + S.board.view.toUpperCase() + ' view shows is a guess'); }
       if (S.board.pop) { say('RULED', 'a Block popped out, the Board faded behind it'); }
     }
@@ -2053,7 +2068,7 @@
     else if (h.indexOf('split') === 0) {
       if (!docIn(proj('thesis'), 'harbor-tolls')) { render(); return; }
       S.here = { project: 'thesis', doc: 'harbor-tolls' };
-      if (h === 'split-doc') { openSplit({ kind: 'doc', pid: 'thesis', did: 'committee-memo' }); }
+      if (h === 'split-doc') { openSplit({ kind: 'doc', pid: 'thesis', did: 'committee-memo-draft' }); }
       else if (h === 'split-same-doc') { openSplit({ kind: 'doc', pid: 'thesis', did: 'harbor-tolls' }); }
       else if (h === 'split-pdf') { openSplit({ kind: 'asset', id: 'a05' }); }
       else if (h === 'split-block') { openSplit({ kind: 'asset', id: 'a04' }); }
