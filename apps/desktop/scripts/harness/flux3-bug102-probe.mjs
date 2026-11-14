@@ -97,15 +97,22 @@ function judgeCost(cRounds, xRounds) {
 }
 
 const CYCLE = 'the signal holds while she writes on ';
-const NOFX = '*,*::before,*::after{backdrop-filter:none!important;filter:none!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important;mix-blend-mode:normal!important;will-change:auto!important}';
+const OFF = (decl) => `*,*::before,*::after{${decl}}`;
+const NOFX = OFF('backdrop-filter:none!important;filter:none!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important;mix-blend-mode:normal!important;will-change:auto!important');
 const ARMS = {
-  C:       { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
-  F0:      { theme: 'flux', flag: false, scale: null, css: '', what: 'Flux theme alone: no flag, no layer (the theme CSS only)' },
-  F0NOFX:  { theme: 'flux', flag: false, scale: null, css: NOFX, what: 'Flux theme alone with every filter/backdrop/shadow/animation/transition/blend/will-change off' },
-  Z100:    { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
-  NOFX:    { theme: 'flux', flag: true, scale: 1, css: NOFX, what: 'Z100 with every filter/backdrop/shadow/animation/transition/blend/will-change off' },
-  NOLAYER: { theme: 'flux', flag: true, scale: 1, css: '[data-flux3-layer]{display:none!important}', what: 'Z100 with the layer canvas display:none' },
-  NOTELE:  { theme: 'flux', flag: true, scale: 1, css: '.flux3-tele{display:none!important}', what: 'Z100 with the telemetry readout display:none' },
+  C:          { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
+  CNOFX:      { theme: 'plateau', flag: false, scale: null, css: NOFX, what: 'Arbor with every filter/backdrop/shadow/animation/transition/blend/will-change off (is the cost Flux-specific?)' },
+  F0:         { theme: 'flux', flag: false, scale: null, css: '', what: 'Flux theme alone: no flag, no layer (the theme CSS only)' },
+  Z100:       { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
+  NOFX:       { theme: 'flux', flag: true, scale: 1, css: NOFX, what: 'Z100 with all eight off' },
+  NOBACKDROP: { theme: 'flux', flag: true, scale: 1, css: OFF('backdrop-filter:none!important'), what: 'Z100 with backdrop-filter off' },
+  NOFILTER:   { theme: 'flux', flag: true, scale: 1, css: OFF('filter:none!important'), what: 'Z100 with filter off' },
+  NOSHADOW:   { theme: 'flux', flag: true, scale: 1, css: OFF('box-shadow:none!important'), what: 'Z100 with box-shadow off' },
+  NOTEXTSH:   { theme: 'flux', flag: true, scale: 1, css: OFF('text-shadow:none!important'), what: 'Z100 with text-shadow off' },
+  NOANIM:     { theme: 'flux', flag: true, scale: 1, css: OFF('animation:none!important'), what: 'Z100 with animation off' },
+  NOTRANS:    { theme: 'flux', flag: true, scale: 1, css: OFF('transition:none!important'), what: 'Z100 with transition off' },
+  NOBLEND:    { theme: 'flux', flag: true, scale: 1, css: OFF('mix-blend-mode:normal!important'), what: 'Z100 with mix-blend-mode off' },
+  NOWILL:     { theme: 'flux', flag: true, scale: 1, css: OFF('will-change:auto!important'), what: 'Z100 with will-change off' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
