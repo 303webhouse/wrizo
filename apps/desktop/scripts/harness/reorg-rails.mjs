@@ -432,7 +432,7 @@ await withHarness(async (app) => {
   ok('B2: none of it is stored - localStorage and sessionStorage byte-identical (the control changed: ' + (diffKeys(store4, store4c).join(',') || 'nothing') + '); the memory holds it (no letters, #777777, no picture)',
     diffKeys(store4c, store4b).length === 0 && diffKeys(store4, store4c).length === 0 && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), boxMem }));
   await openPage(app, 'machina', true);
-  const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && window.wrizoRailMemory.boxes(), letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
+  const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && typeof window.wrizoRailMemory.boxes === 'function' ? window.wrizoRailMemory.boxes() : null, letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
   ok('B2b: a reload forgets the box\'s look (its letters are derived again)', !!shell && b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
   // F2: the letters hold 4.5:1 on every swatch and on a mid-grey of her own
   await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
