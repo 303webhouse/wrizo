@@ -235,8 +235,7 @@
   /* The top bar on a Board (frames P3-NB-C, P3-NB-D). The frames still draw the four stages there and call
      the button "Connect to a doc"; the brief rules otherwise, and the brief wins: the writing stages belong
      to the page only, so the Board's view options stand in their place, and the button reads "Connect Doc".
-     The frames put the button on the left, after the Board's place in the bar; Nick moved it to just
-     before the views (Nov 14). */
+     The button stands where the frames put it, on the left, after the Board's place in the bar. */
   function boardBar() {
     var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name);
     var place = 'Board \u00b7 ' + (!docs.length ? 'no doc yet' : docs.length === 1 ? docs[0].name : docs.length + ' docs');
@@ -247,12 +246,12 @@
       '<button type="button" class="crumb crumb-doc" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(b.name) + '</button>' +
       '<span class="crumb-sep" aria-hidden="true">/</span>' +
       '<button type="button" class="crumb crumb-part" data-act="later" data-note="This line says which Docs the Board serves.">' + esc(place) + '</button>' +
-      '<span class="bar-spring"></span>' +
-      /* Connect Doc comes just before the views and is plainly not one of them: a boxed button, then a
-         divider (Nick, Nov 14). Once the Board has a Doc it stays, as a plus sign in a square box. */
+      /* Connect Doc stands where the frames put it: on the left, after the Board's name and place (Nick,
+         Nov 14, after seeing it both there and beside the views). Once the Board has a Doc it stays, as a
+         plus sign in a square box. */
       '<button type="button" class="connect-btn' + (docs.length ? ' is-icon' : '') + (b.connect ? ' is-open' : '') + '" data-act="connect-drop" aria-expanded="' + !!b.connect + '"' +
       (docs.length ? ' aria-label="Connect Doc" title="Connect Doc: connect this board to another doc">+' : '>' + svg('link', 13, 1.5) + 'Connect Doc') + '</button>' +
-      '<span class="bar-div" aria-hidden="true"></span>' +
+      '<span class="bar-spring"></span>' +
       '<div class="stages views" role="group" aria-label="The Board\u2019s views">';
     VIEWS.forEach(function (v) {
       var id = v.toLowerCase();
@@ -1454,7 +1453,7 @@
     }
     if (S.board) {
       p = proj(S.board.pid);
-      say('RULED', 'F \u00b7 A Board on its own: its view options stand where the stage buttons stand, Connect Doc just before them and set apart (P3-NB-C, with the brief\u2019s words; the button\u2019s place by Nick, Nov 14)');
+      say('RULED', 'F \u00b7 A Board on its own: its view options stand where the stage buttons stand, Connect Doc on the left after the Board\u2019s name and place (P3-NB-C, with the brief\u2019s words; the button\u2019s place kept by Nick, Nov 14)');
       if (S.board.connect) { say('RULED', 'Connect Doc pressed: this Project\u2019s Docs, recent ones first on a scroll, and \u201cA new doc\u201d (P3-NB-D; Nick, Nov 14)'); }
       if (boardDocs(p, S.board.name).length) { say('RULED', 'once the Board has a Doc, Connect Doc stays as a plus sign in a square box (Nick, Nov 14)'); }
       if (S.board.view !== 'open') { say('NOT RULED', 'what the ' + S.board.view.toUpperCase() + ' view shows is a guess'); }

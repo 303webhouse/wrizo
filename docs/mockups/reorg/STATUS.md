@@ -6,7 +6,7 @@ Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1, 2 and 
 
 Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his Cursor window (Nov 14, 4:26 pm), so the pushed branch was opened there as a web page and every split and Board door was walked by script: **no script errors, the rail drawn, the page at 415 / 64 / 620 wide in every state outside the split and at 100 in it, the top bar inside 1366.** One door was broken and is fixed: `#split-doc` named a Doc that does not exist. Nothing else was checked by eye or by hand: the lists below still stand.
 
-**Nick's answers of Nov 14, applied after that look:** Connect Doc comes just before the views, set apart from them (question 7). Once a Board has a Doc the button stays, as a plus sign in a square box; its list has recent Docs first, on a scroll, then "A new doc" (question 8).
+**Nick's answers of Nov 14, applied after that look:** Connect Doc stays on the left, after the Board's name and place, where the frames put it (question 7; it was moved beside the views for one commit and he kept the left). Once a Board has a Doc the button stays, as a plus sign in a square box; its list has recent Docs first, on a scroll, then "A new doc" (question 8).
 
 Where a slip is most likely, so the check can start there:
 
@@ -76,7 +76,7 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 4. **After a split,** should the menus come back as they were (built), or closed?
 5. **A Block's name:** fixed (built), or can she write in it too?
 6. **"Open beside" for a Doc:** on its row in a Project's own list (built), or somewhere else?
-7. **Answered by Nick, Nov 14:** Connect Doc comes just before the views and is clearly a different option. Built as a boxed button and a divider. Still open: his note can also be read as "it should look like the view tabs".
+7. **Answered by Nick, Nov 14:** Connect Doc stays on the left, after the Board's name and place, as the frames draw it.
 8. **Answered by Nick, Nov 14:** it stays, as a plus sign in a square box, and its list has recent Docs first on a scroll, then "A new doc".
 9. **After connecting,** does she stay on the Board (built), or go to the Doc? And which Part does the Board join: none (built)?
 10. **The five views with no frame.** Are Plan, Flip, Walk, Storyboard and Thumbnails near what you mean, or should they wait for frames?

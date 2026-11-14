@@ -199,7 +199,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 ## F. A Board on its own
 
 132. **Where the frames and the brief differ, the brief is built.** Frames P3-NB-C and P3-NB-D still draw SPRINT, BUILD, EDIT and FINALIZE on a Board and word the button "Connect to a doc". The brief puts the Board's six view options where the stages are and words the button "Connect Doc". The frames' foot says "3 cards"; it reads "3 blocks".
-133. **How "Connect Doc" is set apart.** Nick, Nov 14: it comes just before the views and is clearly a different option. Built: the frames' boxed button, then a thin divider, then the views. (I read his note as "it should not look like the view tabs". If he meant it should look like them, this is the thing to change.)
+133. **Where "Connect Doc" stands: ruled by Nick, Nov 14.** On the left, after the Board's name and place ("Board · no doc yet"), as the frames draw it, with the six views at the right. (It was tried just before the views for one commit, `23791f18`; he looked at both and kept the left.)
 134. **How the views are written:** "Open", "Plan", "Flip", "Walk", "Storyboard", "Thumbnails", as the brief writes them, not in capitals like the stages.
 135. **What the Board lies over.** It lies over the page (left 116, top 64, to 32 px short of the window's right edge, as tall as the page). The page is not moved, resized or taken away; it keeps its Part, scroll and words underneath, and the keyboard cannot reach it meanwhile.
 136. **The way back to the page:** a small button over the Board's left corner, "‹" and the name of the Doc and Part she left. The brief draws no way back. The stage she was in is kept.
