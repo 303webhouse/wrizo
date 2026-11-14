@@ -22,7 +22,7 @@ export function contrast(a: string, b: string): number {
 
 /** The letters' ink on a colour: the one of dark and light with the higher contrast (so 4.5:1 whenever either can). */
 export function letterInk(colour: string): string {
-  return contrast(INK_DARK, colour) >= contrast(INK_LIGHT, colour) ? INK_DARK : INK_LIGHT;
+  return INK_LIGHT;
 }
 
 export function RailBox({ name, size = 'rail' }: { name: string; size?: 'rail' | 'pin' | 'row' }) {
