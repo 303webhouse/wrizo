@@ -39,7 +39,7 @@ export function ProjectListPanel({ subject, navigate, travelFromCascade }: Casca
   const row = (e: JournalEntry, depth: 0 | 1, extra?: string | null, label?: string) => (
     <li key={e.id} className={`wz-reorg-list-row${depth ? ' wz-reorg-list-row--part' : ''}`} data-entry-id={e.id} data-depth={depth}
       data-kind={e.pageType === 'board' ? 'board' : 'page'} aria-current={e.id === here ? 'page' : undefined}>
-      <button type="button" className="wz-reorg-list-open" onClick={() => navigate(`/page/${e.id}`)}>
+      <button type="button" className="wz-reorg-list-open" onClick={() => travelFromCascade(e)}>
         <span className="wz-reorg-list-title">{label ?? titleOf(e, t)}</span>
         {extra ? <span className="wz-reorg-list-meta" data-set-name="">{extra}</span> : null}
       </button>
