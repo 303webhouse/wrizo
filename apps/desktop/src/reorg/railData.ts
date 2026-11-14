@@ -42,7 +42,7 @@ export function docsOf(drawerId: string): RailDoc[] {
   for (const set of setsOfDrawer(drawerId)) {
     const mine = live.filter((e) => e.projectId === set.id).sort(compareSections);
     const pages = mine.filter((e) => !isBoard(e));
-    if (isAutoSet(set) && false) {
+    if (isAutoSet(set)) {
       for (const p of pages) out.push({ set: null, parts: [p], boards: [] });
     } else if (pages.length) {
       out.push({ set, parts: pages, boards: mine.filter(isBoard) });
