@@ -97,22 +97,19 @@ function judgeCost(cRounds, xRounds) {
 }
 
 const CYCLE = 'the signal holds while she writes on ';
-const OFF = (decl) => `*,*::before,*::after{${decl}}`;
-const NOFX = OFF('backdrop-filter:none!important;filter:none!important;box-shadow:none!important;text-shadow:none!important;animation:none!important;transition:none!important;mix-blend-mode:normal!important;will-change:auto!important');
+const OFF = (sel, decl) => `${sel}{${decl}}`;
+const NOFILTER = OFF('*,*::before,*::after', 'filter:none!important');
+const KEEP = '.mode-glow,.mode-glow--flux,.wz-goal-glow,.desk-frame-goalflare';
 const ARMS = {
   C:          { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
-  CNOFX:      { theme: 'plateau', flag: false, scale: null, css: NOFX, what: 'Arbor with every filter/backdrop/shadow/animation/transition/blend/will-change off (is the cost Flux-specific?)' },
-  F0:         { theme: 'flux', flag: false, scale: null, css: '', what: 'Flux theme alone: no flag, no layer (the theme CSS only)' },
+  CNOFILTER:  { theme: 'plateau', flag: false, scale: null, css: NOFILTER, what: 'Arbor with every filter off (is the filter cost Flux-specific?)' },
   Z100:       { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
-  NOFX:       { theme: 'flux', flag: true, scale: 1, css: NOFX, what: 'Z100 with all eight off' },
-  NOBACKDROP: { theme: 'flux', flag: true, scale: 1, css: OFF('backdrop-filter:none!important'), what: 'Z100 with backdrop-filter off' },
-  NOFILTER:   { theme: 'flux', flag: true, scale: 1, css: OFF('filter:none!important'), what: 'Z100 with filter off' },
-  NOSHADOW:   { theme: 'flux', flag: true, scale: 1, css: OFF('box-shadow:none!important'), what: 'Z100 with box-shadow off' },
-  NOTEXTSH:   { theme: 'flux', flag: true, scale: 1, css: OFF('text-shadow:none!important'), what: 'Z100 with text-shadow off' },
-  NOANIM:     { theme: 'flux', flag: true, scale: 1, css: OFF('animation:none!important'), what: 'Z100 with animation off' },
-  NOTRANS:    { theme: 'flux', flag: true, scale: 1, css: OFF('transition:none!important'), what: 'Z100 with transition off' },
-  NOBLEND:    { theme: 'flux', flag: true, scale: 1, css: OFF('mix-blend-mode:normal!important'), what: 'Z100 with mix-blend-mode off' },
-  NOWILL:     { theme: 'flux', flag: true, scale: 1, css: OFF('will-change:auto!important'), what: 'Z100 with will-change off' },
+  NOFILTER:   { theme: 'flux', flag: true, scale: 1, css: NOFILTER, what: 'Z100 with every filter off' },
+  NOGOAL:     { theme: 'flux', flag: true, scale: 1, css: OFF('.wz-goal-glow', 'filter:none!important'), what: 'Z100 with only .wz-goal-glow filter off' },
+  NOMODEGLOW: { theme: 'flux', flag: true, scale: 1, css: OFF('.mode-glow,.mode-glow--flux', 'filter:none!important'), what: 'Z100 with only .mode-glow / .mode-glow--flux filter off' },
+  NOFLARE:    { theme: 'flux', flag: true, scale: 1, css: OFF('.desk-frame-goalflare', 'filter:none!important'), what: 'Z100 with only .desk-frame-goalflare filter off' },
+  NOREST:     { theme: 'flux', flag: true, scale: 1, css: OFF(`*:not(${KEEP}),*:not(${KEEP})::before,*:not(${KEEP})::after`, 'filter:none!important'), what: 'Z100 with every filter off EXCEPT those four glows' },
+  GLOWSONLY:  { theme: 'flux', flag: true, scale: 1, css: OFF(KEEP, 'filter:none!important'), what: 'Z100 with only those four glows\' filter off' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -172,7 +169,7 @@ try { await withHarness(async (app) => {
       const scripts = [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => /index-/.test(s));
       return { theme: root.getAttribute('data-theme'), flag: new URLSearchParams(location.search).get('flux3'), layer: document.querySelectorAll('[data-flux3-layer]').length,
         scale: cr && cv.offsetWidth ? cr.width / cv.offsetWidth : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
-        served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z }; })()`);
+        served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z, filtered: [...document.querySelectorAll('*')].filter((e) => { const f = getComputedStyle(e).filter; return f && f !== 'none'; }).slice(0, 14).map((e) => { const r = e.getBoundingClientRect(); return e.tagName.toLowerCase() + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className).slice(0, 48) + ' ' + getComputedStyle(e).filter.slice(0, 30) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height); }) }; })()`);
     // the meter (flux3-latency's, verbatim in method: keydown -> the second animation frame after its beforeinput). DIAG (Nov 14): the same listeners also stamp, per key, the points inside that
     // interval (beforeinput, the first frame, the second frame) and the l-method's BUSY reading (keydown -> the end of the task that handled the key), and an Event Timing observer lists
     // each event's input delay and processing; nothing below changes what the clock measures, it only writes down where the time went.
@@ -236,10 +233,11 @@ try { await withHarness(async (app) => {
     const t = T[k];
     console.log(`BUG102 ${k.padEnd(8)} clock ${r1(t.clock.median)}/${r1(t.clock.p95)} (round spread ${r1(t.spreadMed)}/${r1(t.spreadP95)}) | paint ${r1(t.paint.median)}/${r1(t.paint.p95)} | work ${r1(t.work.median)}/${r1(t.work.p95)} | late ${t.late}/${t.nET} | ${ARMS[k].what}`);
   }
+  for (const k of ['C', 'Z100']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
   const gapC = (k, f) => r1(T[k][f].p95 - T.C[f].p95), gapZ = (k, f) => r1(T.Z100[f].p95 - T[k][f].p95);
   const closed = (k, f) => { const g = T.Z100[f].p95 - T.C[f].p95; return g > 0 ? `${Math.round(100 * (T.Z100[f].p95 - T[k][f].p95) / g)}%` : 'n/a'; };
   for (const k of order.filter((x) => x !== 'C' && x !== 'Z100')) console.log(`BUG102-CLOSES ${k.padEnd(8)} of the Z100-over-Arbor p95 gap: clock ${closed(k, 'clock')} (gap to Arbor ${gapC(k, 'clock')}), paint ${closed(k, 'paint')} (gap to Arbor ${gapC(k, 'paint')})`);
-  ok(`BUG102 (information) Z100 over Arbor, p95: clock ${gapC('Z100', 'clock')}, paint ${gapC('Z100', 'paint')}; Flux theme alone (F0) over Arbor: clock ${gapC('F0', 'clock')}, paint ${gapC('F0', 'paint')}`, true, '');
+  ok(`BUG102 (information) Z100 over Arbor, p95: clock ${gapC('Z100', 'clock')}, paint ${gapC('Z100', 'paint')}`, true, '');
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
