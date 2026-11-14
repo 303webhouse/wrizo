@@ -8,11 +8,12 @@ import { NOTEBOOK, railProjects, type RailProject } from '../railData';
 import { isPinned, setOpenList, togglePin, useRailMemory } from '../railMemory';
 import { RailBox } from '../RailBox';
 import { useWhereSheIs } from '../ReorgRail';
+import { BoxSettings } from './BoxSettings';
 
 // PROJECTS (frame R4): All projects with a count; + New project; her pinned Projects (in the order she pinned them), then the rest (in her
 // order), the Notebook LAST (the hidden Journal, a place of its own, its pin off: Nov 11, Q2). Each row: the box, the name, its Docs by the
 // read-time rule, and a pin. Pins live in memory only (railMemory.ts). A row opens that Project's own list (step 3). BOX SETTINGS, for the
-// Project she is in, comes at the foot in step 4. New project is today's own act (createDrawer, the switcher's route) and the
+// Project she is in, is one closed drop-down at the foot (step 4). New project is today's own act (createDrawer, the switcher's route) and the
 // only write here.
 
 const fillN = (s: string, n: number): string => s.replace('{n}', String(n));
@@ -84,6 +85,7 @@ export function ProjectsPanel({ subject, openCategory }: CascadeContext) {
         {pinned.length > 0 && <div className="wz-reorg-group-head" aria-hidden="true"><PinIcon filled={false} /> {rest.length}</div>}
         <ul className="wz-reorg-rows">{rest.map(row)}</ul>
       </section>
+      <BoxSettings id={here} name={here == null ? '' : rows.find((r) => r.id === here)?.name ?? ''} />
     </div>
   );
 }

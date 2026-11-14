@@ -64,6 +64,9 @@
 [data-theme='machina'] .wz-reorg-row-pin:focus-visible,
 [data-theme='machina'] .wz-reorg-new:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 
+/* a box she gave a picture: the picture fills it, no letters (step 4) */
+[data-theme='machina'] .wz-reorg-box--picture{ background-size:cover; background-position:center; }
+
 /* A PROJECT'S OWN LIST (step 3): + New doc and + New board side by side; Docs, then Boards with no doc; a Doc's Parts and its boards indented */
 [data-theme='machina'] .wz-reorg-list{ padding:0; gap:0; }
 [data-theme='machina'] .wz-reorg-head-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:none; }
@@ -82,3 +85,25 @@
 [data-theme='machina'] .wz-reorg-list-open:hover{ background:var(--ink-900); }
 [data-theme='machina'] .wz-reorg-list-open:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 [data-theme='machina'] .wz-reorg-empty{ margin:0; padding:8px 14px; color:var(--text-mid); font-size:12px; }
+
+/* BOX SETTINGS (step 4, frame R5): one closed drop-down at the foot of PROJECTS, for the Project she is in */
+[data-theme='machina'] .wz-reorg-box-settings{ margin-top:auto; border-top:1px solid var(--ink-border); }
+[data-theme='machina'] .wz-reorg-box-settings-head{ display:flex; align-items:center; gap:10px; width:100%; padding:14px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-box-settings-for{ margin-left:auto; color:var(--text-mid); letter-spacing:.08em; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-box-settings-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-reorg-box-settings-body{ display:flex; flex-direction:column; gap:12px; padding:4px 14px 16px; }
+[data-theme='machina'] .wz-reorg-box-settings-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+[data-theme='machina'] .wz-reorg-box-settings-row--indent{ padding-left:68px; }
+[data-theme='machina'] .wz-reorg-box-settings-label{ width:58px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-letters{ width:54px; height:28px; padding:0 8px; box-sizing:border-box; font-family:var(--font-chromeLabel); font-size:13px;
+  letter-spacing:.06em; text-transform:uppercase; border:1px solid #6A727B; background:none; color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-chip{ display:inline-flex; align-items:center; gap:6px; padding:3px 6px; background:none; border:1px solid #6A727B;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-chip[aria-pressed='true']{ border-color:var(--accent-rest); }
+[data-theme='machina'] .wz-reorg-own-colour input{ width:18px; height:14px; padding:0; border:0; background:none; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-swatches{ display:flex; gap:8px; }
+[data-theme='machina'] .wz-reorg-swatch{ width:22px; height:22px; padding:0; border:1px solid #6A727B; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid var(--text-hi); outline-offset:2px; }
+[data-theme='machina'] .wz-reorg-chip:focus-visible, [data-theme='machina'] .wz-reorg-swatch:focus-visible,
+[data-theme='machina'] .wz-reorg-letters:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
