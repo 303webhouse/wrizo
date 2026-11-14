@@ -12,16 +12,17 @@
 <!--
   A throwaway, clickable prototype with made-up content. Nothing here ships.
   Milestone 1: the shell, the left rail and a Project's own list (brief, section 6 A).
+  Milestone 2: moving between Parts, and the Front menu's Parts tab (6 B and C).
   Opens by double-click: plain HTML, CSS and JavaScript, no build, no server.
 -->
 <div id="shell" class="shell">
   <header id="bar" class="bar"></header>
   <nav id="rail" class="rail" aria-label="Left rail"></nav>
   <div id="pop"></div>
-  <button type="button" class="handle handle-front" data-act="later" data-note="The Front menu comes in milestone 2." aria-label="Front menu (milestone 2)">&lsaquo;</button>
-  <button type="button" class="handle handle-back" data-act="later" data-note="The Back menu comes in milestone 3." aria-label="Back menu (milestone 3)">&rsaquo;</button>
+  <div id="menus"></div>
   <main id="page" class="page"></main>
   <div id="foot" class="foot"></div>
+  <div id="drop"></div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <div id="state-tag" class="state-tag"></div>
   <input id="pick-colour" type="color" class="offstage" tabindex="-1" aria-hidden="true">

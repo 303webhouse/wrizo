@@ -1,13 +1,17 @@
 /*
   Wrizo reorg prototype · Machina · mockup only.
-  Values are lifted from Fable's frames (_sources/frames-html, Ruled-1 to Ruled-7,
-  P3-NB-A, P3-NB-B) and from section 4 of the brief. The frames carry these as
-  inline styles; here they are classes so the states can be switched.
+  Values are lifted from Fable's frames (_sources/frames-html: Ruled-1 to Ruled-7,
+  P3-NB-A, P3-NB-B, P2-12C, P2-12D, P2-13A, P2-13A2, P2-13B) and from section 4
+  of the brief. The frames carry these as inline styles; here they are classes so
+  the states can be switched.
 
   The fixed frame at 1366 x 768:
     top bar 40 high · left rail 84 wide · page 620 x 640 at left 415, top 64 ·
-    a pop-out is 288 wide, at left 84, under the bar.
-  The page's rectangle is set once, on .page, and no state touches it.
+    a pop-out is 288 wide, at left 84, under the bar ·
+    the Front menu is 288 wide at left 127, the Back menu 288 wide at left 1035,
+    both flush against the page and exactly as tall.
+  The page's rectangle is set once, on .page, and no state touches it. Only what
+  is inside the page scrolls (.part-scroll).
 */
 
 html, body { margin: 0; height: 100%; }
@@ -47,6 +51,9 @@ button:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
 .crumb-project { font-size: 11.5px; letter-spacing: .12em; color: #9AA1A8; text-transform: uppercase; }
 .crumb-doc { font-size: 13px; color: #E6E8EA; }
 .crumb-part { font-family: var(--mono); font-size: 11px; color: #9AA1A8; }
+/* The Part's place, opened (frame P2-12C). Brass: the Part she is in. */
+.crumb-part.is-open { color: #E6E8EA; border-bottom-color: #FF9800; }
+.crumb-v { margin-left: 6px; font-size: 10px; }
 .crumb-sep { color: #9AA1A8; font-size: 12px; }
 .bar-spring { flex: 1 1 auto; }
 .stages { display: flex; align-items: center; gap: 22px; }
@@ -112,6 +119,8 @@ svg { display: block; }
 .box-34 { width: 34px; height: 34px; font-size: 11px; }
 .box-24 { width: 24px; height: 24px; font-size: 9.5px; }
 .box-30 { width: 30px; height: 30px; font-size: 11px; border: 1px solid #6A727B; flex: 0 0 auto; }
+/* In no Project: an empty box labelled Unfiled (PROPOSED, Fable, Nov 14). */
+.box-empty { background: none; border: 1px solid #9AA1A8; }
 
 /* ---------- pop-outs ---------- */
 .pop {
@@ -168,8 +177,8 @@ svg { display: block; }
 .row-name { font-size: 13px; color: #3A4047; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row.is-here .row-name { font-weight: 600; }
 .row-meta { font-family: var(--mono); font-size: 10.5px; color: #525A62; }
-.box-pick { flex: 0 0 auto; display: inline-flex; }
-.box-pick.is-picked { outline: 2px solid #23272B; outline-offset: 2px; }
+.row-box { flex: 0 0 auto; display: inline-flex; }
+.row.wrap .row-name { white-space: normal; }
 .icon-btn { flex: 0 0 auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #3A4047; }
 .icon-btn.edged { border: 1px solid #9AA1A8; box-sizing: border-box; }
 .icon-btn.edged[aria-expanded="true"] { background: #E6E8EA; border-color: #23272B; }
@@ -214,6 +223,7 @@ svg { display: block; }
 .swatches { display: flex; gap: 9px; align-items: center; }
 .swatch { width: 22px; height: 22px; box-sizing: border-box; border: 1px solid #6A727B; }
 .swatch[aria-pressed="true"] { outline: 2px solid #23272B; outline-offset: 2px; }
+.box-hint { font-size: 12px; line-height: 1.45; color: #525A62; }
 
 /* UNFILED: the Trash at the foot */
 .pop-divider { flex: 0 0 auto; height: 10px; border-top: 1px solid #D2D6DA; border-bottom: 2px solid #23272B; background: #E6E8EA; }
@@ -232,15 +242,115 @@ svg { display: block; }
 }
 .sub-row.link { color: #3F6183; }
 
-/* ---------- the page: set once, never touched by a state ---------- */
+/* ---------- the two side menus: flush against the page, never moving it ---------- */
 .handle {
   position: absolute; top: 76px; width: 16px; height: 34px; box-sizing: border-box;
-  border: 1px solid #D2D6DA; background: #F4F5F6;
+  border: 1px solid #D2D6DA; background: #F4F5F6; z-index: 2;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--mono); font-size: 11px; color: #525A62; text-align: center;
 }
 .handle-front { left: calc(var(--page-left) - 16px); }
 .handle-back { left: calc(var(--page-left) + 620px); }
+/* Open: the handle rides the menu's outer edge (frames P2-13A, P2-13A2). */
+.handle-front.is-open { left: calc(var(--page-left) - 304px); }
+.handle-back.is-open { left: calc(var(--page-left) + 908px); }
+.menu {
+  position: absolute; top: 64px; width: 288px; height: calc(100% - 128px); box-sizing: border-box;
+  background: #F4F5F6; border: 1px solid #D2D6DA;
+  display: flex; flex-direction: column; overflow: hidden; z-index: 2;
+}
+.menu-front { left: calc(var(--page-left) - 288px); border-right: 0; }
+.menu-back { left: calc(var(--page-left) + 620px); border-left: 0; }
+.tabs {
+  height: 44px; flex: 0 0 auto; padding: 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 18px; border-bottom: 1px solid #D2D6DA;
+}
+.tab {
+  height: 43px; font-size: 11px; letter-spacing: .12em; color: #525A62; font-weight: 400;
+  border-bottom: 2px solid transparent;
+}
+.tab.is-on { color: #3A4047; font-weight: 600; border-bottom-color: #23272B; }
+.menu-body {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  display: flex; flex-direction: column;
+}
+.menu-body > * { flex: 0 0 auto; }
+
+/* The Front menu, Parts tab (frames P2-13A, P2-13B) */
+.part-num { flex: 0 0 auto; width: 10px; font-family: var(--mono); font-size: 11px; color: #525A62; }
+.ptag {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; box-sizing: border-box; border: 1px solid #6A727B;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: .04em;
+}
+.ptag.none { border: 0; }
+.marker {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 6px;
+  box-sizing: border-box; border: 1px solid #6A727B;
+  font-family: var(--mono); font-size: 11px; color: #3A4047;
+}
+.marker[aria-pressed="true"] { border-color: #23272B; background: #E6E8EA; box-shadow: inset 0 0 0 1px #23272B; }
+.part-toggle {
+  flex: 0 0 auto; width: 20px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; color: #3A4047;
+}
+.part-assets { padding: 2px 0 6px; border-bottom: 1px solid #D2D6DA; display: flex; flex-direction: column; }
+.exp-head {
+  height: 22px; padding: 0 12px 0 54px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; color: #525A62;
+}
+.exp-head button { font-size: 10.5px; letter-spacing: 0; color: #3F6183; }
+.exp-head button:hover, .exp-row:hover .exp-name, .filter-all:hover, .part-foot button:hover, .drop-row:hover .drop-name { text-decoration: underline; }
+/* Up to four rows show; more than four scroll behind a very thin scrollbar. */
+.exp-list { max-height: 96px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #6A727B #D2D6DA; }
+@supports selector(::-webkit-scrollbar) {
+  .exp-list { scrollbar-width: auto; scrollbar-color: auto; }
+  .exp-list::-webkit-scrollbar { width: 3px; }
+  .exp-list::-webkit-scrollbar-track { background: #D2D6DA; }
+  .exp-list::-webkit-scrollbar-thumb { background: #6A727B; }
+}
+.exp-row {
+  width: 100%; height: 24px; padding: 0 12px 0 54px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px;
+}
+.exp-kind {
+  flex: 0 0 auto; font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; color: #525A62;
+  border: 1px solid #9AA1A8; padding: 0 4px; min-width: 34px; text-align: center; box-sizing: border-box;
+}
+.exp-name { flex: 1 1 auto; min-width: 0; font-size: 12px; color: #3A4047; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-date { flex: 0 0 auto; font-family: var(--mono); font-size: 9.5px; color: #525A62; }
+.exp-none { padding: 4px 12px 2px 54px; font-size: 12px; color: #525A62; }
+
+/* The Back menu, ASSETS tab, filtered to one Part (frame P2-13A2) */
+.filter-head {
+  padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid #D2D6DA; background: #E6E8EA;
+}
+.filter-text { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.filter-label { font-family: var(--mono); font-size: 10px; color: #525A62; }
+.filter-name { font-size: 12.5px; color: #3A4047; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.filter-all { flex: 0 0 auto; font-family: var(--mono); font-size: 10.5px; color: #3F6183; white-space: nowrap; }
+
+/* The list of Parts dropped from the top bar (frame P2-12C) */
+.drop {
+  position: absolute; top: 40px; width: 300px; max-height: calc(100% - 60px); box-sizing: border-box;
+  background: #F4F5F6; border: 1px solid #23272B; border-top: 0;
+  display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; z-index: 6;
+}
+.drop > * { flex: 0 0 auto; }
+.drop-head { padding: 10px 14px 6px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: #525A62; }
+.drop-row {
+  position: relative; height: 34px; padding: 0 12px 0 14px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #D2D6DA;
+}
+.drop-row.is-here { background: #E6E8EA; }
+.drop-row.is-here .drop-name { font-weight: 600; }
+.drop-row .here-bar { top: 4px; bottom: 4px; }
+.drop-name { flex: 1 1 auto; min-width: 0; font-size: 13px; color: #3A4047; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- the page: set once, never touched by a state ---------- */
 .page {
   position: absolute; left: var(--page-left); top: 64px; width: 620px; height: calc(100% - 128px); box-sizing: border-box;
   background: #FBFBFA; border: 1px solid #D2D6DA; padding: 56px 64px; overflow: hidden;
@@ -254,6 +364,30 @@ svg { display: block; }
   font-size: 14.67px; line-height: 1.55; color: #1C1C1C;
 }
 .page .caret { display: inline-block; width: 1px; height: 18px; background: #1C1C1C; vertical-align: text-bottom; }
+
+/* Only the Part she is in scrolls: it scrolls inside the page, which stays put (frame P2-12D). */
+.part-scroll {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0; box-sizing: border-box;
+  padding: 56px 64px; overflow-y: auto; scrollbar-width: none;
+}
+.part-scroll::-webkit-scrollbar { display: none; }
+.part-track { position: absolute; right: 15px; top: 40px; bottom: 40px; width: 4px; background: #D2D6DA; }
+.part-thumb { position: absolute; right: 15px; top: 40px; width: 4px; height: 60px; background: #8A9199; cursor: grab; touch-action: none; }
+.part-thumb::before { content: ''; position: absolute; left: -7px; right: -7px; top: 0; bottom: 0; }
+.part-arrow {
+  position: absolute; right: 6px; width: 22px; height: 22px; box-sizing: border-box;
+  border: 1px solid #6A727B; background: #F4F5F6; color: #3A4047;
+  display: flex; align-items: center; justify-content: center;
+}
+.part-arrow.up { top: 10px; }
+.part-arrow.down { bottom: 10px; }
+.part-arrow[disabled] { opacity: .35; cursor: default; }
+.part-foot {
+  margin-top: 26px; padding-top: 12px; border-top: 1px solid #D2D6DA;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  font-family: var(--mono); font-size: 11px; color: #525A62;
+}
+.part-foot .next { color: #3F6183; }
 .foot {
   position: absolute; left: var(--page-left); top: calc(100% - 54px); width: 620px;
   display: flex; gap: 10px; align-items: center;
@@ -270,13 +404,14 @@ svg { display: block; }
 .tag-proposed { background: #F4F5F6; color: #23272B; border: 1px solid #23272B; }
 .tag-not { background: #F4F5F6; color: #23272B; border: 1px dashed #23272B; }
 .state-tag {
-  position: absolute; right: 12px; bottom: 10px; max-width: 296px; z-index: 9; pointer-events: none;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right;
-  font-family: var(--mono); font-size: 10px; line-height: 14px; color: #3A4047;
+  position: absolute; right: 12px; bottom: 6px; max-width: 420px; z-index: 9; pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px; text-align: right;
+  font-family: var(--mono); font-size: 10px; line-height: 13px; color: #3A4047;
 }
+/* Notes sit at the bottom right, above the corner tag, clear of the Back menu's tabs. A click sends one away. */
 .toast {
-  position: absolute; right: 12px; top: 52px; max-width: 296px; box-sizing: border-box; z-index: 9;
-  padding: 8px 10px; background: #23272B; color: #E6E8EA;
+  position: absolute; right: 12px; bottom: 76px; max-width: 296px; box-sizing: border-box; z-index: 9;
+  padding: 8px 10px; background: #23272B; color: #E6E8EA; cursor: pointer;
   font-size: 12px; line-height: 1.45;
 }
 .toast[hidden] { display: none; }
