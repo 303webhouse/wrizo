@@ -253,10 +253,10 @@ await withHarness(async (app) => {
   ok('N1c: a reload forgets the pins and the view (nothing was kept anywhere)', forgot === JSON.stringify({ mem: { pins: [], pinView: 'boxes' }, rail: null }), forgot);
 
   // ---- KEYS ----------------------------------------------------------------------------------------------------------------------------
-  await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]').focus()");
+  await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.focus()");
   await app.typeKeys('\n'); await sleep(600);
   const kOpen = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-projects')");
-  await app.evalJs(`document.querySelector('[data-reorg-pin-toggle="${ids.essays}"]').focus()`);
+  await app.evalJs(`document.querySelector('[data-reorg-pin-toggle="${ids.essays}"]')?.focus()`);
   await app.typeKeys('\n'); await sleep(200);
   const kPin = await app.evalJs(RAILPINS);
   await app.evalJs("document.activeElement && document.activeElement.blur(); document.body.focus()");
