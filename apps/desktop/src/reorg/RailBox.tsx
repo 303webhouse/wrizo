@@ -1,15 +1,13 @@
 import { lettersOf } from './railData';
-import { useBoxes } from './railMemory';
 
-// A PROJECT'S BOX (frames R1 to R5): its two letters on its colour, or her picture. Its look is Box settings' (step 4), held in memory only
-// (railMemory.ts); absent, the defaults are derived and never stored: the letters from the name (railData.lettersOf) on the first swatch, no
-// picture. The letters' ink is whichever of the rail's dark, white and black holds the most contrast on the colour, so it holds 4.5:1 on ANY
-// colour (black or white always clears 4.58:1; the Wrizors' guard, Nov 11). A picture fills the box and carries no letters (no ink can be
-// promised over a picture). Decorative: the button around it carries the name.
+// A PROJECT'S BOX (frames R1 to R5): its two letters on its colour. Until step 4's Box settings, every box wears the defaults, derived and never
+// stored: the letters from the name (railData.lettersOf) on the first swatch. The letters are dark or light, whichever holds 4.5:1 on the colour
+// (the Wrizors' guard, Nov 11). Decorative: the button around it carries the name.
 
 /** The ruled swatches (frame R5, sampled as drawn): pale, grey, blue, brass, orange. The first is every box's default. */
 export const SWATCHES = ['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800'] as const;
-const INKS = ['#1E262E', '#FFFFFF', '#000000'] as const;
+const INK_DARK = '#1E262E';
+const INK_LIGHT = '#FFFFFF';
 
 function luminance(hex: string): number {
   const n = parseInt(hex.slice(1), 16);
@@ -22,20 +20,16 @@ export function contrast(a: string, b: string): number {
   return (x + 0.05) / (y + 0.05);
 }
 
-/** The letters' ink on a colour: the rail's dark ink, white or black, whichever holds the most contrast (first wins a tie). */
+/** The letters' ink on a colour: the one of dark and light with the higher contrast (so 4.5:1 whenever either can). */
 export function letterInk(colour: string): string {
-  return INKS.reduce((best, ink) => (contrast(ink, colour) > contrast(best, colour) ? ink : best), INKS[0] as string);
+  return contrast(INK_DARK, colour) >= contrast(INK_LIGHT, colour) ? INK_DARK : INK_LIGHT;
 }
 
-export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: string; size?: 'rail' | 'pin' | 'row' }) {
-  const look = useBoxes()[id ?? ''] || {};
-  const colour = look.colour || SWATCHES[0];
-  if (look.picture) {
-    return <span className={`wz-reorg-box wz-reorg-box--${size} wz-reorg-box--picture`} aria-hidden="true" data-box-picture="" style={{ backgroundImage: `url("${look.picture}")` }} />;
-  }
+export function RailBox({ name, size = 'rail' }: { name: string; size?: 'rail' | 'pin' | 'row' }) {
+  const colour = SWATCHES[0];
   return (
     <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: letterInk(colour) }}>
-      {look.letters !== undefined ? look.letters : lettersOf(name)}
+      {lettersOf(name)}
     </span>
   );
 }

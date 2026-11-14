@@ -43,40 +43,7 @@ export function setPinView(pinView: PinView): void {
   if (memory.pinView !== pinView) set({ ...memory, pinView });
 }
 
-// ---- step 3: which Project's own list is open (a pointer into memory, so a travel out of the list comes back to the same list) --------------
-let openList: string | null = null;
-export function getOpenList(): string | null { return openList; }
-export function setOpenList(id: string | null): void {
-  if (openList === id) return;
-  openList = id;
-  listeners.forEach((fn) => { try { fn(); } catch { /* a listener never breaks the rail */ } });
-}
-export function useOpenList(): string | null {
-  return useSyncExternalStore(subscribeRail, getOpenList, getOpenList);
-}
-
-// ---- step 4: each box's own look (Box settings, frame R5). Absent = the derived defaults (railData.lettersOf, the first swatch, no picture) --
-export interface BoxLook {
-  /** Her own letters; '' = no letters (R5's "No letters"); absent = derived from the name. */
-  letters?: string;
-  /** A swatch, or her own colour (#rrggbb). */
-  colour?: string;
-  /** A picture she chose, read into memory as a data: URL. Nothing uploads. */
-  picture?: string;
-}
-let boxes: Readonly<Record<string, BoxLook>> = {};
-export function getBoxes(): Readonly<Record<string, BoxLook>> { return boxes; }
-export function useBoxes(): Readonly<Record<string, BoxLook>> {
-  return useSyncExternalStore(subscribeRail, getBoxes, getBoxes);
-}
-export function setBoxLook(id: string, patch: BoxLook): void {
-  const next: BoxLook = { ...(boxes[id] || {}), ...patch };
-  for (const k of Object.keys(next) as (keyof BoxLook)[]) if (next[k] === undefined) delete next[k];
-  boxes = { ...boxes, [id]: next };
-  listeners.forEach((fn) => { try { fn(); } catch { /* a listener never breaks the rail */ } });
-}
-
 // Test/inspection seam (the wrizoLexicon pattern): the harness reads what the rail holds, to prove it is held here and nowhere else. Switch on only.
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoRailMemory?: unknown }).wrizoRailMemory = { get: getRailMemory, boxes: getBoxes, openList: getOpenList };
+  (window as unknown as { wrizoRailMemory?: unknown }).wrizoRailMemory = { get: getRailMemory };
 }
