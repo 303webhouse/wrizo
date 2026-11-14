@@ -2,9 +2,9 @@
 
 Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The addresses in brackets open the same state directly.
 
-**After milestone 4, sections A to E are built.** F and G are listed so nothing is lost; each says which milestone builds it.
+**After milestone 5, sections A to F are built.** G is listed so nothing is lost; it says which milestone builds it.
 
-**None of it has been opened in a browser by this lane** (see `STATUS.md`). "Built" below means written and read through, not seen. Fable opened milestones 1 to 3 and passed them; milestone 4, and the changes it makes to C and D, have been seen by no one yet.
+**None of it has been opened in a browser by this lane** (see `STATUS.md`). "Built" below means written and read through, not seen. Fable opened milestones 1 to 3 and passed them; milestones 4 and 5, and the changes milestone 4 makes to C and D, have been seen by no one yet.
 
 ## Mock content
 
@@ -13,7 +13,7 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 | A Project "Thesis" | The top box of the rail (TH, Thesis) | built |
 | The Doc "Harbor Tolls, 1890 to 1912", five Parts | The top bar reads "Part 3 of 5 · Methods". Press it for all five | built |
 | Two more Docs | Press the TH box: "Committee memo, draft" and "Viva notes" | built |
-| One Board with no Doc, "Harbor map" | Press the TH box: under BOARDS WITH NO DOC | built (the Board itself: milestone 5) |
+| One Board with no Doc, "Harbor map" | Press the TH box: under BOARDS WITH NO DOC. Press its row to open it on its own (`#board`) | built |
 | Five more Projects | Press PROJECTS: Grants, Essays, New Project, Client work, Old drafts | built |
 | Eleven assets, some connected to Parts | Open the Back menu (the handle at the page's right edge): ALL ASSETS OF THIS DOC · 11 (`#assets`). Ten are connected to Parts 2, 3 and 4; one to no Part | built |
 
@@ -34,7 +34,7 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 | UNFILED pop-out: writing with no Project, each row with File and Trash | Press UNFILED (`#unfiled`). The first small button on a row files it (pick a Project); the second moves it to the Trash |
 | UNFILED pop-out: the Trash at the foot | Press UNFILED: the Trash line at the foot. Press it to look inside (NOT RULED) (`#trash`) |
 | Every Project box (the one she is in and each pin) opens that Project's own list | Press the TH box (`#list`). Press GR, ES or NP (`#list-grants`). In the list view of the pins, press a row |
-| ...its Docs, then its Boards with no Doc | In the TH list: DOCS · 3, then BOARDS WITH NO DOC · 1. The button on the Board's row reads "Connect Doc" (PROPOSED, does nothing until milestone 5) |
+| ...its Docs, then its Boards with no Doc | In the TH list: DOCS · 3, then BOARDS WITH NO DOC · 1. The Board's row opens the Board on its own. The button on the row reads "Connect Doc" (PROPOSED): it opens the Board with the Connect Doc list already down |
 | ...with "New doc" and "New board" at the top | In any Project's list: the two buttons under its name |
 | PROPOSED (Fable, Nov 14): an Unfiled piece opens on the page like any Doc; the rail's top box is then an empty box labelled Unfiled | Press UNFILED, then "Ferry timetable" (`#unfiled-piece`). To come back: press DOCS and a row under RECENT |
 
@@ -84,7 +84,7 @@ Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in
 | The asset opens on the right, half and half, with a grip to drag | Open the Back menu, press "Open beside" on "Method notes" (`#split`). The page is at left 100 and the asset's side runs from 725 to the right edge: half each of the room right of the rail, as frame P3-23A draws it. The grip is the small upright bar on the line between them; drag it, or put the keyboard on it and press the arrow keys |
 | The page is never narrower than 620 px; the grip stops there | Drag the grip left: it does not move. At 1366 wide, half is already the stop (84 + 16 + 620 + 5 = 725). Drag it right: the asset's side narrows, and the page, still 620 × 640, keeps to the middle of its own wider side. In a wider window the grip moves both ways and stops at 725 on the left |
 | Both menu handles are gone in a split, on both sides | In a split, look at the page's two edges: no handle, and no Front or Back menu, also if one was open before |
-| Closing either side returns the page exactly to its place | Press CLOSE at the right of the asset's head: the page is back at left 415, top 64, and both menus are as they were before the split. The other CLOSE, over the page's right corner, closes the page's side (what is left then is NOT RULED: see `NOT-RULED.md`) |
+| Closing either side returns the page exactly to its place | Press CLOSE at the right of the asset's head: the page is back at left 415, top 64, and both menus are as they were before the split. The other CLOSE, over the page's right corner, closes the page's side (what is left then is NOT RULED: a second Doc takes the page, a Board opens on its own, a Block or an imported file only shows a note) |
 | The stage buttons fade; the stage she is in stays readable | In a split, the top bar: SPRINT, EDIT and FINALIZE are faint and cannot be pressed; BUILD keeps its light letters and its brass line |
 | A click on a Block's text puts the caret there | In a split, click the words of a Block ("Every tenth page of each ledger."): the caret is there, and typing changes them. Enter ends the writing |
 | A double click on a Block's empty area pops it out and fades only the asset's side | Double click a Block away from its words (`#split-pop`): it opens larger over the asset's side, which goes dark behind it. The page stays lit. Its words can be written in there too |
@@ -94,14 +94,19 @@ Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in
 | NOT RULED: the asset side's name is a drop list of the Doc's connected assets | In a split, press the asset's name in its head (`#split-drop`): the eleven connected assets, the one beside her marked. Press another: it takes the place, the split stays. `#split-block` and `#split-pdf` open a Block and an imported file directly |
 | NOT RULED: Ctrl+F in a split opens the search over the asset's side | In a split, press Ctrl+F or the top bar's button (`#split-search`): the same search menu opens over the asset's side, against the page. Found words are marked on the page as before |
 
-## F. A Board on its own (not built: milestone 5)
+## F. A Board on its own (built)
+
+Four ways in: a Board's row in a Project's own list (press the TH box, then "Harbor map"); "Board" in DOCS or "New board" in a Project's list, which make one and open it; "Open" on a Board's row in the Back menu's ASSETS tab; CLOSE on the page's side of a split that has a Board beside it. `#board` opens "Harbor map" directly. The small button over the Board's left corner ("‹ Harbor Tolls, 1890 to 1912 · Part 3") goes back to the page as she left it (NOT RULED).
 
 | The brief says | Where to click |
 |---|---|
-| On a Board, the Board's view options sit exactly where the stage buttons sit (Open, Plan, Flip, Walk, Storyboard, Thumbnails) | not built |
-| For a Board with no Doc, a "Connect Doc" button sits in front of the view options | not built |
-| Pressing it lists this Project's Docs, plus "A new doc" | not built |
-| The Board stays in its Project and can serve more than one Doc | not built |
+| The writing stages belong to the page only | On a Board (`#board`), the top bar: SPRINT, BUILD, EDIT and FINALIZE are not there. Go back to the page: they are, and the stage she was in still has the brass line |
+| On a Board, the Board's view options sit exactly where the stage buttons sit (Open, Plan, Flip, Walk, Storyboard, Thumbnails) | On a Board, the same place at the right of the top bar: the six, with the brass line under the one she is in. It opens on Open: the three Blocks where frame P3-NB-C puts them, over the drawing. Press each of the other five (`#board-plan`, `#board-flip`, `#board-walk`, `#board-storyboard`, `#board-thumbnails`). What each of those five shows is NOT RULED, and a line at the Board's head says so. In Flip the two arrows, or the arrow keys, go from Block to Block |
+| For a Board with no Doc, a "Connect Doc" button sits in front of the view options | On "Harbor map" (`#board`): the button with a link mark, after "Board · no doc yet" and in front of the six views, where frames P3-NB-C and P3-NB-D put it. The frames word it "Connect to a doc"; the brief's "Connect Doc" is used |
+| Pressing it lists this Project's Docs, plus "A new doc" | Press it (`#board-connect`): under the heading CONNECT THIS BOARD TO · DOCS IN THESIS, the three Docs of Thesis, then "A new doc", then a line saying what connecting does. Esc, the button again, or a click elsewhere closes it |
+| The Board stays in its Project | Press "Harbor Tolls, 1890 to 1912" in that list (`#board-connected`). The top bar still reads THESIS / Harbor map, and the line under the Board still says "in Thesis", now with "connected to 1 doc". The Board has left BOARDS WITH NO DOC in the TH list, and is the twelfth asset of the Doc, connected to no Part (go back to the page, Back menu, ASSETS) |
+| ...and can serve more than one Doc | Press Connect Doc again: the Doc it serves reads "connected" and cannot be pressed; the others can. Press "Committee memo, draft": the top bar reads "Board · 2 docs" and the line under the Board "connected to 2 docs". "A new doc" makes "Untitled doc" in Thesis and connects the Board to it (NOT RULED: its name, and that she stays on the Board) |
+| (from E) A click on a Block's words, a double click on its empty area | On a Board the Blocks are the same Blocks: click a Block's words to write in them; double click its empty area to pop it out, the Board dark behind it (`#board-pop`). Esc closes the pop-out and she stays on the Board |
 
 ## G. The stages, NOT RULED (not built: milestone 6)
 
@@ -121,4 +126,4 @@ Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in
 
 ## The page's rectangle
 
-At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left: 415 at 1366 wide, and, in a split only, the middle of the page's own side (left 100 at half). The page's width, height and top are the same in a split as out of it. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.
+At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left: 415 at 1366 wide, and, in a split only, the middle of the page's own side (left 100 at half). The page's width, height and top are the same in a split as out of it. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. A Board on its own is laid over the page (left 116, top 64, 1218 × 640 at 1366 × 768, as frame P3-NB-C draws it): the page is still there underneath, at 415 / 64 / 620 × 640, with its Part, its scroll and its words as she left them. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.

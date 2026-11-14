@@ -4,6 +4,7 @@
   Milestone 2: moving between Parts (6 B) and the Front menu's Parts tab (6 C).
   Milestone 3: the Back menu's three tabs, the search, and find and replace (6 D).
   Milestone 4: the split screen (6 E).
+  Milestone 5: a Board on its own (6 F).
 
   Plain JavaScript, no build. State lives in memory; a reload starts over.
   Every screen state carries a tag (RULED, PROPOSED, NOT RULED) in the corner.
@@ -27,6 +28,7 @@
     page: document.getElementById('page'),
     foot: document.getElementById('foot'),
     beside: document.getElementById('beside'),
+    board: document.getElementById('board'),
     drop: document.getElementById('drop'),
     toast: document.getElementById('toast'),
     tag: document.getElementById('state-tag'),
@@ -66,6 +68,11 @@
        (a second Doc, read-only). x: where the asset's side starts, in px, or null for half.
        drop: the list under the asset's name. pop: the Block popped out, { board, i }. */
     split: null,
+    /* A Board on its own, or null: { pid, name, view, at, connect, pop }. pid: the Project it is in.
+       view: 'open' | 'plan' | 'flip' | 'walk' | 'storyboard' | 'thumbnails'. at: the Block the Flip view
+       is on. connect: the Connect Doc list is open. pop: the Block popped out, { board, i }.
+       The Doc she was in stays in S.here, and the page stays where it is, under the Board. */
+    board: null,
     /* The search takes the Back menu's place. Two separate choices (Fable, Nov 14):
        reach: 'doc' | 'project' | 'all', and kind: null (the words) | 'plan' | 'assets' | 'feedback'. */
     search: {
@@ -107,10 +114,13 @@
     for (var i = 0; i < D.unfiled.length; i++) { if (D.unfiled[i].id === id) { return D.unfiled[i]; } }
     return null;
   }
+  /* The id of the Project she is in: the Board's while she is on a Board, else the Doc's. Null in an Unfiled piece. */
+  function nowPid() { return S.board ? S.board.pid : S.here.project; }
   /* The Project she is in, or null while she is in an Unfiled piece. */
-  function projHere() { return S.here.project ? proj(S.here.project) : null; }
+  function projHere() { var id = nowPid(); return id ? proj(id) : null; }
+  /* The Doc on the page. On a Board it is the Doc she left, still on the page under the Board. */
   function docHere() {
-    var p = projHere();
+    var p = S.here.project ? proj(S.here.project) : null;
     return p ? docIn(p, S.here.doc) : unfiledDoc(S.here.doc);
   }
   /* Every Doc has Parts. A Doc drawn without them is one Part with no name. */
@@ -137,8 +147,8 @@
     }).sort(function (x, y) { return x.order - y.order; });
   }
   function railPins() {
-    var pins = D.projects.filter(function (p) { return p.pinned && p.id !== S.here.project; });
-    if (D.notebook.pinned && S.here.project !== 'notebook') { pins.push(D.notebook); }
+    var pins = D.projects.filter(function (p) { return p.pinned && p.id !== nowPid(); });
+    if (D.notebook.pinned && nowPid() !== 'notebook') { pins.push(D.notebook); }
     return pins;
   }
   function uniqueName(base, taken) {
@@ -213,7 +223,44 @@
 
   /* ---------- the top bar ---------- */
 
+  /* The Board's view options, which stand where the stage buttons stand (section 6 F). */
+  var VIEWS = ['Open', 'Plan', 'Flip', 'Walk', 'Storyboard', 'Thumbnails'];
+
+  /* The Docs of a Project that a Board serves: those it is an asset of. */
+  function boardDocs(p, name) {
+    return p.docs.filter(function (d) {
+      return D.assets.some(function (a) { return a.kind === 'BOARD' && a.name === name && a.doc === d.id; });
+    });
+  }
+  /* The top bar on a Board (frames P3-NB-C, P3-NB-D). The frames still draw the four stages there and call
+     the button "Connect to a doc"; the brief rules otherwise, and the brief wins: the writing stages belong
+     to the page only, so the Board's view options stand in their place, and the button reads "Connect Doc".
+     It stands where the frames put it, after the Board's place in the bar and in front of the view options. */
+  function boardBar() {
+    var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name);
+    var place = 'Board \u00b7 ' + (!docs.length ? 'no doc yet' : docs.length === 1 ? docs[0].name : docs.length + ' docs');
+    var h = '<span class="brand">WRIZO<span class="brand-mark"></span></span>' +
+      '<span class="bar-div" aria-hidden="true"></span>' +
+      '<button type="button" class="crumb crumb-project" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(p.name) + '</button>' +
+      '<span class="crumb-sep" aria-hidden="true">/</span>' +
+      '<button type="button" class="crumb crumb-doc" data-act="later" data-note="Renaming from the top bar is not part of this prototype.">' + esc(b.name) + '</button>' +
+      '<span class="crumb-sep" aria-hidden="true">/</span>' +
+      '<button type="button" class="crumb crumb-part" data-act="later" data-note="This line says which Docs the Board serves.">' + esc(place) + '</button>' +
+      '<button type="button" class="connect-btn' + (b.connect ? ' is-open' : '') + '" data-act="connect-drop" aria-expanded="' + !!b.connect + '">' + svg('link', 13, 1.5) + 'Connect Doc</button>' +
+      '<span class="bar-spring"></span>' +
+      '<div class="stages views" role="group" aria-label="The Board\u2019s views">';
+    VIEWS.forEach(function (v) {
+      var id = v.toLowerCase();
+      h += '<button type="button" class="stage-btn' + (id === b.view ? ' is-here' : '') + '" data-act="board-view" data-id="' + id + '"' + (id === b.view ? ' aria-current="true"' : '') + '>' + v + '</button>';
+    });
+    h += '</div><span class="bar-cmd">&gt;<span>Ctrl+.</span></span>' +
+      '<button type="button" class="bar-search" data-act="later" data-mark="NOT RULED" data-note="Search from a Board is not built: the brief does not say what it looks in there." aria-label="Search" title="Search (Ctrl+F)">' +
+      svg('search', 14, 1.6) + '<span>Ctrl+F</span></button>';
+    return h;
+  }
+
   function renderBar() {
+    if (S.board) { el.bar.innerHTML = boardBar(); return; }
     var p = projHere(), d = docHere(), parts = partsOf(d), part = parts[d.partHere - 1];
     var place = 'Part ' + d.partHere + ' of ' + parts.length + (part.name ? ' \u00b7 ' + part.name : '');
     var h = '<span class="brand">WRIZO<span class="brand-mark"></span></span>' +
@@ -239,6 +286,7 @@
 
   /* The Part's place in the top bar drops a list of all Parts (frame P2-12C). */
   function renderDrop() {
+    if (S.board) { el.drop.innerHTML = S.board.connect ? connectList() : ''; return; }
     if (!S.partsDrop) { el.drop.innerHTML = ''; return; }
     var d = docHere(), parts = partsOf(d), crumb = el.bar.querySelector('.crumb-part');
     var left = crumb ? Math.max(0, crumb.offsetLeft - 14) : 384;
@@ -329,13 +377,13 @@
       });
     }
     b += groupHead('OR START WITH A BOARD');
-    b += '<button type="button" class="new-row h40" data-act="new-board" data-id="' + (S.here.project || '') + '" data-from="docs"><span class="plus" aria-hidden="true">+</span><span class="grow">Board</span><span class="row-meta">no doc yet</span></button>';
+    b += '<button type="button" class="new-row h40" data-act="new-board" data-id="' + (nowPid() || '') + '" data-from="docs"><span class="plus" aria-hidden="true">+</span><span class="grow">Board</span><span class="row-meta">no doc yet</span></button>';
     b += groupHead('RECENT');
     D.recent.forEach(function (r) {
       var p = r.project ? proj(r.project) : null;
       var d = r.project ? (p ? docIn(p, r.doc) : null) : unfiledDoc(r.doc);
       if (!d) { return; }
-      var here = (r.project || null) === (S.here.project || null) && r.doc === S.here.doc;
+      var here = !S.board && (r.project || null) === (S.here.project || null) && r.doc === S.here.doc;
       b += '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) +
         '<button type="button" class="row-main" data-act="open-doc" data-pid="' + (p ? p.id : '') + '" data-id="' + d.id + '"><span class="row-name">' + esc(d.name) + '</span>' +
         '<span class="row-meta">' + esc(p ? p.name : 'Unfiled') + ' \u00b7 ' + plural(d.words, 'word', 'words') + '</span></button></div>';
@@ -347,7 +395,7 @@
 
   /* PROJECTS (frames Ruled-4 and Ruled-5). */
   function projectRow(p) {
-    var here = p.id === S.here.project;
+    var here = p.id === nowPid();
     var meta = (p.isNotebook ? 'the journal \u00b7 ' : '') + plural(p.docs.length, 'doc', 'docs');
     return '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) +
       '<span class="row-box" data-box="' + p.id + '">' + boxHtml(p, '30', 'panel') + '</span>' +
@@ -399,7 +447,7 @@
     var b = groupHead('WRITING WITH NO PROJECT \u00b7 ' + D.unfiled.length);
     if (!D.unfiled.length) { b += '<div class="quiet-line">Nothing is unfiled.</div>'; }
     D.unfiled.forEach(function (u) {
-      var open = S.fileFor === u.id, here = !S.here.project && S.here.doc === u.id;
+      var open = S.fileFor === u.id, here = !S.board && !S.here.project && S.here.doc === u.id;
       b += '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) +
         '<button type="button" class="row-main" data-act="unfiled-open" data-id="' + u.id + '"><span class="row-name">' + esc(u.name) + '</span><span class="row-meta">' + plural(u.words, 'word', 'words') + ' \u00b7 ' + esc(u.date) + '</span></button>' +
         '<button type="button" class="icon-btn edged" data-act="file" data-id="' + u.id + '" aria-expanded="' + open + '" aria-label="File in a Project" title="File in a Project">' + svg('file', 16, 1.2) + '</button>' +
@@ -434,7 +482,9 @@
   /* A Project's own list: its Docs, then its Boards with no Doc (look from frame P3-NB-B).
      The Notebook opens the same way: its pages, each a one-Part Doc. */
   function popList(p) {
-    var count = plural(p.docs.length, 'doc', 'docs') + (p.boards.length ? ' \u00b7 ' + plural(p.boards.length, 'board', 'boards') : '');
+    /* A Board that has been connected to a Doc stays in its Project, and leaves this list of Boards with no Doc. */
+    var loose = p.boards.filter(function (bd) { return !boardDocs(p, bd.name).length; });
+    var count = plural(p.docs.length, 'doc', 'docs') + (loose.length ? ' \u00b7 ' + plural(loose.length, 'board', 'boards') : '');
     var b = '<div class="new-pair">' +
       '<button type="button" class="new-row" data-act="new-doc" data-id="blank" data-pid="' + p.id + '"><span class="plus" aria-hidden="true">+</span>New doc</button>' +
       '<span class="new-pair-div"></span>' +
@@ -442,19 +492,22 @@
     b += groupHead('DOCS \u00b7 ' + p.docs.length);
     if (!p.docs.length) { b += '<div class="quiet-line">No docs here yet.</div>'; }
     p.docs.forEach(function (d) {
-      var here = p.id === S.here.project && d.id === S.here.doc;
+      var here = !S.board && p.id === S.here.project && d.id === S.here.doc;
       var meta = plural(d.parts, 'Part', 'Parts') + ' \u00b7 ' + plural(d.words, 'word', 'words') + (d.boards ? ' \u00b7 ' + plural(d.boards, 'board', 'boards') : '');
       b += '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) +
         '<button type="button" class="row-main" data-act="open-doc" data-pid="' + p.id + '" data-id="' + d.id + '"><span class="row-name">' + esc(d.name) + '</span><span class="row-meta">' + meta + '</span></button>' +
         /* A second Doc beside the page, read-only (section 6 E). Where the button sits is not ruled. */
         '<button type="button" class="chip-btn" data-act="doc-beside" data-pid="' + p.id + '" data-id="' + d.id + '" title="Open beside the page, to read">Open beside</button></div>';
     });
-    b += groupHead('BOARDS WITH NO DOC \u00b7 ' + p.boards.length);
-    if (!p.boards.length) { b += '<div class="quiet-line">No boards here yet.</div>'; }
-    p.boards.forEach(function (bd) {
-      b += '<div class="row"><span class="kind-tag">BOARD</span>' +
-        '<button type="button" class="row-main" data-act="later" data-note="The Board itself opens in milestone 5 (F)."><span class="row-name">' + esc(bd.name) + '</span><span class="row-meta">' + esc(bd.meta) + '</span></button>' +
-        '<button type="button" class="chip-btn" data-act="later" data-mark="PROPOSED" data-note="Connect Doc on a Board\u2019s row is proposed, and does nothing until milestone 5 (F).">Connect Doc</button></div>';
+    b += groupHead('BOARDS WITH NO DOC \u00b7 ' + loose.length);
+    if (!loose.length) { b += '<div class="quiet-line">No boards here yet.</div>'; }
+    loose.forEach(function (bd) {
+      var here = !!S.board && S.board.pid === p.id && S.board.name === bd.name;
+      var to = ' data-act="open-board" data-pid="' + p.id + '" data-name="' + esc(bd.name) + '"';
+      /* The row opens the Board on its own. Its button (PROPOSED) opens it with the Connect Doc list already down. */
+      b += '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) + '<span class="kind-tag">BOARD</span>' +
+        '<button type="button" class="row-main"' + to + (here ? ' aria-current="true"' : '') + '><span class="row-name">' + esc(bd.name) + '</span><span class="row-meta">' + esc(bd.meta) + '</span></button>' +
+        '<button type="button" class="chip-btn"' + to + ' data-connect="1">Connect Doc</button></div>';
     });
     return popShell(p.name, count, b);
   }
@@ -560,7 +613,10 @@
   function assetRow(a) {
     return '<div class="row wrap"><span class="kind-tag">' + a.kind + '</span>' +
       '<div class="row-main"><span class="row-name">' + esc(a.name) + '</span><span class="row-meta">' + esc(a.meta) + '</span></div>' +
-      '<span class="row-chips"><button type="button" class="chip-btn" data-act="open-beside" data-id="' + a.id + '" title="Open beside the page">Open beside</button></span></div>';
+      '<span class="row-chips">' +
+      /* A Board can also open on its own (section 6 F). */
+      (a.kind === 'BOARD' ? '<button type="button" class="chip-btn" data-act="open-board" data-name="' + esc(a.name) + '" title="Open the Board on its own">Open</button>' : '') +
+      '<button type="button" class="chip-btn" data-act="open-beside" data-id="' + a.id + '" title="Open beside the page">Open beside</button></span></div>';
   }
 
   /* The Back menu's ASSETS tab: all of the Doc's assets, or those connected to one Part (frame P2-13A2). */
@@ -638,7 +694,12 @@
       keepId = act.id; a = act.selectionStart; z = act.selectionEnd;
     }
     var h = '';
-    if (S.split) {
+    if (S.board) {
+      /* On a Board the two handles sit at the Board's outer edges (frame P3-NB-C). A Board gets the same two
+         menus; what they offer there is the stage table, milestone 6. */
+      h = '<button type="button" class="handle handle-front on-board" data-act="later" data-mark="NOT RULED" data-note="A Board gets the same two menus. What they offer on a Board is the stage table: milestone 6 (G)." aria-label="Front menu" title="Front menu">&rsaquo;</button>' +
+        '<button type="button" class="handle handle-back on-board" data-act="later" data-mark="NOT RULED" data-note="A Board gets the same two menus. What they offer on a Board is the stage table: milestone 6 (G)." aria-label="Back menu" title="Back menu">&lsaquo;</button>';
+    } else if (S.split) {
       /* In a split both menu handles are gone, and the menus with them (Nick, Nov 14). They come
          back as she left them when she closes either side. Only the search can open, laid over
          the asset's side (Fable's proposal, not ruled). */
@@ -1095,6 +1156,7 @@
   function openSplit(what) {
     S.split = { what: what, x: S.split ? S.split.x : null, drop: false, pop: null };
     S.partsDrop = false;
+    S.board = null;   // a split is the page and something beside it: it takes her off a Board, back to the page
   }
   function assetById(id) {
     for (var i = 0; i < D.assets.length; i++) { if (D.assets[i].id === id) { return D.assets[i]; } }
@@ -1228,6 +1290,131 @@
     swap(el.beside, h);
   }
 
+  /* ---------- a Board on its own (F, frames P3-NB-C and P3-NB-D) ---------- */
+
+  /* The Project a Board is in, found by the Board's name. */
+  function boardPid(name) {
+    var all = D.projects.concat([D.notebook]);
+    for (var i = 0; i < all.length; i++) { if (boardsOf(all[i]).indexOf(name) !== -1) { return all[i].id; } }
+    return null;
+  }
+  /* Opening a Board on its own replaces the page as the surface. The page is not taken away: it stays
+     where it is, under the Board, and the chip over the Board goes back to it as she left it. */
+  function openBoard(pid, name, connect) {
+    closeSearch();
+    openPop(null);
+    S.split = null;
+    S.partsDrop = false;
+    S.board = { pid: pid, name: name, view: 'open', at: 0, connect: !!connect, pop: null };
+  }
+  /* The Board becomes one of that Doc's assets. It stays in its Project and can serve more than one Doc. */
+  function connectBoard(p, d, name) {
+    var meta = boardMeta(name), order = 0;
+    D.assets.forEach(function (a) { order = Math.max(order, a.order); });
+    D.assets.push({ id: 'asset-' + (++S.counter), doc: d.id, part: null, kind: 'BOARD', name: name, meta: meta, added: 'Nov 14', order: order + 1 });
+    d.boards = (d.boards || 0) + 1;
+  }
+  /* The Flip view: to the Block before (-1) or the next one (1). False at either end. */
+  function stepFlip(dir) {
+    var b = S.board, n = (D.blocks[b.name] || []).length, at = Math.max(0, Math.min(n - 1, b.at + dir));
+    if (at === b.at) { return false; }
+    b.at = at;
+  }
+  /* Connect Doc, pressed: this Project's Docs, then "A new doc" (frame P3-NB-D). */
+  function connectList() {
+    var b = S.board, p = proj(b.pid), docs = boardDocs(p, b.name), btn = el.bar.querySelector('.connect-btn');
+    var left = btn ? Math.min(btn.offsetLeft, Math.max(shell.clientWidth, 1366) - 328) : 372;
+    var h = '<section class="drop connect" aria-label="Connect this board to a doc" style="left: ' + left + 'px">' +
+      '<div class="drop-head">CONNECT THIS BOARD TO \u00b7 DOCS IN ' + esc(p.name.toUpperCase()) + '</div>';
+    if (!p.docs.length) { h += '<div class="quiet-line">No docs here yet.</div>'; }
+    p.docs.forEach(function (d) {
+      var on = docs.indexOf(d) !== -1;
+      h += '<button type="button" class="connect-row' + (on ? ' is-on' : '') + '" data-act="connect-to" data-id="' + d.id + '"' + (on ? ' aria-disabled="true"' : '') + '>' +
+        '<span class="connect-main"><span class="row-name">' + esc(d.name) + '</span>' +
+        '<span class="row-meta">' + plural(partsOf(d).length, 'Part', 'Parts') + ' \u00b7 ' + plural(d.words, 'word', 'words') + '</span></span>' +
+        (on ? '<span class="row-meta">connected</span>' : '') + '</button>';
+    });
+    return h + '<button type="button" class="new-row h38" data-act="connect-new"><span class="plus" aria-hidden="true">+</span>A new doc</button>' +
+      '<div class="connect-foot">It becomes one of that doc\u2019s assets. The board stays in ' + esc(p.name) + ', and it can serve more than one doc.</div></section>';
+  }
+
+  var VIEW_NOTE = {
+    plan: 'PLAN: the Blocks as an ordered list.',
+    flip: 'FLIP: one Block at a time.',
+    walk: 'WALK: the Blocks one under another, to read down through.',
+    storyboard: 'STORYBOARD: the Blocks as frames in a row, each under an empty picture.',
+    thumbnails: 'THUMBNAILS: the Blocks small, by name. Double click one to pop it out.'
+  };
+  function boardBody(b, list) {
+    var h = '', at;
+    /* Only the Open view is drawn in a frame. What the other five show is a guess. */
+    if (b.view !== 'open') { h += '<div class="board-note">' + tag('NOT RULED') + '<span>' + VIEW_NOTE[b.view] + ' What this view shows is a guess.</span></div>'; }
+    if (!list.length) { return h + '<div class="quiet-line">No blocks on this board yet.</div>'; }
+    if (b.view === 'open') {
+      /* Blocks where she left them, over the Board's drawing (frame P3-NB-C). A Block with no place of its own is set out in rows. */
+      h += '<div class="board-open">';
+      if (D.drawings[b.name]) { h += '<svg class="board-drawing" aria-hidden="true" width="1100" height="560" viewBox="0 0 1100 560" fill="none">' + D.drawings[b.name] + '</svg>'; }
+      list.forEach(function (blk, k) {
+        var x = blk.x !== undefined ? blk.x : 40 + (k % 4) * 262, y = blk.y !== undefined ? blk.y : 40 + Math.floor(k / 4) * 128;
+        h += '<div class="board-at" style="left: ' + x + 'px; top: ' + y + 'px">' + blkHtml(b.name, k) + '</div>';
+      });
+      return h + '</div>';
+    }
+    if (b.view === 'plan') {
+      h += '<div class="board-col" data-keep="board-plan">';
+      list.forEach(function (blk, k) { h += '<div class="board-step"><span class="part-num">' + (k + 1) + '</span>' + blkHtml(b.name, k) + '</div>'; });
+      return h + '</div>';
+    }
+    if (b.view === 'walk') {
+      h += '<div class="board-col walk" data-keep="board-walk">';
+      list.forEach(function (blk, k) { h += blkHtml(b.name, k); });
+      return h + '</div>';
+    }
+    if (b.view === 'flip') {
+      at = Math.max(0, Math.min(list.length - 1, b.at));
+      return h + '<div class="board-flip">' +
+        '<button type="button" class="flip-btn" data-act="board-step" data-id="-1" aria-label="The Block before"' + (at > 0 ? '' : ' disabled') + '>&lsaquo;</button>' +
+        blkHtml(b.name, at) +
+        '<button type="button" class="flip-btn" data-act="board-step" data-id="1" aria-label="The next Block"' + (at < list.length - 1 ? '' : ' disabled') + '>&rsaquo;</button></div>' +
+        '<div class="board-count">' + (at + 1) + ' of ' + list.length + '</div>';
+    }
+    if (b.view === 'storyboard') {
+      h += '<div class="board-strip" data-keep="board-strip">';
+      list.forEach(function (blk, k) {
+        h += '<div class="board-frame"><span class="board-frame-n">' + (k + 1) + '</span><span class="board-frame-pic"></span>' + blkHtml(b.name, k) + '</div>';
+      });
+      return h + '</div>';
+    }
+    h += '<div class="board-thumbs" data-keep="board-thumbs">';
+    list.forEach(function (blk, k) {
+      var c = blk.colour ? COLOURS[blk.colour] : null;
+      h += '<div class="blk thumb" data-board="' + esc(b.name) + '" data-i="' + k + '" title="Double click to pop it out">' +
+        (c ? '<span class="blk-bar' + (blk.colour === 'yellow' ? ' edged' : '') + '" style="background: ' + c.panel + '"></span>' : '') +
+        '<span class="blk-title">' + esc(blk.title) + '</span></div>';
+    });
+    return h + '</div>';
+  }
+
+  function renderBoard() {
+    shell.classList.toggle('on-board', !!S.board);
+    /* The page stays where it is, under the Board; it is only kept out of the keyboard's way meanwhile. */
+    el.page.setAttribute('aria-hidden', S.board ? 'true' : 'false');
+    el.page.inert = !!S.board;
+    if (!S.board) { swap(el.board, ''); return; }
+    var b = S.board, p = proj(b.pid), d = docHere(), list = D.blocks[b.name] || [], docs = boardDocs(p, b.name);
+    var n = parseInt(boardMeta(b.name), 10) || list.length;
+    var h = '<button type="button" class="chip-btn back-chip" data-act="board-back" title="Back to the page, as you left it">&lsaquo; ' + esc(d.name) + ' \u00b7 Part ' + d.partHere + '</button>' +
+      '<section class="board" aria-label="Board: ' + esc(b.name) + '">' + boardBody(b, list) + (b.pop ? blkPop(b.pop) : '') + '</section>';
+    swap(el.board, h);
+    /* The line under the Board (frame P3-NB-C). */
+    var bits = [plural(n, 'block', 'blocks')];
+    if (D.drawings[b.name]) { bits.push('1 drawing'); }
+    bits.push('in ' + p.name);
+    bits.push(docs.length ? 'connected to ' + plural(docs.length, 'doc', 'docs') : 'not connected to a doc');
+    if (n > list.length) { bits.push('only ' + list.length + ' drawn in this prototype'); }
+    el.foot.innerHTML = bits.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('<span aria-hidden="true">\u00b7</span>');
+  }
+
   /* ---------- marking ---------- */
 
   function renderTag() {
@@ -1250,6 +1437,14 @@
         case 'controls': say('NOT RULED', 'A \u00b7 CONTROLS pop-out: the brief names it and no more'); break;
       }
     }
+    if (S.board) {
+      p = proj(S.board.pid);
+      say('RULED', 'F \u00b7 A Board on its own: its view options stand where the stage buttons stand, Connect Doc in front of them (P3-NB-C, with the brief\u2019s words over the frame\u2019s)');
+      if (S.board.connect) { say('RULED', 'Connect Doc pressed: this Project\u2019s Docs, and \u201cA new doc\u201d (P3-NB-D)'); }
+      if (boardDocs(p, S.board.name).length) { say('NOT RULED', 'Connect Doc stays on a Board that has a Doc, so it can serve another: a guess'); }
+      if (S.board.view !== 'open') { say('NOT RULED', 'what the ' + S.board.view.toUpperCase() + ' view shows is a guess'); }
+      if (S.board.pop) { say('RULED', 'a Block popped out, the Board faded behind it'); }
+    }
     if (S.partsDrop) { say('RULED', 'B \u00b7 The Part\u2019s place in the top bar drops the list of all Parts (P2-12C)'); }
     if (S.split) {
       info = besideInfo();
@@ -1259,7 +1454,7 @@
       if (S.split.pop) { say('RULED', 'a Block popped out: only the asset\u2019s side fades, and Esc closes it, never the split'); }
       if (S.split.drop) { say('NOT RULED', 'the asset\u2019s name drops the Doc\u2019s connected assets (Fable\u2019s proposal)'); }
     }
-    if (S.front.open && !S.split) {
+    if (S.front.open && !S.split && !S.board) {
       if (S.front.tab === 'parts') {
         say('RULED', 'C \u00b7 Front menu, Parts tab: a marker with a count, and a toggle on each Part that has something connected (P2-13A)' +
           (partsOf(d).some(function (x) { return x.open; }) ? '; a Part expanded in place (ruled Nov 14, no frame)' : ''));
@@ -1275,7 +1470,7 @@
       if (S.search.replaceOpen && R && (R.here.length || S.search.undo.length)) {
         say('RULED', 'D \u00b7 Find and Replace: all, or one by one in the list, in the Doc she is in; across a Project greyed, \u201clater\u201d');
       }
-    } else if (S.back.open && !S.split) {
+    } else if (S.back.open && !S.split && !S.board) {
       if (S.back.tab !== 'assets') { say('NOT RULED', 'D \u00b7 Back menu, ' + S.back.tab.toUpperCase() + ' tab, with the search field every tab has: the tab is ruled, what it lists is made up'); }
       else if (S.back.part) { say('RULED', 'C \u00b7 Back menu, ASSETS connected to one Part (P2-13A2)'); }
       else { say('NOT RULED', 'Back menu, ASSETS, all of the Doc\u2019s assets: the grouping is a guess'); }
@@ -1284,8 +1479,8 @@
       say('RULED', 'A \u00b7 ' + (!pins ? 'The rail with no pins (Ruled-3)' : S.pinView === 'boxes' ? 'The rail at rest, pins as boxes (Ruled-1)' : 'The rail at rest, pins as a list (Ruled-2)'));
       say('RULED', 'B \u00b7 One Part on the page: arrows on its scrollbar, the line at its foot, its place in the top bar (P2-12D)');
     }
-    if (!S.here.project) { say('PROPOSED', 'In no Project: the rail\u2019s top box is empty and reads Unfiled'); }
-    if (d.isNew) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
+    if (!nowPid()) { say('PROPOSED', 'In no Project: the rail\u2019s top box is empty and reads Unfiled'); }
+    if (d.isNew && !S.board) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
 
     var mark = marks.indexOf('NOT RULED') !== -1 ? 'NOT RULED' : marks.indexOf('PROPOSED') !== -1 ? 'PROPOSED' : 'RULED';
     el.tag.innerHTML = tag(mark) + '<span>' + esc(bits.join(' \u00b7 ')) + '</span>';
@@ -1303,7 +1498,7 @@
     if (S.split && !splitOk()) { S.split = null; }
     place();
     R = S.search.open ? runSearch() : null;
-    renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderBeside(); renderDrop(); renderTag();
+    renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderBeside(); renderBoard(); renderDrop(); renderTag();
     if (S.search.jump) { S.search.jump = false; showCur(); }
   }
   /* Bring the result she is on into view: on the page (inside the Part, which is all that scrolls) and in the list. */
@@ -1331,6 +1526,9 @@
     /* In a split, Esc closes the popped-out Block first, then the list under the asset's name. It never closes the split. */
     if (S.split && S.split.pop) { S.split.pop = null; return true; }
     if (S.split && S.split.drop) { S.split.drop = false; return true; }
+    /* On a Board: the popped-out Block first, then the Connect Doc list. */
+    if (S.board && S.board.pop) { S.board.pop = null; return true; }
+    if (S.board && S.board.connect) { S.board.connect = false; return true; }
     /* The search: first its replace box, then the search itself. A rail pop-out goes first unless she is in the search. */
     var act = document.activeElement, inSearch = !!(act && act.closest && act.closest('.menu-back'));
     if (S.search.open && (inSearch || !S.pop)) {
@@ -1357,6 +1555,7 @@
     S.partsDrop = false;
     S.back.part = null;
     S.split = null;   // opening other work ends a split: the new Doc opens alone (not ruled)
+    S.board = null;   // and takes her off a Board
     if (!pid) { note('PROPOSED', 'An Unfiled piece opens on the page like any Doc. You are in no Project, so the rail\u2019s top box is empty and reads Unfiled.'); }
     else if (moved) { note('NOT RULED', 'Opening a Doc from another Project moves you into that Project. The brief does not say so.'); }
   }
@@ -1520,16 +1719,55 @@
         note('NOT RULED', 'The page\u2019s side closed, so the Doc that was beside it is now on the page. What is left when the page\u2019s side closes is a guess.');
         return;
       }
-      note('NOT RULED', 'Closing the page\u2019s side would leave the ' + { BOARD: 'Board', BLOCK: 'Block', PDF: 'imported file' }[info.tag] + ' on its own. A Board on its own is milestone 5 (F); for a Block or an imported file the brief does not say.');
+      if (info.type === 'board' && boardPid(info.board)) {
+        openBoard(boardPid(info.board), info.board);
+        note('NOT RULED', 'The page\u2019s side closed, so the Board that was beside it is now on its own. What is left when the page\u2019s side closes is a guess.');
+        return;
+      }
+      note('NOT RULED', 'Closing the page\u2019s side would leave the ' + { BOARD: 'Board', BLOCK: 'Block', PDF: 'imported file' }[info.tag] + ' on its own. For a Block or an imported file the brief does not say what that is.');
       return false;
     },
-    'blk-unpop': function () { if (S.split) { S.split.pop = null; } },
+    'blk-unpop': function () {
+      if (S.split) { S.split.pop = null; }
+      if (S.board) { S.board.pop = null; }
+    },
+
+    /* A Board on its own (F) */
+    'open-board': function (t) {
+      var name = t.getAttribute('data-name'), pid = t.getAttribute('data-pid') || boardPid(name);
+      if (!pid || !proj(pid)) { note('NOT RULED', 'This Board is in no Project here, so it cannot open on its own in this prototype.'); return false; }
+      openBoard(pid, name, !!t.getAttribute('data-connect'));
+    },
+    /* Back to the page, as she left it: the same Doc, Part, scroll and stage. */
+    'board-back': function () { S.board = null; },
+    'board-view': function (t) {
+      S.board.view = t.getAttribute('data-id');
+      S.board.pop = null; S.board.connect = false;
+    },
+    'board-step': function (t) { return stepFlip(parseInt(t.getAttribute('data-id'), 10)); },
+    'connect-drop': function () { S.board.connect = !S.board.connect; S.board.pop = null; },
+    'connect-to': function (t) {
+      var b = S.board, p = proj(b.pid), d = docIn(p, t.getAttribute('data-id'));
+      if (!d || boardDocs(p, b.name).indexOf(d) !== -1) { return false; }
+      connectBoard(p, d, b.name);
+      b.connect = false;
+      note('NOT RULED', '\u201c' + b.name + '\u201d is now one of the assets of \u201c' + d.name + '\u201d, connected to the Doc and to no Part. It stays in ' + p.name + '. Which Part it joins, and that you stay on the Board, are guesses.');
+    },
+    'connect-new': function () {
+      var b = S.board, p = proj(b.pid);
+      var name = uniqueName('Untitled doc', p.docs.map(function (x) { return x.name; }));
+      var d = { id: 'doc-' + (++S.counter), name: name, parts: 1, words: 0, isNew: true };
+      p.docs.push(d);
+      connectBoard(p, d, b.name);
+      b.connect = false;
+      note('NOT RULED', '\u201c' + name + '\u201d was made in ' + p.name + ' and \u201c' + b.name + '\u201d is one of its assets. You stay on the Board. The new Doc\u2019s name, and that it does not open, are guesses.');
+    },
 
     /* DOCS and a Project's own list */
     'more-kinds': function () { S.moreKinds = !S.moreKinds; },
     'open-doc': function (t) { openDoc(t.getAttribute('data-pid'), t.getAttribute('data-id')); },
     'new-doc': function (t) {
-      var pid = t.getAttribute('data-pid') || S.here.project, p = pid ? proj(pid) : null, kind = t.getAttribute('data-id');
+      var pid = t.getAttribute('data-pid') || nowPid(), p = pid ? proj(pid) : null, kind = t.getAttribute('data-id');
       var taken = (p ? p.docs : D.unfiled).map(function (d) { return d.name; });
       var name = uniqueName(kind === 'blank' ? 'Untitled doc' : 'Untitled ' + kind, taken);
       var d = { id: 'doc-' + (++S.counter), name: name, parts: 1, words: 0, isNew: true };
@@ -1543,8 +1781,8 @@
       if (!p) { note('NOT RULED', 'Not built: you are in no Project, and the brief does not say where a new Board lands then.'); return; }
       var name = uniqueName('Untitled board', p.boards.map(function (b) { return b.name; }));
       p.boards.push({ id: 'board-' + (++S.counter), name: name, meta: '0 blocks' });
-      if (t.getAttribute('data-from') === 'docs') { openPop({ kind: 'list', id: p.id }); }
-      note('NOT RULED', '\u201c' + name + '\u201d was made in ' + p.name + ' with no Doc. Its name is a guess. The Board itself opens in milestone 5 (F).');
+      openBoard(p.id, name);
+      note('NOT RULED', '\u201c' + name + '\u201d was made in ' + p.name + ' with no Doc, and opened on its own. Its name, and that it opens at once, are guesses.');
     },
 
     /* PROJECTS */
@@ -1620,6 +1858,8 @@
     if (S.partsDrop && !e.target.closest('.drop') && !e.target.closest('.crumb-part')) { S.partsDrop = false; dirty = true; }
     /* And the list under the asset's name, in a split. */
     if (S.split && S.split.drop && !e.target.closest('.beside-drop') && !e.target.closest('.beside-name')) { S.split.drop = false; dirty = true; }
+    /* And the Connect Doc list, on a Board. */
+    if (S.board && S.board.connect && !e.target.closest('.connect') && !e.target.closest('.connect-btn')) { S.board.connect = false; dirty = true; }
     if (!t) {
       /* A click on the room, the page or a side menu closes an open pop-out. */
       if (S.pop && !e.target.closest('.pop') && !e.target.closest('.rail') && !e.target.closest('.offstage')) { openPop(null); dirty = true; }
@@ -1635,8 +1875,15 @@
     /* Ctrl+F opens the same search as the top bar's button, in the Doc she is in. Pressed again, it goes back to the field. */
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'f' || e.key === 'F')) {
       e.preventDefault();
+      if (S.board) { note('NOT RULED', 'Search from a Board is not built: the brief does not say what it looks in there.'); return; }
       openSearch('bar');
       render();
+      return;
+    }
+    /* The Flip view, from the keyboard: the arrow keys go to the Block before and the next one. */
+    if (S.board && S.board.view === 'flip' && !S.board.pop && !S.board.connect && !S.pop && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+        !(e.target && e.target.classList && e.target.classList.contains('blk-text'))) {
+      if (stepFlip(e.key === 'ArrowLeft' ? -1 : 1) !== false) { e.preventDefault(); render(); }
       return;
     }
     if (e.key === 'Enter' && e.target && e.target.id === 'search-q') {
@@ -1662,10 +1909,12 @@
 
   /* A double click on a Block's empty area pops it out. On its words it selects a word, as anywhere. */
   shell.addEventListener('dblclick', function (e) {
-    if (!S.split || !e.target.closest) { return; }
+    var on = S.board || S.split;
+    if (!on || !e.target.closest) { return; }
     var blk = e.target.closest('.blk');
     if (!blk || blk.classList.contains('is-popped') || e.target.closest('.blk-text')) { return; }
-    S.split.pop = { board: blk.getAttribute('data-board'), i: parseInt(blk.getAttribute('data-i'), 10) };
+    on.pop = { board: blk.getAttribute('data-board'), i: parseInt(blk.getAttribute('data-i'), 10) };
+    if (S.board) { S.board.connect = false; }
     if (window.getSelection) { window.getSelection().removeAllRanges(); }
     render();
   });
@@ -1766,6 +2015,7 @@
     closeSearch();
     S.partsDrop = false;
     S.split = null;
+    S.board = null;
     if (h === 'pins-list') { S.pinView = 'list'; }
     else if (h === 'pins-boxes') { S.pinView = 'boxes'; }
     else if (h === 'day-one') {
@@ -1811,6 +2061,16 @@
       if (h === 'split-pop') { S.split.pop = { board: 'Method notes', i: 2 }; }
       if (h === 'split-drop') { S.split.drop = true; }
       if (h === 'split-search') { openSearch('bar'); S.search.q = 'toll'; }
+    }
+    /* A Board on its own (F). These doors open the Board "Harbor map" in Thesis. */
+    else if (h.indexOf('board') === 0) {
+      if (!proj('thesis')) { render(); return; }
+      openBoard('thesis', 'Harbor map', h === 'board-connect');
+      if (h === 'board-connected' && docIn(proj('thesis'), 'harbor-tolls') && !boardDocs(proj('thesis'), 'Harbor map').length) {
+        connectBoard(proj('thesis'), docIn(proj('thesis'), 'harbor-tolls'), 'Harbor map');
+      }
+      if (h === 'board-pop') { S.board.pop = { board: 'Harbor map', i: 1 }; }
+      if (VIEWS.map(function (v) { return 'board-' + v.toLowerCase(); }).indexOf(h) !== -1) { S.board.view = h.slice(6); }
     }
     else if (h === 'search-assets' || h === 'search-plan' || h === 'search-feedback') {
       closeSearch();

@@ -2,9 +2,9 @@
 
 One line for each thing the brief does not state. Each is a best guess, tagged on screen (a corner tag, a chip beside it, or a note when it is pressed). Nothing here is decided.
 
-After milestone 4 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen).
+After milestone 5 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen; a Board on its own).
 
-The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 78, 86, 94, 97) was answered by Fable and has moved to one of the two lists below. Lines 110 on are milestone 4's.
+The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 78, 86, 94, 97) was answered by Fable and has moved to one of the two lists below. Lines 110 to 130 are milestone 4's, 132 on are milestone 5's.
 
 ## Answered by Fable on Nov 14, so no longer on this list
 
@@ -25,7 +25,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 ## PROPOSED (Fable's proposals, built and tagged PROPOSED)
 
 - **An Unfiled piece opens on the page like any Doc.** While she is in no Project, the rail's top box is an empty box labelled Unfiled.
-- **"Connect Doc" on a Board's row** in a Project's own list. It does nothing until milestone 5.
+- **"Connect Doc" on a Board's row** in a Project's own list. It opens the Board on its own with the Connect Doc list already down (that it does so is mine).
 - **The search's two rows of scope tabs are two separate choices.** The first row is how far she looks: THIS DOC, THIS PROJECT, EVERYTHING. The second is what she looks in: PLAN, ASSETS, FEEDBACK, or none of them for the words themselves. (I read "two separate choices" as two choices she makes side by side, and rebuilt the row so; before, the six were one choice. If Fable meant "leave it as it was", this is the thing to say.) What each pairing looks in is at 74 to 76.
 - **Find and Replace is a closed line** she opens, under the scope tabs, once the search has found something in her Doc.
 - **A replace keeps the capital.** A found word that starts with a capital gets a capital on what replaces it: "Tolls" becomes "Dues".
@@ -66,7 +66,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 23. **What "More kinds" lists:** Essay, Report, Letter, opening in place under the row.
 24. **A new Doc** lands in the Project she is in, is named "Untitled doc" (or "Untitled screenplay" and so on), and opens at once on an empty page.
-25. **A new Board made from DOCS** lands in the Project she is in, named "Untitled board", and the Project's own list opens to show it. (Frame P3-NB-C's foot says "in Thesis"; the brief does not.)
+25. **A new Board made from DOCS** lands in the Project she is in, named "Untitled board", and opens on its own at once, empty. (Frame P3-NB-C's foot says "in Thesis"; the brief does not.) "New board" in a Project's own list does the same.
 26. **Recent** keeps the last three Docs opened.
 27. **The two page-default switches** flip and change nothing else.
 
@@ -93,7 +93,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 40. **The count in its head** leaves out boards when there are none ("7 docs").
 41. **Empty lists** say "No docs here yet." and "No boards here yet."
 42. **"New doc" here** makes the Doc in this Project, even if she is in another one.
-43. **A Board's row** only shows a note until milestone 5.
+43. **A Board's row** opens the Board on its own. A Board that has been connected to a Doc leaves BOARDS WITH NO DOC; it is then reached from that Doc's assets.
 44. **The Notebook's own list** reads "DOCS · 4" over its pages, because it opens "like any Project".
 
 ## THEME and CONTROLS pop-outs
@@ -181,7 +181,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 114. **The grip's other stop:** the asset's side is never narrower than 336 px (one Block and its margins). The arrow keys move the grip 16 px.
 115. **The split is forgotten when it closes:** the next one starts at half again. Swapping the asset keeps where the grip was.
 116. **What the menus are after a split.** As she left them: a Back menu that was open on ASSETS is open on ASSETS again. The brief says "to get her tools back she closes either side" and not in what state.
-117. **The CLOSE over the page's right corner** closes the page's side. The brief says she can close either side and draws no control for the page's. What is left then is not said: with a second Doc beside the page, that Doc takes the page; with a Board, a Block or an imported file, it only shows a note in this milestone.
+117. **The CLOSE over the page's right corner** closes the page's side. The brief says she can close either side and draws no control for the page's. What is left then is not said: with a second Doc beside the page, that Doc takes the page; with a Board, the Board opens on its own (milestone 5); with a Block or an imported file, it only shows a note.
 118. **Opening another Doc ends the split.** The new Doc opens alone.
 119. **The faded stage buttons cannot be pressed.** A note on hover says she stays in her stage.
 120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it.
@@ -196,6 +196,27 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 129. **Where the search sits in a split** (Fable's proposal): the same menu, 288 wide, over the left of the asset's side, against the page, under the asset's head. It looks in the same things as out of a split; it does not look inside the asset beside her any more than before.
 130. **A Board found by the search that is not connected to her Doc** ("Harbor map") opens beside the page all the same; its head says "not connected to this doc".
 
+## F. A Board on its own
+
+132. **Where the frames and the brief differ, the brief is built.** Frames P3-NB-C and P3-NB-D still draw SPRINT, BUILD, EDIT and FINALIZE on a Board and word the button "Connect to a doc". The brief puts the Board's six view options where the stages are and words the button "Connect Doc". The frames' foot says "3 cards"; it reads "3 blocks".
+133. **Where "Connect Doc" stands.** Where the frames put it: after the Board's place in the bar ("Board · no doc yet"), on the left, with the six views at the right. That is in front of the view options in reading order, not touching them.
+134. **How the views are written:** "Open", "Plan", "Flip", "Walk", "Storyboard", "Thumbnails", as the brief writes them, not in capitals like the stages.
+135. **What the Board lies over.** It lies over the page (left 116, top 64, to 32 px short of the window's right edge, as tall as the page). The page is not moved, resized or taken away; it keeps its Part, scroll and words underneath, and the keyboard cannot reach it meanwhile.
+136. **The way back to the page:** a small button over the Board's left corner, "‹" and the name of the Doc and Part she left. The brief draws no way back. The stage she was in is kept.
+137. **Ways in the brief does not name:** "Open" on a Board's row in the Back menu's ASSETS tab; CLOSE on the page's side of a split with a Board beside it; a new Board opening at once (25).
+138. **The rail on a Board** shows the Board's Project at the top, also when the Doc under the Board is in another Project. Box settings then act on the Board's Project.
+139. **The two handles on a Board** sit at the Board's outer edges, as the frames draw. Pressed, each only shows a note: what the menus offer on a Board is the stage table (milestone 6).
+140. **Search on a Board** is not built. The top bar's button and Ctrl+F only show a note: the brief does not say what a search looks in from a Board.
+141. **What five of the six views show.** Only Open is drawn in a frame. Plan: the Blocks as a numbered list, in the order they were made. Flip: one Block large, an arrow each side, "2 of 3" under it; the arrow keys step too. Walk: the Blocks large, one under another, to read down through. Storyboard: the Blocks as numbered frames in a row, each under an empty dashed picture. Thumbnails: the Blocks small, name only. Each says at its head that it is a guess. None can reorder anything.
+142. **Open view: a Block with no place of its own** (every Board but "Harbor map") is set out in rows of four. Blocks cannot be dragged.
+143. **Blocks on a Board on its own** behave as beside the page: the words can be written in, a double click on the empty area pops the Block out and darkens the Board, Esc closes the pop-out. In Thumbnails a double click anywhere on a Block pops it out.
+144. **Connect Doc stays on a Board that already has a Doc,** so it can be connected to another (the brief puts the button on "a Board with no Doc" and also says a Board "can serve more than one Doc"). A Doc it already serves reads "connected" and cannot be pressed. There is no way to disconnect.
+145. **What connecting does.** The Board becomes an asset of that Doc, connected to the Doc and to no Part, dated today. She stays on the Board. The top bar's "Board · no doc yet" becomes the Doc's name, or "2 docs". The Board leaves BOARDS WITH NO DOC in its Project's list (43).
+146. **"A new doc"** makes "Untitled doc" in the Board's Project, connects the Board to it, and does not open it.
+147. **The row pointed at in the Connect Doc list** has the grey ground and dark bar that frame P3-NB-D draws on its first row.
+148. **The line under the Board** adds "only 3 drawn in this prototype" for a Board that says it has more Blocks than this prototype holds (107), and counts Docs: "connected to 2 docs".
+149. **Esc on a Board** closes the pop-out, then the Connect Doc list, then a rail pop-out. It never leaves the Board.
+
 ## For checking only
 
-131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with".
+131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search`, `#board`, `#board-connect`, `#board-connected`, `#board-pop`, `#board-plan`, `#board-flip`, `#board-walk`, `#board-storyboard`, `#board-thumbnails` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with". The Board doors open "Harbor map".

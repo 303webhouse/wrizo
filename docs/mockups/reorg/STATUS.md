@@ -1,20 +1,22 @@
-# STATUS: milestone 4 (Fable's answers of Nov 14, and the split screen)
+# STATUS: milestones 4 and 5 (Fable's answers of Nov 14, the split screen, a Board on its own)
 
-Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1, 2 and 3 passed Fable's check (2 and 3 at `bcb63c1d`). This commit applies Fable's sixteen answers and builds milestone 4 (brief, section 6 E). Milestone 5 (a Board on its own) is the next commit.
+Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1, 2 and 3 passed Fable's check (2 and 3 at `bcb63c1d`). Two commits since: `da00d744` applies Fable's sixteen answers and builds milestone 4 (brief, section 6 E); the commit after it builds milestone 5 (6 F). Milestone 6 (the stages) is not started.
 
 ## Not run, and no screenshots
 
-**I have not opened this page.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Everything in this commit was written and read through, never run. Treat every "built" here and in `CHECKLIST.md` as "written, not seen". There are no screenshots in `shots/`.
+**I have not opened this page.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Both milestones were written and read through, never run. Treat every "built" here and in `CHECKLIST.md` as "written, not seen". There are no screenshots in `shots/`.
 
 Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
-- **The search was rewritten** to make its two rows two separate choices. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere; with ASSETS pressed, 4 in Thesis; with PLAN pressed, 2 in this doc; with FEEDBACK pressed, 1 in this doc.
+- **The search was rewritten** (milestone 4) to make its two rows two separate choices. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere; with ASSETS pressed, 4 in Thesis; with PLAN pressed, 2 in this doc; with FEEDBACK pressed, 1 in this doc.
 - **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
 - **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
 - **The grip.** At 1366 wide it should only move right.
+- **The top bar on a Board.** Six views and Connect Doc are wider than four stages. By my sums it fits 1366 once a Board serves a Doc with a long name, but the sums are estimates of letter widths, not measurements; if anything is pushed off the right edge, it is here (`#board-connected`).
+- **The Board over the page.** `#board` should show the Board at left 116, top 64, 1218 × 640, and the page's rectangle should still measure 415 / 64 / 620 × 640 underneath it.
 
-## Fable's answers, applied
+## Fable's answers, applied (milestone 4's commit)
 
 Changed: the toggle shows only on a Part with something connected (9). Oldest or newest first is one line at the top of the Parts list (10). The Parts' lettered boxes take their letter from the Part's name (14). BOX SETTINGS is not shown in no Project (16). A replace keeps the capital (5). The search's two rows are two separate choices (1).
 
@@ -22,7 +24,7 @@ Kept as built, now marked PROPOSED or ruled in `NOT-RULED.md`: 2, 3, 4, 6, 7, 8,
 
 **One answer I may have read wrongly: 1, "keep the two rows as two separate choices".** Before, the six scope tabs were one choice. I took the answer to mean two choices made side by side: how far she looks (THIS DOC, THIS PROJECT, EVERYTHING) and what she looks in (PLAN, ASSETS, FEEDBACK, or none for the words). So ASSETS with THIS PROJECT is "assets in this Project", and nine other pairings exist that the brief never names. If the answer meant "leave it as it was", say so and I will put it back.
 
-## What milestone 4 adds
+## What milestone 4 adds (the split screen)
 
 - **The split.** An asset opens on the right from half (725 in a 1366 window), with a grip between the sides. The page keeps its size and its top and sits in the middle of its own side: left 100 at half, as frame P3-23A draws it.
 - **Both menu handles are gone in a split,** and the menus with them. Closing the asset's side puts the page back at 415 and the menus back as they were.
@@ -31,32 +33,50 @@ Kept as built, now marked PROPOSED or ruled in `NOT-RULED.md`: 2, 3, 4, 6, 7, 8,
 - **A second Doc beside the page** is read-only. The Doc she is in can open beside itself; the Part on the page is left out, with a line saying so.
 - **Fable's two proposals:** the asset's name drops the Doc's connected assets, to swap without leaving the split; Ctrl+F in a split opens the search over the asset's side.
 
+## What milestone 5 adds (a Board on its own)
+
+- **The Board.** A Board's row in a Project's own list opens it on its own (`#board`): left 116, top 64, 1218 × 640 at 1366 × 768, with "Harbor map" as frame P3-NB-C draws it: three Blocks where the frame puts them, over the drawing of the shore and the mole.
+- **The view options stand where the stage buttons stand:** Open, Plan, Flip, Walk, Storyboard, Thumbnails, the brass line under the one she is in. The four stages are not on a Board. All six can be pressed; only Open is from a frame.
+- **Connect Doc** stands in front of the views. Pressed (`#board-connect`), it lists the Docs of the Board's Project, then "A new doc", as frame P3-NB-D draws. Pressing a Doc makes the Board one of that Doc's assets; the Board stays in its Project, and the button stays, so it can serve a second Doc (`#board-connected`).
+- **The page is under the Board, untouched.** A small button over the Board's left corner goes back to it: the same Doc, Part, scroll and stage.
+- **Blocks on a Board** are written in and popped out as beside the page.
+
 ## What I read
 
-The brief, the rules file, and of the frames' HTML **P3-23A in full**. I did not read P3-23A2, P3-23B or P3-23C: they are options Nick's ruling replaced (the menu over the split; the asset on the left; the page first).
+The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D in full**. I did not read P3-23A2, P3-23B or P3-23C: they are options Nick's ruling replaced.
 
-## Where the frame and the brief differ, and what I did
+## Where the frames and the brief differ, and what I did
 
-- **The handles.** Frame P3-23A still draws both. Nick ruled them gone; they are gone.
-- **Words.** The frame says "6 cards · linked to Part 3". I used "6 blocks · connected to Part 3".
-- **"Open" or "Open beside".** Frame P2-13A2 puts OPEN on an asset's row. The split is what that button does, and Machina's word for it is "Open beside", so the row says that.
-- **The Blocks of "Method notes"** are now the six the frame draws. Milestone 3 had three made-up ones there; see `NOT-RULED.md`, 107 and 109.
+- **The handles in a split.** Frame P3-23A still draws both. Nick ruled them gone; they are gone.
+- **The stages on a Board.** Frames P3-NB-C and P3-NB-D still draw SPRINT, BUILD, EDIT and FINALIZE in the top bar. The brief puts the Board's views there; the views are there.
+- **"Connect Doc".** The frames word the button "Connect to a doc". I used the brief's "Connect Doc". Its place is the frames': on the left, after "Board · no doc yet".
+- **Words.** The frames say "6 cards · linked to Part 3" and "3 cards". I used "6 blocks · connected to Part 3" and "3 blocks".
+- **"Open" or "Open beside".** Frame P2-13A2 puts OPEN on an asset's row. The split is what that button does, and Machina's word for it is "Open beside", so the row says that. A Board's row there now also has "Open", for the Board on its own.
+- **The Blocks of "Method notes"** are the six frame P3-23A draws. Milestone 3 had three made-up ones there; see `NOT-RULED.md`, 107 and 109.
 
 ## What I invented
 
-`NOT-RULED.md`, lines 110 to 130. The ones that shape what Nick sees:
+`NOT-RULED.md`, lines 110 to 130 (milestone 4) and 132 to 149 (milestone 5). The ones that shape what Nick sees:
 
 - **The page moves as she drags the grip,** because it keeps to the middle of its side.
-- **A CLOSE over the page's right corner** for the page's side, and what is left when it is pressed.
+- **A CLOSE over the page's right corner** for the page's side, and what is left when it is pressed (a Board beside the page now opens on its own).
 - **How a second Doc and an imported file look** beside the page.
-- **Only a Block's words can be written in,** not its name.
-- **Where "Open beside" sits for a Doc:** on its row in a Project's own list.
+- **What Plan, Flip, Walk, Storyboard and Thumbnails show.** Five guesses, each marked NOT RULED at the Board's head.
+- **The way back from a Board to the page,** and that the Board lies over the page instead of taking its place.
+- **Connect Doc on a Board that already has a Doc,** and that she stays on the Board after connecting.
+- **A new Board opens at once,** empty.
 
 ## Questions for Fable
 
 1. **Answer 1,** as above: two choices side by side (built), or the six tabs as one choice?
-2. **Closing the page's side.** What should be left: the asset alone? For a Board that would be the Board on its own; for a Block or an imported file the brief has no such screen.
+2. **Closing the page's side of a split.** With a Board beside the page it now leaves the Board on its own. For a Block or an imported file the brief has no such screen: what should be left?
 3. **The page in a split:** in the middle of its side, moving as she drags (built), or pinned at left 100 with the spare room between it and the asset?
 4. **After a split,** should the menus come back as they were (built), or closed?
-5. **A Block's name** beside the page: fixed (built), or can she write in it too?
+5. **A Block's name:** fixed (built), or can she write in it too?
 6. **"Open beside" for a Doc:** on its row in a Project's own list (built), or somewhere else?
+7. **Where does Connect Doc stand?** The frames put it on the left, after "Board · no doc yet" (built). "In front of the view options" could also mean touching them, at the right.
+8. **Does Connect Doc stay once a Board has a Doc?** The brief puts it on "a Board with no Doc" and also says a Board can serve more than one. Built: it stays.
+9. **After connecting,** does she stay on the Board (built), or go to the Doc? And which Part does the Board join: none (built)?
+10. **The five views with no frame.** Are Plan, Flip, Walk, Storyboard and Thumbnails near what you mean, or should they wait for frames?
+11. **The way back from a Board to the page.** A small button over the Board's corner (built). Is there meant to be one, and where?
+12. **Search and the two menus on a Board** only show a note. Is the search meant to work there before milestone 6?

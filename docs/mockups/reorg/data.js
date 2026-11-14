@@ -352,6 +352,16 @@
       ]
     },
 
+    /* What is drawn on a Board, under its Blocks, by Board: the inside of an SVG 1100 by 560.
+       The harbour's shore, three dashed leads and the mole, as frame P3-NB-C draws them. */
+    drawings: {
+      'Harbor map':
+        '<path d="M40 470 C 150 430, 190 330, 300 320 S 470 380, 560 300 S 640 140, 780 150 S 960 230, 1060 120" stroke="#3A4047" stroke-width="2.2"/>' +
+        '<path d="M300 320 l-34 62 M560 300 l10 70 M780 150 l-44 -58" stroke="#525A62" stroke-width="1.4" stroke-dasharray="5 5"/>' +
+        '<path d="M470 470 h150 v36 h-150z M505 470 v-30 h80 v30" stroke="#525A62" stroke-width="1.4"/>' +
+        '<text x="478" y="528" font-family="IBM Plex Mono, monospace" font-size="11" fill="#525A62">the mole</text>'
+    },
+
     /* The Back menu's PLAN tab: the ordered plan of the piece, by Doc. Invented: seven
        Blocks from the Boards above, in an order. */
     plan: {

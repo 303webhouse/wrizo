@@ -594,6 +594,88 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 /* In a split the search lies over the asset's side, against the page (Fable's proposal, not ruled). */
 .menu.over-beside { left: calc(var(--split-x, 725px) + 1px); top: 77px; height: auto; bottom: 64px; border-top: 0; z-index: 4; }
 
+/* ---------- a Board on its own (F, frames P3-NB-C and P3-NB-D) ---------- */
+/* The Board lies over the page. The page is not moved, resized or taken away: it stays at its place, under the Board. */
+.board {
+  position: absolute; left: 116px; top: 64px; width: calc(100% - 148px); height: calc(100% - 128px); box-sizing: border-box;
+  background: #EEF0F1; border: 1px solid #D2D6DA; overflow: hidden; z-index: 1;
+  display: flex; flex-direction: column;
+}
+.on-board .foot { left: 116px; width: auto; }
+/* On a Board the two handles sit at the Board's outer edges. */
+.handle-front.on-board { left: 84px; }
+.handle-back.on-board { left: calc(100% - 16px); }
+/* Back to the page, in the band over the Board's left corner (not ruled). */
+.back-chip { position: absolute; left: 116px; top: 43px; background: #F4F5F6; z-index: 1; }
+.back-chip:hover { text-decoration: underline; }
+
+/* Connect Doc, in the top bar in front of the view options. */
+.connect-btn {
+  flex: 0 0 auto; height: 24px; padding: 0 9px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #9AA1A8; font-family: var(--mono); font-size: 11px; color: #E6E8EA; white-space: nowrap;
+}
+.connect-btn.is-open { border-color: #E6E8EA; background: #27323C; }
+/* A long line of Docs gives way before the bar's buttons do. */
+.on-board .crumb-part { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* The Board's view options stand where the stage buttons stand, written as the brief writes them. */
+.stages.views .stage-btn { letter-spacing: .06em; }
+.drop.connect { width: 320px; }
+.connect-row {
+  height: 44px; padding: 0 14px; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid #D2D6DA;
+}
+.connect-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.connect-row:not(.is-on):hover, .connect-row:not(.is-on):focus-visible { background: #E6E8EA; box-shadow: inset 3px 0 0 #23272B; }
+.connect-row.is-on { cursor: default; }
+.connect-row.is-on .row-name { color: #525A62; }
+.connect-foot { padding: 9px 14px 11px; font-size: 12px; line-height: 1.4; color: #525A62; }
+
+/* OPEN: the Blocks where she left them, over the Board's drawing (frame P3-NB-C draws them 230 x 96). */
+.board-open { position: absolute; left: -1px; top: -1px; right: 0; bottom: 0; overflow: hidden; }
+.board-drawing { position: absolute; left: 34px; top: 46px; }
+.board-at { position: absolute; }
+.board-at .blk { width: 230px; }
+.board > .quiet-line { padding: 20px 24px; }
+
+/* The other five views: guesses, each under a line that says so. */
+.board-note {
+  flex: 0 0 auto; padding: 9px 16px; display: flex; align-items: center; gap: 8px;
+  background: #F4F5F6; border-bottom: 1px solid #D2D6DA; font-family: var(--mono); font-size: 10.5px; color: #525A62;
+}
+.board-col {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding: 24px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.board-col > * { flex: 0 0 auto; }
+.board-step { width: 440px; display: flex; align-items: center; gap: 12px; }
+.board-step .part-num { width: 16px; text-align: right; }
+.board-step .blk { flex: 1 1 auto; min-width: 0; min-height: 64px; }
+.board-col.walk { gap: 20px; }
+.board-col.walk .blk { width: 560px; min-height: 150px; padding: 20px 24px 20px 28px; gap: 8px; }
+.board-col.walk .blk-title, .board-flip .blk-title { font-size: 16px; }
+.board-col.walk .blk-text, .board-flip .blk-text { font-size: 15px; line-height: 1.5; }
+.board-flip { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 24px; }
+.board-flip .blk { width: 520px; min-height: 260px; padding: 28px 32px 28px 36px; gap: 10px; }
+.flip-btn {
+  flex: 0 0 auto; width: 34px; height: 34px; box-sizing: border-box; border: 1px solid #6A727B; background: #F4F5F6;
+  display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 14px; color: #3A4047;
+}
+.flip-btn[disabled] { opacity: .35; cursor: default; }
+.board-count { flex: 0 0 auto; padding: 0 0 28px; text-align: center; font-family: var(--mono); font-size: 11px; color: #525A62; }
+.board-strip {
+  flex: 1 1 auto; min-height: 0; overflow-x: auto; scrollbar-width: thin; padding: 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.board-frame { flex: 0 0 230px; display: flex; flex-direction: column; gap: 6px; }
+.board-frame-n { font-family: var(--mono); font-size: 10.5px; color: #525A62; }
+.board-frame-pic { height: 130px; box-sizing: border-box; border: 1px dashed #9AA1A8; background: #E6E8EA; }
+.board-thumbs {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding: 24px;
+  display: grid; grid-template-columns: repeat(auto-fill, 150px); grid-auto-rows: 56px; gap: 12px; align-content: start;
+}
+.blk.thumb { min-height: 0; padding: 8px 10px 8px 14px; justify-content: center; cursor: default; }
+.blk.thumb .blk-title { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---------- marking: RULED, PROPOSED, NOT RULED ---------- */
 .tag {
   display: inline-block; flex: 0 0 auto; box-sizing: border-box; padding: 1px 5px;
