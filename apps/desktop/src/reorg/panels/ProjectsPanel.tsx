@@ -28,7 +28,7 @@ function useRows(): RailProject[] {
 /** The pop-out head's count: how many Projects All projects lists (the Notebook is not a Project: not counted). */
 export function ProjectsCount() {
   // FIX 1 (Fable, Nov 14, 3:52 pm): All projects counts its Projects; the Notebook is listed, never counted
-  return <span className="wz-reorg-head-count" data-reorg-count="">{useRows().filter((r) => r.id !== NOTEBOOK).length}</span>;
+  return <span className="wz-reorg-head-count" data-reorg-count="">{useRows().length}</span>;
 }
 
 export function ProjectsPanel({ subject, openCategory }: CascadeContext) {
