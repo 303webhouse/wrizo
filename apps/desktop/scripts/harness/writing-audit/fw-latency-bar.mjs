@@ -26,8 +26,10 @@ for (const key of Object.keys(B).sort()) {
     const okP95 = [a1, a2].every((a) => p95(b) - p95(a) <= gap);
     const ok = okMed && okP95;
     if (!ok) bad++;
-    console.log(`${ok ? 'PASS' : 'FAIL'}  ${key} ${m}: median A1 ${med(a1)} B ${med(b)} A2 ${med(a2)}${okMed ? '' : ' (MEDIAN OVER)'}; p95 A1 ${p95(a1)} B ${p95(b)} A2 ${p95(a2)} (A gap ${Math.round(gap * 10) / 10})${okP95 ? '' : ' (P95 OVER)'}`);
+    console.log(`${process.env.GITHUB_ACTIONS === 'true' ? (ok ? 'info-ok  ' : 'info-over') : (ok ? 'PASS' : 'FAIL')}  ${key} ${m}: median A1 ${med(a1)} B ${med(b)} A2 ${med(a2)}${okMed ? '' : ' (MEDIAN OVER)'}; p95 A1 ${p95(a1)} B ${p95(b)} A2 ${p95(a2)} (A gap ${Math.round(gap * 10) / 10})${okP95 ? '' : ' (P95 OVER)'}`);
   }
 }
-console.log(bad ? `FW-LATENCY BAR: FAIL (${bad} of ${n})` : `FW-LATENCY BAR: PASS (${n} measures)`);
-process.exitCode = bad ? 1 : 0;
+// THE BOX'S RULE (as #47 did for flux3-latency): the bar gates only on the box. On a hosted runner (GITHUB_ACTIONS === 'true') the same lines print as INFORMATION and the exit is 0 - the runners' own noise (A1 against A2 alone fails the bar in 21 of 36 median cells, run 43574073895 / 43574516825) is not a verdict on the tree.
+const onBox = process.env.GITHUB_ACTIONS !== 'true';
+if (onBox) { console.log(bad ? `FW-LATENCY BAR: FAIL (${bad} of ${n})` : `FW-LATENCY BAR: PASS (${n} measures)`); process.exitCode = bad ? 1 : 0; }
+else { console.log(`FW-LATENCY BAR: INFORMATION on a hosted runner (${bad} of ${n} would fail on the box's rule); no verdict, exit 0`); process.exitCode = 0; }
