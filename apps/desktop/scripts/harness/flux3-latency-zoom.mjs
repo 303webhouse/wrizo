@@ -14,6 +14,9 @@
 //   MUT-z      the burn landed on every key (a count: gates everywhere), lifted the median by >= 8 ms (a timing line) and FAILS the bar (on the box; on Actions only the landing gates)
 //   SPLIT      information: median / p95 for C, Z100, Z020, Z400, and each zoomed arm's difference from Z100 (the zoom's own share, apart from Flux's)
 //   Premises   each arm stood where it claims (theme, flag, the measured scale, the editor focused), >= 40 keys painted per arm-round, every typed character reached the card, B the build
+// COST READING (Nov 14, Fable): the clock cannot see a cost smaller than a frame (the per-key print, Actions run 43626167023: a 24 ms burn on every key made the median FALL, 47.2 -> 29.3, the burn eating the frame wait),
+//   so each arm is ALSO judged on lib/l-method.mjs's second reading, per key BUSY + FRAME, against the control's spread CAPPED (CAP_MED / CAP_P95); a control over the cap makes the run VOID. The clock lines stay and still gate.
+//   MUT-z is judged on the cost reading (the two clock assertions are parked where they stood); MUT5 / MUT10 are l-method's +5 / +10 ms burns on the control page. DIAG / DIAG-KEYS / DIAG-COST print every key and every round (information).
 // FLUX3_ROUNDS=<n> (default 4). Run: node scripts/harness/flux3-latency-zoom.mjs   (from apps/desktop; a box turn - this is a timing file; on Actions its timing lines are information)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -89,13 +92,31 @@ function judge(cRounds, xRounds) {
   return { lat, layerDamp: xLayer <= xRounds.length, xLayer, C, X, spreadMed, spreadP95, enough };
 }
 
+// The COST reading (Nov 14, Fable's ruling after the per-key print: the clock cannot see a cost under a frame): lib/l-method.mjs's second reading, per key BUSY + FRAME. BUSY = keydown -> the end of the
+// task that handled the key (a message posted from the key's last event); FRAME = the first animation frame after the input -> the end of that frame's rendering (a message posted from the rAF).
+// Judged like the clock (the arm's median and p95 within the control's own round-to-round spread) but with a CAP on that allowance: a control noisier than the cap makes the run VOID (quiet = false), not green.
+const CAP_MED = 8, CAP_P95 = 12;   // PROVISIONAL (Fable confirms before any box turn): half a frame on the median, three quarters on the p95
+const costOf = (r) => (r.ks || []).filter((k) => k[3] != null && k[6] != null).map((k) => k[3] + k[6]);
+function judgeCost(cRounds, xRounds) {
+  const cMeds = cRounds.map((r) => stat(costOf(r)).median), cP95s = cRounds.map((r) => stat(costOf(r)).p95);
+  const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
+  const C = stat(cRounds.flatMap(costOf)), X = stat(xRounds.flatMap(costOf));
+  const enough = X.n >= MIN_KEYS * xRounds.length && C.n >= MIN_KEYS * cRounds.length;
+  const quiet = spreadMed <= CAP_MED && spreadP95 <= CAP_P95;
+  const allowMed = Math.min(spreadMed, CAP_MED), allowP95 = Math.min(spreadP95, CAP_P95);
+  const within = X.median <= C.median + allowMed && X.p95 <= C.p95 + allowP95;
+  return { enough, quiet, within, pass: enough && quiet && within, caught: enough && quiet && !within, C, X, spreadMed, spreadP95, allowMed, allowP95 };
+}
+
 const CYCLE = 'the signal holds while she writes on ';
 const ARMS = {
   C: { theme: 'plateau', flag: false, scale: null, burn: false },
   Z100: { theme: 'flux', flag: true, scale: 1, burn: false },
   Z020: { theme: 'flux', flag: true, scale: 0.2, burn: false },
   Z400: { theme: 'flux', flag: true, scale: 4, burn: false },
-  MUT: { theme: 'flux', flag: true, scale: 4, burn: true },
+  MUT: { theme: 'flux', flag: true, scale: 4, burn: BURN_MS },
+  MUT5: { theme: 'plateau', flag: false, scale: null, burn: 5 },
+  MUT10: { theme: 'plateau', flag: false, scale: null, burn: 10 },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -162,8 +183,8 @@ try { await withHarness(async (app) => {
       window.__lat = []; window.__ks = []; window.__et = []; let t0 = 0, cur = null;
       if (window.__latOff) window.__latOff();
       try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__et.push([e.name, e.startTime, e.processingStart, e.processingEnd, e.duration]); }).observe({ type: 'event', durationThreshold: 16 }); } catch (e) { /* no Event Timing: the DIAG says so */ }
-      const kd = () => { t0 = performance.now(); cur = { kd: t0, bi: null, f1: null, f2: null, busy: null, b0: null, b1: null }; window.__ks.push(cur); };
-      const bi = () => { const t = t0, k = cur; if (k) k.bi = performance.now() - t; requestAnimationFrame(() => { if (k) k.f1 = performance.now() - t; requestAnimationFrame(() => { const now = performance.now(); if (k) k.f2 = now - t; window.__lat.push({ ms: now - t, key: t, at: now }); }); }); };
+      const kd = () => { t0 = performance.now(); cur = { kd: t0, bi: null, f1: null, f2: null, busy: null, frame: null, b0: null, b1: null }; window.__ks.push(cur); };
+      const bi = () => { const t = t0, k = cur; if (k) k.bi = performance.now() - t; requestAnimationFrame(() => { const r = performance.now(); if (k) k.f1 = r - t; const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); }; mc.port2.postMessage(0); requestAnimationFrame(() => { const now = performance.now(); if (k) k.f2 = now - t; window.__lat.push({ ms: now - t, key: t, at: now }); }); }); };
       const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.kd; mc.port1.close(); }; mc.port2.postMessage(0); };
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); };
@@ -171,7 +192,7 @@ try { await withHarness(async (app) => {
     // the burn (the mutant): a synchronous busy-wait on every beforeinput, installed AFTER the meter (the same phase, registered second, so it runs after the meter has stamped the keydown and queued its two
     // animation frames): the frames cannot run until the burn ends, so the cost lands inside the measured interval whatever the frame phase. (Two earlier shapes failed on Actions: a burn on keydown installed
     // BEFORE the meter was invisible - the stamp came after it; installed after the meter it moved the median 5 ms at 12 ms and, at 24 ms, LOWERED it by 19 on a slow runner, the frame phase swallowing it.)
-    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('beforeinput', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; const k = window.__ks[window.__ks.length - 1]; if (k) { k.b0 = t - k.kd; k.b1 = performance.now() - k.kd; } }, true); return true; })()`);
+    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('beforeinput', () => { const t = performance.now(); while (performance.now() - t < ${arm.burn}) { /* burn */ } window.__burnN += 1; const k = window.__ks[window.__ks.length - 1]; if (k) { k.b0 = t - k.kd; k.b1 = performance.now() - k.kd; } }, true); return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[(round * 7 + i) % CYCLE.length]; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
     await sleep(250);
@@ -181,15 +202,15 @@ try { await withHarness(async (app) => {
       const win = fr.filter((f) => f[0] >= k0 && f[0] <= k1);
       const ed = document.querySelector('.board-popup-editor');
       return { lat: lat.map((x) => x.ms), layerFrames: win.filter((f) => f[1] > 0).length, frames: win.length, after: ed ? ed.textContent.length : -1, burned: window.__burnN || 0,
-        ks: window.__ks.map((k) => [k.bi, k.f1, k.f2, k.busy, k.b0, k.b1].map((x) => (x == null ? null : Math.round(x * 10) / 10))), et: window.__et.map((e) => e.map((x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : x))) };
+        ks: window.__ks.map((k) => [k.bi, k.f1, k.f2, k.busy, k.b0, k.b1, k.frame].map((x) => (x == null ? null : Math.round(x * 10) / 10))), et: window.__et.map((e) => e.map((x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : x))) };
     })()`);
     return { name, round, where, landed, typed: typed.length, ...got };
   };
 
   // warm-up (discarded), then the rounds, the arm order rotating each round
   await runArm('C', 0);
-  const order = ['C', 'Z100', 'Z020', 'Z400', 'MUT'];
-  const res = { C: [], Z100: [], Z020: [], Z400: [], MUT: [] };
+  const order = ['C', 'Z100', 'Z020', 'Z400', 'MUT', 'MUT5', 'MUT10'];
+  const res = { C: [], Z100: [], Z020: [], Z400: [], MUT: [], MUT5: [], MUT10: [] };
   for (let round = 1; round <= ROUNDS; round += 1) {
     const rot = order.slice((round - 1) % order.length).concat(order.slice(0, (round - 1) % order.length));
     for (const name of rot) res[name].push(await runArm(name, round));
@@ -217,10 +238,10 @@ try { await withHarness(async (app) => {
   const mn = (xs) => { const s = xs.filter((x) => x != null); return s.length ? Math.min(...s) : null; };
   for (const name of Object.keys(res)) {
     const ks = res[name].flatMap((r) => r.ks || []), col = (i) => ks.map((k) => k[i]), lat = res[name].flatMap((r) => r.lat);
-    const burnOut = lat.filter((x) => x < BURN_MS).length;
+    const bm = ARMS[name].burn || 0, burnOut = lat.filter((x) => x < bm).length;
     const kdE = res[name].flatMap((r) => (r.et || []).filter((e) => e[0] === 'keydown')), inE = res[name].flatMap((r) => (r.et || []).filter((e) => e[0] === 'beforeinput' || e[0] === 'input'));
     const delay = kdE.map((e) => e[2] - e[1]), proc = kdE.map((e) => e[3] - e[2]), dur = kdE.map((e) => e[4]);
-    console.log(`DIAG ${name}: ${lat.length} keys | clock min ${r1(mn(lat))} med ${r1(med(lat))} max ${r1(mx(lat))} (under ${BURN_MS} ms: ${burnOut}) | bi med ${r1(med(col(0)))} f1 med ${r1(med(col(1)))} f2 med ${r1(med(col(2)))} busy med ${r1(med(col(3)))} max ${r1(mx(col(3)))}`
+    console.log(`DIAG ${name}: ${lat.length} keys | clock min ${r1(mn(lat))} med ${r1(med(lat))} max ${r1(mx(lat))} (under the burn's ${bm} ms: ${burnOut}) | bi med ${r1(med(col(0)))} f1 med ${r1(med(col(1)))} f2 med ${r1(med(col(2)))} busy med ${r1(med(col(3)))} max ${r1(mx(col(3)))}`
       + ` | burn b0 med ${r1(med(col(4)))} b1 med ${r1(med(col(5)))} b1 max ${r1(mx(col(5)))} | f1 minus b1 med ${r1(med(ks.map((k) => (k[1] != null && k[5] != null ? k[1] - k[5] : null))))} f2 minus f1 med ${r1(med(ks.map((k) => (k[2] != null && k[1] != null ? k[2] - k[1] : null))))}`
       + ` | Event Timing: keydown n ${kdE.length}, input delay med ${r1(med(delay))} max ${r1(mx(delay))}, processing med ${r1(med(proc))} max ${r1(mx(proc))}, duration med ${r1(med(dur))} max ${r1(mx(dur))}, >= 48 ms ${dur.filter((x) => x >= 48).length}; beforeinput/input entries ${inE.length}`);
   }
@@ -245,8 +266,28 @@ try { await withHarness(async (app) => {
   const m = judge(res.C, res.MUT);
   const burnLanded = res.MUT.length > 0 && res.MUT.every((r) => r.burned >= MIN_KEYS);
   ok(`MUT-z premise: the ${BURN_MS} ms burn landed on every key (${res.MUT.map((r) => r.burned).join('/')} keys burned)`, burnLanded, JSON.stringify(res.MUT.map((r) => ({ round: r.round, burned: r.burned }))));
-  timing(`MUT-z effect the burn lifted the median by >= 8 ms (MUT ${r1(S.MUT.median)} vs Z400 ${r1(S.Z400.median)}: +${r1(S.MUT.median - S.Z400.median)})`, S.MUT.median >= S.Z400.median + 8, JSON.stringify({ mut: show(S.MUT), z400: show(S.Z400) }));
-  ok(`MUT-z the burn FAILS the bar (caught by L: ${m.lat ? 'no' : 'YES'}) - MUT median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}`, burnLanded && (ON_BOX ? !m.lat : true), `C ${show(m.C)} | MUT ${show(m.X)}`);   // on Actions only the landing gates: L is a timing line
+  // PARKED (Nov 14, SUPERSEDED): the two assertions below read the CLOCK and the per-key print (Actions run 43626167023) falsified them: the burn lands on every key (min 28.4 ms, none under 24) yet the clock FELL
+  // (MUT 29.3 vs Z400 47.2), because the burn eats the frame wait; the clock cannot see a cost smaller than a frame (bug #40's blind spot). Originals verbatim; the live successors read the COST reading, further down.
+  // timing(`MUT-z effect the burn lifted the median by >= 8 ms (MUT ${r1(S.MUT.median)} vs Z400 ${r1(S.Z400.median)}: +${r1(S.MUT.median - S.Z400.median)})`, S.MUT.median >= S.Z400.median + 8, JSON.stringify({ mut: show(S.MUT), z400: show(S.Z400) }));
+  // ok(`MUT-z the burn FAILS the bar (caught by L: ${m.lat ? 'no' : 'YES'}) - MUT median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)}`, burnLanded && (ON_BOX ? !m.lat : true), `C ${show(m.C)} | MUT ${show(m.X)}`);   // on Actions only the landing gates: L is a timing line
+  // SUCCESSOR (Nov 14): the same questions asked of the COST reading, where a burn is visible (the clock absorbs it in the frame wait: Actions run 43626167023, MUT clock 29.3 vs Z400 47.2, no key under 24 ms)
+  const costS = Object.fromEntries(Object.keys(res).map((k) => [k, stat(res[k].flatMap(costOf))]));
+  const cj = {}; for (const k of Object.keys(res)) cj[k] = judgeCost(res.C, res[k]);
+  const quietJ = cj.C;   // the control against itself: its spread is the allowance, so `quiet` is the control's own
+  const costPerRound = (k) => res[k].map((r) => `${r1(stat(costOf(r)).median)}/${r1(stat(costOf(r)).p95)}`).join(' ');
+  console.log(`DIAG-COST per round median/p95: C ${costPerRound('C')} | Z100 ${costPerRound('Z100')} | Z020 ${costPerRound('Z020')} | Z400 ${costPerRound('Z400')} | MUT5 ${costPerRound('MUT5')} | MUT10 ${costPerRound('MUT10')} | MUT ${costPerRound('MUT')}`);
+  ok(`SPLIT-COST (information) cost median/p95 ms: C Arbor ${r1(costS.C.median)}/${r1(costS.C.p95)} | Z100 ${r1(costS.Z100.median)}/${r1(costS.Z100.p95)} | Z020 ${r1(costS.Z020.median)}/${r1(costS.Z020.p95)} | Z400 ${r1(costS.Z400.median)}/${r1(costS.Z400.p95)} | C+5 ${r1(costS.MUT5.median)}/${r1(costS.MUT5.p95)} | C+10 ${r1(costS.MUT10.median)}/${r1(costS.MUT10.p95)} | Z400+${BURN_MS} ${r1(costS.MUT.median)}/${r1(costS.MUT.p95)}`, true, '');
+  timing(`VOID-check the control is quiet enough to judge anything: its cost spread (median ${r1(quietJ.spreadMed)}, p95 ${r1(quietJ.spreadP95)}) is within the cap (${CAP_MED} / ${CAP_P95}); over the cap the run is VOID`, quietJ.quiet, `C cost ${show(quietJ.C)} | per round ${costPerRound('C')}`);
+  for (const [name, label] of [['Z100', '1.00'], ['Z020', '0.20'], ['Z400', '4.00']]) {
+    const j = cj[name];
+    timing(`L-zoom-cost@${label} typing into a card at ${label} adds no main-thread cost beyond the control's own spread (capped): ${name} cost median ${r1(j.X.median)} <= C ${r1(j.C.median)} + ${r1(j.allowMed)}, p95 ${r1(j.X.p95)} <= C ${r1(j.C.p95)} + ${r1(j.allowP95)}`,
+      j.pass, `C ${show(j.C)} | ${name} ${show(j.X)} | spread ${r1(j.spreadMed)}/${r1(j.spreadP95)} cap ${CAP_MED}/${CAP_P95} quiet ${j.quiet}`);
+  }
+  const mutLanded = (k) => res[k].length > 0 && res[k].every((r) => r.burned >= MIN_KEYS);
+  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10]]) ok(`${k} premise: the ${ms} ms burn landed on every key of the control page (${res[k].map((r) => r.burned).join('/')} keys burned)`, mutLanded(k), JSON.stringify(res[k].map((r) => ({ round: r.round, burned: r.burned }))));
+  timing(`MUT-z effect (cost) the ${BURN_MS} ms burn lifted the cost median by >= 8 ms (MUT ${r1(costS.MUT.median)} vs Z400 ${r1(costS.Z400.median)}: +${r1(costS.MUT.median - costS.Z400.median)})`, costS.MUT.median >= costS.Z400.median + 8, JSON.stringify({ mut: show(costS.MUT), z400: show(costS.Z400) }));
+  timing(`MUT-z-cost the ${BURN_MS} ms burn FAILS the cost bar (caught: ${cj.MUT.caught ? 'YES' : 'no'}) - MUT cost median ${r1(cj.MUT.X.median)} p95 ${r1(cj.MUT.X.p95)}`, mutLanded('MUT') && cj.MUT.caught, `C ${show(cj.MUT.C)} | MUT ${show(cj.MUT.X)}`);
+  for (const [k, ms] of [['MUT5', 5], ['MUT10', 10]]) timing(`${k}-cost a ${ms} ms burn on the control page FAILS the cost bar (caught: ${cj[k].caught ? 'YES' : 'no'}) - cost median ${r1(cj[k].X.median)} vs C ${r1(cj[k].C.median)} + ${r1(cj[k].allowMed)}, p95 ${r1(cj[k].X.p95)} vs C ${r1(cj[k].C.p95)} + ${r1(cj[k].allowP95)}`, mutLanded(k) && cj[k].caught, `C ${show(cj[k].C)} | ${k} ${show(cj[k].X)}`);
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
