@@ -155,19 +155,23 @@ try { await withHarness(async (app) => {
       return { theme: root.getAttribute('data-theme'), flag: new URLSearchParams(location.search).get('flux3'), layer: document.querySelectorAll('[data-flux3-layer]').length,
         scale: cr && cv.offsetWidth ? cr.width / cv.offsetWidth : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
         served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z }; })()`);
-    // the meter (flux3-latency's, verbatim in method)
+    // the meter (flux3-latency's, verbatim in method: keydown -> the second animation frame after its beforeinput). DIAG (Nov 14): the same listeners also stamp, per key, the points inside that
+    // interval (beforeinput, the first frame, the second frame) and the l-method's BUSY reading (keydown -> the end of the task that handled the key), and an Event Timing observer lists
+    // each event's input delay and processing; nothing below changes what the clock measures, it only writes down where the time went.
     await ev(`(() => {
-      window.__lat = []; let t0 = 0;
+      window.__lat = []; window.__ks = []; window.__et = []; let t0 = 0, cur = null;
       if (window.__latOff) window.__latOff();
-      const kd = () => { t0 = performance.now(); };
-      const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const now = performance.now(); window.__lat.push({ ms: now - t, key: t, at: now }); })); };
-      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
-      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); };
+      try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__et.push([e.name, e.startTime, e.processingStart, e.processingEnd, e.duration]); }).observe({ type: 'event', durationThreshold: 16 }); } catch (e) { /* no Event Timing: the DIAG says so */ }
+      const kd = () => { t0 = performance.now(); cur = { kd: t0, bi: null, f1: null, f2: null, busy: null, b0: null, b1: null }; window.__ks.push(cur); };
+      const bi = () => { const t = t0, k = cur; if (k) k.bi = performance.now() - t; requestAnimationFrame(() => { if (k) k.f1 = performance.now() - t; requestAnimationFrame(() => { const now = performance.now(); if (k) k.f2 = now - t; window.__lat.push({ ms: now - t, key: t, at: now }); }); }); };
+      const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.kd; mc.port1.close(); }; mc.port2.postMessage(0); };
+      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
+      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); };
       return true; })()`);
     // the burn (the mutant): a synchronous busy-wait on every beforeinput, installed AFTER the meter (the same phase, registered second, so it runs after the meter has stamped the keydown and queued its two
     // animation frames): the frames cannot run until the burn ends, so the cost lands inside the measured interval whatever the frame phase. (Two earlier shapes failed on Actions: a burn on keydown installed
     // BEFORE the meter was invisible - the stamp came after it; installed after the meter it moved the median 5 ms at 12 ms and, at 24 ms, LOWERED it by 19 on a slow runner, the frame phase swallowing it.)
-    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('beforeinput', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; }, true); return true; })()`);
+    if (arm.burn) await ev(`(() => { window.__burnN = 0; document.addEventListener('beforeinput', () => { const t = performance.now(); while (performance.now() - t < ${BURN_MS}) { /* burn */ } window.__burnN += 1; const k = window.__ks[window.__ks.length - 1]; if (k) { k.b0 = t - k.kd; k.b1 = performance.now() - k.kd; } }, true); return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[(round * 7 + i) % CYCLE.length]; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
     await sleep(250);
@@ -176,7 +180,8 @@ try { await withHarness(async (app) => {
       const k0 = lat.length ? Math.min(...lat.map((x) => x.key)) : 0, k1 = lat.length ? Math.max(...lat.map((x) => x.at)) : 0;
       const win = fr.filter((f) => f[0] >= k0 && f[0] <= k1);
       const ed = document.querySelector('.board-popup-editor');
-      return { lat: lat.map((x) => x.ms), layerFrames: win.filter((f) => f[1] > 0).length, frames: win.length, after: ed ? ed.textContent.length : -1, burned: window.__burnN || 0 };
+      return { lat: lat.map((x) => x.ms), layerFrames: win.filter((f) => f[1] > 0).length, frames: win.length, after: ed ? ed.textContent.length : -1, burned: window.__burnN || 0,
+        ks: window.__ks.map((k) => [k.bi, k.f1, k.f2, k.busy, k.b0, k.b1].map((x) => (x == null ? null : Math.round(x * 10) / 10))), et: window.__et.map((e) => e.map((x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : x))) };
     })()`);
     return { name, round, where, landed, typed: typed.length, ...got };
   };
@@ -203,6 +208,26 @@ try { await withHarness(async (app) => {
   ok(`P5 at least ${MIN_KEYS} keys painted in every arm-round (${KEYS} typed each)`, thin.length === 0, JSON.stringify(thin.map((r) => ({ arm: r.name, round: r.round, n: r.lat.length }))));
   const lost = all.filter((r) => r.after - r.where.before !== r.typed);
   ok('P6 no key was dropped: in every arm-round the card editor grew by exactly the characters typed', lost.length === 0, JSON.stringify(lost.slice(0, 4).map((r) => ({ arm: r.name, round: r.round, grew: r.after - r.where.before, typed: r.typed }))));
+
+  // ---- DIAG (Nov 14, Fable: "print every key's latency in the mutant arm, and its minimum"). Information only: no check hangs on it.
+  //   clock = keydown -> the second frame (the verdict's own reading); bi = keydown -> beforeinput; f1 = -> the first frame; busy = -> the end of the key's task (the l-method's COST reading, first half);
+  //   b0/b1 = where the burn started and ended, measured from the keydown; "burn-out" = a clock sample under the burn's own length (that key's burn was left out of its sample).
+  const med = (xs) => { const s = xs.filter((x) => x != null).sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : null; };
+  const mx = (xs) => { const s = xs.filter((x) => x != null); return s.length ? Math.max(...s) : null; };
+  const mn = (xs) => { const s = xs.filter((x) => x != null); return s.length ? Math.min(...s) : null; };
+  for (const name of Object.keys(res)) {
+    const ks = res[name].flatMap((r) => r.ks || []), col = (i) => ks.map((k) => k[i]), lat = res[name].flatMap((r) => r.lat);
+    const burnOut = lat.filter((x) => x < BURN_MS).length;
+    const kdE = res[name].flatMap((r) => (r.et || []).filter((e) => e[0] === 'keydown')), inE = res[name].flatMap((r) => (r.et || []).filter((e) => e[0] === 'beforeinput' || e[0] === 'input'));
+    const delay = kdE.map((e) => e[2] - e[1]), proc = kdE.map((e) => e[3] - e[2]), dur = kdE.map((e) => e[4]);
+    console.log(`DIAG ${name}: ${lat.length} keys | clock min ${r1(mn(lat))} med ${r1(med(lat))} max ${r1(mx(lat))} (under ${BURN_MS} ms: ${burnOut}) | bi med ${r1(med(col(0)))} f1 med ${r1(med(col(1)))} f2 med ${r1(med(col(2)))} busy med ${r1(med(col(3)))} max ${r1(mx(col(3)))}`
+      + ` | burn b0 med ${r1(med(col(4)))} b1 med ${r1(med(col(5)))} b1 max ${r1(mx(col(5)))} | f1 minus b1 med ${r1(med(ks.map((k) => (k[1] != null && k[5] != null ? k[1] - k[5] : null))))} f2 minus f1 med ${r1(med(ks.map((k) => (k[2] != null && k[1] != null ? k[2] - k[1] : null))))}`
+      + ` | Event Timing: keydown n ${kdE.length}, input delay med ${r1(med(delay))} max ${r1(mx(delay))}, processing med ${r1(med(proc))} max ${r1(mx(proc))}, duration med ${r1(med(dur))} max ${r1(mx(dur))}, >= 48 ms ${dur.filter((x) => x >= 48).length}; beforeinput/input entries ${inE.length}`);
+  }
+  for (const name of ['C', 'Z400', 'MUT']) for (const r of res[name]) {
+    console.log(`DIAG-KEYS ${name} r${r.round} clock=${JSON.stringify(r.lat.map(r1))} min ${r1(mn(r.lat))}`);
+    if (name === 'MUT') console.log(`DIAG-KEYS ${name} r${r.round} burn b0-b1=${JSON.stringify(r.ks.map((k) => [k[4], k[5]]))} f1=${JSON.stringify(r.ks.map((k) => k[1]))} f2=${JSON.stringify(r.ks.map((k) => k[2]))}`);
+  }
 
   // ---- the verdicts
   const cRounds = res.C.map((r) => `${r1(stat(r.lat).median)}/${r1(stat(r.lat).p95)}`).join(' ');
