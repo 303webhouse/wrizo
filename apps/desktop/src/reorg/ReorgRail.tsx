@@ -51,7 +51,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
   const hereName = nameOf(here);
   const doors: Door[] = [
     { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: false },          // step 5
-    { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: false },     // step 2
+    { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
     { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: false },     // step 6
   ];
   const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode }[] = [
