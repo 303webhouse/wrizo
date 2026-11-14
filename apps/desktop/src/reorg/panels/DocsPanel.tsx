@@ -97,7 +97,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
       <section className="wz-reorg-group" data-reorg-group="defaults" aria-label={t('reorgDefaults')}>
         <div className="wz-reorg-group-head">{t('reorgDefaults')}</div>
         <Toggle id="typewriter" label={t('reorgTypewriter')} on={settings.typewriter} onPick={(on) => setWritingSettings({ typewriter: on })} t={t} />
-        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on, progress: on ? 'words' : 'off' })} t={t} />
+        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
       </section>
     </div>
   );

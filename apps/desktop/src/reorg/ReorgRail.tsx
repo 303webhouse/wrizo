@@ -64,7 +64,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
   return <RailBody entry={entry} open={open} toggle={stableToggle} sig={railSignature(entry)} />;
 }
 
-const RailBody = memo(RailBodyImpl, (a, b) => a.open === b.open && a.sig === b.sig);
+const RailBody = memo(RailBodyImpl, () => false);
 
 function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; sig: string }) {
   railRenders += 1;
