@@ -5,7 +5,7 @@
 import { withHarness } from '../../runtime-verify.mjs';
 import { makeDriver, sleep } from './lib/driver.mjs';
 
-const cfg = { theme: 'flux', flag: 'off', tone: env('WA_TONE', 'light'), width: 1366, height: 768, out: null };
+const cfg = { theme: env('WA_THEME', 'flux'), flag: 'off', tone: env('WA_TONE', 'light'), width: 1366, height: 768, out: null };
 function env(k, d) { return process.env[k] || d; }
 const NL = String.fromCharCode(10);
 const SENT = 'The writer keeps a steady pace through the long page, and nothing slows the page down at all. ';
@@ -30,7 +30,7 @@ await withHarness(async (app) => {
       await app.emulateDpr(1, w, 768);
       await sleep(900); await d.frames(); await sleep(200);
       const r = await d.read(); const box = await d.box(at);
-      const fc = r && r.fluxCaret;
+      const fc = r && (cfg.theme === 'flux' ? r.fluxCaret : await d.pixelCaret());   // a control in Arbor/Machina (WA_THEME): the native caret, read from the pixels
       let verdict = 'ok';
       if (!fc) verdict = 'no block caret drawn';
       else if (!box || box.x === undefined) verdict = 'no expected place (not judged)';
@@ -39,6 +39,8 @@ await withHarness(async (app) => {
         if (Math.abs(dx) > 3 || Math.abs(dy) > Math.max(4, (box.height || 0) * 0.45)) verdict = `block caret at ${Math.round(fc.x)},${Math.round(fc.top)} but the text puts it at ${Math.round(box.x)},${Math.round(box.top)} (off by ${dx.toFixed(1)}, ${dy.toFixed(1)})`;
       }
       console.log(`${name} @ ${w}px: ${verdict}`);
+      // diagnostics (what the page itself says after the resize): is the editor still focused, where is the selection, where is the page, the window size, the native caret's colour
+      console.log(`   [diag] focused=${r && r.focused} active=${r && r.active} sel=${r && r.anchor}..${r && r.focus} page=${JSON.stringify(r && r.page)} view=${await d.ev('innerWidth + "x" + innerHeight')} scroll=${JSON.stringify(r && r.scroll)}`);
       if (verdict !== 'ok' && !/not judged/.test(verdict)) fails.push(`${name} @ ${w}px: ${verdict}`);
     }
   }
