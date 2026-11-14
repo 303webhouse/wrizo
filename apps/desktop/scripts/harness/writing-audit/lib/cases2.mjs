@@ -56,6 +56,12 @@ export const GROUPS2 = {
     c('V09', 'Down onto a line, then type (it lands where the caret is)', 'abcdefghij\nklmnopqrst', 4, [K('ArrowDown', { geo: 'down' }), T('X')]),
   ],
   // 3b. the mouse
+  // #72: the card's text after everything is deleted natively (select all, Backspace): the browser's own empty line is not a newline of the writer's
+  card72: [
+    c('K72a', 'Select all, Backspace, then type x (no stray newline after it)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), T('x')]),
+    c('K72b', 'Select all, Backspace, Backspace (still nothing)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Backspace')]),
+    c('K72c', 'Select all, Backspace, Enter, then type x (one newline, the writer's own)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Enter'), T('x')]),
+  ],
   mouse: [
     c('U01', 'Click in the middle of a word', 'One two three\nFour five six\nSeven eight nine', 0, [{ k: 'click', q: 21 }]),
     c('U02', 'Click to the right of the end of a line', 'One two three\nFour five six\nSeven eight nine', 0, [{ k: 'click', eol: true, line: 1 }]),
