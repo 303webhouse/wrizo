@@ -189,9 +189,9 @@ try { await withHarness(async (app) => {
       window.__lat = []; window.__ks = []; window.__et = []; let t0 = 0, cur = null;
       if (window.__latOff) window.__latOff();
       try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__et.push([e.name, e.startTime, e.processingStart, e.processingEnd, e.duration]); }).observe({ type: 'event', durationThreshold: 16 }); } catch (e) { /* no Event Timing: the DIAG says so */ }
-      const kd = () => { t0 = performance.now(); cur = { kd: t0, bi: null, f1: null, f2: null, busy: null, frame: null, b0: null, b1: null }; window.__ks.push(cur); };
+      const kd = () => { t0 = performance.now(); cur = { kd: t0, bi: null, f1: null, f2: null, busy: null, frame: null, work: null, b0: null, b1: null }; window.__ks.push(cur); };
       const bi = () => { const t = t0, k = cur; if (k) k.bi = performance.now() - t; requestAnimationFrame(() => { const r = performance.now(); if (k) k.f1 = r - t; const mc = new MessageChannel(); mc.port1.onmessage = () => { if (k) k.frame = performance.now() - r; mc.port1.close(); }; mc.port2.postMessage(0); requestAnimationFrame(() => { const now = performance.now(); if (k) k.f2 = now - t; window.__lat.push({ ms: now - t, key: t, at: now }); }); }); };
-      const inp = () => { const k = cur; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.kd; mc.port1.close(); }; mc.port2.postMessage(0); };
+      const inp = () => { const k = cur; if (k) k.work = performance.now() - k.kd; if (!k || k.busy !== null || k.posted) return; k.posted = true; const mc = new MessageChannel(); mc.port1.onmessage = () => { k.busy = performance.now() - k.kd; mc.port1.close(); }; mc.port2.postMessage(0); };
       document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('beforeinput', inp, false); document.addEventListener('input', inp, false);
       window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('beforeinput', inp, false); document.removeEventListener('input', inp, false); };
       return true; })()`);
@@ -208,7 +208,7 @@ try { await withHarness(async (app) => {
       const win = fr.filter((f) => f[0] >= k0 && f[0] <= k1);
       const ed = document.querySelector('.board-popup-editor');
       return { lat: lat.map((x) => x.ms), layerFrames: win.filter((f) => f[1] > 0).length, frames: win.length, after: ed ? ed.textContent.length : -1, burned: window.__burnN || 0,
-        ks: window.__ks.map((k) => [k.bi, k.f1, k.f2, k.busy, k.b0, k.b1, k.frame].map((x) => (x == null ? null : Math.round(x * 10) / 10))), et: window.__et.map((e) => e.map((x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : x))) };
+        ks: window.__ks.map((k) => [k.bi, k.f1, k.f2, k.busy, k.b0, k.b1, k.frame, k.work].map((x) => (x == null ? null : Math.round(x * 10) / 10))), et: window.__et.map((e) => e.map((x) => (typeof x === 'number' ? Math.round(x * 10) / 10 : x))) };
     })()`);
     return { name, round, where, landed, typed: typed.length, ...got };
   };
@@ -315,6 +315,26 @@ try { await withHarness(async (app) => {
   const seesLine = `PROBE-SEES this probe sees a burn of ${seen.length ? Math.min(...seen) + ' ms or more' : 'NOTHING'} on the card editor (seen = caught by the cost bar with a lift of at least twice the allowance; the control's spread is ${r1(cj.C.spreadMed)} / ${r1(cj.C.spreadP95)}, the allowance ${r1(cj.C.allowMed)} / ${r1(cj.C.allowP95)}; lifts +5 -> ${r1(l5)}, +10 -> ${r1(l10)}, +${BURN_MS} -> ${r1(l24)}; 5 ms counts only with a quiet control)`;
   console.log(seesLine);
   ok(`${seesLine} (information)`, true, '');
+
+  // CANDIDATES (Nov 14, information): MUTS-ORDER failed on the cost reading (+5 -> +13.9, +10 -> +42.7, +24 -> +21.5): it catches every burn but does not rise with it (the message that ends BUSY queues behind the frame, so BUSY
+  // and FRAME both move with the frame pipeline). Which readings DO rise with the burn? WORK = keydown capture -> the `input` event's bubble at the document: the key's own synchronous work, no frame in it.
+  {
+    const rows = ['C', 'MUT5', 'MUT10', 'MUT24'];
+    const of = {
+      work: (r) => (r.ks || []).map((k) => k[7]).filter((x) => x != null),
+      'work+frame': (r) => (r.ks || []).filter((k) => k[7] != null && k[6] != null).map((k) => k[7] + k[6]),
+      busy: (r) => (r.ks || []).map((k) => k[3]).filter((x) => x != null),
+      frame: (r) => (r.ks || []).map((k) => k[6]).filter((x) => x != null),
+      'late (key->paint >= 48 ms, Event Timing)': (r) => (r.et || []).filter((e) => e[0] === 'keydown').map((e) => (e[4] >= 48 ? 1 : 0)),
+    };
+    for (const [name, f] of Object.entries(of)) {
+      const per = rows.map((k) => stat(res[k].flatMap(f)));
+      const mono = per[0].median < per[1].median && per[1].median < per[2].median && per[2].median < per[3].median;
+      const monoP = per[0].p95 <= per[1].p95 && per[1].p95 <= per[2].p95 && per[2].p95 <= per[3].p95;
+      const spread = (() => { const meds = res.C.map((r) => stat(f(r)).median); return Math.max(...meds) - Math.min(...meds); })();
+      console.log(`CANDIDATE ${name}: median C ${r1(per[0].median)} +5 ${r1(per[1].median)} +10 ${r1(per[2].median)} +24 ${r1(per[3].median)} (lifts ${r1(per[1].median - per[0].median)} / ${r1(per[2].median - per[0].median)} / ${r1(per[3].median - per[0].median)}; rises with the burn: ${mono ? 'YES' : 'no'}) | p95 ${r1(per[0].p95)} ${r1(per[1].p95)} ${r1(per[2].p95)} ${r1(per[3].p95)} (non-decreasing: ${monoP ? 'yes' : 'no'}) | control per-round median spread ${r1(spread)}`);
+    }
+  }
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
