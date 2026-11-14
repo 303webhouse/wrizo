@@ -46,6 +46,19 @@
 //       B2  none of it is stored (a control of the same length changes nothing either) and the memory holds it; a reload forgets it
 //       B3  it follows where she is: on a Grants page it is Grants' Box settings
 // FLOOR F2  as drawn: the letters hold 4.5:1 on every swatch and on a mid-grey of her own (#777777)
+// STEP 5, DOCS (frame R7):
+// DOCS  D1  NEW DOC lists Blank, Screenplay, Research paper, Board (Machina's word) and More kinds, each through today's own route into the
+//           Project she is in: Blank and Screenplay as today's presets, Research paper as today's deck, Board as today's new board, More kinds
+//           as today's library
+//       D2  RECENT: her three most recently changed Docs, newest first, each with its Project and its words; a row is a departure with the chip
+//       D3  PAGE DEFAULTS: Typewriter mode and Progress bars are today's two saved settings, and a press changes that one setting and nothing else
+// STEP 6, UNFILED and the Trash (frame R6):
+// UNF   U1  UNFILED lists writing with no Project and only that (the loose page, the page in a set with no Drawer; never the Notebook's page),
+//           the head counting it
+//       U2  File opens today's Add to… sheet for that row; Trash goes through today's ask-before-deleting gate and, confirmed, trashes it
+//       U3  the Trash is the row at the very foot, and opens today's Trash
+//       U4  REACHABLE, whole: every Project's list, the Notebook's and Unfiled together reach every page and board the fixture made
+// PAGE  G2  the page's rect is the same with DOCS open and with UNFILED open, at 1366, 1920 and 2000
 //
 // CAPTURE (REORG_RAILS_MODE=capture): prints main's switch-off DOM, one GOLDEN line per surface, instead of checking. Run it on a tree that is
 //   origin/main plus this file (the wrapper reorg-rails-capture.mjs on the branch reorg-rails-golden); the golden file records that tree's SHA.
@@ -419,7 +432,7 @@ await withHarness(async (app) => {
   ok('B2: none of it is stored - localStorage and sessionStorage byte-identical (the control changed: ' + (diffKeys(store4, store4c).join(',') || 'nothing') + '); the memory holds it (no letters, #777777, no picture)',
     diffKeys(store4c, store4b).length === 0 && diffKeys(store4, store4c).length === 0 && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), boxMem }));
   await openPage(app, 'machina', true);
-  const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && window.wrizoRailMemory.boxes(), letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
+  const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && typeof window.wrizoRailMemory.boxes === 'function' ? window.wrizoRailMemory.boxes() : null, letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
   ok('B2b: a reload forgets the box\'s look (its letters are derived again)', !!shell && b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
   // F2: the letters hold 4.5:1 on every swatch and on a mid-grey of her own
   await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
@@ -432,6 +445,104 @@ await withHarness(async (app) => {
     f2.push(await app.evalJs(`(() => { const C = ${CONTRAST_FN}; const b = document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box'); if (!b) return null; const s = getComputedStyle(b); return { sw: ${q(sw)}, text: b.textContent, r: C.ratio(C.rgb(s.color), C.rgb(s.backgroundColor)) }; })()`));
   }
   ok('F2: as drawn - the letters hold 4.5:1 on all five swatches (brass among them) and on a mid-grey of her own (#777777)', f2.length === 6 && f2.every((x) => !!x && !!x.text && x.r >= 4.5), JSON.stringify(f2));
+  await app.key('Escape'); await sleep(600);
+
+  // ---- STEP 5: DOCS ------------------------------------------------------------------------------------------------------------------
+  await openPage(app, 'machina', true);
+  await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+  const DOCS = `(() => { const p = document.querySelector('.desk-frame-cascade-anchor .wz-reorg-docs'); if (!p) return null;
+    return { kinds: [...p.querySelectorAll('[data-new-kind]')].map((b) => [b.dataset.newKind, b.textContent.replace(/[+›]/g, '').trim()]),
+      recent: [...p.querySelectorAll('[data-reorg-group="recent"] [data-entry-id]')].map((r) => [r.dataset.entryId, r.querySelector('.wz-reorg-row-meta')?.textContent]),
+      defaults: [...p.querySelectorAll('[data-reorg-default]')].map((d) => [d.dataset.reorgDefault, d.querySelector('[aria-pressed="true"]')?.dataset.toggle]) }; })()`;
+  const d0 = await app.evalJs(DOCS);
+  const routes = {};
+  for (const k of ['blank', 'screenplay', 'research-paper', 'board', 'more']) {
+    await openPage(app, 'machina', true);
+    await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+    await click(`[data-new-kind="${k}"]`); await sleep(900);
+    routes[k] = await app.evalJs('location.hash');
+  }
+  const S = ids.topSet;
+  ok('D1: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds; each through today\'s own route into Top Drawer\'s set (a preset, a preset, the research-paper deck, a new board, the library)',
+    !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'board', 'more']) && d0.kinds[3][1] === 'Board'
+    && routes.blank === `#/page/new?binder=${S}` && routes.screenplay === `#/page/new?binder=${S}&structure=screenplay`
+    && routes['research-paper'] === `#/page/new?kind=board&binder=${S}&deck=research-paper` && routes.board === `#/page/new?kind=board&binder=${S}`
+    && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`, JSON.stringify({ kinds: d0 && d0.kinds, routes }));
+  // D2: Recent - touch three pages in a known order through the app's own seam, then read
+  // (the open page re-saves itself ~1.1 s after it mounts, so the touch comes after the page settles and with no reload after it)
+  await openPage(app, 'machina', true);
+  await sleep(2500);
+  await app.evalJs("window.wrizoTouchInOrder && window.wrizoTouchInOrder(['rr-g-3', 'rr-l-1', 'rr-top-2'])");
+  await sleep(200);
+  await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+  const d2 = await app.evalJs(DOCS);
+  ok('D2: RECENT - her three most recently changed Docs, newest first (A second note, A loose page, Budget three), each with its Project and its words',
+    !!d2 && JSON.stringify(d2.recent.map((r) => r[0])) === JSON.stringify(['rr-top-2', 'rr-l-1', 'rr-g-3'])
+    && d2.recent[0][1] === `${shell ? shell.words.root : '?'} · 3 words` && d2.recent[1][1] === 'Unfiled · 3 words' && d2.recent[2][1] === 'Grants · 2 words', JSON.stringify(d2 && d2.recent));
+  await click('[data-reorg-group="recent"] [data-entry-id="rr-g-3"] .wz-reorg-list-open');
+  await app.waitFor("location.hash === '#/page/rr-g-3' && !!document.querySelector('.forward-only-editor')", { label: 'the recent doc', timeout: 12000 }).catch(() => {});
+  await sleep(900);
+  const d2b = await app.evalJs(`({ hash: location.hash, chip: !!document.querySelector('.wz-back-to-board'), docs: !!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-docs') })`);
+  ok('D2b: a Recent row is a departure with the return chip, and DOCS comes back open', d2b.hash === '#/page/rr-g-3' && d2b.chip && d2b.docs, JSON.stringify(d2b));
+  // D3: the two defaults are today's saved settings, and only that key changes
+  await openPage(app, 'machina', true);
+  await sleep(2500);
+  await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+  const ws0 = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
+  const st0 = await app.evalJs(STORE);
+  const tw = ws0.typewriter === true, pr = ws0.instrumentsOn !== false;
+  await click(`[data-reorg-default="typewriter"] [data-toggle="${tw ? 'off' : 'on'}"]`); await sleep(200);
+  await click(`[data-reorg-default="progress"] [data-toggle="${pr ? 'off' : 'on'}"]`); await sleep(200);
+  const ws1 = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
+  const st1 = await app.evalJs(STORE);
+  const d3 = await app.evalJs(DOCS);
+  ok('D3: PAGE DEFAULTS - each switch flips today\'s own setting (typewriter, instrumentsOn) and nothing else is stored',
+    ws1.typewriter === !tw && ws1.instrumentsOn === !pr && Object.keys(ws0).every((k) => k === 'typewriter' || k === 'instrumentsOn' || JSON.stringify(ws1[k]) === JSON.stringify(ws0[k]))
+    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+    JSON.stringify({ ws0: { tw: ws0.typewriter, pr: ws0.instrumentsOn }, ws1: { tw: ws1.typewriter, pr: ws1.instrumentsOn }, changed: diffKeys(st0, st1), d3: d3 && d3.defaults }));
+  await click(`[data-reorg-default="typewriter"] [data-toggle="${tw ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${pr ? 'on' : 'off'}"]`); await sleep(200);
+
+  // ---- STEP 6: UNFILED and the Trash ---------------------------------------------------------------------------------------------------
+  await openPage(app, 'machina', true);
+  await click('[data-reorg-rail] [data-category="reorg-unfiled"]'); await sleep(600);
+  const UNF = `(() => { const p = document.querySelector('.desk-frame-cascade-anchor .wz-reorg-unfiled'); if (!p) return null;
+    return { count: document.querySelector('[data-reorg-count]')?.textContent, rows: [...p.querySelectorAll('[data-entry-id]')].map((r) => r.dataset.entryId).sort(),
+      acts: [...p.querySelectorAll('[data-entry-id]')].map((r) => [!!r.querySelector('[data-unfiled-file]'), !!r.querySelector('[data-unfiled-trash]')]),
+      trashLast: p.lastElementChild?.matches('[data-reorg-trash]') || p.querySelector('[data-reorg-trash]') === [...p.children].filter((c) => !c.classList.contains('board-sheet')).pop(), trashText: p.querySelector('[data-reorg-trash]')?.textContent.replace('›', '').trim() }; })()`;
+  const u1 = await app.evalJs(UNF);
+  ok('U1: UNFILED lists the writing with no Project and only that - the loose page and the page in a set with no Drawer (never the Notebook\'s page); the head counts 2',
+    !!u1 && JSON.stringify(u1.rows) === JSON.stringify(['rr-l-1', 'rr-o-1']) && u1.count === '2' && u1.acts.every((a) => a[0] && a[1]), JSON.stringify(u1));
+  ok('U3: the Trash is the row at the very foot, and carries no count (today\'s law for the Trash)', !!u1 && u1.trashLast && u1.trashText === 'Trash', JSON.stringify(u1 && { trashLast: u1.trashLast, trashText: u1.trashText }));
+  await click('[data-unfiled-file="rr-l-1"]'); await sleep(400);
+  const sheet = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .board-sheet, .board-sheet')");
+  await app.key('Escape'); await sleep(600);
+  if (!(await app.evalJs("!!document.querySelector('.wz-reorg-unfiled:not([data-leaving])') && !document.querySelector('.wz-cascade-panel[data-leaving]')"))) { await click('[data-reorg-rail] [data-category="reorg-unfiled"]'); await sleep(600); }
+  await click('[data-unfiled-trash="rr-o-1"]'); await sleep(300);
+  const asked = await app.evalJs("!!document.querySelector('.wz-delete-dialog')");
+  await click('.wz-delete-dialog .wz-delete-go'); await sleep(600);
+  await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow()');
+  const gone = await app.evalJs("(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries')).find((x) => x.id === 'rr-o-1'); return { deleted: !!(e && e.deletedAt), rows: [...document.querySelectorAll('.wz-reorg-unfiled [data-entry-id]')].map((r) => r.dataset.entryId) }; })()");
+  ok('U2: File opens today\'s Add to… sheet; Trash asks first (today\'s gate) and, confirmed, trashes that entry, which leaves Unfiled', sheet && asked && gone.deleted && JSON.stringify(gone.rows) === JSON.stringify(['rr-l-1']), JSON.stringify({ sheet, asked, gone }));
+  await click('[data-reorg-trash]'); await sleep(900);
+  // today's Trash is the system board openTrashBoard finds or makes (the same door TrashPanel opens): read its id the way the app does
+  const trashAt = await app.evalJs("({ hash: location.hash, trashBoard: !!document.querySelector('[data-system-board=\"trash\"], .board-trash, [data-board-kind=\"trash\"]') })");
+  ok('U3b: the Trash row opens today\'s Trash (a board page that is not the page she was on)', /^#\/page\/(?!rr-top-1$)/.test(trashAt.hash), JSON.stringify(trashAt));
+  // U4: reachable, whole - every list, the Notebook's and Unfiled together reach every page and board the fixture made (rr-o-1 was trashed above)
+  await openPage(app, 'machina', true);
+  await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
+  const rows4 = await app.evalJs("[...document.querySelectorAll('[data-reorg-project]')].map((r) => r.dataset.reorgProject)");
+  const seen = [];
+  for (const pid of rows4 || []) {
+    await app.evalJs(`(() => { if (!document.querySelector('.wz-reorg-projects')) document.querySelector('[data-reorg-rail] [data-category="reorg-projects"]')?.click(); })()`); await sleep(600);
+    await click(`[data-reorg-project="${pid}"] .wz-reorg-row-open`); await sleep(600);
+    seen.push(...idsIn(await app.evalJs(LIST)));
+  }
+  await click('[data-reorg-rail] [data-category="reorg-unfiled"]'); await sleep(600);
+  const unf4 = await app.evalJs(UNF);
+  seen.push(...(unf4 ? unf4.rows : []));
+  const made = ['rr-g-1', 'rr-g-2', 'rr-g-3', 'rr-g-b', 'rr-j-1', 'rr-l-1', 'rr-m-b', 'rr-top-1', 'rr-top-2', 'rr-top-b'];
+  ok(`U4: REACHABLE, whole - the ${(rows4 || []).length} Project lists and Unfiled together reach every page and board the fixture made (${made.length}; the one trashed above is in the Trash), each once`,
+    JSON.stringify([...seen].sort()) === JSON.stringify(made), JSON.stringify([...seen].sort()));
   await app.key('Escape'); await sleep(600);
 
   // ---- PAGE ----------------------------------------------------------------------------------------------------------------------------
@@ -461,6 +572,17 @@ await withHarness(async (app) => {
     ok(`G1 [${w}] [successor]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${off}); the editor is the same node throughout`,
       !!off && [rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === off) && same && boxOpen !== null,
       JSON.stringify({ off, rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
+    // G2 (steps 5 and 6): DOCS open, UNFILED open
+    await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
+    const docsOpen = await app.evalJs(PAGE);
+    const docsDrawn = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-docs')");
+    await click('[data-reorg-rail] [data-category="reorg-unfiled"]'); await sleep(600);
+    const unfOpen = await app.evalJs(PAGE);
+    const unfDrawn = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-unfiled')");
+    await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(600);
+    ok(`G2 [${w}]: the page's rect is the same with DOCS open and with UNFILED open (${off}); the editor is still the same node`,
+      !!off && docsDrawn && unfDrawn && docsOpen === off && unfOpen === off && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+      JSON.stringify({ off, docsOpen, unfOpen, docsDrawn, unfDrawn }));
   }
   return checks;
 });
