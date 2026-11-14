@@ -9,6 +9,7 @@ import { usePlace } from '../store/usePlace';
 import { NOTEBOOK, projectOfEntry } from './railData';
 import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
+import { REORG } from './flag';
 
 // THE REORG'S RAIL (phase 2, behind ?reorg=1 in Machina; frames rail-1d R1 to R3). It replaces the strip's CONTENT only: it renders in the same
 // DeskFrame track (84 px), under the same `.wz-strip` root (so the Cascade's keystroke dissolve still knows its own DOM), and every door opens a
@@ -40,7 +41,15 @@ export function useWhereSheIs(entry: JournalEntry): string | null {
 
 const fill = (s: string, name: string): string => s.replace('{name}', name);
 
+// THE SPEED CHECK'S COUNTER (reorg-rails-speed.mjs): how many times the rail has rendered, read through a window seam that exists only under the
+// switch (the wrizoRailMemory pattern). The check holds it still while she types: the rail must not re-render on a keystroke.
+let railRenders = 0;
+if (REORG && typeof window !== 'undefined') {
+  (window as unknown as { wrizoRailRenders?: () => number }).wrizoRailRenders = () => railRenders;
+}
+
 export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void }) {
+  railRenders += 1;
   const { t } = useDeskLexicon();
   const lex = useLexicon();
   const nameOf = useProjectName();
