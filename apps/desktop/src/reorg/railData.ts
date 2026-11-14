@@ -42,7 +42,7 @@ export function docsOf(drawerId: string): RailDoc[] {
   for (const set of setsOfDrawer(drawerId)) {
     const mine = live.filter((e) => e.projectId === set.id).sort(compareSections);
     const pages = mine.filter((e) => !isBoard(e));
-    if (isAutoSet(set)) {
+    if (isAutoSet(set) && false) {
       for (const p of pages) out.push({ set: null, parts: [p], boards: [] });
     } else if (pages.length) {
       out.push({ set, parts: pages, boards: mine.filter(isBoard) });
@@ -58,7 +58,7 @@ export function notebookDocs(): RailDoc[] {
 
 /** All projects: the live Drawers in her order, then the Notebook last. */
 export function railProjects(notebookName: string): RailProject[] {
-  const drawers = getDrawers().slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).slice(0, -1);
+  const drawers = getDrawers().slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   return [
     ...drawers.map((d) => ({ id: d.id, name: d.name, drawer: d, docs: docsOf(d.id).length })),
     { id: NOTEBOOK, name: notebookName, drawer: null, docs: notebookDocs().length },
