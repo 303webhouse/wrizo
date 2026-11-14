@@ -15,7 +15,7 @@ Where a slip is most likely, so the check can start there:
 - **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
 - **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
 - **The grip.** At 1366 wide it should only move right.
-- **The top bar on a Board.** Six views and Connect Doc are wider than four stages. By my sums it fits 1366 once a Board serves a Doc with a long name, but the sums are estimates of letter widths, not measurements; if anything is pushed off the right edge, it is here (`#board-connected`).
+- **The top bar on a Board.** Six views and Connect Doc are wider than four stages. Measured with "Harbor map" connected to the long-named Doc: about 200 px to spare at 1366. A Project or Board with a much longer name has not been tried.
 - **The Board over the page.** `#board` should show the Board at left 116, top 64, 1218 × 640, and the page's rectangle should still measure 415 / 64 / 620 × 640 underneath it.
 
 ## Fable's answers, applied (milestone 4's commit)
