@@ -28,7 +28,7 @@ function titleOf(e: JournalEntry, t: (k: DeskTermId) => string): string {
 function recentDocs(): JournalEntry[] {
   return getJournalEntries()
     .filter((e) => !e.deletedAt && !e.purgedAt && !getSystemKind(e) && !isPairedPlanBoard(e.id) && e.pageType !== 'board')
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id))
     .slice(0, RECENT);
 }
 
@@ -60,7 +60,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
-    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'library' }) },
+    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'research-paper' }) },
     { id: 'board', label: lex.t('board'), act: () => go({ kind: 'board' }) },
     { id: 'more', label: t('reorgKindMore'), act: () => go({ kind: 'board', deck: 'library' }), more: true },
   ];
