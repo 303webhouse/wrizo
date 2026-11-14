@@ -229,10 +229,17 @@ export function mountPergola(): void {
     window.clearTimeout(sleepT);
     if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
     liveOff(true);
-    // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare
-    const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
-    const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);
-    sleepT = window.setTimeout(() => { if (writing()) sleep(true); }, ms + 250);
+    // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare.
+    // bug #80: read two frames AFTER the keystroke that starts writing, never inside it - a getComputedStyle here ran in the key's own task, right after
+    // the writing flip, and forced the restyle that flip had queued (turn 6: 20-38 ms of forced style and layout in the beforeinput handler).
+    // Two frames later the style is already worked out, so the read costs nothing; the sleep starts at most ~33 ms later than it did.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (!writing()) return;
+      const d = getComputedStyle(room.layer).transitionDuration.split(',')[0].trim();
+      const ms = (parseFloat(d) || 0) * (d.endsWith('ms') ? 1 : 1000);
+      window.clearTimeout(sleepT);
+      sleepT = window.setTimeout(() => { if (writing()) sleep(true); }, ms + 250);
+    }));
   };
   new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
   attach();

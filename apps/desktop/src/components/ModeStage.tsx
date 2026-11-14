@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
@@ -212,9 +212,17 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   }, [zoomed]);
   // memoized so useChromeDissolve's rootRef keeps its identity (a fresh array each render tore down the edge-dwell listener); on the framed desk the root element joins, so --fade-dur reaches chrome outside the host [ModeStage §9]
   const htmlRef = useRef<HTMLElement>(typeof document !== 'undefined' ? document.documentElement : null);
+  // bug #80 (Fable, Nov 12, option (a)): on the Arbor redesign --fade-dur is NOT written on <html>. That write re-styled the room's live shade drawing
+  // (a <body> child, ~800 elements) inside the keystroke that starts writing (Actions: 1,095 elements -> ~250 without it). It goes instead to the app's
+  // own root and the mockup bar's host, which hold every other element that reads it, so every Arbor fade keeps its timing. Read at each write (the bar's
+  // host may mount after the stage). The live themes keep <html> (bug #90); useChromeDissolve is untouched. scripts/harness/arbor-keyflip.mjs
+  const arborTopRefs = useMemo(() => ['root', 'arbor2-mockup-bar'].map((id) => ({ get current() { return document.getElementById(id); } }) as RefObject<HTMLElement>), []);
   const dissolveRootRef = useMemo(
-    () => (chromeRootRef ? [stageRef, chromeRootRef, htmlRef] : [stageRef, htmlRef]),   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
-    [chromeRootRef, framed],
+    () => {
+      const top = isArbor2() ? arborTopRefs : [htmlRef];
+      return chromeRootRef ? [stageRef, chromeRootRef, ...top] : [stageRef, ...top];   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
+    },
+    [chromeRootRef, framed, arborTopRefs],
   );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
     surface: 'sprint',
