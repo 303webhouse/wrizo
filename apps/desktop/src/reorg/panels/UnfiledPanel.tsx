@@ -49,7 +49,7 @@ export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeCo
                   </button>
                   <button type="button" className="wz-reorg-icon-btn" data-unfiled-file={e.id} aria-label={fill(t('reorgFile'), 'name', title)} title={fill(t('reorgFile'), 'name', title)} onClick={() => setFiling(e.id)}><FileIcon /></button>
                   <button type="button" className="wz-reorg-icon-btn" data-unfiled-trash={e.id} aria-label={fill(t('reorgTrashOne'), 'name', title)} title={fill(t('reorgTrashOne'), 'name', title)}
-                    onClick={() => { softDeleteEntry(e.id); }}><TrashIcon /></button>
+                    onClick={() => requestDelete(() => { softDeleteEntry(e.id); })}><TrashIcon /></button>
                 </li>
               );
             })}
@@ -57,7 +57,7 @@ export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeCo
         ) : <p className="wz-reorg-empty">{t('reorgUnfiledEmpty')}</p>}
       </section>
       <button type="button" className="wz-reorg-trash" data-reorg-trash="" onClick={() => openTrashBoard(navigate)}>
-        <TrashIcon /> <span>{t('reorgTrash')}</span> <span aria-hidden="true" className="wz-reorg-trash-go">›</span>
+        <TrashIcon /> <span>{t('reorgTrash')} 3 items</span> <span aria-hidden="true" className="wz-reorg-trash-go">›</span>
       </button>
       {filing && <AddToSheet sourceIds={[filing]} onClose={() => setFiling(null)} onDone={() => setFiling(null)} />}
     </div>
