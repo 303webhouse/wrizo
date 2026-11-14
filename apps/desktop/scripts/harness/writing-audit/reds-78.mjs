@@ -21,18 +21,27 @@ await withHarness(async (app) => {
     ['Draft', async () => { await d.openPage(TEXT, 'drafting'); return PARA.length + 2 + 150; }],
     ['Free Write', async () => { await d.openFreeWrite(TEXT); return TEXT.length; }],
   ];
+  // the window is resized for real (the browser's own window bounds), not by a device-metrics override: an override can blur the page or re-run its focus handlers, which a writer dragging a window edge never does. WA_RESIZE=emulate falls back to the override.
+  let windowId = null;
+  if (process.env.WA_RESIZE !== 'emulate') { try { windowId = (await app.cdp('Browser.getWindowForTarget')).windowId; await app.cdp('Emulation.clearDeviceMetricsOverride'); } catch (e) { console.log(`[resize] no window bounds (${String(e && e.message || e).slice(0, 80)}): using the device-metrics override`); } }
+  const resize = async (w) => {
+    if (windowId !== null) { try { await app.cdp('Browser.setWindowBounds', { windowId, bounds: { windowState: 'normal', width: w, height: 768 } }); return; } catch (e) { windowId = null; console.log(`[resize] setWindowBounds failed (${String(e && e.message || e).slice(0, 80)}): using the override`); } }
+    await app.emulateDpr(1, w, 768);
+  };
   for (const [name, open] of surfaces) {
-    await app.emulateDpr(1, 1366, 768); await sleep(300);
+    await resize(1366); await sleep(300);
     let at;
     try { at = await open(); } catch (e) { fails.push(`${name}: could not open (${String(e && e.message || e).slice(0, 100)})`); continue; }
     await d.place(at); await d.ev(`(document.querySelector('.forward-only-editor') || document.querySelector('[contenteditable]')).focus()`); await sleep(500);
     for (const w of WIDTHS) {
-      await app.emulateDpr(1, w, 768);
+      await resize(w);
       await sleep(900); await d.frames(); await sleep(200);
-      const r = await d.read(); const box = await d.box(at);
+      const r = await d.read(); const box = await d.box(r && r.anchor !== null && r.anchor !== undefined ? r.anchor : at);
       const fc = r && (cfg.theme === 'flux' ? r.fluxCaret : await d.pixelCaret());   // a control in Arbor/Machina (WA_THEME): the native caret, read from the pixels
       let verdict = 'ok';
-      if (!fc) verdict = 'no block caret drawn';
+      if (r && r.anchor !== at) verdict = `the resize moved the caret in the text: ${at} -> ${r.anchor}..${r.focus} (focused=${r.focused})`;
+      else if (!r || !r.focused) verdict = `the editor lost focus in the resize (active ${r && r.active})`;
+      else if (!fc) verdict = 'no block caret drawn';
       else if (!box || box.x === undefined) verdict = 'no expected place (not judged)';
       else {
         const dx = fc.x - box.x, cy = fc.top + (fc.height || 0) / 2, ey = box.top + (box.height || 0) / 2, dy = cy - ey;
