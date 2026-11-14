@@ -35,12 +35,16 @@ await withHarness(async (app) => {
     await d.place(text.length); await sleep(600);
     await ev(`(() => {
       const ed = document.querySelector('.forward-only-editor'); ed.focus();
+      if (window.__latStop) window.__latStop();   // the listeners of the size before are removed (they stayed on the window and pushed every paint twice, three times)
       window.__lat = { letter: [], enter: [], paintLetter: [], paintEnter: [] };
       let t0 = null, kind = null, seen = true;
-      window.addEventListener('keydown', (e) => { t0 = performance.now(); kind = e.key === 'Enter' ? 'enter' : 'letter'; seen = false;
+      const onKey = (e) => { t0 = performance.now(); kind = e.key === 'Enter' ? 'enter' : 'letter'; seen = false;
         const k = kind, start = t0;
-        requestAnimationFrame(() => setTimeout(() => { (k === 'enter' ? window.__lat.paintEnter : window.__lat.paintLetter).push(performance.now() - start); }, 0)); }, true);
-      new MutationObserver(() => { if (seen || t0 === null) return; seen = true; window.__lat[kind].push(performance.now() - t0); }).observe(ed, { childList: true, characterData: true, subtree: true });
+        requestAnimationFrame(() => setTimeout(() => { (k === 'enter' ? window.__lat.paintEnter : window.__lat.paintLetter).push(performance.now() - start); }, 0)); };
+      window.addEventListener('keydown', onKey, true);
+      const mo = new MutationObserver(() => { if (seen || t0 === null) return; seen = true; window.__lat[kind].push(performance.now() - t0); });
+      mo.observe(ed, { childList: true, characterData: true, subtree: true });
+      window.__latStop = () => { window.removeEventListener('keydown', onKey, true); mo.disconnect(); window.__latStop = null; };
     })()`);
     for (let i = 0; i < N; i += 1) { await d.type('a'); await sleep(90); }
     for (let i = 0; i < N; i += 1) { await d.key('Enter'); await sleep(90); await d.type('b'); await sleep(90); }
