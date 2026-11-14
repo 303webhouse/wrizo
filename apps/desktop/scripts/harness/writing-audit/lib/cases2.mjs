@@ -62,6 +62,11 @@ export const GROUPS2 = {
     c('K72b', 'Select all, Backspace, Backspace (still nothing)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Backspace')]),
     c('K72c', 'Select all, Backspace, Enter, then type x (one newline, the one she typed)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Enter'), T('x')]),
   ],
+  // #73: the card pop-up grows DOWNWARD only (Nick's ruling): its left, top and width stay, only its height grows (the runs that use these set pageGrowsDown)
+  card73: [
+    c('K73a', 'Ten Enters at the end of a short card (it grows, downward only)', 'Hello', 5, [K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter'), K('Enter')]),
+    c('K73b', 'A long run of words typed into a card (it wraps and grows, downward only)', 'Hello', 5, [T(' one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight twentynine thirty')]),
+  ],
   // #66: the invisible end marker (the guard character after a trailing newline) must not take a Left: one Left from the end of a page that ends in a newline moves the caret one place, as everywhere else
   left66: [
     c('L66a', 'Left from the end of a page that ends in a newline', 'abc\n', 4, [K('ArrowLeft')]),
