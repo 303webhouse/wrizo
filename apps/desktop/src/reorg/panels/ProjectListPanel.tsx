@@ -32,7 +32,7 @@ export function ProjectListPanel({ subject, navigate, travelFromCascade }: Casca
   const list = listOf(id);
   const here = subject.entry.id;
   const fresh = (kind: 'doc' | 'board') => {
-    const target = newTargetOf(id);
+    const target = newTargetOf(id, t('reorgUntitled'));
     if (!target) return;
     navigate(unbornHref(kind === 'board' ? { kind: 'board', ...target } : target));
   };

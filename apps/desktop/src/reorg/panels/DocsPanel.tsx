@@ -51,7 +51,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const here = useWhereSheIs(subject.entry);
   const settings = useWritingSettings();
   const recent = recentDocs();
-  const base = () => (here == null ? { origin: 'loose' as const } : newTargetOf(here));
+  const base = () => (here == null ? { origin: 'loose' as const } : newTargetOf(here, t('reorgUntitled')));
   const go = (extra: Partial<UnbornDescriptor>) => {
     const b = base();
     if (!b) return;

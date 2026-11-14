@@ -1,6 +1,6 @@
 import type { Drawer, JournalEntry, Project } from '../types';
 import { getDrawers, getJournalEntries, getProject, getSystemKind, inJournalView, isAutoSet, isPairedPlanBoard } from '../store/persistence';
-import { compareSections, ensureSet, journalMembers, setsOfDrawer, UNSORTED } from '../store/place';
+import { compareSections, createSet, ensureSet, journalMembers, setsOfDrawer, UNSORTED } from '../store/place';
 
 // THE RAIL'S READS (the reorg, phase 2, behind ?reorg=1 in Machina). Pure reads of what is already stored: nothing here writes, and nothing here
 // is a new saved field. Every rule below is a READ-TIME rule (reorg-plan-tech.md section 2; Fable's clearance, live-feedback-nov14i.md):
@@ -80,13 +80,16 @@ export function notebookDocs(): RailDoc[] {
   return listOf(NOTEBOOK).docs;
 }
 
-/** Where a new Doc or Board from a Project's own list is filed, by today's own route (SectionsPopout's targetSetId): the Project's app-made set
- *  when it has one (so a new Doc is a Doc of its own), else its first set, else the lazy set today's route makes on that need. The Notebook
- *  files nothing into a set (a journal page). */
-export function newTargetOf(id: string): { binderId: string } | { origin: 'journal' } | null {
+/** Where a new Doc or Board from the rail is filed. ALWAYS a Doc of its own, or a Board with no Doc (Fable, Nov 14, 3:52 pm): into the Project's
+ *  app-made set when it has one (each page there is a one-Part Doc, each board a Board with no Doc); a Project with no set at all gets today's
+ *  lazy app-made set (ensureSet); a Project holding only sets she made gets a NEW set through today's "+ New set" act (createSet), titled with
+ *  `untitled`, so the page is its own Doc (and a board is a set of boards only: a Board with no Doc). Never her first set: that would make the
+ *  new page a Part of another Doc. The set is made ON THE CLICK (today's acts make a set at once; only the page waits for the first keystroke),
+ *  so a new Doc she abandons leaves one empty set behind. The Notebook files nothing into a set (a journal page). */
+export function newTargetOf(id: string, untitled: string): { binderId: string } | { origin: 'journal' } | null {
   if (id === NOTEBOOK) return { origin: 'journal' };
   const sets = setsOfDrawer(id);
-  const target = sets.find((s) => isAutoSet(s)) ?? sets[0] ?? ensureSet(id);
+  const target = sets.find((s) => isAutoSet(s)) ?? (sets.length === 0 ? ensureSet(id) : createSet(id, untitled));
   return target ? { binderId: target.id } : null;
 }
 
