@@ -17,7 +17,8 @@ import type { JournalEntry, Project } from '../../types';
 // plumbing on top of that established house pattern).
 // B1 S5 — 'trash' joins the roster: section C's own quiet foot entry.
 // BIG PROJECTS 1a: 'shelf' leaves the roster (its pages are shown in the Journal); 'drawers' is now the PLACE BLOCK's switcher.
-export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'trash' | 'settings' | 'theme';
+// THE REORG (behind ?reorg=1 in Machina, src/reorg/): the rail's three doors, DOCS, PROJECTS and UNFILED. No other rail renders them.
+export type CategoryId = 'journal' | 'page' | 'plan' | 'drawers' | 'trash' | 'settings' | 'theme' | 'reorg-docs' | 'reorg-projects' | 'reorg-unfiled';
 
 // B1 S5 — find-or-create + travel, straight to the Board (no intermediate
 // hop through the '/journal' bridge route — App.tsx's own header comment
