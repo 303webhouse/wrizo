@@ -78,13 +78,13 @@ const ARM = `(() => {
   window.__kaN = 0; return true; })()`;
 // read a burst: every key (ms, busy, frame), and for each key over SLOW_MS its long frames, long tasks and events, with its UTC time
 const READ = `(() => { const K = window.__ka; const o = performance.timeOrigin; const r = (x) => (x == null ? null : Math.round(x * 10) / 10);
-  const keys = K.keys.map((x) => ({ ms: r(x.ms), busy: r(x.k && x.k.busy), frame: r(x.k && x.k.frame), phase: x.phase, flash: x.flash }));
+  const keys = K.keys.map((x) => ({ ms: r(x.ms), busy: r(x.k && x.k.busy), frame: r(x.k && x.k.frame), phase: x.phase, flash: x.flash, t: r(x.t) }));
   const slow = K.keys.filter((x) => x.ms > ${SLOW_MS}).map((x) => { const a = x.t, b = x.at;
     return { ms: r(x.ms), busy: r(x.k && x.k.busy), frame: r(x.k && x.k.frame), phase: x.phase, n: x.i, flash: x.flash, utc: new Date(o + x.t).toISOString(),
       loaf: K.loaf.filter((e) => e.s < b && e.s + e.d > a).map((e) => ({ at: r(e.s - a), d: r(e.d), render: e.rs ? r(e.s + e.d - e.rs) : null, styleLayout: e.sl ? r(e.s + e.d - e.sl) : null, blocking: r(e.b), scripts: e.sc })),
       longtask: K.lt.filter((e) => e.s < b && e.s + e.d > a - 50).map((e) => ({ at: r(e.s - a), d: r(e.d), a: e.a })),
       events: K.ev.filter((e) => e[0] >= a - 400 && e[0] <= b).map((e) => [r(e[0] - a), e[1]]), anims: x.anims, state: x.state }; });
-  return { keys, slow, loafOk: K.loafOk, ltOk: K.ltOk, loafErr: K.loafErr || null, loafN: K.loaf.length, evN: K.ev.length,
+  return { keys, slow, flips: K.ev.filter((e) => e[1] === 'writing=true').map((e) => r(e[0])), loafOk: K.loafOk, ltOk: K.ltOk, loafErr: K.loafErr || null, loafN: K.loaf.length, evN: K.ev.length,
     flutters: K.ev.filter((e) => e[1] === 'flutter-on').length, rootStyles: K.ev.filter((e) => e[1] === 'root-style').length }; })()`;
 const SWITCHES = `(() => { const root = document.documentElement, pg = document.querySelector('.arbor2-pergola');
   return { arbor: root.hasAttribute('data-arbor2'), room: root.getAttribute('data-arbor2-room'), off: root.getAttribute('data-arbor2-off'), pergola: pg ? getComputedStyle(pg).display : null,
@@ -160,7 +160,7 @@ await withHarness(async (app) => {
     flutters: bursts.reduce((s, b) => s + b.flutters, 0), rootStyles: bursts.reduce((s, b) => s + b.rootStyles, 0), loaf: bursts.every((b) => b.loafOk), loafFrames: bursts.reduce((s, b) => s + b.loafN, 0) };
   console.log('ATTR-SUMMARY: ' + JSON.stringify(summary));
   console.log('ATTR-SLOW: ' + JSON.stringify(slow));
-  console.log('ATTR-RAW: ' + JSON.stringify({ switches: sw, bursts: bursts.map((b) => ({ label: b.label, keys: b.keys })) }));
+  console.log('ATTR-RAW: ' + JSON.stringify({ switches: sw, bursts: bursts.map((b) => ({ label: b.label, keys: b.keys, flips: b.flips })) }));
   if (process.env.ARBOR_ATTR_OUT) { fs.mkdirSync(path.dirname(process.env.ARBOR_ATTR_OUT), { recursive: true }); fs.writeFileSync(process.env.ARBOR_ATTR_OUT, JSON.stringify({ summary, slow, switches: sw, bursts }, null, 1)); }
 
   const arborRuns = sw.filter((s) => s.arbor);
@@ -169,12 +169,17 @@ await withHarness(async (app) => {
     JSON.stringify(sw.map((s) => [s.label, s.arbor, s.room, s.off, s.pergola, s.field])));
   ok(`X2 the keys were measured: at least ${ROUNDS * 70 + LONG_BURSTS * (LONG_KEYS - 10)} painted (every one with its time; ${all.length} read)`, all.length >= ROUNDS * 70 + LONG_BURSTS * (LONG_KEYS - 10) && all.every((k) => Number.isFinite(k.ms)), JSON.stringify(summary));
   ok('X3 the frame attribution was there: the Long Animation Frames observer ran on every burst (the slow keys\' frames are attributable)', summary.loaf, JSON.stringify(bursts.map((b) => [b.label, b.loafOk, b.loafErr])));
+  // the bar's premise (bug #80, Nick's bar, Nov 14; judged by arbor-bar-unit.mjs over a turn): every key carries its keydown time, and every burst
+  // (a reopened page) records the writing start, so the judge measures the start window from the key that starts writing, keydown to keydown
+  ok(`X4 the bar's premise: every key carries its keydown time, and every burst records the writing start (writing starts per burst: ${bursts.map((b) => (b.flips || []).length).join(',')})`,
+    all.every((k) => Number.isFinite(k.t)) && bursts.every((b) => Array.isArray(b.flips) && b.flips.length >= 1),
+    JSON.stringify(bursts.map((b) => [b.label, (b.flips || []).length, b.keys.filter((k) => !Number.isFinite(k.t)).length])));
   return checks;
 }, { label: 'arbor-keycost-attr', dist: DIST });
 
 // eslint-disable-next-line no-console
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-const WANT_CHECKS = 3;
+const WANT_CHECKS = 4;
 const pass = checks.length === WANT_CHECKS && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nARBOR-KEYCOST-ATTR VERIFY: PASS (${checks.length} checks)` : `\nARBOR-KEYCOST-ATTR VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT_CHECKS ? ` (and ${checks.length} checks ran where ${WANT_CHECKS} were expected)` : ''}`);
