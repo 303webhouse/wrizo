@@ -15,7 +15,7 @@ const label2 = (st) => {
   return stepLabel(st) + (st.geo ? ' [layout oracle]' : st.prop ? ' [property]' : '');
 };
 
-export async function main({ groupsDef, order, title, surfaceHook = null, editorSel = '.forward-only-editor', pageSel = '.mode-page' }) {
+export async function main({ groupsDef, order, title, surfaceHook = null, editorSel = '.forward-only-editor', pageSel = '.mode-page', fluxBlockCaret = true }) {
   const env = process.env;
   const cfg = {
     theme: env.WA_THEME || 'plateau', flag: env.WA_FLAG || 'off', tone: env.WA_TONE || 'light',
@@ -76,7 +76,11 @@ export async function main({ groupsDef, order, title, surfaceHook = null, editor
     await ctl('page shifted by 7px', 3, `(() => { document.querySelector(${JSON.stringify(pageSel)}).style.transform = 'translateX(7px)'; })()`, 'page');
     await ctl('an error in the console', 3, "console.error('wa-reader-mutant')", 'console');
     await ctl('caret moved after the keystroke', 3, 'window.__wa.place(9)', 'settled', { early: true });
-    if (cfg.theme === 'flux') await ctl('Flux block caret at the page corner', 3, "(() => { const c = document.querySelector('.flux-block-caret'); if (c) { c.style.left = '0px'; c.style.top = '0px'; } })()", 'drawn');
+    // SUPERSEDED (#72, Nov 14; a Flux card draws the thin native caret, not a block caret - the Nov 11 ruling, #73; the Page and Free Write still draw the block caret and still take this line): this line ran on every surface in Flux
+    //   if (cfg.theme === 'flux') await ctl('Flux block caret at the page corner', 3, "(() => { const c = document.querySelector('.flux-block-caret'); if (c) { c.style.left = '0px'; c.style.top = '0px'; } })()", 'drawn');
+    //   else await ctl('painted caret at the first row, text says the third', 15, 'window.__wa.place(0)', 'drawn');
+    // SUCCESSOR: Flux on a surface that draws the block caret keeps the mutant above; on a surface that draws none (`fluxBlockCaret: false`, the card pop-up) the proof is the one Arbor and Machina have: the painted (native) caret at the first row, the text says the third
+    if (cfg.theme === 'flux' && fluxBlockCaret) await ctl('Flux block caret at the page corner', 3, "(() => { const c = document.querySelector('.flux-block-caret'); if (c) { c.style.left = '0px'; c.style.top = '0px'; } })()", 'drawn');
     else await ctl('painted caret at the first row, text says the third', 15, 'window.__wa.place(0)', 'drawn');
   }
 
