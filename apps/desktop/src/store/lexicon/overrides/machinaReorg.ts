@@ -48,4 +48,4 @@ export const MACHINA_REORG_WORDS = {
 } satisfies Partial<Record<DeskTermId, string>>;
 
 export const MACHINA_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
-  { machina: { ...LIVE.machina, ...MACHINA_REORG_WORDS } };
+  REORG ? { machina: { ...LIVE.machina, ...MACHINA_REORG_WORDS } } : LIVE;
