@@ -111,6 +111,9 @@ export type DeskTermId =
   // THE REORG'S RAIL (src/reorg/, behind ?reorg=1 in Machina): new words only, no rename; the rail mounts in Machina alone, so each reads its Machina word
   | 'reorgUnfiled' | 'reorgAllProjects' | 'reorgNewProject' | 'reorgDocOne' | 'reorgDocMany' | 'reorgPin' | 'reorgUnpin' | 'reorgPinnedGroup' | 'reorgUnpinnedGroup'
   | 'reorgPinsLabel' | 'reorgPinsAsList' | 'reorgPinsAsBoxes' | 'reorgWhereLabel' | 'reorgBoxOpen'
+  // THE REORG'S RAIL, step 3 (a Project's own list) and step 4 (Box settings)
+  | 'reorgListTitle' | 'reorgNewDoc' | 'reorgNewBoard' | 'reorgListDocs' | 'reorgBoardsNoDoc' | 'reorgListEmpty' | 'reorgUntitled' | 'reorgUntitledBoard' | 'reorgSketch'
+  | 'reorgBoxSettings' | 'reorgLetters' | 'reorgNoLetters' | 'reorgColour' | 'reorgOwnColour' | 'reorgPicture' | 'reorgChoosePicture' | 'reorgRemovePicture' | 'reorgSwatchPale' | 'reorgSwatchGrey' | 'reorgSwatchBlue' | 'reorgSwatchBrass' | 'reorgSwatchOrange'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
