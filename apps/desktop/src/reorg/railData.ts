@@ -86,7 +86,7 @@ export function notebookDocs(): RailDoc[] {
 export function newTargetOf(id: string): { binderId: string } | { origin: 'journal' } | null {
   if (id === NOTEBOOK) return { origin: 'journal' };
   const sets = setsOfDrawer(id);
-  const target = sets.find((s) => isAutoSet(s)) ?? sets[sets.length - 1] ?? ensureSet(id);
+  const target = sets.find((s) => isAutoSet(s)) ?? sets[0] ?? ensureSet(id);
   return target ? { binderId: target.id } : null;
 }
 
