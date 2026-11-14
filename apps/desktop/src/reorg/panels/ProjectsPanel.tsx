@@ -53,7 +53,7 @@ export function ProjectsPanel({ subject }: CascadeContext) {
         </button>
         <button type="button" className="wz-reorg-row-pin" data-reorg-pin-toggle={r.id} aria-pressed={pinnedNow}
           aria-label={fillName(t(pinnedNow ? 'reorgUnpin' : 'reorgPin'), r.name)} title={fillName(t(pinnedNow ? 'reorgUnpin' : 'reorgPin'), r.name)}
-          onClick={() => togglePin(r.id)}>
+          onMouseDown={() => togglePin(r.id)}>
           <PinIcon filled={pinnedNow} />
         </button>
       </li>
