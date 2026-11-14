@@ -64,7 +64,7 @@ export function listOf(id: string): RailList {
     } else if (pages.length) {
       docs.push({ set, parts: pages, boards: setBoards });
     } else {
-      /* mutant: a set of boards only lists nothing */
+      for (const board of setBoards) boards.push({ board, setName: set.title });
     }
   }
   return { docs, boards };

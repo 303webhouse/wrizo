@@ -49,7 +49,7 @@ export function ProjectListPanel({ subject, navigate, travelFromCascade }: Casca
     const first = d.parts[0];
     // a set she made is one Doc under its own name; a one-Part Doc is its page
     const name = d.set ? d.set.title : titleOf(first, t);
-    const many = d.parts.length > 1 || d.boards.length > 0;
+    const many = false;
     return (
       <li key={d.set ? d.set.id : first.id} className="wz-reorg-doc" data-reorg-doc={d.set ? d.set.id : first.id} data-parts={d.parts.length}>
         <ul className="wz-reorg-rows">
