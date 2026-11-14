@@ -17,9 +17,9 @@ const TAKE = path.join(HERE, 'box-take.mjs');
 const argv = process.argv.slice(2);
 const opt = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null; };
 const all = (name) => argv.reduce((a, v, i) => (v === name ? [...a, argv[i + 1]] : a), []);
-const out = opt('--out'), main = opt('--main'), zoom = opt('--zoom'), wirein = opt('--wirein'), also = all('--also');
+const out = opt('--out'), main = opt('--main'), zoom = opt('--zoom'), wirein = opt('--wirein'), bug102 = opt('--bug102'), also = all('--also');
 const lRuns = Math.max(1, Number(opt('--l-runs') || 3));
-if (!out || (!main && !zoom && !wirein && !also.length)) { console.log('usage: box-latency-turn.mjs --out <dir> [--main <tree>] [--l-runs 3] [--zoom <tree>] [--wirein <tree>] [--also <tree>]...'); process.exit(2); }
+if (!out || (!main && !zoom && !wirein && !bug102 && !also.length)) { console.log('usage: box-latency-turn.mjs --out <dir> [--main <tree>] [--l-runs 3] [--zoom <tree>] [--wirein <tree>] [--also <tree>]...'); process.exit(2); }
 const stamp = () => new Date().toISOString();
 const log = (m) => console.log(`[${stamp()}] ${m}`);
 const desk = (tree) => path.join(tree, 'apps', 'desktop');
@@ -27,6 +27,7 @@ const desk = (tree) => path.join(tree, 'apps', 'desktop');
 // the jobs, and a look at each tree BEFORE the box is taken: a bundle must be there (no build inside the turn)
 const jobs = [];
 if (main) for (let i = 1; i <= lRuns; i += 1) jobs.push({ name: `L main ${i}/${lRuns}`, tree: main, file: 'flux3-latency.mjs', log: path.join(out, `L-main-${i}.log`) });
+if (bug102) jobs.push({ name: 'Bug #102 probe (the board blur and the layer)', tree: bug102, file: 'flux3-bug102-probe.mjs', log: path.join(out, 'bug102.log') });
 if (wirein) jobs.push({ name: 'Wire In (no flag)', tree: wirein, file: 'flux-wirein-latency.mjs', log: path.join(out, 'wirein-lat.log') });
 if (zoom) jobs.push({ name: 'zoomed-board lines', tree: zoom, file: 'flux3-latency-zoom.mjs', log: path.join(out, 'zoom-lat.log') });
 for (const t of also) jobs.push({ name: `L ${path.basename(t)}`, tree: t, file: 'flux3-latency.mjs', log: path.join(out, `L-${path.basename(t)}.log`) });

@@ -11,7 +11,7 @@ import { isOnBox, timingGate } from '../lib/timing-gate.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(here, '..', '..', '..', '..');
 const DIST = path.resolve(here, '..', '..', 'dist-web');
-const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || 6));
+const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || 8));
 const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BURN_MS = 24;
 const VIEW = [1920, 1080];
 const BOARD = 'f3lz-board';
@@ -97,19 +97,15 @@ function judgeCost(cRounds, xRounds) {
 }
 
 const CYCLE = 'the signal holds while she writes on ';
-const OFF = (sel, decl) => `${sel}{${decl}}`;
-const NOFILTER = OFF('*,*::before,*::after', 'filter:none!important');
-const KEEP = '.mode-glow,.mode-glow--flux,.wz-goal-glow,.desk-frame-goalflare';
+const BLUR = '.board-canvas-blurred{filter:none!important}';
+const LAYER = '[data-flux3-layer]{display:none!important}';
 const ARMS = {
-  C:          { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
-  CNOFILTER:  { theme: 'plateau', flag: false, scale: null, css: NOFILTER, what: 'Arbor with every filter off (is the filter cost Flux-specific?)' },
-  Z100:       { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
-  NOFILTER:   { theme: 'flux', flag: true, scale: 1, css: NOFILTER, what: 'Z100 with every filter off' },
-  NOGOAL:     { theme: 'flux', flag: true, scale: 1, css: OFF('.wz-goal-glow', 'filter:none!important'), what: 'Z100 with only .wz-goal-glow filter off' },
-  NOMODEGLOW: { theme: 'flux', flag: true, scale: 1, css: OFF('.mode-glow,.mode-glow--flux', 'filter:none!important'), what: 'Z100 with only .mode-glow / .mode-glow--flux filter off' },
-  NOFLARE:    { theme: 'flux', flag: true, scale: 1, css: OFF('.desk-frame-goalflare', 'filter:none!important'), what: 'Z100 with only .desk-frame-goalflare filter off' },
-  NOREST:     { theme: 'flux', flag: true, scale: 1, css: OFF(`*:not(${KEEP}),*:not(${KEEP})::before,*:not(${KEEP})::after`, 'filter:none!important'), what: 'Z100 with every filter off EXCEPT those four glows' },
-  GLOWSONLY:  { theme: 'flux', flag: true, scale: 1, css: OFF(KEEP, 'filter:none!important'), what: 'Z100 with only those four glows\' filter off' },
+  C:       { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
+  CNOBLUR: { theme: 'plateau', flag: false, scale: null, css: BLUR, what: 'Arbor with the card-open board blur (.board-canvas-blurred filter) off' },
+  Z100:    { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
+  NOBLUR:  { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux with the board blur off' },
+  NOLAYER: { theme: 'flux', flag: true, scale: 1, css: LAYER, what: 'Flux with the layer canvas hidden (display:none)' },
+  NOBOTH:  { theme: 'flux', flag: true, scale: 1, css: BLUR + LAYER, what: 'Flux with the board blur off AND the layer hidden' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -227,11 +223,12 @@ try { await withHarness(async (app) => {
     const lat = res[k].flatMap((r) => r.lat), paint = res[k].flatMap(paintOf), work = res[k].flatMap(workOf2);
     const dur = res[k].flatMap((r) => (r.et || []).filter((e) => e[0] === 'keydown').map((e) => e[4]));
     const cm = res[k].map((r) => stat(r.lat).median), cp = res[k].map((r) => stat(r.lat).p95);
-    return [k, { clock: stat(lat), paint: stat(paint), work: stat(work), late: dur.filter((x) => x >= 48).length, nET: dur.length, spreadMed: Math.max(...cm) - Math.min(...cm), spreadP95: Math.max(...cp) - Math.min(...cp) }];
+    const f1 = stat(res[k].flatMap((r) => (r.ks || []).map((x) => x[1]).filter((x) => x != null))), durS = stat(dur);
+    return [k, { f1, durS, clock: stat(lat), paint: stat(paint), work: stat(work), late: dur.filter((x) => x >= 48).length, nET: dur.length, spreadMed: Math.max(...cm) - Math.min(...cm), spreadP95: Math.max(...cp) - Math.min(...cp) }];
   }));
   for (const k of order) {
     const t = T[k];
-    console.log(`BUG102 ${k.padEnd(8)} clock ${r1(t.clock.median)}/${r1(t.clock.p95)} (round spread ${r1(t.spreadMed)}/${r1(t.spreadP95)}) | paint ${r1(t.paint.median)}/${r1(t.paint.p95)} | work ${r1(t.work.median)}/${r1(t.work.p95)} | late ${t.late}/${t.nET} | ${ARMS[k].what}`);
+    console.log(`BUG102 ${k.padEnd(8)} clock ${r1(t.clock.median)}/${r1(t.clock.p95)} (round spread ${r1(t.spreadMed)}/${r1(t.spreadP95)}) | paint ${r1(t.paint.median)}/${r1(t.paint.p95)} | work ${r1(t.work.median)}/${r1(t.work.p95)} | first frame ${r1(t.f1.median)}/${r1(t.f1.p95)} | key-to-paint (Event Timing) ${r1(t.durS.median)}/${r1(t.durS.p95)} | late ${t.late}/${t.nET} | ${ARMS[k].what}`);
   }
   for (const k of ['C', 'Z100']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
   const gapC = (k, f) => r1(T[k][f].p95 - T.C[f].p95), gapZ = (k, f) => r1(T.Z100[f].p95 - T[k][f].p95);
