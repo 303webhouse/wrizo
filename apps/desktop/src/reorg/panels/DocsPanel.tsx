@@ -28,7 +28,7 @@ function titleOf(e: JournalEntry, t: (k: DeskTermId) => string): string {
 function recentDocs(): JournalEntry[] {
   return getJournalEntries()
     .filter((e) => !e.deletedAt && !e.purgedAt && !getSystemKind(e) && !isPairedPlanBoard(e.id) && e.pageType !== 'board')
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id))
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))
     .slice(0, RECENT);
 }
 
@@ -97,7 +97,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
       <section className="wz-reorg-group" data-reorg-group="defaults" aria-label={t('reorgDefaults')}>
         <div className="wz-reorg-group-head">{t('reorgDefaults')}</div>
         <Toggle id="typewriter" label={t('reorgTypewriter')} on={settings.typewriter} onPick={(on) => setWritingSettings({ typewriter: on })} t={t} />
-        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
+        <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on, progress: on ? 'words' : 'off' })} t={t} />
       </section>
     </div>
   );
