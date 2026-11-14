@@ -63,7 +63,9 @@ export function ProjectsPanel({ subject }: CascadeContext) {
     <div className="wz-cascade-panel-body wz-reorg-projects">
       {naming ? (
         <input className="wz-reorg-new-input" autoFocus aria-label={t('switcherNewDrawerName')} placeholder={t('switcherNewDrawerName')}
-          onKeyDown={(ev) => { if (ev.key === 'Enter') add((ev.target as HTMLInputElement).value); else if (ev.key === 'Escape') { ev.stopPropagation(); setNaming(false); } }}
+          // the field's own Enter and Escape stop here: React removes the field before the event reaches the Cascade's document listener, which
+          // would read a detached target as a keystroke outside the pop-out and close it (harness reorg-rails P3, run on 7247c6f8)
+          onKeyDown={(ev) => { if (ev.key === 'Enter') { ev.stopPropagation(); add((ev.target as HTMLInputElement).value); } else if (ev.key === 'Escape') { ev.stopPropagation(); setNaming(false); } }}
           onBlur={() => setNaming(false)} />
       ) : (
         <button type="button" className="wz-reorg-new" data-new="project" onClick={() => setNaming(true)}>
