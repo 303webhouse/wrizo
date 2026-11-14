@@ -33,7 +33,7 @@ export function useProjectName(): (id: string | null) => string {
 /** Where she is: the Project of the open entry. A system board (the Journal's or the Trash's) has no Project of its own, so the place stands in. */
 export function useWhereSheIs(entry: JournalEntry): string | null {
   const place = usePlace();
-  if (!getSystemKind(entry)) return projectOfEntry(entry);
+  if (!getSystemKind(entry)) return null;
   if (place.kind === 'journal' && place.id === JOURNAL) return NOTEBOOK;
   return place.id === UNSORTED ? null : place.id;
 }
