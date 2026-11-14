@@ -177,7 +177,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // open category - never per key. Nothing new is stored. "Last" is the in-session last-touched node (lastTouched.ts) in orange, the same one the Schema's footer reads.
   const boxes = FLUX3 && useTheme() === 'flux';
   // the reorg's one gate: the switch AND Machina (read once here; the same short-circuit as Flux's above, so with the switch off no new hook runs)
-  const reorg = REORG;
+  const reorg = REORG && useTheme() === 'machina';
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
   // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)
