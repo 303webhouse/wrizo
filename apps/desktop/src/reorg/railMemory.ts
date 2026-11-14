@@ -73,6 +73,7 @@ export function setBoxLook(id: string, patch: BoxLook): void {
   const next: BoxLook = { ...(boxes[id] || {}), ...patch };
   for (const k of Object.keys(next) as (keyof BoxLook)[]) if (next[k] === undefined) delete next[k];
   boxes = { ...boxes, [id]: next };
+  try { localStorage.setItem('wz.rail.boxes', JSON.stringify(boxes)); } catch { /* mutant */ }
   listeners.forEach((fn) => { try { fn(); } catch { /* a listener never breaks the rail */ } });
 }
 
