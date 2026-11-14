@@ -34,7 +34,7 @@
 //   actually animated at rest, it moved no page rect, at least 40 keys painted per arm per round, and every typed key reached the stored page.
 //   B  the build: the bundle served is dist-web's, built after the last commit touching apps/desktop/src (printed as a BUILD line).
 //
-// FLUX3_MUTANT=1 makes T itself skip its damping (the red-first run: L and/or D go red, the verdict is FAIL). FLUX3_ROUNDS=<n> (default 4).
+// FLUX3_MUTANT=1 makes T itself skip its damping (the red-first run: L and/or D go red, the verdict is FAIL). FLUX3_ROUNDS=<n> (default 8; was 4, Nov 14: the steadier L, see STEADY).
 // FLUX3_SHOTS=<dir> writes one frame of each arm at rest.
 // Run: node scripts/harness/flux3-latency.mjs   (from apps/desktop; a box turn - this is a timing file)
 import fs from 'node:fs';
@@ -50,7 +50,10 @@ const DIST = path.resolve(here, '..', '..', 'dist-web');
 const SHOTS = process.env.FLUX3_SHOTS || null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const MUTANT_RUN = process.env.FLUX3_MUTANT === '1';
-const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || 4));
+// THE STEADIER L (Nov 14, Fable: "more rounds, bar unchanged, a mutant"; bug #86 - L was red on one box run and green on three of three after, so the instrument, not the page): the allowance is the control's OWN
+// spread of per-round medians and p95s, an estimate read off the rounds; four rounds can make it tiny or huge by chance, so the bar wobbled while the page did not. Eight rounds steady the estimate. The BAR is unchanged.
+const STEADY_MIN = 8;
+const ROUNDS = Math.max(3, Number(process.env.FLUX3_ROUNDS || STEADY_MIN));
 const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BUSY_MS = 600;
 const VIEW = [1920, 1080];
 const LOAD = { traces: 300, electrons: 120, busyMs: BUSY_MS };
@@ -332,6 +335,11 @@ try { await withHarness(async (app) => {
   ok('P6 no key was dropped: in every arm-round the stored page holds the seed plus every typed character', lost.length === 0, JSON.stringify(lost.map((r) => ({ arm: r.name, round: r.round, stored: r.storedLen, want: r.want }))));
 
   // ---- the verdicts
+  // STEADY: the run read the control's allowance from at least STEADY_MIN rounds (the mutant: FLUX3_ROUNDS=4 must make this line FAIL). It gates everywhere; L itself still gates on the box only.
+  { const cm = res.C.map((r) => stat(r.lat).median), cp = res.C.map((r) => stat(r.lat).p95);
+    ok(`STEADY the control's allowance is read from at least ${STEADY_MIN} rounds (this run: ${ROUNDS} rounds, ${res.C.length} control rounds): the bar is unchanged, its own estimate is steadier`, ROUNDS >= STEADY_MIN && res.C.length >= STEADY_MIN,
+      JSON.stringify({ rounds: ROUNDS, controlRounds: res.C.length, min: STEADY_MIN }));
+    console.log(`STEADY-INFO control per-round median ${JSON.stringify(cm.map(r1))} (spread ${r1(Math.max(...cm) - Math.min(...cm))}) p95 ${JSON.stringify(cp.map(r1))} (spread ${r1(Math.max(...cp) - Math.min(...cp))})`); }
   const cRounds = res.C.map((r) => `${r1(stat(r.lat).median)}/${r1(stat(r.lat).p95)}`).join(' ');
   const t = judge(res.C, res.T);
   timing(`L${MUTANT_RUN ? ' (FLUX3_MUTANT=1: T is undamped)' : ''} typing on Flux with every motion on adds no latency beyond the control's own spread: T median ${r1(t.X.median)} <= C ${r1(t.C.median)} + ${r1(t.spreadMed)}, T p95 ${r1(t.X.p95)} <= C ${r1(t.C.p95)} + ${r1(t.spreadP95)}, no T key over ${MAX_MS} ms`,
