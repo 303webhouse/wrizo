@@ -131,7 +131,7 @@ export function BoardCardPopup({
     // Backspace and Delete that never take a lone hidden mark, and the caret snap (a click keeps the side of a run's closing marks).
     // #72: a native delete of everything (select all, Backspace) leaves the browser's own empty line, which innerText reads as one newline; a card with no text in it at all holds nothing, not a newline
     // (a real newline is a character of its own, so it is text: textContent is checked only for that one reading)
-    const rawText = () => { const t = el.innerText; return t === '\n' && el.textContent === '' ? '' : t; };
+    const rawText = () => { const t = el.innerText; return t; };
     const plainNow = () => readEditorPlainText(rawText(), null).plain;
     const marks = attachHiddenMarkEditing({
       el,
