@@ -244,8 +244,10 @@ try { await withHarness(async (app) => {
   });
   ok(`P1 every arm stood where it claims (C: Arbor; X: Flux in TEXT; W and M: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M only; Page: Dark; the instrument in place): ${placed.length}/${all.length}`,
     placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
-  const tw = all.filter((r) => r.where.typewriter === 'true');
-  ok(`P2 the paper Typewriter is off in every arm: ${all.length - tw.length}/${all.length}`, tw.length === 0, JSON.stringify(tw.map((r) => ({ arm: r.name, round: r.round }))));
+  // (first version counted every arm; Wire In's own typewriter-run page carries data-typewriter="true" by design, so W and M are asserted by P1 (Wire In mounted), and P2 is about the paper Typewriter in C and X)
+  const plain = all.filter((r) => r.name === 'C' || r.name === 'X');
+  const tw = plain.filter((r) => r.where.typewriter === 'true');
+  ok(`P2 the paper Typewriter is off in the Draft arms (C and X): ${plain.length - tw.length}/${plain.length}; W and M are the Corridor (P1)`, plain.length > 0 && tw.length === 0, JSON.stringify(tw.map((r) => ({ arm: r.name, round: r.round }))));
   const loadedM = res.M;
   const thin = all.filter((r) => r.lat.length < MIN_KEYS);
   ok(`P5 at least ${MIN_KEYS} keys painted in every arm-round (${KEYS} typed each)`, thin.length === 0, JSON.stringify(thin.map((r) => ({ arm: r.name, round: r.round, n: r.lat.length }))));
