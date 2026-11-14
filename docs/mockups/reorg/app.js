@@ -73,13 +73,12 @@
        is on. connect: the Connect Doc list is open. pop: the Block popped out, { board, i }.
        The Doc she was in stays in S.here, and the page stays where it is, under the Board. */
     board: null,
-    /* The search takes the Back menu's place. Two separate choices (Fable, Nov 14):
-       reach: 'doc' | 'project' | 'all', and kind: null (the words) | 'plan' | 'assets' | 'feedback'. */
+    /* The search takes the Back menu's place. One row of scope tabs, how far she looks
+       (Nick, Nov 14: no second row). reach: 'doc' | 'project' | 'all'. */
     search: {
       open: false,
       wasOpen: false,          // was the Back menu open before the search took its place
       reach: 'doc',
-      kind: null,
       q: '',
       cur: null,               // the key of the result she is on
       more: {},                // groups opened past their first two rows
@@ -731,11 +730,9 @@
 
   /* ---------- search, and find and replace (D) ---------- */
 
-  /* Two rows, two separate choices (Fable, Nov 14). REACH is how far she looks: the frame's three
-     (P3-26A). KINDS is what she looks in: one for each Back menu tab she can come from, or none
-     of them for the words themselves. */
+  /* One row of scope tabs: how far she looks, the frame's three (P3-26A). A second row (PLAN, ASSETS,
+     FEEDBACK) was built for milestones 3 and 4; Nick took it out on Nov 14 as unnecessary. */
   var REACH = [['doc', 'THIS DOC'], ['project', 'THIS PROJECT'], ['all', 'EVERYTHING']];
-  var KINDS = [['plan', 'PLAN'], ['assets', 'ASSETS'], ['feedback', 'FEEDBACK']];
   var WIDEN = { doc: 'project', project: 'all' };
   var R = null;   // what the open search found, worked out once for each render
 
@@ -744,9 +741,8 @@
     for (var i = 0; i < REACH.length; i++) { if (REACH[i][0] === reach) { return REACH[i][1]; } }
     return '';
   }
-  /* Ruled: the words in THIS DOC (P3-26A) and in THIS PROJECT (P3-26A2), and ASSETS in THIS PROJECT.
-     What every other pairing of the two rows looks in is a guess. */
-  function pairRuled(reach, kind) { return kind ? kind === 'assets' && reach === 'project' : reach !== 'all'; }
+  /* Ruled: what THIS DOC (P3-26A) and THIS PROJECT (P3-26A2) look in. What EVERYTHING lists is a guess. */
+  function reachRuled(reach) { return reach !== 'all'; }
   function isHere(pid, did) { return (pid || null) === (S.here.project || null) && did === S.here.doc; }
 
   /* Where q is in text: upper and lower case alike, no two overlapping. */
@@ -796,11 +792,6 @@
     p.boards.forEach(function (b) { if (names.indexOf(b.name) === -1) { names.push(b.name); } });
     return names;
   }
-  function blockOf(board, title) {
-    var list = D.blocks[board] || [];
-    for (var i = 0; i < list.length; i++) { if (list[i].title === title) { return list[i]; } }
-    return null;
-  }
   /* One row for a Block with q in its name or in its words, or null. */
   function blockHit(board, block, q) {
     var inText = findAll(block.text, q);
@@ -810,8 +801,8 @@
 
   function runSearch() {
     if (!reachOk(S.search.reach)) { S.search.reach = 'doc'; }
-    var q = S.search.q.trim(), reach = S.search.reach, kind = S.search.kind, d = docHere(), p = projHere(), i;
-    var r = { q: q.length >= 2 ? q : '', reach: reach, kind: kind, groups: [], here: [], byKey: {}, total: 0, cur: null, say: '', widen: null };
+    var q = S.search.q.trim(), reach = S.search.reach, d = docHere(), p = projHere(), i;
+    var r = { q: q.length >= 2 ? q : '', reach: reach, groups: [], here: [], byKey: {}, total: 0, cur: null, say: '', widen: null };
     function reg(list) { list.forEach(function (h) { r.byKey[h.key] = h; }); return list; }
     function count(groups) { var n = 0; groups.forEach(function (g) { n += g.rows.length; }); return n; }
     /* A named head (a Project, Unfiled) over its groups, when they found anything. */
@@ -839,71 +830,26 @@
       hits = mine ? r.here : reg(docHits(pid, d2, r.q));
       return hits.length ? [{ head: 'DOC \u00b7 ' + d2.name + ' \u00b7 ' + hits.length, rows: hits, label: parts.length > 1, cap: 'd|' + (pid || '') + '|' + d2.id }] : [];
     }
-    /* One Doc's plan: the Blocks in it, in their order. */
-    function planGroups(d2, head) {
-      var rows = [];
-      (D.plan[d2.id] || []).forEach(function (row, n) {
-        var b = blockOf(row.board, row.block), h = b ? blockHit(row.board, b, r.q) : null;
-        if (h) { h.type = 'plan'; h.n = n + 1; rows.push(h); }
-      });
-      return rows.length ? [{ head: head + ' \u00b7 ' + rows.length, rows: rows }] : [];
-    }
-    function feedbackGroups(d2, head) {
-      var rows = [];
-      (D.feedback[d2.id] || []).forEach(function (f) {
-        var at = findAll(f.text, r.q);
-        if (at.length) { rows.push({ type: 'feedback', html: esc(f.from) + ', on Part ' + f.part + ' \u00b7 ' + snippet(f.text, at[0], r.q.length) }); }
-      });
-      return rows.length ? [{ head: head + ' \u00b7 ' + rows.length, rows: rows }] : [];
-    }
-    /* Assets: the names of the imported files of these Docs and of these Boards, then the Blocks on the Boards. */
-    function assetGroups(docs, names) {
-      var out = [], rows = [];
-      D.assets.forEach(function (a) {
-        var mine = docs.some(function (x) { return x.id === a.doc; });
-        if (a.kind === 'PDF' && mine && findAll(a.name, r.q).length) { rows.push({ type: 'asset', id: a.id, html: 'PDF: ' + markAll(a.name, r.q, -1) }); }
-      });
-      if (rows.length) { out.push({ head: 'IMPORTED \u00b7 ' + rows.length, rows: rows }); }
-      rows = [];
-      names.forEach(function (name) {
-        if (findAll(name, r.q).length) { rows.push({ type: 'board', board: name, html: 'Board: ' + markAll(name, r.q, -1) }); }
-      });
-      if (rows.length) { out.push({ head: 'BOARDS \u00b7 ' + rows.length, rows: rows }); }
-      return out.concat(boardGroups(names));
-    }
-    /* One Project, or the Notebook, in what she chose to look in. The words: its Docs, then its Boards (frame P3-26A2). */
+    /* One Project, or the Notebook: its Docs, then its Boards (frame P3-26A2). */
     function inProject(pp) {
       var out = [];
-      if (kind === 'assets') { return assetGroups(pp.docs, boardsOf(pp)); }
-      pp.docs.forEach(function (d2) {
-        out = out.concat(kind === 'plan' ? planGroups(d2, 'PLAN \u00b7 ' + d2.name) : kind === 'feedback' ? feedbackGroups(d2, 'FEEDBACK \u00b7 ' + d2.name) : docGroups(pp.id, d2));
-      });
-      return kind ? out : out.concat(boardGroups(boardsOf(pp)));
+      pp.docs.forEach(function (d2) { out = out.concat(docGroups(pp.id, d2)); });
+      return out.concat(boardGroups(boardsOf(pp)));
     }
     function inUnfiled() {
       var out = [];
-      if (kind === 'assets') { return assetGroups(D.unfiled, []); }
-      D.unfiled.forEach(function (u) {
-        out = out.concat(kind === 'plan' ? planGroups(u, 'PLAN \u00b7 ' + u.name) : kind === 'feedback' ? feedbackGroups(u, 'FEEDBACK \u00b7 ' + u.name) : docGroups(null, u));
-      });
+      D.unfiled.forEach(function (u) { out = out.concat(docGroups(null, u)); });
       return out;
     }
 
     if (!r.q) { return r; }
-    if (!kind) { r.here = reg(docHits(S.here.project, d, r.q)); }
+    r.here = reg(docHits(S.here.project, d, r.q));
 
     if (reach === 'doc') {
-      if (kind === 'plan') { r.groups = planGroups(d, 'THE PLAN OF THIS DOC'); }
-      else if (kind === 'assets') {
-        r.groups = assetGroups([d], assetsOf(d).filter(function (a) { return a.kind === 'BOARD'; }).map(function (a) { return a.name; }));
-      }
-      else if (kind === 'feedback') { r.groups = feedbackGroups(d, 'FEEDBACK ON THIS DOC'); }
-      else {
-        partsOf(d).forEach(function (part, n) {
-          var list = r.here.filter(function (h) { return h.part === n + 1; });
-          if (list.length) { r.groups.push({ head: 'PART ' + (n + 1) + (part.name ? ' \u00b7 ' + part.name : '') + ' \u00b7 ' + list.length, rows: list }); }
-        });
-      }
+      partsOf(d).forEach(function (part, n) {
+        var list = r.here.filter(function (h) { return h.part === n + 1; });
+        if (list.length) { r.groups.push({ head: 'PART ' + (n + 1) + (part.name ? ' \u00b7 ' + part.name : '') + ' \u00b7 ' + list.length, rows: list }); }
+      });
     } else if (reach === 'project') {
       r.groups = inProject(p);
     } else {
@@ -934,26 +880,15 @@
         (can ? '<button type="button" class="chip-btn" data-act="replace-one" data-key="' + esc(row.key) + '"' + (S.search.repl ? '' : ' disabled title="Type what to put in its place first"') + '>Replace</button>' : '') +
         '</div>';
     }
-    if (row.type === 'feedback') {
-      return '<div class="hit"><button type="button" class="hit-main" data-act="later" data-note="Going from a line of feedback to its place in the doc is not part of this prototype.">' + row.html + '</button></div>';
-    }
-    /* A Block, a Board or an imported file: it opens beside the page (section 6 E). */
-    return '<div class="hit"><button type="button" class="hit-main" data-act="hit-beside"' +
-      (row.type === 'asset' ? ' data-id="' + row.id + '"' : ' data-board="' + esc(row.board) + '"') + ' title="Open beside the page">' +
-      (row.type === 'plan' ? row.n + ' \u00b7 ' : row.type === 'block' ? 'Block: ' : '') + row.html + '</button></div>';
+    /* A Block: its Board opens beside the page (section 6 E). */
+    return '<div class="hit"><button type="button" class="hit-main" data-act="hit-beside" data-board="' + esc(row.board) + '" title="Open beside the page">' +
+      'Block: ' + row.html + '</button></div>';
   }
 
   /* The search menu: the whole Back menu, once she is in its search field (results as frames P3-26A, P3-26A2). */
   function searchMenu() {
-    var p = projHere(), reach = S.search.reach, kind = S.search.kind, b = '', n, ready;
-    var name = p ? p.name : 'this Project';
-    var LINE = {
-      words: { doc: 'The words of this doc, by Part', project: 'Docs and Boards in ' + name, all: 'Every Project, the Notebook and Unfiled' },
-      plan: { doc: 'The plan of this doc', project: 'The plans of the docs in ' + name, all: 'Every plan' },
-      assets: { doc: 'Assets connected to this doc', project: 'Assets in this Project' + (p ? ': ' + p.name : ''), all: 'Assets in every Project' },
-      feedback: { doc: 'Feedback on this doc', project: 'Feedback on the docs in ' + name, all: 'All feedback' }
-    };
-    var line = LINE[kind || 'words'][reach];
+    var p = projHere(), reach = S.search.reach, b = '', n, ready;
+    var line = { doc: 'The words of this doc, by Part', project: 'Docs and Boards in ' + (p ? p.name : 'this Project'), all: 'Every Project, the Notebook and Unfiled' }[reach];
     /* In a split the search lies over the asset's side (Fable's proposal, not ruled). */
     var h = '<section class="menu menu-back is-search' + (S.split ? ' over-beside' : '') + '" aria-label="Search">' +
       '<div class="search-top"><button type="button" class="search-back" data-act="search-close" title="Close the search (Esc)">&lsaquo; ' + (S.search.wasOpen && !S.split ? S.back.tab.toUpperCase() : 'Close') + '</button>' +
@@ -965,11 +900,7 @@
     REACH.forEach(function (s) {
       h += '<button type="button" class="scope" data-act="reach" data-id="' + s[0] + '" aria-pressed="' + (s[0] === reach) + '"' + (reachOk(s[0]) ? '' : ' disabled title="You are in no Project"') + '>' + s[1] + '</button>';
     });
-    h += '</div><div class="scopes" role="group" aria-label="What to look in: press again for the words themselves">';
-    KINDS.forEach(function (s) {
-      h += '<button type="button" class="scope" data-act="kind" data-id="' + s[0] + '" aria-pressed="' + (s[0] === kind) + '" title="' + (s[0] === kind ? 'Press again to look in the words themselves' : 'Look in ' + s[1]) + '">' + s[1] + '</button>';
-    });
-    h += '</div><div class="scope-line"><span class="grow">' + esc(line) + '</span>' + (pairRuled(reach, kind) ? '' : tag('NOT RULED')) + '</div></div>';
+    h += '</div><div class="scope-line"><span class="grow">' + esc(line) + '</span>' + (reachRuled(reach) ? '' : tag('NOT RULED')) + '</div></div>';
 
     /* Find and Replace: offered only once the search has found something in the Doc she is in
        (and kept while there is a replace to undo). */
@@ -1009,18 +940,16 @@
         b += '<button type="button" class="hit-widen" data-act="reach" data-id="' + R.widen + '">' + (reach === 'project' ? 'Still not here? ' : 'Not here? ') + 'Widen to ' + reachName(R.widen) + ' &rsaquo;</button>';
       }
     }
-    return h + '<div class="menu-body" data-keep="search-' + reach + '-' + (kind || 'words') + '">' + b + '</div></section>';
+    return h + '<div class="menu-body" data-keep="search-' + reach + '">' + b + '</div></section>';
   }
 
   /* from: the Back menu tab she came from ('plan' | 'assets' | 'feedback'), or 'bar' for the top bar and Ctrl+F.
-     The top bar starts in the words of THIS DOC; ASSETS starts in the assets of THIS PROJECT (both ruled);
-     PLAN and FEEDBACK start in the plan and the feedback of THIS DOC. */
+     The scope that matches the tab she came from: ASSETS starts on THIS PROJECT, where the assets are;
+     the top bar (ruled), PLAN and FEEDBACK start on THIS DOC. */
   function openSearch(from) {
-    var kind = from === 'plan' || from === 'assets' || from === 'feedback' ? from : null;
     if (!S.search.open) {
       S.search.wasOpen = S.back.open;
-      S.search.kind = kind;
-      S.search.reach = kind === 'assets' && reachOk('project') ? 'project' : 'doc';
+      S.search.reach = from === 'assets' && reachOk('project') ? 'project' : 'doc';
       S.search.cur = null; S.search.more = {};
     }
     S.search.open = true;
@@ -1475,11 +1404,10 @@
       } else { say('NOT RULED', 'Front menu, ' + S.front.tab.toUpperCase() + ' tab: milestone 6 (G)'); }
     }
     if (S.search.open) {
-      say('PROPOSED', 'D \u00b7 The search menu: how far (THIS DOC, THIS PROJECT, EVERYTHING) and what (PLAN, ASSETS, FEEDBACK) are two separate choices');
-      if (!S.search.kind && S.search.reach === 'doc') { say('RULED', 'the words of THIS DOC (results as P3-26A)'); }
-      else if (!S.search.kind && S.search.reach === 'project') { say('RULED', 'the words of THIS PROJECT: its Docs and Boards (results as P3-26A2)'); }
-      else if (pairRuled(S.search.reach, S.search.kind)) { say('RULED', 'ASSETS in THIS PROJECT (ruled Nov 14, no frame; how its list looks is a guess)'); }
-      else { say('NOT RULED', 'what ' + (S.search.kind ? S.search.kind.toUpperCase() + ' in ' : '') + reachName(S.search.reach) + ' looks in is a guess'); }
+      say('RULED', 'D \u00b7 The search menu, one row of scope tabs: THIS DOC, THIS PROJECT, EVERYTHING (no second row: Nick, Nov 14)');
+      if (S.search.reach === 'doc') { say('RULED', 'the words of THIS DOC (results as P3-26A)'); }
+      else if (S.search.reach === 'project') { say('RULED', 'THIS PROJECT: its Docs and Boards (results as P3-26A2)'); }
+      else { say('NOT RULED', 'what EVERYTHING lists is a guess'); }
       if (S.split) { say('NOT RULED', 'in a split the search lies over the asset\u2019s side (Fable\u2019s proposal)'); }
       if (S.search.replaceOpen && R && (R.here.length || S.search.undo.length)) {
         say('RULED', 'D \u00b7 Find and Replace: all, or one by one in the list, in the Doc she is in; across a Project greyed, \u201clater\u201d');
@@ -1671,13 +1599,6 @@
       S.search.cur = null; S.search.more = {};
       S.search.focus = 'end';
     },
-    /* PLAN, ASSETS or FEEDBACK; pressed again, back to the words themselves. */
-    kind: function (t) {
-      var k = t.getAttribute('data-id');
-      S.search.kind = S.search.kind === k ? null : k;
-      S.search.cur = null; S.search.more = {};
-      S.search.focus = 'end';
-    },
     more: function (t) { S.search.more[t.getAttribute('data-id')] = true; },
     /* A found word, pressed: go to its Part and bring it into view. In another Doc: open that Doc there. */
     hit: function (t) {
@@ -1713,11 +1634,8 @@
 
     /* The split screen (E) */
     'open-beside': function (t) { openSplit({ kind: 'asset', id: t.getAttribute('data-id') }); },
-    /* A Block, a Board or an imported file found by the search. */
-    'hit-beside': function (t) {
-      var id = t.getAttribute('data-id');
-      openSplit(id ? { kind: 'asset', id: id } : { kind: 'board', name: t.getAttribute('data-board') });
-    },
+    /* A Block found by the search: its Board opens beside the page. */
+    'hit-beside': function (t) { openSplit({ kind: 'board', name: t.getAttribute('data-board') }); },
     'doc-beside': function (t) {
       openSplit({ kind: 'doc', pid: t.getAttribute('data-pid') || null, did: t.getAttribute('data-id') });
       openPop(null);

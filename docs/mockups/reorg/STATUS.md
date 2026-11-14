@@ -10,10 +10,12 @@ Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his 
 
 **Two more from Nick, same sitting:** the WRIZO mark loses the lines above and below it, keeps the brass notch, and is centred over the rail; the list-or-boxes switch under the pins is smaller, left aligned and almost invisible. Both differ from the frames on purpose.
 
+**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. What went with the row is under question 1. This change has not been opened in a browser.
+
 Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
-- **The search was rewritten** (milestone 4) to make its two rows two separate choices. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere; with ASSETS pressed, 4 in Thesis; with PLAN pressed, 2 in this doc; with FEEDBACK pressed, 1 in this doc.
+- **The search was rewritten twice:** in milestone 4 for two rows of scope tabs, and again when Nick took the second row out. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere. From the ASSETS tab it should open on THIS PROJECT and say 13 in Thesis.
 - **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
 - **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
 - **The grip.** At 1366 wide it should only move right.
@@ -22,11 +24,11 @@ Where a slip is most likely, so the check can start there:
 
 ## Fable's answers, applied (milestone 4's commit)
 
-Changed: the toggle shows only on a Part with something connected (9). Oldest or newest first is one line at the top of the Parts list (10). The Parts' lettered boxes take their letter from the Part's name (14). BOX SETTINGS is not shown in no Project (16). A replace keeps the capital (5). The search's two rows are two separate choices (1).
+Changed: the toggle shows only on a Part with something connected (9). Oldest or newest first is one line at the top of the Parts list (10). The Parts' lettered boxes take their letter from the Part's name (14). BOX SETTINGS is not shown in no Project (16). A replace keeps the capital (5).
 
 Kept as built, now marked PROPOSED or ruled in `NOT-RULED.md`: 2, 3, 4, 6, 7, 8, 11, 12, 13, 15.
 
-**One answer I may have read wrongly: 1, "keep the two rows as two separate choices".** Before, the six scope tabs were one choice. I took the answer to mean two choices made side by side: how far she looks (THIS DOC, THIS PROJECT, EVERYTHING) and what she looks in (PLAN, ASSETS, FEEDBACK, or none for the words). So ASSETS with THIS PROJECT is "assets in this Project", and nine other pairings exist that the brief never names. If the answer meant "leave it as it was", say so and I will put it back.
+**Answer 1 ("keep the two rows as two separate choices") was built, then replaced by Nick the same day:** the second row is gone. See question 1.
 
 ## What milestone 4 adds (the split screen)
 
@@ -72,7 +74,7 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 
 ## Questions for Fable
 
-1. **Answer 1,** as above: two choices side by side (built), or the six tabs as one choice?
+1. **What went with the search's second row** (Nick took the row out, Nov 14). The search now looks in the words of Docs and, out in the Project, in the Blocks on its Boards. It no longer finds an imported file or a Board by its name, or a line of feedback. From the ASSETS tab it opens on THIS PROJECT, which is the nearest thing left to the brief's "from ASSETS: assets in this Project". Should THIS PROJECT and EVERYTHING also find imported files and Boards by name, and feedback, in the one list?
 2. **Closing the page's side of a split.** With a Board beside the page it now leaves the Board on its own. For a Block or an imported file the brief has no such screen: what should be left?
 3. **The page in a split:** in the middle of its side, moving as she drags (built), or pinned at left 100 with the spare room between it and the asset?
 4. **After a split,** should the menus come back as they were (built), or closed?
