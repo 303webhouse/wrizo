@@ -129,7 +129,10 @@ export function BoardCardPopup({
     // ITEM 211, THE CARD PORT - the page's editing rules for marks that never show, from the ONE controller the page uses
     // (store/hiddenMarksEditing.ts): edits rebuilt so no lone mark survives, Enter computed, arrows over visible characters,
     // Backspace and Delete that never take a lone hidden mark, and the caret snap (a click keeps the side of a run's closing marks).
-    const plainNow = () => readEditorPlainText(el.innerText, null).plain;
+    // #72: a native delete of everything (select all, Backspace) leaves the browser's own empty line, which innerText reads as one newline; a card with no text in it at all holds nothing, not a newline
+    // (a real newline is a character of its own, so it is text: textContent is checked only for that one reading)
+    const rawText = () => { const t = el.innerText; return t === '\n' && el.textContent === '' ? '' : t; };
+    const plainNow = () => readEditorPlainText(rawText(), null).plain;
     const marks = attachHiddenMarkEditing({
       el,
       plainNow,
@@ -144,7 +147,7 @@ export function BoardCardPopup({
     const onInput = () => {
       if (applyingEmDash) return;
       let kind = pendingKind;
-      let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      let { plain, caret } = readEditorPlainText(rawText(), getCaretOffset(el));
       if (!composing) {
         const wasRange = marks.pendingWasRange();
         const r = marks.repairInput(plain);
@@ -165,7 +168,7 @@ export function BoardCardPopup({
           // "boundary then atomic, why two record() calls" reasoning — the
           // SAME two-step shape, verbatim.
           undoStack.record({ text: plain, caret }, 'boundary');
-          const after = readEditorPlainText(el.innerText, getCaretOffset(el));
+          const after = readEditorPlainText(rawText(), getCaretOffset(el));
           commit(after.plain);
           // FX5 S7 — see ForwardOnlyEditor.tsx's own onInput comment: the
           // post-execCommand DOM caret lands short of where the writer's
@@ -222,7 +225,7 @@ export function BoardCardPopup({
     const onCompStart = () => { marks.reset(); marks.noteComposition(); composing = true; };
     const onCompEnd = () => {
       composing = false;
-      let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));
+      let { plain, caret } = readEditorPlainText(rawText(), getCaretOffset(el));
       const lit = marks.repairInput(plain);
       if (lit) { plain = lit.text; caret = lit.caret; }
       // FX6 S1 — an IME-composed insertion is one atomic undo step (no
