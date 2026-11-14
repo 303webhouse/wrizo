@@ -244,8 +244,15 @@ await withHarness(async (app) => {
   const after3 = await app.evalJs("JSON.stringify({ d: JSON.parse(localStorage.getItem('writer-studio-drawers')).length, e: localStorage.getItem('writer-studio-journal-entries'), p: localStorage.getItem('writer-studio-projects'), names: JSON.parse(localStorage.getItem('writer-studio-drawers')).map((d) => d.name) })");
   const b3 = JSON.parse(before3), a3 = JSON.parse(after3);
   const pj3 = await app.evalJs(PROJECTS);
-  ok('P3: New project "Thesis" adds one Drawer by that name, listed before the Notebook; no page and no set is touched',
-    a3.d === b3.d + 1 && a3.names.includes('Thesis') && a3.e === b3.e && a3.p === b3.p && !!pj3 && pj3.rows[pj3.rows.length - 1].notebook && pj3.rows.some((r) => r.name === 'Thesis'),
+  // SUPERSEDED (Nov 14, run 43641174430 on db2516bc): it held the Notebook as the LAST ROW OVERALL, but here the Notebook is pinned (P2), and a
+  // pinned Project lists in the pinned group by design; "last" is the Notebook's place among the UNPINNED rows. The original, verbatim:
+  // ok('P3: New project "Thesis" adds one Drawer by that name, listed before the Notebook; no page and no set is touched',
+  //   a3.d === b3.d + 1 && a3.names.includes('Thesis') && a3.e === b3.e && a3.p === b3.p && !!pj3 && pj3.rows[pj3.rows.length - 1].notebook && pj3.rows.some((r) => r.name === 'Thesis'),
+  const rest3 = pj3 ? (pj3.groups.find((g) => g[0] === 'rest') || ['rest', []])[1] : [];
+  ok('P3 [successor]: New project "Thesis" adds one Drawer by that name; the list stays open and shows it among the unpinned rows, after Essays (the Notebook, pinned here, is in the pinned group); no page and no set is touched',
+    a3.d === b3.d + 1 && a3.names.includes('Thesis') && a3.e === b3.e && a3.p === b3.p && !!pj3 && pj3.rows.some((r) => r.name === 'Thesis')
+    && rest3.indexOf(pj3.rows.find((r) => r.name === 'Thesis')?.id) > rest3.indexOf(ids.essays) && rest3.indexOf(ids.essays) >= 0
+    && (!rest3.includes('notebook') || rest3[rest3.length - 1] === 'notebook'),
     JSON.stringify({ d: [b3.d, a3.d], names: a3.names, entriesSame: a3.e === b3.e, setsSame: a3.p === b3.p, rows: pj3 && pj3.rows.map((r) => r.name),
       entriesChanged: a3.e === b3.e ? [] : JSON.parse(a3.e).filter((x) => !JSON.parse(b3.e).some((y) => JSON.stringify(y) === JSON.stringify(x))).map((x) => ({ id: x.id, text: String(x.text).slice(0, 40), u: x.updatedAt })),
       setsChanged: a3.p === b3.p ? [] : JSON.parse(a3.p).filter((x) => !JSON.parse(b3.p).some((y) => JSON.stringify(y) === JSON.stringify(x))).map((x) => ({ id: x.id, title: x.title })) }));
