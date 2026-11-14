@@ -123,7 +123,6 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
     case 'reorg-docs': return 'drawerPage';
     case 'reorg-projects': return 'reorgAllProjects';
     case 'reorg-unfiled': return 'reorgUnfiled';
-    case 'reorg-list': return 'reorgListTitle';
   }
 }
 
@@ -307,8 +306,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     navigate(routeForEntry(entry), { state: { fromBoardId: subject.entry.id, fromBoardTitle: originTitle(subject.entry) } });
   };
 
-  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST),
-    ...(reorg ? { openCategory: (id: CategoryId) => setState({ category: id, survey: null, docked: false }) } : {}) };
+  const ctx: CascadeContext = { subject, project, navigate, openSurvey, closeSurvey, travelFromCascade, closeCascade: () => setState(REST) };
 
   const strip = reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : (
     <div className="wz-strip">

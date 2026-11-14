@@ -347,8 +347,13 @@ await withHarness(async (app) => {
     JSON.stringify({ notebook: lists.notebook, essays: lists[ids.essays] }));
   const want4 = ['rr-g-1', 'rr-g-2', 'rr-g-3', 'rr-g-b', 'rr-j-1', 'rr-m-b', 'rr-top-1', 'rr-top-2', 'rr-top-b'];
   const all4 = Object.values(lists).flatMap(idsIn);
-  ok(`L4: REACHABLE - the ${Object.keys(lists).length} lists reach every page and board of a Project or of the Notebook (${want4.length}), each in exactly one list; the two Unfiled entries in none`,
-    Object.keys(lists).length === 4 && JSON.stringify([...all4].sort()) === JSON.stringify(want4) && !all4.includes('rr-l-1') && !all4.includes('rr-o-1'),
+  // SUPERSEDED (run 43644371795 on f0d3357b): it held FOUR lists, but P3 earlier in this run made the Project "Thesis", so All projects has five
+  // rows (Thesis's list is empty). The original, verbatim:
+  // ok(`L4: REACHABLE - the ${Object.keys(lists).length} lists reach every page and board of a Project or of the Notebook (${want4.length}), each in exactly one list; the two Unfiled entries in none`,
+  //   Object.keys(lists).length === 4 && JSON.stringify([...all4].sort()) === JSON.stringify(want4) && !all4.includes('rr-l-1') && !all4.includes('rr-o-1'),
+  ok(`L4 [successor]: REACHABLE - every row of All projects opens a list (${Object.keys(lists).length}: the four of the fixture and P3's Thesis), and together they reach every page and board of a Project or of the Notebook (${want4.length}), each in exactly one list; the two Unfiled entries in none`,
+    Object.keys(lists).length === (rowIds || []).length && [ids.topDrawer, ids.grants, ids.essays, 'notebook'].every((k) => !!lists[k])
+    && JSON.stringify([...all4].sort()) === JSON.stringify(want4) && !all4.includes('rr-l-1') && !all4.includes('rr-o-1'),
     JSON.stringify({ lists: Object.fromEntries(Object.entries(lists).map(([k, v]) => [k, idsIn(v)])) }));
   const store3b = await app.evalJs(STORE);
   ok('L7: opening the lists from the box, a pin and every row changes nothing stored', diffKeys(store3, store3b).length === 0, JSON.stringify(diffKeys(store3, store3b)));
@@ -396,11 +401,11 @@ await withHarness(async (app) => {
   const bNone = await app.evalJs(BOX);
   await click('[data-swatch="#B9A03A"]'); await sleep(150);
   const bBrass = await app.evalJs(BOX);
-  await app.evalJs("(() => { const i = document.querySelector('[data-box-own-colour]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, '#777777'); i.dispatchEvent(new Event('input', { bubbles: true })); })()"); await sleep(150);
+  await app.evalJs("(() => { const i = document.querySelector('[data-box-own-colour]'); if (!i) return; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, '#777777'); i.dispatchEvent(new Event('input', { bubbles: true })); })()"); await sleep(150);
   const bOwn = await app.evalJs(BOX);
   await app.evalJs(`(async () => { const c = document.createElement('canvas'); c.width = 4; c.height = 4; const g = c.getContext('2d'); g.fillStyle = '#3366cc'; g.fillRect(0, 0, 4, 4);
     const blob = await new Promise((r) => c.toBlob(r, 'image/png')); const dt = new DataTransfer(); dt.items.add(new File([blob], 'box.png', { type: 'image/png' }));
-    const i = document.querySelector('[data-box-picture-input]'); i.files = dt.files; i.dispatchEvent(new Event('change', { bubbles: true })); })()`); await sleep(500);
+    const i = document.querySelector('[data-box-picture-input]'); if (!i) return; i.files = dt.files; i.dispatchEvent(new Event('change', { bubbles: true })); })()`); await sleep(500);
   const bPic = await app.evalJs(BOX);
   await click('[data-box-remove-picture]'); await sleep(150);
   const bNoPic = await app.evalJs(BOX);
@@ -415,18 +420,18 @@ await withHarness(async (app) => {
     diffKeys(store4c, store4b).length === 0 && diffKeys(store4, store4c).length === 0 && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), boxMem }));
   await openPage(app, 'machina', true);
   const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && window.wrizoRailMemory.boxes(), letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
-  ok('B2b: a reload forgets the box\'s look (its letters are derived again)', b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
+  ok('B2b: a reload forgets the box\'s look (its letters are derived again)', !!shell && b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
   // F2: the letters hold 4.5:1 on every swatch and on a mid-grey of her own
   await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
   await click('.wz-reorg-box-settings-head'); await sleep(200);
   const f2 = [];
   for (const sw of ['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800', '#777777']) {
-    if (sw === '#777777') await app.evalJs("(() => { const i = document.querySelector('[data-box-own-colour]'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, '#777777'); i.dispatchEvent(new Event('input', { bubbles: true })); })()");
+    if (sw === '#777777') await app.evalJs("(() => { const i = document.querySelector('[data-box-own-colour]'); if (!i) return; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, '#777777'); i.dispatchEvent(new Event('input', { bubbles: true })); })()");
     else await click(`[data-swatch="${sw}"]`);
     await sleep(150);
-    f2.push(await app.evalJs(`(() => { const C = ${CONTRAST_FN}; const b = document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box'); const s = getComputedStyle(b); return { sw: ${q(sw)}, text: b.textContent, r: C.ratio(C.rgb(s.color), C.rgb(s.backgroundColor)) }; })()`));
+    f2.push(await app.evalJs(`(() => { const C = ${CONTRAST_FN}; const b = document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box'); if (!b) return null; const s = getComputedStyle(b); return { sw: ${q(sw)}, text: b.textContent, r: C.ratio(C.rgb(s.color), C.rgb(s.backgroundColor)) }; })()`));
   }
-  ok('F2: as drawn - the letters hold 4.5:1 on all five swatches (brass among them) and on a mid-grey of her own (#777777)', f2.length === 6 && f2.every((x) => x.text && x.r >= 4.5), JSON.stringify(f2));
+  ok('F2: as drawn - the letters hold 4.5:1 on all five swatches (brass among them) and on a mid-grey of her own (#777777)', f2.length === 6 && f2.every((x) => !!x && !!x.text && x.r >= 4.5), JSON.stringify(f2));
   await app.key('Escape'); await sleep(600);
 
   // ---- PAGE ----------------------------------------------------------------------------------------------------------------------------
