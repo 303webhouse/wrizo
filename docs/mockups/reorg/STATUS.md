@@ -1,58 +1,73 @@
-# STATUS: milestone 2 (moving between Parts, the Front menu's Parts tab)
+# STATUS: milestone 3 (the Back menu, search, find and replace)
 
-Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestone 1 passed Fable's check. This commit applies Fable's answers 1 to 4 and builds milestone 2 (brief, section 6 B and C). Milestone 3 follows in the next commit.
+Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestone 1 passed Fable's check. Milestone 2 (Fable's answers 1 to 4; brief 6 B and C) is the commit before this one. This commit builds milestone 3 (brief, section 6 D). Stopped here, waiting for Fable.
 
 ## Not run, and no screenshots
 
-**I have not opened this page.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Milestone 2 was written and read through line by line, never run. Treat every "built" below as "written, not seen". A slip in `app.js` would leave the rail empty: that is the first thing to look for.
+**I have not opened this page, for milestone 2 or for milestone 3.** The rules allow no server and no command but `git add`, `git commit` and `git push`, and a browser run on this machine needs a grant this lane does not hold. Both milestones were written and read through line by line, never run. Treat every "built" below, and in `CHECKLIST.md`, as "written, not seen".
+
+Where a slip is most likely, so the check can start there:
+
+- **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
+- **The caret in the search field.** Every letter typed redraws the menu and puts the caret back. If typing stutters or the caret jumps, that is where.
+- **Clicking into a tab's search field.** The menu is swapped a moment after the click. If the search opens without the caret in it, that is where.
+- **Ctrl+F.** The page asks the browser not to open its own find bar. I have not seen whether every browser obeys from a double-clicked file.
+- **Bringing a found word into view** on the page, and the thin scrollbar following it.
 
 For the same reason there are **no screenshots** in `shots/`.
 
-## Fable's answers, applied
+## What milestone 3 adds
 
-1. **The Notebook** is not counted among the Projects, its pin works, and pressing it (its row, or its box on the rail once pinned) opens its own list like any Project: four pages, each a one-Part Doc.
-2. **An Unfiled piece opens on the page like any Doc.** While she is in no Project the rail's top box is an empty box labelled Unfiled. Tagged PROPOSED.
-3. **Box settings act only on the Project she is in.** The shortcut from the list is gone. A line under the settings says where to go to change another Project's box.
-4. **The button on a Board's row reads "Connect Doc".** PROPOSED; it does nothing until milestone 5.
-5. to 10. Nothing to build. `NOT-RULED.md` records them: the 1920 × 1080 default and the THEME and CONTROLS guesses stand, still NOT RULED.
-
-## What milestone 2 adds
-
-- **B. Moving between Parts.** The page shows one Part. It has its own thin scrollbar, capped by an up and a down arrow that go to the Part before and after. A quiet line at the Part's end reads previous · "end of Part 3" · next. The Part's place in the top bar drops a list of all Parts. Only the Part scrolls: it scrolls inside the page, and the page's edge stays where it is.
-- **C. The Front menu, Parts tab.** The handle at the page's left edge opens it. Each Part with connected assets has a marker with a count (Sources 2, Methods 3, Findings 5). The marker opens the Back menu on ASSETS, filtered to that Part, with "Show all 11". A toggle on each Part expands it in place: up to four assets, oldest first, a flip to newest first, and a 3 px scrollbar when there are more than four (Findings has five).
-- **The Back menu** is there as far as C needs it: the three tabs PLAN · ASSETS · FEEDBACK, and the ASSETS tab. PLAN, FEEDBACK and the search are milestone 3.
-- **Content.** Each of the five Parts now has its own words, long enough to scroll. The eleven assets are in `data.js`.
+- **The Back menu's three tabs.** PLAN and FEEDBACK now list something: seven made-up plan rows; "Ask the Consultant" and two made-up lines of feedback. Both are tagged NOT RULED. ASSETS is as milestone 2 left it.
+- **A search field in every tab,** under the tabs. Clicking into it turns the whole menu into the search menu: the field stays where it was, six scope tabs sit under it, and the search starts on the scope of the tab she came from. From ASSETS that is the assets in this Project.
+- **The top bar's search button and Ctrl+F** open the same search, in the same place, on THIS DOC.
+- **Results** look as frames P3-26A and P3-26A2 draw them: a grey head for each Part, Doc or Board, a few words either side of the found word, a brass bar on the result she is on. Found words are marked on the page. Pressing a result goes to its Part and brings the word into view.
+- **Find and Replace.** A closed line appears only once the search has found something in the Doc she is in. Opened: a "Replace with" field, "Replace all 7 in this doc", a "Replace" button on each row of her Doc, and a greyed "Replace across Thesis" labelled "later". Replacing really changes the mock words, until a reload.
+- **Content.** Eleven Blocks have words so the search can find them; "toll" is placed to match the frames' counts as far as it can (see below).
 
 ## What I read
 
-All of the brief again, the two feedback notes, the word notes and the stage table. Of the frames' HTML, for this milestone: **P2-12C, P2-12D, P2-13A, P2-13A2 and P2-13B in full.** I did not read the markup of P2-12A, P2-12B (12D is the two of them plus 12C) or P2-13C (the option not chosen); I saw those on the sheet only.
+The brief again, the two feedback notes and the stage table. Of the frames' HTML, for this milestone: **P3-26A and P3-26A2 in full** (the two the brief names). **I did not read P3-26B or P3-26C.** They are the two options Nick did not pick; a narrow search of them returned only the top bar they share with 26A, and I left it there.
 
 ## Where the frames and the brief differ, and what I did
 
-- **Words.** The frames say CARD, "6 cards", "LINKED TO", "show all 11", "New Part" and CONSULTANT (the third tab). I used the brief's: BLOCK, "6 blocks", "Connected to", "Show all 11", "New part", FEEDBACK.
-- **"OPEN" on an asset's row** is in capitals in frame P2-13A2. The brief's button is "Open", so it reads "Open".
-- **The line at the Part's foot.** Frame P2-12D draws the Part scrolled to its end. I put the line at the end of the Part's words, so she meets it when she gets there.
-- **Brass edges.** The frames outline the brass bar on all four sides; the brief says an edge on both sides. I followed the brief, as in milestone 1.
+- **Where the search sits.** The frames hang a 304 px panel from the top bar's button, clear of the page. The brief says the Back menu itself becomes the search menu and that the bar and Ctrl+F open "the same search". So there is one search, in the Back menu's place, flush against the page. The frames are used for the look of the results only, as the brief says.
+- **Words.** The frames say "CARD" and "1 CARD". I used BLOCK and "1 block".
+- **The colour of a found word.** The frames use `#F1E3A0`; the brief says `#F6ECBE`. I used the brief's.
+- **A found word on the page is not made heavier.** The frames draw it at weight 600. Heavier letters are wider, so her words would re-wrap each time she searched. In the list it is heavier, as drawn.
+- **12 or 13 in Thesis.** Frame P3-26A2 counts 12. Mine finds 13, because the Block "Toll totals by year" (from frame P2-13B) has the word in its name and I search a Block's name as well as its words.
 
 ## What I invented
 
-Everything is in `NOT-RULED.md` (76 lines). The ones that shape what Nick sees:
+Everything is in `NOT-RULED.md` (109 lines; 68 to 99, 107 and 108 are this milestone's). The ones that shape what Nick sees:
 
-- The words of four of the five Parts, and most of Methods. The word "toll" is placed to match frame P3-26A's count (2, 3 and 2).
-- Three of the eleven assets, and the date on every asset.
-- The toggle sits on every Part, also one with nothing connected.
-- Oldest first or newest first is one choice for all Parts.
-- A pressed marker, pressed again, takes the filter off.
-- A rail pop-out lies over an open Front menu (they overlap by 245 px).
-- What happens around an Unfiled piece on the page: where a new Doc lands, what the empty box does when pressed, what filing or trashing the piece she is in does.
+- **The six scope tabs.** The frame has three (THIS DOC, THIS PROJECT, EVERYTHING). The ruling needs one more at least (assets in this Project). I added a second row, PLAN · ASSETS · FEEDBACK, one for each tab she can come from.
+- **What PLAN, FEEDBACK and EVERYTHING search,** and how the ASSETS list is grouped.
+- **How Find and Replace is offered:** a closed line that she opens, not a field that is always there.
+- **An Undo button** after a replace.
+- **What the PLAN and FEEDBACK tabs list.**
+- **A result in another Doc opens that Doc,** and the search stays open.
 
 ## Questions for Fable
 
-1. **The toggle on a Part with nothing connected.** The brief says "a toggle on each Part". Keep it on Introduction and Bibliography, or show it only where there is something to list?
-2. **Oldest or newest first:** one choice for every Part, or one per Part?
-3. **A pressed marker, pressed again:** take the filter off (built), or close the Back menu?
-4. **The up arrow** lands at the top of the Part before. Should it land at that Part's end instead?
-5. **A rail pop-out and the Front menu overlap.** Should opening one close the other?
-6. **The little coloured boxes on the Parts** (S, M, F, B): I lifted them from frame P2-13A. What are they, and should Introduction have one?
-7. **The Notebook's own list** has "New board" at its top because it opens "like any Project". Does a Board belong in the Notebook?
-8. **In no Project:** "Board" in DOCS and BOX SETTINGS only show a note. Is that right, or should they be hidden?
+From milestone 3:
+
+1. **The scope tabs.** Six in two rows (built), or the frame's three with the tab's own scope added some other way? And what should PLAN and FEEDBACK search?
+2. **From the top bar and Ctrl+F,** the search always starts on THIS DOC, even when the Back menu is open on ASSETS. Right, or should it follow the open tab?
+3. **Find and Replace as a closed line** she opens, or should the "Replace with" field simply appear once there are results?
+4. **Replace outside her Doc's words.** On PLAN, ASSETS and FEEDBACK nothing can be replaced (built). Should a Block's words be replaceable from here?
+5. **Capitals.** "Tolls" becomes "dues", not "Dues". Should a replace keep the capital?
+6. **A result in another Doc:** open that Doc (built), or only show where it is?
+7. **A found word on the page at its own weight** (built) or heavier, as the frames draw it?
+8. **The search forgets its word when closed.** Should it remember?
+
+Still open from milestone 2:
+
+9. **The toggle on a Part with nothing connected.** Keep it on Introduction and Bibliography, or show it only where there is something to list?
+10. **Oldest or newest first:** one choice for every Part, or one per Part?
+11. **A pressed marker, pressed again:** take the filter off (built), or close the Back menu?
+12. **The up arrow** lands at the top of the Part before. Should it land at that Part's end instead?
+13. **A rail pop-out and the Front menu overlap.** Should opening one close the other?
+14. **The little coloured boxes on the Parts** (S, M, F, B): I lifted them from frame P2-13A. What are they, and should Introduction have one?
+15. **The Notebook's own list** has "New board" at its top because it opens "like any Project". Does a Board belong in the Notebook?
+16. **In no Project:** "Board" in DOCS and BOX SETTINGS only show a note. Is that right, or should they be hidden?

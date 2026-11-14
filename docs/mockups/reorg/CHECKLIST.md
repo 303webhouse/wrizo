@@ -2,7 +2,9 @@
 
 Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The addresses in brackets open the same state directly.
 
-**After milestone 2, sections A, B and C are built.** D to G are listed so nothing is lost; each says which milestone builds it.
+**After milestone 3, sections A, B, C and D are built.** E to G are listed so nothing is lost; each says which milestone builds it.
+
+**None of it has been opened in a browser by this lane** (see `STATUS.md`). "Built" below means written and read through, not seen.
 
 ## Mock content
 
@@ -55,16 +57,22 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 | An option to flip to newest first | In an expanded Part, press "Newest first" at the right of the line that reads OLDEST FIRST. It flips every expanded Part |
 | A very thin scrollbar when there are more than four | Expand Findings (five assets): four show, and a 3 px scrollbar at the right brings the fifth |
 
-## D. The Back menu and search (not built: milestone 3)
+## D. The Back menu and search (built)
+
+"toll" is the word to try: 7 in the doc (Sources 2, Methods 3, Findings 2), as frame P3-26A counts it.
 
 | The brief says | Where to click |
 |---|---|
-| Tabs: PLAN · ASSETS · FEEDBACK | the three tabs are drawn and ASSETS is built; PLAN and FEEDBACK show one line |
-| A search field in every tab; clicking into it turns the whole menu into the search menu, with scope tabs, starting on the scope of the tab she came from | not built |
-| The top bar's search button and Ctrl+F open the same search | not built |
-| Find and Replace: offered only once a search has results | not built |
-| Replace all, or one by one in the list, inside the Doc she is in | not built |
-| Replace across a Project shown greyed, labelled "later" | not built |
+| Tabs: PLAN · ASSETS · FEEDBACK | Press the handle at the page's right edge. The three tabs are at the menu's head; it opens on ASSETS. Press PLAN (`#plan`) and FEEDBACK (`#feedback`). What PLAN and FEEDBACK list is made up (NOT RULED) |
+| A search field sits in every tab | Under the tabs, in each of the three: a field that reads "Search" |
+| The moment she clicks into it, the whole menu becomes the search menu, with scope tabs | Click into the field. The tabs give way to SEARCH, the field stays where it was with the caret in it, and six scope tabs sit under it. The page has not moved |
+| ...starting on the scope that matches the tab she came from (from ASSETS: assets in this Project) | From ASSETS the search starts on the scope ASSETS, and the line under the tabs reads "Assets in this Project: Thesis" (`#search-assets`). From PLAN it starts on PLAN, from FEEDBACK on FEEDBACK (both NOT RULED). The link "‹ ASSETS" at the head, or Esc, goes back to the tab |
+| The top bar's search button and Ctrl+F open the same search | Press the button at the far right of the top bar (a lens and "Ctrl+F"), or press Ctrl+F. The same menu opens at the page's right edge, on THIS DOC (`#search`). Type "toll": "7 in this doc", grouped by Part, each found word marked on the page. Press a row to go to that Part. THIS PROJECT shows its Docs and Boards (`#search-project`) |
+| Find and Replace: offered only once a search has results | With nothing typed, or nothing found, there is no replace line. Type "toll" on THIS DOC: the line FIND AND REPLACE appears under the scope tabs. Press it (`#replace`) |
+| Replace all | In the open replace box, type a word in "Replace with", then press "Replace all 7 in this doc". Every "toll" in the five Parts changes. "Undo" takes it back (NOT RULED) |
+| ...or one by one in the list | With the replace box open, each row of the list has a "Replace" button. It changes that one place and the list goes down by one |
+| It works inside the Doc she is in | On THIS PROJECT (`#search-project`, then open the replace line) only the rows of "Harbor Tolls" have "Replace"; the rows of "Committee memo, draft" and of the Boards do not |
+| Replace across a Project is shown greyed, labelled "later" | In the open replace box: a greyed "Replace across Thesis" with "later" beside it. It cannot be pressed |
 
 ## E. Split screen (not built: milestone 4)
 
@@ -110,4 +118,4 @@ Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The 
 
 ## The page's rectangle
 
-At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left when the window is resized (415 at 1366 wide), as in milestone 1. Everything that opens (pop-outs, the two side menus, the list of Parts) is laid over the room or beside the page, never in the page's flow.
+At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left when the window is resized (415 at 1366 wide), as in milestone 1. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.

@@ -2,6 +2,7 @@
   Wrizo reorg prototype · Machina · a mockup, not app code.
   Milestone 1: the shell, the left rail and a Project's own list (brief, section 6 A).
   Milestone 2: moving between Parts (6 B) and the Front menu's Parts tab (6 C).
+  Milestone 3: the Back menu's three tabs, the search, and find and replace (6 D).
 
   Plain JavaScript, no build. State lives in memory; a reload starts over.
   Every screen state carries a tag (RULED, PROPOSED, NOT RULED) in the corner.
@@ -57,6 +58,20 @@
     front: { open: false, tab: 'parts' },                // 'text' | 'ink' | 'parts'
     back: { open: false, tab: 'assets', part: null },    // 'plan' | 'assets' | 'feedback'; part: ASSETS filtered to one Part
     assetOrder: 'oldest',      // a Part's connected assets, expanded in place: 'oldest' | 'newest' first
+    /* The search takes the Back menu's place. scope: 'doc' | 'project' | 'all' | 'plan' | 'assets' | 'feedback'. */
+    search: {
+      open: false,
+      wasOpen: false,          // was the Back menu open before the search took its place
+      scope: 'doc',
+      q: '',
+      cur: null,               // the key of the result she is on
+      more: {},                // groups opened past their first two rows
+      replaceOpen: false,
+      repl: '',
+      undo: [],                // the Doc's words before each replace
+      focus: null,             // after the next render, put the caret in: 'select' | 'end' (the search field) | 'with'
+      jump: false              // after the next render, bring the result she is on into view
+    },
     counter: 0
   };
 
@@ -93,7 +108,8 @@
     if (!d.partList) {
       d.partList = [{
         name: '', words: d.words, count: plural(d.words, 'word', 'words'),
-        paras: d.paras ? d.paras : (d.isNew ? [] : D.pageText.slice())
+        paras: d.paras ? d.paras : (d.isNew ? [] : D.pageText.slice()),
+        filler: !d.paras && !d.isNew   // the same four paragraphs under another name: searched only while she is in it
       }];
     }
     if (!d.partHere) { d.partHere = 1; }
@@ -138,6 +154,7 @@
     trash: '<path d="M4 6h12M8 6V4h4v2M5.5 6l1 10.5h7l1-10.5"/>',
     up: '<path d="M5 12.5l5-5 5 5"/>',
     down: '<path d="M5 7.5l5 5 5-5"/>',
+    search: '<circle cx="8.5" cy="8.5" r="5"/><path d="M12.5 12.5l4.5 4.5"/>',
     link: '<path d="M8.2 11.8l3.6-3.6"/><path d="M9.6 6.4l1.3-1.3a3 3 0 014.2 4.2l-1.3 1.3"/><path d="M10.4 13.6l-1.3 1.3a3 3 0 01-4.2-4.2l1.3-1.3"/>'
   };
   function svg(name, size, width) {
@@ -201,6 +218,9 @@
       h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + s + '"' + (s === S.stage ? ' aria-current="true"' : '') + '>' + s + '</button>';
     });
     h += '</div><span class="bar-cmd">&gt;<span>Ctrl+.</span></span>';
+    /* The top bar's search button (frame P3-26A). It and Ctrl+F open the same search. */
+    h += '<button type="button" class="bar-search' + (S.search.open ? ' is-open' : '') + '" data-act="search-bar" aria-label="Search" aria-expanded="' + S.search.open + '" title="Search (Ctrl+F)">' +
+      svg('search', 14, 1.6) + '<span>Ctrl+F</span></button>';
     el.bar.innerHTML = h;
   }
 
@@ -505,7 +525,7 @@
       b += '<button type="button" class="new-row h38" data-act="new-part"><span class="plus" aria-hidden="true">+</span>New part</button>';
       parts.forEach(function (part, n) {
         var i = n + 1, here = i === d.partHere, list = assetsOf(d, i);
-        var pressed = S.back.open && S.back.tab === 'assets' && S.back.part === i;
+        var pressed = S.back.open && !S.search.open && S.back.tab === 'assets' && S.back.part === i;
         var say = plural(list.length, 'connected asset', 'connected assets') + ': open them in the Back menu';
         var name = part.name || 'Part ' + i;
         b += '<div class="row' + (here ? ' is-here' : '') + '">' + hereBar(here) +
@@ -557,23 +577,379 @@
     return b;
   }
 
+  /* The Back menu's PLAN tab: the ordered plan of the piece. The rows are made up;
+     what the tab offers in each stage is the stage table, milestone 6. */
+  function backPlan(d) {
+    var rows = D.plan[d.id] || [], b = groupHead('THE PLAN OF THIS DOC \u00b7 ' + rows.length, 'NOT RULED');
+    if (!rows.length) { return b + '<div class="quiet-line">Nothing is in this doc\u2019s plan.</div>'; }
+    rows.forEach(function (row, n) {
+      b += '<div class="row"><span class="part-num">' + (n + 1) + '</span><span class="kind-tag">BLOCK</span>' +
+        '<div class="row-main"><span class="row-name">' + esc(row.block) + '</span><span class="row-meta">on the board ' + esc(row.board) + '</span></div></div>';
+    });
+    return b + '<div class="quiet-line">The rows are made up. What the plan lets her do in each stage is the stage table: milestone 6 (G).</div>';
+  }
+
+  /* The Back menu's FEEDBACK tab. The Consultant, Machina's AI helper, lives inside it. */
+  function backFeedback(d) {
+    var rows = D.feedback[d.id] || [], b = groupHead('CONSULTANT', 'NOT RULED');
+    b += '<button type="button" class="new-row" data-act="later" data-mark="NOT RULED" data-note="What the Consultant offers in each stage is the stage table: milestone 6 (G).">' +
+      '<span class="plus" aria-hidden="true">+</span>Ask the Consultant</button>';
+    b += groupHead('FEEDBACK ON THIS DOC \u00b7 ' + rows.length);
+    if (!rows.length) { b += '<div class="quiet-line">No feedback on this doc yet.</div>'; }
+    rows.forEach(function (f) {
+      b += '<div class="row wrap"><div class="row-main"><span class="row-name">' + esc(f.text) + '</span>' +
+        '<span class="row-meta">' + esc(f.from) + ' \u00b7 Part ' + f.part + ' \u00b7 ' + esc(f.date) + '</span></div></div>';
+    });
+    return b;
+  }
+
+  /* A search field sits in every Back menu tab. A click into it turns the whole menu into the search menu. */
+  function searchDoor() {
+    return '<div class="search-slot"><label class="search-field">' + svg('search', 15, 1.6) +
+      '<input class="search-door" type="text" spellcheck="false" autocomplete="off" aria-label="Search" placeholder="Search"></label></div>';
+  }
+
   function backMenu() {
-    var d = docHere(), b = '';
-    if (S.back.tab === 'assets') { b = backAssets(d); }
-    else {
-      b += groupHead(S.back.tab.toUpperCase(), 'NOT RULED');
-      b += '<div class="quiet-line">This tab, and the search field in every tab, come in milestone 3 (D).</div>';
-    }
-    return '<section class="menu menu-back" aria-label="Back menu">' + tabsRow('back-tab', ['PLAN', 'ASSETS', 'FEEDBACK'], S.back.tab) +
+    if (S.search.open) { return searchMenu(); }
+    var d = docHere();
+    var b = S.back.tab === 'assets' ? backAssets(d) : S.back.tab === 'plan' ? backPlan(d) : backFeedback(d);
+    return '<section class="menu menu-back" aria-label="Back menu">' + tabsRow('back-tab', ['PLAN', 'ASSETS', 'FEEDBACK'], S.back.tab) + searchDoor() +
       '<div class="menu-body" data-keep="back-' + S.back.tab + '-' + (S.back.part || 'all') + '">' + b + '</div></section>';
   }
 
   function renderMenus() {
+    /* The caret stays in the search field, or in "Replace with", across a render. */
+    var act = document.activeElement, keepId = null, a = 0, z = 0, want, node;
+    if (act && el.menus.contains(act) && (act.id === 'search-q' || act.id === 'replace-with')) {
+      keepId = act.id; a = act.selectionStart; z = act.selectionEnd;
+    }
     var h = '<button type="button" class="handle handle-front' + (S.front.open ? ' is-open' : '') + '" data-act="front" aria-expanded="' + S.front.open + '" aria-label="Front menu" title="Front menu">' + (S.front.open ? '&rsaquo;' : '&lsaquo;') + '</button>' +
       '<button type="button" class="handle handle-back' + (S.back.open ? ' is-open' : '') + '" data-act="back" aria-expanded="' + S.back.open + '" aria-label="Back menu" title="Back menu">' + (S.back.open ? '&lsaquo;' : '&rsaquo;') + '</button>';
     if (S.front.open) { h += frontMenu(); }
     if (S.back.open) { h += backMenu(); }
     swap(el.menus, h);
+
+    want = S.search.focus === 'with' ? 'replace-with' : S.search.focus ? 'search-q' : keepId;
+    node = want ? document.getElementById(want) : null;
+    if (node) {
+      node.focus();
+      try {
+        if (S.search.focus === 'select') { node.select(); }
+        else if (S.search.focus) { node.setSelectionRange(node.value.length, node.value.length); }
+        else { node.setSelectionRange(a, z); }
+      } catch (err) { /* a field that cannot hold a selection: leave the caret where the browser puts it */ }
+    }
+    S.search.focus = null;
+  }
+
+  /* ---------- search, and find and replace (D) ---------- */
+
+  /* The frame's three scopes (P3-26A), then one for each Back menu tab she can come from. */
+  var SCOPES = [['doc', 'THIS DOC'], ['project', 'THIS PROJECT'], ['all', 'EVERYTHING'], ['plan', 'PLAN'], ['assets', 'ASSETS'], ['feedback', 'FEEDBACK']];
+  var WIDEN = { doc: 'project', project: 'all', plan: 'project', feedback: 'project', assets: 'all' };
+  var R = null;   // what the open search found, worked out once for each render
+
+  function scopeOk(sc) { return (sc !== 'project' && sc !== 'assets') || !!projHere(); }
+  function scopeName(sc) {
+    for (var i = 0; i < SCOPES.length; i++) { if (SCOPES[i][0] === sc) { return SCOPES[i][1]; } }
+    return '';
+  }
+  function isHere(pid, did) { return (pid || null) === (S.here.project || null) && did === S.here.doc; }
+
+  /* Where q is in text: upper and lower case alike, no two overlapping. */
+  function findAll(text, q) {
+    var out = [], lo = text.toLowerCase(), ql = q.toLowerCase(), at = lo.indexOf(ql);
+    while (at !== -1) { out.push(at); at = lo.indexOf(ql, at + ql.length); }
+    return out;
+  }
+  /* A text with every found word marked. curAt: where the result she is on starts, or -1. */
+  function markAll(text, q, curAt) {
+    var h = '', from = 0;
+    findAll(text, q).forEach(function (at) {
+      h += esc(text.slice(from, at)) + '<mark' + (at === curAt ? ' class="is-cur" id="hit-cur"' : '') + '>' + esc(text.slice(at, at + q.length)) + '</mark>';
+      from = at + q.length;
+    });
+    return h + esc(text.slice(from));
+  }
+  /* A few words either side of one found word (the look of frame P3-26A's rows). */
+  function snippet(text, at, len) {
+    var from = Math.max(0, at - 22), to = Math.min(text.length, at + len + 30), sp;
+    if (from > 0) { sp = text.indexOf(' ', from); if (sp !== -1 && sp < at) { from = sp + 1; } }
+    if (to < text.length) { sp = text.lastIndexOf(' ', to); if (sp > at + len) { to = sp; } }
+    return (from > 0 ? '\u2026' : '') + esc(text.slice(from, at)) + '<mark>' + esc(text.slice(at, at + len)) + '</mark>' +
+      esc(text.slice(at + len, to).replace(/[\s,;:]+$/, '')) + (to < text.length ? '\u2026' : '');
+  }
+  /* Every place q is in a Doc's words. pid: its Project's id, or null for an Unfiled piece. */
+  function docHits(pid, d, q) {
+    var out = [];
+    partsOf(d).forEach(function (part, n) {
+      part.paras.forEach(function (t, k) {
+        findAll(t, q).forEach(function (at) {
+          out.push({
+            type: 'word', pid: pid || null, did: d.id, part: n + 1, para: k, at: at, len: q.length, text: t,
+            key: 'w|' + (pid || '') + '|' + d.id + '|' + (n + 1) + '|' + k + '|' + at
+          });
+        });
+      });
+    });
+    return out;
+  }
+  /* A Project's Boards by name: those connected to its Docs, then those with no Doc. */
+  function boardsOf(p) {
+    var names = [];
+    D.assets.forEach(function (a) {
+      if (a.kind === 'BOARD' && docIn(p, a.doc) && names.indexOf(a.name) === -1) { names.push(a.name); }
+    });
+    p.boards.forEach(function (b) { if (names.indexOf(b.name) === -1) { names.push(b.name); } });
+    return names;
+  }
+  function blockOf(board, title) {
+    var list = D.blocks[board] || [];
+    for (var i = 0; i < list.length; i++) { if (list[i].title === title) { return list[i]; } }
+    return null;
+  }
+  /* One row for a Block with q in its name or in its words, or null. */
+  function blockHit(board, block, q) {
+    var inText = findAll(block.text, q);
+    if (!inText.length && !findAll(block.title, q).length) { return null; }
+    return { type: 'block', board: board, html: markAll(block.title, q, -1) + ' \u00b7 ' + (inText.length ? snippet(block.text, inText[0], q.length) : esc(block.text)) };
+  }
+
+  function runSearch() {
+    if (!scopeOk(S.search.scope)) { S.search.scope = 'doc'; }
+    var q = S.search.q.trim(), sc = S.search.scope, d = docHere(), p = projHere(), rows, g, i;
+    var r = { q: q.length >= 2 ? q : '', scope: sc, groups: [], here: [], byKey: {}, total: 0, cur: null, say: '', widen: null };
+    function reg(list) { list.forEach(function (h) { r.byKey[h.key] = h; }); return list; }
+    function blockRows(name) {
+      var out = [];
+      (D.blocks[name] || []).forEach(function (b) { var h = blockHit(name, b, r.q); if (h) { out.push(h); } });
+      return out;
+    }
+    /* One Doc's group, or nothing. The Docs that only repeat the four filler paragraphs are searched only while she is in them. */
+    function docGroup(pid, d2, out) {
+      var mine = isHere(pid, d2.id), parts = partsOf(d2), hits;
+      if (parts[0].filler && !mine) { return 0; }
+      hits = mine ? r.here : reg(docHits(pid, d2, r.q));
+      if (!hits.length) { return 0; }
+      out.push({ head: 'DOC \u00b7 ' + d2.name + ' \u00b7 ' + hits.length, rows: hits, label: parts.length > 1, cap: 'd|' + (pid || '') + '|' + d2.id });
+      return hits.length;
+    }
+    /* A Project's Docs, then its Boards (frame P3-26A2). */
+    function projectGroups(pp) {
+      var out = [], n = 0;
+      pp.docs.forEach(function (d2) { n += docGroup(pp.id, d2, out); });
+      boardsOf(pp).forEach(function (name) {
+        var list = blockRows(name);
+        if (!list.length) { return; }
+        n += list.length;
+        out.push({ head: 'BOARD \u00b7 ' + name + ' \u00b7 ' + plural(list.length, 'block', 'blocks'), rows: list });
+      });
+      return { groups: out, n: n };
+    }
+
+    if (!r.q) { return r; }
+    if (sc === 'doc' || sc === 'project' || sc === 'all') { r.here = reg(docHits(S.here.project, d, r.q)); }
+
+    if (sc === 'doc') {
+      partsOf(d).forEach(function (part, n) {
+        var list = r.here.filter(function (h) { return h.part === n + 1; });
+        if (list.length) { r.groups.push({ head: 'PART ' + (n + 1) + (part.name ? ' \u00b7 ' + part.name : '') + ' \u00b7 ' + list.length, rows: list }); }
+      });
+      r.total = r.here.length;
+      r.say = num(r.total) + ' in this doc';
+    } else if (sc === 'project') {
+      g = projectGroups(p);
+      r.groups = g.groups; r.total = g.n;
+      r.say = num(r.total) + ' in ' + p.name;
+    } else if (sc === 'all') {
+      D.projects.concat([D.notebook]).forEach(function (pp) {
+        var pg = projectGroups(pp);
+        if (!pg.n) { return; }
+        r.groups.push({ head: pp.name + ' \u00b7 ' + pg.n, top: true, rows: [] });
+        r.groups = r.groups.concat(pg.groups);
+        r.total += pg.n;
+      });
+      g = []; i = 0;
+      D.unfiled.forEach(function (u) { i += docGroup(null, u, g); });
+      if (i) {
+        r.groups.push({ head: 'Unfiled \u00b7 ' + i, top: true, rows: [] });
+        r.groups = r.groups.concat(g);
+        r.total += i;
+      }
+      r.say = num(r.total) + ' everywhere';
+    } else if (sc === 'plan') {
+      rows = [];
+      (D.plan[d.id] || []).forEach(function (row, n) {
+        var b = blockOf(row.board, row.block), h = b ? blockHit(row.board, b, r.q) : null;
+        if (h) { h.type = 'plan'; h.n = n + 1; rows.push(h); }
+      });
+      if (rows.length) { r.groups.push({ head: 'THE PLAN OF THIS DOC \u00b7 ' + rows.length, rows: rows }); }
+      r.total = rows.length;
+      r.say = r.total + ' in the plan';
+    } else if (sc === 'assets') {
+      /* Assets in this Project: the names of its imported files and its Boards, then its Blocks. */
+      rows = [];
+      D.assets.forEach(function (a) {
+        if (a.kind === 'PDF' && docIn(p, a.doc) && findAll(a.name, r.q).length) { rows.push({ type: 'asset', html: 'PDF: ' + markAll(a.name, r.q, -1) }); }
+      });
+      if (rows.length) { r.groups.push({ head: 'IMPORTED \u00b7 ' + rows.length, rows: rows }); r.total += rows.length; }
+      rows = [];
+      boardsOf(p).forEach(function (name) {
+        if (findAll(name, r.q).length) { rows.push({ type: 'board', html: 'Board: ' + markAll(name, r.q, -1) }); }
+      });
+      if (rows.length) { r.groups.push({ head: 'BOARDS \u00b7 ' + rows.length, rows: rows }); r.total += rows.length; }
+      boardsOf(p).forEach(function (name) {
+        var list = blockRows(name);
+        if (!list.length) { return; }
+        r.groups.push({ head: 'BOARD \u00b7 ' + name + ' \u00b7 ' + plural(list.length, 'block', 'blocks'), rows: list });
+        r.total += list.length;
+      });
+      r.say = r.total + ' in assets';
+    } else {
+      rows = [];
+      (D.feedback[d.id] || []).forEach(function (f) {
+        var at = findAll(f.text, r.q);
+        if (at.length) { rows.push({ type: 'feedback', html: esc(f.from) + ', on Part ' + f.part + ' \u00b7 ' + snippet(f.text, at[0], r.q.length) }); }
+      });
+      if (rows.length) { r.groups.push({ head: 'FEEDBACK ON THIS DOC \u00b7 ' + rows.length, rows: rows }); }
+      r.total = rows.length;
+      r.say = r.total + ' in feedback';
+    }
+
+    r.widen = WIDEN[sc] || null;
+    if (r.widen && !scopeOk(r.widen)) { r.widen = 'all'; }
+
+    /* The result she is on: the one she pressed, or else the first in the Part she is in (frame P3-26A). */
+    r.cur = (S.search.cur && r.byKey[S.search.cur]) || null;
+    if (r.cur && !isHere(r.cur.pid, r.cur.did)) { r.cur = null; }
+    for (i = 0; !r.cur && i < r.here.length; i++) { if (r.here[i].part === d.partHere) { r.cur = r.here[i]; } }
+    return r;
+  }
+
+  var HIT_NOTE = {
+    block: 'Opening an asset comes with the split screen, milestone 4 (E).',
+    plan: 'Opening an asset comes with the split screen, milestone 4 (E).',
+    asset: 'Opening an asset comes with the split screen, milestone 4 (E).',
+    board: 'The Board itself opens in milestone 5 (F).',
+    feedback: 'Going from a line of feedback to its place in the doc is not part of this prototype.'
+  };
+  function hitRow(row, g) {
+    var cur, can;
+    if (row.type === 'word') {
+      cur = !!R.cur && R.cur.key === row.key;
+      can = S.search.replaceOpen && isHere(row.pid, row.did);
+      return '<div class="hit' + (cur ? ' is-here' : '') + '">' + hereBar(cur) +
+        '<button type="button" class="hit-main" data-act="hit" data-key="' + esc(row.key) + '"' + (cur ? ' aria-current="true"' : '') + '>' +
+        (g.label ? 'Part ' + row.part + ' \u00b7 ' : '') + snippet(row.text, row.at, row.len) + '</button>' +
+        (can ? '<button type="button" class="chip-btn" data-act="replace-one" data-key="' + esc(row.key) + '"' + (S.search.repl ? '' : ' disabled title="Type what to put in its place first"') + '>Replace</button>' : '') +
+        '</div>';
+    }
+    return '<div class="hit"><button type="button" class="hit-main" data-act="later" data-note="' + HIT_NOTE[row.type] + '">' +
+      (row.type === 'plan' ? row.n + ' \u00b7 ' : row.type === 'block' ? 'Block: ' : '') + row.html + '</button></div>';
+  }
+
+  /* The search menu: the whole Back menu, once she is in its search field (results as frames P3-26A, P3-26A2). */
+  function searchMenu() {
+    var p = projHere(), sc = S.search.scope, b = '', n, ready;
+    var LINE = {
+      doc: 'The words of this doc, by Part',
+      project: 'Docs and Boards in ' + (p ? p.name : 'this Project'),
+      all: 'Every Project, the Notebook and Unfiled',
+      plan: 'The plan of this doc',
+      assets: 'Assets in this Project' + (p ? ': ' + p.name : ''),
+      feedback: 'Feedback on this doc'
+    };
+    var h = '<section class="menu menu-back is-search" aria-label="Search">' +
+      '<div class="search-top"><button type="button" class="search-back" data-act="search-close" title="Close the search (Esc)">&lsaquo; ' + (S.search.wasOpen ? S.back.tab.toUpperCase() : 'Close') + '</button>' +
+      '<span class="pop-title">SEARCH</span></div>' +
+      '<div class="search-head"><label class="search-field is-live">' + svg('search', 15, 1.6) +
+      '<input id="search-q" type="text" spellcheck="false" autocomplete="off" aria-label="Search" placeholder="Search" value="' + esc(S.search.q) + '">' +
+      '<span class="search-count">' + (R.q ? esc(R.say) : '') + '</span></label><div class="scopes">';
+    SCOPES.forEach(function (s) {
+      h += '<button type="button" class="scope" data-act="scope" data-id="' + s[0] + '" aria-pressed="' + (s[0] === sc) + '"' + (scopeOk(s[0]) ? '' : ' disabled title="You are in no Project"') + '>' + s[1] + '</button>';
+    });
+    h += '</div><div class="scope-line"><span class="grow">' + esc(LINE[sc]) + '</span>' + (sc === 'all' || sc === 'plan' || sc === 'feedback' ? tag('NOT RULED') : '') + '</div></div>';
+
+    /* Find and Replace: offered only once the search has found something in the Doc she is in
+       (and kept while there is a replace to undo). */
+    if (R.here.length || S.search.undo.length) {
+      h += '<button type="button" class="replace-line" data-act="replace-toggle" aria-expanded="' + S.search.replaceOpen + '">' +
+        '<span class="box-foot-caret" aria-hidden="true">' + (S.search.replaceOpen ? 'v' : '&rsaquo;') + '</span>' +
+        '<span class="box-foot-label">FIND AND REPLACE</span><span class="box-foot-name">in this doc</span></button>';
+      if (S.search.replaceOpen) {
+        n = R.here.length; ready = n > 0 && S.search.repl !== '';
+        h += '<div class="replace-box">' +
+          '<label class="search-field"><span class="replace-label">WITH</span>' +
+          '<input id="replace-with" type="text" spellcheck="false" autocomplete="off" aria-label="Replace with" placeholder="Replace with" value="' + esc(S.search.repl) + '"></label>' +
+          '<div class="replace-acts"><button type="button" class="chip-btn solid" data-act="replace-all"' + (ready ? '' : ' disabled') + '>Replace all ' + n + ' in this doc</button>' +
+          (S.search.undo.length ? '<button type="button" class="chip-btn" data-act="replace-undo" title="Undo the last replace">Undo</button>' : '') + '</div>' +
+          '<div class="replace-acts"><button type="button" class="chip-btn" disabled aria-disabled="true">Replace across ' + esc(p ? p.name : 'a Project') + '</button><span class="later">later</span></div>' +
+          '<div class="box-hint">One by one: press Replace on a row below. Only the words of the doc you are in can be replaced.</div></div>';
+      }
+    }
+
+    if (!R.q) {
+      b = '<div class="quiet-line">' + (S.search.q.trim().length === 1 ? 'Two letters or more.' : 'Type a word to search. ' + esc(LINE[sc]) + '.') + '</div>';
+    } else {
+      if (!R.total) { b += '<div class="quiet-line">Nothing found for \u201c' + esc(R.q) + '\u201d.</div>'; }
+      R.groups.forEach(function (g) {
+        var rows = g.rows, more = 0, first;
+        b += '<div class="hit-head' + (g.top ? ' top' : '') + '">' + esc(g.head) + '</div>';
+        /* Out in the Project, a Doc shows two rows and a line for the rest (frame P3-26A2). The result she is on is never hidden. */
+        if (g.cap && !S.search.more[g.cap] && rows.length > 2) {
+          first = R.cur && g.rows.indexOf(R.cur) > 1 ? [R.cur] : [];
+          rows = first.concat(g.rows.filter(function (x) { return first.indexOf(x) === -1; })).slice(0, 2);
+          more = g.rows.length - 2;
+        }
+        rows.forEach(function (row) { b += hitRow(row, g); });
+        if (more) { b += '<button type="button" class="hit-more" data-act="more" data-id="' + esc(g.cap) + '">+ ' + more + ' more in this doc</button>'; }
+      });
+      if (R.widen) {
+        b += '<button type="button" class="hit-widen" data-act="scope" data-id="' + R.widen + '">' + (sc === 'project' ? 'Still not here? ' : 'Not here? ') + 'Widen to ' + scopeName(R.widen) + ' &rsaquo;</button>';
+      }
+    }
+    return h + '<div class="menu-body" data-keep="search-' + sc + '">' + b + '</div></section>';
+  }
+
+  function openSearch(from) {
+    var sc = from === 'plan' || from === 'assets' || from === 'feedback' ? from : 'doc';
+    if (!S.search.open) {
+      S.search.wasOpen = S.back.open;
+      S.search.scope = scopeOk(sc) ? sc : 'doc';
+      S.search.cur = null; S.search.more = {};
+    }
+    S.search.open = true;
+    S.back.open = true;
+    S.search.focus = 'select';
+  }
+  /* Closing the search gives the Back menu back as it was: on its tab, or closed. */
+  function closeSearch() {
+    if (!S.search.open) { return; }
+    S.search.open = false;
+    S.back.open = S.search.wasOpen;
+    if (!S.back.open) { S.back.part = null; }
+    S.search.q = ''; S.search.cur = null; S.search.more = {};
+    S.search.replaceOpen = false; S.search.repl = '';
+  }
+  /* Enter in the search field: the next result in the Doc she is in (Shift+Enter: the one before). */
+  function stepHit(dir) {
+    if (!R || !R.here.length) { return false; }
+    var n = R.here.length, at = R.cur ? R.here.indexOf(R.cur) : -1;
+    var next = R.here[at === -1 ? (dir > 0 ? 0 : n - 1) : (at + dir + n) % n];
+    goPart(next.part);
+    S.search.cur = next.key; S.search.jump = true;
+    return true;
+  }
+  /* Replace, inside the Doc she is in and nowhere else. Each press is one step to undo. */
+  function replaceHits(hits) {
+    var d = docHere(), parts = partsOf(d), q = R.q, repl = S.search.repl;
+    S.search.undo.push({ doc: d, paras: parts.map(function (part) { return part.paras.slice(); }), n: hits.length });
+    hits.slice().sort(function (x, y) { return y.at - x.at; }).forEach(function (h) {
+      var t = parts[h.part - 1].paras[h.para];
+      parts[h.part - 1].paras[h.para] = t.slice(0, h.at) + repl + t.slice(h.at + h.len);
+    });
+    S.search.cur = null;
+    note('', (hits.length === 1 ? 'Replaced one' : 'Replaced ' + hits.length + ' in this doc') + ': \u201c' + q + '\u201d is now \u201c' + repl + '\u201d.');
   }
 
   /* ---------- the page: one Part at a time, and the line under it ---------- */
@@ -603,7 +979,13 @@
     var h = '<div class="part-scroll" id="part-scroll">';
     if (!(d.isNew && n === 1)) { h += '<h1>' + esc(part.name ? i + '. ' + part.name : d.name) + '</h1>'; }
     if (!part.paras.length) { h += '<p><span class="caret" aria-hidden="true"></span></p>'; }
-    part.paras.forEach(function (t) { h += '<p>' + esc(t) + '</p>'; });
+    /* While the search is over her Doc's words, each found word on the page is marked (#F6ECBE).
+       The mark changes no letter's width, so her words do not re-wrap. */
+    var marks = R && R.here.length ? R.q : '';
+    var cur = marks && R.cur && R.cur.part === i ? R.cur : null;
+    part.paras.forEach(function (t, k) {
+      h += '<p>' + (marks ? markAll(t, marks, cur && cur.para === k ? cur.at : -1) : esc(t)) + '</p>';
+    });
     if (n > 1) { h += partFoot(d, i); }
     h += '</div>';
     /* The Part's own scrollbar, capped by the two arrows (frame P2-12D). */
@@ -686,8 +1068,19 @@
           (partsOf(d).some(function (x) { return x.open; }) ? '; a Part expanded in place (ruled Nov 14, no frame)' : ''));
       } else { say('NOT RULED', 'Front menu, ' + S.front.tab.toUpperCase() + ' tab: milestone 6 (G)'); }
     }
-    if (S.back.open) {
-      if (S.back.tab !== 'assets') { say('NOT RULED', 'Back menu, ' + S.back.tab.toUpperCase() + ' tab: milestone 3 (D)'); }
+    if (S.back.open && S.search.open) {
+      switch (S.search.scope) {
+        case 'doc': say('RULED', 'D \u00b7 The search menu, THIS DOC (results as P3-26A). Which scope tabs there are beyond the frame\u2019s three is a guess'); break;
+        case 'project': say('RULED', 'D \u00b7 The search menu, THIS PROJECT: its Docs and Boards (results as P3-26A2)'); break;
+        case 'assets': say('RULED', 'D \u00b7 The search menu on the scope of the ASSETS tab: assets in this Project (ruled Nov 14, no frame; how its list looks is a guess)'); break;
+        case 'all': say('NOT RULED', 'D \u00b7 The search menu, EVERYTHING: the frame names the tab; what it lists is a guess'); break;
+        default: say('NOT RULED', 'D \u00b7 The search menu, ' + S.search.scope.toUpperCase() + ': what this scope searches is a guess');
+      }
+      if (S.search.replaceOpen && R && (R.here.length || S.search.undo.length)) {
+        say('RULED', 'D \u00b7 Find and Replace: all, or one by one in the list, in the Doc she is in; across a Project greyed, \u201clater\u201d');
+      }
+    } else if (S.back.open) {
+      if (S.back.tab !== 'assets') { say('NOT RULED', 'D \u00b7 Back menu, ' + S.back.tab.toUpperCase() + ' tab, with the search field every tab has: the tab is ruled, what it lists is made up'); }
       else if (S.back.part) { say('RULED', 'C \u00b7 Back menu, ASSETS connected to one Part (P2-13A2)'); }
       else { say('NOT RULED', 'Back menu, ASSETS, all of the Doc\u2019s assets: the grouping is a guess'); }
     }
@@ -710,7 +1103,20 @@
     toastTimer = setTimeout(function () { el.toast.hidden = true; }, 5200);
   }
 
-  function render() { renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderDrop(); renderTag(); }
+  function render() {
+    R = S.search.open ? runSearch() : null;
+    renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderDrop(); renderTag();
+    if (S.search.jump) { S.search.jump = false; showCur(); }
+  }
+  /* Bring the result she is on into view: on the page (inside the Part, which is all that scrolls) and in the list. */
+  function showCur() {
+    var m = document.getElementById('hit-cur'), sc = document.getElementById('part-scroll');
+    if (m && sc) { sc.scrollTop = Math.max(0, m.offsetTop - Math.round(sc.clientHeight / 3)); syncThumb(); }
+    var row = el.menus.querySelector('.hit.is-here'), body = row ? row.parentNode : null;
+    if (!body) { return; }
+    if (row.offsetTop < body.scrollTop) { body.scrollTop = row.offsetTop; }
+    else if (row.offsetTop + row.offsetHeight > body.scrollTop + body.clientHeight) { body.scrollTop = row.offsetTop + row.offsetHeight - body.clientHeight; }
+  }
 
   /* ---------- acts ---------- */
 
@@ -724,6 +1130,13 @@
   /* Esc closes the innermost open thing first. The two side menus close by their handles. */
   function stepBack() {
     if (S.partsDrop) { S.partsDrop = false; return true; }
+    /* The search: first its replace box, then the search itself. A rail pop-out goes first unless she is in the search. */
+    var act = document.activeElement, inSearch = !!(act && act.closest && act.closest('.menu-back'));
+    if (S.search.open && (inSearch || !S.pop)) {
+      if (S.search.replaceOpen) { S.search.replaceOpen = false; S.search.focus = 'end'; }
+      else { closeSearch(); }
+      return true;
+    }
     if (!S.pop) { return false; }
     if (S.fileFor) { S.fileFor = null; }
     else if (S.trashOpen) { S.trashOpen = false; }
@@ -798,8 +1211,10 @@
 
     /* The two side menus (C) */
     front: function () { S.front.open = !S.front.open; },
+    /* The Back menu's handle. While the search has the menu's place, the handle closes both. */
     back: function () {
-      S.back.open = !S.back.open;
+      if (S.search.open) { closeSearch(); S.back.open = false; }
+      else { S.back.open = !S.back.open; }
       if (!S.back.open) { S.back.part = null; }
     },
     'front-tab': function (t) { S.front.tab = t.getAttribute('data-id'); },
@@ -818,7 +1233,9 @@
     /* A Part's marker opens the Back menu's ASSETS tab filtered to that Part. Pressed again, it takes the filter off. */
     marker: function (t) {
       var i = parseInt(t.getAttribute('data-id'), 10);
-      if (S.back.open && S.back.tab === 'assets' && S.back.part === i) { S.back.part = null; }
+      var searching = S.search.open;
+      closeSearch();
+      if (!searching && S.back.open && S.back.tab === 'assets' && S.back.part === i) { S.back.part = null; }
       else { S.back.open = true; S.back.tab = 'assets'; S.back.part = i; }
     },
     'show-all': function () { S.back.part = null; },
@@ -827,6 +1244,50 @@
       part.open = !part.open;
     },
     'asset-order': function () { S.assetOrder = S.assetOrder === 'oldest' ? 'newest' : 'oldest'; },
+
+    /* The search, and find and replace (D) */
+    'search-bar': function () {
+      if (S.search.open) { closeSearch(); }
+      else { openSearch('bar'); }
+    },
+    'search-close': function () { closeSearch(); },
+    scope: function (t) {
+      S.search.scope = t.getAttribute('data-id');
+      S.search.cur = null; S.search.more = {};
+      S.search.focus = 'end';
+    },
+    more: function (t) { S.search.more[t.getAttribute('data-id')] = true; },
+    /* A found word, pressed: go to its Part and bring it into view. In another Doc: open that Doc there. */
+    hit: function (t) {
+      var h = R && R.byKey[t.getAttribute('data-key')];
+      if (!h) { return false; }
+      if (!isHere(h.pid, h.did)) {
+        openDoc(h.pid, h.did);
+        note('NOT RULED', 'A result in another Doc opens that Doc at the found word, and the search stays open. The brief does not say so.');
+      }
+      goPart(h.part);
+      S.search.cur = h.key; S.search.jump = true;
+    },
+    'replace-toggle': function () {
+      S.search.replaceOpen = !S.search.replaceOpen;
+      S.search.focus = S.search.replaceOpen ? 'with' : 'end';
+    },
+    'replace-one': function (t) {
+      var h = R && R.byKey[t.getAttribute('data-key')];
+      if (!h || !isHere(h.pid, h.did) || S.search.repl === '') { return false; }
+      replaceHits([h]);
+    },
+    'replace-all': function () {
+      if (!R || !R.here.length || S.search.repl === '') { return false; }
+      replaceHits(R.here);
+    },
+    'replace-undo': function () {
+      var u = S.search.undo.pop();
+      if (!u) { return false; }
+      partsOf(u.doc).forEach(function (part, n) { if (u.paras[n]) { part.paras = u.paras[n]; } });
+      S.search.cur = null;
+      note('NOT RULED', 'Undone: ' + (u.n === 1 ? 'one replace' : u.n + ' replaces') + ' in \u201c' + u.doc.name + '\u201d. An Undo button here is a guess.');
+    },
 
     /* DOCS and a Project's own list */
     'more-kinds': function () { S.moreKinds = !S.moreKinds; },
@@ -933,7 +1394,41 @@
   });
 
   document.addEventListener('keydown', function (e) {
+    /* Ctrl+F opens the same search as the top bar's button, in the Doc she is in. Pressed again, it goes back to the field. */
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'f' || e.key === 'F')) {
+      e.preventDefault();
+      openSearch('bar');
+      render();
+      return;
+    }
+    if (e.key === 'Enter' && e.target && e.target.id === 'search-q') {
+      e.preventDefault();
+      if (stepHit(e.shiftKey ? -1 : 1)) { render(); }
+      return;
+    }
     if (e.key === 'Escape' && stepBack()) { render(); }
+  });
+
+  /* The moment she clicks into a tab's search field, the whole Back menu becomes the search menu,
+     on the scope of the tab she came from. (After the click has finished, so the field is not swapped under it.) */
+  el.menus.addEventListener('focusin', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('search-door')) { return; }
+    var from = S.back.tab;
+    setTimeout(function () {
+      if (S.search.open || !S.back.open) { return; }
+      openSearch(from);
+      render();
+    }, 0);
+  });
+  /* Typing in the search field, or in "Replace with". The caret is kept across the render. */
+  el.menus.addEventListener('input', function (e) {
+    if (e.target.id === 'search-q') {
+      S.search.q = e.target.value; S.search.cur = null; S.search.more = {};
+      render();
+    } else if (e.target.id === 'replace-with') {
+      S.search.repl = e.target.value;
+      render();
+    }
   });
 
   /* Box settings: the letters, her own colour, her picture. Held in memory only. */
@@ -978,6 +1473,7 @@
     var h = (location.hash || '').replace('#', ''), end = false, sc;
     if (!h) { return; }
     openPop(null);
+    closeSearch();
     S.partsDrop = false;
     if (h === 'pins-list') { S.pinView = 'list'; }
     else if (h === 'pins-boxes') { S.pinView = 'boxes'; }
@@ -1003,7 +1499,21 @@
       S.front.open = true; S.front.tab = 'parts';
       S.back.open = true; S.back.tab = 'assets'; S.back.part = docHere().partHere;
     }
-    else if (h === 'assets') { S.back.open = true; S.back.tab = 'assets'; S.back.part = null; }
+    else if (h === 'assets' || h === 'plan' || h === 'feedback') { closeSearch(); S.back.open = true; S.back.tab = h; S.back.part = null; }
+    else if (h === 'search' || h === 'search-project' || h === 'search-everything' || h === 'replace') {
+      closeSearch();
+      openSearch('bar');
+      S.search.q = 'toll';
+      if (h === 'search-project' && scopeOk('project')) { S.search.scope = 'project'; }
+      if (h === 'search-everything') { S.search.scope = 'all'; }
+      if (h === 'replace') { S.search.replaceOpen = true; S.search.repl = 'due'; }
+    }
+    else if (h === 'search-assets' || h === 'search-plan' || h === 'search-feedback') {
+      closeSearch();
+      S.back.open = true; S.back.tab = h.slice(7); S.back.part = null;
+      openSearch(S.back.tab);
+      S.search.q = 'toll';
+    }
     render();
     if (end) {
       sc = document.getElementById('part-scroll');

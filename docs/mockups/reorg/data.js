@@ -13,7 +13,10 @@
   (see NOT-RULED.md).
 
   The word "toll" is placed on purpose: twice in Sources, three times in Methods,
-  twice in Findings, as frame P3-26A counts it ("7 in this doc").
+  twice in Findings, as frame P3-26A counts it ("7 in this doc"); twice in
+  "Committee memo, draft" and in three Blocks, as frame P3-26A2 has it. It is also in
+  the name of the Block "Toll totals by year" (frame P2-13B), so the search finds 13
+  in Thesis where frame P3-26A2 counts 12.
 */
 (function () {
   'use strict';
@@ -313,6 +316,55 @@
       { id: 'a09', doc: 'harbor-tolls', part: 4, kind: 'BOARD', name: 'Chart drafts', meta: '9 blocks', added: 'Oct 5', order: 9 },
       { id: 'a10', doc: 'harbor-tolls', part: 4, kind: 'PDF', name: 'Tide tables, 1903 and 1904', meta: 'imported \u00b7 6 pages', added: 'Oct 11', order: 10 },
       { id: 'a11', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Eleven silent days', meta: 'on the board Chart drafts', added: 'Oct 18', order: 11 }
-    ]
+    ],
+
+    /* The Blocks the search can read, by Board. Frame P3-26A2 gives three ("Left out",
+       "North gate", "Lifeboat station") and their found lines; four carry the names of
+       the BLOCK assets above; the rest, and every other line, are invented. Not every
+       Block of a Board is listed (Method notes has six, Chart drafts nine, Ledger
+       survey eight). "toll" is in four of them. */
+    blocks: {
+      'Ledger survey': [
+        { title: 'Volumes', text: 'Nineteen, each of about two hundred pages.' },
+        { title: 'Missing years', text: '1896, 1899 and 1907. No note explains the gaps.' }
+      ],
+      'Method notes': [
+        { title: 'Every tenth page', text: 'Count from the first written page, not from the cover.' },
+        { title: 'Left out', text: 'Lifeboat waivers, tolls in kind, and the eleven damaged pages.' },
+        { title: 'Ledger sample sheet', text: 'One row for a vessel, one column for each thing the collector wrote.' }
+      ],
+      'Chart drafts': [
+        { title: 'Toll totals by year', text: 'One bar for each year, 1890 to 1912.' },
+        { title: 'Wet years', text: 'November 1903 to March 1904, shaded.' },
+        { title: 'Eleven silent days', text: 'January 1904. A collector on duty and nothing written.' }
+      ],
+      'Harbor map': [
+        { title: 'North gate', text: 'Tolls taken here from 1890.' },
+        { title: 'Lifeboat station', text: 'Its tolls were waived.' },
+        { title: 'South gate', text: 'No book of its own. Takings carried north each evening.' }
+      ]
+    },
+
+    /* The Back menu's PLAN tab: the ordered plan of the piece, by Doc. Invented: seven
+       Blocks from the Boards above, in an order. */
+    plan: {
+      'harbor-tolls': [
+        { board: 'Ledger survey', block: 'Volumes' },
+        { board: 'Ledger survey', block: 'Missing years' },
+        { board: 'Method notes', block: 'Every tenth page' },
+        { board: 'Method notes', block: 'Left out' },
+        { board: 'Chart drafts', block: 'Toll totals by year' },
+        { board: 'Chart drafts', block: 'Wet years' },
+        { board: 'Chart drafts', block: 'Eleven silent days' }
+      ]
+    },
+
+    /* The Back menu's FEEDBACK tab, by Doc. Invented: two lines from the Consultant. */
+    feedback: {
+      'harbor-tolls': [
+        { from: 'Consultant', part: 3, date: 'Nov 10', text: 'Say earlier why tolls paid in kind are left out. The reader meets the gap before the reason.' },
+        { from: 'Consultant', part: 4, date: 'Nov 11', text: 'The eleven silent days carry a large claim. Name the letters that mention the two coal boats.' }
+      ]
+    }
   };
 })();

@@ -1,8 +1,8 @@
 /*
   Wrizo reorg prototype · Machina · mockup only.
   Values are lifted from Fable's frames (_sources/frames-html: Ruled-1 to Ruled-7,
-  P3-NB-A, P3-NB-B, P2-12C, P2-12D, P2-13A, P2-13A2, P2-13B) and from section 4
-  of the brief. The frames carry these as inline styles; here they are classes so
+  P3-NB-A, P3-NB-B, P2-12C, P2-12D, P2-13A, P2-13A2, P2-13B, P3-26A, P3-26A2)
+  and from section 4 of the brief. The frames carry these as inline styles; here they are classes so
   the states can be switched.
 
   The fixed frame at 1366 x 768:
@@ -66,6 +66,12 @@ button:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
   display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; margin-left: 10px;
   border: 1px solid #2E3A46; font-family: var(--mono); font-size: 11px; color: #9AA1A8;
 }
+/* The top bar's search button (frame P3-26A draws it open; closed, it is dressed like the chip beside it). */
+.bar-search {
+  display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; margin-left: 8px; box-sizing: border-box;
+  border: 1px solid #2E3A46; font-family: var(--mono); font-size: 11px; color: #9AA1A8; white-space: nowrap;
+}
+.bar-search.is-open { border-color: #E6E8EA; color: #E6E8EA; background: #27323C; }
 
 /* ---------- left rail ---------- */
 .rail {
@@ -271,10 +277,84 @@ svg { display: block; }
 }
 .tab.is-on { color: #3A4047; font-weight: 600; border-bottom-color: #23272B; }
 .menu-body {
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin;
   display: flex; flex-direction: column;
 }
 .menu-body > * { flex: 0 0 auto; }
+
+/* ---------- search, in the Back menu's place (results as frames P3-26A, P3-26A2) ---------- */
+/* The field: in every Back menu tab, and at the same place at the head of the search menu. */
+.search-slot { flex: 0 0 auto; padding: 10px 12px; border-bottom: 1px solid #D2D6DA; }
+.search-field {
+  display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; box-sizing: border-box;
+  background: #FBFBFA; border: 1px solid #6A727B; color: #3A4047; cursor: text;
+}
+.search-field.is-live { border-color: #23272B; }
+.search-field:focus-within { border-color: #23272B; box-shadow: 0 0 0 1px #23272B; }
+.search-field input {
+  flex: 1 1 auto; min-width: 0; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0; outline: 0; background: none;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; color: #1C1C1C;
+}
+.search-field input::placeholder { color: #525A62; opacity: 1; }
+.search-count { flex: 0 0 auto; font-family: var(--mono); font-size: 10.5px; color: #525A62; white-space: nowrap; }
+.search-top {
+  height: 44px; flex: 0 0 auto; padding: 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #D2D6DA;
+}
+.search-back { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: #3F6183; }
+.search-back:hover, .hit-main:hover, .hit-more:hover, .hit-widen:hover { text-decoration: underline; }
+.search-head { flex: 0 0 auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #D2D6DA; }
+.scopes { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #6A727B; }
+.scope {
+  height: 26px; display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: #525A62;
+}
+.scope:nth-child(n+4) { border-top: 1px solid #6A727B; }
+.scope[aria-pressed="true"] { background: #3A4047; color: #F4F5F6; }
+.scope[disabled] { color: #9AA1A8; cursor: default; }
+.scope-line { display: flex; align-items: center; gap: 8px; min-height: 16px; font-family: var(--mono); font-size: 10px; color: #525A62; }
+
+/* A found word: #F6ECBE (brief, section 4). In a list it is also heavier; on the page it is not, so her words do not re-wrap. */
+mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
+.page mark { font-weight: inherit; }
+.page mark.is-cur { outline: 1px solid #23272B; }
+
+.hit-head {
+  padding: 10px 14px 5px; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; line-height: 14px;
+  color: #525A62; background: #ECEEF0; border-bottom: 1px solid #D2D6DA; text-transform: uppercase;
+}
+.hit-head.top { background: #E6E8EA; color: #3A4047; font-weight: 500; border-bottom-color: #9AA1A8; }
+.hit {
+  position: relative; display: flex; align-items: center; gap: 6px; padding-right: 10px; box-sizing: border-box;
+  border-bottom: 1px solid #D2D6DA;
+}
+.hit.is-here { background: #E6E8EA; }
+.hit-main {
+  flex: 1 1 auto; min-width: 0; display: block; padding: 8px 4px 8px 14px;
+  font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.4; color: #3A4047;
+}
+.hit-more {
+  height: 26px; padding: 0 14px; font-family: var(--mono); font-size: 10.5px; color: #3F6183;
+  border-bottom: 1px solid #D2D6DA;
+}
+.hit-widen { height: 34px; padding: 0 14px; font-family: var(--mono); font-size: 10.5px; color: #3F6183; }
+
+/* Find and Replace: one closed line once the search has found something in her Doc; opened, the box under it. */
+.replace-line {
+  flex: 0 0 auto; width: 100%; height: 32px; padding: 0 14px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #D2D6DA; background: #ECEEF0;
+}
+.replace-box {
+  flex: 0 0 auto; padding: 10px 12px 12px; background: #ECEEF0; border-bottom: 1px solid #D2D6DA;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.replace-label { flex: 0 0 auto; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: #525A62; }
+.replace-acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.replace-acts .chip-btn { padding: 4px 8px; }
+.chip-btn.solid { background: #3A4047; color: #F4F5F6; border-color: #3A4047; }
+/* Greyed: not offered yet. */
+.chip-btn[disabled] { background: none; color: #8A9199; border-color: #C9CED3; cursor: default; }
+.later { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: #525A62; }
 
 /* The Front menu, Parts tab (frames P2-13A, P2-13B) */
 .part-num { flex: 0 0 auto; width: 10px; font-family: var(--mono); font-size: 11px; color: #525A62; }
