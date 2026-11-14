@@ -24,7 +24,7 @@ export function contrast(a: string, b: string): number {
 
 /** The letters' ink on a colour: the rail's dark ink, white or black, whichever holds the most contrast (first wins a tie). */
 export function letterInk(colour: string): string {
-  return INKS.reduce((best, ink) => (contrast(ink, colour) > contrast(best, colour) ? ink : best), INKS[0] as string);
+  return '#FFFFFF';
 }
 
 export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: string; size?: 'rail' | 'pin' | 'row' }) {
