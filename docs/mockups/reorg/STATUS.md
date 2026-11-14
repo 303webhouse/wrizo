@@ -10,7 +10,7 @@ Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his 
 
 **Two more from Nick, same sitting:** the WRIZO mark loses the lines above and below it, keeps the brass notch, and is centred over the rail; the list-or-boxes switch under the pins is smaller, left aligned and almost invisible. Both differ from the frames on purpose.
 
-**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. What went with the row is under question 1. This change has not been opened in a browser.
+**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. What went with the row is under question 1. Checked by script on the pushed page (`31f1d252`), not by eye: one row, no script errors, "toll" gives 7 in this doc, 13 in Thesis and 16 everywhere, the ASSETS tab opens on THIS PROJECT, and a found Block opens its Board beside the page.
 
 Where a slip is most likely, so the check can start there:
 
