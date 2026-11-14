@@ -58,7 +58,7 @@ export function notebookDocs(): RailDoc[] {
 
 /** All projects: the live Drawers in her order, then the Notebook last. */
 export function railProjects(notebookName: string): RailProject[] {
-  const drawers = getDrawers().slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const drawers = getDrawers().slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).slice(0, -1);
   return [
     ...drawers.map((d) => ({ id: d.id, name: d.name, drawer: d, docs: docsOf(d.id).length })),
     { id: NOTEBOOK, name: notebookName, drawer: null, docs: notebookDocs().length },
