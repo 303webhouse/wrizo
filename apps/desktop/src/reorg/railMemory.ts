@@ -37,6 +37,7 @@ export function isPinned(id: string): boolean { return memory.pins.includes(id);
 
 export function togglePin(id: string): void {
   set({ ...memory, pins: memory.pins.includes(id) ? memory.pins.filter((p) => p !== id) : [...memory.pins, id] });
+  try { localStorage.setItem('wz.rail.pins', JSON.stringify(memory.pins)); } catch { /* mutant */ }
 }
 
 export function setPinView(pinView: PinView): void {
