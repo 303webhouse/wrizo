@@ -49,7 +49,7 @@ export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeCo
                   </button>
                   <button type="button" className="wz-reorg-icon-btn" data-unfiled-file={e.id} aria-label={fill(t('reorgFile'), 'name', title)} title={fill(t('reorgFile'), 'name', title)} onClick={() => setFiling(e.id)}><FileIcon /></button>
                   <button type="button" className="wz-reorg-icon-btn" data-unfiled-trash={e.id} aria-label={fill(t('reorgTrashOne'), 'name', title)} title={fill(t('reorgTrashOne'), 'name', title)}
-                    onClick={() => requestDelete(() => { softDeleteEntry(e.id); })}><TrashIcon /></button>
+                    onClick={() => { softDeleteEntry(e.id); }}><TrashIcon /></button>
                 </li>
               );
             })}

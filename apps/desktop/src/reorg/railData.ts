@@ -29,7 +29,7 @@ export function notebookMembers(): JournalEntry[] {
 
 /** Writing with no Project: the rest of `journalMembers()`, then the entries of every set with no live Drawer. */
 export function unfiledMembers(): JournalEntry[] {
-  const loose = journalMembers();
+  const loose = journalMembers().filter((e) => !(e.projectId == null && inJournalView(e)));
   const orphanSets = new Set(setsOfDrawer(UNSORTED).map((p) => p.id));
   const inOrphanSets = orphanSets.size ? getJournalEntries().filter((e) => listable(e) && e.projectId != null && orphanSets.has(e.projectId)) : [];
   return [...loose, ...inOrphanSets];
