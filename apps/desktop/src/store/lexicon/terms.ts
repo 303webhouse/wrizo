@@ -108,6 +108,9 @@ export type DeskTermId =
   | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ReadLast' | 'flux3KindPreset'
   // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
   | 'flux3ViewStack' | 'flux3ViewHologram' | 'flux3WordOne' | 'flux3WordMany' | 'flux3PortConnectAnother' | 'flux3PortDisconnect' | 'flux3Checkpoint'
+  // THE REORG'S RAIL (src/reorg/, behind ?reorg=1 in Machina): new words only, no rename; the rail mounts in Machina alone, so each reads its Machina word
+  | 'reorgUnfiled' | 'reorgAllProjects' | 'reorgNewProject' | 'reorgDocOne' | 'reorgDocMany' | 'reorgPin' | 'reorgUnpin' | 'reorgPinnedGroup' | 'reorgUnpinnedGroup'
+  | 'reorgPinsLabel' | 'reorgPinsAsList' | 'reorgPinsAsBoxes' | 'reorgWhereLabel' | 'reorgBoxOpen'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
