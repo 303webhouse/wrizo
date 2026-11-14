@@ -6,7 +6,7 @@
 [data-theme='machina'] .wz-reorg-pins{ border-bottom:2px solid #727C86; padding-bottom:6px; margin-bottom:6px; }
 
 /* 1. where she is: her box over her name, the rail's where-you-are edge on the left */
-[data-theme='machina'] .wz-reorg-where-item{ border-left-color:var(--accent-rest); cursor:default; padding-top:8px; }
+[data-theme='machina'] .wz-reorg-where-item{ border-left-color:var(--accent-rest); cursor:pointer; padding-top:8px; }
 [data-theme='machina'] .wz-reorg-where-item:hover{ background:none; }
 [data-theme='machina'] .wz-reorg-where-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; }
@@ -22,7 +22,8 @@
 [data-theme='machina'] .wz-reorg-pin-grid{ display:grid; grid-template-columns:repeat(2, 34px); gap:6px; justify-content:center; padding:6px 0 4px; }
 [data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-pin-grid{ grid-template-columns:1fr; gap:4px; }
 [data-theme='machina'] .wz-reorg-pin{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; background:none; border:0;
-  color:var(--text-hi); cursor:default; }
+  color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-pin:focus-visible, [data-theme='machina'] .wz-reorg-where-item:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 [data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-box--pin{ width:24px; height:24px; font-size:9px; }
 [data-theme='machina'] .wz-reorg-pin-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .wz-reorg-pin-view{ display:flex; justify-content:center; gap:8px; padding-top:2px; }
@@ -51,7 +52,7 @@
 [data-theme='machina'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
 [data-theme='machina'] .wz-reorg-row[aria-current='location']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
 [data-theme='machina'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
-  color:var(--text-hi); text-align:left; cursor:default; }
+  color:var(--text-hi); text-align:left; cursor:pointer; }
 [data-theme='machina'] .wz-reorg-row-text{ display:flex; flex-direction:column; min-width:0; gap:2px; }
 [data-theme='machina'] .wz-reorg-row-name{ font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .wz-reorg-row[aria-current='location'] .wz-reorg-row-name{ font-weight:600; }
@@ -62,3 +63,22 @@
 [data-theme='machina'] .wz-reorg-row-pin:hover{ color:var(--text-hi); }
 [data-theme='machina'] .wz-reorg-row-pin:focus-visible,
 [data-theme='machina'] .wz-reorg-new:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+
+/* A PROJECT'S OWN LIST (step 3): + New doc and + New board side by side; Docs, then Boards with no doc; a Doc's Parts and its boards indented */
+[data-theme='machina'] .wz-reorg-list{ padding:0; gap:0; }
+[data-theme='machina'] .wz-reorg-head-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:none; }
+[data-theme='machina'] .wz-reorg-list-new{ display:flex; border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .wz-reorg-list-new .wz-reorg-new{ border-bottom:0; }
+[data-theme='machina'] .wz-reorg-group-count{ margin-left:auto; }
+[data-theme='machina'] .wz-reorg-doc{ list-style:none; }
+[data-theme='machina'] .wz-reorg-list-row{ border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
+[data-theme='machina'] .wz-reorg-list-row[aria-current='page']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-list-open{ display:flex; align-items:baseline; gap:8px; width:100%; padding:8px 14px 8px 13px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-list-row--part .wz-reorg-list-open{ padding-left:31px; font-size:12px; }
+[data-theme='machina'] .wz-reorg-list-row[data-kind='board'] .wz-reorg-list-title::before{ content:'\25A6\00A0'; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-list-title{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-list-meta{ margin-left:auto; flex:none; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-list-open:hover{ background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-list-open:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-reorg-empty{ margin:0; padding:8px 14px; color:var(--text-mid); font-size:12px; }

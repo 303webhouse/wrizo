@@ -25,7 +25,8 @@ export function letterInk(colour: string): string {
   return contrast(INK_DARK, colour) >= contrast(INK_LIGHT, colour) ? INK_DARK : INK_LIGHT;
 }
 
-export function RailBox({ name, size = 'rail' }: { name: string; size?: 'rail' | 'pin' | 'row' }) {
+// `id` is the Project's (step 4's Box settings reads the box's look by it)
+export function RailBox({ name, size = 'rail' }: { id: string | null; name: string; size?: 'rail' | 'pin' | 'row' }) {
   const colour = SWATCHES[0];
   return (
     <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: letterInk(colour) }}>

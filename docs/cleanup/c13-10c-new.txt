@@ -47,3 +47,13 @@ reorgPinsAsList=Show pins as a list
 reorgPinsAsBoxes=Show pins as boxes
 reorgWhereLabel=You are in {name}
 reorgBoxOpen=Open {name}
+# THE REORG'S RAIL, step 3 (POLISH; Fable's GO Nov 14, 2:40 pm) - a Project's own list
+reorgListTitle=Project
+reorgNewDoc=New doc
+reorgNewBoard=New board
+reorgListDocs=Docs
+reorgBoardsNoDoc=Boards with no doc
+reorgListEmpty=No docs yet.
+reorgUntitled=Untitled
+reorgUntitledBoard=Untitled board
+reorgSketch=A sketch

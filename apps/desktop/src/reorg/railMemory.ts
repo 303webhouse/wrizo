@@ -43,7 +43,19 @@ export function setPinView(pinView: PinView): void {
   if (memory.pinView !== pinView) set({ ...memory, pinView });
 }
 
+// ---- step 3: which Project's own list is open (a pointer into memory, so a travel out of the list comes back to the same list) --------------
+let openList: string | null = null;
+export function getOpenList(): string | null { return openList; }
+export function setOpenList(id: string | null): void {
+  if (openList === id) return;
+  openList = id;
+  listeners.forEach((fn) => { try { fn(); } catch { /* a listener never breaks the rail */ } });
+}
+export function useOpenList(): string | null {
+  return useSyncExternalStore(subscribeRail, getOpenList, getOpenList);
+}
+
 // Test/inspection seam (the wrizoLexicon pattern): the harness reads what the rail holds, to prove it is held here and nowhere else. Switch on only.
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoRailMemory?: unknown }).wrizoRailMemory = { get: getRailMemory };
+  (window as unknown as { wrizoRailMemory?: unknown }).wrizoRailMemory = { get: getRailMemory, openList: getOpenList };
 }
