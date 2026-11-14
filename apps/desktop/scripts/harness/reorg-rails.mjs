@@ -129,6 +129,7 @@ await withHarness(async (app) => {
       // a second capture of the same surfaces: what differs between two reads of main is not a DOM main draws the same each time
       const again = await captureSurfaces(app);
       ok(`CAPTURE [${theme}]: two captures of main's switch-off surfaces agree (${Object.keys(s).length} surfaces)`, Object.keys(s).every((k) => s[k] === again[k]), Object.keys(s).filter((k) => s[k] !== again[k]).join(','));
+      for (const k of Object.keys(s).filter((x) => s[x] !== again[x])) console.log(`AGAIN ${theme}.${k} ${Buffer.from(String(again[k]), 'utf8').toString('base64')}`);
     }
     return checks;
   }
