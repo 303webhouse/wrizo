@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { JournalEntry } from '../types';
 import type { CategoryId } from '../components/cascade/shared';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useLexicon } from '../store/themeLexicon';
-import { getDrawer, getSystemKind } from '../store/persistence';
+import { getDrawer, getDrawers, getSystemKind } from '../store/persistence';
 import { isDefaultRoot, JOURNAL, UNSORTED } from '../store/place';
 import { usePlace } from '../store/usePlace';
 import { NOTEBOOK, projectOfEntry } from './railData';
@@ -48,7 +48,25 @@ if (REORG && typeof window !== 'undefined') {
   (window as unknown as { wrizoRailRenders?: () => number }).wrizoRailRenders = () => railRenders;
 }
 
+// THE RAIL DOES NOT RE-RENDER ON A KEYSTROKE (the speed check, R1: before this it rendered ~2 times per key, 89 over 44 keys on Actions run
+// 43649080320, because the editor's own re-render built a new rail element each time). The wrapper below runs with its parent, cheaply: it
+// keeps the latest `toggle` for the body and reads a SIGNATURE of what the rail draws from the stored data (the open entry's Project, and
+// every Project's id and name). The body is memoized on the open pop-out and that signature, so typing (which changes neither) never renders
+// it; its own subscriptions (the place, the rail's memory, the lexicon's theme) still render it when they change.
+let latestToggle: (id: CategoryId) => void = () => {};
+const stableToggle = (id: CategoryId): void => latestToggle(id);
+function railSignature(entry: JournalEntry): string {
+  return [entry.id, getSystemKind(entry) ?? '', projectOfEntry(entry) ?? '', ...getDrawers().map((d) => `${d.id}\u0001${d.name}`)].join('\u0002');
+}
+
 export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void }) {
+  latestToggle = toggle;
+  return <RailBody entry={entry} open={open} toggle={stableToggle} sig={railSignature(entry)} />;
+}
+
+const RailBody = memo(RailBodyImpl, (a, b) => a.open === b.open && a.sig === b.sig);
+
+function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; sig: string }) {
   railRenders += 1;
   const { t } = useDeskLexicon();
   const lex = useLexicon();

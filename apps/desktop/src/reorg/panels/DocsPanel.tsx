@@ -60,7 +60,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
-    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'research-paper' }) },
+    { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'library' }) },
     { id: 'board', label: lex.t('board'), act: () => go({ kind: 'board' }) },
     { id: 'more', label: t('reorgKindMore'), act: () => go({ kind: 'board', deck: 'library' }), more: true },
   ];

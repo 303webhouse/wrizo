@@ -76,8 +76,11 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* P1 records what follows */ }
   await app.evalJs("window.wrizoTheme.set('machina')");
+  // the page sits in a FOURTH Project (Thesis), so all three pinned Projects are drawn on the rail (the one she is in shows once, at the top:
+  // the first trial put the page in a pinned Project and drew 2 pins, run 43649080320)
   const made = await app.evalJs(`(() => { const W = window; const d = ['Grants', 'Essays', 'Notes'].map((n) => W.wrizoCreateDrawer(n).id);
-    const set = W.wrizoCreateProject('Ledgers'); W.wrizoSetProjectDrawer(set.id, d[0]);
+    const home = W.wrizoCreateDrawer('Thesis').id;
+    const set = W.wrizoCreateProject('Ledgers'); W.wrizoSetProjectDrawer(set.id, home);
     W.wrizoCreateJournalPage({ id: 'rs-page', text: ${JSON.stringify(SEED)}, createdAt: '2026-04-01T00:00:00.000Z', origin: 'project', source: 'page', projectId: set.id });
     W.wrizoFlushNow(); return { drawers: d }; })()`);
   const pageId = 'rs-page';
