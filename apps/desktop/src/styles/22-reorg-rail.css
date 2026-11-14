@@ -41,6 +41,7 @@
 /* PROJECTS (R4): the head's count, + New project, the two groups, one row a Project */
 [data-theme='machina'] .wz-reorg-head-count{ margin-left:auto; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
 [data-theme='machina'] .wz-reorg-projects{ padding:0; gap:0; }
+body:has(.wz-reorg-projects) .mode-page{ margin-left:40px; }
 [data-theme='machina'] .wz-reorg-new{ display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:none; border:0;
   border-bottom:1px solid var(--ink-border); color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
 [data-theme='machina'] .wz-reorg-new:hover{ background:var(--ink-900); }
