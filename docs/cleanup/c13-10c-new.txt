@@ -70,7 +70,7 @@ reorgSwatchGrey=Grey
 reorgSwatchBlue=Blue
 reorgSwatchBrass=Brass
 reorgSwatchOrange=Orange
-# THE REORG'S RAIL, step 5 (POLISH; Fable, Nov 14, 2:55 pm: "steps 3 and 4, then 5 and 6") - DOCS
+# THE REORG'S RAIL, steps 5 and 6 (POLISH; Fable, Nov 14, 2:55 pm: "steps 3 and 4, then 5 and 6") - DOCS, UNFILED and the Trash
 reorgNewDocHeading=New doc
 reorgKindBlank=Blank
 reorgKindScreenplay=Screenplay
@@ -84,3 +84,8 @@ reorgOff=Off
 reorgOn=On
 reorgWordsOne={n} word
 reorgWordsMany={n} words
+reorgNoProjectHeading=Writing with no project
+reorgFile=File {name}…
+reorgTrashOne=Trash {name}
+reorgTrash=Trash
+reorgUnfiledEmpty=Nothing unfiled.

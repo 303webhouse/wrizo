@@ -271,7 +271,7 @@ export const CANONICAL_CHROME = {
   reorgSwatchBlue: 'Blue',
   reorgSwatchBrass: 'Brass',
   reorgSwatchOrange: 'Orange',
-  // THE REORG'S RAIL, step 5 (DOCS, frame R7). {n} a count
+  // THE REORG'S RAIL, step 5 (DOCS, frame R7) and step 6 (UNFILED and the Trash, frame R6). {n} a count, {name} a title
   reorgNewDocHeading: 'New doc',
   reorgKindBlank: 'Blank',
   reorgKindScreenplay: 'Screenplay',
@@ -285,6 +285,11 @@ export const CANONICAL_CHROME = {
   reorgOn: 'On',
   reorgWordsOne: '{n} word',
   reorgWordsMany: '{n} words',
+  reorgNoProjectHeading: 'Writing with no project',
+  reorgFile: 'File {name}…',
+  reorgTrashOne: 'Trash {name}',
+  reorgTrash: 'Trash',
+  reorgUnfiledEmpty: 'Nothing unfiled.',
   // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
   // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
   flux3JackedExit: 'Wired in · {key} to unplug',

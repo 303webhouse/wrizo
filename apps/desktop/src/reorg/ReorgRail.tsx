@@ -60,7 +60,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
   const doors: Door[] = [
     { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: true },
     { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
-    { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: false },     // step 6
+    { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true },
   ];
   const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode }[] = [
     { id: 'theme', term: 'stripChangeTheme', icon: <ThemeIcon /> },
@@ -97,7 +97,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
           </div>
         </div>
       )}
-      {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (UNFILED and the Trash in step 6) */}
+      {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (the Trash sits at the foot of UNFILED) */}
       <div className="wz-strip-section wz-reorg-doors">
         {doors.map((d) => (
           <button key={d.id} type="button" data-category={d.id} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}

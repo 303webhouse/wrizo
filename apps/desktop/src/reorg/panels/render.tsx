@@ -3,6 +3,7 @@ import { renderCategoryPanel, type CategoryId, type CascadeContext } from '../..
 import { ProjectsCount, ProjectsPanel } from './ProjectsPanel';
 import { ProjectListHead, ProjectListPanel } from './ProjectListPanel';
 import { DocsPanel } from './DocsPanel';
+import { UnfiledCount, UnfiledPanel } from './UnfiledPanel';
 
 // The rail's pop-out bodies (the reorg, behind ?reorg=1 in Machina). Its own doors render here; THEME and SETTINGS are today's panels, unchanged.
 export function renderReorgPanel(category: CategoryId, ctx: CascadeContext): ReactNode {
@@ -10,13 +11,15 @@ export function renderReorgPanel(category: CategoryId, ctx: CascadeContext): Rea
     case 'reorg-docs': return <DocsPanel {...ctx} />;
     case 'reorg-projects': return <ProjectsPanel {...ctx} />;
     case 'reorg-list': return <ProjectListPanel {...ctx} />;
+    case 'reorg-unfiled': return <UnfiledPanel {...ctx} />;
     default: return renderCategoryPanel(category, ctx);
   }
 }
 
-/** What a rail pop-out's head shows after its title: All projects' count (frame R4), a Project's own list its name. */
+/** What a rail pop-out's head shows after its title: All projects' count (frame R4), a Project's own list its name, Unfiled's count (R6). */
 export function reorgHeadExtra(category: CategoryId): ReactNode {
   if (category === 'reorg-projects') return <ProjectsCount />;
   if (category === 'reorg-list') return <ProjectListHead />;
+  if (category === 'reorg-unfiled') return <UnfiledCount />;
   return null;
 }
