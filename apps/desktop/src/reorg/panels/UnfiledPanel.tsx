@@ -57,7 +57,7 @@ export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeCo
         ) : <p className="wz-reorg-empty">{t('reorgUnfiledEmpty')}</p>}
       </section>
       <button type="button" className="wz-reorg-trash" data-reorg-trash="" onClick={() => openTrashBoard(navigate)}>
-        <TrashIcon /> <span>{t('reorgTrash')} 3 items</span> <span aria-hidden="true" className="wz-reorg-trash-go">›</span>
+        <TrashIcon /> <span>{t('reorgTrash')}</span> <span aria-hidden="true" className="wz-reorg-trash-go">›</span>
       </button>
       {filing && <AddToSheet sourceIds={[filing]} onClose={() => setFiling(null)} onDone={() => setFiling(null)} />}
     </div>

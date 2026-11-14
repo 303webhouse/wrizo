@@ -110,6 +110,7 @@
 
 /* DOCS (step 5, frame R7): New doc's kinds, Recent (a title over its Project and words), the two Page defaults as OFF | ON switches */
 [data-theme='machina'] .wz-reorg-docs, [data-theme='machina'] .wz-reorg-unfiled{ padding:0; gap:0; }
+body:has(.wz-reorg-docs) .mode-page{ margin-left:40px; }
 [data-theme='machina'] .wz-reorg-kind{ border-bottom:0; padding:9px 14px; }
 [data-theme='machina'] .wz-reorg-two-line{ flex-direction:column; align-items:flex-start; gap:2px; }
 [data-theme='machina'] .wz-reorg-two-line .wz-reorg-list-title{ max-width:100%; }
