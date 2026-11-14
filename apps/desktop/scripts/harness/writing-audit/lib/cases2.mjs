@@ -60,7 +60,7 @@ export const GROUPS2 = {
   card72: [
     c('K72a', 'Select all, Backspace, then type x (no stray newline after it)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), T('x')]),
     c('K72b', 'Select all, Backspace, Backspace (still nothing)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Backspace')]),
-    c('K72c', 'Select all, Backspace, Enter, then type x (one newline, the writer's own)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Enter'), T('x')]),
+    c('K72c', 'Select all, Backspace, Enter, then type x (one newline, the one she typed)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Enter'), T('x')]),
   ],
   mouse: [
     c('U01', 'Click in the middle of a word', 'One two three\nFour five six\nSeven eight nine', 0, [{ k: 'click', q: 21 }]),
