@@ -62,6 +62,17 @@ export const GROUPS2 = {
     c('K72b', 'Select all, Backspace, Backspace (still nothing)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Backspace')]),
     c('K72c', 'Select all, Backspace, Enter, then type x (one newline, the one she typed)', 'Hello world\nSecond line', 5, [K('a', { ctrl: true }), K('Backspace'), K('Enter'), T('x')]),
   ],
+  // #66: the invisible end marker (the guard character after a trailing newline) must not take a Left: one Left from the end of a page that ends in a newline moves the caret one place, as everywhere else
+  left66: [
+    c('L66a', 'Left from the end of a page that ends in a newline', 'abc\n', 4, [K('ArrowLeft')]),
+    c('L66b', 'Left, Left, Right, Right at the end of a page that ends in a newline', 'abc\n', 4, [K('ArrowLeft'), K('ArrowLeft'), K('ArrowRight'), K('ArrowRight')]),
+    c('L66c', 'Left twice from the end of a page that ends in two newlines', 'abc\n\n', 5, [K('ArrowLeft'), K('ArrowLeft')]),
+    c('L66d', 'Shift+Left from the end of a page that ends in a newline (selects the newline)', 'abc\n', 4, [K('ArrowLeft', { shift: true }), K('ArrowLeft', { shift: true })]),
+    c('L66e', 'Left three times from the end of two lines that end in a newline', 'abc\ndef\n', 8, [K('ArrowLeft'), K('ArrowLeft'), K('ArrowLeft')]),
+    c('L66f', 'Ctrl+Left from the end of a page that ends in a newline', 'abc def\n', 8, [K('ArrowLeft', { ctrl: true })]),
+    c('L66g', 'Enter at the end, then Left (the new empty line: one Left goes back to the end of the line above)', 'abc', 3, [K('Enter'), K('ArrowLeft')]),
+    c('L66h', 'Enter at the end, then Left, then type x (it lands before the newline)', 'abc', 3, [K('Enter'), K('ArrowLeft'), T('x')]),
+  ],
   mouse: [
     c('U01', 'Click in the middle of a word', 'One two three\nFour five six\nSeven eight nine', 0, [{ k: 'click', q: 21 }]),
     c('U02', 'Click to the right of the end of a line', 'One two three\nFour five six\nSeven eight nine', 0, [{ k: 'click', eol: true, line: 1 }]),
