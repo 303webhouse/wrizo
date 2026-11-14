@@ -90,6 +90,8 @@ const pred2 = (g, which) => !!g && !!g.page && (which === 'tools'
   ? !!g.sTab && !!g.sPanel && near(g.sTab.right, g.page.left) && near(g.sPanel.right, g.sTab.left) && g.sPanel.width > 0
   : !!g.tTab && !!g.tPanel && near(g.tTab.left, g.page.right) && near(g.tPanel.left, g.tTab.right) && g.tPanel.width > 0);
 const pred4 = (gs) => gs.every((g) => !!g && sameRect(gs[0].page, g.page));
+// Wire In successor read (Flux, Nov 12): the stored per-page Typewriter value no longer zooms a Flux page - not zoomed, room for both drawers on each side
+const fluxNoZoom = (g) => !!g && !!g.page && !!g.stage && g.zoom === false && (g.page.left - g.stage.left) >= DRAWER_MIN && (g.stage.right - g.page.right) >= DRAWER_MIN;
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
@@ -211,10 +213,39 @@ await withHarness(async (app) => {
       const zl = z0 && z0.page && z0.stage ? z0.page.left - z0.stage.left : null; const zr = z0 && z0.page && z0.stage ? z0.stage.right - z0.page.right : null;
       await setOpen(app, 'tools', true); const zs = await app.evalJs(GEO);
       await press(app, 'tutor'); const zt = await app.evalJs(GEO);
-      ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
-        !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
-      ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
-        J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+      // SUPERSEDED (Nov 12, Wire In: Flux builds the Corridor without the flag): the two checks below pinned the PAPER Typewriter in Flux - a stored
+      // wrizo-typewriter-page-<id>='on' on a Flux Draft page ZOOMED it 1.6x, so no room for both drawers. The paper Typewriter is RETIRED in Flux
+      // (typewriterForPage() is false there; the zoom now only comes from Wire In, which is the Corridor and has no drawers), so in Flux the stored
+      // 'on' changes nothing: the page stays the normal 620px page with 333px a side and BOTH drawers stand open. Arbor and Machina still zoom
+      // and still run the original two checks (live below, the Flux theme skipped). Successors for Flux: 'FX-WI 3' and 'FX-WI 1'; mutant 'MI-WI'.
+      // ORIGINAL (verbatim), as it ran on Flux:
+//       ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
+//         !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+//       ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
+//         J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+//       await setOpen(app, 'tutor', false);
+      if (th.id !== 'flux') {
+        ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
+          !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+        ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
+          J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+      } else {
+        // SUCCESSOR (Flux): the stored Typewriter value does NOT zoom the page, so the room is the normal view's and both drawers open together
+        ok(`FX-WI 3 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed (${Math.round(zl)} / ${Math.round(zr)}px beside it, >= ${DRAWER_MIN}), so opening the Tutor after the Tools leaves BOTH open`,
+          fluxNoZoom(z0) && !!zs && zs.sOpen && !!zt && zt.tOpen && zt.sOpen, J({ zoom: z0 && z0.zoom, zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+        ok(`FX-WI 1 (${th.name} 1366x768, stored Typewriter 'on' is inert): the Tutor tab's rect is unchanged by opening its drawer (it rides the page's edge, which has not moved)`,
+          !!zs && !!zt && pred1(zs, zt, 'tutor') && !!z0 && sameRect(z0.page, zt.page), J({ shut: zs && zs.tTab, open: zt && zt.tTab, page0: z0 && z0.page, pageOpen: zt && zt.page }));
+        // MUTANT for FX-WI 3 (the old behaviour comes back: the page zoomed 1.6x, data-zoom on) - the SAME fluxNoZoom read goes red; asserted LANDED
+        await setOpen(app, 'tutor', false); await setOpen(app, 'tools', false);
+        const zPrev = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom')");
+        await style(app, 'dm-wi-mut', '.desk-frame-stage--prose .mode-page{ transform: scale(1.6) !important; }');
+        await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250);
+        const zm = await app.evalJs(GEO);
+        await style(app, 'dm-wi-mut', null);
+        await app.evalJs(`(() => { const c = document.querySelector('.mode-pagecol'); if (c) { ${J(zPrev)} == null ? c.removeAttribute('data-zoom') : c.setAttribute('data-zoom', ${J(zPrev)}); } return true; })()`);
+        ok(`MI-WI (mutant): with the 1.6x zoom brought back on the Flux page (LANDED: width ${zm && zm.page ? Math.round(zm.page.width) : '?'} vs ${z0 && z0.page ? Math.round(z0.page.width) : '?'}px), FX-WI 3's no-zoom read goes RED`,
+          !!zm && !!z0 && !!zm.page && !!z0.page && zm.page.width - z0.page.width >= 100 && zm.zoom === true && !fluxNoZoom(zm), J({ before: z0 && z0.page, mutated: zm && zm.page, zoom: zm && zm.zoom }));
+      }
       await setOpen(app, 'tutor', false);
     } else ok(`${th.name} 1366x768 zoomed fixture: the page opened`, false, '');
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'off')`);
@@ -275,7 +306,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nDRAWER-MIRROR PARKED: PASS (0 records) - a new file; it parks nothing of its own');
+if (process.env.HARNESS_PARKED === '1') console.log('\nDRAWER-MIRROR PARKED: PASS (1 comment record: the Flux zoomed pair, Wire In Nov 12; successors FX-WI 3 / FX-WI 1, mutant MI-WI - there is no parked leg in this file)');
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nDRAWER-MIRROR VERIFY: PASS (${checks.length} checks)` : `\nDRAWER-MIRROR VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

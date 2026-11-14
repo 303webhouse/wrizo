@@ -403,6 +403,10 @@ await withHarness(async (app) => {
       if (t0 != null) {
         await ensureLeft(app, true);
         const sel = '.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]';
+        // FLUX WIRE IN (Nov 12): the paper Typewriter is RETIRED in Flux and its toggle is not offered there (display:none, src/flux3/flux-wirein.css); the stored value is kept as data.
+        // The three checks below that drive the toggle (focus, Enter flips, Space flips back) pinned the OLD Flux, so they run for Arbor only and Flux gets the successors
+        // 'L9 [flux] [wire-in successor]' (not offered; Enter/Space change nothing) and the mutant 'MI-WI L9'.
+        const WI = th.id === 'flux';
         // CONTROL: Enter on the plain "..." button must open its menu (aria-expanded flips) - if THIS fails the instrument is broken, not the toggle
         await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.focus()");
         const c0 = await app.evalJs("document.querySelector('.wz-sliver-instruments-btn')?.getAttribute('aria-expanded') ?? null");
@@ -412,11 +416,15 @@ await withHarness(async (app) => {
         await pressEnter(app); await sleep(250);   // close it again (Enter on the still-focused "...")
         await app.evalJs(`document.querySelector('${sel}').focus()`);
         const focused = await app.evalJs(`document.activeElement === document.querySelector('${sel}')`);
-        ok(`L9 ${T}: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)`, focused === true, String(focused));
+        // SUPERSEDED for FLUX only (Wire In, Nov 12: the Typewriter toggle is not offered in Flux) - ORIGINAL, quoted verbatim, kept running for Arbor; the Flux record + successor follow:
+        // ok(`L9 ${T}: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)`, focused === true, String(focused));
+        // ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
+        // ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
+        if (!WI) ok(`L9 ${T}: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)`, focused === true, String(focused));
         const t1 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
         await pressEnter(app); await sleep(400);
         const t2 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
-        ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
+        if (!WI) ok(`L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button`, t1 != null && t2 != null && t2 !== t1, JSON.stringify({ t1, t2 }));
         // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 6
         let tuck = null;
         if (t2 === 'true') {
@@ -429,9 +437,34 @@ await withHarness(async (app) => {
         await app.evalJs(`document.querySelector('${sel}')?.focus()`);
         await pressSpace(app); await sleep(400);
         const t3 = await app.evalJs(`document.querySelector('${sel}')?.getAttribute('aria-pressed') ?? null`);
-        pok(`PARKED (was "L9 ${T}: and Space flips it back") - SUPERSEDED by page-size (the zoom tucks the drawer holding the toggle); live successor: L9 ${T}: and Space flips it back [page-size successor]`,
-          t3 != null && t3 !== t2 && (t2 !== 'true' || (!!tuck && tuck.zoom === 'true' && tuck.left !== 'true')), JSON.stringify({ t2, t3, tuck }));
-        ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
+        if (!WI) {
+          pok(`PARKED (was "L9 ${T}: and Space flips it back") - SUPERSEDED by page-size (the zoom tucks the drawer holding the toggle); live successor: L9 ${T}: and Space flips it back [page-size successor]`,
+            t3 != null && t3 !== t2 && (t2 !== 'true' || (!!tuck && tuck.zoom === 'true' && tuck.left !== 'true')), JSON.stringify({ t2, t3, tuck }));
+          ok(`L9 ${T}: and Space flips it back [page-size successor] (the drawer re-opened by the writer if the zoom tucked it)`, t3 != null && t3 !== t2, JSON.stringify({ t2, t3, tuck }));
+        } else {
+          // FLUX WIRE IN (Nov 12) - the Flux half of the three checks above, parked here (records only: the parked leg re-asserts nothing that is false in the new Flux)
+          pok(`PARKED (was "L9 ${T}: the Typewriter toggle can take focus (a precondition: an inert or hidden toggle would make the next press a no-op for the wrong reason)") - SUPERSEDED by Wire In (Nov 12): the toggle is display:none in Flux, it cannot take focus`,
+            true, 'successor: L9 [flux] [wire-in successor]: the Typewriter toggle is NOT offered in Flux');
+          pok(`PARKED (was "L9 ${T}: Enter on the focused Typewriter toggle FLIPS it, like any button") - SUPERSEDED by Wire In (Nov 12): in Flux there is no toggle to press`,
+            true, 'successor: L9 [flux] [wire-in successor]: Enter and Space change nothing');
+          pok(`PARKED (was "L9 ${T}: and Space flips it back [page-size successor]") - SUPERSEDED by Wire In (Nov 12): in Flux the paper Typewriter does not run, so there is no zoom to tuck the drawer and no toggle to flip back`,
+            true, 'successor: L9 [flux] [wire-in successor]: Enter and Space change nothing');
+          const readToggle = () => app.evalJs(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const cs = getComputedStyle(el); el.focus();
+            return { display: cs.display, focused: document.activeElement === el, pressed: el.getAttribute('aria-pressed'), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null }; })()`);
+          const notOffered = (r) => !!r && r.display === 'none' && r.focused === false;
+          const w0 = await readToggle();
+          await pressEnter(app); await sleep(300); await pressSpace(app); await sleep(300);
+          const w1 = await readToggle();
+          ok(`L9 ${T} [wire-in successor]: the Typewriter toggle is NOT offered in Flux (it computes display:none, so a focus() on it leaves the focus elsewhere)`, notOffered(w0), JSON.stringify(w0));
+          ok(`L9 ${T} [wire-in successor]: Enter and Space change nothing in Flux: the toggle's reported state is unchanged and the page is not in the Typewriter zoom`,
+            !!w0 && !!w1 && w1.pressed === w0.pressed && w1.zoom !== 'true' && w0.zoom !== 'true' && w1.display === 'none', JSON.stringify({ w0, w1 }));
+          // MUTANT: the toggle forced visible (the old Flux comes back) - the SAME notOffered read goes red; asserted LANDED
+          await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'wi-mut'; st.textContent = ':root:root:root:root:root .wz-sliver-instruments-modes .wz-sliver-mode-btn[data-mode-toggle=\"typewriter\"]{ display:inline-flex !important; }'; document.head.appendChild(st); return true; })()");
+          await sleep(150);
+          const wm = await readToggle();
+          await app.evalJs("document.getElementById('wi-mut')?.remove()");
+          ok(`MI-WI L9 ${T} (mutant): with the Typewriter toggle forced visible (LANDED: display ${wm && wm.display}), the not-offered read goes RED`, !!wm && wm.display !== 'none' && !notOffered(wm), JSON.stringify(wm));
+        }
       }
       // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 7
       await ensureRight(app, true);
@@ -455,7 +488,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 4 (page-size, Oct 23-24, and the drawer mirror, Oct 24): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer) and L2's right-hand tab move (the tab never moves now), each recorded once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 4 (page-size, Oct 23-24, and the drawer mirror, Oct 24): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer; Arbor only now) and L2's right-hand tab move (the tab never moves now), each recorded once per theme; plus Wire In (Nov 12), Flux only: L9's focus / Enter-flips / Space-flips-back on the retired Typewriter toggle (3 records, in place of the Space one there); the older two-drawer law above L7 stays a comment-only park from Oct 12`
     : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 const failed = checks.filter((c) => !c.pass);
