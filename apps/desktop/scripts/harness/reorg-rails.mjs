@@ -492,11 +492,21 @@ await withHarness(async (app) => {
     routes[k] = await app.evalJs('location.hash');
   }
   const S = ids.topSet;
-  ok('D1: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds; each through today\'s own route into Top Drawer\'s set (a preset, a preset, the research-paper deck, a new board, the library)',
+  // SUPERSEDED (run 43649979289 on 15209b6e, both legs): today's Screenplay preset and research-paper deck are BORN at once (the address moves
+  // to /page/<id>), so their unborn address is never read; the successor reads the page they made. The original, verbatim:
+  // ok('D1: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds; each through today\'s own route into Top Drawer\'s set (a preset, a preset, the research-paper deck, a new board, the library)',
+  //   !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'board', 'more']) && d0.kinds[3][1] === 'Board'
+  //   && routes.blank === `#/page/new?binder=${S}` && routes.screenplay === `#/page/new?binder=${S}&structure=screenplay`
+  //   && routes['research-paper'] === `#/page/new?kind=board&binder=${S}&deck=research-paper` && routes.board === `#/page/new?kind=board&binder=${S}`
+  //   && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`, JSON.stringify({ kinds: d0 && d0.kinds, routes }));
+  const bornOf = (hash) => app.evalJs(`(() => { const m = /^#\\/page\\/([^/?]+)$/.exec(${q(hash)}); if (!m || m[1] === 'new') return null;
+    const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === m[1]); return e ? { projectId: e.projectId ?? null, pageType: e.pageType ?? null, script: !!e.script } : { missing: m[1] }; })()`);
+  const bornScreen = await bornOf(routes.screenplay), bornResearch = await bornOf(routes['research-paper']);
+  ok('D1 [successor]: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds, each through today\'s own route into Top Drawer\'s set: Blank, Board and More kinds as unborn pages there (a preset, a new board, the library); Screenplay and Research paper as today\'s preset and deck, which make their page at once IN that set (a screenplay page; the research-paper deck\'s board)',
     !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'board', 'more']) && d0.kinds[3][1] === 'Board'
-    && routes.blank === `#/page/new?binder=${S}` && routes.screenplay === `#/page/new?binder=${S}&structure=screenplay`
-    && routes['research-paper'] === `#/page/new?kind=board&binder=${S}&deck=research-paper` && routes.board === `#/page/new?kind=board&binder=${S}`
-    && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`, JSON.stringify({ kinds: d0 && d0.kinds, routes }));
+    && routes.blank === `#/page/new?binder=${S}` && routes.board === `#/page/new?kind=board&binder=${S}` && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`
+    && !!bornScreen && bornScreen.projectId === S && bornScreen.pageType !== 'board' && !!bornResearch && bornResearch.projectId === S && bornResearch.pageType === 'board',
+    JSON.stringify({ kinds: d0 && d0.kinds, routes, bornScreen, bornResearch }));
   // D2: Recent - touch three pages in a known order through the app's own seam, then read
   // (the open page re-saves itself ~1.1 s after it mounts, so the touch comes after the page settles and with no reload after it)
   await openPage(app, 'machina', true);
@@ -525,11 +535,26 @@ await withHarness(async (app) => {
   const ws1 = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
   const st1 = await app.evalJs(STORE);
   const d3 = await app.evalJs(DOCS);
-  ok('D3: PAGE DEFAULTS - each switch flips today\'s own setting (typewriter, instrumentsOn) and nothing else is stored',
-    ws1.typewriter === !tw && ws1.instrumentsOn === !pr && Object.keys(ws0).every((k) => k === 'typewriter' || k === 'instrumentsOn' || JSON.stringify(ws1[k]) === JSON.stringify(ws0[k]))
-    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
-    JSON.stringify({ ws0: { tw: ws0.typewriter, pr: ws0.instrumentsOn }, ws1: { tw: ws1.typewriter, pr: ws1.instrumentsOn }, changed: diffKeys(st0, st1), d3: d3 && d3.defaults }));
+  // SUPERSEDED (mutant d3-progress-writes-metric SURVIVED it, run 43650287019: with nothing stored before the press, "nothing else changed"
+  // compared no key at all). The original, verbatim:
+  // ok('D3: PAGE DEFAULTS - each switch flips today\'s own setting (typewriter, instrumentsOn) and nothing else is stored',
+  //   ws1.typewriter === !tw && ws1.instrumentsOn === !pr && Object.keys(ws0).every((k) => k === 'typewriter' || k === 'instrumentsOn' || JSON.stringify(ws1[k]) === JSON.stringify(ws0[k]))
+  //   && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  //   JSON.stringify({ ws0: { tw: ws0.typewriter, pr: ws0.instrumentsOn }, ws1: { tw: ws1.typewriter, pr: ws1.instrumentsOn }, changed: diffKeys(st0, st1), d3: d3 && d3.defaults }));
   await click(`[data-reorg-default="typewriter"] [data-toggle="${tw ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${pr ? 'on' : 'off'}"]`); await sleep(200);
+  // the successor: with the settings now STORED whole (today's setWritingSettings writes the whole object), each switch is pressed again, one at a
+  // time, and every other stored key must keep its value
+  const wsA = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
+  await click(`[data-reorg-default="typewriter"] [data-toggle="${wsA.typewriter ? 'off' : 'on'}"]`); await sleep(200);
+  const wsB = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
+  await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'on' : 'off'}"]`); await sleep(200);
+  const wsC = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
+  const others = (a, b, k) => Object.keys({ ...a, ...b }).filter((x) => x !== k && JSON.stringify(a[x]) !== JSON.stringify(b[x]));
+  ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
+    Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
+    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+    JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  await click(`[data-reorg-default="typewriter"] [data-toggle="${wsA.typewriter ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'off' : 'on'}"]`); await sleep(200);
 
   // ---- STEP 6: UNFILED and the Trash ---------------------------------------------------------------------------------------------------
   await openPage(app, 'machina', true);
@@ -570,8 +595,17 @@ await withHarness(async (app) => {
   const unf4 = await app.evalJs(UNF);
   seen.push(...(unf4 ? unf4.rows : []));
   const made = ['rr-g-1', 'rr-g-2', 'rr-g-3', 'rr-g-b', 'rr-j-1', 'rr-l-1', 'rr-m-b', 'rr-top-1', 'rr-top-2', 'rr-top-b'];
-  ok(`U4: REACHABLE, whole - the ${(rows4 || []).length} Project lists and Unfiled together reach every page and board the fixture made (${made.length}; the one trashed above is in the Trash), each once`,
-    JSON.stringify([...seen].sort()) === JSON.stringify(made), JSON.stringify([...seen].sort()));
+  // SUPERSEDED (run 43649979289 on 15209b6e, both legs): it held the FIXTURE's list, but D1 made two real pages earlier in this run (today's
+  // Screenplay preset and research-paper deck are born at once) and the rail reached them too. The original, verbatim:
+  // ok(`U4: REACHABLE, whole - the ${(rows4 || []).length} Project lists and Unfiled together reach every page and board the fixture made (${made.length}; the one trashed above is in the Trash), each once`,
+  //   JSON.stringify([...seen].sort()) === JSON.stringify(made), JSON.stringify([...seen].sort()));
+  // the successor reads the whole population from storage: every page and board that is not trashed, not a system board (the Journal's, the
+  // Trash's) and not a paired plan board (no page carries a planBoardId in this run)
+  const every4 = await app.evalJs(`(() => { const es = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
+    const paired = new Set(es.map((e) => e.planBoardId).filter(Boolean));
+    return es.filter((e) => !e.deletedAt && !e.purgedAt && !paired.has(e.id) && !(e.pageType === 'board' && JSON.stringify(e.boxes || []).includes('"systemKind"'))).map((e) => e.id).sort(); })()`);
+  ok(`U4 [successor]: REACHABLE, whole - the ${(rows4 || []).length} Project lists and Unfiled together reach EVERY live page and board in storage (${(every4 || []).length}: the fixture's ${made.length} with rr-o-1 in the Trash, and what this run made), each exactly once`,
+    JSON.stringify([...seen].sort()) === JSON.stringify(every4) && made.every((id) => seen.includes(id)) && !seen.includes('rr-o-1'), JSON.stringify({ seen: [...seen].sort(), every4 }));
   await app.key('Escape'); await sleep(600);
 
   // ---- PAGE ----------------------------------------------------------------------------------------------------------------------------
