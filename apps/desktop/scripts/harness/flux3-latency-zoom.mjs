@@ -100,15 +100,19 @@ function judge(cRounds, xRounds) {
 // The COST reading (Nov 14, Fable's ruling after the per-key print: the clock cannot see a cost under a frame): lib/l-method.mjs's second reading, per key BUSY + FRAME. BUSY = keydown -> the end of the
 // task that handled the key (a message posted from the key's last event); FRAME = the first animation frame after the input -> the end of that frame's rendering (a message posted from the rAF).
 // Judged like the clock (the arm's median and p95 within the control's own round-to-round spread) but with a CAP on that allowance: a control noisier than the cap makes the run VOID (quiet = false), not green.
-const CAP_MED = 8, CAP_P95 = 12;   // PROVISIONAL (Fable confirms before any box turn): half a frame on the median, three quarters on the p95
-const costOf = (r) => (r.ks || []).filter((k) => k[3] != null && k[6] != null).map((k) => k[3] + k[6]);
+const CAP_MED = 8, CAP_P95 = 12;   // the cap: CONFIRMED by Fable Nov 14 12:24 pm (a control over it: the run is VOID)
+const FLOOR_MED = 1, FLOOR_P95 = 2;   // PROVISIONAL (Nov 14): the allowance is the control's spread clamped to [floor, cap]; a control with no spread must not allow nothing
+// SUPERSEDED reading (the comment above says BUSY + FRAME): the Nov 14 candidates run (Actions 43632967969) showed it does not rise with the burn (+5 -> +9, +10 -> +40.2, +24 -> +21.8), so it fails Fable's MUTS-ORDER condition. The COST reading is now WORK:
+// the key's own synchronous work, keydown capture -> the `input` event's bubble at the document (no frame in it): the same burns lift it +4.9 / +9.9 / +24.0 and the control's per-round median spread is 0. BUSY and FRAME stay printed (information).
+// The original line, parked: // const costOf = (r) => (r.ks || []).filter((k) => k[3] != null && k[6] != null).map((k) => k[3] + k[6]);
+const costOf = (r) => (r.ks || []).map((k) => k[7]).filter((x) => x != null);
 function judgeCost(cRounds, xRounds) {
   const cMeds = cRounds.map((r) => stat(costOf(r)).median), cP95s = cRounds.map((r) => stat(costOf(r)).p95);
   const spreadMed = Math.max(...cMeds) - Math.min(...cMeds), spreadP95 = Math.max(...cP95s) - Math.min(...cP95s);
   const C = stat(cRounds.flatMap(costOf)), X = stat(xRounds.flatMap(costOf));
   const enough = X.n >= MIN_KEYS * xRounds.length && C.n >= MIN_KEYS * cRounds.length;
   const quiet = spreadMed <= CAP_MED && spreadP95 <= CAP_P95;
-  const allowMed = Math.min(spreadMed, CAP_MED), allowP95 = Math.min(spreadP95, CAP_P95);
+  const allowMed = Math.min(Math.max(spreadMed, FLOOR_MED), CAP_MED), allowP95 = Math.min(Math.max(spreadP95, FLOOR_P95), CAP_P95);
   const within = X.median <= C.median + allowMed && X.p95 <= C.p95 + allowP95;
   return { enough, quiet, within, pass: enough && quiet && within, caught: enough && quiet && !within, C, X, spreadMed, spreadP95, allowMed, allowP95 };
 }
