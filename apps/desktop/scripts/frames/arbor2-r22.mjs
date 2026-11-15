@@ -629,7 +629,7 @@ const screens = {
     await openPage(app, `arbor-r22-blinkm-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day');
     if (await app.evalJs("document.documentElement.getAttribute('data-page') === 'dark'")) { say('r22-light-caret-blink-mutant', { skipped: 'the dark page: its caret is brass (C2)' }); return; }
     await app.evalJs(caretEnd); await sleep(500);
-    await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut2'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
+    await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut2'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
     const nat = await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return ed ? getComputedStyle(ed).caretColor : null; })()");
     await app.evalJs("document.getElementById('r22-blink-mut2')?.remove()");
     const ok = { landed: /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(String(nat)), red: rgbOf(nat).join() !== EDGE.join() };

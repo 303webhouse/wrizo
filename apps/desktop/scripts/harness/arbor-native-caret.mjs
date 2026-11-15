@@ -80,7 +80,7 @@ await withHarness(async (app) => {
   await sleep(300); await go(`#/page/${mid}`); await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }); await mode('draft'); await setRoom('day');
   await app.evalJs(caretEnd); await sleep(300);
   const base = await app.evalJs(READ);
-  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'nc-m1'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'nc-m1'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
   await sleep(200); const m1 = await app.evalJs(READ);
   await app.evalJs("document.getElementById('nc-m1')?.remove()");
   ok(`M1 (mutant): the native caret hidden as the drawn caret hid it (LANDED: caret ${m1 && m1.caret}) - C1 goes red on the light page`,
