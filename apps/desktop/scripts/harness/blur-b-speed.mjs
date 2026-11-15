@@ -11,6 +11,7 @@
 //   BS-first (a timing line: gates on the box, information on Actions): look B's FIRST FRAME median <= the reference's + the reference's own round spread (floor 1 ms, cap 4).   BS-paint: B's PAINT p95 <= the reference's + its own spread (floor 3, cap 10).
 //   BS-late (a timing line): B's late-key count <= the reference's (look B hides the layer's canvases too, so it should be better, never worse).
 //   MUT-live (a timing line): the live blur put back is CAUGHT: FL's first frame median exceeds FO's by more than twice the allowance, OR its paint p95 does (the box sees the first frame, the hosted runner the paint).
+// THE BIG BOARD (Chat 1, Nov 15): a 100-card board, the card opened and the first 10 keys typed straight away while the snapshot is being made: BG-premise / BG-keys / BG-long / BG-arrive, and MUT-slowsnap (a 300 ms serialiser).
 // Run: node scripts/harness/blur-b-speed.mjs   (from apps/desktop; the timing lines gate on the box; BLUR_ROUNDS=<n>)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -175,6 +176,91 @@ try { await withHarness(async (app) => {
   const mutFF = S.FL.ff.median > S.FO.ff.median + 2 * allowFF, mutPaint = S.FL.paint.p95 > S.FO.paint.p95 + 2 * allowPaint;
   timing(`MUT-live the live blur put back is CAUGHT (first frame ${r1(S.FL.ff.median)} vs FO ${r1(S.FO.ff.median)} + ${r1(2 * allowFF)}: ${mutFF ? 'YES' : 'no'}; paint p95 ${r1(S.FL.paint.p95)} vs ${r1(S.FO.paint.p95)} + ${r1(2 * allowPaint)}: ${mutPaint ? 'YES' : 'no'})`, mutFF || mutPaint, JSON.stringify({ FL: S.FL, FO: S.FO }));
   ok(`BS-arbor (information) Arbor: look B ${r1(S.AB.ff.median)} / paint p95 ${r1(S.AB.paint.p95)} against the live blur ${r1(S.AL.ff.median)} / ${r1(S.AL.paint.p95)}`, true, '');
+
+  // ---- THE BIG BOARD (Chat 1, Nov 15: "the big-board case, about 100 cards, the first 10 keys after opening"). The snapshot is made two frames after the card opens, on the main thread, in the same moment she starts to
+  // type: on a board of a hundred cards the clone-and-serialise is the one place look B could COST a keystroke. Three arms on a 100-card board (Flux, ?flux3=1: the Schema and its layer), the card opened and 10 keys typed
+  // straight away (one every 90 ms, NO idle wait: the snapshot is still being made under the first of them):
+  //   GB  look B as shipped      GL  the live blur forced (today's look: the reference for a first-keys read)      GM  the MUTANT: the snapshot made SLOW (serializeToString burns 300 ms), to prove the check can see a slow capture
+  // READINGS (in the page): each key's FIRST FRAME (keydown -> the first animation frame after its beforeinput); LONG TASKS (PerformanceObserver 'longtask') from the card opening; the SNAPSHOT'S ARRIVAL (ms from the
+  // editor appearing to data-blur="snap").
+  // BG-premise (gates everywhere): every GB/GM round got its snapshot (data-blur snap) and all 10 keys landed; GL stayed live; the 100 cards stood.   BG-keys (a timing line): look B's worst first-10-keys first frame <= BIG_KEY_MS in every round.
+  // BG-long (timing): the longest long task in look B's first 1.5 s <= BIG_TASK_MS.   BG-arrive (timing): the snapshot arrives within BIG_ARRIVE_MS.   MUT-slowsnap (timing): the slow capture is CAUGHT: GM's worst key or longest task
+  // exceeds look B's budget (and the 300 ms burn is MEASURED to have landed: a long task of at least 280 ms), so BG-keys or BG-long would be RED.
+  const BIG_KEY_MS = 100, BIG_TASK_MS = 250, BIG_ARRIVE_MS = 1500;
+  const BIGBOARD = 'bbs-big';
+  const bigBoxes = () => {
+    const out = [];
+    for (let i = 0; i < 100; i += 1) {
+      const col = i % 10, row = Math.floor(i / 10);
+      out.push({ id: `bg-${i}`, kind: 'text', x: 0.01 + col * 0.098, y: 0.01 + row * 0.07, w: 0.09, h: 0.055, z: i + 1, text: `Card ${i}: ${['the hall', 'what she wants', 'the lie', 'the turn', 'the door left open'][i % 5]}, and a line more to fill it.` });
+    }
+    for (let i = 0; i < 24; i += 1) out.push({ id: `bgl-${i}`, kind: 'connection', x: 0, y: 0, w: 0, h: 0, z: 200 + i, connA: `bg-${i * 4}`, connB: `bg-${i * 4 + 5}` });
+    out.push({ id: 'bg-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasH: 1500 });
+    return out;
+  };
+  await hashTo('#/');
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the big board', timeout: 15000 });
+  await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BIGBOARD, text: 'Look B big board', pageType: 'board', boxes: bigBoxes(), createdAt: new Date().toISOString(), origin: null, source: null })})`);
+  await sleep(500);
+  const BIG_ARMS = {
+    GB: { css: '', burn: false, what: 'the big board, look B as shipped' },
+    GL: { css: LIVE_CSS, burn: false, what: 'the big board, the live blur forced' },
+    GM: { css: '', burn: true, what: 'the big board, the snapshot made SLOW (the mutant)' },
+  };
+  const runBig = async (name, round) => {
+    const arm = BIG_ARMS[name];
+    await hashTo('#/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the big board', timeout: 15000 });
+    await ev(`window.wrizoPatchEntry(${JSON.stringify(BIGBOARD)}, { boxes: ${JSON.stringify(bigBoxes())} })`);
+    await ev("localStorage.setItem('wrizo-theme', 'flux');");
+    await ev(`history.replaceState(null, '', '/?flux3=1#/page/${BIGBOARD}')`);
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"bg-45\"]') && !!document.querySelector('[data-flux3-layer]')", { timeout: 20000, label: 'the big board' }).catch(() => {});
+    await splashGone();
+    await sleep(1800);
+    const cards = await ev("document.querySelectorAll('.board-canvas .board-box').length");
+    if (arm.css) await ev(`(() => { const s = document.createElement('style'); s.setAttribute('data-probe', '1'); s.textContent = ${JSON.stringify(arm.css)}; document.head.appendChild(s); return true; })()`);
+    if (arm.burn) await ev("(() => { const o = XMLSerializer.prototype.serializeToString; XMLSerializer.prototype.serializeToString = function (...a) { const t = performance.now(); while (performance.now() - t < 300) { /* the slow capture */ } return o.apply(this, a); }; return true; })()");
+    // the meters go in BEFORE the card opens, so the capture is inside what they see
+    await ev(`(() => {
+      window.__big = { popup: null, snap: null, long: [], keys: [] }; let cur = null;
+      try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__big.long.push([Math.round(e.startTime), Math.round(e.duration)]); }).observe({ type: 'longtask' }); } catch (e) { /* no longtask */ }
+      new MutationObserver(() => { if (window.__big.popup === null && document.querySelector('.board-popup-editor')) window.__big.popup = performance.now(); const w = document.querySelector('.board-canvas-blur-wrap'); if (w && window.__big.snap === null && w.getAttribute('data-blur') === 'snap') window.__big.snap = performance.now(); }).observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-blur'] });
+      document.addEventListener('keydown', () => { cur = { kd: performance.now(), f1: null }; window.__big.keys.push(cur); }, true);
+      document.addEventListener('beforeinput', () => { const k = cur; requestAnimationFrame(() => { if (k) k.f1 = performance.now() - k.kd; }); }, true);
+      return true; })()`);
+    const p = await ev("(() => { const e = document.querySelector('.board-box[data-box-id=\"bg-45\"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height * 0.4) }; })()");
+    if (p) await app.doubleClick(p.x, p.y);
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 5000, label: 'the card editor' }).catch(() => {});
+    await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
+    const before = await ev("(document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length");
+    // ten keys at once, one every 90 ms: the first of them lands while the snapshot is being made
+    for (let i = 0; i < 10; i += 1) { await app.typeKeys(CYCLE[(round * 7 + i) % CYCLE.length]); await sleep(GAP); }
+    await sleep(1800);
+    const got = await ev("(() => { const b = window.__big, w = document.querySelector('.board-canvas-blur-wrap'); return { popup: b.popup, snap: b.snap, long: b.long.slice(), keys: b.keys.map((k) => (k.f1 == null ? null : Math.round(k.f1 * 10) / 10)), dataBlur: w ? w.getAttribute('data-blur') : null, filter: w ? getComputedStyle(w).filter : null, after: (document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length }; })()");
+    return { name, round, cards, before, ...got };
+  };
+  await runBig('GB', 0);   // a discarded warm-up
+  const bigRes = { GB: [], GL: [], GM: [] };
+  const BIG_ROUNDS = Math.max(3, Math.min(ROUNDS, 6));
+  for (let round = 1; round <= BIG_ROUNDS; round += 1) {
+    const rot = Object.keys(BIG_ARMS).slice((round - 1) % 3).concat(Object.keys(BIG_ARMS).slice(0, (round - 1) % 3));
+    for (const name of rot) bigRes[name].push(await runBig(name, round));
+  }
+  const bigAll = Object.values(bigRes).flat();
+  const worstKey = (r) => Math.max(...r.keys.filter((x) => x != null), 0);
+  const longestTask = (r) => Math.max(...r.long.filter((l) => l[0] >= (r.popup || 0) - 50).map((l) => l[1]), 0);
+  const arrive = (r) => (r.snap != null && r.popup != null ? Math.round(r.snap - r.popup) : null);
+  for (const k of Object.keys(bigRes)) console.log(`BLURB-BIG ${k} worst first-10-keys first frame ${bigRes[k].map((r) => r1(worstKey(r))).join('/')} ms | longest long task ${bigRes[k].map(longestTask).join('/')} ms | the snapshot arrived after ${bigRes[k].map(arrive).join('/')} ms | ${BIG_ARMS[k].what}`);
+  ok(`BG-premise the big board stood (${[...new Set(bigAll.map((r) => r.cards))].join(',')} cards), every GB/GM round got its snapshot, GL stayed live, all 10 keys landed in every round`,
+    bigAll.every((r) => r.cards >= 100 && r.after - r.before === 10) && [...bigRes.GB, ...bigRes.GM].every((r) => r.dataBlur === 'snap' && r.snap != null) && bigRes.GL.every((r) => r.dataBlur === 'snap' ? /blur/.test(r.filter || '') : true),
+    JSON.stringify(bigAll.filter((r) => !(r.cards >= 100 && r.after - r.before === 10)).slice(0, 3).map((r) => ({ arm: r.name, round: r.round, cards: r.cards, grew: r.after - r.before, dataBlur: r.dataBlur }))));
+  const gbKey = Math.max(...bigRes.GB.map(worstKey)), gbTask = Math.max(...bigRes.GB.map(longestTask)), gbArr = Math.max(...bigRes.GB.map((r) => arrive(r) ?? 99999));
+  timing(`BG-keys on a 100-card board look B's worst first-10-keys first frame is within ${BIG_KEY_MS} ms in every round (worst ${r1(gbKey)} ms; the live blur's ${r1(Math.max(...bigRes.GL.map(worstKey)))})`, gbKey <= BIG_KEY_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, keys: r.keys }))));
+  timing(`BG-long the longest long task in look B's first moments is within ${BIG_TASK_MS} ms (worst ${gbTask} ms)`, gbTask <= BIG_TASK_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, long: r.long }))));
+  timing(`BG-arrive the snapshot arrives within ${BIG_ARRIVE_MS} ms of the card opening (worst ${gbArr} ms)`, gbArr <= BIG_ARRIVE_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, arrive: arrive(r) }))));
+  const gmKey = Math.max(...bigRes.GM.map(worstKey)), gmTask = Math.max(...bigRes.GM.map(longestTask));
+  timing(`MUT-slowsnap the slow capture (a 300 ms burn in the serialiser) is CAUGHT: its longest task ${gmTask} ms (the burn landed: >= 280) and worst key ${r1(gmKey)} ms against the budgets ${BIG_TASK_MS} / ${BIG_KEY_MS}`, gmTask >= 280 && (gmTask > BIG_TASK_MS || gmKey > BIG_KEY_MS), JSON.stringify({ GM: bigRes.GM.map((r) => ({ round: r.round, long: r.long, keys: r.keys })) }));
 
   const served = new Set(all.map((r) => r.where.served));
   ok(`B the build: served ${[...served].join(',')} = dist-web's ${BUILD.bundle}, built ${BUILD.builtAt} after the last src commit ${BUILD.srcCommitAt} (tree ${BUILD.head}, ${BUILD.dirtySrc} uncommitted src file(s))`,
