@@ -165,7 +165,7 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     // an image (the first IMG attempt fell back at once), and a canvas on screen is what holds key-to-paint late on the box (the layer's canvases, then the snapshot's own: 110 late keys against filter off's 34). The browser rasterises the
     // SVG once and holds it as a static image. The SVG is padded three radii on every side so the bleed past the wrap's edge is as soft as the live blur's.
     const pad = Math.ceil(blurPx * 3), W = w + 2 * pad, H = h + 2 * pad;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><filter id="blurb" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="${blurPx}"/></filter></defs><g filter="url(#blurb)"><foreignObject x="${pad}" y="${pad}" width="${w}" height="${h}">${xhtml}</foreignObject></g></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><filter id="blurb" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="${blurPx}"/></filter></defs><g filter="url(#blurb)"><foreignObject x="${pad}" y="${pad}" width="${w}" height="${h}">${xhtml}</foreignObject></g></svg>`;
     mark('serialize', tSer);
     await yieldMain();
     if (shouldStop()) return null;
