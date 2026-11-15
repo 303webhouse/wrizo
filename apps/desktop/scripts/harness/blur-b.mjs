@@ -39,7 +39,7 @@ const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wra
   const first = w.firstElementChild, cr = card && card.getBoundingClientRect();
   return { dataBlur: w.getAttribute('data-blur'), filter: cs.filter, opacity: parseFloat(cs.opacity), cls: w.className, wrap: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10],
     card: cr ? [Math.round(cr.left * 10) / 10, Math.round(cr.top * 10) / 10, Math.round(cr.width * 10) / 10, Math.round(cr.height * 10) / 10] : null,
-    canvas: cv ? { w: cv.width, h: cv.height, css: cv.style.width + 'x' + cv.style.height } : null, slotKids: slot ? slot.childElementCount : null, boardVisibility: first ? getComputedStyle(first).visibility : null,
+    canvas: cv ? { w: cv.width, h: cv.height, css: cv.style.width + 'x' + cv.style.height, lw: cv.offsetWidth, lh: cv.offsetHeight } : null, slotKids: slot ? slot.childElementCount : null, boardVisibility: first ? getComputedStyle(first).visibility : null,
     popup: !!document.querySelector('.board-popup-editor'), focused: !!document.querySelector('.board-popup-editor') && document.activeElement === document.querySelector('.board-popup-editor') }; })()`;
 // the in-page pixel comparison of two PNG data URLs over a rect: mean absolute difference per channel
 const DIFF = (a, b) => `(async () => { const load = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
@@ -94,7 +94,7 @@ try { await withHarness(async (app) => {
     const open = await ev(STATE);
     const wrapRect = await rectOfWrap();
     ok(`BB1 [${T}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot laid out at least the wrap's size (its layout ${open && open.canvas && open.canvas.css}, backing ${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h}, vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
-      snapped && open && open.dataBlur === 'snap' && open.canvas && parseFloat(open.canvas.css) >= wrapRect.w && parseFloat(String(open.canvas.css).split('x')[1]) >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
+      snapped && open && open.dataBlur === 'snap' && open.canvas && open.canvas.lw >= wrapRect.w && open.canvas.lh >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
     ok(`BB3 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open and snapped`,
       JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
 

@@ -239,7 +239,7 @@ try { await withHarness(async (app) => {
     // ten keys at once, one every 90 ms: the first of them lands while the snapshot is being made
     for (let i = 0; i < 10; i += 1) { await app.typeKeys(CYCLE[(round * 7 + i) % CYCLE.length]); await sleep(GAP); }
     await sleep(1800);
-    const got = await ev("(() => { const b = window.__big, w = document.querySelector('.board-canvas-blur-wrap'); return { popup: b.popup, snap: b.snap, long: b.long.slice(), keys: b.keys.map((k) => (k.f1 == null ? null : Math.round(k.f1 * 10) / 10)), dataBlur: w ? w.getAttribute('data-blur') : null, filter: w ? getComputedStyle(w).filter : null, after: (document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length }; })()");
+    const got = await ev("(() => { const b = window.__big, w = document.querySelector('.board-canvas-blur-wrap'); const ph = {}; for (const e of performance.getEntriesByType('measure')) if (e.name.indexOf('blurb:') === 0) ph[e.name.slice(6)] = Math.max(ph[e.name.slice(6)] || 0, Math.round(e.duration)); return { phases: ph, popup: b.popup, snap: b.snap, long: b.long.slice(), keys: b.keys.map((k) => (k.f1 == null ? null : Math.round(k.f1 * 10) / 10)), dataBlur: w ? w.getAttribute('data-blur') : null, filter: w ? getComputedStyle(w).filter : null, after: (document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length }; })()");
     return { name, round, cards, before, ...got };
   };
   await runBig('GB', 0);   // a discarded warm-up
@@ -253,6 +253,7 @@ try { await withHarness(async (app) => {
   const worstKey = (r) => Math.max(...r.keys.filter((x) => x != null), 0);
   const longestTask = (r) => Math.max(...r.long.filter((l) => l[0] >= (r.popup || 0) - 50).map((l) => l[1]), 0);
   const arrive = (r) => (r.snap != null && r.popup != null ? Math.round(r.snap - r.popup) : null);
+  for (const k of ['GB', 'GM']) console.log(`BLURB-PHASES ${k} the capture's longest piece, per round, ms: ${bigRes[k].map((r) => JSON.stringify(r.phases)).join(' ')}`);
   for (const k of Object.keys(bigRes)) console.log(`BLURB-BIG ${k} worst first-10-keys first frame ${bigRes[k].map((r) => r1(worstKey(r))).join('/')} ms | longest long task ${bigRes[k].map(longestTask).join('/')} ms | the snapshot arrived after ${bigRes[k].map(arrive).join('/')} ms | ${BIG_ARMS[k].what}`);
   ok(`BG-premise the big board stood (${[...new Set(bigAll.map((r) => r.cards))].join(',')} cards), every GB/GM round got its snapshot, GL stayed live, all 10 keys landed in every round`,
     bigAll.every((r) => r.cards >= 100 && r.after - r.before === 10) && [...bigRes.GB, ...bigRes.GM].every((r) => r.dataBlur === 'snap' && r.snap != null) && bigRes.GL.every((r) => r.dataBlur === 'snap' ? /blur/.test(r.filter || '') : true) && bigRes.GN.every((r) => r.dataBlur === null && r.snap == null && /blur/.test(r.filter || '')),

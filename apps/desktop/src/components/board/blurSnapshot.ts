@@ -109,6 +109,9 @@ function paintOne(o: Element, c: Element, scrolls: Scroll[]): boolean {
   return true;
 }
 
+// each phase of the capture is a User Timing measure (blurb:*): the harness (blur-b-speed.mjs) prints the longest of each, so the next long piece can be named instead of guessed
+const mark = (name: string, t0: number): void => { try { performance.measure('blurb:' + name, { start: t0, end: performance.now() }); } catch { /* no User Timing */ } };
+
 export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: () => boolean = () => false): Promise<HTMLCanvasElement | null> {
   try {
     const probe = document.createElement('canvas').getContext('2d');
@@ -122,6 +125,7 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     const O: Element[] = [src, ...Array.from(src.querySelectorAll('*'))];
     const C: Element[] = [clone, ...Array.from(clone.querySelectorAll('*'))];
     if (O.length !== C.length) return null;
+    mark('clone+lists', started);
     const scrolls: Scroll[] = [];
     const gone = new Set<Element>();
     // the root is the wrap itself: drawn at full strength and still (its own dim and blur are the live treatment this replaces)
@@ -133,11 +137,13 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
       if (parent && gone.has(parent)) { gone.add(c); continue; }
       if (!paintOne(O[i], c, scrolls)) gone.add(c);
       if (performance.now() - sliceStart > SLICE_MS) {
+        mark('paint-slice', sliceStart);
         await yieldMain();
         if (shouldStop() || performance.now() - started > DEADLINE_MS) return null;
         sliceStart = performance.now();
       }
     }
+    mark('paint-slice', sliceStart);
     for (const s of scrolls) {
       // a scrolled box: its contents move up and left by what it scrolled, inside a clipped box of its own size
       const inner = document.createElement('div');
@@ -150,19 +156,26 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     clone.style.cssText += `;opacity:1;filter:none;transition:none;animation:none;margin:0;position:relative;left:0;top:0;width:${w}px;height:${h}px;overflow:hidden;visibility:visible;`;
     await yieldMain();
     if (shouldStop()) return null;
+    const tSer = performance.now();
     const xhtml = new XMLSerializer().serializeToString(clone);
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
+    mark('serialize', tSer);
     await yieldMain();
     if (shouldStop()) return null;
+    const tBlob = performance.now();
     // the SVG goes in as a BLOB URL, not a data URL: encodeURIComponent over a multi-megabyte string was one more long task, and a blob is handed to the image as it is
     const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+    mark('blob', tBlob);
+    const tDec = performance.now();
     const img = new Image();
     img.decoding = 'async';
     img.src = url;
     try {
       await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
     } finally { URL.revokeObjectURL(url); }
+    mark('decode-wall', tDec);
     if (shouldStop()) return null;
+    const tDraw = performance.now();
     // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap. The canvas is drawn at HALF size with half the blur radius (the blur hides what the half size loses)
     // and shown at full size: a quarter of the pixels for the CPU blur, which was the biggest single piece of the capture left after the slicing
     const pad = Math.ceil(blurPx * 3), S = 0.5;
@@ -173,6 +186,7 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     if (!ctx) return null;
     (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx * S}px)`;
     ctx.drawImage(img, pad * S, pad * S, w * S, h * S);
+    mark('draw', tDraw);
     return canvas;
   } catch {
     return null;
