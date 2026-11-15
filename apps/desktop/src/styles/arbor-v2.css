@@ -945,7 +945,7 @@
    CUT, driven by data-live-off (pergola.ts), whose still picture is the live drawing's own last frame - the shared still at the rest pose, or
    the drawing drawn at the pose its mid-shiver leaves stand at - so nothing visible changes and the live drawing leaves style work at once. */
 :root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > :is(.arbor2-live, .arbor2-still){ position:absolute; inset:0; }
-:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ opacity:0; background-repeat:no-repeat; background-position:center; background-size:cover; }
+:root[data-arbor2][data-theme='plateau'] .arbor2-pergola-drift > .arbor2-still{ opacity:.004; will-change:opacity; background-repeat:no-repeat; background-position:center; background-size:cover; }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off='true'] .arbor2-pergola-drift > .arbor2-still{ opacity:var(--arbor2-still-a, .2); }
 :root[data-arbor2][data-theme='plateau'] :is(.arbor2-pergola, .arbor2-pagesh)[data-live-off='true'] .arbor2-pergola-drift > .arbor2-live{ opacity:0; content-visibility:hidden; }
 
@@ -955,7 +955,7 @@
    there is no pergola and the rhizome stays, barely there. While writing the breeze holds still (nothing in a faded layer repaints), and resumes
    with the return. Reduced motion: cuts. */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh){ opacity:0; transition:opacity 6s ease; }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) :is(.arbor2-pergola-drift, .wz-leaf){ animation-play-state:paused; }
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] :is(.arbor2-pergola, .arbor2-pagesh) .arbor2-pergola-drift{ animation-play-state:paused; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-rhizome-field[data-vines='true']{ opacity:0; transition:opacity 3s ease; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'][data-wz-writing='true'] .wz-rhizome-field[data-vines='true']{ opacity:1; transition:opacity 6s ease; }
 @media (prefers-reduced-motion: reduce){
