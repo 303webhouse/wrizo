@@ -132,7 +132,7 @@
 .board-canvas-blur-wrap[data-blur='snap']{ position:relative; filter:none; transition:none; }
 .board-canvas-blur-wrap[data-blur='snap'] > :not(.board-blur-snap-slot){ visibility:hidden; }
 .board-canvas-blur-wrap[data-blur='snap'] > .board-blur-snap-slot{ display:block; position:absolute; inset:0; pointer-events:none; }
-.board-blur-snap-slot > canvas{ display:block; width:100%; height:100%; }
+/* the canvas is laid out by its own inline style: padded three blur radii beyond the wrap, so the bleed past the board's edge is as soft as the live blur's */
 /* #73 (Nick's ruling): the card pop-up grows DOWNWARD only. It used to be centred on the screen (align-items:center), so every line it grew by moved its top edge up by half a line and the writer's own lines jumped; now its top is fixed where a
    card of the starting size (about 222px tall: a 2px rule, the 49px strip, the 170px editor) would have been centred, and only its foot moves. A card taller than the screen scrolls inside the backdrop instead of running off both edges. */
 .board-popup-backdrop{

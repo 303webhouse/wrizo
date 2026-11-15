@@ -53,6 +53,8 @@ function walk(o: Element, c: Element, scrolls: Array<{ c: Element; left: number;
   }
   if (o instanceof HTMLVideoElement || o instanceof HTMLIFrameElement || o instanceof HTMLObjectElement || o instanceof HTMLEmbedElement) { c.remove(); return; }
   inline(o, c);
+  // a scroll box draws no scrollbar in the snapshot (the live blur never showed one at this strength; the first frames showed a pale thumb)
+  if (/(auto|scroll)/.test(cs.overflowX + cs.overflowY)) { (c as HTMLElement).style.overflow = 'hidden'; }
   if (o instanceof HTMLImageElement && o.complete && o.naturalWidth > 0 && !/^data:/.test(o.currentSrc || o.src)) {
     try {
       const cv = document.createElement('canvas');
@@ -100,12 +102,15 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6): Promise<HTM
     img.decoding = 'async';
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
+    // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap
+    const pad = Math.ceil(blurPx * 3);
     const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
+    canvas.width = w + 2 * pad; canvas.height = h + 2 * pad;
+    canvas.style.cssText = `position:absolute;display:block;left:${-pad}px;top:${-pad}px;width:${w + 2 * pad}px;height:${h + 2 * pad}px;`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx}px)`;
-    ctx.drawImage(img, 0, 0, w, h);
+    ctx.drawImage(img, pad, pad, w, h);
     return canvas;
   } catch {
     return null;
