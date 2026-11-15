@@ -5,14 +5,16 @@ import { useLexicon } from '../../store/themeLexicon';
 import { createDrawer } from '../../store/persistence';
 import { isDefaultRoot } from '../../store/place';
 import { NOTEBOOK, railProjects, type RailProject } from '../railData';
-import { isPinned, togglePin, useRailMemory } from '../railMemory';
+import { isPinned, setOpenList, togglePin, useRailMemory } from '../railMemory';
 import { RailBox } from '../RailBox';
 import { useWhereSheIs } from '../ReorgRail';
+import { BoxSettings } from './BoxSettings';
 
 // PROJECTS (frame R4): All projects with a count; + New project; her pinned Projects (in the order she pinned them), then the rest (in her
 // order), the Notebook LAST (the hidden Journal, a place of its own, its pin off: Nov 11, Q2). Each row: the box, the name, its Docs by the
-// read-time rule, and a pin. Pins live in memory only (railMemory.ts). A row opens that Project's own list in step 3. New project is today's
-// own act (createDrawer, the switcher's route) and the only write here.
+// read-time rule, and a pin. Pins live in memory only (railMemory.ts). A row opens that Project's own list (step 3). BOX SETTINGS, for the
+// Project she is in, is one closed drop-down at the foot (step 4). New project is today's own act (createDrawer, the switcher's route) and the
+// only write here.
 
 const fillN = (s: string, n: number): string => s.replace('{n}', String(n));
 const fillName = (s: string, name: string): string => s.replace('{name}', name);
@@ -23,12 +25,13 @@ function useRows(): RailProject[] {
   return railProjects(lex.t('journal')).map((p) => (p.drawer && isDefaultRoot(p.drawer) ? { ...p, name: t('placeRootName') } : p));
 }
 
-/** The pop-out head's count: how many Projects All projects lists (the Notebook among them). */
+/** The pop-out head's count: how many Projects All projects lists (the Notebook is not a Project: not counted). */
 export function ProjectsCount() {
-  return <span className="wz-reorg-head-count" data-reorg-count="">{useRows().length}</span>;
+  // FIX 1 (Fable, Nov 14, 3:52 pm): All projects counts its Projects; the Notebook is listed, never counted
+  return <span className="wz-reorg-head-count" data-reorg-count="">{useRows().filter((r) => r.id !== NOTEBOOK).length}</span>;
 }
 
-export function ProjectsPanel({ subject }: CascadeContext) {
+export function ProjectsPanel({ subject, openCategory }: CascadeContext) {
   const { t } = useDeskLexicon();
   const rows = useRows();
   const memory = useRailMemory();
@@ -44,8 +47,9 @@ export function ProjectsPanel({ subject }: CascadeContext) {
     const pinnedNow = isPinned(r.id);
     return (
       <li key={r.id} className="wz-reorg-row" data-reorg-project={r.id} data-notebook={r.id === NOTEBOOK ? 'true' : undefined} aria-current={r.id === here ? 'location' : undefined}>
-        <button type="button" className="wz-reorg-row-open" aria-disabled="true" aria-label={fillName(t('reorgBoxOpen'), r.name)}>
-          <RailBox name={r.name} size="row" />
+        <button type="button" className="wz-reorg-row-open" aria-label={fillName(t('reorgBoxOpen'), r.name)}
+          onClick={() => { setOpenList(r.id); openCategory?.('reorg-list'); }}>
+          <RailBox id={r.id} name={r.name} size="row" />
           <span className="wz-reorg-row-text">
             <span className="wz-reorg-row-name">{r.name}</span>
             <span className="wz-reorg-row-meta" data-reorg-docs={r.docs}>{fillN(t(r.docs === 1 ? 'reorgDocOne' : 'reorgDocMany'), r.docs)}</span>
@@ -82,6 +86,7 @@ export function ProjectsPanel({ subject }: CascadeContext) {
         {pinned.length > 0 && <div className="wz-reorg-group-head" aria-hidden="true"><PinIcon filled={false} /> {rest.length}</div>}
         <ul className="wz-reorg-rows">{rest.map(row)}</ul>
       </section>
+      <BoxSettings id={here} name={here == null ? '' : rows.find((r) => r.id === here)?.name ?? ''} />
     </div>
   );
 }
