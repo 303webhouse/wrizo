@@ -237,7 +237,8 @@ export function mountPergola(): void {
     const all = layers().map((l) => liveOf.get(l)).filter((p): p is LiveParts => !!p);
     if (w.__kpIdleCutOff) { all.forEach(idleLive); return; }
     const p = liveOf.get(room.layer);
-    if (!p || p.start == null || !bitmap) { idleT = window.setTimeout(idleTick, 500); return; }
+    // (the breeze clock is read again on each retry: read once at mount it can come before the leaves' animations run, and stay unread)
+    if (!p || p.start == null || !bitmap) { clockAll(); idleT = window.setTimeout(idleTick, 500); return; }
     const now = Number(document.timeline.currentTime ?? 0); const ph = (((now - p.start) % BREEZE) + BREEZE) % BREEZE;
     const live = ph >= W[0] && ph < W[1];
     all.forEach((q) => (live ? idleLive(q) : idleCut(q)));
