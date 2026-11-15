@@ -60,7 +60,7 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   if (!canvas || !sheet) return;
   // #101: a page with NO ink has nothing to paint, and sizing the canvas to the page is the expensive part: width x height of the whole sheet (40,000+ px tall on a long page), thrown away and allocated again from the ResizeObserver every
   // time the page grows by a line - every Enter - which the browser's profile showed as 23-85 ms per Enter in `setTransform`. With no strokes the canvas is one pixel (the CSS box stretches it; it is blank either way) and is not touched again.
-  if (strokes.length === 0) { if (canvas.width !== 1 || canvas.height !== 1) { canvas.width = 1; canvas.height = 1; } return; }
+  if (strokes.length === 0) { canvas.style.willChange = 'transform'; if (canvas.width !== 1 || canvas.height !== 1) { canvas.width = 1; canvas.height = 1; } return; }
   const rect = sheet.getBoundingClientRect();
   const ctx = syncCanvas(canvas, rect.width, rect.height);
   if (!ctx) return;
