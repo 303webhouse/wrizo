@@ -84,7 +84,7 @@ Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in
 | The asset opens on the right, half and half, with a grip to drag | Open the Back menu, press "Open beside" on "Method notes" (`#split`). The page is at left 100 and the asset's side runs from 725 to the right edge: half each of the room right of the rail, as frame P3-23A draws it. The grip is the small upright bar on the line between them; drag it, or put the keyboard on it and press the arrow keys |
 | The page is never narrower than 620 px; the grip stops there | Drag the grip left: it does not move. At 1366 wide, half is already the stop (84 + 16 + 620 + 5 = 725). Drag it right: the asset's side narrows, and the page, still 620 × 640, keeps to the middle of its own wider side. In a wider window the grip moves both ways and stops at 725 on the left |
 | Both menu handles are gone in a split, on both sides | In a split, look at the page's two edges: no handle, and no Front or Back menu, also if one was open before |
-| Closing either side returns the page exactly to its place | Press CLOSE at the right of the asset's head: the page is back at left 415, top 64, and both menus are as they were before the split. The other CLOSE, over the page's right corner, closes the page's side (what is left then is NOT RULED: a second Doc takes the page, a Board opens on its own, a Block or an imported file only shows a note) |
+| Closing either side returns the page exactly to its place | Press CLOSE at the right of the asset's head: the page is back at left 415, top 64, and both menus are as they were before the split. The page's side has no CLOSE: only the asset's side closes (PROPOSED, Fable, Nov 14; the brief's words are "either side") |
 | The stage buttons fade; the stage she is in stays readable | In a split, the top bar: SPRINT, EDIT and FINALIZE are faint and cannot be pressed; BUILD keeps its light letters and its brass line |
 | A click on a Block's text puts the caret there | In a split, click the words of a Block ("Every tenth page of each ledger."): the caret is there, and typing changes them. Enter ends the writing |
 | A double click on a Block's empty area pops it out and fades only the asset's side | Double click a Block away from its words (`#split-pop`): it opens larger over the asset's side, which goes dark behind it. The page stays lit. Its words can be written in there too |
@@ -96,7 +96,7 @@ Three ways in: "Open beside" on a row of the Back menu's ASSETS tab; an asset in
 
 ## F. A Board on its own (built)
 
-Four ways in: a Board's row in a Project's own list (press the TH box, then "Harbor map"); "Board" in DOCS or "New board" in a Project's list, which make one and open it; "Open" on a Board's row in the Back menu's ASSETS tab; CLOSE on the page's side of a split that has a Board beside it. `#board` opens "Harbor map" directly. The small button over the Board's left corner ("‹ Harbor Tolls, 1890 to 1912 · Part 3") goes back to the page as she left it (NOT RULED).
+Three ways in: a Board's row in a Project's own list (press the TH box, then "Harbor map"); "Board" in DOCS or "New board" in a Project's list, which make one and open it; "Open" on a Board's row in the Back menu's ASSETS tab. `#board` opens "Harbor map" directly. The small button over the Board's left corner ("‹ Harbor Tolls, 1890 to 1912 · Part 3") goes back to the page as she left it (NOT RULED).
 
 | The brief says | Where to click |
 |---|---|

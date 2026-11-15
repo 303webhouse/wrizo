@@ -13,7 +13,7 @@
   The page's rectangle is set once, on .page, and no state touches it. Only what
   is inside the page scrolls (.part-scroll). The one exception is the split screen:
   there the page keeps its size and its top, and sits in the middle of its own side
-  (left 100 at half, frame P3-23A). Closing either side puts it back at 415.
+  (left 100 at half, frame P3-23A). Closing the asset's side puts it back at 415.
 */
 
 html, body { margin: 0; height: 100%; }
@@ -593,11 +593,6 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 .grip::before { content: ''; position: absolute; left: -7px; right: -7px; top: -8px; bottom: -8px; }
 .grip span { width: 1px; height: 18px; background: #3A4047; }
 .grip:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
-/* The page's side closes from the band over the page's right corner (where it sits is a guess). */
-.side-close {
-  position: absolute; left: calc(var(--page-left) + 568px); top: 42px; width: 52px; box-sizing: border-box;
-  text-align: center; background: #F4F5F6;
-}
 /* In a split the search lies over the asset's side, against the page (Fable's proposal, not ruled). */
 .menu.over-beside { left: calc(var(--split-x, 725px) + 1px); top: 77px; height: auto; bottom: 64px; border-top: 0; z-index: 4; }
 
@@ -696,11 +691,19 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 .tag-ruled { background: #23272B; color: #F4F5F6; border: 1px solid #23272B; }
 .tag-proposed { background: #F4F5F6; color: #23272B; border: 1px solid #23272B; }
 .tag-not { background: #F4F5F6; color: #23272B; border: 1px dashed #23272B; }
+/* The corner tag: the mark and what it marks. At rest it is two lines at most, on a solid ground, inside
+   the 64 px strip under the page, so it never lies over the page, a menu, the asset's side or a Board.
+   A click opens the whole note, on a solid panel; a click again, or a new state, closes it (Fable's fix, Nov 14). */
 .state-tag {
-  position: absolute; right: 12px; bottom: 6px; max-width: 420px; z-index: 9; pointer-events: none;
+  position: absolute; right: 12px; bottom: 4px; max-width: 300px; box-sizing: border-box; z-index: 9; cursor: pointer;
   display: flex; flex-direction: column; align-items: flex-end; gap: 3px; text-align: right;
+  padding: 3px 4px; background: #E6E8EA; border: 1px solid transparent;
   font-family: var(--mono); font-size: 10px; line-height: 13px; color: #3A4047;
 }
+.state-tag > span:last-child { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.state-tag:hover { border-color: #9AA1A8; }
+.state-tag.is-open { max-width: 420px; padding: 8px 10px; background: #F4F5F6; border-color: #6A727B; }
+.state-tag.is-open > span:last-child { display: block; overflow: visible; }
 /* Notes sit at the bottom right, above the corner tag, clear of the Back menu's tabs. A click sends one away. */
 .toast {
   position: absolute; right: 12px; bottom: 76px; max-width: 296px; box-sizing: border-box; z-index: 9;

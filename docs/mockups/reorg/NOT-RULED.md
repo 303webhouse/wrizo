@@ -41,12 +41,18 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 - **A pressed marker, pressed again,** takes the filter off: ASSETS stays open on all eleven.
 - **The up arrow lands at the top of the Part before,** as every way of arriving in a Part does.
 
+**Fable's second set of answers, Nov 14 (after milestones 4 and 5 passed), all PROPOSED until Nick walks it.** Each is marked on its own line below:
+
+- **Only the asset's side of a split closes.** The CLOSE over the page is gone (117, 137). The brief's words are "closes either side"; this narrows them.
+- **Kept as built:** the page keeps to the middle of its side as she drags (112); the menus come back as they were (116); a Block's name is fixed beside the page (120); "Open beside" on a Doc's row in a Project's own list and on asset rows in the ASSETS tab (110, 126); she stays on the Board after connecting and it joins no Part (145); the way back over the Board's corner (136); no search on a Board before milestone 6 (140).
+- **Still NOT RULED, by Fable's word:** the order of the four types in the search, THIS DOC as the Doc's own words, the scan and the made-up lines (74, 75, 150); the five view guesses, frozen as they are until the Wrizors' frames (141).
+
 ## The shell
 
 1. **Wider windows.** The top bar spans the window. The rail keeps its top (80) and a 40 px gap at its foot. A pop-out runs to the window's foot. The page stays 620 wide and sits in the middle of the room right of the rail (left 415 at 1366, left 692 at 1920), top 64. The two side menus stay flush against it. *(Fable, Nov 14: this default stands, still NOT RULED.)*
 2. **The page's height in a taller window.** It grows with the window: 640 at 768 high, 952 at 1080 high. The brief gives 620 × 640 for 1366 × 768 only. The side menus are always as tall as the page. *(Stands, still NOT RULED.)*
 3. **Smaller windows.** Under 1366 × 768 the frame keeps its size and the window scrolls.
-4. **The corner tag** sits at the bottom right. Notes appear at the bottom right, above the tag, and leave after about five seconds or at a click.
+4. **The corner tag** sits at the bottom right, in the strip under the page: the mark and at most two lines of its note, on a solid ground, so it never lies over the page, a menu, the asset's side or a Board. A click opens the whole note on a solid panel; a click again, or any change of what is on screen, closes it (Fable's fix, Nov 14: the note was drawn over the content with no ground). Notes appear at the bottom right, above the tag, and leave after about five seconds or at a click.
 5. **The stage buttons** move the brass mark and do nothing else until milestone 6.
 6. **The Project's and the Doc's names in the top bar, and the "Ctrl+." chip,** are drawn as in the frames and only show a note when pressed.
 7. **Hover and keyboard looks:** an underline on hover, an outline on keyboard focus.
@@ -184,21 +190,21 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 110. **Three ways in.** "Open beside" on an asset's row in the Back menu's ASSETS tab (the frame says OPEN there; Machina's word table has both "Open" and "Open beside"); an asset in a Part expanded in the Front menu; a Block, a Board or an imported file found by the search. The brief says the asset "opens on the right" and not from where.
 111. **Half** is half of the room right of the rail: the asset's side starts at 725 in a 1366 window, as frame P3-23A draws it.
-112. **Where the page sits in a split.** In the middle of its own side, which runs from 16 px right of the rail to 5 px short of the asset's side. At half in a 1366 window that is left 100, as the frame draws it. When she drags the grip right, the page keeps to the middle of the wider side, so it moves as she drags. Its size and its top never change.
+112. **Where the page sits in a split.** In the middle of its own side, which runs from 16 px right of the rail to 5 px short of the asset's side. At half in a 1366 window that is left 100, as the frame draws it. When she drags the grip right, the page keeps to the middle of the wider side, so it moves as she drags. Its size and its top never change. *(Fable, Nov 14: PROPOSED, as built.)*
 113. **At 1366 wide, half is already the grip's stop.** The page's side is exactly 620 there, so the grip only goes right. In a wider window it goes both ways.
 114. **The grip's other stop:** the asset's side is never narrower than 336 px (one Block and its margins). The arrow keys move the grip 16 px.
 115. **The split is forgotten when it closes:** the next one starts at half again. Swapping the asset keeps where the grip was.
-116. **What the menus are after a split.** As she left them: a Back menu that was open on ASSETS is open on ASSETS again. The brief says "to get her tools back she closes either side" and not in what state.
-117. **The CLOSE over the page's right corner** closes the page's side. The brief says she can close either side and draws no control for the page's. What is left then is not said: with a second Doc beside the page, that Doc takes the page; with a Board, the Board opens on its own (milestone 5); with a Block or an imported file, it only shows a note.
+116. **What the menus are after a split.** As she left them: a Back menu that was open on ASSETS is open on ASSETS again. The brief says "to get her tools back she closes either side" and not in what state. *(Fable, Nov 14: PROPOSED, as built.)*
+117. **The page's side of a split does not close** *(Fable, Nov 14: PROPOSED)*. The CLOSE that stood over the page's right corner is gone; only the asset's side has one. The brief says "she closes either side", so this reads the brief more narrowly than its words.
 118. **Opening another Doc ends the split.** The new Doc opens alone.
 119. **The faded stage buttons cannot be pressed.** A note on hover says she stays in her stage.
-120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it.
+120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it. *(Fable, Nov 14: PROPOSED, the name is fixed beside the page and she renames a Block on its Board. Renaming on a Board is NOT built: a Block's name cannot be changed anywhere in this prototype.)*
 121. **A double click on a Block's name** counts as its empty area and pops it out. A double click on its words selects a word, as anywhere.
 122. **The pop-out's look:** the Block larger, in the upper middle of the asset's side, the name of its Board and a CLOSE under it; the asset's side goes 50% dark behind it, its head too. A click on the dark closes it, as Esc does.
 123. **Esc in a split** closes the pop-out, then the list under the asset's name, then whatever else is open (the search, a rail pop-out). It never closes the split.
 124. **A Block asset beside the page** shows that one Block alone.
 125. **An imported file beside the page:** a white sheet with its name, "PAGE 1 OF 14" and grey bars for its lines. Its own pages are not drawn.
-126. **A second Doc beside the page:** all its Parts in one scroll on a white sheet, read-only. Where the button sits is mine: "Open beside" on each Doc's row in a Project's own list.
+126. **A second Doc beside the page:** all its Parts in one scroll on a white sheet, read-only. The button is "Open beside" on each Doc's row in a Project's own list *(Fable, Nov 14: PROPOSED, as built)*. How the Doc looks there is still a guess.
 127. **"The Part she is writing never opens twice."** The Doc she is in can be opened beside itself: its other Parts are there to read, and where the Part on the page would be a line says it is on the page. The line moves when she changes Part.
 128. **The list under the asset's name** (Fable's proposal): all the assets connected to the Doc she is in, each with its kind and its Part, the one beside her marked. With a second Doc beside her, it still lists the assets of the Doc on the page.
 129. **Where the search sits in a split** (Fable's proposal): the same menu, 288 wide, over the left of the asset's side, against the page, under the asset's head. It looks in the same things as out of a split; it does not look inside the asset beside her any more than before.
@@ -210,16 +216,16 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 133. **Where "Connect Doc" stands: ruled by Nick, Nov 14.** On the left, after the Board's name and place ("Board · no doc yet"), as the frames draw it, with the six views at the right. (It was tried just before the views for one commit, `23791f18`; he looked at both and kept the left.)
 134. **How the views are written:** "Open", "Plan", "Flip", "Walk", "Storyboard", "Thumbnails", as the brief writes them, not in capitals like the stages.
 135. **What the Board lies over.** It lies over the page (left 116, top 64, to 32 px short of the window's right edge, as tall as the page). The page is not moved, resized or taken away; it keeps its Part, scroll and words underneath, and the keyboard cannot reach it meanwhile.
-136. **The way back to the page:** a small button over the Board's left corner, "‹" and the name of the Doc and Part she left. The brief draws no way back. The stage she was in is kept.
-137. **Ways in the brief does not name:** "Open" on a Board's row in the Back menu's ASSETS tab; CLOSE on the page's side of a split with a Board beside it; a new Board opening at once (25).
+136. **The way back to the page:** a small button over the Board's left corner, "‹" and the name of the Doc and Part she left. The brief draws no way back. The stage she was in is kept. *(Fable, Nov 14: PROPOSED, as built.)*
+137. **Ways in the brief does not name:** "Open" on a Board's row in the Back menu's ASSETS tab; a new Board opening at once (25). (A third, CLOSE on the page's side of a split, went with 117.)
 138. **The rail on a Board** shows the Board's Project at the top, also when the Doc under the Board is in another Project. Box settings then act on the Board's Project.
 139. **The two handles on a Board** sit at the Board's outer edges, as the frames draw. Pressed, each only shows a note: what the menus offer on a Board is the stage table (milestone 6).
-140. **Search on a Board** is not built. The top bar's button and Ctrl+F only show a note: the brief does not say what a search looks in from a Board.
-141. **What five of the six views show.** Only Open is drawn in a frame. Plan: the Blocks as a numbered list, in the order they were made. Flip: one Block large, an arrow each side, "2 of 3" under it; the arrow keys step too. Walk: the Blocks large, one under another, to read down through. Storyboard: the Blocks as numbered frames in a row, each under an empty dashed picture. Thumbnails: the Blocks small, name only. Each says at its head that it is a guess. None can reorder anything.
+140. **Search on a Board** is not built. The top bar's button and Ctrl+F only show a note: the brief does not say what a search looks in from a Board. *(Fable, Nov 14: PROPOSED, no search on a Board before milestone 6.)*
+141. **What five of the six views show.** Only Open is drawn in a frame. Plan: the Blocks as a numbered list, in the order they were made. Flip: one Block large, an arrow each side, "2 of 3" under it; the arrow keys step too. Walk: the Blocks large, one under another, to read down through. Storyboard: the Blocks as numbered frames in a row, each under an empty dashed picture. Thumbnails: the Blocks small, name only. Each says at its head that it is a guess. None can reorder anything. *(Fable, Nov 14: frozen as they are, still NOT RULED; they wait for the Wrizors' frames.)*
 142. **Open view: a Block with no place of its own** (every Board but "Harbor map") is set out in rows of four. Blocks cannot be dragged.
 143. **Blocks on a Board on its own** behave as beside the page: the words can be written in, a double click on the empty area pops the Block out and darkens the Board, Esc closes the pop-out. In Thumbnails a double click anywhere on a Block pops it out.
 144. **In the Connect Doc list,** a Doc the Board already serves reads "connected" and cannot be pressed. There is no way to disconnect. "Recent first" is the Docs of this Project that are in DOCS · RECENT, in that order, marked "recent"; the rest follow in the Project's own order. The Docs scroll four rows high; "A new doc" stays under them. (That the button stays once the Board has a Doc, as a plus sign in a square box, and that recent Docs come first on a scroll, are Nick's, Nov 14.)
-145. **What connecting does.** The Board becomes an asset of that Doc, connected to the Doc and to no Part, dated today. She stays on the Board. The top bar's "Board · no doc yet" becomes the Doc's name, or "2 docs". The Board leaves BOARDS WITH NO DOC in its Project's list (43).
+145. **What connecting does.** The Board becomes an asset of that Doc, connected to the Doc and to no Part, dated today. She stays on the Board. The top bar's "Board · no doc yet" becomes the Doc's name, or "2 docs". The Board leaves BOARDS WITH NO DOC in its Project's list (43). *(Fable, Nov 14: PROPOSED, she stays on the Board and it joins no Part.)*
 146. **"A new doc"** makes "Untitled doc" in the Board's Project, connects the Board to it, and does not open it.
 147. **The row pointed at in the Connect Doc list** has the grey ground and dark bar that frame P3-NB-D draws on its first row.
 148. **The line under the Board** adds "only 3 drawn in this prototype" for a Board that says it has more Blocks than this prototype holds (107), and counts Docs: "connected to 2 docs".

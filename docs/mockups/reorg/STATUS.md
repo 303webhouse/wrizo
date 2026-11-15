@@ -1,6 +1,15 @@
-# STATUS: milestones 4 and 5 (Fable's answers of Nov 14, the split screen, a Board on its own)
+# STATUS: milestones 4 and 5 passed; Fable's fix and second answers applied
 
-Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1, 2 and 3 passed Fable's check (2 and 3 at `bcb63c1d`). Two commits since: `da00d744` applies Fable's sixteen answers and builds milestone 4 (brief, section 6 E); the commit after it builds milestone 5 (6 F). Milestone 6 (the stages) is not started.
+Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 5 have passed Fable's check (4 and 5 at `744946d7`, Nov 14, 5:50 pm, with one fix). Milestone 6 (the stages) is not started: Fable's word is GO after the fix, in a fresh chat.
+
+## After Fable's pass (Nov 14, 5:50 pm)
+
+- **The fix: the corner note.** It was drawn over the content with no ground. Now, at rest, it is the mark and at most two lines, on a solid ground, inside the 64 px strip under the page, so it lies over nothing. A click opens the whole note on a solid panel; a click again, or any change of what is on screen, closes it. The click changes nothing else on screen.
+- **Answer 2, built:** the page's side of a split does not close. The CLOSE over the page is gone; only the asset's side closes. The brief's words are "closes either side", so this is narrower than the brief (PROPOSED).
+- **Answers 3, 4, 6, 9, 11, 12:** kept as built, now marked PROPOSED. **Answers 1 and 10:** kept as built, still NOT RULED; the five views are frozen.
+- **Answer 5 does not match what is built.** It says a Block's name is fixed beside the page and "she renames it on its Board (as built)". Renaming on a Board is not built: a Block's name cannot be changed anywhere. I did not build it. See the question at the foot.
+
+The rest of this file is as it stood for the check of milestones 4 and 5.
 
 ## Opened once, at Nick's word; no screenshots in `shots/`
 
@@ -16,7 +25,7 @@ Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
 - **The search was rewritten twice:** in milestone 4 for two rows of scope tabs, and again when Nick took the second row out. The counts to expect for "toll": 7 in this doc, 17 in Thesis, 20 everywhere. From the ASSETS tab it should open on THIS PROJECT and say 17 in Thesis. "gate" should find the scan "Plan of the north gate, 1889" by its name only.
-- **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
+- **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when the asset's side closes.
 - **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
 - **The grip.** At 1366 wide it should only move right.
 - **The top bar on a Board.** Six views and Connect Doc are wider than four stages. Measured with "Harbor map" connected to the long-named Doc: about 200 px to spare at 1366. A Project or Board with a much longer name has not been tried.
@@ -65,7 +74,6 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 `NOT-RULED.md`, lines 110 to 130 (milestone 4) and 132 to 149 (milestone 5). The ones that shape what Nick sees:
 
 - **The page moves as she drags the grip,** because it keeps to the middle of its side.
-- **A CLOSE over the page's right corner** for the page's side, and what is left when it is pressed (a Board beside the page now opens on its own).
 - **How a second Doc and an imported file look** beside the page.
 - **What Plan, Flip, Walk, Storyboard and Thumbnails show.** Five guesses, each marked NOT RULED at the Board's head.
 - **The way back from a Board to the page,** and that the Board lies over the page instead of taking its place.
@@ -73,6 +81,10 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 - **A new Board opens at once,** empty.
 
 ## Questions for Fable
+
+**One open question (after the second answers):** answer 5 says she renames a Block on its Board, "as built". It is not built. Should renaming a Block on its Board be built now, or wait?
+
+**The twelve below were all answered on Nov 14** (7 and 8 by Nick, the rest by Fable at 5:50 pm). They are kept for the record.
 
 1. **The one-row search** (Nick, Nov 14: no second row; THIS PROJECT and EVERYTHING find Docs, Boards, imported files if readable, and feedback, sorted by asset type). Nick also ruled that EVERYTHING keeps a head for each Project and sorts by type under it. Three guesses are left in how it is built (`NOT-RULED.md`, 74, 75, 77 and 150):
    - **The order of the types:** Docs, Boards, imported files, feedback. Each group's head starts with its type; there is no separate head over each type.

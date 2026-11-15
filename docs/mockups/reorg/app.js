@@ -257,7 +257,7 @@
       h += '<button type="button" class="stage-btn' + (id === b.view ? ' is-here' : '') + '" data-act="board-view" data-id="' + id + '"' + (id === b.view ? ' aria-current="true"' : '') + '>' + v + '</button>';
     });
     h += '</div><span class="bar-cmd">&gt;<span>Ctrl+.</span></span>' +
-      '<button type="button" class="bar-search" data-act="later" data-mark="NOT RULED" data-note="Search from a Board is not built: the brief does not say what it looks in there." aria-label="Search" title="Search (Ctrl+F)">' +
+      '<button type="button" class="bar-search" data-act="later" data-mark="PROPOSED" data-note="There is no search on a Board before milestone 6 (Fable, Nov 14)." aria-label="Search" title="Search (Ctrl+F)">' +
       svg('search', 14, 1.6) + '<span>Ctrl+F</span></button>';
     return h;
   }
@@ -276,7 +276,7 @@
       (S.partsDrop ? '<span class="crumb-v" aria-hidden="true">v</span>' : '') + '</button>' +
       '<span class="bar-spring"></span>' +
       /* In a split the stage buttons fade and she stays in her stage, which stays readable (section 6 E). */
-      '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close either side to change stage."' : '') + '>';
+      '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close the asset\u2019s side to change stage."' : '') + '>';
     STAGES.forEach(function (s) {
       h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + s + '"' + (s === S.stage ? ' aria-current="true"' : '') + (S.split ? ' disabled' : '') + '>' + s + '</button>';
     });
@@ -704,7 +704,7 @@
         '<button type="button" class="handle handle-back on-board" data-act="later" data-mark="NOT RULED" data-note="A Board gets the same two menus. What they offer on a Board is the stage table: milestone 6 (G)." aria-label="Back menu" title="Back menu">&lsaquo;</button>';
     } else if (S.split) {
       /* In a split both menu handles are gone, and the menus with them (Nick, Nov 14). They come
-         back as she left them when she closes either side. Only the search can open, laid over
+         back as she left them when she closes the asset's side. Only the search can open, laid over
          the asset's side (Fable's proposal, not ruled). */
       if (S.search.open) { h = searchMenu(); }
     } else {
@@ -1249,8 +1249,8 @@
   function renderBeside() {
     if (!S.split) { swap(el.beside, ''); return; }
     var info = besideInfo();
-    var h = '<button type="button" class="chip-btn side-close" data-act="split-close-page" title="Close the page\u2019s side" aria-label="Close the page\u2019s side">CLOSE</button>' +
-      '<section class="beside" aria-label="Beside the page: the ' + info.tag.toLowerCase() + ' ' + esc(info.name) + '">' +
+    /* Only the asset's side closes: the page's side has no CLOSE (Fable, Nov 14, PROPOSED). */
+    var h = '<section class="beside" aria-label="Beside the page: the ' + info.tag.toLowerCase() + ' ' + esc(info.name) + '">' +
       '<div class="beside-head"><span class="kind-tag">' + info.tag + '</span>' +
       '<button type="button" class="beside-name" data-act="beside-drop" aria-expanded="' + !!S.split.drop + '" title="The assets connected to this doc">' +
       '<span>' + esc(info.name) + '</span><span class="beside-v" aria-hidden="true">v</span></button>' +
@@ -1432,6 +1432,7 @@
     if (S.split) {
       info = besideInfo();
       say('RULED', 'E \u00b7 Split screen: the asset on the right from half, a grip to drag, the page never under 620, both menu handles gone, the stage buttons faded (P3-23A, as ruled Nov 14)');
+      say('PROPOSED', 'only the asset\u2019s side closes; the page\u2019s side has no CLOSE (Fable, Nov 14)');
       if (info.type === 'doc') { say('NOT RULED', 'a second Doc beside the page is read-only (ruled); how it looks there is a guess'); }
       if (info.type === 'pdf') { say('NOT RULED', 'how an imported file looks beside the page is a guess'); }
       if (S.split.pop) { say('RULED', 'a Block popped out: only the asset\u2019s side fades, and Esc closes it, never the split'); }
@@ -1466,7 +1467,14 @@
     if (d.isNew && !S.board) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
 
     var mark = marks.indexOf('NOT RULED') !== -1 ? 'NOT RULED' : marks.indexOf('PROPOSED') !== -1 ? 'PROPOSED' : 'RULED';
-    el.tag.innerHTML = tag(mark) + '<span>' + esc(bits.join(' \u00b7 ')) + '</span>';
+    /* At rest the note is cut to two lines and kept under the page. A new state closes an opened note. */
+    var html = tag(mark) + '<span>' + esc(bits.join(' \u00b7 ')) + '</span>';
+    if (html !== tagHtml) { tagHtml = html; el.tag.innerHTML = html; openTag(false); }
+  }
+  var tagHtml = '';
+  function openTag(open) {
+    el.tag.classList.toggle('is-open', open);
+    el.tag.title = open ? 'Click to close the note' : 'Click to read the whole note';
   }
 
   var toastTimer = null;
@@ -1683,26 +1691,10 @@
     'doc-beside': function (t) {
       openSplit({ kind: 'doc', pid: t.getAttribute('data-pid') || null, did: t.getAttribute('data-id') });
       openPop(null);
-      note('NOT RULED', 'A second Doc beside the page is read-only (ruled). Where \u201cOpen beside\u201d sits and how the Doc looks there are guesses.');
+      note('NOT RULED', 'A second Doc beside the page is read-only (ruled). \u201cOpen beside\u201d on a Doc\u2019s row is PROPOSED (Fable, Nov 14). How the Doc looks there is a guess.');
     },
     'beside-drop': function () { S.split.drop = !S.split.drop; },
     'split-close': function () { S.split = null; },
-    /* Closing the page's side. The brief says she can close either side; what is left then is not said. */
-    'split-close-page': function () {
-      var info = besideInfo();
-      if (info.type === 'doc') {
-        openDoc(info.pid, info.doc.id);
-        note('NOT RULED', 'The page\u2019s side closed, so the Doc that was beside it is now on the page. What is left when the page\u2019s side closes is a guess.');
-        return;
-      }
-      if (info.type === 'board' && boardPid(info.board)) {
-        openBoard(boardPid(info.board), info.board);
-        note('NOT RULED', 'The page\u2019s side closed, so the Board that was beside it is now on its own. What is left when the page\u2019s side closes is a guess.');
-        return;
-      }
-      note('NOT RULED', 'Closing the page\u2019s side would leave the ' + { BOARD: 'Board', BLOCK: 'Block', PDF: 'imported file' }[info.tag] + ' on its own. For a Block or an imported file the brief does not say what that is.');
-      return false;
-    },
     'blk-unpop': function () {
       if (S.split) { S.split.pop = null; }
       if (S.board) { S.board.pop = null; }
@@ -1727,7 +1719,7 @@
       if (!d || boardDocs(p, b.name).indexOf(d) !== -1) { return false; }
       connectBoard(p, d, b.name);
       b.connect = false;
-      note('NOT RULED', '\u201c' + b.name + '\u201d is now one of the assets of \u201c' + d.name + '\u201d, connected to the Doc and to no Part. It stays in ' + p.name + '. Which Part it joins, and that you stay on the Board, are guesses.');
+      note('PROPOSED', '\u201c' + b.name + '\u201d is now one of the assets of \u201c' + d.name + '\u201d, connected to the Doc and to no Part. It stays in ' + p.name + ', and you stay on the Board (Fable, Nov 14).');
     },
     'connect-new': function () {
       var b = S.board, p = proj(b.pid);
@@ -1828,6 +1820,8 @@
   shell.addEventListener('click', function (e) {
     if (!e.target.closest) { return; }
     if (e.target.closest('.toast')) { el.toast.hidden = true; return; }
+    /* The corner tag opens and closes its own note, and changes nothing else on the screen. */
+    if (e.target.closest('.state-tag')) { openTag(!el.tag.classList.contains('is-open')); return; }
     var t = e.target.closest('[data-act]');
     var dirty = false;
     /* A click anywhere else closes the list of Parts. */
@@ -1851,7 +1845,7 @@
     /* Ctrl+F opens the same search as the top bar's button, in the Doc she is in. Pressed again, it goes back to the field. */
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'f' || e.key === 'F')) {
       e.preventDefault();
-      if (S.board) { note('NOT RULED', 'Search from a Board is not built: the brief does not say what it looks in there.'); return; }
+      if (S.board) { note('PROPOSED', 'There is no search on a Board before milestone 6 (Fable, Nov 14).'); return; }
       openSearch('bar');
       render();
       return;
