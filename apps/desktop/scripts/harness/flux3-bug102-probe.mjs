@@ -98,21 +98,19 @@ function judgeCost(cRounds, xRounds) {
 
 const CYCLE = 'the signal holds while she writes on ';
 const BLUR = '.board-canvas-blurred{filter:none!important}';
-const L = (decl) => `[data-flux3-layer]{${decl}}`;
-const LC = (decl) => `[data-flux3-layer] canvas{${decl}}`;
-// The box (Nov 15 00:04Z) split bug #102 in two: the board blur holds Flux's FIRST FRAME (22.5 ms vs Arbor 12.1), and the LAYER holds KEY-TO-PAINT (347 of 352 keys >= 48 ms late; hidden: 54). This probe takes the layer
-// apart with the blur OFF in every Flux arm but the last (so the layer's own share is the only variable): hidden outright / visibility / its canvases only / its containment / promoted / its opacity transition / opacity 0.
+const W = '.board-canvas-blur-wrap';
+// Fable Nov 14 5:50 pm: (1) pin down which layer holds key-to-paint (the canvases; here the ground and the motion canvas apart: the box measures them, Actions has no compositor to show a canvas's cost),
+// (2) the Wrizors' look B: the blur made ONCE when the card opens, then held still, measured against "filter off". Every Flux arm has ?flux3=1; the baseline for the B arms is NOBLUR.
 const ARMS = {
-  C:        { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: blur on, as shipped)' },
-  ZB:       { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux, blur off, layer on (the layer\'s own share is the variable below)' },
-  LHIDE:    { theme: 'flux', flag: true, scale: 1, css: BLUR + L('display:none!important'), what: 'blur off + layer display:none' },
-  LVIS:     { theme: 'flux', flag: true, scale: 1, css: BLUR + L('visibility:hidden!important'), what: 'blur off + layer visibility:hidden (it stays in layout)' },
-  LNOCV:    { theme: 'flux', flag: true, scale: 1, css: BLUR + LC('display:none!important'), what: 'blur off + the layer\'s canvases display:none (the div stays)' },
-  LNOCONT:  { theme: 'flux', flag: true, scale: 1, css: BLUR + L('contain:none!important'), what: 'blur off + the layer\'s contain:strict removed' },
-  LWILL:    { theme: 'flux', flag: true, scale: 1, css: BLUR + L('will-change:transform!important'), what: 'blur off + the layer promoted (will-change:transform)' },
-  LNOTRANS: { theme: 'flux', flag: true, scale: 1, css: BLUR + L('transition:none!important'), what: 'blur off + the layer\'s opacity transition removed' },
-  LOP0:     { theme: 'flux', flag: true, scale: 1, css: BLUR + L('opacity:0!important'), what: 'blur off + the layer opacity:0 (drawn, not seen)' },
-  ZBLURWILL: { theme: 'flux', flag: true, scale: 1, css: L('will-change:transform!important'), what: 'blur ON (as shipped) + the layer promoted' },
+  C:       { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (as shipped: the live blur on)' },
+  ZSHIP:   { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux as shipped (the live blur on, the layer on)' },
+  NOBLUR:  { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux, filter OFF (the baseline B is measured against)' },
+  BWILL:   { theme: 'flux', flag: true, scale: 1, css: `${W}{will-change:filter,opacity}`, what: 'the live blur, the wrap promoted (will-change: filter, opacity)' },
+  BTRANS:  { theme: 'flux', flag: true, scale: 1, css: `${W}{transform:translateZ(0)}`, what: 'the live blur, the wrap on its own layer (translateZ(0))' },
+  BPAINT:  { theme: 'flux', flag: true, scale: 1, css: `${W}{contain:paint;isolation:isolate}`, what: 'the live blur, the wrap painted in isolation (contain:paint; isolation)' },
+  BIMG:    { theme: 'flux', flag: true, scale: 1, css: '', snap: true, what: 'LOOK B, as a bound: the blurred board captured ONCE after the card opens and laid over the hidden live board as one static image' },
+  LNOGCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(1){display:none!important}`, what: 'filter off + the layer\'s FIRST canvas (the ground) hidden' },
+  LNOMCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(2){display:none!important}`, what: 'filter off + the layer\'s SECOND canvas (the motion) hidden' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -167,12 +165,21 @@ try { await withHarness(async (app) => {
     if (b) await app.doubleClick(Math.round(b.l + b.w * 0.5), Math.round(b.t + b.h * 0.4));
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 4000, label: 'the card editor' }).catch(() => {});
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
+    if (arm.snap) {
+      // LOOK B, as a bound on its cost: the board blurred ONCE (the app's own blur, settled), captured as one PNG with the popup's backdrop hidden for the shot, laid over the live board, which is then hidden
+      const rect = await ev("(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const r = w.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; })()");
+      await ev("(() => { const b = document.querySelector('.board-popup-backdrop'); if (b) b.style.visibility = 'hidden'; })()");
+      await sleep(700);
+      const shot = rect ? await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: rect.x, y: rect.y, width: rect.w, height: rect.h, scale: 1 } }) : null;
+      if (shot && shot.data) await ev(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'); const img = document.createElement('img'); img.id = '__snap'; img.src = 'data:image/png;base64,${shot.data}'; img.style.cssText = 'position:fixed;left:${rect.x}px;top:${rect.y}px;width:${rect.w}px;height:${rect.h}px;z-index:205;pointer-events:none'; document.body.appendChild(img); w.style.visibility = 'hidden'; const b = document.querySelector('.board-popup-backdrop'); if (b) b.style.visibility = ''; const e = document.querySelector('.board-popup-editor'); if (e) { e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); } })()`);
+      await sleep(400);
+    }
     await sleep(IDLE_MS);
     const where = await ev(`(() => { const root = document.documentElement, cv = document.querySelector('.board-canvas'), cr = cv && cv.getBoundingClientRect(), ed = document.querySelector('.board-popup-editor');
       const scripts = [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => /index-/.test(s));
       return { theme: root.getAttribute('data-theme'), flag: new URLSearchParams(location.search).get('flux3'), layer: document.querySelectorAll('[data-flux3-layer]').length,
         scale: cr && cv.offsetWidth ? cr.width / cv.offsetWidth : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
-        served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z, filtered: [...document.querySelectorAll('*')].filter((e) => { const f = getComputedStyle(e).filter; return f && f !== 'none'; }).slice(0, 14).map((e) => { const r = e.getBoundingClientRect(); return e.tagName.toLowerCase() + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className).slice(0, 48) + ' ' + getComputedStyle(e).filter.slice(0, 30) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height); }) }; })()`);
+        served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null, instrument: !!window.__f3z, canv: [...document.querySelectorAll('[data-flux3-layer] canvas')].map((c) => c.width + 'x' + c.height + ' css ' + Math.round(c.getBoundingClientRect().width) + 'x' + Math.round(c.getBoundingClientRect().height)), filtered: [...document.querySelectorAll('*')].filter((e) => { const f = getComputedStyle(e).filter; return f && f !== 'none'; }).slice(0, 14).map((e) => { const r = e.getBoundingClientRect(); return e.tagName.toLowerCase() + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className).slice(0, 48) + ' ' + getComputedStyle(e).filter.slice(0, 30) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height); }) }; })()`);
     // the meter (flux3-latency's, verbatim in method: keydown -> the second animation frame after its beforeinput). DIAG (Nov 14): the same listeners also stamp, per key, the points inside that
     // interval (beforeinput, the first frame, the second frame) and the l-method's BUSY reading (keydown -> the end of the task that handled the key), and an Event Timing observer lists
     // each event's input delay and processing; nothing below changes what the clock measures, it only writes down where the time went.
@@ -237,13 +244,14 @@ try { await withHarness(async (app) => {
     const t = T[k];
     console.log(`BUG102 ${k.padEnd(8)} clock ${r1(t.clock.median)}/${r1(t.clock.p95)} (round spread ${r1(t.spreadMed)}/${r1(t.spreadP95)}) | paint ${r1(t.paint.median)}/${r1(t.paint.p95)} | work ${r1(t.work.median)}/${r1(t.work.p95)} | first frame ${r1(t.f1.median)}/${r1(t.f1.p95)} | key-to-paint (Event Timing) ${r1(t.durS.median)}/${r1(t.durS.p95)} | late ${t.late}/${t.nET} | ${ARMS[k].what}`);
   }
-  for (const k of ['C', 'ZB']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
-  // the layer's own share: each arm against ZB (Flux, blur off, layer on); a NEGATIVE delta is what the variant removed
-  for (const k of order.filter((x) => x !== 'C' && x !== 'ZB')) {
-    const d = (f, g) => r1(T[k][f][g] - T.ZB[f][g]);
-    console.log(`BUG102-VS-ZB ${k.padEnd(9)} first frame ${d('f1', 'median')} (p95 ${d('f1', 'p95')}) | key-to-paint median ${d('durS', 'median')} | late keys ${T[k].late - T.ZB.late} (of ${T[k].nET}) | paint p95 ${d('paint', 'p95')} | clock p95 ${d('clock', 'p95')}`);
+  for (const k of ['C', 'ZSHIP']) console.log(`BUG102-CANVAS ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.canv) || [])}`);
+  for (const k of ['C', 'ZSHIP']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
+  // each arm against NOBLUR (Flux, filter OFF): a B arm that costs the same shows deltas near 0; ZSHIP shows what the live blur costs
+  for (const k of order.filter((x) => x !== 'C' && x !== 'NOBLUR')) {
+    const d = (f, g) => r1(T[k][f][g] - T.NOBLUR[f][g]);
+    console.log(`BUG102-VS-NOBLUR ${k.padEnd(9)} first frame ${d('f1', 'median')} (p95 ${d('f1', 'p95')}) | key-to-paint median ${d('durS', 'median')} | late keys ${T[k].late - T.NOBLUR.late} (of ${T[k].nET}) | paint p95 ${d('paint', 'p95')} | clock p95 ${d('clock', 'p95')}`);
   }
-  ok(`BUG102 (information) ZB (Flux, blur off, layer on) against Arbor: first frame ${r1(T.ZB.f1.median)} vs ${r1(T.C.f1.median)}, key-to-paint ${r1(T.ZB.durS.median)} vs ${r1(T.C.durS.median)}, late ${T.ZB.late} vs ${T.C.late}`, true, '');
+  ok(`BUG102 (information) NOBLUR (Flux, blur off, layer on) against Arbor: first frame ${r1(T.NOBLUR.f1.median)} vs ${r1(T.C.f1.median)}, key-to-paint ${r1(T.NOBLUR.durS.median)} vs ${r1(T.C.durS.median)}, late ${T.NOBLUR.late} vs ${T.C.late}`, true, '');
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
