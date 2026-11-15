@@ -1,6 +1,6 @@
 // FLUX-ZOOM-LINKS (Fable, Nov 14 6:42 pm, after the Wrizors' zoom pass 1 (claude/wrizors/flux-zoom-pass-1.md) found ONE real blocker: below 1.00 the dashed links leave their cards - at the outer limit they sit in
 // the stage's top-left while the cards are centred, against spec §2's "one camera"): "a check that every link's two ends land on its two cards' edges at 0.199, 0.50, 1.00, 2.00 and 4.00 in both skins, with a mutant".
-// WHAT IT MEASURES (the drawn PIXELS, never the layer's own opinion of itself): the Schema board (the nine cards and four links of flux3-s1) under ?flux3=1, in Page: Dark and Page: Light. At each scale (through the
+// WHAT IT MEASURES (the drawn PIXELS, never the layer's own opinion of itself): the Schema board (the nine cards and four links of flux3-s1, as the frames job seeds them: canvasH 1800, the page-pin and its doc) under ?flux3=1, in Page: Dark and Page: Light. At each scale (through the
 // camera's own door, window.wrizoFluxZoomTo; the outer limit is asked for as 0.01 and lands where the clamp puts it) the expected end of each link is taken from the CARDS' own rects on screen - the layer's route()
 // leaves A's facing side at its middle and enters B's: (A.right or A.left, A.centre-y) to (B.left or B.right, B.centre-y), the side by which card's centre is further right - and the nearest drawn pixel of the layer's
 // MOTION canvas (the links only; the ground is its own canvas) is found within 90 px of it. An end PASSES when a link pixel lies within TOL px of the point. Only ends inside the stage's frame are judged (at 2.00
@@ -24,8 +24,9 @@ const makeBoxes = () => {
   return [
     T('f3-a', 0.05, 0.05, 1, 'Card A'), T('f3-b', 0.5, 0.05, 2, 'Card B'), T('f3-c', 0.05, 0.4, 3, 'Card C'), T('f3-d', 0.5, 0.4, 4, 'Card D'),
     T('f3-e', 0.05, 0.75, 5, 'Card E'), T('f3-f', 0.5, 0.75, 6, 'Card F'), T('f3-g', 0.75, 0.4, 7, 'Card G, no link'), T('f3-h', 0.75, 0.05, 8, 'The hook'),
+    { id: 'f3-p', kind: 'page-pin', entryId: `${BOARD}-doc`, x: 0.75, y: 0.75, w: 0.2, h: 0.15, z: 9 },
     L('f3-ac', 'f3-a', 'f3-c', 10), L('f3-bd', 'f3-b', 'f3-d', 11), L('f3-ef', 'f3-e', 'f3-f', 12), L('f3-ad', 'f3-a', 'f3-d', 13),
-    { id: 'f3-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasH: 3400 },
+    { id: 'f3-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasH: 1800 },
   ];
 };
 const LINKS = [['f3-a', 'f3-c'], ['f3-b', 'f3-d'], ['f3-e', 'f3-f'], ['f3-a', 'f3-d']];
@@ -82,6 +83,7 @@ try { await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 15000 });
   await splashGone();
+  await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: `${BOARD}-doc`, text: 'The doc node\nIts second line.', createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Zoom links', pageType: 'board', boxes: makeBoxes(), createdAt: new Date().toISOString(), origin: null, source: null })})`);
   await sleep(500);
 
