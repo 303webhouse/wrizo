@@ -929,7 +929,7 @@
   /* The search menu: the whole Back menu, once she is in its search field (results as frames P3-26A, P3-26A2). */
   function searchMenu() {
     var p = projHere(), reach = S.search.reach, b = '', n, ready;
-    var line = { doc: 'The words of this doc, by Part', project: 'Docs, Boards, imported files and feedback in ' + (p ? p.name : 'this Project'), all: 'Every Project, the Notebook and Unfiled' }[reach];
+    var line = { doc: 'The words of this doc, by Part', project: 'Docs, Boards, imported files and feedback', all: 'Every Project, the Notebook and Unfiled' }[reach];
     /* In a split the search lies over the asset's side (Fable's proposal, not ruled). */
     var h = '<section class="menu menu-back is-search' + (S.split ? ' over-beside' : '') + '" aria-label="Search">' +
       '<div class="search-top"><button type="button" class="search-back" data-act="search-close" title="Close the search (Esc)">&lsaquo; ' + (S.search.wasOpen && !S.split ? S.back.tab.toUpperCase() : 'Close') + '</button>' +

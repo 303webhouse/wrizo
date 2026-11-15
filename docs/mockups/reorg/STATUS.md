@@ -10,7 +10,7 @@ Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his 
 
 **Two more from Nick, same sitting:** the WRIZO mark loses the lines above and below it, keeps the brass notch, and is centred over the rail; the list-or-boxes switch under the pins is smaller, left aligned and almost invisible. Both differ from the frames on purpose.
 
-**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. Asked what should still be found, he ruled: **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built as Docs, then Boards, then imported files, then feedback. What I guessed to build it is under question 1.
+**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. Asked what should still be found, he ruled: **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built as Docs, then Boards, then imported files, then feedback. What I guessed to build it is under question 1. Checked by script on the pushed page (`9ddf4691`), not by eye: no script errors; "toll" gives 7 in this doc, 17 in Thesis and 20 everywhere; the groups come as DOC, BOARD, IMPORTED, FEEDBACK; "gate" finds the scan by its name only; a found file opens beside the page.
 
 Where a slip is most likely, so the check can start there:
 
