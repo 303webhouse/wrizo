@@ -11,6 +11,8 @@ const TAG = `${THEMES[cfg.theme].label}/${cfg.flag}/${cfg.tone}/${cfg.width}`;
 const WORDS = (env.WA_WORDS || '500,5000,12000,20000').split(',').map(Number).filter((x) => x > 0);
 const INKS = env.WA_INK === '0' ? [false] : env.WA_INK === '1' ? [true] : [false, true];
 const N = Number(env.WA_KEYS || 30);
+// THE TYPEWRITER ARM (Fable, Nov 14, 7:00 pm): WA_TW=off | on | both (default both). `on` pages are the zoomed ones (data-zoom), where the ink canvas used to be a composited layer; the canvas size read at the start tells which arm ran.
+const TWS = env.WA_TW === 'off' ? ['off'] : env.WA_TW === 'on' ? ['on'] : ['off', 'on'];
 const PARA = 'The writer keeps a steady pace through the long page, and nothing slows the page down at all. ';
 const NL = String.fromCharCode(10);
 const pageText = (words) => { const per = PARA.split(' ').length - 1; const lines = []; for (let i = 0; i < Math.ceil(words / per); i += 1) lines.push(PARA.trim()); return lines.join(NL); };
@@ -24,10 +26,11 @@ await withHarness(async (app) => {
   console.log(`FW101I-HEAD [${TAG}] (${new Date().toISOString()}) words=${WORDS.join(',')} ink=${INKS.join(',')} keys=${N}`);
   await d.boot();
   const ev = d.ev;
-  for (const ink of INKS) {
+  for (const tw of TWS) for (const ink of INKS) {
     for (const words of WORDS) {
       const text = pageText(words);
-      try { await d.openFreeWrite(text, ink ? { strokes: STROKES } : {}); } catch (e) { console.log(`FW101I-ERR ink=${ink} ${words} words: ${String(e && e.message || e).slice(0, 200)}`); unreachable = true; continue; }
+      try { await d.openFreeWrite(text, { typewriter: tw, ...(ink ? { strokes: STROKES } : {}) }); } catch (e) { console.log(`FW101I-ERR tw=${tw} ink=${ink} ${words} words: ${String(e && e.message || e).slice(0, 200)}`); unreachable = true; continue; }
+      const zoom = await ev(`(() => { const z = document.querySelector('[data-zoom]'); return z ? z.getAttribute('data-zoom') : 'none'; })()`);
       await d.place(text.length); await sleep(600);
       const canvas = await ev(`(() => { const c = document.querySelector('.ink-committed'); return c ? c.width + 'x' + c.height : 'none'; })()`);
       await ev(`(() => {
@@ -40,7 +43,7 @@ await withHarness(async (app) => {
       for (let i = 0; i < N; i += 1) { await d.key('Enter'); await sleep(150); await d.type('b'); await sleep(120); }
       await sleep(500);
       const L = await ev('(() => { const L = window.__l101i; L.stop(); return { letter: L.letter, enter: L.enter }; })()');
-      const row = { theme: cfg.theme, ink, words, canvasAtStart: canvas, letter_median: pct(L.letter.slice(0, N), 0.5), letter_p95: pct(L.letter.slice(0, N), 0.95), enter_median: pct(L.enter, 0.5), enter_p95: pct(L.enter, 0.95), n: { letter: L.letter.length, enter: L.enter.length } };
+      const row = { theme: cfg.theme, tw, zoom, ink, words, canvasAtStart: canvas, letter_median: pct(L.letter.slice(0, N), 0.5), letter_p95: pct(L.letter.slice(0, N), 0.95), enter_median: pct(L.enter, 0.5), enter_p95: pct(L.enter, 0.95), n: { letter: L.letter.length, enter: L.enter.length } };
       console.log(`FW101I ${JSON.stringify(row)}`);
     }
   }
