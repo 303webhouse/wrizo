@@ -98,19 +98,15 @@ function judgeCost(cRounds, xRounds) {
 
 const CYCLE = 'the signal holds while she writes on ';
 const BLUR = '.board-canvas-blurred{filter:none!important}';
-const W = '.board-canvas-blur-wrap';
-// Fable Nov 14 5:50 pm: (1) pin down which layer holds key-to-paint (the canvases; here the ground and the motion canvas apart: the box measures them, Actions has no compositor to show a canvas's cost),
-// (2) the Wrizors' look B: the blur made ONCE when the card opens, then held still, measured against "filter off". Every Flux arm has ?flux3=1; the baseline for the B arms is NOBLUR.
+// Fable Nov 14 5:50 pm, (1): "pin down the layer that holds key-to-paint". The box (Nov 15 00:38Z) showed it is the layer's CANVASES on screen (hidden: 306 late keys -> 45); Actions cannot show a canvas's cost (no compositor).
+// The layer has two canvases (the ground 1100x911 first, the motion 792x795 second, a third 0x0 for a drag). The blur is OFF in every Flux arm but ZSHIP, so the canvases are the only variable.
 const ARMS = {
   C:       { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (as shipped: the live blur on)' },
-  ZSHIP:   { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux as shipped (the live blur on, the layer on)' },
-  NOBLUR:  { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux, filter OFF (the baseline B is measured against)' },
-  BWILL:   { theme: 'flux', flag: true, scale: 1, css: `${W}{will-change:filter,opacity}`, what: 'the live blur, the wrap promoted (will-change: filter, opacity)' },
-  BTRANS:  { theme: 'flux', flag: true, scale: 1, css: `${W}{transform:translateZ(0)}`, what: 'the live blur, the wrap on its own layer (translateZ(0))' },
-  BPAINT:  { theme: 'flux', flag: true, scale: 1, css: `${W}{contain:paint;isolation:isolate}`, what: 'the live blur, the wrap painted in isolation (contain:paint; isolation)' },
-  BIMG:    { theme: 'flux', flag: true, scale: 1, css: '', snap: true, what: 'LOOK B, as a bound: the blurred board captured ONCE after the card opens and laid over the hidden live board as one static image' },
-  LNOGCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(1){display:none!important}`, what: 'filter off + the layer\'s FIRST canvas (the ground) hidden' },
-  LNOMCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(2){display:none!important}`, what: 'filter off + the layer\'s SECOND canvas (the motion) hidden' },
+  ZSHIP:   { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux as shipped (the live blur on, both canvases on)' },
+  NOBLUR:  { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux, filter OFF, both canvases on (the baseline the canvas arms are measured against)' },
+  LNOGCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(1){display:none!important}`, what: 'filter off + the layer\'s FIRST canvas (the ground, 1100x911) hidden' },
+  LNOMCV:  { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas:nth-child(2){display:none!important}`, what: 'filter off + the layer\'s SECOND canvas (the motion, the links) hidden' },
+  LNOBOTH: { theme: 'flux', flag: true, scale: 1, css: `${BLUR}[data-flux3-layer] canvas{display:none!important}`, what: 'filter off + BOTH canvases hidden (the box\'s 306 -> 45 arm)' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
