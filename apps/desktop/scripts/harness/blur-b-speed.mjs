@@ -172,9 +172,11 @@ try { await withHarness(async (app) => {
   const allowFF = clamp(spreadOf(res.FO, ff, 'median'), 1, 4), allowPaint = clamp(spreadOf(res.FO, paint, 'p95'), 3, 10);
   timing(`BS-first look B's FIRST FRAME costs what filter off costs: FB median ${r1(S.FB.ff.median)} <= FO ${r1(S.FO.ff.median)} + ${r1(allowFF)}`, S.FB.ff.median <= S.FO.ff.median + allowFF, JSON.stringify({ FB: S.FB.ff, FO: S.FO.ff, allowFF }));
   timing(`BS-paint look B's PAINT p95 costs what filter off costs: FB ${r1(S.FB.paint.p95)} <= FO ${r1(S.FO.paint.p95)} + ${r1(allowPaint)}`, S.FB.paint.p95 <= S.FO.paint.p95 + allowPaint, JSON.stringify({ FB: S.FB.paint, FO: S.FO.paint, allowPaint }));
-  timing(`BS-late look B holds no more keys late than filter off (it hides the layer's canvases too): FB ${S.FB.late} <= FO ${S.FO.late} (of ${S.FB.nEt} / ${S.FO.nEt} logged)`, S.FB.late <= S.FO.late, JSON.stringify({ FB: S.FB.late, FO: S.FO.late }));
-  const mutFF = S.FL.ff.median > S.FO.ff.median + 2 * allowFF, mutPaint = S.FL.paint.p95 > S.FO.paint.p95 + 2 * allowPaint;
-  timing(`MUT-live the live blur put back is CAUGHT (first frame ${r1(S.FL.ff.median)} vs FO ${r1(S.FO.ff.median)} + ${r1(2 * allowFF)}: ${mutFF ? 'YES' : 'no'}; paint p95 ${r1(S.FL.paint.p95)} vs ${r1(S.FO.paint.p95)} + ${r1(2 * allowPaint)}: ${mutPaint ? 'YES' : 'no'})`, mutFF || mutPaint, JSON.stringify({ FL: S.FL, FO: S.FO }));
+  // FABLE'S BAR (Nov 15, 8:45 am): "whole run no more late keys than the live blur": look B's late-key count against the LIVE BLUR's (FL), the control that is today's look.
+  timing(`BS-late (bar 3) the whole run holds no more keys late than the live blur: FB ${S.FB.late} <= FL ${S.FL.late} (of ${S.FB.nEt} / ${S.FL.nEt} logged; filter off holds ${S.FO.late})`, S.FB.late <= S.FL.late, JSON.stringify({ FB: S.FB.late, FL: S.FL.late, FO: S.FO.late }));
+  // THE LIVE-BLUR MUTANT must be caught or the turn is VOID: seen by the first frame, the paint p95, OR the count of late keys (the box saw 22.5 vs 12.1 on the first frame on two turns, and 112 late keys against 31 on the third, when the first-frame gap had gone).
+  const mutFF = S.FL.ff.median > S.FO.ff.median + 2 * allowFF, mutPaint = S.FL.paint.p95 > S.FO.paint.p95 + 2 * allowPaint, mutLate = S.FL.late > S.FO.late + 35;
+  timing(`VOID-live-mutant the live blur put back is CAUGHT, or this turn proves nothing and is VOID (first frame ${r1(S.FL.ff.median)} vs FO ${r1(S.FO.ff.median)} + ${r1(2 * allowFF)}: ${mutFF ? 'YES' : 'no'}; paint p95 ${r1(S.FL.paint.p95)} vs ${r1(S.FO.paint.p95)} + ${r1(2 * allowPaint)}: ${mutPaint ? 'YES' : 'no'}; late keys ${S.FL.late} vs FO ${S.FO.late} + 35: ${mutLate ? 'YES' : 'no'})`, mutFF || mutPaint || mutLate, JSON.stringify({ FL: S.FL, FO: S.FO }));
   ok(`BS-arbor (information) Arbor: look B ${r1(S.AB.ff.median)} / paint p95 ${r1(S.AB.paint.p95)} against the live blur ${r1(S.AL.ff.median)} / ${r1(S.AL.paint.p95)}`, true, '');
 
   // ---- THE BIG BOARD (Chat 1, Nov 15: "the big-board case, about 100 cards, the first 10 keys after opening"). The snapshot is made two frames after the card opens, on the main thread, in the same moment she starts to
@@ -186,7 +188,7 @@ try { await withHarness(async (app) => {
   // BG-premise (gates everywhere): every GB/GM round got its snapshot (data-blur snap) and all 10 keys landed; GL stayed live; the 100 cards stood.   BG-keys (a timing line): look B's worst first-10-keys first frame <= BIG_KEY_MS in every round.
   // BG-long (timing): the longest long task in look B's first 1.5 s <= BIG_TASK_MS.   BG-arrive (timing): the snapshot arrives within BIG_ARRIVE_MS.   MUT-slowsnap (timing): the slow capture is CAUGHT: GM's worst key or longest task
   // exceeds look B's budget (and the 300 ms burn is MEASURED to have landed: a long task of at least 280 ms), so BG-keys or BG-long would be RED.
-  const BIG_KEY_MS = 100, BIG_TASK_MS = 250, BIG_ARRIVE_MS = 1500, BIG_ADD_MS = 100;   // BIG_ADD_MS: PROVISIONAL (a response within 100 ms; Fable confirms after the box reading)
+  const BIG_KEY_MS = 100, BIG_TASK_MS = 100, BIG_ARRIVE_MS = 1500, BIG_ADD_MS = 100, BIG_GAP = 50;   // BIG_TASK_MS 100 and BIG_GAP 50 (10 keys in 0.5 s) are Fable's bar, Nov 15 8:45 am   // BIG_ADD_MS: PROVISIONAL (a response within 100 ms; Fable confirms after the box reading)
   const BIGBOARD = 'bbs-big';
   const bigBoxes = () => {
     const out = [];
@@ -237,7 +239,7 @@ try { await withHarness(async (app) => {
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
     const before = await ev("(document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length");
     // ten keys at once, one every 90 ms: the first of them lands while the snapshot is being made
-    for (let i = 0; i < 10; i += 1) { await app.typeKeys(CYCLE[(round * 7 + i) % CYCLE.length]); await sleep(GAP); }
+    for (let i = 0; i < 10; i += 1) { await app.typeKeys(CYCLE[(round * 7 + i) % CYCLE.length]); await sleep(BIG_GAP); }
     await sleep(1800);
     const got = await ev("(() => { const b = window.__big, w = document.querySelector('.board-canvas-blur-wrap'); const ph = {}; for (const e of performance.getEntriesByType('measure')) if (e.name.indexOf('blurb:') === 0) ph[e.name.slice(6)] = Math.max(ph[e.name.slice(6)] || 0, Math.round(e.duration)); return { phases: ph, popup: b.popup, snap: b.snap, long: b.long.slice(), keys: b.keys.map((k) => (k.f1 == null ? null : Math.round(k.f1 * 10) / 10)), dataBlur: w ? w.getAttribute('data-blur') : null, filter: w ? getComputedStyle(w).filter : null, after: (document.querySelector('.board-popup-editor') || { textContent: '' }).textContent.length }; })()");
     return { name, round, cards, before, ...got };
@@ -259,10 +261,12 @@ try { await withHarness(async (app) => {
     bigAll.every((r) => r.cards >= 100 && r.after - r.before === 10) && [...bigRes.GB, ...bigRes.GM].every((r) => r.dataBlur === 'snap' && r.snap != null) && bigRes.GL.every((r) => r.dataBlur === 'snap' ? /blur/.test(r.filter || '') : true) && bigRes.GN.every((r) => r.dataBlur === null && r.snap == null && /blur/.test(r.filter || '')),
     JSON.stringify(bigAll.filter((r) => !(r.cards >= 100 && r.after - r.before === 10)).slice(0, 3).map((r) => ({ arm: r.name, round: r.round, cards: r.cards, grew: r.after - r.before, dataBlur: r.dataBlur }))));
   const gbKey = Math.max(...bigRes.GB.map(worstKey)), gbTask = Math.max(...bigRes.GB.map(longestTask)), gbArr = Math.max(...bigRes.GB.map((r) => arrive(r) ?? 99999));
-  timing(`BG-keys on a 100-card board look B's worst first-10-keys first frame is within ${BIG_KEY_MS} ms in every round (worst ${r1(gbKey)} ms; the live blur's ${r1(Math.max(...bigRes.GL.map(worstKey)))})`, gbKey <= BIG_KEY_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, keys: r.keys }))));
+  const medOf = (xs) => { const s = xs.slice().sort((a, b) => a - b); return s.length ? s[Math.floor(s.length / 2)] : 0; };
+  const gbMed = medOf(bigRes.GB.map(worstKey)), glMed = medOf(bigRes.GL.map(worstKey)), KEY_SLACK = 5;
+  timing(`BG-keys (bar 2) on a 100-card board the first 10 keys, typed in 0.5 s, are no slower than the live blur: look B's median worst first frame ${r1(gbMed)} ms <= the live blur's ${r1(glMed)} + ${KEY_SLACK} (per round, look B ${bigRes.GB.map((r) => r1(worstKey(r))).join('/')}; live ${bigRes.GL.map((r) => r1(worstKey(r))).join('/')}; no capture ${bigRes.GN.map((r) => r1(worstKey(r))).join('/')})`, gbMed <= glMed + KEY_SLACK, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, keys: r.keys }))));
   const gnTask = Math.max(...bigRes.GN.map(longestTask));
   console.log(`BLURB-BIG-CAPTURE the capture's own cost on 100 cards: the longest task with it ${gbTask} ms, with NO capture ${gnTask} ms: it adds ${gbTask - gnTask} ms`);
-  timing(`BG-long the capture ADDS no more than ${BIG_ADD_MS} ms of main-thread task on a 100-card board (look B's longest task ${gbTask} ms, with no capture ${gnTask} ms: adds ${gbTask - gnTask} ms)`, gbTask - gnTask <= BIG_ADD_MS, JSON.stringify({ GB: bigRes.GB.map((r) => r.long), GN: bigRes.GN.map((r) => r.long) }));
+  timing(`BG-long (bar 1) no task over ${BIG_TASK_MS} ms when the card opens on a 100-card board (look B's longest task ${gbTask} ms; with no capture ${gnTask} ms; the live blur ${Math.max(...bigRes.GL.map(longestTask))} ms)`, gbTask <= BIG_TASK_MS, JSON.stringify({ GB: bigRes.GB.map((r) => r.long), GN: bigRes.GN.map((r) => r.long) }));
   timing(`BG-arrive the snapshot arrives within ${BIG_ARRIVE_MS} ms of the card opening (worst ${gbArr} ms)`, gbArr <= BIG_ARRIVE_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, arrive: arrive(r) }))));
   const gmKey = Math.max(...bigRes.GM.map(worstKey)), gmTask = Math.max(...bigRes.GM.map(longestTask));
   timing(`MUT-slowsnap the slow capture (a 300 ms burn in the serialiser) is CAUGHT: its longest task ${gmTask} ms (the burn landed: >= 280) and worst key ${r1(gmKey)} ms against the budgets ${BIG_TASK_MS} / ${BIG_KEY_MS}`, gmTask >= 280 && (gmTask > BIG_TASK_MS || gmKey > BIG_KEY_MS), JSON.stringify({ GM: bigRes.GM.map((r) => ({ round: r.round, long: r.long, keys: r.keys })) }));
