@@ -49,6 +49,12 @@ const ctrlSlash = async (app) => { for (const type of ['keyDown', 'keyUp']) awai
 const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()");
 const setView = async (app, zoom) => {
   if ((await zoomedNow(app)) === zoom) return zoom;
+  // NO CONTROL, NO DANCE (the merge's Flux H1 red; measured by a diagnostic probe, Actions 43665717851): when the Typewriter control has no box on
+  // the page (Flux Free Write is Wire In - always zoomed, the control hidden), the writer has no way to change the view, so this does nothing and
+  // returns the view as it is (H0's successor already expects Flux zoomed). Running the steps below there moved the page under the read: the
+  // Ctrl+/ open step (taken while §12b hides the grip) scrolled 329 -> 545, the probe's scrollIntoView on the 0x0 control scrolled to 1051, and
+  // the hint was raised while the hold glided back (948) - it landed on the writing line (590 vs 425).
+  if (!(await rectOf(app, TOGGLE))) return zoomedNow(app);
   // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
   // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this trusted click on the grip
   // lands on nothing, so the drawer never opened and the view could not be left. Kept verbatim; it no longer runs:
