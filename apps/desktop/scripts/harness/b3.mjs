@@ -185,7 +185,9 @@ await withHarness(async (app) => {
       return {
         canvas: { w: canvasEl.style.width, h: canvasEl.style.height },
         preBox: document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON(),
-        blurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+        // SUPERSEDED (look B, Nick Nov 14): the board behind the wizard is blurred ONCE as a snapshot canvas two frames after it opens, and the live filter is dropped; original, verbatim:
+        // blurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+        blurred: (cs.filter !== 'none' && cs.filter.includes('blur')) || (blurWrap.getAttribute('data-blur') === 'snap' && !!blurWrap.querySelector('.board-blur-snap-slot canvas')),
         opacity: parseFloat(cs.opacity),
       };
     })()`);

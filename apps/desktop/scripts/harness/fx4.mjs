@@ -419,7 +419,9 @@ await withHarness(async (app) => {
     const cs = getComputedStyle(blurWrap);
     return {
       popupPresent: !!document.querySelector('.board-popup'),
-      filterBlurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+      // SUPERSEDED (look B, Nick Nov 14): the board behind the popup is blurred ONCE as a snapshot canvas two frames after it opens, and the live filter is dropped; original, verbatim:
+      // filterBlurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+      filterBlurred: (cs.filter !== 'none' && cs.filter.includes('blur')) || (blurWrap.getAttribute('data-blur') === 'snap' && !!blurWrap.querySelector('.board-blur-snap-slot canvas')),
       opacity: parseFloat(cs.opacity),
       activeIsEditor: document.activeElement.className.includes('board-popup-editor'),
       hasTypewriter: !!document.querySelector('.board-popup [class*="typewriter"], .board-popup [data-typewriter]'),
