@@ -153,12 +153,12 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       wrap.removeEventListener('touchcancel', onTouchEnd);
       ro?.disconnect();
       delete w.wrizoFluxZoomTo;
+      cv.style.removeProperty('transition');   // (before the lines flux-zoom1.mjs's keepForgets mutant anchors on: the cleanup's tail `unregHome, unsub, keep, setBoardScale(1), paint` stays as it was)
       unregHome();
       unsub();
       keepBoardScale(boardId, getBoardScale());   // the session remembers it (memory only, never storage); a reload forgets
       setBoardScale(1);   // the live scale is 1 wherever no Schema is mounted
       paint();
-      cv.style.removeProperty('transition');
     };
   }, [wrapRef, canvasRef, boardId]);
 }
