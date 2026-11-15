@@ -93,8 +93,8 @@ try { await withHarness(async (app) => {
     await sleep(700);
     const open = await ev(STATE);
     const wrapRect = await rectOfWrap();
-    ok(`BB1 [${T}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot at least the wrap's size (${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h} vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
-      snapped && open && open.dataBlur === 'snap' && open.canvas && open.canvas.w >= wrapRect.w && open.canvas.h >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
+    ok(`BB1 [${T}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot laid out at least the wrap's size (its layout ${open && open.canvas && open.canvas.css}, backing ${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h}, vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
+      snapped && open && open.dataBlur === 'snap' && open.canvas && parseFloat(open.canvas.css) >= wrapRect.w && parseFloat(String(open.canvas.css).split('x')[1]) >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
     ok(`BB3 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open and snapped`,
       JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
 

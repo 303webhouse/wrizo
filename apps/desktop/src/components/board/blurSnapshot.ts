@@ -154,20 +154,25 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
     await yieldMain();
     if (shouldStop()) return null;
+    // the SVG goes in as a BLOB URL, not a data URL: encodeURIComponent over a multi-megabyte string was one more long task, and a blob is handed to the image as it is
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
     const img = new Image();
     img.decoding = 'async';
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-    await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
+    img.src = url;
+    try {
+      await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
+    } finally { URL.revokeObjectURL(url); }
     if (shouldStop()) return null;
-    // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap
-    const pad = Math.ceil(blurPx * 3);
+    // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap. The canvas is drawn at HALF size with half the blur radius (the blur hides what the half size loses)
+    // and shown at full size: a quarter of the pixels for the CPU blur, which was the biggest single piece of the capture left after the slicing
+    const pad = Math.ceil(blurPx * 3), S = 0.5;
     const canvas = document.createElement('canvas');
-    canvas.width = w + 2 * pad; canvas.height = h + 2 * pad;
+    canvas.width = Math.ceil((w + 2 * pad) * S); canvas.height = Math.ceil((h + 2 * pad) * S);
     canvas.style.cssText = `position:absolute;display:block;left:${-pad}px;top:${-pad}px;width:${w + 2 * pad}px;height:${h + 2 * pad}px;`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
-    (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx}px)`;
-    ctx.drawImage(img, pad, pad, w, h);
+    (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx * S}px)`;
+    ctx.drawImage(img, pad * S, pad * S, w * S, h * S);
     return canvas;
   } catch {
     return null;
