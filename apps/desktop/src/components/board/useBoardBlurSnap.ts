@@ -16,7 +16,7 @@ export function useBoardBlurSnap(active: boolean) {
       raf = requestAnimationFrame(() => {
         const wrap = wrapRef.current;
         if (!wrap) return;
-        void snapshotBlurred(wrap).then((canvas) => {
+        void snapshotBlurred(wrap, 6, () => cancelled).then((canvas) => {
           const slot = slotRef.current, w = wrapRef.current;
           if (cancelled || !canvas || !slot || !w) return;
           slot.replaceChildren(canvas);

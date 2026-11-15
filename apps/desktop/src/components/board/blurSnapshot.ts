@@ -54,18 +54,40 @@ function pseudo(o: Element, c: Element): void {
   }
 }
 
-function walk(o: Element, c: Element, scrolls: Array<{ c: Element; left: number; top: number; w: number; h: number }>): void {
+type Scroll = { c: Element; left: number; top: number; w: number; h: number };
+
+// TIME-SLICED (Nov 15; the first big-board reading on Actions, 100 cards: the capture was ONE main-thread task of 245-261 ms right after the card opened, a felt pause): the work is done in slices of about SLICE_MS with a yield between
+// them, so a key she types in those moments is handled between slices, never behind a quarter of a second. The two trees are paired by position in ONE synchronous pass at the start (a flat list each), so a card that re-renders while
+// the slices wait (the popup commits every key into the board) cannot make the walk lose its place. `shouldStop` (the popup closed) ends the work between slices.
+const SLICE_MS = 10, DEADLINE_MS = 6000;
+const yieldMain = (): Promise<void> => new Promise((r) => { setTimeout(r, 0); });
+
+// a canvas becomes an image of what it shows now; a big one is drawn at half size first (the blur is six pixels: nothing the half size lost can show, and the PNG is a quarter of the work)
+function canvasUrl(o: HTMLCanvasElement): string {
+  try {
+    if (o.width * o.height > 250000) {
+      const t = document.createElement('canvas');
+      t.width = Math.max(1, o.width >> 1); t.height = Math.max(1, o.height >> 1);
+      const x = t.getContext('2d');
+      if (x) { x.drawImage(o, 0, 0, t.width, t.height); return t.toDataURL('image/png'); }
+    }
+    return o.toDataURL('image/png');
+  } catch { return ''; }   // a tainted canvas draws nothing
+}
+
+// ONE element: its computed style onto its clone, a replaced element turned into an image, a scroll offset noted. False when the element, and with it its whole subtree, is dropped.
+function paintOne(o: Element, c: Element, scrolls: Scroll[]): boolean {
   const cs = getComputedStyle(o);
-  if (cs.display === 'none') { c.remove(); return; }
-  // a replaced element becomes an image of what it shows now
+  if (cs.display === 'none') { c.remove(); return false; }
   if (o instanceof HTMLCanvasElement) {
     const img = document.createElement('img');
-    try { img.setAttribute('src', o.toDataURL('image/png')); } catch { /* a tainted canvas draws nothing */ }
+    const u = canvasUrl(o);
+    if (u) img.setAttribute('src', u);
     inline(o, img);
     c.replaceWith(img);
-    return;
+    return true;
   }
-  if (o instanceof HTMLVideoElement || o instanceof HTMLIFrameElement || o instanceof HTMLObjectElement || o instanceof HTMLEmbedElement) { c.remove(); return; }
+  if (o instanceof HTMLVideoElement || o instanceof HTMLIFrameElement || o instanceof HTMLObjectElement || o instanceof HTMLEmbedElement) { c.remove(); return false; }
   inline(o, c);
   // a scroll box draws no scrollbar in the snapshot (the live blur never showed one at this strength; the first frames showed a pale thumb)
   if (/(auto|scroll)/.test(cs.overflowX + cs.overflowY)) { (c as HTMLElement).style.overflow = 'hidden'; }
@@ -83,25 +105,39 @@ function walk(o: Element, c: Element, scrolls: Array<{ c: Element; left: number;
   if (o instanceof HTMLElement && (o.scrollLeft > 0 || o.scrollTop > 0) && /(auto|scroll|hidden)/.test(cs.overflowX + cs.overflowY)) {
     scrolls.push({ c, left: o.scrollLeft, top: o.scrollTop, w: o.scrollWidth, h: o.scrollHeight });
   }
-  const oc = Array.from(o.children), cc = Array.from(c.children);   // (taken before the pseudo-elements are added, so the two lists still line up)
   pseudo(o, c);
-  for (let i = 0; i < oc.length; i += 1) if (cc[i]) walk(oc[i], cc[i], scrolls);
+  return true;
 }
 
-export async function snapshotBlurred(src: HTMLElement, blurPx = 6): Promise<HTMLCanvasElement | null> {
+export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: () => boolean = () => false): Promise<HTMLCanvasElement | null> {
   try {
     const probe = document.createElement('canvas').getContext('2d');
     if (!probe || !('filter' in probe)) return null;   // no ctx.filter (an older Safari): keep the live blur
     const r = src.getBoundingClientRect();
     const w = Math.round(r.width), h = Math.round(r.height);
     if (w < 8 || h < 8) return null;
+    const started = performance.now();
     const clone = src.cloneNode(true) as HTMLElement;
-    const scrolls: Array<{ c: Element; left: number; top: number; w: number; h: number }> = [];
+    // the two trees, paired by position, in one synchronous pass (the slices below may wait while the board re-renders)
+    const O: Element[] = [src, ...Array.from(src.querySelectorAll('*'))];
+    const C: Element[] = [clone, ...Array.from(clone.querySelectorAll('*'))];
+    if (O.length !== C.length) return null;
+    const scrolls: Scroll[] = [];
+    const gone = new Set<Element>();
     // the root is the wrap itself: drawn at full strength and still (its own dim and blur are the live treatment this replaces)
-    const oc = Array.from(src.children), cc = Array.from(clone.children);
     inline(src, clone);
     pseudo(src, clone);
-    for (let i = 0; i < oc.length; i += 1) if (cc[i]) walk(oc[i], cc[i], scrolls);
+    let sliceStart = performance.now();
+    for (let i = 1; i < O.length; i += 1) {
+      const c = C[i], parent = c.parentElement;
+      if (parent && gone.has(parent)) { gone.add(c); continue; }
+      if (!paintOne(O[i], c, scrolls)) gone.add(c);
+      if (performance.now() - sliceStart > SLICE_MS) {
+        await yieldMain();
+        if (shouldStop() || performance.now() - started > DEADLINE_MS) return null;
+        sliceStart = performance.now();
+      }
+    }
     for (const s of scrolls) {
       // a scrolled box: its contents move up and left by what it scrolled, inside a clipped box of its own size
       const inner = document.createElement('div');
@@ -112,12 +148,17 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6): Promise<HTM
       if (!(s.c as HTMLElement).style.position || (s.c as HTMLElement).style.position === 'static') (s.c as HTMLElement).style.position = 'relative';
     }
     clone.style.cssText += `;opacity:1;filter:none;transition:none;animation:none;margin:0;position:relative;left:0;top:0;width:${w}px;height:${h}px;overflow:hidden;visibility:visible;`;
+    await yieldMain();
+    if (shouldStop()) return null;
     const xhtml = new XMLSerializer().serializeToString(clone);
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
+    await yieldMain();
+    if (shouldStop()) return null;
     const img = new Image();
     img.decoding = 'async';
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
+    if (shouldStop()) return null;
     // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap
     const pad = Math.ceil(blurPx * 3);
     const canvas = document.createElement('canvas');
