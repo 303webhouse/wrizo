@@ -4,7 +4,7 @@ One line for each thing the brief does not state. Each is a best guess, tagged o
 
 After milestone 5 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen; a Board on its own).
 
-The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 78, 86, 94, 97) was answered by Fable and has moved to one of the two lists below. Lines 110 to 130 are milestone 4's, 132 on are milestone 5's.
+The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 76, 78, 86, 94, 97) was answered by Fable or by Nick and has moved to one of the two lists below. Lines 110 to 130 are milestone 4's, 132 on are milestone 5's.
 
 ## Answered by Fable on Nov 14, so no longer on this list
 
@@ -27,7 +27,8 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 - **The WRIZO mark** has no lines above or below it, keeps its brass notch, and is centred over the rail's 84 px. (The frames draw the two lines and set the mark 16 px from the left edge.)
 - **The switch between pins as a list and as boxes** is smaller, left aligned and almost invisible. Built: two 10 px marks in a grey close to the rail's own, the one in use a shade lighter, with no box round it. That they light up under the pointer or the keyboard is mine.
 - **The search has one row of scope tabs:** THIS DOC, THIS PROJECT, EVERYTHING. The second row (PLAN, ASSETS, FEEDBACK) is gone: "unnecessary". This replaces Fable's answer 1 of the same day ("keep the two rows as two separate choices"). What follows from it is at 74.
-- **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built: Docs, then Boards, then imported files, then feedback. What I had to guess to build it is at 74 to 76.
+- **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built: Docs, then Boards, then imported files, then feedback. What I had to guess to build it is at 74, 75 and 150.
+- **EVERYTHING keeps a head for each Project,** then the Notebook, then Unfiled, and sorts by type under each head ("that's fine"). It was line 76.
 - **"Connect Doc"** stands on the left, after the Board's name and place; once the Board has a Doc it stays as a plus sign in a square box, and its list has recent Docs first on a scroll, then "A new doc" (133, 144).
 
 ## PROPOSED (Fable's proposals, built and tagged PROPOSED)
@@ -142,7 +143,6 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 73. **A line under the scope tabs** says what the scope she is on looks in.
 74. **What goes with the second row.** "The scope that matches the tab she came from" is now: from ASSETS, THIS PROJECT, where the assets are; from PLAN and FEEDBACK, THIS DOC. The brief's "from ASSETS: assets in this Project" has no scope of its own any more. THIS DOC still looks only in the words of the Doc she is in, by Part, as frame P3-26A draws: its own assets and feedback are found from THIS PROJECT. A row of the plan is not found as such (it is a Block, so its Block is found).
 75. **"Sorted by asset type", as built.** Each group's head starts with its type, and the groups come in this order: DOC (one group for each Doc), BOARD (one for each Board), IMPORTED (one for each file), FEEDBACK (one for each Doc it is on). The order of the four is mine, set by the frame's Docs-then-Boards. There is no separate head over each type. A Board found by its own name gets a row "Board: name" at the top of its group; a file found by its name gets a row "PDF: name".
-76. **What EVERYTHING lists:** the same four types, sorted the same way, under a head for each Project, then the Notebook, then Unfiled. That it keeps the Project heads, instead of one list by type across every Project, is a guess. The frame names the tab and draws nothing for it.
 77. **THIS PROJECT finds more than the frame counts.** "toll" finds 17 in Thesis where frame P3-26A2 counts 12: a Block is found by its name as well as its words (the Block "Toll totals by year"), and Nick's ruling adds three lines inside imported files and one line of feedback.
 150. **"If readable."** (New on Nov 14; numbered 150 because 78 is an answered number.) An imported file that can be read is searched by its name and by its words; a row from inside it reads "p. 12 · …" with the found word marked. A file that cannot be read (a scan) is found by its name only, and its row says "a scan, found by its name only". Invented: which file is a scan ("Plan of the north gate, 1889", now marked "a scan" in the ASSETS tab), and the few lines of words inside the other three. A line with the word twice counts once.
 79. **Leaving the search:** the link at its head ("‹ ASSETS", the tab she came from, or "‹ Close"), Esc, the top bar's button again, or the Back menu's handle (which closes the menu too). The Back menu comes back as it was: on its tab, or closed. The word she searched is forgotten. *(Fable, Nov 14: stays, still NOT RULED.)*

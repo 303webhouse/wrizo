@@ -741,9 +741,8 @@
     for (var i = 0; i < REACH.length; i++) { if (REACH[i][0] === reach) { return REACH[i][1]; } }
     return '';
   }
-  /* Ruled: what THIS DOC (P3-26A) and THIS PROJECT (P3-26A2, and Nick on Nov 14) look in. EVERYTHING looks
-     in the same; that it lists them under a head for each Project is a guess. */
-  function reachRuled(reach) { return reach !== 'all'; }
+  /* Ruled, all three: what THIS DOC (P3-26A) and THIS PROJECT (P3-26A2, and Nick on Nov 14) look in, and
+     that EVERYTHING looks in the same under a head for each Project (Nick, Nov 14). */
   function isHere(pid, did) { return (pid || null) === (S.here.project || null) && did === S.here.doc; }
 
   /* Where q is in text: upper and lower case alike, no two overlapping. */
@@ -941,7 +940,7 @@
     REACH.forEach(function (s) {
       h += '<button type="button" class="scope" data-act="reach" data-id="' + s[0] + '" aria-pressed="' + (s[0] === reach) + '"' + (reachOk(s[0]) ? '' : ' disabled title="You are in no Project"') + '>' + s[1] + '</button>';
     });
-    h += '</div><div class="scope-line"><span class="grow">' + esc(line) + '</span>' + (reachRuled(reach) ? '' : tag('NOT RULED')) + '</div></div>';
+    h += '</div><div class="scope-line"><span class="grow">' + esc(line) + '</span></div></div>';
 
     /* Find and Replace: offered only once the search has found something in the Doc she is in
        (and kept while there is a replace to undo). */
@@ -1448,7 +1447,7 @@
       say('RULED', 'D \u00b7 The search menu, one row of scope tabs: THIS DOC, THIS PROJECT, EVERYTHING (no second row: Nick, Nov 14)');
       if (S.search.reach === 'doc') { say('RULED', 'the words of THIS DOC (results as P3-26A)'); }
       else if (S.search.reach === 'project') { say('RULED', 'THIS PROJECT, by type: Docs and Boards (results as P3-26A2), then imported files and feedback (Nick, Nov 14)'); }
-      else { say('RULED', 'EVERYTHING finds the same four types (Nick, Nov 14)'); say('NOT RULED', 'that EVERYTHING lists them under a head for each Project'); }
+      else { say('RULED', 'EVERYTHING finds the same four types, under a head for each Project (Nick, Nov 14)'); }
       if (S.search.reach !== 'doc') { say('NOT RULED', 'how the rows of an imported file and of feedback look; which file is a scan'); }
       if (S.split) { say('NOT RULED', 'in a split the search lies over the asset\u2019s side (Fable\u2019s proposal)'); }
       if (S.search.replaceOpen && R && (R.here.length || S.search.undo.length)) {

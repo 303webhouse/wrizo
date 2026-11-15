@@ -74,9 +74,8 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 
 ## Questions for Fable
 
-1. **The one-row search** (Nick, Nov 14: no second row; THIS PROJECT and EVERYTHING find Docs, Boards, imported files if readable, and feedback, sorted by asset type). Four guesses in how it is built (`NOT-RULED.md`, 74 to 77 and 150):
+1. **The one-row search** (Nick, Nov 14: no second row; THIS PROJECT and EVERYTHING find Docs, Boards, imported files if readable, and feedback, sorted by asset type). Nick also ruled that EVERYTHING keeps a head for each Project and sorts by type under it. Three guesses are left in how it is built (`NOT-RULED.md`, 74, 75, 77 and 150):
    - **The order of the types:** Docs, Boards, imported files, feedback. Each group's head starts with its type; there is no separate head over each type.
-   - **EVERYTHING keeps a head for each Project** and sorts by type under it, instead of one list by type across every Project.
    - **THIS DOC is unchanged:** the words of the Doc she is in, by Part. Its own assets and feedback are found from THIS PROJECT.
    - **"If readable":** a file that cannot be read is found by its name only and its row says so. Which file is a scan, and the lines inside the others, are made up.
 2. **Closing the page's side of a split.** With a Board beside the page it now leaves the Board on its own. For a Block or an imported file the brief has no such screen: what should be left?
