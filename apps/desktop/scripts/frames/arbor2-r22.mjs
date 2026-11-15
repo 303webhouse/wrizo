@@ -357,9 +357,15 @@ const screens = {
       // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret2: m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' : m.caret === m.ink, back },
       // SUCCESSOR caret3: the dark page's caret brass in both rooms; by night the light page is page-less (no light page) and its caret is the words'
       // ink with nothing drawn; by day the light page's native caret is transparent under the drawn edged caret (its pixels are r22-light-caret-tw's).
-      const caret3 = m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' && !m.drawn
-        : room === 'night' ? m.caret === m.ink && !m.drawn : /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(m.caret) && m.drawn;
-      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret3, back },
+      // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page"; by day the light page's caret is no longer transparent under a drawn one). Original, verbatim:
+      // const caret3 = m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' && !m.drawn
+      // : room === 'night' ? m.caret === m.ink && !m.drawn : /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(m.caret) && m.drawn;
+      // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret3, back },
+      // SUCCESSOR caret4: the dark page's caret brass in both rooms; by night the light page is page-less and its caret is the words' ink; by day the
+      // light page's caret is the browser's own in the page ink #241A10. Nothing drawn in any case.
+      const caret4 = m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' && !m.drawn
+        : room === 'night' ? m.caret === m.ink && !m.drawn : m.caret === 'rgb(36, 26, 16)' && !m.drawn;
+      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret4, back },
         z: z && { room: z.room, bare: z.bare, sheet: z.sheet, vignette: z.vignette, inkOk: z.inkOk, sheetOn: z.sheetOn, sheetBg: z.sheetBg, ink: z.ink, want: z.want, vMask: z.vMask }, page: m.page, ink: m.ink, caret: m.caret, px, before, after };
     }
     const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
@@ -610,11 +616,25 @@ const screens = {
   'r22-light-caret': async (app) => lightCaret(app, 'r22-light-caret', 'draft'),
   // the caret as the product shows it - no test sheet (r22-light-caret holds the blink lit for its pixel read): it draws and it blinks
   'r22-light-caret-blink': async (app) => caretBlinkCheck(app, 'r22-light-caret-blink'),
+  // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page": there is no drawn caret to hide). Original, verbatim:
+  //   'r22-light-caret-blink-mutant': async (app) => {
+  //     const r = await caretBlink(app, 'r22-light-caret-blink-mutant', true); if (!r) return;
+  //     const ok = { landed: !!r.at && r.at.shown === false, red: r.lit === 0 };
+  //     if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, r });
+  //     say('r22-light-caret-blink-mutant', { ok, r });
+  //   },
+  // SUCCESSOR (the same screen name): the native caret hidden as the drawn caret used to hide it (caret-color transparent, a test-only sheet, asserted
+  // LANDED) - r22-light-caret-blink's successor read (the light page's native caret is the page ink) must go RED on it.
   'r22-light-caret-blink-mutant': async (app) => {
-    const r = await caretBlink(app, 'r22-light-caret-blink-mutant', true); if (!r) return;
-    const ok = { landed: !!r.at && r.at.shown === false, red: r.lit === 0 };
-    if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, r });
-    say('r22-light-caret-blink-mutant', { ok, r });
+    await openPage(app, `arbor-r22-blinkm-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day');
+    if (await app.evalJs("document.documentElement.getAttribute('data-page') === 'dark'")) { say('r22-light-caret-blink-mutant', { skipped: 'the dark page: its caret is brass (C2)' }); return; }
+    await app.evalJs(caretEnd); await sleep(500);
+    await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut2'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
+    const nat = await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return ed ? getComputedStyle(ed).caretColor : null; })()");
+    await app.evalJs("document.getElementById('r22-blink-mut2')?.remove()");
+    const ok = { landed: /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(String(nat)), red: rgbOf(nat).join() !== EDGE.join() };
+    if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, nat });
+    say('r22-light-caret-blink-mutant', { ok, nat });
   },
   'r22-light-caret-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await lightCaret(app, 'r22-light-caret-2000', 'draft'); },
   'r22-light-caret-tw': async (app) => lightCaret(app, 'r22-light-caret-tw', 'tw'),
@@ -698,9 +718,15 @@ const caretBlink = async (app, name, mutant) => {
 const caretBlinkCheck = async (app, name) => {
   const r = await caretBlink(app, name, false); if (!r) return;
   const bad = [];
-  if (!r.at || !r.at.shown) bad.push('no drawn caret');
-  if (r.lit < 1) bad.push(`no shot showed the edged caret lit (${r.n} shots)`);
-  if (r.bare < 1) bad.push(`no shot showed it off - it did not blink (${r.n} shots)`);
+  // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page" (src/arbor2/edgedCaret.tsx removed; box A/B Nov 15: it cost 3 steady keys over 40 ms)). Kept verbatim; no longer run:
+  // if (!r.at || !r.at.shown) bad.push('no drawn caret');
+  // if (r.lit < 1) bad.push(`no shot showed the edged caret lit (${r.n} shots)`);
+  // if (r.bare < 1) bad.push(`no shot showed it off - it did not blink (${r.n} shots)`);
+  // SUCCESSOR: no drawn caret, and the light page's native caret (the browser's own, which blinks as the browser blinks it) is the page ink #241A10.
+  const nat = await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return ed ? getComputedStyle(ed).caretColor : null; })()");
+  if (r.at) bad.push('a drawn caret is back');
+  if (rgbOf(nat).join() !== EDGE.join()) bad.push(`the light page's native caret is ${nat}, not the page ink #241A10`);
+  r.native = nat;
   if (bad.length) fail(name, { bad, r });
   say(name, r);
 };
@@ -715,15 +741,22 @@ const lightCaret = async (app, name, where) => {
     const light = c.tone !== 'dark' && !(c.zoom && c.room === 'night');
     const paper = c.px?.paper, beside = c.px?.beside, cols = c.px?.cols;
     if (light) {
-      if (!c.drawn || Math.round(c.drawn.w) !== 4 || c.drawn.h < 10) bad.push(`${room}: no 4 px drawn caret`);
-      if (c.active !== 'true' || !transparentCaret(c.native)) bad.push(`${room}: the native caret still shows (${c.native})`);
-      if (!cols || !near3(cols[0], EDGE) || !near3(cols[3], EDGE)) bad.push(`${room}: the edge is not the page ink`);
-      if (!cols || !near3(cols[1], BRASS) || !near3(cols[2], BRASS)) bad.push(`${room}: the core is not brass`);
-      c.edgeOnPaper = cols && beside ? Math.round(contrast(cols[0], beside) * 100) / 100 : null;
-      c.edgeOnBrass = cols ? Math.round(contrast(cols[0], cols[1]) * 100) / 100 : null;
-      if (!(c.edgeOnPaper >= 3)) bad.push(`${room}: edge on paper ${c.edgeOnPaper}`);
-      if (!c.drawn || c.endX == null || Math.abs(c.drawn.l + 1 - c.endX) > 2) bad.push(`${room}: drawn at x ${c.drawn && c.drawn.l + 1}, the words end at ${c.endX}`);
-      if (!(c.edgeOnBrass >= 3)) bad.push(`${room}: edge on brass ${c.edgeOnBrass}`);
+      // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page" (src/arbor2/edgedCaret.tsx removed; box A/B Nov 15: it cost 3 steady keys over 40 ms)). The drawn caret's
+      // nine assertions, kept verbatim; they no longer run:
+      // if (!c.drawn || Math.round(c.drawn.w) !== 4 || c.drawn.h < 10) bad.push(`${room}: no 4 px drawn caret`);
+      // if (c.active !== 'true' || !transparentCaret(c.native)) bad.push(`${room}: the native caret still shows (${c.native})`);
+      // if (!cols || !near3(cols[0], EDGE) || !near3(cols[3], EDGE)) bad.push(`${room}: the edge is not the page ink`);
+      // if (!cols || !near3(cols[1], BRASS) || !near3(cols[2], BRASS)) bad.push(`${room}: the core is not brass`);
+      // c.edgeOnPaper = cols && beside ? Math.round(contrast(cols[0], beside) * 100) / 100 : null;
+      // c.edgeOnBrass = cols ? Math.round(contrast(cols[0], cols[1]) * 100) / 100 : null;
+      // if (!(c.edgeOnPaper >= 3)) bad.push(`${room}: edge on paper ${c.edgeOnPaper}`);
+      // if (!c.drawn || c.endX == null || Math.abs(c.drawn.l + 1 - c.endX) > 2) bad.push(`${room}: drawn at x ${c.drawn && c.drawn.l + 1}, the words end at ${c.endX}`);
+      // if (!(c.edgeOnBrass >= 3)) bad.push(`${room}: edge on brass ${c.edgeOnBrass}`);
+      // SUCCESSOR: the light page's caret is the browser's own, in the page ink #241A10, and nothing is drawn over it (scripts/harness/arbor-native-caret.mjs
+      // holds the same with its mutants on Actions).
+      if (c.drawn) bad.push(`${room}: a drawn caret is back on the light page`);
+      if (c.active) bad.push(`${room}: an editor still carries data-arbor2-caret-active`);
+      if (rgbOf(c.native).join() !== EDGE.join()) bad.push(`${room}: the light page's native caret is ${c.native}, not the page ink #241A10`);
       if (!c.zoom && rgbOf(c.ink).join() !== EDGE.join()) bad.push(`${room}: the page ink is ${c.ink}, not #241A10`);
     } else {
       if (c.drawn) bad.push(`${room}: a drawn caret off the light page`);
