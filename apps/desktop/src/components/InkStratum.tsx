@@ -56,13 +56,15 @@ export function inkOriginY(sheet: HTMLElement, rect?: DOMRect): number {
 // page drawn at one width keeps its ink in place when the text reflows at
 // another. Called on mount, on every stroke-set change, and from the
 // ResizeObserver — existing strokes re-render correctly at any new size.
+const sizedToSheet = new WeakSet<HTMLCanvasElement>();   // #101 variant v3: the canvases that have been given the sheet's size (an empty page's canvas is left as the browser made it)
 export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElement | null, strokes: Stroke[]): void {
   if (!canvas || !sheet) return;
   // #101: a page with NO ink has nothing to paint, and sizing the canvas to the page is the expensive part: width x height of the whole sheet (40,000+ px tall on a long page), thrown away and allocated again from the ResizeObserver every
   // time the page grows by a line - every Enter - which the browser's profile showed as 23-85 ms per Enter in `setTransform`. With no strokes the canvas is one pixel (the CSS box stretches it; it is blank either way) and is not touched again.
-  if (strokes.length === 0) { if (canvas.width !== 1 || canvas.height !== 1) { canvas.width = 1; canvas.height = 1; } return; }
+  if (strokes.length === 0) { if (sizedToSheet.has(canvas)) { canvas.width = 1; canvas.height = 1; sizedToSheet.delete(canvas); } return; }
   const rect = sheet.getBoundingClientRect();
   const ctx = syncCanvas(canvas, rect.width, rect.height);
+  sizedToSheet.add(canvas);
   if (!ctx) return;
   ctx.clearRect(0, 0, rect.width, rect.height);
   const color = inkColor();
