@@ -420,6 +420,12 @@ await withHarness(async (app) => {
   const BARBACK = `(() => { const h = document.getElementById('arbor2-mockup-bar'); if (h && window.__kfBar) h.style.setProperty('--fade-dur', window.__kfBar); return true; })()`;
   const tm = {};
   await open('day'); await focus();
+  // (fixture, Nov 15: the sun's leaves flutter at random moments - sun.ts sets data-flutter on a leaf for a few hundred ms - and a flutter that
+  // started or ended between the fix's read and T2's read made KF-TIMING count one element's animation as a timing difference: the ship candidate's
+  // pair, parked leg, Actions 43701667864, "recede 1 differ", the one extra reader div.arbor2-sun-leaf at 0s/0s. The sun is held still for this
+  // pass with the product's own data-still (animation none on the sun, its drift and its leaves), so the reads compare Arbor's timings, not a
+  // flutter's moment. No assertion changed.)
+  tm.sunStill = await app.evalJs("(() => { const s = document.querySelector('.arbor2-sun'); if (!s) return 'no sun'; s.setAttribute('data-still', 'true'); return s.getAttribute('data-still'); })()");
   tm.fRest = await app.evalJs(FADES);
   tm.rest = await app.evalJs(TDUR); await app.evalJs(T2SIM(true)); tm.t2Rest = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
   await app.typeKeys('a'); await sleep(250);
@@ -446,7 +452,7 @@ await withHarness(async (app) => {
   // the readers of --fade-dur on this page, by name, with their durations: the fix's, and with no --fade-dur anywhere (for the Wrizors)
   tm.readers = tm.recede && tm.none && tm.names && tm.recede.length === tm.none.length && tm.names.length === tm.recede.length
     ? tm.recede.map((x, i) => (x !== tm.none[i] ? `${tm.names[i]}: ${x.split('|')[0]} (unwritten ${tm.none[i].split('|')[0]})` : null)).filter(Boolean) : null;
-  console.log('KF TIMINGS: ' + JSON.stringify({ fRest: tm.fRest, fRecede: tm.fRecede, fReturn: tm.fReturn, writing: [tm.wRecede, tm.wReturn], readers: tm.readers }));
+  console.log('KF TIMINGS: ' + JSON.stringify({ sunStill: tm.sunStill, fRest: tm.fRest, fRecede: tm.fRecede, fReturn: tm.fReturn, writing: [tm.wRecede, tm.wReturn], readers: tm.readers }));
   // MUT-KF-FLIP-ROOT: T2's <html> write put back (every --fade-dur write is copied onto <html>, as T2's ModeStage did): KF-FLIP must be RED
   const mutRoot = await measure('mut-root', { pre: "(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; CSSStyleDeclaration.prototype.setProperty = function (n, v, p) { const r = orig.call(this, n, v, p); if (n === '--fade-dur' && this !== de.style) { window.__kfCopied = (window.__kfCopied || 0) + 1; orig.call(de.style, n, v, p); } return r; }; return true; })()" });
   mutRoot.copied = await app.evalJs('window.__kfCopied || 0');
