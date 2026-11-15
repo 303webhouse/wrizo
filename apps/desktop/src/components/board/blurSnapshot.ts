@@ -2,10 +2,10 @@
 // Why: a live `filter: blur(6px)` over the board is re-run by the compositor on every frame, and every key the card's text changes under it. The box measured it (bug #102,
 // Nov 15): over Flux's board the live blur holds the FIRST FRAME at 22.5 ms against 12.1 in Arbor, and a static image costs what "filter off" costs.
 //
-// This draws the board's own DOM (its canvases, cards, lines) into ONE canvas, blurred with the 2D context's own filter, and the hook (useBoardBlurSnap.ts) lays it over the board.
-// No dependency: the DOM is cloned with its computed styles inlined, serialised into an SVG <foreignObject>, loaded as an image and drawn once. The canvas is only ever DISPLAYED (never read
-// back), so the foreignObject's cross-origin taint does not matter. If ANY step fails (no ctx.filter, an image that will not decode, a timeout) this returns null and the caller keeps the
-// live blur: today's look, unchanged. Nothing here reads the board's data or writes anything.
+// This makes ONE static IMAGE of the board's own DOM (its canvases, cards, lines), blurred, and the hook (useBoardBlurSnap.ts) lays it over the board.
+// No dependency: the DOM is cloned with its computed styles inlined (time-sliced, only what is visible) and serialised into an SVG <foreignObject> inside a Gaussian-blur filter group; that SVG is the image (a blob URL in an <img>).
+// There is NO canvas in the result: a canvas on screen holds key-to-paint late on the box, and a canvas that has drawn a foreignObject image is tainted and cannot be read back into an image. If ANY step fails (no SVG
+// blur filter, an image that will not decode, a timeout) this returns null and the caller keeps the live blur: today's look, unchanged. Nothing here reads the board's data or writes anything.
 
 // the computed properties copied onto every element of the clone (the standalone SVG document has none of the page's stylesheets)
 const PROPS = [
@@ -112,29 +112,9 @@ function paintOne(o: Element, c: Element, scrolls: Scroll[]): boolean {
 // each phase of the capture is a User Timing measure (blurb:*): the harness (blur-b-speed.mjs) prints the longest of each, so the next long piece can be named instead of guessed
 const mark = (name: string, t0: number): void => { try { performance.measure('blurb:' + name, { start: t0, end: performance.now() }); } catch { /* no User Timing */ } };
 
-// a static IMAGE of the blurred canvas, not the canvas: the box showed that ANY canvas on screen holds key-to-paint late (the layer's canvases: either alone costs as much as both; the sliced look B's own snapshot canvas held
-// 110 late keys against filter off's 34). A PNG blob shown in an <img> is a static texture. A canvas that cannot be read back (tainted) is returned as it is: the same look, without the saving.
-async function asImage(canvas: HTMLCanvasElement): Promise<HTMLElement> {
-  try {
-    const blob = await new Promise<Blob | null>((res) => { canvas.toBlob(res, 'image/png'); });
-    if (!blob) return canvas;
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.decoding = 'async';
-    img.alt = '';
-    img.setAttribute('aria-hidden', 'true');
-    img.setAttribute('data-blob', url);
-    img.style.cssText = canvas.style.cssText;
-    img.src = url;
-    await img.decode();
-    return img;
-  } catch { return canvas; }
-}
-
 export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: () => boolean = () => false): Promise<HTMLElement | null> {
   try {
-    const probe = document.createElement('canvas').getContext('2d');
-    if (!probe || !('filter' in probe)) return null;   // no ctx.filter (an older Safari): keep the live blur
+    if (typeof SVGFEGaussianBlurElement === 'undefined') return null;   // no SVG blur filter: keep the live blur
     const r = src.getBoundingClientRect();
     const w = Math.round(r.width), h = Math.round(r.height);
     if (w < 8 || h < 8) return null;
@@ -181,40 +161,32 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     if (shouldStop()) return null;
     const tSer = performance.now();
     const xhtml = new XMLSerializer().serializeToString(clone);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
+    // THE BLUR IS INSIDE THE SVG (a Gaussian blur filter around the foreignObject) and the SVG itself is what is shown, as an <img>: no canvas anywhere. A canvas that has drawn a foreignObject image is TAINTED, so it cannot be read back into
+    // an image (the first IMG attempt fell back at once), and a canvas on screen is what holds key-to-paint late on the box (the layer's canvases, then the snapshot's own: 110 late keys against filter off's 34). The browser rasterises the
+    // SVG once and holds it as a static image. The SVG is padded three radii on every side so the bleed past the wrap's edge is as soft as the live blur's.
+    const pad = Math.ceil(blurPx * 3), W = w + 2 * pad, H = h + 2 * pad;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><defs><filter id="blurb" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="${blurPx}"/></filter></defs><g filter="url(#blurb)"><foreignObject x="${pad}" y="${pad}" width="${w}" height="${h}">${xhtml}</foreignObject></g></svg>`;
     mark('serialize', tSer);
     await yieldMain();
     if (shouldStop()) return null;
     const tBlob = performance.now();
-    // the SVG goes in as a BLOB URL, not a data URL: encodeURIComponent over a multi-megabyte string was one more long task, and a blob is handed to the image as it is
+    // the SVG goes in as a BLOB URL, not a data URL (encodeURIComponent over a multi-megabyte string was one more long task); the URL lives as long as the image is shown (the hook revokes it when the popup closes)
     const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
     mark('blob', tBlob);
     const tDec = performance.now();
     const img = new Image();
     img.decoding = 'async';
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    img.setAttribute('data-blob', url);
+    img.style.cssText = `position:absolute;display:block;left:${-pad}px;top:${-pad}px;width:${W}px;height:${H}px;`;
     img.src = url;
     try {
       await Promise.race([img.decode(), new Promise<never>((_, rej) => setTimeout(() => rej(new Error('snapshot timeout')), TIMEOUT_MS))]);
-    } finally { URL.revokeObjectURL(url); }
+    } catch (e) { URL.revokeObjectURL(url); throw e; }
     mark('decode-wall', tDec);
-    if (shouldStop()) return null;
-    const tDraw = performance.now();
-    // the live blur bleeds past the wrap's edge as a soft fade: pad by three radii and lay the canvas out that far beyond the wrap. The canvas is drawn at HALF size with half the blur radius (the blur hides what the half size loses)
-    // and shown at full size: a quarter of the pixels for the CPU blur, which was the biggest single piece of the capture left after the slicing
-    const pad = Math.ceil(blurPx * 3), S = 0.5;
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.ceil((w + 2 * pad) * S); canvas.height = Math.ceil((h + 2 * pad) * S);
-    canvas.style.cssText = `position:absolute;display:block;left:${-pad}px;top:${-pad}px;width:${w + 2 * pad}px;height:${h + 2 * pad}px;`;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx * S}px)`;
-    ctx.drawImage(img, pad * S, pad * S, w * S, h * S);
-    mark('draw', tDraw);
-    const tImg = performance.now();
-    const shown = await asImage(canvas);
-    mark('to-image', tImg);
-    if (shouldStop()) { const u = shown.getAttribute('data-blob'); if (u) URL.revokeObjectURL(u); return null; }
-    return shown;
+    if (shouldStop()) { URL.revokeObjectURL(url); return null; }
+    return img;
   } catch {
     return null;
   }

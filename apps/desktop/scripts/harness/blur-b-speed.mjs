@@ -223,7 +223,7 @@ try { await withHarness(async (app) => {
     await sleep(1800);
     const cards = await ev("document.querySelectorAll('.board-canvas .board-box').length");
     if (arm.css) await ev(`(() => { const s = document.createElement('style'); s.setAttribute('data-probe', '1'); s.textContent = ${JSON.stringify(arm.css)}; document.head.appendChild(s); return true; })()`);
-    if (arm.nofilter) await ev("(() => { try { delete CanvasRenderingContext2D.prototype.filter; } catch (e) {} return 'filter' in CanvasRenderingContext2D.prototype; })()");
+    if (arm.nofilter) await ev("(() => { try { delete window.SVGFEGaussianBlurElement; } catch (e) {} return typeof window.SVGFEGaussianBlurElement !== 'undefined'; })()");
     if (arm.burn) await ev("(() => { const o = XMLSerializer.prototype.serializeToString; XMLSerializer.prototype.serializeToString = function (...a) { const t = performance.now(); while (performance.now() - t < 300) { /* the slow capture */ } return o.apply(this, a); }; return true; })()");
     // the meters go in BEFORE the card opens, so the capture is inside what they see
     await ev(`(() => {

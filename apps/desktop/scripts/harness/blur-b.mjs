@@ -152,12 +152,12 @@ try { await withHarness(async (app) => {
   ok(`MUT-blank-power the fidelity measure can tell a snapshot from nothing in at least 4 of the ${skins} skins (${measurable} measurable; the others are dark boards on dark grounds where a blank board reads the same)`, skins === 6 && measurable >= 4, JSON.stringify({ skins, measurable }));
 
   // BB6: the fallback (no 2D-context filter): the live blur stays
-  await openBoard('plateau', "(() => { try { delete CanvasRenderingContext2D.prototype.filter; } catch (e) {} return 'filter' in CanvasRenderingContext2D.prototype; })()");
-  const hasFilter = await ev("'filter' in CanvasRenderingContext2D.prototype");
+  await openBoard('plateau', "(() => { try { delete window.SVGFEGaussianBlurElement; } catch (e) {} return typeof window.SVGFEGaussianBlurElement !== 'undefined'; })()");
+  const hasFilter = await ev("typeof window.SVGFEGaussianBlurElement !== 'undefined'");
   await openCard();
   await sleep(2500);
   const fb = await ev(STATE);
-  ok(`BB6 the fallback: with the 2D context's filter missing (premise: ${hasFilter ? 'STILL THERE' : 'gone'}) no snapshot is made (data-blur ${fb.dataBlur}, slot ${fb.slotKids}) and TODAY'S live blur stays (filter ${fb.filter}), the board visible (${fb.boardVisibility})`,
+  ok(`BB6 the fallback: with the SVG blur filter missing (premise: ${hasFilter ? 'STILL THERE' : 'gone'}) no snapshot is made (data-blur ${fb.dataBlur}, slot ${fb.slotKids}) and TODAY'S live blur stays (filter ${fb.filter}), the board visible (${fb.boardVisibility})`,
     hasFilter === false && fb.dataBlur === null && fb.slotKids === 0 && /blur/.test(fb.filter) && fb.boardVisibility === 'visible', JSON.stringify(fb));
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
