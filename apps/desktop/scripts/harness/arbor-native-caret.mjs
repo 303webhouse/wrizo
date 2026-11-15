@@ -84,7 +84,9 @@ await withHarness(async (app) => {
     await sleep(300); await go(`#/page/${bid}`);
     const board = await waitSoft(app, "!!document.querySelector('.board-box')", { label: 'board card', timeout: 10000 });
     await sleep(600);
-    await app.evalJs("(() => { const b = document.querySelector('.board-box'); if (!b) return false; b.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window })); return true; })()");
+    // the writer's double-click, through the browser's own input (a scripted dblclick event did not open it: Actions 43684527383)
+    const at = await app.evalJs("(() => { const b = document.querySelector('.board-box'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    if (at) { await app.mouseMove(at.x, at.y); for (const clickCount of [1, 2]) { await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: at.x, y: at.y, button: 'left', buttons: 1, clickCount }); await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: at.x, y: at.y, button: 'left', buttons: 0, clickCount }); } }
     const opened = await waitSoft(app, "!!document.querySelector('.board-popup-editor')", { label: 'card popup', timeout: 6000 });
     await app.evalJs("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
     await sleep(300);
