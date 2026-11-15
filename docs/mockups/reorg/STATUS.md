@@ -10,12 +10,12 @@ Milestones 4 and 5 were pushed unseen. Then Nick asked to see the mockup in his 
 
 **Two more from Nick, same sitting:** the WRIZO mark loses the lines above and below it, keeps the brass notch, and is centred over the rail; the list-or-boxes switch under the pins is smaller, left aligned and almost invisible. Both differ from the frames on purpose.
 
-**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. What went with the row is under question 1. Checked by script on the pushed page (`31f1d252`), not by eye: one row, no script errors, "toll" gives 7 in this doc, 13 in Thesis and 16 everywhere, the ASSETS tab opens on THIS PROJECT, and a found Block opens its Board beside the page.
+**And one that reverses an answer of Fable's:** Nick took the search's second row of scope tabs (PLAN, ASSETS, FEEDBACK) out as unnecessary. One row is left, the three frame P3-26A draws: THIS DOC, THIS PROJECT, EVERYTHING. Asked what should still be found, he ruled: **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built as Docs, then Boards, then imported files, then feedback. What I guessed to build it is under question 1.
 
 Where a slip is most likely, so the check can start there:
 
 - **A slip anywhere in `app.js` leaves the rail empty.** That is the first thing to look for.
-- **The search was rewritten twice:** in milestone 4 for two rows of scope tabs, and again when Nick took the second row out. The counts to expect for "toll": 7 in this doc, 13 in Thesis, 16 everywhere. From the ASSETS tab it should open on THIS PROJECT and say 13 in Thesis.
+- **The search was rewritten twice:** in milestone 4 for two rows of scope tabs, and again when Nick took the second row out. The counts to expect for "toll": 7 in this doc, 17 in Thesis, 20 everywhere. From the ASSETS tab it should open on THIS PROJECT and say 17 in Thesis. "gate" should find the scan "Plan of the north gate, 1889" by its name only.
 - **The page's left in a split:** 100 at half in a 1366 window, and back to 415 when either side closes.
 - **Writing in a Block.** If the caret will not go into a Block's words, or a keystroke loses it, that is where.
 - **The grip.** At 1366 wide it should only move right.
@@ -74,7 +74,11 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 
 ## Questions for Fable
 
-1. **What went with the search's second row** (Nick took the row out, Nov 14). The search now looks in the words of Docs and, out in the Project, in the Blocks on its Boards. It no longer finds an imported file or a Board by its name, or a line of feedback. From the ASSETS tab it opens on THIS PROJECT, which is the nearest thing left to the brief's "from ASSETS: assets in this Project". Should THIS PROJECT and EVERYTHING also find imported files and Boards by name, and feedback, in the one list?
+1. **The one-row search** (Nick, Nov 14: no second row; THIS PROJECT and EVERYTHING find Docs, Boards, imported files if readable, and feedback, sorted by asset type). Four guesses in how it is built (`NOT-RULED.md`, 74 to 77 and 150):
+   - **The order of the types:** Docs, Boards, imported files, feedback. Each group's head starts with its type; there is no separate head over each type.
+   - **EVERYTHING keeps a head for each Project** and sorts by type under it, instead of one list by type across every Project.
+   - **THIS DOC is unchanged:** the words of the Doc she is in, by Part. Its own assets and feedback are found from THIS PROJECT.
+   - **"If readable":** a file that cannot be read is found by its name only and its row says so. Which file is a scan, and the lines inside the others, are made up.
 2. **Closing the page's side of a split.** With a Board beside the page it now leaves the Board on its own. For a Block or an imported file the brief has no such screen: what should be left?
 3. **The page in a split:** in the middle of its side, moving as she drags (built), or pinned at left 100 with the spare room between it and the asset?
 4. **After a split,** should the menus come back as they were (built), or closed?

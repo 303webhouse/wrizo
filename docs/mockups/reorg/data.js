@@ -303,18 +303,33 @@
        connected to (1 to 5), or null for one connected to the Doc and to no Part.
        Counts by Part from frame P2-13A (2, 3, 5); names from P2-13A2 and P2-13B.
        "Tide tables", "Eleven silent days" and "Plan of the north gate" are invented,
-       and so is every date. order: 1 is the oldest. */
+       and so is every date. order: 1 is the oldest.
+       lines: the words of an imported file that can be read, a few made-up lines with their
+       page, for the search (Nick, Nov 14: "imported files, if readable"). A file with no
+       lines is a scan: the search finds it by its name only. Which file is a scan is invented. */
     assets: [
-      { id: 'a01', doc: 'harbor-tolls', part: null, kind: 'PDF', name: 'Plan of the north gate, 1889', meta: 'imported \u00b7 1 page', added: 'Aug 28', order: 1 },
-      { id: 'a02', doc: 'harbor-tolls', part: 2, kind: 'PDF', name: 'Harbour board returns, 1890 to 1912', meta: 'imported \u00b7 212 pages', added: 'Sep 2', order: 2 },
+      { id: 'a01', doc: 'harbor-tolls', part: null, kind: 'PDF', name: 'Plan of the north gate, 1889', meta: 'imported \u00b7 1 page \u00b7 a scan', added: 'Aug 28', order: 1 },
+      { id: 'a02', doc: 'harbor-tolls', part: 2, kind: 'PDF', name: 'Harbour board returns, 1890 to 1912', meta: 'imported \u00b7 212 pages', added: 'Sep 2', order: 2,
+        lines: [
+          { page: 3, text: 'Returns of the sums received at the gates of the harbour in each year.' },
+          { page: 12, text: 'Tolls received at the north gate, by month, for the year 1890.' },
+          { page: 118, text: 'Resolved, that no toll be taken of the lifeboat or of its tender.' }
+        ] },
       { id: 'a03', doc: 'harbor-tolls', part: 2, kind: 'BOARD', name: 'Ledger survey', meta: '8 blocks', added: 'Sep 9', order: 3 },
       { id: 'a04', doc: 'harbor-tolls', part: 3, kind: 'BLOCK', name: 'Ledger sample sheet', board: 'Ledger survey', meta: 'on the board Ledger survey', added: 'Sep 12', order: 4 },
-      { id: 'a05', doc: 'harbor-tolls', part: 3, kind: 'PDF', name: 'Harbour board returns, 1903', meta: 'imported \u00b7 14 pages', added: 'Sep 16', order: 5 },
+      { id: 'a05', doc: 'harbor-tolls', part: 3, kind: 'PDF', name: 'Harbour board returns, 1903', meta: 'imported \u00b7 14 pages', added: 'Sep 16', order: 5,
+        lines: [
+          { page: 2, text: 'Tolls received in the year fell short of the year before by one part in six.' },
+          { page: 9, text: 'The winter floods closed the north gate for eleven days.' }
+        ] },
       { id: 'a06', doc: 'harbor-tolls', part: 3, kind: 'BOARD', name: 'Method notes', meta: '6 blocks', added: 'Sep 21', order: 6 },
       { id: 'a07', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Toll totals by year', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Sep 28', order: 7 },
       { id: 'a08', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Wet years', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Oct 3', order: 8 },
       { id: 'a09', doc: 'harbor-tolls', part: 4, kind: 'BOARD', name: 'Chart drafts', meta: '9 blocks', added: 'Oct 5', order: 9 },
-      { id: 'a10', doc: 'harbor-tolls', part: 4, kind: 'PDF', name: 'Tide tables, 1903 and 1904', meta: 'imported \u00b7 6 pages', added: 'Oct 11', order: 10 },
+      { id: 'a10', doc: 'harbor-tolls', part: 4, kind: 'PDF', name: 'Tide tables, 1903 and 1904', meta: 'imported \u00b7 6 pages', added: 'Oct 11', order: 10,
+        lines: [
+          { page: 1, text: 'High water at the mole, morning and evening, for each day of the year.' }
+        ] },
       { id: 'a11', doc: 'harbor-tolls', part: 4, kind: 'BLOCK', name: 'Eleven silent days', board: 'Chart drafts', meta: 'on the board Chart drafts', added: 'Oct 18', order: 11 }
     ],
 

@@ -741,7 +741,8 @@
     for (var i = 0; i < REACH.length; i++) { if (REACH[i][0] === reach) { return REACH[i][1]; } }
     return '';
   }
-  /* Ruled: what THIS DOC (P3-26A) and THIS PROJECT (P3-26A2) look in. What EVERYTHING lists is a guess. */
+  /* Ruled: what THIS DOC (P3-26A) and THIS PROJECT (P3-26A2, and Nick on Nov 14) look in. EVERYTHING looks
+     in the same; that it lists them under a head for each Project is a guess. */
   function reachRuled(reach) { return reach !== 'all'; }
   function isHere(pid, did) { return (pid || null) === (S.here.project || null) && did === S.here.doc; }
 
@@ -815,11 +816,46 @@
       (D.blocks[name] || []).forEach(function (b) { var h = blockHit(name, b, r.q); if (h) { out.push(h); } });
       return out;
     }
+    /* A Board: a row for the Board itself when q is in its name, then its Blocks. */
     function boardGroups(names) {
       var out = [];
       names.forEach(function (name) {
         var list = blockRows(name);
-        if (list.length) { out.push({ head: 'BOARD \u00b7 ' + name + ' \u00b7 ' + plural(list.length, 'block', 'blocks'), rows: list }); }
+        var own = findAll(name, r.q).length ? [{ type: 'board', board: name, html: 'Board: ' + markAll(name, r.q, -1) }] : [];
+        if (own.length || list.length) {
+          out.push({ head: 'BOARD \u00b7 ' + name + (list.length ? ' \u00b7 ' + plural(list.length, 'block', 'blocks') : ''), rows: own.concat(list) });
+        }
+      });
+      return out;
+    }
+    /* The imported files of these Docs: each by its name, and by its words where they can be read.
+       A scan has no words to read and is found by its name only. */
+    function fileGroups(docs) {
+      var out = [];
+      D.assets.forEach(function (a) {
+        var rows = [];
+        if (a.kind !== 'PDF' || !docs.some(function (x) { return x.id === a.doc; })) { return; }
+        if (findAll(a.name, r.q).length) {
+          rows.push({ type: 'file', id: a.id, html: a.kind + ': ' + markAll(a.name, r.q, -1) + (a.lines ? '' : ' \u00b7 a scan, found by its name only') });
+        }
+        (a.lines || []).forEach(function (ln) {
+          var at = findAll(ln.text, r.q);
+          if (at.length) { rows.push({ type: 'file', id: a.id, html: 'p. ' + ln.page + ' \u00b7 ' + snippet(ln.text, at[0], r.q.length) }); }
+        });
+        if (rows.length) { out.push({ head: 'IMPORTED \u00b7 ' + a.name + ' \u00b7 ' + rows.length, rows: rows }); }
+      });
+      return out;
+    }
+    /* The feedback on these Docs, a group for each Doc. */
+    function feedbackGroups(docs) {
+      var out = [];
+      docs.forEach(function (d2) {
+        var rows = [];
+        (D.feedback[d2.id] || []).forEach(function (f) {
+          var at = findAll(f.text, r.q);
+          if (at.length) { rows.push({ type: 'feedback', html: esc(f.from) + ', on Part ' + f.part + ' \u00b7 ' + snippet(f.text, at[0], r.q.length) }); }
+        });
+        if (rows.length) { out.push({ head: 'FEEDBACK \u00b7 ' + d2.name + ' \u00b7 ' + rows.length, rows: rows }); }
       });
       return out;
     }
@@ -830,16 +866,17 @@
       hits = mine ? r.here : reg(docHits(pid, d2, r.q));
       return hits.length ? [{ head: 'DOC \u00b7 ' + d2.name + ' \u00b7 ' + hits.length, rows: hits, label: parts.length > 1, cap: 'd|' + (pid || '') + '|' + d2.id }] : [];
     }
-    /* One Project, or the Notebook: its Docs, then its Boards (frame P3-26A2). */
+    /* One Project, or the Notebook, sorted by the type of thing: its Docs, then its Boards (frame P3-26A2),
+       then its imported files, then the feedback on its Docs (Nick, Nov 14). */
     function inProject(pp) {
       var out = [];
       pp.docs.forEach(function (d2) { out = out.concat(docGroups(pp.id, d2)); });
-      return out.concat(boardGroups(boardsOf(pp)));
+      return out.concat(boardGroups(boardsOf(pp)), fileGroups(pp.docs), feedbackGroups(pp.docs));
     }
     function inUnfiled() {
       var out = [];
       D.unfiled.forEach(function (u) { out = out.concat(docGroups(null, u)); });
-      return out;
+      return out.concat(fileGroups(D.unfiled), feedbackGroups(D.unfiled));
     }
 
     if (!r.q) { return r; }
@@ -880,15 +917,19 @@
         (can ? '<button type="button" class="chip-btn" data-act="replace-one" data-key="' + esc(row.key) + '"' + (S.search.repl ? '' : ' disabled title="Type what to put in its place first"') + '>Replace</button>' : '') +
         '</div>';
     }
-    /* A Block: its Board opens beside the page (section 6 E). */
-    return '<div class="hit"><button type="button" class="hit-main" data-act="hit-beside" data-board="' + esc(row.board) + '" title="Open beside the page">' +
-      'Block: ' + row.html + '</button></div>';
+    if (row.type === 'feedback') {
+      return '<div class="hit"><button type="button" class="hit-main" data-act="later" data-note="Going from a line of feedback to its place in the doc is not part of this prototype.">' + row.html + '</button></div>';
+    }
+    /* A Block, a Board or an imported file: it opens beside the page (section 6 E). A Block opens its Board. */
+    return '<div class="hit"><button type="button" class="hit-main" data-act="hit-beside"' +
+      (row.type === 'file' ? ' data-id="' + row.id + '"' : ' data-board="' + esc(row.board) + '"') + ' title="Open beside the page">' +
+      (row.type === 'block' ? 'Block: ' : '') + row.html + '</button></div>';
   }
 
   /* The search menu: the whole Back menu, once she is in its search field (results as frames P3-26A, P3-26A2). */
   function searchMenu() {
     var p = projHere(), reach = S.search.reach, b = '', n, ready;
-    var line = { doc: 'The words of this doc, by Part', project: 'Docs and Boards in ' + (p ? p.name : 'this Project'), all: 'Every Project, the Notebook and Unfiled' }[reach];
+    var line = { doc: 'The words of this doc, by Part', project: 'Docs, Boards, imported files and feedback in ' + (p ? p.name : 'this Project'), all: 'Every Project, the Notebook and Unfiled' }[reach];
     /* In a split the search lies over the asset's side (Fable's proposal, not ruled). */
     var h = '<section class="menu menu-back is-search' + (S.split ? ' over-beside' : '') + '" aria-label="Search">' +
       '<div class="search-top"><button type="button" class="search-back" data-act="search-close" title="Close the search (Esc)">&lsaquo; ' + (S.search.wasOpen && !S.split ? S.back.tab.toUpperCase() : 'Close') + '</button>' +
@@ -1125,7 +1166,7 @@
       return { type: 'board', tag: 'BOARD', name: w.name, board: w.name, id: a ? a.id : null, key: 'board-' + w.name, meta: boardMeta(w.name) + ' \u00b7 ' + where };
     }
     a = assetById(w.id);
-    where = a.part ? 'connected to Part ' + a.part : 'connected to no Part';
+    where = a.doc !== d.id ? 'not connected to this doc' : a.part ? 'connected to Part ' + a.part : 'connected to no Part';
     if (a.kind === 'BOARD') { return { type: 'board', tag: 'BOARD', name: a.name, board: a.name, id: a.id, key: 'board-' + a.name, meta: a.meta + ' \u00b7 ' + where }; }
     if (a.kind === 'BLOCK') { return { type: 'block', tag: 'BLOCK', name: a.name, board: a.board, id: a.id, key: a.id, meta: a.meta + ' \u00b7 ' + where }; }
     return { type: 'pdf', tag: 'PDF', name: a.name, id: a.id, key: a.id, meta: a.meta + ' \u00b7 ' + where };
@@ -1406,8 +1447,9 @@
     if (S.search.open) {
       say('RULED', 'D \u00b7 The search menu, one row of scope tabs: THIS DOC, THIS PROJECT, EVERYTHING (no second row: Nick, Nov 14)');
       if (S.search.reach === 'doc') { say('RULED', 'the words of THIS DOC (results as P3-26A)'); }
-      else if (S.search.reach === 'project') { say('RULED', 'THIS PROJECT: its Docs and Boards (results as P3-26A2)'); }
-      else { say('NOT RULED', 'what EVERYTHING lists is a guess'); }
+      else if (S.search.reach === 'project') { say('RULED', 'THIS PROJECT, by type: Docs and Boards (results as P3-26A2), then imported files and feedback (Nick, Nov 14)'); }
+      else { say('RULED', 'EVERYTHING finds the same four types (Nick, Nov 14)'); say('NOT RULED', 'that EVERYTHING lists them under a head for each Project'); }
+      if (S.search.reach !== 'doc') { say('NOT RULED', 'how the rows of an imported file and of feedback look; which file is a scan'); }
       if (S.split) { say('NOT RULED', 'in a split the search lies over the asset\u2019s side (Fable\u2019s proposal)'); }
       if (S.search.replaceOpen && R && (R.here.length || S.search.undo.length)) {
         say('RULED', 'D \u00b7 Find and Replace: all, or one by one in the list, in the Doc she is in; across a Project greyed, \u201clater\u201d');
@@ -1634,8 +1676,11 @@
 
     /* The split screen (E) */
     'open-beside': function (t) { openSplit({ kind: 'asset', id: t.getAttribute('data-id') }); },
-    /* A Block found by the search: its Board opens beside the page. */
-    'hit-beside': function (t) { openSplit({ kind: 'board', name: t.getAttribute('data-board') }); },
+    /* A Block, a Board or an imported file found by the search. A Block opens its Board. */
+    'hit-beside': function (t) {
+      var id = t.getAttribute('data-id');
+      openSplit(id ? { kind: 'asset', id: id } : { kind: 'board', name: t.getAttribute('data-board') });
+    },
     'doc-beside': function (t) {
       openSplit({ kind: 'doc', pid: t.getAttribute('data-pid') || null, did: t.getAttribute('data-id') });
       openPop(null);

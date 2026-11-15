@@ -27,6 +27,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 - **The WRIZO mark** has no lines above or below it, keeps its brass notch, and is centred over the rail's 84 px. (The frames draw the two lines and set the mark 16 px from the left edge.)
 - **The switch between pins as a list and as boxes** is smaller, left aligned and almost invisible. Built: two 10 px marks in a grey close to the rail's own, the one in use a shade lighter, with no box round it. That they light up under the pointer or the keyboard is mine.
 - **The search has one row of scope tabs:** THIS DOC, THIS PROJECT, EVERYTHING. The second row (PLAN, ASSETS, FEEDBACK) is gone: "unnecessary". This replaces Fable's answer 1 of the same day ("keep the two rows as two separate choices"). What follows from it is at 74.
+- **THIS PROJECT and EVERYTHING also find imported files (if readable), Boards and feedback, sorted by asset type.** Built: Docs, then Boards, then imported files, then feedback. What I had to guess to build it is at 74 to 76.
 - **"Connect Doc"** stands on the left, after the Board's name and place; once the Board has a Doc it stays as a plus sign in a square box, and its list has recent Docs first on a scroll, then "A new doc" (133, 144).
 
 ## PROPOSED (Fable's proposals, built and tagged PROPOSED)
@@ -139,10 +140,11 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 71. **Where the search sits.** In the Back menu's place: 288 wide, flush against the page, as tall as the page. This is so also when it is opened from the top bar or with Ctrl+F. Frame P3-26A draws it as a 304 px panel hanging from the top bar's button; the brief says the whole menu becomes the search menu and that the bar and Ctrl+F open "the same search".
 73. **A line under the scope tabs** says what the scope she is on looks in.
-74. **What goes with the second row.** With one row, the search looks in the words of Docs and, out in the Project, in the names and words of the Blocks on its Boards (frame P3-26A2). It no longer finds an imported file or a Board by its name, a line of feedback, or a row of the plan as such (a plan row is a Block, so its Block is still found). "The scope that matches the tab she came from" is now: from ASSETS, THIS PROJECT, where the Boards and Blocks are; from PLAN and FEEDBACK, THIS DOC. The brief's "from ASSETS: assets in this Project" has no scope of its own any more.
-75. (Gone with the second row: what ASSETS looked in.)
-76. **What EVERYTHING lists:** every Project's Docs and Boards, then the Notebook, then Unfiled, under a head for each. The frame names the tab and draws nothing for it.
-77. **THIS PROJECT finds a Block by its name as well as its words.** So "toll" finds 13 in Thesis where frame P3-26A2 counts 12: the thirteenth is the Block "Toll totals by year".
+74. **What goes with the second row.** "The scope that matches the tab she came from" is now: from ASSETS, THIS PROJECT, where the assets are; from PLAN and FEEDBACK, THIS DOC. The brief's "from ASSETS: assets in this Project" has no scope of its own any more. THIS DOC still looks only in the words of the Doc she is in, by Part, as frame P3-26A draws: its own assets and feedback are found from THIS PROJECT. A row of the plan is not found as such (it is a Block, so its Block is found).
+75. **"Sorted by asset type", as built.** Each group's head starts with its type, and the groups come in this order: DOC (one group for each Doc), BOARD (one for each Board), IMPORTED (one for each file), FEEDBACK (one for each Doc it is on). The order of the four is mine, set by the frame's Docs-then-Boards. There is no separate head over each type. A Board found by its own name gets a row "Board: name" at the top of its group; a file found by its name gets a row "PDF: name".
+76. **What EVERYTHING lists:** the same four types, sorted the same way, under a head for each Project, then the Notebook, then Unfiled. That it keeps the Project heads, instead of one list by type across every Project, is a guess. The frame names the tab and draws nothing for it.
+77. **THIS PROJECT finds more than the frame counts.** "toll" finds 17 in Thesis where frame P3-26A2 counts 12: a Block is found by its name as well as its words (the Block "Toll totals by year"), and Nick's ruling adds three lines inside imported files and one line of feedback.
+150. **"If readable."** (New on Nov 14; numbered 150 because 78 is an answered number.) An imported file that can be read is searched by its name and by its words; a row from inside it reads "p. 12 · …" with the found word marked. A file that cannot be read (a scan) is found by its name only, and its row says "a scan, found by its name only". Invented: which file is a scan ("Plan of the north gate, 1889", now marked "a scan" in the ASSETS tab), and the few lines of words inside the other three. A line with the word twice counts once.
 79. **Leaving the search:** the link at its head ("‹ ASSETS", the tab she came from, or "‹ Close"), Esc, the top bar's button again, or the Back menu's handle (which closes the menu too). The Back menu comes back as it was: on its tab, or closed. The word she searched is forgotten. *(Fable, Nov 14: stays, still NOT RULED.)*
 80. **Ctrl+F while the search is open** puts the caret back in the field and keeps the scope.
 81. **The Tab key into a tab's search field** opens the search too, as a click does.
@@ -150,7 +152,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 83. **The result she is on** (the brass bar in the list) is the one she pressed, or else the first in the Part she is in, as in frame P3-26A. On the page it has a thin dark outline.
 84. **Found words are marked on the page** on every scope, since every scope looks in her Doc's words.
 85. **Pressing a result in the Doc she is in** goes to its Part and brings the word into view. **Enter** in the field goes to the next result in her Doc, Shift+Enter to the one before.
-87. **Pressing a Block** opens its Board beside the page. After a result in another Doc opens that Doc, this prototype has no way back to where she was but the RECENT list.
+87. **Pressing a Block, a Board or an imported file** opens it beside the page (a Block opens its Board; an imported file opens at its first page, not at the found line). A line of feedback only shows a note. After a result in another Doc opens that Doc, this prototype has no way back to where she was but the RECENT list.
 88. **Out in the Project, a Doc shows two rows** and "+ 5 more in this doc"; pressing that lists them all. The result she is on is one of the two.
 89. **"Not here? Widen to..."** goes from THIS DOC to THIS PROJECT and from there to EVERYTHING, as the frames draw.
 90. **In no Project,** THIS PROJECT is greyed.
@@ -180,7 +182,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 ## E. The split screen
 
-110. **Three ways in.** "Open beside" on an asset's row in the Back menu's ASSETS tab (the frame says OPEN there; Machina's word table has both "Open" and "Open beside"); an asset in a Part expanded in the Front menu; a Block found by the search (its Board opens). The brief says the asset "opens on the right" and not from where.
+110. **Three ways in.** "Open beside" on an asset's row in the Back menu's ASSETS tab (the frame says OPEN there; Machina's word table has both "Open" and "Open beside"); an asset in a Part expanded in the Front menu; a Block, a Board or an imported file found by the search. The brief says the asset "opens on the right" and not from where.
 111. **Half** is half of the room right of the rail: the asset's side starts at 725 in a 1366 window, as frame P3-23A draws it.
 112. **Where the page sits in a split.** In the middle of its own side, which runs from 16 px right of the rail to 5 px short of the asset's side. At half in a 1366 window that is left 100, as the frame draws it. When she drags the grip right, the page keeps to the middle of the wider side, so it moves as she drags. Its size and its top never change.
 113. **At 1366 wide, half is already the grip's stop.** The page's side is exactly 620 there, so the grip only goes right. In a wider window it goes both ways.
@@ -200,7 +202,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 127. **"The Part she is writing never opens twice."** The Doc she is in can be opened beside itself: its other Parts are there to read, and where the Part on the page would be a line says it is on the page. The line moves when she changes Part.
 128. **The list under the asset's name** (Fable's proposal): all the assets connected to the Doc she is in, each with its kind and its Part, the one beside her marked. With a second Doc beside her, it still lists the assets of the Doc on the page.
 129. **Where the search sits in a split** (Fable's proposal): the same menu, 288 wide, over the left of the asset's side, against the page, under the asset's head. It looks in the same things as out of a split; it does not look inside the asset beside her any more than before.
-130. **A Board opened from a Block the search found, when it is not connected to her Doc** ("Harbor map") opens beside the page all the same; its head says "not connected to this doc".
+130. **A Board found by the search that is not connected to her Doc** ("Harbor map") opens beside the page all the same; its head says "not connected to this doc".
 
 ## F. A Board on its own
 
