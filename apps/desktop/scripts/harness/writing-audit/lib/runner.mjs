@@ -15,7 +15,7 @@ const label2 = (st) => {
   return stepLabel(st) + (st.geo ? ' [layout oracle]' : st.prop ? ' [property]' : '');
 };
 
-export async function main({ groupsDef, order, title, surfaceHook = null, editorSel = '.forward-only-editor', pageSel = '.mode-page', fluxBlockCaret = true }) {
+export async function main({ groupsDef, order, title, surfaceHook = null, editorSel = '.forward-only-editor', pageSel = '.mode-page', fluxBlockCaret = true, pageGrowsDown = false }) {
   const env = process.env;
   const cfg = {
     theme: env.WA_THEME || 'plateau', flag: env.WA_FLAG || 'off', tone: env.WA_TONE || 'light',
@@ -142,7 +142,7 @@ export async function main({ groupsDef, order, title, surfaceHook = null, editor
       if (anyPairs) { const pr = anyPairs.find((q) => q[0] === late.anchor && q[1] === late.focus) || anyPairs[0]; exp.a = pr[0]; exp.f = pr[1]; }
       if (prop) { exp.a = exp.f = late.focus; }
       const box = exp.collapsed ? await d.box(exp.f) : null;
-      const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: { ...(st.fast ? { noDrawn: true } : {}), inSheet: INSHEET } });
+      const v = verify({ exp: exp.snapshot(), box, before, early, late, errors: d.errors.slice(e0), expect: { ...(st.fast ? { noDrawn: true } : {}), inSheet: INSHEET, ...(pageGrowsDown ? { pageGrowsDown: true } : {}) } });   // #73: the card pop-up's runs (pageGrowsDown) hold the page to "same left, top and width, only ever taller" (lib/verify.mjs)
       if (IGNORE.size) v.fails = v.fails.filter((f) => !IGNORE.has(f.check));
       if (prop) {
         const down = prop === 'down';
