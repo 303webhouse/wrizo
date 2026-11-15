@@ -14,7 +14,8 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const THEMES = ['plateau', 'flux', 'machina'];
-const FID_MAX = 22;   // PROVISIONAL until the first Actions reading (mean abs diff per channel, 0-255)
+const FID_MAX = 6, BLANK_MIN = 1.5;   // PROVISIONAL until the clipped light-and-dark reading (mean abs diff per channel, 0-255)
+const TONES = ['dark', 'light'];
 const BOARD = 'bb-board';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
@@ -62,11 +63,11 @@ try { await withHarness(async (app) => {
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Look B', pageType: 'board', boxes: makeBoxes(), createdAt: new Date().toISOString(), origin: null, source: null })})`);
   await sleep(500);
 
-  const openBoard = async (theme, extra = '') => {
+  const openBoard = async (theme, extra = '', tone = 'dark') => {
     await hashTo('#/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the board', timeout: 15000 });
     await ev(`window.wrizoPatchEntry(${JSON.stringify(BOARD)}, { boxes: ${JSON.stringify(makeBoxes())} })`);
-    await ev(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
+    await ev(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: ${JSON.stringify(tone)}, fade: 'on' }));`);
     await ev(`history.replaceState(null, '', '/#/page/${BOARD}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"bb-d\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
@@ -80,19 +81,20 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 5000, label: 'the card editor' }).catch(() => {});
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
   };
-  const shot = async () => (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  const shot = async () => { const w = await rectOfWrap(); return (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: Math.max(0, w.x), y: Math.max(0, w.y), width: w.w, height: w.h, scale: 1 } })).data; };
 
-  for (const theme of THEMES) {
-    await openBoard(theme);
+  for (const tone of TONES) for (const theme of THEMES) {
+    const T = `${theme}/${tone}`;
+    await openBoard(theme, '', tone);
     const before = await ev(STATE);
     await openCard();
     const snapped = await app.waitFor("document.querySelector('.board-canvas-blur-wrap')?.getAttribute('data-blur') === 'snap'", { timeout: 4000, label: 'the snapshot' }).then(() => true).catch(() => false);
     await sleep(700);
     const open = await ev(STATE);
     const wrapRect = await rectOfWrap();
-    ok(`BB1 [${theme}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot at least the wrap's size (${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h} vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
+    ok(`BB1 [${T}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot at least the wrap's size (${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h} vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
       snapped && open && open.dataBlur === 'snap' && open.canvas && open.canvas.w >= wrapRect.w && open.canvas.h >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
-    ok(`BB3 [${theme}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open and snapped`,
+    ok(`BB3 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open and snapped`,
       JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
 
     // BB2: typing under the snapshot
@@ -101,7 +103,7 @@ try { await withHarness(async (app) => {
     await sleep(500);
     const typed = await ev(STATE);
     const same = await ev("window.__bbCanvas === document.querySelector('.board-blur-snap-slot canvas')");
-    ok(`BB2 [${theme}] held still: after 17 keys the same canvas node is in the slot (${same}), data-blur is still "snap" (${typed.dataBlur}), the live board is still hidden (${typed.boardVisibility})`, !!nodeId && same === true && typed.dataBlur === 'snap' && typed.boardVisibility === 'hidden' && typed.slotKids === 1, JSON.stringify(typed));
+    ok(`BB2 [${T}] held still: after 17 keys the same canvas node is in the slot (${same}), data-blur is still "snap" (${typed.dataBlur}), the live board is still hidden (${typed.boardVisibility})`, !!nodeId && same === true && typed.dataBlur === 'snap' && typed.boardVisibility === 'hidden' && typed.slotKids === 1, JSON.stringify(typed));
 
     // BB5: fidelity against TODAY'S live blur (the same open card, the same theme)
     await sleep(300);
@@ -110,7 +112,6 @@ try { await withHarness(async (app) => {
     await sleep(600);
     const liveShot = await shot();
     const diff = await ev(DIFF(snapShot, liveShot));
-    ok(`BB5 [${theme}] FIDELITY: the snapshot looks like today's live blur: mean absolute difference ${diff} per channel (<= ${FID_MAX})`, typeof diff === 'number' && diff <= FID_MAX, JSON.stringify({ diff }));
     await ev("(() => { const s = document.getElementById('__livecss'); if (s) s.remove(); return true; })()");
     await sleep(300);
     // MUT-blank: the snapshot canvas hidden (the board reads as blank under the popup): BB5's measure must go over FID_MAX
@@ -118,7 +119,8 @@ try { await withHarness(async (app) => {
     await sleep(400);
     const blankShot = await shot();
     const blankDiff = await ev(DIFF(blankShot, liveShot));
-    ok(`MUT-blank [${theme}] premise + effect: with the snapshot canvas hidden the same measure reads ${blankDiff} (> ${FID_MAX}): the mutant landed and BB5 would be RED`, typeof blankDiff === 'number' && blankDiff > FID_MAX, JSON.stringify({ blankDiff, fid: diff }));
+    ok(`BB5 [${T}] FIDELITY (the board's own rect, snapshot against TODAY'S live blur): mean absolute difference ${diff} per channel (<= ${FID_MAX}) and closer to the live blur than a blank board is (${blankDiff}: needs ${diff} * 2 <= ${blankDiff})`, typeof diff === 'number' && typeof blankDiff === 'number' && diff <= FID_MAX && diff * 2 <= blankDiff, JSON.stringify({ diff, blankDiff }));
+    ok(`MUT-blank [${T}] landed and measurable: with the snapshot canvas hidden the board reads ${blankDiff} against the live blur, at least twice the snapshot's ${diff} and at least ${BLANK_MIN}: BB5 would be RED`, typeof blankDiff === 'number' && blankDiff >= BLANK_MIN && blankDiff >= 2 * diff, JSON.stringify({ blankDiff, diff }));
     await ev("(() => { const s = document.getElementById('__mutblank'); if (s) s.remove(); return true; })()");
 
     // MUT-both-off: data-blur removed AND the live filter off: the shared predicate must read false
@@ -126,11 +128,11 @@ try { await withHarness(async (app) => {
     await ev("(() => { const w = document.querySelector('.board-canvas-blur-wrap'); w.removeAttribute('data-blur'); const s = document.createElement('style'); s.id = '__mutoff'; s.textContent = '.board-canvas-blur-wrap{filter:none!important}'; document.head.appendChild(s); return true; })()");
     await sleep(300);
     const predOff = await ev(BLURRED);
-    ok(`MUT-both-off [${theme}] the predicate b3.mjs and fx4.mjs share ("the board is blurred": the live filter OR a snapshot in the slot) reads true as shipped (${predOn}) and FALSE with both off (${predOff})`, predOn === true && predOff === false, JSON.stringify({ predOn, predOff }));
+    ok(`MUT-both-off [${T}] the predicate b3.mjs and fx4.mjs share ("the board is blurred": the live filter OR a snapshot in the slot) reads true as shipped (${predOn}) and FALSE with both off (${predOff})`, predOn === true && predOff === false, JSON.stringify({ predOn, predOff }));
     await ev("(() => { const s = document.getElementById('__mutoff'); if (s) s.remove(); return true; })()");
 
     // BB4: closing gives the board back (Escape closes the popup)
-    await openBoard(theme);
+    await openBoard(theme, '', tone);
     await openCard();
     await app.waitFor("document.querySelector('.board-canvas-blur-wrap')?.getAttribute('data-blur') === 'snap'", { timeout: 4000, label: 'the snapshot again' }).catch(() => {});
     await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
@@ -141,7 +143,7 @@ try { await withHarness(async (app) => {
       await ev("(() => { const b = document.querySelector('.board-popup [aria-label*=\"lose\"], .board-popup-close, .board-popup .board-popup-x'); if (b) b.click(); })()");
       await sleep(900); closed = await ev(STATE);
     }
-    ok(`BB4 [${theme}] closing gives the board back: popup gone (${!closed.popup}), data-blur gone (${closed.dataBlur}), the slot empty (${closed.slotKids}), the live board visible (${closed.boardVisibility}), no filter (${closed.filter}), no dim (${closed.opacity}), the wrap and the card where they were`,
+    ok(`BB4 [${T}] closing gives the board back: popup gone (${!closed.popup}), data-blur gone (${closed.dataBlur}), the slot empty (${closed.slotKids}), the live board visible (${closed.boardVisibility}), no filter (${closed.filter}), no dim (${closed.opacity}), the wrap and the card where they were`,
       !closed.popup && closed.dataBlur === null && closed.slotKids === 0 && closed.boardVisibility === 'visible' && closed.filter === 'none' && closed.opacity === 1 && JSON.stringify(closed.wrap) === JSON.stringify(before.wrap) && JSON.stringify(closed.card) === JSON.stringify(before.card), JSON.stringify(closed));
   }
 
