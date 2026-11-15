@@ -27,12 +27,16 @@
 //   KF-SCAN      no selector in src/**/*.css has a universal subject under a condition that flips at the key; the scanner finds T2's 2 (liveness).
 // Information only: the same trace with the leaves' pause rule taken out, and with every Arbor rule keyed on the flip taken out (what is left).
 //
-// Run: node scripts/harness/arbor-keyflip.mjs (it pins ?arbor2=1&arbor2room=day itself; the night reads navigate with arbor2room=night).
+// Run: node scripts/harness/arbor-keyflip.mjs (it pins ?arbor2=1&arbor2room=day itself, in its own navigations; the night reads navigate with
+// arbor2room=night). It never SETS WS_URL_SEARCH (url-search-optin U5b: nothing opts in through the environment); a launcher's pin, if one is
+// set, is read and used instead.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-if (!process.env.WS_URL_SEARCH) process.env.WS_URL_SEARCH = '?arbor2=1&arbor2room=day';
+// the room pin, carried in this file's own navigations (Page.navigate to base + pin + hash). Was: the env set here before runtime-verify loaded,
+// which U5b forbids (Actions run 43653510960) - the pin and every page it opens are the same as before.
+const PIN = `?${String(process.env.WS_URL_SEARCH || '?arbor2=1&arbor2room=day').replace(/^\/?\??/, '')}`;
 const { withHarness } = await import('../runtime-verify.mjs');
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -264,12 +268,13 @@ const readOkB = (m) => flipFrame(m) != null && m.rec.reads.filter((r) => r.t >= 
 const readLiveB = (m) => flipFrame(m) != null && m.rec.reads.some((r) => r.t >= m.rec.flips[0].t && r.frame > flipFrame(m));
 
 await withHarness(async (app) => {
-  await app.goto('/');
+  const go = async (hash) => { await app.cdp('Page.navigate', { url: `${app.base}/${PIN}#${hash}` }); await sleep(200); };
+  await go('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4');");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await app.emulateDpr(1, 1400, 900);
-  await app.goto('/project/new');
+  await go('/project/new');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
@@ -280,7 +285,7 @@ await withHarness(async (app) => {
 
   // reopen the page at rest (seeded through the seams), in the room asked
   const open = async (room) => {
-    await app.goto('/');
+    await go('/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
     await app.evalJs(`(() => { window.wrizoSetWritingGoal({ n: 1000, unit: 'words' }); window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: Array.from({ length: 7 }, (_, i) => 'word' + i).join(' ') }); return true; })()`);
     await app.reload();

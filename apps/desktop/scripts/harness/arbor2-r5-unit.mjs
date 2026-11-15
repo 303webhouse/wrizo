@@ -108,7 +108,33 @@ for (const ch of css) {
 // inside @media blocks the selectors sit at depth 1; check them too
 const media = [...css.matchAll(/@media[^{]*\{([\s\S]*?\})\s*\}/g)].flatMap((m) => [...m[1].matchAll(/([^{}]+)\{/g)].map((x) => x[1].trim())).flatMap((s) => topSplit(s).map((x) => x.trim()))
   .filter((s) => s && !s.startsWith(':root[data-arbor2]') && !/^\.arbor2-/.test(s));
-ok('R4 every rule in the Arbor file is scoped under the flag (or is the mockup\'s own .arbor2-* class)', loose.length === 0 && media.length === 0, JSON.stringify({ loose: loose.slice(0, 4), media: media.slice(0, 4) }));
+// PARKED 2026-11-15 (SUPERSEDED - bug #80, keyfix-80, merged into the Arbor line as f3161e18: three rules' conditions moved into style queries,
+// `@container style(--arbor2-bar-dim: on){ ... }`, `--arbor2-hook-lt` and `--arbor2-tutor-rtl`. @container is a GROUPING at-rule, as @media is: its
+// inner selectors are the rules, and all three are scoped under :root[data-arbor2]. The scan above knows @media but reads an @container's prelude
+// as a top-level SELECTOR and calls it loose (Actions run 43653510960: loose = the three preludes, nothing else). An instrument fault: the rule's
+// sense - every Arbor rule under the flag - holds. The scan above stays verbatim and still runs; this ok() no longer judges. Original, verbatim:
+// ok('R4 every rule in the Arbor file is scoped under the flag (or is the mockup\'s own .arbor2-* class)', loose.length === 0 && media.length === 0, JSON.stringify({ loose: loose.slice(0, 4), media: media.slice(0, 4) }));
+// SUCCESSOR: the same scan, with @container read exactly as @media is read (its inner selectors checked by the same rule), as a function so the
+// mutant below runs the SAME code. It also counts the @container blocks it read, so it cannot pass blind.
+const r4Scan = (text) => {
+  const lo = []; let dp = 0, bf = '';
+  for (const ch of text) {
+    if (ch === '{') { if (dp === 0) { const sel = bf.trim(); if (sel && !/^@(keyframes|font-face|media|container)/.test(sel)) for (const part of topSplit(sel)) { const x = part.trim(); if (x && !x.startsWith(':root[data-arbor2]') && !x.startsWith(':root[data-wz-writing') && !/^\.arbor2-|^html\[data-wz-writing/.test(x)) lo.push(x); } } dp++; bf = ''; }
+    else if (ch === '}') { dp--; bf = ''; }
+    else if (dp === 0) bf += ch;
+  }
+  const groups = [...text.matchAll(/@(?:media|container)[^{]*\{([\s\S]*?\})\s*\}/g)];
+  const md = groups.flatMap((m) => [...m[1].matchAll(/([^{}]+)\{/g)].map((x) => x[1].trim())).flatMap((x) => topSplit(x).map((y) => y.trim()))
+    .filter((x) => x && !x.startsWith(':root[data-arbor2]') && !/^\.arbor2-/.test(x));
+  return { loose: lo, media: md, containers: (text.match(/@container\b/g) || []).length };
+};
+const r4 = r4Scan(css);
+ok(`R4 [@container successor] every rule in the Arbor file is scoped under the flag (or is the mockup's own .arbor2-* class); an @container's inner rules are checked as an @media's are (${r4.containers} @container blocks read)`,
+  r4.loose.length === 0 && r4.media.length === 0 && r4.containers > 0, JSON.stringify({ loose: r4.loose.slice(0, 4), media: r4.media.slice(0, 4), containers: r4.containers }));
+// MUTANT: an @container holding a rule NOT under the flag (the shape bug #80 removed: a universal subject, bare) must be caught by the same scan
+const r4m = r4Scan(`${css}\n@container style(--r4-mutant: on){\n  .wz-tutor-panel > *{ direction:ltr; }\n}\n`);
+ok('R4 mutant: an @container holding an unscoped rule (.wz-tutor-panel > *) is caught by the successor\'s scan - must go RED on it', r4m.media.includes('.wz-tutor-panel > *') && r4m.loose.length === 0,
+  JSON.stringify({ loose: r4m.loose.slice(0, 4), media: r4m.media.slice(0, 4) }));
 // R4b (Fable's R4 ruling, Nov 7): the size box's wrapper only under the flag. Off the flag TypeControl draws main's markup - the input bare in
 // the .wz-type-size row - so it needs no rule from the Arbor file (whose CSS loads only with the flag), and the old unscoped helper class is gone.
 const tc = fs.readFileSync(new URL('../../src/components/TypeControl.tsx', import.meta.url), 'utf8');
