@@ -704,6 +704,11 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 .state-tag:hover { border-color: #9AA1A8; }
 .state-tag.is-open { max-width: 420px; padding: 8px 10px; background: #F4F5F6; border-color: #6A727B; }
 .state-tag.is-open > span:last-child { display: block; overflow: visible; }
+/* In a split the asset's side runs to the window's foot. The tag moves to the strip under the page's side,
+   against the split, and rests as the mark and two words, clear of the line under the page. */
+.state-tag.in-split { right: auto; left: calc(var(--split-x, 725px) - 12px); transform: translateX(-100%); }
+.state-tag.in-split:not(.is-open) > span:last-child { display: none; }
+.state-tag.in-split:not(.is-open)::after { content: 'read the note'; white-space: nowrap; }
 /* Notes sit at the bottom right, above the corner tag, clear of the Back menu's tabs. A click sends one away. */
 .toast {
   position: absolute; right: 12px; bottom: 76px; max-width: 296px; box-sizing: border-box; z-index: 9;

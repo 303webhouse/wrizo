@@ -1467,8 +1467,10 @@
     if (d.isNew && !S.board) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
 
     var mark = marks.indexOf('NOT RULED') !== -1 ? 'NOT RULED' : marks.indexOf('PROPOSED') !== -1 ? 'PROPOSED' : 'RULED';
-    /* At rest the note is cut to two lines and kept under the page. A new state closes an opened note. */
+    /* At rest the note is cut to two lines and kept under the page. A new state closes an opened note.
+       In a split the asset's side runs to the window's foot, so the tag moves under the page's side. */
     var html = tag(mark) + '<span>' + esc(bits.join(' \u00b7 ')) + '</span>';
+    el.tag.classList.toggle('in-split', !!S.split);
     if (html !== tagHtml) { tagHtml = html; el.tag.innerHTML = html; openTag(false); }
   }
   var tagHtml = '';
