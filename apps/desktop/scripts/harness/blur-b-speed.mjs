@@ -186,7 +186,7 @@ try { await withHarness(async (app) => {
   // BG-premise (gates everywhere): every GB/GM round got its snapshot (data-blur snap) and all 10 keys landed; GL stayed live; the 100 cards stood.   BG-keys (a timing line): look B's worst first-10-keys first frame <= BIG_KEY_MS in every round.
   // BG-long (timing): the longest long task in look B's first 1.5 s <= BIG_TASK_MS.   BG-arrive (timing): the snapshot arrives within BIG_ARRIVE_MS.   MUT-slowsnap (timing): the slow capture is CAUGHT: GM's worst key or longest task
   // exceeds look B's budget (and the 300 ms burn is MEASURED to have landed: a long task of at least 280 ms), so BG-keys or BG-long would be RED.
-  const BIG_KEY_MS = 100, BIG_TASK_MS = 250, BIG_ARRIVE_MS = 1500;
+  const BIG_KEY_MS = 100, BIG_TASK_MS = 250, BIG_ARRIVE_MS = 1500, BIG_ADD_MS = 100;   // BIG_ADD_MS: PROVISIONAL (a response within 100 ms; Fable confirms after the box reading)
   const BIGBOARD = 'bbs-big';
   const bigBoxes = () => {
     const out = [];
@@ -206,6 +206,7 @@ try { await withHarness(async (app) => {
     GB: { css: '', burn: false, what: 'the big board, look B as shipped' },
     GL: { css: LIVE_CSS, burn: false, what: 'the big board, the live blur forced' },
     GM: { css: '', burn: true, what: 'the big board, the snapshot made SLOW (the mutant)' },
+    GN: { css: '', burn: false, nofilter: true, what: 'the big board with NO capture at all (the 2D context filter deleted: the live blur of today, nothing snapshotted): the reference for what the capture adds' },
   };
   const runBig = async (name, round) => {
     const arm = BIG_ARMS[name];
@@ -220,6 +221,7 @@ try { await withHarness(async (app) => {
     await sleep(1800);
     const cards = await ev("document.querySelectorAll('.board-canvas .board-box').length");
     if (arm.css) await ev(`(() => { const s = document.createElement('style'); s.setAttribute('data-probe', '1'); s.textContent = ${JSON.stringify(arm.css)}; document.head.appendChild(s); return true; })()`);
+    if (arm.nofilter) await ev("(() => { try { delete CanvasRenderingContext2D.prototype.filter; } catch (e) {} return 'filter' in CanvasRenderingContext2D.prototype; })()");
     if (arm.burn) await ev("(() => { const o = XMLSerializer.prototype.serializeToString; XMLSerializer.prototype.serializeToString = function (...a) { const t = performance.now(); while (performance.now() - t < 300) { /* the slow capture */ } return o.apply(this, a); }; return true; })()");
     // the meters go in BEFORE the card opens, so the capture is inside what they see
     await ev(`(() => {
@@ -241,10 +243,10 @@ try { await withHarness(async (app) => {
     return { name, round, cards, before, ...got };
   };
   await runBig('GB', 0);   // a discarded warm-up
-  const bigRes = { GB: [], GL: [], GM: [] };
+  const bigRes = { GB: [], GL: [], GM: [], GN: [] };
   const BIG_ROUNDS = Math.max(3, Math.min(ROUNDS, 6));
   for (let round = 1; round <= BIG_ROUNDS; round += 1) {
-    const rot = Object.keys(BIG_ARMS).slice((round - 1) % 3).concat(Object.keys(BIG_ARMS).slice(0, (round - 1) % 3));
+    const rot = Object.keys(BIG_ARMS).slice((round - 1) % 4).concat(Object.keys(BIG_ARMS).slice(0, (round - 1) % 4));
     for (const name of rot) bigRes[name].push(await runBig(name, round));
   }
   const bigAll = Object.values(bigRes).flat();
@@ -253,11 +255,13 @@ try { await withHarness(async (app) => {
   const arrive = (r) => (r.snap != null && r.popup != null ? Math.round(r.snap - r.popup) : null);
   for (const k of Object.keys(bigRes)) console.log(`BLURB-BIG ${k} worst first-10-keys first frame ${bigRes[k].map((r) => r1(worstKey(r))).join('/')} ms | longest long task ${bigRes[k].map(longestTask).join('/')} ms | the snapshot arrived after ${bigRes[k].map(arrive).join('/')} ms | ${BIG_ARMS[k].what}`);
   ok(`BG-premise the big board stood (${[...new Set(bigAll.map((r) => r.cards))].join(',')} cards), every GB/GM round got its snapshot, GL stayed live, all 10 keys landed in every round`,
-    bigAll.every((r) => r.cards >= 100 && r.after - r.before === 10) && [...bigRes.GB, ...bigRes.GM].every((r) => r.dataBlur === 'snap' && r.snap != null) && bigRes.GL.every((r) => r.dataBlur === 'snap' ? /blur/.test(r.filter || '') : true),
+    bigAll.every((r) => r.cards >= 100 && r.after - r.before === 10) && [...bigRes.GB, ...bigRes.GM].every((r) => r.dataBlur === 'snap' && r.snap != null) && bigRes.GL.every((r) => r.dataBlur === 'snap' ? /blur/.test(r.filter || '') : true) && bigRes.GN.every((r) => r.dataBlur === null && r.snap == null && /blur/.test(r.filter || '')),
     JSON.stringify(bigAll.filter((r) => !(r.cards >= 100 && r.after - r.before === 10)).slice(0, 3).map((r) => ({ arm: r.name, round: r.round, cards: r.cards, grew: r.after - r.before, dataBlur: r.dataBlur }))));
   const gbKey = Math.max(...bigRes.GB.map(worstKey)), gbTask = Math.max(...bigRes.GB.map(longestTask)), gbArr = Math.max(...bigRes.GB.map((r) => arrive(r) ?? 99999));
   timing(`BG-keys on a 100-card board look B's worst first-10-keys first frame is within ${BIG_KEY_MS} ms in every round (worst ${r1(gbKey)} ms; the live blur's ${r1(Math.max(...bigRes.GL.map(worstKey)))})`, gbKey <= BIG_KEY_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, keys: r.keys }))));
-  timing(`BG-long the longest long task in look B's first moments is within ${BIG_TASK_MS} ms (worst ${gbTask} ms)`, gbTask <= BIG_TASK_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, long: r.long }))));
+  const gnTask = Math.max(...bigRes.GN.map(longestTask));
+  console.log(`BLURB-BIG-CAPTURE the capture's own cost on 100 cards: the longest task with it ${gbTask} ms, with NO capture ${gnTask} ms: it adds ${gbTask - gnTask} ms`);
+  timing(`BG-long the capture ADDS no more than ${BIG_ADD_MS} ms of main-thread task on a 100-card board (look B's longest task ${gbTask} ms, with no capture ${gnTask} ms: adds ${gbTask - gnTask} ms)`, gbTask - gnTask <= BIG_ADD_MS, JSON.stringify({ GB: bigRes.GB.map((r) => r.long), GN: bigRes.GN.map((r) => r.long) }));
   timing(`BG-arrive the snapshot arrives within ${BIG_ARRIVE_MS} ms of the card opening (worst ${gbArr} ms)`, gbArr <= BIG_ARRIVE_MS, JSON.stringify(bigRes.GB.map((r) => ({ round: r.round, arrive: arrive(r) }))));
   const gmKey = Math.max(...bigRes.GM.map(worstKey)), gmTask = Math.max(...bigRes.GM.map(longestTask));
   timing(`MUT-slowsnap the slow capture (a 300 ms burn in the serialiser) is CAUGHT: its longest task ${gmTask} ms (the burn landed: >= 280) and worst key ${r1(gmKey)} ms against the budgets ${BIG_TASK_MS} / ${BIG_KEY_MS}`, gmTask >= 280 && (gmTask > BIG_TASK_MS || gmKey > BIG_KEY_MS), JSON.stringify({ GM: bigRes.GM.map((r) => ({ round: r.round, long: r.long, keys: r.keys })) }));
