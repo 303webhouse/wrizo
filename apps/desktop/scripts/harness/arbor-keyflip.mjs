@@ -432,6 +432,17 @@ await withHarness(async (app) => {
   await app.key('Escape'); await sleep(250);
   tm.fReturn = await app.evalJs(FADES); tm.wReturn = (await app.evalJs(STATE)).writing;
   tm.ret = await app.evalJs(TDUR); await app.evalJs(T2SIM(true)); tm.t2Ret = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
+  // THE SLOW RETURN (the Wrizors, Nov 14, non-blocking: "the slow-return timing (120 s after the 3-minute pause)"): writing again, then no input for
+  // the engine's whole pause (useChromeDissolve WAIT_MS 180 s) - the chrome comes back on its own over FADE_IN_S 120 s, and the same reads hold:
+  // nothing on <html>, the root and the bar carry 120s, every element's timings as with T2's <html> write. Polls the writing state once a second
+  // (a script read is not input); at most 200 s.
+  await focus(); await app.typeKeys('a'); await sleep(250);
+  tm.wSlowStart = (await app.evalJs(STATE)).writing;
+  { const t0 = Date.now(); while (Date.now() - t0 < 200000) { await sleep(1000); if ((await app.evalJs(STATE)).writing !== 'true') break; } tm.slowAfterMs = Date.now() - t0; }
+  await sleep(250);
+  tm.fSlow = await app.evalJs(FADES); tm.wSlow = (await app.evalJs(STATE)).writing;
+  tm.slow = await app.evalJs(TDUR); await app.evalJs(T2SIM(true)); tm.t2Slow = await app.evalJs(TDUR); await app.evalJs(T2SIM(false));
+  tm.barStripSlow = await app.evalJs(BARSTRIP); tm.mutSlow = await app.evalJs(TDUR); await app.evalJs(BARBACK);
   // the readers of --fade-dur on this page, by name, with their durations: the fix's, and with no --fade-dur anywhere (for the Wrizors)
   tm.readers = tm.recede && tm.none && tm.names && tm.recede.length === tm.none.length && tm.names.length === tm.recede.length
     ? tm.recede.map((x, i) => (x !== tm.none[i] ? `${tm.names[i]}: ${x.split('|')[0]} (unwritten ${tm.none[i].split('|')[0]})` : null)).filter(Boolean) : null;
@@ -585,6 +596,12 @@ await withHarness(async (app) => {
     JSON.stringify({ T, fRest: tm.fRest, fRecede: tm.fRecede, fReturn: tm.fReturn, writing: [tm.wRecede, tm.wReturn], strip: tm.strip, readers: tm.readers }));
   ok(`MUT-KF-TIMING the mockup bar's --fade-dur taken out while receding (${tm.barStrip}): KF-TIMING is RED (${T.mut} elements' timings differ from T2's)`,
     tm.barStrip === '2.8s' && T.mut >= 1, JSON.stringify({ barStrip: tm.barStrip, mut: T.mut }));
+  const TS = { slow: tdiff(tm.slow, tm.t2Slow), mut: tdiff(tm.mutSlow, tm.t2Slow) };
+  ok(`KF-TIMING-SLOW the slow return after the 3-minute pause (back after ${Math.round((tm.slowAfterMs || 0) / 1000)} s): no --fade-dur on <html> (${JSON.stringify(tm.fSlow && tm.fSlow.html)}); the app's root and the mockup bar carry 120s (${tm.fSlow && tm.fSlow.root}/${tm.fSlow && tm.fSlow.bar}); every element's timings as with T2's <html> write (${TS.slow} differ)`,
+    tm.wSlowStart === 'true' && tm.wSlow !== 'true' && tm.slowAfterMs >= 170000 && tm.slowAfterMs <= 200000 && !!tm.fSlow && tm.fSlow.html === '' && tm.fSlow.root === '120s' && tm.fSlow.bar === '120s' && TS.slow === 0,
+    JSON.stringify({ TS, fSlow: tm.fSlow, writing: [tm.wSlowStart, tm.wSlow], afterMs: tm.slowAfterMs }));
+  ok(`MUT-KF-TIMING-SLOW the mockup bar's --fade-dur taken out during the slow return (${tm.barStripSlow}): KF-TIMING-SLOW is RED (${TS.mut} elements' timings differ from T2's)`,
+    tm.barStripSlow === '120s' && TS.mut >= 1, JSON.stringify({ barStripSlow: tm.barStripSlow, mut: TS.mut }));
   ok(`MUT-KF-FLIP-ROOT with T2's <html> write put back (${mutRoot.copied} writes copied onto <html>), KF-FLIP is RED (printed: ${mutRoot.tr.keyEls}/${mutRoot.before.docEls})`,
     mutRoot.copied >= 1 && mutRoot.tr && mutRoot.tr.keyEls != null && !flipOk(mutRoot), JSON.stringify({ copied: mutRoot.copied, tr: mutRoot.tr, docEls: mutRoot.before.docEls }));
   ok(`KF-SCAN-HAS no selector in src/**/*.css has a universal subject under a :has() (${hasHits.length}); the scanner finds T2's rule 642 (${oldHasHits.length} of 1, liveness)`,
@@ -595,7 +612,7 @@ await withHarness(async (app) => {
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 21;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12)
+const WANT_CHECKS = 23;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
