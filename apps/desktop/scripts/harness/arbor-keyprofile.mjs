@@ -21,6 +21,13 @@
 //   shadeoff   arbor + the Mood menu's "Day shadows" switch off (data-arbor2-off~='shadows': the pergola, the page's shade and the sun not shown)
 //   rhizomeoff arbor + the progress style 'bar' (the rhizome field is not rendered)
 //   bothoff    arbor + both
+// ROUND 2 (after round 1 found the start cost in the shade and an unswitched steady cost; Fable, Nov 14, 4:24 pm: cost with it, cost without it):
+//   caretoff   arbor + &arbor2caret=off (the product's own test-only caret pin, arbor2/flag.ts)
+//   night      ?arbor2=1&arbor2room=night (the night room)
+//   nopergola / nopagesh / nosun / novines / novignette   arbor with ONE layer hidden by a harness-only stylesheet (display:none !important on
+//              .arbor2-pergola / .arbor2-pagesh / .arbor2-sun / .arbor2-vines / .arbor2-vignette-mask), re-injected after every reopen; the premise
+//              requires the layer to EXIST on the page and to be hidden, so an arm can never measure a layer that is not there
+//   alloff     arbor + shade off + rhizome off + caret off
 // The switches are the product's own, written as arbor-keycost-attr writes them. Run on Actions: the fix's tree (arms plain, arbor, shadeoff,
 // rhizomeoff, bothoff) and main's tree (plain), one file per arm, so "with it / without it" is read inside one tree and fix-vs-main across two.
 //
@@ -28,7 +35,10 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const ARM = process.env.KP_ARM || 'plain';
-const ARMS = { plain: {}, arbor: { flag: true }, shadeoff: { flag: true, shade: 'off' }, rhizomeoff: { flag: true, rhizome: 'off' }, bothoff: { flag: true, shade: 'off', rhizome: 'off' } };
+const ARMS = { plain: {}, arbor: { flag: true }, shadeoff: { flag: true, shade: 'off' }, rhizomeoff: { flag: true, rhizome: 'off' }, bothoff: { flag: true, shade: 'off', rhizome: 'off' },
+  caretoff: { flag: true, caret: 'off' }, night: { flag: true, room: 'night' }, nopergola: { flag: true, hide: '.arbor2-pergola' }, nopagesh: { flag: true, hide: '.arbor2-pagesh' },
+  nosun: { flag: true, hide: '.arbor2-sun' }, novines: { flag: true, hide: '.arbor2-vines' }, novignette: { flag: true, hide: '.arbor2-vignette-mask' }, alloff: { flag: true, shade: 'off', rhizome: 'off', caret: 'off' } };
+const HIDE_SEL = (ARMS[process.env.KP_ARM || 'plain'] || {}).hide || null;
 const A = ARMS[ARM];
 const START_ROUNDS = Number(process.env.KP_START || 10);
 const STEADY_KEYS = Number(process.env.KP_STEADY || 200);
@@ -48,6 +58,8 @@ const METER = `(() => { if (window.__kpOff) window.__kpOff(); window.__kp = []; 
   window.__kpOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); }; return true; })()`;
 const STATE = `(() => { const root = document.documentElement, pg = document.querySelector('.arbor2-pergola');
   return { arbor: root.hasAttribute('data-arbor2'), room: root.getAttribute('data-arbor2-room'), off: root.getAttribute('data-arbor2-off'), pergola: pg ? getComputedStyle(pg).display : null,
+    hid: ${JSON.stringify(HIDE_SEL)} ? (() => { const els = [...document.querySelectorAll(${JSON.stringify(HIDE_SEL || 'x-none')})]; return { n: els.length, shown: els.filter((e) => getComputedStyle(e).display !== 'none').length }; })() : null,
+    caretOff: /[?&]arbor2caret=off\\b/.test(location.search + location.hash),
     field: !!document.querySelector('.wz-rhizome-field'), anims: document.getAnimations().filter((a) => a.playState === 'running').length,
     bundle: [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => /assets\\/index-/.test(s)).join(',') }; })()`;
 
@@ -133,6 +145,7 @@ await withHarness(async (app) => {
     await js(`location.hash = '#/page/' + ${JSON.stringify(pageHash)}`);
     await app.waitFor(style === 'bar' ? "!!document.querySelector('.forward-only-editor')" : "!!document.querySelector('.wz-rhizome-field')", { label: 'page reopened' });
     await applyShade();
+    if (A.hide) await js(`(() => { const st = document.createElement('style'); st.id = 'kp-hide'; st.textContent = ${JSON.stringify(A.hide)} + '{ display: none !important; }'; document.head.appendChild(st); return true; })()`);
     await sleep(800);
     await js("document.querySelector('.forward-only-editor').focus()");
     states.push(await js(STATE));
@@ -181,8 +194,9 @@ await withHarness(async (app) => {
   // premises
   const wantN = 2 * START_ROUNDS + 2;
   ok(`P1 the arm held at every reopen (${wantN}): ${A.flag ? 'an Arbor page' : 'no Arbor flag'}${A.shade === 'off' ? ', the pergola display:none' : ''}${A.rhizome === 'off' ? ', no rhizome field' : ', the rhizome field present'}`,
-    states.length === wantN && states.every((s) => (A.flag ? s.arbor : !s.arbor) && (A.rhizome === 'off' ? !s.field : s.field) && (!A.flag || (A.shade === 'off' ? s.pergola === 'none' : s.pergola !== 'none'))),
-    JSON.stringify(states.map((s) => [s.arbor, s.room, s.off, s.pergola, s.field])));
+    states.length === wantN && states.every((s) => (A.flag ? s.arbor : !s.arbor) && (A.rhizome === 'off' ? !s.field : s.field) && (!A.flag || (A.shade === 'off' || A.hide === '.arbor2-pergola' ? s.pergola === 'none' : s.pergola !== 'none'))
+      && (A.hide ? !!s.hid && s.hid.n > 0 && s.hid.shown === 0 : true) && (A.room ? s.room === A.room : (!A.flag || s.room === 'day')) && (A.caret === 'off' ? s.caretOff : !s.caretOff)),
+    JSON.stringify(states.map((s) => [s.arbor, s.room, s.off, s.pergola, s.field, s.hid, s.caretOff])));
   const kn = (p) => out[p].keys.n;
   ok(`P2 the keys were typed and painted: start ${START_ROUNDS * 3} per instrument, steady at least ${STEADY_KEYS - 5} per instrument (${kn('start-profile')}, ${kn('start-trace')}, ${kn('steady-profile')}, ${kn('steady-trace')})`,
     kn('start-profile') === START_ROUNDS * 3 && kn('start-trace') === START_ROUNDS * 3 && kn('steady-profile') >= STEADY_KEYS - 5 && kn('steady-trace') >= STEADY_KEYS - 5, '');
