@@ -291,6 +291,10 @@ await withHarness(async (app) => {
     await app.reload();
     await app.cdp('Page.navigate', { url: `${app.base}/?arbor2=1&arbor2room=${room}#/page/${pageId}` });
     await app.waitFor("!!document.querySelector('.wz-rhizome-field') && !!document.querySelector('.forward-only-editor')", { timeout: 15000, label: `page reopened (${room})` });
+    // the splash gone before any read (the merge onto main, Actions run 43644710885: main's splash still showed its loading line ~1.5 s after the
+    // reopen, mid-fade, so the snapshots that KF-LOOK-HAS-DYN-C compares read its opacity at different moments - 1 in one cycle, 0.998 in the
+    // other - and named a transient as a difference). A fixture premise: a splash that never leaves fails the run here, it is not waited past.
+    await app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: `splash gone (${room})` });
     await sleep(1500);
   };
   const focus = () => app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
