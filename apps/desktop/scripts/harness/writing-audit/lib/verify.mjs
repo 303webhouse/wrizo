@@ -10,6 +10,7 @@ export const TOL = { x: 3, y: 4, rect: 0.5, corner: 12 };
 
 const near = (a, b, t) => typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= t;
 const rectEq = (a, b) => !!a && !!b && near(a.x, b.x, TOL.rect) && near(a.y, b.y, TOL.rect) && near(a.w, b.w, TOL.rect) && near(a.h, b.h, TOL.rect);
+const growsDown = (a, b) => !!a && !!b && near(a.x, b.x, TOL.rect) && near(a.y, b.y, TOL.rect) && near(a.w, b.w, TOL.rect) && typeof a.h === 'number' && typeof b.h === 'number' && b.h >= a.h - TOL.rect;   // #73: the card pop-up's law: same left, top and width; the height only grows
 const short = (s, n = 70) => { const j = JSON.stringify(s); return j.length > n ? j.slice(0, n) + '…"' : j; };
 const rect = (r) => (r ? `${Math.round(r.x)},${Math.round(r.top ?? r.y)}` : 'none');
 
@@ -66,8 +67,15 @@ export function verify({ exp, box, before, early, late, errors = [], expect = {}
   const zoomEngaged = !!before && !before.tw && !!late.tw;   // the one ruled exception (page-size, Oct 2026): the Typewriter's zoom engages and the same page is drawn larger
   if (noPage) { /* a fast step in the Typewriter: the zoom glides; the page's rect is judged at the full steps */ }
   else if (zoomEngaged && before.page && late.page && !rectEq(before.page, late.page)) notes.push(`the Typewriter zoom engaged on this step: the page went ${Math.round(before.page.w)}x${Math.round(before.page.h)} -> ${Math.round(late.page.w)}x${Math.round(late.page.h)} (the ruled exception; the page's rect is judged between steps from here)`);
-  else if (before && before.page && late.page && !rectEq(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}`);
-  if (!noPage && !zoomEngaged && before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
+  // SUPERSEDED (#73, Nov 14; the card pop-up grows DOWNWARD only - Nick's ruling - so on the card the law is "same left, top and width; the height may only grow"; every other surface keeps the law below, unchanged): the two checks as they stood
+  //   else if (before && before.page && late.page && !rectEq(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}`);
+  //   if (!noPage && !zoomEngaged && before && before.page && early && early.page && !rectEq(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}`);
+  // SUCCESSOR: the same two checks, with the comparison chosen by `expect.pageGrowsDown` (the card's runs) - rectEq without it
+  const pageSame = expect.pageGrowsDown ? growsDown : rectEq;
+  if (noPage) { /* (see above) */ }
+  else if (zoomEngaged) { /* (see above) */ }
+  else if (before && before.page && late.page && !pageSame(before.page, late.page)) fail('page', `the page's rect changed ${JSON.stringify(before.page)} -> ${JSON.stringify(late.page)}${expect.pageGrowsDown ? ' (a card may only grow downward: same left, top and width, never shorter)' : ''}`);
+  if (!noPage && !zoomEngaged && before && before.page && early && early.page && !pageSame(before.page, early.page)) fail('page', `the page's rect changed within 2 frames ${JSON.stringify(before.page)} -> ${JSON.stringify(early.page)}${expect.pageGrowsDown ? ' (a card may only grow downward: same left, top and width, never shorter)' : ''}`);
 
   // 7. THE VIEW HAS NOT JUMPED (a short document never scrolls: the scroll changes only when the caret would leave the window)
   if ((before && before.tw) || late.tw) notes.push('the Typewriter is engaged on this page: it scrolls the line to its resting place by design, so the view is not judged here (its own cases are a later session)');
