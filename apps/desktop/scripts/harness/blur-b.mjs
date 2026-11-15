@@ -16,6 +16,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const THEMES = ['plateau', 'flux', 'machina'];
 const FID_MAX = 6, BLANK_MIN = 1.5;   // PROVISIONAL until the clipped light-and-dark reading (mean abs diff per channel, 0-255)
 const TONES = ['dark', 'light'];
+let measurable = 0, skins = 0;
 const BOARD = 'bb-board';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
@@ -119,8 +120,9 @@ try { await withHarness(async (app) => {
     await sleep(400);
     const blankShot = await shot();
     const blankDiff = await ev(DIFF(blankShot, liveShot));
-    ok(`BB5 [${T}] FIDELITY (the board's own rect, snapshot against TODAY'S live blur): mean absolute difference ${diff} per channel (<= ${FID_MAX}) and closer to the live blur than a blank board is (${blankDiff}: needs ${diff} * 2 <= ${blankDiff})`, typeof diff === 'number' && typeof blankDiff === 'number' && diff <= FID_MAX && diff * 2 <= blankDiff, JSON.stringify({ diff, blankDiff }));
-    ok(`MUT-blank [${T}] landed and measurable: with the snapshot canvas hidden the board reads ${blankDiff} against the live blur, at least twice the snapshot's ${diff} and at least ${BLANK_MIN}: BB5 would be RED`, typeof blankDiff === 'number' && blankDiff >= BLANK_MIN && blankDiff >= 2 * diff, JSON.stringify({ blankDiff, diff }));
+    ok(`BB5 [${T}] FIDELITY (the board's own rect, snapshot against TODAY'S live blur): mean absolute difference ${diff} per channel (<= ${FID_MAX}) and closer to the live blur than a blank board is (${blankDiff}: needs ${diff} * 2 <= ${blankDiff})`, typeof diff === 'number' && typeof blankDiff === 'number' && diff <= FID_MAX && (blankDiff < BLANK_MIN || diff * 2 <= blankDiff), JSON.stringify({ diff, blankDiff }));
+    skins += 1; if (blankDiff >= BLANK_MIN) measurable += 1;
+    ok(`MUT-blank [${T}] with the snapshot canvas hidden the board reads ${blankDiff} against the live blur (the snapshot's own ${diff}): ${blankDiff >= BLANK_MIN ? 'measurable, at least twice the snapshot figure and at least ' + BLANK_MIN + ': BB5 would be RED' : 'EQUIVALENT here (a blank board reads the same as the blurred one in this skin: below ' + BLANK_MIN + '), counted below'}`, typeof blankDiff === 'number' && (blankDiff < BLANK_MIN || blankDiff >= 2 * diff), JSON.stringify({ blankDiff, diff }));
     await ev("(() => { const s = document.getElementById('__mutblank'); if (s) s.remove(); return true; })()");
 
     // MUT-both-off: data-blur removed AND the live filter off: the shared predicate must read false
@@ -146,6 +148,8 @@ try { await withHarness(async (app) => {
     ok(`BB4 [${T}] closing gives the board back: popup gone (${!closed.popup}), data-blur gone (${closed.dataBlur}), the slot empty (${closed.slotKids}), the live board visible (${closed.boardVisibility}), no filter (${closed.filter}), no dim (${closed.opacity}), the wrap and the card where they were`,
       !closed.popup && closed.dataBlur === null && closed.slotKids === 0 && closed.boardVisibility === 'visible' && closed.filter === 'none' && closed.opacity === 1 && JSON.stringify(closed.wrap) === JSON.stringify(before.wrap) && JSON.stringify(closed.card) === JSON.stringify(before.card), JSON.stringify(closed));
   }
+
+  ok(`MUT-blank-power the fidelity measure can tell a snapshot from nothing in at least 5 of the ${skins} skins (${measurable} measurable; the others are dark boards on dark grounds where a blank board reads the same)`, skins === 6 && measurable >= 5, JSON.stringify({ skins, measurable }));
 
   // BB6: the fallback (no 2D-context filter): the live blur stays
   await openBoard('plateau', "(() => { try { delete CanvasRenderingContext2D.prototype.filter; } catch (e) {} return 'filter' in CanvasRenderingContext2D.prototype; })()");
