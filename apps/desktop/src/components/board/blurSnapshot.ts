@@ -40,6 +40,20 @@ function inline(o: Element, c: Element): void {
   }
 }
 
+// ::before and ::after are not in the clone (cloneNode copies elements): each one with content becomes a real <span> with the pseudo's own computed style, so a theme's card chrome (corner brackets, glows) is drawn
+function pseudo(o: Element, c: Element): void {
+  for (const which of ['::before', '::after'] as const) {
+    const ps = getComputedStyle(o, which);
+    const content = ps.content;
+    if (!content || content === 'none' || content === 'normal' || ps.display === 'none') continue;
+    const span = document.createElement('span');
+    for (const p of PROPS) { const v = ps.getPropertyValue(p); if (v) span.style.setProperty(p, v); }
+    const m = /^"(.*)"$/.exec(content) || /^'(.*)'$/.exec(content);
+    if (m && m[1]) span.textContent = m[1].replace(/\\(.)/g, '$1');
+    if (which === '::before') c.insertBefore(span, c.firstChild); else c.appendChild(span);
+  }
+}
+
 function walk(o: Element, c: Element, scrolls: Array<{ c: Element; left: number; top: number; w: number; h: number }>): void {
   const cs = getComputedStyle(o);
   if (cs.display === 'none') { c.remove(); return; }
@@ -69,7 +83,8 @@ function walk(o: Element, c: Element, scrolls: Array<{ c: Element; left: number;
   if (o instanceof HTMLElement && (o.scrollLeft > 0 || o.scrollTop > 0) && /(auto|scroll|hidden)/.test(cs.overflowX + cs.overflowY)) {
     scrolls.push({ c, left: o.scrollLeft, top: o.scrollTop, w: o.scrollWidth, h: o.scrollHeight });
   }
-  const oc = Array.from(o.children), cc = Array.from(c.children);
+  const oc = Array.from(o.children), cc = Array.from(c.children);   // (taken before the pseudo-elements are added, so the two lists still line up)
+  pseudo(o, c);
   for (let i = 0; i < oc.length; i += 1) if (cc[i]) walk(oc[i], cc[i], scrolls);
 }
 
@@ -85,6 +100,7 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6): Promise<HTM
     // the root is the wrap itself: drawn at full strength and still (its own dim and blur are the live treatment this replaces)
     const oc = Array.from(src.children), cc = Array.from(clone.children);
     inline(src, clone);
+    pseudo(src, clone);
     for (let i = 0; i < oc.length; i += 1) if (cc[i]) walk(oc[i], cc[i], scrolls);
     for (const s of scrolls) {
       // a scrolled box: its contents move up and left by what it scrolled, inside a clipped box of its own size
