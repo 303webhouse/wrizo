@@ -23,6 +23,15 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
+// RETIRED 2026-11-15 (NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page,
+// ink #241A10 on the light page"; src/arbor2/edgedCaret.tsx is removed). This file measured the drawn caret (arms T and M) against the native one (C);
+// with no drawn caret its arms are the same page and its premises (P1, P3: "the drawn caret in T and M") cannot hold. EVERY LINE BELOW IS KEPT
+// VERBATIM and no longer runs. SUCCESSOR: scripts/harness/arbor-native-caret.mjs (the light page's caret is the browser's own in #241A10, the dark
+// page's brass, nothing drawn anywhere; mutants M1/M2). The caret's latency is now the product's own typing, held by Nick's bar (arbor-bar-unit.mjs).
+console.log('ARBOR2-CARET-LATENCY RETIRED: PASS (0 checks run) - the drawn caret is scrapped (Nick, Nov 14); successor arbor-native-caret.mjs');
+if (process.env.HARNESS_PARKED === '1') console.log('ARBOR2-CARET-LATENCY PARKED: PASS (the whole file: retired, kept verbatim below the exit)');
+process.exit(0);
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(here, '..', '..', '..', '..');
 const DIST = path.resolve(here, '..', '..', 'dist-web');
