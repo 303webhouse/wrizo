@@ -98,14 +98,21 @@ function judgeCost(cRounds, xRounds) {
 
 const CYCLE = 'the signal holds while she writes on ';
 const BLUR = '.board-canvas-blurred{filter:none!important}';
-const LAYER = '[data-flux3-layer]{display:none!important}';
+const L = (decl) => `[data-flux3-layer]{${decl}}`;
+const LC = (decl) => `[data-flux3-layer] canvas{${decl}}`;
+// The box (Nov 15 00:04Z) split bug #102 in two: the board blur holds Flux's FIRST FRAME (22.5 ms vs Arbor 12.1), and the LAYER holds KEY-TO-PAINT (347 of 352 keys >= 48 ms late; hidden: 54). This probe takes the layer
+// apart with the blur OFF in every Flux arm but the last (so the layer's own share is the only variable): hidden outright / visibility / its canvases only / its containment / promoted / its opacity transition / opacity 0.
 const ARMS = {
-  C:       { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: no flag, no layer)' },
-  CNOBLUR: { theme: 'plateau', flag: false, scale: null, css: BLUR, what: 'Arbor with the card-open board blur (.board-canvas-blurred filter) off' },
-  Z100:    { theme: 'flux', flag: true, scale: 1, css: '', what: 'Flux ?flux3=1 at 1.00 (the zoom probe\'s Z100)' },
-  NOBLUR:  { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux with the board blur off' },
-  NOLAYER: { theme: 'flux', flag: true, scale: 1, css: LAYER, what: 'Flux with the layer canvas hidden (display:none)' },
-  NOBOTH:  { theme: 'flux', flag: true, scale: 1, css: BLUR + LAYER, what: 'Flux with the board blur off AND the layer hidden' },
+  C:        { theme: 'plateau', flag: false, scale: null, css: '', what: 'Arbor (the control: blur on, as shipped)' },
+  ZB:       { theme: 'flux', flag: true, scale: 1, css: BLUR, what: 'Flux, blur off, layer on (the layer\'s own share is the variable below)' },
+  LHIDE:    { theme: 'flux', flag: true, scale: 1, css: BLUR + L('display:none!important'), what: 'blur off + layer display:none' },
+  LVIS:     { theme: 'flux', flag: true, scale: 1, css: BLUR + L('visibility:hidden!important'), what: 'blur off + layer visibility:hidden (it stays in layout)' },
+  LNOCV:    { theme: 'flux', flag: true, scale: 1, css: BLUR + LC('display:none!important'), what: 'blur off + the layer\'s canvases display:none (the div stays)' },
+  LNOCONT:  { theme: 'flux', flag: true, scale: 1, css: BLUR + L('contain:none!important'), what: 'blur off + the layer\'s contain:strict removed' },
+  LWILL:    { theme: 'flux', flag: true, scale: 1, css: BLUR + L('will-change:transform!important'), what: 'blur off + the layer promoted (will-change:transform)' },
+  LNOTRANS: { theme: 'flux', flag: true, scale: 1, css: BLUR + L('transition:none!important'), what: 'blur off + the layer\'s opacity transition removed' },
+  LOP0:     { theme: 'flux', flag: true, scale: 1, css: BLUR + L('opacity:0!important'), what: 'blur off + the layer opacity:0 (drawn, not seen)' },
+  ZBLURWILL: { theme: 'flux', flag: true, scale: 1, css: L('will-change:transform!important'), what: 'blur ON (as shipped) + the layer promoted' },
 };
 
 // the nine cards and three links (flux3-s1's board), on a TALL canvas so the outer limit lies below 0.20
@@ -230,11 +237,13 @@ try { await withHarness(async (app) => {
     const t = T[k];
     console.log(`BUG102 ${k.padEnd(8)} clock ${r1(t.clock.median)}/${r1(t.clock.p95)} (round spread ${r1(t.spreadMed)}/${r1(t.spreadP95)}) | paint ${r1(t.paint.median)}/${r1(t.paint.p95)} | work ${r1(t.work.median)}/${r1(t.work.p95)} | first frame ${r1(t.f1.median)}/${r1(t.f1.p95)} | key-to-paint (Event Timing) ${r1(t.durS.median)}/${r1(t.durS.p95)} | late ${t.late}/${t.nET} | ${ARMS[k].what}`);
   }
-  for (const k of ['C', 'Z100']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
-  const gapC = (k, f) => r1(T[k][f].p95 - T.C[f].p95), gapZ = (k, f) => r1(T.Z100[f].p95 - T[k][f].p95);
-  const closed = (k, f) => { const g = T.Z100[f].p95 - T.C[f].p95; return g > 0 ? `${Math.round(100 * (T.Z100[f].p95 - T[k][f].p95) / g)}%` : 'n/a'; };
-  for (const k of order.filter((x) => x !== 'C' && x !== 'Z100')) console.log(`BUG102-CLOSES ${k.padEnd(8)} of the Z100-over-Arbor p95 gap: clock ${closed(k, 'clock')} (gap to Arbor ${gapC(k, 'clock')}), paint ${closed(k, 'paint')} (gap to Arbor ${gapC(k, 'paint')})`);
-  ok(`BUG102 (information) Z100 over Arbor, p95: clock ${gapC('Z100', 'clock')}, paint ${gapC('Z100', 'paint')}`, true, '');
+  for (const k of ['C', 'ZB']) console.log(`BUG102-FILTERED ${k}: ${JSON.stringify((res[k][0] && res[k][0].where.filtered) || [])}`);
+  // the layer's own share: each arm against ZB (Flux, blur off, layer on); a NEGATIVE delta is what the variant removed
+  for (const k of order.filter((x) => x !== 'C' && x !== 'ZB')) {
+    const d = (f, g) => r1(T[k][f][g] - T.ZB[f][g]);
+    console.log(`BUG102-VS-ZB ${k.padEnd(9)} first frame ${d('f1', 'median')} (p95 ${d('f1', 'p95')}) | key-to-paint median ${d('durS', 'median')} | late keys ${T[k].late - T.ZB.late} (of ${T[k].nET}) | paint p95 ${d('paint', 'p95')} | clock p95 ${d('clock', 'p95')}`);
+  }
+  ok(`BUG102 (information) ZB (Flux, blur off, layer on) against Arbor: first frame ${r1(T.ZB.f1.median)} vs ${r1(T.C.f1.median)}, key-to-paint ${r1(T.ZB.durS.median)} vs ${r1(T.C.durS.median)}, late ${T.ZB.late} vs ${T.C.late}`, true, '');
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
