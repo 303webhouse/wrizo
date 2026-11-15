@@ -6,7 +6,7 @@
 [data-theme='machina'] .wz-reorg-pins{ border-bottom:2px solid #727C86; padding-bottom:6px; margin-bottom:6px; }
 
 /* 1. where she is: her box over her name, the rail's where-you-are edge on the left */
-[data-theme='machina'] .wz-reorg-where-item{ border-left-color:var(--accent-rest); cursor:default; padding-top:8px; }
+[data-theme='machina'] .wz-reorg-where-item{ border-left-color:var(--accent-rest); cursor:pointer; padding-top:8px; }
 [data-theme='machina'] .wz-reorg-where-item:hover{ background:none; }
 [data-theme='machina'] .wz-reorg-where-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; }
@@ -22,7 +22,8 @@
 [data-theme='machina'] .wz-reorg-pin-grid{ display:grid; grid-template-columns:repeat(2, 34px); gap:6px; justify-content:center; padding:6px 0 4px; }
 [data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-pin-grid{ grid-template-columns:1fr; gap:4px; }
 [data-theme='machina'] .wz-reorg-pin{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; background:none; border:0;
-  color:var(--text-hi); cursor:default; }
+  color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-pin:focus-visible, [data-theme='machina'] .wz-reorg-where-item:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 [data-theme='machina'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-box--pin{ width:24px; height:24px; font-size:9px; }
 [data-theme='machina'] .wz-reorg-pin-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .wz-reorg-pin-view{ display:flex; justify-content:center; gap:8px; padding-top:2px; }
@@ -51,7 +52,7 @@
 [data-theme='machina'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
 [data-theme='machina'] .wz-reorg-row[aria-current='location']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
 [data-theme='machina'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
-  color:var(--text-hi); text-align:left; cursor:default; }
+  color:var(--text-hi); text-align:left; cursor:pointer; }
 [data-theme='machina'] .wz-reorg-row-text{ display:flex; flex-direction:column; min-width:0; gap:2px; }
 [data-theme='machina'] .wz-reorg-row-name{ font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .wz-reorg-row[aria-current='location'] .wz-reorg-row-name{ font-weight:600; }
@@ -62,3 +63,70 @@
 [data-theme='machina'] .wz-reorg-row-pin:hover{ color:var(--text-hi); }
 [data-theme='machina'] .wz-reorg-row-pin:focus-visible,
 [data-theme='machina'] .wz-reorg-new:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+
+/* a box she gave a picture: the picture fills it, no letters (step 4) */
+[data-theme='machina'] .wz-reorg-box--picture{ background-size:cover; background-position:center; }
+
+/* A PROJECT'S OWN LIST (step 3): + New doc and + New board side by side; Docs, then Boards with no doc; a Doc's Parts and its boards indented */
+[data-theme='machina'] .wz-reorg-list{ padding:0; gap:0; }
+[data-theme='machina'] .wz-reorg-head-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:none; }
+[data-theme='machina'] .wz-reorg-list-new{ display:flex; border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .wz-reorg-list-new .wz-reorg-new{ border-bottom:0; }
+[data-theme='machina'] .wz-reorg-group-count{ margin-left:auto; }
+[data-theme='machina'] .wz-reorg-doc{ list-style:none; }
+[data-theme='machina'] .wz-reorg-list-row{ border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
+[data-theme='machina'] .wz-reorg-list-row[aria-current='page']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-list-open{ display:flex; align-items:baseline; gap:8px; width:100%; padding:8px 14px 8px 13px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-list-row--part .wz-reorg-list-open{ padding-left:31px; font-size:12px; }
+[data-theme='machina'] .wz-reorg-list-row[data-kind='board'] .wz-reorg-list-title::before{ content:'\25A6\00A0'; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-list-title{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-list-meta{ margin-left:auto; flex:none; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-list-open:hover{ background:var(--ink-900); }
+[data-theme='machina'] .wz-reorg-list-open:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-reorg-empty{ margin:0; padding:8px 14px; color:var(--text-mid); font-size:12px; }
+
+/* BOX SETTINGS (step 4, frame R5): one closed drop-down at the foot of PROJECTS, for the Project she is in */
+[data-theme='machina'] .wz-reorg-box-settings{ margin-top:auto; border-top:1px solid var(--ink-border); }
+[data-theme='machina'] .wz-reorg-box-settings-head{ display:flex; align-items:center; gap:10px; width:100%; padding:14px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-box-settings-for{ margin-left:auto; color:var(--text-mid); letter-spacing:.08em; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-reorg-box-settings-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-reorg-box-settings-body{ display:flex; flex-direction:column; gap:12px; padding:4px 14px 16px; }
+[data-theme='machina'] .wz-reorg-box-settings-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+[data-theme='machina'] .wz-reorg-box-settings-row--indent{ padding-left:68px; }
+[data-theme='machina'] .wz-reorg-box-settings-label{ width:58px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .wz-reorg-letters{ width:54px; height:28px; padding:0 8px; box-sizing:border-box; font-family:var(--font-chromeLabel); font-size:13px;
+  letter-spacing:.06em; text-transform:uppercase; border:1px solid #6A727B; background:none; color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-chip{ display:inline-flex; align-items:center; gap:6px; padding:3px 6px; background:none; border:1px solid #6A727B;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-chip[aria-pressed='true']{ border-color:var(--accent-rest); }
+[data-theme='machina'] .wz-reorg-own-colour input{ width:18px; height:14px; padding:0; border:0; background:none; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-swatches{ display:flex; gap:8px; }
+[data-theme='machina'] .wz-reorg-swatch{ width:22px; height:22px; padding:0; border:1px solid #6A727B; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid var(--text-hi); outline-offset:2px; }
+[data-theme='machina'] .wz-reorg-chip:focus-visible, [data-theme='machina'] .wz-reorg-swatch:focus-visible,
+[data-theme='machina'] .wz-reorg-letters:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
+
+/* DOCS (step 5, frame R7): New doc's kinds, Recent (a title over its Project and words), the two Page defaults as OFF | ON switches */
+[data-theme='machina'] .wz-reorg-docs, [data-theme='machina'] .wz-reorg-unfiled{ padding:0; gap:0; }
+[data-theme='machina'] .wz-reorg-kind{ border-bottom:0; padding:9px 14px; }
+[data-theme='machina'] .wz-reorg-two-line{ flex-direction:column; align-items:flex-start; gap:2px; }
+[data-theme='machina'] .wz-reorg-two-line .wz-reorg-list-title{ max-width:100%; }
+[data-theme='machina'] .wz-reorg-default{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px;
+  border-bottom:1px solid var(--ink-border); font-family:var(--font-contentLabel); font-size:13px; color:var(--text-hi); }
+[data-theme='machina'] .wz-reorg-toggle{ display:inline-flex; border:1px solid #6A727B; }
+[data-theme='machina'] .wz-reorg-toggle button{ min-width:34px; padding:4px 6px; background:none; border:0; color:var(--text-mid); cursor:pointer;
+  font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+[data-theme='machina'] .wz-reorg-toggle button[aria-pressed='true']{ background:var(--text-hi); color:var(--chrome-surface); }
+[data-theme='machina'] .wz-reorg-toggle button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+
+/* UNFILED (step 6, frame R6): a row's two acts (File, Trash) as small boxed icons; the Trash is the row at the very foot */
+[data-theme='machina'] .wz-reorg-unfiled-row{ display:flex; align-items:center; gap:6px; padding-right:10px; }
+[data-theme='machina'] .wz-reorg-unfiled-row .wz-reorg-list-open{ flex:1; min-width:0; }
+[data-theme='machina'] .wz-reorg-icon-btn{ width:28px; height:28px; flex:none; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid #6A727B; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-icon-btn:focus-visible, [data-theme='machina'] .wz-reorg-trash:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+[data-theme='machina'] .wz-reorg-trash{ margin-top:auto; display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; background:none; border:0;
+  border-top:2px solid #727C86; color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+[data-theme='machina'] .wz-reorg-trash-go{ margin-left:auto; color:var(--text-mid); }
