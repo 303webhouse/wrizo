@@ -63,6 +63,13 @@ const probe = async (app, name) => {
   console.log(`FLUX-ZOOM-PROBE ${name} dashed-svg count ${m.dashed.length}`);
 };
 
+const css = async (app, name) => {
+  const r = await app.evalJs("(() => { const cv = document.querySelector('.board-canvas'), w = document.querySelector('.board-canvas-wrap'); const g = (e) => { const c = getComputedStyle(e); return { transition: c.transition.slice(0, 120), transitionProperty: c.transitionProperty.slice(0, 80), duration: c.transitionDuration, animation: c.animationName, willChange: c.willChange, transform: c.transform }; }; const rr = (e) => { const x = e.getBoundingClientRect(); return [x.left, x.top, x.width, x.height].map((n) => Math.round(n * 10) / 10); }; return { canvas: cv ? g(cv) : null, wrap: w ? g(w) : null, rectNow: cv ? rr(cv) : null, anims: cv ? cv.getAnimations().map((a) => ({ type: a.constructor.name, prop: a.transitionProperty || a.animationName, state: a.playState })) : null }; })()");
+  console.log('FLUX-ZOOM-DIAG ' + name + ' css ' + JSON.stringify(r));
+  await sleep(700);
+  const r2 = await app.evalJs("(() => { const cv = document.querySelector('.board-canvas'); const x = cv.getBoundingClientRect(); return [x.left, x.top, x.width, x.height].map((n) => Math.round(n * 10) / 10); })()");
+  console.log('FLUX-ZOOM-DIAG ' + name + ' rect 700 ms later ' + JSON.stringify(r2));
+};
 const dump = async (app, name) => {
   const log = await app.evalJs('(window.__f3log || []).slice()');
   console.log('FLUX-ZOOM-DIAG ' + name + ' ' + log.length + ' events');
@@ -70,6 +77,6 @@ const dump = async (app, name) => {
 };
 const reduce = (app) => app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
 export default {
-  'zdiag-rm-outer': async (app) => { await reduce(app); await seed(app); await app.evalJs('window.__f3log = []'); await zoomTo(app, 0.0001); await dump(app, 'rm-outer'); await probe(app, 'rm-outer'); },
-  'zdiag-on-outer': async (app) => { await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]); await seed(app); await app.evalJs('window.__f3log = []'); await zoomTo(app, 0.0001); await dump(app, 'on-outer'); await probe(app, 'on-outer'); },
+  'zdiag-rm-outer': async (app) => { await reduce(app); await seed(app); await app.evalJs('window.__f3log = []'); await zoomTo(app, 0.0001); await dump(app, 'rm-outer'); await css(app, 'rm-outer'); await probe(app, 'rm-outer'); },
+  'zdiag-on-outer': async (app) => { await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]); await seed(app); await app.evalJs('window.__f3log = []'); await zoomTo(app, 0.0001); await dump(app, 'on-outer'); await css(app, 'on-outer'); await probe(app, 'on-outer'); },
 };
