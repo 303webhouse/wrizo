@@ -44,7 +44,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 **Fable's second set of answers, Nov 14 (after milestones 4 and 5 passed), all PROPOSED until Nick walks it.** Each is marked on its own line below:
 
 - **Only the asset's side of a split closes.** The CLOSE over the page is gone (117, 137). The brief's words are "closes either side"; this narrows them.
-- **Kept as built:** the page keeps to the middle of its side as she drags (112); the menus come back as they were (116); a Block's name is fixed beside the page (120); "Open beside" on a Doc's row in a Project's own list and on asset rows in the ASSETS tab (110, 126); she stays on the Board after connecting and it joins no Part (145); the way back over the Board's corner (136); no search on a Board before milestone 6 (140).
+- **Kept as built:** the page keeps to the middle of its side as she drags (112); the menus come back as they were (116); a Block's name is fixed everywhere in the prototype (120); "Open beside" on a Doc's row in a Project's own list and on asset rows in the ASSETS tab (110, 126); she stays on the Board after connecting and it joins no Part (145); the way back over the Board's corner (136); no search on a Board before milestone 6 (140).
 - **Still NOT RULED, by Fable's word:** the order of the four types in the search, THIS DOC as the Doc's own words, the scan and the made-up lines (74, 75, 150); the five view guesses, frozen as they are until the Wrizors' frames (141).
 
 ## The shell
@@ -198,7 +198,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 117. **The page's side of a split does not close** *(Fable, Nov 14: PROPOSED)*. The CLOSE that stood over the page's right corner is gone; only the asset's side has one. The brief says "she closes either side", so this reads the brief more narrowly than its words.
 118. **Opening another Doc ends the split.** The new Doc opens alone.
 119. **The faded stage buttons cannot be pressed.** A note on hover says she stays in her stage.
-120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it. *(Fable, Nov 14: PROPOSED, the name is fixed beside the page and she renames a Block on its Board. Renaming on a Board is NOT built: a Block's name cannot be changed anywhere in this prototype.)*
+120. **A Block's words can be written in; its name cannot.** Enter ends the writing. What she writes is kept until a reload, and the search finds it. *(Fable, Nov 14, 7:00 pm: PROPOSED, a Block's name stays fixed everywhere in this prototype. Renaming comes with the Board's spec, after Nick's walk.)*
 121. **A double click on a Block's name** counts as its empty area and pops it out. A double click on its words selects a word, as anywhere.
 122. **The pop-out's look:** the Block larger, in the upper middle of the asset's side, the name of its Board and a CLOSE under it; the asset's side goes 50% dark behind it, its head too. A click on the dark closes it, as Esc does.
 123. **Esc in a split** closes the pop-out, then the list under the asset's name, then whatever else is open (the search, a rail pop-out). It never closes the split.

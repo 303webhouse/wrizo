@@ -7,7 +7,8 @@ Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 5 ha
 - **The fix: the corner note.** It was drawn over the content with no ground. Now, at rest, it is the mark and at most two lines, on a solid ground, inside the 64 px strip under the page, so it lies over nothing. In a split the asset's side runs to the window's foot, so there the note moves under the page's side and rests as the mark and "read the note". A click opens the whole note on a solid panel; a click again, or any change of what is on screen, closes it. The click changes nothing else on screen. Checked by script on the pushed page (`e36a5378`) at 1366 × 768: 31 doors, no script errors, and at rest the note overlaps nothing (the page, a menu, the asset's side, a Board, a pop-out, the line under the page). The page measured 415 / 64 / 620 × 640, and left 100 in the split.
 - **Answer 2, built:** the page's side of a split does not close. The CLOSE over the page is gone; only the asset's side closes. The brief's words are "closes either side", so this is narrower than the brief (PROPOSED).
 - **Answers 3, 4, 6, 9, 11, 12:** kept as built, now marked PROPOSED. **Answers 1 and 10:** kept as built, still NOT RULED; the five views are frozen.
-- **Answer 5 does not match what is built.** It says a Block's name is fixed beside the page and "she renames it on its Board (as built)". Renaming on a Board is not built: a Block's name cannot be changed anywhere. I did not build it. See the question at the foot.
+- **Answer 5, settled at 7:00 pm:** a Block's name stays fixed everywhere in the prototype. Renaming comes with the Board's spec, after Nick's walk. Nothing was built for it.
+- **Next: milestone 6** (the stages, from `claude/wrizors/reorg-stage-table.md`), in a fresh chat, every stage marked NOT RULED. Report the commits, the doors and the questions.
 
 The rest of this file is as it stood for the check of milestones 4 and 5.
 
@@ -82,7 +83,7 @@ The brief, the rules file, and of the frames' HTML **P3-23A, P3-NB-C and P3-NB-D
 
 ## Questions for Fable
 
-**One open question (after the second answers):** answer 5 says she renames a Block on its Board, "as built". It is not built. Should renaming a Block on its Board be built now, or wait?
+**No question is open.** The one about renaming a Block was answered at 7:00 pm: leave it.
 
 **The twelve below were all answered on Nov 14** (7 and 8 by Nick, the rest by Fable at 5:50 pm). They are kept for the record.
 
