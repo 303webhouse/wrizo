@@ -1,7 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
-import { useTheme } from './store/theme';
-import { isArbor2 } from './arbor2/flag';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
@@ -18,7 +16,6 @@ import { Splash } from './components/Splash';
 import { LandingGate } from './components/LandingGate';
 import { PlaceBootstrap } from './components/PlaceBootstrap';
 import { FluxBlockCaret } from './components/FluxBlockCaret';
-import { ArborEdgedCaret } from './arbor2/edgedCaret';
 import { ContextMenuHost } from './components/ContextMenuHost';
 import { HelpPop } from './components/HelpPop';
 import { DeleteDialog } from './components/DeleteDialog';
@@ -209,14 +206,7 @@ function SignedOutRouteGuard({ authState }: { authState: AuthState }) {
 
 function BrandMark() {
   const { pathname } = useLocation();
-  const theme = useTheme();
-  // ARBOR v2 MOCKUP r16 (the Wrizors, Nov 2): under the flag in Arbor the front door keeps the corner mark - the same rect as in the app, so
-  // nothing moves when the splash fades into the page - as the night copy (its ground is the splash's dark in both rooms; styles/arbor-v2.css)
-  const arborFront = isArbor2() && theme === 'plateau' && pathname === '/';
-  if (pathname === '/' && !arborFront) return null;
-  // r18 (Nick, via Fable, Nov 3): on the front door the logo moved into the drawing, at its top (src/arbor2/frontLayer.tsx); the corner mark
-  // stays everywhere else, unchanged
-  if (arborFront) return null;
+  if (pathname === '/') return null;
   // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
   // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
   // background color, which only works when the element has no image content
@@ -347,12 +337,10 @@ export function App() {
         <GlobalHeader onLogout={() => { void handleLogout(); }} authed={authState === 'authed'} />
         <BrandMark />
         {/* The splash, mounted at the app root rather than on a route: it belongs to every app OPENING, not to '/'. It renders once per load, is pointer-events:none throughout, and dims whatever is mounted behind it (Arrival at boot). `ready` is Arrival's own boot-bar derivation (authState !== 'loading'), so the splash holds longer while the app is not ready. [App §5] */}
-        <Splash ready={authState !== 'loading'} authed={authState === 'loading' ? null : authState === 'authed'} />
+        <Splash ready={authState !== 'loading'} />
         <VoiceWallWhisper />
         <ThemeEffectsLayer />
         <FluxBlockCaret />
-        {/* ARBOR v2 MOCKUP (spec §19.2, Nick Nov 9): the light page's brass caret with its 1 px ink edge; nothing off the flag */}
-        <ArborEdgedCaret />
         {/* BOARD CONTEXT MENU: the one small menu and the one "Send to Trash?" dialog, mounted once - every surface asks for them through store/contextMenu.ts and store/deleteGate.ts */}
         <ContextMenuHost />
         <DeleteDialog />

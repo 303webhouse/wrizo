@@ -1,14 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { ThemeId } from '../store/theme';
-import { isArbor2 } from '../arbor2/flag';
 
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
 const SPEED = 0.7; // every mockup time below is multiplied by 0.7 [SplashMark §2]
-// ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8): the Arbor run's own multiplier (faster), and the beat after the last arrow before the front door's
-// order begins (the pop it replaces was 260 + 480)
-const ARBOR2_SPEED = 0.4;
-const ARBOR2_BEAT = 400;
 const GLOW_OFF = 'drop-shadow(0 0 0 transparent)';
 const GLOW_ON = 'drop-shadow(0 0 16px rgba(255,152,0,.8))';
 const GLOW_REST = 'drop-shadow(0 0 5px rgba(255,152,0,.35))';
@@ -71,10 +66,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       // Brief: "Reduced motion: the finished brass drawing shows at once,
       // then the usual fade" — every outline and connector snaps to its lit
       // end state, no glow burst, no pop scale (it settles at rest=1 anyway).
-      // ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8: "ONLY the arrows animate (orange = the writer's acts)"): under the flag the finished frame -
-      // reduced motion, and the front door's own copy of the drawing (Arrival.tsx renders this mark `reduced`) - lights only the arrows; the
-      // stage outlines stay Nick's cream (Actions frames 42522633708: the front door still drew TEXT, FEEDBACK and the boxes in brass)
-      if (!isArbor2()) Object.values(outlineRefs.current).forEach((g) => { if (g) g.style.opacity = '1'; });
+      Object.values(outlineRefs.current).forEach((g) => { if (g) g.style.opacity = '1'; });
       Object.values(pathRefs.current).forEach((p) => { if (p) p.style.strokeDashoffset = '0'; });
       onFloorReached();
       return;
@@ -82,16 +74,10 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
 
     const v = ARBOR_WAVE_PX_PER_MS;
     const v2 = ARBOR_FINAL_WAVE_PX_PER_MS;
-    // ARBOR v2 MOCKUP r22 (Nick's walk, Nov 8, via Fable: "Splash: the flow chart cycles faster and ONLY the arrows animate (orange = the
-    // writer's acts)"): under the flag the run takes ARBOR2_SPEED of the time (0.4 here vs 0.7: the arrows are done in ~1.5 s, not ~2.6 s) and
-    // the five stage outlines never light, glow or pop - they stay Nick's cream (the base drawing and FINAL DRAFT's cream copy). Only the six
-    // connectors draw on, in brass. Off the flag nothing changes.
-    const arbor = isArbor2();
-    const speed = arbor ? ARBOR2_SPEED : SPEED;
 
     const A = (el: Element | null, kf: Keyframe[], at: number, dur: number, easing = 'ease-in-out') => {
       if (!el) return;
-      el.animate(kf, { delay: at * speed, duration: Math.max(1, dur * speed), fill: 'forwards', easing });
+      el.animate(kf, { delay: at * SPEED, duration: Math.max(1, dur * SPEED), fill: 'forwards', easing });
     };
     const draw = (p: SVGPathElement | null, at: number, dur: number) => A(p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], at, dur, 'linear');
     const pop = (el: Element | null, at: number) => A(el, [
@@ -118,7 +104,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       });
     }
 
-    if (!arbor) A(outlineRefs.current.ideas ?? null, [
+    A(outlineRefs.current.ideas ?? null, [
       { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
     ], ideasAt, ideasDur + 250);
 
@@ -129,7 +115,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       draw(pathRefs.current[e.id] ?? null, s, d);
       lastEnd = Math.max(lastEnd, s + d);
     });
-    if (!arbor) (['text', 'page', 'feedback'] as const).forEach((stage) => {
+    (['text', 'page', 'feedback'] as const).forEach((stage) => {
       A(outlineRefs.current[stage] ?? null, [{ opacity: 0 }, { opacity: 1 }], (reach[stage] as number) - 60, 380);
     });
 
@@ -137,23 +123,17 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
     const fd = lens[finalEdge.id] / v2;
     draw(pathRefs.current[finalEdge.id] ?? null, fs, fd);
     const finalAt = fs + fd;
-    if (!arbor) {
-      A(outlineRefs.current.final ?? null, [
-        { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
-      ], finalAt, 750);
-      pop(finalGroupRef.current, finalAt + 260);
-    }
+    A(outlineRefs.current.final ?? null, [
+      { opacity: 0, filter: GLOW_OFF }, { opacity: 1, filter: GLOW_ON, offset: 0.6 }, { opacity: 1, filter: GLOW_REST },
+    ], finalAt, 750);
+    pop(finalGroupRef.current, finalAt + 260);
 
     // Brief: "Ending: a short hold, then a 0.45s fade" — the floor is the
     // moment just before that fade, i.e. the pop's own end plus a short hold.
     const floorAt = finalAt + 260 + 480 + 500;
-    // ARBOR v2 MOCKUP r19 (spec draft 38 §12c): in the Arbor mockup the sketch's end is the pop's settling (its "run is finished"), where the
-    // front door's order begins (src/arbor2/frontLayer.tsx: the logo 0.2 s later); off the flag the floor is unchanged
-    // (r22: with no pop under the flag, the run is finished when the last arrow lands, plus a beat of ARBOR2_BEAT)
-    window.setTimeout(onFloorReached, arbor ? (finalAt + ARBOR2_BEAT) * speed : floorAt * SPEED);
+    window.setTimeout(onFloorReached, floorAt * SPEED);
   }, [reduced, onFloorReached]);
 
-  const lit = reduced && !isArbor2();   // the finished frame's outlines: brass off the flag, cream under it (r22)
   const finalCx = ARBOR_FINAL_CREAM.x + ARBOR_FINAL_CREAM.w / 2;
   const finalCy = ARBOR_FINAL_CREAM.y + ARBOR_FINAL_CREAM.h / 2;
 
@@ -177,9 +157,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       </defs>
 
       {/* The whole sketch in cream (TEXT recoloured cream, FINAL DRAFT's own outline cut out — it pops, so it is its own layer below). */}
-      {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): under the flag, Nick's drawing without its top line "WRIZO (in abstract)" - only that
-          line erased, every other pixel his (scripts/arbor2-splash-r18.mjs; proof: scripts/harness/arbor2-r18-unit.mjs). The logo stands there. */}
-      <image href={isArbor2() ? '/brand/arbor2/splash-base-r18.png' : `${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
+      <image href={`${BRAND}/base.png`} x={0} y={0} width={ARBOR_CANVAS.w} height={ARBOR_CANVAS.h} />
       <image href={`${BRAND}/${ARBOR_FINAL_CREAM.file}`} x={ARBOR_FINAL_CREAM.x} y={ARBOR_FINAL_CREAM.y} width={ARBOR_FINAL_CREAM.w} height={ARBOR_FINAL_CREAM.h} />
 
       {/* The six connectors — each masked by its own progressively-drawn path above.
@@ -189,13 +167,11 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
         <image key={e.id} data-edge={e.id} href={`${BRAND}/${e.file}`} x={e.x} y={e.y} width={e.w} height={e.h} mask={`url(#wz-splash-arbor-mask-${e.id})`} />
       ))}
 
-      {/* The five stage outlines — brass, letters left out by the cutting script, so "no brass on letter pixels" holds by construction.
-          ARBOR v2 MOCKUP r22: under the flag they never light, the finished frame included (`lit`; Actions frames 42523455219 read all five at 1
-          on the front door's copy) - only the arrows are brass. */}
+      {/* The five stage outlines — brass, letters left out by the cutting script, so "no brass on letter pixels" holds by construction. */}
       {(Object.keys(ARBOR_OUTLINES) as ArborStage[]).filter((s) => s !== 'final').map((stage) => {
         const o = ARBOR_OUTLINES[stage];
         return (
-          <g key={stage} data-stage={stage} ref={(el) => { if (el) outlineRefs.current[stage] = el; }} style={{ opacity: lit ? 1 : 0 }}>
+          <g key={stage} data-stage={stage} ref={(el) => { if (el) outlineRefs.current[stage] = el; }} style={{ opacity: reduced ? 1 : 0 }}>
             <image href={`${BRAND}/${o.file}`} x={o.x} y={o.y} width={o.w} height={o.h} />
           </g>
         );
@@ -204,7 +180,7 @@ function ArborMark({ reduced, width, height, onFloorReached }: MarkProps) {
       <g
         data-stage="final"
         ref={(el) => { if (el) { outlineRefs.current.final = el; finalGroupRef.current = el; } }}
-        style={{ opacity: lit ? 1 : 0, transformBox: 'view-box', transformOrigin: `${finalCx}px ${finalCy}px` }}
+        style={{ opacity: reduced ? 1 : 0, transformBox: 'view-box', transformOrigin: `${finalCx}px ${finalCy}px` }}
       >
         <image href={`${BRAND}/${ARBOR_OUTLINES.final.file}`} x={ARBOR_OUTLINES.final.x} y={ARBOR_OUTLINES.final.y} width={ARBOR_OUTLINES.final.w} height={ARBOR_OUTLINES.final.h} />
       </g>
