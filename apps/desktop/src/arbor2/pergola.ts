@@ -224,10 +224,32 @@ export function mountPergola(): void {
     if (bitmap) p.still.style.backgroundImage = `url("${bitmap}")`;
   };
   const liveOff = (on: boolean) => layers().forEach((l) => { const p = liveOf.get(l); if (p) { if (on) cut(p); else uncut(p); } else if (on) l.setAttribute('data-live-off', 'true'); else l.removeAttribute('data-live-off'); });
+  // (b) THE STILL AT REST (measurement): outside the breeze's moving window (the earliest leaf's delay to the latest leaf's delay + its 1.4 s shiver,
+  // 150 ms either side) every leaf stands at rest, so the still picture IS the live drawing; the layers show it, and go live only for the window.
+  const W = (() => { const p = liveOf.get(room.layer); const ds = p ? p.leaves : []; const lo = ds.length ? Math.min(...ds) : 0, hi = ds.length ? Math.max(...ds) : 0; return [Math.max(0, lo - 150), Math.min(BREEZE, hi + MOVING + 150)]; })();
+  const w = window as unknown as { __kpIdleCutOff?: boolean; __arbor2IdleTick?: () => void };
+  let idleT = 0;
+  const idleCut = (p: LiveParts) => { if (p.layer.getAttribute('data-live-off') === 'true') return; if (bitmap) p.still.style.backgroundImage = `url("${bitmap}")`; p.layer.setAttribute('data-live-off', 'true'); };
+  const idleLive = (p: LiveParts) => { if (p.layer.hasAttribute('data-live-off')) uncut(p); };
+  const idleTick = () => {
+    window.clearTimeout(idleT);
+    if (writing()) return;
+    const all = layers().map((l) => liveOf.get(l)).filter((p): p is LiveParts => !!p);
+    if (w.__kpIdleCutOff) { all.forEach(idleLive); return; }
+    const p = liveOf.get(room.layer);
+    if (!p || p.start == null || !bitmap) { idleT = window.setTimeout(idleTick, 500); return; }
+    const now = Number(document.timeline.currentTime ?? 0); const ph = (((now - p.start) % BREEZE) + BREEZE) % BREEZE;
+    const live = ph >= W[0] && ph < W[1];
+    all.forEach((q) => (live ? idleLive(q) : idleCut(q)));
+    const next = live ? W[1] - ph : ph < W[0] ? W[0] - ph : BREEZE - ph + W[0];
+    idleT = window.setTimeout(idleTick, Math.max(16, next + 5));
+  };
+  w.__arbor2IdleTick = idleTick;
   let sleepT = 0;
   const onWriting = () => {
     window.clearTimeout(sleepT);
-    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
+    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(() => { clockAll(); idleTick(); })); return; }
+    window.clearTimeout(idleT);
     liveOff(true);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare.
     // bug #80: read two frames AFTER the keystroke that starts writing, never inside it - a getComputedStyle here ran in the key's own task, right after
@@ -244,5 +266,5 @@ export function mountPergola(): void {
   new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
   attach();
   onWriting();
-  requestAnimationFrame(() => requestAnimationFrame(clockAll));
+  requestAnimationFrame(() => requestAnimationFrame(() => { clockAll(); idleTick(); }));
 }
