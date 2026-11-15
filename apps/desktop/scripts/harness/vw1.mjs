@@ -113,6 +113,8 @@ const LAWFUL = [
     re: /(CAT_SEL|_SEL)\s*=\s*['"`]/ },
   { why: "flux-v2.mjs's CSS mutant - the text of a STYLE RULE it appends to the stylesheet to prove the orange-only-where-allowed check goes red; it selects nothing in the DOM and depends on no position",
     re: /edit:\s*\(c\)\s*=>\s*`\$\{c\}\\n\[data-theme='flux'\]\s*\.wz-strip-item\.active\{/ },
+  { why: "the LIT item picked by STATE - `.wz-strip-item.active` selects whichever item the product marks active, never a position (FABLE RULED, Nov 14, 6:18 pm: arbor2-r23.mjs's night screens read and restyle the active rail label). Strict: every .wz-strip-item on the line must be `.wz-strip-item.active` (or the data-category handle), with no :nth-, no index into a collection of them",
+    re: /^(?!.*\.wz-strip-item(?!\.active\b|\[data-category=))(?!.*:nth-)(?!.*querySelectorAll\([^)]*\.wz-strip-item[^)]*\)\s*\[)(?!.*\.wz-strip-item[^'"`]*['"`]\s*\)\s*\]\s*\[).*\.wz-strip-item\.active\b/ },
   { why: "this instrument's own source — it must name the thing it forbids",
     re: /OFFENDER|LAWFUL|data-category=\$\{cat\}|getAttribute\('data-category'\)/ },
 ];
@@ -137,6 +139,17 @@ const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((d) => {
   const full = path.join(dir, d.name);
   return d.isDirectory() ? walk(full) : (full.endsWith('.mjs') ? [full] : []);
 });
+// the per-line decision, as a function so check 7's mutant runs the SAME rules (lifted from the loop below, Nov 15; the rules and their order are as they were)
+const offends = (line, src) => {
+  if (!line.includes('.wz-strip-item')) return false;
+  const s = line.trim();
+  if (s.startsWith('//') || s.startsWith('*')) return false;        // parked / commented
+  if (line.includes('.wz-strip-item[data-category=')) return false; // the handle itself
+  if (LAWFUL.some((l) => l.re.test(line))) return false;            // named + justified
+  const asg = line.match(ASSIGN);
+  if (asg && !indexesVar(src, asg[1])) return false;                // collection, never indexed
+  return true;
+};
 const offenders = [];
 for (const f of walk(SCRIPTS_DIR)) {
   const src = readFileSync(f, 'utf8');
@@ -147,18 +160,21 @@ for (const f of walk(SCRIPTS_DIR)) {
     // would otherwise be offenders. Its real SELECTIONS all go through
     // data-category, which is visible a few lines up in pressCategory.
     if (path.basename(f) === 'vw1.mjs') return;
-    if (!line.includes('.wz-strip-item')) return;
-    const s = line.trim();
-    if (s.startsWith('//') || s.startsWith('*')) return;        // parked / commented
-    if (line.includes('.wz-strip-item[data-category=')) return; // the handle itself
-    if (LAWFUL.some((l) => l.re.test(line))) return;            // named + justified
-    const asg = line.match(ASSIGN);
-    if (asg && !indexesVar(src, asg[1])) return;                // collection, never indexed
-    offenders.push(path.basename(f) + ':' + (i + 1));
+    if (offends(line, src)) offenders.push(path.basename(f) + ':' + (i + 1));
   });
 }
 ok('VW1 check 7 (INVERTED): every live reference to .wz-strip-item is either a data-category selector or a NAMED, JUSTIFIED exemption. A grep that enumerates spellings sees only the spellings someone thought of — the first version certified ZERO while 38 index selectors lived, because the index was a function argument. Inverting it means a new shape must be ruled lawful deliberately instead of falling through',
   offenders.length === 0, JSON.stringify({ offenders, exemptions: LAWFUL.map((l) => l.why) }));
+// MUT check 7 (Fable, Nov 14, 6:18 pm: the state exemption must not loosen the rule): through the SAME decision, the two state lines it admits pass, and
+// every position shape - an index into the set, an :nth-child, an index into the ACTIVE set, a line mixing a state read with a position read - is an OFFENDER
+{
+  const LAWFUL_STATE = ["const l = document.querySelector('.desk-frame-strip .wz-strip-item.active .wz-strip-label');", "st.textContent = \":root[data-arbor2] .desk-frame-strip .wz-strip-item.active .wz-strip-label{ font-weight:400 !important; }\";"];
+  const POSITION = ["document.querySelectorAll('.wz-strip-item')[2].click();", "document.querySelector('.wz-strip-item:nth-child(3)').click();", "document.querySelectorAll('.wz-strip-item.active')[1].click();",
+    "const a = document.querySelector('.wz-strip-item.active'), b = document.querySelector('.desk-frame-strip .wz-strip-item:nth-child(4)');", "document.querySelector('.wz-strip-item.active:nth-child(2)');", "[...document.querySelectorAll('.wz-strip-item.active')][0];"];
+  const admitted = LAWFUL_STATE.filter((l) => !offends(l, l)), caught = POSITION.filter((l) => offends(l, l));
+  ok(`MUT VW1 check 7: the state exemption admits the lit item by state (${admitted.length}/${LAWFUL_STATE.length}) and every position shape still goes RED (${caught.length}/${POSITION.length}: an index, :nth-child, an index into the active set, a mixed line)`,
+    admitted.length === LAWFUL_STATE.length && caught.length === POSITION.length, JSON.stringify({ notAdmitted: LAWFUL_STATE.filter((l) => offends(l, l)), notCaught: POSITION.filter((l) => !offends(l, l)) }));
+}
 
 await withHarness(async (app) => {
   await freshProsePage(app);
