@@ -472,13 +472,7 @@ await withHarness(async (app) => {
 
     const paperClosed = await rectOf(app, '.mode-pagecol');
     const gripClosed = await rectOf(app, '.wz-tutor-grip');
-    // ---- PARKED - SUPERSEDED by page-size (Nick + Fable, Oct 23): .mode-pagecol is no longer the paper - the prose page is PAINTED by a transform inside
-    // it, and in the Typewriter zoom the column is the whole stage (lane 3: grip 981 / 1110 / 1596 against 1067 / 1242 / 1960). Successor reads the painted
-    // page, with the anchor's documented overflow where the zoom leaves under 160px of margin. Kept VERBATIM and no longer run; records in the parked section.
-    //
-    // ok(`Geometry @${width}px: grip-flush against the paper's right edge (with a seeded Bible present)`,
-    //   Math.abs(gripClosed.left - paperClosed.right) < 1.5, JSON.stringify({ gripLeft: gripClosed.left, paperRight: paperClosed.right }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/tu5.mjs.parked.md record 1
     const pg = await app.evalJs(PS_GRIP);
     tu5Ps.push({ width, ...pg });
     ok(`Geometry @${width}px (with a seeded Bible present): grip-flush [page-size successor]: the grip's own left edge sits flush on the PAINTED page's right edge - or, where the zoom leaves under 160px of margin, inside the page's own margin by at most the anchor's 38px overflow, never into the text`, psGripOk(pg), JSON.stringify(pg));

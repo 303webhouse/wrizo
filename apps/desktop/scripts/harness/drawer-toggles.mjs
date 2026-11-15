@@ -177,9 +177,12 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
   // Write and any pageId-less caller (QuickSprint) keep reading the shared field exactly as before.
   const running = /const typewriterOn = \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(s.stage);
   const runningPP = /const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)\s*:\s*\(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(s.stage);
+  // FLUX WIRE IN (Nov 12): runningPP above pins a shape the change retired - the PAPER Typewriter is retired in Flux, so the pageId-less / Free Write fallback to the shared
+  // field is now `stageTheme !== 'flux' &&` first (Draft with a pageId still asks typewriterForPage, which is false in Flux). runningWI is the live successor.
+  const runningWI = /const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)\s*:\s*stageTheme !== 'flux' && \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(s.stage);
   out.bar = {
     nine: countOf(barSeg, /<button /g) === 9 && countOf(barSeg, /<button type="button" disabled=\{typewriterOn\} className="mode-tbtn/g) === 9,
-    running, runningPP,
+    running, runningPP, runningWI,
     tooltip: /title=\{rail\.tools === 'format' && typewriterOn \? deskT\('formatLockedByTypewriter'\) : undefined\}>/.test(s.stage),
     grey: /^\.mode-bar \.mode-tbtn:disabled\{[^}]*opacity:\.4[^}]*pointer-events:none/m.test(s.css),
   };
@@ -205,6 +208,8 @@ function verdict(c) {
     buttonsPP: b.twBtnPP && b.typewriterOnDef && b.prBtn && b.inHead && b.moreStillAlone && b.twGatedOnAvailability && b.realButtons,
     greyedPP: g.twSegs === 3 && g.twDisabled === 3 && g.twOffPP && g.prSegs === 4 && g.prDisabled === 4 && g.prOff && g.prInput,
     barPP: c.bar?.nine && c.bar?.runningPP && c.bar?.tooltip && c.bar?.grey,
+    // FLUX WIRE IN (Nov 12) successor of barPP: the same claims, typewriterOn read with the Flux guard (the paper Typewriter is retired in Flux)
+    barWI: c.bar?.nine && c.bar?.runningWI && c.bar?.tooltip && c.bar?.grey,
     shortcutsPP: sc.guardOrderPP && sc.keysUseIt && sc.railUsesIt && sc.importedPP,
     // format's own successor rides alongside the original key (f.formatLockedPP is additive,
     // not a replacement - hookBeforeReturn's own claim is unchanged and still true, only its
@@ -297,8 +302,13 @@ ok('(T9) the look: ON = the ICON turns brass and nothing else (same quiet border
 // Free Write and any pageId-less caller (QuickSprint) keep reading the shared field.
 if (false) ok('(T10, superseded) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable',
   v.bar === true, JSON.stringify(base.bar));
-ok('(T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, the shared field otherwise',
+// SUPERSEDED (FLUX WIRE IN, Nov 12: the paper Typewriter is retired in Flux, so ModeStage's typewriterOn fallback to the shared field now starts with
+// `stageTheme !== 'flux' &&`; this check's runningPP regex pins the text before that guard and goes red on the new source) - ORIGINAL, quoted verbatim, parked with
+// `if (false)`. Successor: (T10 Wire In) below reads v.barWI (runningWI). Its mutant: the 'Flux guard' one at the end of the narrow-bar mutants.
+if (false) ok('(T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, the shared field otherwise',
   v.barPP === true, JSON.stringify(base.bar));
+ok('(T10 Wire In) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, and otherwise the shared field - EXCEPT in Flux, where the paper Typewriter is retired (stageTheme !== \'flux\' guards the fallback)',
+  v.barWI === true, JSON.stringify(base.bar));
 
 // =============================================================================
 // MUTATIONS - each asserts it LANDED before the red is believed.
@@ -366,10 +376,13 @@ mutant('the greyed Format buttons swallow the pointer (the group tooltip can nev
 mutant('the ON state is a hard-coded colour (would not follow the theme) [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
 
-mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barPP');
-mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barPP');
-mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barPP');
-mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barPP');
+mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barWI');
+mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barWI');
+mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barWI');
+mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barWI');
+// FLUX WIRE IN (Nov 12) - the four narrow-bar mutants above were retargeted from barPP to barWI: barPP is permanently false on the new source (it pins the pre-guard text), so a
+// mutant reading it would "pass" without the mutation doing anything. This one is the successor's own: the Flux guard is dropped, the shared field runs the Typewriter in Flux again.
+mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barWI');
 
 let failed = 0;
 for (const c of checks) {

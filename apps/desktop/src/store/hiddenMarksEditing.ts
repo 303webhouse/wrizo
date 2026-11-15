@@ -17,6 +17,7 @@
 // nothing).
 import { backspaceAt, closersAt, deleteAt, enterAt, escapeTyped, nativeRange, reabsorb, replaceRange, snapCaret, snapCaretAfterClick, stepLeft, stepRight, wordBackspaceAt, wordDeleteAt, type EditResult } from './hiddenMarks';
 import { extendSelection, placeCaret, selectionEnds } from './hiddenMarksDom';
+import { revealCaret } from './caretInView';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from './clipboardFormat';
 import { getSelectionOffsets } from './caretOffset';
 import type { EditKind } from './textUndo';
@@ -200,9 +201,11 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
       if (!ends.collapsed) {
         const edge = k === 'ArrowLeft' ? Math.min(ends.anchor, ends.focus) : Math.max(ends.anchor, ends.focus);
         placeCaret(el, snapCaret(text, edge));
+        revealCaret(el);
         return true;
       }
       placeCaret(el, step(text, ends.focus));
+      revealCaret(el);   // #64: an arrow that crosses a line brings that line into view
       return true;
     }
     if (!ends.collapsed) return false;

@@ -58,12 +58,7 @@ const grow = (bs, id, h) => bs.map((b) => (b.id === id ? { ...b, h } : b));
   ok('R6b: a card in another column, not under the grown one, is not carried', near(byId(out, 'r').y, byId(before, 'r').y));
 }
 const src = srcText(SRC, 'components/BoardEditor.tsx').replace(/\r\n/g, '\n');   // #13 step 10g: the module and its parts, joined
-// PARKED (Fable, Oct 30, #12b): R9 as first written - SUPERSEDED: a pass on a plain OPEN no longer hands the boxes to rowFit (opening saves nothing); successor R9b. Kept verbatim:
-// ok('R9: BoardEditor imports fitDealtRows and the reflow effect hands it the before and the grown boxes', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /if \(changed\) setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src));
-// PARKED (Fable, Oct 30, #12b): R9b as first written - SUPERSEDED: rowFit now applies on screen on a plain open too (never saved on its own); successor R9c. Kept verbatim:
-// ok('R9b: BoardEditor imports fitDealtRows and hands it the before and the grown boxes only when a change by the writer is waiting (boxes !== the saved mark); a plain open is corrected on screen with no rowFit', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /else setBoxes\(fitDealtRows\(boxes, next\)\);/.test(src) && /if \(boxes === lastSavedRef\.current\) \{\s*lastSavedRef\.current = next;\s*setBoxes\(next\);/.test(src));
-// PARKED (Fable, Oct 30, #12b / bug 32c): R9c as written - SUPERSEDED: the reflow now also fits cards DOWN (sizedByHand) and ends the pass when nothing changed, so its source shape changed; successor R9d. Kept verbatim:
-// ok('R9c: BoardEditor imports fitDealtRows and hands it the before and the grown boxes on EVERY reflow pass (a plain open too: on screen), and moves the saved mark with the result only when no change by the writer is waiting', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /const fitted = fitDealtRows\(boxes, next\);\s*if \(boxes === lastSavedRef\.current\) lastSavedRef\.current = fitted;\s*setBoxes\(fitted\);/.test(src));
+// ARCHIVED PARK (#13 step 14): archive/deck-rows-logic.mjs.parked.md record 1
 ok('R9d: BoardEditor imports fitDealtRows and hands it the before and the fitted-down-or-up boxes on EVERY reflow pass (a plain open too: on screen), ends the pass when nothing changed, and moves the saved mark with the result only when no change by the writer is waiting', /import \{ fitDealtRows \} from '\.\.\/decks\/rowFit';/.test(src) && /const fitted = fitDealtRows\(boxes, next\);/.test(src) && /if \(boxes === lastSavedRef\.current\) lastSavedRef\.current = fitted;\s*setBoxes\(fitted\);/.test(src));
 {
   // the mutant: without the carry (the rule's second half), R2 must go RED - the check can see the bug

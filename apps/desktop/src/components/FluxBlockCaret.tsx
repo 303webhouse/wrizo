@@ -18,13 +18,74 @@ import { caretRow } from './useTypewriterFade';
 // a writer never ends up with no visible caret at all if a rect can't be
 // resolved (an empty line, a fresh mount, a non-Chromium selection quirk).
 const PROSE_SURFACES = '.forward-only-editor, .entry-edit, .board-text, .script-el-active';
+// A caret held at an ELEMENT boundary (the editor restoring it as its own child index after a re-render) has no rect of its own, and the row
+// fallback took the in-progress word's INLINE span for the "row", so the block stood on the last word's first letter (the Wrizors' S4 r9
+// review). An inline span is never a row: the probe finds the caret's place instead [FluxBlockCaret §5]
+export const CARET_PLACE = { textEnd: true };
+// The block holds SOLID while keys land and blinks only at rest (the Wrizors' S4 carry, ruled in by Fable, Nov 7: plain Flux too). A key marks the
+// drawn block data-typing (06-flux-v2.css stops its blink); restMs after the last key the mark lifts and the blink resumes. The mark is set on the
+// element directly, so a key costs no render [FluxBlockCaret §6]
+export const CARET_BLINK = { restMs: 600 };
+
+// #67: the caret's SOFT-WRAP side. A collapsed range at the point where a line wraps reports the END of the line above (the browser's upstream rectangle), though a caret that arrived by Down, Up or Home stands at the START of the next line;
+// End (and a click, and typing) leave it where the rectangle says. The last key that moved the caret is kept, with its time, for that one decision [FluxBlockCaret §7].
+const NAV_DOWNSTREAM = new Set(['ArrowDown', 'ArrowUp', 'Home', 'PageDown', 'PageUp']);
+let lastNav: { key: string; at: number } = { key: '', at: 0 };
 
 interface Rect { left: number; top: number; width: number; height: number }
+
+// JACKED IN's caret is a block as wide as an "n" (the spec's §6; the Wrizors' Corridor review). The width is read from the writing surface's own font, once per surface and line height (a font or
+// a zoom change moves the line height), so a key does no measuring: it reuses the cached number. Outside Jacked In the caret is today's slim block.
+const nCache = new WeakMap<HTMLElement, { h: number; w: number }>();
+let nCanvas: CanvasRenderingContext2D | null = null;
+export function nWidthPx(surface: HTMLElement, height: number): number | null {
+  const key = Math.round(height);
+  const hit = nCache.get(surface);
+  if (hit && hit.h === key) return hit.w;
+  if (!nCanvas) nCanvas = document.createElement('canvas').getContext('2d');
+  if (!nCanvas) return null;
+  const cs = getComputedStyle(surface);
+  nCanvas.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const k = surface.offsetWidth > 0 ? surface.getBoundingClientRect().width / surface.offsetWidth : 1;   // the Typewriter's zoom scales the page by a transform
+  const w = nCanvas.measureText('n').width * (k || 1);
+  if (!(w > 0)) return null;
+  nCache.set(surface, { h: key, w });
+  return w;
+}
 
 export function FluxBlockCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
   const activeElRef = useRef<HTMLElement | null>(null);
+  const caretElRef = useRef<HTMLDivElement | null>(null);
+  const typingRef = useRef(false);
+  const downstream = useRef<{ node: Node; offset: number } | null>(null);
+  const markTyping = (el: HTMLDivElement | null) => { if (!el) return; if (typingRef.current) el.setAttribute('data-typing', ''); else el.removeAttribute('data-typing'); };
+
+  // [FluxBlockCaret §6] solid while keys land, blinking at rest
+  useEffect(() => {
+    if (theme !== 'flux') return undefined;
+    let rest = 0;
+    const set = (on: boolean) => { typingRef.current = on; markTyping(caretElRef.current); };
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab')) return;
+      if (!typingRef.current) set(true);
+      window.clearTimeout(rest);
+      rest = window.setTimeout(() => set(false), CARET_BLINK.restMs);
+    };
+    document.addEventListener('keydown', onKey, { capture: true, passive: true });
+    return () => { document.removeEventListener('keydown', onKey, { capture: true }); window.clearTimeout(rest); set(false); };
+  }, [theme]);
+
+  // [FluxBlockCaret §7] remember the key (and a click) that last moved the caret
+  useEffect(() => {
+    if (theme !== 'flux') return undefined;
+    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; };
+    const onPointer = () => { lastNav = { key: 'pointer', at: performance.now() }; };
+    document.addEventListener('keydown', onNav, { capture: true, passive: true });
+    document.addEventListener('pointerdown', onPointer, { capture: true, passive: true });
+    return () => { document.removeEventListener('keydown', onNav, { capture: true }); document.removeEventListener('pointerdown', onPointer, { capture: true }); };
+  }, [theme]);
 
   useEffect(() => {
     if (theme !== 'flux') {
@@ -50,16 +111,59 @@ export function FluxBlockCaret() {
 
       const range = sel.getRangeAt(0).cloneRange();
       let r = range.getClientRects()[0];
+      // [FluxBlockCaret §7] at a soft wrap the rectangle is the line above's end: after Down, Up or Home the block stands on the START of the line the caret is on (the character after it). The choice is kept while the selection stays put, so a scroll or glide redraw does not undo it.
+      const wrapA = sel.anchorNode, wrapO = sel.anchorOffset;
+      if (r && wrapA && wrapA.nodeType === Node.TEXT_NODE && wrapO < (wrapA as Text).data.length) {
+        const ended = lastNav.key === 'End' && performance.now() - lastNav.at < 500;
+        const same = !ended && !!downstream.current && downstream.current.node === wrapA && downstream.current.offset === wrapO;
+        const fresh = NAV_DOWNSTREAM.has(lastNav.key) && performance.now() - lastNav.at < 500;
+        if (same || fresh) {
+          const one = document.createRange();
+          one.setStart(wrapA, wrapO); one.setEnd(wrapA, wrapO + 1);
+          const cr = [...one.getClientRects()].find((q) => q.height > 0);
+          if (cr && cr.top > r.top + r.height * 0.5) { r = new DOMRect(cr.left, cr.top, 0, cr.height); downstream.current = { node: wrapA, offset: wrapO }; }
+          else if (!same) downstream.current = null;
+        } else downstream.current = null;
+      } else downstream.current = null;
       // the caret's row is the truth where the range gives no rect (a fresh empty line) or a rect off the row; the block stands at the row's start, on scrolls and glides too [FluxBlockCaret §1]
-      const row = caretRow(sel, surface);
+      const row0 = caretRow(sel, surface);
+      // [FluxBlockCaret §5] an inline span HOLDING TEXT (the in-progress word) is never the caret's row: without a rect, the caret at an element
+      // boundary stands at the END of the text just before it, read without touching the DOM, so it follows scrolls and glides too (a probe may
+      // not run then). An inline span with no visible text (the new line after Enter) stays the row: its start is the caret's place (C17-AT)
+      const zeroWidth = (ch: string) => ch.charCodeAt(0) === 0x200b || ch.charCodeAt(0) === 0xfeff;
+      const visible = (s: string) => [...s].some((ch) => ch.trim() !== '' && !zeroWidth(ch));
+      // whether a span holds a visible character, from its text nodes one by one (never its whole text: no editor-text reader here)
+      const holdsText = (el: Element) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) return true; return false; };
+      const wordRow = !!row0 && CARET_PLACE.textEnd && getComputedStyle(row0).display === 'inline' && holdsText(row0);
+      const row = wordRow ? null : row0;
+      const atTextEnd = (): DOMRect | null => {
+        const a = sel.anchorNode;
+        if (!wordRow || !a || a.nodeType !== Node.ELEMENT_NODE || sel.anchorOffset === 0) return null;
+        for (let s: Node | null = a.childNodes[sel.anchorOffset - 1] ?? null; s; s = s.previousSibling) {
+          let t: Text | null = null;
+          if (s.nodeType === Node.TEXT_NODE) t = s as Text;
+          else { const w = document.createTreeWalker(s, NodeFilter.SHOW_TEXT); for (let n = w.nextNode(); n; n = w.nextNode()) if (visible(n.nodeValue ?? '')) t = n as Text; }
+          const v = t?.nodeValue ?? '';
+          let i = v.length;
+          while (i > 0 && zeroWidth(v[i - 1])) i -= 1;
+          if (!t || !i) continue;
+          const one = document.createRange();
+          one.setStart(t, i - 1); one.setEnd(t, i);
+          const lr = [...one.getClientRects()].pop();
+          if (lr && lr.height) return new DOMRect(lr.right, lr.top, 0, lr.height);
+        }
+        return null;
+      };
+      if (!r) { const fromEnd = atTextEnd(); if (fromEnd) r = fromEnd; }
       const atRowStart = (): DOMRect | null => {
         if (!row) return null;
         const rr = row.getBoundingClientRect();
-        if (!rr.height) return null;
         const cs = getComputedStyle(row);
-        const lh = parseFloat(cs.lineHeight) || rr.height;
+        // #61: an EMPTY row (an empty line between two others) is an inline-block of height 0 that sits at the TOP of its line, so its start is still the caret's place, one line of height. Giving up here sent the empty line to the probe below, whose insertNode / removeChild moved the selection to the end of the line above.
+        const lh = parseFloat(cs.lineHeight) || rr.height || (parseFloat(cs.fontSize) || 16) * 1.4;
+        if (!rr.height && !(rr.width > 0 && lh > 0)) return null;
         const sc = row.offsetHeight > 0 ? rr.height / row.offsetHeight : 1;   // the page may be painted at a scale
-        return new DOMRect(rr.left + (parseFloat(cs.paddingLeft) || 0) * sc + (parseFloat(cs.textIndent) || 0) * sc, rr.top, 0, Math.min(rr.height, lh * sc));
+        return new DOMRect(rr.left + (parseFloat(cs.paddingLeft) || 0) * sc + (parseFloat(cs.textIndent) || 0) * sc, rr.top, 0, rr.height ? Math.min(rr.height, lh * sc) : lh * sc);
       };
       if (!r) { const fromRow = atRowStart(); if (fromRow) r = fromRow; }
       if (!r && !probe) return;   // keep the drawn caret; the next selectionchange resolves an empty line
@@ -90,7 +194,8 @@ export function FluxBlockCaret() {
       activeElRef.current = surface;
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
-      setRect({ left: r.left, top: r.top, width: caretWidth(height), height });
+      const nW = document.documentElement.hasAttribute('data-flux3-jacked') ? nWidthPx(surface, height) : null;
+      setRect({ left: r.left, top: r.top, width: nW ?? caretWidth(height), height });
     };
 
     const onBlurCheck = () => {
@@ -124,6 +229,7 @@ export function FluxBlockCaret() {
   if (theme !== 'flux' || !rect) return null;
   return (
     <div
+      ref={(el) => { caretElRef.current = el; markTyping(el); }}
       aria-hidden="true"
       className="flux-block-caret"
       style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}

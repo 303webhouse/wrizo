@@ -340,11 +340,7 @@ for (const m of PIN_MUTANTS) {
 }
 ok(`all ${PIN_MUTANTS.length} pin mutations landed and ${PIN_MUTANTS.length} were killed`, pinLanded === PIN_MUTANTS.length && pinKilled === PIN_MUTANTS.length, `${pinLanded} landed / ${pinKilled} killed`);
 const fo = read('components/ForwardOnlyEditor.tsx');
-// ---- PARKED - SUPERSEDED by ledger 92 (Fable Oct 17, X7): the lens's key door was in onFormatKeyDraft, which runs AFTER onKeyDownDraft's marks.enter had already done the Enter - one Enter was done twice. The door is now the FIRST thing onKeyDownDraft does, and the only call.
-// Kept VERBATIM below and no longer run; the successor pins the new place and that there is exactly one call.
-//
-// ok('R10 the editor carries the lens as data-template and the host\'s key door, and re-draws the lens when the template changes under it (refreshLens on [lens])',
-//   /data-template=\{lens \?\? undefined\}/.test(fo) && /if \(onLensKeyRef\.current\?\.\(e\)\) return;/.test(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
+// ARCHIVED PARK (#13 step 14): archive/page-templates-r2.mjs.parked.md record 1
 const lensKeyDoor = (text) => /const onKeyDownDraft = \(e: KeyboardEvent\) => \{\s*(?:\/\/[^\n]*\n\s*)+if \(onLensKeyRef\.current\?\.\(e\)\) \{ e\.stopImmediatePropagation\(\); return; \}\s*(?:\/\/[^\n]*\n\s*)+marks\.enter\(e\);/.test(text) && (text.match(/onLensKeyRef\.current\?\.\(e\)/g) || []).length === 1;
 ok('R10 [first-listener successor]: the editor carries the lens as data-template, re-draws it when the template changes under it (refreshLens on [lens]), and the host key door is the FIRST thing onKeyDownDraft does - before the marks controller own Enter - exactly ONCE, stopping the event it handles',
   /data-template=\{lens \?\? undefined\}/.test(fo) && lensKeyDoor(fo) && /useEffect\(\(\) => \{ const h = hostRef\.current; if \(h\) refreshLens\(h\); \}, \[lens\]\);/.test(fo), '');
@@ -357,15 +353,7 @@ const doorRed = doorMutants.map(([k, t]) => [k, t !== fo && lensKeyDoor(t) === f
 ok('R10 (mutants): the door back in the format listener after marks.enter, a door that does not stop its event, or a second call each turn the pin RED (each landed)', doorRed.every(([, v]) => v), JSON.stringify(doorRed));
 ok('R11 NOTHING of the lens remains in the string decoration path (store/draftDecoration.ts is byte-identical to main\'s: the rows model owns the page)', !/lensHtml|outlineText/.test(read('store/draftDecoration.ts')), '');
 
-// ---- PARKED - SUPERSEDED by typewriter-scope (Fable, Oct 21) ------------------------------------------------------------------------
-// P14's ORIGINAL gate-text match, quoted VERBATIM and no longer asserted (the successor lives at
-// P14's own spot above, now reading typewriterForPage instead):
-//
-//   ok('P14 the paragraph-indent Tab machine (item 158) stands aside while an Outline is in Draft, so Tab acts on the row and not on the whole one-paragraph outline',
-//     /outlineKeysRef\.current = mode === 'drafting' && realEntry\?\.pageSettings\?\.template === 'outline';/.test(pe) && (pe.match(/if \(outlineKeysRef\.current && !getWritingSettings\(\)\.typewriter\) return;/g) || []).length === 2, '');
-//
-// Re-asserted against its NEW, opposite truth: that exact shared-field read is GONE from the
-// gate, not merely wrong - this block stays green under HARNESS_PARKED=1, proving the retirement.
+// ARCHIVED PARK (#13 step 14): archive/page-templates-r2.mjs.parked.md record 2
 const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail });
@@ -436,11 +424,7 @@ async function part2() {
     ok('X1 Arbor: the Templates section lists Blank, Screenplay, Outline, Title Page, Bibliography', JSON.stringify(await pickerNames()) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(await pickerNames()));
     ok('X1 Arbor: Blank is the current choice (brass at rest, aria-pressed) and no other row is', JSON.stringify(await chosen()) === JSON.stringify(['blank']), JSON.stringify(await chosen()));
     const heads = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
-    // SUPERSEDED (help-buttons, Fable Oct 18-19): the Templates heading now
-    // carries its own "?" (HelpButton, unconditional in both themes), so its
-    // own textContent reads "Templates ?", not the bare exact word. Kept
-    // verbatim, no longer run:
-    //   ok('X1 Arbor: the section heads read "Font" and "Templates"', heads.includes('Font') && heads.includes('Templates'), JSON.stringify(heads));
+    // ARCHIVED PARK (#13 step 14): archive/page-templates-r2.mjs.parked.md record 3
     ok('X1 Arbor: the section heads read "Font" and "Templates" (the latter now carrying its own "?")', heads.includes('Font') && heads.some((h) => h.startsWith('Templates')), JSON.stringify(heads));
     ok('X1 no disabled stand-in and no Custom remain', (await app.evalJs("document.querySelectorAll('.wz-sliver-templates [aria-disabled=\"true\"], .wz-template-btn').length")) === 0, '');
     await fresh('flux');
@@ -448,10 +432,7 @@ async function part2() {
     await toDraft(); await openStrip();
     ok('X1 Flux: the rows read Raw, Script, Spine, Cover, Sources', JSON.stringify(await pickerNames()) === JSON.stringify(['Raw', 'Script', 'Spine', 'Cover', 'Sources']), JSON.stringify(await pickerNames()));
     const headsF = await app.evalJs("[...document.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent)");
-    // SUPERSEDED (help-buttons, Fable Oct 18-19): same gap as the Arbor check
-    // above - "Presets" now carries its own "?" too. Kept verbatim, no
-    // longer run:
-    //   ok('X1 Flux: the section heads read "Typeface" and "Presets"', headsF.includes('Typeface') && headsF.includes('Presets'), JSON.stringify(headsF));
+    // ARCHIVED PARK (#13 step 14): archive/page-templates-r2.mjs.parked.md record 4
     ok('X1 Flux: the section heads read "Typeface" and "Presets" (the latter now carrying its own "?")', headsF.includes('Typeface') && headsF.some((h) => h.startsWith('Presets')), JSON.stringify(headsF));
 
     // ---- X2: an EMPTY (unborn) page takes the choice in place; nothing is born; the first word births it WITH the template ----------------------
@@ -593,10 +574,7 @@ async function part2() {
     await app.evalJs("document.querySelector('.wz-title-sheet [data-field=\"words\"]')?.focus()"); await app.typeKeys('About 62,000 words');
     await sleep(900);
     const tp2 = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));
-    // ---- PARKED - SUPERSEDED by ledger 92 (Fable Oct 17): this read the store 900ms after typing, before the words field had committed (the very next check, after a reload, finds the word line saved). A settle in the check, not a lost write.
-    // Kept VERBATIM below and no longer run; the successor WAITS for the stored text to reach its value (up to 6s) and then reads it.
-    //
-    // ok('X10 author and word line land in the canonical text (the word line right-aligned with ">> ", the author centred under "by")', !!tp2 && tp2.text === '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh', JSON.stringify(tp2 && tp2.text));
+    // ARCHIVED PARK (#13 step 14): archive/page-templates-r2.mjs.parked.md record 5
     const X10_FULL = '>> About 62,000 words\n\n>< The Late Ferry\n>< by\n>< Ada Marsh';
     await waitSoft(`(JSON.parse(localStorage.getItem(${JSON.stringify(ROWS)}) || '[]').find((e) => (e.text || '').includes('The Late Ferry')) || {}).text === ${JSON.stringify(X10_FULL)}`, { label: 'the words field committed', timeout: 6000 });
     const tp3 = (await rows()).find((e) => (e.text || '').includes('The Late Ferry'));

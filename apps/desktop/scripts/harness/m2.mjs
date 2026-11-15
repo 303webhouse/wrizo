@@ -139,12 +139,7 @@ await withHarness(async (app) => {
       const b = E.growMany(E.createRhizomeState(), E.mulberry32(seed), geo, origin, 40);
       return { match: JSON.stringify(a.segments) === JSON.stringify(b.segments), count: a.segments.length };
     })()`);
-    // PARKED 2026-10-08, rhizome-growth.mjs R6. The field no longer imports
-    // rhizomeEngine, so the live seam is not mounted. The old engine's own
-    // unit tests remain in rhizome-goal-core.mjs; new-model determinism is R6.
-    // ok('Determinism (pure engine, pass 1 of 2): the window.__wrizoRhizomeEngine test seam exists and is reachable', pure && !pure.missing, JSON.stringify(pure));
-    // ok('Determinism (pure engine): same seed key + same 40-event count -> byte-identical segment path data, two independent mulberry32 streams',
-    //   pure && pure.match && pure.count > 0, JSON.stringify(pure));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 1
   }
   {
     // (b) Live, pass 2 of 2 — the SAME entry, SAME session, revisited via
@@ -170,16 +165,7 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'rhizome page revisited (in-app nav)' });
     await sleep(300);
     const beforeRetype = await readSegments(app);
-    // SUPERSEDED by M3 (docs/wrizo-alpha/m3-rhizome-roams-brief.md, S3). M3's
-    // total-word driver REVERSES this M2 law: coverage tracks TOTAL words, so
-    // revisiting a written entry now shows a ground alive to the essay's length
-    // (the DoD) rather than remounting empty. Original kept verbatim per the A4
-    // park law (memory: harness-assertions-park-never-edit):
-    //   ok('Determinism (live): revisiting the SAME entry (no new writing yet) remounts EMPTY — forward-only growth is per-mount, never replayed from stored word count',
-    //     beforeRetype.length === 0, String(beforeRetype.length));
-    // Successor (positive proof of the reversed, current truth): m3.mjs
-    // 'Determinism (live, M3): revisiting a WRITTEN entry reproduces the SAME
-    // saturated ground, byte-identical'.
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 2
     ok('SUPERSEDED->M3: revisiting the SAME written entry no longer remounts empty — the total-word driver grows a ground to saturationTarget(total words) on mount (M3 DoD)',
       beforeRetype.length > 0, String(beforeRetype.length));
     await focusEditorAndType(app, 'alpha beta gamma delta epsilon ');
@@ -211,28 +197,9 @@ await withHarness(async (app) => {
       const ox = segs[0].x1, oy = segs[0].y1;
       return segs.map(s => ({ x1: s.x1 - ox, y1: s.y1 - oy, x2: s.x2 - ox, y2: s.y2 - oy }));
     };
-    // SUPERSEDED by M3 (m3-rhizome-roams-brief.md, S3). The original relied on
-    // the M2 remount-empty law (both replays typed from empty to the SAME 5
-    // words). Under M3's total-word driver the revisit does NOT remount empty —
-    // `second` here is the entry retyped to 10 TOTAL words, not 5 — so the
-    // premise (equal totals) is gone, not determinism. Original kept verbatim
-    // per A4 (memory: harness-assertions-park-never-edit):
-    //   ok('Determinism (live): the SAME typed sequence replayed on the SAME entry, SAME session, reproduces a BYTE-IDENTICAL growth SHAPE (every coordinate normalized to the first segment’s own start point)',
-    //     JSON.stringify(normalize(first)) === JSON.stringify(normalize(second)) && second.length === first.length,
-    //     JSON.stringify({ first, second }));
-    // Successor (M3's actual determinism — same entry/session/geo/word-count):
-    // the in-app REVISIT (before any retyping) re-fits to a BYTE-IDENTICAL
-    // normalized ground; m3.mjs proves the same positively at essay scale.
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 3
     m2Parked.revisit = { first: first.length, beforeRetype: beforeRetype.length, second: second.length };
-    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
-    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
-    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successor for THIS check (a revisit
-    // re-fit, not a burst): rhizome-growth.mjs R6 (the same lap replays identically) - Fable, 2026-10-09.
-    //
-    // ok('SUPERSEDED->M3: the in-app revisit re-fits the SAME entry to a byte-identical normalized ground (same seed+geo+total-words => same scatter); the retyped `second` legitimately reaches a LARGER total (forward-only), no longer equal to `first`',
-    //   JSON.stringify(normalize(first)) === JSON.stringify(normalize(beforeRetype)) && beforeRetype.length === first.length && second.length >= first.length,
-    //   JSON.stringify({ first, beforeRetype, second }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 4
   }
 
   // ==========================================================================
@@ -252,21 +219,7 @@ await withHarness(async (app) => {
   // line-based caller would depend on.
   // ==========================================================================
   {
-    // PARKED 2026-10-08, rhizome-growth.mjs R6. Live seam gone; coverage tracks
-    // the goal in rhizomeGrowth.ts, not growOne/growMany event counts.
-    // const unitAgnostic = await app.evalJs(`(() => {
-    //   const E = window.__wrizoRhizomeEngine;
-    //   const geo = { width: 2000, height: 1500, paper: { left: 800, top: 0, right: 1200, bottom: 1300 } };
-    //   const origin = { x: 1000, y: 1300 };
-    //   const rngWord = E.mulberry32(777);
-    //   const rngLine = E.mulberry32(777);
-    //   let word = E.createRhizomeState();
-    //   for (let i = 0; i < 50; i++) word = E.growOne(word, rngWord, geo, origin); // 'word' shape: one event at a time
-    //   const line = E.growMany(E.createRhizomeState(), rngLine, geo, origin, 50); // 'line' shape: one bulk call
-    //   return { match: JSON.stringify(word.segments) === JSON.stringify(line.segments), count: word.segments.length };
-    // })()`);
-    // ok('Growth is unit-agnostic: 50 events delivered one-at-a-time ("word" shape) vs. one bulk call of 50 ("line" shape) produce byte-identical growth',
-    //   unitAgnostic.match && unitAgnostic.count > 0, JSON.stringify(unitAgnostic));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 5
   }
 
   // ==========================================================================
@@ -278,17 +231,12 @@ await withHarness(async (app) => {
   {
     await freshRhizomePage(app, LAPTOP_W, 900);
     const beforeAny = await readSegments(app);
-    // PARKED 2026-10-08, rhizome-growth.mjs R1. segmentsFor(0) shows the
-    // starting stroke (firstCount), not zero.
-    // ok('Origin: a freshly-opened Rhizome page starts with ZERO segments (no catch-up growth on mount)', beforeAny.length === 0, String(beforeAny.length));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 6
     await focusEditorAndType(app, 'origin ');
     await sleep(400);
     const report = await geometryReport(app);
     const segs = await readSegments(app);
-    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. Coverage is a lap of the writer's
-    // goal, so the first line of the default 24-line goal grows a fraction of
-    // the fill, not one event-segment. Original:
-    //   ok('Origin: the very first typed word produces exactly one segment', segs.length === 1, JSON.stringify(segs));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 7
     ok('Origin: SUPERSEDED->rhizome-goal — the first line grows a lap-fraction of the fill (more than one segment)', segs.length > 1, String(segs.length));
     const first = segs[0];
     const dist = first && report.paper ? (() => {
@@ -296,17 +244,7 @@ await withHarness(async (app) => {
       const dy = Math.max(report.paper.top - first.y1, 0, first.y1 - report.paper.bottom);
       return Math.hypot(dx, dy);
     })() : 0;
-    // SUPERSEDED 2026-10-08, rhizome-goal.mjs. The goal lap's first root sits
-    // outside the sheet and the clear band. The paper's bottom edge is inside
-    // that band, so a 1.5px check against it no longer describes the field.
-    // Original:
-    //   ok('Origin: the first segment roots AT the measured origin (paper bottom-center, stage-relative) — within 1.5px',
-    //     first && Math.abs(first.x1 - expectedX) < 1.5 && Math.abs(first.y1 - expectedY) < 1.5, ...);
-    // PARKED 2026-10-08, rhizome-growth.mjs R4. Settled roots are <path>s, so
-    // this probe's x1/y1 is NaN. The first stroke still starts near the origin
-    // in the plan (R4).
-    // ok('Origin: SUPERSEDED->rhizome-goal — the first segment roots outside the sheet (clear band), not on the paper edge',
-    //   first && dist >= 40, JSON.stringify({ first, paper: report.paper, dist }));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 8
   }
 
   // ==========================================================================
@@ -315,19 +253,7 @@ await withHarness(async (app) => {
   // counting, is the reliable way to observe shoot IDs).
   // ==========================================================================
   {
-    // PARKED 2026-10-08, rhizome-growth.mjs R2/R3. Live seam gone; stems and
-    // side branches are R3 (order 0 thick, order 1+ hairline) and R2 (one network).
-    // const spawnExtend = await app.evalJs(`(() => {
-    //   const E = window.__wrizoRhizomeEngine;
-    //   const geo = { width: 2000, height: 1500, paper: { left: 800, top: 0, right: 1200, bottom: 1300 } };
-    //   const origin = { x: 1000, y: 1300 };
-    //   const rng = E.mulberry32(E.hashSeed('m2-harness-spawn-extend'));
-    //   const s = E.growMany(E.createRhizomeState(), rng, geo, origin, 60);
-    //   return { segments: s.segments.length, shoots: s.shoots.length };
-    // })()`);
-    // ok('Spawn-vs-extend: 60 seeded events produced MORE than one shoot (branching happened)', spawnExtend.shoots > 1, JSON.stringify(spawnExtend));
-    // ok('Spawn-vs-extend: segment count exceeds shoot count (extension happened — not every event branched)',
-    //   spawnExtend.segments > spawnExtend.shoots, JSON.stringify(spawnExtend));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 9
   }
 
   // ==========================================================================
@@ -340,19 +266,7 @@ await withHarness(async (app) => {
     await focusEditorAndType(app, 'a '.repeat(45)); // 45 short words -> 45 growth events
     await sleep(600);
     const report = await geometryReport(app);
-    // PARKED 2026-10-08, rhizome-growth.mjs R1. Settled roots are two <path>s
-    // (hairline + thick), so querySelectorAll('.wz-rhizome-seg').length is 2,
-    // not the lap's segment count. Coverage is R1 against the plan.
-    // ok(`Geometry @${width}px: the field actually grew (not a vacuous zero-segment pass)`, report.count >= 20, JSON.stringify(report));
-    // SUPERSEDED 2026-10-08, rhizome-goal.mjs. Connected growth tunnels under
-    // the sheet; the paint clip hides that stretch. An endpoint inside the
-    // paper rect is no longer a violation. Stage clamp below still holds.
-    // Original:
-    //   ok('Geometry @${width}px: no segment endpoint lands inside the paper's own rect', report.paperHit === 0, ...);
-    // PARKED 2026-10-08, rhizome-growth.mjs R2/R4. Same path-batching: count is
-    // 2 DOM nodes, not the lap. Connected growth and tunnelling are R2/R4.
-    // ok(`Geometry @${width}px: SUPERSEDED->rhizome-goal — the field grew a connected lap (endpoints may tunnel under the sheet)`,
-    //   report.count >= 20, JSON.stringify({ count: report.count, paperHit: report.paperHit }));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 10
     ok(`Geometry @${width}px: no segment endpoint exits the stage's own bounds — no overflow, no scrollbar`, report.outOfStage === 0, JSON.stringify(report));
     const hScroll = await app.evalJs('document.documentElement.scrollWidth > document.documentElement.clientWidth + 1');
     ok(`Geometry @${width}px: no horizontal scrollbar introduced`, hScroll === false, String(hScroll));
@@ -366,32 +280,7 @@ await withHarness(async (app) => {
   // huge stage) keeps the counts free of any avoidance-driven skip.
   // ==========================================================================
   {
-    // PARKED 2026-10-08, rhizome-growth.mjs R1. The 200/400/600 decay and 600/24
-    // caps are the old roam engine. A lap now grows until FULL_COVER of visible
-    // cells (LAP_CAP 3000). Live seam gone.
-    // const decay = await app.evalJs(`(() => {
-    //   const E = window.__wrizoRhizomeEngine;
-    //   const geo = { width: 20000, height: 20000, paper: { left: 0, top: 0, right: 5, bottom: 5 } };
-    //   const origin = { x: 10000, y: 10000 };
-    //   const rng = E.mulberry32(12345);
-    //   let s = E.createRhizomeState();
-    //   const at = [];
-    //   let cum = 0;
-    //   for (const n of [200, 200, 200, 800, 1600]) { s = E.growMany(s, rng, geo, origin, n); cum += n; at.push({ cum, segs: s.segments.length, shoots: s.shoots.length }); }
-    //   const before = JSON.stringify(s.segments);
-    //   const sMore = E.growMany(s, rng, geo, origin, 500); // well past the cap already
-    //   return { at, capHeld: JSON.stringify(sMore.segments) === before || sMore.segments.length === s.segments.length, finalSegs: sMore.segments.length, finalShoots: sMore.shoots.length, forwardOnly: JSON.stringify(sMore.segments.slice(0, s.segments.length)) === before };
-    // })()`);
-    // const at = decay.at;
-    // ok('Decay: every event grows while under 200 total — after 200 events, exactly 200 segments', at?.[0]?.segs === 200, JSON.stringify(at));
-    // ok('Decay: every 2nd event grows in the 200-400 band — after 400 events total, exactly 300 segments', at?.[1]?.segs === 300, JSON.stringify(at));
-    // ok('Decay: rate-2 band continues to its own edge — after 600 events total, exactly 400 segments', at?.[2]?.segs === 400, JSON.stringify(at));
-    // ok('Decay: every 4th event grows in the 400-600 band — after 1400 events total, the 600-segment cap is reached exactly', at?.[3]?.segs === 600, JSON.stringify(at));
-    // ok('Cap: 600 segments holds as a HARD stop — 1600 more events (3000 total) still reads exactly 600', at?.[4]?.segs === 600, JSON.stringify(at));
-    // ok('Cap: 500 further events past an already-capped field add nothing more (idempotent hard stop)', decay.capHeld && decay.finalSegs === 600, JSON.stringify(decay));
-    // ok('Cap: shoot count never exceeds the 24-shoot hard cap', decay.finalShoots <= 24 && decay.finalShoots > 0, String(decay.finalShoots));
-    // ok('Forward-only: every one of the first 600 segments is byte-identical after 500 MORE events were thrown at an already-capped field — nothing is ever edited or removed',
-    //   decay.forwardOnly, String(decay.forwardOnly));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 11
   }
 
   // ==========================================================================
@@ -425,63 +314,22 @@ await withHarness(async (app) => {
 
     // Cross the goal (245 seeded + 6 already typed = 251 > 250) — one more word.
     await focusEditorAndType(app, 'seven ');
-    // SUPERSEDED 2026-10-07, rhizome-goal.mjs. The rhizome flashes when the
-    // writer's own goal lap completes, then resets. It does not flash on the
-    // bar's WORD_GOAL. This one-line fixture never crosses the default
-    // 24-line goal, so the old waitFor(data-flash) cannot fire. Original:
-    //   await app.waitFor("document.querySelector('.wz-rhizome-field')?.dataset.flash === 'true'", { label: 'flash engaged on goal crossing', timeout: 3000 });
-    //   ok('Burst+flash: data-flash flips true on the SAME goal-crossing transition the bar itself celebrates on', true);
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 12
     ok('SUPERSEDED->rhizome-goal: the bar 250-word lap does not flash the rhizome while the writer line goal is unmet',
       (await app.evalJs("document.querySelector('.wz-rhizome-field')?.dataset.flash")) !== 'true', '');
     await sleep(300);
     const duringBurst = await readSegments(app);
     const delta = duringBurst.length - beforeBurst.length;
-    // SUPERSEDED by M3 (m3-rhizome-roams-brief.md, S3). This fixture seeds 245
-    // words then types six (245+5 = 250) BEFORE the "seven" keystroke, so under
-    // M3's total-word driver the goal (WORD_GOAL 250) is already crossed during
-    // "one two three four five six" — the burst fires THEN, and `beforeBurst`
-    // (snapshot after "six") already contains it. The "seven" keystroke adds no
-    // NEW burst: the milestone is a one-time event. Original kept verbatim (A4):
-    //   ok('Burst: adds segments after the goal crossing (up to +12, staggered — not necessarily all landed within this short window, but strictly more than before)',
-    //     delta > 0 && delta <= 13, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
-    // Successor (positive proof the burst DOES land +12 on the crossing, with a
-    // boundary that brackets it correctly): m3.mjs 'Burst (M3): crossing the
-    // goal lands up to +12 burst-flagged segments, growth kept whole'.
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 13
     m2Parked.oneTime = { before: beforeBurst.length, during: duringBurst.length, delta };
-    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
-    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
-    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
-    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
-    //
-    // ok('SUPERSEDED->M3: the milestone burst is one-time — a further keystroke after the goal is already crossed adds NO new burst (delta 0); the burst fired earlier, when the total-word count crossed the goal',
-    //   delta === 0, JSON.stringify({ before: beforeBurst.length, during: duringBurst.length, delta }));
-    // ------------------------------------------------------------------
-    // Wait past the full stagger + flash window, then confirm the burst
-    // finished landing and growth was kept whole (every pre-burst segment
-    // still present, byte-identical, at the SAME array indices).
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 14
     await sleep(1200);
     const afterBurst = await readSegments(app);
     const addedCount = afterBurst.length - beforeBurst.length;
-    // SUPERSEDED by M3 (same reason as the delta check above — the burst is a
-    // one-time event that fired during "one..six", so it does not fire AGAIN
-    // across "seven"; the count is stable). Original kept verbatim (A4):
-    //   ok('Burst: settles at up to +12 new segments total (the cap this event applies, never fewer than one, given live shoots existed)',
-    //     addedCount >= 1 && addedCount <= 12, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
-    // Successor (the +12 landing itself): m3.mjs 'Burst (M3): crossing the goal
-    // lands up to +12 burst-flagged segments, growth kept whole'.
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 15
     m2Parked.stable = { before: beforeBurst.length, after: afterBurst.length, addedCount };
     m2Parked.whole = { before: beforeBurst.length, headEqual: JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst) };
-    // ---- PARKED - SUPERSEDED by the connected, coverage-tracking rhizome (Fable, 2026-10-08): the milestone burst no longer
-    // exists, and this probe counts drawing-on <line>s, which settle into <path>s (162 -> 123 is lines settling, not roots
-    // lost). Kept VERBATIM and no longer run; its record is in the HARNESS_PARKED block. Successors: rhizome-growth.mjs
-    // R1/R5, rhizome-goal.mjs's live flash/reset checks.
-    //
-    // ok('SUPERSEDED->M3: the burst count is STABLE after the one-time crossing — no second burst fires across a further keystroke (addedCount 0); the earlier crossing already landed the burst',
-    //   addedCount === 0, JSON.stringify({ before: beforeBurst.length, after: afterBurst.length, addedCount }));
-    // ok('Burst: growth kept whole — every segment present BEFORE the burst is still present, unchanged, at the same index',
-    //   JSON.stringify(afterBurst.slice(0, beforeBurst.length)) === JSON.stringify(beforeBurst),
-    //   JSON.stringify({ beforeBurst, afterHead: afterBurst.slice(0, beforeBurst.length) }));
-    // ------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 16
     const flashAfter = await app.evalJs("document.querySelector('.wz-rhizome-field')?.dataset.flash");
     ok('Burst+flash: the flash class RETURNS to false once its own timer completes (evental, not a new at-rest state)', flashAfter === 'false', String(flashAfter));
   }
@@ -502,15 +350,7 @@ await withHarness(async (app) => {
       const cs = getComputedStyle(seg);
       return { animationName: cs.animationName, opacity: cs.opacity };
     })()`);
-    // SUPERSEDED 2026-10-08. Full motion draws the segment on (stroke-dashoffset).
-    // Reduced motion keeps a plain opacity fade, so the name is wz-rhizome-grow
-    // and the rest opacity is still the hairline. Original required animationName
-    // 'none'.
-    // PARKED 2026-10-08, rhizome-growth.mjs R4. Reduced motion fades
-    // .wz-rhizome-new with wz-rhizome-appear (200ms); settled hairline opacity
-    // is .45, not .32.
-    // ok('Reduced-motion: SUPERSEDED->rhizome-goal — a new segment fades in and rests at the hairline opacity',
-    //   anim && anim.animationName === 'wz-rhizome-grow' && Math.abs(parseFloat(anim.opacity) - 0.32) < 0.02, JSON.stringify(anim));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 17
 
     const transitionCheck = await app.evalJs(`(() => {
       const seg = document.querySelector('.wz-rhizome-seg');
@@ -518,11 +358,7 @@ await withHarness(async (app) => {
       const cs = getComputedStyle(seg);
       return { transitionProperty: cs.transitionProperty, transitionDuration: cs.transitionDuration };
     })()`);
-    // PARKED 2026-10-08, rhizome-growth.mjs R5. Under reduced motion the flash
-    // sets transition:none; brass is a held stroke, not a stroke transition.
-    // ok('Reduced-motion: the flash is transition-driven (stroke), not animation-driven, under reduced motion',
-    //   transitionCheck && transitionCheck.transitionProperty.includes('stroke') && parseFloat(transitionCheck.transitionDuration) > 0,
-    //   JSON.stringify(transitionCheck));
+    // ARCHIVED PARK (#13 step 14): archive/m2.mjs.parked.md record 18
     await app.emulateMedia([]);
   }
 

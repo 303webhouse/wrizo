@@ -147,22 +147,7 @@ const where = (app) => app.evalJs(`({ hash: location.hash,
   paper: !!document.querySelector('.mode-page'),
   framed: !!document.querySelector('.desk-frame'),
   mode: (document.querySelector('.desk-mode-tab.active') || {}).textContent })`);
-// ---- PARKED - SUPERSEDED by POLISH #10 item 5 (Nick, Oct 25: in the zoom the ink sheet covers the visible page): both drivers aimed their fractions
-// at the WHOLE sheet, which was the text's own box. In the zoom the sheet now reaches over the scroller's start offset and end room with matching
-// paddings, so the same fractions land above the text or past the stage (FIX's turn on e2ebe51d, Oct 26: S2/S4/S5 pen/S7/S8/S11 all drew nothing).
-// Kept VERBATIM and no longer called; the record (parked section) measures the sheet against its text box on each run.
-//
-// const safePen = async (app, sel, points, label) => {
-//   if (!(await present(app, sel))) {
-//     ok(`DRIVER: ${label} — target ${sel} was ABSENT, so no pen stroke was dispatched`, false, JSON.stringify(await where(app)));
-//     return false;
-//   }
-//   await app.penStroke(sel, points);
-//   return true;
-// };
-// ------------------------------------------------------------------
-// SUCCESSOR: the same fractions, aimed at the sheet's TEXT box - its content box (the sheet less its paddings, at the painted scale), exactly where
-// the old sheet was - through a pointer-transparent marker laid over it, so every press still lands on the sheet itself.
+// ARCHIVED PARK (#13 step 14): archive/item121.mjs.parked.md record 1
 const i121Aim = [];
 const aimAtText = async (app, sel) => {
   const box = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(sel)}); if (!s) return null; const r = s.getBoundingClientRect(); const cs = getComputedStyle(s);
@@ -612,13 +597,7 @@ await withHarness(async (app) => {
       const r = band.getBoundingClientRect();
       const out = { height: r.height, width: r.width };
       sw.style.display = prev; return out; })()`);
-    // ---- PARKED - SUPERSEDED by Phase 1 (the band's hover TEXT | INK switch is RETIRED: the switch is gone, so "height with it equals height without it" has nothing to remove; Fable, Oct 12), 2026-10-12 ----
-    // Kept VERBATIM and no longer run. The successor follows the parked lines.
-    //
-    // ok(`S9 (${label}): the band's height with the switch mounted EQUALS its height without it — the switch fits the band's existing line and does not wrap it onto a second row (the real failure mode: .sprint-nav is a WRAPPING flex row, so a growth here is a whole row, not a few pixels). Paper never reflows for chrome`,
-    // withSwitch != null && !withoutSwitch.missing && Math.abs(withSwitch.height - withoutSwitch.height) < 0.6,
-    // JSON.stringify({ withSwitch: withSwitch && withSwitch.height, withoutSwitch: withoutSwitch.height }));
-    // ----------------------------------------------------------------------
+    // ARCHIVED PARK (#13 step 14): archive/item121.mjs.parked.md record 2
     const bandShape = await app.evalJs(`(() => { const band = document.querySelector('${BAND}'); if (!band) return null;
       const kids = [...band.children].filter((k) => k.getBoundingClientRect().height > 0);
       const centres = kids.map((k) => { const r = k.getBoundingClientRect(); return r.top + r.height / 2; });
@@ -646,14 +625,7 @@ await withHarness(async (app) => {
       return { side: on && on.id.replace('wz-sliver-tab-', ''),
                paper: paper && paper.getAttribute('data-instrument') }; })()`));
   }
-  // ---- PARKED - SUPERSEDED by Phase 1 (the band's hover TEXT | INK switch is RETIRED: the "switch" a flip is read from is now the drawer's selected tab; Fable, Oct 12), 2026-10-12 ----
-  // Kept VERBATIM and no longer run. The successor follows the parked lines.
-  //
-  // ok('S9: after EVERY flip the switch\'s checked side and the paper\'s own data-instrument agree — two independent readings of one state, so a switch that moved without the page following (or the reverse) is caught',
-  // agreeing.length === 3 && agreeing.every(a => a.side === a.paper)
-  // && agreeing[0].paper === 'ink' && agreeing[1].paper === 'text' && agreeing[2].paper === 'ink',
-  // JSON.stringify(agreeing));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item121.mjs.parked.md record 3
   ok('S9 successor [Phase 1]: after EVERY flip the drawer\'s SELECTED tab and the paper\'s own data-instrument agree - two independent readings of one state, so a tab that moved without the page following (or the reverse) is caught',
     agreeing.length === 3 && agreeing.every((a) => a.side === a.paper)
       && agreeing[0].paper === 'ink' && agreeing[1].paper === 'text' && agreeing[2].paper === 'ink',
@@ -714,13 +686,7 @@ await withHarness(async (app) => {
     switchPresent: !!document.querySelector('${SWITCH}'),
     inkTabPresent: !!document.querySelector('#wz-sliver-tab-ink'),   // PHASE 1: the switch is retired, so the original reads absent everywhere; this is the live half
   }))()`);
-  // ---- PARKED - SUPERSEDED by PR #7 (3951329: the format buttons are titled "Bold (Ctrl+B)", "Italic (Ctrl+I)", "Underline (Ctrl+U)"), 2026-10-02 ----
-  // Kept VERBATIM and no longer run. Only the titles changed; the three buttons are still there.
-  //
-  // ok('S10: DRAFT IS UNTOUCHED — its FORMAT zone still carries Bold/Italic/Underline (R4 survives R15, which rules on ONE surface). This is the check that would have caught "remove STYLING" being read as "remove it everywhere"',
-  //   draftDrawer.format > 0 && draftDrawer.buttons.includes('Bold') && draftDrawer.buttons.includes('Italic') && draftDrawer.buttons.includes('Underline'),
-  //   JSON.stringify(draftDrawer));
-  // ----------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item121.mjs.parked.md record 4
   ok('S10 [PR #7 successor]: DRAFT IS UNTOUCHED — its FORMAT zone still carries Bold/Italic/Underline, now titled with their shortcuts (R4 survives R15, which rules on ONE surface)',
     draftDrawer.format > 0 && ['Bold (Ctrl+B)', 'Italic (Ctrl+I)', 'Underline (Ctrl+U)'].every(t => draftDrawer.buttons.includes(t)),
     JSON.stringify(draftDrawer));

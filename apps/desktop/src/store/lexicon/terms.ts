@@ -108,9 +108,16 @@ export type DeskTermId =
   | 'flux3LinkOne' | 'flux3LinkMany' | 'flux3ChecksumOk' | 'flux3ReadLevel' | 'flux3ReadZoom' | 'flux3ReadLast' | 'flux3KindPreset'
   // FLUX3 S2 - the Schema's Stack and hologram (src/flux3/FluxStack.tsx, behind ?flux3=1): the Stack button's word and the level readout's two words
   | 'flux3ViewStack' | 'flux3ViewHologram' | 'flux3WordOne' | 'flux3WordMany' | 'flux3PortConnectAnother' | 'flux3PortDisconnect' | 'flux3Checkpoint'
+  // THE REORG'S RAIL (src/reorg/, behind ?reorg=1 in Machina): new words only, no rename; the rail mounts in Machina alone, so each reads its Machina word
+  | 'reorgUnfiled' | 'reorgAllProjects' | 'reorgNewProject' | 'reorgDocOne' | 'reorgDocMany' | 'reorgPin' | 'reorgUnpin' | 'reorgPinnedGroup' | 'reorgUnpinnedGroup'
+  | 'reorgPinsLabel' | 'reorgPinsAsList' | 'reorgPinsAsBoxes' | 'reorgWhereLabel' | 'reorgBoxOpen'
+  // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
+  | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
   | 'ctxDelete' | 'ctxDeleteBoard' | 'ctxUngroup' | 'deleteDialogTitle' | 'deleteDialogPurgeTitle' | 'deleteDialogCancel' | 'deleteDialogConfirm' | 'deleteDialogDontAsk'
   | 'ctxEmptyTrash' | 'emptyTrashQuestionOne' | 'emptyTrashQuestionMany' | 'purgedElsewhere' | 'destructiveTypeToGo' | 'destructiveGo'
+  // #76: the quiet line while the same page is open in another window (placeholder words until the Wrizors word it), and the line that says both versions were kept after a merge
+  | 'samePageElsewhere' | 'samePageKeptBoth'
   | 'settingsAskBeforeDelete' | 'toastCardDeleted' | 'toastCardRestored' | 'trashCardBadge'
   // the Grafts / Links tab: the selected card's connections, each with an X that asks first [deskLexicon §6]
   | 'linksRemoveTitle' | 'linksRemoveAria' | 'linksKindPage' | 'linksKindBoard' | 'linksKindCard'
@@ -130,7 +137,6 @@ export type DeskTermId =
   | 'tutorDockClose'
   | 'tutorLensConsistency' | 'tutorLensStructure' | 'tutorLensFragments'
   | 'tutorLensConsistencyEmpty' | 'tutorLensFragmentsEmpty' | 'tutorLensFragmentsNote'
-  | 'tutorNudgesTitle' | 'tutorNudgesEmpty'
   // TU5 S3 — the book's Bible (L4): section header, a one-line note, empty
   // state, the add-input placeholder + button, and the per-fact
   // edit/delete/save/cancel affordances. All writer-facing chrome, all here.
@@ -283,9 +289,6 @@ export type DeskTermId =
   // title (a proper noun — not lexicon vocabulary).
   // the Drawer terms: key names stay (internal ids), string values carry the writer's word [deskLexicon §15]
   | 'createDrawerEyebrow' | 'createDrawerTitleLabel'
-  | 'drawerHomeTitleLabel' | 'backToDrawer'
-  | 'domainLabelCreative' | 'domainLabelAcademic' | 'domainLabelProfessional'
-  | 'sprintSaveToDrawer' | 'sprintSaveAsDrawer'
   // B3 S1 — the deck engine's own chrome (components/DeckWizard.tsx): the
   // two doors' own labels, the library step, the room headings, and the
   // "Start Here" hint (R6's own wayfinding mark). Every deck NAME/prompt/

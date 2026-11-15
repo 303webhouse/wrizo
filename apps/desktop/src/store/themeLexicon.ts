@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme, type ThemeId } from './theme';
+import { REORG } from '../reorg/flag';
 
 // TH1 Slice 1 — lexicon projection (canon §5). Display projection ONLY: data,
 // schema, routes, sync, and search keep the canonical nouns below forever — a
@@ -52,7 +53,7 @@ const CANONICAL: Record<TermId, TermForms> = {
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
   flux: {
     page: { one: 'Doc', many: 'Docs' },
-    drawer: { one: 'Rack', many: 'Racks' },
+    drawer: { one: 'Drive', many: 'Drives' },
     binder: { one: 'Cartridge', many: 'Cartridges' },
     box: { one: 'Node', many: 'Nodes' },
     board: { one: 'Circuit', many: 'Circuits' },
@@ -68,11 +69,12 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
   },
   // Machina's register; not overridden on purpose: 'plan' (already Machina's word), 'script', and 'notebook' (Machina's Notebook is the journal word) [themeLexicon §5]
   machina: {
-    page: { one: 'File', many: 'Files' },
+    page: { one: 'Doc', many: 'Docs' },
     drawer: { one: 'Project', many: 'Projects' },
     binder: { one: 'Folder', many: 'Folders' },
     box: { one: 'Block', many: 'Blocks' },
-    board: { one: 'Plan', many: 'Plans' },
+    // the reorg (?reorg=1 only; reorg-word-changes.md 2a, Nick Nov 14): Machina's surface is Board, written out so it never falls through
+    board: REORG ? { one: 'Board', many: 'Boards' } : { one: 'Plan', many: 'Plans' },
     journal: { one: 'Notebook', many: 'Notebooks' },
     milestone: { one: 'Deliverable', many: 'Deliverables' },
     freewrite: { one: 'Sprint', many: 'Sprints' },

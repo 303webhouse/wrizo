@@ -373,15 +373,7 @@ await withHarness(async (app) => {
     const st = await rosterState(app);
     ok('S0: the Draft roster renders exactly FOUR asks, in the lock record\'s own order',
       st.labels.length === 4 && JSON.stringify(st.ids) === JSON.stringify(ASK_IDS), JSON.stringify(st.ids));
-    // SUPERSEDED (word-diet-layouts, Fable, Oct 15) — this loop ran i < 4
-    // against ASKS for every chip, i.e. for i===3 it asserted verbatim:
-    //   ok(`S0 [ask 4]: the chip's text is BYTE-EXACT against the build
-    //   brief's §2 table — "Look at just this stretch — what's it doing?"`,
-    //   st.labels[3] === ASKS[3], ...)
-    // Ask 4's own visible face is now the short word "Selection" (Nick's
-    // own word, per the mockup) — ASKS[3] is still what it STAGES, proven
-    // separately in S2's successor below, not what it shows. Asks 1-3 keep
-    // the original byte-exact loop unchanged; i<3, not i<4.
+    // ARCHIVED PARK (#13 step 14): archive/item84b.mjs.parked.md record 1
     for (let i = 0; i < 3; i++) {
       ok(`S0 [ask ${i + 1}]: the chip's text is BYTE-EXACT against the build brief's §2 table — ${JSON.stringify(ASKS[i])}`,
         st.labels[i] === ASKS[i], JSON.stringify({ rendered: st.labels[i], required: ASKS[i] }));

@@ -289,6 +289,9 @@ export function rowsPointFor(R: Rows, target: number): { node: Node; offset: num
   }
   const visible = cands.find((c) => !inHidden(c.node));
   if (visible) return visible;
+  // #60: a row with NO text at all (an empty line between two others, or at the top): the caret belongs IN that row. The newline text between rows is a
+  // point on the PREVIOUS line's end, and a caret put there is drawn at the writing area's right margin.
+  if (cands.length === 0 && row.firstChild === null) return { node: row, offset: 0 };
   if (local === 0) {
     const sepBefore = row.previousSibling;
     if (sepBefore && sepBefore.nodeType === 3) return { node: sepBefore, offset: (sepBefore as Text).data.length };

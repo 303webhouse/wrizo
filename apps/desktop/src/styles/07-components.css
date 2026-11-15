@@ -6,9 +6,7 @@
 
 /* Buttons — exactly one .btn-brass per screen. */
 .btn-brass,
-.btn-ghost,
-.btn-quiet,
-.btn-brick {
+.btn-quiet {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -37,15 +35,6 @@
 .btn-brass:hover { border-color: var(--brass-hover); color: var(--brass-hover); }
 .btn-brass:active { border-color: var(--brass-press); color: var(--brass-press); transform: translateY(1px); }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--text-hi);
-  border: 1px solid var(--ink-border);
-  padding: var(--space-3) var(--space-6);
-  transition: border-color var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
-}
-.btn-ghost:hover { border-color: var(--ink-border-strong); background: var(--ink-900); }
-
 .btn-quiet {
   background: none;
   color: var(--text-mid);
@@ -56,27 +45,8 @@
 }
 .btn-quiet:hover { color: var(--text-hi); text-decoration: underline; }
 
-/* De-emphasis modifier (brand: translucency = de-emphasis signal only). For a
-   control that should be reachable but never beckon — a tool for someone who
-   needs it, not a treat. Surfaces to full presence on hover/focus. */
-.btn-ghost { opacity: 0.4; transition: opacity var(--t-state) var(--ease), color var(--t-fast) var(--ease); }
-.btn-ghost:hover,
-.btn-ghost:focus-visible { opacity: 1; }
-
-/* Discard only — the single brick control in the whole app. */
-.btn-brick {
-  background: transparent;
-  color: var(--brick);
-  border: 1px solid var(--brick);
-  padding: var(--space-3) var(--space-6);
-  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
-}
-.btn-brick:hover { background: var(--brick); color: var(--text-hi); }
-
 .btn-brass:disabled,
-.btn-ghost:disabled,
-.btn-quiet:disabled,
-.btn-brick:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-quiet:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Ember wordmark lockup (branding §3). Mark + gap + lift scale with font-size;
    --lockup-lift is the single value to fine-tune the flame's float (v1 = 15px
@@ -98,19 +68,6 @@
   letter-spacing: 0.07em;
   color: var(--text-low);
 }
-
-/* The lit page — prose surfaces only. */
-.paper-page {
-  background: var(--paper);
-  color: var(--ink-on-paper);
-  border-radius: var(--radius-md);
-  box-shadow: var(--paper-glow);
-  padding: var(--space-8);
-  font-family: var(--font-prose);
-  font-size: 17px;
-  line-height: 1.7;
-}
-.paper-page ::placeholder { color: var(--ink-on-paper-low); }
 
 /* FX4 S1 — the Journal carve-out retires: this is the ENTIRE mechanism of
    that carve-out reversing. Before this ticket, `.entry-full` computed and
@@ -154,124 +111,13 @@
    to, instead of being blocked by document geometry underneath it. */
 .entry-full[data-typewriter='true']{ padding-top:var(--tw-start-offset,0px); padding-bottom:30vh; }
 
-/* Glanceable progress — 10px ink-fill dot, always paired with a text label. */
-.status-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  vertical-align: middle;
-}
-.status-dot--empty { border: 1.5px solid var(--ink-border-strong); }
-.status-dot--started {
-  border: 1.5px solid var(--ink-border-strong);
-  background: linear-gradient(to top, var(--brass) 50%, transparent 50%);
-}
-.status-dot--done { background: var(--sage); }
-/* M1 — the same celebration grammar as the writing-surface circle-bar (one
-   grammar app-wide, per the canon), reusing pfill-celebrate verbatim: a
-   brief brass pulse marks the moment of completion, independent of the
-   dot's own resting color (sage for "done" here). Applied only on a
-   transition to done DURING the session — never on mount (the W1-R1 law). */
-.status-dot.celebrate { animation: pfill-celebrate 1.1s ease; }
-@media (prefers-reduced-motion: reduce) { .status-dot.celebrate { animation: none; } }
-
-/* Brass progress line that draws itself (Beat rail, Project Home). */
-.ink-line {
-  position: relative;
-  height: 2px;
-  width: 100%;
-  background: var(--ink-border);
-  border-radius: 0; /* FX1 S4 — square over rounded, everywhere */
-}
-.ink-line__fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: var(--brass);
-  border-radius: 0; /* FX1 S4 */
-  transition: width var(--t-state) var(--ease);
-}
-
-/* Quiet saved confirmation (toggled by JS; fades out after ~2s). */
-.saved-stamp {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--sage);
-  opacity: 1;
-  transition: opacity var(--t-fast) var(--ease);
-}
-.saved-stamp--hidden { opacity: 0; }
-
-/* Nudge result, tucked under the page's top edge. Appears on user action. */
-.nudge-slip {
-  background: var(--ink-800);
-  border: 1px solid var(--clay);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-  color: var(--text-hi);
-  /* The nudge speaks in the writing voice — Crimson Pro, italic. */
-  font-family: var(--font-prose);
-  font-style: italic;
-  font-size: 15px;
-  opacity: 1;
-  transition: opacity var(--t-state) var(--ease);
-  animation: nudge-slip-in var(--t-state) var(--ease);
-}
-/* Ephemeral nudges fade back out (reduced-motion → instant via the global reset). */
-.nudge-slip[data-shown='false'] {
-  opacity: 0;
-}
-@keyframes nudge-slip-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* The single permitted celebration — the sprint finish card rises 12px once. */
-@keyframes finish-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Board (D6): secondary card actions reveal on hover/focus, always shown on touch. */
-.board-card__reveal {
-  opacity: 0;
-  transition: opacity var(--t-fast) var(--ease);
-}
-.board-card:hover .board-card__reveal,
-.board-card:focus-within .board-card__reveal {
-  opacity: 1;
-}
-@media (hover: none) {
-  .board-card__reveal { opacity: 1; }
-}
-
-/* NEXT bookmark tab breaking the card's top edge. */
-.next-bookmark {
-  position: absolute;
-  top: -10px;
-  left: 16px;
-  background: var(--brass);
-  color: var(--on-brass);
-  font-family: var(--font-ui);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  padding: 3px 8px;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-}
-
 /* Focus: 2px brass ring on keyboard focus, never removed without replacement.
    Placed last so it wins over legacy .form-*:focus { outline: none }. */
 button:focus-visible,
 a:focus-visible,
 [tabindex]:focus-visible,
 .btn-brass:focus-visible,
-.btn-ghost:focus-visible,
-.btn-quiet:focus-visible,
-.btn-brick:focus-visible,
-.form-textarea:focus-visible {
+.btn-quiet:focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
@@ -288,51 +134,17 @@ a:focus-visible,
   }
 }
 
-/* Beat rail layout (in CSS, not inline, so W5 can override it on mobile). */
-.beat-rail-dots {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-}
-
 /* W5 — responsive pass. Breakpoint 720px; usable one-handed at 390px. */
 @media (max-width: 720px) {
   .page {
     padding: var(--space-4);
   }
 
-  /* iOS never zooms on focus when inputs are >= 16px. */
-  .form-textarea {
-    font-size: 16px;
-  }
-
   /* Comfortable one-handed tap targets. */
-  .btn-brass,
-  .btn-ghost,
-  .btn-brick {
+  .btn-brass {
     min-height: 44px;
   }
 
-  /* Sprint Save/Finish bar stays reachable above the mobile keyboard. */
-  .sprint-bottombar {
-    position: sticky;
-    bottom: 0;
-    background: var(--ink-950);
-    padding-block: var(--space-2);
-    z-index: 3;
-  }
-
-  /* Beat rail scrolls horizontally with an edge fade when beats overflow. */
-  .beat-rail-dots {
-    justify-content: flex-start;
-    gap: var(--space-4);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
-    mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
-  }
-  /* (its `::-webkit-scrollbar{display:none}` twin is deleted: redundant with scrollbar-width:none above on Chromium >= 121 - one mechanism per element) */
 }
 
 /* Forward-only editor (CW2). Runs render as DOM spans; the native caret is used

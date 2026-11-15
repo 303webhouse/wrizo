@@ -165,12 +165,7 @@ await withHarness(async (app) => {
 
   // ---- 1 · eight tabs, in the ruled order, BY NAME ------------------------
   const order = await app.evalJs(`[...document.querySelectorAll('.wz-strip-item')].map(b => b.getAttribute('data-category'))`);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): the rail carries SEVEN tabs in the new order (the place block, Pages, Boards, Journal, then the foot).
-  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
-  //
-  // ok(`VW1 check 1: the rail carries exactly eight tabs in the ruled order — ${RULED.join(' · ')}`,
-  //   Array.isArray(order) && JSON.stringify(order) === JSON.stringify(RULED),
-  //   JSON.stringify({ got: order, want: RULED }));
+  // ARCHIVED PARK (#13 step 14): archive/vw1.mjs.parked.md record 1
   ok(`VW1 check 1 [big-projects-1a successor]: the rail carries exactly seven tabs in the ruled order - ${RULED.join(' · ')} (the place block first; no Shelf)`,
     Array.isArray(order) && JSON.stringify(order) === JSON.stringify(RULED),
     JSON.stringify({ got: order, want: RULED }));
@@ -205,13 +200,7 @@ await withHarness(async (app) => {
     if (strip) walkNode(strip);
     return out;
   })()`);
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS 1a (docs/plans/big-projects.md, cleared by Fable 2026-10-18): three separators, in the new places - after boards, after journal, above trash.
-  // Kept VERBATIM below and no longer run; the successor asserts the new rail. The Shelf is merged into the Journal (display only), Plan is renamed Boards in the label (the category id stays `plan`), and the Drawers tab is now the PLACE BLOCK at the top.
-  //
-  // const WANT_SEQ = ['page', 'plan', '—', 'drawers', '—', 'journal', 'shelf', '—', 'settings', 'theme', '—', 'trash'];
-  // ok('VW1 check 2: four separators, in the ruled places — after plan, after drawers, after shelf, and above trash. The separators do the teaching silently, so their POSITION is the assertion, not their count',
-  //   JSON.stringify(seq) === JSON.stringify(WANT_SEQ),
-  //   JSON.stringify({ got: seq, want: WANT_SEQ }));
+  // ARCHIVED PARK (#13 step 14): archive/vw1.mjs.parked.md record 2
   const WANT_SEQ = ['drawers', 'page', 'plan', '—', 'journal', '—', 'settings', 'theme', '—', 'trash'];
   ok('VW1 check 2 [big-projects-1a successor]: three separators, in the ruled places - after boards, after journal (the foot\'s own line), and above trash. The place block sits above them all. POSITION is the assertion, not the count',
     JSON.stringify(seq) === JSON.stringify(WANT_SEQ),

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "W1d at rest: the live drawing at full and in style work, the still picture drawn and waiting at 0 (its target the layer's strength)",
+    "pass": true,
+    "detail": "{\"wrap\":true,\"driftT\":null,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":null,\"running\":115,\"ls\":\"[[\\\"writer-studio-dirty-v1\\\",\\\"{\\\\\\\"projects\\\\\\\":[\\\\\\\"mwad5a2dvzbilrr2a\\\\\\\"],\\\\\\\"storyPlans\\\\\\\":[],\\\\\\\"sessions\\\\\\\":[],\\\\\\\"drafts\\\\\\\":[],\\\\\\\"journalEntries\\\\\\\":[\\\\\\\"mwad5a2dplmsftf8o\\\\\\\"],\\\\\\\"drawers\\\\\\\":[]}\\\"],[\\\"writer-studio-journal-entries\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mwad5a2dplmsftf8o\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"projectId\\\\\\\":\\\\\\\"mwad5a2dvzbilrr2a\\\\\\\",\\\\\\\"pageType\\\\\\\":\\\\\\\"manuscript\\\\\\\",\\\\\\\"source\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"origin\\\\\\\":\\\\\\\"project\\\\\\\",\\\\\\\"pageSettings\\\\\\\":{\\\\\\\"margins\\\\\\\":\\\\\\\"normal\\\\\\\",\\\\\\\"lineSpacing\\\\\\\":1.6,\\\\\\\"pageNumbers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"placement\\\\\\\":\\\\\\\"bottom-center\\\\\\\"},\\\\\\\"headers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"footers\\\\\\\":{\\\\\\\"on\\\\\\\":false,\\\\\\\"text\\\\\\\":\\\\\\\"\\\\\\\"},\\\\\\\"size\\\\\\\":11},\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-10T07:23:07.957Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-10T07:23:07.957Z\\\\\\\"}]\\\"],[\\\"writer-studio-journal-resync-v1\\\",\\\"1\\\"],[\\\"writer-studio-last-sync\\\",\\\"1970-01-01T00:00:00.000Z\\\"],[\\\"writer-studio-projects\\\",\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"mwad5a2dvzbilrr2a\\\\\\\",\\\\\\\"title\\\\\\\":\\\\\\\"Untitled\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"creative\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"book\\\\\\\",\\\\\\\"storyPlanId\\\\\\\":null,\\\\\\\"createdAt\\\\\\\":\\\\\\\"2026-11-10T07:23:07.957Z\\\\\\\",\\\\\\\"updatedAt\\\\\\\":\\\\\\\"2026-11-10T07:23:07.957Z\\\\\\\",\\\\\\\"lastActivityAt\\\\\\\":\\\\\\\"2026-11-10T07:23:07.957Z\\\\\\\",\\\\\\\"lastActivityType\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"lastActivePageId\\\\\\\":\\\\\\\"mwad5a2dplmsftf8o\\\\\\\"}]\\\"],[\\\"wrizo-first-run-complete\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen\\\",\\\"1\\\"],[\\\"wrizo-tutor-disclosure-seen-version\\\",\\\"4\\\"],[\\\"wz.lastPlace\\\",\\\"{\\\\\\\"v\\\\\\\":1,\\\\\\\"uid\\\\\\\":\\\\\\\"test-user\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"page\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"mwad5a2dplmsftf8o\\\\\\\",\\\\\\\"at\\\\\\\":1794295387966}\\\"],[\\\"wz.opens.test-user\\\",\\\"{\\\\\\\"mwad5a2dplmsftf8o\\\\\\\":1}\\\"],[\\\"wz.place.test-user\\\",\\\"{\\\\\\\"kind\\\\\\\":\\\\\\\"drawer\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"unsorted\\\\\\\",\\\\\\\"setId\\\\\\\":\\\\\\\"mwad5a2dvzbilrr2a\\\\\\\"}\\\"]]\"}"
+  },
+  {
+    "name": "W2d the first key: within 100 ms the still stands at the layer's strength and the live drawing is at 0 and out of style work (and still so 320 ms on)",
+    "pass": true,
+    "detail": "{\"at100\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"page\":{\"shown\":false,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.034,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"},\"at320\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}"
+  },
+  {
+    "name": "W3d no drift (Nick, Nov 7): the room's wrapper is there at rest and on the first key, and no drift animation is on it",
+    "pass": true,
+    "detail": "{\"rest\":{\"wrap\":true,\"drift\":null},\"key\":{\"wrap\":true,\"drift\":null}}"
+  },
+  {
+    "name": "W4f the chrome's return: the live drawing back at full and in style work, the still picture at 0; the wrapper there and no drift on it (Nick, Nov 7)",
+    "pass": true,
+    "detail": "{\"wrap\":true,\"driftT\":null,\"writing\":null,\"roomName\":\"day\",\"zoom\":true,\"room\":{\"shown\":true,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"page\":{\"shown\":false,\"live\":\"visible\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":1,\"stillO\":0,\"stillA\":0.034,\"wc\":[\"auto\",\"auto\"],\"off\":null},\"drift\":null,\"running\":115}"
+  },
+  {
+    "name": "W5b the swap key within the guard's per-key budget: none of six swap keys over 100 ms (the shade-off first keys reported beside them)",
+    "pass": true,
+    "detail": "{\"on\":[23.6,23.4,24.4,25,24.7,23.6],\"off\":[17.9,33.8,32.6,26.7,26.6,24.1],\"median\":[24,26.6],\"p95\":[25,33.8]}"
+  },
+  {
+    "name": "W6c reduced motion: nothing on the shade animates at rest; the first key is a cut to the still picture; nothing animates after it",
+    "pass": true,
+    "detail": "{\"rest\":{\"running\":0},\"key\":{\"running\":0,\"room\":{\"shown\":true,\"live\":\"hidden\",\"still\":\"block\",\"stillBg\":true,\"stillOp\":0,\"liveO\":0,\"stillO\":0.2,\"stillA\":0.2,\"wc\":[\"auto\",\"auto\"],\"off\":\"true\"}}}"
+  },
+  {
+    "name": "W9c the last frame, mid-shiver: on an unzoomed page, the cut drew a POSE (the counter agreeing: 8+ leaves moving), and its still against the live drawing paused at that pose - over 9 levels on no more than 0.01% of the pixels (the hold proven: the same frame twice identical; the shade proven in the shot: hidden, 1%+ of the pixels change)",
+    "pass": false,
+    "detail": "{\"want\":\"shiver\",\"moving\":8,\"choice\":\"shared still\",\"zoom\":true,\"off\":\"true\",\"pinned\":[\"1\",\"1\",\"0\",\"1\",\"1\"],\"clockAtKey\":{\"asleep\":null,\"liveOff\":null,\"writing\":null,\"first\":{\"state\":\"running\",\"start\":78129,\"current\":16749,\"now\":94878}},\"vs\":{\"n\":1260000,\"over\":0,\"max\":5},\"overPct\":0,\"same\":{\"n\":1260000,\"over\":0,\"max\":0},\"samePct\":0,\"shade\":{\"n\":1260000,\"over\":109409,\"max\":38},\"shadePct\":8.6833,\"pageChoice\":\"shared still\"}"
+  },
+  {
+    "name": "W10c the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)",
+    "pass": false,
+    "detail": "{\"want\":\"rest\",\"moving\":0,\"choice\":\"shared still\",\"zoom\":true,\"off\":\"true\",\"pinned\":[\"1\",\"1\",\"0\",\"1\",\"1\"],\"clockAtKey\":{\"asleep\":null,\"liveOff\":null,\"writing\":null,\"first\":{\"state\":\"running\",\"start\":81245,\"current\":20799,\"now\":102045}},\"vs\":{\"n\":1260000,\"over\":0,\"max\":4},\"overPct\":0,\"same\":{\"n\":1260000,\"over\":0,\"max\":0},\"samePct\":0,\"shade\":{\"n\":1260000,\"over\":109409,\"max\":38},\"shadePct\":8.6833,\"pageChoice\":\"shared still\"}"
+  },
+  {
+    "name": "W8b the flash copy's pre-rendered mask in use, its difference from the SVG mask within twice the accepted 0.02% (the walk judges the look)",
+    "pass": true,
+    "detail": "{\"maskWas\":\"bitmap\",\"w\":1400,\"h\":900,\"n\":1260000,\"diff\":131,\"over\":57,\"max\":53,\"overPct\":0.0045}"
+  },
+  {
+    "name": "W7 nothing stored: localStorage holds no key or value naming the swap",
+    "pass": true,
+    "detail": 2367
+  }
+]
+
+ARBOR2-SWAP VERIFY: FAIL - 2/10 failed

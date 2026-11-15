@@ -1,0 +1,180 @@
+2026-11-11T14:55:20Z tree F:/wrizo-work/arbor-notes: HEAD 82f4bed2 (want 82f4bed2), dirty 0, bundle index-CO0fJNq-.js
+2026-11-11T14:55:21Z tree F:/wrizo-work/arbor-main234: HEAD 31a69f23 (want 31a69f23), dirty 0, bundle index-B9fpcTSq.js
+2026-11-11T14:55:21Z tree F:/wrizo-work/arbor-mid: HEAD 50f051e2 (want 50f051e2), dirty 0, bundle index-DAvQg2uc.js
+2026-11-11T14:55:21Z tree F:/wrizo-work/arbor-t1: HEAD bc33de6e (want bc33de6e), dirty 0, bundle index-B1u4JCOf.js
+2026-11-11T14:55:22Z take: granted to lane "arbor" and bound to the process tree of pid 40616 - name this turn's start and end in your report
+TURN START 2026-11-11T14:55:22Z
+2026-11-11T14:55:22Z token matches the grant
+2026-11-11T14:55:22Z [pin-1] start (arbor2-roompin.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\pin-1
+  [01/1] OK        exit=0   11s arbor2-roompin.mjs :: ARBOR2-ROOMPIN VERIFY: PASS (6 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T14:55:38Z [pin-1] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T14:55:38Z [main-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-1
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T14:56:51Z [main-1] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T14:56:51Z [main-1] A+ VOIDS 0/1 (fast max: 33.9) | A+L none slow []
+2026-11-11T14:56:51Z [main-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-2
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T14:58:03Z [main-2] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T14:58:03Z [main-2] A+ VOIDS 0/1 (fast max: 33.4) | A+L none slow []
+2026-11-11T14:58:03Z [main-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-3
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T14:59:16Z [main-3] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T14:59:16Z [main-3] A+ VOIDS 0/1 (fast max: 33) | A+L none slow []
+2026-11-11T14:59:16Z RL_REF {"c":2.4,"p95":11.3,"c2":1.3,"runs":3}
+2026-11-11T14:59:16Z [t1-day-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t1-day-1
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:01:33Z [t1-day-1] exit 0; bundle now index-B1u4JCOf.js
+2026-11-11T15:01:33Z [t1-day-1] A+ VOIDS 0/1 (fast max: 38.8) | A+L PASS slow []
+2026-11-11T15:01:33Z [mid-day-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\mid-day-1
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:03:49Z [mid-day-1] exit 0; bundle now index-DAvQg2uc.js
+2026-11-11T15:03:49Z [mid-day-1] A+ VOIDS 0/1 (fast max: 35.6) | A+L PASS slow []
+2026-11-11T15:03:49Z [t2-day-1] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t2-day-1
+  [01/1] OK        exit=0  336s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:09:30Z [t2-day-1] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:09:30Z [t2-day-1] A+ VOIDS 3/4 (fast max: 50.1 / 56.1 / 52.4 / 45.9) | A+L PASS slow []
+2026-11-11T15:09:31Z [main-4] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-4
+  [01/1] OK        exit=0   57s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T15:10:33Z [main-4] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T15:10:33Z [main-4] A+ VOIDS 0/1 (fast max: 34.3) | A+L none slow []
+2026-11-11T15:10:33Z [mid-day-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\mid-day-2
+  [01/1] FAIL      exit=1  132s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/25 failed
+  SUITE RESULT: NOT CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:12:50Z [mid-day-2] exit 1; bundle now index-DAvQg2uc.js
+2026-11-11T15:12:50Z [mid-day-2] A+ VOIDS 0/1 (fast max: 38.8) | A+L FAIL slow [{"key":107,"ms":53.8,"t":14343},{"key":109,"ms":52.2,"t":14592}]
+2026-11-11T15:12:50Z [t2-day-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t2-day-2
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:15:06Z [t2-day-2] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:15:06Z [t2-day-2] A+ VOIDS 0/1 (fast max: 42.8) | A+L PASS slow []
+2026-11-11T15:15:07Z [t1-day-2] start (rhizome-latency.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t1-day-2
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:17:23Z [t1-day-2] exit 0; bundle now index-B1u4JCOf.js
+2026-11-11T15:17:23Z [t1-day-2] A+ VOIDS 0/1 (fast max: 35.9) | A+L PASS slow []
+2026-11-11T15:17:23Z [main-5] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-5
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T15:18:35Z [main-5] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T15:18:35Z [main-5] A+ VOIDS 0/1 (fast max: 34.8) | A+L none slow []
+2026-11-11T15:18:35Z [t2-day-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t2-day-3
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:20:52Z [t2-day-3] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:20:52Z [t2-day-3] A+ VOIDS 0/1 (fast max: 44.2) | A+L PASS slow []
+2026-11-11T15:20:52Z [t1-day-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t1-day-3
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:23:08Z [t1-day-3] exit 0; bundle now index-B1u4JCOf.js
+2026-11-11T15:23:08Z [t1-day-3] A+ VOIDS 0/1 (fast max: 37.5) | A+L PASS slow []
+2026-11-11T15:23:08Z [mid-day-3] start (rhizome-latency.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\mid-day-3
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:25:24Z [mid-day-3] exit 0; bundle now index-DAvQg2uc.js
+2026-11-11T15:25:24Z [mid-day-3] A+ VOIDS 0/1 (fast max: 42.3) | A+L PASS slow []
+2026-11-11T15:25:24Z [main-6] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-6
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T15:26:36Z [main-6] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T15:26:36Z [main-6] A+ VOIDS 0/1 (fast max: 33.3) | A+L none slow []
+2026-11-11T15:26:36Z [t1-day-4] start (rhizome-latency.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t1-day-4
+  [01/1] OK        exit=0  335s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:32:17Z [t1-day-4] exit 0; bundle now index-B1u4JCOf.js
+2026-11-11T15:32:17Z [t1-day-4] A+ VOIDS 1/4 (fast max: 43.5 / 40.2 / 36.3 / 36) | A+L PASS slow []
+2026-11-11T15:32:17Z [mid-day-4] start (rhizome-latency.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\mid-day-4
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:34:33Z [mid-day-4] exit 0; bundle now index-DAvQg2uc.js
+2026-11-11T15:34:33Z [mid-day-4] A+ VOIDS 0/1 (fast max: 46.2) | A+L PASS slow []
+2026-11-11T15:34:33Z [t2-day-4] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t2-day-4
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:36:50Z [t2-day-4] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:36:50Z [t2-day-4] A+ VOIDS 0/1 (fast max: 41.5) | A+L PASS slow []
+2026-11-11T15:36:50Z [main-7] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-7
+  [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T15:38:01Z [main-7] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T15:38:01Z [main-7] A+ VOIDS 0/1 (fast max: 34.9) | A+L none slow []
+2026-11-11T15:38:02Z [mid-day-5] start (rhizome-latency.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\mid-day-5
+  [01/1] FAIL      exit=1  203s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: FAIL - 1/25 failed
+  SUITE RESULT: NOT CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:41:29Z [mid-day-5] exit 1; bundle now index-DAvQg2uc.js
+2026-11-11T15:41:29Z [mid-day-5] A+ VOIDS 0/2 (fast max: 47.7 / 35.9) | A+L PASS slow []
+2026-11-11T15:41:30Z [t2-day-5] start (rhizome-latency.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t2-day-5
+  [01/1] OK        exit=0  264s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:45:59Z [t2-day-5] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:45:59Z [t2-day-5] A+ VOIDS 1/3 (fast max: 50.6 / 48.5 / 41.7) | A+L PASS slow []
+2026-11-11T15:46:00Z [t1-day-5] start (rhizome-latency.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\t1-day-5
+  [01/1] OK        exit=0  131s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+  SUITE RESULT: CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:48:16Z [t1-day-5] exit 0; bundle now index-B1u4JCOf.js
+2026-11-11T15:48:16Z [t1-day-5] A+ VOIDS 0/1 (fast max: 48.8) | A+L PASS slow []
+2026-11-11T15:48:16Z [main-8] start (rhizome-latency.mjs in F:/wrizo-work/arbor-main234 default, WS_URL_SEARCH=unset, RL_REF={"c":2.4,"p95":11.3,"c2":1.3,"runs":3})
+  SUITE START HARNESS_PARKED=unset files=1 tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b out=F:\wrizo-work\arbor-turn4-1455Z\main-8
+  [01/1] OK        exit=0   57s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (17 checks)
+  SUITE RESULT: CLEAN — tree=31a69f23 bundle=index-B9fpcTSq.js/1001407b
+2026-11-11T15:49:18Z [main-8] exit 0; bundle now index-B9fpcTSq.js
+2026-11-11T15:49:18Z [main-8] A+ VOIDS 0/1 (fast max: 34.2) | A+L none slow []
+2026-11-11T15:49:18Z TREE t1: voids 1/8 attempts; control-fast max worst 48.8; A+L FAIL 0/5; unreadable 0
+2026-11-11T15:49:18Z TREE mid: voids 0/6 attempts; control-fast max worst 47.7; A+L FAIL 1/5; unreadable 0
+2026-11-11T15:49:18Z TREE t2: voids 4/10 attempts; control-fast max worst 56.1; A+L FAIL 0/5; unreadable 0
+2026-11-11T15:49:18Z [swap-t1] start (arbor2-swap.mjs in F:/wrizo-work/arbor-t1 default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\swap-t1
+  [01/1] FAIL      exit=1  113s arbor2-swap.mjs :: ARBOR2-SWAP VERIFY: FAIL - 2/10 failed
+  SUITE RESULT: NOT CLEAN — tree=bc33de6e bundle=index-B1u4JCOf.js/1040908b
+2026-11-11T15:51:17Z [swap-t1] exit 1; bundle now index-B1u4JCOf.js
+2026-11-11T15:51:17Z [swap-mid] start (arbor2-swap.mjs in F:/wrizo-work/arbor-mid default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\swap-mid
+  [01/1] FAIL      exit=1  114s arbor2-swap.mjs :: ROWS-SHADOW VERIFY: PASS (9 renders checked, shadow == DOM on every one) ;; ARBOR2-SWAP VERIFY: FAIL - 1/10 failed
+  SUITE RESULT: NOT CLEAN — tree=50f051e2 bundle=index-DAvQg2uc.js/1040908b
+2026-11-11T15:53:16Z [swap-mid] exit 1; bundle now index-DAvQg2uc.js
+2026-11-11T15:53:16Z [swap] start (arbor2-swap.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\swap
+  [01/1] FAIL      exit=1  132s arbor2-swap.mjs :: ROWS-SHADOW VERIFY: PASS (40 renders checked, shadow == DOM on every one) ;; ARBOR2-SWAP VERIFY: FAIL - 0/11 failed
+  SUITE RESULT: NOT CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:55:33Z [swap] exit 1; bundle now index-CO0fJNq-.js
+2026-11-11T15:55:33Z W8B swap-t1: PASS {"maskWas":"bitmap","w":1400,"h":900,"n":1260000,"diff":198,"over":46,"max":56,"overPct":0.0037}
+2026-11-11T15:55:33Z W8B swap-mid: PASS {"maskWas":"bitmap","w":1400,"h":900,"n":1260000,"diff":679,"over":417,"max":222,"overPct":0.0331}
+2026-11-11T15:55:33Z W8B swap: PASS {"maskWas":"bitmap","w":1400,"h":900,"n":1260000,"diff":320,"over":154,"max":44,"overPct":0.0122}
+2026-11-11T15:55:34Z [pin-2] start (arbor2-roompin.mjs in F:/wrizo-work/arbor-notes default, WS_URL_SEARCH=?arbor2=1&arbor2room=day, RL_REF=default)
+  SUITE START HARNESS_PARKED=unset files=1 tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b out=F:\wrizo-work\arbor-turn4-1455Z\pin-2
+  [01/1] OK        exit=0   10s arbor2-roompin.mjs :: ARBOR2-ROOMPIN VERIFY: PASS (6 checks)
+  SUITE RESULT: CLEAN — tree=82f4bed2 bundle=index-CO0fJNq-.js/1040908b
+2026-11-11T15:55:49Z [pin-2] exit 0; bundle now index-CO0fJNq-.js
+2026-11-11T15:55:50Z this run's harness browsers swept
+2026-11-11T15:55:50Z release: released
+TURN END 2026-11-11T15:55:50Z

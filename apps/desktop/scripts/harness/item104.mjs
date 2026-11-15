@@ -114,14 +114,7 @@ await withHarness(async (app) => {
   s1DoorsSeen = doorPresent;
   // The address's `mode=draft` no longer opens Draft (item 87's amendment), and the template lives in Draft: reach it by the TAB.
   await app.click('Draft'); await sleep(500);
-  // ---- PARKED - SUPERSEDED by PAGE-TEMPLATES-MOVE (Nick's rulings, 2026-10-08: the page row keeps only Sprout, on a blank Free
-  // Write page; templates live in the tools menu). Kept VERBATIM and no longer run; its parked record (row absent) is in the HARNESS_PARKED block below, and
-  // its successor is the next check.
-  //
-  // ok('S1 (a) — the unborn page offers the Screenplay door (Nick\'s "template icon")',
-  //   Array.isArray(doorPresent) && doorPresent.includes('screenplay'),
-  //   `doors=${JSON.stringify(doorPresent)}`);
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/item104.mjs.parked.md record 1
   const templatesOffered = await templateKeys(app);
   ok('S1 (a) [template successor] — the unborn page offers the Screenplay TEMPLATE in the Draft strip (Nick\'s "template icon", now in the tools menu)',
     Array.isArray(templatesOffered) && templatesOffered.includes('screenplay'),

@@ -5,13 +5,18 @@ import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
+// FLUX WIRE IN (Fable, Nov 12 6:50 pm) - a mount point only: in Flux a page's free-writing mode is Wire In, the Corridor (src/flux3/FluxJackedIn.tsx); no flag, and in no other theme anything mounts
+import { fluxJackMode } from '../flux3/jackIn';
+import { FluxJackedIn } from '../flux3/FluxJackedIn';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
 import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
-import { useTheme, setTheme, type ThemeId } from '../store/theme';
+import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
+import { getTurnSound } from '../store/pageTurnSound';
+import { playPageTurn } from '../store/pageTurnPlay';
 import { useLexicon } from '../store/themeLexicon';
 import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
@@ -191,11 +196,17 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // the bar's label is desk chrome, so it takes the desk one.
   const { t: deskT } = useDeskLexicon();
   // Typewriter engages in Free Write and Draft only; Draft reads this page's own value, Free Write and pageId-less callers the shared field [ModeStage §6]
+  // FLUX WIRE IN (draft 21 §6; Fable, Nov 12 6:50 pm: no flag): in Flux Wire In is the free-writing MODE: Free Write IS Wire In, with no off inside it, and Draft (TEXT) is never the Typewriter. The PAPER Typewriter is retired in Flux, everywhere:
+  // no surface of Flux runs it and none offers its toggle (flux-wirein.css); every stored value is kept as data and read again in any other theme
+  const stageTheme = useTheme();
+  const fluxJack = fluxJackMode(stageTheme) && pageId != null;
   const typewriterOn = mode === 'drafting' && pageId != null
     ? typewriterForPage(pageId, words === 0)
-    : (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+    : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // ... and Flux's Jacked In is the free-writing MODE: it runs the Typewriter whatever the setting says, and BUILD (Draft) never does (typewriterRun is typewriterOn in every other theme)
+  const typewriterRun = fluxJack ? mode === 'journal' : typewriterOn;
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
-  const zoomed = !!framed && typewriterOn;
+  const zoomed = !!framed && typewriterRun;
   const pagecolRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!zoomed) return;
@@ -266,15 +277,15 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
 
   // B5 — in-document pagination. A page is the SHEET HEIGHT (not a line count, so
   // it survives the type scale): when the editor's content overflows the sheet,
-  // flip to a fresh one with a page-turn (animation + soft sound). `pageNum` is
+  // the page turns: a soft sound, no animation (#63: nothing on the page moves when it turns). `pageNum` is
   // the current sheet (0-based), shown as "p.N" beside the progress bar. The bar
   // itself no longer tracks page fill — it's the word/time goal lap (see
   // WritingIncentives.tsx); a page turn and a goal-lap completion are
   // independent rewards now.
   const [pageNum, setPageNum] = useState(0);
   const pageNumRef = useRef(0);
-  const soundOnRef = useRef(soundOn);
-  soundOnRef.current = soundOn;
+  const pageIdRef = useRef(pageId);
+  pageIdRef.current = pageId;
 
   // B3 — the AI assist frame. Collapsible (persisted); a future AI response shown
   // through the shared channel pops it out. Connect is a stub (no provider wired).
@@ -332,27 +343,28 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // container-mode call, one of the two "paper" surfaces the brief's S3
   // retunes; Journal's own window-scroll call is untouched (see
   // useTypewriterFade.ts's own comment).
-  useTypewriterFade({ enabled: typewriterOn, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
+  useTypewriterFade({ enabled: typewriterRun, containerRef: scrollRef, editorSelector: '.forward-only-editor', holdBand: CONTAINER_HOLD_BAND,
     // zoomed, the writing line is held at ZOOM_ANCHOR of the page column, the anchor the band mask is drawn against [ModeStage §13]
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
   // Pagination: watch the editor's content height against the sheet height. On
-  // crossing a sheet boundary, flip (page-turn animation + soft sound). Height-
+  // crossing a sheet boundary, the page turns: the sound (when the writer has it on for this theme), never an animation. Height-
   // based, so the boundary always matches the visible sheet at any type scale.
+  // #63: the sound rings only for a turn the writing made (a key within the last 1.5 s; a long page opening, a way back or a resize is not a turn), and once per
+  // page per sitting: going back over the line and writing past it again is quiet, a page further on rings.
   useEffect(() => {
     const scroll = scrollRef.current;
     if (!scroll) return;
-    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     let raf = 0;
-    const flip = () => {
-      const pageEl = scroll.closest('.mode-page') as HTMLElement | null;
-      if (pageEl && !reduce) {
-        pageEl.classList.remove('flipping');
-        void pageEl.offsetWidth; // restart the animation
-        pageEl.classList.add('flipping');
-        setTimeout(() => pageEl.classList.remove('flipping'), 600);
-      }
-      if (soundOnRef.current && !reduce) playPageTurn();
+    let lastKeyAt = 0;
+    const turn = (page: number) => {
+      const id = pageIdRef.current ?? '';
+      const done = turnSounded.get(id) ?? 0;
+      if (page <= done) return;
+      turnSounded.set(id, page);
+      if (Date.now() - lastKeyAt > 1500) return;
+      const theme = getTheme();
+      if (getTurnSound(theme) === 'on') playPageTurn(theme);
     };
     const measure = () => {
       const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
@@ -364,15 +376,17 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         const turned = page > pageNumRef.current;
         pageNumRef.current = page;
         setPageNum(page);
-        if (turned) flip();
+        if (turned) turn(page);
       }
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
+    const onKey = () => { lastKeyAt = Date.now(); };
     const mo = new MutationObserver(schedule);
     mo.observe(scroll, { childList: true, subtree: true, characterData: true });
     scroll.addEventListener('input', schedule);
+    scroll.addEventListener('keydown', onKey, true);
     schedule();
-    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); cancelAnimationFrame(raf); };
+    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); scroll.removeEventListener('keydown', onKey, true); cancelAnimationFrame(raf); };
   }, []);
 
   // Glow warmth: cumulative for the session (never resets), eased so early
@@ -421,14 +435,16 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
+    // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
+    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
-    if (!inScroll && target !== e.currentTarget) return;
+    if (!inScroll && target !== e.currentTarget && !(fluxJack && typewriterRun)) return;
     const rows = [...ed.querySelectorAll<HTMLElement>('.wz-row')].filter(r => r.getBoundingClientRect().height > 0);
     const lastBottom = rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : -Infinity;
     let offset: number | null;
-    if (!rows.length || e.clientY > lastBottom) offset = editorPlainText(ed).length;
+    if (!rows.length || e.clientY > lastBottom || (fluxJack && typewriterRun)) offset = editorPlainText(ed).length;
     else {
       const er = ed.getBoundingClientRect();
       const firstTop = rows[0].getBoundingClientRect().top;
@@ -500,7 +516,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           <button type="button" className="mode-iconbtn mode-gear" aria-label="Writing settings" aria-expanded={gearOpen} onClick={() => setGearOpen(o => !o)}>
             <GearIcon />
           </button>
-          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} />}
+          {gearOpen && <SettingsPanel settings={{ progress: settings.progress, fadeDepth: settings.fadeDepth, timer: settings.timer, typewriter: typewriterOn, progressStyle: settings.progressStyle }} hasMilestones={!!milestones && milestones.beats.length > 0} typewriterAvailable={!fluxJack} />}
           {gearOpen && <ThemePanel />}
         </div>
       </FirstRunVeil>
@@ -518,7 +534,9 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
           </aside>
         )}
 
-        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}>
+        <div className="mode-pagecol" ref={pagecolRef} data-zoom={zoomed ? 'true' : undefined}
+          /* Typewriter is forward-only and Jacked In has no paper edge to aim at: a press anywhere in the page's column puts the caret at the end too */
+          onClick={fluxJack && typewriterRun ? onPaperPress : undefined}>
           {/* Format / pen bar (top of page) — chrome, dissolves on write.
               AB2 S2/S3 — retires when framed: its ink swatches and Draft's
               format tools both have a home now in the sliver (CD1:
@@ -600,7 +618,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
             <div
               ref={scrollRef}
               className="mode-scroll"
-              data-typewriter={typewriterOn ? 'true' : 'false'}
+              data-typewriter={typewriterRun ? 'true' : 'false'}
             >
               {children({ noteWrite, penColor: rail.tools === 'pen' ? (zoomed && penTheme === 'plateau' && isArbor2() ? arbor2TypewriterInk(penColorProp ?? pen) : null) ?? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
@@ -635,6 +653,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                     label={label}
                     metricLabel={metricLabel}
                     hidden={effectiveProgress === 'off'}
+                    samePageLine
                     rightSlot={<>
                       {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
                       {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
@@ -686,6 +705,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
         ))}
       </div>
 
+      {pageId != null && <FluxJackedIn on={typewriterRun} scrollRef={scrollRef} unitCount={words} />}
+
       {/* Connect AI — stub entry point (no provider wired in B3). */}
       {!framed && connectOpen && (
         <div className="sprint-modal-backdrop" onClick={() => setConnectOpen(false)}>
@@ -715,7 +736,8 @@ function AssistIcon() {
 // options exist only where they act: Progress:Project needs a StoryPlan; the Bar|Rhizome style needs the framed stage; typewriterAvailable is false on a screenplay page; stored values are untouched either way [ModeStage §18]
 export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvailable = true }: { settings: { progress: ProgressMetric; fadeDepth: FadeDepth; timer: boolean; typewriter: boolean; progressStyle: ProgressStyle }; hasMilestones?: boolean; framed?: boolean; typewriterAvailable?: boolean }) {
   const { t: deskLex } = useDeskLexicon();
-  const machina = useTheme() === 'machina';
+  const settingsTheme = useTheme();
+  const machina = settingsTheme === 'machina';
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
@@ -740,7 +762,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
+      {typewriterAvailable && settingsTheme !== 'flux' && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }
@@ -763,6 +785,8 @@ export function ThemePanel() {
       <Seg label="Voice" value={prefs.voice} opts={[['serif', 'Serif'], ['sans', 'Sans']]} onPick={v => setThemePrefs({ voice: v as 'serif' | 'sans' })} />
       <PageToneRow page={prefs.page} />
       <Seg label="Fade" value={prefs.fade} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ fade: v as 'on' | 'off' })} />
+      {/* FLUX WIRE IN (draft 23, 6a.9): the Corridor's idle line has its own switch, on by default; shown only where the line exists (Flux) */}
+      {theme === 'flux' && <Seg label="Idle line" value={prefs.idle} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setThemePrefs({ idle: v as 'on' | 'off' })} />}
       {/* R2 (TH2 review) — a canon-level pref with no UI is a TH1 allowance,
           not a TH2 one, now that Flux actually schedules dial-scaled events. */}
       <Seg label="Ambiance" value={String(dial)} opts={[['0', '0'], ['25', '25'], ['50', '50'], ['75', '75'], ['100', '100']]} onPick={v => setAmbianceDial(Number(v))} />
@@ -770,33 +794,8 @@ export function ThemePanel() {
   );
 }
 
-// A soft synthesized paper-rustle for the page turn (no asset; gated by the
-// sound toggle + reduced-motion by the caller). Best-effort — never throws.
-function playPageTurn(): void {
-  try {
-    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const dur = 0.2;
-    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      const t = i / data.length;
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.5) * 0.22; // decaying noise
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'lowpass';
-    filt.frequency.value = 1700;
-    src.connect(filt);
-    filt.connect(ctx.destination);
-    src.start();
-    src.onended = () => { try { ctx.close(); } catch { /* ignore */ } };
-  } catch {
-    // audio unsupported / blocked — silent
-  }
-}
+// the highest page already sounded for each page of writing in this sitting (until the app is reloaded): a page turn rings once, going back and writing past the line again is quiet [#63]
+const turnSounded = new Map<string, number>();
 
 // One-color tan chrome icons (currentColor; sized for large screens).
 function MicIcon({ off }: { off: boolean }) {

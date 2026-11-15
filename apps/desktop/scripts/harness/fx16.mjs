@@ -88,17 +88,7 @@ await withHarness(async (app) => {
   {
     await openWithInviteState(app, 'fx16-optin', { pref: 'on', marker: true });
     const s = await inviteState(app);
-    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED. ORIGINAL, quoted verbatim
-    // (parked below, HARNESS_PARKED=1): `s.pref` reads the BARE key directly, which this
-    // ticket's own migration fix can now legitimately consume (moving a non-null bare value to
-    // a signed-in account's own scoped key - previously dormant, since readPref() only ever ran
-    // once, always before auth could resolve; the currentUser subscription this review added
-    // makes it run again once the real account is known). Successor reads prefAtKey instead.
-    //
-    //   ok('S2: a deliberate opt-in made under FX15/FX16 ("on" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref stays "on"',
-    //     s.prompt === true && s.pref === 'on' && s.marker === '1', JSON.stringify(s));
-    // ok('S2 [successor]: a deliberate opt-in made under FX15/FX16 ("on" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref (at its currently-effective key) stays "on"',
-    //   s.prompt === true && s.prefAtKey === 'on' && s.marker === '1', JSON.stringify(s));
+    // ARCHIVED PARK (#13 step 14): archive/fx16.mjs.parked.md record 1
     ok('S2 [12f successor]: an opt-in stored before 12f ("on" with the marker) shows NO invite, and both values stay as stored', s.prompt === false && s.invite === false && s.pref === 'on' && s.marker === '1', JSON.stringify(s));
     if (process.env.HARNESS_PARKED === '1') {
       pok('PARKED (was "S2 [successor]: a deliberate opt-in made under FX15/FX16 (\"on\" WITH the migration marker) SURVIVES — the migration is one-time and never a silent overwrite; the prompt still shows and the pref (at its currently-effective key) stays \"on\"") — #13 12f (Fable, Nov 1): the invite is deleted; re-asserted against the new truth: the values survive as stored and no prompt shows', s.prompt === false && s.prefAtKey === 'on' && s.marker === '1', JSON.stringify(s));
@@ -111,13 +101,7 @@ await withHarness(async (app) => {
   {
     await openWithInviteState(app, 'fx16-never', { pref: 'never', marker: false });
     const s = await inviteState(app);
-    // SPROUT-INVITE-SCOPE (Fable's review, ledger 124) - SUPERSEDED, same reasoning as Case 2
-    // above. ORIGINAL, quoted verbatim (parked below):
-    //
-    //   ok('S2: an explicit withdrawal ("never") survives the migration untouched — no invite, and the pref stays "never" (the migration marks itself run but never rewrites a deliberate withdrawal)',
-    //     s.prompt === false && s.invite === false && s.pref === 'never' && s.marker === '1', JSON.stringify(s));
-    // ok('S2 [successor]: an explicit withdrawal ("never") survives the migration untouched — no invite, and the pref (at its currently-effective key) stays "never" (the migration marks itself run but never rewrites a deliberate withdrawal)',
-    //   s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === '1', JSON.stringify(s));
+    // ARCHIVED PARK (#13 step 14): archive/fx16.mjs.parked.md record 2
     ok('S2 [12f successor]: a withdrawal stored before 12f ("never", no marker) shows no invite, and stays as stored with no marker written', s.prompt === false && s.invite === false && s.pref === 'never' && s.marker === null, JSON.stringify(s));
     if (process.env.HARNESS_PARKED === '1') {
       pok('PARKED (was "S2 [successor]: an explicit withdrawal (\"never\") survives the migration untouched — no invite, and the pref (at its currently-effective key) stays \"never\" (the migration marks itself run but never rewrites a deliberate withdrawal)") — #13 12f (Fable, Nov 1): the migration is deleted; re-asserted against the new truth: no invite, the value as stored, no marker', s.prompt === false && s.invite === false && s.prefAtKey === 'never' && s.marker === null, JSON.stringify(s));

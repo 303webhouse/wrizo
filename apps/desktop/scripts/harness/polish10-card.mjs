@@ -92,10 +92,7 @@ await withHarness(async (app) => {
       ok(`${tag} C2: flush - the grip meets the card's edge (gap ${gapGrip}px) and the open dock meets the grip (gap ${gapDock}px)`,
         !!open.dock && gapGrip != null && gapGrip >= -TOL && gapGrip <= TOL && near(open.dock.right, open.grip.left), J({ card: open.card, grip: open.grip, dock: open.dock, gapShut }));
       ok(`${tag} C4: the card's rect is unchanged through the dock's open and close`, sameRect(shut.card, open.card) && sameRect(shut.card, shut2.card), J({ shut: shut.card, open: open.card, shut2: shut2.card }));
-      // C5: PARKED VERBATIM (Fable, Oct 28): Esc closes the whole card - that is ruled (fx4 S5: Esc and the backdrop close the pop-up), so the card's dock does not take
-      // the Esc first. Kept as written and no longer run; its successor follows (C5s: the ruled behaviour, stated).
-      //   focus on a control inside the dock, then Esc:
-      //   ok(`${tag} C5: Esc inside the dock closes the dock, focus returns to the grip, the card stays open (...)`, inside.focus === 'dock' && afterEsc.popup && afterEsc.open === false && afterEsc.focus === 'grip', ...);
+      // ARCHIVED PARK (#13 step 14): archive/polish10-card.mjs.parked.md record 1
       await setDock(app, true);
       await app.evalJs("(() => { document.querySelector('.board-popup-dock .board-popup-tool')?.focus(); return true; })()");
       const inside = await app.evalJs(GEO);

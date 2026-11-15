@@ -717,8 +717,22 @@ function makeApp(base, cdp, waitEvent, tap) {
       await evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
       await app.reload();
       await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Arrival' });
-      await evalJs(`location.hash = '#/sprint'`); // decoupled from launchpad button text
+      // #13 step 12a: QuickSprint (/sprint) is deleted. The fresh writing surface is a blank loose page born through the seam (unframed at
+      // the default width, as the sprint was). Was: location.hash = '#/sprint' (decoupled from launchpad button text).
+      const freshId = await evalJs("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+      await evalJs(`location.hash = '#/page/' + ${JSON.stringify(freshId)}`);
       await app.waitFor("document.querySelector('.forward-only-editor, textarea')", { label: 'sprint writing surface' });
+      // The sprint held its words in memory until a flush, so a fresh one started with nothing unsaved. A seeded page is itself a dirty
+      // record until the app's own sync pushes it (the double accepts by default): wait for that, so the surface starts clean too. A
+      // signed-out boot never syncs; the wait then just runs out (6 s) and the page stays as born. The sync runs every 20 s, so a bare wait
+      // only passed when a tick happened to land inside it (Chat 1's pair: the parked leg missed it); the app's own 'online' handler
+      // (sync.ts startSync) runs one now, through the real push path.
+      await evalJs("window.dispatchEvent(new Event('online')); true");
+      for (let i = 0; i < 60; i += 1) {
+        const dirty = await evalJs("window.wrizoDirty ? Object.values(window.wrizoDirty.ids()).reduce((n, ids) => n + ids.length, 0) : 0");
+        if (dirty === 0) break;
+        await sleep(100);
+      }
       await injectHelpers();
     },
   };
@@ -929,6 +943,10 @@ export async function withHarness(scenario, opts = {}) {
     }
     // Wait for the first authed render, then inject helpers.
     await app.injectHelpers().catch(() => {});
+    // START RACE (#68, Fable Nov 11; helpers-survive was the first file seen, 15 more share the exposure): the scenario can be handed a page that is still about:blank - the browser's first navigation has not
+    // committed - and `localStorage` on that document throws SecurityError ("Access is denied for this document") before any check runs. Every scenario therefore starts on the app's own origin: wait here, once, for it
+    // (returns at once when the page is already there; a deployment under test has an https origin and passes the same test).
+    for (let i = 0; i < 100; i += 1) { let origin = null; try { origin = await app.evalJs('location.origin'); } catch { /* the page is between documents */ } if (origin && /^https?:/.test(origin)) break; await sleep(100); }
     const result = await scenario(app);
     if (verifyRows) {
       const checked = await app.evalJs("(() => { try { return Number(sessionStorage.getItem('wz-rows-checks') || 0); } catch { return 0; } })()").catch(() => 0);

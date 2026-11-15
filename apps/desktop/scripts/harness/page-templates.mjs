@@ -96,8 +96,7 @@ await withHarness(async (app) => {
   const fwMode = await activeMode(app);
   const fwDoors = await pageDoors(app);
   ok('T1 [Free Write, blank page]: the page opens in Free Write (the premise of the next checks)', fwMode === 'freewrite', String(fwMode));
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
-  // ok('T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door', JSON.stringify(fwDoors) === JSON.stringify(['sprout']), JSON.stringify(fwDoors));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 1
   ok('T1 [Free Write, blank page] [12f successor]: the blank Free Write page offers NO door at all - no Sprout, no Screenplay, no Plan', JSON.stringify(fwDoors) === '[]', JSON.stringify(fwDoors));
   if (process.env.HARNESS_PARKED === '1') pok('PARKED (was "T1 [Free Write, blank page]: the beginnings row offers ONE door, Sprout - no Screenplay door, no Plan door") — #13 12f (Fable, Nov 1): the Sprout door is deleted; re-asserted against the new truth: no door', JSON.stringify(fwDoors) === '[]', JSON.stringify(fwDoors));
   const fwOpen = await openStrip(app);
@@ -120,35 +119,14 @@ await withHarness(async (app) => {
   // which already excludes it by construction - only the two that read `s`
   // itself (names, and "every button is a live row") saw the extra entry.
   const sRows = s.filter((b) => b.key !== null);
-  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
-  //
-  // ok('T1 [Draft]: the Templates read Screenplay, Outline, Title page, Bibliography, Custom - in that order, and nothing else',
-  //   JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Screenplay', 'Outline', 'Title page', 'Bibliography', 'Custom']), JSON.stringify(s.map((b) => b.name)));
-  // SUPERSEDED (help-buttons, Fable Oct 18-19): the Templates heading now
-  // carries its own "?" (HelpButton, unconditional in both themes) - a real
-  // button inside .wz-sliver-templates that `s` (every button in the
-  // section) was never written to expect. Kept verbatim, no longer run:
-  //   ok('T1 [Draft, page-templates-r2 successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else',
-  //     JSON.stringify(s.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(s.map((b) => b.name)));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 2
   ok('T1 [Draft, help-buttons successor]: the Templates read Blank, Screenplay, Outline, Title Page, Bibliography - in that order, and nothing else (the heading\'s own "?" is excluded - it is not a template row, keyed null)',
     JSON.stringify(sRows.map((b) => b.name)) === JSON.stringify(['Blank', 'Screenplay', 'Outline', 'Title Page', 'Bibliography']), JSON.stringify(sRows.map((b) => b.name)));
-  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
-  //
-  // ok('T1 [Draft]: Screenplay is the ONE live template (not aria-disabled, keyed screenplay, with its glyph DRAWN at least 12px) - there is no Sprout and no Plan template',
-  //   JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['screenplay']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
-  //     && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 3
   ok('T1 [Draft, page-templates-r2 successor]: all FIVE rows are live (not aria-disabled, keyed blank, screenplay, outline, title, bibliography, each with its page sketch DRAWN at least 12px) - there is no Sprout and no Plan template',
     JSON.stringify(s.filter((b) => b.live).map((b) => b.key)) === JSON.stringify(['blank', 'screenplay', 'outline', 'title', 'bibliography']) && s.filter((b) => b.live).every((b) => b.disabled === null && b.glyph)
       && (await app.evalJs("!document.querySelector('[data-template=\"sprout\"], [data-template=\"plan\"]')")), JSON.stringify(s));
-  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (the approved templates mockup cursor/templates @ 0fc9afef, Fable Oct 16): the picker is FIVE live rows - Blank, Screenplay, Outline, Title Page, Bibliography - and the four grayed stand-ins (and Custom) are gone. Kept VERBATIM and no longer run; its successor follows.
-  //
-  // ok('T1 [Draft]: the four after it are grayed placeholders - aria-disabled, titled "Coming soon", each with its glyph DRAWN at least 12px',
-  //   s.filter((b) => !b.live).length === 4 && s.filter((b) => !b.live).every((b) => b.disabled === 'true' && b.title === 'Coming soon' && b.glyph), JSON.stringify(s.filter((b) => !b.live)));
-  // SUPERSEDED (help-buttons, Fable Oct 18-19): same gap as above - "every
-  // button in the Templates section" now also counts the heading's own "?".
-  // Kept verbatim, no longer run:
-  //   ok('T1 [Draft, page-templates-r2 successor]: no grayed placeholder is left - every button in the Templates section is a live row',
-  //     s.filter((b) => !b.live).length === 0 && s.length === 5, JSON.stringify(s.filter((b) => !b.live)));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 4
   ok('T1 [Draft, help-buttons successor]: no grayed placeholder is left - every TEMPLATE ROW (not counting the heading\'s own "?") is a live row, and there are exactly five',
     sRows.filter((b) => !b.live).length === 0 && sRows.length === 5, JSON.stringify(sRows.filter((b) => !b.live)));
   ok('T1 [Draft]: Plan stays on the PLAN bar', (await app.evalJs("!!document.querySelector('.desk-mode-strip [data-page-plan-door]')")) === true);
@@ -183,12 +161,7 @@ await withHarness(async (app) => {
   await freshDesk(app);
   await blank(app);
   const h0 = await hash(app);
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
-  // const sprout = await press(app, '.wz-beginning[data-beginning="sprout"]');
-  // await sleep(600);
-  // const sprouted = await app.evalJs("({ invite: !!document.querySelector('.fl-invite'), row: !!document.querySelector('.wz-beginnings') })");
-  // ok('T3 [Sprout, blank Free Write page]: the door draws the first-line invitation on THIS page, the row goes, and nothing is written',
-  //   sprout.pressed && sprouted.invite && !sprouted.row && (await hash(app)) === h0 && (await rows(app)).length === 0, JSON.stringify({ sprouted, h0, now: await hash(app), rows: await rows(app) }));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 5
   const sprout = await press(app, '.wz-beginning[data-beginning="sprout"]');
   await sleep(600);
   const sprouted = await app.evalJs("({ invite: !!document.querySelector('.fl-invite'), row: !!document.querySelector('.wz-beginnings') })");
@@ -202,8 +175,7 @@ await withHarness(async (app) => {
   await app.evalJs(`document.querySelector('${ED}')?.focus()`);
   await app.typeKeys('First words.');
   await sleep(400);
-  // ---- PARKED - RETIRED by #13 step 12f (Fable, Nov 1): the Sprout door and the first-line invite are deleted, everywhere, forever. Kept VERBATIM and no longer run; its record is on the parked leg; its successor follows (in full: c13-12f-sprout-invite.mjs).
-  // ok('T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away', rowBefore === '["sprout"]' && JSON.stringify(await pageDoors(app)) === '[]', JSON.stringify({ rowBefore, after: await pageDoors(app) }));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 6
   const rowAfter = JSON.stringify(await pageDoors(app));
   ok('T3 [vanish rule] [12f successor]: a blank Free Write page has no row before the first keystroke or after it', rowBefore === '[]' && rowAfter === '[]', JSON.stringify({ rowBefore, rowAfter }));
   if (process.env.HARNESS_PARKED === '1') pok('PARKED (was "T3 [vanish rule]: the first keystroke on a blank Free Write page takes the row away") — #13 12f (Fable, Nov 1): there is no row to take away; re-asserted against the new truth: no row before or after', rowBefore === '[]' && rowAfter === '[]', JSON.stringify({ rowBefore, rowAfter }));
@@ -231,10 +203,7 @@ await withHarness(async (app) => {
     fresh.length === 1 && !!made && made.origin === 'loose' && where.includes(made.id) && (await app.evalJs(`!!document.querySelector('${SCRIPT}')`)), JSON.stringify({ fresh, where }));
   const chip = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.textContent.trim() : null; })()");
   const chipLabel = await app.evalJs("(() => { const b = document.querySelector('.wz-back-to-board'); return b ? b.getAttribute('aria-label') : null; })()");
-  // ---- PARKED - SUPERSEDED by PAGE TEMPLATES R2 (Fable Oct 16, Q3): the chip on a page a template pick opened is captioned "Opened as a new page · Back"; the page left is named in its accessible name. Kept VERBATIM and no longer run; its successor follows.
-  //
-  // ok(`T4: the new page carries a one-tap way back that names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
-  //   typeof chip === 'string' && chip.includes('Back to') && chip.includes(WORDS.slice(0, 20)), JSON.stringify(chip));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 7
   ok(`T4 [page-templates-r2 successor]: the new page carries a one-tap way back captioned "Opened as a new page · Back", whose accessible name still names the page left ("Back to ${WORDS.slice(0, 20)}...")`,
     typeof chip === 'string' && chip.includes('Opened as a new page') && chip.includes('Back') && typeof chipLabel === 'string' && chipLabel.includes('Back to') && chipLabel.includes(WORDS.slice(0, 20)), JSON.stringify({ chip, chipLabel }));
   const chipPt = await centreOf(app, '.wz-back-to-board');
@@ -251,11 +220,7 @@ await withHarness(async (app) => {
   await app.evalJs("location.hash = '#/page/tpl-board'");
   await waitSoft(app, "!!document.querySelector('.wz-beginnings')", { label: 'board row' });
   const doors = await app.evalJs("[...document.querySelectorAll('.wz-beginning')].map(n => n.dataset.beginning)");
-  // ---- PARKED - SUPERSEDED by BIG PROJECTS step 2 (docs/plans/big-projects.md; Fable Oct 19): three starters.
-  // Kept VERBATIM below and no longer run; the live successor follows. The Boards tab is the Pages pop-out's mirror (SectionsPopout, boards mode): New Board, the place's boards, presets = the deck library. A board's starters are New Card, Templates, Connect Pages - no New Page (the sliver keeps that tool). The Boards tab no longer carries Create a Board / Plot a Story or the "file this page to a drawer first" lead.
-  //
-  // ok('T5: an empty user board still shows its Beginnings row with its own four doors (newCard, newPageCard, loadDeck, connectPage)',
-  //   JSON.stringify(doors) === JSON.stringify(['newCard', 'newPageCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
+  // ARCHIVED PARK (#13 step 14): archive/page-templates.mjs.parked.md record 8
   ok('T5 [big-projects-2 successor]: an empty user board still shows its Beginnings row, now with three doors (newCard, loadDeck, connectPage) - no New Page',
     JSON.stringify(doors) === JSON.stringify(['newCard', 'loadDeck', 'connectPage']), JSON.stringify(doors));
 });

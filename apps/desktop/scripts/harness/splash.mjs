@@ -110,9 +110,7 @@ await withHarness(async (app) => {
   const s1 = await splashState(app);
   ok('S1: the splash mounts on opening the app', s1.mounted === true, JSON.stringify({ mounted: s1.mounted, leaving: s1.leaving }));
 
-  // SUPERSEDED (item splash-hold, Nick live: "the background should be faded out,
-  // not blurred") — the backdrop-filter blur retires whole; there is none to assert.
-  // ok('S1: the backdrop is a LIVE blur of the app — a real backdrop-filter, not a screenshot. This is the first backdrop-filter in this stylesheet, so it is asserted rather than assumed to composite', typeof s1.backdrop === 'string' && /blur\(/.test(s1.backdrop), String(s1.backdrop));
+  // ARCHIVED PARK (#13 step 14): archive/splash.mjs.parked.md record 1
   ok('S1 (item splash-hold successor): no backdrop-filter remains on the veil — the retirement, proven inert, not just unasserted',
     s1.backdrop === 'none', String(s1.backdrop));
 
@@ -123,15 +121,7 @@ await withHarness(async (app) => {
   })()`);
   const veilColor = parseComputedColor(s1.veilBackground);
   const closeEnough = (a, b) => Math.abs(a - b) <= 2; // color-mix rounding across engines
-  // SUPERSEDED (item splash-hold ROUND 6, Nick live: "make it a solid block" —
-  // nothing of the app shows through at all) — ~90% let a sliver of the app
-  // through on purpose; that purpose retired. Parked verbatim; see the
-  // successor just below.
-  // ok('S1 (item splash-hold, round 2): the veil is a flat dimming tint in the THEME\'s own ground colour (--ink-950) at ~90% opacity — never one fixed colour painted over every theme',
-  //   !!veilColor
-  //     && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
-  //     && Math.abs(veilColor.a - 0.90) <= 0.03,
-  //   JSON.stringify({ veilBackground: s1.veilBackground, parsed: veilColor, expectedGround: s1Tint.ground }));
+  // ARCHIVED PARK (#13 step 14): archive/splash.mjs.parked.md record 2
   ok('S1 (ROUND 6 successor): the veil is a SOLID block in the THEME\'s own ground colour (--ink-950) — 100% opaque, nothing of the app showing through, never one fixed colour painted over every theme',
     !!veilColor
       && closeEnough(veilColor.r, s1Tint.ground.r) && closeEnough(veilColor.g, s1Tint.ground.g) && closeEnough(veilColor.b, s1Tint.ground.b)
@@ -384,12 +374,7 @@ await withHarness(async (app) => {
   // ITEM 141 (harness-only): same shape as S5 above — openApp navigates with no
   // settle of its own, so the seam read right after it needs its own waitFor.
   await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S6 settle' });
-  // SUPERSEDED (splash-sweep): HOLD_MS is gone from the seam (there is no
-  // single floor to report any more — see Splash.tsx's own comment on the
-  // window-seam block). Kept verbatim, no longer run:
-  //   const holdMs = await app.evalJs('window.wrizoSplash ? window.wrizoSplash.HOLD_MS : null');
-  //   ok('S6 (driver, ROUND 3 successor): the hold is readable from the page seam, and is the item splash-hold floor (>= 5000ms, Nick live: "minimum 5s per app load")',
-  //     typeof holdMs === 'number' && holdMs >= 5000, String(holdMs));
+  // ARCHIVED PARK (#13 step 14): archive/splash.mjs.parked.md record 3
   const mountedAt = Date.now();
   // A fixed sleep raced the app's OWN readiness (round 3: the hold now also waits for
   // authState to resolve past 'loading', which a slow harness/CI tick could overrun a

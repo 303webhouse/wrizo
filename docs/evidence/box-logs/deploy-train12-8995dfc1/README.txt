@@ -1,0 +1,4 @@
+Train 12 deploy, Nov 14 2026. git 8995dfc1c2e651e9c5bdbc6d42d5180f23946ca7 (main 4a38d5f1 + flux-wire-in-1 d59b60a8, the Corridor alone).
+Railway deployment 7f8fc0c9-126f-44f3-b74d-0fc3f2c5fca4, upload 19:35:02Z to 19:36:02Z (60 s), exit 0, "Deploy complete".
+Before: grant absent, primary checkout clean, railway status = writer-studio / production / writer-studio-app, Railway status page fully operational, live was train 11 (index-DSvcewLl).
+Gates: pair run 43630430896 (8 shards, both legs) only flux-v2-part2 and polish10-14-frames non-OK, 264/266 each leg; flux-wirein-flagoff 22/22 and flux3-s4c-flagoff 74 / flux3-s4c 78 on both legs; browserless.yml 43630433290 success on the tip; c13-standing 11/11, seed-guard 36, th-machina-source 94, tsc x2 0; product diff vs live = DeskInstrument.tsx, ModeStage.tsx, flux-v3.css, flux-wirein.css, jackIn.ts, wireIn.ts, main.tsx, writingSettings.ts only.

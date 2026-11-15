@@ -30,10 +30,13 @@ const CLASSIFIED = [
     'revealAtCaret: the card pop-up only - the page calls revealRowsAtCaret whenever rows are attached (ForwardOnlyEditor)'],
   ['components/ForwardOnlyEditor.tsx', 'readEditorPlainText(el.innerText, getPlainOffset(el));', 'a free-edit surface WITHOUT rows',
     'readNative FALLBACK: readNativeEdit returns null only when no rows are attached; the page always has rows'],
-  ['components/board/BoardCardPopup.tsx', 'const plainNow = () => readEditorPlainText(el.innerText, null).plain;', 'the board card', 'the card pop-up\'s own editor (small; no rows)'],
-  ['components/board/BoardCardPopup.tsx', 'let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card',
-    'the card pop-up\'s input, and (typed-literal) its composition end - the same read, now `let` so the commit can be escaped'],
-  ['components/board/BoardCardPopup.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
+  // #72 SUPERSEDED (the card's three reads of el.innerText now go through ONE function, rawText(), so the card has one read, below); the originals, verbatim:
+  // ['components/board/BoardCardPopup.tsx', 'const plainNow = () => readEditorPlainText(el.innerText, null).plain;', 'the board card', 'the card pop-up\'s own editor (small; no rows)'],
+  // ['components/board/BoardCardPopup.tsx', 'let { plain, caret } = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card',
+  // 'the card pop-up\'s input, and (typed-literal) its composition end - the same read, now `let` so the commit can be escaped'],
+  // ['components/board/BoardCardPopup.tsx', 'const after = readEditorPlainText(el.innerText, getCaretOffset(el));', 'the board card', 'the card pop-up\'s em dash'],
+  ['components/board/BoardCardPopup.tsx', "const rawText = () => { const t = el.innerText; return t === '\\n' && el.textContent === '' ? '' : t; };", 'the board card',
+    "the card pop-up's own editor (small; no rows): the ONE read of its text (its input, its composition end, its em dash and the hidden-mark controller's plainNow all call it); the textContent is looked at only when innerText is a lone newline, to tell the browser's empty line (#72) from a typed one"],
   // connector-b (shipped @ 15dbd991) added this read and the guard was never told - red on main (found Oct 19, Fable Oct 21: fix on its own branch)
   // ---- SUPERSEDED by polish #10 item 4 (916c976f): the drag ghost's label is read from a CLONE of the tile with its hidden marks dropped (`words`), so the read below matches nothing now.
   // Kept verbatim; its successor is the next entry.

@@ -1,6 +1,7 @@
 // signed out here, a per-device flag: set on explicit sign-out, cleared on sign-in; while set, writing routes go back to sign-in; it lives outside the collections resetLocalData clears; every access is wrapped [signedOutHere §1]
 
-const KEY = 'wz.signedOutHere';
+export const SIGNED_OUT_KEY = 'wz.signedOutHere';   // exported so a window can hear another window set it (App.tsx, #81)
+const KEY = SIGNED_OUT_KEY;
 
 export function isSignedOutHere(): boolean {
   try {

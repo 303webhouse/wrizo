@@ -242,12 +242,7 @@ await withHarness(async (app) => {
   const search = await app.evalJs("(() => { const s = document.querySelector('[data-graft-picker] [data-graft-search]'); return s ? { tag: s.tagName, ph: s.getAttribute('placeholder'), focused: document.activeElement === s } : null; })()");
   const lbl = (id) => (rows1.find((r) => r.entry === id && !r.box) || {}).place;
   ok('P1: "+ Graft..." is the top of Grafts on a page', !!addTop && addTop.first && /Graft/.test(addTop.text), JSON.stringify(addTop));
-  // ---- PARKED - SUPERSEDED by Fable's ruling 3 (Oct 21): place labels appear ONLY on items from another Drawer or the Journal - a same-place row
-  // (Ch 2, in The Late Ferry like Ch 3) carries none. Kept VERBATIM and no longer run; its parked record is below, its successor beside it.
-  // ok('P1: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, each with its place label, never the page itself',
-  //   opened1 && !!search && search.focused && rows1.some((r) => r.group === 'Cards') && rows1.some((r) => r.group === 'Pages') && rows1.some((r) => r.group === 'Boards')
-  //     && lbl(IDS.ch2) === 'The Late Ferry' && lbl(IDS.salt) === 'Short stories' && lbl(IDS.kettle) === 'Journal' && !rows1.some((r) => r.entry === IDS.ch3),
-  //   JSON.stringify({ search, n: rows1.length, ch2: lbl(IDS.ch2), salt: lbl(IDS.salt), kettle: lbl(IDS.kettle) }));
+  // ARCHIVED PARK (#13 step 14): archive/big-projects-3.mjs.parked.md record 1
   bp3P1Labels = { ch2: lbl(IDS.ch2) ?? null, salt: lbl(IDS.salt) ?? null, kettle: lbl(IDS.kettle) ?? null };
   ok('P1 [ruling-3 successor]: it opens the picker - a search field (focused), then Cards / Pages / Boards from every place, never the page itself; a place label ONLY on a row from another place (Salt: Short stories, Kettle notes: Journal) and none on a same-place row (Ch 2)',
     opened1 && !!search && search.focused && rows1.some((r) => r.group === 'Cards') && rows1.some((r) => r.group === 'Pages') && rows1.some((r) => r.group === 'Boards')

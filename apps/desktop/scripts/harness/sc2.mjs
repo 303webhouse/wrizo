@@ -506,23 +506,7 @@ await withHarness(async (app) => {
   // pages would leave the bound anchored to nothing.
   ok(`S0 fixture: the baseline document is exactly ${ELEMENTS_BIG} ELEMENTS — the pinned input, held constant so both sides of the bound run the same document. Page count is an OUTPUT of the code under test and rides as an observation only: ${big.geo.pages} pages here, ${big.geo.lines} lines at ${BODY_LINES_PER_PAGE} body lines/page (20 pages before S1 gave the page its vertical rhythm, ~30 after)`,
     big.geo.els === ELEMENTS_BIG, JSON.stringify(big.geo));
-  // SUPERSEDED by SC2 S2b (2026-07-25) — A4 park cycle, travelling in the SAME
-  // commit as the change that falsified it. The ORIGINAL, verbatim:
-  //
-  //   ok('S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em
-  //   sheet at 12pt (SC2 has not yet paginated; this is the pre-SC2 state the
-  //   bound is measured against)',
-  //     Math.abs(big.geo.fontPx - EM) < 0.01, JSON.stringify({ fontPx:
-  //     big.geo.fontPx, expected: EM }));
-  //
-  // SUPERSEDED ON ITS SUBJECT, NOT ITS NUMBER. Its condition (12pt type) is
-  // untouched and still holds; what retired is the state the check exists to
-  // pin — "ONE sheet", "SC2 HAS NOT YET PAGINATED". S2b paginates, so that
-  // sentence cannot be re-asserted by anyone, and a check that reads as a claim
-  // about the pre-SC2 world would be a false label on a true condition. Parked
-  // verbatim in this file's own PARKED section. The successor below asserts
-  // MORE than it did: the 12pt metric it held, now on EVERY sheet, plus the
-  // uniformity a sequence makes assertable and a single sheet could not.
+  // ARCHIVED PARK (#13 step 14): archive/sc2.mjs.parked.md record 1
   ok('SC2 S2b (was "S0 fixture: the sheet is still SC1\'s true page — one 51em x 66em sheet at 12pt"): every sheet in the sequence is SC1\'s true page at 12pt, and they are UNIFORM — the baseline document now projects to a sequence, and a page whose height depended on what landed on it would not be a page',
     Math.abs(big.geo.fontPx - EM) < 0.01 && Math.abs(big.geo.heightPx - PAGE_H_EM * EM) <= 1 && big.geo.sheetsUniform === true,
     JSON.stringify({ fontPx: big.geo.fontPx, expected: EM, heightPx: big.geo.heightPx, sheets: big.geo.pages, uniform: big.geo.sheetsUniform }));

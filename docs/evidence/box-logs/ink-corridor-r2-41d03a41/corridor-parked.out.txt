@@ -1,0 +1,9 @@
+BOX TURN: granted to lane "ink" — token matches the grant file.
+REAPER: 0 harness browser(s), 0 owner(s) —  | floor=300s | targets=0
+REAPER: nothing to reap.
+SUITE START HARNESS_PARKED=1 files=1 tree=41d03a41 bundle=index-BFa1Kh_T.js/1023265b NO-REBUILD out=F:\wrizo-work\INK-corridor-r2-turn-out\corridor-parked
+[01/1] FAIL      exit=1  681s flux3-s4c.mjs :: ROWS-SHADOW VERIFY: PASS (7 renders checked, shadow == DOM on every one) ;; FLUX3-S4C VERIFY: FAIL - 1/78 failed
+
+SUITE DONE HARNESS_PARKED=1 — 0/1 of 1 returned a passing verdict
+  FAIL: flux3-s4c.mjs — full output at F:\wrizo-work\INK-corridor-r2-turn-out\corridor-parked\flux3-s4c.mjs.parked.txt
+SUITE RESULT: NOT CLEAN — tree=41d03a41 bundle=index-BFa1Kh_T.js/1023265b NO-REBUILD

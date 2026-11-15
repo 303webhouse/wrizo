@@ -128,9 +128,7 @@ await withHarness(async (app) => {
     const ex = await systemBoardExit(app, route);
     ok(`S1 (Fable's ruling): the ${name} Board (framed) mounts the SAME PAGE → door and NO "Done"`,
       ex.hasDoor === true && ex.hasDone === false, JSON.stringify(ex));
-    // SUPERSEDED (item word-diet, Nick) — boardPageDoor reworks, "Page" -> "Pages".
-    // ok(`S1: the ${name} Board's door reads exactly "Page →" (one door grammar, no system-board dialect)`,
-    //   ex.doorLabel === 'Page →', String(ex.doorLabel));
+    // ARCHIVED PARK (#13 step 14): archive/cd4.mjs.parked.md record 1
     ok(`S1 [word-diet successor]: the ${name} Board's door reads exactly "Pages →" (one door grammar, no system-board dialect)`,
       ex.doorLabel === 'Pages →', String(ex.doorLabel));
   }
@@ -194,14 +192,7 @@ await withHarness(async (app) => {
   // persisted page at the new viewport).
   const prosePageId = await freshProject(app, 'book', LAPTOP_W);
   const proseLaptop = await barButtons(app);
-  // ---- PARKED - SUPERSEDED by the framed-desk display pass (aa11f58, 2026-09-30; Nick: "Looks good. Let's ship these changes.") ----
-  // Kept VERBATIM and no longer run. The pass moved the PLAN → door out of the right corner and into the mode strip's own row,
-  // so the framed prose bar holds ['Pages'] alone. CD4's own claim - the elder bare "Plan" flight tab is retired and the arrow door
-  // is the only Plan word - is untouched; only the door's address changed, and the successor asserts both.
-  //
-  // ok('S2 @1280px: the prose project bar holds ONLY ["Pages","Plan →"] (the elder Plan flight tab retired)',
-  //   JSON.stringify(proseLaptop) === JSON.stringify(['Pages', 'Plan →']), JSON.stringify(proseLaptop));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/cd4.mjs.parked.md record 2
   const doorLaptop = await stripDoor(app);
   dispPass['1280'] = { bar: proseLaptop, door: doorLaptop };
   ok('S2 @1280px [display-pass successor]: the prose project bar holds ONLY ["Pages"], and the "Plan →" door stands in the mode strip\'s row (the elder Plan flight tab still retired: no bare "Plan")',
@@ -307,13 +298,7 @@ await withHarness(async (app) => {
     label: document.querySelector('.board-popup-done')?.textContent.trim(),
     popupNoDone: [...document.querySelectorAll('.board-popup button')].every(b => b.textContent.trim() !== 'Done'),
   }))()`);
-  // ---- PARKED — SUPERSEDED by card-close-x (Nick's live test, 2026-10-13) ----
-  // Kept VERBATIM and no longer run: the close control is an X in the pop-up's
-  // top-right corner; it shows a glyph, so its NAME (aria-label) is "Close", not
-  // its text. Parked record in this file's parked section; successor below.
-  // ok('CD4.1: the card-edit popup\'s close button reads exactly "Close" (never "Done"), and no button in the popup says "Done"',
-  //   popupClose.label === 'Close' && popupClose.popupNoDone === true, JSON.stringify(popupClose));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/cd4.mjs.parked.md record 3
   cd41CloseX = { ...popupClose, name: await app.evalJs("document.querySelector('.board-popup-done')?.getAttribute('aria-label') ?? null") };
   ok('CD4.1 [card-close-x successor]: the card-edit popup\'s close control is named exactly "Close" (never "Done"), and no button in the popup says "Done"',
     cd41CloseX.name === 'Close' && cd41CloseX.popupNoDone === true, JSON.stringify(cd41CloseX));

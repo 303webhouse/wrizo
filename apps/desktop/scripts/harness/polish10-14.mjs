@@ -41,7 +41,9 @@ function suite(css, pb) {
   // PARKED - SUPERSEDED (S4b L2, Nov 10; the original line, verbatim, no longer runs; its successor P5b follows):
   // chk('P5', () => [/<span className="wz-strip-label wz-place-name">\{name\}<\/span>/.test(pb) && !/wz-place-name">\{(label|fullPath)\}/.test(pb), 'the visible rail label is the place name alone (no RACK prefix)']);
   // SUCCESSOR P4b: the full path is still the button's title WITHOUT the flag (no readout: `reading` is null, so the title is fullPath, RACK > name in Flux); under the flag the title is the readout's hint
-  chk('P4b', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{reading \? reading\.hint : fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title when there is no readout (the flag off), the readout\'s hint when there is one; aria-label keeps the plain name for a reader']);
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // chk('P4b', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{reading \? reading\.hint : fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name\) : name;/.test(pb), 'the full path (RACK > name in Flux) is on the button as its title when there is no readout (the flag off), the readout\'s hint when there is one; aria-label keeps the plain name for a reader']);
+  chk('P4c', () => [/<button[^>]*className=\{`wz-strip-item wz-place-block[^>]*title=\{reading \? reading\.hint : fullPath\}/s.test(pb) && /const fullPath = theme === 'flux' && drawer \? rackReadout\(name, t\('drawerPlaceDrawers'\)\) : name;/.test(pb), 'the full path (DRIVE > name in Flux) is on the button as its title when there is no readout (the flag off), the readout\'s hint when there is one; aria-label keeps the plain name for a reader']);
   // SUCCESSOR P5b: the narrow rail still shows ONLY the place name - the RACK prefix never in the visible label; without the flag the Journal door is its icon alone (bug #4, Nov 7), with it the door reads
   // UNFILED (L2: never blank) or the place name
   chk('P5b', () => [/\{isJournal && !reading \? null : <span className="wz-strip-label wz-place-name">\{isJournal \? t\('pageHomeLoose'\) : name\}<\/span>\}/.test(pb) && !/wz-place-name">\{[^}]*(label|fullPath)/.test(pb), 'the visible rail label is the place name alone (no RACK prefix); the Journal door is its icon alone without a readout, UNFILED with one']);
@@ -55,8 +57,12 @@ const MUT = [
   // PARKED - SUPERSEDED (the two mutants of P4 and P5; verbatim; their successors are the four below):
   // { name: 'the title is dropped', file: 'pb', find: / title=\{fullPath\}/, to: '', red: ['P4'] },
   // { name: 'the rail label shows the full RACK path again', file: 'pb', find: /wz-place-name">\{name\}<\/span>/, to: 'wz-place-name">{fullPath}</span>', red: ['P5'] },
-  { name: 'the title is dropped', file: 'pb', find: / title=\{reading \? reading\.hint : fullPath\}/, to: '', red: ['P4b'] },
-  { name: 'the flag-off title is no longer the full path', file: 'pb', find: /title=\{reading \? reading\.hint : fullPath\}/, to: 'title={reading ? reading.hint : name}', red: ['P4b'] },
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // { name: 'the title is dropped', file: 'pb', find: / title=\{reading \? reading\.hint : fullPath\}/, to: '', red: ['P4b'] },
+  { name: 'the title is dropped [drive successor]', file: 'pb', find: / title=\{reading \? reading\.hint : fullPath\}/, to: '', red: ['P4c'] },
+  // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
+  // { name: 'the flag-off title is no longer the full path', file: 'pb', find: /title=\{reading \? reading\.hint : fullPath\}/, to: 'title={reading ? reading.hint : name}', red: ['P4b'] },
+  { name: 'the flag-off title is no longer the full path [drive successor]', file: 'pb', find: /title=\{reading \? reading\.hint : fullPath\}/, to: 'title={reading ? reading.hint : name}', red: ['P4c'] },
   { name: 'the rail label shows the full RACK path again', file: 'pb', find: /: name\}<\/span>\}/, to: ': fullPath}</span>}', red: ['P5b'] },
   { name: 'the flag-off Journal door gets a label again (bug #4)', file: 'pb', find: /\{isJournal && !reading \? null : /, to: '{', red: ['P5b'] },
 ];

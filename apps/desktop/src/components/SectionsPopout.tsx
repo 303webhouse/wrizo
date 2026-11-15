@@ -89,7 +89,7 @@ export function SectionsPopout({ view, currentId, navigate, boardId, journalLabe
   const presetDecks = theme === 'plateau' ? [...DECKS].sort((a, b) => Number(b.id === 'from-my-pages') - Number(a.id === 'from-my-pages')) : DECKS;
   const shownName = drawer ? (isDefaultRoot(drawer) ? t('placeRootName') : drawer.name) : '';
   const placeName = isJournal ? journalLabel : place.id === UNSORTED ? t('switcherUnsorted') : shownName;
-  const placeHead = theme === 'flux' && drawer ? rackReadout(shownName) : placeName;
+  const placeHead = theme === 'flux' && drawer ? rackReadout(shownName, t('drawerPlaceDrawers')) : placeName;
   const groups: SectionGroup[] = sectionsOf(place, mode);
   const headings = showSetHeadings(place);
   const currentSet = place.setId ?? groups[0]?.set?.id ?? null;

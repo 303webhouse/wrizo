@@ -226,30 +226,17 @@ async function scenario(app) {
         noPageModeTabs: !document.querySelector('.mode-tabs') && !document.querySelector('.mode-tab--action') && !document.querySelector('.desk-mode-strip'),
       };
     })()`);
-    // ---- PARKED - SUPERSEDED by W1 (the Walk, board kinds and "Show as"; Fable's clear of Oct 25, train #8 red): a Board now offers FOUR views - Open, Storyboard, Outline, Walk - drawn as the "Show as" strip, which REPLACED the three
-    // view tabs (the buttons keep the .board-mode-tab class and the data-board-mode-tab attribute, so every selector in this file still finds them). The assertion named the exact three.
-    // Kept VERBATIM below and no longer run; the live successor follows. (Park count for this file: 1 assertion, run at three widths = 3 reds on train #8.)
-    //
-    // ok(`S3 @${width}px: OPEN·STORYBOARD·OUTLINE tabs + PAGE → door present`,
-    //   JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline']) && bar.doorPresent === true,
-    //   JSON.stringify(bar));
+    // ARCHIVED PARK (#13 step 14): archive/bm1.mjs.parked.md record 1
     ok(`S3 @${width}px [W1 successor]: OPEN·STORYBOARD·OUTLINE·WALK (the Show-as strip, in that order) + PAGE → door present`,
       JSON.stringify(bar.tabs) === JSON.stringify(['open', 'storyboard', 'outline', 'walk']) && bar.doorPresent === true,
       JSON.stringify(bar));
     ok(`S3 @${width}px: the door NEVER carries a selected/active state`, bar.doorHasSelected === false);
-    // SUPERSEDED (item word-diet, Nick, Oct 13) — boardTelos REMOVE: the
-    // standing line is gone whole (BoardEditor.tsx's own `boardTelos` var
-    // is now always null); the lexicon's own text is untouched (TELOS
-    // still matches it, see the lexicon-sourced check below), simply
-    // never rendered.
-    // ok(`S3 @${width}px: telos line present, static, exact string`, bar.telosText === TELOS, `telos=${bar.telosText}`);
+    // ARCHIVED PARK (#13 step 14): archive/bm1.mjs.parked.md record 2
     ok(`S3 @${width}px [word-diet successor]: the telos line is REMOVED — no .board-telos element at all`, bar.telosText === null, `telos=${bar.telosText}`);
     ok(`S3 @${width}px: A4 sweep no-op — board has NO page mode-tabs / .desk-mode-strip (w1/ab1 stay true)`, bar.noPageModeTabs === true);
   }
   const telosLex = await app.evalJs("window.wrizoDeskLexicon.t('boardTelos')");
-  // ---- PARKED - RETIRED by #13 step 11 (Fable, Nov 5): the telos line is removed (word-diet, S3 [word-diet successor] above), so its word
-  // is retired UI that no source reads, and step 11 deletes boardTelos from the lexicon. Kept VERBATIM and no longer run; record in the parked block.
-  // ok('S3 telos is lexicon-sourced (deskLexicon boardTelos)', telosLex === TELOS, `lex=${telosLex}`);
+  // ARCHIVED PARK (#13 step 14): archive/bm1.mjs.parked.md record 3
   bm1Retired.telosLex = telosLex === undefined || telosLex === null ? '(gone)' : telosLex;
 
   // ============ S3/S8 — the doors travel under GENUINE trusted pointer ======
@@ -386,23 +373,7 @@ async function scenario(app) {
   await seedEntries(app, [{ id: 'bm1-link', text: 'link board', projectId: null, pageType: 'board', source: 'page', origin: 'loose', boxes: linkBoxes, createdAt: '2026-07-01T00:00:00.000Z', updatedAt: '2026-07-01T00:00:00.000Z' }]);
   await app.reload();
   await openBoard(app, 'bm1-link');
-  // ---- PARKED - SUPERSEDED by connector-a (connector-a, Nick-approved mockup v6, 2026-10-15) ----
-  // Lines are drawn ONLY in connection mode now (no resting hairline at all): a board with a link shows nothing between its cards at rest.
-  // Quoted VERBATIM below. Successor: the check directly below (the link persists as a connection box; no line at rest); the in-mode brass line is connector-a.mjs C4.
-  // const link = await app.evalJs(`(() => {
-  //   const line = document.querySelector('.board-connection-line');
-  //   if (!line) return { present: false };
-  //   const svg = document.querySelector('.board-connections');
-  //   const card = document.querySelector('.board-card, [data-box-id]');
-  //   const stroke = getComputedStyle(line).stroke;
-  //   // orange has R markedly > G > B; assert NOT orange (olive/neutral: G >= R)
-  //   const m = stroke.match(/rgb[a]?\\(([0-9.]+),\\s*([0-9.]+),\\s*([0-9.]+)/);
-  //   const isOrange = m ? (Number(m[1]) > 180 && Number(m[2]) < Number(m[1]) * 0.7 && Number(m[3]) < 100) : false;
-  //   const svgZ = svg ? (getComputedStyle(svg).zIndex) : null;
-  //   return { present: true, stroke, isOrange, svgZ };
-  // })()`);
-  // ok('S5 linking: the connection (v1 link) renders as a line beneath cards (SVG layer, z-auto), nothing orange at rest',
-  //   link.present === true && link.isOrange === false, JSON.stringify(link));
+  // ARCHIVED PARK (#13 step 14): archive/bm1.mjs.parked.md record 4
   const linkBoxNow = ((await app.evalJs('window.wrizoBoard()')) || []).find((b) => b.kind === 'connection');
   ok('S5 linking [connector-a successor]: the connection (v1 link) is still a connection box in the board\'s stored boxes, and NOTHING is drawn for it at rest (lines show only in connection mode)',
     !!linkBoxNow && linkBoxNow.connA === 'lc1' && linkBoxNow.connB === 'lc2' && (await app.evalJs("document.querySelectorAll('.board-connection-line').length")) === 0, JSON.stringify(linkBoxNow || null));

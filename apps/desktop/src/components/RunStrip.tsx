@@ -4,6 +4,7 @@ import { useWritingSettings } from '../store/writingSettings';
 import { goalCount, useWritingGoal } from '../store/writingGoal';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { useGoalProgress } from './WritingIncentives';
+import { SamePageLine } from './SamePageNotice';
 
 // Run, Machina's only progress instrument (not behind the style slot): twenty units, an orange notch on the unit in progress, the whole strip orange at the goal; sparks under NEUTRAL only; fixed counts and angles; a still state under reduced motion [RunStrip §1]
 const UNITS = 20;
@@ -39,6 +40,7 @@ export function RunStrip({ text }: { text: string }) {
         )}
       </div>
       <div className="machina-run-count">{shown} / {n}</div>
+      <SamePageLine />
     </div>
   );
 }

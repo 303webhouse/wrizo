@@ -334,12 +334,7 @@ await withHarness(async (app) => {
   await frame(app, 'reduced-motion');
   ok('G6: under reduced motion the meter fires NOTHING - no pulse on its layer in 6 s at peak, and even a forced event is refused',
     !!s6 && s6.reduced && meterPulses6.length === 0 && Array.isArray(fired6) && fired6.every((f) => f === false), JSON.stringify({ s6, meterPulses6: meterPulses6.length, fired6, pulsesVsSwitch: g6log }));
-  // ---- PARKED - SUPERSEDED (ledger 90; Fable's ruling, Oct 17: honour the global reduced-motion rule, index.css - under reduced motion every
-  // transition is 0.01 ms, so the overlay APPEARS, with no easing; the run read {opacity: 0.42, transition: "1e-05s"}). Kept VERBATIM and no
-  // longer run; successor below.
-  // ok('G6: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), eased in, not cut',
-  //   !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) >= 2, JSON.stringify(still));
-  // ------------------------------------------------------------------
+  // ARCHIVED PARK (#13 step 14): archive/glitch-meter.mjs.parked.md record 1
   gmParks.g6 = still;
   ok('G6 [global-rule successor]: ...it shows the faint still overlay instead, its opacity following intensity (1 x 0.42 at peak), appearing with no easing - the global reduced-motion rule honoured (transition <= 0.01 ms)',
     !!still && Math.abs(still.opacity - 0.42) < 0.03 && parseFloat(still.transition) < 0.001, JSON.stringify(still));

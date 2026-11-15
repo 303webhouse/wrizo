@@ -144,7 +144,9 @@ async function partB(overrides = {}, env = {}) {
   const out = {};
   m.setCurrentUser(user);
   // A dirty page makes the first request the COMBINED push+pull; with nothing dirty it is the final pull. Both paths check.
-  if (env.dirty !== false) m.createJournalPage({ text: 'written before the news' });
+  const firstPage = env.dirty !== false ? m.createJournalPage({ text: 'written before the news' }) : null;
+  // #79: a page that has a kept merge base makes the FIRST request the pull-first one (push: {}), which must check the build too
+  if (env.base && firstPage) map.set('wrizo-sync-base:' + firstPage.id, 'an older text of the page');
   // the server's records must NOT be applied by a tab that is about to stop
   net.responder = () => reply({ build: env.serverBuild ?? 'index-NEWBUILD', pull: { journalEntries: [entry('remote-1'), entry('remote-2')] } });
   await m.startSync();
@@ -189,6 +191,8 @@ const intervalsBefore = intervalsInstalled;
   const b = await partB();
   ok('(B1) a build mismatch marks the tab stale on the sync that reveals it', b.stale === true, JSON.stringify(b));
   ok('(B2) and the pull that carried the news is NOT applied (an old client never merges a newer server\'s records)', b.remoteApplied === false, JSON.stringify(b));
+  const bPre = await partB({}, { base: true });
+  ok('(B2c) the same on the pull-first request (a page with a kept merge base): the build is checked before anything is applied, and the tab stops after that one request', bPre.stale === true && bPre.remoteApplied === false && bPre.callsAfterFirst === 1 && bPre.callsAfterRestart === 1, JSON.stringify(bPre));
   const bClean = await partB({}, { dirty: false });
   ok('(B2b) the same on the other request shape: with nothing to push, the final pull checks the build too', bClean.stale === true && bClean.remoteApplied === false && bClean.callsAfterRestart === 1, JSON.stringify(bClean));
   ok('(B3) it stops: no further request goes out from sync, a forced pull or a restart, and no timer or listener is installed',
@@ -478,8 +482,11 @@ async function partF(overrides = {}) {
       && /function writesHeld\(\): boolean \{ return isStaleClient\(\); \}/.test(pers) && !/writesForced/.test(pers)
       && /overlayDirty\(readArray\(KEYS\[name\]\)/.test(reloadBody) && !/JSON\.stringify\(cache\[/.test(reloadBody) && !/flushNow\(\)/.test(reloadBody), reloadBody.slice(0, 200));
   const sync = read('store/sync.ts');
-  ok('(G5) sync checks the build on EVERY response path (push-only chunks, the combined push+pull, the final pull) before applying anything',
+  // SUPERSEDED (#79: the pull-first request, a FOURTH response path, checks the build too) - by (G5b) below. Parked, not deleted: it pinned exactly four checkBuild( occurrences and three call sites. Kept verbatim; `if (false)` keeps it out of the verdict.
+  if (false) ok('(G5) sync checks the build on EVERY response path (push-only chunks, the combined push+pull, the final pull) before applying anything',
     (sync.match(/checkBuild\(/g) || []).length === 4 && /checkBuild\(resp\);\n        applyRemoteRecords/.test(sync) && /checkBuild\(resp\);\n      applyRemoteRecords/.test(sync) && /checkBuild\(r\);\n        cleanBatch/.test(sync), String((sync.match(/checkBuild\(/g) || []).length));
+  ok('(G5b) sync checks the build on EVERY response path (push-only chunks, the pull-first request that merges words from another device, the combined push+pull, the final pull) before applying anything',
+    (sync.match(/checkBuild\(/g) || []).length === 5 && /checkBuild\(pre\);\n      applyRemoteRecords\(pre\.pull\)/.test(sync) &&/checkBuild\(resp\);\n        applyRemoteRecords/.test(sync) && /checkBuild\(resp\);\n      applyRemoteRecords/.test(sync) && /checkBuild\(r\);\n        cleanBatch/.test(sync), String((sync.match(/checkBuild\(/g) || []).length));
   ok('(G6) a stale tab never (re)starts sync and syncOnce is a no-op for it', /if \(running \|\| isStaleClient\(\)\) return;/.test(sync) && /if \(isStaleClient\(\)\) return 'stale';/.test(sync), '');
   const cb = read('store/clientBuild.ts');
   ok('(G7) the exemptions live in one place: non-http(s), Electron by user-agent, and non-same-origin scripts', /protocol !== 'http:' && env\.protocol !== 'https:'/.test(cb) && /Electron\\\//.test(cb) && /url\.origin !== env\.origin/.test(cb), '');
@@ -520,6 +527,9 @@ async function mutant(name, overrides, run, expectRed) {
 await mutant('checkBuild removed from the combined push+pull path',
   { 'store/sync.ts': swap('        checkBuild(resp);\n        applyRemoteRecords', '        applyRemoteRecords') },
   (o) => partB(o), (r) => r.stale === false);
+await mutant('checkBuild removed from the pull-first path',
+  { 'store/sync.ts': swap('      checkBuild(pre);\n      applyRemoteRecords(pre.pull);', '      applyRemoteRecords(pre.pull);') },
+  (o) => partB(o, { base: true }), (r) => r.remoteApplied === true);
 await mutant('checkBuild removed from the final-pull path',
   { 'store/sync.ts': swap('      checkBuild(resp);\n      applyRemoteRecords', '      applyRemoteRecords') },
   (o) => partB(o, { dirty: false }), (r) => r.stale === false);
