@@ -151,11 +151,11 @@ try { await withHarness(async (app) => {
     const a = ARMS[r.name], w = r.where, f = w.filter || 'none';
     const flagOk = a.flag ? w.flag === '1' && w.layer === 1 : w.flag === null && w.layer === 0;
     const stateOk = a.want === 'snap' ? w.dataBlur === 'snap' && f === 'none' && w.boardVisibility === 'hidden'
-      : a.want === 'live' ? w.dataBlur !== 'snap' && /blur/.test(f) && w.boardVisibility === 'visible'
-      : w.dataBlur !== 'snap' && f === 'none' && w.boardVisibility === 'visible';
+      : a.want === 'live' ? /blur/.test(f) && w.boardVisibility === 'visible'   // the snapshot is still MADE in these arms (data-blur is set); the stylesheet undoes its effect, so the EFFECTIVE state is what is judged
+      : f === 'none' && w.boardVisibility === 'visible';
     return w.theme === a.theme && flagOk && stateOk && w.focused;
   });
-  ok(`BS-premise every arm stood where it claims (FB/AB: snapshot held, live filter dropped, board hidden; FO: unfiltered, board shown; FL/AL: the live blur, board shown; the theme, the flag, the layer, the editor focused): ${placed.length}/${all.length}`,
+  ok(`BS-premise every arm stood where it claims (FB/AB: snapshot held, live filter dropped, live board hidden; FO: effectively unfiltered, live board shown; FL/AL: effectively the live blur, live board shown; the theme, the flag, the layer, the editor focused): ${placed.length}/${all.length}`,
     placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 3).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
   const thin = all.filter((r) => r.ks.filter((k) => k[0] != null).length < MIN_KEYS);
   ok(`BS-keys at least ${MIN_KEYS} keys painted in every arm-round (${KEYS} typed each)`, thin.length === 0, JSON.stringify(thin.map((r) => ({ arm: r.name, round: r.round }))));
