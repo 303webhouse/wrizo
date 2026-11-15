@@ -112,7 +112,26 @@ function paintOne(o: Element, c: Element, scrolls: Scroll[]): boolean {
 // each phase of the capture is a User Timing measure (blurb:*): the harness (blur-b-speed.mjs) prints the longest of each, so the next long piece can be named instead of guessed
 const mark = (name: string, t0: number): void => { try { performance.measure('blurb:' + name, { start: t0, end: performance.now() }); } catch { /* no User Timing */ } };
 
-export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: () => boolean = () => false): Promise<HTMLCanvasElement | null> {
+// a static IMAGE of the blurred canvas, not the canvas: the box showed that ANY canvas on screen holds key-to-paint late (the layer's canvases: either alone costs as much as both; the sliced look B's own snapshot canvas held
+// 110 late keys against filter off's 34). A PNG blob shown in an <img> is a static texture. A canvas that cannot be read back (tainted) is returned as it is: the same look, without the saving.
+async function asImage(canvas: HTMLCanvasElement): Promise<HTMLElement> {
+  try {
+    const blob = await new Promise<Blob | null>((res) => { canvas.toBlob(res, 'image/png'); });
+    if (!blob) return canvas;
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.decoding = 'async';
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    img.setAttribute('data-blob', url);
+    img.style.cssText = canvas.style.cssText;
+    img.src = url;
+    await img.decode();
+    return img;
+  } catch { return canvas; }
+}
+
+export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: () => boolean = () => false): Promise<HTMLElement | null> {
   try {
     const probe = document.createElement('canvas').getContext('2d');
     if (!probe || !('filter' in probe)) return null;   // no ctx.filter (an older Safari): keep the live blur
@@ -191,7 +210,11 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     (ctx as CanvasRenderingContext2D & { filter: string }).filter = `blur(${blurPx * S}px)`;
     ctx.drawImage(img, pad * S, pad * S, w * S, h * S);
     mark('draw', tDraw);
-    return canvas;
+    const tImg = performance.now();
+    const shown = await asImage(canvas);
+    mark('to-image', tImg);
+    if (shouldStop()) { const u = shown.getAttribute('data-blob'); if (u) URL.revokeObjectURL(u); return null; }
+    return shown;
   } catch {
     return null;
   }

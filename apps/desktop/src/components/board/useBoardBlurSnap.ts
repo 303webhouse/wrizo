@@ -16,10 +16,10 @@ export function useBoardBlurSnap(active: boolean) {
       raf = requestAnimationFrame(() => {
         const wrap = wrapRef.current;
         if (!wrap) return;
-        void snapshotBlurred(wrap, 6, () => cancelled).then((canvas) => {
+        void snapshotBlurred(wrap, 6, () => cancelled).then((shown) => {
           const slot = slotRef.current, w = wrapRef.current;
-          if (cancelled || !canvas || !slot || !w) return;
-          slot.replaceChildren(canvas);
+          if (cancelled || !shown || !slot || !w) { const u = shown && shown.getAttribute('data-blob'); if (u) URL.revokeObjectURL(u); return; }
+          slot.replaceChildren(shown);
           w.setAttribute('data-blur', 'snap');
         });
       });
@@ -28,6 +28,8 @@ export function useBoardBlurSnap(active: boolean) {
       cancelled = true;
       cancelAnimationFrame(raf);
       wrapRef.current?.removeAttribute('data-blur');
+      const u = slotRef.current?.firstElementChild?.getAttribute('data-blob');
+      if (u) URL.revokeObjectURL(u);
       slotRef.current?.replaceChildren();
     };
   }, [active]);

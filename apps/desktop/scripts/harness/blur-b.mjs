@@ -34,12 +34,12 @@ const makeBoxes = () => {
   ];
 };
 // the shared predicate (b3.mjs / fx4.mjs): the board behind a popup is blurred when its wrap carries the live filter OR holds the snapshot
-const BLURRED = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w); return (cs.filter !== 'none' && cs.filter.includes('blur')) || (w.getAttribute('data-blur') === 'snap' && !!w.querySelector('.board-blur-snap-slot canvas')); })()`;
-const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w), r = w.getBoundingClientRect(), slot = w.querySelector('.board-blur-snap-slot'), cv = slot && slot.querySelector('canvas'), card = document.querySelector('.board-box[data-box-id="bb-d"]');
+const BLURRED = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w); return (cs.filter !== 'none' && cs.filter.includes('blur')) || (w.getAttribute('data-blur') === 'snap' && !!w.querySelector('.board-blur-snap-slot > *')); })()`;
+const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w), r = w.getBoundingClientRect(), slot = w.querySelector('.board-blur-snap-slot'), cv = slot && slot.firstElementChild, card = document.querySelector('.board-box[data-box-id="bb-d"]');
   const first = w.firstElementChild, cr = card && card.getBoundingClientRect();
   return { dataBlur: w.getAttribute('data-blur'), filter: cs.filter, opacity: parseFloat(cs.opacity), cls: w.className, wrap: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10],
     card: cr ? [Math.round(cr.left * 10) / 10, Math.round(cr.top * 10) / 10, Math.round(cr.width * 10) / 10, Math.round(cr.height * 10) / 10] : null,
-    canvas: cv ? { w: cv.width, h: cv.height, css: cv.style.width + 'x' + cv.style.height, lw: cv.offsetWidth, lh: cv.offsetHeight } : null, slotKids: slot ? slot.childElementCount : null, boardVisibility: first ? getComputedStyle(first).visibility : null,
+    canvas: cv ? { w: cv.width, h: cv.height, css: cv.style.width + 'x' + cv.style.height, lw: cv.offsetWidth, lh: cv.offsetHeight, tag: cv.tagName } : null, slotKids: slot ? slot.childElementCount : null, boardVisibility: first ? getComputedStyle(first).visibility : null,
     popup: !!document.querySelector('.board-popup-editor'), focused: !!document.querySelector('.board-popup-editor') && document.activeElement === document.querySelector('.board-popup-editor') }; })()`;
 // the in-page pixel comparison of two PNG data URLs over a rect: mean absolute difference per channel
 const DIFF = (a, b) => `(async () => { const load = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
@@ -94,16 +94,16 @@ try { await withHarness(async (app) => {
     const open = await ev(STATE);
     const wrapRect = await rectOfWrap();
     ok(`BB1 [${T}] the snapshot arrives within 4 s: data-blur="snap" (${open && open.dataBlur}), a canvas in the slot laid out at least the wrap's size (its layout ${open && open.canvas && open.canvas.css}, backing ${open && open.canvas && open.canvas.w}x${open && open.canvas && open.canvas.h}, vs ${Math.round(wrapRect.w)}x${Math.round(wrapRect.h)}), the live filter dropped (${open && open.filter}), the dim kept (${open && open.opacity}), the live board hidden (${open && open.boardVisibility}), the popup up and focused`,
-      snapped && open && open.dataBlur === 'snap' && open.canvas && open.canvas.lw >= wrapRect.w && open.canvas.lh >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
+      snapped && open && open.dataBlur === 'snap' && open.canvas && open.canvas.tag === 'IMG' && open.canvas.lw >= wrapRect.w && open.canvas.lh >= wrapRect.h && open.filter === 'none' && open.opacity < 0.7 && open.boardVisibility === 'hidden' && open.popup && open.focused, JSON.stringify(open));
     ok(`BB3 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open and snapped`,
       JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
 
     // BB2: typing under the snapshot
-    const nodeId = await ev("(() => { const c = document.querySelector('.board-blur-snap-slot canvas'); if (!c) return null; window.__bbCanvas = c; return true; })()");
+    const nodeId = await ev("(() => { const c = document.querySelector('.board-blur-snap-slot > *'); if (!c) return null; window.__bbCanvas = c; return true; })()");
     await app.typeKeys('and then she lied');
     await sleep(500);
     const typed = await ev(STATE);
-    const same = await ev("window.__bbCanvas === document.querySelector('.board-blur-snap-slot canvas')");
+    const same = await ev("window.__bbCanvas === document.querySelector('.board-blur-snap-slot > *')");
     ok(`BB2 [${T}] held still: after 17 keys the same canvas node is in the slot (${same}), data-blur is still "snap" (${typed.dataBlur}), the live board is still hidden (${typed.boardVisibility})`, !!nodeId && same === true && typed.dataBlur === 'snap' && typed.boardVisibility === 'hidden' && typed.slotKids === 1, JSON.stringify(typed));
 
     // BB5: fidelity against TODAY'S live blur (the same open card, the same theme)
@@ -116,7 +116,7 @@ try { await withHarness(async (app) => {
     await ev("(() => { const s = document.getElementById('__livecss'); if (s) s.remove(); return true; })()");
     await sleep(300);
     // MUT-blank: the snapshot canvas hidden (the board reads as blank under the popup): BB5's measure must go over FID_MAX
-    await ev("(() => { const s = document.createElement('style'); s.id = '__mutblank'; s.textContent = '.board-blur-snap-slot canvas{display:none!important}'; document.head.appendChild(s); return true; })()");
+    await ev("(() => { const s = document.createElement('style'); s.id = '__mutblank'; s.textContent = '.board-blur-snap-slot > *{display:none!important}'; document.head.appendChild(s); return true; })()");
     await sleep(400);
     const blankShot = await shot();
     const blankDiff = await ev(DIFF(blankShot, liveShot));

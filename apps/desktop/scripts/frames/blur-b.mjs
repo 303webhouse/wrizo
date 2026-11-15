@@ -45,7 +45,7 @@ const open = async (app, live, flux3) => {
   await sleep(900);
 };
 
-const stood = (app, name) => app.evalJs(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'), cs = w && getComputedStyle(w), cv = w && w.querySelector('.board-blur-snap-slot canvas');
+const stood = (app, name) => app.evalJs(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'), cs = w && getComputedStyle(w), cv = w && w.querySelector('.board-blur-snap-slot > *');
   return { screen: ${JSON.stringify(name)}, theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), flag: new URLSearchParams(location.search).get('flux3'),
     popup: !!document.querySelector('.board-popup-editor'), dataBlur: w ? w.getAttribute('data-blur') : null, filter: cs ? cs.filter : null, opacity: cs ? cs.opacity : null,
     canvas: cv ? { w: cv.width, h: cv.height } : null, layer: document.querySelectorAll('[data-flux3-layer]').length }; })()`);
