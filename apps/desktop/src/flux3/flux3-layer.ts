@@ -222,6 +222,7 @@ export class FluxLayer {
 
   setView(view: FluxView): void {
     this.view = { tx: view.tx, ty: view.ty, s: view.s > 0 ? view.s : 1 };
+    ((w: any) => { (w.__f3log = w.__f3log || []).push(`setView tx=${view.tx.toFixed(1)} ty=${view.ty.toFixed(1)} s=${view.s.toFixed(3)} damped=${this.damped()} state=${this.state} still=${this.still()}`); })(window as any);
     this.groundDirty = true; this.sceneDirty = true;
     if (this.damped()) { this.followHeld(); this.hold(); return; }
     this.refresh();
@@ -356,6 +357,7 @@ export class FluxLayer {
     if (this.damped()) { this.state = 'running'; this.hold(); return; }
     if (this.groundDirty) this.drawGround();
     if (this.sceneDirty) this.layoutMotion();
+    ((w: any) => { (w.__f3log = w.__f3log || []).push(`refresh laidView tx=${this.laidView.tx.toFixed(1)} ty=${this.laidView.ty.toFixed(1)} s=${this.laidView.s.toFixed(3)} view tx=${this.view.tx.toFixed(1)} ty=${this.view.ty.toFixed(1)} sceneDirty=${this.sceneDirty} box=${JSON.stringify(this.box)} still=${this.still()}`); })(window as any);
     this.endFollow();
     this.wrap.style.transform = '';
     const still = this.still();

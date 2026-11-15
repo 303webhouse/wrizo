@@ -70,6 +70,7 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
       const cv = canvasRef.current;
       if (!cv) return;
       const hr = host.getBoundingClientRect(), cr = cv.getBoundingClientRect();
+      ((w: any) => { (w.__f3log = w.__f3log || []).push(`place cr=${cr.left.toFixed(1)},${cr.top.toFixed(1)} ${cr.width.toFixed(1)}x${cr.height.toFixed(1)} hr=${hr.left.toFixed(1)},${hr.top.toFixed(1)} canvasTransform=${cv.style.transform} scale=${getBoardScale().toFixed(3)}`); })(window as any);
       layer.setView({ tx: cr.left - hr.left, ty: cr.top - hr.top, s: getBoardScale() });
     };
     place();
