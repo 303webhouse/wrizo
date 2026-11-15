@@ -1,0 +1,4 @@
+healthz 200 {"ok":true,"build":"index-JBbJYjYd"}
+auth/me 401
+served index-JBbJYjYd.js 1031719 bytes md5 250d9a223567  (tested build of 35617c69: identical)
+served index-DJsPsndY.css 265165 bytes md5 2928f75768f1  (tested build: identical)

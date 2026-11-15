@@ -83,6 +83,13 @@ ok('V9d the range rectangle being wrong is NOT a failure when the painted caret 
 ok('V13 focus left the editor is a FOCUS failure', names(v({ focused: false, active: 'BODY' })).includes('focus'));
 ok('V14 a step that means to blur is not a focus failure', !names(v({ focused: false }, { expect: { blur: true } })).includes('focus'));
 ok('V15 the page moved 7px is a PAGE failure', names(v({ page: { ...page, x: 407 } })).includes('page'));
+// #73: the card pop-up grows downward only (expect.pageGrowsDown): same left, top and width, the height only grows; every other surface keeps "the rectangle is the same"
+const GD = { expect: { pageGrowsDown: true } };
+ok('V15a (#73) a card that grew taller with its top and left kept passes the card law and fails the page law', !names(v({ page: { ...page, h: 640 } }, GD)).includes('page') && names(v({ page: { ...page, h: 640 } })).includes('page'));
+ok('V15b (#73) a card that grew taller by moving its top UP (the centred card) is a PAGE failure', names(v({ page: { ...page, y: 60, h: 640 } }, GD)).includes('page'));
+ok('V15c (#73) a card that got shorter is a PAGE failure', names(v({ page: { ...page, h: 560 } }, GD)).includes('page'));
+ok('V15d (#73) a card that changed width or moved sideways is a PAGE failure', names(v({ page: { ...page, w: 720 } }, GD)).includes('page') && names(v({ page: { ...page, x: 410 } }, GD)).includes('page'));
+ok('V15e (#73) an unchanged card passes the card law', !names(v({}, GD)).includes('page'));
 ok('V16 the view jumped is a VIEW failure; an allowed scroll is not', names(v({ scroll: { top: 40, win: 0 } })).includes('view') && !names(v({ scroll: { top: 40, win: 0 } }, { expect: { scroll: true } })).includes('view'));
 ok('V16b the Typewriter scrolling is by design: not a VIEW failure, and noted', (() => { const r = verify({ exp, box, before: { ...clean(), tw: 'on' }, early: { ...clean(), tw: 'on' }, late: { ...clean(), tw: 'on', scroll: { top: 24, win: 0 } }, errors: [] }); return r.fails.length === 0 && r.notes.some((n) => /Typewriter/.test(n)); })());
 ok('V16c an empty row with no height is not judged vertically (D06) but its x still is', (() => { const nb = { via: 'row', x: 305, top: 408, height: 18, noY: true }; const a = verify({ exp, box: nb, before: clean(), early: { ...clean(), px: { x: 305, top: 416, width: 1, height: 18 } }, late: { ...clean(), px: { x: 305, top: 416, width: 1, height: 18 } }, errors: [] }); const b = verify({ exp, box: nb, before: clean(), early: { ...clean(), px: { x: 908, top: 416, width: 1, height: 18 } }, late: { ...clean(), px: { x: 908, top: 416, width: 1, height: 18 } }, errors: [] }); return a.fails.length === 0 && names(b).includes('drawn'); })());

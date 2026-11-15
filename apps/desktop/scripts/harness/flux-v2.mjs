@@ -121,6 +121,11 @@ const KEEP = {
   pageHomeProject: 'a placeholder, not a word the writer reads', drawerPlaceShelf: 'the Shelf is retired in big projects; unreachable', cascadeShelfBrowse: 'the Shelf is retired; unreachable', cascadeShelfOpen: 'the Shelf is retired; unreachable',
   boardHomeLabelShelf: 'the Shelf board survives for harness reach only', deckWorldbuildingHistoryBody: 'story craft prose ("page one")', deckScreenplayThemeStatedTitle: 'a screenplay beat name (the story theme)',
   deckScreenplayBStoryBody: 'a screenplay beat description (the story theme)', helpPublish: 'a link in the web sense (Publish shares a URL)', cascadePlanJustAPage: 'never rendered',
+  // THE REORG'S RAIL (POLISH, Nov 14): read only under ?reorg=1 in Machina (src/reorg/); Flux never renders the rail. They take Flux words when
+  // Flux takes the reorg (Nick ruled Machina first, Nov 14, 11:14 am). Each names its Machina word: Board, Box settings, Page defaults.
+  reorgNewBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoardsNoDoc: 'the reorg rail, Machina only: never rendered in Flux',
+  reorgUntitledBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoxSettings: 'the reorg rail, Machina only: never rendered in Flux',
+  reorgDefaults: 'the reorg rail, Machina only: never rendered in Flux',
 };
 const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
 function deskIdsFromSource() {
