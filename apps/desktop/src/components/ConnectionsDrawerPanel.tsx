@@ -1,5 +1,4 @@
 import { useDeskLexicon } from '../store/deskLexicon';
-import type { ReactNode } from 'react';
 import { useBoardSnapshot, getBoardActions } from '../store/boardSelection';
 import { getJournalEntry, getUnbornEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
@@ -17,13 +16,7 @@ import { useLocation } from 'react-router-dom';
 type Undo = { line: string; run: () => void } | null;
 const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
-// ARBOR v2 MOCKUP (?arbor2=1, Arbor only): `only` shows ONE VIEW of this pane under the Tutor drawer's cloth tabs. 'board' = the board parts
-// (Place this..., the paired page, the plan board, the Boards group); 'grafts' = the rest (Cards, Sources, Pages, shared tags). "+ Graft..."
-// is GRAFTS' alone (the Nick walk, Nov 8, Fable's ruling A1: "BOARD shows Board's, never the Graft row"; it was in both). Undefined (every
-// caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
-// no new behaviour, no new state.
-// ARBOR v2 MOCKUP r18 - `help`: a "?" drawn at the end of the "+ Graft..." row (the Arbor mockup's Grafts help, off the folder tab); absent = today's row.
-export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'grafts'; help?: ReactNode } = {}) {
+export function ConnectionsDrawerPanel() {
   const { t } = useDeskLexicon();
   const snap = useBoardSnapshot();
   const location = useLocation();
@@ -101,19 +94,17 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
 
   return (
     <div className="wz-links-pane" data-links-pane="">
-      {only !== 'board' && (() => { const add = (
       <button ref={addRef} type="button" className="wz-graft-add" data-graft-add="" disabled={!subject} aria-expanded={pickerOpen ? 'true' : 'false'}
         onClick={() => { setPlaceOpen(false); setPickerOpen((o) => !o); }}>
         <span aria-hidden="true">+</span> {t('graftAdd')}
       </button>
-      ); return help ? <div className="wz-graft-add-row">{add}{help}</div> : add; })()}
-      {canPlace && only !== 'grafts' && (
+      {canPlace && (
         <button ref={placeRef} type="button" className="wz-graft-add" data-graft-place-this="" aria-expanded={placeOpen ? 'true' : 'false'}
           onClick={() => { setPickerOpen(false); setPlaceOpen((o) => !o); }}>
           {t('graftPlaceThis')}
         </button>
       )}
-      {paired && only !== 'grafts' && (
+      {paired && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
           <span className="wz-links-thumb wz-links-thumb--page" aria-hidden="true" />
           <span className="wz-graft-from">{t('graftPairedPage')}</span>
@@ -123,7 +114,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
       {hasConnected && (
         <div className="wz-graft-connected" data-graft-connected="">{t('graftConnectedTo')} <b>{subjectTitle}</b></div>
       )}
-      {plan && only !== 'grafts' && (
+      {plan && (
         <div className="wz-graft-plan-group">
           <button type="button" className="wz-graft-plan" data-graft-plan="" aria-expanded={planOpen ? 'true' : 'false'} onClick={() => setPlanOpen((o) => !o)}>
             <span className="wz-graft-chev" aria-hidden="true" />
@@ -143,7 +134,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
           )}
         </div>
       )}
-      {g && groups.map(([key, label]) => g[key].length > 0 && (only == null || (only === 'board') === (key === 'Boards')) && (
+      {g && groups.map(([key, label]) => g[key].length > 0 && (
         <div key={key} className="wz-graft-group" data-graft-group={key}>
           <div className="wz-graft-gh">{label}</div>
           <ul className="wz-links-list" data-links-list="">
@@ -164,7 +155,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
           </ul>
         </div>
       ))}
-      {g && only !== 'board' && g.sharedTags.length > 0 && (
+      {g && g.sharedTags.length > 0 && (
         <div className="wz-graft-group" data-graft-group="SharedTags">
           <div className="wz-graft-gh">{t('graftSharedTags')}</div>
           <ul className="wz-links-list">
