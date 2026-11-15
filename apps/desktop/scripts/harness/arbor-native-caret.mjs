@@ -6,8 +6,10 @@
 //   C2 on the DARK page (every case) the native caret is brass #FF9800 - rgb(255, 152, 0)
 //   C3 Typewriter by night on the light page is page-less (the words on the room): not a light page; its native caret shows (not transparent)
 //   C4 nowhere a drawn caret: no .arbor2-edged-caret element and no editor carrying data-arbor2-caret-active
+//   C5 the board card's sheet (§17.7, its cream stock) takes the ink caret too, not brass, on the light page AND the dark page (FABLE, Nov 14,
+//      11:12 pm): the opened card's editor (.board-popup-editor) caret is #241A10 in both tones
 // MUTANTS (each asserted LANDED, through the same reads): M1 the native caret hidden as the drawn caret hid it (caret-color transparent) - C1 goes red;
-// M2 a drawn caret element put back - C4 goes red.
+// M2 a drawn caret element put back - C4 goes red; M3 the card's caret made brass - C5 goes red.
 // The flag is carried in this file's own navigations (history.replaceState to /?arbor2=1 + hash, then reload: frames/arbor2-r22.mjs's go()), never in
 // WS_URL_SEARCH. Seeding goes through the seams. Run: node scripts/harness/arbor-native-caret.mjs (apps/desktop, dist-web built).
 import { withHarness } from '../runtime-verify.mjs';
@@ -73,6 +75,30 @@ await withHarness(async (app) => {
   ok(`C3 Typewriter by night on the light page (page-less) shows its native caret (${nightTw.length} case)`, nightTw.length === 1 && nightTw.every((c) => c.v.c3), J(nightTw.map((c) => [tag(c), c.m.caret])));
   ok(`C4 no drawn caret anywhere (no .arbor2-edged-caret, no editor with data-arbor2-caret-active) in all ${cases.length} cases`, cases.length === 8 && cases.every((c) => c.v.c4), J(cases.map((c) => [tag(c), c.m && c.m.drawn, c.m && c.m.active])));
 
+  // C5: a board with one text card, per tone; the card opened the writer's way (a double-click on it), the caret at its words' end
+  const cardRead = "(() => { const ed = document.querySelector('.board-popup-editor'); if (!ed) return null; return { caret: getComputedStyle(ed).caretColor, ink: getComputedStyle(ed).color, focused: document.activeElement === ed, tone: document.documentElement.getAttribute('data-page') }; })()";
+  const openCard = async (tone) => {
+    await app.evalJs(`localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'), page: ${J(tone)} }))`);
+    const bid = `arbor-nc-board-${tone}-${Math.random().toString(36).slice(2, 6)}`;
+    await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: bid, text: 'Caret board', pageType: 'board', boxes: [{ id: `${bid}-box`, kind: 'text', x: 0.3, y: 0.2, w: 0.34, h: 0.18, z: 1, text: 'A card on the cream stock' }], createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await sleep(300); await go(`#/page/${bid}`);
+    const board = await waitSoft(app, "!!document.querySelector('.board-box')", { label: 'board card', timeout: 10000 });
+    await sleep(600);
+    await app.evalJs("(() => { const b = document.querySelector('.board-box'); if (!b) return false; b.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window })); return true; })()");
+    const opened = await waitSoft(app, "!!document.querySelector('.board-popup-editor')", { label: 'card popup', timeout: 6000 });
+    await app.evalJs("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+    await sleep(300);
+    return { tone, board, opened, m: await app.evalJs(cardRead) };
+  };
+  const cards = [await openCard('light'), await openCard('dark')];
+  ok(`C5 the board card's sheet takes the ink caret #241A10 in both page tones (the opened card's editor): ${cards.map((c) => `${c.tone} ${c.m && c.m.caret}`).join(', ')}`,
+    cards.every((c) => c.board && c.opened && c.m && c.m.focused && c.m.tone === c.tone && c.m.caret === INK), J(cards));
+  // M3 (mutant), on the dark page's opened card: its caret made brass (a test-only sheet, asserted LANDED) - C5's read goes red
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'nc-m3'; st.textContent = '.board-popup-editor.board-popup-editor.board-popup-editor.board-popup-editor{ caret-color:#FF9800 !important; }'; document.head.appendChild(st); return true; })()");
+  await sleep(150); const m3 = await app.evalJs(cardRead);
+  await app.evalJs("document.getElementById('nc-m3')?.remove()");
+  ok(`M3 (mutant): the card's caret made brass (LANDED: ${m3 && m3.caret}) - C5's read goes red`, !!m3 && m3.caret === BRASS && m3.caret !== INK, J({ m3 }));
+
   // MUTANTS, on the last light Draft case's page: back to the light page, Draft, by day
   await app.evalJs(`localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'), page: 'light' }))`);
   const mid = `arbor-nc-mut-${Math.random().toString(36).slice(2, 6)}`;
@@ -94,7 +120,7 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-NATIVE-CARET PARKED: PASS (0 records) - a new file; it parks nothing of its own');
-const WANT = 7;
+const WANT = 9;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-NATIVE-CARET VERIFY: PASS (${checks.length} checks)` : `\nARBOR-NATIVE-CARET VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);
