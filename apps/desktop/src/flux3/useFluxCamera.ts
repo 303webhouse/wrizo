@@ -32,6 +32,9 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
   useEffect(() => {
     const wrap = wrapRef.current, cv = canvasRef.current;
     if (!wrap || !cv) return;
+    // the camera owns the canvas's transform outright: NO transition on it. Under reduced motion the app's own reset is `transition: all 1e-05s`, and a transform that starts a transition reads back as its OLD rect for the
+    // frame after it is set, which is exactly when the layer reads it (FluxSchema's place): the links were drawn at the stage's top-left while the cards sat centred (the Wrizors' zoom pass 1)
+    cv.style.transition = 'none';
     let offL = 0, offT = 0;              // the board's centring offset inside the frame, in screen px (a board smaller than its frame sits in the middle)
     let raf = 0;
 
@@ -155,6 +158,7 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       keepBoardScale(boardId, getBoardScale());   // the session remembers it (memory only, never storage); a reload forgets
       setBoardScale(1);   // the live scale is 1 wherever no Schema is mounted
       paint();
+      cv.style.removeProperty('transition');
     };
   }, [wrapRef, canvasRef, boardId]);
 }

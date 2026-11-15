@@ -151,6 +151,16 @@ try { await withHarness(async (app) => {
     await ev("(() => { const s = document.getElementById('__mutlinks'); if (s) s.remove(); return true; })()");
     await sleep(300);
   }
+  // MUT-links-cause: the real cause put back, motion ON. Zoom to 1.00 first (so the next change is a real one), put the transition on the canvas, then zoom to 0.50 and read: the layer is told the canvas's OLD position.
+  await openBoard('dark', 1366, 768);
+  await zoom(1, false); await sleep(900);
+  await ev("(() => { const s = document.createElement('style'); s.id = '__mutcause'; s.textContent = '.board-canvas{transition-property:all!important;transition-duration:.00001s!important}'; document.head.appendChild(s); return true; })()");
+  await sleep(300);
+  const dur = await ev("getComputedStyle(document.querySelector('.board-canvas')).transitionDuration");
+  await zoom(0.5, false); await sleep(1800);
+  const cm = await measure(), cv = verdict(cm);
+  ok(`MUT-links-cause premise: the canvas carries the reduced-motion reset's transition (computed duration ${dur})`, /e-05|0\.00001/.test(String(dur)), JSON.stringify({ dur }));
+  ok(`MUT-links-cause: with that transition back, the check goes RED at 0.50 (${cv.bad.length}/${cv.n} ends bad, ${cm.ghost ? cm.ghost.outside : '?'} ghost pixels)`, (cv.n >= MIN_ENDS && cv.bad.length > 0) || (cm.ghost && cm.ghost.outside > 0), JSON.stringify({ v: cv, ghost: cm.ghost }));
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
 const failed = checks.filter((c) => !c.pass);
