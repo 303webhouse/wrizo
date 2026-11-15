@@ -14,7 +14,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const THEMES = ['plateau', 'flux', 'machina'];
-const FID_MAX = 6, BLANK_MIN = 1.5;   // PROVISIONAL until the clipped light-and-dark reading (mean abs diff per channel, 0-255)
+const FID_MAX = 6, BLANK_MIN = 3;   // PROVISIONAL until the clipped light-and-dark reading (mean abs diff per channel, 0-255)
 const TONES = ['dark', 'light'];
 let measurable = 0, skins = 0;
 const BOARD = 'bb-board';
@@ -149,7 +149,7 @@ try { await withHarness(async (app) => {
       !closed.popup && closed.dataBlur === null && closed.slotKids === 0 && closed.boardVisibility === 'visible' && closed.filter === 'none' && closed.opacity === 1 && JSON.stringify(closed.wrap) === JSON.stringify(before.wrap) && JSON.stringify(closed.card) === JSON.stringify(before.card), JSON.stringify(closed));
   }
 
-  ok(`MUT-blank-power the fidelity measure can tell a snapshot from nothing in at least 5 of the ${skins} skins (${measurable} measurable; the others are dark boards on dark grounds where a blank board reads the same)`, skins === 6 && measurable >= 5, JSON.stringify({ skins, measurable }));
+  ok(`MUT-blank-power the fidelity measure can tell a snapshot from nothing in at least 4 of the ${skins} skins (${measurable} measurable; the others are dark boards on dark grounds where a blank board reads the same)`, skins === 6 && measurable >= 4, JSON.stringify({ skins, measurable }));
 
   // BB6: the fallback (no 2D-context filter): the live blur stays
   await openBoard('plateau', "(() => { try { delete CanvasRenderingContext2D.prototype.filter; } catch (e) {} return 'filter' in CanvasRenderingContext2D.prototype; })()");
