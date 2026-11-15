@@ -10,7 +10,7 @@
 // Run: node scripts/harness/flux-zoom-links.mjs   (from apps/desktop; browserless-ish: a hosted runner is fine, there is no timing line)
 import { withHarness } from '../runtime-verify.mjs';
 
-const VIEW = [1920, 1080];
+const VIEWS = [[1366, 768], [1920, 1080]];   // the Wrizors' frames job shoots 1366x768; the speed probes run 1920x1080 (the first measurement, 1920, did NOT show the blocker the 1366 frames do)
 const BOARD = 'fzl-board';
 const TOL = 6, RADIUS = 90, MIN_ENDS = 2;
 const SCALES = [['outer', 0.01], ['0.50', 0.5], ['1.00', 1], ['2.00', 2], ['4.00', 4]];
@@ -74,12 +74,12 @@ try { await withHarness(async (app) => {
   await ev(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); ${prefs('dark')}`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 15000 });
-  await app.emulateDpr(1, VIEW[0], VIEW[1]);
   await splashGone();
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Zoom links', pageType: 'board', boxes: makeBoxes(), createdAt: new Date().toISOString(), origin: null, source: null })})`);
   await sleep(500);
 
-  const openBoard = async (tone) => {
+  const openBoard = async (tone, vw, vh) => {
+    await app.emulateDpr(1, vw, vh);
     await hashTo('#/');
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the board', timeout: 15000 });
     await ev(`window.wrizoPatchEntry(${JSON.stringify(BOARD)}, { boxes: ${JSON.stringify(makeBoxes())} })`);
@@ -90,30 +90,31 @@ try { await withHarness(async (app) => {
     await splashGone();
     await sleep(1600);
   };
-  const zoom = async (s) => { const landed = await ev(`window.wrizoFluxZoomTo(${s})`); return landed; };
+  const centreD = () => ev(`(() => { const wrap = document.querySelector('.board-canvas-wrap'), e = document.querySelector('.board-box[data-box-id="f3-d"]'); if (!wrap || !e) return; const r = e.getBoundingClientRect(), w = wrap.getBoundingClientRect(); wrap.scrollLeft += (r.left + r.width / 2) - (w.left + wrap.clientWidth / 2); wrap.scrollTop += (r.top + r.height / 2) - (w.top + wrap.clientHeight / 2); })()`);
+  const zoom = async (s, centre) => { const landed = await ev(`window.wrizoFluxZoomTo(${s})`); if (centre) await centreD(); return landed; };
   const measure = () => ev(`${MEASURE}(${JSON.stringify(LINKS)}, ${RADIUS}, ${TOL})`);
   const verdict = (m) => { const ends = m.ends; const bad = ends.filter((e) => e.dist == null || e.dist > TOL); return { n: ends.length, bad, worst: ends.length ? Math.max(...ends.map((e) => (e.dist == null ? 999 : e.dist))) : null }; };
 
   const results = [];
-  for (const tone of ['dark', 'light']) {
-    await openBoard(tone);
+  for (const [vw, vh] of VIEWS) for (const tone of ['dark', 'light']) {
+    await openBoard(tone, vw, vh);
     for (const [label, ask] of SCALES) {
-      const landed = await zoom(ask);
+      const landed = await zoom(ask, label !== 'outer');
       for (const state of [['held', 250], ['settled', 1800]]) {
         await sleep(state[0] === 'held' ? state[1] : state[1] - 250);
         const m = await measure(), v = verdict(m);
-        results.push({ tone, label, landed, state: state[0], ...v, diag: m.diag, ends: m.ends });
-        console.log(`LINKS ${tone} ${label} (landed ${landed}) ${state[0]}: ${v.n} ends judged, worst ${v.worst} px, bad ${v.bad.length} | canvas ${JSON.stringify(m.diag.canvas)} | wrap ${JSON.stringify(m.diag.wrap)} | layer ${JSON.stringify(m.diag.layer)} | mcv ${JSON.stringify(m.diag.mcv)} px ${JSON.stringify(m.diag.mcvPx)} | held ${m.diag.held} | canvasTransform ${m.diag.canvasTransform}`);
+        results.push({ vw, tone, label, landed, state: state[0], ...v, diag: m.diag, ends: m.ends });
+        console.log(`LINKS ${vw}x${vh} ${tone} ${label} (landed ${landed}) ${state[0]}: ${v.n} ends judged, worst ${v.worst} px, bad ${v.bad.length} | canvas ${JSON.stringify(m.diag.canvas)} | wrap ${JSON.stringify(m.diag.wrap)} | layer ${JSON.stringify(m.diag.layer)} | mcv ${JSON.stringify(m.diag.mcv)} px ${JSON.stringify(m.diag.mcvPx)} | held ${m.diag.held} | canvasTransform ${m.diag.canvasTransform}`);
         if (v.bad.length) console.log(`  BAD ${JSON.stringify(v.bad)}`);
       }
     }
   }
   // the verdicts: every scale, both skins, both states
-  for (const tone of ['dark', 'light']) {
+  for (const [vw] of VIEWS) for (const tone of ['dark', 'light']) {
     for (const [label] of SCALES) {
       for (const state of ['held', 'settled']) {
-        const r = results.find((x) => x.tone === tone && x.label === label && x.state === state);
-        ok(`LINKS-${tone}-${label}-${state} every link end in the frame lands on its card's edge (within ${TOL} px): ${r.n - r.bad.length}/${r.n} (worst ${r.worst} px; the outer limit landed ${r.landed})`,
+        const r = results.find((x) => x.vw === vw && x.tone === tone && x.label === label && x.state === state);
+        ok(`LINKS-${vw}-${tone}-${label}-${state} every link end in the frame lands on its card's edge (within ${TOL} px): ${r.n - r.bad.length}/${r.n} (worst ${r.worst} px; the outer limit landed ${r.landed})`,
           r.n >= MIN_ENDS && r.bad.length === 0, JSON.stringify({ n: r.n, bad: r.bad, canvas: r.diag.canvas, mcv: r.diag.mcv, held: r.diag.held }));
       }
     }
@@ -122,9 +123,9 @@ try { await withHarness(async (app) => {
     results.filter((x) => x.label === 'outer').every((x) => x.landed < 0.2) && results.filter((x) => x.label !== 'outer').every((x) => Math.abs(x.landed - (SCALES.find((s) => s[0] === x.label)[1])) < 0.01), JSON.stringify(results.map((x) => [x.tone, x.label, x.landed]).slice(0, 5)));
 
   // the mutant: the whole layer shifted by (-90, -60) must be caught, at 1.00 and 0.50 in Dark
-  await openBoard('dark');
+  await openBoard('dark', 1920, 1080);
   for (const [label, ask] of [['1.00', 1], ['0.50', 0.5]]) {
-    await zoom(ask); await sleep(1800);
+    await zoom(ask, true); await sleep(1800);
     const before = await measure();
     await ev("(() => { const s = document.createElement('style'); s.id = '__mutlinks'; s.textContent = '[data-flux3-layer]{translate:-90px -60px!important}'; document.head.appendChild(s); return true; })()");
     await sleep(500);
