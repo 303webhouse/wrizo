@@ -128,6 +128,8 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     mark('clone+lists', started);
     const scrolls: Scroll[] = [];
     const gone = new Set<Element>();
+    // what is visible: the wrap's own rect and a margin (the blur bleeds, a card half out of the frame still shows its half)
+    const MARGIN = 60, vl = r.left - MARGIN, vt = r.top - MARGIN, vr = r.right + MARGIN, vb = r.bottom + MARGIN;
     // the root is the wrap itself: drawn at full strength and still (its own dim and blur are the live treatment this replaces)
     inline(src, clone);
     pseudo(src, clone);
@@ -135,6 +137,8 @@ export async function snapshotBlurred(src: HTMLElement, blurPx = 6, shouldStop: 
     for (let i = 1; i < O.length; i += 1) {
       const c = C[i], parent = c.parentElement;
       if (parent && gone.has(parent)) { gone.add(c); continue; }
+      const er = O[i].getBoundingClientRect();
+      if (er.width > 0 && er.height > 0 && (er.right < vl || er.left > vr || er.bottom < vt || er.top > vb)) { c.remove(); gone.add(c); continue; }   // wholly out of the frame: not drawn
       if (!paintOne(O[i], c, scrolls)) gone.add(c);
       if (performance.now() - sliceStart > SLICE_MS) {
         mark('paint-slice', sliceStart);
