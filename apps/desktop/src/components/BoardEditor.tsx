@@ -85,6 +85,7 @@ import { registerFlush } from '../store/flushRegistry';
 import { AUTOSAVE_MS, LONG_PRESS_MS, MOUSE_DRAG_THRESHOLD, TOUCH_CANCEL_THRESHOLD, MIN_TEXT_W, MIN_INK_W, MIN_TEXT_H, MIN_PIN_W, MIN_PIN_H, MEASURE_TOLERANCE_PX, naturalPx, VIEWPORT_MIN_PX, CANVAS_MIN_W, BOARD_MAX_Y, BOARD_BREATHING_ROOM, ADD_CARD_GAP, NEW_CARD_W, NEW_CARD_H, groupMembers, maxBottom, boxesOverlap, notecardExcerpt } from './board/geometry';
 import { BoardInkBox, BoardPinBox, BoardTextBox } from './board/BoardBoxes';
 import { BoardCardPopup } from './board/BoardCardPopup';
+import { useBoardBlurSnap } from './board/useBoardBlurSnap';
 export { BoardCardPopup } from './board/BoardCardPopup';
 import { useBoardMeasure } from './board/useBoardMeasure';
 import { useBoardBox } from './board/useBoardBox';
@@ -224,6 +225,8 @@ export function BoardEditor({ id }: { id: string }) {
   // race this project has already diagnosed once, generalized) — see
   // decks/engine.ts's own header comment for the full reasoning.
   const [deckWizardOpen, setDeckWizardOpen] = useState(() => !!unborn?.descriptor.deck);
+  // LOOK B (Nick, Nov 14): the board behind the popup (or the deck wizard) is blurred ONCE and held still; the hook owns the wrap's ref, the snapshot slot and `data-blur` (board/useBoardBlurSnap.ts)
+  const { wrapRef: blurWrapRef, slotRef: blurSlotRef } = useBoardBlurSnap(popupBoxId != null || deckWizardOpen);
   // W3 - From my pages' picker reads the writer's CURRENT PLACE (the Drawer she is in, or the Journal), so it works on a board that does not exist yet; the cards it deals are grafted once the board's row does
   // (a graft needs the row: an unborn board is born by its first box, in the effect below the autosave).
   const place = usePlace();
@@ -1332,9 +1335,10 @@ export function BoardEditor({ id }: { id: string }) {
   // anywhere — b3.mjs asserts this explicitly, not merely by omission.
   const boardBody = (
     <>
-      <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
+      <div ref={blurWrapRef} className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
         {boardCanvas}
         <FluxBoardFrame />
+        <div ref={blurSlotRef} className="board-blur-snap-slot" aria-hidden="true" />
       </div>
       {popupBox && (
         <BoardCardPopup

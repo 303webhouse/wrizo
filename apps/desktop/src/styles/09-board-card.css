@@ -126,6 +126,13 @@
 .board-canvas-blur-wrap{ transition:filter .28s ease, opacity .28s ease; }
 .board-canvas-blurred{ filter:blur(6px); opacity:.55; pointer-events:none; }
 @media (prefers-reduced-motion:reduce){ .board-canvas-blur-wrap{ transition:none; } }
+/* LOOK B (Nick, Nov 14): once the popup has been open two frames the board is drawn ONCE into a blurred canvas (components/board/useBoardBlurSnap.ts) and the wrap says data-blur="snap": the live filter is dropped and the live board
+   is hidden, so nothing under the popup is re-blurred or re-painted while she types (a live blur over Flux's board held the first frame at 22.5 ms against Arbor's 12.1). The wrap keeps its own dim (opacity), which the canvas inherits. */
+.board-blur-snap-slot{ display:none; }
+.board-canvas-blur-wrap[data-blur='snap']{ position:relative; filter:none; transition:none; }
+.board-canvas-blur-wrap[data-blur='snap'] > :not(.board-blur-snap-slot){ visibility:hidden; }
+.board-canvas-blur-wrap[data-blur='snap'] > .board-blur-snap-slot{ display:block; position:absolute; inset:0; pointer-events:none; }
+.board-blur-snap-slot > canvas{ display:block; width:100%; height:100%; }
 /* #73 (Nick's ruling): the card pop-up grows DOWNWARD only. It used to be centred on the screen (align-items:center), so every line it grew by moved its top edge up by half a line and the writer's own lines jumped; now its top is fixed where a
    card of the starting size (about 222px tall: a 2px rule, the 49px strip, the 170px editor) would have been centred, and only its foot moves. A card taller than the screen scrolls inside the backdrop instead of running off both edges. */
 .board-popup-backdrop{
