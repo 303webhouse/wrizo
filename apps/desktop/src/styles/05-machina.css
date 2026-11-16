@@ -85,10 +85,10 @@
   --accent-door: #A85A00;         /* 4.9:1 */
 }
 /* The board's cards follow the page tone (the mockup's .bcard: the chrome tone on the dark page, white on the light), square, 1px hairline - not Arbor's cream stock. */
-/* #103: the OPEN card (its pop-up, .board-popup-backdrop) is portaled to the body, outside .board-canvas, so it never got these: on Page: Dark it kept the cream stock (#FBF6EA) with the dark page's light ink (#E6E9F1), 1.13:1. It takes the same values as the card on the board. */
+/* #103: the OPEN card (its pop-up, .board-popup-backdrop) is portaled to the body, outside .board-canvas, so it never got these: on Page: Dark it kept the cream stock (#FBF6EA) with the dark page's light ink (#E6E9F1), 1.13:1. It takes the same values as the card on the board, on BOTH page tones and in the neutral cast (Fable's ruling, Nov 15: in Machina the open card matches the board card - white stock and Machina's card ink on the light page too). */
 :root[data-theme='machina'][data-page='dark'] .board-canvas, :root[data-theme='machina'][data-page='dark'] .board-popup-backdrop { --card-stock: var(--ink-900); --card-hairline: var(--ink-border); --ink-on-card: var(--text-hi); --ink-on-card-low: var(--text-mid); --ink-on-card-meta: var(--text-mid); --badge-on-card: var(--text-mid); }
-:root[data-theme='machina'][data-page='light'] .board-canvas { --card-stock: #FFFFFF; --card-hairline: var(--ink-border); --ink-on-card: #141414; --ink-on-card-low: #5C6472; --ink-on-card-meta: #5C6472; --badge-on-card: #5C6472; }
-:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas { --ink-on-card-low: #595959; --ink-on-card-meta: #595959; --badge-on-card: #595959; }
+:root[data-theme='machina'][data-page='light'] .board-canvas, :root[data-theme='machina'][data-page='light'] .board-popup-backdrop { --card-stock: #FFFFFF; --card-hairline: var(--ink-border); --ink-on-card: #141414; --ink-on-card-low: #5C6472; --ink-on-card-meta: #5C6472; --badge-on-card: #5C6472; }
+:root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas, :root[data-theme='machina'][data-cast='neutral'][data-page='light'] .board-popup-backdrop { --ink-on-card-low: #595959; --ink-on-card-meta: #595959; --badge-on-card: #595959; }
 /* The mockup's active rail item is INK-coloured with only the left edge in the carrier colour (the app's own rule paints the label in --accent-rest too). */
 [data-theme='machina'] .wz-strip-item.active { color: var(--text-hi); }
 /* Finalize and the Plan door are plain: quiet at rest, --text-hi on hover; the carrier colour only where it means current. Orange is for the notch, the closed strip and a chosen state, never a resting label [machina §3] */
