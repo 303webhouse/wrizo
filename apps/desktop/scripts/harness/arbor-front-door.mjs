@@ -36,7 +36,8 @@ await withHarness(async (app) => {
     await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); localStorage.setItem('wrizo-theme', 'plateau'); true");
     await app.evalJs("history.replaceState(null, '', '/#/')"); await app.reload();
     await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'the splash gone', timeout: 25000 });
-    await waitSoft(app, "!!document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-signin:not([disabled])')", { label: 'the Sign in door ready', timeout: 15000 });
+    // shown and hit-testable, as a writer sees it (the doors are enabled during data-phase='wait', while still hidden - the Write door probe 37ffbdaf)
+    await waitSoft(app, "(() => { const b = document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-signin:not([disabled])'); if (!b) return false; const r = b.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); })()", { label: 'the Sign in door shown', timeout: 25000 });
     await sleep(600);
     return app.evalJs(FRONT);
   };
