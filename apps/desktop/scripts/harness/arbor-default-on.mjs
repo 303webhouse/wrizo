@@ -40,10 +40,10 @@ await withHarness(async (app) => {
   ok(`D3 Arbor with the explicit ?arbor2=1: the redesign and the mockup bar ("Arbor mockup")`, !!d3 && d3.arbor === 'true' && d3.bar && d3.barHead, J(d3));
   const fx = await visit('flux', ''), mx = await visit('machina', '');
   ok(`D4 Flux and Machina with no query: no data-arbor2 (${fx && fx.arbor}, ${mx && mx.arbor}) - nothing of the redesign reaches another theme`, d4ok(fx) && d4ok(mx) && fx.theme === 'flux' && mx.theme === 'machina', J({ fx, mx }));
-  // D5: live switches the writer's way - the rail's Themes item, then the theme's own card (a locked card is reported, never clicked past)
-  const setTheme = async (t) => { const name = { plateau: 'Arbor', flux: 'Flux', machina: 'Machina' }[t];
-    await app.evalJs("document.querySelector(\".wz-strip-item[data-category='theme']\")?.click()"); await sleep(700);
-    return app.evalJs(`(() => { const c = [...document.querySelectorAll('.wz-theme-card')].find((b) => (b.querySelector('.wz-theme-wm')?.textContent || '').trim() === ${JSON.stringify(name)}); if (!c) return null; if (c.disabled) return 'locked'; c.click(); return 'picker'; })()`); };
+  // D5: a live switch with no reload, through the theme store's own setter
+  // D5 drives the switch through the theme store's own seam (store/theme.ts: window.wrizoTheme.set = setTheme): under the test double only the CURRENT
+  // theme's card is open (theme-picker.mjs D3), so a card click cannot switch live; the seam calls the same setter the card's click calls.
+  const setTheme = (t) => app.evalJs(`(() => { const s = window.wrizoTheme; if (!s || typeof s.set !== 'function') return null; s.set(${JSON.stringify(t)}); return s.get() === ${JSON.stringify(t)} ? 'seam' : 'unchanged'; })()`);
   // (on a page, where the rail is: the front door at / has no rail - the first run's D5 found no Themes item there, via null)
   await visit('plateau', '');
   { const pid = 'arbor-do-' + Math.random().toString(36).slice(2, 7);
@@ -52,7 +52,7 @@ await withHarness(async (app) => {
   const via1 = await setTheme('flux'); await sleep(800); const s1 = await app.evalJs(READ);
   const via2 = await setTheme('plateau'); await sleep(1500); const s2 = await app.evalJs(READ);
   ok(`D5 a theme switch in the session, no reload (via ${via1}/${via2}): Arbor -> Flux takes data-arbor2 away (${s1 && s1.arbor}); Flux -> Arbor puts it back (${s2 && s2.arbor})`,
-    via1 === 'picker' && via2 === 'picker' && !!s1 && s1.theme === 'flux' && s1.arbor !== 'true' && !!s2 && s2.theme === 'plateau' && s2.arbor === 'true', J({ via1, via2, s1, s2 }));
+    via1 === 'seam' && via2 === 'seam' && !!s1 && s1.theme === 'flux' && s1.arbor !== 'true' && !!s2 && s2.theme === 'plateau' && s2.arbor === 'true', J({ via1, via2, s1, s2 }));
   // M1: data-arbor2 forced onto a Flux page - D4's read must go red
   await visit('flux', '');
   await app.evalJs("document.documentElement.setAttribute('data-arbor2', 'true')"); const m1 = await app.evalJs(READ);
