@@ -15,12 +15,12 @@ const WA = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CHILD_TIMEOUT_MS = 6 * 60 * 1000;
 export const ALL = ['plateau', 'flux', 'machina'];
 
-function runChild(script, theme) {
+function runChild(script, theme, tone = 'light') {
   return new Promise((resolve) => {
     const dir = mkdtempSync(path.join(os.tmpdir(), 'wa-red-'));
     const out = path.join(dir, `${script}.${theme || 'none'}.txt`);
     const fd = openSync(out, 'w');
-    const env = { ...process.env, WA_FLAG: 'off', WA_TONE: 'light', WA_W: '1366', WA_H: '768', WA_STRICT: '1' };
+    const env = { ...process.env, WA_FLAG: 'off', WA_TONE: tone, WA_W: '1366', WA_H: '768', WA_STRICT: '1' };   // #103: `tone` is 'light' unless a step names the Page tone it checks (the card's contrast is read in both)
     if (theme) env.WA_THEME = theme;
     const t0 = Date.now();
     const child = spawn(process.execPath, [path.join(WA, script)], { cwd: process.cwd(), env, stdio: ['ignore', fd, fd], windowsHide: true });
@@ -45,11 +45,11 @@ export async function runReds({ name, steps }) {
   for (const s of steps) {
     for (const theme of (s.themes && s.themes.length ? s.themes : [null])) {
       runs += 1;
-      const r = await runChild(s.script, theme);
+      const r = await runChild(s.script, theme, s.tone || 'light');
       const ok = r.code === 0;
-      console.log(`  ${s.script}${theme ? ' ' + theme : ''}: ${ok ? 'green' : r.timedOut ? 'TIMED OUT' : 'RED (exit ' + r.code + ')'} in ${r.secs}s`);
+      console.log(`  ${s.script}${theme ? ' ' + theme : ''}${s.tone ? ' ' + s.tone : ''}: ${ok ? 'green' : r.timedOut ? 'TIMED OUT' : 'RED (exit ' + r.code + ')'} in ${r.secs}s`);
       if (!ok) {
-        bad.push(`${s.script}${theme ? ' ' + theme : ''}`);
+        bad.push(`${s.script}${theme ? ' ' + theme : ''}${s.tone ? ' ' + s.tone : ''}`);
         const lines = r.text.split(/\r?\n/);
         const fails = lines.filter((l) => /^FAIL\b/.test(l)).slice(0, 6);
         for (const l of (fails.length ? fails : lines.filter((l) => l.trim()).slice(-4))) console.log('    ' + l.replace(/^\s+/, '').slice(0, 400));
