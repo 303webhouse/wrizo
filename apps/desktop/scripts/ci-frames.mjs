@@ -82,6 +82,8 @@ const SCREENS = {
 // scripts/captures/arrival-signin-capture.mjs does the same), so each screen: flips it, reloads the Desk signed out, reaches the screen the way a writer does (the Sign in door; from there "New here? Create an account"), waits for it to SETTLE,
 // refuses a frame that shows a typed value or an "@" (no real email may be on a frame), and restores WS_ANON for the screens after it. It works on a tree whose front door is Arrival's doors (main) and on one whose front door is the splash's own Sign in door
 // (the Arbor ship tree, Arrival retired there): both put a "Sign in" button on the front door and open the same sign-in and sign-up stages; the manifest row says which door it took (row.door).
+const SIGNIN_UP = "!!document.querySelector(\".wz-arrival input.wz-field[type='email']\") && !!document.querySelector(\".wz-arrival input.wz-field[type='password']\")";   // the sign-in stage is up (ARBOR: the same markup on main and on the Arbor ship tree)
+const SIGNUP_UP = "!!document.querySelector('.wz-arrival .wz-sub') && !!document.querySelector(\".wz-arrival input.wz-field[autocomplete='given-name']\")";   // the sign-up (account) stage is up: its invitation line and the first-name field
 const SIGNED_OUT = (() => {
   const toSignedOutDoors = async (app) => {
     process.env.WS_ANON = '1';
@@ -89,9 +91,10 @@ const SIGNED_OUT = (() => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'signed-out front door' });
     await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone (signed out)', timeout: 15000 });
     await app.injectHelpers();
+    // the Sign in door, enabled: on the Arbor ship tree it is `.arbor2-front-doors button.arbor2-door.wz-arrival-signin` (disabled until the front is ready); elsewhere a "Sign in" button of Arrival's doors
     await app.waitFor("[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Sign in' && !b.disabled)", { label: 'the Sign in door' });
     await sleep(500);
-    return (await app.evalJs("document.querySelector('.wz-arrival-doors') ? 'arrival-doors' : document.querySelector('.arbor2-front-foot') ? 'splash-door' : 'sign-in-button'"));
+    return (await app.evalJs("document.querySelector('.arbor2-front-doors button.arbor2-door.wz-arrival-signin') ? 'splash-door' : document.querySelector('.wz-arrival-doors') ? 'arrival-doors' : 'sign-in-button'"));
   };
   // the hero (Arrival's logo and doors) fades out over .8 s and the form in over 1 s: a frame inside that window is a ghost, not the screen
   const settled = async (app, probe) => {
@@ -109,14 +112,14 @@ const SIGNED_OUT = (() => {
   return {
     signin: run(async (app) => {
       await app.click('Sign in');
-      await settled(app, "!!document.querySelector('.wz-arrival input.wz-field')");
+      await settled(app, SIGNIN_UP);
     }),
     signup: run(async (app) => {
       await app.click('Sign in');
-      await app.waitFor("!!document.querySelector('.wz-arrival input.wz-field')", { label: 'sign-in first' });
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' });
       await sleep(500);
       await app.click('New here? Create an account');
-      await settled(app, "!!document.querySelector('.wz-arrival .wz-sub')");
+      await settled(app, SIGNUP_UP);
     }),
   };
 })();
