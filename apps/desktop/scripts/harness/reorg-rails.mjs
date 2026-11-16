@@ -126,7 +126,9 @@ async function seed(app) {
 // open the fixture's first page under a theme, with or without the switch (a reload re-reads the address, as the app does once at load)
 async function openPage(app, theme, reorg) {
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1' : '/'}#/page/rr-top-1')`);
+  // (the Arbor redesign is on by default since Nov 15; this file was written for today's Arbor, so its own address carries the harness's pin, ?arbor2=0 -
+  // FABLE RULED, Nov 15, 10:40 pm. It wrote its own address and so skipped the driver's pin: O1/O2 read the redesign's strip against today's golden.)
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/rr-top-1')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
