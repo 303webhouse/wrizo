@@ -21,7 +21,7 @@ await withHarness(async (app) => {
   await d.openCard('Hello world, the words on this card must read.');
   await sleep(400);
   const read = await d.ev(`(() => {
-    const px = (el, prop) => { const m = /rgba?\(([^)]+)\)/.exec(getComputedStyle(el)[prop]); if (!m) return null; const p = m[1].split(',').map((x) => parseFloat(x)); return { rgb: p.slice(0, 3), a: p.length > 3 ? p[3] : 1 }; };
+    const px = (el, prop) => { const s = getComputedStyle(el)[prop]; if (!/^rgb/.test(s)) return null; const p = s.replace(/[^0-9.,]/g, '').split(',').map((x) => parseFloat(x)); return { rgb: p.slice(0, 3), a: p.length > 3 ? p[3] : 1, raw: s }; };   // no backslash in this source: a template literal would eat it
     const pop = document.querySelector('.board-popup');
     if (!pop) return null;
     const out = { bg: px(pop, 'backgroundColor') };
