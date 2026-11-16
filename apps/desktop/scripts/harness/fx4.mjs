@@ -429,7 +429,7 @@ await withHarness(async (app) => {
     };
   })()`);
   ok('S5: double-clicking a text card opens the popup over a BLURRED, dimmed board (the mockup\'s own treatment), focus lands in the editor',
-    // SUPERSEDED (look A): the dim is the fog now, the wrap's own opacity stays 1; original, verbatim:
+    // SUPERSEDED (look A, fog pass 1): the wrap's own opacity stays 1 (the .55 fade sits on its inner board layer, .board-canvas-dim); original, verbatim:
     // openState.popupPresent && openState.filterBlurred && openState.opacity < 0.7 && openState.activeIsEditor,
     openState.popupPresent && openState.filterBlurred && openState.opacity === 1 && openState.activeIsEditor,
     JSON.stringify(openState));

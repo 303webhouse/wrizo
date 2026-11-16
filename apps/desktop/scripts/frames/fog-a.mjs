@@ -5,7 +5,7 @@
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 
-const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
+const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
 
 const seed = async (app, flux3) => {
   const id = `fog-frames-${Date.now()}`;

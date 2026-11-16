@@ -1333,8 +1333,10 @@ export function BoardEditor({ id }: { id: string }) {
   const boardBody = (
     <>
       <div className={`board-canvas-blur-wrap${(popupBox || deckWizardOpen) ? ' board-canvas-blurred' : ''}`}>
-        {boardCanvas}
-        <FluxBoardFrame />
+        <div className="board-canvas-dim">
+          {boardCanvas}
+          <FluxBoardFrame />
+        </div>
       </div>
       {popupBox && (
         <BoardCardPopup

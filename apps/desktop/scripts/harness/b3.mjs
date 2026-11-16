@@ -196,7 +196,7 @@ await withHarness(async (app) => {
     ok(`@${width}px: the pre-existing card's own rendered rect is BYTE-IDENTICAL with the wizard open vs. closed (no reflow anywhere under the pop-out)`,
       JSON.stringify(geomWhileOpen.preBox) === JSON.stringify(preBoxBefore), JSON.stringify({ before: preBoxBefore, open: geomWhileOpen.preBox }));
     ok(`@${width}px: the wizard runs as a pop-out over the FADED board (blur+dim, the SAME .board-canvas-blurred the card popup already uses)`,
-      // SUPERSEDED (look A): the dim is the fog now, the wrap's own opacity stays 1; original, verbatim:
+      // SUPERSEDED (look A, fog pass 1): the wrap's own opacity stays 1 (the .55 fade sits on its inner board layer, .board-canvas-dim); original, verbatim:
       // geomWhileOpen.blurred && geomWhileOpen.opacity < 0.7, JSON.stringify(geomWhileOpen));
       geomWhileOpen.blurred && geomWhileOpen.opacity === 1, JSON.stringify(geomWhileOpen));
 

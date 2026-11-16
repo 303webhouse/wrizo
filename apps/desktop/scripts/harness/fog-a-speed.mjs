@@ -28,8 +28,8 @@ const timing = (name, pass, detail = '') => {
   checks.push({ name: g.info ? `${name} [INFORMATION on Actions: the measure ${g.actual ? 'PASSED' : 'did NOT pass'}; this line gates nothing here]` : name, pass: g.pass, detail });
   if (g.info && !g.actual) console.log(`INFO (would have failed on the box) ${name} -- ${detail}`);
 };
-const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
-const OFF_CSS = ".board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
+const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
+const OFF_CSS = ".board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
 const ARMS = {
   FB: { theme: 'flux', flag: true, css: '', want: 'fog', what: 'Flux, the fog as shipped' },
   FO: { theme: 'flux', flag: true, css: OFF_CSS, want: 'off', what: 'Flux, filter off (the reference)' },
