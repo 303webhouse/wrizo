@@ -233,7 +233,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
       const top = isArbor2() ? arborTopRefs : [htmlRef];
       return chromeRootRef ? [stageRef, chromeRootRef, ...top] : [stageRef, ...top];   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
     },
-    [chromeRootRef, framed, arborTopRefs],
+    [chromeRootRef, framed, arborTopRefs, stageTheme],   // stageTheme: the redesign is on by default in Arbor only, so a theme switch moves the targets
   );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
     surface: 'sprint',

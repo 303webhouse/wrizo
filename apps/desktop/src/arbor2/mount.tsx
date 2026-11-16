@@ -5,7 +5,8 @@ import { mountSun } from './sun';
 import { mountPaper } from './paper';
 import { mountChrome } from './chrome';
 import { mountPergola } from './pergola';
-import { arbor2RoomPin } from './flag';
+import { arbor2RoomPin, isArbor2, arbor2MockupBar } from './flag';
+import { subscribeTheme } from '../store/theme';
 import { mountDrawerEdge } from './drawerEdge';
 import { mountScrollReveal } from './scrollReveal';
 import { clearRhizome, undoClearRhizome, canUndoClear, hasRhizome, subscribeLife } from './rhizomeLife';
@@ -99,7 +100,11 @@ const setRoom = (c: Choice) => { const v = dataRoomOf(c); if (v) root.setAttribu
   return root.getAttribute('data-arbor2-dayness');
 };
 
-root.setAttribute('data-arbor2', 'true');
+// data-arbor2 marks the redesign on <html>; by default it follows the theme (on in Arbor, off in Flux and Machina, live as she switches), so no Arbor
+// rule reaches another theme; under the explicit ?arbor2=1 it stays on, as before.
+const markArbor = () => { if (isArbor2()) root.setAttribute('data-arbor2', 'true'); else root.removeAttribute('data-arbor2'); };
+markArbor();
+subscribeTheme(() => markArbor());
 // NICK RULED (Nov 9, 11:29 pm, via Fable): the night room takes brown B - set before the room's tokens are first read; the bar's Night browns row
 // (Now / A / B / C) is gone with A and C (styles/arbor-v2.css). In-session attribute, nothing stored.
 root.setAttribute('data-arbor2-brown', 'b');
@@ -235,7 +240,10 @@ function MockupBar() {
   );
 }
 
+// the bar's host is always there (ModeStage writes --fade-dur on it - bug #80 option (a) - and it holds the bar when it shows); the bar itself is
+// TEST-ONLY (Nick, Nov 15): it renders only under the explicit ?arbor2=1. By default no bar, so every Mood switch stands at its ruled default (all
+// on), the logo all Sage, the night room brown B.
 const host = document.createElement('div');
 host.id = 'arbor2-mockup-bar';
 document.body.appendChild(host);
-ReactDOM.createRoot(host).render(<MockupBar />);
+if (arbor2MockupBar()) ReactDOM.createRoot(host).render(<MockupBar />);
