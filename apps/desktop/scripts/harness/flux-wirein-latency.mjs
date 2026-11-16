@@ -200,12 +200,13 @@ try { await withHarness(async (app) => {
         instrument: !!window.__wli, rect: ${rectOf} }; })()`);
     // the meter (rhizome-latency's and flux3-latency's, verbatim in method)
     await app.evalJs(`(() => {
-      window.__lat = []; let t0 = 0;
+      window.__lat = []; window.__wk = []; let t0 = 0, cur = null;
       if (window.__latOff) window.__latOff();
-      const kd = () => { t0 = performance.now(); };
+      const kd = () => { t0 = performance.now(); cur = { kd: t0, work: null }; window.__wk.push(cur); };
+      const inp = () => { if (cur) cur.work = performance.now() - cur.kd; };
       const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => { const now = performance.now(); window.__lat.push({ ms: now - t, key: t, at: now }); })); };
-      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
-      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); };
+      document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true); document.addEventListener('input', inp, false); document.addEventListener('beforeinput', inp, false);
+      window.__latOff = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('beforeinput', bi, true); document.removeEventListener('input', inp, false); document.removeEventListener('beforeinput', inp, false); };
       return true; })()`);
     let typed = '';
     for (let i = 0; i < KEYS; i += 1) { const ch = CYCLE[cursor % CYCLE.length]; cursor += 1; typed += ch; await app.typeKeys(ch); await sleep(GAP); }
@@ -215,7 +216,7 @@ try { await withHarness(async (app) => {
       const k0 = lat.length ? Math.min(...lat.map((x) => x.key)) : 0, k1 = lat.length ? Math.max(...lat.map((x) => x.at)) : 0;
       const pick = (a, b) => fr.filter((f) => f[0] >= a && f[0] <= b);
       const sum = (fs) => ({ n: fs.length, drawFrames: fs.filter((f) => f[2] > 0).length, cbMs: fs.map((f) => f[3]), dt: fs.map((f) => f[1]) });
-      return { lat: lat.map((x) => x.ms), idle: sum(pick(${idle0}, ${idle1})), typing: sum(pick(k0, k1)) };
+      return { lat: lat.map((x) => x.ms), work: window.__wk.map((k) => (k.work == null ? null : Math.round(k.work * 10) / 10)).filter((x) => x != null), idle: sum(pick(${idle0}, ${idle1})), typing: sum(pick(k0, k1)) };
     })()`);
     // every typed key reached the stored page (read after the debounced save lands: wait on the STORED value)
     const nonWs = (s) => String(s || '').replace(/\s+/g, '').length;
@@ -267,6 +268,20 @@ try { await withHarness(async (app) => {
     JSON.stringify(loadedM.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames }))));
   timing(`MUT-b the undamped-layer mutant FAILS L (M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)} against C ${r1(m.C.median)} / ${r1(m.C.p95)}; caught: ${m.lat ? 'NO' : 'YES'})`,
     mLanded && !m.lat, `C ${show(m.C)} | M ${show(m.X)}`);
+
+  // COST reading, INFORMATION ONLY (Fable Nov 14, 12:24 pm: "add the cost reading to the Wire In probe as information only"). The clock (keydown -> the second frame) cannot see a cost smaller than a frame (the zoom probe's per-key print,
+  // Actions run 43626167023: a 24 ms burn on every key LOWERED the clock); the reading that rises with a burn is WORK, the key's own synchronous work: keydown capture -> the `input` event's bubble at the document
+  // (stamped at the LAST of beforeinput / input: Wire In cancels the default insert, so no `input` event reaches the document there; Actions run 43634369387 read null in W and M with `input` alone)
+  // (flux3-latency-zoom: +5 / +10 / +24 ms burns lift it +4.9 / +9.9 / +23.9, the control's per-round median spread 0.2). It gates nothing here; the lines print what it reads.
+  {
+    const wk = (rs) => rs.map((r) => ({ ...r, lat: r.work || [] }));
+    const WS = Object.fromEntries(['C', 'X', 'W', 'M'].map((k) => [k, stat(res[k].flatMap((r) => r.work || []))]));
+    const jw = judge(wk(res.C), wk(res.W));
+    const perRound = (k) => res[k].map((r) => `${r1(stat(r.work || []).median)}/${r1(stat(r.work || []).p95)}`).join(' ');
+    ok(`COST (information) the key's own synchronous work, median/p95 ms: C Arbor ${r1(WS.C.median)}/${r1(WS.C.p95)} | X Flux TEXT ${r1(WS.X.median)}/${r1(WS.X.p95)} | W Wire In ${r1(WS.W.median)}/${r1(WS.W.p95)} | M undamped-layer mutant ${r1(WS.M.median)}/${r1(WS.M.p95)}`, true, '');
+    ok(`COST-W (information) Wire In against the control on the work reading: W median ${r1(jw.X.median)} vs C ${r1(jw.C.median)} + ${r1(jw.spreadMed)}, p95 ${r1(jw.X.p95)} vs C ${r1(jw.C.p95)} + ${r1(jw.spreadP95)}: the measure ${jw.lat ? 'passed' : 'did NOT pass'}; this line gates nothing`, true, `per round median/p95: C ${perRound('C')} | X ${perRound('X')} | W ${perRound('W')} | M ${perRound('M')}`);
+    console.log(`COST-INFO per round work median/p95: C ${perRound('C')} | X ${perRound('X')} | W ${perRound('W')} | M ${perRound('M')}`);
+  }
 
   // ---- the build
   const served = new Set(all.map((r) => r.where.served));
