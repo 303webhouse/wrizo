@@ -2,15 +2,16 @@
 // limit, bring numbers for a 2 px line"). WHAT IT MEASURES: what the writer SEES. The Schema board (flux3-s1's nine cards and four links, as the frames job seeds it) under ?flux3=1, Page: Dark and Page: Light, REDUCED MOTION ON (the still frame:
 // the motion canvas holds the links and nothing else), 1920x1080 at DPR 1. At 1.00, 0.50 and the outer limit (asked as 0.01: it lands where the clamp puts it, 0.304 here), in two states: REST (nothing selected) and SEL (card B selected: its link is hot).
 // Every pixel the motion canvas COVERS (alpha > 0) is read from a viewport screenshot at the same place, and its contrast ratio (WCAG) against the ground the writer sees (the median colour of a block of the stage) is computed.
-//   CON-share    at least SHARE_MIN of the covered pixels hold CONTRAST:1 (3:1, the floor for a non-text component): a line on whole pixels is crisp, a line on half pixels is two half-covered rows at about 2.5:1
+//   CON-body     at least BODY_MIN of the covered pixels are FULLY covered (alpha 255): a line on whole pixels has a body, a line on half pixels is two half-covered rows and has none (a dash's soft ends are partial whatever the grid)
+//   CON-full     at least FULL_MIN of the fully covered pixels hold CONTRAST:1 (3:1, the floor for a non-text component) AS SEEN in the screenshot (this also catches a layer resampled off the grid at composite)
 //   CON-median   the median covered pixel holds 3:1 (the Wrizors' own reading was a median)
-// MUT-half: the layer shifted half a pixel (CSS `translate: .5px .5px` on the layer: its canvases are resampled, every line lands on half pixels again) must make CON-share RED at 1.00, in Dark and Light; its premise is MEASURED (the motion canvas's rect moved by .5).
+// MUT-half: the layer shifted half a pixel (CSS `translate: .5px .5px` on the layer: its canvases are resampled, every line lands on half pixels again) must make CON-full RED at 1.00, in Dark and Light; its premise is MEASURED (the motion canvas's rect moved by .5).
 // Run: node scripts/harness/flux-zoom-link-contrast.mjs   (from apps/desktop; no timing line)
 import { withHarness } from '../runtime-verify.mjs';
 
 const VIEW = [1920, 1080];
 const BOARD = 'fzk-board';
-const CONTRAST = 3, SHARE_MIN = 0.85;
+const CONTRAST = 3, BODY_MIN = 0.6, FULL_MIN = 0.98;
 const SCALES = [['1.00', 1], ['0.50', 0.5], ['outer', 0.01]];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
@@ -44,7 +45,7 @@ const MEASURE = (png) => `(async () => {
   const med = (a) => { a.sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
   const ground = [med(rs), med(gs), med(bs)];
   const px = [];
-  for (let cy = 0; cy < H; cy += 1) for (let cx = 0; cx < W; cx += 1) { if (d[(cy * W + cx) * 4 + 3] === 0) continue; const sx = Math.round(mr.left + (cx + 0.5) * kx - 0.5), sy = Math.round(mr.top + (cy + 0.5) * ky - 0.5); if (sx < 0 || sy < 0 || sx >= SW || sy >= cv.height) continue; const k = (sy * SW + sx) * 4; px.push([s[k], s[k + 1], s[k + 2]]); }
+  for (let cy = 0; cy < H; cy += 1) for (let cx = 0; cx < W; cx += 1) { if (d[(cy * W + cx) * 4 + 3] === 0) continue; const sx = Math.round(mr.left + (cx + 0.5) * kx - 0.5), sy = Math.round(mr.top + (cy + 0.5) * ky - 0.5); if (sx < 0 || sy < 0 || sx >= SW || sy >= cv.height) continue; const k = (sy * SW + sx) * 4; px.push([s[k], s[k + 1], s[k + 2], d[(cy * W + cx) * 4 + 3]]); }
   return { n: px.length, ground, px, rect: [mr.left, mr.top, mr.width, mr.height] };
 })()`;
 
@@ -85,9 +86,9 @@ try { await withHarness(async (app) => {
   const read = async () => {
     const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
     const m = await ev(MEASURE(png));
-    if (!m.n) return { n: 0, share: 0, median: 0, ground: m.ground };
-    const rs = m.px.map((c) => ratio(c, m.ground)).sort((a, b) => a - b);
-    return { n: m.n, share: rs.filter((r) => r >= CONTRAST).length / rs.length, median: rs[Math.floor(rs.length / 2)], p10: rs[Math.floor(rs.length * 0.1)], ground: m.ground, rect: m.rect, landed: null };
+    if (!m.n) return { n: 0, body: 0, fullShare: 0, nFull: 0, median: 0, ground: m.ground };
+    const all = m.px.map((c) => ratio(c, m.ground)).sort((a, b) => a - b), full = m.px.filter((c) => c[3] === 255).map((c) => ratio(c, m.ground));
+    return { n: m.n, body: full.length / m.px.length, fullShare: full.length ? full.filter((r) => r >= CONTRAST).length / full.length : 0, nFull: full.length, median: all[Math.floor(all.length / 2)], p10: all[Math.floor(all.length * 0.1)], ground: m.ground, rect: m.rect, landed: null };
   };
   const at = async (ask) => { const landed = await ev(`window.wrizoFluxZoomTo(${ask})`); await sleep(1800); return landed; };
 
@@ -100,12 +101,13 @@ try { await withHarness(async (app) => {
         const landed = await at(ask);
         const r = await read();
         results.push({ tone, state, label, landed, ...r });
-        console.log(`LINKCON ${tone} ${state} ${label} (landed ${typeof landed === 'number' ? landed.toFixed(3) : landed}): ${r.n} covered px, ${(r.share * 100).toFixed(0)}% hold ${CONTRAST}:1, median ${r.median && r.median.toFixed(2)}:1, p10 ${r.p10 && r.p10.toFixed(2)}:1, ground ${JSON.stringify(r.ground)}`);
+        console.log(`LINKCON ${tone} ${state} ${label} (landed ${typeof landed === 'number' ? landed.toFixed(3) : landed}): ${r.n} covered px, ${(r.body * 100).toFixed(0)}% fully covered, ${(r.fullShare * 100).toFixed(0)}% of those hold ${CONTRAST}:1, median ${r.median && r.median.toFixed(2)}:1, p10 ${r.p10 && r.p10.toFixed(2)}:1, ground ${JSON.stringify(r.ground)}`);
       }
     }
   }
   for (const r of results) {
-    ok(`CON-share [${r.tone} ${r.state} ${r.label}] ${(r.share * 100).toFixed(0)}% of the ${r.n} covered pixels hold ${CONTRAST}:1 against the ground (>= ${SHARE_MIN * 100}%)`, r.n >= 40 && r.share >= SHARE_MIN, JSON.stringify({ n: r.n, share: r.share, median: r.median, p10: r.p10, ground: r.ground }));
+    ok(`CON-body [${r.tone} ${r.state} ${r.label}] ${(r.body * 100).toFixed(0)}% of the ${r.n} covered pixels are fully covered (>= ${BODY_MIN * 100}%): the line has a body on whole pixels`, r.n >= 40 && r.body >= BODY_MIN, JSON.stringify({ n: r.n, nFull: r.nFull, body: r.body }));
+    ok(`CON-full [${r.tone} ${r.state} ${r.label}] ${(r.fullShare * 100).toFixed(0)}% of the ${r.nFull} fully covered pixels hold ${CONTRAST}:1 against the ground as seen (>= ${FULL_MIN * 100}%)`, r.nFull >= 40 && r.fullShare >= FULL_MIN, JSON.stringify({ nFull: r.nFull, fullShare: r.fullShare, ground: r.ground }));
     ok(`CON-median [${r.tone} ${r.state} ${r.label}] the median covered pixel holds ${r.median && r.median.toFixed(2)}:1 (>= ${CONTRAST}:1)`, r.n >= 40 && r.median >= CONTRAST, JSON.stringify({ median: r.median }));
   }
 
@@ -119,7 +121,7 @@ try { await withHarness(async (app) => {
     const after = await read();
     const shiftX = Math.round((after.rect[0] - before.rect[0]) * 100) / 100, shiftY = Math.round((after.rect[1] - before.rect[1]) * 100) / 100;
     ok(`MUT-half premise [${tone}]: the half-pixel shift landed on the motion canvas (moved ${shiftX}, ${shiftY}; asked .5, .5)`, Math.abs(shiftX - 0.5) <= 0.05 && Math.abs(shiftY - 0.5) <= 0.05, JSON.stringify({ before: before.rect, after: after.rect }));
-    ok(`MUT-half [${tone}]: with the layer half a pixel off the grid CON-share goes RED (${(after.share * 100).toFixed(0)}% hold ${CONTRAST}:1 against ${(before.share * 100).toFixed(0)}% on the grid; needs < ${SHARE_MIN * 100}%)`, after.share < SHARE_MIN && before.share >= SHARE_MIN, JSON.stringify({ before: before.share, after: after.share, medianAfter: after.median }));
+    ok(`MUT-half [${tone}]: with the layer half a pixel off the grid CON-full goes RED (${(after.fullShare * 100).toFixed(0)}% of the fully covered pixels hold ${CONTRAST}:1 as seen, against ${(before.fullShare * 100).toFixed(0)}% on the grid; needs < ${FULL_MIN * 100}%)`, after.fullShare < FULL_MIN && before.fullShare >= FULL_MIN, JSON.stringify({ before: before.fullShare, after: after.fullShare, medianAfter: after.median }));
   }
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
