@@ -55,10 +55,13 @@ await withHarness(async (app) => {
   await boot();
   await waitSoft(app, "!!document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write:not([disabled])')", { label: 'the Write door ready', timeout: 25000 });
   const wrote = await press(app, '.arbor2-front-doors .arbor2-door.wz-arrival-write');
-  await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'a page', timeout: 15000 }); await sleep(800);
-  await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
-  await app.typeKeys('Wren'); await sleep(500);
-  const g1 = await app.evalJs(EDITOR);
+  // (the Write door's page: whatever editable the writer lands in - read by the focus and the route, not by one editor's class)
+  await waitSoft(app, "!!document.querySelector('[contenteditable=\"true\"]') && !document.querySelector('.arbor2-front:not(.gone)')", { label: 'a writing surface', timeout: 15000 }); await sleep(800);
+  const landed = await app.evalJs("(() => { const a = document.activeElement; return { hash: location.hash, active: a ? (a.tagName.toLowerCase() + '.' + String(a.className || '').split(' ').slice(0, 2).join('.')) : null, editable: !!(a && a.isContentEditable) }; })()");
+  if (!landed.editable) await app.evalJs("(() => { const e = document.querySelector('[contenteditable=\"true\"]'); if (e) e.focus(); return !!e; })()");
+  await app.typeKeys('Wren'); await sleep(700);
+  const g1 = await app.evalJs("(() => { const a = document.activeElement; const e = a && a.isContentEditable ? a : document.querySelector('[contenteditable=\"true\"]'); return { text: e ? e.innerText : null, cls: e ? String(e.className) : null, hash: location.hash, arbor: document.documentElement.getAttribute('data-arbor2') }; })()");
+  g1.landed = landed;
   ok(`G1 FRONT DOOR: the splash's Write door opens a page (pressed ${wrote}) and the keys typed there land in it (${J(g1 && g1.text)})`, wrote && !!g1 && g1.arbor === 'true' && /Wren/.test(g1.text || ''), J(g1));
 
   // G2 THEME PICKER
@@ -75,9 +78,10 @@ await withHarness(async (app) => {
   await openTools('presets');
   const rows = await app.evalJs("[...document.querySelectorAll('.wz-template-row')].map((b) => b.getAttribute('data-template'))");
   const pickedTpl = await press(app, ".wz-template-row[data-template='screenplay']");
-  await sleep(800); const g3 = await app.evalJs(EDITOR);
-  ok(`G3 PAGE TEMPLATES: Tools -> Presets lists ${J(rows)}; Screenplay on an empty page makes it a screenplay (data-template ${g3 && g3.template})`,
-    J(rows) === J(['blank', 'screenplay', 'outline', 'title', 'bibliography']) && pickedTpl && !!g3 && g3.template === 'screenplay', J({ rows, pickedTpl, g3 }));
+  await waitSoft(app, "!!document.querySelector('.script-sheet')", { label: 'the screenplay surface', timeout: 6000 }); await sleep(500);
+  const g3 = await app.evalJs("(() => ({ sheets: document.querySelectorAll('.script-sheet').length, editor: !!document.querySelector('.forward-only-editor'), pressed: document.querySelector(\".wz-template-row[data-template='screenplay']\")?.getAttribute('aria-pressed') ?? null }))()");
+  ok(`G3 PAGE TEMPLATES: Tools -> Presets lists ${J(rows)}; Screenplay on an empty page makes it a screenplay (${g3 && g3.sheets} screenplay sheet(s))`,
+    J(rows) === J(['blank', 'screenplay', 'outline', 'title', 'bibliography']) && pickedTpl && !!g3 && g3.sheets >= 1, J({ rows, pickedTpl, g3 }));
 
   // G4 FONT-SIZE BOX and G5 PAGE SIZE - on a page born now
   await openPage('The ferry was late, so Ada counted gulls.');
