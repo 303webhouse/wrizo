@@ -24,7 +24,7 @@ const ease = (x) => { const bx = (t) => 3 * (1 - t) * (1 - t) * t * 0.25 + 3 * (
   if (x <= 0) return 0; if (x >= 1) return 1; let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; } return by((lo + hi) / 2); };
 const READ = `(() => { const o = (q) => { const e = document.querySelector(q); return e ? Number(getComputedStyle(e).opacity) : null; };
   const root = document.documentElement;
-  return { room: o('.arbor2-pergola'), page: o('.arbor2-pagesh:not([data-bitmap])'), vines: o(".wz-rhizome-field[data-vines='true']"), writing: root.getAttribute('data-wz-writing'),
+  return { room: o('.arbor2-pergola'), page: o('.arbor2-pagesh:not([data-bitmap])'), pages: [...document.querySelectorAll('.arbor2-pagesh:not([data-bitmap])')].map((e) => ({ op: Number(getComputedStyle(e).opacity), host: e.parentElement ? e.parentElement.className.split(' ').slice(0, 2).join('.') : null, born: e.dataset.ksfBorn || (e.dataset.ksfBorn = String(Math.round(performance.now()))), tr: getComputedStyle(e).transition.slice(0, 40), live: e.getAttribute('data-live-off') })), vines: o(".wz-rhizome-field[data-vines='true']"), writing: root.getAttribute('data-wz-writing'),
     arbor: root.getAttribute('data-arbor2'), roomName: root.getAttribute('data-arbor2-room'), pergola: (() => { const p = document.querySelector('.arbor2-pergola'); return p ? getComputedStyle(p).display : null; })() }; })()`;
 
 await withHarness(async (app) => {
