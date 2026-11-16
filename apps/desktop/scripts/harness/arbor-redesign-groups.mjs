@@ -53,7 +53,8 @@ await withHarness(async (app) => {
 
   // G1 FRONT DOOR
   await boot();
-  await waitSoft(app, "!!document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write:not([disabled])')", { label: 'the Write door ready', timeout: 25000 });
+  // shown and hit-testable, as a writer sees it (the doors are enabled during data-phase='wait', when they are still hidden)
+  await waitSoft(app, "(() => { const b = document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write:not([disabled])'); if (!b) return false; const r = b.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); })()", { label: 'the Write door shown', timeout: 25000 });
   const wrote = await press(app, '.arbor2-front-doors .arbor2-door.wz-arrival-write');
   // (the Write door's page: whatever editable the writer lands in - read by the focus and the route, not by one editor's class)
   await waitSoft(app, "!!document.querySelector('[contenteditable=\"true\"]') && !document.querySelector('.arbor2-front:not(.gone)')", { label: 'a writing surface', timeout: 15000 }); await sleep(800);
@@ -109,7 +110,8 @@ await withHarness(async (app) => {
 
   // M1: the Write door taken away - G1's path must go red
   await boot();
-  await waitSoft(app, "!!document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write:not([disabled])')", { label: 'the Write door ready', timeout: 25000 });
+  // shown and hit-testable, as a writer sees it (the doors are enabled during data-phase='wait', when they are still hidden)
+  await waitSoft(app, "(() => { const b = document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write:not([disabled])'); if (!b) return false; const r = b.getBoundingClientRect(); const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); })()", { label: 'the Write door shown', timeout: 25000 });
   await app.evalJs("document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-write')?.remove(); true");
   const m1 = await press(app, '.arbor2-front-doors .arbor2-door.wz-arrival-write');
   ok(`M1 (mutant): the Write door taken away (LANDED: pressed ${m1}) - G1's path goes RED`, !m1, J({ m1 }));
