@@ -32,9 +32,6 @@
    writing line), so it rides the Typewriter's own line advance with no script. (Esc leaves Jacked In for BUILD, so there is no lifted state.) */
 :root[data-wirein][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page{ background:transparent; border-color:transparent; box-shadow:none; outline:none; }
 :root[data-wirein][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .flux-readouts{ visibility:hidden; }
-/* no page to turn: ModeStage's page-turn (.flipping, 12-studio-chrome.css) animates the page's transform from none, so while zoomed it threw the
-   page back to scale 1 for half a second (r9's zoom watch: four times in six seconds, the rect moving). Jacked in it does not play */
-:root[data-wirein][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-page.flipping{ animation:none; }
 :root[data-wirein][data-theme='flux'][data-flux3-jacked] .mode-pagecol[data-zoom='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
 /* THE DIM IS ON HER WORDS ONLY (Nick, Nov 10, after wirein-fade-band.png: "I don't want the dark box"; Fable, Nov 10, 4:30 pm). Nothing is painted over the ground, the glow or the corridor's lines: the
    band that was a ground-coloured rectangle is gone. The editor's own text takes its colour from ONE static gradient, clipped to the glyphs (background-clip:text), written from the editor's OWN box
