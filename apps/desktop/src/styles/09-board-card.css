@@ -123,9 +123,15 @@
    on the board itself, reduced-motion honored). Inline contenteditable
    editing RETIRES whole — this is the only way to edit a text card's
    words now. */
-.board-canvas-blur-wrap{ transition:filter .28s ease, opacity .28s ease; }
-.board-canvas-blurred{ filter:blur(6px); opacity:.55; pointer-events:none; }
-@media (prefers-reduced-motion:reduce){ .board-canvas-blur-wrap{ transition:none; } }
+/* LOOK A, THE FOG (Nick, Nov 15, 6:36 pm; the Wrizors' look A): the board behind an open card (or the deck wizard) is NOT blurred: the board's own paper colour lies over it at 80%, in every theme. The fog is a LAYER over the wrap
+   (::after), so nothing underneath is ever filtered or re-painted by it (a live filter: blur(6px) over the board cost Flux's first frame 22.5 ms against Arbor's 12.1: bug #102). It fades in and out over .28s (a cut under reduced
+   motion). The wrap keeps its own class names (.board-canvas-blurred is the state the guards and BoardEditor.tsx know); the old filter and the old dim (opacity .55) are gone. The fog sits above every card (an isolated stack, a
+   z-index no card reaches) and takes no pointer: the board under an open card is read-only as before. */
+.board-canvas-blur-wrap{ position:relative; }
+.board-canvas-blur-wrap::after{ content:''; position:absolute; inset:0; background:var(--paper); opacity:0; pointer-events:none; z-index:1000000000; transition:opacity .28s ease; }
+.board-canvas-blurred{ pointer-events:none; isolation:isolate; }
+.board-canvas-blurred::after{ opacity:.8; }
+@media (prefers-reduced-motion:reduce){ .board-canvas-blur-wrap::after{ transition:none; } }
 /* #73 (Nick's ruling): the card pop-up grows DOWNWARD only. It used to be centred on the screen (align-items:center), so every line it grew by moved its top edge up by half a line and the writer's own lines jumped; now its top is fixed where a
    card of the starting size (about 222px tall: a 2px rule, the 49px strip, the 170px editor) would have been centred, and only its foot moves. A card taller than the screen scrolls inside the backdrop instead of running off both edges. */
 .board-popup-backdrop{
