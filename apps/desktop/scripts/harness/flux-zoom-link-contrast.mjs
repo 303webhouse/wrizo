@@ -45,7 +45,7 @@ const MEASURE = (png) => `(async () => {
   const med = (a) => { a.sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; };
   const ground = [med(rs), med(gs), med(bs)];
   const px = [];
-  for (let cy = 0; cy < H; cy += 1) for (let cx = 0; cx < W; cx += 1) { if (d[(cy * W + cx) * 4 + 3] === 0) continue; const sx = Math.round(mr.left + (cx + 0.5) * kx - 0.5), sy = Math.round(mr.top + (cy + 0.5) * ky - 0.5); if (sx < 0 || sy < 0 || sx >= SW || sy >= cv.height) continue; const k = (sy * SW + sx) * 4; px.push([s[k], s[k + 1], s[k + 2], d[(cy * W + cx) * 4 + 3]]); }
+  for (let cy = 0; cy < H; cy += 1) for (let cx = 0; cx < W; cx += 1) { if (d[(cy * W + cx) * 4 + 3] === 0) continue; const sx = Math.round(mr.left + (cx + 0.5) * kx - 0.5), sy = Math.round(mr.top + (cy + 0.5) * ky - 0.5); if (sx < 0 || sy < 0 || sx >= SW || sy >= cv.height) continue; const k = (sy * SW + sx) * 4; px.push([s[k], s[k + 1], s[k + 2], d[(cy * W + cx) * 4 + 3], cx, cy]); }
   return { n: px.length, ground, px, rect: [mr.left, mr.top, mr.width, mr.height] };
 })()`;
 
@@ -88,7 +88,8 @@ try { await withHarness(async (app) => {
     const m = await ev(MEASURE(png));
     if (!m.n) return { n: 0, body: 0, fullShare: 0, nFull: 0, median: 0, ground: m.ground };
     const all = m.px.map((c) => ratio(c, m.ground)).sort((a, b) => a - b), full = m.px.filter((c) => c[3] === 255).map((c) => ratio(c, m.ground));
-    return { n: m.n, body: full.length / m.px.length, fullShare: full.length ? full.filter((r) => r >= CONTRAST).length / full.length : 0, nFull: full.length, median: all[Math.floor(all.length / 2)], p10: all[Math.floor(all.length * 0.1)], ground: m.ground, rect: m.rect, landed: null };
+    const bad = m.px.filter((c) => c[3] === 255 && ratio(c, m.ground) < CONTRAST).slice(0, 8).map((c) => c[4] + ',' + c[5] + ':' + c[0] + '/' + c[1] + '/' + c[2]);
+    return { bad, n: m.n, body: full.length / m.px.length, fullShare: full.length ? full.filter((r) => r >= CONTRAST).length / full.length : 0, nFull: full.length, median: all[Math.floor(all.length / 2)], p10: all[Math.floor(all.length * 0.1)], ground: m.ground, rect: m.rect, landed: null };
   };
   const at = async (ask) => { const landed = await ev(`window.wrizoFluxZoomTo(${ask})`); await sleep(1800); return landed; };
 
@@ -101,7 +102,7 @@ try { await withHarness(async (app) => {
         const landed = await at(ask);
         const r = await read();
         results.push({ tone, state, label, landed, ...r });
-        console.log(`LINKCON ${tone} ${state} ${label} (landed ${typeof landed === 'number' ? landed.toFixed(3) : landed}): ${r.n} covered px, ${(r.body * 100).toFixed(0)}% fully covered, ${(r.fullShare * 100).toFixed(0)}% of those hold ${CONTRAST}:1, median ${r.median && r.median.toFixed(2)}:1, p10 ${r.p10 && r.p10.toFixed(2)}:1, ground ${JSON.stringify(r.ground)}`);
+        console.log(`LINKCON ${tone} ${state} ${label} (landed ${typeof landed === 'number' ? landed.toFixed(3) : landed}): ${r.n} covered px, ${(r.body * 100).toFixed(0)}% fully covered, ${(r.fullShare * 100).toFixed(0)}% of those hold ${CONTRAST}:1, median ${r.median && r.median.toFixed(2)}:1, p10 ${r.p10 && r.p10.toFixed(2)}:1, ground ${JSON.stringify(r.ground)}${r.bad && r.bad.length ? ' BAD(cx,cy:rgb) ' + r.bad.join(' ') : ''}`);
       }
     }
   }
