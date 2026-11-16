@@ -52,6 +52,15 @@ const stood = (app, screen) => app.evalJs(`(() => {
     scale: cr && cv.offsetWidth ? +(cr.width / cv.offsetWidth).toFixed(4) : null, zoomed: cv && cv.getAttribute('data-f3-zoomed'), frame: wr && { l: Math.round(wr.left), t: Math.round(wr.top), w: Math.round(wr.width), h: Math.round(wr.height) }, tele };
 })()`).then((s) => console.log('FLUX-ZOOM1-FRAME ' + JSON.stringify(s)));
 
+// a click on a card selects it: its links go HOT (Guard 6: the approved colours, opacity 1)
+const selectCard = async (app, id) => {
+  const p = await app.evalJs(`(() => { const e = document.querySelector('.board-box[data-box-id="${id}"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width * 0.5), y: Math.round(r.top + r.height * 0.35) }; })()`);
+  if (!p) return;
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y, pointerType: 'mouse', buttons: 0 });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' });
+  await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
+  await sleep(1400);
+};
 const CYCLE = [1, 0.75, 0.5, 0.3, 0.0001, 0.3, 0.5, 0.75, 1, 2, 4];
 const RM = [1, 0.5, 0.0001, 0.5, 1, 4];
 const reduce = (app) => app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
@@ -79,6 +88,9 @@ export default {
   'zoom-outer': async (app) => { await seed(app); await zoomTo(app, 0.0001); await stood(app, 'zoom-outer'); },
   'zoom-050': async (app) => { await seed(app); await zoomTo(app, 0.5); await stood(app, 'zoom-050'); },
   'zoom-100': async (app) => { await seed(app); await stood(app, 'zoom-100'); },
+  'zoom-100-sel': async (app) => { await seed(app); await selectCard(app, 'f3-b'); await stood(app, 'zoom-100-sel'); },
+  'zoom-050-sel': async (app) => { await seed(app); await zoomTo(app, 0.5); await selectCard(app, 'f3-b'); await stood(app, 'zoom-050-sel'); },
+  'zoom-200-sel': async (app) => { await seed(app); await zoomTo(app, 2); await reveal(app, 'f3-d'); await selectCard(app, 'f3-d'); await stood(app, 'zoom-200-sel'); },
   'zoom-200': async (app) => { await seed(app); await zoomTo(app, 2); await reveal(app, 'f3-d'); await stood(app, 'zoom-200'); },
   'zoom-400': async (app) => { await seed(app); await zoomTo(app, 4); await reveal(app, 'f3-d'); await stood(app, 'zoom-400'); },
   'zoom-mid': async (app) => {

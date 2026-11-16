@@ -63,13 +63,15 @@ export const TONES: Record<FluxTone, { ground: string; glow: string; grid: strin
     ground: '#020c10',
     glow: 'radial-gradient(70% 60% at 50% 48%, rgba(8,40,72,.45), rgba(2,12,16,0) 70%)',
     grid: '29,74,82', trace: '42,106,118', end: '87,208,245',
-    link: 'rgba(0,194,255,.36)', hot: 'rgba(0,194,255,.75)', flash: '166,240,255', cyan: '#00C2FF',
+    // GUARD 6 (Fable, Nov 15): the Schema's links are drawn in the colours Nick approved for #57 (the board's own live links), at opacity 1: rest #3A8FA5, selected #00C2FF (were translucent cyan, .36 / .75)
+    link: '#3A8FA5', hot: '#00C2FF', flash: '166,240,255', cyan: '#00C2FF',
   },
   light: {
     ground: '#F7FAFA',
     glow: 'radial-gradient(70% 60% at 50% 48%, rgba(0,194,255,.05), rgba(247,250,250,0) 70%)',
     grid: '143,169,174', trace: '143,169,174', end: '0,150,200',
-    link: 'rgba(0,194,255,.55)', hot: 'rgba(0,194,255,.95)', flash: '0,194,255', cyan: '#00C2FF',
+    // GUARD 6 (Fable, Nov 15): #57's approved colours, opacity 1: rest #35859E, selected #00719C (were translucent cyan, .55 / .95)
+    link: '#35859E', hot: '#00719C', flash: '0,194,255', cyan: '#00C2FF',
   },
 };
 
