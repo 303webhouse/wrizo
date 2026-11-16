@@ -44,7 +44,11 @@ await withHarness(async (app) => {
   const setTheme = async (t) => { const name = { plateau: 'Arbor', flux: 'Flux', machina: 'Machina' }[t];
     await app.evalJs("document.querySelector(\".wz-strip-item[data-category='theme']\")?.click()"); await sleep(700);
     return app.evalJs(`(() => { const c = [...document.querySelectorAll('.wz-theme-card')].find((b) => (b.querySelector('.wz-theme-wm')?.textContent || '').trim() === ${JSON.stringify(name)}); if (!c) return null; if (c.disabled) return 'locked'; c.click(); return 'picker'; })()`); };
+  // (on a page, where the rail is: the front door at / has no rail - the first run's D5 found no Themes item there, via null)
   await visit('plateau', '');
+  { const pid = 'arbor-do-' + Math.random().toString(36).slice(2, 7);
+    await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: pid, text: 'Theme switch page', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`); await sleep(300);
+    await app.evalJs(`location.hash = '#/page/${pid}'`); await waitSoft(app, "!!document.querySelector('.forward-only-editor') && !!document.querySelector(\".wz-strip-item[data-category='theme']\")", { label: 'page with the rail', timeout: 15000 }); await sleep(800); }
   const via1 = await setTheme('flux'); await sleep(800); const s1 = await app.evalJs(READ);
   const via2 = await setTheme('plateau'); await sleep(1500); const s2 = await app.evalJs(READ);
   ok(`D5 a theme switch in the session, no reload (via ${via1}/${via2}): Arbor -> Flux takes data-arbor2 away (${s1 && s1.arbor}); Flux -> Arbor puts it back (${s2 && s2.arbor})`,
