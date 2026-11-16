@@ -59,7 +59,7 @@ const screens = {
     if (!c || !c.focused) fail('ship-card-caret', { c }); await shipState(app, 'ship-card-caret', c);
   },
   'ship-key-first': keyAt('ship-key-first', async (app) => { await app.typeKeys('a'); await sleep(60); }),
-  'ship-key-0.3s': keyAt('ship-key-0.3s', async (app) => { await app.typeKeys('a'); await sleep(300); }),
+  'ship-key-03s': keyAt('ship-key-03s', async (app) => { await app.typeKeys('a'); await sleep(300); }),
   'ship-key-mid-burst': keyAt('ship-key-mid-burst', async (app) => { for (let i = 0; i < 25; i += 1) { await app.typeKeys('a'); await sleep(110); } }),
   'ship-pause-3s': keyAt('ship-pause-3s', async (app) => { for (let i = 0; i < 25; i += 1) { await app.typeKeys('a'); await sleep(110); } await sleep(6500); await app.key('Escape'); await sleep(3000); }),
   'ship-doors': async (app) => {
