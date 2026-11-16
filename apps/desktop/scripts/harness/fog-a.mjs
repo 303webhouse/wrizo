@@ -75,19 +75,28 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 5000, label: 'the card editor' }).catch(() => {});
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
   };
-  // a pixel of the viewport on a card OUTSIDE the popup (the card's top-left corner area, inside the card), as [r, g, b]
-  const probe = () => ev("(() => { const e = document.querySelector('.board-box[data-box-id=\"bb-a\"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + 14), y: Math.round(r.bottom - 12) }; })()");
+  // the probe: the highest-contrast 3x3 block of card A (against the paper colour) in a screenshot taken BEFORE the card opens: the card's text ink, where every skin shows a difference from the paper
+  const probe = async (paperRgb) => {
+    const box = await ev("(() => { const e = document.querySelector('.board-box[data-box-id=\"bb-a\"]'); if (!e) return null; const r = e.getBoundingClientRect(); return { x: Math.max(0, Math.round(r.left)), y: Math.max(0, Math.round(r.top)), w: Math.round(r.width), h: Math.round(r.height) }; })()");
+    if (!box || !paperRgb) return null;
+    const shot = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: box.x, y: box.y, width: box.w, height: box.h, scale: 1 } })).data;
+    const at = await ev(`(async () => { const i = new Image(); await new Promise((res, rej) => { i.onload = res; i.onerror = rej; i.src = 'data:image/png;base64,' + ${JSON.stringify(shot)}; }); const cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, cv.width, cv.height).data, P = ${JSON.stringify(paperRgb)}; let best = -1, bx = 0, by = 0;
+      for (let y = 1; y + 4 < cv.height; y += 3) for (let xx = 1; xx + 4 < cv.width; xx += 3) { let s = [0, 0, 0]; for (let dy = 0; dy < 3; dy += 1) for (let dx = 0; dx < 3; dx += 1) { const k = ((y + dy) * cv.width + xx + dx) * 4; s[0] += d[k]; s[1] += d[k + 1]; s[2] += d[k + 2]; } const dist = Math.abs(s[0] / 9 - P[0]) + Math.abs(s[1] / 9 - P[1]) + Math.abs(s[2] / 9 - P[2]); if (dist > best) { best = dist; bx = xx + 1; by = y + 1; } }
+      return { x: bx, y: by, dist: Math.round(best) }; })()`);
+    return { x: box.x + at.x, y: box.y + at.y, dist: at.dist };
+  };
   const pixel = async (pt) => {
-    const shot = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: pt.x - 2, y: pt.y - 2, width: 5, height: 5, scale: 1 } })).data;
+    const shot = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: pt.x - 1, y: pt.y - 1, width: 3, height: 3, scale: 1 } })).data;
     return ev(`(async () => { const i = new Image(); await new Promise((res, rej) => { i.onload = res; i.onerror = rej; i.src = 'data:image/png;base64,' + ${JSON.stringify(shot)}; }); const cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, cv.width, cv.height).data; const c = [0, 0, 0]; const n = d.length / 4; for (let k = 0; k < d.length; k += 4) { c[0] += d[k]; c[1] += d[k + 1]; c[2] += d[k + 2]; } return c.map((v) => Math.round(v / n)); })()`);
   };
-  const share = (before, open, paper) => { const out = []; for (let k = 0; k < 3; k += 1) { const span = paper[k] - before[k]; if (Math.abs(span) >= CONTRAST_MIN) out.push((open[k] - before[k]) / span); } return out; };
+  const share = (before, open, paper, b) => { const out = []; for (let k = 0; k < 3; k += 1) { const span = paper[k] - before[k]; if (Math.abs(span) >= CONTRAST_MIN) out.push((open[k] / (1 - b) - before[k]) / span); } return out; };
+  const backdropAlpha = async () => { const c = await ev("(() => { const b = document.querySelector('.board-popup-backdrop'); return b ? getComputedStyle(b).backgroundColor : null; })()"); const m = /rgba\(\s*\d+,\s*\d+,\s*\d+,\s*([\d.]+)\)/.exec(c || ''); return m ? Number(m[1]) : 0; };
 
   for (const tone of TONES) for (const theme of THEMES) {
     const T = `${theme}/${tone}`;
     await openBoard(theme, tone);
     const before = await ev(STATE);
-    const pt = await probe();
+    const pt = await probe(rgb(before.paper));
     const pxBefore = pt ? await pixel(pt) : null;
     await openCard();
     await sleep(900);
@@ -97,10 +106,10 @@ try { await withHarness(async (app) => {
       FOGGED(open) && open.popup && open.focused, JSON.stringify(open));
     ok(`FA2 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open`, JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
     // FA4: the fog is 80%, measured
-    const paperRgb = rgb(open.paper);
-    const sh = pxBefore && pxOpen && paperRgb ? share(pxBefore, pxOpen, paperRgb) : [];
+    const paperRgb = rgb(open.paper), bAlpha = await backdropAlpha();
+    const sh = pxBefore && pxOpen && paperRgb ? share(pxBefore, pxOpen, paperRgb, bAlpha) : [];
     skins += 1; if (sh.length) measurable += 1;
-    ok(`FA4 [${T}] THE FOG IS 80%: a card pixel went ${JSON.stringify(pxBefore)} -> ${JSON.stringify(pxOpen)} under the paper colour ${JSON.stringify(paperRgb)}: the share of paper over it ${sh.map((v) => v.toFixed(2)).join('/') || 'not measurable here (the card is the paper colour)'} (needs ${SHARE_LO} to ${SHARE_HI} in every channel that can show it)`,
+    ok(`FA4 [${T}] THE FOG IS 80%: a text-ink pixel of card A (contrast ${pt && pt.dist}) went ${JSON.stringify(pxBefore)} -> ${JSON.stringify(pxOpen)} under the paper colour ${JSON.stringify(paperRgb)} and the popup's backdrop (alpha ${bAlpha}): the share of paper over it ${sh.map((v) => v.toFixed(2)).join('/') || 'not measurable here (the card is the paper colour)'} (needs ${SHARE_LO} to ${SHARE_HI} in every channel that can show it)`,
       sh.length === 0 || sh.every((v) => v >= SHARE_LO && v <= SHARE_HI), JSON.stringify({ pxBefore, pxOpen, paperRgb, sh }));
 
     // the mutants, on the open card
@@ -116,7 +125,7 @@ try { await withHarness(async (app) => {
     await sleep(600);
     const noSt = await ev(STATE);
     const pxNo = pt ? await pixel(pt) : null;
-    const shNo = pxBefore && pxNo && paperRgb ? share(pxBefore, pxNo, paperRgb) : [];
+    const shNo = pxBefore && pxNo && paperRgb ? share(pxBefore, pxNo, paperRgb, bAlpha) : [];
     ok(`MUT-nofog [${T}] landed (the fog opacity ${noSt.fogOpacity}): the predicate reads FALSE and, where measurable, the share (${shNo.map((v) => v.toFixed(2)).join('/') || 'not measurable'}) leaves ${SHARE_LO}-${SHARE_HI}`, !FOGGED(noSt) && (shNo.length === 0 || shNo.some((v) => v < SHARE_LO)), JSON.stringify({ noSt, pxNo, shNo }));
     await ev("(() => { const s = document.getElementById('__mut'); if (s) s.remove(); return true; })()");
 
