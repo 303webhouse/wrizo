@@ -49,7 +49,7 @@ export async function runReds({ name, steps }) {
       const ok = r.code === 0;
       console.log(`  ${s.script}${theme ? ' ' + theme : ''}${s.tone ? ' ' + s.tone : ''}: ${ok ? 'green' : r.timedOut ? 'TIMED OUT' : 'RED (exit ' + r.code + ')'} in ${r.secs}s`);
       if (!ok) {
-        bad.push(`${s.script}${theme ? ' ' + theme : ''}`);
+        bad.push(`${s.script}${theme ? ' ' + theme : ''}${s.tone ? ' ' + s.tone : ''}`);
         const lines = r.text.split(/\r?\n/);
         const fails = lines.filter((l) => /^FAIL\b/.test(l)).slice(0, 6);
         for (const l of (fails.length ? fails : lines.filter((l) => l.trim()).slice(-4))) console.log('    ' + l.replace(/^\s+/, '').slice(0, 400));
