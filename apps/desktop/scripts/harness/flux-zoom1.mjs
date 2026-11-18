@@ -129,7 +129,9 @@ const MUTANTS = {
   // the camera does not file the board's scale when it goes (guard 7's memory): the call just before the live scale is set back to 1 is cut from the cleanup
   keepForgets: [/(,\w+\(\),\w+\(\)),\w+\(\w+,\w+\(\)\)(,\w+\(1\),\w+\(\)\}\},\[\w+,\w+,\w+\]\))/g, '$1$2'],
   // the readout's click calls nothing (the way home's button is there, the door does not open)
-  homeNoop: [/(className:"flux3-tele-zoom",tabIndex:-1,title:\w+\("flux3ZoomReset"\),"data-f3-zoom-home":"true",onPointerDown:\w+=>\w+\.stopPropagation\(\),onClick:\w+=>\{\w+\.stopPropagation\(\),)\w+\(\)\}/g, '$1void 0}'],
+  // (Nov 18, train-22b's pair, Actions 44365317556: this anchor matched 0 - the minifier named the reset call `$X`, which `\w+` cannot match; the
+  // identifier slots are `[\w$]+` now, JavaScript's own identifier characters. The cut and its check are unchanged.)
+  homeNoop: [/(className:"flux3-tele-zoom",tabIndex:-1,title:[\w$]+\("flux3ZoomReset"\),"data-f3-zoom-home":"true",onPointerDown:[\w$]+=>[\w$]+\.stopPropagation\(\),onClick:[\w$]+=>\{[\w$]+\.stopPropagation\(\),)[\w$]+\(\)\}/g, '$1void 0}'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
 
