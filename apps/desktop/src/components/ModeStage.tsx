@@ -18,7 +18,7 @@ import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
 import { getTurnSound } from '../store/pageTurnSound';
 import { playPageTurn } from '../store/pageTurnPlay';
 import { useLexicon } from '../store/themeLexicon';
-import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
+import { useThemePrefs, setThemePrefs, usePageTone, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
@@ -270,7 +270,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // both the unframed bar's own `pen` state and the framed host's controlled
   // `penColorProp` (PageEditor.tsx), since both funnel through that one line.
   const penTheme = useTheme();
-  const { page: penPageTone } = useThemePrefs();
+  const { page: penPageTone } = usePageTone();   // the page in force (Arbor's day room: always light - Nick, Nov 18)
   const [gearOpen, setGearOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [, tick] = useReducer((n: number) => n + 1, 0);
