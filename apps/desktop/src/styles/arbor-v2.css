@@ -593,6 +593,9 @@
    pages and Typewriter by day (the sheet stays) keep the page's plate exactly as r11 ruled; the padding stays, so nothing moves. */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .desk-frame-instrument{ background:none; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .desk-frame-instrument :is(.mode-pmeta, .mode-pmetric){ color:var(--text-low); }
+/* (#108, the track too: the bar's track is the paper's dim fill, a 6 px cream band across the row - its first run read 10.8% cream left in the box,
+   Actions 44396837228. On the unframed page it takes the room's surface inside and the room's low lettering as its outline, a mark at about 7:1.) */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']) .desk-frame-instrument .mode-ptrack{ background:var(--ink-900); border-color:var(--text-low); }
 /* FABLE, Nov 10, 2:15 pm, item 8 (the Wrizors' B2): the rail's active item (the Journal pin, since bug #4) drew its LABEL in the active colour - the
    global .wz-strip-item.active{ color:var(--accent-rest) } (14-ink-options.css), sage #A7B27E in the rail by day: 4.39:1 on the olive rail. Its label now
    takes the other rail labels' colour (--text-hi, 8.44:1 by day); the olive ribbon still marks where she is. By night it already had their colour and
