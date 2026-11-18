@@ -367,6 +367,19 @@ else {
   ok(xy.boxes.a.letters === 'CD' && xy.view === 'list' && xy.boxes.a.colour === '' && !xy.pins.b.removedAt && !!xy.pins.c, `U3 a tie settles by value (letters ${xy.boxes.a.letters}, view ${xy.view}), a stamped empty wins (colour "${xy.boxes.a.colour}"), a later re-pin beats the unpin`);
 }
 
+// U4 - acts inside one millisecond keep the order she made them in (no tick between them)
+{
+  const T = await loadDevice('T');
+  T.mod.mem.togglePin(P4); T.mod.mem.togglePin(P4); T.mod.mem.togglePin(P4);
+  const three = pinsOf(T).includes(P4);
+  T.mod.mem.togglePin(P4);
+  const four = pinsOf(T).includes(P4);
+  T.mod.mem.setBoxLook(P4, { letters: 'AB' }); T.mod.mem.setBoxLook(P4, { letters: 'AA' });
+  const T2 = await loadDevice('T2', 'T');   // what was kept says the same
+  ok(three && !four && lookOf(T, P4).letters === 'AA' && pinsOf(T2).includes(P4) === false && lookOf(T2, P4).letters === 'AA',
+    `U4 pin, unpin, pin in one millisecond leaves it pinned (${three}), a fourth unpins it (${!four}); letters AB then AA in one millisecond read AA (${lookOf(T, P4).letters}, kept ${lookOf(T2, P4).letters})`);
+}
+
 console.log(`INFO checks ${checks}, failing ${fails}`);
 console.log(`REORG-RAIL-SAVED: ${fails ? `FAIL - ${fails}` : 'PASS'}`);
 process.exit(fails ? 1 : 0);
