@@ -63,17 +63,27 @@ export const TONES: Record<FluxTone, { ground: string; glow: string; grid: strin
     ground: '#020c10',
     glow: 'radial-gradient(70% 60% at 50% 48%, rgba(8,40,72,.45), rgba(2,12,16,0) 70%)',
     grid: '29,74,82', trace: '42,106,118', end: '87,208,245',
-    link: 'rgba(0,194,255,.36)', hot: 'rgba(0,194,255,.75)', flash: '166,240,255', cyan: '#00C2FF',
+    // GUARD 6 (Fable, Nov 15): the Schema's links are drawn in the colours Nick approved for #57 (the board's own live links), at opacity 1: rest #3A8FA5, selected #00C2FF (were translucent cyan, .36 / .75)
+    link: '#3A8FA5', hot: '#00C2FF', flash: '166,240,255', cyan: '#00C2FF',
   },
   light: {
     ground: '#F7FAFA',
     glow: 'radial-gradient(70% 60% at 50% 48%, rgba(0,194,255,.05), rgba(247,250,250,0) 70%)',
     grid: '143,169,174', trace: '143,169,174', end: '0,150,200',
-    link: 'rgba(0,194,255,.55)', hot: 'rgba(0,194,255,.95)', flash: '0,194,255', cyan: '#00C2FF',
+    // GUARD 6 (Fable, Nov 15): #57's approved colours, opacity 1: rest #35859E, selected #00719C (were translucent cyan, .55 / .95)
+    link: '#35859E', hot: '#00719C', flash: '0,194,255', cyan: '#00C2FF',
   },
 };
 
 export type Pt = [number, number];
+
+// THE LINKS ON THE PIXEL GRID (zoom pass 3, Nov 15): a link's width is a whole number of device pixels (a 1.4 px line straddles pixels and is drawn as two half-covered ones: its colour is mixed with the ground, about 2.5:1 against the 3:1 the
+// approved colours were chosen for), and every point of its route is snapped to the device grid: to the CENTRE of a device pixel for an odd width, to a pixel boundary for an even one. The routes are horizontal and vertical only, so a snapped line is crisp.
+export const linkWidth = (s: number, hot: boolean): number => Math.max(1, Math.min(3, Math.round(s * (hot ? 2 : 1.4))));
+export const snapPt = (p: Pt, widthCssPx: number, dpr: number): Pt => {
+  const o = Math.round(widthCssPx * dpr) % 2 === 1 ? 0.5 : 0;
+  return [(Math.round(p[0] * dpr - o) + o) / dpr, (Math.round(p[1] * dpr - o) + o) / dpr];
+};
 interface Route { a: string; b: string; pts: Pt[]; len: number; hot: boolean; phase: number }
 interface Pulse { pts: Pt[]; len: number; t0: number; dur: number }
 
@@ -480,9 +490,10 @@ export class FluxLayer {
     for (const l of this.scene.links) {
       const A = byId.get(l.a), B = byId.get(l.b);
       if (!A || !B) continue;
-      const pts = route(A, B).map((p): Pt => [p[0] * v.s + v.tx, p[1] * v.s + v.ty]);
+      const hotRoute = !!sel && (l.a === sel || l.b === sel);
+      const pts = route(A, B).map((p): Pt => snapPt([p[0] * v.s + v.tx, p[1] * v.s + v.ty], linkWidth(v.s, hotRoute), this.dpr));
       for (const p of pts) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }
-      this.routes.push({ a: l.a, b: l.b, pts, len: lengthOf(pts), hot: !!sel && (l.a === sel || l.b === sel), phase: strHash(l.a + '>' + l.b) });
+      this.routes.push({ a: l.a, b: l.b, pts, len: lengthOf(pts), hot: hotRoute, phase: strHash(l.a + '>' + l.b) });
     }
     const pad = PAD + 4 * Math.max(1, v.s);
     const bx = Math.max(0, Math.floor(x0 - pad)), by = Math.max(0, Math.floor(y0 - pad));
@@ -545,7 +556,7 @@ export class FluxLayer {
         r.pts.forEach((p, j) => (j ? m.lineTo(p[0], p[1]) : m.moveTo(p[0], p[1])));
       }
       if (!any) continue;
-      m.lineWidth = Math.max(1, Math.min(3, v.s * (hot ? 2 : 1.4)));
+      m.lineWidth = linkWidth(v.s, hot);
       m.strokeStyle = hot ? T.hot : T.link;
       m.stroke();
     }
@@ -577,13 +588,13 @@ export class FluxLayer {
         if (!A || !B) continue;
         any = true;
         route(A, B).forEach((p, j) => {
-          const x = p[0] * v.s + v.tx, y = p[1] * v.s + v.ty;
+          const q = snapPt([p[0] * v.s + v.tx, p[1] * v.s + v.ty], linkWidth(v.s, hot), this.dpr), x = q[0], y = q[1];
           x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
           if (j) f.lineTo(x, y); else f.moveTo(x, y);
         });
       }
       if (!any) continue;
-      f.lineWidth = Math.max(1, Math.min(3, v.s * (hot ? 2 : 1.4)));
+      f.lineWidth = linkWidth(v.s, hot);
       f.strokeStyle = hot ? T.hot : T.link;
       f.stroke();
     }
@@ -640,7 +651,7 @@ export class FluxLayer {
         r.pts.forEach((p, j) => (j ? m.lineTo(p[0], p[1]) : m.moveTo(p[0], p[1])));
       }
       if (!any) continue;
-      m.lineWidth = Math.max(1, Math.min(3, v.s * (hot ? 2 : 1.4)));
+      m.lineWidth = linkWidth(v.s, hot);
       m.strokeStyle = hot ? T.hot : T.link;
       m.stroke();
     }
