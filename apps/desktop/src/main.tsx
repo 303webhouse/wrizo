@@ -39,12 +39,18 @@ import './store/deleteSeams';
 // FLUX3 - the redesign's styles and root mark load only under ?flux3=1 (a separate chunk, never fetched without the flag)
 import { FLUX3 } from './flux3/flag';
 if (FLUX3) void import('./flux3/boot');
+import { isArbor2, arbor2Enabled } from './arbor2/flag';
+import { subscribeTheme } from './store/theme';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
 // render so there is never a themeless/wrong-voice flash.
 initTheme();
 initThemePrefs();
 initThemeCast();
+// THE ARBOR REDESIGN (src/arbor2/flag.ts): on by default in Arbor (Nick, Nov 15). Its CSS and modules load when Arbor is the theme at boot, or the
+// first time a writer switches to Arbor in the session; under the test-only ?arbor2=0 nothing is fetched.
+if (isArbor2()) void import('./arbor2/mount');
+else if (arbor2Enabled()) { const off = subscribeTheme((t) => { if (t === 'plateau') { off(); void import('./arbor2/mount'); } }); }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

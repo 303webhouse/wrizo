@@ -3,6 +3,7 @@ import { getUserPageDefaults, bornPageSettings } from '../pageDefaults';
 import { cache, clone, durableSeam, generateId, upsert } from './core';
 import { getProject, saveProject } from './projects';
 import { getJournalEntry } from './entries';
+import { newPageSize } from '../../arbor2/newPageSize';   // ARBOR v2 MOCKUP r17 (kept on r20's rebase: main's TOOLS #14 covers the unborn page; these two birth paths keep the mockup's rule)
 
 // --- Journal (J1) ---------------------------------------------------------
 // A completed sprint commits its text to a permanent Journal entry. This is an
@@ -174,6 +175,7 @@ export function createJournalPage(seed?: JournalPageSeed): JournalEntry {
   // the wall clock unconditionally, so whatever was assigned here never
   // survived the very next line. A fixture needing rows in a recency order
   // touches them through `wrizoTouchInOrder`, which makes the order real.
+  newPageSize(entry);   // ARBOR v2 MOCKUP r17: a page born under the flag starts at 11 pt (../../arbor2/newPageSize.ts)
   saveJournalEntry(entry);
   return entry;
 }

@@ -246,7 +246,10 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
     await app.evalJs(`window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: ${JSON.stringify(SEED)} })`);
     await app.evalJs(`localStorage.setItem('wrizo-theme', ${JSON.stringify(arm.theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'dark', fade: 'on' }));`);
-    await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.flag ? '/?flux3=1' : '/')} + '#/page/' + ${JSON.stringify(pageId)})`);
+    // (arm C's own address carries the harness's pin, ?arbor2=0 - FABLE RULED, Nov 15, 10:40 pm: a file that doesn't ask for the redesign tests today's
+    // Arbor. This address skipped the pin, so arm C ran the redesign, whose day room has had no dark page since Nick's page-tone ruling (Nov 18):
+    // P1's Page: Dark read light on train-22b, Actions 44365317556. The Flux arms' address is unchanged.)
+    await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.flag ? '/?flux3=1' : arm.theme === 'plateau' ? '/?arbor2=0' : '/')} + '#/page/' + ${JSON.stringify(pageId)})`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'page after reload' }).catch(() => {});
     await splashGone();

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
@@ -18,11 +18,12 @@ import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
 import { getTurnSound } from '../store/pageTurnSound';
 import { playPageTurn } from '../store/pageTurnPlay';
 import { useLexicon } from '../store/themeLexicon';
-import { useThemePrefs, setThemePrefs, type PageTone } from '../store/themePrefs';
+import { useThemePrefs, setThemePrefs, usePageTone, type PageTone } from '../store/themePrefs';
 import { useAmbianceDial, setAmbianceDial } from '../store/ambianceDial';
 import { FirstRunVeil } from './FirstRunGate';
 import { usePageDress, dressVars } from '../store/pageDress';
 import { setCaretOffset } from '../store/caretOffset';
+import { isArbor2 } from '../arbor2/flag';   // ARBOR v2 mockup r7: the dark page's pen inks (below), only under ?arbor2=1
 import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
 import { tuckDrawers } from '../store/menusDrawers';
 import { ZOOM_ANCHOR } from '../store/pageScale';
@@ -82,10 +83,27 @@ function effectivePenInk(ink: string, theme: ThemeId, pageTone: PageTone): strin
     if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';
     return pageTone === 'dark' ? (PEN_INKS_MACHINA_DARK[ink] ?? ink) : ink;
   }
+  // ARBOR v2 MOCKUP r7 (spec §2d, Fable Oct 31; flag-only): Arbor's dark page (the existing Page: Dark) is #1A1510, where the default walnut
+  // swatch would vanish - the same gap Flux's and Machina's dark pages closed: the default swatch becomes the page's own ink (var(--ink-on-paper),
+  // #EFE4CB, 14.35:1) and red and blue take Machina's lightened pair (8.2 / 8.6:1 on #1A1510). Display-only: the stored swatch is still the hex.
+  // Off the flag, and on Arbor's light page, nothing changes.
+  if (theme === 'plateau' && pageTone === 'dark' && isArbor2()) {
+    if (ink === PEN_DEFAULT_INK) return 'var(--ink-on-paper)';
+    return PEN_INKS_MACHINA_DARK[ink] ?? ink;
+  }
   if (theme !== 'flux') return ink;
   if (pageTone === 'dark') return PEN_INKS_FLUX_DARK[ink] ?? ink;
   return PEN_INKS_FLUX_LIGHT[ink] ?? ink;
 }
+
+// ARBOR v2 MOCKUP r22 (Fable, Nov 8, ruling 1; flag-only): under Typewriter's zoom Arbor's page is bare and the words sit on the ROOM, so the
+// pen's ink follows the room, not the Page setting: each swatch becomes a variable the zoomed page sets per room (styles/arbor-v2.css) - the
+// default the room's page ink, red and blue the pair for that ground. CSS, so it follows the room as the room changes. Display-only: the
+// stored swatch is still the hex. A swatch not in the set (null) keeps effectivePenInk. Off the zoom, and off the flag, nothing changes.
+// (Nick's correction, Nov 8: page-less Typewriter is night only - by day the zoomed page keeps its paper and these variables carry the values the
+// pen had before r22, set per Page setting in styles/arbor-v2.css)
+const ARBOR2_TW_INK: Record<string, string> = { '#1a0f06': 'var(--arbor2-tw-ink, var(--ink-on-paper))', '#b8231f': 'var(--arbor2-tw-red, #b8231f)', '#1f4fb8': 'var(--arbor2-tw-blue, #1f4fb8)' };
+const arbor2TypewriterInk = (ink: string): string | null => ARBOR2_TW_INK[ink.toLowerCase()] ?? null;
 
 interface RailDef { heading: string; items: string[]; ai: 'sealed' | 'open'; tools: 'pen' | 'format'; }
 const RAILS: Record<EditorMode, RailDef> = {
@@ -205,9 +223,17 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   }, [zoomed]);
   // memoized so useChromeDissolve's rootRef keeps its identity (a fresh array each render tore down the edge-dwell listener); on the framed desk the root element joins, so --fade-dur reaches chrome outside the host [ModeStage §9]
   const htmlRef = useRef<HTMLElement>(typeof document !== 'undefined' ? document.documentElement : null);
+  // bug #80 (Fable, Nov 12, option (a)): on the Arbor redesign --fade-dur is NOT written on <html>. That write re-styled the room's live shade drawing
+  // (a <body> child, ~800 elements) inside the keystroke that starts writing (Actions: 1,095 elements -> ~250 without it). It goes instead to the app's
+  // own root and the mockup bar's host, which hold every other element that reads it, so every Arbor fade keeps its timing. Read at each write (the bar's
+  // host may mount after the stage). The live themes keep <html> (bug #90); useChromeDissolve is untouched. scripts/harness/arbor-keyflip.mjs
+  const arborTopRefs = useMemo(() => ['root', 'arbor2-mockup-bar'].map((id) => ({ get current() { return document.getElementById(id); } }) as RefObject<HTMLElement>), []);
   const dissolveRootRef = useMemo(
-    () => (chromeRootRef ? [stageRef, chromeRootRef, htmlRef] : [stageRef, htmlRef]),   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
-    [chromeRootRef, framed],
+    () => {
+      const top = isArbor2() ? arborTopRefs : [htmlRef];
+      return chromeRootRef ? [stageRef, chromeRootRef, ...top] : [stageRef, ...top];   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
+    },
+    [chromeRootRef, framed, arborTopRefs, stageTheme],   // stageTheme: the redesign is on by default in Arbor only, so a theme switch moves the targets
   );
   const { dissolved, noteWrite: engineNote, resurface } = useChromeDissolve({
     surface: 'sprint',
@@ -244,7 +270,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // both the unframed bar's own `pen` state and the framed host's controlled
   // `penColorProp` (PageEditor.tsx), since both funnel through that one line.
   const penTheme = useTheme();
-  const { page: penPageTone } = useThemePrefs();
+  const { page: penPageTone } = usePageTone();   // the page in force (Arbor's day room: always light - Nick, Nov 18)
   const [gearOpen, setGearOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [, tick] = useReducer((n: number) => n + 1, 0);
@@ -594,7 +620,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
               className="mode-scroll"
               data-typewriter={typewriterRun ? 'true' : 'false'}
             >
-              {children({ noteWrite, penColor: rail.tools === 'pen' ? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
+              {children({ noteWrite, penColor: rail.tools === 'pen' ? (zoomed && penTheme === 'plateau' && isArbor2() ? arbor2TypewriterInk(penColorProp ?? pen) : null) ?? effectivePenInk(penColorProp ?? pen, penTheme, penPageTone) : undefined })}
             </div>
             {!framed && <div className="mode-wordcount mode-dissolve">{words} words</div>}
           </div>

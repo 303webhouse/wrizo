@@ -44,7 +44,8 @@ export async function loadAppStore() {
     } }],
   });
   const map = new Map();
-  globalThis.window = { addEventListener() {}, removeEventListener() {}, dispatchEvent() {} };
+  // (window.location: the store reads it where a page is born - Arbor's flag check, arbor2/flag.ts - and a window without one throws; Fable, Nov 7)
+  globalThis.window = { addEventListener() {}, removeEventListener() {}, dispatchEvent() {}, location: { protocol: 'https:', origin: 'https://app.test', href: 'https://app.test/#/', search: '', hash: '#/' } };
   globalThis.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {}, querySelectorAll: () => [], documentElement: { getAttribute: () => null } };
   globalThis.location = { protocol: 'https:', origin: 'https://app.test', href: 'https://app.test/#/' };
   Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128' }, configurable: true, writable: true });

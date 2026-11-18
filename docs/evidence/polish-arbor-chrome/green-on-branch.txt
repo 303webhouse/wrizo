@@ -1,0 +1,167 @@
+﻿node : REAPER: 0 harness browser(s), 0 owner(s) ΓÇö  | floor=300s | targets=0
+At C:\Users\nickh\AppData\Local\Temp\ps-script-8ddbeb06-c183-43d8-a1bc-168e0b3fa854.ps1:80 char:325
++ ... TS='after'; node scripts/harness/polish-arbor-chrome.mjs 2>&1 | Out-F ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (REAPER: 0 harne...00s | targets=0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+REAPER: nothing to reap.
+[
+  {
+    "name": "POLISH @ 1366x768: the rail, the top bar and the paper are present to measure (Arbor)",
+    "pass": true,
+    "detail": "{\"ok\":true,\"place\":[{\"name\":\"Pages\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(150, 160, 90)\",\"glyphColor\":\"rgb(150, 160, 90)\"},{\"name\":\"Boards\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Journal\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}],\"foot\":[{\"name\":\"Settings\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Themes\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Trash\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}],\"placeBlock\":{\"name\":\"Unsorted\",\"glyph\":24.48,\"svg\":25.9062,\"label\":13.8,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(255, 152, 0)\"},\"aside\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"right\":\"rgb(143, 122, 76)\",\"top\":103,\"bottom\":768,\"w\":84,\"bg\":\"rgb(31, 26, 22)\"},\"lastItemBottom\":728.6,\"clipped\":[],\"sep\":\"rgb(143, 122, 76)\",\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"navKids\":[\"sprint-crumb:19\",\"desk-mode-strip:33\",\"sprint-actions:31\"],\"tab\":{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"},\"door\":12.48,\"toggle\":15.6,\"paper\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6},\"act\":{\"borderLeft\":\"rgba(0, 0, 0, 0)\",\"bgImage\":\"linear-gradient(rgb(150, 160, 90), rgb(150, 160, 90))\",\"color\":\"rgb(150, 160, 90)\"},\"hoverBgRest\":\"rgba(0, 0, 0, 0)\",\"ratios\":{\"railLabelRest\":6.14,\"footLabelRest\":13.91,\"openMark\":6.14,\"tabRest\":13.91},\"inkTokens\":{\"ink800\":\"#2A241E\"}}"
+  },
+  {
+    "name": "P1 @ 1366x768: the rail's places (Pages, Boards, Journal) are 20% bigger - glyph 24.48, mark 25.92, label 12.96 px (shipped 20.4 / 21.6 / 10.8)",
+    "pass": true,
+    "detail": "[{\"name\":\"Pages\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(150, 160, 90)\",\"glyphColor\":\"rgb(150, 160, 90)\"},{\"name\":\"Boards\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Journal\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}]"
+  },
+  {
+    "name": "P2 @ 1366x768: Settings, Themes and Trash are the SAME size as the places (they shipped a third smaller: 13.668 / 14.472 / 7.236 px)",
+    "pass": true,
+    "detail": "[{\"name\":\"Settings\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Themes\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Trash\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}]"
+  },
+  {
+    "name": "P1 @ 1366x768: the place block's name is 20% bigger too (13.8 px; shipped 11.5)",
+    "pass": true,
+    "detail": "{\"name\":\"Unsorted\",\"glyph\":24.48,\"svg\":25.9062,\"label\":13.8,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(255, 152, 0)\"}"
+  },
+  {
+    "name": "P3 @ 1366x768: nothing in the rail is cut off at the bottom (Trash is the last item; the rail clips what overflows)",
+    "pass": true,
+    "detail": "{\"clipped\":[],\"lastItemBottom\":728.6,\"asideBottom\":768}"
+  },
+  {
+    "name": "P4 @ 1366x768: the top bar's tabs are 20% bigger (12.48 px; shipped 10.4)",
+    "pass": true,
+    "detail": "{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"}"
+  },
+  {
+    "name": "P4 @ 1366x768: the top bar is EXACTLY as tall as main painted it (51 px) - the stage sits under it, so a taller bar pushes the PAGE down (the first build of this change did: 6.6 px at 1366, 9 px at 1920)",
+    "pass": true,
+    "detail": "{\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"kids\":[\"sprint-crumb:19\",\"desk-mode-strip:33\",\"sprint-actions:31\"]}"
+  },
+  {
+    "name": "P4 @ 1366x768: the Plan door is the SAME size as the tabs (its own rule says so; the first build made it 15.6) and the Pages switch on the right is 20% bigger",
+    "pass": true,
+    "detail": "{\"door\":12.48,\"tab\":12.48,\"toggle\":15.6}"
+  },
+  {
+    "name": "P5 @ 1366x768: their own look - the rail's outer rule, its dividers and the top bar's rule are muted bronze rgb(143, 122, 76)",
+    "pass": true,
+    "detail": "{\"rail\":\"rgb(143, 122, 76)\",\"sep\":\"rgb(143, 122, 76)\",\"nav\":\"rgb(143, 122, 76)\"}"
+  },
+  {
+    "name": "P5 @ 1366x768: the open item wears an olive ribbon (the full-height bar and the wash are Flux's), its label stays olive",
+    "pass": true,
+    "detail": "{\"borderLeft\":\"rgba(0, 0, 0, 0)\",\"bgImage\":\"linear-gradient(rgb(150, 160, 90), rgb(150, 160, 90))\",\"color\":\"rgb(150, 160, 90)\"}"
+  },
+  {
+    "name": "P5 @ 1366x768: a hovered item lifts to a visible tile (it shipped as the rail's own colour, so hover showed nothing)",
+    "pass": true,
+    "detail": "{\"hov\":\"rgb(42, 36, 30)\",\"rail\":\"rgb(31, 26, 22)\"}"
+  },
+  {
+    "name": "P6 @ 1366x768: square corners and NO drop shadow on the rail, the top bar and its tabs",
+    "pass": true,
+    "detail": "{\"aside\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"right\":\"rgb(143, 122, 76)\",\"top\":103,\"bottom\":768,\"w\":84,\"bg\":\"rgb(31, 26, 22)\"},\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"tab\":{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"}}"
+  },
+  {
+    "name": "P6 @ 1366x768: labels >= 4.5:1 (rail rest, foot rest, open mark, top-bar tab rest) - measured",
+    "pass": true,
+    "detail": "{\"railLabelRest\":6.14,\"footLabelRest\":13.91,\"openMark\":6.14,\"tabRest\":13.91}"
+  },
+  {
+    "name": "POLISH @ 1920x1080: the rail, the top bar and the paper are present to measure (Arbor)",
+    "pass": true,
+    "detail": "{\"ok\":true,\"place\":[{\"name\":\"Pages\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(150, 160, 90)\",\"glyphColor\":\"rgb(150, 160, 90)\"},{\"name\":\"Boards\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Journal\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}],\"foot\":[{\"name\":\"Settings\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Themes\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Trash\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}],\"placeBlock\":{\"name\":\"Unsorted\",\"glyph\":24.48,\"svg\":25.9062,\"label\":13.8,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(255, 152, 0)\"},\"aside\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"right\":\"rgb(143, 122, 76)\",\"top\":103,\"bottom\":1080,\"w\":84,\"bg\":\"rgb(31, 26, 22)\"},\"lastItemBottom\":1025,\"clipped\":[],\"sep\":\"rgb(143, 122, 76)\",\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"navKids\":[\"sprint-crumb:22\",\"desk-mode-strip:33\",\"sprint-actions:30\"],\"tab\":{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"},\"door\":12.48,\"toggle\":18,\"paper\":{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7},\"act\":{\"borderLeft\":\"rgba(0, 0, 0, 0)\",\"bgImage\":\"linear-gradient(rgb(150, 160, 90), rgb(150, 160, 90))\",\"color\":\"rgb(150, 160, 90)\"},\"hoverBgRest\":\"rgba(0, 0, 0, 0)\",\"ratios\":{\"railLabelRest\":6.14,\"footLabelRest\":13.91,\"openMark\":6.14,\"tabRest\":13.91},\"inkTokens\":{\"ink800\":\"#2A241E\"}}"
+  },
+  {
+    "name": "P1 @ 1920x1080: the rail's places (Pages, Boards, Journal) are 20% bigger - glyph 24.48, mark 25.92, label 12.96 px (shipped 20.4 / 21.6 / 10.8)",
+    "pass": true,
+    "detail": "[{\"name\":\"Pages\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(150, 160, 90)\",\"glyphColor\":\"rgb(150, 160, 90)\"},{\"name\":\"Boards\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Journal\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}]"
+  },
+  {
+    "name": "P2 @ 1920x1080: Settings, Themes and Trash are the SAME size as the places (they shipped a third smaller: 13.668 / 14.472 / 7.236 px)",
+    "pass": true,
+    "detail": "[{\"name\":\"Settings\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Themes\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"},{\"name\":\"Trash\",\"glyph\":24.48,\"svg\":25.9062,\"label\":12.96,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(237, 230, 218)\"}]"
+  },
+  {
+    "name": "P1 @ 1920x1080: the place block's name is 20% bigger too (13.8 px; shipped 11.5)",
+    "pass": true,
+    "detail": "{\"name\":\"Unsorted\",\"glyph\":24.48,\"svg\":25.9062,\"label\":13.8,\"labelColor\":\"rgb(237, 230, 218)\",\"glyphColor\":\"rgb(255, 152, 0)\"}"
+  },
+  {
+    "name": "P3 @ 1920x1080: nothing in the rail is cut off at the bottom (Trash is the last item; the rail clips what overflows)",
+    "pass": true,
+    "detail": "{\"clipped\":[],\"lastItemBottom\":1025,\"asideBottom\":1080}"
+  },
+  {
+    "name": "P4 @ 1920x1080: the top bar's tabs are 20% bigger (12.48 px; shipped 10.4)",
+    "pass": true,
+    "detail": "{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"}"
+  },
+  {
+    "name": "P4 @ 1920x1080: the top bar is EXACTLY as tall as main painted it (51 px) - the stage sits under it, so a taller bar pushes the PAGE down (the first build of this change did: 6.6 px at 1366, 9 px at 1920)",
+    "pass": true,
+    "detail": "{\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"kids\":[\"sprint-crumb:22\",\"desk-mode-strip:33\",\"sprint-actions:30\"]}"
+  },
+  {
+    "name": "P4 @ 1920x1080: the Plan door is the SAME size as the tabs (its own rule says so; the first build made it 15.6) and the Pages switch on the right is 20% bigger",
+    "pass": true,
+    "detail": "{\"door\":12.48,\"tab\":12.48,\"toggle\":18}"
+  },
+  {
+    "name": "P5 @ 1920x1080: their own look - the rail's outer rule, its dividers and the top bar's rule are muted bronze rgb(143, 122, 76)",
+    "pass": true,
+    "detail": "{\"rail\":\"rgb(143, 122, 76)\",\"sep\":\"rgb(143, 122, 76)\",\"nav\":\"rgb(143, 122, 76)\"}"
+  },
+  {
+    "name": "P5 @ 1920x1080: the open item wears an olive ribbon (the full-height bar and the wash are Flux's), its label stays olive",
+    "pass": true,
+    "detail": "{\"borderLeft\":\"rgba(0, 0, 0, 0)\",\"bgImage\":\"linear-gradient(rgb(150, 160, 90), rgb(150, 160, 90))\",\"color\":\"rgb(150, 160, 90)\"}"
+  },
+  {
+    "name": "P5 @ 1920x1080: a hovered item lifts to a visible tile (it shipped as the rail's own colour, so hover showed nothing)",
+    "pass": true,
+    "detail": "{\"hov\":\"rgb(42, 36, 30)\",\"rail\":\"rgb(31, 26, 22)\"}"
+  },
+  {
+    "name": "P6 @ 1920x1080: square corners and NO drop shadow on the rail, the top bar and its tabs",
+    "pass": true,
+    "detail": "{\"aside\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"right\":\"rgb(143, 122, 76)\",\"top\":103,\"bottom\":1080,\"w\":84,\"bg\":\"rgb(31, 26, 22)\"},\"nav\":{\"radius\":\"0px/0px\",\"shadow\":\"none\",\"h\":51,\"bottom\":\"rgb(143, 122, 76)\",\"bg\":\"rgb(31, 26, 22)\"},\"tab\":{\"size\":12.48,\"color\":\"rgb(237, 230, 218)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"}}"
+  },
+  {
+    "name": "P6 @ 1920x1080: labels >= 4.5:1 (rail rest, foot rest, open mark, top-bar tab rest) - measured",
+    "pass": true,
+    "detail": "{\"railLabelRest\":6.14,\"footLabelRest\":13.91,\"openMark\":6.14,\"tabRest\":13.91}"
+  },
+  {
+    "name": "P7 flux: untouched - places 20.4 px, foot 13.668 px (smaller), top-bar tab 10.4 px, no bronze rule",
+    "pass": true,
+    "detail": "{\"place\":[20.4,20.4,20.4],\"foot\":[13.668,13.668,13.668],\"tab\":{\"size\":10.4,\"color\":\"rgb(231, 244, 241)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"},\"rail\":\"rgb(25, 53, 86)\",\"nav\":\"rgb(25, 53, 86)\"}"
+  },
+  {
+    "name": "P7 machina: untouched - places 20.4 px, foot 13.668 px (smaller), top-bar tab 10.4 px, no bronze rule",
+    "pass": true,
+    "detail": "{\"place\":[20.4,20.4,20.4],\"foot\":[13.668,13.668,13.668],\"tab\":{\"size\":10.4,\"color\":\"rgb(230, 233, 241)\",\"shadow\":\"none\",\"radius\":\"0px\",\"tx\":\"uppercase\"},\"rail\":\"rgb(37, 41, 51)\",\"nav\":\"rgb(37, 41, 51)\"}"
+  },
+  {
+    "name": "P8 @ 1366x768: THE PAGE DOES NOT MOVE OR RESIZE - Arbor's paper is the very rect main painted ({\"x\":187,\"y\":107,\"w\":992,\"h\":897.6}); the menus changed, the page did not",
+    "pass": true,
+    "detail": "{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6}"
+  },
+  {
+    "name": "P8 @ 1920x1080: THE PAGE DOES NOT MOVE OR RESIZE - Arbor's paper is the very rect main painted ({\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7}); the menus changed, the page did not",
+    "pass": true,
+    "detail": "{\"x\":420.4,\"y\":107,\"w\":1079.3,\"h\":1396.7}"
+  },
+  {
+    "name": "P8 @ 1366x768: the paper is the same SIZE in Arbor, Flux and Machina (the page-size law)",
+    "pass": true,
+    "detail": "{\"arbor\":{\"x\":187,\"y\":107,\"w\":992,\"h\":897.6},\"flux\":{\"x\":187,\"y\":108,\"w\":992,\"h\":897.6},\"machina\":{\"x\":187,\"y\":108,\"w\":992,\"h\":897.6}}"
+  }
+]
+
+POLISH-ARBOR-CHROME VERIFY: PASS (31 checks)
