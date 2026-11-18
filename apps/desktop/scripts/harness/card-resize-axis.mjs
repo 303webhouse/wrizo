@@ -54,13 +54,13 @@ const pins = (b, c) => ({
 {
   const p = pins(be, css);
   ok('S1: a page-pin resize reads BOTH dx and dy (the axis the pointer moved MORE drives the width: dx, or dy / aspect, whichever is larger in magnitude), the height follows at the kind\'s aspect, and MIN_PIN_H plus a min width floor it', p.readsDy && p.floors, JSON.stringify(p));
+  const m5 = be.replace('const dyFrac = (e.clientY - startY) / (pageWidthPx * getBoardScale());', 'const dyFrac = (e.clientY - startY) / pageWidthPx;');   // flux-zoom-1: the scale dropped from the dy line
   ok('S1-ZOOM (mutant landed) the page-pin dy line without the board\'s scale turns the successor pin RED (the zoom-aware line is what S1 reads)', m5 !== be && !pins(m5, css).readsDy && pins(be, css).readsDy, '');
   ok('S2: the canvas carries data-resizing for the length of the gesture (set when the corner is taken, cleared when it ends) and CSS makes the whole canvas wear the diagonal arrow while it is set', p.flag && p.arrow, JSON.stringify(p));
   const m1 = be.replace('const byX = dx, byY = dyFrac / a;', 'const byX = dx, byY = 0;');
   const m2 = be.replace('Math.max(minW, MIN_PIN_H / a, toward)', 'Math.max(minW, toward)');
   const m3 = css.replace("cursor:nwse-resize !important;", 'cursor:default !important;');
   const m4 = be.replace("canvas.dataset.resizing = 'true';", '');
-  const m5 = be.replace('const dyFrac = (e.clientY - startY) / (pageWidthPx * getBoardScale());', 'const dyFrac = (e.clientY - startY) / pageWidthPx;');   // flux-zoom-1: the scale dropped from the dy line
   ok('S (mutants): reading dx alone (the old lock), dropping the height floor, dropping the arrow, or never setting the flag each turn a pin RED (each mutation landed)',
     m1 !== be && !pins(m1, css).readsDy && m2 !== be && !pins(m2, css).floors && m3 !== css && !pins(be, m3).arrow && m4 !== be && !pins(m4, css).flag, '');
 }
