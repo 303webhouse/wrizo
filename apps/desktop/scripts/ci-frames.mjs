@@ -124,6 +124,25 @@ const SIGNED_OUT = (() => {
       if (!(await press(app, '.wz-popout-switch'))) await app.click('New here? Create an account');   // the pop-out's own switch; the label on the older full-page form
       await settled(app, SIGNUP_UP);
     }),
+    // the pop-out's other states (Fable Nov 18, 3:50 pm): a field focused (the password; the email is focused on open), the 18+ error line (the button pressed unticked: focus lands on the tick), and the tick ticked
+    'signin-focus': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await settled(app, SIGNIN_UP);
+      await app.evalJs("document.querySelector('.wz-popout input[type=password]').focus(); true"); await sleep(300);
+    }),
+    'signup-error': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
+      await press(app, '.wz-popout-switch'); await settled(app, SIGNUP_UP);
+      await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line' }); await sleep(400);
+    }),
+    'signup-ticked': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
+      await press(app, '.wz-popout-switch'); await settled(app, SIGNUP_UP);
+      await press(app, '.wz-adult'); await app.waitFor("!!document.querySelector('.wz-adult-box') && document.querySelector('.wz-adult-box').checked", { label: 'the tick ticked' }); await sleep(300);
+    }),
   };
 })();
 
