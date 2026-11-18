@@ -36,6 +36,22 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [inviteCode, setInviteCode] = useState('');
   // the 18+ tick on the create-account face: this panel's own state, never stored and never sent
   const [adult, setAdult] = useState(false);
+  const adultRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Machina's create-account face grows upward but never over the mark: the stop is the logo's foot + 8 px, as a length from the top of this screen (the stylesheet reads --popout-floor) [spec draft 4 §5]
+  useEffect(() => {
+    if (stage !== 'account') return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const set = () => {
+      const logo = el.querySelector('.wz-hero .wz-logo');
+      if (!logo) { el.style.removeProperty('--popout-floor'); return; }
+      el.style.setProperty('--popout-floor', `${Math.round(logo.getBoundingClientRect().bottom - el.getBoundingClientRect().top + 8)}px`);
+    };
+    set();
+    window.addEventListener('resize', set);
+    return () => { window.removeEventListener('resize', set); el.style.removeProperty('--popout-floor'); };
+  }, [stage]);
   // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
   // error); checked once per arrival at the account stage, never polled.
   const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
@@ -193,7 +209,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const handleCreate = async () => {
     if (busy || submitting.current) return;
     // the 18+ tick: no tick, no account (and no call to the server); the line says why [Arrival §authAdult]
-    if (!adult) { setError(t('authAdultRequired')); return; }
+    if (!adult) { setError(t('authAdultRequired')); adultRef.current?.focus(); return; }
     submitting.current = true;
     setError(''); setBusy(true);
     try {
@@ -208,7 +224,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   };
 
   return (
-    <div className="wz-home wz-arrival" data-stage={stage} data-locked={locked ? 'true' : 'false'}>
+    <div className="wz-home wz-arrival" ref={rootRef} data-stage={stage} data-locked={locked ? 'true' : 'false'}>
       <div className="wz-ambient" aria-hidden="true" />
       {!arborFront && <WrizoMark className="wz-mark show" alt="" />}
 
@@ -324,7 +340,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
               </div>
               {/* THE 18+ TICK: the account is not made without it. It lives in this panel's own state and nowhere else (not stored, not sent): unticked, the submit says the line below instead of calling the server. */}
               <label className="wz-adult">
-                <input type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
+                <input ref={adultRef} type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
                 <span>{t('authAdultConfirm')}</span>
               </label>
               {error && <div className="wz-error" role="alert">{error}</div>}

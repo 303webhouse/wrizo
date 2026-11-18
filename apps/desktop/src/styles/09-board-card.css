@@ -384,7 +384,13 @@
 .wz-arrival .wz-popout .wz-link{ font-size:.82rem; }
 /* the 18+ tick on the create-account face (nothing about it is stored) */
 .wz-arrival .wz-popout .wz-adult{ display:flex; align-items:center; gap:.55rem; font-family:var(--wz-ui); font-size:.82rem; color:var(--wz-ink); cursor:pointer; }
-.wz-arrival .wz-popout .wz-adult-box{ width:1rem; height:1rem; margin:0; accent-color:var(--wz-orange); flex:none; }
+/* the box (spec draft 4 §1): 16 px square, 1 px in the theme's field-edge colour; the mark is her act, so brass (the room is dark in every theme here; Machina's light room, whose mark is ink, does not exist on the live arrival). Space ticks it (a real checkbox); the whole row is the press area (the label). */
+.wz-arrival .wz-popout{ --adult-edge:#9C8A6E; --adult-mark:var(--wz-orange); }
+[data-theme='flux'] .wz-arrival .wz-popout{ --adult-edge:#5F8F95; }
+[data-theme='machina'] .wz-arrival .wz-popout{ --adult-edge:#9AA1A8; }
+.wz-arrival .wz-popout .wz-adult-box{ appearance:none; -webkit-appearance:none; width:16px; height:16px; margin:0; flex:none; box-sizing:border-box; position:relative; background:transparent; border:1px solid var(--adult-edge); border-radius:0; cursor:pointer; }
+.wz-arrival .wz-popout .wz-adult-box:checked::after{ content:''; position:absolute; left:4px; top:0; width:4px; height:9px; border:solid var(--adult-mark); border-width:0 2px 2px 0; transform:rotate(45deg); }
+.wz-arrival .wz-popout .wz-adult-box:focus-visible{ outline:1px solid var(--wz-orange); outline-offset:2px; }
 .wz-popout-tag{ display:none; }
 
 /* FLUX: a node with corner brackets and the N.01 · INPUT tag; the field she types in is cyan with a thin brass bar beside it (Flux's door rule); LOG IN in capitals and brackets */
@@ -400,19 +406,20 @@
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::before{ content:'[ '; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::after{ content:' ]'; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-link, [data-theme='flux'] .wz-arrival .wz-popout .wz-adult{ color:#9AD7EA; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-adult-box{ accent-color:#00C2FF; }
 
 /* MACHINA: hairlines only, no fade, no shadow, no veil: the panel takes the two doors' place under the tagline so WRIZO stays readable; the room is the page tone (dark and light) */
 [data-theme='machina'] .wz-arrival .wz-hero.behind{ opacity:1; transition:none; }
 [data-theme='machina'] .wz-arrival[data-stage='signin']::after, [data-theme='machina'] .wz-arrival[data-stage='account']::after{ display:none; }
 [data-theme='machina'] .wz-arrival .wz-arrival-doors-ghost{ display:none; }
-[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ width:clamp(360px, 35.5vw, 417px); top:max(56%, 300px); max-height:calc(100% - max(56%, 300px) - 1rem); background:var(--ink-900); border:1px solid var(--text-low); box-shadow:none; padding:1.1rem 1.2rem 1rem; }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:600; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-hi); }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-field{ background:transparent; border:1px solid var(--text-low); color:var(--text-hi); }
+[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ width:clamp(360px, 35.5vw, 417px); top:max(56%, 300px); max-height:calc(100% - max(56%, 300px) - 1rem); background:#151719; border:1px solid #9AA1A8; box-shadow:none; padding:1.1rem 1.2rem 1rem; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:500; font-size:.72rem; letter-spacing:.24em; text-transform:uppercase; color:#E6E8EA; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-field{ background:transparent; border:1px solid #9AA1A8; color:#E6E8EA; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-field::placeholder{ color:#9AA1A8; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-field:focus{ border-color:var(--text-hi); }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-btn{ align-self:stretch; border:1px solid var(--text-low); color:var(--text-hi); text-transform:uppercase; letter-spacing:.18em; font-size:.72rem; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-btn{ align-self:stretch; border:1px solid #9AA1A8; color:#E6E8EA; text-transform:uppercase; letter-spacing:.18em; font-size:.72rem; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-popout-links{ flex-direction:row; justify-content:space-between; }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-link, [data-theme='machina'] .wz-arrival .wz-popout .wz-adult{ color:var(--text-mid); }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-adult-box{ accent-color:var(--text-hi); }
-/* the panel never runs off the window: a short window scrolls it (Machina's create-account face keeps the sign-in face's top edge too: Fable Nov 18, 1:45 pm, "leave it as is"; the Wrizors rule on the frames) */
+[data-theme='machina'] .wz-arrival .wz-popout .wz-link{ color:#9AA1A8; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-adult{ color:#E6E8EA; }
+/* the panel never runs off the window: a short window scrolls it. MACHINA's CREATE-ACCOUNT FACE (spec draft 4 §5, the Wrizors' ruling Nov 18, 2:00 pm): its FOOT is pinned 24 px above the window's foot and it grows UPWARD; WRIZO (the logo's box) is never covered: if it will not fit it stops 8 px under the logo and scrolls inside. --popout-floor (the logo's foot + 8 px, set by Arrival.tsx) is that stop; the sign-in face keeps the doors' place. */
 .wz-arrival .wz-screen.wz-popout{ max-height:calc(100% - 2rem); overflow-y:auto; }
+[data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ top:auto; bottom:24px; max-height:calc(100% - 24px - var(--popout-floor, 300px)); }
