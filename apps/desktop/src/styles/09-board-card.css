@@ -408,3 +408,6 @@
 [data-theme='machina'] .wz-arrival .wz-popout .wz-popout-links{ flex-direction:row; justify-content:space-between; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-link, [data-theme='machina'] .wz-arrival .wz-popout .wz-adult{ color:var(--text-mid); }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-adult-box{ accent-color:var(--text-hi); }
+/* the panel never runs off the window: a short window scrolls it. Machina's SIGN-IN panel sits under the tagline (the doors' place); its CREATE-ACCOUNT face is taller than the room left there, so it stands on the window's foot instead and grows up (Arbor and Flux keep the top edge put and grow down) */
+.wz-arrival .wz-screen.wz-popout{ max-height:calc(100% - 2rem); overflow-y:auto; }
+[data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ top:auto; bottom:1.25rem; }
