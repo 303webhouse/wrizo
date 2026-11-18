@@ -118,6 +118,20 @@ const INSTRUMENT = `(() => {
   const tick = () => { const now = performance.now(); I.frames.push([now, now - last]); last = now; if (I.frames.length > 40000) I.frames.splice(0, 20000); raf(tick); };
   raf(tick);
   addEventListener('keydown', () => I.keys.push(performance.now()), true);
+  // bug #106 follow-up: the layer is QUIET when it has neither drawn nor been asked to hold (a key, a wheel, a scroll, a pointer press or release, a pointer move with a button) for quietMs: its settle redraw lands 616 ms after the last of those
+  I.lastInput = 0;
+  for (const t of ['pointerdown', 'pointerup', 'keydown', 'beforeinput', 'wheel', 'scroll']) addEventListener(t, () => { I.lastInput = performance.now(); }, true);
+  addEventListener('pointermove', (e) => { if (e.buttons) I.lastInput = performance.now(); }, true);
+  I.lastDraw = () => (I.log.length ? I.log[I.log.length - 1][0] : -1e9);
+  I.quiet = async (quietMs, capMs) => {
+    const t0 = performance.now();
+    for (;;) {
+      const now = performance.now(), sinceDraw = now - I.lastDraw(), sinceInput = now - I.lastInput;
+      if (sinceDraw >= quietMs && sinceInput >= quietMs) return { ok: true, waited: Math.round(now - t0), sinceDraw: Math.round(sinceDraw), sinceInput: Math.round(sinceInput) };
+      if (now - t0 >= capMs) return { ok: false, waited: Math.round(now - t0), sinceDraw: Math.round(sinceDraw), sinceInput: Math.round(sinceInput) };
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  };
   addEventListener('wheel', () => I.wheels.push(performance.now()), { capture: true, passive: true });
   const rr = (r) => ({ x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) });
   I.rr = rr;
@@ -177,6 +191,8 @@ const MUTANTS = {
   // bug #106: the layer's key handler (onActivity: it stamps the busy window and HOLDS) made to redraw instead: no busy window, and refresh() on every key. Every key then draws, so D2-HOLO must read draws in the keys' window AND name them (the chain
   // reads drawMotion<refresh<onActivity). Two tries before this drew NOTHING in this scenario and proved nothing (Actions cf932242 and 44354086421): the damping gate removed, and the busy window cut to 40 ms. The keys here arm no settle redraw between
   // themselves; the only draw the live run shows is ONE settle redraw 617.9 ms after the LAST key (canvas 1 clearRect via drawMotion<refresh), and, once, a refresh stroke 0.2 ms BEFORE the first key.
+  // bug #106 follow-up: the layer kept BUSY: still() forced false, so its frame loop never stops and it draws every frame: it never goes quiet, so the quiet wait must hit its 5 s cap and FAIL
+  keepbusy: [/still\(\)\{var \w+;return!this\.opts\.motion\|\|!!\(\(\w+=this\.mq\)!=null&&\w+\.matches\)\}/g, 'still(){return!1}'],
   redraw: [/onActivity",\(\)=>\{this\.busyUntil=performance\.now\(\)\+(\w+),this\.stillUntil=this\.busyUntil,this\.stopFollow\(\),this\.hold\(\)\}/g, 'onActivity",()=>{this.busyUntil=0,this.stillUntil=0,this.stopFollow(),this.refresh()}'],
 };
 
@@ -460,7 +476,8 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 4000, label: 'the card editor' }).catch(() => {});
     await ev('(() => { window.__f3.drawers = []; window.__f3.trace = true; })()');
     await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
-    await sleep(600);
+    // the layer must be QUIET before the first key (bug #106): the editor's own click settles the layer 616 ms later, and a settle redraw landing at the first keydown is the race; 800 ms without a layer draw or an input, with a 5 s cap that fails the check
+    const quiet = await ev('window.__f3.quiet(800, 5000)');
     const k0 = await ev('window.__f3.keys.length');
     const word = ' written in the hologram ok';   // 27 keys
     for (const ch of word) { await app.typeKeys(ch); await sleep(90); }
@@ -474,15 +491,15 @@ try { await withHarness(async (app) => {
     const text = await ev(`((window.wrizoBoard() || []).find((b) => b.id === ${JSON.stringify(c0.centre)}) || {}).text || ''`);
     await key('Escape', 600); await key('Escape', SETTLE_MS);
     const resumeH = await rest(1200);
-    return { word, span, during, drew, text, hostAfter, resumeH };
+    return { word, span, during, drew, text, hostAfter, resumeH, quiet };
   };
   const nearest = (e) => (e ? `${e.gap} ms ${e.canvas === undefined ? '' : 'canvas ' + e.canvas + ' ' + e.op + ' via ' + e.via}` : 'none recorded');
   const hol = await testHolo();
   ok(`D2-HOLO ZERO layer draw calls while ${hol.span.n} keys land in the hologram's node (the board's own editor), and the words are stored in the card`,
-    hol.span.n >= 25 && hol.during === 0 && hol.text.includes(hol.word.trim()) && hol.resumeH > 0,
-    JSON.stringify({ keys: hol.span.n, during: hol.during, drew: hol.drew, stored: hol.text.slice(-40), hostAfter: hol.hostAfter, resumeH: hol.resumeH }));
+    hol.quiet.ok && hol.span.n >= 25 && hol.during === 0 && hol.text.includes(hol.word.trim()) && hol.resumeH > 0,
+    JSON.stringify({ quiet: hol.quiet, keys: hol.span.n, during: hol.during, drew: hol.drew, stored: hol.text.slice(-40), hostAfter: hol.hostAfter, resumeH: hol.resumeH }));
   // always said, pass or fail: what drew in the window, and the nearest draws either side
-  info(`D2-HOLO-DREW ${hol.drew.n} draw call(s) in the keys' window (${hol.during} counted)`, `inside ${JSON.stringify(hol.drew.inside)}; nearest before the first key: ${nearest(hol.drew.before)}; nearest after the last key: ${nearest(hol.drew.after)}`);
+  info(`D2-HOLO-DREW ${hol.drew.n} draw call(s) in the keys' window (${hol.during} counted; the layer was quiet after ${hol.quiet.waited} ms: ${hol.quiet.ok ? 'yes' : 'NO'})`, `inside ${JSON.stringify(hol.drew.inside)}; nearest before the first key: ${nearest(hol.drew.before)}; nearest after the last key: ${nearest(hol.drew.after)}`);
 
   // ---- F: <= 3 centre changes a second ---------------------------------------------------------------------------------------------------------
   const testFlash = async () => {
@@ -628,6 +645,10 @@ try { await withHarness(async (app) => {
     mU.landed === 1 && mU.during > 0 && mU.drew.n > 0 && mU.drew.inside.length > 0 && mU.drew.inside.every((e) => Number.isInteger(e.canvas) && !!e.op && typeof e.via === 'string' && e.via.length > 0) && mU.drew.inside.some((e) => /draw/.test(e.via)),
     JSON.stringify({ landed: mU.landed, keys: mU.span.n, during: mU.during, n: mU.drew.n, first: mU.drew.inside.slice(0, 3), before: mU.drew.before, after: mU.drew.after }));
   info(`MUT-REDRAW-DREW ${mU.drew.n} draw call(s) in the keys' window with the key handler redrawing (${mU.during} counted)`, `inside ${JSON.stringify(mU.drew.inside)}; nearest before the first key: ${nearest(mU.drew.before)}; nearest after the last key: ${nearest(mU.drew.after)}`);
+  const mB = await withMutant('keepbusy', testHolo);
+  mB.landed = landed.keepbusy;
+  ok('MUT-KEEPBUSY (landed) the layer kept busy (its frame loop never stops): the quiet wait before typing never sees 800 ms without a draw and FAILS at its 5 s cap, so D2-HOLO goes RED',
+    mB.landed === 1 && mB.quiet.ok === false && mB.quiet.waited >= 4900, JSON.stringify({ landed: mB.landed, quiet: mB.quiet, during: mB.during }));
 
   // ---- B: the build -------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
