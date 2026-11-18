@@ -92,7 +92,7 @@ const SIGNED_OUT = (() => {
     await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone (signed out)', timeout: 15000 });
     await app.injectHelpers();
     // the Sign in door, enabled: on the Arbor ship tree it is `.arbor2-front-doors button.arbor2-door.wz-arrival-signin` (disabled until the front is ready); elsewhere a "Sign in" button of Arrival's doors
-    await app.waitFor("[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Sign in' && !b.disabled)", { label: 'the Sign in door' });
+    await app.waitFor("[...document.querySelectorAll('button')].some((b) => /^(sign in|log in)$/i.test(b.textContent.trim()) && !b.disabled)", { label: 'the Sign in door (Flux calls it Log in)' });
     await sleep(500);
     return (await app.evalJs("document.querySelector('.arbor2-front-doors button.arbor2-door.wz-arrival-signin') ? 'splash-door' : document.querySelector('.wz-arrival-doors') ? 'arrival-doors' : 'sign-in-button'"));
   };
@@ -103,7 +103,7 @@ const SIGNED_OUT = (() => {
     await app.waitFor("(() => { const h = document.querySelector('.wz-hero'); if (!h) return true; if (h.classList.contains('behind')) { const o = getComputedStyle(h).opacity; if (window.__ho === o) { window.__hn = (window.__hn || 0) + 1; } else { window.__ho = o; window.__hn = 0; } return window.__hn >= 3; } return getComputedStyle(h).opacity === '0'; })()", { label: 'the hero gone or dimmed and still', timeout: 8000 });
     await app.waitFor("(() => { const s = document.querySelector('.wz-screen'); return !s || getComputedStyle(s).opacity === '1'; })()", { label: 'the form shown', timeout: 8000 });
     await sleep(400);
-    const seen = JSON.parse(await app.evalJs("JSON.stringify({ values: [...document.querySelectorAll('input')].map((i) => i.value), atInText: /@/.test(document.body.innerText) })"));
+    const seen = JSON.parse(await app.evalJs("JSON.stringify({ values: [...document.querySelectorAll(\"input:not([type='checkbox'])\")].map((i) => i.value), atInText: /@/.test(document.body.innerText) })"));   // a tick box's value is "on", not something she typed
     if (seen.values.some((v) => v !== '') || seen.atInText) throw new Error('refused: the screen shows a typed value or an "@": ' + JSON.stringify(seen));
   };
   const run = (steps) => async (app, ctx) => {
@@ -112,14 +112,14 @@ const SIGNED_OUT = (() => {
   };
   return {
     signin: run(async (app) => {
-      await app.click('Sign in');
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');   // the door's own class (every theme, whatever its word); the label as the fallback
       await settled(app, SIGNIN_UP);
     }),
     signup: run(async (app) => {
-      await app.click('Sign in');
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
       await app.waitFor(SIGNIN_UP, { label: 'sign-in first' });
       await sleep(500);
-      await app.click('New here? Create an account');
+      if (!(await press(app, '.wz-popout-switch'))) await app.click('New here? Create an account');   // the pop-out's own switch; the label on the older full-page form
       await settled(app, SIGNUP_UP);
     }),
   };
