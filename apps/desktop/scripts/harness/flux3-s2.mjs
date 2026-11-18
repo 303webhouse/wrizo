@@ -174,7 +174,9 @@ const MUTANTS = {
     '.addEventListener("f3-mut-nodown",$1,!0),$2.addEventListener("click",$3,!0),$4.addEventListener("dblclick"'],
   clean: [/\.style\.transform="",(\w+)\.style\.transition="",/g, '.style.f3mut="",$1.style.transition="",'],
   still: [/(\w+)!=="still"&&(\w+)\.motion/g, '$1!=="still"&&!0'],
-  undamp: [/damped\(\)\{return this\.held\|\|performance\.now\(\)<this\.busyUntil\}/g, 'damped(){return!1}'],   // bug #106: the layer's damping gate removed: it never holds, so it draws while keys land
+  // bug #106: the layer's BUSY window (BUSY_MS, 600 ms: after a key the layer stays still this long) cut to 40 ms, shorter than the 90 ms between keys, so its settle redraw fires BETWEEN keys. This is the very path the one red in eight pairs came through (a stall in the
+  // typing longer than the window lets the layer settle and redraw once mid-run: the "after the last key" draw in the INFO line reads canvas 1 clearRect via drawMotion<refresh). The first try, the damping gate removed, drew NOTHING here (the layer never held, so it never settled).
+  busy: [/=600,(\w+)=1e3\/30,(\w+)=1100,/g, '=40,$1=1e3/30,$2=1100,'],
 };
 
 const median = (a) => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
@@ -619,9 +621,9 @@ try { await withHarness(async (app) => {
   const mS = await withMutant('still', () => testStill('dial0'));
   mS.landed = landed.still;
   ok('MUT-STILL (landed) the still state ignored (the nodes always fly): STILL at Ambiance 0 fails', mS.landed === 1 && !mS.pass, JSON.stringify(mS));
-  const mU = await withMutant('undamp', testHolo);
-  mU.landed = landed.undamp;
-  ok('MUT-UNDAMP (landed) the layer\'s damping gate removed: D2-HOLO reads draw calls while the keys land AND names every one it lists (a canvas, a call, the chain that drew, a draw path among them)',
+  const mU = await withMutant('busy', testHolo);
+  mU.landed = landed.busy;
+  ok('MUT-BUSY (landed) the layer\'s busy window cut to 40 ms (its settle redraw fires between keys): D2-HOLO reads draw calls while the keys land AND names every one it lists (a canvas, a call, the chain that drew, a draw path among them)',
     mU.landed === 1 && mU.during > 0 && mU.drew.n > 0 && mU.drew.inside.length > 0 && mU.drew.inside.every((e) => Number.isInteger(e.canvas) && !!e.op && typeof e.via === 'string' && e.via.length > 0) && mU.drew.inside.some((e) => /draw/.test(e.via)),
     JSON.stringify({ landed: mU.landed, during: mU.during, n: mU.drew.n, first: mU.drew.inside.slice(0, 3) }));
 
