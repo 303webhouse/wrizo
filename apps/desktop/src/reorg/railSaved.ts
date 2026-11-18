@@ -141,6 +141,15 @@ function readMirror(): Mirror {
 
 let rail: RailRecord = emptyRail();
 let pending: Record<string, PendingPicture> = {};
+// pictures the server has taken (or refused for good) this session: never queued again, whatever an older copy in storage says
+const settled = new Set<string>();
+
+// THE QUEUE IS NOT A UNION. A picture waits to upload only while it is still the box's picture and the server has not taken it: a removed or
+// replaced picture leaves the queue, and so does one already sent (a union with the stored copy would bring both back - found by reorg-rails
+// B2 [successor], run 44410467853: the removed picture was still queued)
+function livePending(p: Record<string, PendingPicture>): Record<string, PendingPicture> {
+  return Object.fromEntries(Object.entries(p).filter(([id, q]) => rail.boxes[id]?.picture === q.sha && !settled.has(q.sha)));
+}
 let signedIn = false;
 let version = 0;
 const listeners = new Set<() => void>();
@@ -156,7 +165,7 @@ function persist(): void {
   if (!REORG) return;
   const stored = readMirror();
   rail = mergeRail(rail, stored.rail);
-  pending = { ...stored.pending, ...pending };
+  pending = livePending({ ...stored.pending, ...pending });
   const empty = Object.keys(rail.pins).length === 0 && Object.keys(rail.boxes).length === 0 && !rail.viewAt && Object.keys(pending).length === 0;
   try {
     const had = localStorage.getItem(RAIL_KEY);
@@ -296,7 +305,9 @@ async function uploadPending(live: () => void): Promise<void> {
     live();
     // stored, or a later picture was already there, or refused for good (too big, not a picture, the Project deleted for good): done with it
     if (r.ok || r.status === 400 || r.status === 410 || r.status === 413 || r.status === 415) {
+      settled.add(p.sha);
       if (pending[id]?.sha === p.sha) { const { [id]: _done, ...rest } = pending; pending = rest; }
+      persist();   // the stored copy lets it go too
     } else return;   // 401, 5xx, 507: kept, tried next round
   }
 }
@@ -367,6 +378,7 @@ if (REORG) {
     rail = emptyRail();
     pending = {};
     shown.clear();
+    settled.clear();
     signedIn = false;
     if (roundTimer) { clearTimeout(roundTimer); roundTimer = null; }
     notify();
@@ -383,7 +395,7 @@ if (REORG) {
       if (e.key !== RAIL_KEY) return;
       const stored = readMirror();
       rail = mergeRail(rail, stored.rail);
-      pending = { ...stored.pending, ...pending };
+      pending = livePending({ ...stored.pending, ...pending });
       notify();
     });
   }

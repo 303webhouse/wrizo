@@ -373,6 +373,25 @@ else {
   ok(xy.boxes.a.letters === 'CD' && xy.view === 'list' && xy.boxes.a.colour === '' && !xy.pins.b.removedAt && !!xy.pins.c, `U3 a tie settles by value (letters ${xy.boxes.a.letters}, view ${xy.view}), a stamped empty wins (colour "${xy.boxes.a.colour}"), a later re-pin beats the unpin`);
 }
 
+// R14 - the picture queue: a removed picture leaves it, an uploaded one leaves it and is sent once (reorg-rails B2 [successor] found a removed
+// picture still queued in the stored copy, run 44410467853 on 3f18ce12)
+{
+  const Q = await loadDevice('Q');
+  await syncDev(Q); tick();
+  const queued = () => { try { return Object.keys(JSON.parse(stores.Q.get('writer-studio-rail') || '{}').pending || {}); } catch { return ['unreadable']; } };
+  await setPicture(Q, P5, webp(5)); tick();
+  const was = queued().includes(P5);
+  Q.mod.mem.setBoxLook(P5, { colour: '#41658A', picture: undefined }); tick();   // a swatch pick removes the picture (R5)
+  const afterRemove = queued();
+  await setPicture(Q, P6, webp(6)); tick();
+  const puts = () => requests.filter((r) => r === `Q PUT /api/box-picture/${P6}`).length;
+  await round(Q); tick();
+  const afterUpload = queued();
+  await round(Q); tick(); await round(Q); tick();
+  ok(hasSaved && was && afterRemove.length === 0 && afterUpload.length === 0 && puts() === 1,
+    `R14 a removed picture leaves the stored queue (${JSON.stringify(afterRemove)}); an uploaded one leaves it (${JSON.stringify(afterUpload)}) and is sent once in three rounds (${puts()})`);
+}
+
 // U4 - acts inside one millisecond keep the order she made them in (no tick between them)
 {
   const T = await loadDevice('T');
