@@ -252,9 +252,12 @@ export function mountPergola(): void {
     if (p) clock(p);
     if (!p || p.start == null) { gustT = window.setTimeout(gustPlan, 500); return; }   // no clock yet: look again shortly
     const ph = (((Number(document.timeline.currentTime ?? 0) - p.start) % BREEZE) + BREEZE) % BREEZE;
-    const inGust = ph >= BREEZE - GUST_LEAD || ph < MOVING + GUST_TAIL;
-    layers().forEach((l) => { const q = liveOf.get(l); if (q) { if (inGust) uncut(q); else cut(q); } });
-    const next = inGust ? (ph < MOVING + GUST_TAIL ? MOVING + GUST_TAIL - ph : BREEZE - ph + MOVING + GUST_TAIL) : BREEZE - GUST_LEAD - ph;
+    // (a timer can fire a few ms before its edge: within EDGE of the next edge counts as there - the second run, Actions 44398133550, cut an
+    // already-cut room at phase 15849 and came back 16 ms later to show it; and a layer is written only when its state changes)
+    const EDGE = 20;
+    const inGust = ph >= BREEZE - GUST_LEAD - EDGE || ph < MOVING + GUST_TAIL - EDGE;
+    layers().forEach((l) => { const q = liveOf.get(l); if (!q) return; const off = q.layer.hasAttribute('data-live-off'); if (inGust && off) uncut(q); else if (!inGust && !off) cut(q); });
+    const next = inGust ? (ph < MOVING + GUST_TAIL ? MOVING + GUST_TAIL - ph : BREEZE - ph + MOVING + GUST_TAIL) : (BREEZE - GUST_LEAD - ph + BREEZE) % BREEZE;
     gustT = window.setTimeout(gustPlan, Math.max(16, next));
   };
   let sleepT = 0;
