@@ -9,6 +9,9 @@
 //   P9  MACHINA's create-account face (spec draft 4 §5, Fable Nov 18, 2:45 pm): its foot is 24 px above the window's foot, it never covers the logo (it stops 8 px under it and scrolls inside if it will not fit); P9M the old top-pinned build turns it red (asserted landed)
 //   P10 going back from the create-account face returns Machina's panel to the doors' place (the sign-in face's top edge)
 //   P11 the 18+ tick as the spec draws it: a 16 px box, 1 px in the theme's field-edge colour, a brass mark when ticked; on its error focus moves to the tick; Space ticks it
+//   P12 FLUX holds its chart's finished frame behind the panel and no old door shows around it (Fable Nov 18, 3:50 pm); the mutant (the old hero shown, the chart gone) turns it red
+//   P13 the button is never brass at rest (Arbor cream; Flux and Machina the label colour); under the pointer: Arbor brass, Flux cyan with the brass bar, Machina a brass underline; the mutant (brass at rest) turns it red
+//   P14 focus starts in the first field when the panel opens, and a real Tab walk reaches the button with the same brass-on-focus look; the mutant (focus dropped) turns it red
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -45,6 +48,7 @@ await withHarness(async (app) => {
   const p1 = await ev(`(() => { const p = document.querySelector('.wz-popout'); const h = document.querySelector('.wz-hero'); const door = document.querySelector('.wz-hero .wz-arrival-signin');
     return { panel: !!p, dialog: !!p && p.getAttribute('role') === 'dialog' && p.getAttribute('aria-modal') === 'true', hero: !!h && h.classList.contains('behind'), heroOpacity: h ? getComputedStyle(h).opacity : null, doorPressable: !!door && door.tagName === 'BUTTON' && !door.closest('[aria-hidden="true"]') }; })()`);
   check('P1', p1.panel && p1.dialog && p1.hero && Number(p1.heroOpacity) > 0 && !p1.doorPressable, JSON.stringify(p1));
+  const active0 = await ev("(() => { const a = document.activeElement; return a ? { tag: a.tagName, type: a.type || null, inPanel: !!a.closest('.wz-popout'), first: a === document.querySelector('.wz-popout input.wz-field') } : null; })()");
   const top1 = await ev("document.querySelector('.wz-popout').getBoundingClientRect().top");
   const h1 = await ev("document.querySelector('.wz-popout').getBoundingClientRect().height");
   const w = await ev(`(() => { const tag = document.querySelector('.wz-popout-tag'); const btn = document.querySelector('.wz-popout button[type=submit]'); return { door: ${JSON.stringify(doorWord)}, button: btn && btn.textContent.trim(), tag: tag ? tag.textContent.trim() : null, head: document.querySelector('.wz-popout .wz-bighead').textContent.trim() }; })()`);
@@ -61,6 +65,46 @@ await withHarness(async (app) => {
   const same = (a, h) => !!a && hex(a) === h;
   const p8 = cfg.theme === 'plateau' ? sp.ph === 'rgb(156, 144, 129)' : cfg.theme === 'machina' ? same(sp.edge, '#9AA1A8') && same(sp.link, '#9AA1A8') && sp.ph === 'rgb(154, 161, 168)' : cfg.theme === 'flux' ? same(sp.edge, '#5F8F95') && same(sp.link, '#9AD7EA') && same(sp.tag, '#7EB4C4') : true;
   check('P8', p8, `placeholder ${sp.ph}; edge ${sp.edge && hex(sp.edge)}; links ${sp.link && hex(sp.link)}; tag ${sp.tag ? hex(sp.tag) : null}`);
+  // P12 FLUX: the chart behind the panel, no old door around it
+  if (cfg.theme === 'flux') {
+    const CHART = `(() => { const vis = (e) => { const r = e.getBoundingClientRect(); const c = getComputedStyle(e); return r.width > 0 && c.display !== 'none' && c.visibility === 'visible' && Number(c.opacity) > 0; }; const ch = document.querySelector('.wz-popout-chart'); const svg = ch && ch.querySelector('svg'); const old = [...document.querySelectorAll('.wz-arrival .wz-arrival-signin, .wz-arrival .wz-arrival-write, .wz-arrival .wz-arrival-open, .wz-arrival .wz-logo')].filter((e) => !e.closest('.wz-popout') && vis(e)).map((e) => (e.textContent || e.className || '').toString().trim().slice(0, 20)); return { chart: !!svg, chartW: svg ? Math.round(svg.getBoundingClientRect().width) : 0, chartShown: !!ch && vis(ch), old }; })()`;
+    const c12 = await ev(CHART);
+    check('P12', c12.chart && c12.chartW > 0 && c12.chartShown && c12.old.length === 0, JSON.stringify(c12));
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-chart'; st.textContent = '.wz-arrival .wz-hero.behind{ visibility:visible !important; } .wz-popout-chart{ display:none !important; }'; document.head.appendChild(st); return true; })()");
+    await sleep(200);
+    const m12 = await ev(CHART);
+    check('P12M', !m12.chartShown && m12.old.length > 0, `the old hero shown, the chart gone (landed: `+JSON.stringify(m12)+`): P12's read goes RED`);
+    await ev("document.getElementById('mut-chart').remove(); true");
+  }
+  // P13 / P14 the button
+  {
+    const BTN = `(() => { const b = document.querySelector('.wz-popout button[type=submit]'); const cs = getComputedStyle(b); return { color: cs.color, border: cs.borderTopColor, shadow: cs.boxShadow, active: document.activeElement === b }; })()`;
+    const rest = await ev(BTN);
+    const bp = await ev("(() => { const r = document.querySelector('.wz-popout button[type=submit]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    await app.mouseMove(bp.x, bp.y); await sleep(450);
+    const hov = await ev(BTN);
+    await app.mouseMove(2, 2); await sleep(350);
+    const BRASS = 'rgb(255, 152, 0)';
+    const restOk = rest.color !== BRASS && rest.border !== BRASS && rest.shadow === 'none' && (cfg.theme !== 'plateau' || rest.color === 'rgb(239, 228, 203)');
+    const hovOk = cfg.theme === 'plateau' ? hov.color === BRASS && hov.border === BRASS : cfg.theme === 'flux' ? hov.color === 'rgb(0, 194, 255)' && hov.shadow.includes('255, 152, 0') : hov.shadow.includes('255, 152, 0');
+    check('P13', restOk && hovOk, `at rest `+JSON.stringify(rest)+`; under the pointer `+JSON.stringify(hov));
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-brass'; st.textContent = '.wz-arrival .wz-popout .wz-btn{ color:#ff9800 !important; border-color:#ff9800 !important; }'; document.head.appendChild(st); return true; })()");
+    const mrest = await ev(BTN);
+    const mrestOk = mrest.color !== BRASS && mrest.border !== BRASS && mrest.shadow === 'none';
+    check('P13M', mrest.color === BRASS && !mrestOk, `the button brass at rest (landed: `+JSON.stringify(mrest)+`): P13's read goes RED`);
+    await ev("document.getElementById('mut-brass').remove(); true");
+    // P14: focus in the first field on open (read at open), then a real Tab walk reaches the button
+    await ev("document.querySelector('.wz-popout input.wz-field').focus(); true");
+    await app.key('Tab'); await sleep(120); await app.key('Tab'); await sleep(300);
+    const foc = await ev(BTN);
+    const focOk = foc.active && (cfg.theme === 'plateau' ? foc.color === BRASS : cfg.theme === 'flux' ? foc.color === 'rgb(0, 194, 255)' : foc.shadow.includes('255, 152, 0'));
+    const openOk = !!active0 && active0.inPanel && active0.first;
+    check('P14', openOk && focOk, `on open: `+JSON.stringify(active0)+`; after two Tabs: `+JSON.stringify(foc));
+    const OPEN = "(() => { const a = document.activeElement; return a ? { inPanel: !!a.closest('.wz-popout'), first: a === document.querySelector('.wz-popout input.wz-field') } : null; })()";
+    await ev("document.activeElement && document.activeElement.blur(); true");
+    const mopen = await ev(OPEN);
+    check('P14M', !!mopen && !(mopen.inPanel && mopen.first), `focus dropped (landed: `+JSON.stringify(mopen)+`): P14's open read goes RED`);
+  }
   await ev("document.querySelector('.wz-popout-switch').click()");
   await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
   await sleep(700);

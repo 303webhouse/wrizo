@@ -364,6 +364,14 @@
 .wz-arrival .wz-hero.behind{ opacity:.34; transform:none; pointer-events:none; transition:opacity .35s ease; }
 .wz-arrival[data-stage='signin']::after, .wz-arrival[data-stage='account']::after{ content:''; position:absolute; inset:0; z-index:7; background:rgba(8,4,0,.55); pointer-events:none; }
 .wz-arrival-doors-ghost{ pointer-events:none; }
+/* FLUX holds its chart's finished frame behind the panel (Arrival.tsx renders it); the old hero, its logo and its Log in door are not shown around the panel (Fable Nov 18, 3:50 pm) */
+.wz-popout-chart{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:2; }
+[data-theme='flux'] .wz-arrival .wz-hero.behind{ visibility:hidden; }
+/* THE BUTTON (spec draft 4 §1, §3-§5): at rest in the panel’s label colour, never brass; brass is her act: Arbor brass under the pointer and on keyboard focus, Flux cyan with the brass bar, Machina a brass underline */
+[data-theme='plateau'] .wz-arrival .wz-popout .wz-btn{ color:#EFE4CB; border:1.5px solid #EFE4CB; }
+[data-theme='plateau'] .wz-arrival .wz-popout .wz-btn:hover:not(:disabled), [data-theme='plateau'] .wz-arrival .wz-popout .wz-btn:focus-visible{ color:var(--wz-orange); border-color:var(--wz-orange); }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-btn:hover:not(:disabled), [data-theme='flux'] .wz-arrival .wz-popout .wz-btn:focus-visible{ color:#00C2FF; box-shadow:-4px 0 0 0 var(--wz-orange); }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-btn:hover:not(:disabled), [data-theme='machina'] .wz-arrival .wz-popout .wz-btn:focus-visible{ box-shadow:inset 0 -2px 0 var(--wz-orange); }
 /* the approved spec: Flux's veil is #020C10 at 74%; Arbor's placeholder #9C9081 */
 [data-theme='flux'] .wz-arrival[data-stage='signin']::after, [data-theme='flux'] .wz-arrival[data-stage='account']::after{ background:rgba(2,12,16,.74); }
 [data-theme='plateau'] .wz-arrival .wz-popout .wz-field::placeholder{ color:#9C9081; }

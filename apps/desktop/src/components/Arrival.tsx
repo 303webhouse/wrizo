@@ -55,6 +55,14 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
   // error); checked once per arrival at the account stage, never polled.
   const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
+  // focus starts in the first field when the panel opens (spec draft 4 §1: "Focus starts in the email field"; the create-account face's first field is the name)
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const id = window.requestAnimationFrame(() => { (el.querySelector('.wz-popout input.wz-field') as HTMLInputElement | null)?.focus(); });
+    return () => window.cancelAnimationFrame(id);
+  }, [stage, signupOpen]);
   useEffect(() => {
     if (stage !== 'account') return;
     let cancelled = false;
@@ -85,12 +93,13 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // (r20: under the flag in Arbor the drawing's box takes even whole sizes, as the splash's does - the logo lands on the same whole pixel in both)
   const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor;
   const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : sizeFor(window.innerWidth, window.innerHeight)));
+  // (Flux holds its chart's finished frame behind the pop-out, the same box the splash drew it in, so it needs the box too)
   useEffect(() => {
-    if (!arborFront) return undefined;
+    if (!arborFront && theme !== 'flux') return undefined;
     const resize = () => setFrontBox(sizeFor(window.innerWidth, window.innerHeight));
     resize(); window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
-  }, [arborFront]);
+  }, [arborFront, theme]);
 
   // ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3: "Enter = Write"): on the front door's doors, Enter writes - unless a control or a field has
   // the key (a focused door presses itself; the sign-in form submits). Read through a ref so the listener always calls today's handler.
@@ -256,6 +265,12 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
         </section>
       ) : (
         <>
+          {/* FLUX: the splash's chart, on its finished frame, is the picture behind the panel (as Arbor holds its sketch); the old hero and its door are not shown around the panel (stylesheet) [spec draft 4 §1, §4; Fable Nov 18, 3:50 pm] */}
+          {theme === 'flux' && stage !== 'doors' && (
+            <div className="wz-popout-chart" aria-hidden="true" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px` }}>
+              <SplashMark theme="flux" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
+            </div>
+          )}
         {/* THE SIGN-IN POP-OUT (the Wrizors' spec, Nov 18): sign-in and sign-up are a small panel over the splash picture, not a page of their own. The picture stays (dimmed by a veil, `behind`), and the panel opens over it;
             the splash's own Sign in door and a device that signed out (`locked`, no back) both land on this one panel. */}
         <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero behind'} aria-hidden={stage === 'doors' ? undefined : true}>
