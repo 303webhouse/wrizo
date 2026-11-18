@@ -50,7 +50,8 @@ await withHarness(async (app) => {
   const c = await app.evalJs(READ);
   ok('A3 "New here? Create an account" swaps the face in place (account, the 18+ tick) and the front door and the veil stay', !!c && c.pop === 'account' && c.adult && A1({ ...c, pop: 'signin' }) && A2(c), J(c));
 
-  await press(app, '.wz-popout-back'); await sleep(600);
+  // the account face's back goes to sign-in, sign-in's back to the doors: two presses
+  await press(app, '.wz-popout-back'); await sleep(500); await press(app, '.wz-popout-back'); await sleep(600);
   const back = await app.evalJs(READ);
   ok('A4 Back puts the doors back: no panel, the front without `behind`, its Sign in door pressable', !!back && back.pop === null && back.front && !back.frontBehind && back.signinDoor, J(back));
 
