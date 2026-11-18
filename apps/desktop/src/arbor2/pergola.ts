@@ -246,6 +246,10 @@ export function mountPergola(): void {
     window.clearTimeout(gustT);
     if (!GUST_LIVE || writing()) return;
     const p = liveOf.get(room.layer);
+    // the clock read here, at rest, once per edge (a read flushes style: twice per 16 s, never per frame) - the pergola restarts its animations when
+    // the room shows it again, so a clock read once at mount goes stale (and is absent while the room is not yet day: the first run, Actions 44396431096,
+    // never left that state - 0 flips)
+    if (p) clock(p);
     if (!p || p.start == null) { gustT = window.setTimeout(gustPlan, 500); return; }   // no clock yet: look again shortly
     const ph = (((Number(document.timeline.currentTime ?? 0) - p.start) % BREEZE) + BREEZE) % BREEZE;
     const inGust = ph >= BREEZE - GUST_LEAD || ph < MOVING + GUST_TAIL;
