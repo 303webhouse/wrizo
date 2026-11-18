@@ -187,7 +187,7 @@ await withHarness(async (app) => {
         preBox: document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON(),
         // SUPERSEDED (look A, the fog; Nick Nov 15): the board behind the wizard is FOGGED (its paper colour at 80% in a layer over it), not blurred and dimmed; original, verbatim:
         // blurred: cs.filter !== 'none' && cs.filter.includes('blur'),
-        blurred: (parseFloat(getComputedStyle(blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
+        blurred: (parseFloat(getComputedStyle(blurWrap.querySelector(':scope > .board-canvas-dim') || blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
         opacity: parseFloat(cs.opacity),
       };
     })()`);

@@ -5,7 +5,7 @@
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 
-const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
+const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-dim::after{opacity:0!important}";
 
 const seed = async (app, flux3) => {
   const id = `fog-frames-${Date.now()}`;
@@ -42,7 +42,7 @@ const open = async (app, live, flux3) => {
   await sleep(900);
 };
 
-const stood = (app, name) => app.evalJs(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'), cs = w && getComputedStyle(w), af = w && getComputedStyle(w, '::after');
+const stood = (app, name) => app.evalJs(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'), cs = w && getComputedStyle(w), af = w && getComputedStyle(w.querySelector(':scope > .board-canvas-dim') || w, '::after');
   return { screen: ${JSON.stringify(name)}, theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), flag: new URLSearchParams(location.search).get('flux3'),
     popup: !!document.querySelector('.board-popup-editor'), filter: cs ? cs.filter : null, opacity: cs ? cs.opacity : null, fogOpacity: af ? af.opacity : null, fogColour: af ? af.backgroundColor : null, layer: document.querySelectorAll('[data-flux3-layer]').length }; })()`);
 

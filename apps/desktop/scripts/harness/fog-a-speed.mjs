@@ -28,8 +28,8 @@ const timing = (name, pass, detail = '') => {
   checks.push({ name: g.info ? `${name} [INFORMATION on Actions: the measure ${g.actual ? 'PASSED' : 'did NOT pass'}; this line gates nothing here]` : name, pass: g.pass, detail });
   if (g.info && !g.actual) console.log(`INFO (would have failed on the box) ${name} -- ${detail}`);
 };
-const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
-const OFF_CSS = ".board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}";
+const LIVE_CSS = ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-dim::after{opacity:0!important}";
+const OFF_CSS = ".board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-dim::after{opacity:0!important}";
 const ARMS = {
   FB: { theme: 'flux', flag: true, css: '', want: 'fog', what: 'Flux, the fog as shipped' },
   FO: { theme: 'flux', flag: true, css: OFF_CSS, want: 'off', what: 'Flux, filter off (the reference)' },
@@ -112,7 +112,7 @@ try { await withHarness(async (app) => {
     const where = await ev(`(() => { const w = document.querySelector('.board-canvas-blur-wrap'), cs = w && getComputedStyle(w), first = w && w.firstElementChild, ed = document.querySelector('.board-popup-editor');
       const scripts = [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => /index-/.test(s));
       return { theme: document.documentElement.getAttribute('data-theme'), flag: new URLSearchParams(location.search).get('flux3'), layer: document.querySelectorAll('[data-flux3-layer]').length,
-        fog: w ? parseFloat(getComputedStyle(w, '::after').opacity) : null, wrapOpacity: cs ? parseFloat(cs.opacity) : null, filter: cs ? cs.filter : null, boardVisibility: first ? getComputedStyle(first).visibility : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
+        fog: w ? parseFloat(getComputedStyle(w.querySelector(':scope > .board-canvas-dim') || w, '::after').opacity) : null, wrapOpacity: cs ? parseFloat(cs.opacity) : null, filter: cs ? cs.filter : null, boardVisibility: first ? getComputedStyle(first).visibility : null, focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1,
         served: scripts.length ? scripts[0].replace(/^.*\\//, '') : null }; })()`);
     await ev(`(() => {
       window.__ks = []; window.__et = []; let cur = null;

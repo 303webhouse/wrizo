@@ -1,14 +1,15 @@
-// FOG-A (Nick, Nov 15, 6:36 pm; the Wrizors' look A, THE FOG): the board behind an open card has NO blur; the board's own paper colour lies over it at 80%, in every theme (styles/09-board-card.css: the wrap's ::after).
+// FOG-A (Nick, Nov 15, 6:36 pm; the Wrizors' look A, THE FOG): the board behind an open card has NO blur; the board's own paper colour lies over it at 80%, in every theme (styles/09-board-card.css: the board layer's own ::after, inside its .55 fade).
 // Over the nine-card board, in Arbor (plateau), Flux and Machina, Page: Dark and Page: Light:
 //   FA1  the fog is on: within 1 s of the card opening the wrap carries .board-canvas-blurred, its ::after is the board's paper colour (the computed colour of .board-canvas) at opacity >= 0.79 (it fades over .28 s), its z-index is above any card,
 //        the wrap itself carries NO filter and NO dim (opacity 1), the layer takes no pointer; the popup is up and the editor focused. FOG PASS 1 (the Wrizors, Nov 16: "the .55 fade was left out"): the BOARD LAYER inside the wrap
-//        (.board-canvas-dim) carries today's .55 fade, and the veil is ON TOP of it (the wrap is not faded, so the veil is not: 0.8, not 0.44)
+//        (.board-canvas-dim) carries today's .55 fade. FOG PASS 3 (Nov 18: pass 2 NOT PASSED, light boards read about 146 against the drawn 95; pass 1's "veil on top" was wrong): the 80% veil is the board layer's OWN ::after, INSIDE
+//        the fade, so the board and the veil fade to .55 together (FA1 reads the veil off .board-canvas-dim::after; the wrap carries no veil)
 //   FA2  nothing moves: the wrap's rect and a card's rect are the same before the card opens and while it is open
 //   FA3  closing gives the board back: the class is gone, the fog's opacity is 0 again (after its fade), the wrap is as it was
-//   FA4  THE FOG IS 80%, MEASURED: a viewport pixel on a card (outside the popup), while it is open with the veil switched off (the faded board alone) and with it on: the share of the paper colour that lies over it is (open - faded) / (paper - faded) per channel: 0.75 to 0.85.
+//   FA4  THE FOG IS 80%, MEASURED: a viewport pixel on a card (outside the popup), while it is open with the veil switched off (the faded board alone) and with it on: the share of the paper colour that lies over it is (open - faded) / ((1 - backdrop) * .55 * (paper - board)) per channel (the veil is inside the .55 fade): 0.75 to 0.85.
 //        Only where the card and the paper differ by at least 30/255 in a channel (a card that IS the paper colour cannot show a fog); the run needs it measurable in at least 4 of the 6 skins
 //   MUTANTS, each LANDED (the stylesheet is in the page and the measure changes): MUT-live (today's blur put back: filter blur(6px) and the dim, no fog) must make FA1's predicate FALSE; MUT-colour (a wrong fog colour) must make FA1's
-//        colour check FALSE; MUT-nofog (the fog at opacity 0) must move the pixel FA4 reads; MUT-nodim (the board layer's fade removed: opacity 1) must make FA1's predicate FALSE
+//        colour check FALSE; MUT-nofog (the fog at opacity 0) must move the pixel FA4 reads; MUT-nodim (the board layer's fade removed: opacity 1) must make FA1's predicate FALSE; MUT-outside (FOG PASS 3: the veil put back on the wrap, outside the fade, pass 1's layering) must make FA1's predicate FALSE and the share leave 0.75-0.85
 // Seeding goes through the app's seams (window.wrizoCreateJournalPage, wrizoPatchEntry), never raw storage. No timing line: the speed check is fog-a-speed.mjs.
 // Run: node scripts/harness/fog-a.mjs   (from apps/desktop)
 import { withHarness } from '../runtime-verify.mjs';
@@ -16,17 +17,19 @@ import { withHarness } from '../runtime-verify.mjs';
 const THEMES = ['plateau', 'flux', 'machina'];
 const TONES = ['dark', 'light'];
 const BOARD = 'fog-board';
-const SHARE_LO = 0.75, SHARE_HI = 0.85, CONTRAST_MIN = 30;
+const SHARE_LO = 0.75, SHARE_HI = 0.85, CONTRAST_MIN = 30, DIM = 0.55;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 let measurable = 0, skins = 0;
 
 const MUT = {
-  live: ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-blur-wrap::after,.board-canvas-blurred::after{opacity:0!important}",
+  live: ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-dim::after{opacity:0!important}",
   nodim: ".board-canvas-blurred>.board-canvas-dim{opacity:1!important}",
-  colour: ".board-canvas-blurred::after{background:#ff00ff!important}",
-  nofog: ".board-canvas-blurred::after{opacity:0!important}",
+  colour: ".board-canvas-dim::after{background:#ff00ff!important}",
+  nofog: ".board-canvas-dim::after{opacity:0!important}",
+  // FOG PASS 3's mutant: the veil OUTSIDE the fade (pass 1's layering: the 80% veil on the wrap, over the faded board, not faded itself)
+  outside: ".board-canvas-dim::after{opacity:0!important}.board-canvas-blurred::after{content:'';position:absolute;inset:0;background:var(--paper);opacity:.8;pointer-events:none;z-index:1000000000}",
 };
 const makeBoxes = () => {
   const T = (id, x, y, z, text) => ({ id, kind: 'text', x, y, w: 0.2, h: 0.1, z, text });
@@ -39,7 +42,7 @@ const makeBoxes = () => {
   ];
 };
 // the page's reading of the wrap and its fog
-const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w), af = getComputedStyle(w, '::after'), dm = w.querySelector(':scope > .board-canvas-dim'), paper = getComputedStyle(document.querySelector('.board-canvas')).backgroundColor, r = w.getBoundingClientRect(), card = document.querySelector('.board-box[data-box-id="bb-d"]'), cr = card && card.getBoundingClientRect();
+const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w), dm = w.querySelector(':scope > .board-canvas-dim'), af = getComputedStyle(dm || w, '::after'), paper = getComputedStyle(document.querySelector('.board-canvas')).backgroundColor, r = w.getBoundingClientRect(), card = document.querySelector('.board-box[data-box-id="bb-d"]'), cr = card && card.getBoundingClientRect();
   return { cls: w.className, filter: cs.filter, opacity: parseFloat(cs.opacity), dimOpacity: dm ? parseFloat(getComputedStyle(dm).opacity) : null, fogOpacity: parseFloat(af.opacity), fogColour: af.backgroundColor, paper, fogZ: af.zIndex, fogPointer: af.pointerEvents,
     wrap: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10], card: cr ? [Math.round(cr.left * 10) / 10, Math.round(cr.top * 10) / 10, Math.round(cr.width * 10) / 10, Math.round(cr.height * 10) / 10] : null,
     popup: !!document.querySelector('.board-popup-editor'), focused: !!document.querySelector('.board-popup-editor') && document.activeElement === document.querySelector('.board-popup-editor') }; })()`;
@@ -92,7 +95,9 @@ try { await withHarness(async (app) => {
     return ev(`(async () => { const i = new Image(); await new Promise((res, rej) => { i.onload = res; i.onerror = rej; i.src = 'data:image/png;base64,' + ${JSON.stringify(shot)}; }); const cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; const x = cv.getContext('2d', { willReadFrequently: true }); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, cv.width, cv.height).data; const c = [0, 0, 0]; const n = d.length / 4; for (let k = 0; k < d.length; k += 4) { c[0] += d[k]; c[1] += d[k + 1]; c[2] += d[k + 2]; } return c.map((v) => Math.round(v / n)); })()`);
   };
   // base = the faded board alone UNDER the popup's backdrop (veil off), open = veil on, also under the backdrop (alpha b, black): open = (1-b)*s*paper + (1-s)*base, so s = (open - base) / ((1-b)*paper - base)
-  const share = (base, open, paper, b) => { const out = []; for (let k = 0; k < 3; k += 1) { const span = (1 - b) * paper[k] - base[k]; if (Math.abs(span) >= CONTRAST_MIN) out.push((open[k] - base[k]) / span); } return out; };
+  // FOG PASS 3: the veil is INSIDE the fade, so the board and the veil fade to DIM together: open = (1-b) * DIM * ((1-s)*board + s*paper) + (1-b) * (1-DIM) * behind, and base (the veil off) = (1-b) * (DIM*board + (1-DIM)*behind);
+  // so open - base = (1-b) * DIM * s * (paper - board), and s = (open - base) / ((1-b) * DIM * (paper - board)); board = the pixel before the card opened (no backdrop, no fade)
+  const share = (base, open, paper, b, before) => { const out = []; for (let k = 0; k < 3; k += 1) { const gap = paper[k] - before[k]; if (Math.abs(gap) >= CONTRAST_MIN) out.push((open[k] - base[k]) / ((1 - b) * DIM * gap)); } return out; };
   const backdropAlpha = async () => { const c = await ev("(() => { const b = document.querySelector('.board-popup-backdrop'); return b ? getComputedStyle(b).backgroundColor : null; })()"); const m = /rgba\(\s*\d+,\s*\d+,\s*\d+,\s*([\d.]+)\)/.exec(c || ''); return m ? Number(m[1]) : 0; };
 
   for (const tone of TONES) for (const theme of THEMES) {
@@ -116,7 +121,7 @@ try { await withHarness(async (app) => {
     const pxD = pt ? await pixel(pt) : null;
     await ev("(() => { const s = document.getElementById('__veiloff'); if (s) s.remove(); return true; })()");
     await sleep(500);
-    const sh = pxD && pxOpen && paperRgb ? share(pxD, pxOpen, paperRgb, bAlpha) : [];
+    const sh = pxBefore && pxD && pxOpen && paperRgb ? share(pxD, pxOpen, paperRgb, bAlpha, pxBefore) : [];
     skins += 1; if (sh.length) measurable += 1;
     ok(`FA4 [${T}] THE FOG IS 80%: a text-ink pixel of card A (contrast ${pt && pt.dist}) went ${JSON.stringify(pxBefore)} (open, veil off ${JSON.stringify(pxD)}) -> ${JSON.stringify(pxOpen)} under the paper colour ${JSON.stringify(paperRgb)} and the popup's backdrop (alpha ${bAlpha}): the share of paper over it ${sh.map((v) => v.toFixed(2)).join('/') || 'not measurable here (the card is the paper colour)'} (needs ${SHARE_LO} to ${SHARE_HI} in every channel that can show it)`,
       sh.length === 0 || sh.every((v) => v >= SHARE_LO && v <= SHARE_HI), JSON.stringify({ pxBefore, pxD, pxOpen, paperRgb, sh }));
@@ -134,6 +139,13 @@ try { await withHarness(async (app) => {
     await sleep(500);
     const ndSt = await ev(STATE);
     ok(`MUT-nodim [${T}] landed (the board layer's fade ${ndSt.dimOpacity}, expected .55 without the mutant): the fog predicate reads FALSE with the .55 fade removed`, ndSt.dimOpacity === 1 && !FOGGED(ndSt), JSON.stringify(ndSt));
+    await ev("document.getElementById('__mut').textContent = " + JSON.stringify(MUT.outside));
+    await sleep(700);
+    const outSt = await ev(STATE);
+    const pxOut = pt ? await pixel(pt) : null;
+    const shOut = pxBefore && pxD && pxOut && paperRgb ? share(pxD, pxOut, paperRgb, bAlpha, pxBefore) : [];
+    ok(`MUT-outside [${T}] landed (the veil put back OUTSIDE the fade, on the wrap: the board layer's own veil ${outSt.fogOpacity}, its fade ${outSt.dimOpacity}): the predicate reads FALSE and, where measurable, the share (${shOut.map((v) => v.toFixed(2)).join('/') || 'not measurable'}) leaves ${SHARE_LO}-${SHARE_HI}`,
+      !FOGGED(outSt) && (shOut.length === 0 || shOut.some((v) => v < SHARE_LO || v > SHARE_HI)), JSON.stringify({ outSt, pxOut, pxD, shOut }));
     await ev("document.getElementById('__mut').textContent = " + JSON.stringify(MUT.nofog));
     await sleep(600);
     const noSt = await ev(STATE);

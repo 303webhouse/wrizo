@@ -421,7 +421,7 @@ await withHarness(async (app) => {
       popupPresent: !!document.querySelector('.board-popup'),
       // SUPERSEDED (look A, the fog; Nick Nov 15): the board behind the popup is FOGGED, not blurred; original, verbatim:
       // filterBlurred: cs.filter !== 'none' && cs.filter.includes('blur'),
-      filterBlurred: (parseFloat(getComputedStyle(blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
+      filterBlurred: (parseFloat(getComputedStyle(blurWrap.querySelector(':scope > .board-canvas-dim') || blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
       opacity: parseFloat(cs.opacity),
       activeIsEditor: document.activeElement.className.includes('board-popup-editor'),
       hasTypewriter: !!document.querySelector('.board-popup [class*="typewriter"], .board-popup [data-typewriter]'),
