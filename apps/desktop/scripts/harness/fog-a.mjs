@@ -21,7 +21,7 @@ const SHARE_LO = 0.75, SHARE_HI = 0.85, CONTRAST_MIN = 30, DIM = 0.55;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
-let measurable = 0, skins = 0;
+let measurable = 0, skins = 0, outLightMeasurable = 0, outLightLeft = 0;
 
 const MUT = {
   live: ".board-canvas-blurred{filter:blur(6px)!important;opacity:.55!important}.board-canvas-blurred>.board-canvas-dim{opacity:1!important}.board-canvas-dim::after{opacity:0!important}",
@@ -144,8 +144,12 @@ try { await withHarness(async (app) => {
     const outSt = await ev(STATE);
     const pxOut = pt ? await pixel(pt) : null;
     const shOut = pxBefore && pxD && pxOut && paperRgb ? share(pxD, pxOut, paperRgb, bAlpha, pxBefore) : [];
-    ok(`MUT-outside [${T}] landed (the veil put back OUTSIDE the fade, on the wrap: the board layer's own veil ${outSt.fogOpacity}, its fade ${outSt.dimOpacity}): the predicate reads FALSE and, where measurable, the share (${shOut.map((v) => v.toFixed(2)).join('/') || 'not measurable'}) leaves ${SHARE_LO}-${SHARE_HI}`,
-      !FOGGED(outSt) && (shOut.length === 0 || shOut.some((v) => v < SHARE_LO || v > SHARE_HI)), JSON.stringify({ outSt, pxOut, pxD, shOut }));
+    // THE LAYERING CAN ONLY SHOW WHERE THE PAPER IS NOT THE STAGE: on a dark board the paper colour IS the colour behind the board (the page's dark stage), so a veil inside the fade and a veil outside it paint the same pixels (Actions 44339115644: flux/dark and
+    // machina/dark read the share 0.80 and 0.77 under the mutant). That is the Wrizors' "dark boards must stay as they are now" in numbers. So the pixel half is judged on the LIGHT skins only (the dark ones are held by the predicate), and a power check below needs it to bite in them
+    const left = shOut.length > 0 && shOut.some((v) => v < SHARE_LO || v > SHARE_HI);
+    if (tone === 'light' && shOut.length > 0) { outLightMeasurable += 1; if (left) outLightLeft += 1; }
+    ok(`MUT-outside [${T}] landed (the veil put back OUTSIDE the fade, on the wrap: the board layer's own veil ${outSt.fogOpacity}, its fade ${outSt.dimOpacity}): the predicate reads FALSE${tone === 'light' ? ` and, where measurable, the share (${shOut.map((v) => v.toFixed(2)).join('/') || 'not measurable'}) leaves ${SHARE_LO}-${SHARE_HI}` : ` (dark skin: the paper is the stage's own colour, so the layering cannot show in pixels; the share reads ${shOut.map((v) => v.toFixed(2)).join('/') || 'not measurable'} and is not judged)`}`,
+      !FOGGED(outSt) && (tone !== 'light' || shOut.length === 0 || left), JSON.stringify({ outSt, pxOut, pxD, shOut }));
     await ev("document.getElementById('__mut').textContent = " + JSON.stringify(MUT.nofog));
     await sleep(600);
     const noSt = await ev(STATE);
@@ -163,6 +167,7 @@ try { await withHarness(async (app) => {
     ok(`FA3 [${T}] closing gives the board back: popup gone (${!closed.popup}), the class gone (${!/board-canvas-blurred/.test(closed.cls)}), the fog opacity ${closed.fogOpacity} (0), no filter (${closed.filter}), the board layer back to full strength (${closed.dimOpacity}), the wrap and the card where they were`,
       !closed.popup && !/board-canvas-blurred/.test(closed.cls) && closed.fogOpacity === 0 && closed.filter === 'none' && closed.opacity === 1 && closed.dimOpacity === 1 && JSON.stringify(closed.wrap) === JSON.stringify(before.wrap) && JSON.stringify(closed.card) === JSON.stringify(before.card), JSON.stringify(closed));
   }
+  ok(`MUT-outside-power the veil-outside mutant moved the share out of ${SHARE_LO}-${SHARE_HI} in every measurable LIGHT skin, and at least 2 of the 3 light skins were measurable (${outLightLeft} of ${outLightMeasurable} measurable left the range)`, outLightMeasurable >= 2 && outLightLeft === outLightMeasurable, JSON.stringify({ outLightMeasurable, outLightLeft }));
   ok(`FA4-power the measure can show a fog in at least 4 of the ${skins} skins (${measurable} measurable; the others have a card the colour of the paper)`, skins === 6 && measurable >= 4, JSON.stringify({ skins, measurable }));
 }); } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
