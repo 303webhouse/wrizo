@@ -7,7 +7,8 @@
 //   T3 night x saved light: the page drawn light; the Page row offered with Light and Dark
 //   T4 night x saved dark : the page drawn DARK (the choice stays); the Page row offered, Dark the pressed choice
 //   T5 the room moving with no reload (saved dark: night -> day -> night): dark, light, dark again; the saved value dark throughout
-//   T6 the rail's tone readout (the Themes item's count) reads the page in force: LIGHT by day with dark saved, DARK at night
+//   T6 (PARKED Nov 18, below: the rail draws no tone readout in Arbor - Flux only) -> SUCCESSOR T6b: in Arbor the rail draws no tone readout,
+//      by day or at night; M3 (its mutant) puts one in and T6b goes red
 //   T7 no new key in storage: the keys after the run are the keys before it (plus none), and wrizo-theme-prefs holds the same four fields
 //   M1 (mutant, across the four cells) the old rule - the page drawn in the SAVED tone, data-page forced to it (asserted LANDED in each cell): the
 //      cells' read goes red in day x dark ONLY, and stays green in the other three (the read discriminates the ruling, not the room)
@@ -30,7 +31,9 @@ const press = async (app, sel) => {
 };
 // the page as drawn (the paper's computed colour and its luminance), the attribute, the saved value, and the Themes panel's rows
 // (the paper as drawn: the first layer from the editor outwards that paints an opaque background - the page's layers differ by mode)
-const READ = `(() => { const r = document.documentElement; let pg = document.querySelector('.desk-frame-stage .mode-page .forward-only-editor'), bg = null;
+// (driver fix, Nov 18: the first run's '.desk-frame-stage .mode-page .forward-only-editor' matched nothing - bg null in all cells; the paper is
+// .mode-page's own var(--paper) (12-studio-chrome.css), so the walk starts there)
+const READ = `(() => { const r = document.documentElement; let pg = document.querySelector('.mode-page'), bg = null;
   for (let e = pg; e && e !== document.body; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor; const a = /rgba\\([^)]*,\\s*([\\d.]+)\\)/.exec(c); if (c && c !== 'transparent' && !(a && Number(a[1]) < 0.9)) { bg = c; break; } }
   const m = bg && /rgba?\\(([\\d.]+),\\s*([\\d.]+),\\s*([\\d.]+)/.exec(bg);
   const lum = m ? Math.round((0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255 * 1000) / 1000 : null;
@@ -85,10 +88,24 @@ await withHarness(async (app) => {
   ok(`T5 the room moving, no reload (saved dark): ${J(seq.map((m) => m && `${m.room}:${m.drawn}`))}, saved ${J(seq.map((m) => m && m.saved))}`,
     seq.length === 3 && seq[0].drawn === 'dark' && seq[1].drawn === 'light' && seq[2].drawn === 'dark' && seq.every((m) => m.saved === 'dark' && m.arbor === 'true'), J(seq));
 
-  // T6: the rail's tone readout reads the page in force
-  await setRoom('day'); await sleep(500); const railDay = await app.evalJs(RAIL);
-  await setRoom('night'); await sleep(500); const railNight = await app.evalJs(RAIL);
-  ok(`T6 the rail's tone readout reads the page in force (saved dark): by day "${railDay}", at night "${railNight}"`, /LIGHT/.test(railDay || '') && !/DARK/.test(railDay || '') && /DARK/.test(railNight || ''), J({ railDay, railNight }));
+  // PARKED 2026-11-18 (SUPERSEDED - its premise is falsified: the rail draws its tone readout only in Flux (Cascade.tsx: boxes = FLUX3 && the theme
+  // is flux), and Arbor's day room exists only in Arbor, so there is no readout here to follow the room - Actions 44356027494 and 44356020688
+  // both read "Themes", no count. The Cascade edit that fed it is reverted as dead code. Original, verbatim:
+  // // T6: the rail's tone readout reads the page in force
+  // await setRoom('day'); await sleep(500); const railDay = await app.evalJs(RAIL);
+  // await setRoom('night'); await sleep(500); const railNight = await app.evalJs(RAIL);
+  // ok(`T6 the rail's tone readout reads the page in force (saved dark): by day "${railDay}", at night "${railNight}"`, /LIGHT/.test(railDay || '') && !/DARK/.test(railDay || '') && /DARK/.test(railNight || ''), J({ railDay, railNight }));
+  // SUCCESSOR T6b: in Arbor the rail draws no tone readout by day or at night (so no saved tone is shown where the page in force differs); its
+  // mutant M3 puts a readout into the Themes item (asserted LANDED) and T6b's read goes red.
+  const READOUT = "(() => { const t = document.querySelector(\".wz-strip-item[data-category='theme']\"); return t ? { item: true, readouts: t.querySelectorAll('.wz-strip-readout').length, text: (t.textContent || '').replace(/\\s+/g, ' ').trim() } : { item: false }; })()";
+  const t6bOk = (r) => !!r && r.item && r.readouts === 0;
+  await setRoom('day'); await sleep(500); const roDay = await app.evalJs(READOUT);
+  await setRoom('night'); await sleep(500); const roNight = await app.evalJs(READOUT);
+  ok(`T6b in Arbor the rail draws no tone readout (by day ${J(roDay)}, at night ${J(roNight)})`, t6bOk(roDay) && t6bOk(roNight), J({ roDay, roNight }));
+  await app.evalJs("(() => { const t = document.querySelector(\".wz-strip-item[data-category='theme']\"); if (!t) return false; const s = document.createElement('span'); s.className = 'wz-strip-readout'; s.textContent = 'DARK'; t.appendChild(s); return true; })()");
+  const m3 = await app.evalJs(READOUT);
+  ok(`M3 (mutant): a tone readout put into the Themes item (LANDED: ${m3 && m3.readouts}) - T6b's read goes RED`, !!m3 && m3.readouts === 1 && !t6bOk(m3), J(m3));
+  await app.evalJs("document.querySelectorAll(\".wz-strip-item[data-category='theme'] .wz-strip-readout\").forEach((s) => s.remove())");
 
   // T7: nothing new saved
   const keysAfter = await app.evalJs('Object.keys(localStorage).sort()');
@@ -116,8 +133,8 @@ await withHarness(async (app) => {
 }, { label: 'arbor-page-tone' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-PAGE-TONE PARKED: PASS (0 records) - a new file; it parks nothing of its own');
-const WANT = 9;
+if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-PAGE-TONE PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks one original as quoted comments (T6, Nov 18: the rail\'s tone readout is Flux-only, so there is none in Arbor to follow the room), with its successor T6b and mutant M3');
+const WANT = 10;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-PAGE-TONE VERIFY: PASS (${checks.length} checks)` : `\nARBOR-PAGE-TONE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);
