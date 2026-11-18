@@ -1,0 +1,786 @@
+// ARBOR v2 MOCKUP, ROUND r22 - as named screens for INK's frames job (-f themes=plateau -f screens_file=apps/desktop/scripts/frames/arbor2-r22.mjs).
+// Source: Nick's walk of the play server (Nov 8), his notes relayed by Fable the same day:
+//   2. "On a Board, the Tutor drawer opens INSIDE the board; it must open at the surface's edge, as on the Page."
+//   4. "The day sage logo is nearly invisible: darker green, >= 3:1 vs the day room; before/after frames."
+//   5. "Splash: the flow chart cycles faster and ONLY the arrows animate (orange = the writer's acts)."
+//   7. "Enter drops a block, the screen fades, but the Tools strip's tabs stayed. Rule: tabs follow their drawer."
+// and Fable's rulings on notes 1 and 3 (Nov 8): 1. "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on the
+//   room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly." 3. "ALL night-room
+//   browns step darker together (the room ground, rails, panels, the dark page), keeping the lamplight's warm gradient. Three steps."
+// Every check THROWS with its numbers when it fails and prints them when it passes ("ARBOR-R22 <screen> {...}"). Seeds go through window.wrizo*.
+// Pictures (-pic-) are for the eye: the board with each drawer open, the corner logo by day before and after, the splash mid-run.
+import { guarded } from './mockup-kit.mjs';
+import { withRoomPin } from './mockup-kit.mjs';
+import { zoomProof, holeOf, stopsOf } from './arbor2.mjs';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const say = (name, data) => console.log(`ARBOR-R22 ${name} ${JSON.stringify(data)}`);
+const fail = (name, data) => { console.log(`ARBOR-R22-FAIL ${name} ${JSON.stringify(data)}`); throw new Error(`${name} FAILED ${JSON.stringify(data)}`.slice(0, 1200)); };
+const FINISH = "(() => { document.getAnimations().forEach((a) => { try { if (a.effect && Number.isFinite(a.effect.getComputedTiming().endTime)) a.finish(); } catch {} }); return true; })()";
+const PAGEW = 'The morning light came in low across the table, and she began to write. The kettle ticked as it cooled, and outside a dog asked the street a question nobody answered.';
+const DRAWER_MIN = 200;   // store/menusDrawers.ts: below this margin a drawer overlays, on the Page and now on the Board
+const setRoom = async (app, room) => { await app.evalJs(`document.documentElement.setAttribute('data-room', ${JSON.stringify(room === 'day' ? 'light' : 'dark')})`); await sleep(700); };
+const caretEnd = "(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()";
+const key = async (app, k, code, vk, text) => {
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, ...(text ? { text, unmodifiedText: text } : {}) });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk });
+};
+const go = async (app, hash) => {
+  await app.evalJs(`history.replaceState(null, '', '/?arbor2=1' + ${JSON.stringify(hash)})`); await app.reload();
+  await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'flag', timeout: 15000 });
+  await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 });
+};
+const openPage = async (app, id) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await sleep(300); await go(app, `#/page/${id}`);
+  if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }))) fail('R22-OPEN-PAGE', { id, editor: false });
+  await sleep(900);
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === 'draft'); if (b) b.click(); return !!b; })()"); await sleep(900);
+  await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+  await app.mouseMove(600, 300); await sleep(700);
+};
+const openBoard = async (app, id) => {
+  await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: 'R22 board', pageType: 'board', boxes: [{ id: `${id}-box`, kind: 'text', x: 0.62, y: 0.12, w: 0.34, h: 0.16, z: 1, text: 'A card near the right edge' }], createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: null })})`);
+  await sleep(300); await go(app, `#/page/${id}`);
+  if (!(await waitSoft(app, "!!document.querySelector('.board-canvas-wrap, .board-canvas')", { label: 'board', timeout: 10000 }))) fail('R22-OPEN-BOARD', { id, board: false });
+  await sleep(1200); await app.mouseMove(600, 300); await sleep(500);
+};
+// the board's rect, the stage's, and every visible drawer panel's (the board area is what useBoardBox sizes; the wrap is what Tutor.tsx measures)
+const BOARD = `(() => { const rr = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { l: Math.round(r.left * 10) / 10, r: Math.round(r.right * 10) / 10, t: Math.round(r.top), w: Math.round(r.width * 10) / 10 }; };
+  const wrap = document.querySelector('.board-canvas-wrap') || document.querySelector('.board-canvas'); const stage = document.querySelector('.desk-frame-stage');
+  const vis = (s) => [...document.querySelectorAll(s)].find((e) => { const r = e.getBoundingClientRect(); return r.width > 4 && getComputedStyle(e).visibility !== 'hidden'; }) || null;
+  const tp = document.querySelector('.wz-tutor-panel'), sp = document.querySelector('.wz-sliver-panel');
+  const slideR = tp && tp.querySelector('.wz-drawer-slide'), slideL = sp && sp.querySelector('.wz-drawer-slide');
+  return { wrap: rr(wrap), stage: rr(stage), tutor: tp ? { open: tp.getAttribute('data-open'), panel: rr(tp), slide: rr(slideR) } : null, tools: sp ? { open: sp.getAttribute('data-open'), panel: rr(sp), slide: rr(slideL) } : null,
+    boardL: stage ? stage.style.getPropertyValue('--board-l') : null, boardR: stage ? stage.style.getPropertyValue('--board-r') : null, card: rr(vis('.board-box')) }; })()`;
+const same = (a, b) => !!a && !!b && Math.abs(a.l - b.l) <= 0.5 && Math.abs(a.r - b.r) <= 0.5 && Math.abs(a.w - b.w) <= 0.5;
+// effective opacity (the element's times every ancestor's; display:none / visibility:hidden = 0)
+const EFF = "const eff = (e) => { if (!e) return null; let o = 1; for (let n = e; n && n.nodeType === 1; n = n.parentElement) { const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden') return 0; o *= Number(cs.opacity); } return Math.round(o * 100) / 100; };";
+
+// ── r22 notes 1 and 3 (Fable's rulings, Nov 8) ──
+const clickMode = async (app, word) => {
+  const hit = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === ${JSON.stringify(word)}); if (b) b.click(); return !!b; })()`);
+  if (!hit) fail('R22-MODE', { word, found: false });
+  await sleep(1200);
+};
+const openFree = async (app, id) => {
+  await openPage(app, id); await clickMode(app, 'free write');
+  if (!(await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 }))) fail('R22-OPEN-FREE', { id, zoomed: false });
+  await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+  await app.mouseMove(600, 300); await sleep(700);
+};
+const openTools = async (app) => { await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g && document.querySelector('.wz-sliver')?.getAttribute('data-open') !== 'true') g.click(); return true; })()"); await sleep(300); };
+// the page as drawn (for "leaving restores the page exactly")
+const PAGEREAD = `(() => { const p = document.querySelector('.mode-page'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const cs = getComputedStyle(p), r = p.getBoundingClientRect();
+  return { bg: cs.backgroundColor, shadow: cs.boxShadow, ink: getComputedStyle(ed).color, zoom: p.closest('.mode-pagecol')?.getAttribute('data-zoom') ?? null,
+    rect: { l: Math.round(r.left * 10) / 10, r: Math.round(r.right * 10) / 10, w: Math.round(r.width * 10) / 10 } }; })()`;
+// the mockup bar's Night browns row, pressed as Nick would (the bar opens if it is folded); true when the step's button reads pressed afterwards
+const pickBrown = (app, s) => app.evalJs(`(async () => { const word = ${JSON.stringify({ now: 'Now', a: 'A', b: 'B', c: 'C' })}[${JSON.stringify(s)}];
+  const head = [...document.querySelectorAll('.arbor2-bar-head')].find((h) => h.textContent.trim() === 'Arbor mockup'); if (head && head.getAttribute('aria-expanded') !== 'true') { head.click(); await new Promise((r) => setTimeout(r, 100)); }
+  const row = document.querySelector('.arbor2-bar-row[aria-label="Night browns"]'); const b = row && [...row.querySelectorAll('.arbor2-bar-opt')].find((x) => x.textContent.trim() === word);
+  if (!b) return false; b.click(); await new Promise((r) => setTimeout(r, 150)); return b.getAttribute('aria-pressed') === 'true'; })()`);
+// every token the steps move, as computed (the values as the stylesheet writes them)
+const BROWNREAD = `(() => { const cs = getComputedStyle(document.documentElement), v = (n) => cs.getPropertyValue(n).trim().toUpperCase();
+  const room = {}; for (const n of ['--ink-950', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--arbor2-bar', '--arbor2-bar-line']) room[n] = v(n);
+  const page = {}; for (const n of ['--paper', '--paper-dim', '--paper-border']) page[n] = v(n);
+  const sp = document.querySelector('.wz-sliver-panel');
+  return { room, page, glow: cs.getPropertyValue('--lamp-glow').trim(), drawer: sp ? getComputedStyle(sp).getPropertyValue('--desk-ground').trim().toUpperCase() : null,
+    tone: document.documentElement.getAttribute('data-page'), brown: document.documentElement.getAttribute('data-arbor2-brown') }; })()`;
+const parseHex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const contrast = (a, b) => { const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+  const x = L(a), y = L(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+// the four steps, as styles/arbor-v2.css writes them (Now = today's palette; A / B / C = OKLab L -.02 / -.04 / -.06 on every night brown)
+const BROWNS = {
+  now: {"room":{"--ink-950":"#120A06","--ink-900":"#1B120C","--ink-800":"#261A12","--ink-border":"#3A2A1C","--ink-border-strong":"#4A3726","--arbor2-bar":"#241912","--arbor2-bar-line":"#35271C"},"glow":["#2E1D0E","#20140B","#170E08","#120A06"],"drawer":"#2E2118","page":{"--paper":"#1A1510","--paper-dim":"#150F0B","--paper-border":"#3A2D22"}},
+  a: {"room":{"--ink-950":"#0D0704","--ink-900":"#160E09","--ink-800":"#20160F","--ink-border":"#342519","--ink-border-strong":"#443222","--arbor2-bar":"#1F150E","--arbor2-bar-line":"#2F2218"},"glow":["#28190B","#1A1008","#120A06","#0D0704"],"drawer":"#281D14","page":{"--paper":"#15110C","--paper-dim":"#100B08","--paper-border":"#34281E"}},
+  b: {"room":{"--ink-950":"#080402","--ink-900":"#110A06","--ink-800":"#1B120B","--ink-border":"#2E2115","--ink-border-strong":"#3E2D1F","--arbor2-bar":"#19110B","--arbor2-bar-line":"#291E15"},"glow":["#221509","#150C06","#0D0704","#080402"],"drawer":"#231811","page":{"--paper":"#100C09","--paper-dim":"#0B0705","--paper-border":"#2F241A"}},
+  c: {"room":{"--ink-950":"#050201","--ink-900":"#0C0604","--ink-800":"#160D08","--ink-border":"#281C12","--ink-border-strong":"#38291B","--arbor2-bar":"#140C08","--arbor2-bar-line":"#241911"},"glow":["#1C1006","#100804","#080402","#050201"],"drawer":"#1D140D","page":{"--paper":"#0C0806","--paper-dim":"#070403","--paper-border":"#291F17"}}};
+
+// the ground UNDER the zoomed page's words: the words (and caret) made transparent for one screenshot, an 8 x 5 grid on the words' column in the
+// writing band (the writing line to 1.4 lines below it); each sample's ratio to the words' ink (r22-typewriter's successor sampler, as a helper)
+const floorUnderWords = async (app) => {
+  const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col && col.querySelector('.mode-page'), ed = p && p.querySelector('.forward-only-editor'); if (!ed) return null;
+    const er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+    const l = Math.max(er.left, pr.left) + 4, r = Math.min(er.right, pr.right - 24) - 4;
+    return { xs: Array.from({ length: 8 }, (_, i) => l + (r - l) * i / 7), ys: [0, 0.35, 0.7, 1.05, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color }; })()`);
+  if (!m) return { n: 0, min: null };
+  // (driver, §19.2, no assertion changed: the light page's drawn caret is hidden with the words and the native caret)
+  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'r22-tw-hide2'; s.textContent = '.forward-only-editor, .forward-only-editor *{ color:transparent !important; caret-color:transparent !important; -webkit-text-fill-color:transparent !important; } .arbor2-edged-caret{ visibility:hidden !important; }'; document.head.appendChild(s); return true; })()");
+  await sleep(150);
+  const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs("document.getElementById('r22-tw-hide2')?.remove()");
+  return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+    const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+    const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+    const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+      rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+    const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+    return { n: rows.length, min, ink }; })()`);
+};
+
+const screens = {
+  // ── 2. THE BOARD KEEPS ITS RECT; EACH DRAWER OPENS AT ITS EDGE (flush where the margin holds a drawer, over it where it does not, as on the Page)
+  'r22-board-drawers': async (app) => {
+    await openBoard(app, 'arbor-r22-board'); await setRoom(app, 'day');
+    const shut = await app.evalJs(BOARD);
+    if (!shut.wrap || !shut.stage) fail('R22-BOARD-DRAWERS', { blind: true, shut });
+    const margin = Math.round((shut.stage.r - shut.wrap.r) * 10) / 10, marginL = Math.round((shut.wrap.l - shut.stage.l) * 10) / 10;
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const tut = await app.evalJs(BOARD);
+    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const tools = await app.evalJs(BOARD);
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH);
+    const back = await app.evalJs(BOARD);
+    const tutorVisL = tut.tutor && tut.tutor.slide ? tut.tutor.slide.l : null, toolsVisR = tools.tools && tools.tools.slide ? tools.tools.slide.r : null;
+    const ok = {
+      tutorOpened: !!tut.tutor && tut.tutor.open === 'true', toolsOpened: !!tools.tools && tools.tools.open === 'true',
+      boardStillWithTutor: same(shut.wrap, tut.wrap), boardStillWithTools: same(shut.wrap, tools.wrap), boardBack: same(shut.wrap, back.wrap),
+      // where the margin holds a drawer it stands at the board's edge, never over it; where it does not, it overlays (the Page's rule)
+      tutorAtEdge: margin >= DRAWER_MIN ? tutorVisL !== null && Math.abs(tutorVisL - shut.wrap.r) <= 2 : tutorVisL !== null,
+      toolsAtEdge: marginL >= DRAWER_MIN + 60 ? toolsVisR !== null && Math.abs(toolsVisR - shut.wrap.l) <= 2 : toolsVisR !== null,
+    };
+    const data = { ok, margin, marginL, shut: shut.wrap, withTutor: tut.wrap, tutorSlide: tut.tutor && tut.tutor.slide, withTools: tools.wrap, toolsSlide: tools.tools && tools.tools.slide, vars: [tut.boardL, tut.boardR, tools.boardL, tools.boardR], win: await app.evalJs('[innerWidth, innerHeight]') };
+    if (Object.values(ok).some((x) => !x)) fail('R22-BOARD-DRAWERS', data);
+    say('r22-board-drawers', data);
+  },
+  'r22-pic-board-tutor': async (app) => { await openBoard(app, 'arbor-r22-pbt'); await setRoom(app, 'day'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+  'r22-pic-board-tutor-night': async (app) => { await openBoard(app, 'arbor-r22-pbtn'); await setRoom(app, 'night'); await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+  'r22-pic-board-tools': async (app) => { await openBoard(app, 'arbor-r22-pbl'); await setRoom(app, 'day'); await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); },
+
+  // ── 7. TABS FOLLOW THEIR DRAWER: Enter (any key) fades the open Tools drawer and its folder tabs together; Esc brings both back
+  'r22-tabs-follow': async (app) => {
+    await openPage(app, 'arbor-r22-tabs'); await setRoom(app, 'day');
+    await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(900); await app.evalJs(FINISH); await sleep(200);
+    const R = `(() => { ${EFF} const tabs = document.querySelector('.arbor2-c2--left'), panel = document.querySelector('.wz-sliver-panel');
+      return { tabs: tabs ? { op: eff(tabs), pe: getComputedStyle(tabs).pointerEvents, n: tabs.querySelectorAll('.wz-drawer-tab').length } : null, panel: panel ? { op: eff(panel), open: panel.getAttribute('data-open') } : null,
+        writing: document.documentElement.getAttribute('data-wz-writing') }; })()`;
+    const rest = await app.evalJs(R);
+    await app.evalJs(caretEnd); await key(app, 'Enter', 'Enter', 13, '\r'); await sleep(300); await key(app, 'w', 'KeyW', 87, 'w');
+    await sleep(3500); await app.evalJs(FINISH); await sleep(200);
+    const wr = await app.evalJs(R);
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708, 4 of 4 red on this line only: Esc returns the chrome AND closes the open Tools
+    // drawer, so the tabs rightly left with it (back: tabs at 0, taking the pointer again - not writing). The return that keeps the drawer open is
+    // the writer reaching for the chrome: the pointer resting at the top edge, as the walk drives it). Original, verbatim:
+    // await key(app, 'Escape', 'Escape', 27); await sleep(1500); await app.evalJs(FINISH); await sleep(200);
+    // SUCCESSOR: the edge dwell brings the chrome back with the drawer still open (panel and tabs both return); then Esc closes the drawer and
+    // the tabs go with it (they follow their drawer that way too).
+    const [W] = await app.evalJs('[innerWidth, innerHeight]'); const x = Math.round(W * 0.5);
+    await app.mouseMove(x, 300); await sleep(60); for (let i = 0; i < 8; i++) { await app.mouseMove(x + (i % 2 ? 2 : -2), 18); await sleep(90); }
+    await sleep(1500); await app.evalJs(FINISH); await sleep(200);
+    const back = await app.evalJs(R);
+    await key(app, 'Escape', 'Escape', 27); await sleep(1200); await app.evalJs(FINISH); await sleep(200);
+    const shut = await app.evalJs(R);
+    const ok = {
+      seen: !!rest.tabs && rest.tabs.n >= 2 && rest.tabs.op === 1 && !!rest.panel && rest.panel.open === 'true' && rest.panel.op === 1,
+      writing: wr.writing === 'true',
+      panelFaded: !!wr.panel && wr.panel.op === 0,
+      tabsFollow: !!wr.tabs && wr.tabs.op === 0 && wr.tabs.pe === 'none',
+      // PARKED 2026-11-08 (SUPERSEDED - as the Esc line above: it read the return after Esc, which closes the drawer). Original, verbatim:
+      // returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && !!back.panel && back.panel.op === 1,
+      // SUCCESSOR: after the edge dwell, the drawer still open and both back at full
+      returned: back.writing !== 'true' && !!back.tabs && back.tabs.op === 1 && back.tabs.pe !== 'none' && !!back.panel && back.panel.open === 'true' && back.panel.op === 1,
+      closedTogether: !!shut.panel && shut.panel.open !== 'true' && !!shut.tabs && shut.tabs.op === 0,
+    };
+    if (Object.values(ok).some((x) => !x)) fail('R22-TABS-FOLLOW', { ok, back, shut, wr: wr.tabs });
+    say('r22-tabs-follow', { ok, back, shut, wr: wr.tabs });
+  },
+
+  // ── 4. THE DAY LOGO, DARKER: the corner mark's ink as drawn (at .7) against the plaster around it, read from the screen, >= 3:1
+  'r22-day-logo': async (app) => {
+    await openPage(app, 'arbor-r22-logo'); await setRoom(app, 'day');
+    await app.evalJs("document.documentElement.setAttribute('data-arbor2-off', ((document.documentElement.getAttribute('data-arbor2-off') || '') + ' shadows').trim())"); await sleep(500);
+    const m = await app.evalJs(`(() => { const e = [...document.querySelectorAll('.brand-mark')].find((x) => x.getBoundingClientRect().width > 0); if (!e) return null; const r = e.getBoundingClientRect(), a = getComputedStyle(e, '::after');
+      return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], op: Number(getComputedStyle(e).opacity), dayImg: a.backgroundImage, dayOp: Number(a.opacity), room: document.documentElement.getAttribute('data-arbor2-room') }; })()`);
+    if (!m) fail('R22-DAY-LOGO', { mark: false });
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+      const [x, y, w, h] = ${JSON.stringify(m.rect)}.map((v) => Math.round(v * dpr)); const c = document.createElement('canvas'); c.width = w; c.height = h; const cx = c.getContext('2d'); cx.drawImage(img, -x, -y);
+      const d = cx.getImageData(0, 0, w, h).data; const cnt = new Map(); const at = (i) => d[i] + ',' + d[i + 1] + ',' + d[i + 2];
+      for (let i = 0; i < w; i++) { for (const j of [0, h - 1]) { const k = at((j * w + i) * 4); cnt.set(k, (cnt.get(k) || 0) + 1); } }
+      const g = [...cnt.entries()].sort((a, b) => b[1] - a[1])[0][0].split(',').map(Number);
+      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+      const ink = new Map(); let inked = 0;
+      for (let i = 0; i < d.length; i += 4) { const p = [d[i], d[i + 1], d[i + 2]]; if (Math.max(...p.map((v, k) => Math.abs(v - g[k]))) < 24) continue; inked++; const q = p.map((v) => Math.round(v / 6) * 6).join(','); ink.set(q, (ink.get(q) || 0) + 1); }
+      const top = [...ink.entries()].sort((a, b) => b[1] - a[1])[0]; const t = top ? top[0].split(',').map(Number) : null;
+      const ratio = t ? (Math.max(L(t), L(g)) + 0.05) / (Math.min(L(t), L(g)) + 0.05) : null;
+      return { ground: g, ink: t, inked, ratio: ratio ? Math.round(ratio * 100) / 100 : null }; })()`);
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE, Nov 10, 2:15 pm, item 10: the day logo darkens until it reads 3:1 on shaded plaster - the day copy is now wrizo-logo-day-green2-all.png, #374325 (scripts/arbor2-logo-r23.mjs); r22's file is kept). Original, verbatim:
+    // const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
+    // SUCCESSOR: the r23 copy (darker, for the shade); the same drawn-at-.7 and 3:1 bars
+    const ok = { dayRoom: m.room === 'day', file: /wrizo-logo-day-green2-all\.png/.test(m.dayImg) && m.dayOp === 1, drawnAt7: Math.abs(m.op - 0.7) < 0.01, seen: px.inked >= 200, contrast: px.ratio !== null && px.ratio >= 3 };
+    if (Object.values(ok).some((x) => !x)) fail('R22-DAY-LOGO', { ok, m, px });
+    say('r22-day-logo', { ok, m, px });
+  },
+  // before / after, the same corner, the same room (before = the r21 sage copy put back for this frame only)
+  'r22-pic-logo-day-before': async (app) => { await openPage(app, 'arbor-r22-plb'); await setRoom(app, 'day'); await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = \":root[data-arbor2][data-theme='plateau'] .brand-mark::after{ background-image:url('/brand/arbor2/wrizo-logo-sage-all.png') !important; }\"; document.head.appendChild(s); return true; })()"); await sleep(500); },
+  'r22-pic-logo-day-after': async (app) => { await openPage(app, 'arbor-r22-pla'); await setRoom(app, 'day'); await sleep(500); },
+
+  // ── 5. THE SPLASH: only the arrows animate (the five stage outlines never light), and the run is faster (the arrows done in <= 1.5 s)
+  'r22-splash-arrows': async (app) => {
+    // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708, 4 of 4 red: a requestAnimationFrame sampler during the page's load got 5-10
+    // samples, so it never saw an arrow start or finish (first/done null) while the frames show the arrows drawn; the instrument, not the app.
+    // It also read only the splash, and the front door's own finished drawing (Arrival.tsx, the same mark `reduced`) still lit the outlines -
+    // the app fix is in SplashMark.tsx). Original, verbatim:
+    // const SAMPLER = `(() => { const t0 = performance.now(); window.__r22 = { outlinesMax: 0, first: null, done: null, edges: 0, sketchDone: null, samples: 0 };
+      // const tick = () => { const s = window.__r22; const svg = document.querySelector('.wz-splash .wz-splash-arbor');
+        // if (svg) { s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; });
+          // const ps = [...svg.querySelectorAll('mask path')]; s.edges = ps.length; const offs = ps.map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')));
+          // const now = Math.round(performance.now() - t0); if (s.first === null && offs.some((v) => v < 0.98)) s.first = now; if (s.done === null && ps.length && offs.every((v) => v <= 0.001)) s.done = now; }
+        // const f = window.wrizoArborFront; if (f && f.sketchDone && s.sketchDone === null) s.sketchDone = Math.round(f.sketchDone - t0);
+        // if (performance.now() - t0 < 12000) requestAnimationFrame(tick); };
+      // requestAnimationFrame(tick); })();`;
+    // const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: SAMPLER });
+    // try {
+      // await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      // await waitSoft(app, "!!window.__r22 && window.__r22.done !== null", { label: 'arrows done', timeout: 15000 }); await sleep(1500);
+    // } finally { await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier }).catch(() => {}); }
+    // const s = await app.evalJs('window.__r22');
+    // const run = s && s.first !== null && s.done !== null ? s.done - s.first : null;
+    // const ok = { sampled: !!s && s.samples > 20 && s.edges === 6, outlinesNeverLight: !!s && s.outlinesMax === 0, arrowsDrew: !!s && s.first !== null && s.done !== null, faster: run !== null && run <= 1500 };
+    // if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, s, run });
+    // say('r22-splash-arrows', { ok, s, run });
+    // SUCCESSOR: read the plan, not the paint. From document start a 16 ms interval (not a frame callback) records the six arrows' own animation
+    // timings (delay + duration, already scaled) the moment they exist, the stage outlines' animation count and their highest opacity; then,
+    // with the splash gone, the front door's finished drawing: every arrow drawn, every outline still at 0 (cream).
+    const SAMPLER = `(() => { const t0 = performance.now(); window.__r22b = { plan: null, outlineAnims: 0, outlinesMax: 0, samples: 0 };
+      const iv = setInterval(() => { const s = window.__r22b; const svg = document.querySelector('.wz-splash .wz-splash-arbor'); if (!svg) { if (performance.now() - t0 > 12000) clearInterval(iv); return; }
+        s.samples++; const st = [...svg.querySelectorAll('g[data-stage]')]; st.forEach((g) => { const o = Number(getComputedStyle(g).opacity); if (o > s.outlinesMax) s.outlinesMax = o; s.outlineAnims = Math.max(s.outlineAnims, g.getAnimations().length); });
+        const ps = [...svg.querySelectorAll('mask path')];
+        if (!s.plan && ps.length === 6 && ps.every((p) => p.getAnimations().length)) s.plan = ps.map((p) => { const t = p.getAnimations()[0].effect.getTiming(); return [Math.round(Number(t.delay)), Math.round(Number(t.duration))]; });
+        if (performance.now() - t0 > 12000) clearInterval(iv); }, 16); })();`;
+    const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: SAMPLER });
+    try {
+      await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+      await waitSoft(app, '!!window.__r22b && !!window.__r22b.plan', { label: 'the arrows planned', timeout: 15000 });
+      await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 }); await sleep(800);
+    } finally { await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier }).catch(() => {}); }
+    const s = await app.evalJs('window.__r22b');
+    const door = await app.evalJs("(() => { const svg = document.querySelector('.arbor2-front-mark .wz-splash-arbor'); if (!svg) return null; return { outlines: [...svg.querySelectorAll('g[data-stage]')].map((g) => Number(getComputedStyle(g).opacity)), arrows: [...svg.querySelectorAll('mask path')].map((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', ''))) }; })()");
+    const span = s && s.plan ? Math.max(...s.plan.map(([d, u]) => d + u)) - Math.min(...s.plan.map(([d]) => d)) : null;
+    const ok = { planned: !!s && !!s.plan && s.plan.length === 6 && s.samples > 0, outlinesNeverAnimate: !!s && s.outlineAnims === 0 && s.outlinesMax === 0,
+      faster: span !== null && span <= 1500, doorArrowsDrawn: !!door && door.arrows.length === 6 && door.arrows.every((v) => v <= 0.001), doorOutlinesCream: !!door && door.outlines.length === 5 && door.outlines.every((o) => o === 0) };
+    if (Object.values(ok).some((x) => !x)) fail('R22-SPLASH-ARROWS', { ok, span, s, door });
+    say('r22-splash-arrows', { ok, span, s, door });
+  },
+  // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42523455219: the frames job refuses any frame while the opening splash is on screen ("the
+  // opening splash is still on screen"), so a mid-run splash picture cannot be a frames-job screen). Original, verbatim:
+  // // mid-run: the arrows part-drawn in brass, every stage outline still Nick's cream
+  // 'r22-pic-splash-mid': async (app) => {
+    // await app.evalJs("history.replaceState(null, '', '/?arbor2=1#/')"); await app.reload();
+    // // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42522633708: the 100 ms poll missed the ~1.1 s run, so the frame was the finished front door,
+    // // not mid-run). Original, verbatim:
+    // // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) <= 0.001) && ps.some((p) => Number(getComputedStyle(p).strokeDashoffset.replace('px', '')) > 0.5); })()", { label: 'mid-run', timeout: 10000 });
+    // // await app.evalJs("document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); true");
+    // // SUCCESSOR: as soon as the six arrows' animations exist, pause every animation and set the splash's to the run's middle moment (all six
+    // // start together, so one currentTime is one moment; the delays are inside it).
+    // await waitSoft(app, "(() => { const ps = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')]; return ps.length === 6 && ps.every((p) => p.getAnimations().length); })()", { label: 'arrows planned', timeout: 10000 });
+    // const mid = await app.evalJs("(() => { document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); const as = [...document.querySelectorAll('.wz-splash .wz-splash-arbor mask path')].map((p) => p.getAnimations()[0]); const t = as.map((a) => a.effect.getTiming()); const lo = Math.min(...t.map((x) => Number(x.delay))), hi = Math.max(...t.map((x) => Number(x.delay) + Number(x.duration))); const m = (lo + hi) / 2; as.forEach((a) => { a.currentTime = m; }); return { lo, hi, m }; })()");
+    // say('r22-pic-splash-mid', { mid });
+  // },
+  // SUCCESSOR: the mid-run splash is seen in the box recording (scripts/frames/arbor2-walk.mjs step 1, every frame, day and night, both sizes), and
+  // r22-splash-arrows above reads its plan and the front door's finished drawing.
+  // ── 1. TYPEWRITER ON THE ROOM (Fable's ruling 1, Nov 8: "while Typewriter is on, Arbor's page draws no fill or edge of its own; the words sit on
+  // the room's ground under the lamplight glow; the text floors hold, measured on the room; leaving restores the page exactly"). The page opens in
+  // Draft (read), goes to Free Write (Typewriter's zoom), then back to Draft (read again). Per room, zoomed:
+  //   proof   zoomProof V7 (scripts/frames/arbor2.mjs): no sheet, the page bare, the room's shade unbroken over it, the words the room's ink, and by
+  //           day no slat on the prose or the count
+  //   floor   the words' ink against the room's own PIXELS (a screenshot) in the writing band - the page's margin either side of the prose, from
+  //           the writing line to 1.4 lines below it, where the band is whole - >= 13.9 at every sample (the page-text floor, docs/MAP.md)
+  //   caret   by day the caret is the ink (the dark page's brass is 2:1 on plaster)
+  //   back    Draft again: the page's background, shadow, ink and rect exactly as before Free Write
+  // (Nick's CORRECTION, via Fable, Nov 8: "page-less Typewriter is NIGHT/dark ONLY. Day/light Typewriter stays exactly as before (the page's paper
+  // stays)". So: proof = zoomProof V9, by room - page-less by night, the hard sheet in the page's paper by day; floor = the words against the ground
+  // under them, which by day is the sheet; caret2 = brass on a dark page in both rooms, the ink on a light one. The lines above are kept as written.)
+  'r22-typewriter': async (app) => {
+    const out = {};
+    for (const room of ['night', 'day']) {
+      await openPage(app, `arbor-r22-tw-${room}`); await setRoom(app, room);
+      const before = await app.evalJs(PAGEREAD);
+      await clickMode(app, 'free write');
+      const zoomed = await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 });
+      if (!zoomed) fail('R22-TYPEWRITER', { room, zoomed: false });
+      await app.evalJs(caretEnd); await sleep(900);
+      const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+      // PARKED 2026-11-08 (SUPERSEDED - Actions frames 42537140287, 4 of 4 red on "floor": the instrument read the page's MARGINS, not the ground
+      // under the words - its worst night and day samples, 8 px inside the page's right edge, were the page's scrollbar thumb (#B9AA8C / #6B5F4E,
+      // the low ink); it also caught the day pergola crossing the bare page, a real miss fixed in paper.ts). Original, verbatim:
+      // const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col.querySelector('.mode-page'), ed = p.querySelector('.forward-only-editor');
+        // const pr = p.getBoundingClientRect(), er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect();
+        // const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+        // const xs = [pr.left + 8, (pr.left + er.left) / 2, er.left - 8, er.right + 8, (er.right + pr.right) / 2, pr.right - 8].filter((x) => x > pr.left && x < pr.right && (x < er.left - 2 || x > er.right + 2));
+        // return { xs, ys: [-0.1, 0.3, 0.7, 1.1, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page') }; })()`);
+      // const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      // const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        // const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        // const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+        // const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+        // const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+          // rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+        // const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+        // return { n: rows.length, min, grounds: [...new Set(rows.map((q) => q.g.join(',')))].slice(0, 6) }; })()`);
+      // SUCCESSOR: the ground UNDER THE WORDS. For one screenshot the words (and the caret) are made transparent - the page, the room, the glow,
+      // the vignette and the pergola stay as they are - and the ground is read on a grid across the words' own column (the editor's rect, 8 x 5)
+      // in the writing band, from the writing line to 1.4 lines below it, where the band is whole. The words' ink against every sample >= 13.9.
+      const m = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), p = col.querySelector('.mode-page'), ed = p.querySelector('.forward-only-editor');
+        const er = ed.getBoundingClientRect(), cr = col.getBoundingClientRect(), pr = p.getBoundingClientRect();
+        const lh = parseFloat(getComputedStyle(col).getPropertyValue('--tw-lh')) || 43.52, y0 = cr.top + cr.height * 0.5;
+        const l = Math.max(er.left, pr.left) + 4, r = Math.min(er.right, pr.right - 24) - 4;
+        return { xs: Array.from({ length: 8 }, (_, i) => l + (r - l) * i / 7), ys: [0, 0.35, 0.7, 1.05, 1.4].map((k) => y0 + k * lh), ink: getComputedStyle(ed).color, caret: getComputedStyle(ed).caretColor, page: document.documentElement.getAttribute('data-page'), drawn: !!document.querySelector('.arbor2-edged-caret') }; })()`);
+      // (driver, §19.2, no assertion changed: "the words (and the caret) made transparent" now covers the light page's drawn caret too)
+      await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'r22-tw-hide'; s.textContent = '.forward-only-editor, .forward-only-editor *{ color:transparent !important; caret-color:transparent !important; -webkit-text-fill-color:transparent !important; } .arbor2-edged-caret{ visibility:hidden !important; }'; document.head.appendChild(s); return true; })()");
+      await sleep(250);
+      const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      await app.evalJs("document.getElementById('r22-tw-hide')?.remove()");
+      const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; const L = (p) => 0.2126 * lin(p[0]) + 0.7152 * lin(p[1]) + 0.0722 * lin(p[2]);
+        const ink = ${JSON.stringify(m.ink)}.match(/\\d+/g).slice(0, 3).map(Number);
+        const rows = []; for (const y of ${JSON.stringify(m.ys)}) for (const x of ${JSON.stringify(m.xs)}) { const d = cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data; const g = [d[0], d[1], d[2]];
+          rows.push({ x: Math.round(x), y: Math.round(y), g, r: Math.round(((Math.max(L(ink), L(g)) + 0.05) / (Math.min(L(ink), L(g)) + 0.05)) * 100) / 100 }); }
+        const min = rows.reduce((a, b) => (b.r < a.r ? b : a), rows[0]);
+        return { n: rows.length, min, grounds: [...new Set(rows.map((q) => q.g.join(',')))].slice(0, 6) }; })()`);
+      await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()");
+      await clickMode(app, 'draft'); await sleep(1200);
+      const after = await app.evalJs(PAGEREAD);
+      const back = !!before && !!after && before.bg === after.bg && before.shadow === after.shadow && before.ink === after.ink && same(before.rect, after.rect) && after.zoom !== 'true';
+      // PARKED 2026-11-08 (SUPERSEDED - Nick's correction via Fable, Nov 8: "Day/light Typewriter stays exactly as before" - by day the dark page's
+      // caret is brass again, as it was before r22). Original, verbatim:
+      // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret: room === 'night' || m.caret === m.ink, back },
+      // SUCCESSOR caret2: in both rooms the dark page's caret is brass (#FF9800, its own rule) and the light page's is the words' ink.
+      // PARKED 2026-11-09 (SUPERSEDED - NICK RULED, Nov 9, 9:14 pm, via Fable, spec §19.2: "Arbor's caret on the LIGHT page = brass with a 1 px edge
+      // in the page ink #241A10, light page only"; by day the zoomed light page keeps its paper, so its caret is the drawn edged one and the native
+      // caret under it is transparent). Original, verbatim:
+      // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret2: m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' : m.caret === m.ink, back },
+      // SUCCESSOR caret3: the dark page's caret brass in both rooms; by night the light page is page-less (no light page) and its caret is the words'
+      // ink with nothing drawn; by day the light page's native caret is transparent under the drawn edged caret (its pixels are r22-light-caret-tw's).
+      // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page"; by day the light page's caret is no longer transparent under a drawn one). Original, verbatim:
+      // const caret3 = m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' && !m.drawn
+      // : room === 'night' ? m.caret === m.ink && !m.drawn : /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(m.caret) && m.drawn;
+      // out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret3, back },
+      // SUCCESSOR caret4: the dark page's caret brass in both rooms; by night the light page is page-less and its caret is the words' ink; by day the
+      // light page's caret is the browser's own in the page ink #241A10. Nothing drawn in any case.
+      const caret4 = m.page === 'dark' ? m.caret === 'rgb(255, 152, 0)' && !m.drawn
+        : room === 'night' ? m.caret === m.ink && !m.drawn : m.caret === 'rgb(36, 26, 16)' && !m.drawn;
+      out[room] = { ok: { proof: !!z && z.pass, floor: px.n >= 10 && px.min.r >= 13.9, caret4, back },
+        z: z && { room: z.room, bare: z.bare, sheet: z.sheet, vignette: z.vignette, inkOk: z.inkOk, sheetOn: z.sheetOn, sheetBg: z.sheetBg, ink: z.ink, want: z.want, vMask: z.vMask }, page: m.page, ink: m.ink, caret: m.caret, px, before, after };
+    }
+    const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
+    if (bad.length) fail('R22-TYPEWRITER', { bad, ...out });
+    say('r22-typewriter', out);
+  },
+  // for the eye: Typewriter by night and by day (the job's two tones give each a light and a dark Page setting - the words are the room's either way)
+  'r22-pic-typewriter-night': async (app) => { await openFree(app, 'arbor-r22-ptn'); await setRoom(app, 'night'); await sleep(900); },
+  'r22-pic-typewriter-day': async (app) => { await openFree(app, 'arbor-r22-ptd'); await setRoom(app, 'day'); await sleep(900); },
+  // ── 1b. THE DAWN IN TYPEWRITER (Nick's correction, via Fable, Nov 8: "By the clock: the page fill fades in step with the room's tone; the floors hold
+  // at every moment"). Following the clock (the room row's By the clock), Free Write by night, then the clock walked through the dawn's first half
+  // in small steps - the night fill's whole window (dayness 0 -> .02, the first ~24 s) and beyond - and the room's switch. At each step: the proof
+  // (zoomProof V9: by night the fill at min(1, dayness / .02), by day the sheet) and the floor (the words against the ground UNDER them, the words
+  // made transparent for one screenshot) >= 13.9. The page tone of the job decides the ink by day (cream on the dark page, walnut on the light).
+  'r22-typewriter-dawn': async (app) => {
+    await openFree(app, 'arbor-r22-dawn');
+    await app.evalJs("document.documentElement.removeAttribute('data-room')"); await sleep(300);   // By the clock
+    if ((await app.evalJs("typeof window.arbor2Clock === 'function'")) !== true) fail('R22-TYPEWRITER-DAWN', { seam: false });
+    const steps = ['06:40', '06:50:03', '06:50:06', '06:50:09', '06:50:12', '06:50:18', '06:50:24', '06:50:36', '06:51', '06:53', '06:56', '06:59:50', '07:00:10', '07:05', '07:20'];
+    const rows = [];
+    for (const at of steps) {
+      await app.evalJs(`window.arbor2Clock(${JSON.stringify(at)})`); await sleep(200);
+      const z = await app.evalJs(`(${zoomProof.toString()})(${holeOf.toString()}, ${stopsOf.toString()})`);
+      const px = await floorUnderWords(app);
+      rows.push({ at, dayness: z && z.dayness, room: z && z.room, fill: z && z.fillWant, sheetOpacity: z && z.sheetOpacity, proof: !!z && z.pass, min: px.min && px.min.r, ground: px.min && px.min.g, n: px.n,
+        why: z && !z.pass ? { bare: z.bare, sheet: z.sheet, vignette: z.vignette, inkOk: z.inkOk, ink: z.ink, want: z.want } : undefined });
+    }
+    await app.evalJs('window.arbor2Clock(null)');
+    const inWindow = rows.filter((r) => r.room === 'night' && r.dayness > 0 && r.dayness < 0.02).length;
+    const ok = { proof: rows.every((r) => r.proof), floor: rows.every((r) => r.n >= 10 && r.min >= 13.9), window: inWindow >= 2, crossed: rows.some((r) => r.room === 'night') && rows.some((r) => r.room === 'day') };
+    if (Object.values(ok).some((x) => !x)) fail('R22-TYPEWRITER-DAWN', { ok, rows });
+    say('r22-typewriter-dawn', { ok, rows });
+  },
+  // ── A CAPTURE (no assertion): what paints UNDER Typewriter's words. Actions frames 42540157120 read the ground under the words at rgb(44,30,18)
+  // on the dark fill rgb(26,21,16) - a warm lift inside the page only. With the words hidden, every element at the page's middle on the writing
+  // line (elementsFromPoint), with its painted background, opacity and any glow variables, plus the writing goal and the goal glow's own state.
+  'r22-typewriter-layers': async (app) => {
+    const out = {};
+    for (const room of ['night', 'day']) {
+      await openFree(app, `arbor-r22-layers-${room}`); await setRoom(app, room); await sleep(600);
+      out[room] = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'), cr = col.getBoundingClientRect();
+        const x = Math.round(cr.left + cr.width / 2), y = Math.round(cr.top + cr.height * 0.5);
+        const layers = document.elementsFromPoint(x, y).map((e) => { const cs = getComputedStyle(e); const bg = cs.backgroundColor, bi = cs.backgroundImage;
+          return { el: e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\\s+/).slice(0, 3).join('.') : ''),
+            bg: bg === 'rgba(0, 0, 0, 0)' ? null : bg, img: bi === 'none' ? null : bi.slice(0, 90), op: cs.opacity === '1' ? null : cs.opacity, z: cs.zIndex === 'auto' ? null : cs.zIndex,
+            glow: cs.getPropertyValue('--glow-intensity').trim() || null, mix: cs.mixBlendMode === 'normal' ? null : cs.mixBlendMode, filt: cs.filter === 'none' ? null : cs.filter.slice(0, 40) }; })
+          .filter((l) => l.bg || l.img || l.op || l.mix);
+        const gg = [...document.querySelectorAll('.wz-goal-glow')].map((e) => ({ op: getComputedStyle(e).opacity, int: e.style.getPropertyValue('--glow-intensity') || getComputedStyle(e).getPropertyValue('--glow-intensity'), r: (() => { const b = e.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })() }));
+        let goal = null; try { goal = localStorage.getItem('wrizo-writing-goal-lines'); } catch {}
+        return { at: [x, y], room: document.documentElement.getAttribute('data-arbor2-room'), page: document.documentElement.getAttribute('data-page'), layers, goalGlow: gg, goal,
+          words: (document.querySelector('.forward-only-editor')?.textContent || '').trim().split(/\\s+/).length }; })()`);
+    }
+    say('r22-typewriter-layers', out);
+  },
+  // ── 1c. THE GOAL GLOW IN TYPEWRITER (RULED by Fable, Nov 8: "in Arbor Typewriter the goal glow grows only to 0.19 and holds; the dark page's words
+  // take the lifted cream #F7F0DE (14.2:1). The floors hold at every progress level"). The goal is set through the seam to 8 words and the page
+  // already has more - progress 1, the glow's intensity at its cap .34 (liveness: read). Per room: in Free Write (Typewriter) the glow's opacity
+  // holds at .19 and the words hold the floor on the ground under them (the words hidden for one screenshot); back in Draft the glow is its whole
+  // .34 again (the cap is Typewriter's only). The goal goes back to the app's default (24 lines, store/writingGoal.ts) at the end, through the seam.
+  'r22-typewriter-glow': async (app) => {
+    const GLOW = "(() => { const g = [...document.querySelectorAll('.wz-goal-glow')].find((e) => e.getBoundingClientRect().width > 0); return g ? { int: Number(g.style.getPropertyValue('--glow-intensity')), op: Number(getComputedStyle(g).opacity) } : null; })()";
+    const out = {};
+    for (const room of ['night', 'day']) {
+      const seam = await app.evalJs("typeof window.wrizoSetWritingGoal === 'function' ? (window.wrizoSetWritingGoal({ n: 8, unit: 'words' }), true) : false");
+      if (!seam) fail('R22-TYPEWRITER-GLOW', { seam: false });
+      await openFree(app, `arbor-r22-glow-${room}`); await setRoom(app, room); await sleep(1900);   // the glow's own 1.4 s transition
+      const tw = await app.evalJs(GLOW);
+      const px = await floorUnderWords(app);
+      const ink = px.ink;
+      await clickMode(app, 'draft'); await sleep(1900);
+      const draft = await app.evalJs(GLOW);
+      out[room] = { tw, draft, ink, floor: px.min && px.min.r, ground: px.min && px.min.g, n: px.n,
+        ok: { reached: !!tw && tw.int >= 0.335, held: !!tw && tw.op >= 0.185 && tw.op <= 0.195, floor: px.n >= 10 && px.min.r >= 13.9, draftWhole: !!draft && draft.op >= 0.335 } };
+    }
+    await app.evalJs("typeof window.wrizoSetWritingGoal === 'function' && window.wrizoSetWritingGoal({ n: 24, unit: 'lines' })");
+    const bad = Object.entries(out).flatMap(([room, v]) => Object.entries(v.ok).filter(([, x]) => !x).map(([k]) => `${room} ${k}`));
+    if (bad.length) fail('R22-TYPEWRITER-GLOW', { bad, ...out });
+    say('r22-typewriter-glow', out);
+  },
+
+  // ── 3. THREE DARKER NIGHT BROWNS (Fable's ruling 2, Nov 8: "ALL night-room browns step darker together (the room ground, rails, panels, the
+  // dark page), keeping the lamplight's warm gradient. Three steps, floors measured, frames for Nick"). For Now, A, B, C by night: the mockup bar's
+  // Night browns row is pressed (as Nick would), every token reads its step's value (the room, its surfaces and hairlines, the glow, the bars, the
+  // drawers' ground; the dark page with the dark tone), the room's own pixels in a corner are that step's ground (liveness: the step paints),
+  // and every lettering pair holds its floor on the measured grounds. By day nothing changes (the day tokens read the same at every step).
+  // PARKED 2026-11-10 (SUPERSEDED - NICK RULED, Nov 9, 11:29 pm, via Fable: "B, for sure"; the night room is brown B and the mockup bar's Night
+  // browns row (Now / A / B / C) is gone, so there is nothing to press). Kept verbatim under the name r22-browns-v1 (not in the run list); SUCCESSOR
+  // r22-browns-b below: B's tokens with nothing pressed, its corner paints, its floors.
+  'r22-browns-v1': async (app) => {
+    await openPage(app, 'arbor-r22-browns');
+    const rows = {};
+    for (const s of ['now', 'a', 'b', 'c']) {
+      await setRoom(app, 'night');
+      const pressed = await pickBrown(app, s);
+      await sleep(500);
+      const t = await app.evalJs(BROWNREAD);
+      const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      const corner = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+        const page = document.querySelector('.mode-page').getBoundingClientRect();
+        // the darkest of five points in the room's margin left of the page (a vine or a leaf only lightens a point; the vignette only darkens it)
+        const pts = [0.35, 0.45, 0.55, 0.65, 0.75].map((f) => { const d = cx.getImageData(Math.round((page.left - 24) * dpr), Math.round(innerHeight * f * dpr), 1, 1).data; return [d[0], d[1], d[2]]; });
+        return pts.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)); })()`);
+      await setRoom(app, 'day'); await sleep(300);
+      const day = await app.evalJs(BROWNREAD);
+      rows[s] = { pressed, t, corner, day };
+    }
+    await pickBrown(app, 'now'); await setRoom(app, 'night');
+    const dark = rows.now.t.tone === 'dark';
+    const ok = {}, floors = [];
+    for (const [s, r] of Object.entries(rows)) {
+      const want = BROWNS[s];
+      ok[`${s} pressed`] = r.pressed === true;
+      ok[`${s} tokens`] = Object.entries(want.room).every(([k, v]) => r.t.room[k] === v) && r.t.drawer === want.drawer && (!dark || Object.entries(want.page).every(([k, v]) => r.t.page[k] === v));
+      ok[`${s} glow`] = want.glow.every((g) => r.t.glow.toUpperCase().includes(g));
+      // the vignette darkens the room's edge, so the corner reads at or a little under the ground - never over it
+      const g = parseHex(want.room['--ink-950']);
+      ok[`${s} paints`] = r.corner.every((v, i) => v <= g[i] + 2 && v >= g[i] - 10);
+      ok[`${s} day unchanged`] = JSON.stringify(r.day.room) === JSON.stringify(rows.now.day.room);
+      for (const [label, ink, ground, floor] of [['cream / room', '#EFE4CB', want.room['--ink-950'], 4.5], ['cream / bar', '#EFE4CB', want.room['--arbor2-bar'], 4.5],
+        ['cream / drawer', '#EFE4CB', want.drawer, 4.5], ['quiet / room', '#B9AA8C', want.room['--ink-950'], 4.5], ['quiet / bar', '#B9AA8C', want.room['--arbor2-bar'], 4.5],
+        ['quiet / drawer', '#B9AA8C', want.drawer, 4.5], ['olive text / raised', '#85914C', want.room['--ink-800'], 4.5], ['olive text / drawer', '#85914C', want.drawer, 4.5],
+        ['olive mark / room', '#6B7A3A', want.room['--ink-950'], 3], ['cream / dark page', '#EFE4CB', want.page['--paper'], 13.9], ['cream / glow top', '#EFE4CB', want.glow[0], 4.5]]) {
+        const ratio = contrast(parseHex(ink), parseHex(ground));
+        floors.push([s, label, Math.round(ratio * 100) / 100]);
+        if (ratio < floor) ok[`${s} ${label}`] = false;
+      }
+    }
+    const brief = { ok, dark, corners: Object.fromEntries(Object.entries(rows).map(([s, r]) => [s, r.corner])), floors };
+    if (Object.values(ok).some((x) => !x)) fail('R22-BROWNS', { bad: Object.keys(ok).filter((k) => !ok[k]), ...brief, rows });
+    say('r22-browns', brief);
+  },
+  // SUCCESSOR r22-browns-b: by night, with nothing pressed, every token reads B's value (r22-browns' own table), the room's corner paints B's
+  // ground, and every lettering pair holds its floor on B's grounds; by day the day tokens read as they did.
+  'r22-browns-b': async (app) => {
+    await openPage(app, 'arbor-r22-browns-b');
+    await setRoom(app, 'night'); await sleep(500);
+    const t = await app.evalJs(BROWNREAD);
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    const corner = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth;
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const cx = c.getContext('2d'); cx.drawImage(img, 0, 0);
+      const page = document.querySelector('.mode-page').getBoundingClientRect();
+      const pts = [0.35, 0.45, 0.55, 0.65, 0.75].map((f) => { const d = cx.getImageData(Math.round((page.left - 24) * dpr), Math.round(innerHeight * f * dpr), 1, 1).data; return [d[0], d[1], d[2]]; });
+      return pts.reduce((a, b) => (a[0] + a[1] + a[2] <= b[0] + b[1] + b[2] ? a : b)); })()`);
+    const rows = !!(await app.evalJs("!!document.querySelector('.arbor2-bar-row[aria-label=\"Night browns\"]')"));
+    // PARKED 2026-11-10 (SUPERSEDED - FABLE RULED, Nov 10, 1:50 pm, (i): B's drawer ground is lifted just enough to stand 6.0 L* off the dark page - #231811 -> #241811 (L* 9.55 against the page's 3.55: 6.00; 6.1 as r13 rounds)). Original, verbatim:
+    // const want = BROWNS.b, dark = t.tone === 'dark', ok = {}, floors = [];
+    // SUCCESSOR: B's table with the drawer ground lifted to #241811 (every other token as B; the floors read on the lifted ground)
+    const want = { ...BROWNS.b, drawer: '#241811' }, dark = t.tone === 'dark', ok = {}, floors = [];
+    ok['brown attribute b'] = t.brown === 'b';
+    ok['no Night browns row'] = !rows;
+    ok.tokens = Object.entries(want.room).every(([k, v]) => t.room[k] === v) && t.drawer === want.drawer && (!dark || Object.entries(want.page).every(([k, v]) => t.page[k] === v));
+    ok.glow = want.glow.every((g) => t.glow.toUpperCase().includes(g));
+    const g = parseHex(want.room['--ink-950']);
+    ok.paints = corner.every((v, i) => v <= g[i] + 2 && v >= g[i] - 10);
+    for (const [label, ink, ground, floor] of [['cream / room', '#EFE4CB', want.room['--ink-950'], 4.5], ['cream / bar', '#EFE4CB', want.room['--arbor2-bar'], 4.5],
+      ['cream / drawer', '#EFE4CB', want.drawer, 4.5], ['quiet / room', '#B9AA8C', want.room['--ink-950'], 4.5], ['quiet / bar', '#B9AA8C', want.room['--arbor2-bar'], 4.5],
+      ['quiet / drawer', '#B9AA8C', want.drawer, 4.5], ['olive text / raised', '#85914C', want.room['--ink-800'], 4.5], ['olive text / drawer', '#85914C', want.drawer, 4.5],
+      ['olive mark / room', '#6B7A3A', want.room['--ink-950'], 3], ['cream / dark page', '#EFE4CB', want.page['--paper'], 13.9], ['cream / glow top', '#EFE4CB', want.glow[0], 4.5]]) {
+      const ratio = contrast(parseHex(ink), parseHex(ground));
+      floors.push([label, Math.round(ratio * 100) / 100]);
+      if (ratio < floor) ok[label] = false;
+    }
+    if (Object.values(ok).some((x) => !x)) fail('R22-BROWNS-B', { bad: Object.keys(ok).filter((k) => !ok[k]), dark, corner, floors, t });
+    say('r22-browns-b', { ok, dark, corner, floors });
+  },
+  // PARKED 2026-11-10 (SUPERSEDED with r22-browns: the steps were for Nick to pick, and he picked B; nothing to press). Kept verbatim under the
+  // names r22-pic-browns-<step>-<room>-v1 (not in the run list); SUCCESSOR pictures: r23-pic-night-b and r23-pic-day (scripts/frames/arbor2-r23.mjs).
+  // for Nick to pick: each step by night with the Tools drawer open (the room, the bars, a drawer, the page), and by day (unchanged, to compare)
+  ...Object.fromEntries(['now', 'a', 'b', 'c'].flatMap((s) => [
+    [`r22-pic-browns-${s}-night-v1`, async (app) => { await openPage(app, `arbor-r22-pbn-${s}`); await setRoom(app, 'night'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+    [`r22-pic-browns-${s}-day-v1`, async (app) => { await openPage(app, `arbor-r22-pbd-${s}`); await setRoom(app, 'day'); await pickBrown(app, s); await openTools(app); await sleep(900); await app.evalJs(FINISH); await app.mouseMove(600, 300); await sleep(300); }],
+  ])),
+
+  // ── NICK, Nov 8 (relayed by Fable): "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for the whole session;
+  // leaving Typewriter brings them back." (styles/13-desk-frame.css §12b). Run with -f themes=plateau,flux,machina. A handle counts as HIDDEN only
+  // when it is visibility:hidden, the point at its centre reaches something else, and it cannot take focus; SHOWN only when all three are the
+  // opposite. Both handles must exist with a box, or the check is blind and fails. Typewriter is left both ways a writer can: the mode strip (Draft,
+  // on a page with words, is Typewriter-off) and the switch in the Tools drawer, reached by Ctrl+/ since its handle is gone; entering again hides
+  // them again (a hover over where they sit included). Mode tabs are found by data-mode-key, because their words are themed.
+  'r22-typewriter-handles': async (app) => {
+    const HANDLES = `(() => { const one = (s) => { const g = document.querySelector(s); if (!g) return null; const r = g.getBoundingClientRect(), cs = getComputedStyle(g);
+      const at = r.width > 0 && r.height > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
+      const was = document.activeElement; g.focus(); const focused = document.activeElement === g; if (focused) { g.blur(); if (was && was !== document.body) was.focus?.(); }
+      return { vis: cs.visibility, w: Math.round(r.width), h: Math.round(r.height), reach: !!at && g.contains(at), focused }; };
+      return { zoom: !!document.querySelector('.mode-pagecol[data-zoom="true"]'), toolsOpen: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null,
+        tools: one('.wz-sliver-grip'), tutor: one('.wz-tutor-grip'), theme: document.documentElement.getAttribute('data-theme') }; })()`;
+    const boxed = (h) => !!h && h.w > 0 && h.h > 0;
+    const hidden = (s) => !!s && boxed(s.tools) && boxed(s.tutor) && [s.tools, s.tutor].every((h) => h.vis === 'hidden' && !h.reach && !h.focused);
+    const shown = (s) => !!s && boxed(s.tools) && boxed(s.tutor) && [s.tools, s.tutor].every((h) => h.vis === 'visible' && h.reach && h.focused);
+    const mode = async (k) => {
+      const hit = await app.evalJs(`(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key=${JSON.stringify(k)}]'); if (b) b.click(); return !!b; })()`);
+      if (!hit) fail('R22-TW-HANDLES', { mode: k, found: false });
+      await sleep(1200);
+    };
+    const ctrlSlash = async () => {
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 });
+      await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 });
+      await sleep(500); await app.evalJs(FINISH);
+    };
+    const toggleTw = async () => { const hit = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver [data-mode-toggle=\"typewriter\"]'); if (b) b.click(); return !!b; })()"); await sleep(1200); return hit; };
+    const away = async () => { await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()"); await app.mouseMove(600, 300); await sleep(500); };
+    const id = 'arbor-r22-twh';
+    await app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+    await sleep(300); await go(app, `#/page/${id}`);
+    if (!(await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }))) fail('R22-TW-HANDLES', { id, editor: false });
+    await sleep(900);
+    await mode('freewrite');
+    if (!(await waitSoft(app, "!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'typewriter zoom', timeout: 6000 }))) fail('R22-TW-HANDLES', { id, zoomed: false });
+    await away();
+    const inFree = await app.evalJs(HANDLES);                                        // 1. Free Write's Typewriter: hidden
+    await mode('draft'); await away();
+    const inDraft = await app.evalJs(HANDLES);                                       // 2. left by the mode strip: back
+    await mode('freewrite'); await away();
+    const backFree = await app.evalJs(HANDLES);                                      // 3. in again: hidden again
+    await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) return false; const r = g.getBoundingClientRect(); window.__twhAt = [r.left + r.width / 2, r.top + r.height / 2]; return true; })()");
+    const at = await app.evalJs('window.__twhAt || null');
+    if (at) { await app.mouseMove(at[0], at[1]); await sleep(400); }
+    const hovered = await app.evalJs(HANDLES);                                       // 4. a hover where the Tools handle sits brings nothing back
+    await away();
+    await ctrlSlash();
+    const opened = await app.evalJs(HANDLES);                                        // 5. Ctrl+/ still opens the Tools drawer (the way out)
+    const offHit = await toggleTw(); await ctrlSlash(); await away();
+    const switchedOff = await app.evalJs(HANDLES);                                   // 6. left by the drawer's own switch: back
+    await ctrlSlash(); const onHit = await toggleTw(); await away();
+    const switchedOn = await app.evalJs(HANDLES);                                    // 7. on again by the switch: hidden, the drawer tucked
+    const steps = { inFree, inDraft, backFree, hovered, opened, switchedOff, switchedOn };
+    const ok = !!inFree?.zoom && hidden(inFree)
+      && !inDraft?.zoom && shown(inDraft)
+      && !!backFree?.zoom && hidden(backFree)
+      && !!at && !!hovered?.zoom && hidden(hovered)
+      && !!opened?.zoom && opened.toolsOpen === 'true'
+      && offHit && !switchedOff?.zoom && switchedOff.toolsOpen === 'false' && shown(switchedOff)
+      && onHit && !!switchedOn?.zoom && switchedOn.toolsOpen === 'false' && hidden(switchedOn);
+    if (!ok) fail('r22-typewriter-handles', { offHit, onHit, ...steps });
+    say('r22-typewriter-handles', { theme: inFree.theme, steps: Object.fromEntries(Object.entries(steps).map(([k, s]) => [k, { zoom: s.zoom, toolsOpen: s.toolsOpen, tools: s.tools.vis, tutor: s.tutor.vis }])) });
+  },
+
+  // ── §19.2 THE LIGHT PAGE'S CARET (NICK RULED, Nov 9, 9:14 pm, via Fable) and §19.1 THE PAGE INK ──
+  // "Arbor's caret on the LIGHT page = brass with a 1 px edge in the page ink #241A10, light page only." Run per page tone (the job's two tones),
+  // in Draft (both rooms: the page keeps its paper) and in Free Write's Typewriter (by day the paper stays; by night it is page-less, so no light page).
+  // Each case reads, with the caret at the end of the words: the drawn caret (src/arbor2/edgedCaret.tsx) and its pixels from a screenshot taken with
+  // its blink held lit - the four columns must be edge, brass, brass, edge, the edge 3:1 or better on the paper beside it and on the brass (a caret is a
+  // graphic: the 3:1 floor; the page-text 13.9 is the INK's, below) - and the drawn caret standing where the native one is (the words' end, within 2 px);
+  // the native caret hidden under it; and, read with the drawn one lifted for a moment, the caret r22 drew before the build (Fable's question 2).
+  // The page ink (§19.1): the editor's ink on the page's paper, measured from pixels, 13.9:1 or better, #241A10 on the light page. Off the light page
+  // (the dark page, night Typewriter) there must be NO drawn caret and a visible native one. Ends lit on the shot's case (Draft by day).
+  'r22-light-caret': async (app) => lightCaret(app, 'r22-light-caret', 'draft'),
+  // the caret as the product shows it - no test sheet (r22-light-caret holds the blink lit for its pixel read): it draws and it blinks
+  'r22-light-caret-blink': async (app) => caretBlinkCheck(app, 'r22-light-caret-blink'),
+  // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page": there is no drawn caret to hide). Original, verbatim:
+  //   'r22-light-caret-blink-mutant': async (app) => {
+  //     const r = await caretBlink(app, 'r22-light-caret-blink-mutant', true); if (!r) return;
+  //     const ok = { landed: !!r.at && r.at.shown === false, red: r.lit === 0 };
+  //     if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, r });
+  //     say('r22-light-caret-blink-mutant', { ok, r });
+  //   },
+  // SUCCESSOR (the same screen name): the native caret hidden as the drawn caret used to hide it (caret-color transparent, a test-only sheet, asserted
+  // LANDED) - r22-light-caret-blink's successor read (the light page's native caret is the page ink) must go RED on it.
+  'r22-light-caret-blink-mutant': async (app) => {
+    await openPage(app, `arbor-r22-blinkm-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day');
+    if (await app.evalJs("document.documentElement.getAttribute('data-page') === 'dark'")) { say('r22-light-caret-blink-mutant', { skipped: 'the dark page: its caret is brass (C2)' }); return; }
+    await app.evalJs(caretEnd); await sleep(500);
+    await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut2'; st.textContent = \"html:root[data-arbor2][data-theme='plateau'] body .mode-pagecol .mode-page .forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor.forward-only-editor{ caret-color:transparent !important; }\"; document.head.appendChild(st); return true; })()");
+    const nat = await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return ed ? getComputedStyle(ed).caretColor : null; })()");
+    await app.evalJs("document.getElementById('r22-blink-mut2')?.remove()");
+    const ok = { landed: /^rgba\(0, 0, 0, 0\)$|^transparent$/.test(String(nat)), red: rgbOf(nat).join() !== EDGE.join() };
+    if (!ok.landed || !ok.red) fail('r22-light-caret-blink-mutant', { ok, nat });
+    say('r22-light-caret-blink-mutant', { ok, nat });
+  },
+  'r22-light-caret-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await lightCaret(app, 'r22-light-caret-2000', 'draft'); },
+  'r22-light-caret-tw': async (app) => lightCaret(app, 'r22-light-caret-tw', 'tw'),
+  'r22-light-caret-tw-2000': async (app) => { await app.emulateDpr(1, 2000, 1125); await lightCaret(app, 'r22-light-caret-tw-2000', 'tw'); },
+  // the same Draft-by-day shot with an 8x inset of the caret in the lower-left corner (for the eye; the inset is the screenshot's own pixels)
+  'r22-pic-light-caret-8x': async (app) => { await lightCaret(app, 'r22-pic-light-caret-8x', 'draft'); await inset8x(app); },
+  // the Wrizors' batch-12 spot (Nov 8): night Typewriter, 1.81:1 at x 1171, y 403 at 1366 - what sits there now (a reading, never a verdict)
+  'r22-probe-1171': async (app) => {
+    await openFree(app, 'arbor-r22-p1171'); await setRoom(app, 'night'); await app.evalJs(caretEnd); await sleep(900);
+    const at = await app.evalJs(`(() => { const d = (e) => { const r = e.getBoundingClientRect(), cs = getComputedStyle(e); return { el: e.tagName.toLowerCase() + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\\s+/).join('.') : ''),
+        r: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], bg: cs.backgroundColor, color: cs.color, vis: cs.visibility, op: cs.opacity }; };
+      return { w: innerWidth, stack: document.elementsFromPoint(1171, 403).slice(0, 8).map(d),
+        thin: [...document.querySelectorAll('body *')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.width <= 12 && r.height >= 100 && r.left <= 1175 && r.right >= 1167; }).slice(0, 6).map(d) }; })()`);
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const g = (x, y) => Array.from(cx.getImageData(Math.round(x * dpr), Math.round(y * dpr), 1, 1).data.slice(0, 3)); return { at: g(1171, 403), left: g(1160, 403), right: g(1182, 403) }; })()`);
+    say('r22-probe-1171', { ...at, px });
+  },
+};
+
+// the drawn caret and the page under it, for one case; the blink held lit while the screenshot is taken
+const CARETREAD = `(() => { const ed = document.querySelector('.forward-only-editor'), p = ed && ed.closest('.mode-page'), c = document.querySelector('.arbor2-edged-caret'); if (!ed) return null;
+  const r = c ? c.getBoundingClientRect() : null; if (c) c.getAnimations().forEach((a) => { a.pause(); a.currentTime = 0; });
+  const lift = ed.getAttribute('data-arbor2-caret-active'); if (lift) ed.removeAttribute('data-arbor2-caret-active'); const before = getComputedStyle(ed).caretColor; if (lift) ed.setAttribute('data-arbor2-caret-active', lift);
+  return { drawn: r ? { l: r.left, t: r.top, w: r.width, h: r.height } : null, native: getComputedStyle(ed).caretColor, before, active: ed.getAttribute('data-arbor2-caret-active'),
+    ink: getComputedStyle(ed).color, paper: p ? getComputedStyle(p).backgroundColor : null, zoom: !!ed.closest('.mode-pagecol[data-zoom="true"]'),
+    tone: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-arbor2-room'), w: innerWidth,
+    endX: (() => { const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let t = null, n; while ((n = w.nextNode())) if (n.textContent.length) t = n; if (!t) return null; const q = document.createRange(); q.setStart(t, t.textContent.length - 1); q.setEnd(t, t.textContent.length); const x = [...q.getClientRects()].pop(); return x ? x.right : null; })() }; })()`;
+const rgbOf = (s) => (String(s).match(/\d+(\.\d+)?/g) || []).slice(0, 3).map(Number);
+const near3 = (a, b, tol = 24) => !!a && !!b && a.every((v, i) => Math.abs(v - b[i]) <= tol);
+const transparentCaret = (s) => /rgba\(0, 0, 0, 0\)|transparent/.test(String(s));
+const EDGE = [0x24, 0x1a, 0x10], BRASS = [0xff, 0x98, 0x00];
+const lightCaretCase = async (app) => {
+  await app.evalJs(caretEnd); await sleep(700);
+  const m = await app.evalJs(CARETREAD);
+  if (!m) return null;
+  // (driver, Nov 10, no assertion changed - frames 42924222690, 1920 light, the night case: the drawn caret stood where it should (x 767, 4 px) but
+  // all four columns read bare paper - the blink was OFF at the shot. Pausing its animation from script does not hold if the caret element is
+  // re-created between the read and the shot (it is keyed on its place), so the blink is held LIT for the shot by a test-only sheet instead, the
+  // swap check's way: animation none, opacity 1 - and lifted after)
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-caret-lit'; st.textContent = '.arbor2-edged-caret{ animation:none !important; opacity:1 !important; }'; document.head.appendChild(st); return true; })()");
+  await sleep(120);
+  const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs("document.getElementById('r22-caret-lit')?.remove()");
+  // the four columns at the caret's middle row and the paper 14 px to its right (with no drawn caret, the paper beside the selection's own rect)
+  m.px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const g = (x, y) => Array.from(cx.getImageData(Math.floor(x * dpr), Math.floor(y * dpr), 1, 1).data.slice(0, 3));
+    const d = ${JSON.stringify(m.drawn)}; const ed = document.querySelector('.forward-only-editor'), p = ed.closest('.mode-page'); const er = ed.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    // (after run 42757912151, no assertion changed: the paper for the INK is read in the page's left margin, level with the words' first line, so it
+    // never depends on a caret; the paper the caret sits on is read 14 px to its right)
+    return { cols: d ? [0, 1, 2, 3].map((i) => g(d.l + i + 0.5, d.t + d.h / 2)) : null, beside: d ? g(d.l + d.w + 14, d.t + d.h / 2) : null,
+      paper: g((pr.left + er.left) / 2, er.top + 12), dot: d ? document.elementFromPoint(d.l + d.w + 14, d.t + d.h / 2)?.className ?? null : null }; })()`);
+  return m;
+};
+// ── THE CARET SHOWS IN THE PRODUCT, as it is (Fable, Nov 10, 4:50 pm: "name the check that proves the caret shows in the product without" the
+// test-only sheet that r22-light-caret holds it lit with). Light page, Draft by day, the caret at the words' end, NO test sheet and nothing paused:
+// eight shots ~170 ms apart (more than one 1.06 s blink). In at least one the four columns at the caret read edge, brass, brass, edge (it draws), and
+// in at least one they read the paper (it blinks). The mutant hides the caret (a test-only display:none) and must give NO lit shot - red.
+const caretBlink = async (app, name, mutant) => {
+  await openPage(app, `arbor-r22-blink-${Math.random().toString(36).slice(2, 6)}`); await setRoom(app, 'day');
+  if (await app.evalJs("document.documentElement.getAttribute('data-page') === 'dark'")) { say(name, { skipped: 'the dark page has no drawn caret (its native brass caret is r7\'s)' }); return null; }
+  await app.evalJs(caretEnd); await sleep(700);
+  if (mutant) await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-blink-mut'; st.textContent = '.arbor2-edged-caret{ display:none !important; }'; document.head.appendChild(st); return true; })()");
+  // (fix after frames 42926393076: the mutant's caret, display:none, has no box, so "at" came back null and its landing read false; the element is
+  // now reported whenever it exists - shown only with a box and not display:none - and the pixel spot falls back to the words' end)
+  const at = await app.evalJs("(() => { const c = document.querySelector('.arbor2-edged-caret'); if (!c) return null; const r = c.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height, shown: getComputedStyle(c).display !== 'none' && r.width > 0 }; })()");
+  const ref = (at && at.shown) ? at : await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let t = null, n; while ((n = w.nextNode())) if (n.textContent.length) t = n; const q = document.createRange(); q.setStart(t, t.textContent.length - 1); q.setEnd(t, t.textContent.length); const x = [...q.getClientRects()].pop(); return { l: x.right - 1, t: x.top, w: 4, h: x.height, shown: false }; })()");
+  const shots = [];
+  for (let i = 0; i < 8; i++) {
+    const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+    shots.push(await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const k = img.width / innerWidth; const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const cx = c.getContext('2d'); cx.drawImage(img, 0, 0); const d = ${JSON.stringify(ref)}; const g = (x, y) => Array.from(cx.getImageData(Math.floor(x * k), Math.floor(y * k), 1, 1).data.slice(0, 3));
+      return [0, 1, 2, 3].map((j) => g(d.l + j + 0.5, d.t + d.h / 2)); })()`));
+    await sleep(170);
+  }
+  if (mutant) await app.evalJs("document.getElementById('r22-blink-mut')?.remove()");
+  const lit = shots.filter((c) => near3(c[0], EDGE) && near3(c[1], BRASS) && near3(c[2], BRASS) && near3(c[3], EDGE)).length;
+  const bare = shots.filter((c) => c.every((p) => p.every((v) => v > 200))).length;
+  return { at, lit, bare, n: shots.length };
+};
+const caretBlinkCheck = async (app, name) => {
+  const r = await caretBlink(app, name, false); if (!r) return;
+  const bad = [];
+  // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page" (src/arbor2/edgedCaret.tsx removed; box A/B Nov 15: it cost 3 steady keys over 40 ms)). Kept verbatim; no longer run:
+  // if (!r.at || !r.at.shown) bad.push('no drawn caret');
+  // if (r.lit < 1) bad.push(`no shot showed the edged caret lit (${r.n} shots)`);
+  // if (r.bare < 1) bad.push(`no shot showed it off - it did not blink (${r.n} shots)`);
+  // SUCCESSOR: no drawn caret, and the light page's native caret (the browser's own, which blinks as the browser blinks it) is the page ink #241A10.
+  const nat = await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); return ed ? getComputedStyle(ed).caretColor : null; })()");
+  if (r.at) bad.push('a drawn caret is back');
+  if (rgbOf(nat).join() !== EDGE.join()) bad.push(`the light page's native caret is ${nat}, not the page ink #241A10`);
+  r.native = nat;
+  if (bad.length) fail(name, { bad, r });
+  say(name, r);
+};
+const lightCaret = async (app, name, where) => {
+  const id = `arbor-r22-lc-${where}-${Math.random().toString(36).slice(2, 7)}`;
+  if (where === 'draft') await openPage(app, id); else await openFree(app, id);
+  const cases = {};
+  for (const room of ['night', 'day']) { await setRoom(app, room); cases[room] = await lightCaretCase(app); }   // ends by day: the picture's case
+  const bad = [];
+  for (const [room, c] of Object.entries(cases)) {
+    if (!c) { bad.push(`${room}: no editor`); continue; }
+    const light = c.tone !== 'dark' && !(c.zoom && c.room === 'night');
+    const paper = c.px?.paper, beside = c.px?.beside, cols = c.px?.cols;
+    if (light) {
+      // PARKED 2026-11-15 (SUPERSEDED - NICK RULED, Nov 14, 8:15 pm, via Fable 8:24 pm: "The drawn caret is SCRAPPED: the browser's own caret, brass on the dark page, ink #241A10 on the light page" (src/arbor2/edgedCaret.tsx removed; box A/B Nov 15: it cost 3 steady keys over 40 ms)). The drawn caret's
+      // nine assertions, kept verbatim; they no longer run:
+      // if (!c.drawn || Math.round(c.drawn.w) !== 4 || c.drawn.h < 10) bad.push(`${room}: no 4 px drawn caret`);
+      // if (c.active !== 'true' || !transparentCaret(c.native)) bad.push(`${room}: the native caret still shows (${c.native})`);
+      // if (!cols || !near3(cols[0], EDGE) || !near3(cols[3], EDGE)) bad.push(`${room}: the edge is not the page ink`);
+      // if (!cols || !near3(cols[1], BRASS) || !near3(cols[2], BRASS)) bad.push(`${room}: the core is not brass`);
+      // c.edgeOnPaper = cols && beside ? Math.round(contrast(cols[0], beside) * 100) / 100 : null;
+      // c.edgeOnBrass = cols ? Math.round(contrast(cols[0], cols[1]) * 100) / 100 : null;
+      // if (!(c.edgeOnPaper >= 3)) bad.push(`${room}: edge on paper ${c.edgeOnPaper}`);
+      // if (!c.drawn || c.endX == null || Math.abs(c.drawn.l + 1 - c.endX) > 2) bad.push(`${room}: drawn at x ${c.drawn && c.drawn.l + 1}, the words end at ${c.endX}`);
+      // if (!(c.edgeOnBrass >= 3)) bad.push(`${room}: edge on brass ${c.edgeOnBrass}`);
+      // SUCCESSOR: the light page's caret is the browser's own, in the page ink #241A10, and nothing is drawn over it (scripts/harness/arbor-native-caret.mjs
+      // holds the same with its mutants on Actions).
+      if (c.drawn) bad.push(`${room}: a drawn caret is back on the light page`);
+      if (c.active) bad.push(`${room}: an editor still carries data-arbor2-caret-active`);
+      if (rgbOf(c.native).join() !== EDGE.join()) bad.push(`${room}: the light page's native caret is ${c.native}, not the page ink #241A10`);
+      if (!c.zoom && rgbOf(c.ink).join() !== EDGE.join()) bad.push(`${room}: the page ink is ${c.ink}, not #241A10`);
+    } else {
+      if (c.drawn) bad.push(`${room}: a drawn caret off the light page`);
+      if (transparentCaret(c.native)) bad.push(`${room}: no native caret off the light page`);
+    }
+    // §19.1: the page's ink on its paper, as drawn (Draft's page; Typewriter's ink is r22 note 1's own floor)
+    c.inkOnPaper = paper ? Math.round(contrast(rgbOf(c.ink), paper) * 100) / 100 : null;
+    if (!c.zoom && !(c.inkOnPaper >= 13.9)) bad.push(`${room}: page ink ${c.inkOnPaper}`);
+  }
+  if (bad.length) fail(name, { bad, cases });
+  say(name, Object.fromEntries(Object.entries(cases).map(([k, c]) => [k, { tone: c.tone, room: c.room, zoom: c.zoom, w: c.w, drawn: c.drawn, before: c.before, native: c.native, ink: c.ink,
+    inkOnPaper: c.inkOnPaper, edgeOnPaper: c.edgeOnPaper ?? null, edgeOnBrass: c.edgeOnBrass ?? null, cols: c.px?.cols ?? null, paper: c.px?.paper ?? null, beside: c.px?.beside ?? null, dot: c.px?.dot ?? null, endX: c.endX ?? null }])));
+  // leave the blink held lit for the job's own shot
+  await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'r22-caret-lit-shot'; st.textContent = '.arbor2-edged-caret{ animation:none !important; opacity:1 !important; }'; document.head.appendChild(st); return true; })()");   // (driver, Nov 10: the same test-only sheet as the read, for the job's shot)
+};
+const inset8x = async (app) => {
+  const png = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+  await app.evalJs(`(async () => { const c = document.querySelector('.arbor2-edged-caret'); const ed = document.querySelector('.forward-only-editor'); const r = (c || ed).getBoundingClientRect();
+    const img = new Image(); img.src = 'data:image/png;base64,${png}'; await img.decode(); const dpr = img.width / innerWidth; const sw = 40, sh = 40, k = 8;
+    const cv = document.createElement('canvas'); cv.width = sw * k; cv.height = sh * k; cv.style.cssText = 'position:fixed;left:24px;bottom:24px;z-index:99999;border:2px solid #241A10;image-rendering:pixelated;width:' + sw * k + 'px;height:' + sh * k + 'px';
+    const cx = cv.getContext('2d'); cx.imageSmoothingEnabled = false; cx.drawImage(img, Math.floor((r.left - 18) * dpr), Math.floor((r.top + r.height / 2 - sh / 2) * dpr), sw * dpr, sh * dpr, 0, 0, sw * k, sh * k);
+    document.body.appendChild(cv); return true; })()`);
+  await sleep(200);
+};
+
+// (census (a), Nov 10: every screen here runs under the kit's room pin - midday unless the screen sets its own room; mockup-kit.mjs withRoomPin)
+export default withRoomPin(guarded(screens, { verdict: ['ARBOR-R22'] }), { bothRooms: ["r22-splash-arrows"] });   // census (c): these also run by night ('<name>-night')

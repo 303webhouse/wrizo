@@ -1,0 +1,107 @@
+{
+  "0-current": {
+    "label": "Now",
+    "room": "#1F1A16",
+    "tile": "#2A241E",
+    "onRoom": {
+      "cream text (--text-hi)": 13.91,
+      "quiet text (--text-mid)": 7.47,
+      "quietest text (--text-low)": 3.87,
+      "olive": 6.14,
+      "brass": 8,
+      "bronze rule": 4.15
+    },
+    "onHoverTile": {
+      "cream text (--text-hi)": 12.36,
+      "quiet text (--text-mid)": 6.64,
+      "quietest text (--text-low)": 3.44,
+      "olive": 5.46,
+      "brass": 7.11,
+      "bronze rule": 3.69
+    }
+  },
+  "A-deep-espresso": {
+    "label": "A  Deep espresso",
+    "room": "#150F0B",
+    "tile": "#1F1711",
+    "onRoom": {
+      "cream text (--text-hi)": 15.32,
+      "quiet text (--text-mid)": 8.23,
+      "quietest text (--text-low)": 4.27,
+      "olive": 6.76,
+      "brass": 8.82,
+      "bronze rule": 4.58
+    },
+    "onHoverTile": {
+      "cream text (--text-hi)": 14.24,
+      "quiet text (--text-mid)": 7.65,
+      "quietest text (--text-low)": 3.97,
+      "olive": 6.29,
+      "brass": 8.2,
+      "bronze rule": 4.25
+    }
+  },
+  "B-roasted-amber": {
+    "label": "B  Roasted amber",
+    "room": "#221208",
+    "tile": "#2D190B",
+    "onRoom": {
+      "cream text (--text-hi)": 14.62,
+      "quiet text (--text-mid)": 7.85,
+      "quietest text (--text-low)": 4.07,
+      "olive": 6.45,
+      "brass": 8.41,
+      "bronze rule": 4.37
+    },
+    "onHoverTile": {
+      "cream text (--text-hi)": 13.49,
+      "quiet text (--text-mid)": 7.24,
+      "quietest text (--text-low)": 3.76,
+      "olive": 5.95,
+      "brass": 7.76,
+      "bronze rule": 4.03
+    }
+  },
+  "C-mahogany": {
+    "label": "C  Mahogany",
+    "room": "#21120D",
+    "tile": "#2C1A13",
+    "onRoom": {
+      "cream text (--text-hi)": 14.63,
+      "quiet text (--text-mid)": 7.86,
+      "quietest text (--text-low)": 4.08,
+      "olive": 6.46,
+      "brass": 8.42,
+      "bronze rule": 4.37
+    },
+    "onHoverTile": {
+      "cream text (--text-hi)": 13.39,
+      "quiet text (--text-mid)": 7.19,
+      "quietest text (--text-low)": 3.73,
+      "olive": 5.91,
+      "brass": 7.71,
+      "bronze rule": 4
+    }
+  },
+  "D-ember-black": {
+    "label": "D  Ember black",
+    "room": "#170C05",
+    "tile": "#21130A",
+    "onRoom": {
+      "cream text (--text-hi)": 15.52,
+      "quiet text (--text-mid)": 8.33,
+      "quietest text (--text-low)": 4.32,
+      "olive": 6.85,
+      "brass": 8.93,
+      "bronze rule": 4.63
+    },
+    "onHoverTile": {
+      "cream text (--text-hi)": 14.57,
+      "quiet text (--text-mid)": 7.82,
+      "quietest text (--text-low)": 4.06,
+      "olive": 6.43,
+      "brass": 8.38,
+      "bronze rule": 4.35
+    }
+  }
+}

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { DrawerTabs, type DrawerTabItem } from './DrawerTabs';
+import { useFolderTabsHost } from '../arbor2/folderTabs';
 import type { DrawerSide } from '../store/drawerShell';
 
 // PHASE 1 - THE SHARED DRAWER FRAME, one component for both hands (and, in S4, the card).
@@ -33,10 +35,18 @@ interface Props<T extends string> {
 
 export function SideDrawer<T extends string>({ side, idPrefix, tabs, children, foot }: Props<T>) {
   const hasTabs = !!tabs && tabs.items.length > 1;
+  // ARBOR v2 MOCKUP r17: Nick's C2 folder tabs stand off the drawer, so under the flag the row is drawn beside the opener (../arbor2/folderTabs.ts)
+  const folderHost = useFolderTabsHost(side, idPrefix, hasTabs);
   return (
     <div className={`wz-drawer-slide wz-drawer-slide--${side}`}>
-      {hasTabs && tabs && (
+      {hasTabs && tabs && !folderHost && (
         <DrawerTabs items={tabs.items} notes={tabs.notes} value={tabs.value} onChange={tabs.onChange} label={tabs.label} idPrefix={idPrefix} />
+      )}
+      {hasTabs && tabs && folderHost && createPortal(
+        <div className={`arbor2-c2 arbor2-c2--${side}`}>
+          <DrawerTabs items={tabs.items} notes={tabs.notes} value={tabs.value} onChange={tabs.onChange} label={tabs.label} idPrefix={idPrefix} />
+        </div>,
+        folderHost,
       )}
       {hasTabs && tabs ? (
         <div className="wz-drawer-body" role="tabpanel" id={`${idPrefix}-panel`} aria-labelledby={`${idPrefix}-tab-${tabs.value}`}>

@@ -211,8 +211,30 @@ await withHarness(async (app) => {
     if (await openPage(app, id)) {
       const z0 = await app.evalJs(GEO);
       const zl = z0 && z0.page && z0.stage ? z0.page.left - z0.stage.left : null; const zr = z0 && z0.page && z0.stage ? z0.stage.right - z0.page.right : null;
-      await setOpen(app, 'tools', true); const zs = await app.evalJs(GEO);
-      await press(app, 'tutor'); const zt = await app.evalJs(GEO);
+      // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are
+      // hidden for the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). In the zoom both tabs are hidden, so
+      // the trusted presses land on nothing: the Tools opens only by Ctrl+/ and the Tutor has no door at all - "opening the Tutor after the Tools" is no
+      // longer a writer's act there, and the Tutor's tab is not seen to open. Kept verbatim; they no longer run:
+      //   await setOpen(app, 'tools', true); const zs = await app.evalJs(GEO);
+      //   await press(app, 'tutor'); const zt = await app.evalJs(GEO);
+      //   ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
+      //     !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+      //   ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
+      //     J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+      //   await setOpen(app, 'tutor', false);
+      // SUCCESSORS: in the zoom both tabs are hidden; the Tools still opens by its shortcut (Ctrl+/); a trusted press where the Tutor's tab sits opens
+      // no Tutor; and the hidden Tutor tab keeps its box (nothing moves). Then the Tools closes by the same shortcut.
+      const zVis = () => app.evalJs("(() => { const v = (s) => { const g = document.querySelector(s); return g ? getComputedStyle(g).visibility : null; }; return { s: v('.wz-sliver-grip'), t: v('.wz-tutor-grip') }; })()");
+      const zCtrlSlash = async () => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); await sleep(250); await waitSoft(app, settled('tools'), { label: 'tools settled', timeout: 2500 }); await sleep(250); };
+      const zv = await zVis();
+      // MERGE (ARBOR ship onto main a2f71199, Nov 14): the two sides changed this block for different reasons and both stand. ARBOR (Nov 9): in any
+      // Typewriter zoom both tabs are hidden (desk-frame §12b keys on .mode-pagecol[data-zoom='true']), so non-Flux themes open the Tools by Ctrl+/ and
+      // run 3b / 1b. MAIN (Nov 12, Wire In): a stored Typewriter 'on' no longer zooms a Flux page, so §12b never applies in Flux, its tabs stay
+      // pressable, and Flux runs FX-WI 3 / FX-WI 1 / MI-WI with main's own opening (setOpen Tools, press Tutor). Each side's sequence is kept as it ran;
+      // main's note below that Arbor and Machina "still run the original two checks" is read as: they run ARBOR's successors 3b / 1b.
+      let zs, zt;
+      if (th.id !== 'flux') { await zCtrlSlash(); zs = await app.evalJs(GEO); await press(app, 'tutor'); zt = await app.evalJs(GEO); }
+      else { await setOpen(app, 'tools', true); zs = await app.evalJs(GEO); await press(app, 'tutor'); zt = await app.evalJs(GEO); }
       // SUPERSEDED (Nov 12, Wire In: Flux builds the Corridor without the flag): the two checks below pinned the PAPER Typewriter in Flux - a stored
       // wrizo-typewriter-page-<id>='on' on a Flux Draft page ZOOMED it 1.6x, so no room for both drawers. The paper Typewriter is RETIRED in Flux
       // (typewriterForPage() is false there; the zoom now only comes from Wire In, which is the Corridor and has no drawers), so in Flux the stored
@@ -225,10 +247,11 @@ await withHarness(async (app) => {
 //         J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
 //       await setOpen(app, 'tutor', false);
       if (th.id !== 'flux') {
-        ok(`${th.name} 1366x768 zoomed 3: there is NO room for both (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page, < ${DRAWER_MIN}), so opening the Tutor after the Tools CLOSES the Tools`,
-          !!z0 && z0.zoom && zl != null && (zl < DRAWER_MIN || zr < DRAWER_MIN) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
-        ok(`${th.name} 1366x768 zoomed 1 (Tutor): in the zoom too the tab's rect is unchanged by opening its drawer (it rides the painted page's edge)`, !!zs && !!zt && pred1(zs, zt, 'tutor'),
-          J({ shut: zs && zs.tTab, open: zt && zt.tTab }));
+        ok(`${th.name} 1366x768 zoomed 3b: in the zoom (${Math.round(zl)} / ${Math.round(zr)}px beside the 1.6x page) both tabs are HIDDEN, the Tools opens by Ctrl+/, and a press where the Tutor's tab sits opens NO Tutor`,
+          !!z0 && z0.zoom && !!zv && zv.s === 'hidden' && zv.t === 'hidden' && !!zs && zs.sOpen && !!zt && !zt.tOpen, J({ zl, zr, vis: zv, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+        ok(`${th.name} 1366x768 zoomed 1b (Tutor): in the zoom the hidden Tutor tab keeps its box - its rect is unchanged by the press`, !!zs && !!zt && sameRect(zs.tTab, zt.tTab),
+          J({ before: zs && zs.tTab, after: zt && zt.tTab }));
+        if (await app.evalJs(OPEN.tools)) await zCtrlSlash();
       } else {
         // SUCCESSOR (Flux): the stored Typewriter value does NOT zoom the page, so the room is the normal view's and both drawers open together
         ok(`FX-WI 3 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed (${Math.round(zl)} / ${Math.round(zr)}px beside it, >= ${DRAWER_MIN}), so opening the Tutor after the Tools leaves BOTH open`,
@@ -306,7 +329,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nDRAWER-MIRROR PARKED: PASS (1 comment record: the Flux zoomed pair, Wire In Nov 12; successors FX-WI 3 / FX-WI 1, mutant MI-WI - there is no parked leg in this file)');
+if (process.env.HARNESS_PARKED === '1') console.log('\nDRAWER-MIRROR PARKED: PASS (2 comment records: the zoomed pair, ARBOR Nov 9 (tabs hidden in the zoom; successors zoomed 3b / 1b); the Flux zoomed pair, Wire In Nov 12; successors FX-WI 3 / FX-WI 1, mutant MI-WI - there is no parked leg in this file)');
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nDRAWER-MIRROR VERIFY: PASS (${checks.length} checks)` : `\nDRAWER-MIRROR VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);

@@ -276,8 +276,13 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
   const extraButton = t.replace('</div>\n  );\n}', '<button type="button">Add a font</button></div>\n  );\n}');
   ok('FALSIFICATION M8 an extra button (an add door) is added to the control — must go RED', landed(extraButton) && (ctlShape(extraButton).buttons !== 3 || ctlShape(extraButton).addDoor), '');
   // ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 9
-  const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
-  ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
+
+  // ---- PARKED 2026-11-10 (SUPERSEDED - ARBOR r17 lifted the size input into a `sizeInput` const at a different indent, so this anchor no longer lands; full pair 42928277885). Kept VERBATIM, no longer run; the successor follows. ----
+  // const reguarded = t.replace('<input\n          className="wz-type-num"', "{form === 'full' && (<input\n          className=\"wz-type-num\"");
+  // ok('FALSIFICATION M9 [size-box successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED', landed(reguarded) && ctlShape(reguarded).inputGuardedByFullForm, '');
+  // ------------------------------------------------------------------
+  const reguardedB = t.replace(/<input\s+className="wz-type-num"/, "{form === 'full' && (<input className=\"wz-type-num\"");
+  ok('FALSIFICATION M9 [sizeInput successor] the number input is guarded to the FULL form again (Free Write and a card lose it) - must go RED (anchor: the input\'s tag and class, any indent)', landed(reguardedB) && ctlShape(reguardedB).inputGuardedByFullForm, '');
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
   ok('FALSIFICATION M10 a heading is added above the control — must go RED', landed(captioned) && ctlShape(captioned).caption, '');
 }
