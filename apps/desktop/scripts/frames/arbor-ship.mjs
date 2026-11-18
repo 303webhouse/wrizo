@@ -32,11 +32,13 @@ const openPage = async (app, text = PAGEW) => {
   await app.evalJs("(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === 'draft'); if (b) b.click(); return !!b; })()"); await sleep(900);
   return id;
 };
+// the caret held lit for the shot (test-only: the browser's caret-animation switch; the gate-7 frames caught the blink off)
+const HOLD = "(() => { if (!document.getElementById('ship-caret-hold')) { const st = document.createElement('style'); st.id = 'ship-caret-hold'; st.textContent = '*{ caret-animation:manual !important; }'; document.head.appendChild(st); } return getComputedStyle(document.documentElement).getPropertyValue('caret-animation') || 'unsupported'; })()";
 const caretEnd = "(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()";
 const room = (r, wide) => async (app) => { if (wide) await app.emulateDpr(1, 2000, 1125); await openPage(app); await setRoom(app, r); await app.evalJs("document.querySelector('.forward-only-editor')?.blur(); getSelection()?.removeAllRanges()"); await app.mouseMove(600, 300); await sleep(1200); await shipState(app, `ship-room-${r}${wide ? '-2000' : ''}`); };
 const caretPage = async (app) => { await openPage(app); await setRoom(app, 'day'); await app.evalJs(caretEnd); await app.mouseMove(40, 700); await sleep(500);
   const c = await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); return e ? { caret: getComputedStyle(e).caretColor, focused: document.activeElement === e } : null; })()");
-  if (!c || !c.focused) fail('ship-page-caret', { c }); await shipState(app, 'ship-page-caret', c); };
+  if (!c || !c.focused) fail('ship-page-caret', { c }); c.hold = await app.evalJs(HOLD); await app.evalJs(caretEnd); await shipState(app, 'ship-page-caret', c); };
 // the first key, 0.3 s after it, mid-burst, and the pause (the chrome's return) plus 3 s - by day
 const keyAt = (label, run) => async (app) => { await openPage(app); await setRoom(app, 'day'); await app.evalJs(caretEnd); await sleep(400); await run(app); await shipState(app, label); };
 const screens = {
@@ -56,7 +58,9 @@ const screens = {
     await waitSoft(app, "!!document.querySelector('.board-popup-editor')", { label: 'the card open', timeout: 6000 });
     await app.evalJs("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()"); await sleep(500);
     const c = await app.evalJs("(() => { const e = document.querySelector('.board-popup-editor'); return e ? { caret: getComputedStyle(e).caretColor, focused: document.activeElement === e } : null; })()");
-    if (!c || !c.focused) fail('ship-card-caret', { c }); await shipState(app, 'ship-card-caret', c);
+    if (!c || !c.focused) fail('ship-card-caret', { c }); c.hold = await app.evalJs(HOLD);
+    await app.evalJs("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return false; e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+    await shipState(app, 'ship-card-caret', c);
   },
   'ship-key-first': keyAt('ship-key-first', async (app) => { await app.typeKeys('a'); await sleep(60); }),
   'ship-key-03s': keyAt('ship-key-03s', async (app) => { await app.typeKeys('a'); await sleep(300); }),
