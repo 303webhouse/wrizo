@@ -213,15 +213,20 @@ export function FluxBlockCaret() {
     document.addEventListener('focusout', onBlurCheck, true);
     document.addEventListener('scroll', moved, { capture: true, passive: true });
     document.addEventListener('wz-caret-moved', moved);
-    window.addEventListener('resize', moved);
+    // #78: a resize re-lays the page out in steps that settle AFTER the resize event and its first frame (the page's width, the zoom, the scroller), and nothing else moves the selection, so the one redraw above stood at a stale place. The caret is drawn again as the layout settles:
+    // right away and at three later moments after the LAST resize [FluxBlockCaret §3]
+    let settle: number[] = [];
+    const onResize = () => { moved(); settle.forEach((t) => window.clearTimeout(t)); settle = [150, 400, 900].map((ms) => window.setTimeout(moved, ms)); };
+    window.addEventListener('resize', onResize);
     update();
     return () => {
       cancelAnimationFrame(raf);
+      settle.forEach((t) => window.clearTimeout(t));
       document.removeEventListener('selectionchange', onSel);
       document.removeEventListener('focusout', onBlurCheck, true);
       document.removeEventListener('scroll', moved, { capture: true });
       document.removeEventListener('wz-caret-moved', moved);
-      window.removeEventListener('resize', moved);
+      window.removeEventListener('resize', onResize);
       clearActive();
     };
   }, [theme]);
