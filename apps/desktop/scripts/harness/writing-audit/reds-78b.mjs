@@ -68,5 +68,5 @@ await withHarness(async (app) => {
     }
   }
 });
-console.log(bad.length ? `RED-78B: FAIL (${bad.length} of ${judged} reads): ${bad.slice(0, 4).join(' | ')}` : `RED-78B: PASS (${judged} reads, ${CYCLES} resize cycles: the Flux block caret follows the caret and the Tutor's box draws none)`);
+console.log(bad.length ? `RED-78B [${cfg.theme}/${cfg.tone}] FAIL (${bad.length} of ${judged} reads): ${bad.slice(0, 4).join(' | ')}` : `RED-78B [${cfg.theme}/${cfg.tone}] PASS (${judged} reads, ${CYCLES} resize cycles: the Flux block caret follows the caret and the Tutor's box draws none)`);   // not the verdict shape NAME: PASS|FAIL (the wrapper's line alone)
 process.exitCode = bad.length ? 1 : 0;
