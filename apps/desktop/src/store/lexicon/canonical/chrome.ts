@@ -223,6 +223,8 @@ export const CANONICAL_CHROME = {
   flux3ChecksumOk: 'Checksum OK',
   flux3ReadLevel: 'Level',
   flux3ReadZoom: 'Zoom',
+  // the way home: the ZOOM readout is a button that returns the board to true size; this is its hint (the key it answers to is Ctrl + 0)
+  flux3ZoomReset: 'Reset zoom (Ctrl + 0)',
   flux3ReadLast: 'Last',
   flux3KindPreset: 'Preset',
   // FLUX3 S2 - read only under ?flux3=1 in Flux: the Stack button in Show as, and the level readout while the Stack or the hologram is open

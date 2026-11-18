@@ -1,5 +1,6 @@
 import { useEffect, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
 import { type Box } from '../../types';
+import { getBoardScale } from '../../flux3/boardZoom';
 import { getJournalEntryIncludingDeleted, livePinFor, isCardLinkedToEntry, generateId, toggleEntryLink, pinAspectFor } from '../../store/persistence';
 import { MOUSE_DRAG_THRESHOLD, NEW_CARD_W, NEW_CARD_H, MIN_TEXT_W, MIN_TEXT_H, BOARD_MAX_Y, BOARD_BREATHING_ROOM, naturalPx, MEASURE_TOLERANCE_PX, groupMembers, LONG_PRESS_MS, TOUCH_CANCEL_THRESHOLD, MIN_INK_W, MIN_PIN_W, MIN_PIN_H, type LastAction } from './geometry';
 import { CARD_H } from '../../decks/layout';
@@ -564,8 +565,8 @@ export function useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, box
       }
       if (phase === 'dragging') {
         e.preventDefault();
-        const dxRaw = (e.clientX - startX) / pageWidthPx;
-        const dyRaw = (e.clientY - startY) / pageWidthPx;
+        const dxRaw = (e.clientX - startX) / (pageWidthPx * getBoardScale());   // the Schema's zoom is 1 everywhere else
+        const dyRaw = (e.clientY - startY) / (pageWidthPx * getBoardScale());
         const ids = new Set(movingIds);
         // FX17 S3 (SV22) — THE HARD STOP, applied to the DELTA rather than to
         // each box. Clamping per box (the way the x-axis's own Math.max(0, …)
@@ -601,7 +602,7 @@ export function useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, box
       }
       if (phase === 'resizing' && resizingId && resizeStart) {
         e.preventDefault();
-        const dx = (e.clientX - startX) / pageWidthPx;
+        const dx = (e.clientX - startX) / (pageWidthPx * getBoardScale());
         const minW = resizeStart.kind === 'text' ? MIN_TEXT_W : resizeStart.kind === 'ink' ? MIN_INK_W : MIN_PIN_W;
         const newW = Math.max(minW, resizeStart.w + dx);
         setBoxes(startBoxes.map(b => {
@@ -611,7 +612,7 @@ export function useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, box
           if (b.kind === 'page-pin' && resizeStart!.pinAspect != null) {
             // the card keeps its proportions and follows the pointer on both axes: the axis the pointer moved more drives the size, so the corner stays under the hand; MIN_PIN_H floors it [BoardEditor §43]
             const a = resizeStart!.pinAspect;
-            const dyFrac = (e.clientY - startY) / pageWidthPx;
+            const dyFrac = (e.clientY - startY) / (pageWidthPx * getBoardScale());
             // a DELTA from the start size, so an outward drag never shrinks an older, differently shaped card: it takes its kind's shape at the first pixel and grows [BoardEditor §44]
             const byX = dx, byY = dyFrac / a;
             const toward = resizeStart!.w + (Math.abs(byX) >= Math.abs(byY) ? byX : byY);
@@ -625,7 +626,7 @@ export function useBoardGestures({ canvasRef, previewLineRef, armTipRef, id, box
           // becomes a minimum, not a dictate" (the brief's own words).
           // page-pin already resized both axes freeform (AB4 S4); text now
           // shares the identical branch, MIN_TEXT_H its own floor.
-          const dy = (e.clientY - startY) / pageWidthPx;
+          const dy = (e.clientY - startY) / (pageWidthPx * getBoardScale());
           const minH = b.kind === 'text' ? MIN_TEXT_H : MIN_PIN_H;
           const newH = Math.max(minH, resizeStart!.h + dy);
           return { ...b, w: newW, h: newH, ...(b.kind === 'text' ? { sizedByHand: true as const } : {}) };   // BUG 32c: a text card the writer resizes by hand is theirs to size
