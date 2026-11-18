@@ -41,6 +41,24 @@ export const CANONICAL_SETTINGS = {
   // ITEM 224 — the invite-code field.
   authInviteCodePlaceholder: 'invite code',
   authSignupByInvitation: 'By invitation, for now.',
+  // THE SIGN-IN POP-OUT: the words Arrival.tsx carried inline, moved unchanged, plus the 18+ tick's two lines (Fable, Nov 18).
+  authWelcomeBack: 'Welcome back.',
+  authSignIn: 'Sign in',
+  authSigningIn: 'one moment…',
+  authNewHere: 'New here? Create an account',
+  authBack: '← back',
+  authPanelTag: 'Input',
+  authEmailPlaceholder: 'you@example.com',
+  authPasswordPlaceholder: 'password',
+  authSignInFailed: 'Could not sign in',
+  authCreateHeading: 'Save your writing to an account.',
+  authCreateSub: "Add an email and your writing follows you to any device — anything you've already written here comes with it.",
+  authNamePlaceholder: 'what should we call you?',
+  authNewPasswordPlaceholder: 'choose a password',
+  authCreateSubmit: 'Create my account',
+  authCreateFailed: 'Could not create your account',
+  authAdultConfirm: "I'm 18 or older.",
+  authAdultRequired: 'Wrizo accounts are for writers 18 and older, for now.',
 
   // ITEM splash-hold, ROUND 3 — Arbor's own voice, a tree/garden register
   // matching the rest of this theme's own vocabulary (Graft, Rhizome).

@@ -229,5 +229,8 @@ export const FLUX_OVERRIDES = {
     graftKnobTip: 'Drag to connect',
     boardFitToText: 'Auto-fit',
     graftPairedPage: 'Doc',
+    // THE SIGN-IN POP-OUT: Flux's own words (the node's tag, and LOG IN for the sign-in door and the panel's button; the capitals and the brackets are the stylesheet's)
+    authSignIn: 'Log in',
+    authPanelTag: 'N.01 · INPUT',
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;
