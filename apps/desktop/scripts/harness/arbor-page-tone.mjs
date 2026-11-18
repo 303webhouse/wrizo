@@ -64,7 +64,18 @@ await withHarness(async (app) => {
   const setSaved = (page) => app.evalJs(`(() => { window.wrizoThemePrefs.set({ page: ${J(page)} }); return window.wrizoThemePrefs.get().page; })()`);
   const openPanel = async () => { if (await app.evalJs("!!document.querySelector('.wz-theme-picker')")) return true; const p = await press(app, ".wz-strip-item[data-category='theme']"); await waitSoft(app, "!!document.querySelector('.wz-theme-picker')", { label: 'the Themes panel', timeout: 5000 }); return p; };
   const closePanel = async () => { if (await app.evalJs("!!document.querySelector('.wz-theme-picker')")) { await app.key('Escape'); await sleep(400); } };
-  const cell = async (room, page) => { await closePanel(); await setSaved(page); await setRoom(room); await sleep(500); await openPanel(); await sleep(300); return app.evalJs(READ); };
+  // THE PAGE AS DRAWN (driver fix, Nov 18, second run: in Arbor .mode-page and every layer above it paint transparent - the paper is drawn by
+  // another layer - so a computed colour read null in every cell, on both trees). Now the drawn pixels: a 40 x 40 clip of the screen low in the
+  // page's own box (below the one line of text), its per-channel median, read with the Themes panel closed (bug83-count-row's method).
+  const PAGEBOX = "(() => { const e = document.querySelector('.mode-page') || document.querySelector('.mode-pagecol'); if (!e) return null; const r = e.getBoundingClientRect(); if (r.width < 120 || r.height < 160) return null; const bottom = Math.min(r.bottom, innerHeight); return { x: Math.round(r.left + r.width / 2 - 20), y: Math.round(Math.max(r.top + 120, bottom - 90)), w: 40, h: 40 }; })()";
+  const drawnPage = async () => {
+    const b = await app.evalJs(PAGEBOX); if (!b) return { bg: null, lum: null, drawn: null, box: null };
+    const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.w, height: b.h, scale: 1 } })).data;
+    const rgb = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data; const med = (k) => { const v = []; for (let i = k; i < D.length; i += 4) v.push(D[i]); v.sort((a, b) => a - b); return v[v.length >> 1]; }; return [med(0), med(1), med(2)]; })()`);
+    const lum = Array.isArray(rgb) ? Math.round((0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 * 1000) / 1000 : null;
+    return { bg: rgb ? `rgb(${rgb.join(', ')})` : null, lum, drawn: lum == null ? null : lum > 0.5 ? 'light' : lum < 0.25 ? 'dark' : 'mid', box: b };
+  };
+  const cell = async (room, page) => { await closePanel(); await setSaved(page); await setRoom(room); await sleep(500); const d = await drawnPage(); await openPanel(); await sleep(300); return { ...(await app.evalJs(READ)), ...d }; };
 
   // the cells' predicates (the ruling): by day the page is drawn light and no tone is offered; at night the page is drawn in the saved tone
   // and the row offers both; the saved value is always the one set
@@ -84,7 +95,7 @@ await withHarness(async (app) => {
   // T5: the room moving with no reload, saved dark throughout
   await closePanel(); await setSaved('dark');
   const seq = [];
-  for (const room of ['night', 'day', 'night']) { await setRoom(room); await sleep(500); seq.push(await app.evalJs(READ)); }
+  for (const room of ['night', 'day', 'night']) { await setRoom(room); await sleep(500); seq.push({ ...(await app.evalJs(READ)), ...(await drawnPage()) }); }
   ok(`T5 the room moving, no reload (saved dark): ${J(seq.map((m) => m && `${m.room}:${m.drawn}`))}, saved ${J(seq.map((m) => m && m.saved))}`,
     seq.length === 3 && seq[0].drawn === 'dark' && seq[1].drawn === 'light' && seq[2].drawn === 'dark' && seq.every((m) => m.saved === 'dark' && m.arbor === 'true'), J(seq));
 
@@ -117,7 +128,7 @@ await withHarness(async (app) => {
   for (const [room, page] of [['day', 'light'], ['day', 'dark'], ['night', 'light'], ['night', 'dark']]) {
     const before = await cell(room, page);
     await app.evalJs(`document.documentElement.setAttribute('data-page', ${J(page)})`); await sleep(300);
-    const m = await app.evalJs(READ);
+    const panelRead = await app.evalJs(READ); await closePanel(); const m = { ...panelRead, ...(await drawnPage()) };   // (the panel read, then the page as drawn with it closed)
     m1.push({ room, page, landed: !!m && m.dataPage === page, red: !cellOk(room, page, m), before: before && before.drawn, after: m && m.drawn });
   }
   const m1ok = m1.every((c) => c.landed) && m1.filter((c) => c.red).map((c) => `${c.room}x${c.page}`).join(',') === 'dayxdark';
@@ -127,7 +138,7 @@ await withHarness(async (app) => {
   await closePanel(); await app.evalJs("document.documentElement.removeAttribute('data-page')");
   const m2pre = await cell('day', 'dark');
   await app.evalJs("(() => { const p = document.querySelector('.wz-theme-picker-field'); if (!p) return false; const d = document.createElement('div'); d.className = 'mode-crow'; d.innerHTML = '<span>Page</span><div class=\"mode-seg\"><button type=\"button\" class=\"on\">Light</button><button type=\"button\">Dark</button></div>'; p.prepend(d); return true; })()");
-  const m2 = await app.evalJs(READ);
+  const m2 = { ...(await app.evalJs(READ)), bg: m2pre && m2pre.bg, lum: m2pre && m2pre.lum, drawn: m2pre && m2pre.drawn };   // (the injected row changes no paper: the page as drawn is m2pre's)
   ok(`M2 (mutant): a Page row with Dark put into the day panel (LANDED: Page rows ${m2 && m2.pageRow}, Dark offered ${m2 && m2.darkOffered}) - T2's read goes RED`, dayOk(m2pre, 'dark') && !!m2 && m2.pageRow > 0 && m2.darkOffered === true && !dayOk(m2, 'dark'), J({ m2pre, m2 }));
   return checks;
 }, { label: 'arbor-page-tone' });
