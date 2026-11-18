@@ -370,7 +370,7 @@
 .wz-arrival .wz-popout .wz-sub{ font-size:.82rem; line-height:1.45; margin:0; max-width:none; }
 .wz-arrival .wz-popout .wz-form{ align-items:stretch; gap:.7rem; }
 .wz-arrival .wz-popout .wz-fieldcol{ align-items:stretch; gap:.5rem; margin-top:.1rem; }
-.wz-arrival .wz-popout .wz-field{ width:100%; box-sizing:border-box; text-align:left; font-size:.9rem; padding:.55rem .75rem; background:var(--wz-lift); border:1px solid #9C8A6E; }
+.wz-arrival .wz-popout .wz-field{ width:100%; box-sizing:border-box; text-align:left; font-size:.9rem; padding:.55rem .75rem; background:var(--wz-lift); border:1px solid #4a3d2c; }
 .wz-arrival .wz-popout .wz-field:focus{ border-color:var(--wz-orange); }
 .wz-arrival .wz-popout .wz-btn{ align-self:center; margin-top:.15rem; }
 .wz-arrival .wz-popout .wz-error{ font-size:.82rem; text-align:left; }
