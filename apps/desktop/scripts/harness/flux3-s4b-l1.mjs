@@ -90,12 +90,22 @@ try { await withHarness(async (app) => {
   // ---- TAME: no trace louder than the rest; the strongest ground pixel is fainter than the faintest real link -------------------------------------------------
   const layerSrc = fs.readFileSync(new URL('../../src/flux3/flux3-layer.ts', import.meta.url), 'utf8');
   const darkTone = layerSrc.slice(layerSrc.indexOf('dark: {'), layerSrc.indexOf('light: {'));
-  const gm = /ground: '#([0-9a-fA-F]{6})'/.exec(darkTone), lm = /link: 'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)'/.exec(darkTone);
+  // SUPERSEDED (flux-zoom-1 Guard 6, Nov 15: the Schema's link colour is the Wrizors' approved opaque hex, '#3A8FA5' in the dark tone, not an rgba; this read returned null for the faintest real link and TAME / TAME-SCHEMA read 'linkC null'); original, verbatim:
+  // const gm = /ground: '#([0-9a-fA-F]{6})'/.exec(darkTone), lm = /link: 'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)'/.exec(darkTone);
+  const gm = /ground: '#([0-9a-fA-F]{6})'/.exec(darkTone), lm = /link: 'rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)'/.exec(darkTone), lh = /link: '#([0-9a-fA-F]{6})'/.exec(darkTone);
   const hex = gm ? [0, 2, 4].map((i) => parseInt(gm[1].slice(i, i + 2), 16)) : null;
   const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
   const lum = (c) => 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
   const cr2 = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
-  const linkC = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : null;
+  // SUPERSEDED with the line above (the rgba-only read of the link colour); original, verbatim:
+  // const linkC = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : null;
+  const linkHex = lh ? [0, 2, 4].map((i) => parseInt(lh[1].slice(i, i + 2), 16)) : null;
+  const linkNow = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : (hex && linkHex ? cr2(linkHex, hex) : null);   // an rgba link composited on the ground, or an opaque hex link as it is
+  // THE FIXED CEILING (Fable, Nov 18: "add a fixed ceiling at the old bar"): the approved opaque link reads about 5.3:1, stronger than the old rgba(0,194,255,.36) link (about 3.6:1). Left as the bar it would loosen TAME and put the old full-strength drawing (3.62:1) UNDER it, so the red-first clause could never hold.
+  // The bar is the FAINTER of the two: the link as drawn now, and the old link's contrast on the same ground.
+  const OLD_LINK = [0, 194, 255, 0.36];
+  const linkOld = hex ? cr2(OLD_LINK.slice(0, 3).map((v, i) => v * OLD_LINK[3] + hex[i] * (1 - OLD_LINK[3])), hex) : null;
+  const linkC = linkNow !== null && linkOld !== null ? Math.min(linkNow, linkOld) : linkNow;
   const url0 = await ev('window.__l1.picture()');
   const tame = url0 && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(url0)}, ${JSON.stringify(hex)})`) : null;
   // the old drawing (a coarse trace at full strength and 2.5 px, its end pad over it) as a picture, for the reader's red proof
