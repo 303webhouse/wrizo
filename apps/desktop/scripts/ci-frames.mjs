@@ -93,6 +93,8 @@ const SIGNED_OUT = (() => {
     await app.injectHelpers();
     // the Sign in door, enabled: on the Arbor ship tree it is `.arbor2-front-doors button.arbor2-door.wz-arrival-signin` (disabled until the front is ready); elsewhere a "Sign in" button of Arrival's doors
     await app.waitFor("[...document.querySelectorAll('button')].some((b) => /^(sign in|log in)$/i.test(b.textContent.trim()) && !b.disabled)", { label: 'the Sign in door (Flux calls it Log in)' });
+    // the splash's Sign in door is ENABLED while its layer is still hidden (data-phase=wait): wait until a pointer would land on it (the Arbor ship tree; Nov 18, run 44388858387)
+    await app.waitFor("(() => { const b = document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-signin'); if (!b) return true; const r = b.getBoundingClientRect(); if (!r.width) return false; const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); })()", { label: 'the Sign in door, hit-testable', timeout: 20000 });
     await sleep(500);
     return (await app.evalJs("document.querySelector('.arbor2-front-doors button.arbor2-door.wz-arrival-signin') ? 'splash-door' : document.querySelector('.wz-arrival-doors') ? 'arrival-doors' : 'sign-in-button'"));
   };
