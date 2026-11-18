@@ -53,10 +53,10 @@ await withHarness(async (app) => {
   const h1 = await ev("document.querySelector('.wz-popout').getBoundingClientRect().height");
   const w = await ev(`(() => { const tag = document.querySelector('.wz-popout-tag'); const btn = document.querySelector('.wz-popout button[type=submit]'); return { door: ${JSON.stringify(doorWord)}, button: btn && btn.textContent.trim(), tag: tag ? tag.textContent.trim() : null, head: document.querySelector('.wz-popout .wz-bighead').textContent.trim() }; })()`);
   const p2a = w.door === WORDS.door && w.button === WORDS.door && w.head === 'Welcome back.' && (WORDS.tag === null ? (w.tag === 'Input' || w.tag === null) : w.tag === WORDS.tag);
-  const e = await ev(`(() => { ${PX} const f = document.querySelector('.wz-popout .wz-field'); const p = document.querySelector('.wz-popout'); return { edge: px(f, 'borderTopColor').rgb, edgeW: getComputedStyle(f).borderTopWidth, field: bgOf(f), panel: bgOf(p) }; })()`);
+  const e = await ev(`(() => { ${PX} const f = [...document.querySelectorAll('.wz-popout .wz-field')].pop(); const p = document.querySelector('.wz-popout'); return { edge: px(f, 'borderTopColor').rgb, edgeW: getComputedStyle(f).borderTopWidth, field: bgOf(f), panel: bgOf(p) }; })()`);
   const rField = ratio(e.edge, e.field), rPanel = ratio(e.edge, e.panel);
   check('P3', rField >= 3 && rPanel >= 3 && e.edgeW === '1px', `edge ${hex(e.edge)} ${e.edgeW}: ${rField.toFixed(2)}:1 against the field ${hex(e.field)}, ${rPanel.toFixed(2)}:1 against the panel ${hex(e.panel)}`);
-  const sp = await ev(`(() => { ${PX} const p = document.querySelector('.wz-popout'); const f = p.querySelector('.wz-field'); const arr = document.querySelector('.wz-arrival'); const veil = getComputedStyle(arr, '::after'); const ghost = document.querySelector('.wz-arrival-doors-ghost .wz-arrival-write'); const link = p.querySelector('.wz-link'); const tag = p.querySelector('.wz-popout-tag');
+  const sp = await ev(`(() => { ${PX} const p = document.querySelector('.wz-popout'); const f = [...p.querySelectorAll('.wz-field')].pop(); const arr = document.querySelector('.wz-arrival'); const veil = getComputedStyle(arr, '::after'); const ghost = document.querySelector('.wz-arrival-doors-ghost .wz-arrival-write'); const link = p.querySelector('.wz-link'); const tag = p.querySelector('.wz-popout-tag');
     const ph = getComputedStyle(f, '::placeholder').color; return { w: Math.round(p.getBoundingClientRect().width * 10) / 10, vw: window.innerWidth, veilBg: veil.backgroundColor, veilShown: veil.display !== 'none' && veil.content !== 'none', ghost: ghost ? ghost.textContent : null, ph, edge: px(f, 'borderTopColor').rgb, link: px(link, 'color').rgb, tag: tag && getComputedStyle(tag).display !== 'none' ? px(tag, 'color').rgb : null }; })()`);
   const want = cfg.theme === 'machina' ? 417 : 400;
   check('P6', Math.abs(sp.w - want) <= 1 && sp.w >= 360, `panel ${sp.w} px at ${sp.vw} (want ${want}, never under 360)`);
@@ -89,6 +89,7 @@ await withHarness(async (app) => {
     const hovOk = cfg.theme === 'plateau' ? hov.color === BRASS && hov.border === BRASS : cfg.theme === 'flux' ? hov.color === 'rgb(0, 194, 255)' && hov.shadow.includes('255, 152, 0') : hov.shadow.includes('255, 152, 0');
     check('P13', restOk && hovOk, `at rest `+JSON.stringify(rest)+`; under the pointer `+JSON.stringify(hov));
     await ev("(() => { const st = document.createElement('style'); st.id = 'mut-brass'; st.textContent = '.wz-arrival .wz-popout .wz-btn{ color:#ff9800 !important; border-color:#ff9800 !important; }'; document.head.appendChild(st); return true; })()");
+    await sleep(600);
     const mrest = await ev(BTN);
     const mrestOk = mrest.color !== BRASS && mrest.border !== BRASS && mrest.shadow === 'none';
     check('P13M', mrest.color === BRASS && !mrestOk, `the button brass at rest (landed: `+JSON.stringify(mrest)+`): P13's read goes RED`);
