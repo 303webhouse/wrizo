@@ -88,7 +88,7 @@ async function serve(tag, url, opts = {}) {
   const u = new URL(url, 'http://wrizo.test');
   const method = (opts.method || 'GET').toUpperCase();
   requests.push(`${tag} ${method} ${u.pathname}`);
-  if (!rules) return new Response('{"error":"not found"}', { status: 404 });
+  if (!rules || db.down) return new Response('{"error":"not found"}', { status: 404 });
   const hdr = (k) => { const h = opts.headers || {}; const key = Object.keys(h).find((x) => x.toLowerCase() === k.toLowerCase()); return key ? h[key] : undefined; };
   if (u.pathname === '/api/rail' && method === 'GET') return reply(await rules.railGet(memStore, USER));
   if (u.pathname === '/api/rail' && method === 'PUT') { db.railPuts += 1; return reply(await rules.railPut(memStore, USER, JSON.parse(opts.body))); }
@@ -342,15 +342,21 @@ ok(!stores.B.has('writer-studio-rail') && pinsOf(B).length === 0 && Object.keys(
   ok(queued.includes(1000) && db.railPuts > puts0 && serverPins().includes(P6), `R12 a pin made signed in is on the server one second later (queued ${JSON.stringify(queued)}, PUTs ${db.railPuts - puts0})`);
 }
 
-// R13 - switch on, nothing touched: no key; a round that learns nothing rewrites nothing
+// R13 - switch on, nothing touched: no key, even after rounds that reach no rail (a browser harness under ?reorg=1 reads storage byte for byte);
+// a round stores what it learned; a round that learns nothing leaves it byte-identical
 {
   const N = await loadDevice('N');
   const fresh = !stores.N.has('writer-studio-rail');
-  await syncDev(N); tick(); await round(N); tick();
+  await syncDev(N); tick();
+  db.down = true;
+  await round(N); tick(); await round(N); tick();
+  db.down = false;
+  const untouched = !stores.N.has('writer-studio-rail');
+  await round(N); tick();
   const learned = stores.N.get('writer-studio-rail');
   await round(N); tick();
-  ok(fresh && typeof learned === 'string' && learned.includes(P3) && stores.N.get('writer-studio-rail') === learned,
-    `R13 switch on and untouched, the device stores nothing (${fresh}); a round stores what it learned (${typeof learned === 'string'}); a round that learns nothing leaves it byte-identical`);
+  ok(fresh && untouched && typeof learned === 'string' && learned.includes(P3) && stores.N.get('writer-studio-rail') === learned,
+    `R13 switch on and untouched, the device stores nothing (at load ${fresh}, after two rounds that reached no rail ${untouched}); a round stores what it learned (${typeof learned === 'string'}); a round that learns nothing leaves it byte-identical`);
 }
 
 // U1-U3 - the merge itself
