@@ -20,7 +20,7 @@ await withHarness(async (app) => {
   await d.boot();
   for (const cat of CATEGORIES) {
     let found = null;
-    for (const w of [cfg.width, 1000, 800]) {
+    for (const w of [cfg.width, 1200, 1120, 1060]) {
       await app.emulateDpr(1, w, 768); await sleep(300);
       await d.openPage(TEXT, 'drafting');
       await d.place(5); await d.ev(`document.querySelector('.forward-only-editor').focus()`); await sleep(400);
