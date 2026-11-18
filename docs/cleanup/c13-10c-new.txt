@@ -99,6 +99,7 @@ authNewHere=New here? Create an account
 authBack=← back
 authPanelTag=Input
 authPanelTag@flux=N.01 · INPUT
+authDoorWrite=Write
 authEmailPlaceholder=you@example.com
 authPasswordPlaceholder=password
 authSignInFailed=Could not sign in

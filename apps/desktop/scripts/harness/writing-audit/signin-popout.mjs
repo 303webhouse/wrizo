@@ -3,6 +3,9 @@
 //   P2  the panel's words are the lexicon's for this theme (Arbor "Sign in", Flux "Log in" and the node tag "N.01 · INPUT", Machina "Sign in"), and "New here? Create an account" swaps the panel's contents IN PLACE: Arbor and Flux keep the top edge put and the panel grows down
 //   P3  #107: a field's 1 px edge reads >= 3:1 against the field and against the panel (Arbor's is #9C8A6E: 5.83:1 and 4.02:1)
 //   P4  the 18+ tick on the create-account face: unticked, the submit says "Wrizo accounts are for writers 18 and older, for now." and calls nothing (no request to the register endpoint); ticked, it goes; the tick is stored nowhere (no storage key is added)
+//   P6  the approved spec's width (Fable, Nov 18, 1:45 pm): 400 px at 1366 and never under 360 (Machina: the mark's width, 417)
+//   P7  the veil (Flux #020C10 at 74%; Machina none) and the ghost doors read the same words as the real doors (one lexicon key: authDoorWrite)
+//   P8  the spec table's colours, exactly: Arbor placeholder #9C9081; Flux field edge #5F8F95, links #9AD7EA, tag #7EB4C4
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -31,6 +34,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival-signin') && !document.querySelector('.wz-arrival-signin').disabled", { label: 'the sign-in door' });
   await sleep(500);
   const doorWord = await ev("document.querySelector('.wz-arrival-signin').textContent.trim()");
+  const realWrite = await ev("(document.querySelector('.wz-hero .wz-arrival-write') || {}).textContent");
   const pt = await ev("(() => { const r = document.querySelector('.wz-arrival-signin').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
   await d.click(pt.x, pt.y, 1);
   await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel', timeout: 8000 }).catch(() => {});
@@ -45,6 +49,15 @@ await withHarness(async (app) => {
   const e = await ev(`(() => { ${PX} const f = document.querySelector('.wz-popout .wz-field'); const p = document.querySelector('.wz-popout'); return { edge: px(f, 'borderTopColor').rgb, edgeW: getComputedStyle(f).borderTopWidth, field: bgOf(f), panel: bgOf(p) }; })()`);
   const rField = ratio(e.edge, e.field), rPanel = ratio(e.edge, e.panel);
   check('P3', rField >= 3 && rPanel >= 3 && e.edgeW === '1px', `edge ${hex(e.edge)} ${e.edgeW}: ${rField.toFixed(2)}:1 against the field ${hex(e.field)}, ${rPanel.toFixed(2)}:1 against the panel ${hex(e.panel)}`);
+  const sp = await ev(`(() => { ${PX} const p = document.querySelector('.wz-popout'); const f = p.querySelector('.wz-field'); const arr = document.querySelector('.wz-arrival'); const veil = getComputedStyle(arr, '::after'); const ghost = document.querySelector('.wz-arrival-doors-ghost .wz-arrival-write'); const link = p.querySelector('.wz-link'); const tag = p.querySelector('.wz-popout-tag');
+    const ph = getComputedStyle(f, '::placeholder').color; return { w: Math.round(p.getBoundingClientRect().width * 10) / 10, vw: window.innerWidth, veilBg: veil.backgroundColor, veilShown: veil.display !== 'none' && veil.content !== 'none', ghost: ghost ? ghost.textContent : null, ph, edge: px(f, 'borderTopColor').rgb, link: px(link, 'color').rgb, tag: tag && getComputedStyle(tag).display !== 'none' ? px(tag, 'color').rgb : null }; })()`);
+  const want = cfg.theme === 'machina' ? 417 : 400;
+  check('P6', Math.abs(sp.w - want) <= 1 && sp.w >= 360, `panel ${sp.w} px at ${sp.vw} (want ${want}, never under 360)`);
+  const veilOk = cfg.theme === 'flux' ? sp.veilShown && sp.veilBg === 'rgba(2, 12, 16, 0.74)' : cfg.theme === 'machina' ? !sp.veilShown : sp.veilShown;
+  check('P7', veilOk && !!realWrite && sp.ghost === realWrite, `veil ${sp.veilShown ? sp.veilBg : 'none'}; ghost door ${JSON.stringify(sp.ghost)} against the real door ${JSON.stringify(realWrite)}`);
+  const same = (a, h) => !!a && hex(a) === h;
+  const p8 = cfg.theme === 'plateau' ? sp.ph === 'rgb(156, 144, 129)' : cfg.theme === 'flux' ? same(sp.edge, '#5F8F95') && same(sp.link, '#9AD7EA') && same(sp.tag, '#7EB4C4') : true;
+  check('P8', p8, `placeholder ${sp.ph}; edge ${sp.edge && hex(sp.edge)}; links ${sp.link && hex(sp.link)}; tag ${sp.tag ? hex(sp.tag) : null}`);
   await ev("document.querySelector('.wz-popout-switch').click()");
   await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
   await sleep(700);

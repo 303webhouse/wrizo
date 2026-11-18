@@ -48,6 +48,7 @@ export const CANONICAL_SETTINGS = {
   authNewHere: 'New here? Create an account',
   authBack: '← back',
   authPanelTag: 'Input',
+  authDoorWrite: 'Write',
   authEmailPlaceholder: 'you@example.com',
   authPasswordPlaceholder: 'password',
   authSignInFailed: 'Could not sign in',

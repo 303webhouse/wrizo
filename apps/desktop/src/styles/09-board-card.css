@@ -364,10 +364,13 @@
 .wz-arrival .wz-hero.behind{ opacity:.34; transform:none; pointer-events:none; transition:opacity .35s ease; }
 .wz-arrival[data-stage='signin']::after, .wz-arrival[data-stage='account']::after{ content:''; position:absolute; inset:0; z-index:7; background:rgba(8,4,0,.55); pointer-events:none; }
 .wz-arrival-doors-ghost{ pointer-events:none; }
+/* the approved spec: Flux's veil is #020C10 at 74%; Arbor's placeholder #9C9081 */
+[data-theme='flux'] .wz-arrival[data-stage='signin']::after, [data-theme='flux'] .wz-arrival[data-stage='account']::after{ background:rgba(2,12,16,.74); }
+[data-theme='plateau'] .wz-arrival .wz-popout .wz-field::placeholder{ color:#9C9081; }
 /* ARBOR (the veil is ruled, Fable Nov 18 12:50 pm: the front door dims under the pop-out; the spec veil is #0A0503 at 72% over the WHOLE front door, spec 1 and 3). The Arbor front layer (.arbor2-front, z 2) stays under this ::after (z 7) while the panel (z 8) is open. */
 :root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='signin']::after, :root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='account']::after{ background:rgba(10,5,3,.72); }
 :root[data-arbor2][data-theme='plateau'] .arbor2-front.behind{ pointer-events:none; }
-.wz-arrival .wz-screen.wz-popout{ inset:auto; left:50%; top:max(6vh, calc(50% - 175px)); transform:translateX(-50%); width:min(340px, 90vw); box-sizing:border-box;
+.wz-arrival .wz-screen.wz-popout{ inset:auto; left:50%; top:max(6vh, calc(50% - 175px)); transform:translateX(-50%); width:clamp(360px, 29.3vw, 400px); max-width:calc(100% - 1rem); box-sizing:border-box;
   justify-content:flex-start; align-items:stretch; text-align:left; gap:.85rem; padding:1.35rem 1.5rem 1.15rem; background:#241811; border:2px solid #9C8A6E; border-radius:0; transition:none; }
 .wz-arrival .wz-popout .wz-bighead{ font-family:var(--wz-text); font-weight:500; font-size:1.55rem; line-height:1.2; letter-spacing:0; margin:0; }
 .wz-arrival .wz-popout .wz-sub{ font-size:.82rem; line-height:1.45; margin:0; max-width:none; }
@@ -389,21 +392,21 @@
   background-image:linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br));
   background-size:12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px;
   background-position:-1px -1px,-1px -1px,calc(100% + 1px) -1px,calc(100% + 1px) -1px,-1px calc(100% + 1px),-1px calc(100% + 1px),calc(100% + 1px) calc(100% + 1px),calc(100% + 1px) calc(100% + 1px); background-repeat:no-repeat; }
-[data-theme='flux'] .wz-arrival .wz-popout-tag{ display:block; font-family:var(--font-ui); font-size:.62rem; letter-spacing:.18em; color:#8FD6EE; text-transform:uppercase; }
+[data-theme='flux'] .wz-arrival .wz-popout-tag{ display:block; font-family:var(--font-ui); font-size:.62rem; letter-spacing:.18em; color:#7EB4C4; text-transform:uppercase; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:700; font-size:1.05rem; letter-spacing:.08em; text-transform:uppercase; color:#E8F6FA; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-field{ background:#020C10; border:1px solid rgba(143,214,238,.7); color:#E8F6FA; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-field{ background:#020C10; border:1px solid #5F8F95; color:#E8F6FA; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-field:focus{ border-color:#00C2FF; box-shadow:-4px 0 0 0 var(--wz-orange); }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn{ border-color:transparent; color:#E8F6FA; text-transform:uppercase; letter-spacing:.14em; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::before{ content:'[ '; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::after{ content:' ]'; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-link, [data-theme='flux'] .wz-arrival .wz-popout .wz-adult{ color:#8FD6EE; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-link, [data-theme='flux'] .wz-arrival .wz-popout .wz-adult{ color:#9AD7EA; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-adult-box{ accent-color:#00C2FF; }
 
 /* MACHINA: hairlines only, no fade, no shadow, no veil: the panel takes the two doors' place under the tagline so WRIZO stays readable; the room is the page tone (dark and light) */
 [data-theme='machina'] .wz-arrival .wz-hero.behind{ opacity:1; transition:none; }
 [data-theme='machina'] .wz-arrival[data-stage='signin']::after, [data-theme='machina'] .wz-arrival[data-stage='account']::after{ display:none; }
 [data-theme='machina'] .wz-arrival .wz-arrival-doors-ghost{ display:none; }
-[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ top:max(56%, 300px); background:var(--ink-900); border:1px solid var(--text-low); box-shadow:none; padding:1.1rem 1.2rem 1rem; }
+[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ width:clamp(360px, 35.5vw, 417px); top:max(56%, 300px); background:var(--ink-900); border:1px solid var(--text-low); box-shadow:none; padding:1.1rem 1.2rem 1rem; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:600; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-hi); }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-field{ background:transparent; border:1px solid var(--text-low); color:var(--text-hi); }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-field:focus{ border-color:var(--text-hi); }
@@ -411,6 +414,5 @@
 [data-theme='machina'] .wz-arrival .wz-popout .wz-popout-links{ flex-direction:row; justify-content:space-between; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-link, [data-theme='machina'] .wz-arrival .wz-popout .wz-adult{ color:var(--text-mid); }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-adult-box{ accent-color:var(--text-hi); }
-/* the panel never runs off the window: a short window scrolls it. Machina's SIGN-IN panel sits under the tagline (the doors' place); its CREATE-ACCOUNT face is taller than the room left there, so it stands on the window's foot instead and grows up (Arbor and Flux keep the top edge put and grow down) */
+/* the panel never runs off the window: a short window scrolls it (Machina's create-account face keeps the sign-in face's top edge too: Fable Nov 18, 1:45 pm, "leave it as is"; the Wrizors rule on the frames) */
 .wz-arrival .wz-screen.wz-popout{ max-height:calc(100% - 2rem); overflow-y:auto; }
-[data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ top:auto; bottom:1.25rem; }

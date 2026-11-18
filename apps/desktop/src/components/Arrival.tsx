@@ -252,7 +252,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           {stage === 'doors' && (
             <div className="wz-arrival-doors">
               <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>
-                Write
+                {t('authDoorWrite')}
               </button>
               <button type="button" className="wz-link wz-arrival-open" disabled={!ready || landing} onClick={handleOpen}>
                 Open
@@ -268,7 +268,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           {/* the doors as the picture shows them behind the panel: not pressable, not read out (Machina's panel takes their place instead, stylesheet) */}
           {stage !== 'doors' && (
             <div className="wz-arrival-doors wz-arrival-doors-ghost" aria-hidden="true">
-              <span className="wz-btn wz-primary wz-arrival-write">Write</span>
+              <span className="wz-btn wz-primary wz-arrival-write">{t('authDoorWrite')}</span>
               {authState === 'anon' && <span className="wz-link wz-arrival-signin">{t('authSignIn')}</span>}
             </div>
           )}

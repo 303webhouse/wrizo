@@ -497,7 +497,7 @@ export type DeskTermId =
   // THE SIGN-IN POP-OUT (the Wrizors' spec, Nov 18): the words of the panel that opens over the splash for sign-in and sign-up, moved here from Arrival.tsx unchanged; `authSignIn` is the splash door's word and the panel's button (Arbor "Sign in", Flux "Log in", Machina "Sign in"), `authPanelTag` is
   // Flux's node tag (empty elsewhere), and the two adult lines are the 18+ tick on the create-account face (nothing is stored)
   | 'authWelcomeBack' | 'authSignIn' | 'authSigningIn' | 'authNewHere' | 'authBack' | 'authPanelTag'
-  | 'authEmailPlaceholder' | 'authPasswordPlaceholder' | 'authSignInFailed'
+  | 'authDoorWrite' | 'authEmailPlaceholder' | 'authPasswordPlaceholder' | 'authSignInFailed'
   | 'authCreateHeading' | 'authCreateSub' | 'authNamePlaceholder' | 'authNewPasswordPlaceholder' | 'authCreateSubmit' | 'authCreateFailed'
   | 'authAdultConfirm' | 'authAdultRequired'
   // the splash's cycling loading line, four phrases per theme [deskLexicon §22]
