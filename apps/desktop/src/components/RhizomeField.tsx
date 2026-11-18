@@ -3,6 +3,10 @@ import { useWritingSettings } from '../store/writingSettings';
 import { useWritingGoal, goalCount } from '../store/writingGoal';
 import { useTheme } from '../store/theme';
 import { lapPlan, segmentsFor, geometryKey, pickSurvivor, hashSeed, type GrowthGeometry, type GrowthSegment, type Rect } from '../store/rhizomeGrowth';
+import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBOR v2 mockup, item 7: drawn only under ?arbor2=1
+import { isArbor2 } from '../arbor2/flag';
+import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
+import { ArborVines, type Room } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
 
 // the goal rhizome: shoots grow out of existing stems, flash brass at the goal and leave a seed; drawn behind the page and clipped from the rail, strip, header and open menus; ambient, framed stage only [RhizomeField §1]
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
@@ -109,6 +113,11 @@ function pathOf(segs: GrowthSegment[], thick: boolean): string {
   return d;
 }
 
+// ARBOR v2 mockup r21 (Fable, Nov 4): under the flag the vines are PLANNED in fixed page-relative units - the page a 620 x 560 band at the centre of
+// a 2000 x 1300 field - so the plan is the seed and the words only: no window, menu, drawer or receding chrome can reshape it (the measured
+// geometry counted the chrome only while it showed, so its recede and return re-planned the drawing). The vines module places it on the screen.
+const CANON: GrowthGeometry = { width: 2000, height: 1300, origin: { x: 1000, y: 650 }, hidden: [{ left: 690, top: 370, right: 1310, bottom: 930 }] };
+
 export function RhizomeField({ text, seedKey, paperRef }: {
   text: string;
   seedKey: string;
@@ -130,6 +139,16 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const openKey = `${seedKey}|${goalKey}`;
   const opened = useRef<{ key: string; lap: number }>({ key: '', lap: 0 });
   if (opened.current.key !== openKey) opened.current = { key: openKey, lap };
+  // ARBOR v2 mockup (r5, spec §8b - the rhizome's life): under the flag the finished laps STAY (drawn at .4 by day; by night only in the flash),
+  // the next lap grows from the TIP of the last one, and the history is held IN-SESSION per page (src/arbor2/rhizomeLife.ts: nothing stored),
+  // with Clear Rhizome / Undo in the mockup bar. Off the flag: life is null and every line below is today's.
+  const life = active && isArbor2() ? lifeOf(openKey, lap) : null;
+  const [, setLifeTick] = useState(0);
+  useEffect(() => (life ? subscribeLife(() => setLifeTick((x) => x + 1)) : undefined), [life]);
+  useEffect(() => { if (life) setCurrentRhizome(openKey, count, lap, frac); }, [life, openKey, count, lap, frac]);
+  useEffect(() => () => setCurrentRhizome(null), []);
+  const eff = life ? effective(life, lap, frac) : null;
+  const lifeSeed = eff ? `${pageSeed}${eff.suffix}` : pageSeed;
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [m, setM] = useState<Measured | null>(null);
@@ -189,16 +208,51 @@ export function RhizomeField({ text, seedKey, paperRef }: {
 
   // What to draw. During the flash: the finished lap, whole. Otherwise: the current lap up to the goal fraction.
   const shownLap = flashLap ?? lap;
-  const shownVisit = Math.max(0, shownLap - opened.current.lap);
-  const plan = useMemo(() => (m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, shownVisit]);
-  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, frac)) : 0;
+  const shownVisit = Math.max(0, shownLap - (eff ? eff.baseLap : opened.current.lap));
+  const lifeOn = !!eff;
+  const plan = useMemo(() => (lifeOn ? lifePlan(CANON, lifeSeed, shownVisit) : m ? lapPlan(m.geo, pageSeed, shownVisit) : null), [m, pageSeed, lifeSeed, lifeOn, shownVisit]);
+  // ARBOR v2 mockup (item 7): under the flag each lap keeps its own pace and shoot widths (src/arbor2/shoots.ts). Off the flag: unchanged.
+  const variation = variationOn();
+  const drawFrac = eff ? eff.frac : frac;
+  const k = plan ? (flashLap != null ? plan.segments.length : segmentsFor(plan, variation ? pacedFrac(pageSeed, shownLap, drawFrac) : drawFrac)) : 0;
+  // r5 §8b: the laps before this one (from the base lap), whole - the kept history, and where this lap's first segment came from (the tip)
+  const pastPlans = useMemo(() => (lifeOn ? Array.from({ length: shownVisit }, (_, v) => lifePlan(CANON, lifeSeed, v)) : []), [lifeOn, lifeSeed, shownVisit]);
+  // r21: the room the vines reach into (svg coordinates): the page's centre, the rail's right edge, the bar's bottom, the field's own size - read
+  // from their rects whatever their opacity (the chrome's recede must not move a stem's end), only when the field is measured again
+  const room = useMemo<Room | null>(() => {
+    const svg = svgRef.current; if (!m || !svg) return null;
+    const st = svg.getBoundingClientRect();
+    const rail = document.querySelector('.desk-frame-strip')?.getBoundingClientRect(), bar = [...document.querySelectorAll('.chrome-top.sprint-nav')].map((b) => b.getBoundingClientRect()).find((r) => r.height > 0);
+    // (r21: and the page's own edges - the kept band less its clearance - so a stem knows whether it can leave through the top or the bottom)
+    const pg = m.geo.hidden[0];
+    return { cx: m.geo.origin.x, cy: m.geo.origin.y, left: rail && rail.width > 0 ? Math.max(0, rail.right - st.left) : 0, right: m.geo.width, top: bar ? Math.max(0, bar.bottom - st.top) : 0, bottom: m.geo.height,
+      pl: pg.left + PAGE_CLEAR, pt: pg.top + PAGE_CLEAR, pr: pg.right - PAGE_CLEAR, pb: pg.bottom - PAGE_CLEAR };
+  }, [m]);
+  const roomKey = room ? [room.cx, room.cy, room.left, room.right, room.top, room.bottom, room.pl, room.pt, room.pr, room.pb].map((v) => Math.round(v)).join(',') : '';
+  const roomStable = useMemo(() => room, [roomKey]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const baseLap = eff ? eff.baseLap : 0;
+  const pastPaths = useMemo(() => {
+    const out: { key: string; thick: boolean; w?: number; d: string }[] = [];
+    if (!pastPlans.length) return out;
+    if (variation) {
+      for (const c of [0, 1, 2, 3] as const) for (const thick of [false, true]) {
+        const d = pastPlans.map((pl, v) => pathOf(pl.segments.filter((s) => shootClass(pageSeed, baseLap + v, s) === c), thick)).join('');
+        if (d) out.push({ key: `${c}${thick}`, thick, w: c, d });
+      }
+    } else {
+      for (const thick of [false, true]) { const d = pastPlans.map((pl) => pathOf(pl.segments, thick)).join(''); if (d) out.push({ key: String(thick), thick, d }); }
+    }
+    return out;
+  }, [pastPlans, variation, pageSeed, baseLap]);
+  const tipKey = lifeOn && shownVisit > 0 && pastPlans.length ? segKey(tipOf(pastPlans[pastPlans.length - 1])) : undefined;
+  const startKey = lifeOn && shownVisit > 0 && plan ? segKey(plan.segments[0]) : undefined;
 
   // Which segments are still GROWING. A segment that appears gets its own start time (staggered within its burst) and stays
   // a separate <line> until its draw-on has finished, so typing the next word never cuts the last word's growth short.
   // Anything that changes the drawing as a whole (another page, another lap, a new geometry, the flash) starts a fresh
   // record with nothing growing, so a reload or a resize never replays the growth.
   const growing = useRef<{ key: string; k: number; born: Map<number, { delay: number; until: number }> }>({ key: '', k: 0, born: new Map() });
-  const drawKey = plan && m ? `${pageSeed}#${shownLap}#${geometryKey(m.geo)}#${flashLap != null ? 'flash' : 'grow'}` : '';
+  const drawKey = plan && m ? `${lifeSeed}#${shownLap}#${geometryKey(m.geo)}#${flashLap != null ? 'flash' : 'grow'}` : '';
   const segs = plan ? plan.segments.slice(0, k) : [];
   const now = Date.now();
   const g = growing.current;
@@ -220,17 +274,57 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const settled = animated.length ? segs.filter(s => !born.has(s.id)) : segs;
   // While the finished plant fades, the one root the next lap will grow from stays put. It is the same segment
   // lapPlan will draw first on the following visit, so the handoff does not cut.
-  const seedRoot = flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;
+  const seedRoot = !lifeOn && flashFading && plan ? pickSurvivor(plan, hashSeed(`${pageSeed}:survivor:${shownVisit}`)) : null;   // r5: under the flag no survivor - the next lap grows from the tip
   const isSeed = (s: GrowthSegment) => !!seedRoot && seedRoot.some(r => r.x1 === s.x1 && r.y1 === s.y1 && r.x2 === s.x2 && r.y2 === s.y2);
   const fadingSettled = seedRoot ? settled.filter(s => !isSeed(s)) : settled;
   const seedSettled = seedRoot ? settled.filter(isSeed) : [];
 
+  // ARBOR v2 mockup r21 (Fable, Nov 6: the flash's night B2 - "a pre-rendered bitmap mask; keep the look identical"): the flash copy's mask is the
+  // field's own - its 24 px edge fade and its holes - drawn ONCE per field geometry into a bitmap (device pixels) and applied as a CSS mask on
+  // the flash layer, so the brass copy never re-reads the live field's SVG mask while it pulses. Until it exists the SVG mask stays.
+  // (hooks: above the early return, so their order never changes)
+  const [flashMask, setFlashMask] = useState<string | null>(null);
+  const fw = m?.geo.width ?? 0, fh = m?.geo.height ?? 0;
+  const maskKey = active && lifeOn && !!m && !!roomStable && fh > 60 ? `${fw}x${fh}|${m.holes.map((r) => [r.left, r.top, r.right, r.bottom].map((v) => Math.round(v * 10) / 10).join(',')).join(';')}` : '';
+  useEffect(() => {
+    if (!maskKey || !m) { setFlashMask(null); return; }
+    const k = window.devicePixelRatio || 1, c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(fw * k)); c.height = Math.max(1, Math.round(fh * k));
+    const g = c.getContext('2d'); if (!g) return;
+    g.scale(k, k);
+    // the field mask's white-to-black as alpha: clear at the top and bottom edges, whole between, over the same 24 px
+    const grad = g.createLinearGradient(0, 0, 0, fh);
+    grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(24 / fh, 'rgba(0,0,0,1)'); grad.addColorStop(1 - 24 / fh, 'rgba(0,0,0,1)'); grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad; g.fillRect(0, 0, fw, fh);
+    for (const r of m.holes) g.clearRect(r.left, r.top, Math.max(0, r.right - r.left), Math.max(0, r.bottom - r.top));
+    let url: string | null = null, gone = false;
+    c.toBlob((b) => { if (!b || gone) return; url = URL.createObjectURL(b); setFlashMask(url); }, 'image/png');
+    return () => { gone = true; if (url) URL.revokeObjectURL(url); };
+  }, [maskKey]);   // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!active) return null;
 
   const w = m?.geo.width ?? 0, h = m?.geo.height ?? 0;
+  // ARBOR v2 mockup r19 (spec draft 35 §18.1 F; Fable: Arbor's own presentation behind this seam): under the flag the same plan, the same k and
+  // the same kept laps are drawn as filled, tapered vines (src/arbor2/vines.tsx). Off the flag (lifeOn false) nothing below changes.
+  const vines = lifeOn && !!m && !!roomStable;
+  const vineP = flashLap != null ? 1 : Math.max(0, Math.min(1, drawFrac));   // r21 §18.6: this lap's words / its goal (the flash draws it whole)
   const clipD = m ? groundClipPath(w, h, m.holes) : '';
 
+  // ARBOR v2 mockup r20: the flash as a brass copy of the vines in its own layer (styles/arbor-v2.css: opacity only, composited) - the field
+  // itself never changes while it flashes, so typing in the flash costs what typing at rest does
+  const flashState = flashLap != null ? (flashFading ? 'fading' : 'true') : null;
+  const flashCopy = vines && flashState && m ? (
+    <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
+      style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined,
+        ...(flashMask ? { maskImage: `url("${flashMask}")`, WebkitMaskImage: `url("${flashMask}")`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskMode: 'alpha' } : {}) }}
+      data-mask={flashMask ? 'bitmap' : 'svg'}>
+      <g mask={flashMask ? undefined : 'url(#wz-rhizome-mask)'}><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
+    </svg>
+  ) : null;
+
   return (
+    <>
     <svg
       ref={svgRef}
       className="wz-rhizome-field"
@@ -240,6 +334,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
       data-lap={shownLap}
       data-segments={segs.length}
       data-goal-frac={frac.toFixed(3)}
+      data-tip={tipKey}
+      data-start={startKey}
+      data-vines={vines ? 'true' : undefined}
       viewBox={w > 0 ? `0 0 ${w} ${h}` : undefined}
       preserveAspectRatio="none"
       style={{ pointerEvents: 'none', clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined }}
@@ -249,8 +346,15 @@ export function RhizomeField({ text, seedKey, paperRef }: {
           <clipPath id="wz-rhizome-ground" clipPathUnits="userSpaceOnUse">
             <path clipRule="evenodd" fillRule="evenodd" d={clipD} />
           </clipPath>
+          {/* ARBOR v2 mockup r21 (Fable Nov 5: no hard cut at the field's top / bottom): under the flag the vines fade out over the field's last
+              24 px, top and bottom - the mask they already pass through takes a vertical gradient (no new layer, no layout change) */}
+          {vines && h > 60 && (
+            <linearGradient id="arbor2-edge-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={h}>
+              <stop offset="0" stopColor="#000" /><stop offset={24 / h} stopColor="#fff" /><stop offset={1 - 24 / h} stopColor="#fff" /><stop offset="1" stopColor="#000" />
+            </linearGradient>
+          )}
           <mask id="wz-rhizome-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
-            <rect x="0" y="0" width={w} height={h} fill="#fff" />
+            <rect x="0" y="0" width={w} height={h} fill={vines && h > 60 ? 'url(#arbor2-edge-fade)' : '#fff'} />
             {m.holes.map((r, i) => (
               <rect key={i} x={r.left} y={r.top} width={Math.max(0, r.right - r.left)} height={Math.max(0, r.bottom - r.top)} fill="#000" />
             ))}
@@ -258,20 +362,37 @@ export function RhizomeField({ text, seedKey, paperRef }: {
         </>
       )}
       <g clipPath={m ? 'url(#wz-rhizome-ground)' : undefined} mask={m ? 'url(#wz-rhizome-mask)' : undefined}>
-        <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
-        <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+        {vines ? <ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /> : (<>
+        {pastPaths.length > 0 && (
+          <g className="wz-rhizome-past">
+            {pastPaths.map((p) => <path key={p.key} className="wz-rhizome-old" data-thick={p.thick ? 'true' : undefined} data-w={p.w} d={p.d} />)}
+          </g>
+        )}
+        {variation ? ([0, 1, 2, 3] as const).flatMap((c) => [false, true].map((thick) => (
+          <path key={`${c}${thick}`} className="wz-rhizome-seg" data-thick={thick ? 'true' : undefined} data-w={c}
+            d={pathOf(fadingSettled.filter((s) => shootClass(pageSeed, shownLap, s) === c), thick)} />
+        ))) : (
+          <>
+            <path className="wz-rhizome-seg" d={pathOf(fadingSettled, false)} />
+            <path className="wz-rhizome-seg" data-thick="true" d={pathOf(fadingSettled, true)} />
+          </>
+        )}
         {seedSettled.length > 0 && <path className="wz-rhizome-seg" data-thick="true" data-seed="true" d={pathOf(seedSettled, true)} />}
         {animated.map(s => (
           <line
             key={`${drawKey}:${s.id}`}
             className="wz-rhizome-seg wz-rhizome-new"
             data-thick={s.thick ? 'true' : undefined}
+            data-w={variation ? shootClass(pageSeed, shownLap, s) : undefined}
             pathLength={1}
             style={{ animationDelay: `${born.get(s.id)!.delay}ms` }}
             x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
           />
         ))}
+        </>)}
       </g>
     </svg>
+    {flashCopy}
+    </>
   );
 }

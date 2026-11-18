@@ -6,9 +6,12 @@
 //       introduced the opt-in - (a) there it changed nothing else, (b) the declaration is still that one, (c) unset, no other use is left;
 //       U1L proves U1b can fail.
 //   U2  the unset value IS '/': the declaration evaluated with an empty environment gives '/', so `${base}${URL_SEARCH}#x` === `${base}/#x`.
+//       [U1b(c), U1L and U2 PARKED Nov 15 - the Arbor pin (Fable's ruling): successors U1b(c2), U1L2, U2b and its liveness U2L]
 //   U3  every page the driver opens goes through the opt-in: no `${base}/#` is left, and the three opens (goto, the reset, the launch) use it.
 //   U4  liveness: set, it does reach the URL - '?arbor2=1' and '/?arbor2=1' both give '/?arbor2=1' (a check that cannot fail is not run).
-//   U5  nothing opts in by accident: no harness or frames file sets WS_URL_SEARCH (only this proof names it).
+//   U5  nothing opts in by accident: no harness or frames file sets WS_URL_SEARCH (only this proof names it).   [PARKED Nov 10 - see U5b]
+//   U5b nothing opts in by accident: no harness or frames file SETS WS_URL_SEARCH (an assignment in code, comments stripped); files may READ it
+//       (Arbor's pinned files fail when it carries no pin). Coverage printed; MUT-U5b a file that sets it must be caught.
 // Run: node apps/desktop/scripts/harness/url-search-optin-unit.mjs  ->  "URL-SEARCH-OPTIN VERIFY: PASS (n checks)" or FAIL with the numbers.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,6 +27,8 @@ const norm = (s) => s.split('\r\n').join('\n');
 const now = norm(fs.readFileSync(RV, 'utf8'));
 const DECL = /\/\/ WS_URL_SEARCH \(opt-in[^\n]*\n\/\/[^\n]*\nconst URL_SEARCH = ([^\n]*);\n\n/;
 const m = now.match(DECL);
+// the Arbor pin (Nov 15): one named block before the opt-in's comment, ending in its one assignment and a blank line
+const PIN = /\/\/ THE ARBOR REDESIGN IS ON BY DEFAULT[^\n]*\n(?:\/\/[^\n]*\n)*if \(!process\.env\.WS_URL_SEARCH && process\.env\.WS_ARBOR2 !== 'default'\) process\.env\.WS_URL_SEARCH = '\?arbor2=0';\n\n/;
 ok('U0 the opt-in declaration is found (the proof reads the real file)', !!m);
 
 // ARCHIVED PARK (#13 step 14): archive/url-search-optin-unit.mjs.parked.md record 1
@@ -50,19 +55,43 @@ try {
   ok('U1b(a) at the commit that introduced the opt-in, unset, the driver was its parent\'s file byte for byte', same, same ? `${intro.slice(0, 8)}: ${before.length} chars identical` : `${intro.slice(0, 8)}: ${where || 'no declaration at the introducing commit'}`);
 } catch (e) { ok('U1b(a) the introducing commit and its parent could be read', false, String(e.message || e).slice(0, 200)); }
 ok('U1b(b) today\'s declaration is the one the opt-in introduced, unchanged', !!m && !!introDecl && m[0] === introDecl, introDecl ? (m && m[0] === introDecl ? 'identical' : 'changed') : 'no introducing declaration');
-{ const u = unsetOf(now); ok('U1b(c) today, unset, nothing named URL_SEARCH is left', u != null && !u.includes('URL_SEARCH'), u == null ? 'no declaration' : `${(u.match(/URL_SEARCH/g) || []).length} left`); }
-// U1L liveness (a check that cannot fail is not run): the same test REJECTS today's file with a stray use, and with a changed declaration
+// PARKED 2026-11-15 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default, and the harness pins today's Arbor (?arbor2=0) for any file that doesn't ask for the redesign - runtime-verify.mjs sets WS_URL_SEARCH to '?arbor2=0' before the opt-in's declaration when no query is named and WS_ARBOR2 is not 'default': the opt-in now has one more foothold, the pin, by ruling). Original, verbatim:
+// { const u = unsetOf(now); ok('U1b(c) today, unset, nothing named URL_SEARCH is left', u != null && !u.includes('URL_SEARCH'), u == null ? 'no declaration' : `${(u.match(/URL_SEARCH/g) || []).length} left`); }
+// SUCCESSOR U1b(c2): today, unset, nothing named URL_SEARCH is left but the declaration and the ONE ruled foothold, the Arbor pin block
+{ const u = unsetOf(now); const p = now.match(PIN); const v = u == null ? null : u.replace(PIN, '');
+  ok('U1b(c2) today, unset, nothing named URL_SEARCH is left but the declaration and the Arbor pin (one block, Fable Nov 15)', !!p && v != null && !v.includes('URL_SEARCH'), v == null ? 'no declaration' : `pin ${!!p}; ${(v.match(/URL_SEARCH/g) || []).length} left`); }
+// PARKED 2026-11-15 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default, and the harness pins today's Arbor (?arbor2=0) for any file that doesn't ask for the redesign - runtime-verify.mjs sets WS_URL_SEARCH to '?arbor2=0' before the opt-in's declaration when no query is named and WS_ARBOR2 is not 'default': today's file carries the pin, so "footholdFree(today)" is false by ruling). Original, verbatim:
+// // U1L liveness (a check that cannot fail is not run): the same test REJECTS today's file with a stray use, and with a changed declaration
+// {
+//   const stray = now.replace(DECL, (d) => d + 'const STRAY = URL_SEARCH;\n');
+//   const changed = now.replace(DECL, (d) => d.replace(/;\n\n$/, ' || \'/\';\n\n'));
+//   const live = footholdFree(now, introDecl) && stray !== now && !footholdFree(stray, introDecl) && changed !== now && !footholdFree(changed, introDecl);
+//   ok('U1L liveness: U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ today: footholdFree(now, introDecl), stray: footholdFree(stray, introDecl), changed: footholdFree(changed, introDecl) }));
+// }
+// SUCCESSOR U1L2: the same liveness with the pin block taken out first (it is U1b(c2)'s one named foothold) - the test still rejects a stray use and a
+// changed declaration
 {
+  const noPin = (t) => t.replace(PIN, '');
   const stray = now.replace(DECL, (d) => d + 'const STRAY = URL_SEARCH;\n');
   const changed = now.replace(DECL, (d) => d.replace(/;\n\n$/, ' || \'/\';\n\n'));
-  const live = footholdFree(now, introDecl) && stray !== now && !footholdFree(stray, introDecl) && changed !== now && !footholdFree(changed, introDecl);
-  ok('U1L liveness: U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ today: footholdFree(now, introDecl), stray: footholdFree(stray, introDecl), changed: footholdFree(changed, introDecl) }));
+  const live = !!now.match(PIN) && footholdFree(noPin(now), introDecl) && stray !== now && !footholdFree(noPin(stray), introDecl) && changed !== now && !footholdFree(noPin(changed), introDecl);
+  ok('U1L2 liveness: with the pin block out, U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ pin: !!now.match(PIN), today: footholdFree(noPin(now), introDecl), stray: footholdFree(noPin(stray), introDecl), changed: footholdFree(noPin(changed), introDecl) }));
 }
 
 // U2 / U4: the declaration's own expression, evaluated
 const evalWith = (env) => (m ? new Function('process', `return ${m[1]};`)({ env }) : undefined);
 const unsetVal = evalWith({}), emptyVal = evalWith({ WS_URL_SEARCH: '' });
-ok('U2 unset (and empty) give "/" - so ${base}${URL_SEARCH}#x === ${base}/#x', unsetVal === '/' && emptyVal === '/', JSON.stringify({ unsetVal, emptyVal }));
+// PARKED 2026-11-15 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default, and the harness pins today's Arbor (?arbor2=0) for any file that doesn't ask for the redesign - runtime-verify.mjs sets WS_URL_SEARCH to '?arbor2=0' before the opt-in's declaration when no query is named and WS_ARBOR2 is not 'default'). Original, verbatim:
+// ok('U2 unset (and empty) give "/" - so ${base}${URL_SEARCH}#x === ${base}/#x', unsetVal === '/' && emptyVal === '/', JSON.stringify({ unsetVal, emptyVal }));
+// SUCCESSOR U2b: the pin and the declaration evaluated together, as the driver runs them: unset (and empty) give '/?arbor2=0'; WS_ARBOR2=default gives '/'
+// (the redesign's own default); a named query still wins
+const pinCode = (now.match(PIN) || [''])[0].split('\n').filter((l) => /^if \(/.test(l)).join('\n');
+const evalPinned = (env, code = pinCode) => (m ? new Function('process', `${code}\nreturn ${m[1]};`)({ env: { ...env } }) : undefined);
+const p0 = evalPinned({}), p1 = evalPinned({ WS_URL_SEARCH: '' }), p2 = evalPinned({ WS_ARBOR2: 'default' }), p3 = evalPinned({ WS_URL_SEARCH: '?arbor2=1' });
+ok('U2b unset (and empty) give "/?arbor2=0" (today\'s Arbor pinned); WS_ARBOR2=default gives "/" (the redesign); a named query wins', !!pinCode && p0 === '/?arbor2=0' && p1 === '/?arbor2=0' && p2 === '/' && p3 === '/?arbor2=1', JSON.stringify({ pinCode: !!pinCode, p0, p1, p2, p3 }));
+// U2L liveness: with the pin taken out, U2b's read goes red (unset is '/' again)
+const q0 = evalPinned({}, '');
+ok('U2L liveness: without the pin, unset gives "/" - U2b\'s read goes RED', q0 === '/' && q0 !== '/?arbor2=0', JSON.stringify({ q0 }));
 const a1 = evalWith({ WS_URL_SEARCH: '?arbor2=1' }), a2 = evalWith({ WS_URL_SEARCH: '/?arbor2=1' });
 ok('U4 liveness: set, the query reaches the URL', a1 === '/?arbor2=1' && a2 === '/?arbor2=1', JSON.stringify({ a1, a2 }));
 
@@ -76,7 +105,19 @@ const scripts = path.resolve(here, '..');
 const hits = [];
 const walk = (dir) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) { if (e.name !== 'node_modules') walk(p); } else if (/\.(mjs|js|sh|yml)$/.test(e.name) && p !== RV && p !== fileURLToPath(import.meta.url) && fs.readFileSync(p, 'utf8').includes('WS_URL_SEARCH')) hits.push(path.relative(scripts, p)); } };
 walk(scripts);
-ok('U5 no harness or frames file sets WS_URL_SEARCH (nothing opts in by accident)', hits.length === 0, hits.join(', ') || 'none');
+// ---- PARKED 2026-11-10 (SUPERSEDED - its premise "only this proof names it" fell when Arbor's pinned files began READING WS_URL_SEARCH to prove the
+// room pin took (arbor2-keycost/-roompin/-sleep/-swap fail when it carries no pin) and naming it in their Run: lines; none of them SETS it. The check
+// tested mentions, not setting; full pair 42928277885). Kept VERBATIM, no longer run; the successor follows.
+// ok('U5 no harness or frames file sets WS_URL_SEARCH (nothing opts in by accident)', hits.length === 0, hits.join(', ') || 'none');
+// SUCCESSOR U5b: the claim as worded - a SET is an assignment in code (comments stripped): env.WS_URL_SEARCH = ..., WS_URL_SEARCH: ... in an env
+// object, ['WS_URL_SEARCH'] = ..., or a shell WS_URL_SEARCH=... / export. A READ (process.env.WS_URL_SEARCH || '') is not a set.
+const codeOnly = (t) => t.split('\n').filter((l) => !/^\s*(\/\/|#|\*|\/\*)/.test(l)).join('\n');
+const SETS = /env\.WS_URL_SEARCH\s*=(?!=)|\bWS_URL_SEARCH\s*:|\[\s*['"]WS_URL_SEARCH['"]\s*\]\s*=(?!=)|(?:^|[\s;&|(])(?:export\s+)?WS_URL_SEARCH=/m;
+const setters = hits.filter((rel) => SETS.test(codeOnly(fs.readFileSync(path.join(scripts, rel), 'utf8'))));
+ok(`U5b no harness or frames file SETS WS_URL_SEARCH (nothing opts in by accident) - coverage: ${hits.length} file(s) mention it, ${setters.length} set it`, setters.length === 0, JSON.stringify({ setters, mention: hits }));
+const mutSet = "const q = process.env.WS_URL_SEARCH || '';\nprocess.env.WS_URL_SEARCH = '?arbor2=1';\n";
+const mutRead = "// Run: WS_URL_SEARCH='?arbor2=1' node x.mjs\nconst q = process.env.WS_URL_SEARCH || '';\n";
+ok('MUT-U5b the setter test catches a file that sets it (and passes one that only reads and names it)', SETS.test(codeOnly(mutSet)) && !SETS.test(codeOnly(mutRead)), '');
 
 const failed = results.filter((r) => !r.pass).length;
 console.log(`URL-SEARCH-OPTIN VERIFY: ${failed ? `FAIL - ${failed}/${results.length} failed` : `PASS (${results.length} checks)`}`);

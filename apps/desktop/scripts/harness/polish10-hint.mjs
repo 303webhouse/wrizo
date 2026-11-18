@@ -45,16 +45,36 @@ const attr = (app, sel, a) => app.evalJs(`document.querySelector(${J(sel)})?.get
 const click = async (app, x, y) => { await app.mouseMove(x, y); await app.mouseDown(x, y); await app.mouseUp(x, y); };
 const TOGGLE = '[data-mode-toggle="typewriter"]';
 const zoomedNow = (app) => app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+const ctrlSlash = async (app) => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); };
+const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()");
 const setView = async (app, zoom) => {
   if ((await zoomedNow(app)) === zoom) return zoom;
-  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // NO CONTROL, NO DANCE (the merge's Flux H1 red; measured by a diagnostic probe, Actions 43665717851): when the Typewriter control has no box on
+  // the page (Flux Free Write is Wire In - always zoomed, the control hidden), the writer has no way to change the view, so this does nothing and
+  // returns the view as it is (H0's successor already expects Flux zoomed). Running the steps below there moved the page under the read: the
+  // Ctrl+/ open step (taken while §12b hides the grip) scrolled 329 -> 545, the probe's scrollIntoView on the 0x0 control scrolled to 1051, and
+  // the hint was raised while the hold glided back (948) - it landed on the writing line (590 vs 425).
+  if (!(await rectOf(app, TOGGLE))) return zoomedNow(app);
+  // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+  // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this trusted click on the grip
+  // lands on nothing, so the drawer never opened and the view could not be left. Kept verbatim; it no longer runs:
+  //   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // SUCCESSOR: the writer's own way in each state - the grip while it shows, Ctrl+/ (the Sliver's shortcut) while Typewriter hides it.
+  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } } else { await ctrlSlash(app); await sleep(600); } }
   const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
     return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)) }; })()`);
   let at = await probe();
   for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
   if (at && at.hits) { await click(app, at.x, at.y); await sleep(1100); }
-  if ((await attr(app, '.wz-sliver', 'data-open')) === 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // PARKED 2026-11-15 (SUPERSEDED - the Arbor line onto main (ARBOR, ship-onto-main @ 5a6b7f5c and 206d4ae8, Actions 43644710885 / 43660825323):
+  // main parked the OPEN step above for §12b but kept this CLOSE step's trusted click on the grip. Flux Free Write is Wire In, always zoomed, so
+  // with §12b (the Arbor line's 13-desk-frame.css) the grip is hidden there: the click lands on nothing, the Tools drawer opened by Ctrl+/ stays
+  // OPEN through the read, and 'Flux normal H1' measured the hint with the drawer open (writing line 590 vs 425 with it shut; bisected on Actions:
+  // 13-desk-frame.css alone set back to main's -> PASS, run 43661831009). Kept verbatim; it no longer runs:
+  //   if ((await attr(app, '.wz-sliver', 'data-open')) === 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } }
+  // SUCCESSOR: the same writer's way as the open step - the grip while it shows, Ctrl+/ (the Sliver's shortcut) while Typewriter hides it.
+  if ((await attr(app, '.wz-sliver', 'data-open')) === 'true') { if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(600); } } else { await ctrlSlash(app); await sleep(600); } }
   return zoomedNow(app);
 };
 // the hold settled: the scroller still for 1s (capped at 20s)

@@ -16,7 +16,9 @@ for (const f of files) {
   if (!line) { console.error(`no RL-RAW line in ${f} (skipped)`); continue; }
   const raw = JSON.parse(line.slice(8));
   if (!raw.fade?.length || !raw.restFast?.length || !raw.fine?.fade?.cost?.length || !raw.fine?.fast?.cost?.length) { console.error(`${f}: incomplete samples (skipped)`); continue; }
-  if (raw.mutantMs || raw.mutantStallMs || raw.mutantFadeMs) { console.error(`${f}: a mutant run is not a control (skipped)`); continue; }
+  // PARKED - SUPERSEDED by THE SWAP KEY's mutants (Nov 6): they are not controls either. The line(s) that stood, verbatim (the successor is the line below this block):
+  // if (raw.mutantMs || raw.mutantStallMs || raw.mutantFadeMs) { console.error(`${f}: a mutant run is not a control (skipped)`); continue; }
+  if (raw.mutantMs || raw.mutantStallMs || raw.mutantFadeMs || raw.mutantSwapMs || raw.mutantSecondMs) { console.error(`${f}: a mutant run is not a control (skipped)`); continue; }
   shifts.push({ f, c: pct(raw.fade, 0.5) - pct(raw.restFast, 0.5), p95: pct(raw.fade, 0.95) - pct(raw.restFast, 0.95), c2: pct(raw.fine.fade.cost, 0.5) - pct(raw.fine.fast.cost, 0.5) });
 }
 for (const s of shifts) console.error(`${s.f}: fade shift median ${r1(s.c)} p95 ${r1(s.p95)} cost ${r1(s.c2)}`);
