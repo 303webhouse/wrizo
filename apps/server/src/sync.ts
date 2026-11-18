@@ -5,6 +5,7 @@ import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { getServerBuild } from './build';
 import { wordCount } from './wordCount';
+import { purgeRailDrawer } from './railRoutes';
 
 // Record-level last-write-wins sync. All queries are scoped to the session
 // user_id; a pushed record only overwrites a stored row when its updated_at is
@@ -218,6 +219,8 @@ async function writeShell(table: string, userId: string, r: any): Promise<void> 
          updated_at = greatest(drawers.updated_at, excluded.updated_at), synced_at = now()
        where drawers.user_id = excluded.user_id`,
       [r.id, userId, SHELL_TEXT, deleted, created, updated]);
+    // the reorg's rail: the Project's pin, its box and its picture's bytes go with it (railRoutes.ts)
+    await purgeRailDrawer(userId, r.id);
   } else if (table === 'story_plans') {
     await pool.query(
       `insert into story_plans (id, user_id, project_id, framework_id, beat_notes, deleted_at, purged_at, created_at, updated_at)
