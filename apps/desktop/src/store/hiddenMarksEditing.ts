@@ -216,9 +216,9 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
     return true;
   };
 
-  const snapCaretHere = (fromClick = false) => {
+  const snapCaretHere = (fromClick = false, known?: ReturnType<typeof selectionEnds>) => {
     if (pointerDown) return;
-    const ends = selectionEnds(el);
+    const ends = known !== undefined ? known : selectionEnds(el);   // #66: selectionChange reads the selection once and hands it on
     if (!ends || !ends.collapsed) return;
     const text = host.plainNow();
     const at = fromClick ? snapCaretAfterClick(text, ends.focus) : ends.focus === clickPlaced ? clickPlaced : snapCaret(text, ends.focus);
@@ -232,7 +232,14 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
 
   const selectionChange = () => {
     if (host.busy()) return;
-    snapCaretHere();
+    // #66: at the very end of a page that ends in a newline, Shift+Right selects the invisible end marker (the guard character): the browser's range is not collapsed, but its plain-text ends are the same place (the guard is not text). That is nothing the writer selected, and the next Left only
+    // collapses it instead of moving. It is collapsed where it stands: Shift+Right at the very end selects nothing, and Left moves one place.
+    // ONE read of the selection per change: the same ends feed the marker rule and the snap (a drag in progress reads nothing, as before)
+    if (!pointerDown) {
+      const ends = selectionEnds(el);
+      if (ends && !ends.collapsed && ends.anchor === ends.focus) { placeCaret(el, ends.focus); return; }
+      snapCaretHere(false, ends);
+    }
     if (pending) { const ends = selectionEnds(el); if (!ends || !ends.collapsed || ends.focus !== pending.at) pending = null; }
   };
   const onPointerDown = () => { pointerDown = true; };
