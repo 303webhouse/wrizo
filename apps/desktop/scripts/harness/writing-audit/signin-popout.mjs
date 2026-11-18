@@ -140,12 +140,15 @@ await withHarness(async (app) => {
     window.__keys0 = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; const n = (sel, v) => { const el = document.querySelector(sel); const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; s.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
     n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); return { box: true, ticked: document.querySelector('.wz-adult-box').checked }; })()`);
   let p4 = !!sig.box && sig.ticked === false;
-  let line = null, regUnticked = null, regTicked = null, added = null, focusOnTick = null, spaceTicked = null, tickLook = null, errColor = null;
+  let line = null, regUnticked = null, regTicked = null, added = null, focusOnTick = null, spaceTicked = null, tickLook = null, errColor = null, redNow = null;
   if (p4) {
     await ev("document.querySelector('.wz-popout button[type=submit]').click()"); await sleep(600);
     line = await ev("(document.querySelector('.wz-popout .wz-error') || {}).textContent || null");
     regUnticked = await ev('window.__reg');
     errColor = await ev("(() => { const e = document.querySelector('.wz-popout .wz-error'); return e ? getComputedStyle(e).color : null; })()");
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-red'; st.textContent = '.wz-popout .wz-error{ color:#c0503a !important; }'; document.head.appendChild(st); return true; })()"); await sleep(200);
+    redNow = await ev("(() => { const e = document.querySelector('.wz-popout .wz-error'); return e ? getComputedStyle(e).color : null; })()");
+    await ev("document.getElementById('mut-red') && document.getElementById('mut-red').remove(); true");
     focusOnTick = await ev("document.activeElement === document.querySelector('.wz-adult-box')");
     const look0 = await ev(`(() => { ${PX} const b = document.querySelector('.wz-adult-box'); const cs = getComputedStyle(b); return { w: cs.width, h: cs.height, bw: cs.borderTopWidth, edge: px(b, 'borderTopColor').rgb, mark: getComputedStyle(b, '::after').content }; })()`);
     await app.typeKeys(' '); await sleep(250);
@@ -161,10 +164,7 @@ await withHarness(async (app) => {
     check('P11', !!l0 && l0.w === '16px' && l0.h === '16px' && l0.bw === '1px' && hex(l0.edge) === edgeWant && focusOnTick === true && spaceTicked === true && !!l1 && l1.mark === '""' && l1.markColor === 'rgb(255, 152, 0)', `box `+(l0 && l0.w)+' x '+(l0 && l0.h)+`, border `+(l0 && l0.bw)+` `+(l0 && hex(l0.edge))+` (want `+edgeWant+`); focus on the tick after the error `+focusOnTick+`; Space ticked `+spaceTicked+`; mark `+JSON.stringify(l1)); }
   { const want = { plateau: 'rgb(185, 170, 140)', flux: 'rgb(126, 180, 196)', machina: 'rgb(154, 161, 168)' }[cfg.theme];
     check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's label colour `+want+`, never red)`);
-    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-red'; st.textContent = '.wz-popout .wz-error{ color:#c0503a !important; }'; document.head.appendChild(st); return true; })()"); await sleep(200);
-    const redNow = await ev("(() => { const e = document.querySelector('.wz-popout .wz-error'); return e ? getComputedStyle(e).color : null; })()");
-    check('P15M', redNow !== null && redNow !== want && redNow !== errColor, `the error line red (landed: `+redNow+`): P15's read goes RED`);
-    await ev("document.getElementById('mut-red') && document.getElementById('mut-red').remove(); true"); }
+    check('P15M', redNow !== null && redNow !== want && redNow !== errColor, `the error line red (landed: `+redNow+`): P15's read goes RED`); }
   check('P4', p4, `tick ${JSON.stringify(sig)}; line ${JSON.stringify(line)}; register calls unticked ${regUnticked}, ticked ${regTicked}; storage keys added ${JSON.stringify(added)}`);
   await ev("localStorage.setItem('wz.signedOutHere', '1'); true");
   await app.reload();
