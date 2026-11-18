@@ -240,4 +240,6 @@ ink-canvas-empty.mjs 70
 wa-red-74.mjs 60
 wa-red-103.mjs 60
 wa-red-76.mjs 240
+wa-red-78.mjs 240
 wa-red-79.mjs 120
+wa-red-93.mjs 150
