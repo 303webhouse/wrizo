@@ -94,6 +94,9 @@ const MOVING = KF[5][0] * BREEZE;   // a leaf moves over the first 1.4 s of its 
 // So her first key between gusts finds nothing to switch off. Without the query nothing here runs (the shipped arm).
 const GUST_LIVE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('arbor2gust') === 'live';
 const GUST_LEAD = 150, GUST_TAIL = 100;
+// #104 PROBE ARM 2, TEST-ONLY (the box turn's "still painted ahead"): ?arbor2gust=warm - the room's still picture and live drawing on their own
+// layers and the still held at .004 before the cut (repaint4's WARM sheet, Actions 44367494940), so the cut repaints nothing. A sheet only.
+const GUST_WARM = typeof location !== 'undefined' && new URLSearchParams(location.search).get('arbor2gust') === 'warm';
 function easeInOut(x: number): number {   // cubic-bezier(.42, 0, .58, 1), solved for its x by bisection
   const bx = (t: number) => 3 * (1 - t) * (1 - t) * t * 0.42 + 3 * (1 - t) * t * t * 0.58 + t * t * t, by = (t: number) => 3 * (1 - t) * t * t + t * t * t;
   let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; } return by((lo + hi) / 2);
@@ -147,6 +150,7 @@ function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; 
 
 /** The room's layer, appended to <body>; and the page's, kept inside whichever .mode-page is on screen. */
 export function mountPergola(): void {
+  if (GUST_WARM) { const st = document.createElement('style'); st.id = 'arbor2-gust-warm'; st.textContent = ".arbor2-pergola .arbor2-pergola-drift > .arbor2-still, .arbor2-pergola .arbor2-pergola-drift > .arbor2-live { will-change: opacity; } .arbor2-pergola:not([data-live-off='true']) .arbor2-pergola-drift > .arbor2-still { opacity: .004 !important; }"; document.head.appendChild(st); }
   const room = makeLayer('arbor2-pergola', null);
   document.body.appendChild(room.layer);
 
