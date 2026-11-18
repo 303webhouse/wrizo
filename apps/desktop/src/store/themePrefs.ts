@@ -52,11 +52,29 @@ function load(): ThemePrefs {
 let current: ThemePrefs = load();
 const subs = new Set<(p: ThemePrefs) => void>();
 
+// NICK RULED (Nov 18, 10:06 am, via Fable): in Arbor's redesign the DAY room's page is always light - no Page: Dark is offered by day; at
+// NIGHT the light/dark choice stays. The SAVED choice is never touched (a 'dark' saved by night is still 'dark', and is the page again at
+// night): only the page in force follows the room. Read from <html>'s own attributes (the redesign, the theme, the room in force - arbor2/
+// mount.tsx), so this store imports nothing of Arbor's. Every other theme, and Arbor without the redesign, keeps the saved choice exactly.
+function arborDay(): boolean {
+  if (typeof document === 'undefined') return false;
+  const r = document.documentElement;
+  return r.getAttribute('data-arbor2') === 'true' && r.getAttribute('data-theme') === 'plateau' && r.getAttribute('data-arbor2-room') === 'day';
+}
+/** The page tone IN FORCE: the saved choice, except light in Arbor's day room (Nick, Nov 18). */
+export function effectivePage(prefs: ThemePrefs = current): PageTone {
+  return arborDay() ? 'light' : prefs.page;
+}
+/** True while the page tone is not hers to choose (Arbor's day room): the Page row is not offered. */
+export function pageToneForced(): boolean {
+  return arborDay();
+}
+
 function applyAttributes(prefs: ThemePrefs) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.setAttribute('data-voice', prefs.voice);
-  root.setAttribute('data-page', prefs.page);
+  root.setAttribute('data-page', effectivePage(prefs));
   root.setAttribute('data-fade', prefs.fade);
 }
 
@@ -75,6 +93,17 @@ export function setThemePrefs(patch: Partial<ThemePrefs>): void {
 // <html> before first paint-adjacent render (no flash of the wrong voice).
 export function initThemePrefs(): void {
   applyAttributes(current);
+  // the page in force follows the room (Nick, Nov 18): when the redesign, the theme or the room changes, data-page is set again (in the same
+  // task, before paint) and the rows that offer or read the tone hear of it
+  if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
+    let was = `${effectivePage()}|${pageToneForced()}`;
+    new MutationObserver(() => {
+      const page = effectivePage();
+      if (document.documentElement.getAttribute('data-page') !== page && !document.documentElement.hasAttribute('data-flux3-jacked')) document.documentElement.setAttribute('data-page', page);
+      const now = `${page}|${pageToneForced()}`;
+      if (now !== was) { was = now; toneSubs.forEach((fn) => fn()); }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-arbor2', 'data-theme', 'data-arbor2-room'] });
+  }
 }
 
 export function useThemePrefs(): ThemePrefs {
@@ -86,6 +115,19 @@ export function useThemePrefs(): ThemePrefs {
     return () => { subs.delete(fn); };
   }, []);
   return value;
+}
+
+// the page tone in force and whether it is hers to choose, for the rows that offer or read it (they re-render when the room moves it)
+const toneSubs = new Set<() => void>();
+export function usePageTone(): { page: PageTone; forced: boolean } {
+  const prefs = useThemePrefs();
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const fn = () => tick((x) => x + 1);
+    toneSubs.add(fn);
+    return () => { toneSubs.delete(fn); };
+  }, []);
+  return { page: effectivePage(prefs), forced: pageToneForced() };
 }
 
 // Test/inspection seam (the resumeVocab.ts / wrizoVocab pattern).

@@ -17,7 +17,7 @@ import { FLUX3 } from '../flux3/flag';
 import { useTheme } from '../store/theme';
 import { sectionsOf, journalMembers } from '../store/place';
 import { railReadout, railHint } from '../store/fluxReadouts';
-import { useThemePrefs } from '../store/themePrefs';
+import { useThemePrefs, usePageTone } from '../store/themePrefs';
 import { useLastTouched } from '../flux3/lastTouched';
 import { nodeHex } from '../flux3/FluxNodeRecord';
 // THE REORG'S RAIL (phase 2): ?reorg=1 in Machina only; with the switch off, or in any other theme, the strip renders exactly as before
@@ -181,6 +181,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const reorg = REORG && useTheme() === 'machina';
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
+  const { page: pageInForce } = usePageTone();   // the rail reads the page in force (Arbor's day room: always light - Nick, Nov 18)
   // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)
   const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
   const readouts = useMemo(() => {
@@ -200,7 +201,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes, hintWords.doc, hintWords.circuit, hintWords.rack, hintWords.log, place.kind, place.id, place.setId, subject.entry.id, subject.entry.pageType]);
   // the foot's boxes read the two settings they open (live: the prefs store notifies). The Trash has NO count: the Trash is a place, not a nag (TrashPanel: A18's anti-solicitation core).
-  const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal', hintWords) }, theme: { count: prefs.page.toUpperCase(), hint: railHint('tone', prefs.page, 'journal', hintWords) } } : null;
+  const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal', hintWords) }, theme: { count: pageInForce.toUpperCase(), hint: railHint('tone', pageInForce, 'journal', hintWords) } } : null;
   const lastReadout = boxes && lastNode ? `${t('flux3ReadLast').toUpperCase()} 0x${nodeHex(lastNode)}` : null;
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at
