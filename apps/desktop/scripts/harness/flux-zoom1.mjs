@@ -80,7 +80,7 @@ const INSTRUMENT = `(() => {
       rail: document.querySelector('.desk-rail') ? rr(document.querySelector('.desk-rail').getBoundingClientRect()) : null, tele: tele ? rr(tele.getBoundingClientRect()) : null,
       doc: { sw: document.documentElement.scrollWidth, sh: document.documentElement.scrollHeight },
       W: cv ? cv.offsetWidth : 0, H: cv ? cv.offsetHeight : 0, cw: wrap ? wrap.clientWidth : 0, ch: wrap ? wrap.clientHeight : 0, scroll: wrap ? [wrap.scrollLeft, wrap.scrollTop] : null,
-      canvas: cr ? rr(cr) : null, layers: document.querySelectorAll('[data-flux3-layer]').length, seam: typeof window.wrizoFluxZoomTo, page: document.documentElement.getAttribute('data-page'),
+      canvas: cr ? rr(cr) : null, layers: document.querySelectorAll('[data-flux3-layer]').length, seam: typeof window['wrizoFluxZoomTo'], page: document.documentElement.getAttribute('data-page'),
       stackOn: !!document.querySelector('[data-flux3-stack-tab][aria-pressed="true"]'),
     };
   };
