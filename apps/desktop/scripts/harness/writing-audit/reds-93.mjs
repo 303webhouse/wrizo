@@ -58,5 +58,5 @@ await withHarness(async (app) => {
     console.log(`RED-93 [${TAG} ${cat}] ${through || (el && el.display !== 'none' && el.visibility !== 'hidden') ? 'FAIL' : 'PASS'}`);
   }
 });
-console.log(fails.length ? `RED-93: FAIL - ${fails.join(' | ')}` : `RED-93: PASS (${TAG}: no caret is drawn over an open rail pop-out)`);
+console.log(fails.length ? `RED-93 [${TAG}] FAIL - ${fails.join(' | ')}` : `RED-93 [${TAG}] PASS (no caret is drawn over an open rail pop-out)`);   // not the verdict shape NAME: PASS|FAIL - that line is the wrapper's alone (wa-red-run.mjs)
 process.exitCode = fails.length ? 1 : 0;
