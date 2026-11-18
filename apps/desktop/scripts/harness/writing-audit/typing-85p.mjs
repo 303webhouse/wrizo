@@ -25,14 +25,18 @@ const summarise = (profile, keys) => {
   for (const [id, ms] of self) {
     const cf = nodes.get(id).callFrame; const nm = cf.functionName || '(anonymous)';
     if (nm === '(idle)') special.idle += ms; else if (nm === '(garbage collector)') special.gc += ms; else if (nm === '(program)') special.program += ms; else if (nm === '(root)') special.root += ms;
-    else { special.js += ms; const k = `${nm} ${String(cf.url || '').split('/').pop()}:${cf.lineNumber + 1}:${cf.columnNumber + 1}`; byFn.set(k, (byFn.get(k) || 0) + ms); where.set(k, { scriptId: cf.scriptId, line: cf.lineNumber, col: cf.columnNumber }); }
+    else { special.js += ms; const k = `${nm} ${String(cf.url || '').split('/').pop()}:${cf.lineNumber + 1}:${cf.columnNumber + 1}`; byFn.set(k, (byFn.get(k) || 0) + ms); const prev = where.get(k); if (!prev || ms > prev.ms) where.set(k, { scriptId: cf.scriptId, line: cf.lineNumber, col: cf.columnNumber, node: id, ms }); }
   }
+  // who called them: the ancestors of each function's heaviest node (the profile tree's own parent links)
+  const parent = new Map(); for (const n of profile.nodes) for (const c of (n.children || [])) parent.set(c, n.id);
+  const chainOf = (id) => { const out = []; let p = parent.get(id); while (p !== undefined && out.length < 5) { const cf = nodes.get(p).callFrame; out.push({ k: `${cf.functionName || '(anonymous)'} ${String(cf.url || '').split('/').pop()}:${cf.lineNumber + 1}:${cf.columnNumber + 1}`, scriptId: cf.scriptId, line: cf.lineNumber, col: cf.columnNumber }); p = parent.get(p); } return out; };
+  for (const w of where.values()) w.chain = chainOf(w.node);
   const r1 = (x) => Math.round(x * 10) / 10;
   return { spanMs: r1(total), idleMs: r1(special.idle), gcMs: r1(special.gc), programMs: r1(special.program), jsMs: r1(special.js),
     perKey: { spanMs: r1(total / keys), jsMs: r1(special.js / keys), programMs: r1(special.program / keys), idleMs: r1(special.idle / keys) },
     top: [...byFn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, ms]) => ({ fn: k, msPerKey: r1(ms / keys), at: where.get(k) })) };
 };
-const where = new Map();   // function key -> where it stands in the script (so its source text can be read back)
+const where = new Map();   // (reset per profile below) function key -> where it stands in the script (so its source text can be read back)
 
 let unreachable = false;
 await withHarness(async (app) => {
@@ -61,6 +65,11 @@ await withHarness(async (app) => {
           if (!cache[t.at.scriptId]) cache[t.at.scriptId] = ((await cdp('Debugger.getScriptSource', { scriptId: t.at.scriptId })).scriptSource || '').split(String.fromCharCode(10));
           const ln = cache[t.at.scriptId][t.at.line] || '';
           t.src = ln.slice(t.at.col, t.at.col + 420);
+          t.callers = [];
+          for (const c of (t.at.chain || []).slice(0, 4)) {
+            if (c.scriptId && !cache[c.scriptId]) cache[c.scriptId] = ((await cdp('Debugger.getScriptSource', { scriptId: c.scriptId })).scriptSource || '').split(String.fromCharCode(10));
+            t.callers.push({ k: c.k, src: c.scriptId ? ((cache[c.scriptId][c.line] || '').slice(c.col, c.col + 160)) : '' });
+          }
         }
         await cdp('Debugger.disable');
       } catch (e) { row[kind].srcError = String(e && e.message || e).slice(0, 120); }
