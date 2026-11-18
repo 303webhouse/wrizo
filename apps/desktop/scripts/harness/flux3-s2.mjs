@@ -625,7 +625,8 @@ try { await withHarness(async (app) => {
   mU.landed = landed.busy;
   ok('MUT-BUSY (landed) the layer\'s busy window cut to 40 ms (its settle redraw fires between keys): D2-HOLO reads draw calls while the keys land AND names every one it lists (a canvas, a call, the chain that drew, a draw path among them)',
     mU.landed === 1 && mU.during > 0 && mU.drew.n > 0 && mU.drew.inside.length > 0 && mU.drew.inside.every((e) => Number.isInteger(e.canvas) && !!e.op && typeof e.via === 'string' && e.via.length > 0) && mU.drew.inside.some((e) => /draw/.test(e.via)),
-    JSON.stringify({ landed: mU.landed, during: mU.during, n: mU.drew.n, first: mU.drew.inside.slice(0, 3) }));
+    JSON.stringify({ landed: mU.landed, keys: mU.span.n, during: mU.during, n: mU.drew.n, first: mU.drew.inside.slice(0, 3), before: mU.drew.before, after: mU.drew.after }));
+  info(`MUT-BUSY-DREW ${mU.drew.n} draw call(s) in the keys' window under the 40 ms busy window (${mU.during} counted)`, `inside ${JSON.stringify(mU.drew.inside)}; nearest before the first key: ${nearest(mU.drew.before)}; nearest after the last key: ${nearest(mU.drew.after)}`);
 
   // ---- B: the build -------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
