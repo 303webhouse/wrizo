@@ -40,11 +40,24 @@ const oldSpans = [...arrivalSrc.matchAll(/<span className="wz-link"/g)];
 const newButtons = [...arrivalSrc.matchAll(/<button type="button" className="wz-link"/g)];
 ok('A2: no <span className="wz-link"> survives anywhere in Arrival.tsx — the exact unreachable shape the audit measured is gone',
   oldSpans.length === 0, `found ${oldSpans.length}`);
-ok('A2: all THREE links the audit named are now real buttons — sign-in\'s "Create an account", sign-in\'s "← back", AND the account screen\'s own "← back" (the audit named all three, Arrival.tsx:140/143/160)',
-  newButtons.length === 3, `found ${newButtons.length}`);
-ok('A2: the exact wording survives unchanged (verbatim house copy, not rewritten in the conversion) — counted in rendered button text only, not this diff\'s own comments',
-  /New here\? Create an account/.test(arrivalSrc) && (arrivalSrc.match(/>← back<\/button>/g) || []).length === 2,
-  '');
+// SUPERSEDED (Nov 18, the sign-in pop-out: the three links carry their pop-out classes, and their words moved into the lexicon): the two A2 checks as they stood, verbatim
+//   ok('A2: all THREE links the audit named are now real buttons — sign-in\'s "Create an account", sign-in\'s "← back", AND the account screen\'s own "← back" (the audit named all three, Arrival.tsx:140/143/160)',
+//     newButtons.length === 3, `found ${newButtons.length}`);
+//   ok('A2: the exact wording survives unchanged (verbatim house copy, not rewritten in the conversion) — counted in rendered button text only, not this diff\'s own comments',
+//     /New here\? Create an account/.test(arrivalSrc) && (arrivalSrc.match(/>← back<\/button>/g) || []).length === 2,
+//     '');
+// SUCCESSORS: the same three links are real buttons (their pop-out classes), and the same wording survives, read from the lexicon the buttons render
+const popoutButtons = [...arrivalSrc.matchAll(/<button type="button" className="wz-link wz-popout-(?:switch|back)"/g)];
+const lexSrc = srcText(SRC, 'store/lexicon/canonical/settings.ts');
+const backs = (arrivalSrc.match(/>\{t\('authBack'\)\}<\/button>/g) || []).length;
+const wordsOk = /authNewHere: 'New here\? Create an account'/.test(lexSrc) && /authBack: '← back'/.test(lexSrc) && /\{t\('authNewHere'\)\}/.test(arrivalSrc) && backs === 2;
+ok('A2: all THREE links the audit named are now real buttons — sign-in\'s "Create an account", sign-in\'s "← back", AND the account screen\'s own "← back" (the pop-out\'s own classes)',
+  popoutButtons.length === 3, `found ${popoutButtons.length}`);
+ok('A2: the exact wording survives unchanged (verbatim house copy, now the lexicon\'s: authNewHere, authBack) — read from the lexicon and counted in the rendered button text',
+  wordsOk, `backs ${backs}`);
+ok('A2 MUTATION KILLED: a link that is a span again, or a word that left the lexicon, is red',
+  [...arrivalSrc.replace('<button type="button" className="wz-link wz-popout-switch"', '<span className="wz-link wz-popout-switch"').matchAll(/<button type="button" className="wz-link wz-popout-(?:switch|back)"/g)].length !== 3
+  && !/authNewHere: 'New here\? Create an account'/.test(lexSrc.replace("authNewHere: 'New here? Create an account'", "authNewHere: 'New here'")), '');
 
 // ---- A2, the chrome reset: a real <button> must not grow native chrome ----
 // (the EXACT other defect this same audit found — the board-name button
