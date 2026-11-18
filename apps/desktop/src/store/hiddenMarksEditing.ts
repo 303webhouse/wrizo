@@ -232,6 +232,10 @@ export function attachHiddenMarkEditing(host: HiddenMarkHost): HiddenMarkEditing
 
   const selectionChange = () => {
     if (host.busy()) return;
+    // #66: at the very end of a page that ends in a newline, Shift+Right selects the invisible end marker (the guard character): the browser's range is not collapsed, but its plain-text ends are the same place (the guard is not text). That is nothing the writer selected, and the next Left only
+    // collapses it instead of moving. It is collapsed where it stands: Shift+Right at the very end selects nothing, and Left moves one place.
+    const markerOnly = selectionEnds(el);
+    if (markerOnly && !markerOnly.collapsed && markerOnly.anchor === markerOnly.focus) { placeCaret(el, markerOnly.focus); return; }
     snapCaretHere();
     if (pending) { const ends = selectionEnds(el); if (!ends || !ends.collapsed || ends.focus !== pending.at) pending = null; }
   };
