@@ -93,14 +93,21 @@ export function setThemePrefs(patch: Partial<ThemePrefs>): void {
 // <html> before first paint-adjacent render (no flash of the wrong voice).
 export function initThemePrefs(): void {
   applyAttributes(current);
-  // the page in force follows the room (Nick, Nov 18): when the redesign, the theme or the room changes, data-page is set again (in the same
-  // task, before paint) and the rows that offer or read the tone hear of it
+  // the page in force follows the room (Nick, Nov 18): when Arbor's day room starts or stops forcing the page light (the redesign, the theme or
+  // the room changed), data-page is set again (in the same task, before paint) and the rows that offer or read the tone hear of it. ONLY then:
+  // a theme change that leaves the force as it was does not touch data-page, so another writer's value stands (Flux's Jacked In; bg2's raw
+  // Flux dark page - train-22b, Actions 44365317556, where this observer rewrote it to the saved light on the theme flip).
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
     let was = `${effectivePage()}|${pageToneForced()}`;
+    let wasForced = pageToneForced();
     new MutationObserver(() => {
       const page = effectivePage();
-      if (document.documentElement.getAttribute('data-page') !== page && !document.documentElement.hasAttribute('data-flux3-jacked')) document.documentElement.setAttribute('data-page', page);
-      const now = `${page}|${pageToneForced()}`;
+      const forced = pageToneForced();
+      if (forced !== wasForced) {
+        wasForced = forced;
+        if (document.documentElement.getAttribute('data-page') !== page && !document.documentElement.hasAttribute('data-flux3-jacked')) document.documentElement.setAttribute('data-page', page);
+      }
+      const now = `${page}|${forced}`;
       if (now !== was) { was = now; toneSubs.forEach((fn) => fn()); }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-arbor2', 'data-theme', 'data-arbor2-room'] });
   }
