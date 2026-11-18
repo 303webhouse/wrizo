@@ -78,10 +78,59 @@ const SCREENS = {
   },
 };
 
+// #87 - THE SIGN-IN FRAMES DRIVER: the two SIGNED-OUT screens, `signin` and `signup` (not in `all`: name them, e.g. -f screens=signin,signup). The auth double answers "signed out" while process.env.WS_ANON is '1' (it reads it per request, in this process;
+// scripts/captures/arrival-signin-capture.mjs does the same), so each screen: flips it, reloads the Desk signed out, reaches the screen the way a writer does (the Sign in door; from there "New here? Create an account"), waits for it to SETTLE,
+// refuses a frame that shows a typed value or an "@" (no real email may be on a frame), and restores WS_ANON for the screens after it. It works on a tree whose front door is Arrival's doors (main) and on one whose front door is the splash's own Sign in door
+// (the Arbor ship tree, Arrival retired there): both put a "Sign in" button on the front door and open the same sign-in and sign-up stages; the manifest row says which door it took (row.door).
+const SIGNIN_UP = "!!document.querySelector(\".wz-arrival input.wz-field[type='email']\") && !!document.querySelector(\".wz-arrival input.wz-field[type='password']\")";   // the sign-in stage is up (ARBOR: the same markup on main and on the Arbor ship tree)
+const SIGNUP_UP = "!!document.querySelector('.wz-arrival .wz-sub') && !!document.querySelector(\".wz-arrival input.wz-field[autocomplete='given-name']\")";   // the sign-up (account) stage is up: its invitation line and the first-name field
+const SIGNED_OUT = (() => {
+  const toSignedOutDoors = async (app) => {
+    process.env.WS_ANON = '1';
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'signed-out front door' });
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone (signed out)', timeout: 15000 });
+    await app.injectHelpers();
+    // the Sign in door, enabled: on the Arbor ship tree it is `.arbor2-front-doors button.arbor2-door.wz-arrival-signin` (disabled until the front is ready); elsewhere a "Sign in" button of Arrival's doors
+    await app.waitFor("[...document.querySelectorAll('button')].some((b) => /^(sign in|log in)$/i.test(b.textContent.trim()) && !b.disabled)", { label: 'the Sign in door (Flux calls it Log in)' });
+    // the splash's Sign in door is ENABLED while its layer is still hidden (data-phase=wait): wait until a pointer would land on it (the Arbor ship tree; Nov 18, run 44388858387)
+    await app.waitFor("(() => { const b = document.querySelector('.arbor2-front-doors .arbor2-door.wz-arrival-signin'); if (!b) return true; const r = b.getBoundingClientRect(); if (!r.width) return false; const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!t && (t === b || b.contains(t)); })()", { label: 'the Sign in door, hit-testable', timeout: 20000 });
+    await sleep(500);
+    return (await app.evalJs("document.querySelector('.arbor2-front-doors button.arbor2-door.wz-arrival-signin') ? 'splash-door' : document.querySelector('.wz-arrival-doors') ? 'arrival-doors' : 'sign-in-button'"));
+  };
+  // the hero (Arrival's logo and doors) fades out over .8 s and the form in over 1 s: a frame inside that window is a ghost, not the screen
+  const settled = async (app, probe) => {
+    await app.waitFor(probe, { label: 'the screen', timeout: 10000 });
+    // the full-page forms hide the hero; the POP-OUT (`.wz-popout`, Nov 18) keeps it behind a veil, so there the settled hero is the one marked `behind` (its dimming has finished: the opacity stops changing)
+    await app.waitFor("(() => { const h = document.querySelector('.wz-hero'); if (!h) return true; if (h.classList.contains('behind')) { const o = getComputedStyle(h).opacity; if (window.__ho === o) { window.__hn = (window.__hn || 0) + 1; } else { window.__ho = o; window.__hn = 0; } return window.__hn >= 3; } return getComputedStyle(h).opacity === '0'; })()", { label: 'the hero gone or dimmed and still', timeout: 8000 });
+    await app.waitFor("(() => { const s = document.querySelector('.wz-screen'); return !s || getComputedStyle(s).opacity === '1'; })()", { label: 'the form shown', timeout: 8000 });
+    await sleep(400);
+    const seen = JSON.parse(await app.evalJs("JSON.stringify({ values: [...document.querySelectorAll(\"input:not([type='checkbox'])\")].map((i) => i.value), atInText: /@/.test(document.body.innerText) })"));   // a tick box's value is "on", not something she typed
+    if (seen.values.some((v) => v !== '') || seen.atInText) throw new Error('refused: the screen shows a typed value or an "@": ' + JSON.stringify(seen));
+  };
+  const run = (steps) => async (app, ctx) => {
+    const was = process.env.WS_ANON;
+    try { ctx.door = await toSignedOutDoors(app); await steps(app); } finally { process.env.WS_ANON = was === undefined ? '' : was; }
+  };
+  return {
+    signin: run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');   // the door's own class (every theme, whatever its word); the label as the fallback
+      await settled(app, SIGNIN_UP);
+    }),
+    signup: run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' });
+      await sleep(500);
+      if (!(await press(app, '.wz-popout-switch'))) await app.click('New here? Create an account');   // the pop-out's own switch; the label on the older full-page form
+      await settled(app, SIGNUP_UP);
+    }),
+  };
+})();
+
 let EXTRA = {};
 const screensFile = arg('screens-file', null);
 if (screensFile) EXTRA = (await import(pathToFileURL(path.resolve(screensFile)).href)).default || {};
-const ALL = { ...SCREENS, ...EXTRA };
+const ALL = { ...SCREENS, ...SIGNED_OUT, ...EXTRA };   // `all` stays the built-in SCREENS only (NAMES below): the signed-out screens are named on purpose
 const want = arg('screens', 'all');
 const NAMES = want === 'all' ? Object.keys(SCREENS) : list(want);
 const unknown = NAMES.filter((n) => !ALL[n]);
@@ -111,7 +160,9 @@ await withHarness(async (app) => {
     const row = { screen: name, theme, tone, width: w, height: HEIGHT[w], file };
     try {
       await freshDesk(app, theme, tone, w);
-      await ALL[name](app, { theme, tone, width: w });
+      const ctx = { theme, tone, width: w };
+      await ALL[name](app, ctx);
+      if (ctx.door) row.door = ctx.door;   // #87: which front door the signed-out driver took
       // a frame of the opening splash is not a frame of the screen: refuse it rather than ship it
       if (await app.evalJs("!!document.querySelector('.wz-splash')")) throw new Error('the opening splash is still on screen');
       writeFileSync(path.join(OUT, file), Buffer.from(await app.screenshot(), 'base64'));
