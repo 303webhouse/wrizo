@@ -11,7 +11,15 @@ export function plainLines(text: string): string[] {
 
 /** The first line with anything to read, as plain text; undefined when there is none. */
 export function firstPlainLine(text: string): string | undefined {
-  return plainLines(text)[0];
+  // #85: the same answer as plainLines(text)[0], without reading every line of the page: the page's title is asked for on every keystroke, and reading all of a 50,000-word page's lines for its first one cost ~20 ms a key
+  for (let from = 0; from <= text.length;) {
+    const nl = text.indexOf('\n', from);
+    const line = stripLine((nl < 0 ? text.slice(from) : text.slice(from, nl)).trimStart()).trim();
+    if (line) return line;
+    if (nl < 0) break;
+    from = nl + 1;
+  }
+  return undefined;
 }
 
 // the opening non-empty line: entries have no titles, so this derives a label [entryText §2]
