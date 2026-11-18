@@ -81,6 +81,16 @@ await withHarness(async (app) => {
     await ev("document.getElementById('mut-top').remove(); true");
     await sleep(200);
   }
+  if (cfg.theme === 'machina') {
+    await ev("(document.querySelector('.wz-popout-back') || { click() {} }).click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    const bk = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return { top: Math.round(r.top), want: Math.round(Math.max(window.innerHeight * 0.56, 300)), stage: document.querySelector('.wz-popout').dataset.popout }; })()");
+    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2, JSON.stringify(bk));
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face again', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+  }
   const sig = await ev(`(() => { if (!document.querySelector('.wz-adult-box')) return { box: false }; window.__reg = 0; const rf = window.fetch.bind(window); window.fetch = (u, o) => { if (String(u).includes('register')) window.__reg++; return rf(u, o); };
     window.__keys0 = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; const n = (sel, v) => { const el = document.querySelector(sel); const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; s.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
     n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); return { box: true, ticked: document.querySelector('.wz-adult-box').checked }; })()`);
@@ -104,13 +114,6 @@ await withHarness(async (app) => {
   { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#9AA1A8' }[cfg.theme]; const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
     check('P11', !!l0 && l0.w === '16px' && l0.h === '16px' && l0.bw === '1px' && hex(l0.edge) === edgeWant && focusOnTick === true && spaceTicked === true && !!l1 && l1.mark === '""' && l1.markColor === 'rgb(255, 152, 0)', `box `+(l0 && l0.w)+' x '+(l0 && l0.h)+`, border `+(l0 && l0.bw)+` `+(l0 && hex(l0.edge))+` (want `+edgeWant+`); focus on the tick after the error `+focusOnTick+`; Space ticked `+spaceTicked+`; mark `+JSON.stringify(l1)); }
   check('P4', p4, `tick ${JSON.stringify(sig)}; line ${JSON.stringify(line)}; register calls unticked ${regUnticked}, ticked ${regTicked}; storage keys added ${JSON.stringify(added)}`);
-  if (cfg.theme === 'machina') {
-    await ev("(document.querySelector('.wz-popout-back') || { click() {} }).click()");
-    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
-    await sleep(500);
-    const bk = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return { top: Math.round(r.top), want: Math.round(Math.max(window.innerHeight * 0.56, 300)), stage: document.querySelector('.wz-popout').dataset.popout }; })()");
-    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2, JSON.stringify(bk));
-  }
   await ev("localStorage.setItem('wz.signedOutHere', '1'); true");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'the arrival, signed out here' });
