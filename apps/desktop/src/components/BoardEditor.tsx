@@ -96,6 +96,7 @@ import { useBoardKeys } from './board/useBoardKeys';
 import type { LastAction } from './board/geometry';
 // FLUX3 S1 - the Schema Live view's two mount points (src/flux3/): the layer and readouts in the board frame, a node record on each card; both render only under ?flux3=1 in Flux
 import { FLUX3 } from '../flux3/flag';
+import { getBoardScale } from '../flux3/boardZoom';
 import { FluxSchema } from '../flux3/FluxSchema';
 import { FluxNodeRecord } from '../flux3/FluxNodeRecord';
 import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
@@ -996,8 +997,9 @@ export function BoardEditor({ id }: { id: string }) {
     const start = canvasResizeStartRef.current;
     if (!start) return;
     e.preventDefault();
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
+    const zs = getBoardScale();   // the Schema's zoom (1 everywhere else): a pointer delta is screen px, the canvas is in board px
+    const dx = (e.clientX - start.x) / zs;
+    const dy = (e.clientY - start.y) / zs;
     setCanvasOverrideW(Math.max(CANVAS_MIN_W, start.w + dx));
     setCanvasOverrideH(Math.max(VIEWPORT_MIN_PX, start.h + dy));
   };
@@ -1010,8 +1012,9 @@ export function BoardEditor({ id }: { id: string }) {
     // from this release event's own coordinates (the same math onMove just
     // used), rather than reading back React state that may not have
     // committed its last update yet — avoids a stale-closure race entirely.
-    const w = Math.max(CANVAS_MIN_W, start.w + (e.clientX - start.x));
-    const h = Math.max(VIEWPORT_MIN_PX, start.h + (e.clientY - start.y));
+    const zs = getBoardScale();
+    const w = Math.max(CANVAS_MIN_W, start.w + (e.clientX - start.x) / zs);
+    const h = Math.max(VIEWPORT_MIN_PX, start.h + (e.clientY - start.y) / zs);
     setBoxes(prev => {
       const existing = prev.find(b => b.kind === 'board-meta');
       const meta: Box = existing
@@ -1311,7 +1314,7 @@ export function BoardEditor({ id }: { id: string }) {
         onPointerUp={onCanvasHandleUp}
         onPointerCancel={onCanvasHandleUp}
       />
-      {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} boxes={boxes} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} labelFor={boxLabel} />}
+      {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} boxes={boxes} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} boardId={id} labelFor={boxLabel} />}
     </div>
   );
 

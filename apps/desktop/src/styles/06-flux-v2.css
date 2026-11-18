@@ -186,6 +186,9 @@
 [data-theme='flux'][data-page='light'] .flux-block-caret{ background:#A84E00; box-shadow:0 0 6px rgba(168, 78, 0, .4); }
 /* solid while keys land, blinking only at rest: FluxBlockCaret marks the block data-typing on a key and lifts it after a short rest [flux-v2 §13] */
 .flux-block-caret[data-typing]{ animation:none; opacity:1; }
+/* #93 (Fable, Nov 18): while a rail pop-out is open over the page, the page's caret is not drawn. The block is a fixed element above the stage (z-index 60), so it showed through the open Config pop-out (the cascade panel, or the page's own settings panel). It is hidden
+   for as long as one is open and not on its way out; the native caret of the other themes already sits under the panel. Pure CSS (:has): no observer, no render, nothing per key. */
+:root:has(.wz-cascade-panel[data-visible='true']:not([data-leaving='true']), [data-menus-popout]) .flux-block-caret{ visibility:hidden; }
 
 /* ==========================================================================================================================================================
    POLISH - ARBOR'S MENUS (Nick, Oct 27). Arbor-scoped ([data-theme='plateau'] is Arbor), cosmetic only: no rect, track, token or behaviour changes.
