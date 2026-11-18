@@ -1,4 +1,4 @@
-import { setThemePrefs } from '../../store/themePrefs';
+import { setThemePrefs, usePageTone } from '../../store/themePrefs';
 import { Seg } from './Seg';
 
 // the Progress row's options, one list for the gear (ModeStage) and the Sliver's foot; Drawer only where a StoryPlan gives it something to count. The stored value stays 'project' (a storage id); only its label is a word [ModeStage §22]
@@ -9,6 +9,9 @@ export function progressOptions(hasMilestones: boolean, drawerWord: string): [st
 }
 
 // the page's tone, one row for the gear's theme panel (ModeStage) and the theme picker
+// (NICK RULED, Nov 18: in Arbor's day room the page is always light and no Page: Dark is offered - the row is not shown; at night it is)
 export function PageToneRow({ page }: { page: 'dark' | 'light' }) {
+  const { forced } = usePageTone();
+  if (forced) return null;
   return <Seg label="Page" value={page} opts={[['light', 'Light'], ['dark', 'Dark']]} onPick={(v) => setThemePrefs({ page: v as 'dark' | 'light' })} />;
 }

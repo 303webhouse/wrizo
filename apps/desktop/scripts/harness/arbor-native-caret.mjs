@@ -8,6 +8,7 @@
 //   C4 nowhere a drawn caret: no .arbor2-edged-caret element and no editor carrying data-arbor2-caret-active
 //   C5 the board card's sheet (§17.7, its cream stock) takes the ink caret too, not brass, on the light page AND the dark page (FABLE, Nov 14,
 //      11:12 pm): the opened card's editor (.board-popup-editor) caret is #241A10 in both tones
+// (NOV 18: P, C1, C2, C5 PARKED for Pb, C1b, C2b, C5b - by day the page in force is light, Nick's page-tone ruling; M4 their mutant, below.)
 // MUTANTS (each asserted LANDED, through the same reads): M1 the native caret hidden as the drawn caret hid it (caret-color transparent) - C1 goes red;
 // M2 a drawn caret element put back - C4 goes red; M3 the card's caret made brass - C5 goes red.
 // The flag is carried in this file's own navigations (history.replaceState to /?arbor2=1 + hash, then reload: frames/arbor2-r22.mjs's go()), never in
@@ -65,24 +66,41 @@ await withHarness(async (app) => {
     }
   }
   const tag = (c) => `${c.tone}/${c.where}/${c.room}`;
-  const premise = cases.filter((c) => c.m && c.opened && c.moded && c.m.flag === 'true' && c.m.theme === 'plateau' && c.m.tone === c.tone && c.m.room === c.room && c.m.focused && c.m.zoom === (c.where === 'free write'));
-  ok(`P every case stood where it claims (8: flag on, Arbor, the tone and room set, the editor focused, Typewriter zoomed only in Free Write): ${premise.length}/${cases.length}`, premise.length === 8 && cases.length === 8,
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am: by day the Arbor page in force is always light; the saved Page: Dark holds only at
+  // night. The two dark-by-day cases stand on the light page, so "the tone set" reads light there. Train-22b's pair, Actions 44365317556: every caret as ruled). Original, verbatim:
+  // const premise = cases.filter((c) => c.m && c.opened && c.moded && c.m.flag === 'true' && c.m.theme === 'plateau' && c.m.tone === c.tone && c.m.room === c.room && c.m.focused && c.m.zoom === (c.where === 'free write'));
+  // ok(`P every case stood where it claims (8: flag on, Arbor, the tone and room set, the editor focused, Typewriter zoomed only in Free Write): ${premise.length}/${cases.length}`, premise.length === 8 && cases.length === 8,
+  //   J(cases.map((c) => [tag(c), c.opened, c.moded, c.m && [c.m.flag, c.m.theme, c.m.tone, c.m.room, c.m.zoom, c.m.focused]])));
+  // SUCCESSOR Pb: the same premise, the tone IN FORCE - light by day whatever is saved, the saved tone at night; its mutant M4 below
+  const inForce = (c) => (c.room === 'day' ? 'light' : c.tone);
+  const premise = cases.filter((c) => c.m && c.opened && c.moded && c.m.flag === 'true' && c.m.theme === 'plateau' && c.m.tone === inForce(c) && c.m.room === c.room && c.m.focused && c.m.zoom === (c.where === 'free write'));
+  ok(`Pb every case stood where it claims (8: flag on, Arbor, the tone IN FORCE - light by day - and room set, the editor focused, Typewriter zoomed only in Free Write): ${premise.length}/${cases.length}`, premise.length === 8 && cases.length === 8,
     J(cases.map((c) => [tag(c), c.opened, c.moded, c.m && [c.m.flag, c.m.theme, c.m.tone, c.m.room, c.m.zoom, c.m.focused]])));
   const lightCases = cases.filter((c) => c.m && isLight(c.m)), darkCases = cases.filter((c) => c.m && c.m.tone === 'dark'), nightTw = cases.filter((c) => c.m && c.m.tone !== 'dark' && c.m.zoom && c.m.room === 'night');
-  ok(`C1 on the light page the caret is the browser's own in the page ink #241A10 (${lightCases.length} cases: Draft by day and night, Typewriter by day)`, lightCases.length === 3 && lightCases.every((c) => c.v.c1),
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am: by day the Arbor page in force is always light; the saved Page: Dark holds only at
+  // night. The light-page cases are now FIVE: Draft by day in both saved tones and by night on light, Typewriter by day in both saved tones. Train-22b's pair, Actions 44365317556: every caret as ruled). Original, verbatim:
+  // ok(`C1 on the light page the caret is the browser's own in the page ink #241A10 (${lightCases.length} cases: Draft by day and night, Typewriter by day)`, lightCases.length === 3 && lightCases.every((c) => c.v.c1),
+  //   J(lightCases.map((c) => [tag(c), c.m.caret, c.m.ink])));
+  // SUCCESSOR C1b: the same read over the five light-page cases; its mutants M1 (above, the caret hidden) and M4 (the old dark-by-day rule)
+  ok(`C1b on the light page the caret is the browser's own in the page ink #241A10 (${lightCases.length} cases: Draft by day in both saved tones and by night on light, Typewriter by day in both)`, lightCases.length === 5 && lightCases.every((c) => c.v.c1),
     J(lightCases.map((c) => [tag(c), c.m.caret, c.m.ink])));
-  ok(`C2 on the dark page the caret is the browser's own in brass #FF9800 (${darkCases.length} cases)`, darkCases.length === 4 && darkCases.every((c) => c.v.c2), J(darkCases.map((c) => [tag(c), c.m.caret])));
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am: by day the Arbor page in force is always light; the saved Page: Dark holds only at
+  // night. The dark page exists only at night now: two cases, not four. Train-22b's pair, Actions 44365317556: every caret as ruled). Original, verbatim:
+  // ok(`C2 on the dark page the caret is the browser's own in brass #FF9800 (${darkCases.length} cases)`, darkCases.length === 4 && darkCases.every((c) => c.v.c2), J(darkCases.map((c) => [tag(c), c.m.caret])));
+  // SUCCESSOR C2b: the same read over the two dark-page cases (night); its mutant M4 (the old rule makes a third)
+  ok(`C2b on the dark page (at night) the caret is the browser's own in brass #FF9800 (${darkCases.length} cases)`, darkCases.length === 2 && darkCases.every((c) => c.v.c2 && c.room === 'night'), J(darkCases.map((c) => [tag(c), c.m.caret])));
   ok(`C3 Typewriter by night on the light page (page-less) shows its native caret (${nightTw.length} case)`, nightTw.length === 1 && nightTw.every((c) => c.v.c3), J(nightTw.map((c) => [tag(c), c.m.caret])));
   ok(`C4 no drawn caret anywhere (no .arbor2-edged-caret, no editor with data-arbor2-caret-active) in all ${cases.length} cases`, cases.length === 8 && cases.every((c) => c.v.c4), J(cases.map((c) => [tag(c), c.m && c.m.drawn, c.m && c.m.active])));
 
   // C5: a board with one text card, per tone; the card opened the writer's way (a double-click on it), the caret at its words' end
   const cardRead = "(() => { const ed = document.querySelector('.board-popup-editor'); if (!ed) return null; return { caret: getComputedStyle(ed).caretColor, ink: getComputedStyle(ed).color, focused: document.activeElement === ed, tone: document.documentElement.getAttribute('data-page') }; })()";
-  const openCard = async (tone) => {
+  const openCard = async (tone, room = null) => {
     await app.evalJs(`localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'), page: ${J(tone)} }))`);
     const bid = `arbor-nc-board-${tone}-${Math.random().toString(36).slice(2, 6)}`;
     await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: bid, text: 'Caret board', pageType: 'board', boxes: [{ id: `${bid}-box`, kind: 'text', x: 0.3, y: 0.2, w: 0.34, h: 0.18, z: 1, text: 'A card on the cream stock' }], createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
     await sleep(300); await go(`#/page/${bid}`);
     const board = await waitSoft(app, "!!document.querySelector('.board-box')", { label: 'board card', timeout: 10000 });
+    if (room) await setRoom(room);   // (the room after the reload: C5b's dark card stands at night)
     await sleep(600);
     // the writer's double-click, through the browser's own input (a scripted dblclick event did not open it: Actions 43684527383)
     const at = await app.evalJs("(() => { const b = document.querySelector('.board-box'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
@@ -92,8 +110,17 @@ await withHarness(async (app) => {
     await sleep(300);
     return { tone, board, opened, m: await app.evalJs(cardRead) };
   };
-  const cards = [await openCard('light'), await openCard('dark')];
-  ok(`C5 the board card's sheet takes the ink caret #241A10 in both page tones (the opened card's editor): ${cards.map((c) => `${c.tone} ${c.m && c.m.caret}`).join(', ')}`,
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am: by day the Arbor page in force is always light; the saved Page: Dark holds only at
+  // night. Each card opens with a reload, which forgets the in-session room - so the dark card opened in the day room and stood on the light page. Train-22b's pair, Actions 44365317556: every caret as ruled). Original, verbatim:
+  // const cards = [await openCard('light'), await openCard('dark')];
+  // (C5b's cards: the light card by day, the dark card AT NIGHT - the only room with a dark page now)
+  const cards = [await openCard('light', 'day'), await openCard('dark', 'night')];
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am: by day the Arbor page in force is always light; the saved Page: Dark holds only at
+  // night. The dark card must be opened at night to stand on a dark page. Train-22b's pair, Actions 44365317556: every caret as ruled). Original, verbatim:
+  // ok(`C5 the board card's sheet takes the ink caret #241A10 in both page tones (the opened card's editor): ${cards.map((c) => `${c.tone} ${c.m && c.m.caret}`).join(', ')}`,
+  //   cards.every((c) => c.board && c.opened && c.m && c.m.focused && c.m.tone === c.tone && c.m.caret === INK), J(cards));
+  // SUCCESSOR C5b: the same read, the dark card at night; its mutant M3 below (the card's caret made brass, on the dark card)
+  ok(`C5b the board card's sheet takes the ink caret #241A10 in both page tones (light by day, dark at night; the opened card's editor): ${cards.map((c) => `${c.tone} ${c.m && c.m.caret}`).join(', ')}`,
     cards.every((c) => c.board && c.opened && c.m && c.m.focused && c.m.tone === c.tone && c.m.caret === INK), J(cards));
   // M3 (mutant), on the dark page's opened card: its caret made brass (a test-only sheet, asserted LANDED) - C5's read goes red
   await app.evalJs("(() => { const st = document.createElement('style'); st.id = 'nc-m3'; st.textContent = '.board-popup-editor.board-popup-editor.board-popup-editor.board-popup-editor{ caret-color:#FF9800 !important; }'; document.head.appendChild(st); return true; })()");
@@ -117,12 +144,26 @@ await withHarness(async (app) => {
   await sleep(100); const m2 = await app.evalJs(READ);
   await app.evalJs("document.getElementById('nc-m2')?.remove()");
   ok(`M2 (mutant): a drawn caret element put back (LANDED: ${m2 && m2.drawn} element) - C4 goes red`, !!m2 && m2.drawn === 1 && !judge(m2).c4, J({ drawn: m2 && m2.drawn }));
+  // M4 (mutant, for Pb, C1b and C2b): the OLD rule - on a dark-saved Draft page by day, the page drawn in the saved tone (data-page forced to dark,
+  // asserted LANDED) - read as that case: Pb's premise fails for it, it counts as a dark page (C2b would count 3) and not a light one (C1b 4)
+  await app.evalJs(`localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'), page: 'dark' }))`);
+  const m4id = `arbor-nc-m4-${Math.random().toString(36).slice(2, 6)}`;
+  await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: m4id, text: PAGEW, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' })})`);
+  await sleep(300); await go(`#/page/${m4id}`); await waitSoft(app, "!!document.querySelector('.forward-only-editor')", { label: 'page', timeout: 10000 }); await mode('draft'); await setRoom('day');
+  await app.evalJs(caretEnd); await sleep(300); const m4base = await app.evalJs(READ);
+  await app.evalJs("document.documentElement.setAttribute('data-page', 'dark')"); await sleep(300); const m4 = await app.evalJs(READ);
+  const m4case = { tone: 'dark', where: 'draft', room: 'day', opened: true, moded: true, m: m4, v: judge(m4) };
+  const swapped = cases.map((c) => (c.tone === 'dark' && c.where === 'draft' && c.room === 'day' ? m4case : c));
+  const m4Light = swapped.filter((c) => c.m && isLight(c.m)).length, m4Dark = swapped.filter((c) => c.m && c.m.tone === 'dark').length;
+  const m4Pb = !!m4 && m4.tone === inForce(m4case);
+  ok(`M4 (mutant): the old rule - a dark-saved Draft page by day drawn dark (LANDED: base ${m4base && m4base.tone}, forced ${m4 && m4.tone}, caret ${m4 && m4.caret}) - Pb's premise fails for it (${!m4Pb}), C1b counts ${m4Light} light (needs 5), C2b ${m4Dark} dark (needs 2)`,
+    !!m4base && m4base.tone === 'light' && !!m4 && m4.tone === 'dark' && !m4Pb && m4Light !== 5 && m4Dark !== 2, J({ m4base, m4 }));
   return checks;
 }, { label: 'arbor-native-caret' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-NATIVE-CARET PARKED: PASS (0 records) - a new file; it parks nothing of its own');
-const WANT = 9;
+if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-NATIVE-CARET PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks four originals as quoted comments (P, C1, C2, C5 and C5\'s card call, Nov 18: by day the page in force is light - Nick\'s page-tone ruling), with successors Pb, C1b, C2b, C5b and the mutant M4');
+const WANT = 10;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-NATIVE-CARET VERIFY: PASS (${checks.length} checks)` : `\nARBOR-NATIVE-CARET VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);

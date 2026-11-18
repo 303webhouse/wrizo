@@ -180,7 +180,10 @@ try { await withHarness(async (app) => {
       (() => { const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { typewriter: false }); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w)); })();
       localStorage.setItem('wrizo-typewriter-page-${pageId}', 'off');
       ${arm.mode ? `localStorage.setItem('wrizo-mode-page-${pageId}', 'drafting');` : `localStorage.removeItem('wrizo-mode-page-${pageId}');`}`);
-    await app.evalJs(`history.replaceState(null, '', '/#/page/' + ${JSON.stringify(pageId)})`);
+    // (arm C's own address carries the harness's pin, ?arbor2=0 - FABLE RULED, Nov 15, 10:40 pm: a file that doesn't ask for the redesign tests today's
+    // Arbor. This address skipped the pin, so arm C ran the redesign, whose day room has had no dark page since Nick's page-tone ruling (Nov 18):
+    // P1's Page: Dark read light on train-22b, Actions 44365317556. The Flux arms' address is unchanged.)
+    await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.theme === 'plateau' ? '/?arbor2=0' : '/')} + '#/page/' + ${JSON.stringify(pageId)})`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'page after reload' }).catch(() => {});
     await splashGone();

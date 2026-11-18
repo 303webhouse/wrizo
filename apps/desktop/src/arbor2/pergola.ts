@@ -7,7 +7,8 @@
 //                     the zoomed page, never in print (styles/arbor-v2.css); aria-hidden, no pointer, no selection, outside the editable text,
 //                     so it never enters a copy or an export.
 // THE BREEZE AND THE DRIFT are the file's own CSS animations, moved into arbor-v2.css (scoped; the file's <style> is dropped): every leaf
-// cluster shivers once every 16 s, staggered left to right over ~2.6 s (each cluster's own delay and pivot are in the file), and the drift
+// cluster shivers once every 16 s, staggered left to right over ~2.6 s (each cluster's own delay and pivot are in the file; SINCE NOV 18 THE LIVE
+// LAYERS GUST - one delay for every leaf, GUST_DELAY below), and the drift
 // (12 px over 20 s) moves a wrapper outside the blur, so it is composited and never re-blurs the shade. The page copy's animations are given
 // the room's start times, so the breeze crosses both together. Reduced motion: still (the CSS).
 // NO DRIFT (Nick, Nov 7, via Fable): the wrapper no longer moves (arbor-v2.css); it stays for the swap, the sleep and the copies' placement.
@@ -21,6 +22,15 @@ import svgText from './pergola-shadow.svg?raw';
 // (its blur and ~115 animated leaf clusters). They now draw ONE bitmap, rendered once from the same file at full strength and shared: no live blur,
 // breeze or flutter in them (at the page's 3.4% none of it read). Each moves only by the drift's compositor transform, its animation started at
 // the room's own start time, so it stands where the room's drawing stands. THE PAGE'S COPY AND THE ROOM ARE r20's, live, unchanged.
+// GUSTS (NICK RULED, Nov 18, 10:06 am, via Fable 10:12 am, after bug #104's measurement: the staggered breeze kept some leaf moving at every
+// moment, so the room's live drawing repainted every frame at rest and a first key landed on a full pipeline): the leaves flutter TOGETHER,
+// on one gust clock - every leaf cluster in every live layer takes the same breeze delay, so all of them shiver over the same ~1.4 s of each
+// 16 s and the drawing is still for the rest. The file keeps its own (staggered) delays; the live layers are given the one delay here, and
+// the page's copy takes the room's start times (sync, below), so the room and the page gust as one. They still stop at her first key and
+// return with the room after the pause (Nick's ruling B, unchanged).
+const GUST_DELAY = '0s';
+const gusting = (svg: string) => svg.replace(/animation-delay:\s*[\d.]+s/g, `animation-delay:${GUST_DELAY}`);
+
 let bitmap: string | null = null;
 const bitmapWait: ((url: string) => void)[] = [];
 function withBitmap(use: (url: string) => void): void {
@@ -108,7 +118,7 @@ function makeLayer(cls: string, alpha: string | null): { layer: HTMLDivElement; 
   drift.className = 'arbor2-pergola-drift';
   const live = document.createElement('div');
   live.className = 'arbor2-live';
-  live.innerHTML = svgText.replace(/<style>[\s\S]*?<\/style>/, '');
+  live.innerHTML = gusting(svgText.replace(/<style>[\s\S]*?<\/style>/, ''));   // one gust clock (Nick, Nov 18)
   const still = document.createElement('div');
   still.className = 'arbor2-still';
   // the still picture at the layer's own strength: the page copy's 3.4%, the room's own 20% (the file's group opacity)

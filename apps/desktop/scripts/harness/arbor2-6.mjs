@@ -169,10 +169,28 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
   //   JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
   // SUCCESSOR L1f: NO DRIFT - the wrapper is there (displayed, a non-zero rect) and runs NO animation, the layer holds still; and the leaves
   // still stir: all 115 clusters on the 16 s arbor2-breeze, forever, staggered (>= 2 s), none paused at rest (the liveness half: the breeze runs).
-  ok('L1f with motion, NO DRIFT (Nick, Nov 7): the pergola\'s wrapper is drawn and runs no animation, the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
-    pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && pg.drift.anims.length === 0
-      && pg.leaves === 115 && pg.breeze === 115 && pg.delays.length >= 2 && pg.delays[pg.delays.length - 1] - pg.delays[0] >= 2000 && pg.writing !== 'true' && pg.paused === 0,
-    JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
+  // PARKED 2026-11-18 (SUPERSEDED - NICK RULED, Nov 18, 10:06 am, via Fable: the leaves flutter in GUSTS, all together, ~1.4 s every 16 s -
+  // every leaf takes ONE breeze delay (pergola.ts GUST_DELAY), so "staggered (>= 2 s)" can no longer hold; train-22b's pair, Actions 44365317556:
+  // 115 on the breeze, none paused, delays [1 distinct]). Original, verbatim:
+  // ok('L1f with motion, NO DRIFT (Nick, Nov 7): the pergola\'s wrapper is drawn and runs no animation, the layer holds still; 115 leaf clusters on the 16 s breeze, staggered; none paused at rest',
+  //   pgLive && pg.anim === 'none' && !!pg.drift && pg.drift.display !== 'none' && pg.drift.w > 0 && pg.drift.h > 0 && pg.drift.anims.length === 0
+  //     && pg.leaves === 115 && pg.breeze === 115 && pg.delays.length >= 2 && pg.delays[pg.delays.length - 1] - pg.delays[0] >= 2000 && pg.writing !== 'true' && pg.paused === 0,
+  //   JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
+  // SUCCESSOR L1g: NO DRIFT and GUSTS - the wrapper drawn and still as L1f read it; all 115 clusters on the 16 s arbor2-breeze, forever, on ONE
+  // gust clock (a single delay), none paused at rest. Its mutant M-L1g below.
+  const l1gOk = (p) => !!p && p.display !== 'none' && p.w > 0 && p.h > 0 && p.anim === 'none' && !!p.drift && p.drift.display !== 'none' && p.drift.w > 0 && p.drift.h > 0 && p.drift.anims.length === 0
+    && p.leaves === 115 && p.breeze === 115 && p.delays.length === 1 && p.writing !== 'true' && p.paused === 0;
+  ok('L1g with motion, NO DRIFT and GUSTS (Nick, Nov 7 and Nov 18): the pergola\'s wrapper is drawn and runs no animation, the layer holds still; 115 leaf clusters on the 16 s breeze on ONE gust clock; none paused at rest',
+    l1gOk(pg), JSON.stringify(pg && { ...pg, delays: [pg.delays.length, pg.delays[0], pg.delays[pg.delays.length - 1]] }));
+  // M-L1g (mutant): the file's own staggered delays restored on the room's 115 clusters (asserted LANDED: many distinct delays) - L1g's read goes
+  // red; then every cluster's delay is put back to the one gust delay it had, and that is read back (the rest of the file sees the build as built)
+  const gustDelay = pg && pg.delays.length === 1 ? pg.delays[0] : 0;
+  await app.evalJs(`(() => { const D = [0.84,0.96,1.21,1.34,1.54,1.57,1.93,2.21,2.36,2.52,0.37,0.65,0.77,1.11,1.26,1.41,1.49,1.73,2.05,2.21,2.48,2.67,0.37,0.97,1.7,2.15,2.23,2.45,2.7,0.49,0.64,0.89,1.05,1.18,1.63,1.86,2.04,2.19,2.66,2.66,0.71,0.77,0.87,0.75,0.59,0.69,0.96,1.17,1.15,1.33,1.03,0.98,1.11,1.23,1.27,1.42,1.37,1.47,1.36,1.46,1.48,1.51,1.66,1.57,1.6,1.74,1.73,1.43,1.57,1.66,1.67,1.81,1.78,1.59,1.92,1.94,2.1,2.01,1.98,1.81,2.12,2.19,2.2,1.98,2.19,2.22,2.25,2.14,2.34,2.42,2.47,2.55,2.2,2.27,2.49,2.56,2.59,2.6,2.39,2.69,2.73,2.63,2.65,2.69,2.68,2.7,2.74,2.75,2.67,2.71,2.67,2.69,2.73,2.62,2.72]; [...document.querySelectorAll('.arbor2-pergola .wz-leaf')].forEach((g, i) => { if (D[i] != null) g.style.animationDelay = D[i] + 's'; }); return true; })()`);
+  await sleep(200); const pgM = await app.evalJs(PERG);
+  await app.evalJs(`(() => { [...document.querySelectorAll('.arbor2-pergola .wz-leaf')].forEach((g) => { g.style.animationDelay = '${gustDelay / 1000}s'; }); return true; })()`);
+  await sleep(200); const pgBack = await app.evalJs(PERG);
+  ok(`M-L1g (mutant): the file's staggered delays restored (LANDED: ${pgM && pgM.delays.length} distinct delays) - L1g's read goes RED; put back: ${pgBack && pgBack.delays.length} delay`,
+    !!pgM && pgM.delays.length > 50 && !l1gOk(pgM) && l1gOk(pgBack), JSON.stringify({ m: pgM && pgM.delays.length, back: pgBack && pgBack.delays }));
   await snap(app, 'item6-day-shadows-1366');
 
   await app.evalJs(`(() => { window.__flut = []; const seen = new Map(); window.__fo && window.__fo.disconnect(); window.__fo = new MutationObserver((ms) => { for (const m of ms) { const el = m.target; const on = el.getAttribute('data-flutter') === 'true'; if (on) seen.set(el, performance.now()); else if (seen.has(el)) { window.__flut.push([Math.round(seen.get(el)), Math.round(performance.now() - seen.get(el)), document.querySelectorAll('.arbor2-sun-leaf[data-flutter="true"]').length]); seen.delete(el); } } }); document.querySelectorAll('.arbor2-sun-leaf').forEach((l) => window.__fo.observe(l, { attributes: true, attributeFilter: ['data-flutter'] })); })()`);
