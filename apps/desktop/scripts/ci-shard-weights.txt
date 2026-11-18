@@ -242,4 +242,5 @@ wa-red-103.mjs 60
 wa-red-76.mjs 240
 wa-red-78.mjs 240
 wa-red-79.mjs 120
+perkey-whole-page.mjs 20
 wa-red-93.mjs 150
