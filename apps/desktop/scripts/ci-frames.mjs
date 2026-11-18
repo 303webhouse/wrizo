@@ -99,7 +99,8 @@ const SIGNED_OUT = (() => {
   // the hero (Arrival's logo and doors) fades out over .8 s and the form in over 1 s: a frame inside that window is a ghost, not the screen
   const settled = async (app, probe) => {
     await app.waitFor(probe, { label: 'the screen', timeout: 10000 });
-    await app.waitFor("(() => { const h = document.querySelector('.wz-hero'); return !h || getComputedStyle(h).opacity === '0'; })()", { label: 'the hero gone', timeout: 8000 });
+    // the full-page forms hide the hero; the POP-OUT (`.wz-popout`, Nov 18) keeps it behind a veil, so there the settled hero is the one marked `behind` (its dimming has finished: the opacity stops changing)
+    await app.waitFor("(() => { const h = document.querySelector('.wz-hero'); if (!h) return true; if (h.classList.contains('behind')) { const o = getComputedStyle(h).opacity; if (window.__ho === o) { window.__hn = (window.__hn || 0) + 1; } else { window.__ho = o; window.__hn = 0; } return window.__hn >= 3; } return getComputedStyle(h).opacity === '0'; })()", { label: 'the hero gone or dimmed and still', timeout: 8000 });
     await app.waitFor("(() => { const s = document.querySelector('.wz-screen'); return !s || getComputedStyle(s).opacity === '1'; })()", { label: 'the form shown', timeout: 8000 });
     await sleep(400);
     const seen = JSON.parse(await app.evalJs("JSON.stringify({ values: [...document.querySelectorAll('input')].map((i) => i.value), atInText: /@/.test(document.body.innerText) })"));
