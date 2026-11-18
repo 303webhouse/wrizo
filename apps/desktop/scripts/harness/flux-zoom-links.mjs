@@ -73,7 +73,7 @@ const MEASURE = `((LINKS, RADIUS, TOL, GHOST) => {
 })`;
 
 try { await withHarness(async (app) => {
-  const ev = (js) => app.evalJs(js);
+  const ev = (js) => { return app.evalJs(js); };
   const hashTo = async (h) => { await ev(`location.hash = ${JSON.stringify(h)}`); await sleep(300); };
   const splashGone = () => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
   const prefs = (tone) => `localStorage.setItem('wrizo-theme','flux'); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: '${tone}', fade: 'on' }));`;
