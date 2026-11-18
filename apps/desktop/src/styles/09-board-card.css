@@ -364,6 +364,10 @@
 .wz-arrival .wz-hero.behind{ opacity:.34; transform:none; pointer-events:none; transition:opacity .35s ease; }
 .wz-arrival[data-stage='signin']::after, .wz-arrival[data-stage='account']::after{ content:''; position:absolute; inset:0; z-index:7; background:rgba(8,4,0,.55); pointer-events:none; }
 .wz-arrival-doors-ghost{ pointer-events:none; }
+/* the error line: the panel’s label colour, never red (spec draft 4 §1: "Errors sit as one line under the fields, in the panel’s label colour. Never red, never a shake") */
+.wz-arrival .wz-popout .wz-error{ color:#B9AA8C; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-error{ color:#7EB4C4; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-error{ color:#9AA1A8; }
 /* FLUX holds its chart's finished frame behind the panel (Arrival.tsx renders it); the old hero, its logo and its Log in door are not shown around the panel (Fable Nov 18, 3:50 pm) */
 .wz-popout-chart{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:2; }
 [data-theme='flux'] .wz-arrival .wz-hero.behind{ visibility:hidden; }
