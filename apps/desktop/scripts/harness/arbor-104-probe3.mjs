@@ -17,7 +17,9 @@ const CATS = ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'dis
 const ARMS = [['redesign', '/', false], ['nopause', '/', true], ['today', '/?arbor2=0', false]];
 // NOPAUSE: the redesign with ONE rule deleted from the CSSOM in the page (arbor-v2.css:956, the leaves' animation-play-state:paused under
 // [data-wz-writing='true']) - a measurement arm only, no product change. It must delete exactly one rule, or the arm reports it.
-const DELPAUSE = "(() => { let n = 0; const walk = (list, owner) => { for (let i = list.length - 1; i >= 0; i -= 1) { const r = list[i]; if (r.cssRules) walk(r.cssRules, r); else if (r.selectorText && r.selectorText.includes(\"data-wz-writing\") && r.selectorText.includes('.wz-leaf') && r.style && r.style.animationPlayState === 'paused') { owner.deleteRule(i); n += 1; } } }; for (const sh of document.styleSheets) { try { walk(sh.cssRules, sh); } catch {} } return n; })()";
+// (r2: probe 3 r1, Actions 44345310200, deleted 0 in all 9 - the walker recursed into every style rule, since CSSStyleRule has cssRules under CSS
+// nesting, and never read its selector; the arm was VOID. Now the selector is read first.)
+const DELPAUSE = "(() => { let n = 0; const walk = (list, owner) => { for (let i = list.length - 1; i >= 0; i -= 1) { const r = list[i]; if (r.selectorText && r.selectorText.includes(\"data-wz-writing\") && r.selectorText.includes('.wz-leaf') && r.style && r.style.animationPlayState === 'paused') { owner.deleteRule(i); n += 1; } else if (r.cssRules && r.cssRules.length) walk(r.cssRules, r); } }; for (const sh of document.styleSheets) { try { walk(sh.cssRules, sh); } catch {} } return n; })()";
 const METER = `(() => { if (window.__kbOff) window.__kbOff(); window.__kb = []; let t0 = 0; const kd = () => { t0 = performance.now(); };
   const bi = () => { const t = t0; requestAnimationFrame(() => requestAnimationFrame(() => window.__kb.push(performance.now() - t))); };
   document.addEventListener('keydown', kd, true); document.addEventListener('beforeinput', bi, true);
