@@ -113,6 +113,14 @@ GROUPS2.nick = [
   c('NE', "Nick (e): a line of text, Enter, Up, then a letter", '', 0, [T('A line of text'), K('Enter'), K('ArrowUp', { geo: 'up' }), T('x')], { cont: true, trace: true }),
   c('NF', "Nick (f): a line of text, Enter, Enter, Up, then a letter", '', 0, [T('A line of text'), K('Enter'), K('Enter'), K('ArrowUp', { geo: 'up' }), T('x')], { cont: true, trace: true }),
 ];
+// #66 (Fable's wording, Nov 18; the audit's C4, case R05 above): at the very END of the page SHIFT+RIGHT selects the invisible end marker, and then Left does nothing. Expected: Shift+Right at the very end selects nothing, and Left moves one place.
+// S66a-d are R05's own shape on a page with text: Shift+Right at the end, then Left; the same after a trailing newline (the marker); Shift+Right then typing, with and without the trailing newline. R05 itself is run beside them.
+GROUPS2.end66 = [
+  c('S66a', 'Shift+Right at the very end of the page selects nothing, and Left moves one place', 'abc', 3, [K('ArrowRight', { shift: true }), K('ArrowLeft')], { cont: true }),
+  c('S66b', 'The same after a trailing newline (the invisible end marker): Shift+Right selects nothing, Left moves one place', 'abc\n', 4, [K('ArrowRight', { shift: true }), K('ArrowLeft')], { cont: true }),
+  c('S66c', 'Shift+Right at the very end, then typing x', 'abc', 3, [K('ArrowRight', { shift: true }), T('x')], { cont: true }),
+  c('S66d', 'Shift+Right at the end after a trailing newline, then typing x', 'abc\n', 4, [K('ArrowRight', { shift: true }), T('x')], { cont: true }),
+];
 // the SMOKE set (Fable's "dark and 1920"): the cases that found something plus one clean control per kind, drawn from both sessions' groups
 import { GROUPS as G1 } from './cases.mjs';
 const pick = (list, ids) => list.filter((x) => ids.includes(x.id));
