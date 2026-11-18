@@ -5,8 +5,8 @@ process.env.WS_ANON ??= '1';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
 await withHarness(async (app) => {
-  for (const theme of ['plateau', 'flux', 'machina']) {
-    for (const [w, h] of [[1366, 768], [1920, 1080]]) {
+  for (const theme of ['machina']) {
+    for (const [w, h] of [[1366, 768], [1920, 1080], [1100, 640], [1600, 900]]) {
       await app.emulateDpr(1, w, h);
       await app.goto('/');
       await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); localStorage.setItem('wrizo-theme', '${theme}'); true`);
@@ -21,6 +21,14 @@ await withHarness(async (app) => {
         out.doors = [...document.querySelectorAll('.wz-arrival button')].map((b) => ({ t: (b.textContent || '').trim(), ...box(b) }));
         return out; })()`);
       console.log(`POPOUT-WIDTH ${theme} ${w} ${JSON.stringify(r)}`);
+      const press = await app.evalJs("(() => { const b = document.querySelector('.wz-arrival-signin'); if (!b) return false; b.click(); return true; })()");
+      await sleep(1200);
+      const faces = [];
+      for (const face of ['signin', 'account']) {
+        if (face === 'account') { await app.evalJs("document.querySelector('.wz-popout-switch') && document.querySelector('.wz-popout-switch').click()"); await sleep(700); }
+        faces.push(await app.evalJs(`(() => { const b = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), w: Math.round(r.width) }; }; return { face: '${face}', logo: b('.wz-hero .wz-logo'), tagline: b('.wz-hero .wz-tagline'), hero: b('.wz-hero'), panel: b('.wz-popout'), win: [innerWidth, innerHeight] }; })()`));
+      }
+      console.log(`POPOUT-MACHINA ${w}x${h} pressed ${press} ${JSON.stringify(faces)}`);
     }
   }
 }, { label: 'popout-width-probe' });
