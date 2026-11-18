@@ -96,15 +96,20 @@ console.log(`BUILD: tree=${BUILD.head} bundle=${BUILD.bundle} builtAt=${BUILD.bu
 // ---- the outside instrument + page-side readers (on every document, before any page script) --------------------------------------------------------
 const INSTRUMENT = `(() => {
   if (window.__f3) return;
-  const I = window.__f3 = { log: [], frames: [], keys: [], wheels: [], centres: [] };
+  const I = window.__f3 = { log: [], frames: [], keys: [], wheels: [], centres: [], trace: false, drawers: [] };
   const LAYER = '[data-flux3-layer] canvas';
   const which = (cv) => (cv.parentElement ? Array.prototype.indexOf.call(cv.parentElement.children, cv) : -1);
   const P = CanvasRenderingContext2D.prototype;
+  // bug #106: while I.trace is on, each layer draw also records the names of the methods that called it (V8's stack text; class methods keep their names in the bundle, so 'drawMotion<loop<...' says which path drew)
+  const via = () => { try { return new Error().stack.split(' at ').slice(3, 9).map((f) => f.split(' (')[0].split('.').pop().trim()).join('<'); } catch (e) { return '?'; } };
   for (const m of ['stroke', 'fill', 'fillRect', 'strokeRect', 'clearRect', 'drawImage', 'fillText', 'strokeText', 'putImageData']) {
     const o = P[m]; if (typeof o !== 'function') continue;
     P[m] = function (...a) {
       const cv = this.canvas;
-      if (cv && cv.matches && cv.matches(LAYER) && I.log.length < 600000) I.log.push([performance.now(), which(cv), m]);
+      if (cv && cv.matches && cv.matches(LAYER) && I.log.length < 600000) {
+        const t = performance.now(); I.log.push([t, which(cv), m]);
+        if (I.trace && I.drawers.length < 4000) I.drawers.push([t, which(cv), m, via()]);
+      }
       return o.apply(this, a);
     };
   }
@@ -117,6 +122,9 @@ const INSTRUMENT = `(() => {
   const rr = (r) => ({ x: +r.x.toFixed(2), y: +r.y.toFixed(2), w: +r.width.toFixed(2), h: +r.height.toFixed(2) });
   I.rr = rr;
   I.calls = (t0, t1) => I.log.filter((e) => e[0] >= t0 && e[0] <= t1).length;
+  const dr = (e) => ({ canvas: e[1], op: e[2], via: e[3] });
+  I.what = (t0, t1) => { const ds = I.drawers, inside = ds.filter((e) => e[0] >= t0 && e[0] <= t1), before = ds.filter((e) => e[0] < t0).pop(), after = ds.find((e) => e[0] > t1);
+    return { n: inside.length, inside: inside.slice(0, 12).map((e) => ({ at: +(e[0] - t0).toFixed(1), ...dr(e) })), before: before ? { gap: +(t0 - before[0]).toFixed(1), ...dr(before) } : null, after: after ? { gap: +(after[0] - t1).toFixed(1), ...dr(after) } : null }; };
   I.st = () => {
     const cards = [...document.querySelectorAll('.board-canvas .board-box')];
     const wrap = document.querySelector('.board-canvas-wrap'), host = wrap ? wrap.parentElement : null;
@@ -166,6 +174,7 @@ const MUTANTS = {
     '.addEventListener("f3-mut-nodown",$1,!0),$2.addEventListener("click",$3,!0),$4.addEventListener("dblclick"'],
   clean: [/\.style\.transform="",(\w+)\.style\.transition="",/g, '.style.f3mut="",$1.style.transition="",'],
   still: [/(\w+)!=="still"&&(\w+)\.motion/g, '$1!=="still"&&!0'],
+  undamp: [/damped\(\)\{return this\.held\|\|performance\.now\(\)<this\.busyUntil\}/g, 'damped(){return!1}'],   // bug #106: the layer's damping gate removed: it never holds, so it draws while keys land
 };
 
 const median = (a) => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
@@ -433,28 +442,44 @@ try { await withHarness(async (app) => {
   }
 
   // ---- D2-HOLO: zero draws while keys land, in the hologram's editor ----------------------------------------------------------------------------
-  await open(true, 'dark');
-  await stackOn();
-  const c0 = await st();
-  const cpt = await cardAt(c0.centre);
-  await click(cpt.x, cpt.y); await sleep(1100);
-  const ce = await cardAt(c0.centre);
-  await app.doubleClick(ce.x, ce.y);
-  await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 4000, label: 'the card editor' }).catch(() => {});
-  await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
-  await sleep(600);
-  const k0 = await ev('window.__f3.keys.length');
-  const word = ' written in the hologram ok';   // 27 keys
-  for (const ch of word) { await app.typeKeys(ch); await sleep(90); }
-  const span = await ev(`(() => { const k = window.__f3.keys.slice(${k0}); return { n: k.length, a: k[0], b: k[k.length - 1] }; })()`);
-  const during = await ev(`window.__f3.calls(${span.a}, ${span.b})`);
-  await click(20, 300); await sleep(900);
-  const hostAfter = (await st()).host;
-  const text = await ev(`((window.wrizoBoard() || []).find((b) => b.id === ${JSON.stringify(c0.centre)}) || {}).text || ''`);
-  await key('Escape', 600); await key('Escape', SETTLE_MS);
-  const resumeH = await rest(1200);
-  ok(`D2-HOLO ZERO layer draw calls while ${span.n} keys land in the hologram's node (the board's own editor), and the words are stored in the card`,
-    span.n >= 25 && during === 0 && text.includes(word.trim()) && resumeH > 0, JSON.stringify({ keys: span.n, during, stored: text.slice(-40), hostAfter, resumeH }));
+  // BUG #106 (Nov 16; one red in eight pairs: "D2-HOLO ZERO layer draw calls ... during: 1", and the line could not say what drew): the readout is now NAMED. From the moment the editor is focused until the keys are read, the page
+  // records every layer draw call with the canvas it drew on, the call, and the layer's own call chain (the names of the methods that called it (the wrapper and this reader skipped): class methods keep their names in the bundle, so "drawMotion<loop<..." says which
+  // path drew). The answer comes back with the check: what drew inside the keys' window (at = ms after the first key), and the nearest draw BEFORE the first key and AFTER the last, with their gaps. A stray draw that is the tail of
+  // a frame already in flight reads as "before" or "at ~0"; a draw nothing should have asked for reads with its own chain. The assertion itself is unchanged.
+  const testHolo = async () => {
+    await open(true, 'dark');
+    await stackOn();
+    const c0 = await st();
+    const cpt = await cardAt(c0.centre);
+    await click(cpt.x, cpt.y); await sleep(1100);
+    const ce = await cardAt(c0.centre);
+    await app.doubleClick(ce.x, ce.y);
+    await app.waitFor("!!document.querySelector('.board-popup-editor')", { timeout: 4000, label: 'the card editor' }).catch(() => {});
+    await ev('(() => { window.__f3.drawers = []; window.__f3.trace = true; })()');
+    await ev("(() => { const e = document.querySelector('.board-popup-editor'); if (!e) return; e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); })()");
+    await sleep(600);
+    const k0 = await ev('window.__f3.keys.length');
+    const word = ' written in the hologram ok';   // 27 keys
+    for (const ch of word) { await app.typeKeys(ch); await sleep(90); }
+    const span = await ev(`(() => { const k = window.__f3.keys.slice(${k0}); return { n: k.length, a: k[0], b: k[k.length - 1] }; })()`);
+    const during = await ev(`window.__f3.calls(${span.a}, ${span.b})`);
+    await sleep(700);   // the nearest draw AFTER the last key is read too
+    const drew = await ev(`window.__f3.what(${span.a}, ${span.b})`);
+    await ev('window.__f3.trace = false');
+    await click(20, 300); await sleep(900);
+    const hostAfter = (await st()).host;
+    const text = await ev(`((window.wrizoBoard() || []).find((b) => b.id === ${JSON.stringify(c0.centre)}) || {}).text || ''`);
+    await key('Escape', 600); await key('Escape', SETTLE_MS);
+    const resumeH = await rest(1200);
+    return { word, span, during, drew, text, hostAfter, resumeH };
+  };
+  const nearest = (e) => (e ? `${e.gap} ms ${e.canvas === undefined ? '' : 'canvas ' + e.canvas + ' ' + e.op + ' via ' + e.via}` : 'none recorded');
+  const hol = await testHolo();
+  ok(`D2-HOLO ZERO layer draw calls while ${hol.span.n} keys land in the hologram's node (the board's own editor), and the words are stored in the card`,
+    hol.span.n >= 25 && hol.during === 0 && hol.text.includes(hol.word.trim()) && hol.resumeH > 0,
+    JSON.stringify({ keys: hol.span.n, during: hol.during, drew: hol.drew, stored: hol.text.slice(-40), hostAfter: hol.hostAfter, resumeH: hol.resumeH }));
+  // always said, pass or fail: what drew in the window, and the nearest draws either side
+  info(`D2-HOLO-DREW ${hol.drew.n} draw call(s) in the keys' window (${hol.during} counted)`, `inside ${JSON.stringify(hol.drew.inside)}; nearest before the first key: ${nearest(hol.drew.before)}; nearest after the last key: ${nearest(hol.drew.after)}`);
 
   // ---- F: <= 3 centre changes a second ---------------------------------------------------------------------------------------------------------
   const testFlash = async () => {
@@ -594,6 +619,11 @@ try { await withHarness(async (app) => {
   const mS = await withMutant('still', () => testStill('dial0'));
   mS.landed = landed.still;
   ok('MUT-STILL (landed) the still state ignored (the nodes always fly): STILL at Ambiance 0 fails', mS.landed === 1 && !mS.pass, JSON.stringify(mS));
+  const mU = await withMutant('undamp', testHolo);
+  mU.landed = landed.undamp;
+  ok('MUT-UNDAMP (landed) the layer\'s damping gate removed: D2-HOLO reads draw calls while the keys land AND names every one it lists (a canvas, a call, the chain that drew, a draw path among them)',
+    mU.landed === 1 && mU.during > 0 && mU.drew.n > 0 && mU.drew.inside.length > 0 && mU.drew.inside.every((e) => Number.isInteger(e.canvas) && !!e.op && typeof e.via === 'string' && e.via.length > 0) && mU.drew.inside.some((e) => /draw/.test(e.via)),
+    JSON.stringify({ landed: mU.landed, during: mU.during, n: mU.drew.n, first: mU.drew.inside.slice(0, 3) }));
 
   // ---- B: the build -------------------------------------------------------------------------------------------------------------------------------
   await open(true, 'dark');
