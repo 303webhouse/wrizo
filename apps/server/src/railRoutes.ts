@@ -1,4 +1,4 @@
-import express, { Router, type Request, type Response } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { pool } from './db';
 import { requireAuth } from './auth';
 import { asyncHandler } from './asyncHandler';
@@ -81,7 +81,16 @@ railRouter.get('/box-picture/:drawerId', asyncHandler(async (req: Request, res: 
 
 // The bytes arrive raw, capped at the picture's own limit (a larger body is refused 413 before it is buffered). The app-wide JSON parser in
 // index.ts skips an image Content-Type, so this parser is the one that reads them; a JSON body never becomes a Buffer and is refused 415.
-railRouter.put('/box-picture/:drawerId', express.raw({ type: () => true, limit: PICTURE_MAX_BYTES }), asyncHandler(async (req: Request, res: Response) => {
+// Its over-limit error is answered HERE, with the picture's own limit in the body (index.ts's handler would name the app-wide 5 MB one).
+const rawPicture = express.raw({ type: () => true, limit: PICTURE_MAX_BYTES });
+function readPicture(req: Request, res: Response, next: NextFunction): void {
+  rawPicture(req, res, (err?: unknown) => {
+    const e = err as { status?: number; type?: string } | undefined;
+    if (e && (e.status === 413 || e.type === 'entity.too.large')) { res.status(413).json({ error: 'payload too large', limitBytes: PICTURE_MAX_BYTES }); return; }
+    next(err);
+  });
+}
+railRouter.put('/box-picture/:drawerId', readPicture, asyncHandler(async (req: Request, res: Response) => {
   const body = Buffer.isBuffer(req.body) ? new Uint8Array(req.body) : req.body;
   send(res, await picturePut(sqlRailStore, req.session.userId as string, req.params.drawerId, body, req.get('X-Picked-At')));
 }));

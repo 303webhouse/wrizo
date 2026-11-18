@@ -6,7 +6,6 @@ import { sessionMiddleware } from './session';
 import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { railRouter } from './railRoutes';
-import { PICTURE_MAX_BYTES } from './rail';
 import { tutorRouter } from './tutor';
 import { logError } from './logSafe';
 import { getServerBuild } from './build';
@@ -147,9 +146,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
     // eslint-disable-next-line no-console
     console.error('[server] refused a request body over the limit (413)');
     // the limit that applied to THIS request: /api/sync's is larger than everyone else's
-    // (and a box's picture has its own, far smaller one: railRoutes.ts)
-    const limitBytes = req.path === '/api/sync' ? SYNC_BODY_LIMIT_BYTES : req.path.startsWith('/api/box-picture/') ? PICTURE_MAX_BYTES : BODY_LIMIT_BYTES;
-    res.status(413).json({ error: 'payload too large', limitBytes });
+    res.status(413).json({ error: 'payload too large', limitBytes: req.path === '/api/sync' ? SYNC_BODY_LIMIT_BYTES : BODY_LIMIT_BYTES });
     return;
   }
   if (typeof status === 'number' && status >= 400 && status < 500 && e.expose) {
