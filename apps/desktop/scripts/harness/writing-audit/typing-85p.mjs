@@ -25,13 +25,14 @@ const summarise = (profile, keys) => {
   for (const [id, ms] of self) {
     const cf = nodes.get(id).callFrame; const nm = cf.functionName || '(anonymous)';
     if (nm === '(idle)') special.idle += ms; else if (nm === '(garbage collector)') special.gc += ms; else if (nm === '(program)') special.program += ms; else if (nm === '(root)') special.root += ms;
-    else { special.js += ms; const k = `${nm} ${String(cf.url || '').split('/').pop()}:${cf.lineNumber + 1}`; byFn.set(k, (byFn.get(k) || 0) + ms); }
+    else { special.js += ms; const k = `${nm} ${String(cf.url || '').split('/').pop()}:${cf.lineNumber + 1}:${cf.columnNumber + 1}`; byFn.set(k, (byFn.get(k) || 0) + ms); where.set(k, { scriptId: cf.scriptId, line: cf.lineNumber, col: cf.columnNumber }); }
   }
   const r1 = (x) => Math.round(x * 10) / 10;
   return { spanMs: r1(total), idleMs: r1(special.idle), gcMs: r1(special.gc), programMs: r1(special.program), jsMs: r1(special.js),
     perKey: { spanMs: r1(total / keys), jsMs: r1(special.js / keys), programMs: r1(special.program / keys), idleMs: r1(special.idle / keys) },
-    top: [...byFn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, ms]) => ({ fn: k, msPerKey: r1(ms / keys) })) };
+    top: [...byFn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, ms]) => ({ fn: k, msPerKey: r1(ms / keys), at: where.get(k) })) };
 };
+const where = new Map();   // function key -> where it stands in the script (so its source text can be read back)
 
 let unreachable = false;
 await withHarness(async (app) => {
@@ -51,6 +52,18 @@ await withHarness(async (app) => {
       for (let i = 0; i < N; i += 1) { if (kind === 'enter') await d.key('Enter'); else await d.type('a'); await sleep(150); }
       const { profile } = await cdp('Profiler.stop'); await cdp('Profiler.disable');
       row[kind] = summarise(profile, N);
+      // the source text at each of the top functions (the bundle is minified: the text names what the function does)
+      try {
+        await cdp('Debugger.enable');
+        const cache = {};
+        for (const t of row[kind].top.slice(0, 6)) {
+          if (!t.at || !t.at.scriptId) continue;
+          if (!cache[t.at.scriptId]) cache[t.at.scriptId] = ((await cdp('Debugger.getScriptSource', { scriptId: t.at.scriptId })).scriptSource || '').split(String.fromCharCode(10));
+          const ln = cache[t.at.scriptId][t.at.line] || '';
+          t.src = ln.slice(t.at.col, t.at.col + 420);
+        }
+        await cdp('Debugger.disable');
+      } catch (e) { row[kind].srcError = String(e && e.message || e).slice(0, 120); }
       await sleep(400);
     }
     console.log(`FW101P ${JSON.stringify(row)}`);
