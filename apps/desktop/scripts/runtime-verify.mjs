@@ -435,6 +435,13 @@ window.__setText = (text, sel) => {
 `;
 
 // --- the harness facade given to scenario code ----------------------------
+// THE ARBOR REDESIGN IS ON BY DEFAULT (Nick, Nov 15). FABLE RULED (Nov 15, 10:40 pm): "In the harness, a fresh profile pins today's Arbor (?arbor2=0)
+// for any file that doesn't ask for the redesign, so the 69 keep testing what they were written for." So when no query is named, the driver opens
+// '/?arbor2=0' (today's Arbor; every other theme is unaffected by it). A file ASKS for the redesign with WS_ARBOR2=default (the product's own default,
+// no query), or names its own query with WS_URL_SEARCH, which wins; a file that navigates with its own URL (history.replaceState, Page.navigate) is
+// unaffected. The opt-in's own declaration, below, stays as it was (url-search-optin-unit.mjs U0/U1b anchor on it; U2b reads this pin).
+if (!process.env.WS_URL_SEARCH && process.env.WS_ARBOR2 !== 'default') process.env.WS_URL_SEARCH = '?arbor2=0';
+
 // WS_URL_SEARCH (opt-in, e.g. '?arbor2=1'): a query string before the hash on every page this driver opens, so a guard can run under a URL
 // flag (ARBOR r19: rhizome-latency + 150b on the Arbor vines). Unset = today's URLs exactly ('/' then the hash).
 const URL_SEARCH = process.env.WS_URL_SEARCH ? `/${process.env.WS_URL_SEARCH.replace(/^\/?/, '')}` : '/';
