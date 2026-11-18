@@ -88,6 +88,12 @@ const BREEZE = 16000;
 // arbor2-breeze's keyframes (arbor-v2.css): offset, degrees; each step eased ease-in-out
 const KF: [number, number][] = [[0, 0], [0.0156, 8], [0.0344, -6], [0.0531, 3.5], [0.0719, -1.5], [0.0875, 0], [1, 0]];
 const MOVING = KF[5][0] * BREEZE;   // a leaf moves over the first 1.4 s of its cycle
+// #104 PROBE ARM, TEST-ONLY (Fable, Nov 18, 1:45 pm; a probe branch, never merged): ?arbor2gust=live - while she isn't writing, every live layer stands
+// CUT between gusts (the still picture; the live drawing out of style work) and shows its live drawing only for each gust, LEAD ms before the
+// gust to TAIL ms after its last move. Two timers per 16 s at the gust's edges, worked out from the clock already read at rest; nothing per frame.
+// So her first key between gusts finds nothing to switch off. Without the query nothing here runs (the shipped arm).
+const GUST_LIVE = typeof location !== 'undefined' && new URLSearchParams(location.search).get('arbor2gust') === 'live';
+const GUST_LEAD = 150, GUST_TAIL = 100;
 function easeInOut(x: number): number {   // cubic-bezier(.42, 0, .58, 1), solved for its x by bisection
   const bx = (t: number) => 3 * (1 - t) * (1 - t) * t * 0.42 + 3 * (1 - t) * t * t * 0.58 + t * t * t, by = (t: number) => 3 * (1 - t) * t * t + t * t * t;
   let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (bx(m) < x) lo = m; else hi = m; } return by((lo + hi) / 2);
@@ -187,7 +193,7 @@ export function mountPergola(): void {
       // the page keeps r20's live copy; every other surface draws the shared bitmap
       const c = h.matches(HOSTS[0]) ? makeLayer('arbor2-pagesh', PAGE_SHADE_ALPHA) : makeBitmapLayer(PAGE_ALPHA);
       if (room.layer.hasAttribute('data-asleep')) c.layer.setAttribute('data-asleep', 'true');
-      { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (writing()) cut(p); else clock(p); }))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
+      { const p = liveOf.get(c.layer); if (p) requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(() => { if (writing()) cut(p); else { clock(p); gustPlan(); } }))); else if (room.layer.hasAttribute('data-live-off')) c.layer.setAttribute('data-live-off', 'true'); }
       h.appendChild(c.layer); copies.set(h, c); ro.observe(h); place(h, c);
       requestAnimationFrame(() => requestAnimationFrame(() => sync(c.layer)));
     }
@@ -234,10 +240,24 @@ export function mountPergola(): void {
     if (bitmap) p.still.style.backgroundImage = `url("${bitmap}")`;
   };
   const liveOff = (on: boolean) => layers().forEach((l) => { const p = liveOf.get(l); if (p) { if (on) cut(p); else uncut(p); } else if (on) l.setAttribute('data-live-off', 'true'); else l.removeAttribute('data-live-off'); });
+  // (#104 probe arm) the gust's edges: one timer to the next edge, re-armed at each; stopped while she writes
+  let gustT = 0;
+  const gustPlan = () => {
+    window.clearTimeout(gustT);
+    if (!GUST_LIVE || writing()) return;
+    const p = liveOf.get(room.layer);
+    if (!p || p.start == null) { gustT = window.setTimeout(gustPlan, 500); return; }   // no clock yet: look again shortly
+    const ph = (((Number(document.timeline.currentTime ?? 0) - p.start) % BREEZE) + BREEZE) % BREEZE;
+    const inGust = ph >= BREEZE - GUST_LEAD || ph < MOVING + GUST_TAIL;
+    layers().forEach((l) => { const q = liveOf.get(l); if (q) { if (inGust) uncut(q); else cut(q); } });
+    const next = inGust ? (ph < MOVING + GUST_TAIL ? MOVING + GUST_TAIL - ph : BREEZE - ph + MOVING + GUST_TAIL) : BREEZE - GUST_LEAD - ph;
+    gustT = window.setTimeout(gustPlan, Math.max(16, next));
+  };
   let sleepT = 0;
   const onWriting = () => {
     window.clearTimeout(sleepT);
-    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
+    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(() => { clockAll(); gustPlan(); })); return; }
+    window.clearTimeout(gustT);
     liveOff(true);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare.
     // bug #80: read two frames AFTER the keystroke that starts writing, never inside it - a getComputedStyle here ran in the key's own task, right after
@@ -254,5 +274,5 @@ export function mountPergola(): void {
   new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
   attach();
   onWriting();
-  requestAnimationFrame(() => requestAnimationFrame(clockAll));
+  requestAnimationFrame(() => requestAnimationFrame(() => { clockAll(); gustPlan(); }));
 }
