@@ -100,11 +100,23 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
 // =============================================================================
 {
   const arr = read('components/Arrival.tsx');
-  ok('(C1) the hero hides once the stage is past the doors (HomeFlow\'s .gone pattern)',
-    /className=\{stage === 'doors' \? 'wz-hero' : 'wz-hero gone'\}/.test(arr), '');
-  ok('(C2) a visible "Sign in" is offered whenever signed out (authState anon)',
-    /authState === 'anon' && \(/.test(arr) && /wz-arrival-signin/.test(arr) && />\s*Sign in\s*</.test(arr), '');
-  ok('(C3) "Create an account" stays on the sign-in screen', /New here\? Create an account/.test(arr), '');
+  // SUPERSEDED (Nov 18, the sign-in pop-out: sign-in and sign-up are a panel over the splash picture, not a page of their own, and the words moved into the lexicon): (C1), (C2) and (C3) as they stood, verbatim
+  //   ok('(C1) the hero hides once the stage is past the doors (HomeFlow\'s .gone pattern)',
+  //     /className=\{stage === 'doors' \? 'wz-hero' : 'wz-hero gone'\}/.test(arr), '');
+  //   ok('(C2) a visible "Sign in" is offered whenever signed out (authState anon)',
+  //     /authState === 'anon' && \(/.test(arr) && /wz-arrival-signin/.test(arr) && />\s*Sign in\s*</.test(arr), '');
+  //   ok('(C3) "Create an account" stays on the sign-in screen', /New here\? Create an account/.test(arr), '');
+  // SUCCESSORS: the hero STAYS behind the panel (marked `behind`, never `gone`); the sign-in door is offered whenever signed out and says the lexicon's word; "Create an account" stays on the sign-in panel, in the lexicon
+  const lexWords = read('store/lexicon/canonical/settings.ts');
+  const C1s = (s) => /className=\{stage === 'doors' \? 'wz-hero' : 'wz-hero behind'\}/.test(s) && !/wz-hero gone/.test(s);
+  const C2s = (s) => /authState === 'anon' && \(/.test(s) && /wz-arrival-signin/.test(s) && /\{t\('authSignIn'\)\}/.test(s);
+  const C3s = (s) => /\{t\('authNewHere'\)\}/.test(s) && /authNewHere: 'New here\? Create an account'/.test(lexWords);
+  ok('(C1) the hero STAYS behind the panel once the stage is past the doors (`behind`, not `gone`)', C1s(arr), '');
+  ok('(C2) a visible sign-in door (the lexicon\'s word) is offered whenever signed out (authState anon)', C2s(arr), '');
+  ok('(C3) "Create an account" stays on the sign-in panel (the lexicon\'s authNewHere)', C3s(arr), '');
+  ok('(C1m) MUTATION KILLED: the hero marked gone again is red', !C1s(arr.replace("'wz-hero behind'", "'wz-hero gone'")), '');
+  ok('(C2m) MUTATION KILLED: a door with a literal word instead of the lexicon\'s is red', !C2s(arr.replace(/\{t\('authSignIn'\)\}/g, 'Sign in')), '');
+  ok('(C3m) MUTATION KILLED: the switch with its word taken out of the lexicon is red', !C3s(arr.replace("{t('authNewHere')}", 'New here? Create an account')), '');
   ok('(C4) the first stage follows the flag: a signed-out device opens on sign-in',
     /useState<Stage>\(\(\) => \(isSignedOutHere\(\) \? 'signin' : 'doors'\)\)/.test(arr), '');
   // SUPERSEDED (review fixes) — by (C5b and C5c) below. Parked, not deleted: the account screen's back is no longer hidden when locked.
@@ -255,18 +267,31 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   const signinForm = arr.slice(arr.indexOf('<form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>'));
   ok('(G1) sign-in is a <form> whose onSubmit prevents the default and runs handleSignin',
     /<form className="wz-form" onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleSignin\(\); \}\}>/.test(arr), '');
-  ok('(G2) the sign-in button is type="submit" (not a click handler), inside that form',
-    /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Sign in'\}<\/button>\s*<\/form>/.test(arr), '');
-  ok('(G3) the account screen is a <form> too, with a submit button that runs handleCreate',
-    /onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleCreate\(\); \}\}/.test(arr)
-      && /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Create my account'\}<\/button>\s*<\/form>/.test(arr), '');
+  // SUPERSEDED (Nov 18, the sign-in pop-out: the buttons' words moved into the lexicon, and the create-account submit now stops at the 18+ tick before it takes the ref): (G2), (G3) and (G6) as they stood, verbatim
+  //   ok('(G2) the sign-in button is type="submit" (not a click handler), inside that form',
+  //     /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Sign in'\}<\/button>\s*<\/form>/.test(arr), '');
+  //   ok('(G3) the account screen is a <form> too, with a submit button that runs handleCreate',
+  //     /onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleCreate\(\); \}\}/.test(arr)
+  //       && /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? 'one moment…' : 'Create my account'\}<\/button>\s*<\/form>/.test(arr), '');
+  //   ok('(G6) both submit paths are guarded by a synchronous ref as well as the busy state (two Enters in one tick cannot both run)',
+  //     /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleSignin'), arr.indexOf('const handleCreate')))
+  //       && /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleCreate'))), '');
+  // SUCCESSORS: the same shapes with the lexicon's words; the create path adds the 18+ guard BETWEEN the busy check and the ref (an unticked submit returns before it takes the ref, so nothing is left locked)
+  const G2s = (s) => /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? t\('authSigningIn'\) : t\('authSignIn'\)\}<\/button>\s*<\/form>/.test(s);
+  const G3s = (s) => /onSubmit=\{\(e\) => \{ e\.preventDefault\(\); void handleCreate\(\); \}\}/.test(s)
+    && /<button type="submit" className="wz-btn" disabled=\{busy\}>\{busy \? t\('authSigningIn'\) : t\('authCreateSubmit'\)\}<\/button>\s*<\/form>/.test(s);
+  const G6s = (s) => /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(s.slice(s.indexOf('const handleSignin'), s.indexOf('const handleCreate')))
+    && /if \(busy \|\| submitting\.current\) return;(?:\s*\/\/[^\n]*)*\s*if \(!adult\) \{ setError\(t\('authAdultRequired'\)\); return; \}\s*submitting\.current = true;/.test(s.slice(s.indexOf('const handleCreate')));
+  ok('(G2) the sign-in button is type="submit" (not a click handler), inside that form, in the lexicon\'s words', G2s(arr), '');
+  ok('(G3) the account screen is a <form> too, with a submit button that runs handleCreate, in the lexicon\'s words', G3s(arr), '');
+  ok('(G2m) MUTATION KILLED: a sign-in button that is not a submit is red', !G2s(arr.replace('<button type="submit" className="wz-btn" disabled={busy}>{busy ? t(\'authSigningIn\') : t(\'authSignIn\')}', '<button type="button" className="wz-btn" disabled={busy}>{busy ? t(\'authSigningIn\') : t(\'authSignIn\')}')), '');
+  ok('(G3m) MUTATION KILLED: an account form that does not run handleCreate on submit is red', !G3s(arr.replace('void handleCreate(); }}', 'void handleSignin(); }}')), '');
   ok('(G4) neither screen still wires its button to a click handler for submitting',
     !/onClick=\{handleSignin\}/.test(arr) && !/onClick=\{handleCreate\}/.test(arr), '');
   ok('(G5) autocomplete is kept: email, current-password on sign-in, new-password on the account form',
     (arr.match(/autoComplete="email"/g) || []).length >= 2 && /autoComplete="current-password"/.test(arr) && /autoComplete="new-password"/.test(arr), '');
-  ok('(G6) both submit paths are guarded by a synchronous ref as well as the busy state (two Enters in one tick cannot both run)',
-    /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleSignin'), arr.indexOf('const handleCreate')))
-      && /if \(busy \|\| submitting\.current\) return;\s*submitting\.current = true;/.test(arr.slice(arr.indexOf('const handleCreate'))), '');
+  ok('(G6) both submit paths are guarded by a synchronous ref as well as the busy state (two Enters in one tick cannot both run); the create path stops at the 18+ tick first', G6s(arr), '');
+  ok('(G6m) MUTATION KILLED: a create path that takes the ref before the busy check, or has no 18+ stop, is red', !G6s(arr.replace("if (!adult) { setError(t('authAdultRequired')); return; }", '')), '');
   ok('(G7) the ref is released after the call returns, so a failed sign-in can be retried',
     (arr.match(/submitting\.current = false;/g) || []).length === 2, String((arr.match(/submitting\.current = false;/g) || []).length));
   const css = read('index.css');
@@ -534,8 +559,13 @@ const flag = await import(`file://${dest.replace(/\\/g, '/')}?t=${Date.now()}`);
   ok('(C5b) while locked, sign-in\'s back (to the doors) is hidden — exactly ONE back link sits behind !locked',
     (arr.match(/\{!locked && \(/g) || []).length === 1, String((arr.match(/\{!locked && \(/g) || []).length));
   const acct = arr.slice(arr.indexOf("{stage === 'account' && ("));
-  ok('(C5c) the ACCOUNT screen\'s back is not hidden when locked, and it goes to sign-in (so "New here?" is never a dead end)',
-    !/!locked/.test(acct) && /setStage\('signin'\); \}\}>← back/.test(acct) && !/setStage\('doors'\)/.test(acct), '');
+  // SUPERSEDED (Nov 18, the sign-in pop-out: the back link's word moved into the lexicon): (C5c) as it stood, verbatim
+  //   ok('(C5c) the ACCOUNT screen\'s back is not hidden when locked, and it goes to sign-in (so "New here?" is never a dead end)',
+  //     !/!locked/.test(acct) && /setStage\('signin'\); \}\}>← back/.test(acct) && !/setStage\('doors'\)/.test(acct), '');
+  // SUCCESSOR: the same law, the back link reading the lexicon's authBack
+  const C5cs = (a) => !/!locked/.test(a) && /setStage\('signin'\); \}\}>\{t\('authBack'\)\}/.test(a) && !/setStage\('doors'\)/.test(a);
+  ok('(C5c) the ACCOUNT screen\'s back is not hidden when locked, and it goes to sign-in (so "New here?" is never a dead end)', C5cs(acct), '');
+  ok('(C5cm) MUTATION KILLED: an account back that goes to the doors, or hides when locked, is red', !C5cs(acct.replace("setStage('signin'); }}>{t('authBack')}", "setStage('doors'); }}>{t('authBack')}")) && !C5cs(acct.replace('<div className="wz-secondary">', '{!locked && <div className="wz-secondary">')), '');
 }
 
 // =============================================================================

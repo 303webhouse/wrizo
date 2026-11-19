@@ -306,7 +306,7 @@ function FluxMark({ reduced, width, height, onFloorReached }: MarkProps) {
       <path className="fx-tree" d="M40,80 L40,40 L80,40 M1270,40 L1310,40 L1310,80 M1310,1000 L1310,1040 L1270,1040 M80,1040 L40,1040 L40,1000" />
 
       {/* wordmark — straight strokes on a grid, never the hand-drawn one */}
-      <g transform="translate(435,70) scale(1.6)">
+      <g className="fx-wordmark" transform="translate(435,70) scale(1.6)">
         <g fill="none" stroke="#E3F1EC" strokeWidth={8} strokeLinecap="square" strokeLinejoin="miter">
           <path d="M0,0 L14,64 L35,22 L56,64 L70,0" />
           <path d="M92,64 L92,0 L124,0 L136,12 L136,26 L124,36 L92,36 M114,36 L136,64" />
