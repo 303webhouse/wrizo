@@ -172,7 +172,7 @@ for (const theme of THEMES) for (const vp of VPS) {
   const c = await mk(); const p = await c.newPage();
   const email = `a11y-${theme}-${vp.id}-${Date.now()}@example.invalid`;
   await p.goto(BASE + '/');
-  const reg = await c.request.post(BASE + '/auth/register', { data: { email, password: PASSWORD } });
+  const reg = await c.request.post(BASE + '/auth/register', { data: { email, password: PASSWORD, adult: true } });
   await p.reload(); await p.waitForSelector('.wz-arrival-open:not([disabled])', { timeout: 10000 }).catch(() => {}); await settle(p, 800);
   const seed = await p.evaluate(() => {
     const w = window; const binder = w.wrizoCreateBinder('The Long Winter', 'novel');
