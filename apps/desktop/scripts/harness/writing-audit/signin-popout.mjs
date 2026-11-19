@@ -19,6 +19,8 @@
 //   P20 FLUX: the panel's top sits at least 8 px under WRIZO's letters (their ink foot: the wordmark's box foot plus half its stroke) and covers no part of the mark, at 1366 and 1920, on both faces; P20M the old top (6vh / centred, 209 at 1366) turns it red (Fable Nov 18, 5:35 pm)
 //   P21 on the 18+ error the tick is IN VIEW inside the visible part of the list, above the error line, and focused, at 1366x768 and 1366x560, in every theme (the Wrizors' v5 REAL: it was scrolled out of sight in Machina); P21M the same flow with the scroll taken away leaves it out of view (asserted landed at a height where the list is short)
 //   P22 the register request carries adult: true, and none leaves unticked (Fable Nov 18, 5:55 pm: apiRegister never sent it); nothing is stored; P22M the field dropped from the request turns it red (asserted landed)
+//   P23 Esc closes the panel like its back (spec draft 4 section 1 and section 6 check 4; Fable Nov 18, 6:05 pm): on the create-account face it goes to sign-in, on the sign-in face to the doors; on a LOCKED device the sign-in face does nothing and the create-account face still goes to sign-in; P23M the Esc handler taken away (the key swallowed before it, asserted landed) turns it red
+//   P8 (Flux, section 4) also reads the panel edge (1 px #8FB4AC), the corner brackets (--br #8FB4AC), the heading and the typed text (#E7F4F1); P8M the old values (the .45 cyan edge, #9fd8e8, #E8F6FA) turn it red
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -44,6 +46,8 @@ await withHarness(async (app) => {
   const d = makeDriver(app, cfg);
   await d.boot();
   const ev = d.ev;
+  const ESCKEY = async () => { for (const type of ['rawKeyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 }); await sleep(500); };
+  const STAGE = "(() => { const a = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); return { stage: a && a.getAttribute('data-stage'), panel: p ? p.getAttribute('data-popout') : null, back: !!document.querySelector('.wz-popout-back') }; })()";
   await app.waitFor("!!document.querySelector('.wz-arrival-signin') && !document.querySelector('.wz-arrival-signin').disabled", { label: 'the sign-in door' });
   await sleep(500);
   const doorWord = await ev("document.querySelector('.wz-arrival-signin').textContent.trim()");
@@ -64,14 +68,23 @@ await withHarness(async (app) => {
   const rField = ratio(e.edge, e.field), rPanel = ratio(e.edge, e.panel);
   check('P3', rField >= 3 && rPanel >= 3 && e.edgeW === '1px', `edge ${hex(e.edge)} ${e.edgeW}: ${rField.toFixed(2)}:1 against the field ${hex(e.field)}, ${rPanel.toFixed(2)}:1 against the panel ${hex(e.panel)}`);
   const sp = await ev(`(() => { ${PX} const p = document.querySelector('.wz-popout'); const f = [...p.querySelectorAll('.wz-field')].pop(); const arr = document.querySelector('.wz-arrival'); const veil = getComputedStyle(arr, '::after'); const ghost = document.querySelector('.wz-arrival-doors-ghost .wz-arrival-write'); const link = p.querySelector('.wz-link'); const tag = p.querySelector('.wz-popout-tag');
-    const ph = getComputedStyle(f, '::placeholder').color; return { w: Math.round(p.getBoundingClientRect().width * 10) / 10, vw: window.innerWidth, veilBg: veil.backgroundColor, veilShown: veil.display !== 'none' && veil.content !== 'none', ghost: ghost ? ghost.textContent : null, ph, edge: px(f, 'borderTopColor').rgb, link: px(link, 'color').rgb, tag: tag && getComputedStyle(tag).display !== 'none' ? px(tag, 'color').rgb : null }; })()`);
+    const ph = getComputedStyle(f, '::placeholder').color; return { w: Math.round(p.getBoundingClientRect().width * 10) / 10, vw: window.innerWidth, veilBg: veil.backgroundColor, veilShown: veil.display !== 'none' && veil.content !== 'none', ghost: ghost ? ghost.textContent : null, ph, edge: px(f, 'borderTopColor').rgb, link: px(link, 'color').rgb, tag: tag && getComputedStyle(tag).display !== 'none' ? px(tag, 'color').rgb : null, panelEdge: px(p, 'borderTopColor').rgb, panelEdgeW: getComputedStyle(p).borderTopWidth, br: getComputedStyle(p).getPropertyValue('--br').trim(), head: px(p.querySelector('.wz-bighead'), 'color').rgb, typed: px(f, 'color').rgb }; })()`);
   const want = cfg.theme === 'machina' ? 417 : 400;
   check('P6', Math.abs(sp.w - want) <= 1 && sp.w >= 360, `panel ${sp.w} px at ${sp.vw} (want ${want}, never under 360)`);
   const veilOk = cfg.theme === 'flux' ? sp.veilShown && sp.veilBg === 'rgba(2, 12, 16, 0.74)' : cfg.theme === 'machina' ? !sp.veilShown : sp.veilShown;
   check('P7', veilOk && !!realWrite && sp.ghost === realWrite, `veil ${sp.veilShown ? sp.veilBg : 'none'}; ghost door ${JSON.stringify(sp.ghost)} against the real door ${JSON.stringify(realWrite)}`);
   const same = (a, h) => !!a && hex(a) === h;
-  const p8 = cfg.theme === 'plateau' ? sp.ph === 'rgb(156, 144, 129)' : cfg.theme === 'machina' ? same(sp.edge, '#9AA1A8') && same(sp.link, '#9AA1A8') && sp.ph === 'rgb(154, 161, 168)' : cfg.theme === 'flux' ? same(sp.edge, '#5F8F95') && same(sp.link, '#9AD7EA') && same(sp.tag, '#7EB4C4') : true;
+  const p8 = cfg.theme === 'plateau' ? sp.ph === 'rgb(156, 144, 129)' : cfg.theme === 'machina' ? same(sp.edge, '#9AA1A8') && same(sp.link, '#9AA1A8') && sp.ph === 'rgb(154, 161, 168)' : cfg.theme === 'flux' ? same(sp.edge, '#5F8F95') && same(sp.link, '#9AD7EA') && same(sp.tag, '#7EB4C4') && same(sp.panelEdge, '#8FB4AC') && sp.panelEdgeW === '1px' && sp.br.toUpperCase() === '#8FB4AC' && same(sp.head, '#E7F4F1') && same(sp.typed, '#E7F4F1') : true;
   check('P8', p8, `placeholder ${sp.ph}; edge ${sp.edge && hex(sp.edge)}; links ${sp.link && hex(sp.link)}; tag ${sp.tag ? hex(sp.tag) : null}`);
+  if (cfg.theme === 'flux') {
+    const TBL = "(() => { const p = document.querySelector('.wz-popout'); const f = [...p.querySelectorAll('.wz-field')].pop(); const c = (e) => getComputedStyle(e).color; return { edge: getComputedStyle(p).borderTopColor, br: getComputedStyle(p).getPropertyValue('--br').trim().toUpperCase(), head: c(p.querySelector('.wz-bighead')), typed: c(f) }; })()";
+    const tblOk = (g) => g.edge === 'rgb(143, 180, 172)' && g.br === '#8FB4AC' && g.head === 'rgb(231, 244, 241)' && g.typed === 'rgb(231, 244, 241)';
+    const t0 = await ev(TBL);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-flux'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ border-color:rgba(87,208,245,.45) !important; --br:#9fd8e8 !important; } .wz-arrival .wz-popout .wz-bighead, .wz-arrival .wz-popout .wz-field{ color:#E8F6FA !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+    const t1 = await ev(TBL);
+    await ev("document.getElementById('mut-flux').remove(); true");
+    check('P8M', tblOk(t0) && t1.edge !== t0.edge && t1.br !== t0.br && t1.head !== t0.head && !tblOk(t1), `the old Flux values (landed: ${JSON.stringify(t1)}): P8's read goes RED; the real build reads ${JSON.stringify(t0)}`);
+  }
   // P12 FLUX: the chart behind the panel, no old door around it
   if (cfg.theme === 'flux') {
     const CHART = `(() => { const vis = (e) => { const r = e.getBoundingClientRect(); const c = getComputedStyle(e); return r.width > 0 && c.display !== 'none' && c.visibility === 'visible' && Number(c.opacity) > 0; }; const ch = document.querySelector('.wz-popout-chart'); const svg = ch && ch.querySelector('svg'); const old = [...document.querySelectorAll('.wz-arrival .wz-arrival-signin, .wz-arrival .wz-arrival-write, .wz-arrival .wz-arrival-open, .wz-arrival .wz-logo')].filter((e) => !e.closest('.wz-popout') && vis(e)).map((e) => (e.textContent || e.className || '').toString().trim().slice(0, 20)); return { chart: !!svg, chartW: svg ? Math.round(svg.getBoundingClientRect().width) : 0, chartShown: !!ch && vis(ch), old }; })()`;
@@ -235,6 +248,23 @@ await withHarness(async (app) => {
     check('P21M', !!landed21, landed21 ? `the scroll taken away (landed at ${landed21.h} px: tick ${landed21.tickTop}..${landed21.tickBottom}, list ${landed21.listTop}..${landed21.listBottom}, error line ${landed21.errTop}): P21's read goes RED` : 'the mutant never left the tick out of view at any height tried');
     await app.emulateDpr(1, 1366, 768); await sleep(700); await FRESH();
   }
+  // ---- P23: Esc (the create-account face now)
+  {
+    const s0 = await ev(STAGE);
+    await ESCKEY(); const s1 = await ev(STAGE);
+    await ESCKEY(); const s2 = await ev(STAGE);
+    check('P23', s0.panel === 'account' && s1.panel === 'signin' && s2.panel === null && s2.stage === 'doors', `Esc on the create-account face: ${JSON.stringify(s0)} then ${JSON.stringify(s1)} (to sign-in); Esc on sign-in: ${JSON.stringify(s2)} (to the doors)`);
+    await ev("document.querySelector('.wz-arrival-signin').click(); true");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'the panel again', timeout: 6000 }).catch(() => {});
+    await sleep(400);
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]') && !!document.querySelector('.wz-adult-box')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    await ev("window.__escSwallow = (e) => { if (e.key === 'Escape') e.stopImmediatePropagation(); }; window.addEventListener('keydown', window.__escSwallow, true); true");
+    await ESCKEY(); const m = await ev(STAGE);
+    await ev("window.removeEventListener('keydown', window.__escSwallow, true); true");
+    check('P23M', m.panel === 'account', `the Esc handler taken away (the key swallowed; landed: panel still ${JSON.stringify(m.panel)}): P23's read goes RED`);
+  }
   const sig = await ev(`(() => { if (!document.querySelector('.wz-adult-box')) return { box: false }; window.__reg = 0; window.__regBodies = []; const rf = window.fetch.bind(window); window.fetch = (u, o) => { if (String(u).includes('register')) { window.__reg++; window.__regBodies.push(o && o.body ? String(o.body) : null); } return rf(u, o); };
     window.__keys0 = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; const n = (sel, v) => { const el = document.querySelector(sel); const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; s.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
     n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); return { box: true, ticked: document.querySelector('.wz-adult-box').checked }; })()`);
@@ -275,6 +305,16 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel, already up', timeout: 8000 }).catch(() => {});
   const w2 = await ev("({ panel: !!document.querySelector('.wz-popout'), stage: document.querySelector('.wz-popout') ? document.querySelector('.wz-popout').dataset.popout : null, back: !!document.querySelector('.wz-popout .wz-popout-back') })");
   check('P5', w2.panel && w2.stage === 'signin' && w2.back === false, JSON.stringify(w2));
+  // ---- P23L: a locked device: Esc does nothing on the sign-in face; the create-account face still returns to sign-in (its back is kept)
+  {
+    const l0 = await ev(STAGE);
+    await ESCKEY(); const l1 = await ev(STAGE);
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face (locked)', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    await ESCKEY(); const l2 = await ev(STAGE);
+    check('P23L', l0.panel === 'signin' && l0.back === false && l1.panel === 'signin' && l1.stage === 'signin' && l2.panel === 'signin', `locked: ${JSON.stringify(l0)}; Esc: ${JSON.stringify(l1)} (nothing); on the create-account face Esc: ${JSON.stringify(l2)} (to sign-in)`);
+  }
   // P22M: the field dropped from the request (asserted landed) turns P22's read red
   {
     await ev("document.querySelector('.wz-popout-switch').click()");

@@ -408,15 +408,15 @@
 .wz-popout-tag{ display:none; }
 
 /* FLUX: a node with corner brackets and the N.01 · INPUT tag; the field she types in is cyan with a thin brass bar beside it (Flux's door rule); LOG IN in capitals and brackets */
-[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ background-color:#04141A; border:1px solid rgba(87,208,245,.45); --br:#9fd8e8;
+[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ background-color:#04141A; border:1px solid #8FB4AC; --br:#8FB4AC;
   background-image:linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br));
   background-size:12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px;
   background-position:-1px -1px,-1px -1px,calc(100% + 1px) -1px,calc(100% + 1px) -1px,-1px calc(100% + 1px),-1px calc(100% + 1px),calc(100% + 1px) calc(100% + 1px),calc(100% + 1px) calc(100% + 1px); background-repeat:no-repeat; }
 [data-theme='flux'] .wz-arrival .wz-popout-tag{ display:block; font-family:var(--font-ui); font-size:.62rem; letter-spacing:.18em; color:#7EB4C4; text-transform:uppercase; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:700; font-size:1.05rem; letter-spacing:.08em; text-transform:uppercase; color:#E8F6FA; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-field{ background:#020C10; border:1px solid #5F8F95; color:#E8F6FA; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-bighead{ font-family:var(--font-ui); font-weight:700; font-size:1.05rem; letter-spacing:.08em; text-transform:uppercase; color:#E7F4F1; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-field{ background:#020C10; border:1px solid #5F8F95; color:#E7F4F1; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-field:focus{ border-color:#00C2FF; box-shadow:-4px 0 0 0 var(--wz-orange); }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-btn{ border-color:transparent; color:#E8F6FA; text-transform:uppercase; letter-spacing:.14em; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-btn{ border-color:transparent; color:#E7F4F1; text-transform:uppercase; letter-spacing:.14em; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::before{ content:'[ '; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-btn[type='submit']::after{ content:' ]'; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-link, [data-theme='flux'] .wz-arrival .wz-popout .wz-adult{ color:#9AD7EA; }

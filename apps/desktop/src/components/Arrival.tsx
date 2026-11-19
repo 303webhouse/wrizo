@@ -34,7 +34,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [password, setPassword] = useState('');
   // ITEM 224 — sign-up by invite code, until launch.
   const [inviteCode, setInviteCode] = useState('');
-  // the 18+ tick on the create-account face: this panel's own state, never stored and never sent
+  // the 18+ tick on the create-account face: this panel's own state, never stored on the device; it is sent only as adult: true, and only from the ticked form (apiRegister)
   const [adult, setAdult] = useState(false);
   const adultRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -74,6 +74,17 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // While locked there is no doors stage and no way back to it; sign-in and Create an account are the only doors.
   const locked = authState === 'anon' && isSignedOutHere();
   useEffect(() => { if (locked && stage === 'doors') setStage('signin'); }, [locked, stage]);
+  // Esc closes the panel the way its "← back" does (spec draft 4 §1, §6 check 4; Fable Nov 18, 6:05 pm): the sign-in face returns to the doors, the create-account face returns to sign-in (where its back goes), and on a locked device the sign-in face has no back, so Esc does nothing there
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
+      if (stage === 'account') { e.preventDefault(); setError(''); setStage('signin'); return; }
+      if (stage === 'signin' && !locked) { e.preventDefault(); setError(''); setStage('doors'); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [stage, locked]);
   // Signed in: the door is back to Write / Open, whatever stage the sign-in left behind.
   useEffect(() => { if (authState === 'authed') setStage('doors'); }, [authState]);
   const framed = useDeskFrameViewport();
@@ -372,7 +383,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
                 {/* ITEM 224 — sign-up by invite code, until launch. */}
                 <input className="wz-field" type="text" placeholder={t('authInviteCodePlaceholder')} autoComplete="off" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
               </div>
-              {/* THE 18+ TICK: the account is not made without it. It lives in this panel's own state and nowhere else (not stored, not sent): unticked, the submit says the line below instead of calling the server. */}
+              {/* THE 18+ TICK: the account is not made without it. It lives in this panel's own state and is not stored on the device; ticked, the register request carries adult: true (apiRegister); unticked, the submit says the line below instead of calling the server. */}
               <label className="wz-adult">
                 <input ref={adultRef} type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
                 <span>{t('authAdultConfirm')}</span>
