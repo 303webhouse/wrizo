@@ -87,6 +87,16 @@ function diffStores(a, b) {
 }
 // the only change allowed: one record of one collection, and only these keys (updatedAt is the store's own stamp on every write)
 const onlyChanged = (d, coll, id, keys) => d.length === 1 && d[0][0] === coll && d[0][1] === id && d[0][2].every((k) => keys.includes(k) || k === 'updatedAt');
+// a write to a page in a set also stamps that set's resume pointer (F1, persistence/journal.ts stampPageActivity, on every page write: a star,
+// a tag or Page setup alike): the page's record, plus at most that one set's lastActivityAt / lastActivePageId pointing at this page, nothing else
+const onlyPageChanged = (d, after, pageId, keys) => {
+  const page = d.filter((x) => x[0] === 'writer-studio-journal-entries');
+  const rest = d.filter((x) => x[0] !== 'writer-studio-journal-entries');
+  const entry = (after['writer-studio-journal-entries'] || []).find((e) => e.id === pageId);
+  const set = entry && entry.projectId ? (after['writer-studio-projects'] || []).find((p) => p.id === entry.projectId) : null;
+  return page.length === 1 && page[0][1] === pageId && page[0][2].every((k) => keys.includes(k) || k === 'updatedAt')
+    && rest.every((x) => x[0] === 'writer-studio-projects' && !!set && x[1] === set.id && x[2].every((k) => ['updatedAt', 'lastActivityAt', 'lastActivePageId'].includes(k)) && set.lastActivePageId === pageId);
+};
 
 // ---- the fixture ---------------------------------------------------------------------------------------------------------------------------
 let ids = null;
@@ -290,8 +300,8 @@ await withHarness(async (app) => {
   const e1 = s1[entriesKey]?.find((e) => e.id === 'tr-g-2');
   const e0 = s0[entriesKey]?.find((e) => e.id === 'tr-g-2');
   const settingsOnlyName = e0 && e1 && JSON.stringify({ ...(e1.pageSettings || {}), name: undefined }) === JSON.stringify({ ...(e0.pageSettings || {}), name: undefined });
-  ok('R3a the Part\'s rename writes pageSettings.name on that page only: its text and every other setting identical',
-    res.opened && onlyChanged(d, entriesKey, 'tr-g-2', ['pageSettings']) && e1.pageSettings?.name === 'The second part' && e1.text === e0.text && settingsOnlyName, { d, ps: e1 && e1.pageSettings });
+  ok('R3a the Part\'s rename writes pageSettings.name on that page only (beside the set\'s own F1 resume stamp): its text and every other setting identical',
+    res.opened && onlyPageChanged(d, s1, 'tr-g-2', ['pageSettings']) && e1.pageSettings?.name === 'The second part' && e1.text === e0.text && settingsOnlyName, { d, ps: e1 && e1.pageSettings });
   const shown = await app.evalJs(READ_TOP);
   ok('R3b the Part line now reads the stored name', shown.names.part?.text === 'The second part' && shown.partCount === 'Part 2 of 3', shown);
   s0 = s1;
@@ -315,7 +325,7 @@ await withHarness(async (app) => {
   const one = s1[entriesKey]?.find((e) => e.id === 'tr-top-1');
   const oneRead = await app.evalJs(READ_TOP);
   ok('R4 a one-Part Doc\'s name is its page\'s pageSettings.name (one record, one name); the Part line still names no Part',
-    res.opened && onlyChanged(d, entriesKey, 'tr-top-1', ['pageSettings']) && one.pageSettings?.name === 'Ledger notes' && one.text === 'Notes on the ledgers' && oneRead.names.doc?.text === 'Ledger notes' && oneRead.partCount === 'Part 1 of 1' && !oneRead.names.part, { d, oneRead });
+    res.opened && onlyPageChanged(d, s1, 'tr-top-1', ['pageSettings']) && one.pageSettings?.name === 'Ledger notes' && one.text === 'Notes on the ledgers' && oneRead.names.doc?.text === 'Ledger notes' && oneRead.partCount === 'Part 1 of 1' && !oneRead.names.part, { d, oneRead });
 
   await open(app, 'machina', true, 'tr-g-2');
   const kept = await app.evalJs(READ_TOP);
@@ -345,6 +355,9 @@ await withHarness(async (app) => {
 
   // ---- SPEED -------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'tr-g-1');
+  // a Part opens in Build; she types in Sprint (Free Write's editor), as the left rail's speed check does; the switch's re-persist lands ~1.1 s later
+  await app.evalJs("document.querySelector('.reorg-top .desk-mode-tab[data-mode-key=\"freewrite\"]')?.click(); null");
+  await sleep(1300);
   const live0 = await app.evalJs('window.wrizoTopNamesRenders ? window.wrizoTopNamesRenders() : null');
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null");
   await sleep(300);
