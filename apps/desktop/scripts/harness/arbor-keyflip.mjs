@@ -20,6 +20,8 @@
 //                a quarter of the document's elements, on every one of 3 reopens.
 //   MUT-KF-FLIP  T2's two rules put back verbatim into the running page (the fix's two style queries taken out): KF-FLIP is RED on every reopen.
 //   KF-READ      no getComputedStyle on a shade layer inside the key's task; the pergola's read is seen, one frame or more after the flip (liveness).
+//   KF-FLIP-SP   (Fable Nov 19) the same read for a SPACE as the first key (a Space commits the word and rebuilds the committed runs: the page's nodes are written again, as every letter once did): green on the fix
+//   MUT-KF-FLIP-HAS-SP  T2's rule 642 put back, the first key a Space: KF-FLIP-SP is RED (successor of MUT-KF-FLIP-HAS, parked: since the Free Write fix a letter no longer replaces the page, so the restyle that rule feeds is not provoked by a letter)
 //   MUT-KF-READ  T2's pattern rebuilt in the page (an observer of the flip that reads the shade layer's style at once): KF-READ is RED.
 //   KF-LOOK-*    by NIGHT (where both rules apply), at rest and while writing: the computed opacity and colour of every element are the same with
 //                the fix as with T2's rules put back (transitions off for the read); coverage: T2's rules change some element at rest.
@@ -298,10 +300,10 @@ await withHarness(async (app) => {
     await sleep(1500);
   };
   const focus = () => app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
-  const traceKey = async () => {
+  const traceKey = async (key = 'a') => {
     await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
     await sleep(400);
-    await app.typeKeys('a');
+    await app.typeKeys(key);
     await sleep(700);
     const done = app.waitEvent('Tracing.tracingComplete', 30000);
     await app.cdp('Tracing.end');
@@ -313,7 +315,7 @@ await withHarness(async (app) => {
     let j; try { j = JSON.parse(s); } catch (e) { return { err: 'trace not JSON: ' + String(e).slice(0, 80) }; }
     return analyse(Array.isArray(j) ? j : (j.traceEvents || []));
   };
-  const measure = async (label, { swap = null, oldRead = false, pre = null } = {}) => {
+  const measure = async (label, { swap = null, oldRead = false, pre = null, key = 'a' } = {}) => {
     await open('day');
     const sw = swap ? await app.evalJs(SWAP(swap)) : null;
     if (swap) await sleep(500);
@@ -322,7 +324,7 @@ await withHarness(async (app) => {
     if (pre) { await app.evalJs(pre); await sleep(400); }
     await focus();
     const before = await app.evalJs(STATE);
-    const tr = await traceKey();
+    const tr = await traceKey(key);
     const after = await app.evalJs(STATE);
     const rec = await app.evalJs(READ_REC);
     const { attrib, ...trShort } = tr || {};
@@ -349,6 +351,9 @@ await withHarness(async (app) => {
   // the second pass's mutants: T2's rule 642 put back; the shade layers' own --fade-dur taken out
   const mutHas = await measure('mut-has', { swap: 'oldhas' });
   const mutFade = await measure('mut-fade', { swap: 'nofade' });
+  // Fable Nov 19: the first key a SPACE (it rebuilds the committed runs; a letter no longer does)
+  const fixSp = await measure('fix-space', { key: ' ' });
+  const mutHasSp = await measure('mut-has-space', { swap: 'oldhas', key: ' ' });
   // information (the third pass, Nov 12): run 43299418991 left ONE whole-document restyle (1099, forced by the editor's caret effect) right after the
   // dissolve hook writes --fade-dur on <html>. What would take it out: (a) the live shade drawings out of style work before the key (data-live-off,
   // the product's own cut), (b) the <html> --fade-dur write held back
@@ -542,8 +547,15 @@ await withHarness(async (app) => {
     mutHas.swap && mutHas.swap.containers === 1 && mutHas.swap.inserted === 1 && mutHas.swap.tutorProp === 1
       && lh.swapOld.inserted === 1 && lh.swapUn.removed === 1 && lh.swapMutB.inserted === 1 && lh.swapMutBOld.inserted === 1 && lh.dynMut.mut && lh.dynMut.mut.containers === 1,
     JSON.stringify({ mutHas: mutHas.swap, look: LH.swaps, mutB: lh.swapMutB, mutBOld: lh.swapMutBOld, dynMut: lh.dynMut.mut }));
-  ok(`MUT-KF-FLIP-HAS with T2's rule 642 put back in the running page, KF-FLIP is RED (printed: ${mutHas.tr.keyEls}/${mutHas.before.docEls})`,
-    mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
+  // PARKED 2026-11-19 (SUPERSEDED by MUT-KF-FLIP-HAS-SP - Fable's ruling: since the Free Write fix (a letter writes only the active word's span) the first LETTER no longer
+  // replaces the page's nodes, so T2's rule 642 put back is not provoked into the whole-document restyle by a letter (Actions run 44586159818: printed 249/1940, the same as the fix).
+  // A Space still rebuilds the committed runs. Original, verbatim:
+  // ok(`MUT-KF-FLIP-HAS with T2's rule 642 put back in the running page, KF-FLIP is RED (printed: ${mutHas.tr.keyEls}/${mutHas.before.docEls})`,
+  //   mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
+  ok(`KF-FLIP-SP the same read with a Space as the first key: the largest single restyle touches at most ${SHARE * 100}% of the document's elements (printed: ${fixSp.tr.keyEls}/${fixSp.before.docEls})`,
+    flipOk(fixSp), JSON.stringify({ tr: fixSp.tr, docEls: fixSp.before.docEls }));
+  ok(`MUT-KF-FLIP-HAS-SP with T2's rule 642 put back in the running page (the edit landed) and a Space as the first key, KF-FLIP-SP is RED (printed: ${mutHasSp.tr.keyEls}/${mutHasSp.before.docEls})`,
+    !!mutHasSp.swap && mutHasSp.swap.containers === 1 && mutHasSp.swap.inserted === 1 && mutHasSp.swap.tutorProp === 1 && mutHasSp.tr && mutHasSp.tr.keyEls != null && !flipOk(mutHasSp), JSON.stringify({ swap: mutHasSp.swap, tr: mutHasSp.tr, docEls: mutHasSp.before.docEls }));
   // PARKED 2026-11-12 (SUPERSEDED, no successor - its premise is falsified, Actions run 43299418991: the shade layers' own --fade-dur did not stop the
   // restyle (fix 1099, mutant 1095), so the rule it guarded is taken out of the fix). Original, verbatim:
   // ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
@@ -614,11 +626,11 @@ await withHarness(async (app) => {
     hasHits.length === 0 && oldHasHits.length === 1, JSON.stringify({ hasHits, oldHasHits }));
   ok(`KF-SPEC every rule the fix rewrote keeps T2's specificity (${SPEC_PAIRS.map((p) => `${p.what} ${JSON.stringify(p.was)} -> ${JSON.stringify(p.now)}`).join('; ')}); the calculator reads known values and sees one attribute fewer (liveness)`,
     SPEC_PAIRS.every((p) => p.now && cmp3(p.was, p.now) === 0) && SPEC_SELF.every(Boolean), JSON.stringify({ SPEC_PAIRS, SPEC_SELF }));
-  console.log('KF READINGS: ' + JSON.stringify([...all, mutHas, mutFade, preLive, noRootFade].map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
+  console.log('KF READINGS: ' + JSON.stringify([...all, mutHas, mutFade, fixSp, mutHasSp, preLive, noRootFade].map((m) => ({ label: m.label, keyEls: m.tr.keyEls, keyElsMs: m.tr.keyElsMs, forced: m.tr.keyElsForced, forcedEls: m.tr.forcedEls, forcedMs: m.tr.forcedMs, keyTaskMs: m.tr.keyTaskMs, docEls: m.before.docEls, liveEls: m.before.liveEls, readsInKey: m.rec.inKey.length }))));
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 23;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15)
+const WANT_CHECKS = 24;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15, + 1 for the Space successor pair net of the parked MUT-KF-FLIP-HAS, Nov 19)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
