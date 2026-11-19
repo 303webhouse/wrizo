@@ -1,0 +1,7 @@
+healthz 200 {"ok":true,"build":"index-CkYTKve9"}
+auth/me 401
+served index-CkYTKve9.js 1089735 bytes md5 548e5830a2b4  (tested build of 03f19972: identical)
+served index-DDLHmlxj.css 279107 bytes md5 f519e5156d37  (tested build: identical)
+smoke-login: PASS 6/6
+railway deployment list: 43ac4404-1a9d-486f-bf72-d7f989006fa2 SUCCESS (2026-11-19 14:13:23 -07:00); b4597bee-8243-47ab-94f1-e58d8d7fc2d8 (fog train) REMOVING
+front door in each theme: see front-door.txt (PASS 3 themes)
