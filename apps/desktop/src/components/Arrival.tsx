@@ -71,8 +71,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       const h = pop.querySelector('.wz-bighead') as HTMLElement | null;
       const e = pop.querySelector('.wz-error') as HTMLElement | null;
       const gap = parseFloat(getComputedStyle(sc).rowGap) || 0;
-      // squeezed -> back only when the window would still hold a whole field with the heading and the error out again (and 16 px to spare: no flip-flop)
-      setSqueezed((was) => (was ? win - ((h ? h.offsetHeight + gap : 0) + (e ? e.offsetHeight + gap : 0)) - 16 < 36 : win < 36));
+      // squeezed -> back only when the window would still hold a whole field with the heading and the error out again AND the tightened spacing undone (32 px to spare: the squeeze's own padding and gap changes give back about 16, so a smaller margin flip-flops on a one-line error)
+      setSqueezed((was) => (was ? win - ((h ? h.offsetHeight + gap : 0) + (e ? e.offsetHeight + gap : 0)) - 32 < 36 : win < 36));
     };
     measure();
     window.addEventListener('resize', measure);

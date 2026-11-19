@@ -26,6 +26,7 @@
 //   P24 also reads that the button never overlaps the links row below it (the Machina sign-in frame at 560 with an error showed them overlapped)
 //   P26 on the 18+ error the focus MARK is drawn on the focused tick, in every theme (the Wrizors' v9 REAL: focus was on the tick and no mark showed; Fable Nov 18, 11:00 pm): an outline or a bar is drawn while it has focus, where it had none before; programmatic focus must show it too; P26M the mark taken away (asserted landed) turns it red
 //   P27 THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' draft 8 s1), MACHINA sign-in at 1366x560 with the two-line error: data-squeeze is on, the heading and the error line are inside the scrolling part, the fields' window is at least 36 px, the spacing is the short-window spacing (padding 12 top and bottom, 8 px between the button and the links, the button 36 px) and no text changed size; P27E the error is in view, at the foot of the scrolling part; P27M the window cut under 36 and P27EM the part scrolled to its top (each asserted landed) turn the reads red
+//   P27L the ONE-line error (the server's 400 "Wrong email or password.") squeezes too and STAYS squeezed: the panel is still there, the window is at least 36 px, the error in view, and the state is the same 600 ms later (a flip-flop between squeezed and not once blanked the page); P27LM the window cut (asserted landed) turns it red
 //   P27U ARBOR and FLUX at 1366x560 with the error, both faces, do NOT squeeze: no data-squeeze, the heading and the error outside the scrolling part, the panel padding as at 768; P27UM the squeeze forced on (asserted landed) turns it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
@@ -294,6 +295,22 @@ await withHarness(async (app) => {
       await ev("(() => { const sc = document.querySelector('.wz-popout .wz-popout-scroll'); sc.scrollTop = 0; return true; })()"); await sleep(200);
       const mt = await ev(SQ);
       check('P27EM', mt.errInScroll && !mt.errInView && !mt.atBottom, `the part scrolled to its top (landed: error in view ${mt.errInView}, at the bottom ${mt.atBottom}): P27E's read goes RED`);
+      // P27L: a ONE-line error
+      await goFace('account'); await goFace('signin');
+      await ev("(() => { window.__fl1 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.resolve({ ok: false, status: 400, json: async () => ({ error: 'Wrong email or password.' }) }) : window.__fl1(u, o); return true; })()");
+      await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the one-line error', timeout: 8000 }).catch(() => {});
+      await sleep(700);
+      const l1 = await ev("(document.querySelector('.wz-popout') ? true : false) && " + SQ).catch(() => null);
+      await sleep(600);
+      const l2 = await ev("(document.querySelector('.wz-popout') ? true : false) && " + SQ).catch(() => null);
+      await ev("window.fetch = window.__fl1; true");
+      const lOk = (g) => !!g && g.squeeze === 'true' && g.win >= 36 && g.errInScroll && g.errInView && g.errH <= 20;
+      check('P27L', lOk(l1) && !!l2 && l2.squeeze === l1.squeeze && l2.win === l1.win, `the one-line error at 560: ${JSON.stringify(l1)}; 600 ms later: window ${l2 && l2.win}, squeeze ${l2 && l2.squeeze}`);
+      await ev("(() => { const st = document.createElement('style'); st.id = 'mut-win1'; st.textContent = '.wz-arrival .wz-popout .wz-popout-scroll{ max-height:20px !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+      const lm = await ev(SQ);
+      await ev("document.getElementById('mut-win1').remove(); true"); await sleep(200);
+      check('P27LM', lm.win < 36 && !lOk(lm), `the window cut (landed: ${lm.win} px): P27L's read goes RED`);
     }
     await goFace('account');
     await app.mouseMove(2, 2); await sleep(400);
