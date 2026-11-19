@@ -252,7 +252,7 @@ await withHarness(async (app) => {
   }
   // ---- P24 / P25: short windows, the button row pinned, the button at rest after the error
   {
-    const SHORT = "(() => { const root = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); const r = p.getBoundingClientRect(); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back') || p.querySelector('.wz-popout-switch'); const sc = p.querySelector('.wz-popout-scroll'); const e = p.querySelector('.wz-error'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; const q = (x) => Math.round(x * 10) / 10; const floor = parseFloat(root.style.getPropertyValue('--popout-floor')) || 0; return { face: p.getAttribute('data-popout'), top: q(r.top), bottom: q(r.bottom), winH: innerHeight, floor, topInRoot: q(r.top - root.getBoundingClientRect().top), btnTop: q(br.top), btnBottom: q(br.bottom), linkBottom: q(kr.bottom), errBottom: er ? q(er.bottom) : null, scrolls: sc ? sc.scrollHeight > sc.clientHeight + 1 : false, panelScrolls: p.scrollHeight > p.clientHeight + 1 }; })()";
+    const SHORT = "(() => { const root = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); if (!p) return null; const r = p.getBoundingClientRect(); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back') || p.querySelector('.wz-popout-switch'); const sc = p.querySelector('.wz-popout-scroll'); const e = p.querySelector('.wz-error'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; const q = (x) => Math.round(x * 10) / 10; const floor = parseFloat(root.style.getPropertyValue('--popout-floor')) || 0; return { face: p.getAttribute('data-popout'), top: q(r.top), bottom: q(r.bottom), winH: innerHeight, floor, topInRoot: q(r.top - root.getBoundingClientRect().top), btnTop: q(br.top), btnBottom: q(br.bottom), linkBottom: q(kr.bottom), errBottom: er ? q(er.bottom) : null, scrolls: sc ? sc.scrollHeight > sc.clientHeight + 1 : false, panelScrolls: p.scrollHeight > p.clientHeight + 1 }; })()";
     const shortOk = (g) => !!g && g.bottom <= g.winH - 24 + 0.5 && g.topInRoot >= g.floor - 0.5 && g.btnTop >= g.top - 0.5 && g.btnBottom <= g.bottom + 0.5 && g.linkBottom <= g.bottom + 0.5 && g.btnBottom <= g.winH && g.errBottom !== null && g.errBottom <= g.btnTop + 0.5 && !g.panelScrolls;
     const BTN = "(() => { const b = document.querySelector('.wz-popout button[type=submit]'); const cs = getComputedStyle(b); const a = document.activeElement; return { color: cs.color, border: cs.borderTopColor, shadow: cs.boxShadow, active: a === b, focusVisible: b.matches(':focus-visible'), onTick: !!a && a.classList.contains('wz-adult-box') }; })()";
     const SCROLLTO = (end) => `(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const y = ${end ? '1e6' : '0'}; if (sc) sc.scrollTop = y; p.scrollTop = y; return true; })()`;
@@ -266,10 +266,12 @@ await withHarness(async (app) => {
     };
     await app.emulateDpr(1, 1366, 560); await sleep(800);
     await goFace('signin');
+    await ev("(() => { window.__fl0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.reject(new TypeError('Failed to fetch')) : window.__fl0(u, o); return true; })()");
     await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
     await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line', timeout: 8000 }).catch(() => {});
     await sleep(500);
     const s24 = await ev(SHORT);
+    await ev("window.fetch = window.__fl0; true");
     await goFace('account');
     await app.mouseMove(2, 2); await sleep(400);
     const rest0 = await ev(BTN);
