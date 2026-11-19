@@ -342,9 +342,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>
           {/* A real <form>: Enter submits, and a password manager recognises it. */}
           <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>
+            <div className="wz-popout-scroll">
             <div className="wz-fieldcol">
               <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
               <input className="wz-field" type="password" name="password" placeholder={t('authPasswordPlaceholder')} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
             </div>
             {error && <div className="wz-error">{error}</div>}
             <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authSignIn')}</button>

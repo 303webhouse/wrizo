@@ -4,6 +4,7 @@
 //   A3 "New here? Create an account" swaps the panel's face in place (data-popout=account, the 18+ tick there) and the front door and the veil stay
 //   A4 Back puts the doors back: the front without `behind`, its Sign in door pressable again, no panel
 //   A5 Esc closes the panel like Back (spec draft 4 §1; Fable Nov 18, 6:05 pm): on sign-in it returns to the doors (the front without `behind`); M3 (mutant) the key swallowed before the handler (asserted landed) leaves the panel up
+//   A6 a SHORT window (1366x560) on the redesign, create-account face with the 18+ error showing (the Wrizors' v6/v7 pass; Fable Nov 18, 8:15 pm): the panel's foot is 24 px above the window's foot, the button and the back sit inside the panel and the window, and the button does not move when the fields scroll; M4 (mutant) the cap taken away (asserted LANDED): A6's read goes red
 //   M1 (mutant) the veil taken away (asserted LANDED): A2's read goes red
 //   M2 (mutant) the front door sent away as main sent it before the pop-out (class gone; asserted LANDED): A1's read goes red
 import { withHarness } from '../runtime-verify.mjs';
@@ -75,12 +76,26 @@ await withHarness(async (app) => {
   await app.evalJs("(() => { const f = document.querySelector('.arbor2-front'); f.classList.remove('behind'); f.classList.add('gone'); return true; })()");
   const m2 = await app.evalJs(READ);
   ok(`M2 (mutant): the front door sent away (LANDED: gone ${m2 && m2.frontGone}) - A1's read goes RED`, !!m2 && m2.frontGone && !A1(m2), J(m2));
+  // A6 / M4: a short window
+  const SHORT = `(() => { const p = document.querySelector('.wz-popout'); const r = p.getBoundingClientRect(); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back'); const e = p.querySelector('.wz-error'); const sc = p.querySelector('.wz-popout-scroll'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(); const q = (x) => Math.round(x * 10) / 10; return { bottom: q(r.bottom), winH: innerHeight, btnBottom: q(br.bottom), backBottom: q(kr.bottom), btnTop: q(br.top), inPanel: br.top >= r.top && br.bottom <= r.bottom + 0.5 && kr.bottom <= r.bottom + 0.5, err: !!e, errBottom: e ? q(e.getBoundingClientRect().bottom) : null, scrolls: !!sc && sc.scrollHeight > sc.clientHeight + 1, panelScrolls: p.scrollHeight > p.clientHeight + 1 }; })()`;
+  const A6 = (g) => !!g && g.bottom <= g.winH - 24 + 0.5 && g.inPanel && g.btnBottom <= g.winH && g.err && g.errBottom <= g.btnTop + 0.5 && !g.panelScrolls;
+  const BTNY = `(() => Math.round(document.querySelector('.wz-popout button[type=submit]').getBoundingClientRect().top * 10) / 10)()`;
+  await open(); await press(app, '.wz-popout-switch'); await sleep(500);
+  await app.emulateDpr(1, 1366, 560); await sleep(800);
+  await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true"); await sleep(700);
+  const sh = await app.evalJs(SHORT);
+  await app.evalJs("(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = 0; p.scrollTop = 0; return true; })()"); await sleep(150); const y0 = await app.evalJs(BTNY);
+  await app.evalJs("(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = 1e6; p.scrollTop = 1e6; return true; })()"); await sleep(150); const y1 = await app.evalJs(BTNY);
+  ok(`A6 at 1366x560 the create-account face with the error: foot ${sh && sh.bottom} against ${sh && sh.winH} - 24, the button row inside the panel and the window, the button at ${y0} then ${y1} when the fields scroll`, A6(sh) && Math.abs(y0 - y1) <= 0.5 && sh.scrolls === true, J(sh));
+  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'mut-cap'; s.textContent = '.wz-arrival .wz-screen.wz-popout{ max-height:none !important; }'; document.head.appendChild(s); return true; })()"); await sleep(400);
+  const m4 = await app.evalJs(SHORT);
+  ok(`M4 (mutant): the cap taken away (LANDED: foot ${m4 && m4.bottom} in a ${m4 && m4.winH} window) - A6's read goes RED`, !!m4 && m4.bottom > m4.winH - 24 && !A6(m4), J(m4));
   return checks;
 }, { label: 'arbor-popout' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-POPOUT PARKED: PASS (0 records) - a new file; it parks nothing of its own');
-const WANT = 8;
+const WANT = 10;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-POPOUT VERIFY: PASS (${checks.length} checks)` : `\nARBOR-POPOUT VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);

@@ -21,6 +21,8 @@
 //   P22 the register request carries adult: true, and none leaves unticked (Fable Nov 18, 5:55 pm: apiRegister never sent it); nothing is stored; P22M the field dropped from the request turns it red (asserted landed)
 //   P23 Esc closes the panel like its back (spec draft 4 section 1 and section 6 check 4; Fable Nov 18, 6:05 pm): on the create-account face it goes to sign-in, on the sign-in face to the doors; on a LOCKED device the sign-in face does nothing and the create-account face still goes to sign-in; P23M the Esc handler taken away (the key swallowed before it, asserted landed) turns it red
 //   P8 (Flux, section 4) also reads the panel edge (1 px #8FB4AC), the corner brackets (--br #8FB4AC), the heading and the typed text (#E7F4F1); P8M the old values (the .45 cyan edge, #9fd8e8, #E8F6FA) turn it red
+//   P24 SHORT WINDOWS (1366x560), EVERY theme, both faces, with the error showing (the Wrizors' v6/v7 pass; Fable Nov 18, 8:15 pm): the panel's foot is at least 24 px above the window's foot and its top never above the mark's floor; the error line, the button and the links/back sit inside the panel and the window; on the create-account face (where the fields scroll) the button does not move when the fields scroll; P24M the old cap (max-height none) pushes the foot off the window, P24M2 the old build (the panel scrolls as one) moves the button, both asserted landed
+//   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -247,6 +249,67 @@ await withHarness(async (app) => {
     }
     check('P21M', !!landed21, landed21 ? `the scroll taken away (landed at ${landed21.h} px: tick ${landed21.tickTop}..${landed21.tickBottom}, list ${landed21.listTop}..${landed21.listBottom}, error line ${landed21.errTop}): P21's read goes RED` : 'the mutant never left the tick out of view at any height tried');
     await app.emulateDpr(1, 1366, 768); await sleep(700); await FRESH();
+  }
+  // ---- P24 / P25: short windows, the button row pinned, the button at rest after the error
+  {
+    const SHORT = "(() => { const root = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); const r = p.getBoundingClientRect(); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back') || p.querySelector('.wz-popout-switch'); const sc = p.querySelector('.wz-popout-scroll'); const e = p.querySelector('.wz-error'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; const q = (x) => Math.round(x * 10) / 10; const floor = parseFloat(root.style.getPropertyValue('--popout-floor')) || 0; return { face: p.getAttribute('data-popout'), top: q(r.top), bottom: q(r.bottom), winH: innerHeight, floor, topInRoot: q(r.top - root.getBoundingClientRect().top), btnTop: q(br.top), btnBottom: q(br.bottom), linkBottom: q(kr.bottom), errBottom: er ? q(er.bottom) : null, scrolls: sc ? sc.scrollHeight > sc.clientHeight + 1 : false, panelScrolls: p.scrollHeight > p.clientHeight + 1 }; })()";
+    const shortOk = (g) => !!g && g.bottom <= g.winH - 24 + 0.5 && g.topInRoot >= g.floor - 0.5 && g.btnTop >= g.top - 0.5 && g.btnBottom <= g.bottom + 0.5 && g.linkBottom <= g.bottom + 0.5 && g.btnBottom <= g.winH && g.errBottom !== null && g.errBottom <= g.btnTop + 0.5 && !g.panelScrolls;
+    const BTN = "(() => { const b = document.querySelector('.wz-popout button[type=submit]'); const cs = getComputedStyle(b); const a = document.activeElement; return { color: cs.color, border: cs.borderTopColor, shadow: cs.boxShadow, active: a === b, focusVisible: b.matches(':focus-visible'), onTick: !!a && a.classList.contains('wz-adult-box') }; })()";
+    const SCROLLTO = (end) => `(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const y = ${end ? '1e6' : '0'}; if (sc) sc.scrollTop = y; p.scrollTop = y; return true; })()`;
+    const BTNY = "(() => Math.round(document.querySelector('.wz-popout button[type=submit]').getBoundingClientRect().top * 10) / 10)()";
+    const goFace = async (face) => {
+      const cur = await ev("(document.querySelector('.wz-popout') || { getAttribute() { return null; } }).getAttribute('data-popout')");
+      if (cur === face) return;
+      await ev(face === 'signin' ? "document.querySelector('.wz-popout-back').click()" : "document.querySelector('.wz-popout-switch').click()");
+      await app.waitFor(`!!document.querySelector('.wz-popout[data-popout=${face}]')` + (face === 'account' ? " && !!document.querySelector('.wz-adult-box')" : ''), { label: face + ' face', timeout: 6000 }).catch(() => {});
+      await sleep(500);
+    };
+    await app.emulateDpr(1, 1366, 560); await sleep(800);
+    await goFace('signin');
+    await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
+    await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line', timeout: 8000 }).catch(() => {});
+    await sleep(500);
+    const s24 = await ev(SHORT);
+    await goFace('account');
+    await app.mouseMove(2, 2); await sleep(400);
+    const rest0 = await ev(BTN);
+    await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
+    await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line', timeout: 6000 }).catch(() => {});
+    await sleep(600);
+    await app.mouseMove(2, 2); await sleep(400);
+    const a24 = await ev(SHORT);
+    const rest1 = await ev(BTN);
+    await ev(SCROLLTO(false)); await sleep(150); const y0 = await ev(BTNY);
+    await ev(SCROLLTO(true)); await sleep(150); const y1 = await ev(BTNY);
+    const pinned24 = Math.abs(y0 - y1) <= 0.5 && a24 && a24.scrolls === true;
+    check('P24', shortOk(s24) && shortOk(a24) && pinned24, `1366x560 with the error: sign-in ${JSON.stringify(s24)}; create-account ${JSON.stringify(a24)}; button top ${y0} scrolled to the top, ${y1} to the foot`);
+    // P25: the button at rest after the error: the pointer parked away, focus on the tick
+    const bp = await ev("(() => { const r = document.querySelector('.wz-popout button[type=submit]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    const sameLook = (a, b) => a.color === b.color && a.border === b.border && a.shadow === b.shadow;
+    await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
+    await app.mouseMove(bp.x, bp.y); await sleep(450); const hov1 = await ev(BTN);
+    await app.mouseMove(2, 2); await sleep(400);
+    check('P25', sameLook(rest0, rest1) && rest1.active === false && rest1.focusVisible === false && rest1.onTick === true && !sameLook(rest1, hov1), `before the submit ${JSON.stringify(rest0)}; after the 18+ error, pointer away ${JSON.stringify(rest1)}; under the pointer ${JSON.stringify(hov1)} (the brass is the pointer, not the focus)`);
+    await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
+    await app.key('Tab'); await sleep(350);
+    const tabbed = await ev(BTN);
+    check('P25M', tabbed.active === true && !sameLook(tabbed, rest0), `focus moved to the button (landed: ${JSON.stringify(tabbed)}): P25's read goes RED`);
+    // the mutants (asserted landed), on the create-account face with the error showing
+    await goFace('signin'); await goFace('account');
+    await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
+    await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-cap'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ max-height:none !important; }'; document.head.appendChild(st); return true; })()"); await sleep(400);
+    const m24 = await ev(SHORT);
+    check('P24M', !shortOk(m24) && (m24.bottom > m24.winH - 24 || m24.topInRoot < m24.floor - 0.5), `the old cap (no max-height; landed: panel ${m24 && m24.top}..${m24 && m24.bottom} in a ${m24 && m24.winH} window, floor ${m24 && m24.floor}): P24's read goes RED`);
+    await ev("document.getElementById('mut-cap').remove(); true"); await sleep(300);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-asone'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ display:block !important; overflow-y:auto !important; } .wz-arrival .wz-popout .wz-popout-scroll{ display:contents !important; } .wz-arrival .wz-popout .wz-form{ display:block !important; }'; document.head.appendChild(st); return true; })()"); await sleep(400);
+    await ev(SCROLLTO(false)); await sleep(150); const z0 = await ev(BTNY);
+    await ev(SCROLLTO(true)); await sleep(150); const z1 = await ev(BTNY);
+    check('P24M2', Math.abs(z0 - z1) > 1, `the old build (the panel scrolls as one; landed: button top ${z0} then ${z1}): P24's pinned read goes RED`);
+    await ev("document.getElementById('mut-asone').remove(); true"); await sleep(300);
+    await app.emulateDpr(1, 1366, 768); await sleep(800);
+    await goFace('signin'); await goFace('account');
   }
   // ---- P23: Esc (the create-account face now)
   {
