@@ -185,7 +185,9 @@ await withHarness(async (app) => {
       return {
         canvas: { w: canvasEl.style.width, h: canvasEl.style.height },
         preBox: document.querySelector('[data-box-id="b3-preexisting"]').getBoundingClientRect().toJSON(),
-        blurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+        // SUPERSEDED (look A, the fog; Nick Nov 15): the board behind the wizard is FOGGED (its paper colour at 80% in a layer over it), not blurred and dimmed; original, verbatim:
+        // blurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+        blurred: (parseFloat(getComputedStyle(blurWrap.querySelector(':scope > .board-canvas-dim') || blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
         opacity: parseFloat(cs.opacity),
       };
     })()`);
@@ -194,7 +196,9 @@ await withHarness(async (app) => {
     ok(`@${width}px: the pre-existing card's own rendered rect is BYTE-IDENTICAL with the wizard open vs. closed (no reflow anywhere under the pop-out)`,
       JSON.stringify(geomWhileOpen.preBox) === JSON.stringify(preBoxBefore), JSON.stringify({ before: preBoxBefore, open: geomWhileOpen.preBox }));
     ok(`@${width}px: the wizard runs as a pop-out over the FADED board (blur+dim, the SAME .board-canvas-blurred the card popup already uses)`,
-      geomWhileOpen.blurred && geomWhileOpen.opacity < 0.7, JSON.stringify(geomWhileOpen));
+      // SUPERSEDED (look A, fog pass 1): the wrap's own opacity stays 1 (the .55 fade sits on its inner board layer, .board-canvas-dim); original, verbatim:
+      // geomWhileOpen.blurred && geomWhileOpen.opacity < 0.7, JSON.stringify(geomWhileOpen));
+      geomWhileOpen.blurred && geomWhileOpen.opacity === 1, JSON.stringify(geomWhileOpen));
 
     // The library, grouped by room — Three-Act Structure under The Fiction Room.
     const libraryState = await app.evalJs(`(() => {
