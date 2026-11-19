@@ -51,7 +51,7 @@ function pageLib() {
     }
     return { T, breaks: out };
   };
-  PB.snips = (T, breaks) => { const t = PB.textOf(T).split('​').join(''); const raw = PB.textOf(T); return breaks.map((o) => { const zw = raw.slice(0, o).split('​').length - 1; const c = o - zw; return t.slice(c, c + 28); }); };
+  PB.snips = (T, breaks) => { const t = PB.textOf(T).split('​').join(''); const raw = PB.textOf(T); return breaks.map((o) => { const zw = raw.slice(0, o).split('​').length - 1; const c = o - zw; return t.slice(c, c + 40).replace(/^\n+/, '').slice(0, 28); }); };   // a break the walk lands on the paragraph's own newline is the same page start
   // THE MEASURER: one block per logical line at the framed page's text column, scale 1, off screen
   PB.build = (rowsHtml, geo) => {
     document.getElementById('pb-measurer')?.remove();
@@ -88,7 +88,7 @@ function pageLib() {
     }
     return { breaks: out, tops, i: Math.max(0, i), pageTop, lo };
   };
-  PB.msnips = (breaks) => { const t = [...PB.m.children].map((b) => b.textContent).join('\n'); return breaks.map((o) => t.slice(o, o + 28)); };
+  PB.msnips = (breaks) => { const t = [...PB.m.children].map((b) => b.textContent).join('\n'); return breaks.map((o) => t.slice(o, o + 40).replace(/^\n+/, '').slice(0, 28)); };
   // THE PER-KEY WORK (the sync and idle arms): the measurer's last line takes the letter, its last page is walked again, and the last break's mark is
   // placed on the live page at that offset's character
   PB.work = (ch) => {
@@ -168,7 +168,12 @@ await withHarness(async (app) => {
     return { buildMs: +(t1 - t0).toFixed(1), walkMs: +(t2 - t1).toFixed(1), pages: s.breaks.length + 1, height: Math.round(h), blocks: m.children.length, snips: window.__pb.msnips(s.breaks) }; })()`);
   const liveWalk = async () => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const page = ed.closest('.mode-page'); const scale = page.offsetWidth ? page.getBoundingClientRect().width / page.offsetWidth : 1;
     const t0 = performance.now(); const r = window.__pb.walk(ed, ${GEO ? GEO.H : 678.35}, scale); const t1 = performance.now(); return { ms: +(t1 - t0).toFixed(1), pages: r.breaks.length + 1, scale: +scale.toFixed(4), snips: window.__pb.snips(r.T, r.breaks) }; })()`);
-  const agree = (a, b) => { const n = Math.max(a.length, b.length); let same = 0, firstDiff = -1; for (let i = 0; i < n; i++) { if (a[i] === b[i]) same++; else if (firstDiff < 0) firstDiff = i; } return { same, of: n, firstDiff, a: firstDiff >= 0 ? a[firstDiff] : null, b: firstDiff >= 0 ? b[firstDiff] : null }; };
+  // SUPERSEDED (run 44608549614): compared the raw 28 characters at each break, and a live break that lands on the paragraph's own newline read
+  // "\nwords" against the measurer's "words" - the same page start counted as a difference (9 of 62 same at 20k). Kept for the record:
+  // const agree = (a, b) => { const n = Math.max(a.length, b.length); let same = 0, firstDiff = -1; for (let i = 0; i < n; i++) { if (a[i] === b[i]) same++; else if (firstDiff < 0) firstDiff = i; } return { same, of: n, firstDiff, a: firstDiff >= 0 ? a[firstDiff] : null, b: firstDiff >= 0 ? b[firstDiff] : null }; };
+  // successor: the snippets drop leading newlines (PB.snips / PB.msnips), and every difference is listed (index, both sides; the first 6 and the last)
+  const agree = (a, b) => { const n = Math.max(a.length, b.length); let same = 0; const diffs = []; for (let i = 0; i < n; i++) { if (a[i] === b[i]) same++; else diffs.push([i, a[i] ?? null, b[i] ?? null]); }
+    return { same, of: n, counts: [a.length, b.length], diffs: diffs.length > 7 ? [...diffs.slice(0, 6), diffs[diffs.length - 1]] : diffs, lastA: a[a.length - 1] ?? null, lastB: b[b.length - 1] ?? null }; };
   const keyMs = async (ch) => { await app.typeKeys(ch); return app.evalJs(AFTER); };
   const arm = async (name, n = 30) => {
     await app.evalJs(`(() => { const P = window.__pb; P.arm = '${name}'; P.workMs = []; P.measMs = []; clearTimeout(P.idleT); P.pend = ''; return true; })()`);
