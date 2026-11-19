@@ -101,7 +101,7 @@ try { await withHarness(async (app) => {
   // const linkC = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : null;
   const linkHex = lh ? [0, 2, 4].map((i) => parseInt(lh[1].slice(i, i + 2), 16)) : null;
   const linkNow = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : (hex && linkHex ? cr2(linkHex, hex) : null);   // an rgba link composited on the ground, or an opaque hex link as it is
-  // THE FIXED CEILING (Fable, Nov 18: "add a fixed ceiling at the old bar"): the approved opaque link reads about 5.3:1, stronger than the old rgba(0,194,255,.36) link (about 3.6:1). Left as the bar it would loosen TAME and put the old full-strength drawing (3.62:1) UNDER it, so the red-first clause could never hold.
+  // THE FIXED CEILING (Fable, Nov 18: "add a fixed ceiling at the old bar"): the approved opaque link reads about 5.3:1, stronger than the old rgba(0,194,255,.36) link (2.14:1; the 3.6 once written here was the old full-strength DRAWING, not the link). Left as the bar it would loosen TAME and put the old full-strength drawing (3.62:1) UNDER it, so the red-first clause could never hold.
   // The bar is the FAINTER of the two: the link as drawn now, and the old link's contrast on the same ground.
   const OLD_LINK = [0, 194, 255, 0.36];
   const linkOld = hex ? cr2(OLD_LINK.slice(0, 3).map((v, i) => v * OLD_LINK[3] + hex[i] * (1 - OLD_LINK[3])), hex) : null;
