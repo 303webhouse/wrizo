@@ -37,7 +37,7 @@
 // STAGES S1  cycling the stages from the top rail leaves the page's text identical and the stage is today's (data-mode-key active)
 // PAGE  G1  [1366, 1920, 2000] the page's rect (column, paper, editor) is the same with the switch off, on at rest, with a rename open, with a
 //           long name, and with the Connect list open on a Board's sibling page; the editor is the same node throughout
-// SPEED K1  while she types 24 keys on a Part, the names render ZERO times (window.wrizoTopNamesRenders, a counter that exists only under the
+// SPEED K1  while she types 26 keys on a Part, the names render ZERO times (window.wrizoTopNamesRenders, a counter that exists only under the
 //           switch; the left rail's method), and the counter is live (it counted the page's own first render)
 // DEFAULT D1  "Set as my default" never carries a Part's name: store/pageDefaults.ts strips `name` at the door (source), and the live seam proves it
 // WORDS W1  every top-rail string comes from the lexicon (terms.ts and the canonical table carry each key)
@@ -299,7 +299,9 @@ await withHarness(async (app) => {
   d = diffStores(s0, s1);
   const e1 = s1[entriesKey]?.find((e) => e.id === 'tr-g-2');
   const e0 = s0[entriesKey]?.find((e) => e.id === 'tr-g-2');
-  const settingsOnlyName = e0 && e1 && JSON.stringify({ ...(e1.pageSettings || {}), name: undefined }) === JSON.stringify({ ...(e0.pageSettings || {}), name: undefined });
+  // a page that never chose its settings is named beside the app's floor (PAGE_SETTINGS_FALLBACK, as a template is): absent reads as that floor
+  const FLOOR = { margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' } };
+  const settingsOnlyName = e0 && e1 && JSON.stringify({ ...(e1.pageSettings || FLOOR), name: undefined }) === JSON.stringify({ ...(e0.pageSettings || FLOOR), name: undefined });
   ok('R3a the Part\'s rename writes pageSettings.name on that page only (beside the set\'s own F1 resume stamp): its text and every other setting identical',
     res.opened && onlyPageChanged(d, s1, 'tr-g-2', ['pageSettings']) && e1.pageSettings?.name === 'The second part' && e1.text === e0.text && settingsOnlyName, { d, ps: e1 && e1.pageSettings });
   const shown = await app.evalJs(READ_TOP);
@@ -355,20 +357,26 @@ await withHarness(async (app) => {
 
   // ---- SPEED -------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'tr-g-1');
-  // a Part opens in Build; she types in Sprint (Free Write's editor), as the left rail's speed check does; the switch's re-persist lands ~1.1 s later
-  await app.evalJs("document.querySelector('.reorg-top .desk-mode-tab[data-mode-key=\"freewrite\"]')?.click(); null");
+  // typed as reorg-rails-speed.mjs types: in Build (Draft), pressed and settled (its re-persist lands ~1.1 s after the switch), the editor
+  // confirmed, then a trusted click into it before the keys
+  await app.evalJs("document.querySelector('.reorg-top .desk-mode-tab[data-mode-key=\"draft\"]')?.click(); null");
+  await app.waitFor("document.querySelector('[data-mode-key=\"draft\"]')?.getAttribute('aria-selected') === 'true' && !!document.querySelector('.forward-only-editor')", { timeout: 6000, label: 'Draft' }).catch(() => {});
   await sleep(1300);
   const live0 = await app.evalJs('window.wrizoTopNamesRenders ? window.wrizoTopNamesRenders() : null');
+  const at = await app.evalJs("(() => { const r = document.querySelector('.forward-only-editor')?.getBoundingClientRect(); return r ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + Math.min(40, r.height / 2)) } : null; })()");
+  if (at) { await app.mouseDown(at.x, at.y); await app.mouseUp(at.x, at.y); }
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null");
   await sleep(300);
   const k0 = await app.evalJs('window.wrizoTopNamesRenders ? window.wrizoTopNamesRenders() : null');
-  for (const ch of 'and a few more words here') { await app.typeKeys(ch); await sleep(50); }
+  const focusAt = await app.evalJs("(() => { const a = document.activeElement; return a ? (a.className || a.tagName) + '' : null; })()");
+  for (const ch of ' and a few more words here') { await app.typeKeys(ch); await sleep(50); }
   await sleep(150);
   const k1 = await app.evalJs('window.wrizoTopNamesRenders ? window.wrizoTopNamesRenders() : null');
-  await sleep(1200);
-  const typedSaved = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'tr-g-1') || {}).text || ''");
-  ok('K1 the names render ZERO times while she types 24 keys (the counter is live: it counted the first render of the page), and the typing is saved',
-    typeof live0 === 'number' && live0 > 0 && k0 !== null && k1 === k0 && /few more words/.test(typedSaved), { live0, k0, k1, typedSaved });
+  const stored = "((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'tr-g-1') || {}).text || '')";
+  await app.waitFor(`/few more words/.test(${stored})`, { timeout: 8000, label: 'typed text saved' }).catch(() => {});
+  const typedSaved = await app.evalJs(stored);
+  ok('K1 the names render ZERO times while she types 26 keys (the counter is live: it counted the first render of the page), and the typing is saved',
+    typeof live0 === 'number' && live0 > 0 && k0 !== null && k1 === k0 && /few more words/.test(typedSaved), { live0, k0, k1, typedSaved, focusAt });
 
   // ---- DEFAULT -------------------------------------------------------------------------------------------------------------------------
   const live = await app.evalJs(`(() => { if (!window.wrizoPageDefaultsDress) return 'no seam'; const out = window.wrizoPageDefaultsDress({ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }, name: 'One page only' }); return out && !('name' in out) ? 'stripped' : JSON.stringify(out); })()`);
