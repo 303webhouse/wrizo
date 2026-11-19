@@ -12,6 +12,10 @@
 //   P12 FLUX holds its chart's finished frame behind the panel and no old door shows around it (Fable Nov 18, 3:50 pm); the mutant (the old hero shown, the chart gone) turns it red
 //   P13 the button is never brass at rest (Arbor cream; Flux and Machina the label colour); under the pointer: Arbor brass, Flux cyan with the brass bar, Machina a brass underline; the mutant (brass at rest) turns it red
 //   P14 focus starts in the first field when the panel opens, and a real Tab walk reaches the button with the same brass-on-focus look; the mutant (focus dropped) turns it red
+//   P16 MACHINA: every edge of the panel is on a whole pixel at 1366, 1920 and an odd 1367 (a half pixel read 2.5:1; Fable Nov 18, 4:35 pm); P16M the old build (417 px, left 50% and a translate) turns it red
+//   P17 MACHINA create-account face at 1366x768 (the live splash): top 8 px under the logo or lower, foot at or above 744, NOTHING scrolls, no sub-line; P17M the old build (42 px fields, the sub-line back) scrolls and turns it red
+//   P18 MACHINA, a shorter window (1366x560): only the fields scroll; the button row is pinned at the foot (the button does not move when the fields scroll, is in the window, Create my account left and back right on one row), the scroll thumb reads >= 3:1; P18M the old build (the panel scrolls as one) turns it red
+//   P19 MACHINA: an error line sits above the button row, and the button row stays in the window
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -127,11 +131,56 @@ await withHarness(async (app) => {
     await sleep(200);
   }
   if (cfg.theme === 'machina') {
+    // ---- P16: whole-pixel edges
+    const whole = (v) => Math.abs(v - Math.round(v)) < 0.02;
+    const EDGES = "(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom }; })()";
+    const edgesOk = (g) => whole(g.l) && whole(g.r) && whole(g.t) && whole(g.b);
+    const e16 = [];
+    for (const [w, h] of [[1366, 768], [1920, 1080], [1367, 768]]) { await app.emulateDpr(1, w, h); await sleep(600); e16.push({ w, ...(await ev(EDGES)) }); }
+    check('P16', e16.every(edgesOk), JSON.stringify(e16));
+    await app.emulateDpr(1, 1366, 768); await sleep(500);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-half'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ width:417px !important; left:50% !important; transform:translateX(-50%) !important; }'; document.head.appendChild(st); return true; })()");
+    await sleep(300);
+    const m16 = await ev(EDGES);
+    check('P16M', !whole(m16.l) && !edgesOk(m16), `the old build (417 px, left 50%, a translate; landed: left ${m16.l}): P16's read goes RED`);
+    await ev("document.getElementById('mut-half').remove(); true"); await sleep(200);
+    // ---- P17: no scroll at 1366x768
+    const FIT = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const r = p.getBoundingClientRect(); const l = document.querySelector('.wz-hero .wz-logo').getBoundingClientRect(); const sub = p.querySelector('.wz-popout-subline'); return { top: Math.round(r.top * 10) / 10, bottom: Math.round(r.bottom * 10) / 10, logoBottom: Math.round(l.bottom * 10) / 10, winH: innerHeight, scrollOver: sc.scrollHeight - sc.clientHeight, panelOver: p.scrollHeight - p.clientHeight, sub: sub ? getComputedStyle(sub).display : null }; })()";
+    const fitOk = (g) => g.top >= g.logoBottom + 7 && g.bottom <= 744.5 && g.scrollOver <= 1 && g.panelOver <= 1 && g.sub === 'none';
+    const f17 = await ev(FIT);
+    check('P17', fitOk(f17), JSON.stringify(f17));
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-fat'; st.textContent = '.wz-arrival .wz-popout .wz-field{ height:42px !important; } .wz-arrival .wz-popout .wz-popout-subline{ display:block !important; }'; document.head.appendChild(st); return true; })()");
+    await sleep(300);
+    const m17 = await ev(FIT);
+    check('P17M', m17.sub === 'block' && !fitOk(m17), `the old build (42 px fields, the sub-line back; landed: sub ${m17.sub}, scroll over ${m17.scrollOver}): P17's read goes RED`);
+    await ev("document.getElementById('mut-fat').remove(); true"); await sleep(200);
+    // ---- P18: a shorter window, the button row pinned
+    const ROW = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { by: Math.round(br.top * 10) / 10, bb: Math.round(br.bottom * 10) / 10, rowDy: Math.round(Math.abs((kr.top + kr.height / 2) - (br.top + br.height / 2)) * 10) / 10, backRight: kr.left >= br.right, pb: Math.round(pr.bottom * 10) / 10, winH: innerHeight, scrollable: sc.scrollHeight > sc.clientHeight + 1, sc: getComputedStyle(sc).scrollbarColor }; })()";
+    const SCROLLALL = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = sc.scrollHeight; p.scrollTop = p.scrollHeight; return true; })()";
+    const TOP = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = 0; p.scrollTop = 0; return true; })()";
+    await app.emulateDpr(1, 1366, 560); await sleep(700);
+    await ev(TOP); const r0 = await ev(ROW); await ev(SCROLLALL); await sleep(150); const r1 = await ev(ROW);
+    const nums = (r0.sc.match(/[0-9]+/g) || []).map(Number); const thumb = nums.slice(0, 3), track = nums.slice(3, 6);
+    const thumbRatio = thumb.length === 3 && track.length === 3 ? ratio(thumb, track) : 0;
+    const pinned = (a, c) => a.scrollable && Math.abs(a.by - c.by) <= 0.5 && c.bb <= c.winH && a.bb <= a.winH && a.rowDy <= 2 && a.backRight && a.pb <= a.winH - 24 + 0.5;
+    check('P18', pinned(r0, r1) && thumbRatio >= 3, `top ${JSON.stringify(r0)}; scrolled ${JSON.stringify({ by: r1.by, bb: r1.bb })}; thumb ${thumbRatio.toFixed(2)}:1`);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-unpin'; st.textContent = '.wz-arrival .wz-screen.wz-popout[data-popout=account]{ display:block !important; overflow-y:auto !important; } .wz-arrival .wz-popout .wz-popout-scroll{ display:contents !important; }'; document.head.appendChild(st); return true; })()");
+    await sleep(300);
+    await ev(TOP); const q0 = await ev(ROW); await ev(SCROLLALL); await sleep(150); const q1 = await ev(ROW);
+    const landed18 = await ev("getComputedStyle(document.querySelector('.wz-popout')).display === 'block'");
+    check('P18M', landed18 && !pinned({ ...q0, scrollable: true }, q1), `the old build (the panel scrolls as one; landed ${landed18}): button top ${q0.by} then ${q1.by}, bottom ${q0.bb} (window ${q0.winH}): P18's read goes RED`);
+    await ev("document.getElementById('mut-unpin').remove(); true");
+    await app.emulateDpr(1, 1366, 768); await sleep(700);
+    // ---- P19: the error line above the button row
+    await ev("document.querySelector('.wz-popout button[type=submit]').click(); true"); await sleep(500);
+    const e19 = await ev("(() => { const p = document.querySelector('.wz-popout'); const e = p.querySelector('.wz-error'); const b = p.querySelector('button[type=submit]'); if (!e) return null; const er = e.getBoundingClientRect(), br = b.getBoundingClientRect(); return { errBottom: Math.round(er.bottom * 10) / 10, btnTop: Math.round(br.top * 10) / 10, btnBottom: Math.round(br.bottom * 10) / 10, winH: innerHeight }; })()");
+    check('P19', !!e19 && e19.errBottom <= e19.btnTop + 0.5 && e19.btnBottom <= e19.winH - 24, JSON.stringify(e19));
     await ev("(document.querySelector('.wz-popout-back') || { click() {} }).click()");
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
     await sleep(500);
     const bk = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return { top: Math.round(r.top), want: Math.round(Math.max(window.innerHeight * 0.56, 300)), stage: document.querySelector('.wz-popout').dataset.popout }; })()");
-    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2, JSON.stringify(bk));
+    const be = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom].every((v) => Math.abs(v - Math.round(v)) < 0.02); })()");
+    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2 && be === true, JSON.stringify({ ...bk, wholeEdges: be }));
     await ev("document.querySelector('.wz-popout-switch').click()");
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face again', timeout: 6000 }).catch(() => {});
     await sleep(500);

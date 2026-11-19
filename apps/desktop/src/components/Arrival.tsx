@@ -344,8 +344,9 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <div className="wz-sub">{t('authSignupByInvitation')}</div>
           ) : signupOpen === true ? (
             <>
-              <div className="wz-sub">{t('authCreateSub')}</div>
+              <div className="wz-sub wz-popout-subline">{t('authCreateSub')}</div>
               <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleCreate(); }}>
+              <div className="wz-popout-scroll">
               <div className="wz-fieldcol">
                 <input className="wz-field" type="text" placeholder={t('authNamePlaceholder')} autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
                 <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
@@ -358,6 +359,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
                 <input ref={adultRef} type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
                 <span>{t('authAdultConfirm')}</span>
               </label>
+              </div>
               {error && <div className="wz-error" role="alert">{error}</div>}
               <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authCreateSubmit')}</button>
               </form>
