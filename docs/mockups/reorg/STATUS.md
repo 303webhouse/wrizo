@@ -1,6 +1,59 @@
-# STATUS: milestones 4 and 5 passed; Fable's fix and second answers applied
+# STATUS: milestone 6 built (the stages), not yet opened; waiting for Fable's check
 
-Cursor lane, Nov 14, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 5 have passed Fable's check (4 and 5 at `744946d7`, Nov 14, 5:50 pm, with one fix). Milestone 6 (the stages) is not started: Fable's word is GO after the fix, in a fresh chat.
+Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`, from `0a629bd5`. Milestones 1 to 5 have passed Fable's check. Milestone 6 is built on Fable's GO of Nov 19, 11:40 am: the stages filled from `_sources/reorg-stage-table.md`, the whole table in one file, every stage NOT RULED, and the panel "What changed with this stage". The three questions with Fable had no answer when this was built, so the three defaults she named are built and listed in `NOT-RULED.md` (151, 152, 153).
+
+## What milestone 6 adds (the stages, 6 G)
+
+- **The table in one file: `stage-table.js`.** Every cell of the designers' table, in Machina's words: "On a Page" (drawn), "On a Board" and "On a Card" (here "On a Block", kept and not drawn). Inside it is plain JSON; the first line wraps it so a double-clicked page can read it. Change a cell, save, reload.
+- **Four buttons, five columns.** SPRINT is Free Writing, BUILD is Drafting, EDIT is Revising, FINALIZE is Publishing. Workshopping is in the file, kept off screen.
+- **Pressing a stage changes what the two menus offer.** Each tab of each menu has a band at its head, "PARTS IN BUILD", tagged NOT RULED, with the stage's offers as chips and the table's aside under them. A blue edge marks what the table sets in bold (new with the reorg). The session (Typewriter mode, the goal, the timer, progress) is a band at the Front menu's foot, gone in FINALIZE. In FEEDBACK the band is the Consultant's.
+- **Three things a stage switches, beyond the bands.** "New part" is there only in SPRINT and BUILD. There is no split screen in SPRINT (the table's Q25): "Open beside" is greyed and every other way in says so. The session comes and goes.
+- **It never changes the page.** The page, its Part, words and scroll are the same in every stage. The table's "resting surface" row is given in the panel as words, marked "not drawn".
+- **"What changed with this stage".** A dashed button just right of FINALIZE opens a panel over the middle of the page, so both menus stay in sight. For each tab of each menu and the session it lists "+" gained and "−" lost against the stage she came from (or any other, from a row at its head), then the split screen, then the table's words for the page. It stays open as she presses stages. After every stage press a note counts what was gained and lost.
+- **What is untouched:** everything ruled in A to F. The Parts list, its markers and toggles, the search field in every tab, the assets, the plan's rows and the feedback lines are in every stage. On a Board nothing changes but the note on its handles.
+
+## Not opened, not checked by eye or by script
+
+This lane ran no browser this time: there was no word from Nick to open it, and the rules allow only `git add`, `git commit` and `git push`. So **milestone 6 has not been loaded once.** Every change was read through against the code it calls; the table file was checked for trailing commas, missing commas and its 85 cells (17 rows of 5). Where a slip is most likely, so the check can start there:
+
+- **A slip in `app.js` leaves the rail empty;** a slip in `stage-table.js` does not, but every band then says "stage-table.js did not load".
+- **The bar at 1366.** The "What changed" button adds about 100 px after FINALIZE. By my count the bar still has about 200 px to spare with "Harbor Tolls, 1890 to 1912 / Part 3 of 5 · Methods"; not measured.
+- **The Front menu in BUILD, on PARTS:** the band (ten chips) above "New part" and the list, and the session at the foot. The list should still scroll under the band.
+- **SPRINT and the split:** `#sprint`, then "Open beside" on an asset should be greyed; `#split` from SPRINT should switch to BUILD and open the split.
+- **The panel's counts, BUILD to EDIT (`#changed`):** TEXT gains "Find across the Doc"; PARTS loses New part, Name, Level and Make it its own Doc; THE SESSION loses the goal and the timer; FEEDBACK lists "in another order: The lenses, The four asks".
+- **The page:** 415 / 64 / 620 × 640 in every stage and with the panel open.
+
+## The doors added
+
+`#sprint`, `#build`, `#edit`, `#finalize` (both menus open in that stage, each on the tab it was on), `#text`, `#ink` (the Front menu on that tab), `#session` (SPRINT, the Front menu on TEXT, the session at its foot), `#changed` (EDIT against BUILD, the panel and both menus open). The 45 earlier doors are unchanged in the code but for one thing: the split doors switch to BUILD if she is in SPRINT.
+
+## What I invented
+
+`NOT-RULED.md`, section G, lines 151 to 169. The ones that shape what Nick sees:
+
+- **Where a stage's offers show:** a band of chips at the head of each tab, rather than whole menus redrawn for each stage (156). The built, ruled contents of each tab stay under it in every stage (158).
+- **Each cell cut into single offers,** so "gained" and "lost" can be counted, and the words I had to choose where the brief's table has none: "Sprint Tips", "Page setup", "Progress" (154, 155).
+- **The page is not drawn per stage** (162): no fading chrome in SPRINT, no lens marks in EDIT, no whole Doc in one scroll in FINALIZE.
+- **The panel's place,** over the middle of the page, and that it stays open across stage presses (164).
+
+## Questions for Fable
+
+**Still with you from this morning (defaults built):**
+
+1. **The `.json` file and double-click.** Built as `stage-table.js`: the same JSON inside one line of JavaScript, since a double-clicked page cannot read a `.json` file. Keep it, or serve the folder some other way?
+2. **Five columns to four buttons.** Built: SPRINT, BUILD, EDIT, FINALIZE for Free Writing, Drafting, Revising, Publishing; Workshopping in the file, off screen.
+3. **The Board and Card tables.** Built: only "On a Page" drawn; the other two in the file, in Machina's words, not drawn.
+
+**New:**
+
+4. **The page in each stage.** The table changes the page in three stages (SPRINT: the chrome fades as she types; EDIT: the lenses' marks on the page; FINALIZE: the whole Doc in one scroll, read-only). The brief says a stage changes the menus and never the page's words, and only the Part she is in scrolls. Built: none of it drawn, the table's words in the panel. Should any of the three be drawn?
+5. **The corner tag at rest.** With both menus closed it still reads RULED (A, B); the stages' NOT RULED shows in the bands, the panel, the buttons' tooltips and the dashed "What changed" button. Is that enough for "mark every stage NOT RULED", or should the rest state read NOT RULED too?
+6. **Search on a Board.** Your Nov 14 answer was "no search on a Board before milestone 6". Milestone 6 leaves it unbuilt; the note now says "in this prototype". Should it be built now, and what does it look in?
+7. **The words I chose** where the brief's table has none: "Sprint Tips" for Free Writing Tips, "Page setup" kept, "Progress" kept rather than Machina's "Run".
+
+## Before this milestone
+
+What follows is this file as it stood after milestones 4 and 5 passed, kept for the record.
 
 ## After Fable's pass (Nov 14, 5:50 pm)
 

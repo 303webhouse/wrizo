@@ -2,9 +2,9 @@
 
 Open `docs/mockups/reorg/index.html` by double-click. A reload starts over. The addresses in brackets open the same state directly.
 
-**After milestone 5, sections A to F are built.** G is listed so nothing is lost; it says which milestone builds it.
+**After milestone 6, sections A to G are built.**
 
-**This lane has opened it once, by script, not by hand** (see `STATUS.md`): every split and Board door loads with no script error and the page where it should be. "Built" below still means written and read through; the clicks in each row have not been tried one by one. Fable opened milestones 1 to 3 and passed them; milestones 4 and 5, and the changes milestone 4 makes to C and D, are not yet checked by Fable.
+**Milestone 6 has not been opened by this lane at all** (see `STATUS.md`): "built" in G means written and read through, not clicked. Milestones 1 to 5 have passed Fable's check. Milestone 6 touches C, D, E and F in four places, each listed in G: the bands at the head of the menus' tabs, "New part" only in SPRINT and BUILD, no split screen in SPRINT, and the new note on a Board's handles.
 
 ## Mock content
 
@@ -109,13 +109,17 @@ Three ways in: a Board's row in a Project's own list (press the TH box, then "Ha
 | ...and can serve more than one Doc | Press the boxed plus: the Doc it serves reads "connected" and cannot be pressed; the others can. Press "Committee memo, draft": the top bar reads "Board · 2 docs" and the line under the Board "connected to 2 docs". "A new doc" makes "Untitled doc" in Thesis and connects the Board to it (NOT RULED: its name, and that she stays on the Board) |
 | (from E) A click on a Block's words, a double click on its empty area | On a Board the Blocks are the same Blocks: click a Block's words to write in them; double click its empty area to pop it out, the Board dark behind it (`#board-pop`). Esc closes the pop-out and she stays on the Board |
 
-## G. The stages, NOT RULED (not built: milestone 6)
+## G. The stages (built; NOT RULED, every stage)
+
+Open both menus (the handles at the page's two edges), then press the stages at the right of the top bar. `#build`, `#sprint`, `#edit` and `#finalize` open both menus in that stage. Every band, and the panel, carries a NOT RULED tag.
 
 | The brief says | Where to click |
 |---|---|
-| Pressing SPRINT, BUILD, EDIT or FINALIZE changes what the two menus offer, never the page's words | not built (the buttons only move the brass mark) |
-| The whole table in one file, `stage-table.json` | not built |
-| A small panel, "What changed with this stage" | not built |
+| Pressing SPRINT, BUILD, EDIT or FINALIZE changes what the two menus offer | With both menus open, press SPRINT (`#sprint`). The band at the head of each tab changes: PARTS IN SPRINT has no chips and "New part" stays; TEXT IN SPRINT is Font and Forward lock (`#text`); THE SESSION at the Front menu's foot has Typewriter mode, the goal, what it counts, the timer and progress (`#session`); ASSETS IN SPRINT is "Open to read", and every "Open beside" is greyed (no split screen in SPRINT). Press BUILD: PARTS has ten chips (Split here, Join, Move, ...), the plan's band has Drag rows and the rest. Press EDIT: "New part" is gone, TEXT has "Find across the Doc" (press it: the search opens), THE CONSULTANT has the lenses first. Press FINALIZE: TEXT and INK offer nothing, the session is gone, PARTS offers ticking Parts in or out and the three ways out. A blue edge on a chip: bold in the table, new with the reorg |
+| ...it never changes the page's words | In every stage the page is the same: the same Part, words, scroll and rectangle (415 / 64 / 620 × 640). What the table says of the page in each stage is in the panel, marked "not drawn" |
+| Fill it from `reorg-stage-table.md` | Every cell of "On a Page" is in the bands, in Machina's words; Workshopping is in the file and has no button (NOT RULED, 152). "On a Board" and "On a Card" are in the file and not drawn (153) |
+| The whole table in one file, so Fable can change a cell and reload | `stage-table.js`, beside `index.html` (NOT RULED, 151: a double-clicked page cannot read a `.json` file; the inside is plain JSON). Change a cell's words, save, reload: the band and the panel show the change |
+| A small panel, "What changed with this stage", listing what each menu gained and lost | Press "What changed", the dashed button just right of FINALIZE (`#changed`: EDIT against BUILD). It drops over the middle of the page and moves nothing. For each tab of each menu and the session, "+" gained, "−" lost, then the split screen and the table's words for the page. The row of stages at its head changes what it compares with. Press a tab's name to open that tab. It stays open as you press stages; its button, CLOSE or Esc closes it |
 
 ## Marking
 
@@ -127,4 +131,4 @@ Three ways in: a Board's row in a Project's own list (press the TH box, then "Ha
 
 ## The page's rectangle
 
-At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left: 415 at 1366 wide, and, in a split only, the middle of the page's own side (left 100 at half). The page's width, height and top are the same in a split as out of it. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. A Board on its own is laid over the page (left 116, top 64, 1218 × 640 at 1366 × 768, as frame P3-NB-C draws it): the page is still there underneath, at 415 / 64 / 620 × 640, with its Part, its scroll and its words as she left them. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap.
+At 1366 × 768 the page is 620 × 640 at left 415, top 64. One CSS rule (`.page` in `reorg.css`) sets it. The only thing a script sets is the page's left: 415 at 1366 wide, and, in a split only, the middle of the page's own side (left 100 at half). The page's width, height and top are the same in a split as out of it. Everything that opens (pop-outs, the two side menus, the list of Parts, the search) is laid over the room or beside the page, never in the page's flow. A Board on its own is laid over the page (left 116, top 64, 1218 × 640 at 1366 × 768, as frame P3-NB-C draws it): the page is still there underneath, at 415 / 64 / 620 × 640, with its Part, its scroll and its words as she left them. The search marks found words inside the page; a mark changes no letter's width, so the words do not re-wrap. A stage changes nothing in the page, and "What changed with this stage" is laid over the page's middle, under the top bar, without touching it.

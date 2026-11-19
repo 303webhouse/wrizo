@@ -2,9 +2,9 @@
 
 One line for each thing the brief does not state. Each is a best guess, tagged on screen (a corner tag, a chip beside it, or a note when it is pressed). Nothing here is decided.
 
-After milestone 5 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen; a Board on its own).
+After milestone 6 (the shell, the rail, a Project's own list; moving between Parts; the Front menu's Parts tab; the Back menu, search and replace; the split screen; a Board on its own; the stages).
 
-The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 76, 78, 86, 94, 97) was answered by Fable or by Nick and has moved to one of the two lists below. Lines 110 to 130 are milestone 4's, 132 on are milestone 5's.
+The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 56, 57, 60, 64, 72, 76, 78, 86, 94, 97) was answered by Fable or by Nick and has moved to one of the two lists below. Lines 110 to 130 are milestone 4's, 132 to 149 milestone 5's, 151 on milestone 6's. **Every stage is NOT RULED** (brief, 6 G; Fable, Nov 19): the whole of section G below.
 
 ## Answered by Fable on Nov 14, so no longer on this list
 
@@ -53,7 +53,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 2. **The page's height in a taller window.** It grows with the window: 640 at 768 high, 952 at 1080 high. The brief gives 620 × 640 for 1366 × 768 only. The side menus are always as tall as the page. *(Stands, still NOT RULED.)*
 3. **Smaller windows.** Under 1366 × 768 the frame keeps its size and the window scrolls.
 4. **The corner tag** sits at the bottom right, in the strip under the page: the mark and at most two lines of its note, on a solid ground, so it never lies over the page, a menu or a Board. In a split, where the asset's side runs to the window's foot, it moves under the page's side, against the split, and rests as the mark and the words "read the note". A click opens the whole note on a solid panel; a click again, or any change of what is on screen, closes it (Fable's fix, Nov 14: the note was drawn over the content with no ground). Notes appear at the bottom right, above the tag, and leave after about five seconds or at a click.
-5. **The stage buttons** move the brass mark and do nothing else until milestone 6.
+5. **The stage buttons** move the brass mark and change what the two menus offer (section G, 151 on). Pressing the stage she is in does nothing. Each button's tooltip gives its column: Arbor's word, the job, and "NOT RULED".
 6. **The Project's and the Doc's names in the top bar, and the "Ctrl+." chip,** are drawn as in the frames and only show a note when pressed.
 7. **Hover and keyboard looks:** an underline on hover, an outline on keyboard focus.
 
@@ -127,7 +127,7 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 ## C. The Front menu, Parts tab
 
-55. **The TEXT and INK tabs** are named in the frames. Each shows one line saying its content is milestone 6.
+55. **The TEXT and INK tabs** are named in the frames. All they show is the band of what the stage offers (156).
 58. **The date each asset was connected** shows at the right of its row, so the order can be seen.
 59. **Pressing an asset in an expanded Part** opens it beside the page, as "Open beside" in the Back menu does.
 61. **Pressing a Part's name in the Front menu** goes to that Part.
@@ -139,8 +139,8 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 
 ## D. The Back menu's tabs
 
-68. **What the PLAN tab lists:** seven made-up rows, each a Block on one of the Doc's Boards, numbered in order. Nothing can be done to them. What the plan offers in each stage is milestone 6. A Doc with no plan says "Nothing is in this doc's plan."
-69. **What the FEEDBACK tab lists:** a "CONSULTANT" head with one button, "Ask the Consultant", which only shows a note; then "FEEDBACK ON THIS DOC" with two made-up lines from the Consultant. A Doc with none says "No feedback on this doc yet."
+68. **What the PLAN tab lists:** seven made-up rows, each a Block on one of the Doc's Boards, numbered in order. Nothing can be done to them, in any stage (also in BUILD, where the table offers dragging and renaming rows: 167). What the plan offers in each stage is the band over the rows. A Doc with no plan says "Nothing is in this doc's plan."
+69. **What the FEEDBACK tab lists:** the band of what the Consultant offers in the stage she is in, headed THE CONSULTANT (it replaces milestone 3's one button, "Ask the Consultant"); then "FEEDBACK ON THIS DOC" with two made-up lines from the Consultant. A Doc with none says "No feedback on this doc yet."
 70. **The search field in a tab** sits under the tabs, above the tab's list, and reads "Search".
 
 ## D. The search
@@ -219,8 +219,8 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 136. **The way back to the page:** a small button over the Board's left corner, "‹" and the name of the Doc and Part she left. The brief draws no way back. The stage she was in is kept. *(Fable, Nov 14: PROPOSED, as built.)*
 137. **Ways in the brief does not name:** "Open" on a Board's row in the Back menu's ASSETS tab; a new Board opening at once (25). (A third, CLOSE on the page's side of a split, went with 117.)
 138. **The rail on a Board** shows the Board's Project at the top, also when the Doc under the Board is in another Project. Box settings then act on the Board's Project.
-139. **The two handles on a Board** sit at the Board's outer edges, as the frames draw. Pressed, each only shows a note: what the menus offer on a Board is the stage table (milestone 6).
-140. **Search on a Board** is not built. The top bar's button and Ctrl+F only show a note: the brief does not say what a search looks in from a Board. *(Fable, Nov 14: PROPOSED, no search on a Board before milestone 6.)*
+139. **The two handles on a Board** sit at the Board's outer edges, as the frames draw. Pressed, each only shows a note: what the menus offer on a Board is the stage table's "On a Board", kept in `stage-table.js` and not drawn (153).
+140. **Search on a Board** is not built. The top bar's button and Ctrl+F only show a note: the brief does not say what a search looks in from a Board. *(Fable, Nov 14: PROPOSED, no search on a Board before milestone 6.)* Milestone 6 leaves it so: the note now reads "in this prototype". See the questions in `STATUS.md`.
 141. **What five of the six views show.** Only Open is drawn in a frame. Plan: the Blocks as a numbered list, in the order they were made. Flip: one Block large, an arrow each side, "2 of 3" under it; the arrow keys step too. Walk: the Blocks large, one under another, to read down through. Storyboard: the Blocks as numbered frames in a row, each under an empty dashed picture. Thumbnails: the Blocks small, name only. Each says at its head that it is a guess. None can reorder anything. *(Fable, Nov 14: frozen as they are, still NOT RULED; they wait for the Wrizors' frames.)*
 142. **Open view: a Block with no place of its own** (every Board but "Harbor map") is set out in rows of four. Blocks cannot be dragged.
 143. **Blocks on a Board on its own** behave as beside the page: the words can be written in, a double click on the empty area pops the Block out and darkens the Board, Esc closes the pop-out. In Thumbnails a double click anywhere on a Block pops it out.
@@ -231,6 +231,30 @@ The numbers are kept from milestone 3, so a number that is missing (14, 20, 48, 
 148. **The line under the Board** adds "only 3 drawn in this prototype" for a Board that says it has more Blocks than this prototype holds (107), and counts Docs: "connected to 2 docs".
 149. **Esc on a Board** closes the pop-out, then the Connect Doc list, then a rail pop-out. It never leaves the Board.
 
+## G. The stages (every line NOT RULED)
+
+The brief rules three things here: pressing a stage changes what the two menus offer and never the page's words; the table is filled from `reorg-stage-table.md` and kept in one file; there is a panel, "What changed with this stage". The stages themselves are NOT RULED. Three questions are with Fable (Nov 19); until she answers, 151, 152 and 153 are the defaults she named.
+
+151. **The file is `stage-table.js`, not `stage-table.json`** *(default while Fable's first question is open)*. A page opened by double-click cannot read a `.json` file from the disk, so the table is plain JSON wrapped in one line of JavaScript. Taking away that first line and the last ";" gives the brief's `stage-table.json`. A change to a cell shows on a reload. If the file has a slip and does not load, the four buttons still show and each menu says the file did not load.
+152. **Five columns, four buttons** *(default while Fable's second question is open)*. SPRINT is Free Writing, BUILD is Drafting, EDIT is Revising, FINALIZE is Publishing. Workshopping is in the file with `"shown": false` and has no button (the table hides it until Read is built). Setting it to `true` would add a fifth button, WORKSHOPPING, which is not one of Machina's words.
+153. **Only "On a Page" is drawn** *(default while Fable's third question is open)*. "On a Board" and "On a Card" (here "On a Block") are in the file, in Machina's words and in the same form, and are not drawn. On a Board the two handles still only show a note, and the Board's views stand where the stages stand (6 F), so the Board table's stages have no button to press.
+154. **The table in Machina's words.** Section is Part, Page is Doc, Card is Block, the Sections tab is PARTS, the Help tab is FEEDBACK, the Tutor is the Consultant, "→ Section" is "→ Part", "make it its own Page" is "Make it its own Doc", "Find across the piece" is "Find across the Doc". Mine, where the brief's table has no word: "Free Writing Tips" is "Sprint Tips"; "Page setup" stays (the printed page: margins, numbers, headers, footers); "Progress" stays (Machina's words pass has "Run", which the brief's table does not give); "Copy My Words", "Copy Formatted", "Download", "Send to Read", "Writing Prompt" and "Unblock" keep their names.
+155. **Each cell is cut into offers,** one thing each, so the panel can count what was gained and lost. Where the table says "The same." the offers are written out. "Split" in EDIT is "Split here", as in BUILD. "The Tutor's four asks" are not named in the table, so they are one offer, "The four asks". The table's aside stays with the cell as its note ("No re-ordering here: that's looking back.").
+156. **Where a stage's offers show:** a band at the head of each tab (under the search field in the Back menu), headed with the tab and the stage ("PARTS IN BUILD") and tagged NOT RULED, with the offers as small chips and the table's aside under them. A tab that offers nothing in a stage says so ("Nothing to set: the words are fixed here.").
+157. **The blue edge.** A chip with a blue edge (the blue tag colour) is set in bold in the table: new with the reorg. Plain chips are in the app today and only move. Brass is not used.
+158. **What a stage leaves alone.** Everything already built and ruled stays in every stage: the Parts list with its markers and toggles (C), the search field in every tab (D), the assets, the plan's rows and the feedback lines. A stage only changes the bands, plus three things it switches: "New part" (159), the split screen (160) and the session (161).
+159. **"New part" shows only where the cell offers it:** SPRINT and BUILD. EDIT and FINALIZE list no adding of Parts, so the row is not there. It is the row over the Parts list, not a chip.
+160. **No split screen in SPRINT** (the table's Q25). "Open beside" on the ASSETS rows is greyed, and every other way in (an asset in an expanded Part, a result of the search, a Doc's "Open beside") shows a note and opens nothing. The split doors (`#split` and the rest) change to BUILD first. In a split the stage buttons are faded, so she cannot reach SPRINT from one.
+161. **The session** (the table's Q7) is a band at the Front menu's foot, under every tab, headed THE SESSION. It is gone in FINALIZE, where it offers nothing. Its offers are chips like the others; the two switches under DOCS · PAGE DEFAULTS are separate and unchanged.
+162. **The page is the same in every stage.** The table's resting surface (SPRINT: the chrome fades as she types; EDIT: marks from the lenses on the page; FINALIZE: the whole Doc in one scroll, read-only) is not drawn. The brief says a stage changes what the two menus offer, and only the Part she is in scrolls (6 B). The panel gives the table's words for the page, marked "not drawn".
+163. **The "What changed" button** sits in the top bar right after the four stage buttons, dressed like the bar's other chips with the dashed edge of the NOT RULED tag. It is not on a Board.
+164. **The panel's place.** It drops from the top bar over the middle of the page (left 515, 420 wide, at 1366), so both menus stay in sight beside it. It moves nothing. It stays open while she presses stages, so she can step through them; its button, its CLOSE, or Esc closes it (Esc closes it before the search, unless the caret is in the search). It still opens in a split, where the menus are gone.
+165. **Compared with which stage.** The one she was in before her last press; before any press, the stage before this one (SPRINT: BUILD). A row of the other stages at its head changes it.
+166. **What the panel lists.** For each tab of each menu, and the session: "+" for an offer gained, "−" (struck through) for one lost, "~" for an offer with the same words and another detail, and "in another order" when the same offers are reordered (FEEDBACK, BUILD to EDIT: the lenses first). Then whether the split screen is offered, then the table's words for the page. Offers are matched by their words. A tab's name, pressed, opens that tab in its menu.
+167. **What an offer does when pressed.** Only "Find across the Doc" (TEXT, in EDIT) does something: it opens the search on THIS DOC. Every other chip shows a note saying it is offered in this stage and what it does is not part of this prototype. The plan's rows stay read-only in every stage.
+168. **The note after a stage press** counts what the two menus gained and lost against the stage she left, says when the split screen goes, and says the page has not changed.
+169. **The corner tag** reads NOT RULED with a G line whenever a menu shows a stage's band, and when the panel is open. At rest, with both menus closed, it is unchanged (RULED, A and B): the only stage mark there is each button's tooltip.
+
 ## For checking only
 
-131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search`, `#board`, `#board-connect`, `#board-connected`, `#board-pop`, `#board-plan`, `#board-flip`, `#board-walk`, `#board-storyboard`, `#board-thumbnails` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with". The Board doors open "Harbor map".
+131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search`, `#board`, `#board-connect`, `#board-connected`, `#board-pop`, `#board-plan`, `#board-flip`, `#board-walk`, `#board-storyboard`, `#board-thumbnails`, `#sprint`, `#build`, `#edit`, `#finalize`, `#text`, `#ink`, `#session`, `#changed` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with". The Board doors open "Harbor map". The four stage doors open both menus in that stage, each on the tab it was on; `#session` is SPRINT with the Front menu on TEXT; `#changed` is EDIT against BUILD with the panel and both menus open.
