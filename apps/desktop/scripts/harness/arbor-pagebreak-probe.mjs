@@ -27,6 +27,10 @@ const med = (a) => { const s = a.slice().sort((x, y) => x - y); return s.length 
 const p90 = (a) => { const s = a.slice().sort((x, y) => x - y); return s.length ? +s[Math.min(s.length - 1, Math.floor(s.length * 0.9))].toFixed(1) : null; };
 const mx = (a) => (a.length ? +Math.max(...a).toFixed(1) : null);
 const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res(performance.now() - window.__pbT0), 0)))";
+// THE BOX TURN (Fable, Nov 19, 2:20 pm, hand-up 7; 4:20 pm: "Draft and Free Write at 50k, sync vs idle"). PB_BOX=1: 50k only, Free Write with the
+// Typewriter (zoomed: Nick's ruling, Free Write is always the Typewriter), the key arms rotated over three rounds at 40 keys each, every key kept;
+// the near-screen and the agreement sections skipped (the whole-line walk settled agreement). One pooled line: PB-BOX {mode: {arm: stats}}.
+const BOX = process.env.PB_BOX === '1';
 
 // ---- the page-side candidate, injected whole (a function's source, so nothing is quoted by hand)
 function pageLib() {
@@ -146,7 +150,7 @@ await withHarness(async (app) => {
   const set = (w, h) => app.emulateDpr(1, w, h);
   await set(1366, 768);
   await app.goto('/');
-  await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); localStorage.setItem('wrizo-writing-settings', JSON.stringify({ typewriter: false })); true");
+  await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); localStorage.setItem('wrizo-writing-settings', JSON.stringify({ typewriter: " + (BOX ? 'true' : 'false') + " })); true");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
@@ -200,7 +204,7 @@ await withHarness(async (app) => {
   const agree = (a, b) => { const n = Math.max(a.length, b.length); let same = 0; const diffs = []; for (let i = 0; i < n; i++) { if (a[i] === b[i]) same++; else diffs.push([i, a[i] ?? null, b[i] ?? null]); }
     return { same, of: n, counts: [a.length, b.length], diffs: diffs.length > 7 ? [...diffs.slice(0, 6), diffs[diffs.length - 1]] : diffs, lastA: a[a.length - 1] ?? null, lastB: b[b.length - 1] ?? null }; };
   const keyMs = async (ch) => { await app.typeKeys(ch); return app.evalJs(AFTER); };
-  const arm = async (name, n = 30) => {
+  const arm = async (name, n = BOX ? 40 : 30) => {
     await app.evalJs(`(() => { const P = window.__pb; P.arm = '${name}'; P.workMs = []; P.measMs = []; clearTimeout(P.idleT); P.pend = ''; return true; })()`);
     for (let i = 0; i < 5; i++) await keyMs('abcde'[i]);
     await app.evalJs("(() => { window.__pb.workMs = []; window.__pb.measMs = []; return true; })()");
@@ -208,8 +212,12 @@ await withHarness(async (app) => {
     if (name === 'idle') await sleep(700);
     const w = await app.evalJs("(() => ({ work: window.__pb.workMs.slice(), meas: window.__pb.measMs.slice(), placed: !!window.__pb.placed }))()");
     await app.evalJs("(() => { window.__pb.arm = 'base'; return true; })()");
-    return { arm: name, keys: t.length, med: med(t), p90: p90(t), max: mx(t), workN: w.work.length, workMed: med(w.work), workMax: mx(w.work), measMed: med(w.meas), placed: w.placed };
+    return { arm: name, keys: t.length, med: med(t), p90: p90(t), max: mx(t), workN: w.work.length, workMed: med(w.work), workMax: mx(w.work), measMed: med(w.meas), placed: w.placed, ...(BOX ? { ts: t.map((x) => +x.toFixed(1)), work: w.work.map((x) => +x.toFixed(2)) } : {}) };
   };
+  const ARMS = BOX ? ['base', 'sync', 'idle', 'idle', 'base', 'sync', 'sync', 'idle', 'base', 'base'] : ['base', 'sync', 'idle', 'base'];
+  const POOL = {};
+  const pool = (mode, res) => { for (const r of res) { const p = ((POOL[mode] = POOL[mode] || {})[r.arm] = POOL[mode][r.arm] || { ts: [], work: [] }); p.ts.push(...(r.ts || [])); p.work.push(...(r.work || [])); } };
+  const brief = (res) => res.map(({ ts, work, ...rest }) => rest);
 
   const AG = {}; const AGS = {}; let CHAIN = null;
   // the shell measurer: built from the recorded class chain and this markup, walked, compared; then the bare measurer is put back for the key arms
@@ -223,7 +231,7 @@ await withHarness(async (app) => {
   const edHtml = async () => app.evalJs(`document.querySelector('${ED}').innerHTML`);
   let complete = true;
   // ---- COST at 1366, and agreement at 1366 for every size
-  for (const words of [5000, 20000, 50000]) {
+  for (const words of BOX ? [50000] : [5000, 20000, 50000]) {
     const d = await open(words, 'drafting');
     say(`open-draft-${words}`, d.st);
     if (!d.up) { complete = false; continue; }
@@ -239,8 +247,8 @@ await withHarness(async (app) => {
     var HTML_D = await edHtml();
     { const S = await shellCheck(HTML_D, L.snips, rows); AGS[words] = S.raw; say(`shell-draft-1366-${words}`, { buildMs: S.buildMs, walkMs: S.walkMs, pages: S.pages, shellEdW: S.shellEdW, vsLive: S.vsLive }); }
     await caretEnd('drafting');
-    const res = []; for (const a of ['base', 'sync', 'idle', 'base']) res.push(await arm(a));
-    say(`keys-draft-${words}`, res);
+    const res = []; for (const a of ARMS) res.push(await arm(a));
+    say(`keys-draft-${words}`, brief(res)); pool('draft', res);
     const f = await open(words, 'journal');
     say(`open-freewrite-${words}`, f.st);
     if (!f.up) { complete = false; continue; }
@@ -249,8 +257,15 @@ await withHarness(async (app) => {
     say(`live-freewrite-1366-${words}`, { ms: LF.ms, pages: LF.pages, scale: LF.scale, agree: agree(M.snips, LF.snips) });
     { const S = await shellCheck(HTML_D, LF.snips, rows); say(`shell-vs-freewrite-1366-${words}`, { pages: S.pages, vsLive: S.vsLive }); }
     await caretEnd('journal');
-    const resF = []; for (const a of ['base', 'sync', 'idle', 'base']) resF.push(await arm(a));
-    say(`keys-freewrite-${words}`, resF);
+    const resF = []; for (const a of ARMS) resF.push(await arm(a));
+    say(`keys-freewrite-${words}`, brief(resF)); pool('freewrite', resF);
+  }
+  if (BOX) {
+    const stat = (t) => ({ n: t.length, med: med(t), p90: p90(t), max: mx(t), over40: t.filter((x) => x > 40).length, over50: t.filter((x) => x > 50).length });
+    const out = {}; for (const m of Object.keys(POOL)) { out[m] = {}; for (const a of Object.keys(POOL[m])) out[m][a] = { key: stat(POOL[m][a].ts), work: a === 'base' ? null : stat(POOL[m][a].work) }; }
+    console.log(`PB-BOX ${JSON.stringify(out)}`);
+    console.log(`PB-PROBE: ${complete && POOL.draft && POOL.freewrite ? 'DONE' : 'INCOMPLETE'}`);
+    return;
   }
 
   // ---- DRAW NEAR THE SCREEN: Draft at 20k and 50k, content-visibility:auto on the rows (injected) against without
