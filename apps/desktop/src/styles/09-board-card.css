@@ -466,3 +466,9 @@
 .wz-arrival .wz-screen.wz-popout{ scrollbar-width:thin; scrollbar-color:#9C8A6E #241811; }
 [data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ scrollbar-color:#5F8F95 #04141A; }
 [data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ scrollbar-color:#9AA1A8 #151719; }
+
+/* MACHINA, a SHORT window (Fable Nov 18, 10:15 pm): no face ever covers the mark. The sign-in face keeps the doors' place at 768 and above; on a short window its top goes no higher than the mark's floor (--popout-floor), its fields scroll and its button row stays pinned. */
+@media (max-height: 700px){
+  [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='signin']{ --ptop:round(down, max(56%, 300px, var(--popout-floor, 0px)), 1px); top:var(--ptop); max-height:calc(100% - var(--ptop) - 24px); }
+  [data-theme='machina'] .wz-arrival .wz-popout[data-popout='signin'] .wz-popout-scroll{ min-height:0; }
+}

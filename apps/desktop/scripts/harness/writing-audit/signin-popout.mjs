@@ -22,6 +22,7 @@
 //   P23 Esc closes the panel like its back (spec draft 4 section 1 and section 6 check 4; Fable Nov 18, 6:05 pm): on the create-account face it goes to sign-in, on the sign-in face to the doors; on a LOCKED device the sign-in face does nothing and the create-account face still goes to sign-in; P23M the Esc handler taken away (the key swallowed before it, asserted landed) turns it red
 //   P8 (Flux, section 4) also reads the panel edge (1 px #8FB4AC), the corner brackets (--br #8FB4AC), the heading and the typed text (#E7F4F1); P8M the old values (the .45 cyan edge, #9fd8e8, #E8F6FA) turn it red
 //   P24 SHORT WINDOWS (1366x560), EVERY theme, both faces, with the error showing (the Wrizors' v6/v7 pass; Fable Nov 18, 8:15 pm): the panel's foot is at least 24 px above the window's foot and its top never above the mark's floor; the error line, the button and the links/back sit inside the panel and the window; on the create-account face (where the fields scroll) the button does not move when the fields scroll; P24M the old cap (max-height none) pushes the foot off the window, P24M2 the old build (the panel scrolls as one) moves the button, both asserted landed
+//   P24 (Machina, Fable Nov 18, 10:15 pm) the sign-in face too clears the mark at 1366x560: its top is no higher than the floor (337); P24M3 the old top (313, the doors' place) turns it red, asserted landed
 //   P24 also reads that the button never overlaps the links row below it (the Machina sign-in frame at 560 with an error showed them overlapped)
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
@@ -254,7 +255,7 @@ await withHarness(async (app) => {
   // ---- P24 / P25: short windows, the button row pinned, the button at rest after the error
   {
     const SHORT = "(() => { const root = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); if (!p) return null; const r = p.getBoundingClientRect(); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back') || p.querySelector('.wz-popout-switch'); const sc = p.querySelector('.wz-popout-scroll'); const e = p.querySelector('.wz-error'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; const q = (x) => Math.round(x * 10) / 10; const linkBelow = !(p.getAttribute('data-popout') === 'account' && document.documentElement.getAttribute('data-theme') === 'machina'); const floor = parseFloat(root.style.getPropertyValue('--popout-floor')) || 0; return { face: p.getAttribute('data-popout'), linkBelow, top: q(r.top), bottom: q(r.bottom), winH: innerHeight, floor, topInRoot: q(r.top - root.getBoundingClientRect().top), btnTop: q(br.top), btnBottom: q(br.bottom), linkBottom: q(kr.bottom), linkTop: q(kr.top), errBottom: er ? q(er.bottom) : null, scrolls: sc ? sc.scrollHeight > sc.clientHeight + 1 : false, panelScrolls: p.scrollHeight > p.clientHeight + 1 }; })()";
-    const floorApplies = (g) => cfg.theme === 'flux' || (cfg.theme === 'machina' && g.face === 'account');
+    const floorApplies = (g) => cfg.theme === 'flux' || cfg.theme === 'machina';
     const shortOk = (g) => !!g && g.bottom <= g.winH - 24 + 0.5 && (!floorApplies(g) || g.topInRoot >= g.floor - 0.5) && g.btnTop >= g.top - 0.5 && g.btnBottom <= g.bottom + 0.5 && g.linkBottom <= g.bottom + 0.5 && (!g.linkBelow || g.btnBottom <= g.linkTop + 0.5) && g.btnBottom <= g.winH && g.errBottom !== null && g.errBottom <= g.btnTop + 0.5 && !g.panelScrolls;
     const BTN = "(() => { const b = document.querySelector('.wz-popout button[type=submit]'); const cs = getComputedStyle(b); const a = document.activeElement; return { color: cs.color, border: cs.borderTopColor, shadow: cs.boxShadow, active: a === b, focusVisible: b.matches(':focus-visible'), onTick: !!a && a.classList.contains('wz-adult-box') }; })()";
     const SCROLLTO = (end) => `(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const y = ${end ? '1e6' : '0'}; if (sc) sc.scrollTop = y; p.scrollTop = y; return true; })()`;
@@ -312,6 +313,13 @@ await withHarness(async (app) => {
     await ev(SCROLLTO(true)); await sleep(150); const z1 = await ev(BTNY);
     check('P24M2', Math.abs(z0 - z1) > 1, `the old build (the panel scrolls as one; landed: button top ${z0} then ${z1}): P24's pinned read goes RED`);
     await ev("document.getElementById('mut-asone').remove(); true"); await sleep(300);
+    if (cfg.theme === 'machina') {
+      await goFace('signin');
+      await ev("(() => { const st = document.createElement('style'); st.id = 'mut-top313'; st.textContent = '.wz-arrival .wz-screen.wz-popout[data-popout=signin]{ top:313px !important; max-height:calc(100% - 313px - 24px) !important; }'; document.head.appendChild(st); return true; })()"); await sleep(400);
+      const m3 = await ev(SHORT);
+      check('P24M3', !!m3 && m3.topInRoot < m3.floor - 0.5, `the old sign-in top (landed: top ${m3 && m3.topInRoot}, the mark's floor ${m3 && m3.floor}): P24's floor read goes RED`);
+      await ev("document.getElementById('mut-top313').remove(); true"); await sleep(300);
+    }
     await app.emulateDpr(1, 1366, 768); await sleep(800);
     await goFace('signin'); await goFace('account');
   }
