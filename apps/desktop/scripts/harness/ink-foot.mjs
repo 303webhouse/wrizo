@@ -88,9 +88,8 @@ await withHarness(async (app) => {
     judge(r1, '');
     ok(`K5 ${tag}: the canvas is not the page (backing ${r1.canvasPx}, the scroller ${Math.round(g.scrollClient)} px tall)`, Number(String(r1.canvasPx).split('x')[1]) <= 4 * g.scrollClient + 512, r1.canvasPx);
     await app.reload();
-    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after reload' });
     await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
-    await openPage(id);
+    await openPage(id);   // the hash is still the page's: a reload lands on it
     if (words > 200) { await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(700); }
     judge(await app.evalJs(READ(id)), ' (after a reload)');
   };
