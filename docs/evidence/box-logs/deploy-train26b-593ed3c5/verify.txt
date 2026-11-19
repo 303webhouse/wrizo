@@ -1,0 +1,5 @@
+healthz 200 {"ok":true,"build":"index-C_lD8ill"}
+auth/me 401
+served index-C_lD8ill.js 1084531 bytes md5 43bc1bd27a1d  (tested build of 593ed3c5: identical)
+served index-CPtwwN__.css 267816 bytes md5 6c1c87c5311d  (unchanged; tested build: identical)
+rail probe (smoke account, statuses only): GET /api/rail 401 (no cookie) / 200 keys=rail (signed in); GET /api/box-picture/<none> 404; logout 204
