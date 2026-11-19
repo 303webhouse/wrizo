@@ -207,7 +207,9 @@ await withHarness(async (app) => {
 
     // (3), the else-branch: in the zoom at 1366 the 1.6x page leaves under 200px a side - opening the Tutor after the Tools closes the Tools
     await app.emulateDpr(1, 1366, 768);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms a Draft page (it is read by nothing); the page is zoomed by being in Free Write. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);
     if (await openPage(app, id)) {
       const z0 = await app.evalJs(GEO);
       const zl = z0 && z0.page && z0.stage ? z0.page.left - z0.stage.left : null; const zr = z0 && z0.page && z0.stage ? z0.stage.right - z0.page.right : null;
@@ -271,7 +273,9 @@ await withHarness(async (app) => {
       }
       await setOpen(app, 'tutor', false);
     } else ok(`${th.name} 1366x768 zoomed fixture: the page opened`, false, '');
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'off')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms a Draft page (it is read by nothing); the page is zoomed by being in Free Write. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'off')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting')`);
   }
 
   // (7) reduced motion, Arbor at 1366: the first read after the press already shows the drawer at rest, at its final rect
@@ -308,7 +312,9 @@ await withHarness(async (app) => {
   // CD: the Cascade docks on a ZOOMED page where the painted page leaves room on its left; refused below the floor (the control)
   const dockAt = async (w, h) => {
     await app.emulateDpr(1, w, h);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid('plateau')}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms a Draft page (it is read by nothing); the page is zoomed by being in Free Write. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid('plateau')}', 'on')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${pid('plateau')}', 'journal')`);
     if (!(await openPage(app, pid('plateau')))) return null;
     const g = await app.evalJs(GEO);
     await app.evalJs("document.querySelector('.wz-strip-item[data-category=journal]')?.click()"); await sleep(200);
@@ -325,7 +331,9 @@ await withHarness(async (app) => {
   const cdTight = await dockAt(1100, 900);
   ok('CD (control): on a ZOOMED page at 1100 the painted page leaves under 120px, and the dock is REFUSED (the survey closes instead) - the floor still bites',
     !!cdTight && cdTight.zoom && cdTight.roomL != null && cdTight.roomL < 120 && cdTight.survey && cdTight.docked !== 'true', J(cdTight));
-  await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid('plateau')}', 'off')`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms a Draft page (it is read by nothing); the page is zoomed by being in Free Write. The original line, verbatim:
+  // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid('plateau')}', 'off')`);
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${pid('plateau')}', 'drafting')`);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);

@@ -147,7 +147,9 @@ await withHarness(async (app) => {
       // a fresh page each case (the hint's struck words change the text), Free Write, the view named
       await app.evalJs("location.hash = '#/'"); await sleep(300);
       await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text: PARA, createdAt: new Date().toISOString(), origin: null, source: 'page' })})`);
-      await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal'); localStorage.setItem('wrizo-typewriter-page-${id}', '${zoom ? 'on' : 'off'}'); localStorage.setItem('wrizo-theme', '${th.id}')`);
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
+      // await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal'); localStorage.setItem('wrizo-typewriter-page-${id}', '${zoom ? 'on' : 'off'}'); localStorage.setItem('wrizo-theme', '${th.id}')`);
+      await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${zoom ? 'journal' : 'drafting'}'); localStorage.setItem('wrizo-theme', '${th.id}')`);   // the zoom is Free Write, the normal view is Draft
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       await app.reload();
       await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });

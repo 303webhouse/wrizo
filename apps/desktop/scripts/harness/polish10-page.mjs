@@ -184,11 +184,15 @@ await withHarness(async (app) => {
     // P5-ALIGN (ruled (a), Fable Oct 30). The three strokes are on the canvas. Read the ink's bands (one per stroke) in the zoom, leave it (the writer's own control), read again, return, read again.
     const zBands = await app.evalJs(INKBANDS); const zg = await app.evalJs(P5PROBE);
     await app.evalJs("location.hash = '#/'"); await sleep(300);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'drafting')`);   // leave the zoom: the normal view is Draft
     let nBands = null; let ng = null; let viewNormal = null;
     if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nBands = await app.evalJs(INKBANDS); ng = await app.evalJs(P5PROBE); }
     await app.evalJs("location.hash = '#/'"); await sleep(300);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'journal')`);   // back to the zoom: Free Write
     let rBands = null; let rg = null; let viewZoom = null;
     if (await openPage(app, fid)) { viewZoom = (await setView(app, true)) === true; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(500); rBands = await app.evalJs(INKBANDS); rg = await app.evalJs(P5PROBE); }
     const rel = (bands, g) => (bands && g ? bands.map((b) => (b.top - g.lineTop) / g.scale) : null);
