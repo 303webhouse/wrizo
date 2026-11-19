@@ -101,7 +101,7 @@ try { await withHarness(async (app) => {
   // const linkC = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : null;
   const linkHex = lh ? [0, 2, 4].map((i) => parseInt(lh[1].slice(i, i + 2), 16)) : null;
   const linkNow = hex && lm ? cr2([+lm[1], +lm[2], +lm[3]].map((v, i) => v * +lm[4] + hex[i] * (1 - +lm[4])), hex) : (hex && linkHex ? cr2(linkHex, hex) : null);   // an rgba link composited on the ground, or an opaque hex link as it is
-  // THE FIXED CEILING (Fable, Nov 18: "add a fixed ceiling at the old bar"): the approved opaque link reads about 5.3:1, stronger than the old rgba(0,194,255,.36) link (about 3.6:1). Left as the bar it would loosen TAME and put the old full-strength drawing (3.62:1) UNDER it, so the red-first clause could never hold.
+  // THE FIXED CEILING (Fable, Nov 18: "add a fixed ceiling at the old bar"): the approved opaque link reads about 5.3:1, stronger than the old rgba(0,194,255,.36) link (2.14:1; the 3.6 once written here was the old full-strength DRAWING, not the link). Left as the bar it would loosen TAME and put the old full-strength drawing (3.62:1) UNDER it, so the red-first clause could never hold.
   // The bar is the FAINTER of the two: the link as drawn now, and the old link's contrast on the same ground.
   const OLD_LINK = [0, 194, 255, 0.36];
   const linkOld = hex ? cr2(OLD_LINK.slice(0, 3).map((v, i) => v * OLD_LINK[3] + hex[i] * (1 - OLD_LINK[3])), hex) : null;
@@ -112,6 +112,16 @@ try { await withHarness(async (app) => {
   const oldUrl = await ev(`(() => { const c = document.createElement('canvas'); c.width = 400; c.height = 120; const x = c.getContext('2d'); x.strokeStyle = 'rgba(42,106,118,0.550)'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(20, 60); x.lineTo(380, 60); x.lineTo(380, 100); x.stroke(); x.fillStyle = 'rgba(87,208,245,0.350)'; x.beginPath(); x.rect(378, 98, 4, 4); x.fill(); return c.toDataURL('image/png'); })()`);
   const oldC = oldUrl && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(oldUrl)}, ${JSON.stringify(hex)})`) : null;
   ok(`TAME the strongest pixel of the ground (${tame && tame.max.toFixed(2)}:1) is fainter than the faintest real link (${linkC && linkC.toFixed(2)}:1), and the reader goes RED on the old full-strength drawing (${oldC && oldC.max.toFixed(2)}:1)`, !!tame && linkC !== null && tame.max < linkC && !!oldC && oldC.max >= linkC, JSON.stringify({ tame, linkC, oldC, hex }));
+  // TAME-CEIL (Fable, Nov 18: "hold the ground's strongest pixel under the OLD bar, as a fixed number written in the check"). The old link, rgba(0,194,255,.36) on the dark ground #020c10, reads 2.136:1 -> 2.14 WRITTEN HERE, not computed
+  // from the source, so a later link or ground edit cannot move it. It sits beside the line above (every ground trace fainter than the faintest link as drawn): the approved opaque link reads 5.32:1, a ground trace could grow louder
+  // up to there and the line above would stay green; this line would not.
+  const OLD_BAR = 2.14;
+  ok(`TAME-CEIL the strongest pixel of the ground (${tame && tame.max.toFixed(2)}:1) stays under the old bar, a fixed ${OLD_BAR}:1 (the old link's contrast; the number is the old link's: ${linkOld && linkOld.toFixed(3)}:1 computed here agrees within 0.01)`, !!tame && tame.max < OLD_BAR && linkOld !== null && Math.abs(linkOld - OLD_BAR) < 0.01, JSON.stringify({ tame, OLD_BAR, linkOld }));
+  // the mutant: a louder ground trace (rgba(0,194,255,.55), about 3.5:1) that still sits UNDER the faintest link as drawn (5.32:1): the line above holds it (true), the fixed number does not (false), so only the new line goes red
+  const loudUrl = await ev(`(() => { const c = document.createElement('canvas'); c.width = 400; c.height = 120; const x = c.getContext('2d'); x.strokeStyle = 'rgba(0,194,255,0.550)'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(20, 60); x.lineTo(380, 60); x.stroke(); return c.toDataURL('image/png'); })()`);
+  const loudC = loudUrl && hex ? await ev(`window.__l1.maxContrast(${JSON.stringify(loudUrl)}, ${JSON.stringify(hex)})`) : null;
+  const underLink = (m) => !!m && linkNow !== null && m.max < linkNow, underOldBar = (m) => !!m && m.max < OLD_BAR;
+  ok(`MUT-CEIL (landed) a louder ground trace (${loudC && loudC.max.toFixed(2)}:1, above the old bar ${OLD_BAR}) that still sits under the faintest link as drawn (${linkNow && linkNow.toFixed(2)}:1): the faintest-link line holds it GREEN, the fixed old bar turns it RED, so only the new line goes red; the live ground is green on both`, !!loudC && loudC.max > OLD_BAR + 0.5 && underLink(loudC) === true && underOldBar(loudC) === false && underLink(tame) && underOldBar(tame), JSON.stringify({ loudC, linkNow, OLD_BAR, tame: tame && tame.max }));
   const rectOn = await ev('window.__l1.rects()');
   await ev("document.querySelector('[data-flux3-room-ground]').style.display = 'none'"); await sleep(250);
   const rectOff = await ev('window.__l1.rects()');

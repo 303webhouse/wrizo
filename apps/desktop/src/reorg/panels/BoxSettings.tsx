@@ -2,12 +2,12 @@ import { useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { lettersOf } from '../railData';
 import { setBoxLook, useBoxes } from '../railMemory';
+import { encodeBoxPicture, setBoxPictureSaved } from '../railSaved';
 import { SWATCHES } from '../RailBox';
 
 // BOX SETTINGS (step 4, frame R5; Nick, Nov 11: "one closed drop-down at the foot of Projects, for the Project she is in"). Letters (or none),
-// a colour (the five swatches, brass among them, or her own colour), a picture. ALL OF IT IN MEMORY ONLY (railMemory.setBoxLook): the box's
-// letters, colour and picture are new saved data, not approved until Nick's saved-data sitting, so a reload forgets them and nothing uploads
-// (a picture is read with FileReader into a data: URL in this tab's memory).
+// a colour (the five swatches, brass among them, or her own colour), a picture. SAVED WITH THE ACCOUNT (Nick's ruling, Nov 18; railSaved.ts):
+// the picture is made small on this device first (256 px square, WebP, 64 KB at most) and only that copy is uploaded, never her file.
 
 const SWATCH_NAMES: DeskTermId[] = ['reorgSwatchPale', 'reorgSwatchGrey', 'reorgSwatchBlue', 'reorgSwatchBrass', 'reorgSwatchOrange'];
 
@@ -21,9 +21,8 @@ export function BoxSettings({ id, name }: { id: string | null; name: string }) {
   const letters = look.letters !== undefined ? look.letters : lettersOf(name);
   const choosePicture = (f: File | undefined) => {
     if (!f || !/^image\//.test(f.type)) return;
-    const reader = new FileReader();
-    reader.onload = () => { if (typeof reader.result === 'string') setBoxLook(id, { picture: reader.result }); };
-    reader.readAsDataURL(f);
+    // a file the browser cannot read as a picture, or none that fits in 64 KB, changes nothing
+    void encodeBoxPicture(f).then((small) => { if (small) return setBoxPictureSaved(id, small.bytes, small.mime); }).catch(() => undefined);
   };
   return (
     <section className="wz-reorg-box-settings" data-box-settings={id} data-open={open ? 'true' : 'false'}>

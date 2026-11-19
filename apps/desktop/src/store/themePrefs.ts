@@ -56,6 +56,11 @@ const subs = new Set<(p: ThemePrefs) => void>();
 // NIGHT the light/dark choice stays. The SAVED choice is never touched (a 'dark' saved by night is still 'dark', and is the page again at
 // night): only the page in force follows the room. Read from <html>'s own attributes (the redesign, the theme, the room in force - arbor2/
 // mount.tsx), so this store imports nothing of Arbor's. Every other theme, and Arbor without the redesign, keeps the saved choice exactly.
+// #109 (FABLE, Nov 18, 1:45 pm: "night->day while typing cuts the page tone over at once: the switch waits for her next pause"): when the day room's
+// force starts or stops WHILE she writes (<html data-wz-writing>), the page in force is HELD where it stands - the attribute, the pen's inks and the
+// rows all read the held tone - and the switch lands at her next pause, when the room comes back (data-wz-writing leaves <html>). Either way:
+// night->day and day->night. In memory only.
+let held: PageTone | null = null;
 function arborDay(): boolean {
   if (typeof document === 'undefined') return false;
   const r = document.documentElement;
@@ -63,6 +68,7 @@ function arborDay(): boolean {
 }
 /** The page tone IN FORCE: the saved choice, except light in Arbor's day room (Nick, Nov 18). */
 export function effectivePage(prefs: ThemePrefs = current): PageTone {
+  if (held) return held;   // #109: held while she writes
   return arborDay() ? 'light' : prefs.page;
 }
 /** True while the page tone is not hers to choose (Arbor's day room): the Page row is not offered. */
@@ -100,16 +106,21 @@ export function initThemePrefs(): void {
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
     let was = `${effectivePage()}|${pageToneForced()}`;
     let wasForced = pageToneForced();
+    const put = () => { const root = document.documentElement; const page = effectivePage(); if (root.getAttribute('data-page') !== page && !root.hasAttribute('data-flux3-jacked')) root.setAttribute('data-page', page); };
     new MutationObserver(() => {
-      const page = effectivePage();
+      const root = document.documentElement;
+      const writing = root.getAttribute('data-wz-writing') === 'true';
       const forced = pageToneForced();
       if (forced !== wasForced) {
         wasForced = forced;
-        if (document.documentElement.getAttribute('data-page') !== page && !document.documentElement.hasAttribute('data-flux3-jacked')) document.documentElement.setAttribute('data-page', page);
+        // #109: while she writes, the page in force stays as drawn until her next pause
+        if (writing && held === null) { const drawn = root.getAttribute('data-page'); held = drawn === 'dark' || drawn === 'light' ? drawn : null; }
+        put();
       }
-      const now = `${page}|${forced}`;
+      if (!writing && held !== null) { held = null; put(); }   // her pause: the held switch lands
+      const now = `${effectivePage()}|${forced}`;
       if (now !== was) { was = now; toneSubs.forEach((fn) => fn()); }
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-arbor2', 'data-theme', 'data-arbor2-room'] });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-arbor2', 'data-theme', 'data-arbor2-room', 'data-wz-writing'] });
   }
 }
 

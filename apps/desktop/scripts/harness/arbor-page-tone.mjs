@@ -58,6 +58,11 @@ await withHarness(async (app) => {
   await app.evalJs(`location.hash = '#/page/${id}'`);
   await waitSoft(app, "!!document.querySelector('.desk-frame-stage .mode-page') && !!document.querySelector(\".wz-strip-item[data-category='theme']\")", { label: 'the page and the rail', timeout: 15000 });
   await sleep(800);
+  // (driver fix, Nov 18, train 25's pair, Actions 44406420415: a page opens in FREE WRITE - the zoomed Typewriter page, page-less by night by design
+  // (r22) - so at night the drawn-page clip, low in the page's box, read the COUNT ROW's cream plate there, the very strip #108 removes; with #108 it
+  // read the room. The page tone is read where a page is drawn: Draft, the framed page, its paper under the clip. Every assertion stands as written.)
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim().toLowerCase() === 'draft'); if (b) b.click(); return !!b; })()");
+  await waitSoft(app, "!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'Draft (the framed page)', timeout: 6000 }); await sleep(600);
   const keysBefore = await app.evalJs('Object.keys(localStorage).sort()');
 
   const setRoom = (room) => app.evalJs(`(() => { document.documentElement.setAttribute('data-room', ${J(room === 'day' ? 'light' : 'dark')}); return true; })()`);

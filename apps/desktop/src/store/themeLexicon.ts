@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme, type ThemeId } from './theme';
 import { REORG } from '../reorg/flag';
+import { ARBOR_CANVAS } from './lexicon/overrides/arbor';
 
 // TH1 Slice 1 — lexicon projection (canon §5). Display projection ONLY: data,
 // schema, routes, sync, and search keep the canonical nouns below forever — a
@@ -51,6 +52,9 @@ const CANONICAL: Record<TermId, TermForms> = {
 // module's own construction); 'script' is intentionally absent (unchanged,
 // "already dual-natured" per the canon).
 const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForms>>>>> = {
+  // ARBOR'S CANVAS (Nick, Nov 14; reorg-word-changes.md 4a): Arbor's surface is Canvas - its first override, so the default stays Board underneath
+  // (flag 4). On with the redesign (off only under the test-only ?arbor2=0) - lexicon/overrides/arbor.ts holds its strings and the switch.
+  ...(ARBOR_CANVAS ? { plateau: { board: { one: 'Canvas', many: 'Canvases' } } } : {}),
   flux: {
     page: { one: 'Doc', many: 'Docs' },
     drawer: { one: 'Drive', many: 'Drives' },

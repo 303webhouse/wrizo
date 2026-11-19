@@ -1,0 +1,6 @@
+healthz 200 {"ok":true,"build":"index-CZS0nPWO"}
+auth/me 401
+served index-CZS0nPWO.js 1084584 bytes md5 f8e01ef60f76  (tested build of 0c028eed: identical)
+served index-CFjm4f6A.css 268136 bytes md5 405d7a22af8a  (tested build: identical; the fog's three-file CSS change)
+smoke-login: PASS 6/6
+railway deployment list: b4597bee-8243-47ab-94f1-e58d8d7fc2d8 SUCCESS (2026-11-19 10:57:58 -07:00); e968d492-88c4-4aa3-af28-6a231c7a1bad (train 26b) REMOVING
