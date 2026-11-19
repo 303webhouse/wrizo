@@ -446,6 +446,8 @@
 [data-theme='machina'] .wz-arrival .wz-popout .wz-adult{ height:20px; margin:10px 0; line-height:20px; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-error{ line-height:18px; margin:0; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-link{ line-height:18px; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-popout-links{ margin-top:0; gap:0; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-form{ margin:0; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-btn{ height:36px; box-sizing:border-box; padding:0 18px; margin:0; line-height:34px; }
 [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ display:grid; grid-template-columns:1fr auto; grid-template-rows:auto minmax(0, 1fr) auto auto; align-items:center; gap:0; overflow:hidden; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-form{ display:contents; }

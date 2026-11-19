@@ -179,8 +179,9 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
     await sleep(500);
     const bk = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return { top: Math.round(r.top), want: Math.round(Math.max(window.innerHeight * 0.56, 300)), stage: document.querySelector('.wz-popout').dataset.popout }; })()");
-    const be = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom].every((v) => Math.abs(v - Math.round(v)) < 0.02); })()");
-    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2 && be === true, JSON.stringify({ ...bk, wholeEdges: be }));
+    const bEdges = await ev("(() => { const r = document.querySelector('.wz-popout').getBoundingClientRect(); return [r.left, r.right, r.top, r.bottom]; })()");
+    const be = bEdges.every((v) => Math.abs(v - Math.round(v)) < 0.02);
+    check('P10', bk.stage === 'signin' && Math.abs(bk.top - bk.want) <= 2 && be === true, JSON.stringify({ ...bk, wholeEdges: be, edges: bEdges }));
     await ev("document.querySelector('.wz-popout-switch').click()");
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face again', timeout: 6000 }).catch(() => {});
     await sleep(500);
