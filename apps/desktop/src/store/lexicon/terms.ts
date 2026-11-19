@@ -118,6 +118,8 @@ export type DeskTermId =
   | 'reorgNewDocHeading' | 'reorgKindBlank' | 'reorgKindScreenplay' | 'reorgKindResearch' | 'reorgKindMore' | 'reorgRecent' | 'reorgDefaults' | 'reorgTypewriter' | 'reorgProgressBars' | 'reorgOff' | 'reorgOn' | 'reorgWordsOne' | 'reorgWordsMany' | 'reorgNoProjectHeading' | 'reorgFile' | 'reorgTrashOne' | 'reorgTrash' | 'reorgUnfiledEmpty'
   // THE REORG'S TOP RAIL (src/reorg/TopRail.tsx, behind ?reorg=1 in Machina): new words only
   | 'reorgTopWhere' | 'reorgTopRename' | 'reorgTopPlace' | 'reorgTopPartOf' | 'reorgTopPlaceNoDoc' | 'reorgTopPlaceOne' | 'reorgTopPlaceMany' | 'reorgTopConnect' | 'reorgTopConnectAnother' | 'reorgTopConnectRecent' | 'reorgTopConnectNew' | 'reorgTopConnectHeld' | 'reorgTopConnectNewHeld' | 'reorgTopSearch' | 'reorgTopSearchSoon'
+  // THE REORG'S FRONT MENU (plan steps 3.1 and 3.2: reorg/frontTabs.ts, reorg/PartsList.tsx)
+  | 'reorgFrontLabel' | 'reorgFrontParts' | 'reorgPartsHead' | 'reorgPartsOf' | 'reorgPartN'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]

@@ -72,3 +72,22 @@
 [data-theme='machina'] .reorg-top-search:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-top-soon{ position:absolute; top:calc(100% + 10px); right:0; z-index:60; white-space:nowrap; padding:6px 10px;
   background:#F4F5F6; border:1px solid #23272B; color:#3A4047; font-family:var(--font-ui); font-size:12px; }
+
+/* THE REORG'S FRONT MENU, the PARTS tab (plan step 3.2, read-only; reorg/PartsList.tsx; the prototype's .row, .part-num, .row-meta). Scoped to
+   .reorg-parts, which only the reorg renders. */
+[data-theme='machina'] .reorg-parts{ display:flex; flex-direction:column; gap:4px; }
+[data-theme='machina'] .reorg-parts-head{ padding:2px 0 6px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .reorg-parts-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+[data-theme='machina'] .reorg-parts-row{ position:relative; display:flex; align-items:center; gap:10px; width:100%; min-height:34px; padding:0 8px 0 12px;
+  box-sizing:border-box; background:none; border:0; border-bottom:1px solid var(--ink-border); border-radius:0; text-align:left; cursor:pointer;
+  font-family:var(--font-ui); color:var(--text-hi); }
+[data-theme='machina'] .reorg-parts-row:hover .reorg-parts-name{ text-decoration:underline; text-underline-offset:3px; }
+[data-theme='machina'] .reorg-parts-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+/* the Part she is on: the rail's where-you-are edge, and her name in weight (colour is never the only signal) */
+[data-theme='machina'] .reorg-parts-row.is-here{ cursor:default; }
+[data-theme='machina'] .reorg-parts-row.is-here::before{ content:''; position:absolute; left:0; top:5px; bottom:5px; width:3px; background:var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:600; text-decoration:none; }
+[data-theme='machina'] .reorg-parts-num{ flex:none; width:18px; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); text-align:right; }
+[data-theme='machina'] .reorg-parts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+[data-theme='machina'] .reorg-parts-words{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
