@@ -169,6 +169,15 @@ const SIGNED_OUT = (() => {
       await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line' }); await sleep(500);
       await app.mouseMove(2, 2); await sleep(300);
     }),
+    // the same, with a ONE-line error (the server answers 401 "Wrong email or password."): the squeeze's other case
+    'signin-error1-short': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await settled(app, SIGNIN_UP);
+      await app.emulateDpr(1, 1366, 560); await sleep(900);
+      await app.evalJs("(() => { const f0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.resolve(new Response(JSON.stringify({ error: 'Wrong email or password.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })) : f0(u, o); document.querySelector('.wz-popout button[type=submit]').click(); return true; })()");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line' }); await sleep(500);
+      await app.mouseMove(2, 2); await sleep(300);
+    }),
     'signup-ticked': run(async (app) => {
       if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
       await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
