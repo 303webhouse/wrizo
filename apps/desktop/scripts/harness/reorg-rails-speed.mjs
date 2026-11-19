@@ -5,7 +5,7 @@
 // TWO ARMS, interleaved in rounds (the order alternates; one discarded warm-up), on the SAME page re-seeded to the same text through the app's seam, at
 // 1920x1080, in Draft with the Typewriter off:
 //   C  the control: Machina, the switch off (today's strip).
-//   R  Machina with ?reorg=1: the rail drawn, three pins on it (pinned through PROJECTS each round: pins live in memory, so a reload forgets them),
+//   R  Machina with ?reorg=1: the rail drawn, three pins on it (pinned through PROJECTS each round where not already pinned: since Nov 18 a reload keeps them),
 //      every pop-out closed, as she writes.
 // Keys: one character every ~90 ms; each key's latency read IN the page (keydown -> the second animation frame after its `beforeinput`: the
 // rhizome-latency / flux3-latency method, verbatim).
@@ -100,7 +100,9 @@ await withHarness(async (app) => {
     await sleep(1300);   // the mode switch's own re-persist lands ~1.1 s after it
     if (reorg) {
       await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click()"); await sleep(500);
-      for (const id of made.drawers) { await app.evalJs(`document.querySelector('[data-reorg-pin-toggle="${id}"]')?.click()`); await sleep(120); }
+      // pinned only if not pinned already: since Nick's ruling Nov 18 the pins are SAVED, so a reload keeps the last round's and a blind toggle
+      // would unpin them (run 44408993606, P1 read 0 pins in R rounds 2 and 4)
+      for (const id of made.drawers) { await app.evalJs(`(() => { const b = document.querySelector('[data-reorg-pin-toggle="${id}"]'); if (b && b.getAttribute('aria-pressed') !== 'true') b.click(); })()`); await sleep(120); }
       await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(600);
     }
     const where = await app.evalJs(`(() => { const root = document.documentElement, tab = document.querySelector('[data-mode-key][aria-selected="true"]'), tw = document.querySelector('.mode-scroll[data-typewriter]');

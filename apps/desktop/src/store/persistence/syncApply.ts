@@ -1,6 +1,7 @@
 import { clearSyncBases, getSyncBase, setSyncBase } from './syncBase';
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { clearProofingLocal } from '../proofing';
+import { clearRailLocal } from '../../reorg/railSavedKey';
 import { mergeBoxLists } from '../boxTombstones';
 import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, lastRaw, notify, onDisk, onDiskText, persistDirty, scheduleFlush, setPreFlush } from './core';
 import { mergeText } from '../textMerge';
@@ -217,5 +218,7 @@ export function resetLocalData(): void {
 
   // the proofing mirror goes out with everything else at sign-out, through its own store's function; unpushed words on this device go with it [persistence §30]
   clearProofingLocal();
+  // the reorg's rail (pins, boxes, the list-or-boxes switch) and any picture not yet uploaded go too: they are this account's
+  clearRailLocal();
   notify();
 }
