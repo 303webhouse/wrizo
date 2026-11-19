@@ -21,9 +21,9 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 
 const GEOM = `(() => { const q = (s) => document.querySelector(s); const sc = q('.mode-scroll'), sh = q('.wz-ink-sheet'), ed = q(${JSON.stringify(ED)}), cv = q('.ink-committed');
   if (!sc || !sh || !ed) return null; const s = sc.getBoundingClientRect(), h = sh.getBoundingClientRect(); const r = document.createRange(); r.selectNodeContents(ed); const rs = [...r.getClientRects()].filter((x) => x.height > 4); const last = rs.length ? Math.max(...rs.map((x) => x.bottom)) : null;
-  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const yAbove = s.bottom - 8; const hit = document.elementFromPoint(Math.round(h.left + h.width / 2), Math.round(yAbove));
+  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const foot = Math.min(s.bottom, window.innerHeight); const yAbove = foot - 8; const hit = document.elementFromPoint(Math.round(h.left + h.width / 2), Math.round(yAbove));
   const hitSheet = !!hit && !!hit.closest('.wz-ink-sheet');
-  return { scroll: { top: s.top, bottom: s.bottom, left: s.left, right: s.right }, sheet: { top: h.top, bottom: h.bottom, left: h.left, right: h.right, w: h.width }, lastLine: last, zoom, hitSheet, canvasPx: cv ? cv.width + 'x' + cv.height : null, scrollClient: sc.clientHeight, scrollTop: sc.scrollTop, scrollHeight: sc.scrollHeight }; })()`;
+  return { foot, scroll: { top: s.top, bottom: s.bottom, left: s.left, right: s.right }, sheet: { top: h.top, bottom: h.bottom, left: h.left, right: h.right, w: h.width }, lastLine: last, zoom, hitSheet, canvasPx: cv ? cv.width + 'x' + cv.height : null, scrollClient: sc.clientHeight, scrollTop: sc.scrollTop, scrollHeight: sc.scrollHeight }; })()`;
 // the stored strokes of a page, in px from the sheet's top (y * width + the text's origin) and the painted ink's own box (css px from the sheet's top)
 const READ = (id) => `(() => { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const e = rows.find((x) => x.id === ${JSON.stringify(id)}); const strokes = (e && e.strokes) || [];
   const cv = document.querySelector('.ink-committed'); const sh = cv.parentElement; const sr = sh.getBoundingClientRect(); const cr = cv.getBoundingClientRect(); const W = sr.width;
@@ -69,14 +69,14 @@ await withHarness(async (app) => {
     const g = await app.evalJs(GEOM);
     ok(`(premise) ${tag}: the page and the INK instrument are there (zoom reads ${g && g.zoom})`, !!g && tabbed && (zoom ? g.zoom === 'true' : g.zoom !== 'true'), JSON.stringify(g));
     if (!g || !tabbed) return;
-    ok(`K1 ${tag}: the sheet reaches the scroller's visible foot (sheet bottom ${Math.round(g.sheet.bottom)} vs scroller ${Math.round(g.scroll.bottom)}) and the pointer is routed to the ink just above that foot`, g.sheet.bottom >= g.scroll.bottom - 1 && g.hitSheet, JSON.stringify({ hitSheet: g.hitSheet, lastLine: g.lastLine }));
-    const footY = g.scroll.bottom - 24;
+    ok(`K1 ${tag}: the sheet reaches the paper's visible foot (sheet bottom ${Math.round(g.sheet.bottom)} vs ${Math.round(g.foot)}: the scroller's foot or the window's) and the pointer is routed to the ink just above that foot`, g.sheet.bottom >= g.foot - 1 && g.hitSheet, JSON.stringify({ hitSheet: g.hitSheet, lastLine: g.lastLine }));
+    const footY = g.foot - 24;
     const lastY = Math.min(g.lastLine - 8, footY - 60);
     const x0 = g.sheet.left + 120;
     const A = lerp({ x: x0, y: lastY }, { x: x0 + 40, y: footY }, 14);
     const B = lerp({ x: x0 + 160, y: footY - 40 }, { x: x0 + 300, y: footY - 40 }, 10);
     await penPath(app, A); await sleep(300); await penPath(app, B); await sleep(900);
-    const sheetTop = (await app.evalJs(GEOM)).sheet.top;
+    const sheetTop = g.sheet.top;   // read before the pen went down
     const want = { A: A[A.length - 1].y - sheetTop, B0: B[0].y - sheetTop };
     const judge = (r, when) => {
       ok(`K2${when} ${tag}: both strokes are SAVED whole: ${r.n} stored, A's lowest point ${r.low[0] !== undefined ? Math.round(r.low[0]) : '-'} (pen ${Math.round(want.A)}), B's first point ${r.first[1] !== undefined ? Math.round(r.first[1]) : '-'} (pen ${Math.round(want.B0)})`,
@@ -86,10 +86,11 @@ await withHarness(async (app) => {
     };
     const r1 = await app.evalJs(READ(id));
     judge(r1, '');
-    ok(`K5 ${tag}: the canvas is not the page (backing ${r1.canvasPx}, the scroller ${Math.round(g.scrollClient)} px tall)`, Number(String(r1.canvasPx).split('x')[1]) <= 4 * g.scrollClient + 512, r1.canvasPx);
+    ok(`K5 ${tag}: the canvas is not the page: its backing store (${r1.canvasPx}) ends within 300 px of the lowest ink or the visible foot, whichever is lower down`, Number(String(r1.canvasPx).split('x')[1]) <= Math.max(Math.max(...r1.low), g.scrollClient) + 300, r1.canvasPx);
     await app.reload();
     await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
     await openPage(id);   // the hash is still the page's: a reload lands on it
+    await sleep(1500);
     if (words > 200) { await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(700); }
     judge(await app.evalJs(READ(id)), ' (after a reload)');
   };
