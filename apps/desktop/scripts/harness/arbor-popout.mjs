@@ -3,6 +3,7 @@
 //   A2 the veil is the spec's: .wz-arrival[data-stage=signin]::after is rgba(10,5,3,.72), above the front layer and under the panel (z-index between the front's and the panel's), and as wide as the whole door
 //   A3 "New here? Create an account" swaps the panel's face in place (data-popout=account, the 18+ tick there) and the front door and the veil stay
 //   A4 Back puts the doors back: the front without `behind`, its Sign in door pressable again, no panel
+//   A5 Esc closes the panel like Back (spec draft 4 §1; Fable Nov 18, 6:05 pm): on sign-in it returns to the doors (the front without `behind`); M3 (mutant) the key swallowed before the handler (asserted landed) leaves the panel up
 //   M1 (mutant) the veil taken away (asserted LANDED): A2's read goes red
 //   M2 (mutant) the front door sent away as main sent it before the pop-out (class gone; asserted LANDED): A1's read goes red
 import { withHarness } from '../runtime-verify.mjs';
@@ -55,6 +56,15 @@ await withHarness(async (app) => {
   const back = await app.evalJs(READ);
   ok('A4 Back puts the doors back: no panel, the front without `behind`, its Sign in door pressable', !!back && back.pop === null && back.front && !back.frontBehind && back.signinDoor, J(back));
 
+  // A5: Esc (a trusted key), and its mutant
+  const esc = async () => { for (const type of ['rawKeyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 }); await sleep(600); };
+  await open(); await esc(); const e5 = await app.evalJs(READ);
+  ok('A5 Esc on the sign-in face returns to the doors: no panel, the front without `behind`, its Sign in door pressable', !!e5 && e5.pop === null && e5.front && !e5.frontBehind && e5.signinDoor, J(e5));
+  await open();
+  await app.evalJs("window.__escSwallow = (e) => { if (e.key === 'Escape') e.stopImmediatePropagation(); }; window.addEventListener('keydown', window.__escSwallow, true); true");
+  await esc(); const m3 = await app.evalJs(READ);
+  await app.evalJs("window.removeEventListener('keydown', window.__escSwallow, true); true");
+  ok(`M3 (mutant): the Esc handler taken away (key swallowed; LANDED: panel still ${J(m3 && m3.pop)}) - A5's read goes RED`, !!m3 && m3.pop === 'signin', J(m3));
   // M1: the veil taken away
   await open();
   await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = '.wz-arrival::after{ background:none !important; }'; document.head.appendChild(s); return true; })()");
@@ -70,7 +80,7 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-POPOUT PARKED: PASS (0 records) - a new file; it parks nothing of its own');
-const WANT = 6;
+const WANT = 8;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-POPOUT VERIFY: PASS (${checks.length} checks)` : `\nARBOR-POPOUT VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);
