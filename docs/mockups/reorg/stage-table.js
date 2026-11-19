@@ -13,7 +13,11 @@
     of JavaScript: NOT-RULED.md, 151.) A slip here leaves the menus saying the file did not load.
   - "stages": the columns, in order. Arbor's word for each is "was". "shown": false keeps a
     column off screen (Workshopping). "split": false means no split screen in that stage.
-    "page" is the table's resting surface, shown in the panel as words and not drawn.
+    "page" is the table's resting surface, shown in the panel as words. "drawn" says which
+    one the page draws (Fable, Nov 19; NOT RULED): "chrome-fades" (SPRINT: the page takes
+    typing and the chrome fades as she types), "whole-doc" (FINALIZE: the whole Doc in one
+    read-only scroll), "as-today" (one Part, as in milestones 1 to 5). Take "drawn" away and
+    the page shows one Part, as today, with the words marked "not drawn".
   - "onAPage": the rows, one for each tab of the two menus, and "THE SESSION" at the Front
     menu's foot. A row has one cell for each stage. A cell is
       { "offers": [ ... ], "note": "the table's aside" }
@@ -35,6 +39,7 @@ window.REORG_STAGE_TABLE =
       "key": "SPRINT", "was": "Free Writing", "shown": true,
       "job": "Get words out. Don't look back.",
       "page": "One Part. The chrome fades as she types. Typewriter mode if she has it on (Q8).",
+      "drawn": "chrome-fades",
       "split": false,
       "splitNote": "No split screen in SPRINT (Q25): Typewriter mode is off in a split, and SPRINT is where Typewriter mode lives."
     },
@@ -42,6 +47,7 @@ window.REORG_STAGE_TABLE =
       "key": "BUILD", "was": "Drafting", "shown": true,
       "job": "Build the piece.",
       "page": "One Part, on the page as today.",
+      "drawn": "as-today",
       "split": true
     },
     {
@@ -54,6 +60,7 @@ window.REORG_STAGE_TABLE =
       "key": "FINALIZE", "was": "Publishing", "shown": true,
       "job": "Send it out.",
       "page": "The whole Doc in one scroll, read-only, as it will go out (Q9).",
+      "drawn": "whole-doc",
       "split": true
     },
     {
@@ -112,7 +119,7 @@ window.REORG_STAGE_TABLE =
             { "say": "Level", "new": true },
             { "say": "Colour", "new": true },
             { "say": "Make it its own Doc", "new": true },
-            { "say": "Page setup", "detail": "margins, numbers, headers, footers" },
+            { "say": "Page setup", "detail": "margins, numbers, headers, footers. The word is PROPOSED: the Wrizors choose it after Nick's walk." },
             "Kind",
             "Style guide"
           ],
@@ -124,7 +131,7 @@ window.REORG_STAGE_TABLE =
             { "say": "Join", "new": true },
             { "say": "Move", "new": true },
             { "say": "Colour", "new": true },
-            { "say": "Page setup", "detail": "margins, numbers, headers, footers" },
+            { "say": "Page setup", "detail": "margins, numbers, headers, footers. The word is PROPOSED: the Wrizors choose it after Nick's walk." },
             "Kind",
             "Style guide"
           ]
@@ -133,7 +140,7 @@ window.REORG_STAGE_TABLE =
           "offers": [
             { "say": "Tick Parts in or out", "new": true, "detail": "what goes out" },
             { "say": "Order what goes out", "new": true },
-            { "say": "Page setup", "detail": "margins, numbers, headers, footers" },
+            { "say": "Page setup", "detail": "margins, numbers, headers, footers. The word is PROPOSED: the Wrizors choose it after Nick's walk." },
             "Copy My Words",
             "Copy Formatted",
             "Download"
@@ -148,9 +155,9 @@ window.REORG_STAGE_TABLE =
       },
       "THE SESSION": {
         "was": "Front menu · the session (Q7)",
-        "SPRINT": { "offers": ["Typewriter mode", "The goal", "What the goal counts", "The timer", "Progress"] },
-        "BUILD": { "offers": ["The goal", "The timer", "Progress"] },
-        "EDIT": { "offers": ["Progress"], "note": "Progress only." },
+        "SPRINT": { "offers": ["Typewriter mode", "The goal", "What the goal counts", "The timer", { "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }] },
+        "BUILD": { "offers": ["The goal", "The timer", { "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }] },
+        "EDIT": { "offers": [{ "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }], "note": "Progress only." },
         "FINALIZE": { "offers": [], "note": "Nothing." },
         "WORKSHOPPING": { "offers": [], "note": "Nothing." }
       }
@@ -231,7 +238,7 @@ window.REORG_STAGE_TABLE =
       "FEEDBACK": {
         "was": "Back menu · Help (the Tutor)",
         "SPRINT": {
-          "offers": ["Writing Prompt", "Unblock", { "say": "Sprint Tips", "detail": "Arbor's Free Writing Tips" }],
+          "offers": ["Writing Prompt", "Unblock", { "say": "Sprint Tips", "detail": "Arbor's Free Writing Tips. The word is PROPOSED: the Wrizors choose it after Nick's walk." }],
           "note": "The Consultant's three starters."
         },
         "BUILD": {

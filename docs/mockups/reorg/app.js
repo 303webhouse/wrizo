@@ -222,6 +222,9 @@
   function offersAct(cell, act) { return !!cell && cell.offers.some(function (o) { return o.act === act; }); }
   /* Is the split screen offered in the stage she is in? Not in SPRINT (the table's Q25). */
   function splitOffered() { return stageOf(S.stage).split !== false; }
+  /* What the page draws in the stage she is in (Fable, Nov 19; NOT RULED): "chrome-fades" in SPRINT,
+     "whole-doc" in FINALIZE, '' for one Part as today. The page's rectangle is the same in every stage. */
+  function pageWay(key) { var w = stageOf(key || S.stage).drawn; return w === 'chrome-fades' || w === 'whole-doc' ? w : ''; }
   function stageTitle(key) {
     var s = stageOf(key);
     return key + (s.was ? ', was ' + s.was : '') + (s.job ? ': ' + s.job : '') + ' What it offers is NOT RULED.';
@@ -371,7 +374,9 @@
       (S.partsDrop ? '<span class="crumb-v" aria-hidden="true">v</span>' : '') + '</button>' +
       '<span class="bar-spring"></span>' +
       /* In a split the stage buttons fade and she stays in her stage, which stays readable (section 6 E). */
-      '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close the asset\u2019s side to change stage."' : '') + '>';
+      '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close the asset\u2019s side to change stage."' : '') + '>' +
+      /* The strip's own tag, in view in every stage, in a split and while the chrome fades (Fable, Nov 19). */
+      '<span class="stages-tag" title="The stages: what each offers, and what the page draws in SPRINT and FINALIZE, are NOT RULED.">' + tag('NOT RULED') + '</span>';
     STAGES.forEach(function (s) {
       h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + esc(s) + '"' + (s === S.stage ? ' aria-current="true"' : '') +
         (S.split ? ' disabled' : ' title="' + esc(stageTitle(s)) + '"') + '>' + esc(s) + '</button>';
@@ -446,10 +451,16 @@
       var sa = stageOf(from).split !== false, sb = stageOf(to).split !== false;
       b += '<div class="changed-menu">THE SPLIT SCREEN</div><div class="changed-row"><span class="changed-tab plain">OPEN BESIDE</span><ul>' +
         (sa === sb ? li('same', '', sb ? 'offered in both' : 'offered in neither') : li(sb ? 'gain' : 'lose', sb ? '+' : '\u2212', (sb ? 'offered in ' : 'not offered in ') + esc(to))) + '</ul></div>';
-      /* The table's resting surface: words only. The brief: a stage changes what the two menus offer, never the page. */
-      b += '<div class="changed-menu">ON THE PAGE \u00b7 NOT DRAWN</div>' +
+      /* The table's resting surface. SPRINT's fade and FINALIZE's whole Doc are drawn (Fable, Nov 19); EDIT's lens
+         marks are not. The page's rectangle never changes. */
+      var drawn = st.drawn === 'chrome-fades' || st.drawn === 'whole-doc' || st.drawn === 'as-today';
+      b += '<div class="changed-menu">ON THE PAGE \u00b7 ' + (drawn ? 'DRAWN' : 'NOT DRAWN') + '</div>' +
         '<div class="changed-page">' + esc(st.page || 'The table says nothing here.') + '</div>' +
-        '<div class="changed-page quiet">The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page is the same in every stage, and a stage changes only what the two menus offer.</div>';
+        '<div class="changed-page quiet">' + (st.drawn === 'chrome-fades' ? 'Drawn: the page takes typing in ' + esc(to) + ', and as she types the menus, the rail and the top bar fade, all but the stages. Moving the mouse brings them back. Typewriter mode is not drawn.'
+          : st.drawn === 'whole-doc' ? 'Drawn: every Part in one scroll, read-only. The arrows and the Parts list go to a Part\u2019s place in the scroll.'
+          : st.drawn === 'as-today' ? 'Drawn: one Part, as in every stage before the stages.'
+          : 'The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page shows one Part, as today.') +
+        ' The page\u2019s size and place do not change.</div>';
     }
     h += '<div class="changed-body" data-keep="changed">' + b + '</div>' +
       '<div class="changed-foot">From stage-table.js: change a cell and reload. In the menus, a blue edge marks what the table sets in bold, new with the reorg. Workshopping is in the file and kept off screen.</div></section>';
@@ -1219,29 +1230,65 @@
 
   function renderPage() {
     var d = docHere(), parts = partsOf(d), i = d.partHere, part = parts[i - 1], n = parts.length;
-    var key = (S.here.project || '') + '/' + d.id + '/' + i;
-    var old = document.getElementById('part-scroll');
-    var keep = old && el.page.getAttribute('data-key') === key ? old.scrollTop : 0;
-    var h = '<div class="part-scroll" id="part-scroll">';
-    if (!(d.isNew && n === 1)) { h += '<h1>' + esc(part.name ? i + '. ' + part.name : d.name) + '</h1>'; }
-    if (!part.paras.length) { h += '<p><span class="caret" aria-hidden="true"></span></p>'; }
+    var way = pageWay(), whole = way === 'whole-doc', writes = way === 'chrome-fades';
+    var key = (S.here.project || '') + '/' + d.id + '/' + (whole ? 'whole' : i);
+    var old = document.getElementById('part-scroll'), fresh = el.page.getAttribute('data-key') !== key;
+    var keep = old && !fresh ? old.scrollTop : 0;
     /* While the search is over her Doc's words, each found word on the page is marked (#F6ECBE).
        The mark changes no letter's width, so her words do not re-wrap. */
     var marks = R && R.here.length ? R.q : '';
-    var cur = marks && R.cur && R.cur.part === i ? R.cur : null;
-    part.paras.forEach(function (t, k) {
-      h += '<p>' + (marks ? markAll(t, marks, cur && cur.para === k ? cur.at : -1) : esc(t)) + '</p>';
-    });
-    if (n > 1) { h += partFoot(d, i); }
+    function paras(pt, j) {
+      var cur = marks && R.cur && R.cur.part === j ? R.cur : null;
+      return pt.paras.map(function (t, k) { return '<p>' + (marks ? markAll(t, marks, cur && cur.para === k ? cur.at : -1) : esc(t)) + '</p>'; }).join('');
+    }
+    var h = '<div class="part-scroll' + (whole ? ' is-whole' : '') + '" id="part-scroll">';
+    if (whole) {
+      /* FINALIZE: every Part in one scroll, read-only, as it will go out (Fable, Nov 19; NOT RULED). */
+      parts.forEach(function (pt, k) {
+        var j = k + 1;
+        h += '<section class="whole-part" id="whole-part-' + j + '">';
+        if (!(d.isNew && n === 1)) { h += '<h1>' + esc(pt.name ? j + '. ' + pt.name : d.name) + '</h1>'; }
+        h += pt.paras.length ? paras(pt, j) : '<p class="whole-empty">Nothing written in this Part yet.</p>';
+        h += '</section>';
+      });
+    } else {
+      if (!(d.isNew && n === 1)) { h += '<h1>' + esc(part.name ? i + '. ' + part.name : d.name) + '</h1>'; }
+      /* SPRINT: the Part's words take typing, so the chrome can fade as she types (Fable, Nov 19; NOT RULED).
+         In the other stages the page is a picture, as in milestones 1 to 5. */
+      if (writes) {
+        h += '<div class="page-words" id="page-words" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="' + esc(part.name || d.name) + '">' +
+          (part.paras.length ? paras(part, i) : '<p><br></p>') + '</div>';
+      } else {
+        if (!part.paras.length) { h += '<p><span class="caret" aria-hidden="true"></span></p>'; }
+        h += paras(part, i);
+      }
+      if (n > 1) { h += partFoot(d, i); }
+    }
     h += '</div>';
+    if (whole) {
+      h += '<div class="whole-label">' + tag('NOT RULED') + '<span>FINALIZE \u00b7 the whole doc, read-only, as it will go out</span></div>';
+    }
     /* The Part's own scrollbar, capped by the two arrows (frame P2-12D). */
     h += '<span class="part-track" aria-hidden="true"></span><span class="part-thumb" id="part-thumb" aria-hidden="true"></span>';
     h += arrowBtn(d, -1) + arrowBtn(d, 1);
     el.page.innerHTML = h;
     el.page.setAttribute('data-key', key);
-    document.getElementById('part-scroll').scrollTop = keep;
+    var sc = document.getElementById('part-scroll');
+    sc.scrollTop = keep;
+    /* In the whole Doc, the arrows, the Parts list and the drop take her to the Part's place in the scroll. */
+    if (whole && (fresh || S.pageJump)) {
+      var sec = document.getElementById('whole-part-' + i);
+      sc.scrollTop = sec && i > 1 ? Math.max(0, sec.offsetTop - 48) : 0;
+      jumpedTo = sc.scrollTop;
+    }
+    S.pageJump = false;
     syncThumb();
+    renderFoot(d);
+  }
 
+  /* The line under the page. In the whole Doc, "Part 3 of 5" follows the scroll. */
+  function renderFoot(d) {
+    var parts = partsOf(d), i = d.partHere, part = parts[i - 1], n = parts.length;
     var words = part.words || 0;
     var bits = [
       part.count || plural(words, 'word', 'words'),
@@ -1265,6 +1312,48 @@
     th.style.top = (40 + Math.round((track - size) * sc.scrollTop / room)) + 'px';
   }
   el.page.addEventListener('scroll', syncThumb, true);
+  /* In the whole Doc, the Part she is reading is the one whose heading last passed the top of the page.
+     Only the top bar, the drop, the menus, the arrows and the line under the page follow it: the scroll is not redrawn. */
+  /* Where a jump to a Part left the scroll: a short last Part cannot reach the top, and the jump still holds. */
+  var jumpedTo = null;
+  el.page.addEventListener('scroll', function () {
+    var sc = document.getElementById('part-scroll');
+    if (S.board || !sc || !sc.classList.contains('is-whole')) { return; }
+    if (jumpedTo !== null && Math.abs(sc.scrollTop - jumpedTo) < 2) { return; }
+    jumpedTo = null;
+    var d = docHere(), secs = sc.querySelectorAll('.whole-part'), j = 1;
+    for (var k = 0; k < secs.length; k++) { if (secs[k].offsetTop - 60 <= sc.scrollTop) { j = k + 1; } }
+    if (sc.scrollTop > 0 && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) { j = secs.length; }
+    if (j === d.partHere) { return; }
+    d.partHere = j;
+    renderBar(); renderDrop(); renderMenus(); renderFoot(d);
+    ['up', 'down'].forEach(function (w) {
+      var a = el.page.querySelector('.part-arrow.' + w);
+      if (a) { a.outerHTML = arrowBtn(d, w === 'up' ? -1 : 1); }
+    });
+  }, true);
+
+  /* SPRINT: what she types goes into the Part, and the chrome fades as she types (Fable, Nov 19; NOT RULED).
+     Everything but the page and the stages fades; nothing moves. Moving the mouse brings it back. */
+  var fadeFrom = null;
+  el.page.addEventListener('input', function (e) {
+    var w = e.target.id === 'page-words' ? e.target : null;
+    if (!w) { return; }
+    var d = docHere(), part = partsOf(d)[d.partHere - 1], ps = w.querySelectorAll('p'), out = [];
+    for (var k = 0; k < ps.length; k++) { out.push(ps[k].textContent); }
+    if (!ps.length && w.textContent) { out = w.innerText.split('\n'); }
+    part.paras = out.filter(function (t, k2) { return t !== '' || k2 < out.length - 1; });
+    fadeChrome(true);
+  });
+  function fadeChrome(on) {
+    fadeFrom = null;
+    shell.classList.toggle('is-typing', !!on && pageWay() === 'chrome-fades' && !S.board);
+  }
+  document.addEventListener('pointermove', function (e) {
+    if (!shell.classList.contains('is-typing')) { return; }
+    if (!fadeFrom) { fadeFrom = { x: e.clientX, y: e.clientY }; return; }
+    if (Math.abs(e.clientX - fadeFrom.x) + Math.abs(e.clientY - fadeFrom.y) > 12) { fadeChrome(false); }
+  });
   el.page.addEventListener('pointerdown', function (e) {
     if (e.target.id !== 'part-thumb') { return; }
     var sc = document.getElementById('part-scroll');
@@ -1640,12 +1729,16 @@
         (splitOffered() ? '' : '; no split screen in this stage'));
     }
     if (S.changed.open && !S.board) {
-      say('NOT RULED', 'G \u00b7 What changed with this stage: ' + S.stage + (compareWith() ? ' against ' + compareWith() : '') + '; the page\u2019s line is the table\u2019s words, not drawn');
+      say('NOT RULED', 'G \u00b7 What changed with this stage: ' + S.stage + (compareWith() ? ' against ' + compareWith() : '') +
+        (pageWay(S.stage) ? '; the page as drawn in this stage (Fable, Nov 19)' : '; the page\u2019s line is the table\u2019s words'));
     }
+    var way = S.board ? '' : pageWay();
     if (!bits.length) {
       say('RULED', 'A \u00b7 ' + (!pins ? 'The rail with no pins (Ruled-3)' : S.pinView === 'boxes' ? 'The rail at rest, pins as boxes (Ruled-1)' : 'The rail at rest, pins as a list (Ruled-2)'));
-      say('RULED', 'B \u00b7 One Part on the page: arrows on its scrollbar, the line at its foot, its place in the top bar (P2-12D)');
+      if (way !== 'whole-doc') { say('RULED', 'B \u00b7 One Part on the page: arrows on its scrollbar, the line at its foot, its place in the top bar (P2-12D)'); }
     }
+    if (way === 'whole-doc') { say('NOT RULED', 'G \u00b7 FINALIZE: the whole Doc in one read-only scroll; the arrows and the Parts list go to a Part\u2019s place in it (Fable, Nov 19)'); }
+    if (way === 'chrome-fades') { say('NOT RULED', 'G \u00b7 SPRINT: the page takes typing, and as she types all but the page and the stages fades; the mouse brings it back (Fable, Nov 19)'); }
     if (!nowPid()) { say('PROPOSED', 'In no Project: the rail\u2019s top box is empty and reads Unfiled'); }
     if (d.isNew && !S.board) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
 
@@ -1674,6 +1767,7 @@
     if (S.split && !splitOk()) { S.split = null; }
     place();
     R = S.search.open ? runSearch() : null;
+    if (pageWay() !== 'chrome-fades' || S.board) { shell.classList.remove('is-typing'); }
     renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderBeside(); renderBoard(); renderDrop(); renderChanged(); renderTag();
     if (S.search.jump) { S.search.jump = false; showCur(); }
   }
@@ -1746,10 +1840,17 @@
     S.partsDrop = false;
     S.back.part = null;
   }
+  /* In FINALIZE the whole Doc is read-only, so Replace changes nothing there (NOT RULED). */
+  function readOnly() {
+    if (pageWay() !== 'whole-doc') { return false; }
+    note('NOT RULED', 'In ' + S.stage + ' the Doc is read-only: Replace changes nothing here. Go back to BUILD or EDIT to change words.');
+    return true;
+  }
   function goPart(i) {
     var d = docHere(), n = partsOf(d).length;
     d.partHere = Math.min(n, Math.max(1, i));
     S.partsDrop = false;
+    S.pageJump = true;
   }
   function newProject() {
     var name = uniqueName('Untitled project', D.projects.map(function (p) { return p.name; }));
@@ -1780,7 +1881,11 @@
       if (!T) { note('NOT RULED', s + ': stage-table.js did not load, so the menus cannot show what this stage offers.'); return; }
       n = stageCount(was, s);
       note('NOT RULED', s + (st.was ? ' (was ' + st.was + ')' : '') + (st.job ? ': ' + st.job : '.') + ' Against ' + was + ', the two menus gained ' + n.gained + ' and lost ' + n.lost +
-        (stageOf(was).split !== false && st.split === false ? ', and there is no split screen' : '') + '. The page has not changed. \u201cWhat changed\u201d, beside the stages, lists them.');
+        (stageOf(was).split !== false && st.split === false ? ', and there is no split screen' : '') + '. ' +
+        (pageWay(s) === 'whole-doc' ? 'The page shows the whole Doc in one scroll, read-only; no word has changed.'
+          : pageWay(s) === 'chrome-fades' ? 'Type on the page: the chrome fades as you type, and the mouse brings it back.'
+          : pageWay(was) === 'whole-doc' ? 'The page shows one Part again.' : 'The page has not changed.') +
+        ' \u201cWhat changed\u201d, beside the stages, lists it all.');
     },
     /* "What changed with this stage" (G) */
     changed: function () { S.changed.open = !S.changed.open; },
@@ -1890,10 +1995,12 @@
     'replace-one': function (t) {
       var h = R && R.byKey[t.getAttribute('data-key')];
       if (!h || !isHere(h.pid, h.did) || S.search.repl === '') { return false; }
+      if (readOnly()) { return; }
       replaceHits([h]);
     },
     'replace-all': function () {
       if (!R || !R.here.length || S.search.repl === '') { return false; }
+      if (readOnly()) { return; }
       replaceHits(R.here);
     },
     'replace-undo': function () {
@@ -2278,6 +2385,20 @@
     else if (STAGES.indexOf(h.toUpperCase()) !== -1) {
       if (S.stage !== h.toUpperCase()) { S.changed.from = S.stage; S.stage = h.toUpperCase(); }
       S.front.open = true; S.back.open = true; S.back.part = null;
+    }
+    /* SPRINT as she types: the chrome faded, both menus open under the fade. FINALIZE with the search over the whole Doc. */
+    else if (h === 'sprint-faded' && STAGES.indexOf('SPRINT') !== -1) {
+      if (S.stage !== 'SPRINT') { S.changed.from = S.stage; S.stage = 'SPRINT'; }
+      S.front.open = true; S.back.open = true; S.back.part = null;
+      render();
+      fadeChrome(true);
+      return;
+    }
+    else if (h === 'finalize-search' && STAGES.indexOf('FINALIZE') !== -1) {
+      if (S.stage !== 'FINALIZE') { S.changed.from = S.stage; S.stage = 'FINALIZE'; }
+      openSearch('bar');
+      S.search.q = 'toll';
+      S.search.jump = true;
     }
     else if (h === 'text' || h === 'ink') { S.front.open = true; S.front.tab = h; }
     else if (h === 'session') { S.front.open = true; S.front.tab = 'text'; if (STAGES.indexOf('SPRINT') !== -1) { S.stage = 'SPRINT'; } }

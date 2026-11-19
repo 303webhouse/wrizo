@@ -70,6 +70,9 @@ button:focus-visible { outline: 2px solid #3F6183; outline-offset: 1px; }
 /* In a split the stage buttons fade; the stage she is in stays readable (brief, section 6 E). */
 .stages.is-faded .stage-btn { color: #56616B; cursor: default; }
 .stages.is-faded .stage-btn.is-here { color: #E6E8EA; }
+/* The stage strip's own NOT RULED tag, on the dark bar: the same dashed edge, light on dark (Fable, Nov 19). */
+.stages-tag { display: flex; align-items: center; margin-right: -8px; cursor: help; }
+.stages-tag .tag-not { background: transparent; color: #E6E8EA; border-color: #9AA1A8; }
 .bar-cmd {
   display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 8px; margin-left: 10px;
   border: 1px solid #2E3A46; font-family: var(--mono); font-size: 11px; color: #9AA1A8;
@@ -483,6 +486,23 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
   font-family: var(--mono); font-size: 11px; color: #525A62;
 }
 .part-foot .next { color: #3F6183; }
+
+/* SPRINT: the Part's words take typing (Fable, Nov 19; NOT RULED). */
+.page-words { outline: none; caret-color: #1C1C1C; }
+/* FINALIZE: the whole Doc in one read-only scroll, every Part under its heading (Fable, Nov 19; NOT RULED).
+   The label sits in the page's top margin, on the page's own ground, so the words scroll under it. */
+.whole-part + .whole-part { margin-top: 30px; padding-top: 22px; border-top: 1px solid #D2D6DA; }
+.page p.whole-empty { color: #6A727B; font-style: italic; }
+.whole-label {
+  position: absolute; left: 0; right: 40px; top: 0; height: 40px; box-sizing: border-box; padding-left: 64px; z-index: 1;
+  display: flex; align-items: center; gap: 8px; background: #FBFBFA;
+  font-family: var(--mono); font-size: 10.5px; color: #525A62; white-space: nowrap;
+}
+
+/* SPRINT as she types: everything but the page, the stages and the corner tag fades. Nothing moves or closes. */
+.bar > *, .rail, #pop, #menus, .foot, #drop, #changed { transition: opacity .2s ease; }
+.shell.is-typing .bar > :not(.stages), .shell.is-typing .rail, .shell.is-typing #pop, .shell.is-typing #menus,
+.shell.is-typing .foot, .shell.is-typing #drop, .shell.is-typing #changed { opacity: .1; transition: opacity .8s ease; }
 .foot {
   position: absolute; left: var(--page-left); top: calc(100% - 54px); width: 620px;
   display: flex; gap: 10px; align-items: center;
