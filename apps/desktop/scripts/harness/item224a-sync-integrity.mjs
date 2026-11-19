@@ -93,6 +93,7 @@ function loadSyncRouter(failIds, { sourceOverride } = {}) {
   svRequire.cache[dbDest] = { id: dbDest, filename: dbDest, loaded: true, exports: { pool: makeFakeDb(failIds) } };
   const src = sourceOverride ?? fs.readFileSync(path.join(SERVER_SRC, 'sync.ts'), 'utf8');
   write('wordCount.ts', stripTypes(svRequire, fs.readFileSync(path.join(SERVER_SRC, 'wordCount.ts'), 'utf8')));   // sync.ts imports './wordCount' (polish #10 item 4, format-r7): it has to be in the scratch folder too
+  for (const f of ['rail.ts', 'railRoutes.ts']) write(f, stripTypes(svRequire, fs.readFileSync(path.join(SERVER_SRC, f), 'utf8')));   // the saved rail (reorg-rail-saved): sync.ts imports './railRoutes' (purgeRailDrawer in writeShell), which imports './rail'
   const dest = write('sync.ts', stripTypes(svRequire, src));
   return svRequire(dest).syncRouter;
 }

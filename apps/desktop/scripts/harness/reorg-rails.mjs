@@ -24,6 +24,8 @@
 //       P3  New project: typed and Entered, it adds one Drawer with that name and touches no page and no set (today's own act)
 // SAVED N1  pins and list-or-boxes change nothing stored (localStorage and sessionStorage byte-identical, beside a control of the same
 //           length with no act), and the in-memory rail holds them; a reload forgets them
+//           [successor, Nick's ruling Nov 18: saved with the account - they change ONE key, the rail's own copy, and a reload KEEPS them;
+//           the account half is reorg-rail-saved.mjs]
 // PAGE  G1  the page's rect is identical with the switch off, on at rest, with PROJECTS open, with pins drawn as boxes and as a list, at
 //           1366, 1920 and 2000; the editor element is the same node throughout (no remount)
 // KEYS  K1  PROJECTS opens on Enter; a row's pin toggles on Enter; Escape from the page closes the pop-out
@@ -40,12 +42,13 @@
 //       L5  opening a Part is a departure with the return chip, and the rail comes back open on the same list
 //       L6  + New board and + New doc go through today's own route: an unborn board in Top Drawer's set; an unborn doc in Grants' first set
 //           [successor, (c) Fable 3:52 pm: a new Doc is always its own: in Grants (no app-made set) a NEW set made by today's "+ New set"]
-//       L7  browsing the lists changes nothing stored
+//       L7  browsing the lists changes nothing stored [successor, Nov 18: nothing but L2's own pin of Grants, in the rail's copy]
 //       L8  + New board in Grants' list lands in a new set of boards only (a Board with no Doc); abandoned, it leaves that one empty set and no page
 // STEP 4, Box settings (frame R5):
 // BOX   B1  one closed drop-down at the foot of PROJECTS, for the Project she is in; open, it sets the letters (the rail's box and the row's
 //           read them), No letters, a swatch (brass), her own colour, and a picture (the box shows it), and Remove the picture
 //       B2  none of it is stored (a control of the same length changes nothing either) and the memory holds it; a reload forgets it
+//           [successor, Nov 18: stored in the rail's copy alone, nothing waiting to upload; a reload KEEPS it]
 //       B3  it follows where she is: on a Grants page it is Grants' Box settings
 // FLOOR F2  as drawn: the letters hold 4.5:1 on every swatch and on a mid-grey of her own (#777777)
 // STEP 5, DOCS (frame R7):
@@ -274,8 +277,17 @@ await withHarness(async (app) => {
   const diffKeys = (a, b) => { const A = JSON.parse(a), B = JSON.parse(b); const out = []; A.forEach((s, i) => { const m = new Map(s); const n = new Map(B[i]); for (const k of new Set([...m.keys(), ...n.keys()])) if (m.get(k) !== n.get(k)) out.push(`${i ? 'session' : 'local'}:${k}`); }); return out; };
   const control = diffKeys(storeBefore, storeControl);
   const acted = diffKeys(storeControl, storeAfter);
-  ok('N1: four pins, an unpin and both views change nothing stored - localStorage and sessionStorage are byte-identical (a control of the same wait with no act changed: ' + (control.join(',') || 'nothing') + ')',
-    acted.length === 0 && control.length === 0, JSON.stringify({ acted, control }));
+  // SUPERSEDED (Nick's ruling Nov 18, 1:56 pm: her pins, their order and the list-or-boxes switch are SAVED WITH THE ACCOUNT; Fable's GO Nov 18,
+  // 2:45 pm; red by design in run 44408993606 on 0e3b3890, acted = local:writer-studio-rail). The original, verbatim:
+  // ok('N1: four pins, an unpin and both views change nothing stored - localStorage and sessionStorage are byte-identical (a control of the same wait with no act changed: ' + (control.join(',') || 'nothing') + ')',
+  //   acted.length === 0 && control.length === 0, JSON.stringify({ acted, control }));
+  // the rail's own local copy, read out of a STORE snapshot; its pins in her order (the app's own rule: railSaved.pinnedIdsOf)
+  const railCopy = (store) => { const e = JSON.parse(store)[0].find(([k]) => k === 'writer-studio-rail'); try { return e ? JSON.parse(e[1]) : null; } catch { return 'unreadable'; } };
+  const pinnedIn = (c) => (c && c.rail ? Object.entries(c.rail.pins || {}).filter(([, p]) => !(p.removedAt && p.removedAt >= p.at)).sort((a, b) => a[1].order - b[1].order || (a[0] < b[0] ? -1 : 1)).map(([id]) => id) : null);
+  const copyN1 = railCopy(storeAfter);
+  ok('N1 [successor]: four pins, an unpin and both views change ONE stored key, the rail\'s own copy (writer-studio-rail), and nothing else; it holds the Notebook then Top Drawer pinned and the boxes view (a control of the same wait with no act changed: ' + (control.join(',') || 'nothing') + ')',
+    JSON.stringify(acted) === JSON.stringify(['local:writer-studio-rail']) && control.length === 0 && JSON.stringify(pinnedIn(copyN1)) === JSON.stringify(['notebook', ids.topDrawer]) && !!copyN1 && copyN1.rail.view === 'boxes',
+    JSON.stringify({ acted, control, pins: pinnedIn(copyN1), view: copyN1 && copyN1.rail && copyN1.rail.view }));
   ok('N1b: the rail\'s memory held them while she worked (Grants, the Notebook and Top Drawer pinned, in that order; the boxes view)', memory === JSON.stringify({ pins: [ids.grants, 'notebook', ids.topDrawer], pinView: 'boxes' }), memory);
 
   // P3: New project (today's own act: one Drawer, nothing else)
@@ -303,7 +315,12 @@ await withHarness(async (app) => {
   // N1c: a reload forgets the rail's memory
   await openPage(app, 'machina', true);
   const forgot = await app.evalJs(`JSON.stringify({ mem: window.wrizoRailMemory && window.wrizoRailMemory.get(), rail: ${RAILPINS} })`);
-  ok('N1c: a reload forgets the pins and the view (nothing was kept anywhere)', forgot === JSON.stringify({ mem: { pins: [], pinView: 'boxes' }, rail: null }), forgot);
+  // SUPERSEDED (Nick's ruling Nov 18: saved with the account; red by design in run 44408993606). The original, verbatim:
+  // ok('N1c: a reload forgets the pins and the view (nothing was kept anywhere)', forgot === JSON.stringify({ mem: { pins: [], pinView: 'boxes' }, rail: null }), forgot);
+  const keptN = JSON.parse(forgot);
+  ok('N1c [successor]: a reload KEEPS the pins and the view (the Notebook then Top Drawer, boxes), and the rail draws them (all but the Project she is in, which shows once at the top)',
+    JSON.stringify(keptN.mem) === JSON.stringify({ pins: ['notebook', ids.topDrawer], pinView: 'boxes' }) && !!keptN.rail && keptN.rail.view === 'boxes'
+    && keptN.rail.pins.length >= 1 && keptN.rail.pins.every((p) => keptN.mem.pins.includes(p)), forgot);
 
   // ---- KEYS ----------------------------------------------------------------------------------------------------------------------------
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.focus()");
@@ -376,7 +393,16 @@ await withHarness(async (app) => {
     && JSON.stringify([...all4].sort()) === JSON.stringify(want4) && !all4.includes('rr-l-1') && !all4.includes('rr-o-1'),
     JSON.stringify({ lists: Object.fromEntries(Object.entries(lists).map(([k, v]) => [k, idsIn(v)])) }));
   const store3b = await app.evalJs(STORE);
-  ok('L7: opening the lists from the box, a pin and every row changes nothing stored', diffKeys(store3, store3b).length === 0, JSON.stringify(diffKeys(store3, store3b)));
+  // SUPERSEDED (Nick's ruling Nov 18: a pin is saved; red in run 44408993606: L2 pins Grants inside this window, so the rail's copy changes). The original, verbatim:
+  // ok('L7: opening the lists from the box, a pin and every row changes nothing stored', diffKeys(store3, store3b).length === 0, JSON.stringify(diffKeys(store3, store3b)));
+  const c3 = railCopy(store3), c3b = railCopy(store3b);
+  // compared key-sorted: the copy's key order is the merge's, not a fact she chose
+  const canonJ = (v) => (Array.isArray(v) ? `[${v.map(canonJ).join(',')}]` : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonJ(v[k])}`).join(',')}}` : JSON.stringify(v ?? null));
+  const withoutGrants = (c) => (c && c.rail ? canonJ({ ...c, rail: { ...c.rail, pins: Object.fromEntries(Object.entries(c.rail.pins || {}).filter(([k]) => k !== ids.grants)) } }) : String(c));
+  ok('L7 [successor]: opening the lists from the box, a pin and every row changes nothing stored but L2\'s own act - the rail\'s copy, where only Grants\' pin changed (unpinned before, pinned after)',
+    JSON.stringify(diffKeys(store3, store3b)) === JSON.stringify(['local:writer-studio-rail']) && withoutGrants(c3) === withoutGrants(c3b)
+    && !(pinnedIn(c3) || []).includes(ids.grants) && (pinnedIn(c3b) || []).includes(ids.grants),
+    JSON.stringify({ changed: diffKeys(store3, store3b), before: pinnedIn(c3), after: pinnedIn(c3b) }));
   // L5: a Part is a departure with the return chip, and the rail comes back open on the same list
   await click(`[data-reorg-rail] [data-reorg-pin="${ids.grants}"]`); await sleep(600);
   if (!(await app.evalJs(LIST))) { await click(`[data-reorg-rail] [data-reorg-pin="${ids.grants}"]`); await sleep(600); }
@@ -460,14 +486,30 @@ await withHarness(async (app) => {
     JSON.stringify({ b1closed, bLetters: bLetters.where, bNone: bNone.where, bBrass: bBrass.where, bOwn: bOwn.where, bPic: bPic.where, bNoPic: bNoPic.where }));
   const store4b = await app.evalJs(STORE);
   const boxMem = await app.evalJs(`JSON.stringify(window.wrizoRailMemory && window.wrizoRailMemory.boxes && window.wrizoRailMemory.boxes()[${q(ids.topDrawer)}])`);
-  ok('B2: none of it is stored - localStorage and sessionStorage byte-identical (the control changed: ' + (diffKeys(store4, store4c).join(',') || 'nothing') + '); the memory holds it (no letters, #777777, no picture)',
-    diffKeys(store4c, store4b).length === 0 && diffKeys(store4, store4c).length === 0 && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), boxMem }));
+  // SUPERSEDED (Nick's ruling Nov 18: each Project's box - letters, colour, picture - is SAVED WITH THE ACCOUNT; red by design in run 44408993606,
+  // acted = local:writer-studio-rail). The original, verbatim:
+  // ok('B2: none of it is stored - localStorage and sessionStorage byte-identical (the control changed: ' + (diffKeys(store4, store4c).join(',') || 'nothing') + '); the memory holds it (no letters, #777777, no picture)',
+  //   diffKeys(store4c, store4b).length === 0 && diffKeys(store4, store4c).length === 0 && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), boxMem }));
+  const copy4 = railCopy(store4b);
+  const box4 = copy4 && copy4.rail && copy4.rail.boxes ? copy4.rail.boxes[ids.topDrawer] : null;
+  ok('B2 [successor]: the look is stored in the rail\'s own copy and nowhere else - only writer-studio-rail changed (the control changed: ' + (diffKeys(store4, store4c).join(',') || 'nothing') + '); it holds no letters, #777777 and the picture removed, nothing waiting to upload; the memory holds it (no letters, #777777, no picture)',
+    JSON.stringify(diffKeys(store4c, store4b)) === JSON.stringify(['local:writer-studio-rail']) && diffKeys(store4, store4c).length === 0
+    && !!box4 && box4.letters === '' && box4.colour === '#777777' && box4.picture === '' && Object.keys(copy4.pending || {}).length === 0
+    && boxMem === JSON.stringify({ letters: '', colour: '#777777' }), JSON.stringify({ acted: diffKeys(store4c, store4b), box4, pending: copy4 && Object.keys(copy4.pending || {}), boxMem }));
   await openPage(app, 'machina', true);
   const b2r = await app.evalJs(`JSON.stringify({ boxes: window.wrizoRailMemory && typeof window.wrizoRailMemory.boxes === 'function' ? window.wrizoRailMemory.boxes() : null, letters: document.querySelector('[data-reorg-rail] [data-reorg-where] .wz-reorg-box')?.textContent })`);
-  ok('B2b: a reload forgets the box\'s look (its letters are derived again)', !!shell && b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
+  // SUPERSEDED (Nick's ruling Nov 18: saved with the account; red by design in run 44408993606). The original, verbatim:
+  // ok('B2b: a reload forgets the box\'s look (its letters are derived again)', !!shell && b2r === JSON.stringify({ boxes: {}, letters: letters(shell.words.root) }), b2r);
+  const kept2 = JSON.parse(b2r);
+  ok('B2b [successor]: a reload KEEPS the box\'s look - the memory reads no letters and #777777 (no picture), and the rail\'s box draws no letters',
+    !!shell && !!kept2.boxes && JSON.stringify(kept2.boxes[ids.topDrawer]) === JSON.stringify({ letters: '', colour: '#777777' }) && kept2.letters === '', b2r);
   // F2: the letters hold 4.5:1 on every swatch and on a mid-grey of her own
   await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
   await click('.wz-reorg-box-settings-head'); await sleep(200);
+  // F2's premise is a box that DRAWS letters: since Nov 18 the reload above keeps B1's "No letters", so she gives it letters again first
+  // (red in run 44408993606: every swatch read text ""; the check below is unchanged)
+  await app.evalJs("(() => { const i = document.querySelector('[data-box-letters]'); i?.focus(); i?.select(); })()");
+  await app.typeKeys('xy'); await sleep(200);
   const f2 = [];
   for (const sw of ['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800', '#777777']) {
     if (sw === '#777777') await app.evalJs("(() => { const i = document.querySelector('[data-box-own-colour]'); if (!i) return; const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, '#777777'); i.dispatchEvent(new Event('input', { bubbles: true })); })()");
