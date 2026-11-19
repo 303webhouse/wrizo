@@ -479,6 +479,7 @@ await withHarness(async (app) => {
     const r28m = await RUN28('adult_required_x');
     check('P28M', r28m.text === 'adult_required_x' && r28m.text !== WANT28, `a code the map does not know (landed: the line reads ${JSON.stringify(r28m.text)}): P28's read goes RED`);
     await ev("window.fetch = window.__fl28; true");
+    await ev("(() => { const bx = document.querySelector('.wz-adult-box'); if (bx && bx.checked) bx.click(); return true; })()");   // leave the tick as it was found: P22M ticks it itself
     await ev("document.querySelector('.wz-popout-back').click()");
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
     await sleep(400);
