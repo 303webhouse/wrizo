@@ -541,7 +541,8 @@
   /* the cards keep their cream stock and their own dark ink (r7's light-page ink, below) */
   --ink-on-card:#241A10; --ink-on-card-low:#6B5F4E;
 }
-:root[data-arbor2][data-theme='plateau'][data-page='dark'] :is(.board-canvas, .board-canvas-wrap, .wz-links-thumb--board, .board-handle, .board-graft-knob, .walk){
+/* FOG (the Wrizors' look A): .board-canvas-dim sits OUTSIDE .board-canvas and carries the fog veil (its ::after is var(--paper)); on the dark page the room's --paper is dark, so without it the veil read rgb(16,12,9) over a cream board (Actions 44496288430). It takes the board's paper with the board. */
+:root[data-arbor2][data-theme='plateau'][data-page='dark'] :is(.board-canvas, .board-canvas-wrap, .board-canvas-dim, .wz-links-thumb--board, .board-handle, .board-graft-knob, .walk){
   --paper:#F3EDE1; --paper-dim:#E9E1D2; --paper-border:#d8c8b4; --ink-on-paper:#241A10; --ink-on-paper-low:#6B5F4E; --accent-door:#4F5730;
 }
 /* (the editor sets its caret INLINE from the pen ink in Free Write, so the brass caret needs !important - run 41246620757 measured it cream; the ink
