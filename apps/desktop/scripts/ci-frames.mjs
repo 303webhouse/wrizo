@@ -174,7 +174,7 @@ const SIGNED_OUT = (() => {
       if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
       await settled(app, SIGNIN_UP);
       await app.emulateDpr(1, 1366, 560); await sleep(900);
-      await app.evalJs("(() => { const f0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.resolve(new Response(JSON.stringify({ error: 'Wrong email or password.' }), { status: 401, headers: { 'Content-Type': 'application/json' } })) : f0(u, o); document.querySelector('.wz-popout button[type=submit]').click(); return true; })()");
+      await app.evalJs("(() => { const f0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.resolve({ ok: false, status: 400, json: async () => ({ error: 'Wrong email or password.' }) }) : f0(u, o); document.querySelector('.wz-popout button[type=submit]').click(); return true; })()");
       await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line' }); await sleep(500);
       await app.mouseMove(2, 2); await sleep(300);
     }),
