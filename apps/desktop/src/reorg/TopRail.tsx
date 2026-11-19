@@ -173,7 +173,9 @@ if (REORG && typeof window !== 'undefined') {
 /** What the names draw, read from the store (only on a store change, never per keystroke). */
 function namesSig(id: string): string {
   const e = getJournalEntry(id);
-  if (!e) return '';
+  return e ? sigOf(e) : '';
+}
+function sigOf(e: JournalEntry): string {
   const set = e.projectId ? getProject(e.projectId) : null;
   const drawer = set?.drawerId ? getDrawer(set.drawerId) : null;
   const siblings = set
@@ -184,7 +186,7 @@ function namesSig(id: string): string {
 
 interface NamesProps { entry: JournalEntry; canRename: boolean; beforeWrite: () => void }
 
-const PageNames = memo(function PageNames({ entry, canRename, beforeWrite }: NamesProps) {
+function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   useSyncExternalStore(subscribe, () => namesSig(entry.id));
   namesRenders += 1;
   const { t } = useDeskLexicon();
@@ -216,7 +218,8 @@ const PageNames = memo(function PageNames({ entry, canRename, beforeWrite }: Nam
       </span>
     </nav>
   );
-}, (a, b) => a.entry.id === b.entry.id && a.canRename === b.canRename);
+}
+const PageNames = memo(PageNamesImpl, (a, b) => a.entry.id === b.entry.id && a.canRename === b.canRename);
 
 export function TopRail({ kind, entry, stages, views, boardName, boardAfter, beforeWrite, canRename = true }: TopRailProps) {
   // the host's latest save-the-typing act, behind a stable function, so the memoized names never need the host's new closure
