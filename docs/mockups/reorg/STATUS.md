@@ -1,8 +1,18 @@
-# STATUS: milestone 6 passed; Fable's four asks built, not yet opened; going to Nick's walk
+# STATUS: milestone 6 and 6b passed; Fable's last two answers built; holding for Nick's walk
 
-Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 6 have passed Fable's check (6 at `c8ef5838`, Nov 19, 12:35 pm, headless Chrome at 1366 × 768: every door draws, no errors). Her answers to the seven questions are built on top of it.
+Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 6 have passed Fable's check (6 at `c8ef5838`, 12:35 pm; 6b at `796aca95`, 1:35 pm; headless Chrome at 1366 × 768: every door draws, no errors). Her two 1:35 pm answers are built on top of 6b. **Nothing more is built until Nick's walk.**
 
-## After Fable's pass (Nov 19, 12:35 pm)
+## After Fable's pass of 6b (Nov 19, 1:35 pm)
+
+- **Every writing stage writes** (NOT RULED, 170). BUILD and EDIT take typing too, as SPRINT does; FINALIZE's whole Doc stays read-only, the one proposal that differs. A new Doc with no words no longer shows a blinking caret until she clicks in it.
+- **In SPRINT's fade the stage buttons fade with the rest; the strip's NOT RULED tag stays bright** (171, 175).
+- **FINALIZE opening on the Part she was in:** kept as built (173).
+- **Not opened by this lane:** worth a look are `#build` with a click into the words and a few keys (nothing should fade), and `#sprint-faded` (the four buttons faint, the tag beside them bright).
+- **No open questions.**
+
+## After Fable's pass of 6 (Nov 19, 12:35 pm)
+
+This section, down to "Milestone 6 as built", is 6b as Fable checked it; its two questions are answered above.
 
 - **FINALIZE draws the whole Doc as one read-only scroll** (NOT RULED, 172 to 174). Every Part under its heading, a hairline between Parts, a label in the page's top margin. The top bar's place, the drop, the Parts list, the arrows and the line under the page follow the scroll; the arrows and lists scroll to a Part. Nothing on the page takes typing, and Replace says the Doc is read-only.
 - **SPRINT's chrome fades as she types** (NOT RULED, 170, 171). In SPRINT only, the Part's words take typing. At the first keystroke everything but the page, the stage strip and the corner tag fades to a tenth; nothing moves or closes. Moving the mouse brings it back.
@@ -26,7 +36,7 @@ As in milestone 6, no browser was run: the rules allow only `git add`, `git comm
 
 `#sprint-faded` (SPRINT, both menus open, the chrome faded) and `#finalize-search` (FINALIZE, "toll" found across the whole Doc).
 
-## Questions for Fable
+## Questions for Fable (answered Nov 19, 1:35 pm)
 
 1. **Typing elsewhere.** The page takes typing only in SPRINT, where the fade needs it; in BUILD and EDIT it is still a picture. Should it take typing there too, so FINALIZE's "read-only" has something to differ from?
 2. **The tag in the fade.** I kept the stage strip and its tag bright while the rest fades, by your "always in view". Or should the strip fade with the rest?

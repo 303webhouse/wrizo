@@ -14,10 +14,10 @@
   - "stages": the columns, in order. Arbor's word for each is "was". "shown": false keeps a
     column off screen (Workshopping). "split": false means no split screen in that stage.
     "page" is the table's resting surface, shown in the panel as words. "drawn" says which
-    one the page draws (Fable, Nov 19; NOT RULED): "chrome-fades" (SPRINT: the page takes
-    typing and the chrome fades as she types), "whole-doc" (FINALIZE: the whole Doc in one
-    read-only scroll), "as-today" (one Part, as in milestones 1 to 5). Take "drawn" away and
-    the page shows one Part, as today, with the words marked "not drawn".
+    one the page draws (Fable, Nov 19; NOT RULED): "chrome-fades" (SPRINT: the chrome fades
+    as she types), "whole-doc" (FINALIZE: the whole Doc in one read-only scroll), "as-today"
+    (one Part). Take "drawn" away and the page shows one Part, with the words marked "not
+    drawn". Every stage but "whole-doc" takes typing on the page.
   - "onAPage": the rows, one for each tab of the two menus, and "THE SESSION" at the Front
     menu's foot. A row has one cell for each stage. A cell is
       { "offers": [ ... ], "note": "the table's aside" }

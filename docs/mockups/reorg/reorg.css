@@ -487,7 +487,7 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 }
 .part-foot .next { color: #3F6183; }
 
-/* SPRINT: the Part's words take typing (Fable, Nov 19; NOT RULED). */
+/* The Part's words take typing in every stage but FINALIZE (Fable, Nov 19; NOT RULED). */
 .page-words { outline: none; caret-color: #1C1C1C; }
 /* FINALIZE: the whole Doc in one read-only scroll, every Part under its heading (Fable, Nov 19; NOT RULED).
    The label sits in the page's top margin, on the page's own ground, so the words scroll under it. */
@@ -499,10 +499,11 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
   font-family: var(--mono); font-size: 10.5px; color: #525A62; white-space: nowrap;
 }
 
-/* SPRINT as she types: everything but the page, the stages and the corner tag fades. Nothing moves or closes. */
-.bar > *, .rail, #pop, #menus, .foot, #drop, #changed { transition: opacity .2s ease; }
-.shell.is-typing .bar > :not(.stages), .shell.is-typing .rail, .shell.is-typing #pop, .shell.is-typing #menus,
-.shell.is-typing .foot, .shell.is-typing #drop, .shell.is-typing #changed { opacity: .1; transition: opacity .8s ease; }
+/* SPRINT as she types: everything but the page, the stage strip's tag and the corner tag fades, the stage
+   buttons with the rest (Fable, Nov 19). Nothing moves or closes. */
+.bar > *, .stages > *, .rail, #pop, #menus, .foot, #drop, #changed { transition: opacity .2s ease; }
+.shell.is-typing .bar > :not(.stages), .shell.is-typing .stages > :not(.stages-tag), .shell.is-typing .rail, .shell.is-typing #pop,
+.shell.is-typing #menus, .shell.is-typing .foot, .shell.is-typing #drop, .shell.is-typing #changed { opacity: .1; transition: opacity .8s ease; }
 .foot {
   position: absolute; left: var(--page-left); top: calc(100% - 54px); width: 620px;
   display: flex; gap: 10px; align-items: center;

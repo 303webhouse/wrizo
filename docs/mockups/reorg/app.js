@@ -375,7 +375,7 @@
       '<span class="bar-spring"></span>' +
       /* In a split the stage buttons fade and she stays in her stage, which stays readable (section 6 E). */
       '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close the asset\u2019s side to change stage."' : '') + '>' +
-      /* The strip's own tag, in view in every stage, in a split and while the chrome fades (Fable, Nov 19). */
+      /* The strip's own tag, in view in every stage, in a split, and bright while the chrome and the strip fade (Fable, Nov 19). */
       '<span class="stages-tag" title="The stages: what each offers, and what the page draws in SPRINT and FINALIZE, are NOT RULED.">' + tag('NOT RULED') + '</span>';
     STAGES.forEach(function (s) {
       h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + esc(s) + '"' + (s === S.stage ? ' aria-current="true"' : '') +
@@ -456,10 +456,10 @@
       var drawn = st.drawn === 'chrome-fades' || st.drawn === 'whole-doc' || st.drawn === 'as-today';
       b += '<div class="changed-menu">ON THE PAGE \u00b7 ' + (drawn ? 'DRAWN' : 'NOT DRAWN') + '</div>' +
         '<div class="changed-page">' + esc(st.page || 'The table says nothing here.') + '</div>' +
-        '<div class="changed-page quiet">' + (st.drawn === 'chrome-fades' ? 'Drawn: the page takes typing in ' + esc(to) + ', and as she types the menus, the rail and the top bar fade, all but the stages. Moving the mouse brings them back. Typewriter mode is not drawn.'
+        '<div class="changed-page quiet">' + (st.drawn === 'chrome-fades' ? 'Drawn: as she types in ' + esc(to) + ', the menus, the rail and the top bar fade, the stages with them; only the stages\u2019 NOT RULED tag stays. Moving the mouse brings them back. Typewriter mode is not drawn.'
           : st.drawn === 'whole-doc' ? 'Drawn: every Part in one scroll, read-only. The arrows and the Parts list go to a Part\u2019s place in the scroll.'
-          : st.drawn === 'as-today' ? 'Drawn: one Part, as in every stage before the stages.'
-          : 'The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page shows one Part, as today.') +
+          : st.drawn === 'as-today' ? 'Drawn: one Part, which takes typing.'
+          : 'The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page shows one Part, which takes typing.') +
         ' The page\u2019s size and place do not change.</div>';
     }
     h += '<div class="changed-body" data-keep="changed">' + b + '</div>' +
@@ -1230,7 +1230,7 @@
 
   function renderPage() {
     var d = docHere(), parts = partsOf(d), i = d.partHere, part = parts[i - 1], n = parts.length;
-    var way = pageWay(), whole = way === 'whole-doc', writes = way === 'chrome-fades';
+    var way = pageWay(), whole = way === 'whole-doc', writes = !whole;
     var key = (S.here.project || '') + '/' + d.id + '/' + (whole ? 'whole' : i);
     var old = document.getElementById('part-scroll'), fresh = el.page.getAttribute('data-key') !== key;
     var keep = old && !fresh ? old.scrollTop : 0;
@@ -1253,14 +1253,11 @@
       });
     } else {
       if (!(d.isNew && n === 1)) { h += '<h1>' + esc(part.name ? i + '. ' + part.name : d.name) + '</h1>'; }
-      /* SPRINT: the Part's words take typing, so the chrome can fade as she types (Fable, Nov 19; NOT RULED).
-         In the other stages the page is a picture, as in milestones 1 to 5. */
+      /* Every writing stage writes: the Part's words take typing where they stand (Fable, Nov 19; NOT RULED).
+         Only FINALIZE's whole Doc is read-only. */
       if (writes) {
         h += '<div class="page-words" id="page-words" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="' + esc(part.name || d.name) + '">' +
           (part.paras.length ? paras(part, i) : '<p><br></p>') + '</div>';
-      } else {
-        if (!part.paras.length) { h += '<p><span class="caret" aria-hidden="true"></span></p>'; }
-        h += paras(part, i);
       }
       if (n > 1) { h += partFoot(d, i); }
     }
@@ -1333,8 +1330,9 @@
     });
   }, true);
 
-  /* SPRINT: what she types goes into the Part, and the chrome fades as she types (Fable, Nov 19; NOT RULED).
-     Everything but the page and the stages fades; nothing moves. Moving the mouse brings it back. */
+  /* What she types goes into the Part, in every stage but FINALIZE. In SPRINT the chrome fades as she types
+     (Fable, Nov 19; NOT RULED): everything but the page, the stage strip's tag and the corner tag; nothing moves.
+     Moving the mouse brings it back. */
   var fadeFrom = null;
   el.page.addEventListener('input', function (e) {
     var w = e.target.id === 'page-words' ? e.target : null;
@@ -1738,7 +1736,7 @@
       if (way !== 'whole-doc') { say('RULED', 'B \u00b7 One Part on the page: arrows on its scrollbar, the line at its foot, its place in the top bar (P2-12D)'); }
     }
     if (way === 'whole-doc') { say('NOT RULED', 'G \u00b7 FINALIZE: the whole Doc in one read-only scroll; the arrows and the Parts list go to a Part\u2019s place in it (Fable, Nov 19)'); }
-    if (way === 'chrome-fades') { say('NOT RULED', 'G \u00b7 SPRINT: the page takes typing, and as she types all but the page and the stages fades; the mouse brings it back (Fable, Nov 19)'); }
+    if (way === 'chrome-fades') { say('NOT RULED', 'G \u00b7 SPRINT: as she types, all but the page, the stages\u2019 tag and this tag fades, the stages too; the mouse brings it back (Fable, Nov 19)'); }
     if (!nowPid()) { say('PROPOSED', 'In no Project: the rail\u2019s top box is empty and reads Unfiled'); }
     if (d.isNew && !S.board) { say('NOT RULED', 'A new Doc on the page: where it lands and its name are guesses'); }
 
