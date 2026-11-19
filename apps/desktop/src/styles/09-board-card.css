@@ -391,9 +391,6 @@
 /* the approved spec: Flux's veil is #020C10 at 74%; Arbor's placeholder #9C9081 */
 [data-theme='flux'] .wz-arrival[data-stage='signin']::after, [data-theme='flux'] .wz-arrival[data-stage='account']::after{ background:rgba(2,12,16,.74); }
 [data-theme='plateau'] .wz-arrival .wz-popout .wz-field::placeholder{ color:#9C9081; }
-/* ARBOR (the veil is ruled, Fable Nov 18 12:50 pm: the front door dims under the pop-out; the spec veil is #0A0503 at 72% over the WHOLE front door, spec 1 and 3). The Arbor front layer (.arbor2-front, z 2) stays under this ::after (z 7) while the panel (z 8) is open. */
-:root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='signin']::after, :root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='account']::after{ background:rgba(10,5,3,.72); }
-:root[data-arbor2][data-theme='plateau'] .arbor2-front.behind{ pointer-events:none; }
 .wz-arrival .wz-screen.wz-popout{ inset:auto; left:50%; --ptop:max(6vh, calc(50% - 175px)); top:var(--ptop); transform:translateX(-50%); width:clamp(360px, 29.3vw, 400px); max-width:calc(100% - 1rem); box-sizing:border-box;
   justify-content:flex-start; align-items:stretch; text-align:left; gap:.85rem; padding:1.35rem 1.5rem 1.15rem; background:#241811; border:2px solid #9C8A6E; border-radius:0; transition:none; }
 .wz-arrival .wz-popout .wz-bighead{ font-family:var(--wz-text); font-weight:500; font-size:1.55rem; line-height:1.2; letter-spacing:0; margin:0; }
@@ -420,7 +417,7 @@
 .wz-popout-tag{ display:none; }
 
 /* FLUX: a node with corner brackets and the N.01 · INPUT tag; the field she types in is cyan with a thin brass bar beside it (Flux's door rule); LOG IN in capitals and brackets */
-[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ background-color:#04141A; border:1px solid #8FB4AC; --br:#8FB4AC;
+[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ background-color:#04141A; border:1px solid #7EB4C4; --br:#7EB4C4;
   background-image:linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br)),linear-gradient(var(--br),var(--br));
   background-size:12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px,12px 1px,1px 12px;
   background-position:-1px -1px,-1px -1px,calc(100% + 1px) -1px,calc(100% + 1px) -1px,-1px calc(100% + 1px),-1px calc(100% + 1px),calc(100% + 1px) calc(100% + 1px),calc(100% + 1px) calc(100% + 1px); background-repeat:no-repeat; }
