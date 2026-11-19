@@ -21,7 +21,7 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 
 const GEOM = `(() => { const q = (s) => document.querySelector(s); const sc = q('.mode-scroll'), sh = q('.wz-ink-sheet'), ed = q(${JSON.stringify(ED)}), cv = q('.ink-committed');
   if (!sc || !sh || !ed) return null; const s = sc.getBoundingClientRect(), h = sh.getBoundingClientRect(); const r = document.createRange(); r.selectNodeContents(ed); const rs = [...r.getClientRects()].filter((x) => x.height > 4); const last = rs.length ? Math.max(...rs.map((x) => x.bottom)) : null;
-  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const foot = Math.min(s.bottom, window.innerHeight); const yAbove = foot - 8; const hit = document.elementFromPoint(Math.round(h.left + h.width / 2), Math.round(yAbove));
+  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const foot = Math.min(s.bottom, window.innerHeight); const yAbove = foot - 8; const hit = document.elementFromPoint(Math.round(h.left + 140), Math.round(yAbove));
   const hitSheet = !!hit && !!hit.closest('.wz-ink-sheet');
   return { foot, scroll: { top: s.top, bottom: s.bottom, left: s.left, right: s.right }, sheet: { top: h.top, bottom: h.bottom, left: h.left, right: h.right, w: h.width }, lastLine: last, zoom, hitSheet, canvasPx: cv ? cv.width + 'x' + cv.height : null, scrollClient: sc.clientHeight, scrollTop: sc.scrollTop, scrollHeight: sc.scrollHeight }; })()`;
 // the stored strokes of a page, in px from the sheet's top (y * width + the text's origin) and the painted ink's own box (css px from the sheet's top)
@@ -75,9 +75,13 @@ await withHarness(async (app) => {
     const x0 = g.sheet.left + 120;
     const A = lerp({ x: x0, y: lastY }, { x: x0 + 40, y: footY }, 14);
     const B = lerp({ x: x0 + 160, y: footY - 40 }, { x: x0 + 300, y: footY - 40 }, 10);
-    await penPath(app, A); await sleep(300); await penPath(app, B); await sleep(900);
+    await penPath(app, A); await sleep(900);
+    // a long page: the first stroke's commit leaves the scroller at the top (on main too); the second is drawn from the end again
+    let sheetTopB = sheetTop;
+    if (words > 200) { await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(800); const g2 = await app.evalJs(GEOM); sheetTopB = g2.sheet.top; }
+    await penPath(app, B); await sleep(900);
     const sheetTop = g.sheet.top;   // read before the pen went down
-    const want = { A: A[A.length - 1].y - sheetTop, B0: B[0].y - sheetTop };
+    const want = { A: A[A.length - 1].y - sheetTop, B0: B[0].y - sheetTopB };
     const judge = (r, when) => {
       ok(`K2${when} ${tag}: both strokes are SAVED whole: ${r.n} stored, A's lowest point ${r.low[0] !== undefined ? Math.round(r.low[0]) : '-'} (pen ${Math.round(want.A)}), B's first point ${r.first[1] !== undefined ? Math.round(r.first[1]) : '-'} (pen ${Math.round(want.B0)})`,
         r.n === 2 && Math.abs(r.low[0] - want.A) <= 6 && Math.abs(r.first[1] - want.B0) <= 6 && r.pts[0] >= 12 && r.pts[1] >= 8, JSON.stringify(r));
@@ -86,7 +90,7 @@ await withHarness(async (app) => {
     };
     const r1 = await app.evalJs(READ(id));
     judge(r1, '');
-    ok(`K5 ${tag}: the canvas is not the page: its backing store (${r1.canvasPx}) ends within 300 px of the lowest ink or the visible foot, whichever is lower down`, Number(String(r1.canvasPx).split('x')[1]) <= Math.max(Math.max(...r1.low), g.scrollClient) + 300, r1.canvasPx);
+    ok(`K5 ${tag}: the canvas is not the page: its backing store (${r1.canvasPx}) ends within 300 px of the lowest ink or the visible foot, whichever is lower down`, Number(String(r1.canvasPx).split('x')[1]) <= Math.max(Math.max(...r1.low), g.scroll.bottom - g.scroll.top) + 300, r1.canvasPx);
     await app.reload();
     await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
     await openPage(id);   // the hash is still the page's: a reload lands on it
