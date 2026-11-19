@@ -137,6 +137,21 @@ const SIGNED_OUT = (() => {
       await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true");
       await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line' }); await sleep(400);
     }),
+    // a SHORTER window (1366 x 560; name it with -f widths=1366): the create-account face where its fields scroll and the button row stays
+    'signup-short': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
+      await press(app, '.wz-popout-switch'); await settled(app, SIGNUP_UP);
+      await app.emulateDpr(1, 1366, 560); await sleep(900);
+    }),
+    'signup-error-short': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
+      await press(app, '.wz-popout-switch'); await settled(app, SIGNUP_UP);
+      await app.emulateDpr(1, 1366, 560); await sleep(900);
+      await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line' }); await sleep(500);
+    }),
     'signup-ticked': run(async (app) => {
       if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
       await app.waitFor(SIGNIN_UP, { label: 'sign-in first' }); await sleep(500);
