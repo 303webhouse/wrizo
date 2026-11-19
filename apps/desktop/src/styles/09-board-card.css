@@ -441,7 +441,7 @@
 .wz-arrival .wz-screen.wz-popout{ max-height:calc(100% - var(--ptop) - 24px); overflow-y:auto; }
 [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ top:auto; bottom:24px; max-height:calc(100% - 24px - var(--popout-floor, 300px)); }
 /* the scroll area (the fields and the tick) is the only thing that scrolls; the other themes leave it transparent to layout (display:contents) */
-.wz-popout-scroll{ display:flex; flex-direction:column; gap:.7rem; flex:0 1 auto; min-height:36px; overflow-y:auto; overflow-x:hidden; padding:0 6px; margin:0 -6px; scrollbar-width:thin; scrollbar-color:#9C8A6E #241811; }
+.wz-popout-scroll{ display:flex; flex-direction:column; gap:.7rem; flex:0 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:0 6px; margin:0 -6px; scrollbar-width:thin; scrollbar-color:#9C8A6E #241811; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-popout-scroll{ scrollbar-color:#5F8F95 #04141A; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-popout-scroll{ scrollbar-color:#9AA1A8 #151719; gap:8px; }
 .wz-arrival .wz-popout .wz-form{ flex:0 1 auto; min-height:0; }
@@ -474,3 +474,7 @@
   [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='signin']{ --ptop:round(down, max(56%, 300px, var(--popout-floor, 0px)), 1px); top:var(--ptop); max-height:calc(100% - var(--ptop) - 24px); }
   [data-theme='machina'] .wz-arrival .wz-popout[data-popout='signin'] .wz-popout-scroll{ min-height:0; }
 }
+/* THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' spec draft 8 s1): when the panel scrolls and the fixed rows would leave the fields' window under one field (36 px), Arrival.tsx sets data-squeeze: the heading and the error line are already inside the scrolling part (the error last), and the spacing tightens: panel padding 12 px top and bottom, 8 px between the button and the links; the button keeps its height and no text changes size. */
+.wz-arrival .wz-popout .wz-popout-scroll > *{ flex:none; }
+.wz-arrival .wz-screen.wz-popout[data-squeeze]{ padding-top:12px; padding-bottom:12px; gap:8px; }
+.wz-arrival .wz-popout[data-squeeze] .wz-form{ gap:8px; }

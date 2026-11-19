@@ -25,6 +25,8 @@
 //   P24 (Machina, Fable Nov 18, 10:15 pm) the sign-in face too clears the mark at 1366x560: its top is no higher than the floor (337); P24M3 the old top (313, the doors' place) turns it red, asserted landed
 //   P24 also reads that the button never overlaps the links row below it (the Machina sign-in frame at 560 with an error showed them overlapped)
 //   P26 on the 18+ error the focus MARK is drawn on the focused tick, in every theme (the Wrizors' v9 REAL: focus was on the tick and no mark showed; Fable Nov 18, 11:00 pm): an outline or a bar is drawn while it has focus, where it had none before; programmatic focus must show it too; P26M the mark taken away (asserted landed) turns it red
+//   P27 THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' draft 8 s1), MACHINA sign-in at 1366x560 with the two-line error: data-squeeze is on, the heading and the error line are inside the scrolling part, the fields' window is at least 36 px, the spacing is the short-window spacing (padding 12 top and bottom, 8 px between the button and the links, the button 36 px) and no text changed size; P27E the error is in view, at the foot of the scrolling part; P27M the window cut under 36 and P27EM the part scrolled to its top (each asserted landed) turn the reads red
+//   P27U ARBOR and FLUX at 1366x560 with the error, both faces, do NOT squeeze: no data-squeeze, the heading and the error outside the scrolling part, the panel padding as at 768; P27UM the squeeze forced on (asserted landed) turns it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
@@ -268,6 +270,8 @@ await withHarness(async (app) => {
       await app.waitFor(`!!document.querySelector('.wz-popout[data-popout=${face}]')` + (face === 'account' ? " && !!document.querySelector('.wz-adult-box')" : ''), { label: face + ' face', timeout: 6000 }).catch(() => {});
       await sleep(500);
     };
+    const SQ = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const e = p.querySelector('.wz-error'); const h = p.querySelector('.wz-bighead'); const b = p.querySelector('button[type=submit]'); const l = p.querySelector('.wz-secondary'); const cs = getComputedStyle(p); const sr = sc.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; const br = b.getBoundingClientRect(); const q = (x) => Math.round(x * 10) / 10; const fs = (el) => el ? getComputedStyle(el).fontSize : null; return { squeeze: p.getAttribute('data-squeeze'), win: q(sc.clientHeight), headInScroll: !!h && sc.contains(h), errInScroll: !!e && sc.contains(e), errInView: !!er && er.top >= sr.top - 0.5 && er.bottom <= sr.bottom + 0.5, errH: er ? q(er.height) : 0, atBottom: sc.scrollHeight - sc.scrollTop - sc.clientHeight <= 1.5, padT: cs.paddingTop, padB: cs.paddingBottom, btnH: q(br.height), gapBL: q(l.getBoundingClientRect().top - br.bottom), fonts: { head: fs(h), field: fs(p.querySelector('.wz-field')), btn: fs(b), link: fs(p.querySelector('.wz-link')) } }; })()";
+    const base0 = await ev("(() => { const p = document.querySelector('.wz-popout'); const fs = (el) => el ? getComputedStyle(el).fontSize : null; return { padT: getComputedStyle(p).paddingTop, head: fs(p.querySelector('.wz-bighead')), field: fs(p.querySelector('.wz-field')), btn: fs(p.querySelector('button[type=submit]')), link: fs(p.querySelector('.wz-link')) }; })()");
     await app.emulateDpr(1, 1366, 560); await sleep(800);
     await goFace('signin');
     await ev("(() => { window.__fl0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.reject(new TypeError('Failed to fetch')) : window.__fl0(u, o); return true; })()");
@@ -275,7 +279,22 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line', timeout: 8000 }).catch(() => {});
     await sleep(500);
     const s24 = await ev(SHORT);
+    const sqSignin = await ev(SQ);
     await ev("window.fetch = window.__fl0; true");
+    if (cfg.theme === 'machina') {
+      const sq = await ev(SQ);
+      const sqOk = sq.squeeze === 'true' && sq.win >= 36 && sq.headInScroll && sq.errInScroll;
+      const spaceOk = sq.padT === '12px' && sq.padB === '12px' && Math.abs(sq.gapBL - 8) <= 0.5 && sq.btnH === 36 && sq.fonts.head === base0.head && sq.fonts.field === base0.field && sq.fonts.btn === base0.btn && sq.fonts.link === base0.link;
+      check('P27', sqOk && spaceOk, `the squeezed sign-in at 560 with the error (${sq.errH} px tall): ${JSON.stringify(sq)}; sizes at 768 ${JSON.stringify(base0)}`);
+      check('P27E', sq.errInScroll && sq.errInView && sq.atBottom, `the error line in view at the foot of the scrolling part: in view ${sq.errInView}, at the bottom ${sq.atBottom}`);
+      await ev("(() => { const st = document.createElement('style'); st.id = 'mut-win'; st.textContent = '.wz-arrival .wz-popout .wz-popout-scroll{ max-height:20px !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+      const mw = await ev(SQ);
+      await ev("document.getElementById('mut-win').remove(); true"); await sleep(200);
+      check('P27M', mw.win < 36 && !(mw.squeeze === 'true' && mw.win >= 36 && mw.headInScroll && mw.errInScroll), `the fields' window cut (landed: ${mw.win} px): P27's read goes RED`);
+      await ev("(() => { const sc = document.querySelector('.wz-popout .wz-popout-scroll'); sc.scrollTop = 0; return true; })()"); await sleep(200);
+      const mt = await ev(SQ);
+      check('P27EM', mt.errInScroll && !mt.errInView && !mt.atBottom, `the part scrolled to its top (landed: error in view ${mt.errInView}, at the bottom ${mt.atBottom}): P27E's read goes RED`);
+    }
     await goFace('account');
     await app.mouseMove(2, 2); await sleep(400);
     const rest0 = await ev(BTN);
@@ -286,12 +305,21 @@ await withHarness(async (app) => {
     await sleep(600);
     await app.mouseMove(2, 2); await sleep(400);
     const a24 = await ev(SHORT);
+    const sqA = await ev(SQ);
     const rest1 = await ev(BTN);
     const tick1 = await ev(TICK);
     await ev(SCROLLTO(false)); await sleep(150); const y0 = await ev(BTNY);
     await ev(SCROLLTO(true)); await sleep(150); const y1 = await ev(BTNY);
     const pinned24 = Math.abs(y0 - y1) <= 0.5 && a24 && a24.scrolls === true;
     check('P24', shortOk(s24) && shortOk(a24) && pinned24, `1366x560 with the error: sign-in ${JSON.stringify(s24)}; create-account ${JSON.stringify(a24)}; button top ${y0} scrolled to the top, ${y1} to the foot`);
+    if (cfg.theme !== 'machina') {
+      const unchanged = (g) => g.squeeze === null && !g.headInScroll && !g.errInScroll && g.padT === base0.padT;
+      check('P27U', unchanged(sqSignin) && unchanged(sqA), `at 560 with the error, sign-in ${JSON.stringify({ squeeze: sqSignin.squeeze, head: sqSignin.headInScroll, err: sqSignin.errInScroll, pad: sqSignin.padT })}, create-account ${JSON.stringify({ squeeze: sqA.squeeze, head: sqA.headInScroll, err: sqA.errInScroll, pad: sqA.padT })}, panel padding at 768 ${base0.padT}`);
+      await ev("document.querySelector('.wz-popout').setAttribute('data-squeeze', 'true'); true"); await sleep(300);
+      const mu = await ev(SQ);
+      await ev("document.querySelector('.wz-popout').removeAttribute('data-squeeze'); true"); await sleep(200);
+      check('P27UM', mu.squeeze === 'true' && !unchanged(mu), `the squeeze forced on (landed: padding ${mu.padT}): P27U's read goes RED`);
+    }
     // P25: the button at rest after the error: the pointer parked away, focus on the tick
     const bp = await ev("(() => { const r = document.querySelector('.wz-popout button[type=submit]').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
     const sameLook = (a, b) => a.color === b.color && a.border === b.border && a.shadow === b.shadow;

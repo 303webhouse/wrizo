@@ -1,5 +1,5 @@
 import { WrizoMark } from './WrizoMark';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
@@ -38,6 +38,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [adult, setAdult] = useState(false);
   const adultRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  // THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' spec draft 8 s1): on a short window the fixed rows can leave the fields' window less than one whole field (36 px). Then the heading and the error line join the scrolling part (the error LAST, just above the pinned button row) and the panel's spacing tightens (data-squeeze); nothing else changes, no word changes.
+  const [squeezed, setSqueezed] = useState(false);
   // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
   // error); checked once per arrival at the account stage, never polled.
   const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
@@ -57,6 +59,31 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   }, [stage]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  useLayoutEffect(() => {
+    if (stage === 'doors') { setSqueezed(false); return undefined; }
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const pop = el.querySelector('.wz-popout') as HTMLElement | null;
+      const sc = pop ? (pop.querySelector('.wz-popout-scroll') as HTMLElement | null) : null;
+      if (!pop || !sc) { setSqueezed(false); return; }
+      const win = sc.clientHeight;
+      const h = pop.querySelector('.wz-bighead') as HTMLElement | null;
+      const e = pop.querySelector('.wz-error') as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(sc).rowGap) || 0;
+      // squeezed -> back only when the window would still hold a whole field with the heading and the error out again (and 16 px to spare: no flip-flop)
+      setSqueezed((was) => (was ? win - ((h ? h.offsetHeight + gap : 0) + (e ? e.offsetHeight + gap : 0)) - 16 < 36 : win < 36));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [stage, error, signupOpen, squeezed]);
+  // when the error appears in the scrolling part, the part scrolls to the bottom so the line is in view (it stays the quiet colour and role=alert)
+  useEffect(() => {
+    if (!error || !squeezed) return;
+    const sc = rootRef.current ? (rootRef.current.querySelector('.wz-popout-scroll') as HTMLElement | null) : null;
+    if (sc) sc.scrollTop = sc.scrollHeight;
+  }, [error, squeezed]);
   // On the 18+ error, focus moves to the tick AND the list scrolls it into view, above the error line (spec draft 4 §1; the Wrizors' v5 pass): the effect runs once the error line is in the layout, so the tick is placed against the shortened list, not the one before the line appeared
   useEffect(() => {
     if (error !== t('authAdultRequired')) return;
@@ -337,18 +364,20 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       )}
 
       {stage === 'signin' && (
-        <section className="wz-screen show wz-popout" data-popout="signin" role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
+        <section className="wz-screen show wz-popout" data-popout="signin" data-squeeze={squeezed ? 'true' : undefined} role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
           {t('authPanelTag') && <div className="wz-popout-tag" aria-hidden="true">{t('authPanelTag')}</div>}
-          <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>
+          {!squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>}
           {/* A real <form>: Enter submits, and a password manager recognises it. */}
           <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>
             <div className="wz-popout-scroll">
+            {squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>}
             <div className="wz-fieldcol">
               <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
               <input className="wz-field" type="password" name="password" placeholder={t('authPasswordPlaceholder')} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
+            {squeezed && error && <div className="wz-error">{error}</div>}
             </div>
-            {error && <div className="wz-error">{error}</div>}
+            {!squeezed && error && <div className="wz-error">{error}</div>}
             <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authSignIn')}</button>
           </form>
           <div className="wz-secondary wz-popout-links">
@@ -364,9 +393,9 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       )}
 
       {stage === 'account' && (
-        <section className="wz-screen show wz-popout" data-popout="account" role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
+        <section className="wz-screen show wz-popout" data-popout="account" data-squeeze={squeezed ? 'true' : undefined} role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
           {t('authPanelTag') && <div className="wz-popout-tag" aria-hidden="true">{t('authPanelTag')}</div>}
-          <div className="wz-bighead" id="wz-popout-head">{t('authCreateHeading')}</div>
+          {!(squeezed && signupOpen === true) && <div className="wz-bighead" id="wz-popout-head">{t('authCreateHeading')}</div>}
           {/* ITEM 224, ROUND 2 — closed reads as a quiet fact, never a form
               the writer fills in only to be told no at the end. `null`
               (status not back yet) renders neither the form nor the
@@ -378,6 +407,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
               <div className="wz-sub wz-popout-subline">{t('authCreateSub')}</div>
               <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleCreate(); }}>
               <div className="wz-popout-scroll">
+              {squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authCreateHeading')}</div>}
               <div className="wz-fieldcol">
                 <input className="wz-field" type="text" placeholder={t('authNamePlaceholder')} autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
                 <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
@@ -390,8 +420,9 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
                 <input ref={adultRef} type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
                 <span>{t('authAdultConfirm')}</span>
               </label>
+              {squeezed && error && <div className="wz-error" role="alert">{error}</div>}
               </div>
-              {error && <div className="wz-error" role="alert">{error}</div>}
+              {!squeezed && error && <div className="wz-error" role="alert">{error}</div>}
               <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authCreateSubmit')}</button>
               </form>
             </>
