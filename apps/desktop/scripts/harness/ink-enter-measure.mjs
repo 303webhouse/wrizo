@@ -23,7 +23,7 @@ const INSTRUMENT = `(() => {
   const isInk = (el) => el && el.classList && el.classList.contains('ink-committed');
   for (const prop of ['width', 'height']) {
     const d = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, prop);
-    Object.defineProperty(HTMLCanvasElement.prototype, prop, { configurable: true, get() { return d.get.call(this); }, set(v) { if (isInk(this)) { window.__inkSizes += 1; const st = new Error().stack.split('\n').slice(2, 6).map((l) => l.trim().replace(/^at /, '').replace(/\(?https?:[^)]*\/assets\//, '(')).join(' < '); window.__inkWho[st] = (window.__inkWho[st] || 0) + 1; } d.set.call(this, v); } });
+    Object.defineProperty(HTMLCanvasElement.prototype, prop, { configurable: true, get() { return d.get.call(this); }, set(v) { if (isInk(this)) { window.__inkSizes += 1; const st = new Error().stack.split(String.fromCharCode(10)).slice(2, 6).map((l) => l.trim().split('/').pop()).join(' < '); window.__inkWho[st] = (window.__inkWho[st] || 0) + 1; } d.set.call(this, v); } });
   }
   const cr = CanvasRenderingContext2D.prototype.clearRect;
   CanvasRenderingContext2D.prototype.clearRect = function (...a) { if (isInk(this.canvas)) window.__inkDraws += 1; return cr.apply(this, a); };
