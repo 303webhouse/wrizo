@@ -5,6 +5,9 @@
 //   N1  [theme x tone x surface] the stage strip has no "?": no .wz-help, no .desk-mode-tab-wrap, and no control in it that names a
 //       stage's help ("What is ...?") or reads "?". LIVE in the same cell: the strip is mounted with its four stage keys, and the
 //       document carries the theme and page tone asked for. Arbor, Flux and Machina x dark and light x a Page and a screenplay = 12.
+//       A Page is read twice: as it opens (Free Write) and again in Draft. Flux draws its Free Write dark whatever the tone (jacked in:
+//       data-flux3-jacked), so the tone is asserted on the Draft read; both reads must carry no "?". (Found on the first green run:
+//       flux/light/page read tone "dark" on main and on the fix alike, with the "?" absent on the fix - the premise, not the product.)
 //   MUT [same cells] a "?" planted into the live strip (the old DOM shape: a wrap holding a .wz-help) is SEEN by the same reader, so
 //       the reader is not blind; the plant is removed before the next cell. The source mutant is the red-first run itself: origin/main,
 //       where ModeStrip still mounts its HelpButton, must FAIL N1 in every cell.
@@ -35,7 +38,7 @@ const READ_STRIP = `(() => {
   const wraps = [...strip.querySelectorAll('.desk-mode-tab-wrap')].length;
   const named = [...strip.querySelectorAll('button, [role="button"]')].filter((b) => /^What is /.test(b.getAttribute('aria-label') || '') || (b.textContent || '').trim() === '?').length;
   const keys = [...strip.querySelectorAll('.desk-mode-tab[data-mode-key]')].map((b) => b.getAttribute('data-mode-key'));
-  return { helps, wraps, named, keys, theme: document.documentElement.getAttribute('data-theme'), tone: document.documentElement.getAttribute('data-page') };
+  return { helps, wraps, named, keys, theme: document.documentElement.getAttribute('data-theme'), tone: document.documentElement.getAttribute('data-page'), jacked: document.documentElement.hasAttribute('data-flux3-jacked') };
 })()`;
 const PLANT = `(() => {
   const strip = document.querySelector('.desk-mode-strip');
@@ -72,9 +75,18 @@ await withHarness(async (app) => {
       for (const surface of ['page', 'script']) {
         const cell = `${theme}/${tone}/${surface}`;
         const mounted = await openSurface(app, theme, tone, surface);
-        const r = mounted ? await app.evalJs(READ_STRIP) : null;
-        const live = !!r && KEYS.every((k) => r.keys.includes(k)) && r.theme === theme && r.tone === tone;
-        ok(`N1 [${cell}] the stage strip has no "?" (and it is live: the four stage keys, theme ${theme}, tone ${tone})`, live && clean(r), JSON.stringify(r));
+        const opened = mounted ? await app.evalJs(READ_STRIP) : null;
+        let r = opened;
+        if (mounted && surface === 'page') {
+          // the same strip in Draft, where every theme draws the tone asked for
+          await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click()");
+          await app.waitFor(`document.documentElement.getAttribute('data-page') === ${JSON.stringify(tone)}`, { label: 'the tone, in Draft', timeout: 6000 }).catch(() => {});
+          await sleep(300);
+          r = await app.evalJs(READ_STRIP);
+        }
+        const live = !!r && KEYS.every((k) => r.keys.includes(k)) && r.theme === theme && r.tone === tone
+          && !!opened && KEYS.every((k) => opened.keys.includes(k)) && opened.theme === theme;
+        ok(`N1 [${cell}] the stage strip has no "?" (and it is live: the four stage keys, theme ${theme}, tone ${tone})`, live && clean(r) && clean(opened), JSON.stringify(surface === 'page' ? { opened, draft: r } : r));
         if (!mounted || !r) { ok(`MUT [${cell}] a planted "?" is seen by the reader`, false, 'no strip to plant into'); continue; }
         await app.evalJs(PLANT);
         const planted = await app.evalJs(READ_STRIP);
