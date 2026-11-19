@@ -397,7 +397,11 @@ await withHarness(async (app) => {
       // the two mode toggles: keyboard-operable, state reported
       await modeTab(app, 'draft');
       const t0 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? null`);
-      ok(`L9 ${T}: the Typewriter toggle exists on Draft and reports aria-pressed`, t0 === 'true' || t0 === 'false', String(t0));
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages (Draft never runs it); the original check, verbatim:
+      //   ok(`L9 ${T}: the Typewriter toggle exists on Draft and reports aria-pressed`, t0 === 'true' || t0 === 'false', String(t0));
+      // successor: no toggle on Draft, and the foot's Progress toggle (the one that remains) is there to read - power: it reports aria-pressed
+      const pr0 = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="progress"]')?.getAttribute('aria-pressed') ?? null`);
+      ok(`L9 ${T} [Free Write = Typewriter successor]: there is NO Typewriter toggle on Draft, and the Progress toggle beside the "..." is there and reports aria-pressed (so the absence is not an empty foot)`, t0 === null && (pr0 === 'true' || pr0 === 'false'), JSON.stringify({ typewriter: t0, progress: pr0 }));
       // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 5
 
       if (t0 != null) {
