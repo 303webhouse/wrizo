@@ -126,6 +126,9 @@ const KEEP = {
   reorgNewBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoardsNoDoc: 'the reorg rail, Machina only: never rendered in Flux',
   reorgUntitledBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoxSettings: 'the reorg rail, Machina only: never rendered in Flux',
   reorgDefaults: 'the reorg rail, Machina only: never rendered in Flux',
+  // THE REORG'S TOP RAIL (POLISH, Nov 19): read only under ?reorg=1 in Machina (src/reorg/TopRail.tsx); Flux never renders it. Each names Machina's Board or doc.
+  reorgTopPlaceNoDoc: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopPlaceOne: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopPlaceMany: 'the reorg top rail, Machina only: never rendered in Flux',
+  reorgTopConnectAnother: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopConnectHeld: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopConnectNewHeld: 'the reorg top rail, Machina only: never rendered in Flux',
 };
 const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
 function deskIdsFromSource() {
