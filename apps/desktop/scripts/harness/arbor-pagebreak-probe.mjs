@@ -115,6 +115,25 @@ function pageLib() {
     const t2 = performance.now();
     (PB.workMs = PB.workMs || []).push(+(t2 - t0).toFixed(2)); (PB.measMs = PB.measMs || []).push(+(t1 - t0).toFixed(2)); PB.placed = placed;
   };
+  // THE SHELL MEASURER (run 3's finding: a bare off-page block copied the editor's font but laid a few lines out differently from the live page,
+  // which itself agrees with itself at every width, in zoom and in both editors). The shell rebuilds the editor's own CLASS CHAIN (stage > ... >
+  // editor, each with its classes, data attributes and inline style as recorded on the framed page), so every rule that lays the editor out lays the
+  // shell out; the transform is pinned to 1, and it sits off screen, hidden. Its content is the live editor's own markup.
+  PB.chainOf = (ed) => { const out = []; for (let e = ed; e && e !== document.body; e = e.parentElement) { const data = {}; for (const a of e.attributes) if (a.name.startsWith('data-') && a.name !== 'data-zoom') data[a.name] = a.value;
+      out.push({ tag: e.tagName.toLowerCase(), cls: e.getAttribute('class') || '', style: e.getAttribute('style') || '', data }); if (e.classList.contains('desk-frame-stage')) break; } return out.reverse(); };
+  PB.buildShell = (chain, html) => {
+    document.getElementById('pb-shell')?.remove();
+    let root = null, cur = null;
+    chain.forEach((c, i) => { const el = document.createElement(c.tag); if (c.cls) el.setAttribute('class', c.cls); if (c.style) el.setAttribute('style', c.style); for (const k of Object.keys(c.data)) el.setAttribute(k, c.data[k]);
+      if (i === 0) { root = el; el.id = 'pb-shell'; el.setAttribute('aria-hidden', 'true'); Object.assign(el.style, { position: 'fixed', left: '-30000px', top: '0px', width: '1400px', height: '900px', visibility: 'hidden', pointerEvents: 'none', overflow: 'hidden' }); el.style.setProperty('--wz-k', '1'); el.style.setProperty('--wz-zoom', '1'); }
+      if (cur) cur.appendChild(el); cur = el; });
+    cur.removeAttribute('contenteditable'); cur.style.position = 'relative'; cur.innerHTML = html;
+    document.body.appendChild(root); PB.m = cur; PB.starts = null; return cur;
+  };
+  // which computed properties differ between a live row and the bare measurer's block (the ones that lay text out; geometry excluded)
+  PB.styleDiff = () => { const ed = document.querySelector('.mode-scroll .forward-only-editor'); const row = ed && ed.querySelector(':scope > .wz-row'); const blk = document.querySelector('#pb-measurer > div'); if (!row || !blk) return null;
+    const a = getComputedStyle(row), b = getComputedStyle(blk); const skip = /^(width|height|inline-size|block-size|min-|max-|position|top|left|right|bottom|inset|visibility|contain|display|transform|translate|scale|rotate|perspective|pointer-events|content-visibility|vertical-align|box-sizing|margin|padding|border|outline|overflow|z-index|will-change|cursor|caret|color|background|opacity|filter|mask|clip|user-select|-webkit-user-modify|-webkit-text-fill|-webkit-text-stroke|-webkit-locale|text-decoration|text-emphasis|tab-size$)/;
+    const out = {}; for (let i = 0; i < a.length; i++) { const p = a[i]; if (skip.test(p)) continue; if (a.getPropertyValue(p) !== b.getPropertyValue(p)) out[p] = [a.getPropertyValue(p), b.getPropertyValue(p)]; } return out; };
   PB.blockOf = (o) => { const s = PB.starts; let lo = 0, hi = s.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (s[m] <= o) lo = m; else hi = m - 1; } return lo; };
   if (!PB.keyHooked) { PB.keyHooked = true; PB.arm = 'base';
     document.addEventListener('keydown', (e) => { window.__pbT0 = performance.now(); const ch = e.key && e.key.length === 1 ? e.key : '';
@@ -192,7 +211,16 @@ await withHarness(async (app) => {
     return { arm: name, keys: t.length, med: med(t), p90: p90(t), max: mx(t), workN: w.work.length, workMed: med(w.work), workMax: mx(w.work), measMed: med(w.meas), placed: w.placed };
   };
 
-  const AG = {};
+  const AG = {}; const AGS = {}; let CHAIN = null;
+  // the shell measurer: built from the recorded class chain and this markup, walked, compared; then the bare measurer is put back for the key arms
+  const shellCheck = async (html, liveSnips, restoreRows) => {
+    const r = await app.evalJs(`(() => { const P = window.__pb; const t0 = performance.now(); const ed = P.buildShell(${JSON.stringify(CHAIN)}, ${JSON.stringify(html)}); const last = ed.lastElementChild; void (last && last.offsetTop); const t1 = performance.now();
+      const s = P.mwalk(${GEO.H}); const t2 = performance.now(); const snips = P.msnips(s.breaks); const w = ed.getBoundingClientRect().width;
+      document.getElementById('pb-shell')?.remove(); return { buildMs: +(t1 - t0).toFixed(1), walkMs: +(t2 - t1).toFixed(1), pages: s.breaks.length + 1, shellEdW: +w.toFixed(3), snips }; })()`);
+    if (restoreRows) await app.evalJs(`(() => { window.__pb.build(${JSON.stringify(restoreRows)}, ${JSON.stringify(GEO)}); window.__pb.H = ${GEO.H}; window.__pb.starts = null; window.__pb.state = window.__pb.mwalk(${GEO.H}); return true; })()`);
+    return { ...r, snips: undefined, raw: r.snips, vsLive: liveSnips ? agree(r.snips, liveSnips) : null };
+  };
+  const edHtml = async () => app.evalJs(`document.querySelector('${ED}').innerHTML`);
   let complete = true;
   // ---- COST at 1366, and agreement at 1366 for every size
   for (const words of [5000, 20000, 50000]) {
@@ -206,6 +234,10 @@ await withHarness(async (app) => {
     AG[words] = M.snips;
     const L = await liveWalk();
     say(`live-draft-1366-${words}`, { ms: L.ms, pages: L.pages, scale: L.scale, agree: agree(M.snips, L.snips) });
+    if (words === 5000) say('style-diff-row-vs-bare-block', await app.evalJs('window.__pb.styleDiff()'));
+    if (!CHAIN) { CHAIN = await app.evalJs(`window.__pb.chainOf(document.querySelector('${ED}'))`); say('chain', CHAIN.map((c) => c.cls)); }
+    var HTML_D = await edHtml();
+    { const S = await shellCheck(HTML_D, L.snips, rows); AGS[words] = S.raw; say(`shell-draft-1366-${words}`, { buildMs: S.buildMs, walkMs: S.walkMs, pages: S.pages, shellEdW: S.shellEdW, vsLive: S.vsLive }); }
     await caretEnd('drafting');
     const res = []; for (const a of ['base', 'sync', 'idle', 'base']) res.push(await arm(a));
     say(`keys-draft-${words}`, res);
@@ -215,6 +247,7 @@ await withHarness(async (app) => {
     await app.evalJs(`(() => { window.__pb.build(${JSON.stringify(rows)}, ${JSON.stringify(GEO)}); window.__pb.H = ${GEO.H}; window.__pb.starts = null; window.__pb.state = window.__pb.mwalk(${GEO.H}); return true; })()`);
     const LF = await liveWalk();
     say(`live-freewrite-1366-${words}`, { ms: LF.ms, pages: LF.pages, scale: LF.scale, agree: agree(M.snips, LF.snips) });
+    { const S = await shellCheck(HTML_D, LF.snips, rows); say(`shell-vs-freewrite-1366-${words}`, { pages: S.pages, vsLive: S.vsLive }); }
     await caretEnd('journal');
     const resF = []; for (const a of ['base', 'sync', 'idle', 'base']) resF.push(await arm(a));
     say(`keys-freewrite-${words}`, resF);
@@ -253,6 +286,7 @@ await withHarness(async (app) => {
     const M = await buildM(await harvest());
     const L = await liveWalk();
     say(`agree-${tag}`, { st: d.st, measurerPages: M.pages, measurerVs1366: agree(AG[20000] || [], M.snips), live: { pages: L.pages, scale: L.scale, ms: L.ms }, liveVsMeasurer: agree(M.snips, L.snips) });
+    { const S = await shellCheck(await edHtml(), L.snips, null); say(`shell-${tag}`, { pages: S.pages, shellEdW: S.shellEdW, vsShell1366: agree(AGS[20000] || [], S.raw), vsLive: S.vsLive }); }
   }
   await set(1366, 768); await sleep(800);
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ typewriter: true })); true");
@@ -265,6 +299,7 @@ await withHarness(async (app) => {
     await app.evalJs(`(() => { window.__pb.build(${JSON.stringify(rz)}, ${JSON.stringify(GEO)}); window.__pb.H = ${GEO.H}; window.__pb.starts = null; window.__pb.state = window.__pb.mwalk(${GEO.H}); return true; })()`);
     const L = await liveWalk();
     say('agree-zoom-freewrite', { st: fz.st, live: { pages: L.pages, scale: L.scale, ms: L.ms }, liveVs1366Measurer: agree(AG[20000] || [], L.snips) });
+    say('shell-zoom-freewrite', { liveVs1366Shell: agree(AGS[20000] || [], L.snips) });
   } else { complete = false; say('agree-zoom-freewrite', { up: false }); }
   console.log(`PB-PROBE: ${complete ? 'DONE' : 'INCOMPLETE'}`);
 });
