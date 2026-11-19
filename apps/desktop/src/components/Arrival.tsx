@@ -1,5 +1,5 @@
 import { WrizoMark } from './WrizoMark';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unbornHref } from '../store/unbornPage';
 import { setForwardLock } from '../store/forwardLock';
@@ -34,9 +34,23 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [password, setPassword] = useState('');
   // ITEM 224 — sign-up by invite code, until launch.
   const [inviteCode, setInviteCode] = useState('');
+  // the 18+ tick on the create-account face: this panel's own state, never stored on the device; it is sent only as adult: true, and only from the ticked form (apiRegister)
+  const [adult, setAdult] = useState(false);
+  const adultRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' spec draft 8 s1): on a short window the fixed rows can leave the fields' window less than one whole field (36 px). Then the heading and the error line join the scrolling part (the error LAST, just above the pinned button row) and the panel's spacing tightens (data-squeeze); nothing else changes, no word changes.
+  const [squeezed, setSqueezed] = useState(false);
   // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
   // error); checked once per arrival at the account stage, never polled.
   const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
+  // focus starts in the first field when the panel opens (spec draft 4 §1: "Focus starts in the email field"; the create-account face's first field is the name)
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const id = window.requestAnimationFrame(() => { (el.querySelector('.wz-popout input.wz-field') as HTMLInputElement | null)?.focus(); });
+    return () => window.cancelAnimationFrame(id);
+  }, [stage, signupOpen]);
   useEffect(() => {
     if (stage !== 'account') return;
     let cancelled = false;
@@ -45,6 +59,39 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   }, [stage]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  useLayoutEffect(() => {
+    if (stage === 'doors') { setSqueezed(false); return undefined; }
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const measure = () => {
+      const pop = el.querySelector('.wz-popout') as HTMLElement | null;
+      const sc = pop ? (pop.querySelector('.wz-popout-scroll') as HTMLElement | null) : null;
+      if (!pop || !sc) { setSqueezed(false); return; }
+      const win = sc.clientHeight;
+      const h = pop.querySelector('.wz-bighead') as HTMLElement | null;
+      const e = pop.querySelector('.wz-error') as HTMLElement | null;
+      const gap = parseFloat(getComputedStyle(sc).rowGap) || 0;
+      // squeezed -> back only when the window would still hold a whole field with the heading and the error out again AND the tightened spacing undone (32 px to spare: the squeeze's own padding and gap changes give back about 16, so a smaller margin flip-flops on a one-line error)
+      setSqueezed((was) => (was ? win - ((h ? h.offsetHeight + gap : 0) + (e ? e.offsetHeight + gap : 0)) - 32 < 36 : win < 36));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [stage, error, signupOpen, squeezed]);
+  // when the error appears in the scrolling part, the part scrolls to the bottom so the line is in view (it stays the quiet colour and role=alert)
+  useEffect(() => {
+    if (!error || !squeezed) return;
+    const sc = rootRef.current ? (rootRef.current.querySelector('.wz-popout-scroll') as HTMLElement | null) : null;
+    if (sc) sc.scrollTop = sc.scrollHeight;
+  }, [error, squeezed]);
+  // On the 18+ error, focus moves to the tick AND the list scrolls it into view, above the error line (spec draft 4 §1; the Wrizors' v5 pass): the effect runs once the error line is in the layout, so the tick is placed against the shortened list, not the one before the line appeared
+  useEffect(() => {
+    if (error !== t('authAdultRequired')) return;
+    const box = adultRef.current;
+    if (!box) return;
+    box.focus({ preventScroll: true });
+    box.scrollIntoView({ block: 'nearest' });
+  }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
   // A ref as well as the state: two Enter presses in one tick both read busy=false before a re-render, and
   // would submit twice. The ref flips synchronously.
   const submitting = useRef(false);
@@ -54,6 +101,17 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // While locked there is no doors stage and no way back to it; sign-in and Create an account are the only doors.
   const locked = authState === 'anon' && isSignedOutHere();
   useEffect(() => { if (locked && stage === 'doors') setStage('signin'); }, [locked, stage]);
+  // Esc closes the panel the way its "← back" does (spec draft 4 §1, §6 check 4; Fable Nov 18, 6:05 pm): the sign-in face returns to the doors, the create-account face returns to sign-in (where its back goes), and on a locked device the sign-in face has no back, so Esc does nothing there
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented || e.isComposing) return;
+      if (stage === 'account') { e.preventDefault(); setError(''); setStage('signin'); return; }
+      if (stage === 'signin' && !locked) { e.preventDefault(); setError(''); setStage('doors'); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [stage, locked]);
   // Signed in: the door is back to Write / Open, whatever stage the sign-in left behind.
   useEffect(() => { if (authState === 'authed') setStage('doors'); }, [authState]);
   const framed = useDeskFrameViewport();
@@ -67,12 +125,37 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   // (r20: under the flag in Arbor the drawing's box takes even whole sizes, as the splash's does - the logo lands on the same whole pixel in both)
   const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor;
   const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : sizeFor(window.innerWidth, window.innerHeight)));
+  // (Flux holds its chart's finished frame behind the pop-out, the same box the splash drew it in, so it needs the box too)
   useEffect(() => {
-    if (!arborFront) return undefined;
+    if (!arborFront && theme !== 'flux') return undefined;
     const resize = () => setFrontBox(sizeFor(window.innerWidth, window.innerHeight));
     resize(); window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
-  }, [arborFront]);
+  }, [arborFront, theme]);
+  // The pop-out never covers the mark: --popout-floor is the mark's foot + its margin, as a length from the top of this screen (the stylesheet reads it).
+  // Machina: the logo's box foot + 8 px (its create-account face grows upward and stops there). Flux: the chart's WRIZO letters' ink foot + 8 px (half the stroke is added: a bounding box leaves the stroke out), and the panel's top is never above it [spec draft 5/6; Fable Nov 18, 5:35 pm]
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const set = () => {
+      const top = el.getBoundingClientRect().top;
+      let foot: number | null = null;
+      if (theme === 'flux') {
+        const word = el.querySelector('.wz-popout-chart .fx-wordmark');
+        const svg = el.querySelector('.wz-popout-chart svg');
+        if (word && svg) foot = word.getBoundingClientRect().bottom + 6.4 * (svg.getBoundingClientRect().width / 1350) + 8;
+      } else {
+        const logo = el.querySelector('.wz-hero .wz-logo');
+        if (logo) foot = logo.getBoundingClientRect().bottom + 8;
+      }
+      if (foot === null) el.style.removeProperty('--popout-floor');
+      else el.style.setProperty('--popout-floor', `${Math.ceil(foot - top)}px`);
+    };
+    set();
+    window.addEventListener('resize', set);
+    return () => { window.removeEventListener('resize', set); el.style.removeProperty('--popout-floor'); };
+  }, [stage, theme, frontBox.width, frontBox.height]);
 
   // ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3: "Enter = Write"): on the front door's doors, Enter writes - unless a control or a field has
   // the key (a focused door presses itself; the sign-in form submits). Read through a ref so the listener always calls today's handler.
@@ -181,7 +264,7 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     try {
       const res = await runAuthCall(() => apiLogin(email.trim(), password));
       if (res.ok && res.user) { onAuthed(res.user); await openWhenLoaded(true); }
-      else setError(res.error || 'Could not sign in');
+      else setError(res.error || t('authSignInFailed'));
     } finally {
       submitting.current = false;
       setBusy(false);
@@ -190,13 +273,16 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
 
   const handleCreate = async () => {
     if (busy || submitting.current) return;
+    // the 18+ tick: no tick, no account (and no call to the server); the line says why [Arrival §authAdult]
+    if (!adult) { setError(t('authAdultRequired')); return; }
     submitting.current = true;
     setError(''); setBusy(true);
     try {
-      const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim()));
+      const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim(), adult));
       // B10.1 - a successful REGISTER is a first run on this device whatever the flag says (once per account).
       if (res.ok && res.user) { markRegistered(res.user.id); onAuthed(res.user); openAsAuthed(); }
-      else setError(res.error || 'Could not create your account');
+      // the server's own 18+ refusal answers 400 { error: 'adult_required' }: shown as the lexicon's line (never the raw code), and the existing error effect puts focus on the tick, as for the browser's own refusal [Fable Nov 19, 12:45 am]
+      else setError(res.error === 'adult_required' ? t('authAdultRequired') : (res.error || t('authCreateFailed')));
     } finally {
       submitting.current = false;
       setBusy(false);
@@ -204,12 +290,13 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   };
 
   return (
-    <div className="wz-home wz-arrival">
+    <div className="wz-home wz-arrival" ref={rootRef} data-stage={stage} data-locked={locked ? 'true' : 'false'}>
       <div className="wz-ambient" aria-hidden="true" />
       {!arborFront && <WrizoMark className="wz-mark show" alt="" />}
 
       {arborFront ? (
-        <section className={stage === 'doors' ? 'arbor2-front' : 'arbor2-front gone'} aria-label="Wrizo">
+        /* POP-OUT (Nov 18): signed out and pressing Log in / Sign in, the front door STAYS (dimmed by the .wz-arrival[data-stage] veil; `behind`) and the panel opens over it; it no longer goes. Not read out while behind, not pressable. */
+        <section className={stage === 'doors' ? 'arbor2-front' : 'arbor2-front behind'} aria-label="Wrizo" aria-hidden={stage === 'doors' ? undefined : true}>
           <div className="arbor2-front-mark" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }} aria-hidden="true">
             <SplashMark theme="plateau" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
             {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo, still, where the drawing's top line stood, the tagline under it - the splash's
@@ -234,17 +321,26 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
           )}
         </section>
       ) : (
-        <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero gone'}>
+        <>
+          {/* FLUX: the splash's chart, on its finished frame, is the picture behind the panel (as Arbor holds its sketch); the old hero and its door are not shown around the panel (stylesheet) [spec draft 4 §1, §4; Fable Nov 18, 3:50 pm] */}
+          {theme === 'flux' && stage !== 'doors' && (
+            <div className="wz-popout-chart" aria-hidden="true" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px` }}>
+              <SplashMark theme="flux" reduced width={frontBox.width} height={frontBox.height} onFloorReached={() => {}} />
+            </div>
+          )}
+        {/* THE SIGN-IN POP-OUT (the Wrizors' spec, Nov 18): sign-in and sign-up are a small panel over the splash picture, not a page of their own. The picture stays (dimmed by a veil, `behind`), and the panel opens over it;
+            the splash's own Sign in door and a device that signed out (`locked`, no back) both land on this one panel. */}
+        <section className={stage === 'doors' ? 'wz-hero' : 'wz-hero behind'} aria-hidden={stage === 'doors' ? undefined : true}>
           <WrizoMark className="wz-logo" alt="Wrizo" />
           <div className="wz-tagline">For humans writing</div>
           <div className="wz-arrival-bootbar" data-ready={ready ? 'true' : 'false'} aria-hidden="true">
             <div className="wz-arrival-bootbar-fill" />
           </div>
-  
+
           {stage === 'doors' && (
             <div className="wz-arrival-doors">
               <button type="button" className="wz-btn wz-primary wz-arrival-write" disabled={!ready || landing} onClick={() => { void handleWrite(); }}>
-                Write
+                {t('authDoorWrite')}
               </button>
               <button type="button" className="wz-link wz-arrival-open" disabled={!ready || landing} onClick={handleOpen}>
                 Open
@@ -252,43 +348,55 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
               {landing && <div className="wz-sub wz-arrival-loading" role="status">Loading your pages…</div>}
               {authState === 'anon' && (
                 <button type="button" className="wz-link wz-arrival-signin" onClick={() => { setError(''); setStage('signin'); }}>
-                  Sign in
+                  {t('authSignIn')}
                 </button>
               )}
             </div>
           )}
+          {/* the doors as the picture shows them behind the panel: not pressable, not read out (Machina's panel takes their place instead, stylesheet) */}
+          {stage !== 'doors' && (
+            <div className="wz-arrival-doors wz-arrival-doors-ghost" aria-hidden="true">
+              <span className="wz-btn wz-primary wz-arrival-write">{t('authDoorWrite')}</span>
+              {authState === 'anon' && <span className="wz-link wz-arrival-signin">{t('authSignIn')}</span>}
+            </div>
+          )}
         </section>
+        </>
       )}
 
       {stage === 'signin' && (
-        <section className="wz-screen show" style={{ zIndex: 8 }}>
-          <div className="wz-bighead">Welcome back.</div>
+        <section className="wz-screen show wz-popout" data-popout="signin" data-squeeze={squeezed ? 'true' : undefined} role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
+          {t('authPanelTag') && <div className="wz-popout-tag" aria-hidden="true">{t('authPanelTag')}</div>}
+          {!squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>}
           {/* A real <form>: Enter submits, and a password manager recognises it. */}
           <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleSignin(); }}>
+            <div className="wz-popout-scroll">
+            {squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authWelcomeBack')}</div>}
             <div className="wz-fieldcol">
-              <input className="wz-field" type="email" name="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-              <input className="wz-field" type="password" name="password" placeholder="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
+              <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+              <input className="wz-field" type="password" name="password" placeholder={t('authPasswordPlaceholder')} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
-            {error && <div className="wz-error">{error}</div>}
-            <button type="submit" className="wz-btn" disabled={busy}>{busy ? 'one moment…' : 'Sign in'}</button>
+            {squeezed && error && <div className="wz-error">{error}</div>}
+            </div>
+            {!squeezed && error && <div className="wz-error">{error}</div>}
+            <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authSignIn')}</button>
           </form>
-          <div className="wz-secondary">
+          <div className="wz-secondary wz-popout-links">
+            {!locked && (
+              <button type="button" className="wz-link wz-popout-back" onClick={() => { setError(''); setStage('doors'); }}>{t('authBack')}</button>
+            )}
             {/* a11y audit A2 (Blocker, WCAG 2.1.1 Keyboard) — was a <span onClick>,
                 unreachable by keyboard. A real <button>; index.css resets its
                 chrome so nothing looks different. */}
-            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('account'); }}>New here? Create an account</button>
+            <button type="button" className="wz-link wz-popout-switch" onClick={() => { setError(''); setStage('account'); }}>{t('authNewHere')}</button>
           </div>
-          {!locked && (
-            <div className="wz-secondary">
-              <button type="button" className="wz-link" onClick={() => { setError(''); setStage('doors'); }}>← back</button>
-            </div>
-          )}
         </section>
       )}
 
       {stage === 'account' && (
-        <section className="wz-screen show" style={{ zIndex: 8 }}>
-          <div className="wz-bighead">Save your writing to an account.</div>
+        <section className="wz-screen show wz-popout" data-popout="account" data-squeeze={squeezed ? 'true' : undefined} role="dialog" aria-modal="true" aria-labelledby="wz-popout-head" style={{ zIndex: 8 }}>
+          {t('authPanelTag') && <div className="wz-popout-tag" aria-hidden="true">{t('authPanelTag')}</div>}
+          {!(squeezed && signupOpen === true) && <div className="wz-bighead" id="wz-popout-head">{t('authCreateHeading')}</div>}
           {/* ITEM 224, ROUND 2 — closed reads as a quiet fact, never a form
               the writer fills in only to be told no at the end. `null`
               (status not back yet) renders neither the form nor the
@@ -297,24 +405,33 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
             <div className="wz-sub">{t('authSignupByInvitation')}</div>
           ) : signupOpen === true ? (
             <>
-              <div className="wz-sub">Add an email and your writing follows you to any device — anything you've already written here comes with it.</div>
+              <div className="wz-sub wz-popout-subline">{t('authCreateSub')}</div>
               <form className="wz-form" onSubmit={(e) => { e.preventDefault(); void handleCreate(); }}>
+              <div className="wz-popout-scroll">
+              {squeezed && <div className="wz-bighead" id="wz-popout-head">{t('authCreateHeading')}</div>}
               <div className="wz-fieldcol">
-                <input className="wz-field" type="text" placeholder="what should we call you?" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
-                <input className="wz-field" type="email" name="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
-                <input className="wz-field" type="password" name="new-password" placeholder="choose a password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+                <input className="wz-field" type="text" placeholder={t('authNamePlaceholder')} autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
+                <input className="wz-field" type="email" name="email" placeholder={t('authEmailPlaceholder')} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+                <input className="wz-field" type="password" name="new-password" placeholder={t('authNewPasswordPlaceholder')} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
                 {/* ITEM 224 — sign-up by invite code, until launch. */}
                 <input className="wz-field" type="text" placeholder={t('authInviteCodePlaceholder')} autoComplete="off" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
               </div>
-              {error && <div className="wz-error">{error}</div>}
-              <button type="submit" className="wz-btn" disabled={busy}>{busy ? 'one moment…' : 'Create my account'}</button>
+              {/* THE 18+ TICK: the account is not made without it. It lives in this panel's own state and is not stored on the device; ticked, the register request carries adult: true (apiRegister); unticked, the submit says the line below instead of calling the server. */}
+              <label className="wz-adult">
+                <input ref={adultRef} type="checkbox" className="wz-adult-box" name="adult" checked={adult} aria-required="true" onChange={(e) => { setAdult(e.target.checked); if (e.target.checked && error === t('authAdultRequired')) setError(''); }} />
+                <span>{t('authAdultConfirm')}</span>
+              </label>
+              {squeezed && error && <div className="wz-error" role="alert">{error}</div>}
+              </div>
+              {!squeezed && error && <div className="wz-error" role="alert">{error}</div>}
+              <button type="submit" className="wz-btn" disabled={busy}>{busy ? t('authSigningIn') : t('authCreateSubmit')}</button>
               </form>
             </>
           ) : null}
           {/* Kept when locked: this back goes to SIGN-IN, never to the doors, so "New here?" is never a dead end. */}
           <div className="wz-secondary">
             {/* a11y audit A2 — same fix as sign-in's own "← back" above. */}
-            <button type="button" className="wz-link" onClick={() => { setError(''); setStage('signin'); }}>← back</button>
+            <button type="button" className="wz-link wz-popout-back" onClick={() => { setError(''); setStage('signin'); }}>{t('authBack')}</button>
           </div>
         </section>
       )}
