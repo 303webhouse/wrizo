@@ -281,7 +281,8 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
       const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim(), adult));
       // B10.1 - a successful REGISTER is a first run on this device whatever the flag says (once per account).
       if (res.ok && res.user) { markRegistered(res.user.id); onAuthed(res.user); openAsAuthed(); }
-      else setError(res.error || t('authCreateFailed'));
+      // the server's own 18+ refusal answers 400 { error: 'adult_required' }: shown as the lexicon's line (never the raw code), and the existing error effect puts focus on the tick, as for the browser's own refusal [Fable Nov 19, 12:45 am]
+      else setError(res.error === 'adult_required' ? t('authAdultRequired') : (res.error || t('authCreateFailed')));
     } finally {
       submitting.current = false;
       setBusy(false);

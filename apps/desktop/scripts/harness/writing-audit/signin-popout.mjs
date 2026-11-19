@@ -30,6 +30,7 @@
 //   P27U ARBOR and FLUX at 1366x560 with the error, both faces, do NOT squeeze: no data-squeeze, the heading and the error outside the scrolling part, the panel padding as at 768; P27UM the squeeze forced on (asserted landed) turns it red
 //   P26 (Machina, Fable Nov 19, 12:10 am) the focused tick's OWN edge turns #E6E8EA from #9AA1A8 and NOTHING is drawn outside the box (an outside outline was clipped by the scrolling part: a stray 1 px line); P26M the mark taken away and P26MO an outside outline drawn (each asserted landed) turn it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
+//   P28 the SERVER's 18+ refusal (a stubbed 400 { error: 'adult_required' } on the register call) shows the lexicon's line, role=alert, with focus on the tick, never the raw code (Fable Nov 19, 12:45 am); P28M a code the map does not know (asserted landed) shows raw and turns it red
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -456,6 +457,31 @@ await withHarness(async (app) => {
     await sleep(500);
     await ESCKEY(); const l2 = await ev(STAGE);
     check('P23L', l0.panel === 'signin' && l0.back === false && l1.panel === 'signin' && l1.stage === 'signin' && l2.panel === 'signin', `locked: ${JSON.stringify(l0)}; Esc: ${JSON.stringify(l1)} (nothing); on the create-account face Esc: ${JSON.stringify(l2)} (to sign-in)`);
+  }
+  // ---- P28: the server's 400 adult_required
+  {
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]') && !!document.querySelector('.wz-adult-box')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    const RUN28 = async (code) => {
+      await ev(`(() => { window.__fl28 = window.__fl28 || window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('register') ? Promise.resolve({ ok: false, status: 400, json: async () => ({ error: ${JSON.stringify(code)} }) }) : window.__fl28(u, o);
+        const n = (sel, v) => { const el = document.querySelector(sel); const st = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; st.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
+        n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); const box = document.querySelector('.wz-adult-box'); if (!box.checked) box.click(); return true; })()`);
+      await sleep(250);
+      await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the error line', timeout: 6000 }).catch(() => {});
+      await sleep(500);
+      return ev("(() => { const e = document.querySelector('.wz-popout .wz-error'); return { text: e ? e.textContent : null, role: e ? e.getAttribute('role') : null, onTick: document.activeElement === document.querySelector('.wz-adult-box') }; })()");
+    };
+    const WANT28 = 'Wrizo accounts are for writers 18 and older, for now.';
+    const r28 = await RUN28('adult_required');
+    check('P28', r28.text === WANT28 && r28.role === 'alert' && r28.onTick === true, `a stubbed 400 adult_required: ${JSON.stringify(r28)}`);
+    const r28m = await RUN28('adult_required_x');
+    check('P28M', r28m.text === 'adult_required_x' && r28m.text !== WANT28, `a code the map does not know (landed: the line reads ${JSON.stringify(r28m.text)}): P28's read goes RED`);
+    await ev("window.fetch = window.__fl28; true");
+    await ev("document.querySelector('.wz-popout-back').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
+    await sleep(400);
   }
   // P22M: the field dropped from the request (asserted landed) turns P22's read red
   {
