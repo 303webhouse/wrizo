@@ -263,7 +263,9 @@ await withHarness(async (app) => {
   // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
   await sleep(250);
-  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('plain words');
   await sleep(100);
@@ -513,7 +515,9 @@ await withHarness(async (app) => {
   // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
   await sleep(250);
-  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('hello');
   await sleep(100);
