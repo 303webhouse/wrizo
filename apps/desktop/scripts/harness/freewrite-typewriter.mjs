@@ -100,9 +100,8 @@ try { await withHarness(async (app) => {
     const T = `${theme}/${tone}`;
     let id = await openCase({ theme, tone, ...CASES.fresh });
     const fresh = await ev(PROBE);
-    const gearFw = await ev(GEAR);
     ok(`FW-FRESH [${T}] a fresh page opened in Free Write is zoomed with the Typewriter fade on (data-zoom ${fresh.zoom}, data-typewriter ${fresh.tw}, page ${fresh.pageW}px)`, zoomed(fresh), JSON.stringify(fresh));
-    ok(`GONE [${T}] Free Write offers no Typewriter switch: no toggle button (${fresh.toggles}), and the gear's panel has no Typewriter row (${gearFw.hasTypewriterRow})`, fresh.toggles === 0 && gearFw.gear && gearFw.hasTypewriterRow === false, JSON.stringify({ toggles: fresh.toggles, gearFw }));
+    ok(`GONE [${T}] Free Write offers no Typewriter switch: no toggle button (${fresh.toggles})`, fresh.toggles === 0, JSON.stringify({ toggles: fresh.toggles }));
     // keys: nothing new may be saved for the page's Typewriter
     await ev("(() => { const e = document.querySelector('.forward-only-editor'); if (e) e.focus(); })()");
     for (const ch of 'a few words') { await app.typeKeys(ch); await sleep(30); }
@@ -122,10 +121,9 @@ try { await withHarness(async (app) => {
 
     id = await openCase({ theme, tone, ...CASES.draftOn });
     const dr = await ev(PROBE);
-    const gearDr = await ev(GEAR);
     const drKept = await ev(`({ page: localStorage.getItem('wrizo-typewriter-page-${id}'), setting: (JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')).typewriter })`);
     ok(`DR-ON [${T}] a Draft page whose switch was ON (its own value 'on', the shared setting on) is NEVER zoomed and its fade is off (data-zoom ${dr.zoom}, data-typewriter ${dr.tw}, page ${dr.pageW}px)`, plain(dr), JSON.stringify(dr));
-    ok(`GONE [${T}] Draft offers no Typewriter switch either: no toggle button (${dr.toggles}), no Typewriter row in the gear (${gearDr.hasTypewriterRow})`, dr.toggles === 0 && gearDr.gear && gearDr.hasTypewriterRow === false, JSON.stringify({ toggles: dr.toggles, gearDr }));
+    ok(`GONE [${T}] Draft offers no Typewriter switch either: no toggle button (${dr.toggles})`, dr.toggles === 0, JSON.stringify({ toggles: dr.toggles }));
     ok(`DATA [${T}] the Draft page's old value stays as seeded: the page's own value ${JSON.stringify(drKept.page)} (seeded 'on'), the shared setting ${JSON.stringify(drKept.setting)} (seeded true)`, drKept.page === 'on' && drKept.setting === true, JSON.stringify(drKept));
     await snap(`draft-on-${theme}-${tone}`);
 
@@ -134,8 +132,19 @@ try { await withHarness(async (app) => {
     ok(`DR-FRESH [${T}] a fresh empty Draft page is never zoomed (the plateau skin's old default was ON): data-zoom ${dfr.zoom}, data-typewriter ${dfr.tw}`, plain(dfr), JSON.stringify(dfr));
   }
 
+  // ---- GONE in the gear: the gear is the unframed stage's, so it is read on a narrow screen (below the 1100px frame gate), in Free Write and in Draft; the power check needs the gear to be THERE
+  await app.emulateDpr(1, 1000, 800);
+  for (const mode of ['journal', 'drafting']) {
+    await openCase({ theme: 'plateau', tone: 'dark', mode, text: OLD_TEXT, pageKey: 'on', setting: true });
+    const g = await ev(GEAR);
+    ok(`GONE-GEAR [narrow, ${mode === 'journal' ? 'Free Write' : 'Draft'}] the gear is there (power) and its panel has no Typewriter row (${g.hasTypewriterRow})`, g.gear === true && g.hasTypewriterRow === false, JSON.stringify(g));
+  }
+  await app.emulateDpr(1, 1920, 1080);
+  const stageSrc = fs.readFileSync(new URL('../../src/components/ModeStage.tsx', import.meta.url), 'utf8');
+  ok('GONE-SRC ModeStage offers the writer no Typewriter switch in its source: no TypewriterToggle element, no Typewriter row (Seg label) in the gear, no setTypewriterExplicit call', !/<TypewriterToggle\b/.test(stageSrc) && !/label="Typewriter"/.test(stageSrc) && !/setTypewriterExplicit\(/.test(stageSrc), '');
+
   // ---- MUT: each old path put back goes RED on its own read; undone, the same read is green -------------------------------------------------------------
-  const withMutant = async (name, run) => { mutant = name; landed[name] = undefined; try { return { landed: landed[name], ...(await run()) }; } finally { mutant = null; } };
+  const withMutant = async (name, run) => { mutant = name; landed[name] = undefined; try { const r = await run(); return { landed: landed[name], ...r }; } finally { mutant = null; } };
   const mFw = await withMutant('fwswitch', async () => { await openCase({ theme: 'plateau', tone: 'dark', ...CASES.old }); return { probe: await ev(PROBE) }; });
   ok(`MUT-fwswitch (landed ${mFw.landed}) Free Write reading the shared switch again: the old page (switch off) is NOT zoomed, so the Free Write read goes RED (data-zoom ${mFw.probe.zoom}, data-typewriter ${mFw.probe.tw})`, mFw.landed === 1 && !zoomed(mFw.probe), JSON.stringify(mFw));
   const mDr = await withMutant('draftpage', async () => { await openCase({ theme: 'plateau', tone: 'dark', ...CASES.draftOn }); return { probe: await ev(PROBE) }; });
