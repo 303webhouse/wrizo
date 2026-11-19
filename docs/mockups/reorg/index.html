@@ -16,6 +16,7 @@
   Milestone 3: the Back menu's tabs, the search, and find and replace (6 D).
   Milestone 4: the split screen (6 E).
   Milestone 5: a Board on its own (6 F).
+  Milestone 6: the stages (6 G), from stage-table.js: change a cell there and reload.
   Opens by double-click: plain HTML, CSS and JavaScript, no build, no server.
 -->
 <div id="shell" class="shell">
@@ -28,11 +29,13 @@
   <div id="beside"></div>
   <div id="board"></div>
   <div id="drop"></div>
+  <div id="changed"></div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <div id="state-tag" class="state-tag"></div>
   <input id="pick-colour" type="color" class="offstage" tabindex="-1" aria-hidden="true">
   <input id="pick-picture" type="file" accept="image/*" class="offstage" tabindex="-1" aria-hidden="true">
 </div>
+<script src="stage-table.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>

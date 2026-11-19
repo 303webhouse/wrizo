@@ -5,6 +5,7 @@
   Milestone 3: the Back menu's three tabs, the search, and find and replace (6 D).
   Milestone 4: the split screen (6 E).
   Milestone 5: a Board on its own (6 F).
+  Milestone 6: the stages (6 G). What each menu offers in each stage is read from stage-table.js.
 
   Plain JavaScript, no build. State lives in memory; a reload starts over.
   Every screen state carries a tag (RULED, PROPOSED, NOT RULED) in the corner.
@@ -30,6 +31,7 @@
     beside: document.getElementById('beside'),
     board: document.getElementById('board'),
     drop: document.getElementById('drop'),
+    changed: document.getElementById('changed'),
     toast: document.getElementById('toast'),
     tag: document.getElementById('state-tag'),
     colour: document.getElementById('pick-colour'),
@@ -45,12 +47,20 @@
     brass:  { name: 'brass',     panel: '#FF9800', rail: '#FF9800', ink: '#1C1C1C' }
   };
   var COLOUR_ORDER = ['pale', 'grey', 'blue', 'yellow', 'brass'];
-  var STAGES = ['SPRINT', 'BUILD', 'EDIT', 'FINALIZE'];
+  /* The stage table (G), NOT RULED in every cell. It is all in stage-table.js, so a cell can change with a
+     reload. If that file has a slip and does not load, the brief's four buttons still show and the menus say so. */
+  var T = window.REORG_STAGE_TABLE || null;
+  var STAGES = (function () {
+    var list = T && T.stages ? T.stages.filter(function (s) { return s && s.key && s.shown !== false; }).map(function (s) { return s.key; }) : [];
+    return list.length ? list : ['SPRINT', 'BUILD', 'EDIT', 'FINALIZE'];
+  })();
 
   var S = {
     here: { project: 'thesis', doc: 'harbor-tolls' },   // project: null while she is in an Unfiled piece
     prev: null,                // the Doc she was in before this one
-    stage: 'BUILD',
+    stage: STAGES.indexOf('BUILD') !== -1 ? 'BUILD' : STAGES[0],
+    /* "What changed with this stage": open, and the stage it compares with (null: the one she was in before). */
+    changed: { open: false, from: null },
     pinView: 'boxes',          // 'boxes' | 'list'
     pop: null,                 // null | { kind: 'docs' | 'projects' | 'unfiled' | 'theme' | 'controls' | 'list', id }
     boxOpen: false,            // PROJECTS: the box settings drop-down (the Project she is in, no other)
@@ -187,6 +197,91 @@
     return '<span class="tag ' + cls + '">' + mark + '</span>';
   }
 
+  /* ---------- the stages (G): what the two menus offer in the stage she is in ---------- */
+
+  /* A column of the table: { key, was, job, page, split, splitNote }. */
+  function stageOf(key) {
+    var list = T && T.stages ? T.stages : [];
+    for (var i = 0; i < list.length; i++) { if (list[i] && list[i].key === key) { return list[i]; } }
+    return { key: key };
+  }
+  /* The rows drawn on screen, "On a Page" only: the tabs of the two menus, and the session at the Front menu's foot. */
+  var STAGE_ROWS = [['front', 'TEXT'], ['front', 'INK'], ['front', 'PARTS'], ['front', 'THE SESSION'],
+    ['back', 'PLAN'], ['back', 'ASSETS'], ['back', 'FEEDBACK']];
+  /* One cell: { offers: [{ say, new, detail, act }], note }. Null when stage-table.js did not load. */
+  function stageCell(menu, row, key) {
+    if (!T) { return null; }
+    var r = T.onAPage && T.onAPage[menu] ? T.onAPage[menu][row] : null, c = r ? r[key] : null;
+    if (!c) { return { offers: [], note: 'This cell is not in stage-table.js.' }; }
+    return {
+      offers: (c.offers || []).map(function (o) { return typeof o === 'string' ? { say: o } : o; })
+        .filter(function (o) { return o && typeof o.say === 'string' && o.say; }),
+      note: c.note || ''
+    };
+  }
+  function offersAct(cell, act) { return !!cell && cell.offers.some(function (o) { return o.act === act; }); }
+  /* Is the split screen offered in the stage she is in? Not in SPRINT (the table's Q25). */
+  function splitOffered() { return stageOf(S.stage).split !== false; }
+  function stageTitle(key) {
+    var s = stageOf(key);
+    return key + (s.was ? ', was ' + s.was : '') + (s.job ? ': ' + s.job : '') + ' What it offers is NOT RULED.';
+  }
+  /* The band at the head of a tab: what the tab offers in the stage she is in. Each offer is a chip; the blue
+     edge marks what the table sets in bold, new with the reorg. "New part" is not a chip: it is the row itself. */
+  function stageBand(menu, row, head) {
+    var c = stageCell(menu, row, S.stage), chips, h;
+    h = '<div class="stage-band"><div class="stage-band-head"><span>' + esc(head + ' IN ' + S.stage) + '</span>' + tag('NOT RULED') + '</div>';
+    if (!c) { return h + '<div class="stage-band-note">stage-table.js did not load. Look in it for a slip (a missing comma or quote), then reload.</div></div>'; }
+    chips = c.offers.filter(function (o) { return o.act !== 'new-part'; });
+    if (chips.length) {
+      h += '<div class="stage-chips">';
+      chips.forEach(function (o) {
+        h += '<button type="button" class="stage-chip' + (o.new ? ' is-new' : '') + '" data-act="offer" data-menu="' + menu + '" data-row="' + esc(row) + '" data-say="' + esc(o.say) + '"' +
+          ' title="' + esc(o.say + (o.detail ? ': ' + o.detail : '') + (o.new ? ' (new with the reorg)' : '')) + '">' + esc(o.say) + '</button>';
+      });
+      h += '</div>';
+    }
+    if (c.note || !c.offers.length) { h += '<div class="stage-band-note">' + esc(c.note || 'Nothing.') + '</div>'; }
+    return h + '</div>';
+  }
+
+  /* "What changed with this stage" compares with the stage she was in before her last press;
+     before any press, with the stage before this one (SPRINT: the one after). */
+  function compareWith() {
+    var f = S.changed.from, i = STAGES.indexOf(S.stage);
+    if (f && f !== S.stage && STAGES.indexOf(f) !== -1) { return f; }
+    return STAGES[i > 0 ? i - 1 : 1] || null;
+  }
+  function sameSay(a, b) { return !!a && !!b && a.say.trim().toLowerCase() === b.say.trim().toLowerCase(); }
+  function findSay(list, o) {
+    for (var i = 0; i < list.length; i++) { if (sameSay(list[i], o)) { return list[i]; } }
+    return null;
+  }
+  /* What one row gained and lost from one stage to another, by the words of its offers.
+     changed: the same words with another detail. order: the same offers in another order. */
+  function rowDiff(menu, row, from, to) {
+    var a = stageCell(menu, row, from), b = stageCell(menu, row, to), ka, kb;
+    var out = { gained: [], lost: [], changed: [], order: [] };
+    if (!a || !b) { return out; }
+    b.offers.forEach(function (o) {
+      var x = findSay(a.offers, o);
+      if (!x) { out.gained.push(o); } else if ((x.detail || '') !== (o.detail || '')) { out.changed.push(o); }
+    });
+    a.offers.forEach(function (o) { if (!findSay(b.offers, o)) { out.lost.push(o); } });
+    ka = a.offers.filter(function (o) { return findSay(b.offers, o); });
+    kb = b.offers.filter(function (o) { return findSay(a.offers, o); });
+    kb.forEach(function (o, i) { if (!sameSay(o, ka[i])) { out.order.push(o); } });
+    return out;
+  }
+  function stageCount(from, to) {
+    var n = { gained: 0, lost: 0 };
+    STAGE_ROWS.forEach(function (r) {
+      var d = rowDiff(r[0], r[1], from, to);
+      n.gained += d.gained.length; n.lost += d.lost.length;
+    });
+    return n;
+  }
+
   /* A Project's box: letters on a colour, or her picture. where: 'rail' | 'panel'. */
   function boxHtml(p, size, where) {
     var c = COLOURS[p.colour], bg, ink;
@@ -257,7 +352,7 @@
       h += '<button type="button" class="stage-btn' + (id === b.view ? ' is-here' : '') + '" data-act="board-view" data-id="' + id + '"' + (id === b.view ? ' aria-current="true"' : '') + '>' + v + '</button>';
     });
     h += '</div><span class="bar-cmd">&gt;<span>Ctrl+.</span></span>' +
-      '<button type="button" class="bar-search" data-act="later" data-mark="PROPOSED" data-note="There is no search on a Board before milestone 6 (Fable, Nov 14)." aria-label="Search" title="Search (Ctrl+F)">' +
+      '<button type="button" class="bar-search" data-act="later" data-mark="PROPOSED" data-note="There is no search on a Board in this prototype (Fable, Nov 14)." aria-label="Search" title="Search (Ctrl+F)">' +
       svg('search', 14, 1.6) + '<span>Ctrl+F</span></button>';
     return h;
   }
@@ -278,9 +373,14 @@
       /* In a split the stage buttons fade and she stays in her stage, which stays readable (section 6 E). */
       '<div class="stages' + (S.split ? ' is-faded' : '') + '"' + (S.split ? ' title="In a split you stay in ' + S.stage + '. Close the asset\u2019s side to change stage."' : '') + '>';
     STAGES.forEach(function (s) {
-      h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + s + '"' + (s === S.stage ? ' aria-current="true"' : '') + (S.split ? ' disabled' : '') + '>' + s + '</button>';
+      h += '<button type="button" class="stage-btn' + (s === S.stage ? ' is-here' : '') + '" data-act="stage" data-id="' + esc(s) + '"' + (s === S.stage ? ' aria-current="true"' : '') +
+        (S.split ? ' disabled' : ' title="' + esc(stageTitle(s)) + '"') + '>' + esc(s) + '</button>';
     });
-    h += '</div><span class="bar-cmd">&gt;<span>Ctrl+.</span></span>';
+    h += '</div>';
+    /* "What changed with this stage" (G). The brief asks for a small panel Nick can open; where its button sits
+       is a guess, and its dashed edge is the NOT RULED tag's. */
+    h += '<button type="button" class="changed-btn' + (S.changed.open ? ' is-open' : '') + '" data-act="changed" aria-expanded="' + S.changed.open + '" title="What changed with this stage (NOT RULED)">What changed</button>';
+    h += '<span class="bar-cmd">&gt;<span>Ctrl+.</span></span>';
     /* The top bar's search button (frame P3-26A). It and Ctrl+F open the same search. */
     h += '<button type="button" class="bar-search' + (S.search.open ? ' is-open' : '') + '" data-act="search-bar" aria-label="Search" aria-expanded="' + S.search.open + '" title="Search (Ctrl+F)">' +
       svg('search', 14, 1.6) + '<span>Ctrl+F</span></button>';
@@ -301,6 +401,59 @@
         '<span class="row-meta">' + esc(part.count) + '</span></button>';
     });
     el.drop.innerHTML = h + '</section>';
+  }
+
+  /* "What changed with this stage" (G, NOT RULED): what each menu gained and lost against another stage.
+     It drops from the top bar over the middle of the page, so both menus stay in sight beside it, and it
+     moves nothing. It stays open across stage presses; its button, CLOSE or Esc closes it. */
+  function renderChanged() {
+    if (!S.changed.open || S.board) { swap(el.changed, ''); return; }
+    var to = S.stage, from = compareWith(), st = stageOf(to), h, b = '';
+    function li(cls, sign, text) { return '<li class="' + cls + '"><span class="sign" aria-hidden="true">' + sign + '</span><span>' + text + '</span></li>'; }
+    function says(list) { return list.map(function (o) { return esc(o.say); }).join(', '); }
+
+    h = '<section class="changed" aria-label="What changed with this stage">' +
+      '<div class="changed-head"><span class="pop-title">What changed with this stage</span>' + tag('NOT RULED') +
+      '<button type="button" class="chip-btn" data-act="changed" title="Close (Esc)">CLOSE</button></div>' +
+      '<div class="changed-stage"><span class="changed-key">' + esc(to) + '</span>' + (st.was ? '<span class="row-meta">was ' + esc(st.was) + '</span>' : '') + '</div>' +
+      (st.job ? '<div class="changed-job">' + esc(st.job) + '</div>' : '');
+    if (from) {
+      h += '<div class="changed-vs"><span class="row-meta">COMPARED WITH</span><span class="changed-scopes">';
+      STAGES.forEach(function (s) {
+        if (s !== to) { h += '<button type="button" class="scope" data-act="changed-vs" data-id="' + esc(s) + '" aria-pressed="' + (s === from) + '">' + esc(s) + '</button>'; }
+      });
+      h += '</span></div>';
+    }
+
+    if (!T) {
+      b = '<div class="quiet-line">stage-table.js did not load. Look in it for a slip (a missing comma or quote), then reload.</div>';
+    } else if (!from) {
+      b = '<div class="quiet-line">There is only one stage on screen, so there is nothing to compare it with.</div>';
+    } else {
+      [['front', 'FRONT MENU'], ['back', 'BACK MENU']].forEach(function (m) {
+        b += '<div class="changed-menu">' + m[1] + '</div>';
+        STAGE_ROWS.forEach(function (r) {
+          if (r[0] !== m[0]) { return; }
+          var d = rowDiff(r[0], r[1], from, to), lines = '';
+          d.gained.forEach(function (o) { lines += li('gain', '+', esc(o.say) + (o.detail ? ' <span class="changed-detail">(' + esc(o.detail) + ')</span>' : '')); });
+          d.lost.forEach(function (o) { lines += li('lose', '\u2212', '<s>' + esc(o.say) + '</s>'); });
+          d.changed.forEach(function (o) { lines += li('moved', '~', esc(o.say) + ': ' + esc(o.detail || 'no detail now')); });
+          if (d.order.length) { lines += li('moved', '\u2195', 'in another order: ' + says(d.order)); }
+          b += '<div class="changed-row"><button type="button" class="changed-tab" data-act="changed-show" data-menu="' + r[0] + '" data-id="' + esc(r[1].toLowerCase()) + '" title="Open this in its menu">' +
+            esc(r[1]) + '</button><ul>' + (lines || li('same', '', 'no change')) + '</ul></div>';
+        });
+      });
+      var sa = stageOf(from).split !== false, sb = stageOf(to).split !== false;
+      b += '<div class="changed-menu">THE SPLIT SCREEN</div><div class="changed-row"><span class="changed-tab plain">OPEN BESIDE</span><ul>' +
+        (sa === sb ? li('same', '', sb ? 'offered in both' : 'offered in neither') : li(sb ? 'gain' : 'lose', sb ? '+' : '\u2212', (sb ? 'offered in ' : 'not offered in ') + esc(to))) + '</ul></div>';
+      /* The table's resting surface: words only. The brief: a stage changes what the two menus offer, never the page. */
+      b += '<div class="changed-menu">ON THE PAGE \u00b7 NOT DRAWN</div>' +
+        '<div class="changed-page">' + esc(st.page || 'The table says nothing here.') + '</div>' +
+        '<div class="changed-page quiet">The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page is the same in every stage, and a stage changes only what the two menus offer.</div>';
+    }
+    h += '<div class="changed-body" data-keep="changed">' + b + '</div>' +
+      '<div class="changed-foot">From stage-table.js: change a cell and reload. In the menus, a blue edge marks what the table sets in bold, new with the reorg. Workshopping is in the file and kept off screen.</div></section>';
+    swap(el.changed, h);
   }
 
   /* ---------- the left rail (frames Ruled-1, Ruled-2, Ruled-3) ---------- */
@@ -582,11 +735,24 @@
     return h + '</div></div>';
   }
 
-  /* The Front menu (frames P2-13A, P2-13B). TEXT and INK are named in the frames; what they offer is milestone 6. */
+  /* The session (the table's Q7): at the Front menu's foot, under every tab, and only in a stage that has a sitting. */
+  function sessionFoot() {
+    var c = stageCell('front', 'THE SESSION', S.stage);
+    if (c && !c.offers.length) { return ''; }
+    return '<div class="session">' + stageBand('front', 'THE SESSION', 'THE SESSION') + '</div>';
+  }
+
+  /* The Front menu (frames P2-13A, P2-13B). TEXT and INK are named in the frames; what each tab offers in the
+     stage she is in is the stage table (G), in a band at the tab's head. The Parts list (C) stays in every stage. */
   function frontMenu() {
-    var d = docHere(), parts = partsOf(d), b = '';
+    var d = docHere(), parts = partsOf(d), b = '', cell;
     if (S.front.tab === 'parts') {
-      b += '<button type="button" class="new-row h38" data-act="new-part"><span class="plus" aria-hidden="true">+</span>New part</button>';
+      cell = stageCell('front', 'PARTS', S.stage);
+      b += stageBand('front', 'PARTS', 'PARTS');
+      /* "New part" shows only in a stage whose cell offers it (an offer with "act": "new-part"). */
+      if (!cell || offersAct(cell, 'new-part')) {
+        b += '<button type="button" class="new-row h38" data-act="new-part"><span class="plus" aria-hidden="true">+</span>New part</button>';
+      }
       /* One oldest or newest choice for all Parts, shown once at the top of the list (Fable, Nov 14). */
       if (assetsOf(d).some(function (a) { return a.part; })) {
         b += '<div class="exp-head"><span>CONNECTED ASSETS \u00b7 ' + (S.assetOrder === 'newest' ? 'NEWEST FIRST' : 'OLDEST FIRST') + '</span>' +
@@ -606,11 +772,10 @@
         if (part.open && list.length) { b += partAssets(i, list); }
       });
     } else {
-      b += groupHead(S.front.tab.toUpperCase(), 'NOT RULED');
-      b += '<div class="quiet-line">The frames name this tab. What it offers in each stage is the stage table: milestone 6 (G).</div>';
+      b += stageBand('front', S.front.tab.toUpperCase(), S.front.tab.toUpperCase());
     }
     return '<section class="menu menu-front" aria-label="Front menu">' + tabsRow('front-tab', ['TEXT', 'INK', 'PARTS'], S.front.tab) +
-      '<div class="menu-body" data-keep="front-' + S.front.tab + '">' + b + '</div></section>';
+      '<div class="menu-body" data-keep="front-' + S.front.tab + '">' + b + '</div>' + sessionFoot() + '</section>';
   }
 
   function assetRow(a) {
@@ -619,7 +784,9 @@
       '<span class="row-chips">' +
       /* A Board can also open on its own (section 6 F). */
       (a.kind === 'BOARD' ? '<button type="button" class="chip-btn" data-act="open-board" data-name="' + esc(a.name) + '" title="Open the Board on its own">Open</button>' : '') +
-      '<button type="button" class="chip-btn" data-act="open-beside" data-id="' + a.id + '" title="Open beside the page">Open beside</button></span></div>';
+      /* Greyed in a stage with no split screen (the table's Q25: SPRINT). */
+      '<button type="button" class="chip-btn" data-act="open-beside" data-id="' + a.id + '"' +
+      (splitOffered() ? ' title="Open beside the page"' : ' disabled title="No split screen in ' + esc(S.stage) + ' (the stage table, Q25)"') + '>Open beside</button></span></div>';
   }
 
   /* The Back menu's ASSETS tab: all of the Doc's assets, or those connected to one Part (frame P2-13A2). */
@@ -650,8 +817,8 @@
     return b;
   }
 
-  /* The Back menu's PLAN tab: the ordered plan of the piece. The rows are made up;
-     what the tab offers in each stage is the stage table, milestone 6. */
+  /* The Back menu's PLAN tab: the ordered plan of the piece. The rows are made up and read-only in every
+     stage; what the tab offers in each stage is the band over them (G). */
   function backPlan(d) {
     var rows = D.plan[d.id] || [], b = groupHead('THE PLAN OF THIS DOC \u00b7 ' + rows.length, 'NOT RULED');
     if (!rows.length) { return b + '<div class="quiet-line">Nothing is in this doc\u2019s plan.</div>'; }
@@ -659,15 +826,13 @@
       b += '<div class="row"><span class="part-num">' + (n + 1) + '</span><span class="kind-tag">BLOCK</span>' +
         '<div class="row-main"><span class="row-name">' + esc(row.block) + '</span><span class="row-meta">on the board ' + esc(row.board) + '</span></div></div>';
     });
-    return b + '<div class="quiet-line">The rows are made up. What the plan lets her do in each stage is the stage table: milestone 6 (G).</div>';
+    return b + '<div class="quiet-line">The rows are made up. Nothing can be done to them in this prototype, in any stage.</div>';
   }
 
-  /* The Back menu's FEEDBACK tab. The Consultant, Machina's AI helper, lives inside it. */
+  /* The Back menu's FEEDBACK tab. The Consultant, Machina's AI helper, lives inside it: what it offers in the
+     stage she is in is the band at the tab's head (G). Under it, the feedback on this Doc. */
   function backFeedback(d) {
-    var rows = D.feedback[d.id] || [], b = groupHead('CONSULTANT', 'NOT RULED');
-    b += '<button type="button" class="new-row" data-act="later" data-mark="NOT RULED" data-note="What the Consultant offers in each stage is the stage table: milestone 6 (G).">' +
-      '<span class="plus" aria-hidden="true">+</span>Ask the Consultant</button>';
-    b += groupHead('FEEDBACK ON THIS DOC \u00b7 ' + rows.length);
+    var rows = D.feedback[d.id] || [], b = groupHead('FEEDBACK ON THIS DOC \u00b7 ' + rows.length);
     if (!rows.length) { b += '<div class="quiet-line">No feedback on this doc yet.</div>'; }
     rows.forEach(function (f) {
       b += '<div class="row wrap"><div class="row-main"><span class="row-name">' + esc(f.text) + '</span>' +
@@ -684,11 +849,15 @@
 
   function backMenu() {
     if (S.search.open) { return searchMenu(); }
-    var d = docHere();
-    var b = S.back.tab === 'assets' ? backAssets(d) : S.back.tab === 'plan' ? backPlan(d) : backFeedback(d);
+    var d = docHere(), tab = S.back.tab.toUpperCase();
+    var b = stageBand('back', tab, tab === 'FEEDBACK' ? 'THE CONSULTANT' : tab) +
+      (S.back.tab === 'assets' ? backAssets(d) : S.back.tab === 'plan' ? backPlan(d) : backFeedback(d));
     return '<section class="menu menu-back" aria-label="Back menu">' + tabsRow('back-tab', ['PLAN', 'ASSETS', 'FEEDBACK'], S.back.tab) + searchDoor() +
       '<div class="menu-body" data-keep="back-' + S.back.tab + '-' + (S.back.part || 'all') + '">' + b + '</div></section>';
   }
+
+  var BOARD_MENUS = 'A Board gets the same two menus. What they offer on a Board is the stage table\u2019s second part, ' +
+    '\u201cOn a Board\u201d: it is kept in stage-table.js and not drawn. The stages belong to the page; on a Board its views stand in their place.';
 
   function renderMenus() {
     /* The caret stays in the search field, or in "Replace with", across a render. */
@@ -698,10 +867,11 @@
     }
     var h = '';
     if (S.board) {
-      /* On a Board the two handles sit at the Board's outer edges (frame P3-NB-C). A Board gets the same two
-         menus; what they offer there is the stage table, milestone 6. */
-      h = '<button type="button" class="handle handle-front on-board" data-act="later" data-mark="NOT RULED" data-note="A Board gets the same two menus. What they offer on a Board is the stage table: milestone 6 (G)." aria-label="Front menu" title="Front menu">&rsaquo;</button>' +
-        '<button type="button" class="handle handle-back on-board" data-act="later" data-mark="NOT RULED" data-note="A Board gets the same two menus. What they offer on a Board is the stage table: milestone 6 (G)." aria-label="Back menu" title="Back menu">&lsaquo;</button>';
+      /* On a Board the two handles sit at the Board's outer edges (frame P3-NB-C). What the two menus offer on a
+         Board is the stage table's second part: it is in stage-table.js and not drawn (the default while Fable's
+         question on the Board and Block tables is open). */
+      h = '<button type="button" class="handle handle-front on-board" data-act="later" data-mark="NOT RULED" data-note="' + esc(BOARD_MENUS) + '" aria-label="Front menu" title="Front menu">&rsaquo;</button>' +
+        '<button type="button" class="handle handle-back on-board" data-act="later" data-mark="NOT RULED" data-note="' + esc(BOARD_MENUS) + '" aria-label="Back menu" title="Back menu">&lsaquo;</button>';
     } else if (S.split) {
       /* In a split both menu handles are gone, and the menus with them (Nick, Nov 14). They come
          back as she left them when she closes the asset's side. Only the search can open, laid over
@@ -1126,7 +1296,12 @@
     var x = S.split.x === null ? Math.round(84 + (w - 84) / 2) : S.split.x;
     return Math.max(SPLIT_MIN, Math.min(w - ASSET_MIN, x));
   }
+  /* False, with a note, in a stage that offers no split screen (the stage table: SPRINT, Q25). */
   function openSplit(what) {
+    if (!splitOffered()) {
+      note('NOT RULED', (stageOf(S.stage).splitNote || 'No split screen in ' + S.stage + ', says the stage table.') + ' Change stage to open it beside the page.');
+      return false;
+    }
     S.split = { what: what, x: S.split ? S.split.x : null, drop: false, pop: null };
     S.partsDrop = false;
     S.board = null;   // a split is the page and something beside it: it takes her off a Board, back to the page
@@ -1442,7 +1617,7 @@
       if (S.front.tab === 'parts') {
         say('RULED', 'C \u00b7 Front menu, Parts tab: a marker with a count, and a toggle on each Part that has something connected (P2-13A)' +
           (partsOf(d).some(function (x) { return x.open; }) ? '; a Part expanded in place (ruled Nov 14, no frame)' : ''));
-      } else { say('NOT RULED', 'Front menu, ' + S.front.tab.toUpperCase() + ' tab: milestone 6 (G)'); }
+      } else { say('NOT RULED', 'G \u00b7 Front menu, ' + S.front.tab.toUpperCase() + ' tab: the frames name it; all it shows is what the stage offers'); }
     }
     if (S.search.open) {
       say('RULED', 'D \u00b7 The search menu, one row of scope tabs: THIS DOC, THIS PROJECT, EVERYTHING (no second row: Nick, Nov 14)');
@@ -1458,6 +1633,14 @@
       if (S.back.tab !== 'assets') { say('NOT RULED', 'D \u00b7 Back menu, ' + S.back.tab.toUpperCase() + ' tab, with the search field every tab has: the tab is ruled, what it lists is made up'); }
       else if (S.back.part) { say('RULED', 'C \u00b7 Back menu, ASSETS connected to one Part (P2-13A2)'); }
       else { say('NOT RULED', 'Back menu, ASSETS, all of the Doc\u2019s assets: the grouping is a guess'); }
+    }
+    /* Every stage is NOT RULED (Fable, Nov 19): wherever a menu shows what the stage offers, and in the panel. */
+    if (!S.split && !S.board && (S.front.open || (S.back.open && !S.search.open))) {
+      say('NOT RULED', 'G \u00b7 What the menus offer in ' + S.stage + (stageOf(S.stage).was ? ' (was ' + stageOf(S.stage).was + ')' : '') + ' is the stage table, a first guess, read from stage-table.js' +
+        (splitOffered() ? '' : '; no split screen in this stage'));
+    }
+    if (S.changed.open && !S.board) {
+      say('NOT RULED', 'G \u00b7 What changed with this stage: ' + S.stage + (compareWith() ? ' against ' + compareWith() : '') + '; the page\u2019s line is the table\u2019s words, not drawn');
     }
     if (!bits.length) {
       say('RULED', 'A \u00b7 ' + (!pins ? 'The rail with no pins (Ruled-3)' : S.pinView === 'boxes' ? 'The rail at rest, pins as boxes (Ruled-1)' : 'The rail at rest, pins as a list (Ruled-2)'));
@@ -1491,7 +1674,7 @@
     if (S.split && !splitOk()) { S.split = null; }
     place();
     R = S.search.open ? runSearch() : null;
-    renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderBeside(); renderBoard(); renderDrop(); renderTag();
+    renderBar(); renderRail(); renderPop(); renderMenus(); renderPage(); renderBeside(); renderBoard(); renderDrop(); renderChanged(); renderTag();
     if (S.search.jump) { S.search.jump = false; showCur(); }
   }
   /* Bring the result she is on into view: on the page (inside the Part, which is all that scrolls) and in the list. */
@@ -1524,6 +1707,8 @@
     if (S.board && S.board.connect) { S.board.connect = false; return true; }
     /* The search: first its replace box, then the search itself. A rail pop-out goes first unless she is in the search. */
     var act = document.activeElement, inSearch = !!(act && act.closest && act.closest('.menu-back'));
+    /* "What changed with this stage" closes before the search, unless the caret is in the search. */
+    if (S.changed.open && !S.board && !(S.search.open && inSearch)) { S.changed.open = false; return true; }
     if (S.search.open && (inSearch || !S.pop)) {
       if (S.search.replaceOpen) { S.search.replaceOpen = false; S.search.focus = 'end'; }
       else { closeSearch(); }
@@ -1584,9 +1769,45 @@
       note('NOT RULED', 'Pressing the empty box opens UNFILED. What the box shows is proposed; what it does when pressed is a guess.');
     },
     'pin-view': function (t) { S.pinView = t.getAttribute('data-id'); },
+    /* A stage changes what the two menus offer, never the page (G). The note counts what changed. */
     stage: function (t) {
-      S.stage = t.getAttribute('data-id');
-      note('NOT RULED', 'The stages are milestone 6 (G). For now the button only marks the stage you are in.');
+      var s = t.getAttribute('data-id'), was, n, st;
+      if (S.split || s === S.stage || STAGES.indexOf(s) === -1) { return false; }
+      was = S.stage;
+      S.stage = s;
+      S.changed.from = was;
+      st = stageOf(s);
+      if (!T) { note('NOT RULED', s + ': stage-table.js did not load, so the menus cannot show what this stage offers.'); return; }
+      n = stageCount(was, s);
+      note('NOT RULED', s + (st.was ? ' (was ' + st.was + ')' : '') + (st.job ? ': ' + st.job : '.') + ' Against ' + was + ', the two menus gained ' + n.gained + ' and lost ' + n.lost +
+        (stageOf(was).split !== false && st.split === false ? ', and there is no split screen' : '') + '. The page has not changed. \u201cWhat changed\u201d, beside the stages, lists them.');
+    },
+    /* "What changed with this stage" (G) */
+    changed: function () { S.changed.open = !S.changed.open; },
+    'changed-vs': function (t) { S.changed.from = t.getAttribute('data-id'); },
+    /* A tab's name in the panel opens that tab in its menu. */
+    'changed-show': function (t) {
+      var m = t.getAttribute('data-menu'), id = t.getAttribute('data-id');
+      if (S.split) { note('', 'In a split both menus are gone. Close the asset\u2019s side to see them.'); return false; }
+      if (m === 'front') {
+        S.front.open = true;
+        if (id !== 'the session') { S.front.tab = id; }
+      } else {
+        closeSearch();
+        S.back.open = true; S.back.tab = id; S.back.part = null;
+      }
+    },
+    /* An offer in a stage's band. Only "Find across the Doc" does something here: it opens the search. */
+    offer: function (t) {
+      var c = stageCell(t.getAttribute('data-menu'), t.getAttribute('data-row'), S.stage), say = t.getAttribute('data-say'), o = null;
+      (c ? c.offers : []).forEach(function (x) { if (x.say === say) { o = x; } });
+      if (o && o.act === 'search') {
+        openSearch('bar');
+        note('NOT RULED', '\u201c' + say + '\u201d opens the search on THIS DOC, as the top bar\u2019s button does. The stage table offers it in ' + S.stage + '.');
+        return;
+      }
+      note('NOT RULED', '\u201c' + say + '\u201d' + (o && o.detail ? ' (' + o.detail + ')' : '') + ': the stage table offers it here in ' + S.stage + '. What it does is not part of this prototype.');
+      return false;
     },
     later: function (t) { note(t.getAttribute('data-mark') || '', t.getAttribute('data-note')); },
     'switch': function (t) {
@@ -1684,14 +1905,14 @@
     },
 
     /* The split screen (E) */
-    'open-beside': function (t) { openSplit({ kind: 'asset', id: t.getAttribute('data-id') }); },
+    'open-beside': function (t) { return openSplit({ kind: 'asset', id: t.getAttribute('data-id') }); },
     /* A Block, a Board or an imported file found by the search. A Block opens its Board. */
     'hit-beside': function (t) {
       var id = t.getAttribute('data-id');
-      openSplit(id ? { kind: 'asset', id: id } : { kind: 'board', name: t.getAttribute('data-board') });
+      return openSplit(id ? { kind: 'asset', id: id } : { kind: 'board', name: t.getAttribute('data-board') });
     },
     'doc-beside': function (t) {
-      openSplit({ kind: 'doc', pid: t.getAttribute('data-pid') || null, did: t.getAttribute('data-id') });
+      if (openSplit({ kind: 'doc', pid: t.getAttribute('data-pid') || null, did: t.getAttribute('data-id') }) === false) { return false; }
       openPop(null);
       note('NOT RULED', 'A second Doc beside the page is read-only (ruled). \u201cOpen beside\u201d on a Doc\u2019s row is PROPOSED (Fable, Nov 14). How the Doc looks there is a guess.');
     },
@@ -1847,7 +2068,7 @@
     /* Ctrl+F opens the same search as the top bar's button, in the Doc she is in. Pressed again, it goes back to the field. */
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 'f' || e.key === 'F')) {
       e.preventDefault();
-      if (S.board) { note('PROPOSED', 'There is no search on a Board before milestone 6 (Fable, Nov 14).'); return; }
+      if (S.board) { note('PROPOSED', 'There is no search on a Board in this prototype (Fable, Nov 14).'); return; }
       openSearch('bar');
       render();
       return;
@@ -1985,6 +2206,7 @@
     if (!h) { return; }
     openPop(null);
     closeSearch();
+    S.changed.open = false;
     S.partsDrop = false;
     S.split = null;
     S.board = null;
@@ -2025,13 +2247,15 @@
     else if (h.indexOf('split') === 0) {
       if (!docIn(proj('thesis'), 'harbor-tolls')) { render(); return; }
       S.here = { project: 'thesis', doc: 'harbor-tolls' };
+      /* A stage with no split screen (SPRINT) gives way to the first stage that has one, for these doors only. */
+      if (!splitOffered()) { S.stage = STAGES.filter(function (s) { return stageOf(s).split !== false; })[0] || S.stage; }
       if (h === 'split-doc') { openSplit({ kind: 'doc', pid: 'thesis', did: 'committee-memo-draft' }); }
       else if (h === 'split-same-doc') { openSplit({ kind: 'doc', pid: 'thesis', did: 'harbor-tolls' }); }
       else if (h === 'split-pdf') { openSplit({ kind: 'asset', id: 'a05' }); }
       else if (h === 'split-block') { openSplit({ kind: 'asset', id: 'a04' }); }
       else { openSplit({ kind: 'asset', id: 'a06' }); }
-      if (h === 'split-pop') { S.split.pop = { board: 'Method notes', i: 2 }; }
-      if (h === 'split-drop') { S.split.drop = true; }
+      if (S.split && h === 'split-pop') { S.split.pop = { board: 'Method notes', i: 2 }; }
+      if (S.split && h === 'split-drop') { S.split.drop = true; }
       if (h === 'split-search') { openSearch('bar'); S.search.q = 'toll'; }
     }
     /* A Board on its own (F). These doors open the Board "Harbor map" in Thesis. */
@@ -2049,6 +2273,19 @@
       S.back.open = true; S.back.tab = h.slice(7); S.back.part = null;
       openSearch(S.back.tab);
       S.search.q = 'toll';
+    }
+    /* The stages (G): a stage with both menus open, each on the tab it was on. */
+    else if (STAGES.indexOf(h.toUpperCase()) !== -1) {
+      if (S.stage !== h.toUpperCase()) { S.changed.from = S.stage; S.stage = h.toUpperCase(); }
+      S.front.open = true; S.back.open = true; S.back.part = null;
+    }
+    else if (h === 'text' || h === 'ink') { S.front.open = true; S.front.tab = h; }
+    else if (h === 'session') { S.front.open = true; S.front.tab = 'text'; if (STAGES.indexOf('SPRINT') !== -1) { S.stage = 'SPRINT'; } }
+    /* "What changed with this stage", from BUILD to EDIT, with both menus open. */
+    else if (h === 'changed') {
+      if (STAGES.indexOf('EDIT') !== -1 && STAGES.indexOf('BUILD') !== -1) { S.stage = 'EDIT'; S.changed.from = 'BUILD'; }
+      S.changed.open = true;
+      S.front.open = true; S.back.open = true; S.back.part = null;
     }
     render();
     if (end) {

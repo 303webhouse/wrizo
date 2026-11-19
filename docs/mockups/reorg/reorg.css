@@ -682,6 +682,67 @@ mark { background: #F6ECBE; color: #1C1C1C; font-weight: 600; }
 .blk.thumb { min-height: 0; padding: 8px 10px 8px 14px; justify-content: center; cursor: default; }
 .blk.thumb .blk-title { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ---------- the stages (G): what the menus offer in the stage she is in. NOT RULED, every cell. ---------- */
+/* The band at a tab's head: the stage's offers as chips. A blue edge (the blue tag, #41658A) marks what the
+   table sets in bold, new with the reorg. Brass is not used: it means "where she is" only. */
+.stage-band { flex: 0 0 auto; padding: 0 0 10px; background: #ECEEF0; border-bottom: 1px solid #D2D6DA; }
+.stage-band-head {
+  padding: 9px 12px 6px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: #525A62;
+}
+.stage-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 12px 0 16px; }
+.stage-chip {
+  padding: 3px 7px; box-sizing: border-box; background: #F4F5F6; border: 1px solid #9AA1A8;
+  font-size: 12px; line-height: 16px; color: #3A4047;
+}
+.stage-chip.is-new { padding-left: 9px; box-shadow: inset 3px 0 0 #41658A; }
+.stage-chip:hover { text-decoration: underline; }
+.stage-band-note { padding: 6px 12px 0 16px; font-size: 12px; line-height: 1.4; color: #525A62; }
+/* The session: at the Front menu's foot, under every tab, gone in a stage with no sitting. */
+.session { flex: 0 0 auto; max-height: 40%; overflow-y: auto; scrollbar-width: thin; border-top: 1px solid #9AA1A8; }
+.session .stage-band { border-bottom: 0; }
+
+/* The button for "What changed with this stage", after the stage buttons. Its dashed edge is the NOT RULED tag's. */
+.changed-btn {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 8px; margin-left: 6px; box-sizing: border-box;
+  border: 1px dashed #9AA1A8; font-family: var(--mono); font-size: 11px; color: #9AA1A8; white-space: nowrap;
+}
+.changed-btn:hover { color: #E6E8EA; }
+.changed-btn.is-open { border-color: #E6E8EA; color: #E6E8EA; background: #27323C; }
+/* The panel drops from the top bar over the middle of the page, so both menus stay in sight; it moves nothing. */
+.changed {
+  position: absolute; top: 40px; left: calc(var(--page-left) + 100px); width: 420px; max-height: calc(100% - 104px); box-sizing: border-box;
+  background: #F4F5F6; border: 1px solid #23272B; border-top: 0;
+  display: flex; flex-direction: column; z-index: 6;
+}
+.changed > * { flex: 0 0 auto; }
+.changed-head {
+  height: 40px; padding: 0 12px 0 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #D2D6DA;
+}
+.changed-head .pop-title { flex: 1 1 auto; }
+.changed-stage { padding: 10px 14px 0; display: flex; align-items: baseline; gap: 10px; }
+.changed-key { font-size: 12px; font-weight: 600; letter-spacing: .12em; color: #1C1C1C; }
+.changed-job { padding: 2px 14px 0; font-size: 13px; line-height: 1.4; color: #3A4047; }
+.changed-vs { padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #D2D6DA; }
+.changed-scopes { flex: 1 1 auto; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid #6A727B; }
+.changed-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-bottom: 10px; }
+.changed-menu { padding: 12px 14px 4px; font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: #525A62; }
+.changed-row { display: flex; gap: 10px; padding: 5px 14px; border-bottom: 1px solid #E1E4E7; }
+.changed-tab {
+  flex: 0 0 92px; align-self: flex-start; padding-top: 2px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: #3F6183; text-align: left;
+}
+button.changed-tab:hover { text-decoration: underline; }
+.changed-tab.plain { color: #3A4047; }
+.changed-row ul { flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.changed-row li { display: flex; gap: 6px; font-size: 12.5px; line-height: 1.4; color: #3A4047; }
+.changed-row .sign { flex: 0 0 10px; font-family: var(--mono); color: #1C1C1C; }
+.changed-row li.lose, .changed-row li.same { color: #525A62; }
+.changed-detail { color: #525A62; }
+.changed-page { padding: 4px 14px 0; font-size: 12.5px; line-height: 1.45; color: #3A4047; }
+.changed-page.quiet { font-size: 12px; color: #525A62; }
+.changed-foot { padding: 8px 14px 10px; border-top: 1px solid #D2D6DA; font-size: 11.5px; line-height: 1.4; color: #525A62; }
+
 /* ---------- marking: RULED, PROPOSED, NOT RULED ---------- */
 .tag {
   display: inline-block; flex: 0 0 auto; box-sizing: border-box; padding: 1px 5px;
