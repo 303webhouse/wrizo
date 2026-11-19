@@ -76,11 +76,11 @@ await withHarness(async (app) => {
   const b1 = await app.evalJs(BOX);
   ok('I3: the ink is where the strokes put it, before and after the Enters, and the canvas stays inside the sheet', boxOk(b0) && boxOk(b1), JSON.stringify({ before: b0, after: b1 }));
   // I4: the sheet's WIDTH changes (a real ResizeObserver event; the page is only scaled by CSS when the window narrows, so the sheet's own width does not change then): the ink is redrawn at the new width
-  await app.evalJs("(() => { const sh = document.querySelector('.ink-committed').parentElement; sh.style.width = '600px'; return true; })()"); await sleep(1000);
+  await app.evalJs("(() => { const sh = document.querySelector('.ink-committed').parentElement; sh.style.width = '300px'; return true; })()"); await sleep(1000);
   const b2 = await app.evalJs(BOX);
   await app.evalJs("(() => { const sh = document.querySelector('.ink-committed').parentElement; sh.style.width = ''; return true; })()"); await sleep(800);
   const b3 = await app.evalJs(BOX);
-  ok('I4: the sheet narrows to 600 px: the ink is redrawn at the new width and matches the strokes own box; widened again, it matches at the old one', boxOk(b2) && b2.W <= 610 && b2.W < b1.W - 100 && boxOk(b3) && b3.W === b1.W, JSON.stringify({ narrow: b2, back: b3 }));
+  ok('I4: the sheet narrows to 300 layout px: the ink is redrawn at the new width and matches the strokes own box; widened again, it matches at the old one', boxOk(b2) && b2.W < b1.W - 100 && boxOk(b3) && b3.W === b1.W, JSON.stringify({ narrow: b2, back: b3 }));
   console.log(`READING  I5: Enter on the page with ink: key-to-frame median ${med(dts).toFixed(1)} ms (printed, not a check: the runners' speeds differ)`);
   // I6: the native caret is painted at the end of a page with ink (plain view, Typewriter)
   {

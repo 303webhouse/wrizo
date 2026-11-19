@@ -79,7 +79,9 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   const cssH = Math.max(1, Math.min(rect.height, Math.ceil(need / INK_STEP) * INK_STEP));
   const ctx = syncCanvas(canvas, rect.width, cssH);
   if (!ctx) return;
-  canvas.style.height = cssH + 'px';
+  // cssH is in painted (on-screen) px, like rect: a sheet that is scaled by a transform needs the box in its own layout px, or the ink would be stretched down the page
+  const scale = sheet.offsetWidth > 0 ? rect.width / sheet.offsetWidth : 1;
+  canvas.style.height = (cssH / (scale || 1)) + 'px';
   ctx.clearRect(0, 0, rect.width, cssH);
   ctx.save(); ctx.translate(0, oy);   // measured from the text [InkStratum §3]
   for (const st of strokes) renderStroke(ctx, st, rect.width, color);
