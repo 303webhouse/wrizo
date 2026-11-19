@@ -18,18 +18,19 @@ const f1 = (x) => (Number.isFinite(x) ? x.toFixed(1) : 'n/a');
 
 const INSTRUMENT = `(() => {
   if (window.__inkInst) return true; window.__inkInst = true;
-  window.__inkT0 = 0; window.__inkSizes = 0; window.__inkDraws = 0;
+  window.__inkT0 = 0; window.__inkSizes = 0; window.__inkDraws = 0; window.__inkRO = 0; window.__inkWho = {};
   document.addEventListener('keydown', () => { window.__inkT0 = performance.now(); }, true);
-  const c = document.querySelector('.ink-committed');
-  if (c) {
-    for (const prop of ['width', 'height']) {
-      const d = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, prop);
-      Object.defineProperty(c, prop, { configurable: true, get() { return d.get.call(this); }, set(v) { if (d.get.call(this) !== v) window.__inkSizes += 1; d.set.call(this, v); } });
-    }
-    const ctx = c.getContext('2d'); const cr = ctx.clearRect.bind(ctx); ctx.clearRect = (...a) => { window.__inkDraws += 1; return cr(...a); };
+  const isInk = (el) => el && el.classList && el.classList.contains('ink-committed');
+  for (const prop of ['width', 'height']) {
+    const d = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, prop);
+    Object.defineProperty(HTMLCanvasElement.prototype, prop, { configurable: true, get() { return d.get.call(this); }, set(v) { if (isInk(this)) { window.__inkSizes += 1; const st = new Error().stack.split('\n').slice(2, 6).map((l) => l.trim().replace(/^at /, '').replace(/\(?https?:[^)]*\/assets\//, '(')).join(' < '); window.__inkWho[st] = (window.__inkWho[st] || 0) + 1; } d.set.call(this, v); } });
   }
-  return !!c; })()`;
-const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ dt: performance.now() - window.__inkT0, sizes: window.__inkSizes, draws: window.__inkDraws, w: (document.querySelector('.ink-committed') || {}).width, h: (document.querySelector('.ink-committed') || {}).height, sheet: Math.round((document.querySelector('.wz-ink-sheet') || document.body).getBoundingClientRect().height) }), 0)))";
+  const cr = CanvasRenderingContext2D.prototype.clearRect;
+  CanvasRenderingContext2D.prototype.clearRect = function (...a) { if (isInk(this.canvas)) window.__inkDraws += 1; return cr.apply(this, a); };
+  const RO = window.ResizeObserver;
+  window.ResizeObserver = class extends RO { constructor(cb) { super((entries, o) => { if (entries.some((e) => e.target && e.target.contains && e.target.querySelector && e.target.querySelector('.ink-committed'))) window.__inkRO += 1; return cb(entries, o); }); } };
+  return !!document.querySelector('.ink-committed'); })()`;
+const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ dt: performance.now() - window.__inkT0, sizes: window.__inkSizes, draws: window.__inkDraws, ro: window.__inkRO, w: (document.querySelector('.ink-committed') || {}).width, h: (document.querySelector('.ink-committed') || {}).height, sheet: Math.round((document.querySelector('.wz-ink-sheet') || document.body).getBoundingClientRect().height) }), 0)))";
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1400, 900);
@@ -54,7 +55,10 @@ await withHarness(async (app) => {
     const dts = []; let last = null;
     for (let i = 0; i < 6; i += 1) { await app.typeKeys('\n'); await app.evalJs(AFTER); }
     const before = await app.evalJs(AFTER);
+    await app.evalJs('window.__inkWho = {}; true');
     for (let i = 0; i < 25; i += 1) { await app.typeKeys('\n'); last = await app.evalJs(AFTER); dts.push(last.dt); }
+    const who = await app.evalJs('JSON.stringify(window.__inkWho)');
+    console.log(`INKWHO words=${words} strokes=${nStrokes} ${who}`);
     const sizes = last.sizes - before.sizes, draws = last.draws - before.draws;
     await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 250 }); await app.cdp('Profiler.start');
     for (let i = 0; i < 20; i += 1) { await app.typeKeys('\n'); await app.evalJs(AFTER); }
@@ -62,7 +66,7 @@ await withHarness(async (app) => {
     const self = new Map(); const byId = new Map(profile.nodes.map((n) => [n.id, n]));
     profile.samples.forEach((id, i) => { const cf = byId.get(id).callFrame; const k = `${cf.functionName || '(anonymous)'} ${String(cf.url).split('/').pop()}:${cf.lineNumber + 1}`; self.set(k, (self.get(k) || 0) + (profile.timeDeltas[i] || 0)); });
     const top = [...self.entries()].sort((x, y) => y[1] - x[1]).slice(0, 7).map(([k, v]) => `${k} ${(v / 20000).toFixed(1)} ms/Enter`);
-    console.log(`INKENTER words=${words} strokes=${nStrokes} instrumented=${inst} | Enter key-to-frame median ${f1(q(dts, 0.5))} ms p95 ${f1(q(dts, 0.95))} ms | over 25 Enters: canvas resized ${sizes}x, strokes drawn ${draws}x | canvas ${last.w}x${last.h}, sheet ${last.sheet} px | profile: ${top.join(' | ')}`);
+    console.log(`INKENTER words=${words} strokes=${nStrokes} instrumented=${inst} | Enter key-to-frame median ${f1(q(dts, 0.5))} ms p95 ${f1(q(dts, 0.95))} ms | over 25 Enters: canvas width/height assigned ${sizes}x, strokes drawn ${draws}x, sheet ResizeObserver fired ${last.ro - before.ro}x | canvas ${last.w}x${last.h}, sheet ${last.sheet} px | profile: ${top.join(' | ')}`);
     await app.evalJs("location.hash = '#/'"); await sleep(800);
   }
 });
