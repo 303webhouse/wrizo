@@ -27,7 +27,7 @@ Milestones 1 to 6 have passed Fable's check (6 on Nov 19, 12:35 pm, and 6b, FINA
 | The rail with no pins (frame Ruled-3) | PROJECTS, then press every filled pin until none is left (`#day-one` also puts her in New Project) |
 | DOCS pop-out: New (Blank, Screenplay, Research paper, More kinds, and Board) | Press DOCS (`#docs`). The first five rows. Each makes a Doc or a Board (NOT RULED: where it lands, its name) |
 | DOCS pop-out: Recent | Press DOCS: under RECENT. Press a row to open that Doc |
-| DOCS pop-out: page defaults | Press DOCS: under PAGE DEFAULTS · EVERY DOC, two switches |
+| DOCS pop-out: page defaults | Press DOCS: under PAGE DEFAULTS · EVERY DOC, one switch, Progress bars. "Typewriter mode" is gone: SPRINT is always the Typewriter (Nick, Nov 19; Fable, 4:20 pm) |
 | PROJECTS pop-out: every Project with a pin | Press PROJECTS (`#projects`). Press a pin: the Project moves between the pinned and unpinned groups and joins or leaves the rail |
 | PROJECTS pop-out: box settings in one closed drop-down at the foot | Press PROJECTS: the BOX SETTINGS line at the foot is closed and names the Project she is in. Press it to open (`#box`): letters, colour, picture. Changes show on the rail at once. They act on the Project she is in and no other; in no Project the line is not shown (`#unfiled-piece`, then PROJECTS) (Fable, Nov 14) |
 | PROJECTS pop-out: the Notebook is listed last, pin off | Press PROJECTS: the last row. It is not counted in the "6". Its pin works. Press its name: its own list of four pages (`#list-notebook`) |

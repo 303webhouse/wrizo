@@ -67,7 +67,7 @@
     trashOpen: false,          // UNFILED: inside the Trash
     fileFor: null,             // UNFILED: the row whose "File" list is open
     moreKinds: false,          // DOCS: "More kinds" opened
-    defaults: { typewriter: false, progress: true },
+    defaults: { progress: true },
     theme: { dark: false, quiet: false },
     partsDrop: false,          // the list of Parts dropped from the top bar
     front: { open: false, tab: 'parts' },                // 'text' | 'ink' | 'parts'
@@ -556,7 +556,7 @@
         '<span class="row-meta">' + esc(p ? p.name : 'Unfiled') + ' \u00b7 ' + plural(d.words, 'word', 'words') + '</span></button></div>';
     });
     b += groupHead('PAGE DEFAULTS \u00b7 EVERY DOC');
-    b += switchRow('Typewriter mode', 'defaults', 'typewriter') + switchRow('Progress bars', 'defaults', 'progress');
+    b += switchRow('Progress bars', 'defaults', 'progress');
     return popShell('DOCS', '', b);
   }
 

@@ -9,7 +9,8 @@ Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 6 ha
 - **FINALIZE opening on the Part she was in:** kept as built (173).
 - **Not opened by this lane:** worth a look are `#build` with a click into the words and a few keys (nothing should fade), and `#sprint-faded` (the four buttons faint, the tag beside them bright).
 - **Nick, 2:10 pm: SPRINT is always the Typewriter; BUILD never is.** "Typewriter mode" is out of SPRINT's session (NOT-RULED's answered list).
-- **One open question:** the "Typewriter mode" switch under DOCS · PAGE DEFAULTS (frame Ruled-7) is still there. Should it go too?
+- **Fable, 4:20 pm: no Typewriter switch any more.** "Typewriter mode" is out of DOCS · PAGE DEFAULTS too; "Progress bars" is the one switch left there.
+- **No open questions.** Holding: Nick walks the prototype Friday morning.
 
 ## After Fable's pass of 6 (Nov 19, 12:35 pm)
 
