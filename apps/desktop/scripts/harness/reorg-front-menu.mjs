@@ -203,6 +203,7 @@ await withHarness(async (app) => {
     boardOn.tabs === 0 && !boardOn.parts && !boardOn.setup && Array.isArray(boardOn.sections) && boardOn.sections.length === 1 && Array.isArray(boardOff) && boardOff.length === 1, { boardOn, boardOff });
 
   // ---- PARTS ---------------------------------------------------------------------------------------------------------------------------
+  await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   await app.evalJs(pick('parts')); await sleep(400);
   let parts = await app.evalJs(PARTS);
   ok('P1 PARTS on Budget two: Budget one, two, three in her order, numbered, with their words, Budget two marked',
