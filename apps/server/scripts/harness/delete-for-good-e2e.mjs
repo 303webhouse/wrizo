@@ -68,7 +68,7 @@ const startServer = async (distDir) => {
   proc.kill(); throw new Error('the server did not come up: ' + log.slice(-800));
 };
 const register = async (base, email) => {
-  const r = await fetch(`${base}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: 'correct horse battery', code: 'dfg-code' }) });
+  const r = await fetch(`${base}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: 'correct horse battery', code: 'dfg-code', adult: true }) });
   return r.ok || r.status === 409;
 };
 // a device: a child process with the client store; call(cmd, args) -> its answer

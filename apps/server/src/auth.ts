@@ -122,6 +122,14 @@ authRouter.post('/register', asyncHandler(async (req: Request, res: Response) =>
   // (bcrypt, the DB) runs, so a bad or missing code costs the server nothing.
   const code = String(req.body?.code || '').trim();
 
+  // The 18+ confirmation (Fable, Nov 18): the browser's tick is not the gate, this is. Only the boolean true passes.
+  // Answered first, so a caller without the tick always reads this one refusal (the client maps the code to its
+  // authAdultRequired line). The value is checked and dropped: nothing about it is stored. (adult-gate.mjs)
+  if (req.body?.adult !== true) {
+    res.status(400).json({ error: 'adult_required' });
+    return;
+  }
+
   if (!email || !password) {
     res.status(400).json({ error: 'Email and password are required' });
     return;
