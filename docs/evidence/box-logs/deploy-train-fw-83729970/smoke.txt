@@ -1,0 +1,3 @@
+SMOKE: PASS (6/6)
+healthz 200 {"ok":true,"build":"index-BabZ_lwZ"}
+served index-BabZ_lwZ.js 1090155 bytes md5 e20e1e846b10 ; index-DDLHmlxj.css 279107 bytes md5 f519e5156d37 (identical to the tested build)
