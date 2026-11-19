@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { useTheme } from '../store/theme';
 import { getDrawer, getJournalEntries, getJournalEntry, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
@@ -16,8 +15,7 @@ import { REORG } from './flag';
 // places, not names. Right: the host's own stage buttons (ModeStrip, unchanged), or on a Board its views; on a Board, Connect Doc after the
 // place. The search door at the end. Switch off, or any other theme: the host renders exactly what it rendered before.
 
-/** On for this page load only when the switch is on AND the theme is Machina. Chosen once at load, so the hook order never changes. */
-export const useReorgTop: () => boolean = REORG ? () => useTheme() === 'machina' : () => false;
+export { useReorgTop } from './useReorg';
 
 const fill = (s: string, vals: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vals ? String(vals[k]) : m));
 
