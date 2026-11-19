@@ -219,6 +219,7 @@ await withHarness(async (app) => {
       writeFileSync(path.join(OUT, file), Buffer.from(await app.screenshot(), 'base64'));
       row.status = 'ok';
       row.md5 = md5(path.join(OUT, file));
+      row.height = await app.evalJs('innerHeight');   // the window as it stands (the -short screens are 560 tall, not the width's default)
       row.hash = await app.evalJs('location.hash');
       row.attrs = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), voice: document.documentElement.getAttribute('data-voice') })");
     } catch (e) { row.status = 'failed'; row.error = String(e && e.message || e).slice(0, 300); }
