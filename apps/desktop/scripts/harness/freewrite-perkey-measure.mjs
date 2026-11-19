@@ -58,8 +58,20 @@ await withHarness(async (app) => {
     rows.letter.length = 0; ih.letter.length = 0;
     for (let i = 0; i < 40; i += 1) await one('letter', 'mnopqrstuv'[i % 10]);
     for (let i = 0; i < 20; i += 1) { await one('enter', '\n'); for (const c of 'ab') await one('letter', c); }
+    // the browser's own profile of 40 letters at this size: the top self-time functions (JS only; "(program)" is the browser's own layout, style and paint)
+    if (words >= 20000) {
+      await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 250 }); await app.cdp('Profiler.start');
+      for (let i = 0; i < 40; i += 1) await one('letter', 'pqrstuvwxy'[i % 10]);
+      const { profile } = await app.cdp('Profiler.stop'); await app.cdp('Profiler.disable');
+      const self = new Map(); const byId = new Map(profile.nodes.map((n) => [n.id, n]));
+      profile.samples.forEach((id, i) => { const n = byId.get(id); const cf = n.callFrame; const k = `${cf.functionName || '(anonymous)'} ${String(cf.url).split('/').pop()}:${cf.lineNumber + 1}`; self.set(k, (self.get(k) || 0) + (profile.timeDeltas[i] || 0)); });
+      const total = [...self.values()].reduce((x, y) => x + y, 0) || 1;
+      const top = [...self.entries()].sort((x, y) => y[1] - x[1]).slice(0, 8).map(([k, v]) => `${k} ${(v / 40000).toFixed(1)} ms/key (${Math.round((100 * v) / total)}%)`);
+      console.log(`FWPROFILE words=${words} per key, self time: ${top.join(' | ')}`);
+    }
     const line = (cls) => `${cls} n=${rows[cls].length} key-to-frame median ${f1(q(rows[cls], 0.5))} ms p95 ${f1(q(rows[cls], 0.95))} ms; editable innerHTML median ${f1(q(ih[cls], 0.5))} ms p95 ${f1(q(ih[cls], 0.95))} ms`;
     console.log(`FWKEY words=${words} html=${lenAt} chars | ${line('letter')} | ${line('space')} | ${line('enter')}`);
     await app.evalJs("location.hash = '#/'"); await sleep(800);
   }
 });
+console.log('FREEWRITE-MEASURE: PASS (a measurement; the lines above are the result)');
