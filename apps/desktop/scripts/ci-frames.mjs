@@ -105,6 +105,7 @@ const SIGNED_OUT = (() => {
     await app.waitFor("(() => { const h = document.querySelector('.wz-hero'); if (!h) return true; if (h.classList.contains('behind')) { const o = getComputedStyle(h).opacity; if (window.__ho === o) { window.__hn = (window.__hn || 0) + 1; } else { window.__ho = o; window.__hn = 0; } return window.__hn >= 3; } return getComputedStyle(h).opacity === '0'; })()", { label: 'the hero gone or dimmed and still', timeout: 8000 });
     await app.waitFor("(() => { const s = document.querySelector('.wz-screen'); return !s || getComputedStyle(s).opacity === '1'; })()", { label: 'the form shown', timeout: 8000 });
     await sleep(400);
+    await app.mouseMove(2, 2); await sleep(350);
     const seen = JSON.parse(await app.evalJs("JSON.stringify({ values: [...document.querySelectorAll(\"input:not([type='checkbox'])\")].map((i) => i.value), atInText: /@/.test(document.body.innerText) })"));   // a tick box's value is "on", not something she typed
     if (seen.values.some((v) => v !== '') || seen.atInText) throw new Error('refused: the screen shows a typed value or an "@": ' + JSON.stringify(seen));
   };
@@ -136,6 +137,7 @@ const SIGNED_OUT = (() => {
       await press(app, '.wz-popout-switch'); await settled(app, SIGNUP_UP);
       await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true");
       await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line' }); await sleep(400);
+      await app.mouseMove(2, 2); await sleep(300);
     }),
     // a SHORTER window (1366 x 560; name it with -f widths=1366): the create-account face where its fields scroll and the button row stays
     'signup-short': run(async (app) => {
@@ -151,6 +153,21 @@ const SIGNED_OUT = (() => {
       await app.emulateDpr(1, 1366, 560); await sleep(900);
       await app.evalJs("document.querySelector('.wz-popout button[type=submit]').click(); true");
       await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line' }); await sleep(500);
+      await app.mouseMove(2, 2); await sleep(300);
+    }),
+    // the sign-in face in the shorter window, plain and with its error line (the login call made to fail: the signed-out double signs anyone in)
+    'signin-short': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await settled(app, SIGNIN_UP);
+      await app.emulateDpr(1, 1366, 560); await sleep(900); await app.mouseMove(2, 2); await sleep(300);
+    }),
+    'signin-error-short': run(async (app) => {
+      if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
+      await settled(app, SIGNIN_UP);
+      await app.emulateDpr(1, 1366, 560); await sleep(900);
+      await app.evalJs("(() => { const f0 = window.fetch.bind(window); window.fetch = (u, o) => String(u).includes('/auth/login') ? Promise.reject(new TypeError('Failed to fetch')) : f0(u, o); document.querySelector('.wz-popout button[type=submit]').click(); return true; })()");
+      await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the sign-in error line' }); await sleep(500);
+      await app.mouseMove(2, 2); await sleep(300);
     }),
     'signup-ticked': run(async (app) => {
       if (!(await press(app, '.wz-arrival-signin'))) await app.click('Sign in');
