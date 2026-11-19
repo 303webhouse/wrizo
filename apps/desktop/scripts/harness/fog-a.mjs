@@ -18,6 +18,10 @@ const THEMES = ['plateau', 'flux', 'machina'];
 const TONES = ['dark', 'light'];
 const BOARD = 'fog-board';
 const SHARE_LO = 0.75, SHARE_HI = 0.85, CONTRAST_MIN = 30, DIM = 0.55;
+// THE ROOM IS PINNED (Chat 1, Nov 19: 0c028eed read PASS 56 at 09:30Z and FAIL 2/56 [plateau/light] MUT-outside at 19:19Z, same bytes). Arbor's room (data-arbor2-room) follows the CLOCK, and the plateau skins' stage behind the board is the room's: at night it is
+// dark (the veil-off pixel read [51,50,49] and the outside mutant moved the share to 2.07/2.23/2.51), by day it is the paper's own cream ([117,117,114], the outside mutant read 0.80/0.81/0.84, the same pixels as the inside veil), so the pixel half of MUT-outside is BLIND by day:
+// the layering shows only where the paper is not the stage (see MUT-outside below). The harness pins the room with Arbor's test-only URL pin (flag.ts arbor2RoomPin: ?arbor2room=night, never stored), so the run no longer depends on the runner's hour; FA-ROOM reads that the pin took.
+const ROOM = 'night';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -43,7 +47,7 @@ const makeBoxes = () => {
 };
 // the page's reading of the wrap and its fog
 const STATE = `(() => { const w = document.querySelector('.board-canvas-blur-wrap'); if (!w) return null; const cs = getComputedStyle(w), dm = w.querySelector(':scope > .board-canvas-dim'), af = getComputedStyle(dm || w, '::after'), paper = getComputedStyle(document.querySelector('.board-canvas')).backgroundColor, r = w.getBoundingClientRect(), card = document.querySelector('.board-box[data-box-id="bb-d"]'), cr = card && card.getBoundingClientRect();
-  return { cls: w.className, filter: cs.filter, opacity: parseFloat(cs.opacity), dimOpacity: dm ? parseFloat(getComputedStyle(dm).opacity) : null, fogOpacity: parseFloat(af.opacity), fogColour: af.backgroundColor, paper, fogZ: af.zIndex, fogPointer: af.pointerEvents,
+  return { cls: w.className, filter: cs.filter, opacity: parseFloat(cs.opacity), dimOpacity: dm ? parseFloat(getComputedStyle(dm).opacity) : null, fogOpacity: parseFloat(af.opacity), fogColour: af.backgroundColor, paper, fogZ: af.zIndex, fogPointer: af.pointerEvents, room: document.documentElement.getAttribute('data-arbor2-room'), dayness: document.documentElement.getAttribute('data-arbor2-dayness'),
     wrap: [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10], card: cr ? [Math.round(cr.left * 10) / 10, Math.round(cr.top * 10) / 10, Math.round(cr.width * 10) / 10, Math.round(cr.height * 10) / 10] : null,
     popup: !!document.querySelector('.board-popup-editor'), focused: !!document.querySelector('.board-popup-editor') && document.activeElement === document.querySelector('.board-popup-editor') }; })()`;
 const FOGGED = (s) => !!s && /board-canvas-blurred/.test(s.cls) && s.filter === 'none' && s.opacity === 1 && Math.abs(s.dimOpacity - 0.55) < 0.011 && s.fogOpacity >= 0.79 && s.fogColour === s.paper && Number(s.fogZ) >= 1000 && s.fogPointer === 'none';
@@ -68,7 +72,7 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the board', timeout: 15000 });
     await ev(`window.wrizoPatchEntry(${JSON.stringify(BOARD)}, { boxes: ${JSON.stringify(makeBoxes())} })`);
     await ev(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: ${JSON.stringify(tone)}, fade: 'on' }));`);
-    await ev(`history.replaceState(null, '', '/#/page/${BOARD}')`);
+    await ev(`history.replaceState(null, '', '/?arbor2room=${ROOM}#/page/${BOARD}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"bb-d\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
     await splashGone();
@@ -112,6 +116,7 @@ try { await withHarness(async (app) => {
     const pxOpen = pt ? await pixel(pt) : null;
     ok(`FA1 [${T}] the fog is on: .board-canvas-blurred (${open && /board-canvas-blurred/.test(open.cls)}), the fog layer is the board's paper colour (${open && open.fogColour} vs ${open && open.paper}) at opacity ${open && open.fogOpacity} (>= 0.79), z-index ${open && open.fogZ}, no pointer (${open && open.fogPointer}); the wrap has no filter (${open && open.filter}) and no dim (${open && open.opacity}); the board layer inside it carries the .55 fade (${open && open.dimOpacity}); the popup up and focused`,
       FOGGED(open) && open.popup && open.focused, JSON.stringify(open));
+    ok(`FA-ROOM [${T}] the room premise: Arbor's room is pinned to ${ROOM} (read ${open && open.room}, dayness ${open && open.dayness}) in the plateau skins, so the stage behind the board does not follow the runner's clock`, theme !== 'plateau' || (!!open && open.room === ROOM && Number(open.dayness) === (ROOM === 'day' ? 1 : 0)), JSON.stringify({ room: open && open.room, dayness: open && open.dayness }));
     ok(`FA2 [${T}] nothing moves: the wrap's rect and the card's rect are the same before the card opens and while it is open`, JSON.stringify(before.wrap) === JSON.stringify(open.wrap) && JSON.stringify(before.card) === JSON.stringify(open.card), JSON.stringify({ before: [before.wrap, before.card], open: [open.wrap, open.card] }));
     // FA4: the fog is 80%, measured
     const paperRgb = rgb(open.paper), bAlpha = await backdropAlpha();
