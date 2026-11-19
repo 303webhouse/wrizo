@@ -14,11 +14,14 @@
 //           reorg-front-menu-capture.mjs on main + this file), with the tree it came from
 //       O1  [theme x surface] switch OFF, Arbor, Flux and Machina, open on a Draft Part, a Free Write page, a screenplay and a Board: the drawer
 //           is main's DOM exactly
-//       O2  [theme x surface] switch ON in Arbor and Flux: the same; and ON in Machina on a Board (a Board keeps today's drawer)
+//       O2  [theme x surface] switch ON in Arbor and Flux: the same (Machina is held by F5: the switch changes Machina's words, Plan -> Board,
+//           so its drawer cannot be main's bytes)
 // FRAME F1  a Draft Part: the tabs read TEXT · PARTS (no INK: Draft has no instrument), TEXT selected
 //       F2  a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, leaving it puts it back in text)
 //       F3  [Draft Part, Free Write page, screenplay] TEXT holds exactly the sections the switch-off drawer holds on that surface, in order, then
 //           Page setup at the foot (nothing added but Page setup, nothing lost)
+//       F5  a Board in Machina, switch ON, keeps today's drawer: no tab row, no Parts list, no Page setup, and the same section headings as
+//           the switch-off drawer but for the reorg's own word for a board
 //       F4  Page setup in the Front menu is today's zone and today's act: choosing Narrow margins writes that page's pageSettings.margins and
 //           nothing else stored (its name, if any, kept)
 // PARTS P1  on Budget two: PARTS lists Budget one, two, three in her order, each with its number and its words, Budget two marked as where she is
@@ -65,6 +68,17 @@ function diffStores(a, b) {
   }
   return out;
 }
+
+// a write to a page in a set also stamps that set's resume pointer (F1, persistence/journal.ts stampPageActivity, on every page write): the
+// page's record, plus at most that one set's lastActivityAt / lastActivePageId pointing at this page, nothing else
+const onlyPageChanged = (d, after, pageId, keys) => {
+  const page = d.filter((x) => x[0] === 'writer-studio-journal-entries');
+  const rest = d.filter((x) => x[0] !== 'writer-studio-journal-entries');
+  const entry = (after['writer-studio-journal-entries'] || []).find((e) => e.id === pageId);
+  const set = entry && entry.projectId ? (after['writer-studio-projects'] || []).find((p) => p.id === entry.projectId) : null;
+  return page.length === 1 && page[0][1] === pageId && page[0][2].every((k) => keys.includes(k) || k === 'updatedAt')
+    && rest.every((x) => x[0] === 'writer-studio-projects' && !!set && x[1] === set.id && x[2].every((k) => ['updatedAt', 'lastActivityAt', 'lastActivePageId'].includes(k)) && set.lastActivePageId === pageId);
+};
 
 let ids = null;
 async function seed(app) {
@@ -139,10 +153,10 @@ await withHarness(async (app) => {
     await open(app, theme, false, id); await openDrawer(app);
     const h = await app.evalJs(DRAWER());
     ok(`O1 [${theme}.${s}]: switch OFF - the drawer is main's DOM exactly`, !!want && h === want, h === want ? '' : `got ${String(h).slice(0, 300)}`);
-    if (theme !== 'machina' || s === 'board') {
+    if (theme !== 'machina') {
       await open(app, theme, true, id); await openDrawer(app);
       const hOn = await app.evalJs(DRAWER());
-      ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (${theme === 'machina' ? 'a Board keeps today\'s drawer' : 'the Front menu is Machina\'s alone'})`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
+      ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (the Front menu is Machina's alone)`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
     }
   }
 
@@ -179,8 +193,14 @@ await withHarness(async (app) => {
   const s1 = await app.evalJs(COLLECTIONS);
   const d = diffStores(s0, s1);
   const e1 = (s1['writer-studio-journal-entries'] || []).find((e) => e.id === 'tr-g-2');
-  ok('F4 Page setup in the Front menu is today\'s zone and act: Narrow writes that page\'s pageSettings.margins and nothing else stored',
-    pressed && d.length === 1 && d[0][0] === 'writer-studio-journal-entries' && d[0][1] === 'tr-g-2' && d[0][2].every((k) => k === 'pageSettings' || k === 'updatedAt') && e1?.pageSettings?.margins === 'narrow', { pressed, d });
+  ok('F4 Page setup in the Front menu is today\'s zone and act: Narrow writes that page\'s pageSettings.margins and nothing else stored (beside the set\'s F1 resume stamp)',
+    pressed && onlyPageChanged(d, s1, 'tr-g-2', ['pageSettings']) && e1?.pageSettings?.margins === 'narrow', { pressed, d });
+
+  await open(app, 'machina', true, 'tr-g-b'); await openDrawer(app);
+  const boardOn = await app.evalJs(`(() => ({ tabs: document.querySelectorAll('.wz-sliver [role="tab"]').length, parts: !!document.querySelector('.wz-sliver [data-reorg-parts]'), setup: !!document.querySelector('.wz-sliver .wz-page-setup'), sections: ${SECTIONS} }))()`);
+  const boardOff = golden && golden.sections ? golden.sections['machina.board'] : null;
+  ok('F5 a Board in Machina, switch ON, keeps today\'s drawer: no tab row, no Parts list, no Page setup, one section as off (the reorg names it Board)',
+    boardOn.tabs === 0 && !boardOn.parts && !boardOn.setup && Array.isArray(boardOn.sections) && boardOn.sections.length === 1 && Array.isArray(boardOff) && boardOff.length === 1, { boardOn, boardOff });
 
   // ---- PARTS ---------------------------------------------------------------------------------------------------------------------------
   await app.evalJs(pick('parts')); await sleep(400);
@@ -248,7 +268,7 @@ if (CAPTURE) {
   process.exit(0);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 1 + THEMES.length * 4 + (2 * 4 + 1) + 4 + 4 + 1 + 1;
+const EXPECTED = 1 + THEMES.length * 4 + 2 * 4 + 5 + 4 + 1 + 1;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FRONT-MENU VERIFY: PASS (${checks.length} checks)`
