@@ -61,7 +61,7 @@ await withHarness(async (app) => {
     // the browser's own profile of 40 letters at this size: the top self-time functions (JS only; "(program)" is the browser's own layout, style and paint)
     if (words >= 20000) {
       await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 250 }); await app.cdp('Profiler.start');
-      for (let i = 0; i < 40; i += 1) await one('letter', 'pqrstuvwxy'[i % 10]);
+      for (let i = 0; i < 40; i += 1) { await app.typeKeys('pqrstuvwxy'[i % 10]); await app.evalJs(AFTER); }
       const { profile } = await app.cdp('Profiler.stop'); await app.cdp('Profiler.disable');
       const self = new Map(); const byId = new Map(profile.nodes.map((n) => [n.id, n]));
       profile.samples.forEach((id, i) => { const n = byId.get(id); const cf = n.callFrame; const k = `${cf.functionName || '(anonymous)'} ${String(cf.url).split('/').pop()}:${cf.lineNumber + 1}`; self.set(k, (self.get(k) || 0) + (profile.timeDeltas[i] || 0)); });
