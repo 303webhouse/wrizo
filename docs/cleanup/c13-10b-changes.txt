@@ -7,3 +7,8 @@
 +   // stored legacy data: no code reads or writes it (Nick, Oct 29)
 +   // (DM1's fragment substrate; its code was deleted in #13 step 12d. The field is kept as stored and travels whole with the record;
 +   // the server has never stored it - bug #88.)
+# THE REORG'S TOP RAIL (POLISH, Nov 19): a Part's name, PageSettings.name (Nick's ruling, Nov 19, via Fable: saved with the account; the existing page_settings column carries it)
++   // THE REORG (Nick's ruling, Nov 19, via Fable): a Part's own name, saved with the account by the whole-blob page_settings column it already rides
++   // (schema change: none). Absent, never null and never '', on every page that was never named: the page reads its first line (the Sep 12 rule).
++   // A fact about THIS page, never dress: store/pageDefaults.ts strips it from the per-user default. Written by reorg/partsSeam.ts renamePart.
++   name?: string;

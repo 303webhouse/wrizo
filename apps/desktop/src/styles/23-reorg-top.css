@@ -1,0 +1,74 @@
+/* THE REORG'S TOP RAIL (plan step 2.1, behind ?reorg=1 in Machina; src/reorg/TopRail.tsx). Every rule is scoped to Machina and to a .reorg-top
+   class or the [data-reorg-top-row] attribute, which only the top rail renders, so with the switch off nothing here matches. Built to Cursor's
+   prototype's top bar (docs/mockups/reorg/reorg.css .bar, .crumb-*, .bar-search, .connect-btn, .drop). The row keeps today's height: the
+   names and buttons are no taller than the stage tabs, and the leavers' hidden struts hold what the PLAN door and the Pages button held. */
+
+/* the row never wraps: a long name truncates, the row never grows (the page under it never moves) */
+[data-theme='machina'] [data-reorg-top-row]{ flex-wrap:nowrap; }
+[data-theme='machina'] .reorg-top{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:14px; }
+[data-theme='machina'] .reorg-top-spring{ flex:1 1 auto; min-width:8px; }
+[data-theme='machina'] .reorg-top-right{ flex:0 0 auto; display:flex; align-items:center; }
+
+/* the leavers' struts: their own classes give them today's height; zero width, hidden, out of the way */
+[data-theme='machina'] [data-reorg-top-row] [data-top-strut]{ visibility:hidden; pointer-events:none; width:0; min-width:0; overflow:hidden;
+  padding-left:0 !important; padding-right:0 !important; margin-left:0 !important; margin-right:0 !important;
+  border-left-width:0 !important; border-right-width:0 !important; }
+
+/* LEFT: where she is (Project / Doc / Part) */
+[data-theme='machina'] .reorg-top-names{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
+[data-theme='machina'] .reorg-top-name{ min-width:0; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto;
+  font-family:var(--font-ui); font-size:13px; line-height:normal; color:var(--text-hi); }
+[data-theme='machina'] .reorg-top-name[data-top-name='project']{ font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); max-width:180px; }
+[data-theme='machina'] .reorg-top-name-btn{ display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none;
+  font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; text-align:left; cursor:text; }
+[data-theme='machina'] .reorg-top-name-btn:hover{ text-decoration:underline; text-underline-offset:3px; }
+[data-theme='machina'] .reorg-top-name-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-top-name[data-editable='false']{ cursor:default; }
+/* the rename: a field in the same box, never taller than the name it replaces */
+[data-theme='machina'] .reorg-top-rename{ box-sizing:border-box; height:22px; width:min(240px, 22vw); padding:0 5px; margin:0;
+  font:inherit; letter-spacing:inherit; text-transform:none; color:var(--text-hi); background:transparent;
+  border:1px solid var(--text-mid); border-radius:0; outline:none; }
+[data-theme='machina'] .reorg-top-rename:focus{ border-color:var(--accent-rest); }
+[data-theme='machina'] .reorg-top-sep{ flex:none; color:var(--text-mid); font-size:12px; }
+[data-theme='machina'] .reorg-top-part{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:6px; overflow:hidden; }
+[data-theme='machina'] .reorg-top-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-top-dot{ flex:none; color:var(--text-mid); font-size:11px; }
+[data-theme='machina'] .reorg-top-part .reorg-top-name{ font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-top-place{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; font-family:var(--font-chromeLabel, monospace);
+  font-size:11px; color:var(--text-mid); }
+/* the Board's own rename control and nest chain keep their classes; here they read as the Board's name */
+[data-theme='machina'] .reorg-top-board{ display:flex; align-items:center; gap:7px; }
+[data-theme='machina'] .reorg-top-board .crumb-here{ color:var(--text-hi); font-weight:400; }
+
+/* Connect Doc (a Board): a word in a box, or a "+" in a square box once the Board serves a Doc (Nick, Nov 14) */
+[data-theme='machina'] .reorg-top-connect-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+[data-theme='machina'] .reorg-top-connect{ height:24px; padding:0 9px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px;
+  background:none; border:1px solid var(--text-mid); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi);
+  white-space:nowrap; cursor:pointer; }
+[data-theme='machina'] .reorg-top-connect.is-icon{ width:24px; padding:0; justify-content:center; font-size:15px; line-height:1; }
+[data-theme='machina'] .reorg-top-connect[aria-expanded='true']{ border-color:var(--text-hi); }
+[data-theme='machina'] .reorg-top-connect:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+
+/* the drop under a top-rail button: laid over the page, never moving it (the prototype's .drop) */
+[data-theme='machina'] .reorg-top-drop{ position:absolute; top:calc(100% + 10px); left:0; z-index:60; width:320px; box-sizing:border-box;
+  background:#F4F5F6; border:1px solid #23272B; display:flex; flex-direction:column; color:#3A4047; font-family:var(--font-ui); }
+[data-theme='machina'] .reorg-top-drop-head{ padding:10px 14px 6px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:#525A62; }
+[data-theme='machina'] .reorg-top-drop-scroll{ max-height:176px; overflow-y:auto; scrollbar-width:thin; }
+[data-theme='machina'] .reorg-top-drop-row{ display:flex; align-items:center; gap:8px; width:100%; height:34px; padding:0 14px; box-sizing:border-box;
+  background:none; border:0; border-bottom:1px solid #D2D6DA; border-radius:0; font:inherit; font-size:13px; color:#3A4047; text-align:left;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+[data-theme='machina'] .reorg-top-drop-row:hover{ background:#E6E8EA; }
+[data-theme='machina'] .reorg-top-drop-row:focus-visible{ outline:1px solid #3F6183; outline-offset:-2px; }
+[data-theme='machina'] .reorg-top-drop-new{ border-bottom:0; color:#3F6183; }
+[data-theme='machina'] .reorg-top-drop-said{ padding:8px 14px 10px; border-top:1px solid #D2D6DA; font-size:12px; line-height:1.4; color:#3A4047; white-space:normal; }
+
+/* the search door, at the row's end (frame P3-26A); the search itself arrives with the Back menu */
+[data-theme='machina'] .reorg-top-search-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+[data-theme='machina'] .reorg-top-search{ height:24px; width:28px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid var(--text-mid); border-radius:0; color:var(--text-mid); cursor:pointer; padding:0; }
+[data-theme='machina'] .reorg-top-search:hover{ color:var(--text-hi); border-color:var(--text-hi); }
+[data-theme='machina'] .reorg-top-search:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-top-soon{ position:absolute; top:calc(100% + 10px); right:0; z-index:60; white-space:nowrap; padding:6px 10px;
+  background:#F4F5F6; border:1px solid #23272B; color:#3A4047; font-family:var(--font-ui); font-size:12px; }

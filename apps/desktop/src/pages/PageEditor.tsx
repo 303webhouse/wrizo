@@ -6,6 +6,7 @@ import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
+import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -113,6 +114,8 @@ function PageEditorView({ id }: { id: string }) {
   // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
   // docs/wrizo-alpha/ab1-shell-inventory.md.
   const framed = useDeskFrameViewport();
+  // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
+  const reorgTop = useReorgTop();
   // non-null only while this surface has no row yet; every use below reads "if this page is still unborn", so the born path is the ordinary one, and `entry` resolves from the unborn slot meanwhile [PageEditor §1]
   const unborn = useUnborn(id);
   // ITEM 104 (THIRD) — `entry` MUST NOT be able to change this component's HOOK
@@ -1218,7 +1221,13 @@ function PageEditorView({ id }: { id: string }) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
         <FirstRunVeil active={gateActive}>
-          <div className="chrome-fade chrome-top sprint-nav">
+          <div className="chrome-fade chrome-top sprint-nav" data-reorg-top-row={reorgTop ? 'true' : undefined}>
+            {reorgTop ? (
+              <TopRail kind="page" entry={entry} canRename={!unborn} beforeWrite={() => { flush(); flushNow(); }}
+                // the PLAN door leaves the bar; a hidden strut keeps its height in its own place, so the row (and the page under it) never moves
+                stages={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)}
+                  end={<button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
+            ) : <>
             {/* the address: crumb (marginRight:auto) · strip · actions, the shape the Board uses [PageEditor §33] */}
             <LocationCrumb entry={entry} project={project} drawer={drawer} title={pageTitle} />
             {/* ITEM 121 I3 — the TEXT | INK switch, in the band, immediately
@@ -1241,8 +1250,13 @@ function PageEditorView({ id }: { id: string }) {
                 </button>
               )}
             />
+            </>}
             {(project || fromBoard) && <div className="sprint-actions">
-              {project && (
+              {project && reorgTop && (
+                // the old Pages button leaves the bar; its hidden strut keeps the row's height
+                <div className="sprint-toggle" data-top-strut aria-hidden="true"><button type="button" tabIndex={-1} className="sprint-toggle-btn active">{lexMany('page')}</button></div>
+              )}
+              {project && !reorgTop && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
                   {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
                       retired; the arrow-dressed PLAN → door below is the bar's only Plan
