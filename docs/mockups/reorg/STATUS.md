@@ -8,7 +8,8 @@ Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 6 ha
 - **In SPRINT's fade the stage buttons fade with the rest; the strip's NOT RULED tag stays bright** (171, 175).
 - **FINALIZE opening on the Part she was in:** kept as built (173).
 - **Not opened by this lane:** worth a look are `#build` with a click into the words and a few keys (nothing should fade), and `#sprint-faded` (the four buttons faint, the tag beside them bright).
-- **No open questions.**
+- **Nick, 2:10 pm: SPRINT is always the Typewriter; BUILD never is.** "Typewriter mode" is out of SPRINT's session (NOT-RULED's answered list).
+- **One open question:** the "Typewriter mode" switch under DOCS · PAGE DEFAULTS (frame Ruled-7) is still there. Should it go too?
 
 ## After Fable's pass of 6 (Nov 19, 12:35 pm)
 

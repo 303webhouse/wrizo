@@ -456,7 +456,7 @@
       var drawn = st.drawn === 'chrome-fades' || st.drawn === 'whole-doc' || st.drawn === 'as-today';
       b += '<div class="changed-menu">ON THE PAGE \u00b7 ' + (drawn ? 'DRAWN' : 'NOT DRAWN') + '</div>' +
         '<div class="changed-page">' + esc(st.page || 'The table says nothing here.') + '</div>' +
-        '<div class="changed-page quiet">' + (st.drawn === 'chrome-fades' ? 'Drawn: as she types in ' + esc(to) + ', the menus, the rail and the top bar fade, the stages with them; only the stages\u2019 NOT RULED tag stays. Moving the mouse brings them back. Typewriter mode is not drawn.'
+        '<div class="changed-page quiet">' + (st.drawn === 'chrome-fades' ? 'Drawn: as she types in ' + esc(to) + ', the menus, the rail and the top bar fade, the stages with them; only the stages\u2019 NOT RULED tag stays. Moving the mouse brings them back. SPRINT is always the Typewriter (Nick, Nov 19); the Typewriter itself is not drawn.'
           : st.drawn === 'whole-doc' ? 'Drawn: every Part in one scroll, read-only. The arrows and the Parts list go to a Part\u2019s place in the scroll.'
           : st.drawn === 'as-today' ? 'Drawn: one Part, which takes typing.'
           : 'The table\u2019s guess for the page in ' + esc(to) + '. It is not drawn: the page shows one Part, which takes typing.') +

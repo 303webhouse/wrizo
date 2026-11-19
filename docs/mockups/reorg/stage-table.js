@@ -38,10 +38,10 @@ window.REORG_STAGE_TABLE =
     {
       "key": "SPRINT", "was": "Free Writing", "shown": true,
       "job": "Get words out. Don't look back.",
-      "page": "One Part. The chrome fades as she types. Typewriter mode if she has it on (Q8).",
+      "page": "One Part. The chrome fades as she types. SPRINT is always the Typewriter; BUILD never is (Nick, Nov 19).",
       "drawn": "chrome-fades",
       "split": false,
-      "splitNote": "No split screen in SPRINT (Q25): Typewriter mode is off in a split, and SPRINT is where Typewriter mode lives."
+      "splitNote": "No split screen in SPRINT (Q25): the Typewriter is off in a split, and SPRINT is always the Typewriter."
     },
     {
       "key": "BUILD", "was": "Drafting", "shown": true,
@@ -155,7 +155,7 @@ window.REORG_STAGE_TABLE =
       },
       "THE SESSION": {
         "was": "Front menu · the session (Q7)",
-        "SPRINT": { "offers": ["Typewriter mode", "The goal", "What the goal counts", "The timer", { "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }] },
+        "SPRINT": { "offers": ["The goal", "What the goal counts", "The timer", { "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }] },
         "BUILD": { "offers": ["The goal", "The timer", { "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }] },
         "EDIT": { "offers": [{ "say": "Progress", "detail": "The word is PROPOSED: the Wrizors choose it after Nick's walk." }], "note": "Progress only." },
         "FINALIZE": { "offers": [], "note": "Nothing." },
