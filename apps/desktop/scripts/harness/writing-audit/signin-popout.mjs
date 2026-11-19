@@ -24,6 +24,7 @@
 //   P24 SHORT WINDOWS (1366x560), EVERY theme, both faces, with the error showing (the Wrizors' v6/v7 pass; Fable Nov 18, 8:15 pm): the panel's foot is at least 24 px above the window's foot and its top never above the mark's floor; the error line, the button and the links/back sit inside the panel and the window; on the create-account face (where the fields scroll) the button does not move when the fields scroll; P24M the old cap (max-height none) pushes the foot off the window, P24M2 the old build (the panel scrolls as one) moves the button, both asserted landed
 //   P24 (Machina, Fable Nov 18, 10:15 pm) the sign-in face too clears the mark at 1366x560: its top is no higher than the floor (337); P24M3 the old top (313, the doors' place) turns it red, asserted landed
 //   P24 also reads that the button never overlaps the links row below it (the Machina sign-in frame at 560 with an error showed them overlapped)
+//   P26 on the 18+ error the focus MARK is drawn on the focused tick, in every theme (the Wrizors' v9 REAL: focus was on the tick and no mark showed; Fable Nov 18, 11:00 pm): an outline or a bar is drawn while it has focus, where it had none before; programmatic focus must show it too; P26M the mark taken away (asserted landed) turns it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
@@ -278,12 +279,15 @@ await withHarness(async (app) => {
     await goFace('account');
     await app.mouseMove(2, 2); await sleep(400);
     const rest0 = await ev(BTN);
+    const TICK = "(() => { const t = document.querySelector('.wz-adult-box'); const cs = getComputedStyle(t); return { focused: document.activeElement === t, outlineStyle: cs.outlineStyle, outlineW: cs.outlineWidth, outlineColor: cs.outlineColor, shadow: cs.boxShadow }; })()";
+    const tick0 = await ev(TICK);
     await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
     await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line', timeout: 6000 }).catch(() => {});
     await sleep(600);
     await app.mouseMove(2, 2); await sleep(400);
     const a24 = await ev(SHORT);
     const rest1 = await ev(BTN);
+    const tick1 = await ev(TICK);
     await ev(SCROLLTO(false)); await sleep(150); const y0 = await ev(BTNY);
     await ev(SCROLLTO(true)); await sleep(150); const y1 = await ev(BTNY);
     const pinned24 = Math.abs(y0 - y1) <= 0.5 && a24 && a24.scrolls === true;
@@ -295,6 +299,14 @@ await withHarness(async (app) => {
     await app.mouseMove(bp.x, bp.y); await sleep(450); const hov1 = await ev(BTN);
     await app.mouseMove(2, 2); await sleep(400);
     check('P25', sameLook(rest0, rest1) && rest1.active === false && rest1.focusVisible === false && rest1.onTick === true && !sameLook(rest1, hov1), `before the submit ${JSON.stringify(rest0)}; after the 18+ error, pointer away ${JSON.stringify(rest1)}; under the pointer ${JSON.stringify(hov1)} (the brass is the pointer, not the focus)`);
+    // P26: the focus mark on the tick after the error
+    const markDrawn = (g) => !!g && g.focused === true && ((g.outlineStyle !== 'none' && parseFloat(g.outlineW) > 0 && g.outlineColor !== 'rgba(0, 0, 0, 0)') || g.shadow !== 'none');
+    check('P26', tick0.focused === false && !markDrawn({ ...tick0, focused: true }) && markDrawn(tick1), `before the error (the tick unfocused) ${JSON.stringify(tick0)}; after the 18+ error, focus on the tick ${JSON.stringify(tick1)}`);
+    await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-nomark'; st.textContent = '.wz-arrival .wz-popout .wz-adult-box:focus{ outline:none !important; box-shadow:none !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+    const tickM = await ev(TICK);
+    check('P26M', tickM.focused === true && !markDrawn(tickM), `the mark taken away (landed: ${JSON.stringify(tickM)}): P26's read goes RED`);
+    await ev("document.getElementById('mut-nomark').remove(); true"); await sleep(200);
     await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
     await app.key('Tab'); await sleep(350);
     const tabbed = await ev(BTN);
