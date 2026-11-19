@@ -6,9 +6,11 @@
 //   I2  ... and the strokes are drawn (clearRect on that canvas) 0 times (main: 25)
 //   I3  the ink is where the strokes put it, before and after the Enters: its pixel bounding box matches the strokes' own (x from 0.1 to 0.7 of the page's width, down to 0.9) within 8 px, and the canvas stays inside the sheet (its foot no lower than the sheet's)
 //   I4  the page narrows (1400 -> 1000): the ink is redrawn at the new width, and again matches the strokes' own box (the width still repaints)
+//   I6  the native caret is still PAINTED at the end of a page with ink, in the normal view and in the Typewriter (#101's will-change law: a page-sized composited canvas was what kept the caret painted; the canvas is now only as tall as the ink)
 //   I5  (reading) the Enter's key-to-frame median, printed, not a check (runners differ in speed)
 // Run: on Actions (harness.yml, files=ink-enter.mjs). One verdict line: INK-ENTER: PASS|FAIL.
 import { withHarness } from '../runtime-verify.mjs';
+import { makeDriver } from './writing-audit/lib/driver.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
@@ -77,6 +79,25 @@ await withHarness(async (app) => {
   const b2 = await app.evalJs(BOX);
   ok('I4: the page narrows (1400 -> 1000): the ink is redrawn at the new width and matches the strokes\' own box', boxOk(b2) && b2.W < b1.W - 100, JSON.stringify({ narrow: b2, wide: b1.W }));
   console.log(`READING  I5: Enter on the page with ink: key-to-frame median ${med(dts).toFixed(1)} ms (printed, not a check: the runners' speeds differ)`);
+  // I6: the native caret is painted at the end of a page with ink (plain view, Typewriter)
+  {
+    const d = makeDriver(app, { theme: 'plateau', flag: 'off', tone: 'light', width: 1366, height: 768, out: null });
+    await d.boot();
+    for (const tw of ['off', 'on']) {
+      const TEXT = pageOf(300);
+      await d.surface('.forward-only-editor', true);
+      const id = await d.openPage(TEXT, 'journal', { typewriter: tw });
+      await d.ev(`window.wrizoPatchEntry(${JSON.stringify(id)}, { strokes: ${JSON.stringify(STROKES)} }); true`);
+      await d.ev("location.hash = '#/'"); await sleep(400);
+      await d.ev(`location.hash = '#/page/${id}'`);
+      const painted = await waitSoft(app, "!!document.querySelector('.ink-committed') && document.querySelector('.ink-committed').width > 1 && !!document.querySelector('.forward-only-editor')", { label: `the page with ink (typewriter ${tw})`, timeout: 15000 });
+      await sleep(900);
+      await d.place(TEXT.length); await d.ev("document.querySelector('.forward-only-editor').focus()"); await sleep(500);
+      await d.still();
+      const px = await d.pixelCaret();
+      ok(`I6: the native caret is painted at the end of a page with ink (typewriter ${tw})`, painted && !!px, JSON.stringify({ painted, px: px && { via: px.via, tries: px.tries, w: px.width } }));
+    }
+  }
 });
 const bad = checks.filter((c) => !c.pass);
 console.log(`INK-ENTER: ${bad.length ? 'FAIL' : 'PASS'} (${checks.length - bad.length}/${checks.length} checks${bad.length ? '; red: ' + bad.map((c) => c.name.split(':')[0]).join(', ') : ''})`);
