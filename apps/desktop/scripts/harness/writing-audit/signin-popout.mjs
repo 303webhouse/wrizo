@@ -16,6 +16,7 @@
 //   P17 MACHINA create-account face at 1366x768 (the live splash): top 8 px under the logo or lower, foot at or above 744, NOTHING scrolls, no sub-line; P17M the old build (42 px fields, the sub-line back) scrolls and turns it red
 //   P18 MACHINA, a shorter window (1366x560): only the fields scroll; the button row is pinned at the foot (the button does not move when the fields scroll, is in the window, Create my account left and back right on one row), the scroll thumb reads >= 3:1; P18M the old build (the panel scrolls as one) turns it red
 //   P19 MACHINA: an error line sits above the button row, and the button row stays in the window
+//   P20 FLUX: the panel's top sits at least 8 px under WRIZO's letters (their ink foot: the wordmark's box foot plus half its stroke) and covers no part of the mark, at 1366 and 1920, on both faces; P20M the old top (6vh / centred, 209 at 1366) turns it red (Fable Nov 18, 5:35 pm)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -79,6 +80,21 @@ await withHarness(async (app) => {
     const m12 = await ev(CHART);
     check('P12M', !m12.chartShown && m12.old.length > 0, `the old hero shown, the chart gone (landed: `+JSON.stringify(m12)+`): P12's read goes RED`);
     await ev("document.getElementById('mut-chart').remove(); true");
+  }
+  // P20 FLUX: the panel clears the mark
+  if (cfg.theme === 'flux') {
+    const CLEAR = "(() => { const p = document.querySelector('.wz-popout'); const w = document.querySelector('.wz-popout-chart .fx-wordmark'); const svg = document.querySelector('.wz-popout-chart svg'); if (!p || !w || !svg) return null; const pr = p.getBoundingClientRect(), wr = w.getBoundingClientRect(); const ink = wr.bottom + 6.4 * (svg.getBoundingClientRect().width / 1350); return { panelTop: Math.round(pr.top * 10) / 10, inkFoot: Math.round(ink * 10) / 10, gap: Math.round((pr.top - ink) * 10) / 10, panelBottom: Math.round(pr.bottom * 10) / 10, winH: innerHeight }; })()";
+    const clearOk = (g) => !!g && g.gap >= 8 && g.panelBottom <= g.winH;
+    const c20 = [];
+    for (const [w, h] of [[1366, 768], [1920, 1080]]) { await app.emulateDpr(1, w, h); await sleep(700); c20.push({ w, signin: await ev(CLEAR) }); }
+    await ev("document.querySelector('.wz-popout-switch').click()"); await sleep(600);
+    for (const [w, h] of [[1920, 1080], [1366, 768]]) { await app.emulateDpr(1, w, h); await sleep(700); c20.push({ w, account: await ev(CLEAR) }); }
+    check('P20', c20.every((r) => clearOk(r.signin || r.account)), JSON.stringify(c20));
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-top'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ top:max(6vh, calc(50% - 175px)) !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+    const m20 = await ev(CLEAR);
+    check('P20M', !!m20 && m20.gap < 8 && !clearOk(m20), `the old top (landed: panel top ${m20 && m20.panelTop}, mark foot ${m20 && m20.inkFoot}): P20's read goes RED`);
+    await ev("document.getElementById('mut-top').remove(); true");
+    await ev("document.querySelector('.wz-popout-back').click()"); await sleep(600);
   }
   // P13 / P14 the button
   {
@@ -213,7 +229,7 @@ await withHarness(async (app) => {
   { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#9AA1A8' }[cfg.theme]; const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
     check('P11', !!l0 && l0.w === '16px' && l0.h === '16px' && l0.bw === '1px' && hex(l0.edge) === edgeWant && focusOnTick === true && spaceTicked === true && !!l1 && l1.mark === '""' && l1.markColor === 'rgb(255, 152, 0)', `box `+(l0 && l0.w)+' x '+(l0 && l0.h)+`, border `+(l0 && l0.bw)+` `+(l0 && hex(l0.edge))+` (want `+edgeWant+`); focus on the tick after the error `+focusOnTick+`; Space ticked `+spaceTicked+`; mark `+JSON.stringify(l1)); }
   { const want = { plateau: 'rgb(185, 170, 140)', flux: 'rgb(126, 180, 196)', machina: 'rgb(154, 161, 168)' }[cfg.theme];
-    check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's label colour `+want+`, never red)`);
+    check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's quiet colour `+want+`, never red)`);
     check('P15M', redNow !== null && redNow !== want && redNow !== errColor, `the error line red (landed: `+redNow+`): P15's read goes RED`); }
   check('P4', p4, `tick ${JSON.stringify(sig)}; line ${JSON.stringify(line)}; register calls unticked ${regUnticked}, ticked ${regTicked}; storage keys added ${JSON.stringify(added)}`);
   await ev("localStorage.setItem('wz.signedOutHere', '1'); true");

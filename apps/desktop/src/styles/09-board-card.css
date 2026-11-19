@@ -364,7 +364,9 @@
 .wz-arrival .wz-hero.behind{ opacity:.34; transform:none; pointer-events:none; transition:opacity .35s ease; }
 .wz-arrival[data-stage='signin']::after, .wz-arrival[data-stage='account']::after{ content:''; position:absolute; inset:0; z-index:7; background:rgba(8,4,0,.55); pointer-events:none; }
 .wz-arrival-doors-ghost{ pointer-events:none; }
-/* the error line: the panel’s label colour, never red (spec draft 4 §1: "Errors sit as one line under the fields, in the panel’s label colour. Never red, never a shake") */
+/* FLUX: the panel's top sits at least 8 px under WRIZO's letters (--popout-floor, set by Arrival.tsx) and never covers the mark; both faces keep that one top edge (Fable Nov 18, 5:35 pm, the Wrizors' v4 carry) */
+[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ --ptop:max(6vh, calc(50% - 175px), var(--popout-floor, 0px)); top:var(--ptop); max-height:calc(100% - var(--ptop) - 16px); }
+/* the error line: the panel’s QUIET colour, never red (spec draft 6 §1: "Errors sit as one line under the fields, in the panel’s quiet colour. Never red, never a shake") */
 .wz-arrival .wz-popout .wz-error{ color:#B9AA8C; }
 [data-theme='flux'] .wz-arrival .wz-popout .wz-error{ color:#7EB4C4; }
 [data-theme='machina'] .wz-arrival .wz-popout .wz-error{ color:#9AA1A8; }

@@ -38,20 +38,6 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const [adult, setAdult] = useState(false);
   const adultRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  // Machina's create-account face grows upward but never over the mark: the stop is the logo's foot + 8 px, as a length from the top of this screen (the stylesheet reads --popout-floor) [spec draft 4 §5]
-  useEffect(() => {
-    if (stage !== 'account') return undefined;
-    const el = rootRef.current;
-    if (!el) return undefined;
-    const set = () => {
-      const logo = el.querySelector('.wz-hero .wz-logo');
-      if (!logo) { el.style.removeProperty('--popout-floor'); return; }
-      el.style.setProperty('--popout-floor', `${Math.round(logo.getBoundingClientRect().bottom - el.getBoundingClientRect().top + 8)}px`);
-    };
-    set();
-    window.addEventListener('resize', set);
-    return () => { window.removeEventListener('resize', set); el.style.removeProperty('--popout-floor'); };
-  }, [stage]);
   // ITEM 224, ROUND 2 — null while unchecked (renders nothing extra, not an
   // error); checked once per arrival at the account stage, never polled.
   const [signupOpen, setSignupOpen] = useState<boolean | null>(null);
@@ -100,6 +86,30 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     resize(); window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, [arborFront, theme]);
+  // The pop-out never covers the mark: --popout-floor is the mark's foot + its margin, as a length from the top of this screen (the stylesheet reads it).
+  // Machina: the logo's box foot + 8 px (its create-account face grows upward and stops there). Flux: the chart's WRIZO letters' ink foot + 8 px (half the stroke is added: a bounding box leaves the stroke out), and the panel's top is never above it [spec draft 5/6; Fable Nov 18, 5:35 pm]
+  useEffect(() => {
+    if (stage === 'doors') return undefined;
+    const el = rootRef.current;
+    if (!el) return undefined;
+    const set = () => {
+      const top = el.getBoundingClientRect().top;
+      let foot: number | null = null;
+      if (theme === 'flux') {
+        const word = el.querySelector('.wz-popout-chart .fx-wordmark');
+        const svg = el.querySelector('.wz-popout-chart svg');
+        if (word && svg) foot = word.getBoundingClientRect().bottom + 6.4 * (svg.getBoundingClientRect().width / 1350) + 8;
+      } else {
+        const logo = el.querySelector('.wz-hero .wz-logo');
+        if (logo) foot = logo.getBoundingClientRect().bottom + 8;
+      }
+      if (foot === null) el.style.removeProperty('--popout-floor');
+      else el.style.setProperty('--popout-floor', `${Math.ceil(foot - top)}px`);
+    };
+    set();
+    window.addEventListener('resize', set);
+    return () => { window.removeEventListener('resize', set); el.style.removeProperty('--popout-floor'); };
+  }, [stage, theme, frontBox.width, frontBox.height]);
 
   // ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3: "Enter = Write"): on the front door's doors, Enter writes - unless a control or a field has
   // the key (a focused door presses itself; the sign-in form submits). Read through a ref so the listener always calls today's handler.
