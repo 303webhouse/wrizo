@@ -1,0 +1,3 @@
+SMOKE: PASS (6/6)  (login 200, me 200, sync pull 200, logout 204, me after logout 401, replayed cookie 401)
+healthz 200 {"ok":true,"build":"index-CkYTKve9"}
+register without adult:true -> 400 {"error":"adult_required"}  GATE LIVE: PASS
