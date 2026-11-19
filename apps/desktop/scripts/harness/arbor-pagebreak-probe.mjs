@@ -160,8 +160,14 @@ await withHarness(async (app) => {
   const readGeo = async () => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const page = ed.closest('.mode-page'); const cs = getComputedStyle(ed); const ps = getComputedStyle(page);
     const li = parseFloat(ps.getPropertyValue('--wz-letter-in')) || (620 / 8.5); const pad = parseFloat(ps.paddingTop) || 0;
     const font = {}; for (const k of ['fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'wordSpacing', 'fontWeight', 'fontStyle', 'tabSize', 'textRendering', 'fontKerning', 'fontFeatureSettings', 'fontVariantLigatures', 'overflowWrap', 'wordBreak', 'hyphens', 'textAlign', 'textIndent', 'fontStretch', 'fontOpticalSizing', 'fontVariationSettings']) font[k] = cs[k];
-    const w = ed.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
-    return { w, font, li, pad, padB: parseFloat(ps.paddingBottom) || 0, H: +(11 * li - (parseFloat(ps.paddingTop) || 0) - (parseFloat(ps.paddingBottom) || 0)).toFixed(2), pageW: page.offsetWidth, pageH: page.offsetHeight }; })()`);
+    // SUPERSEDED (run 44609537262): the column from clientWidth, an INTEGER (462), while the live column is fractional - the measurer wrapped one word
+    // early on a few lines and the pages drifted from break 5 on (12 of 62 the same at 20k; 157 pages against 156 at 50k). Kept for the record:
+    // const w = ed.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    // successor: the exact content width, from the layout box at scale 1 (getBoundingClientRect / the page's scale), less padding and border
+    const sc = page.offsetWidth ? page.getBoundingClientRect().width / page.offsetWidth : 1;
+    const px = (v) => parseFloat(v) || 0;
+    const w = ed.getBoundingClientRect().width / sc - px(cs.paddingLeft) - px(cs.paddingRight) - px(cs.borderLeftWidth) - px(cs.borderRightWidth);
+    return { w, wInt: ed.clientWidth, wCss: cs.width, font, li, pad, padB: parseFloat(ps.paddingBottom) || 0, H: +(11 * li - (parseFloat(ps.paddingTop) || 0) - (parseFloat(ps.paddingBottom) || 0)).toFixed(2), pageW: page.offsetWidth, pageH: page.offsetHeight }; })()`);
   const harvest = async () => app.evalJs(`[...document.querySelector('${ED}').children].filter((r) => r.classList.contains('wz-row')).map((r) => r.innerHTML)`);
   const buildM = async (rows) => app.evalJs(`(() => { const t0 = performance.now(); const m = window.__pb.build(${JSON.stringify(rows)}, ${JSON.stringify(GEO)}); const h = m.lastElementChild.offsetTop + m.lastElementChild.offsetHeight; const t1 = performance.now();
     window.__pb.H = ${GEO.H}; window.__pb.starts = null; const s = window.__pb.mwalk(${GEO.H}); const t2 = performance.now(); window.__pb.state = s;
