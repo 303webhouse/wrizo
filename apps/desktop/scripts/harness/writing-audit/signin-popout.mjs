@@ -30,7 +30,7 @@
 //   P27U ARBOR and FLUX at 1366x560 with the error, both faces, do NOT squeeze: no data-squeeze, the heading and the error outside the scrolling part, the panel padding as at 768; P27UM the squeeze forced on (asserted landed) turns it red
 //   P26 (Machina, Fable Nov 19, 12:10 am) the focused tick's OWN edge turns #E6E8EA from #9AA1A8 and NOTHING is drawn outside the box (an outside outline was clipped by the scrolling part: a stray 1 px line); P26M the mark taken away and P26MO an outside outline drawn (each asserted landed) turn it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
-//   P28 the SERVER's 18+ refusal (a stubbed 400 { error: 'adult_required' } on the register call) shows the lexicon's line, role=alert, with focus on the tick, never the raw code (Fable Nov 19, 12:45 am); P28M a code the map does not know (asserted landed) shows raw and turns it red
+//   P28 the SERVER's 18+ refusal (a stubbed 400 { error: 'adult_required' } on the register call) shows the lexicon's line, role=alert, with focus on the tick, never the raw code (Fable Nov 19, 12:45 am); P28M the MAPPING ITSELF removed from the built bundle (the comparison with 'adult_required' rewritten through CDP Fetch, asserted landed: exactly one match), then a reload: the same stubbed 400 shows the raw code and P28's read goes red (Fable Nov 19, 11:05 am)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -476,12 +476,43 @@ await withHarness(async (app) => {
     const WANT28 = 'Wrizo accounts are for writers 18 and older, for now.';
     const r28 = await RUN28('adult_required');
     check('P28', r28.text === WANT28 && r28.role === 'alert' && r28.onTick === true, `a stubbed 400 adult_required: ${JSON.stringify(r28)}`);
-    const r28m = await RUN28('adult_required_x');
-    check('P28M', r28m.text === 'adult_required_x' && r28m.text !== WANT28, `a code the map does not know (landed: the line reads ${JSON.stringify(r28m.text)}): P28's read goes RED`);
     await ev("window.fetch = window.__fl28; true");
     await ev("(() => { const bx = document.querySelector('.wz-adult-box'); if (bx && bx.checked) bx.click(); return true; })()");   // leave the tick as it was found: P22M ticks it itself
     await ev("document.querySelector('.wz-popout-back').click()");
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
+    await sleep(400);
+    // P28M: the mapping itself taken out of the built bundle (CDP Fetch rewrites the comparison), then a reload
+    const landed28 = { n: 0 };
+    await app.cdp('Network.enable');
+    await app.cdp('Network.setCacheDisabled', { cacheDisabled: true });
+    await app.cdp('Fetch.enable', { patterns: [{ urlPattern: '*/assets/index-*.js', requestStage: 'Response' }] });
+    app.tap(async (method, p) => {
+      if (method !== 'Fetch.requestPaused') return;
+      try {
+        const body = await app.cdp('Fetch.getResponseBody', { requestId: p.requestId });
+        let text = body.base64Encoded ? Buffer.from(body.body, 'base64').toString('utf8') : body.body;
+        const re = /(\w+)\.error===["']adult_required["']/g;
+        const hits = text.match(re) || [];
+        landed28.n += hits.length;
+        if (hits.length === 1) text = text.replace(re, (m, v) => v + '.error==="adult_required_off"');
+        await app.cdp('Fetch.fulfillRequest', { requestId: p.requestId, responseCode: p.responseStatusCode || 200, responseHeaders: p.responseHeaders || [], body: Buffer.from(text, 'utf8').toString('base64') });
+      } catch { try { await app.cdp('Fetch.continueRequest', { requestId: p.requestId }); } catch { /* the request is gone */ } }
+    });
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'the arrival (mutant bundle)' });
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
+    await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel (mutant bundle)', timeout: 8000 }).catch(() => {});
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]') && !!document.querySelector('.wz-adult-box')", { label: 'the create-account face (mutant bundle)', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    const r28m = await RUN28('adult_required');
+    await app.cdp('Fetch.disable');
+    check('P28M', landed28.n === 1 && r28m.text === 'adult_required' && r28m.text !== WANT28, `the mapping removed from the bundle (landed: ${landed28.n} match(es); the same stubbed 400 now reads ${JSON.stringify(r28m.text)}, role ${r28m.role}): P28's read goes RED`);
+    await app.cdp('Network.setCacheDisabled', { cacheDisabled: false });
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'the arrival (real bundle again)' });
+    await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
+    await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel (real bundle again)', timeout: 8000 }).catch(() => {});
     await sleep(400);
   }
   // P22M: the field dropped from the request (asserted landed) turns P22's read red
