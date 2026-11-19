@@ -187,13 +187,36 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     grey: /^\.mode-bar \.mode-tbtn:disabled\{[^}]*opacity:\.4[^}]*pointer-events:none/m.test(s.css),
   };
   out.icons = /export const TypewriterModeIcon/.test(s.icons) && /export const ProgressModeIcon/.test(s.icons) && /aria-hidden/.test(s.icons);
+  out.fw = fwClaims(s, row, tw, pr);
   return out;
+}
+// FREE WRITE = TYPEWRITER successors: the sources with their comments stripped (a SUPERSEDED note quoting an old line must not satisfy a live read, nor be the line a mutant lands on)
+const noC = (t) => t.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+function fwClaims(s, row, tw, pr) {
+  const sl = noC(s.sliver), st = noC(s.stage), rowN = fnText(sl, 'function SliverInstrumentRow(') || '', twN = fnText(sl, 'function TypewriterFields(') || '', prN = fnText(sl, 'function ProgressFields(') || '';
+  const head = row.slice(row.indexOf('wz-sliver-instruments-head'));
+  const rowDiv = row.slice(row.indexOf('wz-sliver-instruments-row"'), row.indexOf('wz-sliver-instruments-modes'));
+  const prBtn = /<button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"\s+aria-label=\{t\('modeToggleProgress'\)\} title=\{t\('modeToggleProgress'\)\}\s+aria-pressed=\{settings\.instrumentsOn\}\s+onClick=\{\(\) => setWritingSettings\(\{ instrumentsOn: !settings\.instrumentsOn \}\)\}>/.test(rowN);
+  return {
+    noTypewriterButton: !/data-mode-toggle="typewriter"/.test(sl) && !/setTypewriterExplicit/.test(sl),
+    prBtn, inHead: head.includes('wz-sliver-instruments-row') && head.includes('wz-sliver-instruments-modes'),
+    moreStillAlone: countOf(rowDiv, /<button/g) === 1 && /aria-label=\{t\('footSettings'\)\}/.test(rowDiv),
+    realButtons: !/role="button"|tabIndex=\{-1\}|<div[^>]*onClick/.test(row.slice(row.indexOf('wz-sliver-instruments-modes'))),
+    menuOnFreeWriteOnly: /typewriterAvailable=\{content\.kind === 'freewrite'\}/.test(sl),
+    twRowsNeverGreyed: /const off = false;/.test(twN) && countOf(twN, /<Seg /g) === 3 && countOf(twN, /<Seg [^>]*disabled=\{off\}/g) === 3,
+    prRowsGreyedByTheirMode: countOf(prN, /<Seg /g) === 4 && countOf(prN, /<Seg [^>]*disabled=\{off\}/g) === 4 && /const off = !settings\.instrumentsOn;/.test(prN),
+    narrowBar: countOf(st, /disabled=\{typewriterOn\}/g) === 9 && /const typewriterOn = typewriterRun && !fluxJack;/.test(st),
+  };
 }
 function verdict(c) {
   const b = c.buttons || {}, g = c.greyed || {}, f = c.format || {}, sc = c.shortcuts || {}, l = c.look || {};
   return {
     // ORIGINAL (pre-typewriter-scope) keys - kept for the parked block below, predicate text
     // byte-for-byte unchanged. Each reads a shape the approved refactor retired on purpose.
+    // FREE WRITE = TYPEWRITER successors (the keys the retargeted mutants below read)
+    buttonsFW: !!c.fw && c.fw.noTypewriterButton && c.fw.prBtn && c.fw.inHead && c.fw.moreStillAlone && c.fw.realButtons && c.fw.menuOnFreeWriteOnly,
+    greyedFW: !!c.fw && c.fw.twRowsNeverGreyed && c.fw.prRowsGreyedByTheirMode && g.prInput,
+    barFW: !!c.fw && c.fw.narrowBar && c.bar?.tooltip && c.bar?.grey,
     buttons: b.twBtn && b.prBtn && b.inHead && b.moreStillAlone && b.twGatedOnAvailability && b.realButtons,
     greyed: g.twSegs === 3 && g.twDisabled === 3 && g.twOff && g.prSegs === 4 && g.prDisabled === 4 && g.prOff && g.prInput,
     bar: c.bar?.nine && c.bar?.running && c.bar?.tooltip && c.bar?.grey,
@@ -227,8 +250,11 @@ ok('(T0) the sources this harness reads all exist (a missing function would make
 // typewriterForPage when a pageId is given, the shared field otherwise.
 if (false) ok('(T1, superseded) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter',
   v.buttons === true, JSON.stringify(base.buttons));
-ok('(T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter; aria-pressed/onClick both ask typewriterOn, which is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter; aria-pressed/onClick both ask typewriterOn, which is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
   v.buttonsPP === true, JSON.stringify(base.buttons));
+ok('(T1) [Free Write = Typewriter successor] PROGRESS TRACKING is the one icon-only native button in the head beside the "..." (which stays alone in its own row); there is NO Typewriter button (no data-mode-toggle="typewriter", no setTypewriterExplicit in the Sliver), and the foot\'s Typewriter menu mounts on Free Write only',
+  v.buttonsFW === true, JSON.stringify(base.fw));
 ok('(T2) each button reports on/off with aria-pressed from the stored value, and carries a lexicon name that does not change with the state; the two names differ',
   v.words === true, JSON.stringify({ words: base.words, names: base.names }));
 // SUPERSEDED (Phase 1 S5: writingSettings.ts gains the per-page typewriter memory, so 'byte-identical to main' no longer holds) - by (T3b) below.
@@ -261,7 +287,8 @@ if (false) ok('(T3b) the toggles flip the SAME values the old rows flipped (type
 // (T3c) successor: T3b's claim with one allowance - forwardLock.ts and writingGoal.ts may lose ONLY the two unused getters #13 step 11 deletes:
 // no line added, and no removed line touches storage, a key or a stored field. It holds before the delete (no diff) and after it.
 const STEP11_GETTERS = ['getForwardLock', 'getWritingGoal'];
-ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
   v.buttonsPP === true && (() => {
     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
@@ -275,13 +302,18 @@ ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter thro
     return other !== null && added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && removedOrKeyTouched === false;
   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
 ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu', v.rowsGone === true, JSON.stringify(base.rowsGone));
+ok('(T3c) [Free Write = Typewriter successor] the Progress toggle flips the SAME value the old row flipped (instrumentsOn, through setWritingSettings) and the Sliver calls no setTypewriterExplicit; the stores are not touched by this ticket (no line of forwardLock.ts or writingGoal.ts changes)',
+  v.buttonsFW === true && base.fw.prBtn === true, JSON.stringify(base.fw));
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if
 // (false)`: `off` pinned the shared field directly. Successor (T5) below reads v.greyedPP -
 // `off` now negates THIS page's own typewriterForPage read when a pageId is given.
 if (false) ok('(T5, superseded) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number',
   v.greyed === true, JSON.stringify(base.greyed));
-ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
   v.greyedPP === true, JSON.stringify(base.greyed));
+ok('(T5) [Free Write = Typewriter successor] the Typewriter menu\'s rows (Forward Lock, Line Fade, Page Scroll: 3 of 3) are NEVER greyed - there is no switch to turn the Typewriter off in Free Write - and Progress\' rows are still greyed by their own mode (4 of 4 and the Goal number)',
+  v.greyedFW === true, JSON.stringify({ fw: base.fw, prInput: base.greyed.prInput }));
 ok('(T6) "disabled" is real: Seg marks the row (data-disabled) and disables its option buttons, so a greyed row cannot be focused or pressed', v.seg === true, JSON.stringify(base.seg));
 ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
   v.format === true, JSON.stringify(base.format));
@@ -307,8 +339,11 @@ if (false) ok('(T10, superseded) the NARROW-SCREEN format bar (ModeStage, unfram
 // `if (false)`. Successor: (T10 Wire In) below reads v.barWI (runningWI). Its mutant: the 'Flux guard' one at the end of the narrow-bar mutants.
 if (false) ok('(T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, the shared field otherwise',
   v.barPP === true, JSON.stringify(base.bar));
-ok('(T10 Wire In) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, and otherwise the shared field - EXCEPT in Flux, where the paper Typewriter is retired (stageTheme !== \'flux\' guards the fallback)',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T10 Wire In) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, and otherwise the shared field - EXCEPT in Flux, where the paper Typewriter is retired (stageTheme !== \'flux\' guards the fallback)',
   v.barWI === true, JSON.stringify(base.bar));
+ok('(T10) [Free Write = Typewriter successor] the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) is locked by the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn (Free Write outside Flux), with the tooltip, and locked buttons grey and let the pointer fall through to it',
+  v.barFW === true, JSON.stringify({ narrowBar: base.fw.narrowBar, tooltip: base.bar?.tooltip, grey: base.bar?.grey }));
 
 // =============================================================================
 // MUTATIONS - each asserts it LANDED before the red is believed.
@@ -328,18 +363,25 @@ function mutant(name, key, patchFn, which) {
 // false (they pin a shape the approved refactor retired), so a mutant checking them would
 // "pass" without the mutation doing anything - guard-can-pass-while-blind. Two anchors also
 // moved with the refactor (fixed below, same mechanical-drift class as T0's own fix above).
-mutant('the typewriter button stops reporting its state', 'sliver', (t) => mutate(t, 'aria-pressed={typewriterOn}', 'aria-pressed={false}'), 'buttonsPP');
-mutant('the progress button flips a different value', 'sliver', (t) => mutate(t, 'setWritingSettings({ instrumentsOn: !settings.instrumentsOn })', 'setWritingSettings({ timer: !settings.timer })'), 'buttonsPP');
-mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => mutate(t, 'onClick={() => setTypewriterExplicit(!typewriterOn)}>', 'onClick={() => setWritingSettings({ typewriter: !typewriterOn })}>'), 'buttonsPP');
-mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsPP');
-mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
-mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the typewriter button stops reporting its state', 'sliver', (t) => mutate(t, 'aria-pressed={typewriterOn}', 'aria-pressed={false}'), 'buttonsPP');
+mutant('the progress button flips a different value', 'sliver', (t) => mutate(t, 'setWritingSettings({ instrumentsOn: !settings.instrumentsOn })', 'setWritingSettings({ timer: !settings.timer })'), 'buttonsFW');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => mutate(t, 'onClick={() => setTypewriterExplicit(!typewriterOn)}>', 'onClick={() => setWritingSettings({ typewriter: !typewriterOn })}>'), 'buttonsPP');
+// FREE WRITE = TYPEWRITER: the old things put back, each landing on the live (comment-stripped) line and going RED on the successor key
+mutant('the Typewriter button comes back in the foot', 'sliver', (t) => mutate(t, 'data-mode-toggle="progress"', 'data-mode-toggle="typewriter"'), 'buttonsFW');
+mutant('the Sliver calls setTypewriterExplicit again', 'sliver', (t) => mutate(t, 'import { useWritingSettings, setWritingSettings } from', 'import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from'), 'buttonsFW');
+mutant('the Typewriter menu rows grey on the stored switch again', 'sliver', (t) => mutate(t, 'const off = false;', 'const off = !settings.typewriter;'), 'greyedFW');
+mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsFW');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
+mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedFW');
 // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the Timer row's label now comes from the lexicon (t('timerLabel')), so the mutation anchor moved.
 // Kept VERBATIM below and no longer run; the live successor follows.
 //
 // mutant('the Timer row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'} disabled={off}', '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'}'), 'greyedPP');
-mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
-mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
+mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedFW');
+mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedFW');
 mutant('Seg ignores disabled', 'stage', (t) => mutate(t, "className={value === v ? 'on' : ''} disabled={disabled} onClick", "className={value === v ? 'on' : ''} onClick"), 'seg');
 mutant('the Format fieldset is not disabled', 'sliver', (t) => mutate(t, '<fieldset className="wz-sliver-fieldset" disabled={formatLocked}', '<fieldset className="wz-sliver-fieldset"'), 'format');
 // `const settings = useWritingSettings();` appears several times in this file (every
@@ -376,13 +418,13 @@ mutant('the greyed Format buttons swallow the pointer (the group tooltip can nev
 mutant('the ON state is a hard-coded colour (would not follow the theme) [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
 
-mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barWI');
-mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barWI');
-mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barWI');
-mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barWI');
+mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barFW');
+mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barFW');
+mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barFW');
+mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barFW');
 // FLUX WIRE IN (Nov 12) - the four narrow-bar mutants above were retargeted from barPP to barWI: barPP is permanently false on the new source (it pins the pre-guard text), so a
 // mutant reading it would "pass" without the mutation doing anything. This one is the successor's own: the Flux guard is dropped, the shared field runs the Typewriter in Flux again.
-mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barWI');
+mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barFW');
 
 let failed = 0;
 for (const c of checks) {

@@ -952,8 +952,13 @@ await withHarness(async (app) => {
   const twOff = await app.evalJs(`(() => { const tw = document.querySelector('.mode-scroll'); return tw ? tw.getAttribute('data-typewriter') : null; })()`);
   ok('S6 (driver): the Typewriter is off before the format key (its own foot toggle reads not-pressed)', twOff === 'false', String(twOff));
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus()");
-  await app.keyCombo('a'); await sleep(150);
-  await app.keyCombo('b'); await sleep(300);
+  // SUPERSEDED (Free Write = Typewriter, Nov 19; Actions 44634465258 read bold 0 here): Draft never runs the Typewriter, so the FIRST press (above) already made the bold, and this second Ctrl+A, Ctrl+B toggled it OFF; the second press happens only when the first made none. The original lines, verbatim:
+  //   await app.keyCombo('a'); await sleep(150);
+  //   await app.keyCombo('b'); await sleep(300);
+  if (!(fx5TwBlocked && fx5TwBlocked.bold >= 1)) {
+    await app.keyCombo('a'); await sleep(150);
+    await app.keyCombo('b'); await sleep(300);
+  }
   fx5DraftBold = await app.evalJs(boldNow);
   ok('S6 [typewriter-off successor]: Draft mode hides its marks too - with the Typewriter off, a bold made with Ctrl+B carries its two real marks, both .md-mark-hidden (item 211 applies to every writing surface)',
     !!fx5DraftBold && fx5DraftBold.bold >= 1 && fx5DraftBold.marks >= 2 && fx5DraftBold.allHidden, JSON.stringify(fx5DraftBold));

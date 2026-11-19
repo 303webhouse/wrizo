@@ -337,8 +337,11 @@ await withHarness(async (app) => {
   await sleep(200);
   // ARCHIVED PARK (#13 step 14): archive/fx3.mjs.parked.md record 5
   const scriptMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
-  ok('S4 successor (Phase 1): on a script page the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
-    !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === false && !!scriptMenuToggle && scriptMenuToggle.label === 'Typewriter mode' && scriptMenuToggle.text === '' && (scriptMenuToggle.pressed === 'true' || scriptMenuToggle.pressed === 'false'), JSON.stringify({ scriptMenu, scriptMenuToggle }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S4 successor (Phase 1): on a script page the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+  // !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === false && !!scriptMenuToggle && scriptMenuToggle.label === 'Typewriter mode' && scriptMenuToggle.text === '' && (scriptMenuToggle.pressed === 'true' || scriptMenuToggle.pressed === 'false'), JSON.stringify({ scriptMenu, scriptMenuToggle }));
+  ok('S4 [Free Write = Typewriter successor]: on a script page the typewriter is NOT offered - there is no icon toggle beside the "..." (none found), no on/off row in the Settings menu, and the menu itself is there (power)',
+    !!scriptMenu && scriptMenu.headings.length >= 1 && !scriptMenu.headings.includes('Typewriter Mode') && scriptMenu.typewriterRow === false && scriptMenuToggle === null, JSON.stringify({ scriptMenu, scriptMenuToggle }));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -377,8 +380,11 @@ await withHarness(async (app) => {
   await sleep(200);
   // ARCHIVED PARK (#13 step 14): archive/fx3.mjs.parked.md record 7
   const proseMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
-  ok('S4 successor (Phase 1): on prose the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
-    !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === false && !!proseMenuToggle && proseMenuToggle.label === 'Typewriter mode' && proseMenuToggle.text === '' && (proseMenuToggle.pressed === 'true' || proseMenuToggle.pressed === 'false'), JSON.stringify({ proseMenu, proseMenuToggle }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S4 successor (Phase 1): on prose the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+  // !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === false && !!proseMenuToggle && proseMenuToggle.label === 'Typewriter mode' && proseMenuToggle.text === '' && (proseMenuToggle.pressed === 'true' || proseMenuToggle.pressed === 'false'), JSON.stringify({ proseMenu, proseMenuToggle }));
+  ok('S4 [Free Write = Typewriter successor]: on prose the typewriter is NOT offered as a switch - there is no icon toggle beside the "..." (none found), no on/off row in the Settings menu, and the menu itself is there (power)',
+    !!proseMenu && proseMenu.headings.length >= 1 && proseMenu.typewriterRow === false && proseMenuToggle === null, JSON.stringify({ proseMenu, proseMenuToggle }));
 
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the

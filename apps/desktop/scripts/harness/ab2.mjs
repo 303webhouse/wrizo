@@ -255,8 +255,15 @@ await withHarness(async (app) => {
       JSON.stringify(draftRail));
 
   const pageRectAfter = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
-    JSON.stringify(pageRectBefore) === JSON.stringify(pageRectAfter), `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write now runs the Typewriter (the page is ZOOMED) and Draft never does, so the rect across a mode switch changes by exactly the Typewriter's zoom - the one ruled page-size exception (docs/page-primacy-canon.md); the original check, verbatim:
+  //   ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
+  //     JSON.stringify(pageRectBefore) === JSON.stringify(pageRectAfter), `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)}`);
+  // successor: the rail populating moves nothing - the page is the SAME page: same top, same height, same centre (the zoom is about the centre), it is not zoomed in Draft, and it was the Typewriter's zoom (wider) in Free Write
+  const dxC = (r) => r.left + r.width / 2;
+  const draftZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+  ok('PAGE IS PRIMARY [Free Write = Typewriter successor]: across a mode switch with the rail populated the page keeps its top, its height and its centre (Free Write\'s rect is the Typewriter\'s zoom of the same page, Draft\'s is the normal page, not zoomed), so nothing the rail did moved it',
+    !!pageRectBefore && !!pageRectAfter && pageRectBefore.top === pageRectAfter.top && pageRectBefore.height === pageRectAfter.height && Math.abs(dxC(pageRectBefore) - dxC(pageRectAfter)) <= 1 && pageRectBefore.width > pageRectAfter.width && draftZoom !== 'true',
+    `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)} zoom=${String(draftZoom)}`);
 
   // === S3 — Bold writes ** conventions into entry.text (the storage ruling
   // proven at the seam) + the iA register decorates it. ======================
@@ -662,8 +669,12 @@ await withHarness(async (app) => {
       const scriptSettingsHeads = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-instruments .mode-settings h4')].map(h => (h.textContent || '').trim())`);
       await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
       await sleep(150);
-      ok('SC1 S3 [PR #7 successor]: the typewriter option IS PRESENT on a screenplay page - R12 stands; it now lives as "Typewriter Mode" inside the foot\'s one Settings menu',
-        Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.includes('Typewriter Mode'),
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter switch left every stage (Draft and Screenplay never run it); the original check, verbatim:
+      //   ok('SC1 S3 [PR #7 successor]: the typewriter option IS PRESENT on a screenplay page - R12 stands; it now lives as "Typewriter Mode" inside the foot\'s one Settings menu',
+      //     Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.includes('Typewriter Mode'),
+      //     JSON.stringify(scriptSettingsHeads));
+      ok('SC1 S3 [Free Write = Typewriter successor]: a screenplay page offers NO Typewriter option - the foot\'s one Settings menu carries Progress Tracking only (the menu is there: power)',
+        Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.length >= 1 && !scriptSettingsHeads.includes('Typewriter Mode') && scriptSettingsHeads.includes('Progress Tracking'),
         JSON.stringify(scriptSettingsHeads));
   // close the gear again — hygiene for the typing run below
   await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
