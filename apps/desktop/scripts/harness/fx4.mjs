@@ -419,7 +419,9 @@ await withHarness(async (app) => {
     const cs = getComputedStyle(blurWrap);
     return {
       popupPresent: !!document.querySelector('.board-popup'),
-      filterBlurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+      // SUPERSEDED (look A, the fog; Nick Nov 15): the board behind the popup is FOGGED, not blurred; original, verbatim:
+      // filterBlurred: cs.filter !== 'none' && cs.filter.includes('blur'),
+      filterBlurred: (parseFloat(getComputedStyle(blurWrap.querySelector(':scope > .board-canvas-dim') || blurWrap, '::after').opacity) >= 0.79 && cs.filter === 'none'),
       opacity: parseFloat(cs.opacity),
       activeIsEditor: document.activeElement.className.includes('board-popup-editor'),
       hasTypewriter: !!document.querySelector('.board-popup [class*="typewriter"], .board-popup [data-typewriter]'),
@@ -427,7 +429,9 @@ await withHarness(async (app) => {
     };
   })()`);
   ok('S5: double-clicking a text card opens the popup over a BLURRED, dimmed board (the mockup\'s own treatment), focus lands in the editor',
-    openState.popupPresent && openState.filterBlurred && openState.opacity < 0.7 && openState.activeIsEditor,
+    // SUPERSEDED (look A, fog pass 1): the wrap's own opacity stays 1 (the .55 fade sits on its inner board layer, .board-canvas-dim); original, verbatim:
+    // openState.popupPresent && openState.filterBlurred && openState.opacity < 0.7 && openState.activeIsEditor,
+    openState.popupPresent && openState.filterBlurred && openState.opacity === 1 && openState.activeIsEditor,
     JSON.stringify(openState));
   ok('S5: no typewriter, no progress instrument anywhere in the popup — Nick\'s own word',
     !openState.hasTypewriter && !openState.hasProgress, JSON.stringify(openState));
