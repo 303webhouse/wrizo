@@ -21,7 +21,7 @@ const SHARE_LO = 0.75, SHARE_HI = 0.85, CONTRAST_MIN = 30, DIM = 0.55;
 // THE ROOM IS PINNED (Chat 1, Nov 19: 0c028eed read PASS 56 at 09:30Z and FAIL 2/56 [plateau/light] MUT-outside at 19:19Z, same bytes). Arbor's room (data-arbor2-room) follows the CLOCK, and the plateau skins' stage behind the board is the room's: at night it is
 // dark (the veil-off pixel read [51,50,49] and the outside mutant moved the share to 2.07/2.23/2.51), by day it is the paper's own cream ([117,117,114], the outside mutant read 0.80/0.81/0.84, the same pixels as the inside veil), so the pixel half of MUT-outside is BLIND by day:
 // the layering shows only where the paper is not the stage (see MUT-outside below). The harness pins the room with Arbor's test-only URL pin (flag.ts arbor2RoomPin: ?arbor2room=night, never stored), so the run no longer depends on the runner's hour; FA-ROOM reads that the pin took.
-const ROOM = 'night';
+const ROOM = 'day';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
