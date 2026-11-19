@@ -1,6 +1,39 @@
-# STATUS: milestone 6 built (the stages), not yet opened; waiting for Fable's check
+# STATUS: milestone 6 passed; Fable's four asks built, not yet opened; going to Nick's walk
 
-Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`, from `0a629bd5`. Milestones 1 to 5 have passed Fable's check. Milestone 6 is built on Fable's GO of Nov 19, 11:40 am: the stages filled from `_sources/reorg-stage-table.md`, the whole table in one file, every stage NOT RULED, and the panel "What changed with this stage". The three questions with Fable had no answer when this was built, so the three defaults she named are built and listed in `NOT-RULED.md` (151, 152, 153).
+Cursor lane, Nov 19, 2026. Branch `cursor/reorg-prototype`. Milestones 1 to 6 have passed Fable's check (6 at `c8ef5838`, Nov 19, 12:35 pm, headless Chrome at 1366 × 768: every door draws, no errors). Her answers to the seven questions are built on top of it.
+
+## After Fable's pass (Nov 19, 12:35 pm)
+
+- **FINALIZE draws the whole Doc as one read-only scroll** (NOT RULED, 172 to 174). Every Part under its heading, a hairline between Parts, a label in the page's top margin. The top bar's place, the drop, the Parts list, the arrows and the line under the page follow the scroll; the arrows and lists scroll to a Part. Nothing on the page takes typing, and Replace says the Doc is read-only.
+- **SPRINT's chrome fades as she types** (NOT RULED, 170, 171). In SPRINT only, the Part's words take typing. At the first keystroke everything but the page, the stage strip and the corner tag fades to a tenth; nothing moves or closes. Moving the mouse brings it back.
+- **EDIT's lens marks stay undrawn.** BUILD and EDIT show one Part, as before.
+- **The stage strip's own NOT RULED tag** (175), just left of SPRINT, light on the dark bar, in every stage, in a split and through the fade.
+- **"Sprint Tips", "Page setup", "Progress" are PROPOSED** until the Wrizors choose the words after Nick's walk: listed with the PROPOSED items in `NOT-RULED.md`, and each offer says so when the pointer rests on it.
+- **Answers 1, 2, 3 and 6** change nothing built: `stage-table.js` stays, four buttons for five columns, only "On a Page" drawn, no search on a Board. 151 to 153 moved to the "Answered by Fable on Nov 19" list.
+- **The page's rectangle** is 415 / 64 / 620 × 640 in every stage still: the fade is opacity only, and the whole Doc scrolls inside the page.
+- **In `stage-table.js`** each column now has `"drawn"`, which says what the page draws in that stage: take it away and that stage shows one Part.
+
+## Not opened, not checked by eye or by script
+
+As in milestone 6, no browser was run: the rules allow only `git add`, `git commit` and `git push`. Where a slip is most likely:
+
+- **The bar at 1366.** The strip's tag adds about 80 px left of SPRINT, after "What changed" added about 100. Not measured.
+- **FINALIZE's landing** (`#finalize`): Part 3's heading near the top of the page, under the label. A short last Part cannot reach the top; the arrow down to it should still say "Part 5 of 5".
+- **SPRINT's typing:** Enter should make a new paragraph; what she types stays in the Part after going to another Part and back. A click on a menu redraws the page, and the caret goes with it.
+- **The fade** (`#sprint-faded`): the stage strip and its tag stay bright; the menus are faint and still there.
+
+## The doors added
+
+`#sprint-faded` (SPRINT, both menus open, the chrome faded) and `#finalize-search` (FINALIZE, "toll" found across the whole Doc).
+
+## Questions for Fable
+
+1. **Typing elsewhere.** The page takes typing only in SPRINT, where the fade needs it; in BUILD and EDIT it is still a picture. Should it take typing there too, so FINALIZE's "read-only" has something to differ from?
+2. **The tag in the fade.** I kept the stage strip and its tag bright while the rest fades, by your "always in view". Or should the strip fade with the rest?
+
+## Milestone 6 as built (before Fable's pass)
+
+What follows is this file's milestone 6 section as it stood when Fable checked it. Its questions are answered above and in `NOT-RULED.md`.
 
 ## What milestone 6 adds (the stages, 6 G)
 
@@ -36,7 +69,7 @@ This lane ran no browser this time: there was no word from Nick to open it, and 
 - **The page is not drawn per stage** (162): no fading chrome in SPRINT, no lens marks in EDIT, no whole Doc in one scroll in FINALIZE.
 - **The panel's place,** over the middle of the page, and that it stays open across stage presses (164).
 
-## Questions for Fable
+## Questions for Fable (answered Nov 19, 12:35 pm)
 
 **Still with you from this morning (defaults built):**
 
