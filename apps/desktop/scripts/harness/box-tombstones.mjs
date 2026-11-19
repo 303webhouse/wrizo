@@ -233,6 +233,10 @@ const RAW_BASELINE = {
   'store/childSteps.ts': 1,          // Add scenes: addChildren's `[...boxes, ...made]` - a pure spread of the caller's own list (it reads no stored entry); the board appends only `added`, never this whole list
   'store/pageExport.ts': 1,          // the board-meta lookup (lane titles) - the cards themselves go through liveBoxes
   'store/unbornPage.ts': 3,          // building a NEW page's boxes (writes)
+  // the saved rail (reorg-rail-saved): NOT a board's cards. The rail record keeps a map named `boxes` (each Project's box look on the left rail: two letters,
+  // a colour, a picture, keyed by Project id), so these reads share the word only; none of them touches a board entry or a card, stored or live.
+  'reorg/railMemory.ts': 1,          // the rail's Project box looks, read to hand the left rail its letters / colour / picture
+  'reorg/railSaved.ts': 18,          // the rail record's `boxes` map: its shape check, canonical form, merge, the box acts, the picture queue and the round
 };
 
 const base = await load();

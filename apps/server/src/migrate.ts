@@ -196,6 +196,25 @@ export async function runMigrations(): Promise<void> {
   // merge was considered and refused for that reason.
   await pool.query(`alter table users add column if not exists proofing jsonb`);
 
+  // THE REORG'S RAIL, SAVED WITH THE ACCOUNT (Nick's ruling Nov 18, 1:56 pm, items 1-3 of the reorg's saved-data sheet; Fable accepted the
+  // storage plan Nov 18, 2:45 pm: "users.rail (one nullable jsonb column), box_pictures (one table) ... are within Nick's 'A'"). The proofing
+  // recipe: no default, no CHECK, no backfill - null on every existing writer, so nobody's row changes until she pins or dresses a box.
+  //   rail: { pins:  { "<drawerId>": { order, at, removedAt? } }, view?: 'list'|'boxes', viewAt?,
+  //           boxes: { "<drawerId>": { letters?, lettersAt?, colour?, colourAt?, picture?: "<sha>"|"", pictureAt? } } }
+  // The merge is the client's (apps/desktop/src/reorg/railSaved.ts); the server compares-and-swaps and enforces a purge (rail.ts).
+  await pool.query(`alter table users add column if not exists rail jsonb`);
+  // A box's picture: at most one row per Project, 64 KB at most, WebP/JPEG/PNG by its own first bytes (rail.ts). Last picked wins on picked_at.
+  await pool.query(
+    `create table if not exists box_pictures (
+       user_id uuid not null references users(id),
+       drawer_id text not null,
+       sha text not null,
+       mime text not null,
+       bytes bytea not null,
+       picked_at timestamptz not null,
+       primary key (user_id, drawer_id)
+     )`);
+
   // CONNECTOR-B (Nick's route (b), Oct 14; plan reviewed and approved by Fable, Oct 14: docs/plans/connector-b-page-links.md) - THE PAGE LINKS. ONE additive column on `journal_entries`:
   // an ARRAY of link records (jsonb, default '[]'), the pairs a same-board connection box cannot hold because an end is an ENTRY, not a box on this board (a card <-> a page or a board, a card <-> a card on another
   // board, a page <-> a page...). A same-board card <-> card link stays a 'connection' box inside `boxes`, forever; this column holds only what a box cannot. Shape (types/index.ts PageLink):
