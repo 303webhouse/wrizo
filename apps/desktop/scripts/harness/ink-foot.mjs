@@ -21,7 +21,7 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 
 const GEOM = `(() => { const q = (s) => document.querySelector(s); const sc = q('.mode-scroll'), sh = q('.wz-ink-sheet'), ed = q(${JSON.stringify(ED)}), cv = q('.ink-committed');
   if (!sc || !sh || !ed) return null; const s = sc.getBoundingClientRect(), h = sh.getBoundingClientRect(); const r = document.createRange(); r.selectNodeContents(ed); const rs = [...r.getClientRects()].filter((x) => x.height > 4); const last = rs.length ? Math.max(...rs.map((x) => x.bottom)) : null;
-  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const foot = Math.min(s.bottom, window.innerHeight); const yAbove = foot - 8; const hit = document.elementFromPoint(Math.round(h.left + 140), Math.round(yAbove));
+  const zoom = (q('.mode-pagecol') || {}).getAttribute ? q('.mode-pagecol').getAttribute('data-zoom') : null; const foot = Math.min(s.bottom, window.innerHeight); const yAbove = foot - 24; const hit = document.elementFromPoint(Math.round(h.left + 140), Math.round(yAbove));
   const hitSheet = !!hit && !!hit.closest('.wz-ink-sheet');
   return { foot, scroll: { top: s.top, bottom: s.bottom, left: s.left, right: s.right }, sheet: { top: h.top, bottom: h.bottom, left: h.left, right: h.right, w: h.width }, lastLine: last, zoom, hitSheet, canvasPx: cv ? cv.width + 'x' + cv.height : null, scrollClient: sc.clientHeight, scrollTop: sc.scrollTop, scrollHeight: sc.scrollHeight }; })()`;
 // the stored strokes of a page, in px from the sheet's top (y * width + the text's origin) and the painted ink's own box (css px from the sheet's top)
@@ -69,7 +69,7 @@ await withHarness(async (app) => {
     const g = await app.evalJs(GEOM);
     ok(`(premise) ${tag}: the page and the INK instrument are there (zoom reads ${g && g.zoom})`, !!g && tabbed && (zoom ? g.zoom === 'true' : g.zoom !== 'true'), JSON.stringify(g));
     if (!g || !tabbed) return;
-    ok(`K1 ${tag}: the sheet reaches the paper's visible foot (sheet bottom ${Math.round(g.sheet.bottom)} vs ${Math.round(g.foot)}: the scroller's foot or the window's) and the pointer is routed to the ink just above that foot`, g.sheet.bottom >= g.foot - 1 && g.hitSheet, JSON.stringify({ hitSheet: g.hitSheet, lastLine: g.lastLine }));
+    ok(`K1 ${tag}: the sheet reaches the paper's visible foot (sheet bottom ${Math.round(g.sheet.bottom)} vs ${Math.round(g.foot)}: the scroller's foot or the window's) and the pointer is routed to the ink where the pen goes (24 px above that foot)`, g.sheet.bottom >= g.foot - 1 && g.hitSheet, JSON.stringify({ hitSheet: g.hitSheet, lastLine: g.lastLine }));
     const footY = g.foot - 24;
     const lastY = Math.min(g.lastLine - 8, footY - 60);
     const x0 = g.sheet.left + 120;

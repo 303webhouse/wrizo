@@ -148,7 +148,8 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     const sheet = sheetRef.current;
     if (!sheet || typeof ResizeObserver === 'undefined') return;
     const ro = new ResizeObserver(() => paintCommitted(committedRef.current, sheetRef.current, strokesRef.current, { resize: true }));
-    ro.observe(sheet);
+    // the BORDER box: the text's origin is the sheet's padding-top, which a content-box observation never sees change
+    ro.observe(sheet, { box: 'border-box' });
     // the text's origin moves without the sheet's own size changing (the Typewriter's start offset settles after the first paint: the ink was left 25 px from where it was drawn after a reload); the scroller's content box changes with it, so it is watched too, and the paint is skipped when nothing it reads changed
     const scroller = sheet.closest('.mode-scroll');
     if (scroller) ro.observe(scroller);
