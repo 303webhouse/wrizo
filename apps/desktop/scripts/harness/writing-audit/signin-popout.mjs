@@ -28,6 +28,7 @@
 //   P27 THE SQUEEZE (Fable Nov 18, 11:20 pm; the Wrizors' draft 8 s1), MACHINA sign-in at 1366x560 with the two-line error: data-squeeze is on, the heading and the error line are inside the scrolling part, the fields' window is at least 36 px, the spacing is the short-window spacing (padding 12 top and bottom, 8 px between the button and the links, the button 36 px) and no text changed size; P27E the error is in view, at the foot of the scrolling part; P27M the window cut under 36 and P27EM the part scrolled to its top (each asserted landed) turn the reads red
 //   P27L the ONE-line error (the server's 400 "Wrong email or password.") squeezes too and STAYS squeezed: the panel is still there, the window is at least 36 px, the error in view, and the state is the same 600 ms later (a flip-flop between squeezed and not once blanked the page); P27LM the window cut (asserted landed) turns it red
 //   P27U ARBOR and FLUX at 1366x560 with the error, both faces, do NOT squeeze: no data-squeeze, the heading and the error outside the scrolling part, the panel padding as at 768; P27UM the squeeze forced on (asserted landed) turns it red
+//   P26 (Machina, Fable Nov 19, 12:10 am) the focused tick's OWN edge turns #E6E8EA from #9AA1A8 and NOTHING is drawn outside the box (an outside outline was clipped by the scrolling part: a stray 1 px line); P26M the mark taken away and P26MO an outside outline drawn (each asserted landed) turn it red
 //   P25 the button is NOT brass at rest after the 18+ error (the pointer parked away; focus is on the tick): same colour/edge/shadow as before the submit; under the pointer it is brass (the frame driver's pointer was the brass); P25M a Tab from the tick to the button turns the read red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
@@ -315,7 +316,7 @@ await withHarness(async (app) => {
     await goFace('account');
     await app.mouseMove(2, 2); await sleep(400);
     const rest0 = await ev(BTN);
-    const TICK = "(() => { const t = document.querySelector('.wz-adult-box'); const cs = getComputedStyle(t); return { focused: document.activeElement === t, outlineStyle: cs.outlineStyle, outlineW: cs.outlineWidth, outlineColor: cs.outlineColor, shadow: cs.boxShadow }; })()";
+    const TICK = "(() => { const t = document.querySelector('.wz-adult-box'); const cs = getComputedStyle(t); return { focused: document.activeElement === t, outlineStyle: cs.outlineStyle, outlineW: cs.outlineWidth, outlineColor: cs.outlineColor, shadow: cs.boxShadow, border: cs.borderTopColor }; })()";
     const tick0 = await ev(TICK);
     await ev("document.querySelector('.wz-popout button[type=submit]').click(); true");
     await app.waitFor("!!document.querySelector('.wz-popout .wz-error')", { label: 'the 18+ error line', timeout: 6000 }).catch(() => {});
@@ -346,12 +347,21 @@ await withHarness(async (app) => {
     check('P25', sameLook(rest0, rest1) && rest1.active === false && rest1.focusVisible === false && rest1.onTick === true && !sameLook(rest1, hov1), `before the submit ${JSON.stringify(rest0)}; after the 18+ error, pointer away ${JSON.stringify(rest1)}; under the pointer ${JSON.stringify(hov1)} (the brass is the pointer, not the focus)`);
     // P26: the focus mark on the tick after the error
     const markDrawn = (g) => !!g && g.focused === true && ((g.outlineStyle !== 'none' && parseFloat(g.outlineW) > 0 && g.outlineColor !== 'rgba(0, 0, 0, 0)') || g.shadow !== 'none');
-    check('P26', tick0.focused === false && !markDrawn({ ...tick0, focused: true }) && markDrawn(tick1), `before the error (the tick unfocused) ${JSON.stringify(tick0)}; after the 18+ error, focus on the tick ${JSON.stringify(tick1)}`);
+    const isM = cfg.theme === 'machina';
+    const outsideNone = (g) => g.outlineStyle === 'none' || parseFloat(g.outlineW) === 0;
+    const p26ok = isM ? (tick0.focused === false && tick0.border === 'rgb(154, 161, 168)' && tick1.focused === true && tick1.border === 'rgb(230, 232, 234)' && outsideNone(tick1) && tick1.shadow === 'none') : (tick0.focused === false && !markDrawn({ ...tick0, focused: true }) && markDrawn(tick1));
+    check('P26', p26ok, `before the error (the tick unfocused) ${JSON.stringify(tick0)}; after the 18+ error, focus on the tick ${JSON.stringify(tick1)}`);
     await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
-    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-nomark'; st.textContent = '.wz-arrival .wz-popout .wz-adult-box:focus{ outline:none !important; box-shadow:none !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-nomark'; st.textContent = '.wz-arrival .wz-popout .wz-adult-box:focus{ outline:none !important; box-shadow:none !important; border-color:var(--adult-edge) !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
     const tickM = await ev(TICK);
-    check('P26M', tickM.focused === true && !markDrawn(tickM), `the mark taken away (landed: ${JSON.stringify(tickM)}): P26's read goes RED`);
+    check('P26M', tickM.focused === true && !markDrawn(tickM) && (!isM || tickM.border === 'rgb(154, 161, 168)'), `the mark taken away (landed: ${JSON.stringify(tickM)}): P26's read goes RED`);
     await ev("document.getElementById('mut-nomark').remove(); true"); await sleep(200);
+    if (isM) {
+      await ev("(() => { const st = document.createElement('style'); st.id = 'mut-outside'; st.textContent = '.wz-arrival .wz-popout .wz-adult-box:focus{ outline:1px solid #ff9800 !important; outline-offset:2px !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+      const tickO = await ev(TICK);
+      await ev("document.getElementById('mut-outside').remove(); true"); await sleep(200);
+      check('P26MO', tickO.focused === true && !outsideNone(tickO) && !(tickO.border === 'rgb(230, 232, 234)' && outsideNone(tickO) && tickO.shadow === 'none'), `an outline drawn outside the box (landed: ${tickO.outlineStyle} ${tickO.outlineW}): P26's read goes RED`);
+    }
     await ev("(document.querySelector('.wz-adult-box') || { focus() {} }).focus(); true");
     await app.key('Tab'); await sleep(350);
     const tabbed = await ev(BTN);
@@ -422,7 +432,7 @@ await withHarness(async (app) => {
     added = await ev("(() => { const now = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; return now.filter((k) => !window.__keys0.includes(k) && /adult|18|age|over/i.test(k)); })()");
     p4 = line === 'Wrizo accounts are for writers 18 and older, for now.' && regUnticked === 0 && regTicked >= 1 && added.length === 0;
   }
-  { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#9AA1A8' }[cfg.theme]; const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
+  { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#E6E8EA' }[cfg.theme];   // read while the tick has focus: Machina's own edge turns #E6E8EA then (its rest edge #9AA1A8 is read in P26) const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
     check('P11', !!l0 && l0.w === '16px' && l0.h === '16px' && l0.bw === '1px' && hex(l0.edge) === edgeWant && focusOnTick === true && spaceTicked === true && !!l1 && l1.mark === '""' && l1.markColor === 'rgb(255, 152, 0)', `box `+(l0 && l0.w)+' x '+(l0 && l0.h)+`, border `+(l0 && l0.bw)+` `+(l0 && hex(l0.edge))+` (want `+edgeWant+`); focus on the tick after the error `+focusOnTick+`; Space ticked `+spaceTicked+`; mark `+JSON.stringify(l1)); }
   { const want = { plateau: 'rgb(185, 170, 140)', flux: 'rgb(126, 180, 196)', machina: 'rgb(154, 161, 168)' }[cfg.theme];
     check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's quiet colour `+want+`, never red)`);

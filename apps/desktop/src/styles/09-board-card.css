@@ -406,7 +406,7 @@
 .wz-arrival .wz-popout .wz-adult-box:checked::after{ content:''; position:absolute; left:4px; top:0; width:4px; height:9px; border:solid var(--adult-mark); border-width:0 2px 2px 0; transform:rotate(45deg); }
 .wz-arrival .wz-popout .wz-adult-box:focus{ outline:1px solid var(--wz-orange); outline-offset:2px; } /* the focus mark shows whenever the tick has focus, as the fields' does, including when the 18+ error moves focus here by script (:focus-visible alone does not match then): the Wrizors' v9 pass; Fable Nov 18, 11:00 pm */
 [data-theme='flux'] .wz-arrival .wz-popout .wz-adult-box:focus{ outline-color:#00C2FF; box-shadow:-4px 0 0 0 var(--wz-orange); }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-adult-box:focus{ outline-color:var(--text-hi); }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-adult-box:focus{ outline:none; border-color:#E6E8EA; } /* Machina: the box's OWN edge turns #E6E8EA; nothing is drawn outside the box (an outside outline is clipped by the scrolling part: the Wrizors' v11 pass; Fable Nov 19, 12:10 am) */
 .wz-popout-tag{ display:none; }
 
 /* FLUX: a node with corner brackets and the N.01 · INPUT tag; the field she types in is cyan with a thin brass bar beside it (Flux's door rule); LOG IN in capitals and brackets */
