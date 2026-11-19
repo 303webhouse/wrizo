@@ -594,10 +594,16 @@ await withHarness(async (app) => {
   await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'on' : 'off'}"]`); await sleep(200);
   const wsC = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
   const others = (a, b, k) => Object.keys({ ...a, ...b }).filter((x) => x !== k && JSON.stringify(a[x]) !== JSON.stringify(b[x]));
-  ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
-    Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
-    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
-    JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): PAGE DEFAULTS no longer carries a Typewriter mode switch (the Typewriter switch left every stage); the original D3 [successor], verbatim:
+  // ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
+  // Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
+  // && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  // JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // successor: PAGE DEFAULTS is the Progress bars switch alone; pressing it flips only `instrumentsOn` (every other stored key, `typewriter` included, keeps its value), and the Typewriter row is not there to press
+  const d3tw = await app.evalJs("document.querySelectorAll('[data-reorg-default=\"typewriter\"]').length");
+  ok('D3 [Free Write = Typewriter successor]: PAGE DEFAULTS offers Progress bars alone - there is no Typewriter mode switch (' + d3tw + ' found) - and pressing it changes only `instrumentsOn`: every other stored key (the old `typewriter` value included) keeps its value',
+    d3tw === 0 && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['progress', pr ? 'off' : 'on']]) && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0 && wsA.typewriter === wsC.typewriter,
+    JSON.stringify({ d3tw, defaults: d3 && d3.defaults, pr: [wsB.instrumentsOn, wsC.instrumentsOn], prOthers: others(wsB, wsC, 'instrumentsOn'), twKept: [wsA.typewriter, wsC.typewriter] }));
   await click(`[data-reorg-default="typewriter"] [data-toggle="${wsA.typewriter ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'off' : 'on'}"]`); await sleep(200);
 
   // ---- STEP 6: UNFILED and the Trash ---------------------------------------------------------------------------------------------------
