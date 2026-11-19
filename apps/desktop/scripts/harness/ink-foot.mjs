@@ -77,7 +77,7 @@ await withHarness(async (app) => {
     const B = lerp({ x: x0 + 160, y: footY - 40 }, { x: x0 + 300, y: footY - 40 }, 10);
     await penPath(app, A); await sleep(900);
     // a long page: the first stroke's commit leaves the scroller at the top (on main too); the second is drawn from the end again
-    let sheetTopB = sheetTop;
+    let sheetTopB = g.sheet.top;
     if (words > 200) { await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(800); const g2 = await app.evalJs(GEOM); sheetTopB = g2.sheet.top; }
     await penPath(app, B); await sleep(900);
     const sheetTop = g.sheet.top;   // read before the pen went down
