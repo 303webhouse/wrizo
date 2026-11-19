@@ -5,7 +5,7 @@
 //   I1  25 Enters at the end of a 5 000-word Free Write page holding 7 strokes: the committed canvas's width/height are assigned 0 times (main: 50)
 //   I2  ... and the strokes are drawn (clearRect on that canvas) 0 times (main: 25)
 //   I3  the ink is where the strokes put it, before and after the Enters: its pixel bounding box matches the strokes' own (x from 0.1 to 0.7 of the page's width, down to 0.9) within 8 px, and the canvas stays inside the sheet (its foot no lower than the sheet's)
-//   I4  the page narrows (1400 -> 1000): the ink is redrawn at the new width, and again matches the strokes' own box (the width still repaints)
+//   I4  the page narrows (1400 -> 1200, still framed): the ink is redrawn at the new width, and again matches the strokes' own box (the width still repaints)
 //   I6  the native caret is still PAINTED at the end of a page with ink, in the normal view and in the Typewriter (#101's will-change law: a page-sized composited canvas was what kept the caret painted; the canvas is now only as tall as the ink)
 //   I5  (reading) the Enter's key-to-frame median, printed, not a check (runners differ in speed)
 // Run: on Actions (harness.yml, files=ink-enter.mjs). One verdict line: INK-ENTER: PASS|FAIL.
@@ -75,9 +75,9 @@ await withHarness(async (app) => {
   await sleep(500);
   const b1 = await app.evalJs(BOX);
   ok('I3: the ink is where the strokes put it, before and after the Enters, and the canvas stays inside the sheet', boxOk(b0) && boxOk(b1), JSON.stringify({ before: b0, after: b1 }));
-  await app.emulateDpr(1, 1000, 900); await sleep(1200);
+  await app.emulateDpr(1, 1200, 900); await sleep(1200);
   const b2 = await app.evalJs(BOX);
-  ok('I4: the page narrows (1400 -> 1000): the ink is redrawn at the new width and matches the strokes\' own box', boxOk(b2) && b2.W < b1.W - 100, JSON.stringify({ narrow: b2, wide: b1.W }));
+  ok('I4: the page narrows (1400 -> 1200, still framed): the ink is redrawn at the new width and matches the strokes\' own box', boxOk(b2) && b2.W < b1.W - 40, JSON.stringify({ narrow: b2, wide: b1.W }));
   console.log(`READING  I5: Enter on the page with ink: key-to-frame median ${med(dts).toFixed(1)} ms (printed, not a check: the runners' speeds differ)`);
   // I6: the native caret is painted at the end of a page with ink (plain view, Typewriter)
   {
