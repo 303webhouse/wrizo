@@ -17,6 +17,8 @@
 //   P18 MACHINA, a shorter window (1366x560): only the fields scroll; the button row is pinned at the foot (the button does not move when the fields scroll, is in the window, Create my account left and back right on one row), the scroll thumb reads >= 3:1; P18M the old build (the panel scrolls as one) turns it red
 //   P19 MACHINA: an error line sits above the button row, and the button row stays in the window
 //   P20 FLUX: the panel's top sits at least 8 px under WRIZO's letters (their ink foot: the wordmark's box foot plus half its stroke) and covers no part of the mark, at 1366 and 1920, on both faces; P20M the old top (6vh / centred, 209 at 1366) turns it red (Fable Nov 18, 5:35 pm)
+//   P21 on the 18+ error the tick is IN VIEW inside the visible part of the list, above the error line, and focused, at 1366x768 and 1366x560, in every theme (the Wrizors' v5 REAL: it was scrolled out of sight in Machina); P21M the same flow with the scroll taken away leaves it out of view (asserted landed at a height where the list is short)
+//   P22 the register request carries adult: true, and none leaves unticked (Fable Nov 18, 5:55 pm: apiRegister never sent it); nothing is stored; P22M the field dropped from the request turns it red (asserted landed)
 //   P5  way 2: a device that signed out, or a link to a page while signed out, opens already on the panel with NO "back"
 // One line per check: `POPOUT [tag] P1 PASS|FAIL ...` and `SIGNIN-POPOUT [tag] PASS|FAIL`. Run: on Actions via writing-audit.yml, script=signin-popout.mjs, configs theme/off/tone/1366.
 import { withHarness } from '../../runtime-verify.mjs';
@@ -202,11 +204,42 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]')", { label: 'the create-account face again', timeout: 6000 }).catch(() => {});
     await sleep(500);
   }
-  const sig = await ev(`(() => { if (!document.querySelector('.wz-adult-box')) return { box: false }; window.__reg = 0; const rf = window.fetch.bind(window); window.fetch = (u, o) => { if (String(u).includes('register')) window.__reg++; return rf(u, o); };
+  // ---- P21: the tick in view after the error
+  {
+    const VIS = "(() => { const t = document.querySelector('.wz-adult-box'); const e = document.querySelector('.wz-popout .wz-error'); if (!t) return null; let c = t.parentElement; while (c && !/(auto|scroll)/.test(getComputedStyle(c).overflowY)) c = c.parentElement; const cr = c ? c.getBoundingClientRect() : { top: 0, bottom: innerHeight }; const tr = t.getBoundingClientRect(); const er = e ? e.getBoundingClientRect() : null; return { tickTop: Math.round(tr.top * 10) / 10, tickBottom: Math.round(tr.bottom * 10) / 10, listTop: Math.round(cr.top * 10) / 10, listBottom: Math.round(Math.min(cr.bottom, innerHeight) * 10) / 10, errTop: er ? Math.round(er.top * 10) / 10 : null, focused: document.activeElement === t, winH: innerHeight }; })()";
+    const visOk = (g) => !!g && g.tickTop >= g.listTop - 0.5 && g.tickBottom <= g.listBottom + 0.5 && g.errTop !== null && g.tickBottom <= g.errTop + 0.5 && g.focused;
+    const FRESH = async () => {
+      await ev("(document.querySelector('.wz-popout-back') || { click() {} }).click()");
+      await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'back on sign-in', timeout: 6000 }).catch(() => {});
+      await sleep(300);
+      await ev("document.querySelector('.wz-popout-switch').click()");
+      await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]') && !!document.querySelector('.wz-adult-box')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
+      await sleep(500);
+    };
+    const v21 = [];
+    for (const h of [768, 560]) {
+      await app.emulateDpr(1, 1366, h); await sleep(700); await FRESH();
+      await ev("document.querySelector('.wz-popout button[type=submit]').click(); true"); await sleep(700);
+      v21.push({ h, ...(await ev(VIS)) });
+    }
+    check('P21', v21.every(visOk), JSON.stringify(v21));
+    let landed21 = null;
+    for (const h of [768, 560, 400, 330, 260]) {
+      await app.emulateDpr(1, 1366, h); await sleep(700); await FRESH();
+      await ev("window.__siv = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = function () {}; true");
+      await ev("document.querySelector('.wz-popout button[type=submit]').click(); true"); await sleep(700);
+      const g = { h, ...(await ev(VIS)) };
+      await ev("Element.prototype.scrollIntoView = window.__siv; true");
+      if (!visOk(g)) { landed21 = g; break; }
+    }
+    check('P21M', !!landed21, landed21 ? `the scroll taken away (landed at ${landed21.h} px: tick ${landed21.tickTop}..${landed21.tickBottom}, list ${landed21.listTop}..${landed21.listBottom}, error line ${landed21.errTop}): P21's read goes RED` : 'the mutant never left the tick out of view at any height tried');
+    await app.emulateDpr(1, 1366, 768); await sleep(700); await FRESH();
+  }
+  const sig = await ev(`(() => { if (!document.querySelector('.wz-adult-box')) return { box: false }; window.__reg = 0; window.__regBodies = []; const rf = window.fetch.bind(window); window.fetch = (u, o) => { if (String(u).includes('register')) { window.__reg++; window.__regBodies.push(o && o.body ? String(o.body) : null); } return rf(u, o); };
     window.__keys0 = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; const n = (sel, v) => { const el = document.querySelector(sel); const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; s.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
     n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); return { box: true, ticked: document.querySelector('.wz-adult-box').checked }; })()`);
   let p4 = !!sig.box && sig.ticked === false;
-  let line = null, regUnticked = null, regTicked = null, added = null, focusOnTick = null, spaceTicked = null, tickLook = null, errColor = null, redNow = null;
+  let line = null, regUnticked = null, regTicked = null, added = null, focusOnTick = null, spaceTicked = null, tickLook = null, errColor = null, redNow = null, regBodies = null;
   if (p4) {
     await ev("document.querySelector('.wz-popout button[type=submit]').click()"); await sleep(600);
     line = await ev("(document.querySelector('.wz-popout .wz-error') || {}).textContent || null");
@@ -223,6 +256,7 @@ await withHarness(async (app) => {
     tickLook = { look0, look1 };
     await ev("document.querySelector('.wz-popout button[type=submit]').click()"); await sleep(900);
     regTicked = await ev('window.__reg');
+    regBodies = await ev('window.__regBodies');
     added = await ev("(() => { const now = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; return now.filter((k) => !window.__keys0.includes(k) && /adult|18|age|over/i.test(k)); })()");
     p4 = line === 'Wrizo accounts are for writers 18 and older, for now.' && regUnticked === 0 && regTicked >= 1 && added.length === 0;
   }
@@ -231,6 +265,8 @@ await withHarness(async (app) => {
   { const want = { plateau: 'rgb(185, 170, 140)', flux: 'rgb(126, 180, 196)', machina: 'rgb(154, 161, 168)' }[cfg.theme];
     check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's quiet colour `+want+`, never red)`);
     check('P15M', redNow !== null && redNow !== want && redNow !== errColor, `the error line red (landed: `+redNow+`): P15's read goes RED`); }
+  { const parsed = (regBodies || []).map((b) => { try { return JSON.parse(b); } catch { return null; } });
+    check('P22', parsed.length >= 1 && parsed.every((b) => !!b && b.adult === true) && regUnticked === 0 && (added || []).length === 0, `register requests ${JSON.stringify(parsed.map((b) => b && { adult: b.adult, keys: Object.keys(b).sort() }))}; sent unticked ${regUnticked}; storage keys added ${JSON.stringify(added)}`); }
   check('P4', p4, `tick ${JSON.stringify(sig)}; line ${JSON.stringify(line)}; register calls unticked ${regUnticked}, ticked ${regTicked}; storage keys added ${JSON.stringify(added)}`);
   await ev("localStorage.setItem('wz.signedOutHere', '1'); true");
   await app.reload();
@@ -239,6 +275,21 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel, already up', timeout: 8000 }).catch(() => {});
   const w2 = await ev("({ panel: !!document.querySelector('.wz-popout'), stage: document.querySelector('.wz-popout') ? document.querySelector('.wz-popout').dataset.popout : null, back: !!document.querySelector('.wz-popout .wz-popout-back') })");
   check('P5', w2.panel && w2.stage === 'signin' && w2.back === false, JSON.stringify(w2));
+  // P22M: the field dropped from the request (asserted landed) turns P22's read red
+  {
+    await ev("document.querySelector('.wz-popout-switch').click()");
+    await app.waitFor("!!document.querySelector('.wz-popout[data-popout=account]') && !!document.querySelector('.wz-adult-box')", { label: 'the create-account face', timeout: 6000 }).catch(() => {});
+    await sleep(500);
+    await ev(`(() => { window.__mutBodies = []; const rf = window.fetch.bind(window); window.fetch = (u, o) => { if (String(u).includes('register')) { let b = o && o.body ? String(o.body) : null; try { const j = JSON.parse(b); delete j.adult; b = JSON.stringify(j); } catch (e) {} window.__mutBodies.push(b); return rf(u, { ...o, body: b }); } return rf(u, o); };
+      const n = (sel, v) => { const el = document.querySelector(sel); const st = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; st.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
+      n('.wz-popout input[autocomplete=given-name]', 'Pat'); n('.wz-popout input[name=email]', 'pat@example.com'); n('.wz-popout input[name=new-password]', 'a-long-password-1'); document.querySelector('.wz-adult-box').click(); return true; })()`);
+    await sleep(250);
+    await ev("document.querySelector('.wz-popout button[type=submit]').click(); true"); await sleep(900);
+    const mb = await ev('window.__mutBodies');
+    const mparsed = (mb || []).map((b) => { try { return JSON.parse(b); } catch { return null; } });
+    const droppedLanded = mparsed.length >= 1 && mparsed.every((b) => !!b && !('adult' in b));
+    check('P22M', droppedLanded && !mparsed.every((b) => !!b && b.adult === true), `the field dropped (landed: ${JSON.stringify(mparsed.map((b) => b && Object.keys(b).sort()))}): P22's read goes RED`);
+  }
 });
 const bad = results.filter((r) => !r.pass).map((r) => r.id);
 console.log(bad.length ? `SIGNIN-POPOUT [${TAG}] FAIL - ${bad.join(', ')}` : `SIGNIN-POPOUT [${TAG}] PASS (${results.length} checks)`);

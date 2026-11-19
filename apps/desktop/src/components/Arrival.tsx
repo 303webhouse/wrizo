@@ -57,6 +57,14 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   }, [stage]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // On the 18+ error, focus moves to the tick AND the list scrolls it into view, above the error line (spec draft 4 §1; the Wrizors' v5 pass): the effect runs once the error line is in the layout, so the tick is placed against the shortened list, not the one before the line appeared
+  useEffect(() => {
+    if (error !== t('authAdultRequired')) return;
+    const box = adultRef.current;
+    if (!box) return;
+    box.focus({ preventScroll: true });
+    box.scrollIntoView({ block: 'nearest' });
+  }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
   // A ref as well as the state: two Enter presses in one tick both read busy=false before a re-render, and
   // would submit twice. The ref flips synchronously.
   const submitting = useRef(false);
@@ -228,11 +236,11 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const handleCreate = async () => {
     if (busy || submitting.current) return;
     // the 18+ tick: no tick, no account (and no call to the server); the line says why [Arrival §authAdult]
-    if (!adult) { setError(t('authAdultRequired')); adultRef.current?.focus(); return; }
+    if (!adult) { setError(t('authAdultRequired')); return; }
     submitting.current = true;
     setError(''); setBusy(true);
     try {
-      const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim()));
+      const res = await runAuthCall(() => apiRegister(email.trim(), password, name.trim(), inviteCode.trim(), adult));
       // B10.1 - a successful REGISTER is a first run on this device whatever the flag says (once per account).
       if (res.ok && res.user) { markRegistered(res.user.id); onAuthed(res.user); openAsAuthed(); }
       else setError(res.error || t('authCreateFailed'));

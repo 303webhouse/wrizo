@@ -89,8 +89,10 @@ export async function apiLogin(email: string, password: string): Promise<AuthRes
 // parked call site (superseded by Arrival.tsx, unreachable from any UI —
 // see that file's own header) needs no edit; an empty code fails the
 // server's own check exactly like any other wrong code.
-export async function apiRegister(email: string, password: string, name: string, code = ''): Promise<AuthResult> {
-  const res = await postJson('/auth/register', { email, password, name, code });
+// THE 18+ CONFIRMATION (Fable Nov 18, 5:55 pm: this call never sent it): a registration carries `adult: true` and nothing leaves without it. `adult` is the sign-up form's tick, passed in; the request is not made, and nothing is stored on this device, when it is not true.
+export async function apiRegister(email: string, password: string, name: string, code = '', adult = false): Promise<AuthResult> {
+  if (adult !== true) return { ok: false, error: 'Could not create account' };
+  const res = await postJson('/auth/register', { email, password, name, code, adult: true });
   if (res.ok) return { ok: true, user: (await res.json()) as AuthUser };
   return { ok: false, error: await errorMessage(res, 'Could not create account') };
 }
