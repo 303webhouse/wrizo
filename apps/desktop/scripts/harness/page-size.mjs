@@ -231,32 +231,44 @@ const settledSliver = "(() => { const l = document.querySelector('.wz-sliver-pan
 // a trusted Ctrl+/ - the Sliver's own shortcut (Sliver.tsx SLIVER_SHORTCUT_LABEL)
 const ctrlSlash = async (app) => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); };
 const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); return !!g && getComputedStyle(g).visibility !== 'hidden'; })()");
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+// const pressTypewriter = async (app) => {
+//   // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
+//   // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this driver's trusted click on the
+//   // grip lands on nothing, so the OFF press never opened the drawer. Kept verbatim; it no longer runs:
+//   //   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+//   // SUCCESSOR: the writer's own way in each state - the grip while it shows, Ctrl+/ while Typewriter hides it. The press and its HIT stay as they were.
+//   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') {
+//     if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
+//     else { await ctrlSlash(app); await sleep(300); }
+//   }
+//   await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
+//   // (lane run on 64e5b7f9: at 2560/3840 the press hit the Sliver's own container - right after typing the chrome is DISSOLVED, pointer-events off,
+//   // until the pointer moves; a writer's hand moving to the button restores it. So the pointer goes there, and the hit is waited for, up to 2.5s.)
+//   const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+//     const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
+//     return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed'),
+//     btn: { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) },
+//     panel: (() => { const p = document.querySelector('.wz-sliver-panel'); if (!p) return null; const q = p.getBoundingClientRect(); const cs = getComputedStyle(p); return { l: Math.round(q.left), t: Math.round(q.top), r: Math.round(q.right), b: Math.round(q.bottom), pe: cs.pointerEvents, op: cs.opacity, ov: cs.overflowY, sh: p.scrollHeight, ch: p.clientHeight }; })(),
+//     writing: document.querySelector('.desk-frame')?.getAttribute('data-writing') ?? null }; })()`);
+//   let at = await probe();
+//   for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
+//   if (!at || !at.hits) { await snap(app, `press-miss-${Date.now()}`); return { pressed: null, at }; }
+//   await click(app, at.x, at.y); await sleep(1100);
+//   return { pressed: await attr(app, TOGGLE, 'aria-pressed'), at };
+// };
+// successor: the writer's way in and out of the Typewriter is the MODE - the strip's Draft and Free Write tabs - so the press switches the page to the other one and reports the zoom it now has (pressed 'true' when zoomed)
 const pressTypewriter = async (app) => {
-  // PARKED 2026-11-09 (SUPERSEDED - Nick, Nov 8, via Fable: "in ANY Typewriter mode, in every theme, the TOOLS and TUTOR opener handles are hidden for
-  // the whole session; leaving Typewriter brings them back" (13-desk-frame.css §12b, ARBOR 65e0494c). Under the zoom this driver's trusted click on the
-  // grip lands on nothing, so the OFF press never opened the drawer. Kept verbatim; it no longer runs:
-  //   if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
-  // SUCCESSOR: the writer's own way in each state - the grip while it shows, Ctrl+/ while Typewriter hides it. The press and its HIT stay as they were.
-  if ((await attr(app, '.wz-sliver', 'data-open')) !== 'true') {
-    if (await gripShown(app)) { const g = await rectOf(app, '.wz-sliver-grip'); if (g) { await click(app, g.x, g.y); await sleep(300); } }
-    else { await ctrlSlash(app); await sleep(300); }
-  }
-  await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
-  // (lane run on 64e5b7f9: at 2560/3840 the press hit the Sliver's own container - right after typing the chrome is DISSOLVED, pointer-events off,
-  // until the pointer moves; a writer's hand moving to the button restores it. So the pointer goes there, and the hit is waited for, up to 2.5s.)
-  const probe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    const r = b.getBoundingClientRect(); const x = r.left + r.width / 2; const y = r.top + r.height / 2; const hit = document.elementFromPoint(x, y);
-    return { x: Math.round(x), y: Math.round(y), hits: !!hit && (hit === b || b.contains(hit)), hit: hit ? String(hit.className || hit.tagName).slice(0, 60) : null, before: b.getAttribute('aria-pressed'),
-    btn: { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) },
-    panel: (() => { const p = document.querySelector('.wz-sliver-panel'); if (!p) return null; const q = p.getBoundingClientRect(); const cs = getComputedStyle(p); return { l: Math.round(q.left), t: Math.round(q.top), r: Math.round(q.right), b: Math.round(q.bottom), pe: cs.pointerEvents, op: cs.opacity, ov: cs.overflowY, sh: p.scrollHeight, ch: p.clientHeight }; })(),
-    writing: document.querySelector('.desk-frame')?.getAttribute('data-writing') ?? null }; })()`);
-  let at = await probe();
-  for (let i = 0; at && !at.hits && i < 16; i += 1) { await app.mouseMove(at.x, at.y); await sleep(150); at = await probe(); }
-  if (!at || !at.hits) { await snap(app, `press-miss-${Date.now()}`); return { pressed: null, at }; }
-  await click(app, at.x, at.y); await sleep(1100);
-  return { pressed: await attr(app, TOGGLE, 'aria-pressed'), at };
+  const was = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+  const target = was ? 'Draft' : 'Free Write';
+  const hit = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim() === ${J(target)}); if (!b) return false; b.click(); return true; })()`);
+  await sleep(1100);
+  const now = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
+  return { pressed: now ? 'true' : 'false', at: { hits: !!hit, mode: target } };
 };
-const typewriterIs = async (app, id) => app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${id}')`);
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+// const typewriterIs = async (app, id) => app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${id}')`);
+const typewriterIs = async (app, id) => ((await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'")) ? 'on' : 'off');   // the zoom itself (the id is not read: no per-page value exists any more)
 const openTutor = async (app) => {
   if ((await attr(app, '.wz-tutor-panel', 'data-open')) === 'true') return true;
   const g = await rectOf(app, '.wz-tutor-grip'); if (!g) return false;
@@ -381,7 +393,9 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const tag = `${th.name} ${kind === 'fw' ? 'Free Write ' : ''}${w}x${h}`;
   if (!(await openPage(app, id))) { ok(`${tag} zoom fixture: the page opened`, false, ''); return; }
   // start in the normal view: if the writer's control reads ON, press it off first (a premise, not the subject)
-  if ((await attr(app, TOGGLE, 'aria-pressed')) === 'true' || (kind === 'draft' && (await typewriterIs(app, id)) === 'on')) await pressTypewriter(app);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+  // if ((await attr(app, TOGGLE, 'aria-pressed')) === 'true' || (kind === 'draft' && (await typewriterIs(app, id)) === 'on')) await pressTypewriter(app);
+  if ((await typewriterIs(app, id)) === 'on') await pressTypewriter(app);
   const tutorOpen = await openTutor(app);
   const g0 = await app.evalJs('window.__psGeom()');
   const l0 = await app.evalJs('window.__psLines()');
@@ -559,7 +573,9 @@ await withHarness(async (app) => {
     }
     const fid = pid(th.id, 'fresh');
     await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: fid, text: 'One line to start.', createdAt: now, origin: null, source: 'page' })})`);
-    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'drafting')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'drafting')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', '${th.id === 'flux' ? 'drafting' : 'journal'}')`);
     await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
   }
   await app.evalJs('window.wrizoFlushNow()');
@@ -636,7 +652,9 @@ await withHarness(async (app) => {
       await app.evalJs("location.hash = '#/'"); await sleep(300);
       await app.evalJs(`localStorage.setItem('wrizo-theme', '${th.id}'); localStorage.setItem('wrizo-theme-prefs', ${J(J({ voice: 'serif', page: tone, fade: 'on' }))})`);
       // V reads the NORMAL page: an earlier zoom case can leave the page's own Typewriter key on (7ff7b8ea: V measured a zoomed page's bottom fade)
-      await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid(th.id, 'draft')}', 'off')`);
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+      // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${pid(th.id, 'draft')}', 'off')`);
+      await app.evalJs(`localStorage.setItem('wrizo-mode-page-${pid(th.id, 'draft')}', 'drafting')`);
       await app.reload();
       await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
       await app.emulateDpr(1, 1366, 768);
@@ -683,7 +701,9 @@ await withHarness(async (app) => {
       for (const [iw, ih] of [[1366, 768], [1920, 1080]]) {
         const did = pid(th.id, 'draft');
         await app.emulateDpr(1, iw, ih);
-        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+        // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'drafting')`);
         if (!(await openPage(app, did))) { ident[skin][iw] = null; continue; }
         const normal = await app.evalJs(IDENT_PROBE);
         // MI (the mutant, once): Flux dark's page padding widened 90px - the identity below must catch it (asserted to have LANDED)
@@ -693,13 +713,17 @@ await withHarness(async (app) => {
           mutated = await app.evalJs(IDENT_PROBE);
           await app.evalJs("window.__psStyle('ps-mi', null)"); await sleep(200);
         }
-        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
+        // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+        // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
+        await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'journal')`);
         const zoomed = (await openPage(app, did)) ? await app.evalJs(IDENT_PROBE) : null;
         // MIZ (the mutant, once) [Wire In successor]: the zoom attribute written onto Flux dark's column while the probe reads - the no-zoom read below must go RED (the attribute is put back as it was)
         if (th.id === 'flux' && tone === 'dark' && iw === 1366 && zoomed) {
           identMZ.fluxDark1366 = await app.evalJs(`(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return null; const was = c.getAttribute('data-zoom'); c.setAttribute('data-zoom', 'true'); const r = ${IDENT_PROBE}; if (was == null) c.removeAttribute('data-zoom'); else c.setAttribute('data-zoom', was); return r; })()`);
         }
-        await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+        // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'off')`);
+        await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'drafting')`);
         ident[skin][iw] = { normal, zoomed, mutated };
       }
     }
@@ -761,7 +785,9 @@ await withHarness(async (app) => {
   await app.emulateDpr(1, 1100, 900);
   {
     const sid = pid('plateau', 'draft');
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'on')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${sid}', 'journal')`);
     if (await openPage(app, sid)) {
       const stripProbe = `(() => { const s = document.querySelector('.desk-frame-strip'); const p = document.querySelector('.desk-frame-stage--prose .mode-page'); const col = document.querySelector('.mode-pagecol');
         if (!s || !p || !col) return null; const a = s.getBoundingClientRect(); const b = p.getBoundingClientRect();
@@ -776,7 +802,9 @@ await withHarness(async (app) => {
       ok(`MS (mutant): with the old gutter's zoom written back (LANDED: --wz-zoom ${landedS}, the page wider), the page slides under the strip - S fails`,
         !!sMut && !!sNow && sMut.pageWidth > sNow.pageWidth && !(sMut.pageLeft >= sMut.stripRight), J({ now: sNow, mutated: sMut }));
     } else ok('S fixture: the Arbor Draft page opened at 1100x900', false, '');
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'off')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${sid}', 'off')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${sid}', 'drafting')`);
   }
 
   // BR (FIX's turn 3 on d4a89f48, escexit S4's A/B): on an EMPTY page in the zoom the beginnings row sits wholly BELOW the writing line - the zoom holds the
@@ -787,7 +815,9 @@ await withHarness(async (app) => {
     const eid = 'ps-empty';
     await app.evalJs("location.hash = '#/'"); await sleep(300);
     await app.evalJs(`window.wrizoCreateJournalPage(${J({ id: eid, text: '', createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose' })})`);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${eid}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${eid}', 'on')`);
+    // (a loose page opens in Free Write, which always runs the Typewriter: nothing to set)
     await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
     if (await openPage(app, eid)) {
       // (turn 4 on 5921df05: this page opened in the NORMAL view - zoom null - so the writer's own control turns the zoom on, as zoomCase does)
@@ -809,7 +839,9 @@ await withHarness(async (app) => {
   await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   await app.emulateDpr(1, 1366, 768);
   const rid = pid('plateau', 'draft');
-  await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${rid}', 'on')`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+  // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${rid}', 'on')`);
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${rid}', 'journal')`);
   if (await openPage(app, rid)) {
     const rm = await app.evalJs("matchMedia('(prefers-reduced-motion: reduce)').matches");
     await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(1200);
@@ -823,7 +855,9 @@ await withHarness(async (app) => {
       rm && !!v && moved > 0 && distinct.length <= INSTANT_MAX, J({ rm, moved, values: distinct.length }));
   } else ok('Arbor 1366x768 G (reduced motion) fixture: the Draft page opened', false, '');
   await app.emulateMedia([]);
-  await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${rid}', 'off')`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
+  // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${rid}', 'off')`);
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${rid}', 'drafting')`);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 500)}]` : ''}`);
