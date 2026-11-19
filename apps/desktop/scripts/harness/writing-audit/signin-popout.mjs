@@ -432,7 +432,7 @@ await withHarness(async (app) => {
     added = await ev("(() => { const now = [...Object.keys(localStorage), ...Object.keys(sessionStorage)]; return now.filter((k) => !window.__keys0.includes(k) && /adult|18|age|over/i.test(k)); })()");
     p4 = line === 'Wrizo accounts are for writers 18 and older, for now.' && regUnticked === 0 && regTicked >= 1 && added.length === 0;
   }
-  { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#E6E8EA' }[cfg.theme];   // read while the tick has focus: Machina's own edge turns #E6E8EA then (its rest edge #9AA1A8 is read in P26) const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
+  { const edgeWant = { plateau: '#9C8A6E', flux: '#5F8F95', machina: '#E6E8EA' }[cfg.theme]; /* read while the tick has focus: Machina's own edge turns #E6E8EA then (its rest edge #9AA1A8 is read in P26) */ const l0 = tickLook && tickLook.look0; const l1 = tickLook && tickLook.look1;
     check('P11', !!l0 && l0.w === '16px' && l0.h === '16px' && l0.bw === '1px' && hex(l0.edge) === edgeWant && focusOnTick === true && spaceTicked === true && !!l1 && l1.mark === '""' && l1.markColor === 'rgb(255, 152, 0)', `box `+(l0 && l0.w)+' x '+(l0 && l0.h)+`, border `+(l0 && l0.bw)+` `+(l0 && hex(l0.edge))+` (want `+edgeWant+`); focus on the tick after the error `+focusOnTick+`; Space ticked `+spaceTicked+`; mark `+JSON.stringify(l1)); }
   { const want = { plateau: 'rgb(185, 170, 140)', flux: 'rgb(126, 180, 196)', machina: 'rgb(154, 161, 168)' }[cfg.theme];
     check('P15', errColor === want, `the error line's colour `+errColor+` (the panel's quiet colour `+want+`, never red)`);
