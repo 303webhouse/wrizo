@@ -72,7 +72,11 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   // the backing store reaches the LOWEST stroke (not the page's foot: 739 x 22 400 at 5 000 words, 739 x 50 458 at 12 000, allocated and cleared on every Enter): below the ink there is nothing to hold. An erase adds nothing below the ink it rubs out.
   let low = 0;
   for (const st of strokes) { if (st.eraser) continue; for (const p of st.points) if (p.y > low) low = p.y; }
-  const need = Math.ceil(oy + low * rect.width + INK_PAD);
+  // ... and never less than the paper's visible foot (#111): the scroller's visible height, so a stroke drawn anywhere on the paper she sees shows whole
+  const scale = sheet.offsetWidth > 0 ? rect.width / sheet.offsetWidth : 1;
+  const scroller = sheet.closest('.mode-scroll') as HTMLElement | null;
+  const visible = scroller ? scroller.clientHeight * scale : 0;
+  const need = Math.ceil(Math.max(oy + low * rect.width + INK_PAD, visible));
   const was = painted.get(canvas);
   // from the sheet's ResizeObserver, a paint that would draw what is already there is not made: the same strokes, width, pixel ratio, origin and colour, and the canvas still reaches the lowest stroke and not past the sheet's foot
   if (opts && opts.resize && was && was.strokes === strokes && was.w === rect.width && was.dpr === dpr && was.oy === oy && was.color === color && was.cssH >= Math.min(rect.height, need) && was.cssH <= rect.height + 0.5) return;
@@ -80,7 +84,6 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   const ctx = syncCanvas(canvas, rect.width, cssH);
   if (!ctx) return;
   // cssH is in painted (on-screen) px, like rect: a sheet that is scaled by a transform needs the box in its own layout px, or the ink would be stretched down the page
-  const scale = sheet.offsetWidth > 0 ? rect.width / sheet.offsetWidth : 1;
   canvas.style.height = (cssH / (scale || 1)) + 'px';
   ctx.clearRect(0, 0, rect.width, cssH);
   ctx.save(); ctx.translate(0, oy);   // measured from the text [InkStratum §3]
