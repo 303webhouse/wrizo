@@ -2,6 +2,8 @@ import type { PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getJournalEntry, getProject, saveJournalEntry } from '../store/persistence';
 import { getUserPageDefaults } from '../store/pageDefaults';
+import { createEmptyScriptDoc } from '../store/scriptDoc';
+import { serializeScriptDoc } from '../store/scriptText';
 import { ensureDoc, newPart, partsOfDoc, renamePart, setPartTemplate } from './parts';
 import { setDocSetting, styleGuideOf } from './docSettings';
 import {
@@ -91,6 +93,8 @@ export function applyPreset(entryId: string, presetId: string): PresetResult {
   const setup = preset.kind === 'standard' ? pageSetupFor(style) : null;
   const tplOf = (name: string) => { const s = specialOf({ id: '', name, template: null }); return s ? specialTemplate(s) : null; };
   const made: string[] = [];
+  // a Screenplay Doc's new Parts are screenplay pages (an empty script each), as its own pages are
+  const seed = () => { const script = createEmptyScriptDoc(); return preset.kind === 'screenplay' ? { script, text: serializeScriptDoc(script) } : undefined; };
   if (plan.reuse && plan.firstName) {
     renamePart(plan.reuse, plan.firstName);
     const t = tplOf(plan.firstName);
@@ -99,7 +103,7 @@ export function applyPreset(entryId: string, presetId: string): PresetResult {
   }
   let prev = plan.after;
   for (const name of plan.add) {
-    const id = newPart(doc.docId, { afterId: prev, name, template: tplOf(name), level: 0 });
+    const id = newPart(doc.docId, { afterId: prev, name, template: tplOf(name), level: 0, seed: seed() });
     if (!id) break;
     if (setup) patchSetup(id, setup);
     made.push(id);

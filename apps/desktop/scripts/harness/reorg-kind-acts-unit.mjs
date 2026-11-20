@@ -60,6 +60,7 @@ function loadAll(acts) {
     '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api,
     '../store/wordCount': { wordCount: (t) => { const s = String(t ?? '').trim(); return s ? s.split(/\s+/).length : 0; } }, '../store/markRuns': MARKRUNS,
     '../store/boxTombstones': { liveBoxes: (b) => (b ?? []).filter((x) => !x.deletedAt && !x.purgedAt) }, './flag': { REORG: false },
+    '../store/scriptDoc': { createEmptyScriptDoc: () => ({ elements: [] }) }, '../store/scriptText': { serializeScriptDoc: () => '' },
   };
   const cache = {};
   const mod = (rel) => {
@@ -176,9 +177,10 @@ function suite(acts) {
     const k2 = K2.A.applyPreset(K2.ids[0], 'personal-essay'); const w2 = K2.S.log.length;
     const k3 = K2.A.applyPreset(K2.ids[0], 'tv-half-hour');
     const scr = K2.P.partsOfDoc(DOC).map((p) => p.name).join('|');
+    const scrKinds = K2.P.partsOfDoc(DOC).slice(1).every((p) => p.kind === 'script') && K2.P.partsOfDoc(DOC).slice(1).every((p) => !!K2.api.getJournalEntry(p.id).script);   // a Screenplay Doc's new Parts are screenplay pages
     const k4 = K1.A.applyPreset(K1.ids[0], 'no-such-preset');
     R.PRESET = { pass: empty && hersSame && newSetUp && shown && tplOk && ar.ok && tp === 'title', detail: J({ empty, hersSame, newSetUp, shown, names: names(L), tplOk, ar: ar.ok, tp }) };
-    R.KIND = { pass: k1.ok === false && k1.reason === 'wrong-kind' && w1 === 0 && k2.ok === false && k2.reason === 'wrong-kind' && w2 === 0 && k3.ok && scr === 'Cold Open|Act One|Act Two|Tag' && k4.ok === false && k4.reason === 'unknown-preset', detail: J({ k1, w1, k2, w2, k3: k3.ok, scr, k4 }) };
+    R.KIND = { pass: k1.ok === false && k1.reason === 'wrong-kind' && w1 === 0 && k2.ok === false && k2.reason === 'wrong-kind' && w2 === 0 && k3.ok && scr === 'Cold Open|Act One|Act Two|Tag' && scrKinds && k4.ok === false && k4.reason === 'unknown-preset', detail: J({ k1, w1, k2, w2, k3: k3.ok, scr, k4 }) };
     // WORDS: no act wrote a Part's text, ink or cards
     const everyWrite = L.S.log.filter((l) => l.op === 'save').length > 0;
     R.WORDS = { pass: everyWrite && J(L.ids.map((id) => L.api.getJournalEntry(id).text)) === J(['Her chapter one words', 'Her second page', '']) && L.api.getJournalEntries().filter((e) => !L.ids.includes(e.id)).every((e) => (e.text || '') === '' && !(e.strokes && e.strokes.length) && !(e.boxes && e.boxes.length)), detail: J({ everyWrite }) };
@@ -202,6 +204,7 @@ const MUT = [
   ['the Title Page is a plain Part, not the template', 'SPECIAL', (t) => t.replace('template: specialTemplate(kind), level: 0 });\n  if (!id)', () => 'template: null, level: 0 });\n  if (!id)')],
   ['a preset goes in front of hers', 'PRESET', (t) => t.replace('let prev = plan.after;', () => 'let prev: string | null = null;')],
   ['a preset sets the Page Setup on hers too', 'PRESET', (t) => t.replace('made.push(id);', () => 'made.push(id); if (setup) for (const p of partsOfDoc(doc.docId)) patchSetup(p.id, setup);')],
+  ['a Screenplay Doc\'s preset Parts are text pages', 'KIND', (t) => t.replace('level: 0, seed: seed() }', () => 'level: 0 }')],
   ['a screenplay preset is taken on a standard Doc', 'KIND', (t) => t.replace("if ((preset.kind === 'screenplay') !== isScreenplay) return { ok: false, reason: 'wrong-kind' };", () => '')],
 ];
 for (const [name, key, fn] of MUT) {
