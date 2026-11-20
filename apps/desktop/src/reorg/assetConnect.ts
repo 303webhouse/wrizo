@@ -1,6 +1,7 @@
 import { getJournalEntry } from '../store/persistence';
 import { graftTo, isGrafted, type GraftTarget } from '../store/grafts';
 import { withoutFontMarks } from '../store/markRuns';
+import { liveBoxes } from '../store/boxTombstones';
 
 // AN ASSET ONTO A PART (reorg plan 5.2, first slice; Fable, Nov 20: "the drag through graftTo with its date: right"). Behind ?reorg=1, Machina only.
 // She drags a row of the Back menu's Assets tab onto a Part in the Front menu's Parts tab, or presses the row's "→ Part": the asset is connected to
@@ -28,13 +29,13 @@ export function readAssetDrag(dt: DataTransfer | null): GraftTarget | null {
   } catch { return null; }
 }
 
-/** The asset's title as the Assets tab draws it (the panel's titleOf: the first line, 60 characters; a sketch card reads "A sketch"). '' when gone. */
+/** The asset's title as the Assets tab draws it (the panel's titleOf: the first line, 60 characters; a sketch card reads "A sketch"). '' when gone (a deleted card is gone: liveBoxes). */
 export function assetTitle(asset: GraftTarget): string {
   const e = getJournalEntry(asset.entryId);
   if (!e) return '';
   const first = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
   if (!asset.boxId) return first(e.text);
-  const b = (e.boxes ?? []).find((x) => x.id === asset.boxId);
+  const b = liveBoxes(e.boxes).find((x) => x.id === asset.boxId);
   return b ? (b.kind === 'ink' ? 'A sketch' : first(b.text)) : '';
 }
 
