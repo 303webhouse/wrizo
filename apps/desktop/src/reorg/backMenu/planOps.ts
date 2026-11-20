@@ -141,7 +141,7 @@ export function addPlanRow(boxes: Box[], title: string, newId: () => string): Bo
   const nextSeq = Math.max(seqs.length ? Math.max(...seqs) : -1, top.length - 1) + 1;
   const lowest = cards.reduce((m, c) => Math.max(m, c.y + c.h), 0.05);
   const card: Box = { id: newId(), kind: 'text', x: 0.05, y: lowest + 0.02, w: 0.3, h: 0.12, z: maxZ + 1, text: clean, seq: nextSeq, updatedAt: stampNow() };
-  return [...boxes, card];
+  return boxes.concat([card]);
 }
 
 /** The ids of a board's cards in Plan order (the pre-order walk), for a check that reads the order without the DOM. */

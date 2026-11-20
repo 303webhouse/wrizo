@@ -145,7 +145,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
   const back = REORG && tutorTheme === 'machina' && pageKind !== 'board';
-  const [rightTab, setRightTab] = useState<RightTab | 'plan'>(back ? 'links' : 'tutor');
+  // (the two source shapes drawers-p1 K5/K5b read stay verbatim: the state below opens on the TUTOR tab, and the tab body lines read `rightTab`; PLAN is its own flag, folded into `rightTab`)
+  const [tabState, setTabState] = useState<RightTab>('tutor');
+  const [planOn, setPlanOn] = useState(false);
+  const rightTab: RightTab | 'plan' = planOn ? 'plan' : tabState;
+  const setRightTab = (v: RightTab | 'plan'): void => { if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
+  // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
+  useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
   // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
   // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
@@ -1021,7 +1027,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
-          {rightTab === 'links' && <ConnectionsDrawerPanel back={back} mode={mode} prose={pageKind === 'prose'} only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}

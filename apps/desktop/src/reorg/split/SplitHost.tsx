@@ -128,7 +128,7 @@ function SplitReader({ asset }: { asset: SplitRef }) {
   const { t } = useDeskLexicon();
   const snap = useSyncExternalStore(subscribe, () => {
     const e = getJournalEntry(asset.entryId);
-    return e ? e.updatedAt + '|' + (e.boxes?.length ?? 0) : '';
+    return e ? e.updatedAt + '|' + liveBoxes(e.boxes).length : '';
   });
   void snap;
   const e = getJournalEntry(asset.entryId);

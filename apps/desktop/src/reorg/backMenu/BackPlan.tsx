@@ -1,7 +1,8 @@
 import { memo, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Box, JournalEntry } from '../../types';
 import { useDeskLexicon } from '../../store/deskLexicon';
-import { generateId, getJournalEntry, getPlanBoardId, isUnborn, saveJournalEntry, subscribe } from '../../store/persistence';
+import { generateId, getJournalEntry, getPlanBoardId, isUnborn, saveBoardBoxes, subscribe } from '../../store/persistence';
+import { liveBoxes } from '../../store/boxTombstones';
 import { getOrCreatePlanBoard } from '../../store/persistence/planPairing';
 import { cache } from '../../store/persistence/core';
 import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
@@ -17,7 +18,7 @@ import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renam
 // IT NEVER RE-RENDERS ON A KEYSTROKE (law L): the snapshot is the board's own `boxes` array plus the hidden cards' ids as a string, so a keystroke
 // in the page (which saves the PAGE, never this board) changes neither. It is mounted only while the Plan tab is the one showing.
 
-interface PlanSnap { key: string; board: unknown; boardId: string | null; boxes: readonly Box[] | undefined; hiddenKey: string }
+interface PlanSnap { key: string; board: unknown; boardId: string | null; cards: Box[]; hiddenKey: string }
 let planMemo: (PlanSnap & { pageId: string }) | null = null;
 // read from the store's own cache, never through getJournalEntry (which CLONES the whole entry, text and all, on every call): this runs on every store
 // notification, including each keystroke's save, and must cost nothing and return the SAME object until the board or the hidden list has changed
@@ -29,7 +30,7 @@ function planSnapshot(pageId: string): PlanSnap {
   // the board is compared by IDENTITY: every save replaces the cache's row, so two saves inside one millisecond (a board born and a row added in one act) still read as two
   const key = `${board ? boardId : ''}|${hiddenKey}`;
   if (planMemo && planMemo.pageId === pageId && planMemo.key === key && planMemo.board === board) return planMemo;
-  planMemo = { pageId, key, board, boardId: board ? boardId : null, boxes: board?.boxes, hiddenKey };
+  planMemo = { pageId, key, board, boardId: board ? boardId : null, cards: liveBoxes(board?.boxes), hiddenKey };
   return planMemo;
 }
 
@@ -52,18 +53,17 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   const addRef = useRef<HTMLInputElement | null>(null);
   const hidden = useMemo(() => new Set(snap.hiddenKey ? snap.hiddenKey.split(',') : []), [snap.hiddenKey]);
   const rows = useMemo(
-    () => planRows(snap.boxes, hidden, (b) => (b.entryId ? titleOfText(getJournalEntry(b.entryId)?.text) : '')),
-    [snap.boxes, hidden],
+    () => planRows(snap.cards, hidden, (b) => (b.entryId ? titleOfText(getJournalEntry(b.entryId)?.text) : '')),
+    [snap.cards, hidden],
   );
 
-  // the one write door: the board's boxes through the board's own entry, so it syncs like every other edit of a board
+  // the one write door: the board's LIVE cards through the store's own write boundary for a board (saveBoardBoxes: the tombstones and markers stored with the board are carried back, so
+  // nothing a writer deleted is brought back and nothing is stripped), so it syncs like every other edit of a board
   const writeBoxes = (next: Box[] | null): void => {
     if (!next || !snap.boardId) return;
-    const board = getJournalEntry(snap.boardId);
-    if (!board || next === board.boxes) return;
-    saveJournalEntry({ ...board, boxes: next });
+    saveBoardBoxes(snap.boardId, next);
   };
-  const boxesNow = (): Box[] => (snap.boardId ? [...(getJournalEntry(snap.boardId)?.boxes ?? [])] : []);
+  const boxesNow = (): Box[] => (snap.boardId ? liveBoxes(getJournalEntry(snap.boardId)?.boxes) : []);
   const act = (fn: (b: Box[]) => Box[]): void => { const cur = boxesNow(); const next = fn(cur); if (next !== cur) writeBoxes(next); };
 
   const remove = (boxId: string, title: string): void => {
@@ -76,8 +76,8 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
     // the Page's board is born the first time something is put on it (never before: empty boards do not pile up), and never from an unborn page
     const board = snap.boardId ? getJournalEntry(snap.boardId) : getOrCreatePlanBoard(pageId);
     if (!board) return;
-    const next = addPlanRow([...(board.boxes ?? [])], text, generateId);
-    saveJournalEntry({ ...board, boxes: next });
+    const next = addPlanRow(liveBoxes(board.boxes), text, generateId);
+    saveBoardBoxes(board.id, next);
     setAdding('');
     addRef.current?.focus();
   };
@@ -96,7 +96,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
                 <span className="wz-graft-title wz-back-plan-name" data-plan-name="">{r.isInk ? t('reorgSketch') : (r.title || t('reorgUntitled'))}</span>
               ) : (
                 <input type="text" className="wz-back-plan-name wz-back-plan-input" data-plan-name="" defaultValue={r.title} key={`${r.boxId}:${r.title}`}
-                  aria-label={`${t('reorgPlanRename')}: ${r.number}`} spellCheck={false}
+                  aria-label={`${t('reorgPlanRename')}: ${r.number}`}
                   onKeyDown={(e) => {
                     if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); act((b) => movePlanRow(b, r.boxId, e.key === 'ArrowUp' ? -1 : 1)); return; }
                     if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); }
@@ -122,7 +122,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
         </div>
       )}
       <div className="wz-back-plan-add">
-        <input ref={addRef} type="text" className="wz-back-plan-input" data-plan-add="" value={adding} disabled={!canAdd} spellCheck={false}
+        <input ref={addRef} type="text" className="wz-back-plan-input" data-plan-add="" value={adding} disabled={!canAdd}
           placeholder={t('reorgPlanAdd')} aria-label={t('reorgPlanAdd')}
           onChange={(e) => setAdding(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }} />
