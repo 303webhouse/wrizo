@@ -20,12 +20,12 @@
 //   L14 THE ZOOMED PAGE STAYS PAPER (r10 sheet.ts): on Free Write's zoomed page, a dark page in the light room has a sheet behind the column in the
 //       page's own colour, inside the page
 //   L15 THE DRAWER ALIGNMENT: the open Tools drawer stands flush against the page and its tab rides the drawer's outer edge
-//       (PARKED Nov 20, its first run read the panel's inner box: SUCCESSOR L15b, itself PARKED the same day: SUCCESSOR L15c reads as drawer-mirror does, mutant M5b)
+//       (PARKED Nov 20, its first run read the panel's inner box: SUCCESSOR L15b, itself PARKED the same day: SUCCESSOR L15c, PARKED too (it read the zoomed Free Write page): SUCCESSOR L15d on a Draft page, mutant M5c)
 //   M1  (mutant) data-machina2 forced onto a Flux page (LANDED): L4's read goes red
 //   M2  (mutant) a mockup bar put into the default page (LANDED): L1's read goes red
 //   M3  (mutant) a command line box put into the page (LANDED): L6's read goes red
 //   M4  (mutant) the nameplate hidden (LANDED): L10's read goes red
-//   M5b (mutant) the open Tools panel moved 40 px (LANDED, the gap moves by 40): L15c's read goes red
+//   M5c (mutant) the open Tools panel moved 40 px (LANDED, the gap moves by 40): L15d's read goes red
 // Seeding goes through the seams (wrizoCreateJournalPage, origin and source carried); the theme through the product's store key read at boot.
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -149,17 +149,34 @@ await withHarness(async (app) => {
     return { page, panel, tab, firstPage: R('.mode-page'), slide: R('.wz-sliver-panel .wz-drawer-slide'), open: document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true', w: innerWidth,
       gap: page && panel ? +(page.l - panel.r).toFixed(2) : null, tabGap: panel && tab ? +(panel.l - tab.r).toFixed(2) : null }; })()`;
   const l15cOk = (d) => !!d && d.open && d.gap != null && Math.abs(d.gap) <= 1 && Math.abs(d.tabGap) <= 1 && d.panel.w > 100;
-  // close it (the untrusted click above) and open it again by a trusted press, then wait for the slide to rest
+  // PARKED 2026-11-20 (SUPERSEDED, Actions 44695523429: its own rects found the cause - the page was 992 px wide at 1400 (204-1196), the ZOOMED Free Write page: a
+  // fresh page opens in Free Write, always the Typewriter now, and r10's drawer alignment leaves the zoom out by design (its rules carry
+  // :not(:has(.mode-pagecol[data-zoom='true'])); main hides the tabs in any Typewriter mode). drawer-mirror reads the NORMAL view: a Draft page. Its mutant M5b
+  // moved the gap by exactly 40, so the read itself was sound.) Original, verbatim, with its mutant:
+  // // close it (the untrusted click above) and open it again by a trusted press, then wait for the slide to rest
+  // await app.evalJs("(() => { const g = document.querySelector(\".wz-sliver-grip[data-open='true']\"); if (g) g.click(); return true; })()"); await sleep(900);
+  // const at15 = await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  // if (at15) { await app.mouseMove(at15.x, at15.y); await app.mouseDown(at15.x, at15.y); await app.mouseUp(at15.x, at15.y); }
+  // await waitSoft(app, "(() => { const l = document.querySelector('.wz-sliver-panel .wz-drawer-slide'); return !!document.querySelector(\".wz-sliver[data-open='true']\") && (!l || getComputedStyle(l).transform === 'none'); })()", { label: 'tools at rest', timeout: 3000 }); await sleep(300);
+  // const d15c = await app.evalJs(D15C);
+  // ok(`L15c the open Tools drawer stands flush against the page (panel to page ${d15c && d15c.gap}) and its tab rides the drawer's outer edge (tab to panel ${d15c && d15c.tabGap})`, l15cOk(d15c), J(d15c));
+  // await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.setProperty('translate', '-40px 0'); return !!p; })()"); await sleep(100);
+  // const m5b = await app.evalJs(D15C);
+  // await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.removeProperty('translate'); return !!p; })()"); await sleep(100);
+  // ok(`M5b (mutant): the open panel moved 40 px (LANDED: gap ${d15c && d15c.gap} -> ${m5b && m5b.gap}) - L15c's read goes RED`, !!m5b && !!d15c && m5b.gap != null && d15c.gap != null && Math.abs(m5b.gap - d15c.gap - 40) <= 1 && !l15cOk(m5b), J(m5b));
+  // SUCCESSOR L15d: L15c's reading on a DRAFT page (the normal view, as drawer-mirror reads it), with its premise in the check: the page is not zoomed. M5c its mutant.
   await app.evalJs("(() => { const g = document.querySelector(\".wz-sliver-grip[data-open='true']\"); if (g) g.click(); return true; })()"); await sleep(900);
+  await openPage(TEXT, 'drafting');
+  const zoom15 = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
   const at15 = await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
   if (at15) { await app.mouseMove(at15.x, at15.y); await app.mouseDown(at15.x, at15.y); await app.mouseUp(at15.x, at15.y); }
   await waitSoft(app, "(() => { const l = document.querySelector('.wz-sliver-panel .wz-drawer-slide'); return !!document.querySelector(\".wz-sliver[data-open='true']\") && (!l || getComputedStyle(l).transform === 'none'); })()", { label: 'tools at rest', timeout: 3000 }); await sleep(300);
-  const d15c = await app.evalJs(D15C);
-  ok(`L15c the open Tools drawer stands flush against the page (panel to page ${d15c && d15c.gap}) and its tab rides the drawer's outer edge (tab to panel ${d15c && d15c.tabGap})`, l15cOk(d15c), J(d15c));
+  const d15d = await app.evalJs(D15C);
+  ok(`L15d on a Draft page (zoomed ${zoom15}), the open Tools drawer stands flush against the page (panel to page ${d15d && d15d.gap}) and its tab rides the drawer's outer edge (tab to panel ${d15d && d15d.tabGap})`, zoom15 === false && l15cOk(d15d), J({ zoom15, d15d }));
   await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.setProperty('translate', '-40px 0'); return !!p; })()"); await sleep(100);
-  const m5b = await app.evalJs(D15C);
+  const m5c = await app.evalJs(D15C);
   await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.removeProperty('translate'); return !!p; })()"); await sleep(100);
-  ok(`M5b (mutant): the open panel moved 40 px (LANDED: gap ${d15c && d15c.gap} -> ${m5b && m5b.gap}) - L15c's read goes RED`, !!m5b && !!d15c && m5b.gap != null && d15c.gap != null && Math.abs(m5b.gap - d15c.gap - 40) <= 1 && !l15cOk(m5b), J(m5b));
+  ok(`M5c (mutant): the open panel moved 40 px (LANDED: gap ${d15d && d15d.gap} -> ${m5c && m5c.gap}) - L15d's read goes RED`, !!m5c && !!d15d && m5c.gap != null && d15d.gap != null && Math.abs(m5c.gap - d15d.gap - 40) <= 1 && !l15cOk(m5c), J(m5c));
   await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); if (g) g.click(); return !!g; })()"); await sleep(900);
   const out6 = await app.evalJs(OUTREAD);
   ok(`L6 look only: with both drawers open, none of the features ruled out is on the page (${J(out6)})`, Array.isArray(out6) && out6.length === 0, J(out6));
@@ -246,7 +263,7 @@ await withHarness(async (app) => {
 }, { label: 'machina-look' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nMACHINA-LOOK PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks two originals as quoted comments (L15 and L15b with M5, Nov 20: the first read the panel\'s inner box), successor L15c and mutant M5b');
+if (process.env.HARNESS_PARKED === '1') console.log('\nMACHINA-LOOK PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks three originals as quoted comments (L15, L15b with M5, L15c with M5b, Nov 20: the first read the panel\'s inner box), the third the zoomed page), successor L15d and mutant M5c');
 const WANT = 20;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nMACHINA-LOOK VERIFY: PASS (${checks.length} checks)` : `\nMACHINA-LOOK VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
