@@ -306,7 +306,6 @@ export const CANONICAL_CHROME = {
   reorgTopConnectNew: 'A new doc',
   reorgTopConnectOn: 'connected',
   reorgTopConnectUnborn: 'Add a card first: a board is kept once it has one, and then it can join a doc.',
-  reorgTopConnectNewHeld: 'A new doc would be made for this board. That is not switched on yet, so nothing changed.',
   reorgTopSearch: 'Search',
   reorgTopSearchSoon: 'Search arrives with the Back menu.',
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts, reorg/PartsList.tsx) - {name} a Doc's name, {n} a number. Placeholder words until the Wrizors word them

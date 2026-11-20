@@ -125,7 +125,6 @@ reorgTopConnectRecent=Recent docs
 reorgTopConnectNew=A new doc
 reorgTopConnectOn=connected
 reorgTopConnectUnborn=Add a card first: a board is kept once it has one, and then it can join a doc.
-reorgTopConnectNewHeld=A new doc would be made for this board. That is not switched on yet, so nothing changed.
 reorgTopSearch=Search
 reorgTopSearchSoon=Search arrives with the Back menu.
 # THE REORG'S FRONT MENU (POLISH, Nov 19; plan steps 3.1 and 3.2): its words, behind ?reorg=1 in Machina

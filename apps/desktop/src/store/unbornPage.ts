@@ -1,4 +1,4 @@
-import { generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
+import { addPageLink, generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
 import { graftTo } from './grafts';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
@@ -43,6 +43,10 @@ export interface UnbornDescriptor {
   // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
   // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
   landing: HelpLanding | null;
+  // THE REORG - CONNECT DOC'S "A new doc" (Fable, Nov 19 7:55 pm): the Board this new page will SERVE (`sb`). Like `graft`, it rides the
+  // address and nothing is written until `birth` (the first word, PB1): then the page and the Board's own card-less PageLink to it are one
+  // act. Optional, so every other door's descriptor is unchanged; only reorg/TopRail.tsx sets it (behind ?reorg=1 in Machina).
+  serves?: string | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -86,6 +90,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
+    serves: q.get('sb')?.trim() || null,
     landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
   };
 }
@@ -101,6 +106,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
+  if (d.serves) q.set('sb', d.serves);
   if (d.deck && d.landing) q.set('land', landingToken(d.landing));
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
@@ -172,6 +178,12 @@ export function birth(
     const board = getJournalEntry(d.graft.boardId);
     if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
     try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ }
+  }
+  // THE REORG - "A new doc": the Board this page was opened to serve owns one card-less PageLink to it, made in this same act (Connect Doc's
+  // own write, store addPageLink). A Board that has gone, or was never kept, since the door was pressed is simply not linked.
+  if (d.serves) {
+    const board = getJournalEntry(d.serves);
+    if (board && board.pageType === 'board' && !board.deletedAt) addPageLink(board.id, { bEntryId: born.id });
   }
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most

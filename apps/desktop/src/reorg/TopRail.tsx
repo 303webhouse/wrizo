@@ -3,8 +3,10 @@ import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { addPageLink, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
-import { NOTEBOOK } from './railData';
+import { NOTEBOOK, newTargetOf } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
+import { unbornHref } from '../store/unbornPage';
+import { useNavigate } from 'react-router-dom';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
 import { REORG } from './flag';
@@ -103,11 +105,15 @@ function boardDocs(board: JournalEntry): { id: string; name: string }[] {
 /** Connect Doc's list (Nick, Nov 14, 5:47 pm): her recent Docs first, on a scroll, then "A new doc". A pick WRITES (Fable, Nov 19, 6:05 pm, ask
  *  d; Nick: saved with the account): one PageLink owned by the Board, to the Doc's first Part in her order (a Doc is its Parts; a set has no
  *  entry of its own), a card at neither end, through the store's own addPageLink (idempotent, either direction). The list closes and she stays
- *  on the Board. A Doc it already serves reads "connected" and a pick on it writes nothing. "A new doc" stays held: a page is born when it has
- *  a word (PB1), so an empty Doc cannot be stored for it. A Board not yet kept (no card: the unborn slot) is not born by a side door. */
+ *  on the Board. A Doc it already serves reads "connected" and a pick on it writes nothing. "A new doc" (Fable, Nov 19, 7:55 pm, ask a) opens a
+ *  new empty page filed where the left rail files a new Doc for the Board's Project (railData newTargetOf), carrying the Board in its address
+ *  (`sb`); her first word births the page and, in the same act, the Board's own link to it (store/unbornPage.ts birth). A Board not yet kept
+ *  (no card: the unborn slot) is not born by a side door, so neither act runs on it. */
 function ConnectList({ board, served, onClose }: { board: JournalEntry; served: ReadonlySet<string>; onClose: () => void }) {
   const { t } = useDeskLexicon();
   const [said, setSaid] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const here = useWhereSheIs(board);
   const seen = new Set<string>();
   const docs: { id: string; name: string; anchor: string }[] = [];
   for (const e of getJournalEntries()
@@ -123,6 +129,13 @@ function ConnectList({ board, served, onClose }: { board: JournalEntry; served: 
     if (isUnborn(board.id)) { setSaid(t('reorgTopConnectUnborn')); return; }
     addPageLink(board.id, { bEntryId: d.anchor });
     onClose();
+  };
+  const fresh = () => {
+    if (isUnborn(board.id)) { setSaid(t('reorgTopConnectUnborn')); return; }
+    const target = here == null ? { origin: 'loose' as const } : newTargetOf(here, t('reorgUntitled'));
+    if (!target) return;
+    onClose();
+    navigate(unbornHref({ ...target, serves: board.id }));
   };
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -148,7 +161,7 @@ function ConnectList({ board, served, onClose }: { board: JournalEntry; served: 
         })}
       </div>
       <button type="button" className="reorg-top-drop-row reorg-top-drop-new" data-connect-row="new"
-        onClick={() => setSaid(t('reorgTopConnectNewHeld'))}><span aria-hidden="true">+</span> {t('reorgTopConnectNew')}</button>
+        onClick={fresh}><span aria-hidden="true">+</span> {t('reorgTopConnectNew')}</button>
       {said && <div className="reorg-top-drop-said" data-top-connect-said role="status">{said}</div>}
     </div>
   );
