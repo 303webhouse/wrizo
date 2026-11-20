@@ -43,7 +43,7 @@ html.b-dark {
   --name: #F4F5F6;
   --label: #E6E8EA;
   --quiet: #B4BAC0;
-  --off: #9AA1A8;
+  --off: #A9B0B7;
   --solid: #E6E8EA;
   --solid-ink: #151719;
   --field: #151719;
@@ -54,10 +54,18 @@ html.b-dark {
 
 html, body { background: var(--room); }
 .shell { background: var(--room); color: var(--label); }
-/* Machina has no motion: SPRINT's fade is a cut too. */
+/* Machina has no motion: SPRINT's fade is a cut too. (The selectors are reorg.css's own, so these win by coming later.) */
 .bar > *, .stages > *, .rail, #pop, #menus, .foot, #drop, #changed,
-.shell.is-typing .bar > *, .shell.is-typing .stages > *, .shell.is-typing .rail, .shell.is-typing #pop,
+.shell.is-typing .bar > :not(.stages), .shell.is-typing .stages > :not(.stages-tag), .shell.is-typing .rail, .shell.is-typing #pop,
 .shell.is-typing #menus, .shell.is-typing .foot, .shell.is-typing #drop, .shell.is-typing #changed { transition: none; }
+/* Every list that scrolls does it behind a very thin bar, as a Part's connected assets do in the prototype. */
+.menu-body, .pop-body, .session, .b-notes-list { scrollbar-width: thin; scrollbar-color: var(--ctl) var(--hair); }
+@supports selector(::-webkit-scrollbar) {
+  .menu-body, .pop-body, .session, .b-notes-list { scrollbar-width: auto; scrollbar-color: auto; }
+  .menu-body::-webkit-scrollbar, .pop-body::-webkit-scrollbar, .session::-webkit-scrollbar, .b-notes-list::-webkit-scrollbar { width: 4px; }
+  .menu-body::-webkit-scrollbar-track, .pop-body::-webkit-scrollbar-track, .session::-webkit-scrollbar-track, .b-notes-list::-webkit-scrollbar-track { background: var(--hair); }
+  .menu-body::-webkit-scrollbar-thumb, .pop-body::-webkit-scrollbar-thumb, .session::-webkit-scrollbar-thumb, .b-notes-list::-webkit-scrollbar-thumb { background: var(--ctl); }
+}
 html.b-dark button:focus-visible { outline-color: #7FA0BC; }
 
 /* ---------- a Part's colour: a lettered tag, and a muted tint behind what belongs to the Part she is in ---------- */
@@ -124,7 +132,7 @@ html.b-dark .b-tint-brass { --tint: #57431F; }
 }
 .b-utils .changed-btn:hover, .b-utils .bar-search:hover { color: #E6E8EA; }
 .b-utils .changed-btn.is-open, .b-utils .bar-search.is-open { color: #F4F5F6; background: #2E3A46; }
-.b-key { display: none; font-family: var(--mono); font-size: 10px; color: #9AA1A8; border: 1px solid #56616B; padding: 0 3px; line-height: 14px; }
+.b-key { display: none; font-family: var(--mono); font-size: 10px; color: #9AA1A8; border: 1px solid #9AA1A8; padding: 0 3px; line-height: 14px; }
 @media (min-width: 1500px) { .b-key { display: inline-block; } }
 
 /* ---------- the page: the one bright sheet, with an ink edge. Its rectangle is reorg.css's. ---------- */
@@ -174,13 +182,13 @@ html.b-dark .b-tint-brass { --tint: #57431F; }
 .b-grow { flex: 1 1 auto; }
 .b-sub + .b-sub { border-top: 1px solid var(--hair); }
 .b-sublabel { display: flex; align-items: center; gap: 6px; padding: 6px 6px 0 8px; font-size: 11px; font-weight: 600; color: var(--label); }
-.b-tools { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; }
+.b-tools { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 6px; }
 .b-sub .b-tools { padding-top: 5px; }
 .b-line { padding: 8px; font-size: 12px; line-height: 1.4; color: var(--quiet); }
 
 /* Buttons. Plain: a secondary act. Lead: the first act of its group. Solid: the one main act of the zone. */
 .b-btn {
-  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 7px; box-sizing: border-box;
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 6px; box-sizing: border-box;
   background: transparent; border: 1px solid var(--ctl);
   font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 12px; font-weight: 500; color: var(--label); white-space: nowrap;
 }
@@ -226,7 +234,7 @@ html.b-dark .b-tint-brass { --tint: #57431F; }
 .b-quietbtn:hover { color: var(--name); box-shadow: inset 0 0 0 1px var(--ctl); }
 
 .b-prow {
-  position: relative; display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 4px 0 10px; box-sizing: border-box;
+  position: relative; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 4px 0 10px; box-sizing: border-box;
   border-bottom: 1px solid var(--hair);
 }
 .b-parts > :last-child { border-bottom: 0; }
@@ -277,7 +285,9 @@ html.b-dark .b-tint-brass { --tint: #57431F; }
 .b-agroup { display: flex; flex-direction: column; gap: 4px; }
 .b-ahead { border: 1px solid var(--hair); min-height: 28px; }
 .b-agroup.is-here .b-ahead { border-color: var(--ctl); }
-.b-card { display: flex; flex-direction: column; gap: 5px; padding: 7px 8px; border: 1px solid var(--hair); background: var(--panel); }
+/* A card sits a step in from its Part's header: the Part, then what is connected to it. */
+.b-card { display: flex; flex-direction: column; gap: 5px; margin-left: 8px; padding: 7px 8px; border: 1px solid var(--hair); background: var(--panel); }
+.b-agroup > .b-line { margin-left: 8px; border: 1px solid var(--hair); }
 .b-card-top { display: flex; align-items: flex-start; gap: 7px; }
 .b-card-name { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 500; line-height: 18px; color: var(--name); }
 .b-card-foot { display: flex; align-items: center; gap: 6px; min-height: 24px; }
@@ -287,7 +297,7 @@ html.b-dark .b-tint-brass { --tint: #57431F; }
 .b-filter-label { font-weight: 400; color: var(--label); }
 
 /* The Consultant is help: it wears the guidance blue, and nothing else here does. */
-.b-group.is-help > .b-ghead { color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); }
+.b-group.is-help > .b-ghead { background: var(--panel); color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); }
 
 /* ---------- Compact (PROPOSED; not saved) ---------- */
 html.b-compact .menu-body { padding: 6px; gap: 6px; }
@@ -333,6 +343,10 @@ html.b-compact .session { padding-bottom: 6px; }
 .row.is-here { background: var(--strip); }
 .row-name { color: var(--name); font-weight: 500; }
 .row-meta { color: var(--quiet); }
+/* Facts in words are Plex Sans; Plex Mono is for numbers and readouts only. */
+.menu .row-meta, .pop .row-meta, .beside-row .row-meta { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; }
+/* A line of feedback is a sentence to read, not a name. */
+.b-feedback .row-name { font-weight: 400; }
 .row.is-here .row-meta { color: var(--label); }
 .set-row { padding: 0 10px; color: var(--name); border-bottom-color: var(--hair); }
 .switch { border-color: var(--ctl); }
@@ -375,6 +389,8 @@ html.b-compact .session { padding-bottom: 6px; }
 .drop-row.is-here { background: var(--tint, var(--strip)); }
 .drop-name { color: var(--name); font-weight: 500; }
 .drop-row .part-num { color: var(--quiet); }
+/* On a Part's tint, facts step up from quiet to label, to keep the label floor. */
+.drop-row.is-here .part-num, .drop-row.is-here .row-meta { color: var(--label); }
 .changed-head, .changed-vs { border-bottom-color: var(--hair); }
 .changed-key { color: var(--name); }
 .changed-job, .changed-page, .changed-row li { color: var(--label); }

@@ -462,6 +462,7 @@
     /* PLAN and FEEDBACK: the stage's offers as a tools group, then the prototype's own rows, boxed. */
     band = body.querySelector('.stage-band');
     if (band) { band.parentNode.removeChild(band); }
+    body.classList.add('b-' + tab);
     boxify(body);
     row = tab.toUpperCase();
     t = tools('back', row, items('back', row, stage, false), 3, 'b-' + tab, stage);
@@ -550,11 +551,14 @@
 
   function notesList() {
     var out = [], mark = el.tag.querySelector('.tag'), text = el.tag.querySelector('span:last-child'), stage = stageNow(), fresh = [];
-    var front = el.menus.querySelector('.menu-front'), back = el.menus.querySelector('.menu-back:not(.is-search)'), tab, c, nodes, i;
+    var front = el.menus.querySelector('.menu-front'), back = el.menus.querySelector('.menu-back:not(.is-search)'), tab, c;
     /* The prototype's own note for this state: what was its corner legend. */
     if (mark && text && text !== mark) { out.push({ mark: mark.textContent, text: text.textContent }); }
-    /* The stage table's asides, which stood as captions under the bands ("Everything."). */
+    /* The stage table's asides, which stood as captions under the bands ("Everything."), and what it sets
+       in bold as new with the reorg, which wore a blue edge. Read from the table, so what is under "More" counts too. */
     function aside(menu, row, label) {
+      var r = T && T.onAPage && T.onAPage[menu] ? T.onAPage[menu][row] : null, raw = r && r[stage] ? r[stage].offers || [] : [];
+      raw.forEach(function (o) { if (o && o.new && o.say) { fresh.push(o.say); } });
       c = cell(menu, row, stage);
       if (c.note) { out.push({ mark: 'NOT RULED', text: label + ' in ' + stage + ', the stage table\u2019s aside: \u201c' + c.note + '\u201d' }); }
     }
@@ -567,13 +571,16 @@
       tab = back.querySelector('.tab.is-on');
       if (tab) { aside('back', tab.textContent, tab.textContent); }
     }
-    nodes = el.menus.querySelectorAll('[data-new]');
-    for (i = 0; i < nodes.length; i++) { fresh.push(nodes[i].getAttribute('data-say')); }
     if (fresh.length) { out.push({ mark: 'NOT RULED', text: 'New with the reorg, by the stage table (it was a blue edge): ' + fresh.join(', ') + '.' }); }
     if (front || back) {
       out.push({ mark: 'NOT RULED', text: 'Team B\u2019s dress: each side menu gives 8 px to a gutter beside the page, and the page gives none; tools a stage does not offer keep their place, faint; an asset\u2019s second act sits under More.' });
     }
-    out.push({ mark: 'NOT RULED', text: 'The readout\u2019s \u201c' + pageBit() + '\u201d is whole pages worked out from the word count (260 words to a page). No page-break marks are drawn.' });
+    if (stage === 'SPRINT' && !onBoard()) {
+      out.push({ mark: 'NOT RULED', text: 'SPRINT here: as she types the chrome goes faint in one cut, with no fade (Machina has no motion). This strip stays lit, as the corner note did.' });
+    }
+    if (!onBoard()) {
+      out.push({ mark: 'NOT RULED', text: 'The readout\u2019s \u201c' + pageBit() + '\u201d is whole pages worked out from the word count (260 words to a page). No page-break marks are drawn.' });
+    }
     if (B.dark) { out.push({ mark: 'NOT RULED', text: 'The dark room: the brief gives the light room only. These dark values are Team B\u2019s (PAIRS.md), and the page keeps its light tone.' }); }
     out.push({ mark: 'PROPOSED', text: 'Team B\u2019s words (WORDS.md): This doc, Structure, Look, More, Command line, Review notes; in CONTROLS: Density, Comfortable, Compact.' });
     out.push({ mark: 'PROPOSED', text: 'Nothing new is saved [DATA: none]. Density (F8), Dark and these notes (F9) last until a reload.' });
