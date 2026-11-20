@@ -8,8 +8,8 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
-import type { PartsHost } from '../reorg/PartsList';
-import { splitPart } from '../reorg/parts';
+import { REORG_JOIN_STATE, type PartsHost } from '../reorg/PartsList';
+import { joinPart, splitPart } from '../reorg/parts';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -522,6 +522,17 @@ function PageEditorView({ id }: { id: string }) {
   };
   reconcileRef.current = reconcile;
   useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef });
+  // THE REORG - a join of the Part she was on arrives here, on the Part above, as route state (reorg/PartsList.tsx): it runs once this page has
+  // mounted, when the page it deletes is gone (so that page's not-found guard never fires), and after the subscription above, so this page
+  // adopts the joined words through #76. The state is spent first (replaced away), so a reload or Back never joins again.
+  const joinFrom = reorgTop ? (location.state as Record<string, unknown> | null)?.[REORG_JOIN_STATE] : undefined;
+  useEffect(() => {
+    if (typeof joinFrom !== 'string') return;
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    joinPart(joinFrom);
+    flushNow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinFrom]);
   // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
   useEffect(() => {
     if (remount === 0) return;

@@ -25,6 +25,9 @@ import {
 // makes it one first. "Split here" is the host's (it owns the caret and her unsaved words). A split or a join can be undone from the line under
 // the tools while she stays here (INK's undo refuses when either side changed since).
 
+/** The route state a join of the open Part travels in: the id of the Part to join onto the page that receives it. */
+export const REORG_JOIN_STATE = 'reorgJoinPart';
+
 const fill = (s: string, vals: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vals ? String(vals[k]) : m));
 
 export type PartsStage = 'sprint' | 'build' | 'edit';
@@ -114,15 +117,15 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
   const join = (p: PartRow) => {
     save();
     setOpenMenu(null);
-    // the Part she is on: deleting the open page first would let the page's own not-found guard send her to the Desk. INK's refusals are read
-    // first; then she goes to the Part above, and the join runs once that page is hers (it adopts the joined words through #76)
+    // the Part she is on: deleting the open page while it is mounted lets the page's own not-found guard send her to the Desk. INK's refusals
+    // are read first; then she goes to the Part above CARRYING the join (route state), and that page runs it once it has mounted, when this one
+    // is gone (pages/PageEditor.tsx, REORG_JOIN_STATE): it adopts the joined words through #76
     if (p.id === latest.id) {
       const me = partById(p.id), above = parts[p.n - 2] ? getJournalEntry(parts[p.n - 2].id) : null;
       if (!me || !above || p.n < 2) { say(refusal('unknown')); return; }
       if (me.carries) { say(refusal('carries')); return; }
       if (me.kind === 'script' || above.pageType === 'script') { say(refusal('not-text')); return; }
-      navigate(routeForEntry(above));
-      window.setTimeout(() => { joinPart(p.id); flushNow(); }, 0);
+      navigate(routeForEntry(above), { state: { [REORG_JOIN_STATE]: p.id } });
       return;
     }
     const r = joinPart(p.id);
