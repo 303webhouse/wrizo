@@ -253,6 +253,10 @@ export const CANONICAL_CHROME = {
   // THE REORG'S BACK MENU (behind ?reorg=1 in Machina): the first tab's word and the tab row's accessible name
   reorgBackPlan: 'Plan',
   reorgBackTabsLabel: 'Plan, assets and feedback',
+  // SPRINT's Back menu: Plan and Assets are locked, and the one prompt she presses for
+  reorgSprintLocked: 'Plan and Assets are locked in Sprint. Move to Build to use them.',
+  reorgSprintAnother: 'Another Prompt',
+  reorgSprintEmpty: 'A prompt to get you writing again.',
   reorgPlanEmpty: "Nothing is in this doc's plan.",
   reorgPlanRename: 'Name of the plan row',
   reorgPlanUp: 'Move up',

@@ -26,6 +26,7 @@ import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { SplitHost } from '../reorg/split/SplitHost';
+import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
@@ -148,11 +149,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
   const back = REORG && tutorTheme === 'machina' && pageKind !== 'board';
+  // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
+  const sprint = back && mode === 'journal';
   // (the two source shapes drawers-p1 K5/K5b read stay verbatim: the state below opens on the TUTOR tab, and the tab body lines read `rightTab`; PLAN is its own flag, folded into `rightTab`)
   const [tabState, setTabState] = useState<RightTab>('tutor');
   const [planOn, setPlanOn] = useState(false);
-  const rightTab: RightTab | 'plan' = planOn ? 'plan' : tabState;
-  const setRightTab = (v: RightTab | 'plan'): void => { if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
+  const rightTab: RightTab | 'plan' = sprint ? 'tutor' : planOn ? 'plan' : tabState;
+  const setRightTab = (v: RightTab | 'plan'): void => { if (sprint) return; if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
   useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
   // THE REORG'S SEARCH (reorg/search/, POLISH): while it is open it takes this menu's place (the tab row and every tab's body give way to the
@@ -543,9 +546,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
   // the composer takes focus when the panel opens in Free Write (blank space with a cursor); preventScroll, and held off while the disclosure is up [Tutor §27]
   useEffect(() => {
-    if (!open || !freeWrite || showDisclosure) return;
+    if (!open || !freeWrite || showDisclosure || sprint) return;   // SPRINT has no composer: the command-line default retires
     composerRef.current?.focus({ preventScroll: true });
-  }, [open, freeWrite, showDisclosure]);
+  }, [open, freeWrite, showDisclosure, sprint]);
 
   // the refill: an ask's draws reset after 100 words written on this page since its third draw (HB1's monotone count, which never goes backwards under forward lock); the standing draw survives a refill [Tutor §28]
   useEffect(() => {
@@ -756,7 +759,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     label: t('drawerRightTabsLabel'),
   } : undefined;
   const rightTabs: DrawerTabsConfig<RightTab | 'plan'> = back ? {
-    items: [{ id: 'plan', label: t('reorgBackPlan') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: RIGHT_TABS[0], label: t('tutorTabTutor') }],
+    items: [{ id: 'plan', label: t('reorgBackPlan'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[1], label: t('drawerLinks'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[0], label: t('tutorTabTutor') }],
     value: rightTab,
     onChange: setRightTab,
     label: t('reorgBackTabsLabel'),
@@ -809,6 +812,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* the body renders unconditionally inside the faded panel (the Sliver's shape), so the close fades the content instead of unmounting it and fading an empty box [Tutor §35] */}
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
+            {sprint ? (
+              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={() => pressPreset('writingPrompt')} noteId="wz-sprint-note" />
+            ) : (<>
             {/* no standing header (the tab row names it); the dock toggle is icon-only, its full wording on aria-label and title [Tutor §36] */}
             <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} title={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>
               {docked ? '×' : '⊙'}
@@ -1043,6 +1049,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 {meterState.text}
               </div>
             )}
+            </>)}
             </div>
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}

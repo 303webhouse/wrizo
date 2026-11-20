@@ -42,3 +42,15 @@
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
+
+/* SPRINT'S BACK MENU (Free Write, behind ?reorg=1 in Machina): Plan and Assets stay in the tab row, greyed and not pressable, with a note; Feedback is the one standing writing prompt and the
+   button that draws the next. Locked tabs read at 3:1 (--text-low on the drawer), the note at 4.5:1 (--text-mid). */
+.wz-drawer-tab[data-locked='true']{ color:var(--text-low); border-style:dashed; cursor:default; }
+.wz-drawer-tab[data-locked='true']:hover{ color:var(--text-low); border-color:var(--ink-border); }
+.wz-sprint-feedback{ display:flex; flex-direction:column; gap:14px; padding:16px 14px; }
+.wz-sprint-note{ margin:0; font-family:var(--font-ui); font-size:12px; line-height:1.45; color:var(--text-mid); }
+.wz-sprint-prompt{ min-height:3.2em; font-family:var(--font-prose); font-size:16px; line-height:1.5; color:var(--text-hi); }
+.wz-sprint-empty{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-sprint-press{ align-self:flex-start; height:28px; padding:0 12px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.04em; cursor:pointer; }
+.wz-sprint-press:hover, .wz-sprint-press:focus-visible{ border-color:var(--text-low); outline:none; }
+.wz-sprint-refill{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
