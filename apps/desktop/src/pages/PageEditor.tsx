@@ -8,6 +8,7 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
+import { PublishView } from '../reorg/PublishView';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -193,6 +194,9 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
+  // THE REORG: the whole-Doc publishing view laid over the paper (reorg/PublishView.tsx). Session state only: saved nowhere, and gone when she leaves the page.
+  const [publishing, setPublishing] = useState(false);
+  useEffect(() => { setPublishing(false); }, [entry.id]);
   // E1 S2 — Publish's own quiet confirmation line (the existing ActionToast
   // pattern, reused per the brief's own "don't invent a new one" instruction).
   const publishToast = useActionToast();
@@ -1233,7 +1237,8 @@ function PageEditorView({ id }: { id: string }) {
             {reorgTop ? (
               <TopRail kind="page" entry={entry} canRename={!unborn} beforeWrite={() => { flush(); flushNow(); }}
                 // the PLAN door leaves the bar; a hidden strut keeps its height in its own place, so the row (and the page under it) never moves
-                stages={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)}
+                stages={<ModeStrip mode={mode} onSwitch={(m) => { setPublishing(false); switchMode(m); }} publishActive={publishing}
+                  onPublish={() => { if (publishing) setPublishing(false); else if (!unborn) { flush(); flushNow(); setPublishing(true); } }}
                   end={<button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
             ) : <>
             {/* the address: crumb (marginRight:auto) · strip · actions, the shape the Board uses [PageEditor §33] */}
@@ -1340,7 +1345,7 @@ function PageEditorView({ id }: { id: string }) {
             inkPermission={inkPermission}
             /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
             readouts={unborn ? undefined : reorgTop
-              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} /><PartArrows entry={entry} beforeLeave={leaveStable} /></>
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : <PartArrows entry={entry} beforeLeave={leaveStable} />}</>
               : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}

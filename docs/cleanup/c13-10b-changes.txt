@@ -7,11 +7,13 @@
 +   // stored legacy data: no code reads or writes it (Nick, Oct 29)
 +   // (DM1's fragment substrate; its code was deleted in #13 step 12d. The field is kept as stored and travels whole with the record;
 +   // the server has never stored it - bug #88.)
-# THE REORG'S TOP RAIL (POLISH, Nov 19): a Part's name, PageSettings.name (Nick's ruling, Nov 19, via Fable: saved with the account; the existing page_settings column carries it)
-+   // THE REORG (Nick's ruling, Nov 19, via Fable): a Part's own name, saved with the account by the whole-blob page_settings column it already rides
-+   // (schema change: none). Absent, never null and never '', on every page that was never named: the page reads its first line (the Sep 12 rule).
-+   // A fact about THIS page, never dress: store/pageDefaults.ts strips it from the per-user default. Written by reorg/partsSeam.ts renamePart.
-+   name?: string;
+# REORG phase 3 (INK, Nov 19): the Parts layer's four per-Part keys inside PageSettings (reorg/parts.ts).
++   // REORG PHASE 3 (the Parts, src/reorg/parts.ts; Fable's saved-data ruling Nov 19: saved to the ACCOUNT, no migration - the whole-blob page_settings jsonb carries them). All ABSENT, never null, on every page that never chose; none is dress:
++   // store/pageDefaults.ts strips them, so "Set as my default" on one Part never names, colours or limits every future page.
++   name?: string;                                          // a Part's own name; absent, its first few words stand in
++   level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
++   color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
++   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
 # COLOURS ON ASSETS (ARBOR, Nov 20): a card's colour, Box.color, a slot a-f (Nick's saved-data sheet #14 A; Fable's slot ruling); the whole-blob boxes jsonb carries it
 +   // A CARD'S COLOUR IS A SLOT (the reorg's colours on assets, plan 5.1 / tech D4; Nick's saved-data sheet #14 "A", Nov 19; Fable's ruling Nov 20:
 +   // "store slots a–f, never a colour name or a hex"). One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the

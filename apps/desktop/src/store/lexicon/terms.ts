@@ -120,6 +120,8 @@ export type DeskTermId =
   | 'reorgTopWhere' | 'reorgTopRename' | 'reorgTopPlace' | 'reorgTopPartOf' | 'reorgTopPlaceNoDoc' | 'reorgTopPlaceOne' | 'reorgTopPlaceMany' | 'reorgTopConnect' | 'reorgTopConnectAnother' | 'reorgTopConnectRecent' | 'reorgTopConnectNew' | 'reorgTopConnectOn' | 'reorgTopConnectUnborn' | 'reorgTopConnectNewHeld' | 'reorgTopSearch' | 'reorgTopSearchSoon'
   // THE REORG'S FRONT MENU (plan steps 3.1 and 3.2: reorg/frontTabs.ts, reorg/PartsList.tsx)
   | 'reorgFrontLabel' | 'reorgFrontParts' | 'reorgPartsHead' | 'reorgPartsOf' | 'reorgPartN' | 'reorgTopPartsDrop' | 'reorgPartPrevTo' | 'reorgPartNextTo' | 'reorgPartNoPrev' | 'reorgPartNoNext' | 'reorgPartEnd' | 'reorgPartNext'
+  // PUBLISHING AS A VIEW (src/reorg/PublishView.tsx, behind ?reorg=1 in Machina)
+  | 'reorgPubLabel' | 'reorgPubBack' | 'reorgPubEmptyPart' | 'reorgPubTick' | 'reorgPubCount' | 'reorgPubAll' | 'reorgPubNone' | 'reorgPubMd' | 'reorgPubTxt'
   // THE REORG'S BACK MENU (src/reorg/backMenu/, behind ?reorg=1 in Machina): new words only; the tab row reads PLAN, ASSETS (drawerLinks), FEEDBACK (tutorTabTutor)
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
