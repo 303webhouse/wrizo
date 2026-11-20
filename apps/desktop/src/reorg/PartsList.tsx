@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties }
 import type { DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
-import type { DeskTermId } from '../store/lexicon/terms';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { flushNow, getJournalEntry, isAutoSet, removePageLink, subscribe } from '../store/persistence';
 import { routeForEntry } from '../store/routeForEntry';
@@ -13,9 +12,10 @@ import {
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
 import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { SLOT_WORD, slotLetter } from './colourSlots';
 
 // THE FRONT MENU'S PARTS TAB (plan step 3.2; the prototype's frontMenu PARTS rows, frame P2-13A). Every Part of the Doc she is in, in her order
-// (reorg/partsSeam.ts over INK's reorg/parts.ts): its number, its colour tag (its first letter on its colour; no colour, an empty place of the
+// (reorg/partsSeam.ts over INK's reorg/parts.ts): its number, its colour tag (its slot's letter on its colour; no colour, an empty place of the
 // same size), its name (or its first words), its words, the one she is on marked, and a Part one or two levels in drawn further in. A row opens
 // that Part the way every list in the app opens a page (save, then go), so the left rail's return chip brings her back. A one-Part Doc lists its
 // one Part ("Part 1", Fable's ruling A, Nov 14).
@@ -40,7 +40,9 @@ export interface PartsHost {
   splitHere?: () => { ok: true; token: SplitToken } | { ok: false; why: 'caret' | 'text' };
 }
 
-const COLOUR_KEY: Record<PartColor, DeskTermId> = { a: 'reorgPartColourClay', b: 'reorgPartColourAmber', c: 'reorgPartColourMoss', d: 'reorgPartColourTeal', e: 'reorgPartColourSlate', f: 'reorgPartColourPlum' };
+// THE TEAM B RESTYLE (slice 1, Nov 20): a Part's colour is a SLOT (Fable's ruling; INK's PART_COLORS), named by Machina's tags (Outline, Pale, Blue,
+// Yellow, Mid, Solid: reorg/colourSlots.ts SLOT_WORD, the Assets tab's own names) and drawn by the same tokens; its tag reads the SLOT's letter
+// ("a label first, the colour second", Nick, Nov 11), so a Part and its assets read as one thread.
 
 export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost }) {
   const { t } = useDeskLexicon();
@@ -170,7 +172,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
   const tools = canNew || canSplit;
   return (
     <section ref={listRef} className="reorg-parts" data-reorg-parts aria-label={fill(t('reorgPartsOf'), { name: doc.name || t('reorgUntitled') })}>
-      <div className="reorg-parts-head">{t('reorgPartsHead')}</div>
+      <div className="reorg-parts-head">{fill(t('reorgPartsHead'), { n: parts.length })}</div>
       {tools && (
         <div className="reorg-parts-tools" data-parts-tools>
           {canNew && (
@@ -203,7 +205,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
                 onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDragLeave={() => { if (over === p.id) setOver(null); }} onDrop={onDrop(p)}>
                 <span className="reorg-parts-num">{p.n}</span>
-                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? label.charAt(0).toUpperCase() : ''}</span>
+                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
@@ -227,7 +229,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
                     <button type="button" className="reorg-part-swatch" data-part-colour="none" aria-pressed={!p.color} aria-label={t('reorgPartColourNone')} title={t('reorgPartColourNone')}
                       onClick={() => colour(p, null)} />
                     {PART_COLORS.map((c) => (
-                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(COLOUR_KEY[c])} title={t(COLOUR_KEY[c])}
+                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(SLOT_WORD[c])} title={t(SLOT_WORD[c])}
                         onClick={() => colour(p, c)} />
                     ))}
                   </div>
