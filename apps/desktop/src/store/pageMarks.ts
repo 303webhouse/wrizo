@@ -84,8 +84,10 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
       if (y === null && row) y = row.getBoundingClientRect().top;   // a row with nothing drawn: its own top is its line's
     }
     if (y === null) continue;
-    const Y = Math.round(y * dpr);
-    const stemTop = Y - Math.round(H / 2), armTop = Y - Math.round(T / 2);
+    // each piece snapped to whole device pixels from the UNROUNDED break line, so the stem's centre stays within half a pixel of it (an odd stem -
+    // 15 at 1.088 - rounded from a rounded line drifted a whole pixel)
+    const Y = y * dpr;
+    const stemTop = Math.round(Y - H / 2), armTop = Math.round(Y - T / 2);
     const lTip = colL - G, rTip = colR + G;
     const piece = (x: number, top: number, w: number, h: number) =>
       `<i style="left:${toLocalX(x).toFixed(4)}px;top:${toLocalY(top).toFixed(4)}px;width:${len(w).toFixed(4)}px;height:${len(h).toFixed(4)}px"></i>`;

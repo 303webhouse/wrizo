@@ -75,7 +75,7 @@ function lib() {
       if (rows.length) { const k = text.slice(0, o).split(NL).length - 1; const row = rows[k]; const local = o - (text.slice(0, o).lastIndexOf(NL) + 1); const RT = nodes(row); q = rectAt(RT, local); if (!q) return null;
         const u = L.rowUnit(row); const rr = row.getBoundingClientRect(); const idx = u.starts.filter((st, i) => i > 0 && st <= local).length; return rr.top + idx * (rr.height / u.n); }
       return null; };
-    return { s, vh: innerHeight, scrollTop: ed ? ed.closest('.mode-scroll').scrollTop : null, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
+    return { s, vh: innerHeight, wrapTop: layer ? layer.parentElement.getBoundingClientRect().top : 0, scrollTop: ed ? ed.closest('.mode-scroll').scrollTop : null, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
   L.read = () => { const st = window.wrizoPageBreaks(); const c = document.querySelectorAll('.wz-pagecount'); return { st, count: [...c].map((x) => x.textContent), n: c.length, dataPage: document.querySelector('.mode-page')?.getAttribute('data-page') ?? null }; };
   return true;
 }
@@ -117,7 +117,15 @@ const judgePair = (M, pages, head, geo) => {
       // whole-pixel judgment that read no pair at all is a FAIL (a guard can pass while blind)
       const onScreen = L.stem.y > -40 && L.stem.y < (M.vh || 800) + 40;
       if (onScreen) seen += 1;
-      if (geo.whole && onScreen && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
+      // SUPERSEDED (run 44663621000): on screen, the deep pair still read 0.047 off at y 370 - the drift rides the mark's DEPTH in the text
+      // (41,000 layout px of offset, mapped through 32-bit floats: x, at a shallow offset, is exact), not its screen position. Kept for the record:
+      // if (geo.whole && onScreen && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
+      // successor: y allows two LayoutUnits plus a float32 step per 2^19 px of depth (0.08 px at 41,000; the half-pixel mutant is 6x past it); x keeps two LayoutUnits
+      const depth = Math.abs(L.stem.y - (M.wrapTop || 0)) / (M.s || 1);
+      const LUy = LU + depth / 524288 * (M.s || 1);
+      const offX = [L.stem.x, L.arm.x, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU);
+      const offY = [L.stem.y, L.arm.y].some((v) => Math.abs(v - Math.round(v)) > LUy);
+      if (geo.whole && onScreen && (offX || offY)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, LUy ${LUy.toFixed(4)} at depth ${Math.round(depth)}, scrollTop ${M.scrollTop})` };
     }
   }
   if (geo && geo.whole && seen === 0) return { pass: false, why: `no pair on screen to read (${M.pairs.length} pairs, scrollTop ${M.scrollTop})` };
@@ -164,7 +172,7 @@ await withHarness(async (app) => {
     if (bring !== null) await app.evalJs(`(() => { const sc = document.querySelector('.mode-scroll'); const ps = [...document.querySelectorAll('.wz-pb-marks .wz-pb-pair')]; if (!ps.length) return false;
       const k = ${JSON.stringify(bring)} === 'last' ? ps.length - 1 : ${JSON.stringify(bring)} === 'mid' ? Math.floor(ps.length / 2) : Math.min(ps.length - 1, +${JSON.stringify(bring)}); const i = ps[k].querySelector('i'); const page = sc.closest('.mode-page');
       const s = page && page.offsetWidth ? page.getBoundingClientRect().width / parseFloat(getComputedStyle(page).width) : 1; sc.scrollTop += (i.getBoundingClientRect().top - sc.getBoundingClientRect().top - 200) / s; return true; })()`);
-    let prev = null; for (let k = 0; k < 20; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
+    let prev = null; for (let k = 0; k < 100; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
 
   // ---- seeds (through the seams) ----
   const T5 = pageOf(5000), T20 = pageOf(20000, 3);
