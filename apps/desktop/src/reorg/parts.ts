@@ -29,7 +29,7 @@ import {
   softDeleteEntry,
 } from '../store/persistence';
 import { restoreEntry } from '../store/persistence/restore';
-import { reorderSections } from '../store/place';
+import { ensureSet, reorderSections } from '../store/place';
 import { firstPlainLine } from '../store/entryText';
 import { wordCount } from '../store/wordCount';   // the ONE word counter (c13-10f: no private copy)
 import { getUserPageDefaults } from '../store/pageDefaults';
@@ -468,6 +468,8 @@ if (typeof window !== 'undefined') {
     partById: (id: string) => partById(id),
     newPart: (docId: string | null, o?: NewPartOptions) => durable(newPart(docId, o)),
     ensureDoc: (id: string) => durable(ensureDoc(id)),
+    // the app's own lazy set of a Drawer (a loose page in a Drawer lives in it): the harness asks for it through the app's own function, never raw storage
+    autoSet: (drawerId: string) => durable(ensureSet(drawerId)),
     renamePart: (id: string, name: string) => durable(renamePart(id, name)),
     setPartColor: (id: string, c: PartColor | null) => durable(setPartColor(id, c)),
     setPartTemplate: (id: string, t: PageTemplate | null) => durable(setPartTemplate(id, t)),

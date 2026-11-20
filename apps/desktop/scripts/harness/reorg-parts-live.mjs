@@ -6,6 +6,7 @@
 //   L3  the ordering, read from the real store between the two writes: a split has the tail stored while the source still holds everything; a join has the words appended while the emptied Part is still live
 //   L4  an unknown pageSettings key (what a newer client wrote) survives a rename, a colour and a level change on the same Part
 //   L5  a re-order and a level change write no word: every Part's stored text is identical before and after, across a reload
+//   ED  a split on a loose page in a Drawer (a page in the Drawer's app-made set) gives ONE Doc with TWO Parts: the new set is in the same Drawer, the neighbour page and the app's set are untouched, and it is the same after a reload
 //   L6  make it its own Doc: the new set carries the old one's Drawer, holds the run with rebased levels, and the old Doc lists the rest
 // Run: on Actions (harness.yml, files=reorg-parts-live.mjs) or a box turn. Machina and ?reorg=1 are not needed: this layer has no screen.
 import { withHarness } from '../runtime-verify.mjs';
@@ -101,6 +102,31 @@ try { await withHarness(async (app) => {
   const left = await P(`p.partsOfDoc(${J(doc)})`);
   const proj = own.ok ? await ev(`(() => { const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => x.id === ${J(own.docId)}); return p ? { drawerId: p.drawerId ?? null, title: p.title } : null; })()`) : null;
   ok('L6 make it its own Doc: a new set in the same Drawer holds the Part (named for it), the old Doc lists the rest, no Part lost', !!target && own.ok && newParts.length >= 1 && newParts[0].id === ids[1] && newParts[0].level === 0 && newParts.length + left.length === 4 && !!proj && proj.drawerId === (drawer || null) && proj.title === 'The Second', J({ own, newParts: newParts.map((x) => x.name), left: left.length, proj }));
+
+  // ED a split on a loose page in a Drawer: ONE Doc, TWO Parts, nothing else in the Drawer moves
+  const dr = await ev("window.wrizoCreateDrawer('ED drawer').id");
+  const auto = await P(`p.autoSet(${J(dr)})`);
+  const edA = 'ed-loose-a', edB = 'ed-loose-b';
+  for (const [id, t] of [[edA, 'A loose page with enough words to cut'], [edB, 'The neighbour page, untouched']]) {
+    await ev(`window.wrizoCreateJournalPage(${J({ id, text: t, createdAt: new Date().toISOString(), origin: 'project', source: 'page' })})`);
+    await ev(`window.wrizoPatchEntry(${J(id)}, { projectId: ${J(auto.id)} })`);
+  }
+  const bBefore = await stored(edB);
+  const autoBefore = await ev(`(() => { const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => x.id === ${J(auto.id)}); return p ? JSON.stringify(p) : null; })()`);
+  const edSplit = await P(`p.splitPart(${J(edA)}, 15)`);
+  await reloadBack();
+  const edRow = await stored(edA);
+  const edTail = edSplit.ok ? await stored(edSplit.tailId) : null;
+  const projs = await ev(`JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').filter((x) => x.drawerId === ${J(dr)}).map((x) => x.id)`);
+  const edDocId = await ev(`(() => { const r = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === ${J(edA)}); return r ? r.projectId : null; })()`);
+  const edParts = edDocId ? await P(`p.partsOfDoc(${J(edDocId)})`) : [];
+  const autoParts = await P(`p.partsOfDoc(${J(auto.id)})`);
+  const bAfter = await stored(edB);
+  const autoAfter = await ev(`(() => { const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => x.id === ${J(auto.id)}); return p ? JSON.stringify(p) : null; })()`);
+  ok('ED a split on a loose page in a Drawer gives ONE Doc with TWO Parts: the new set is in the same Drawer, the neighbour and the app-made set are byte-identical, and it holds after a reload',
+    edSplit.ok && !!edDocId && edDocId !== auto.id && edParts.length === 2 && edParts[0].id === edA && edParts[1].id === edSplit.tailId && projs.length === 2 && projs.includes(auto.id) && projs.includes(edDocId)
+    && autoParts.length === 1 && autoParts[0].id === edB && J(bBefore) === J(bAfter) && autoBefore === autoAfter && !!edRow && !!edTail && edRow.text + edTail.text === 'A loose page with enough words to cut',
+    J({ edSplit: edSplit.ok, edDocId, parts: edParts.map((x) => x.id), projs, autoParts: autoParts.map((x) => x.id), sameB: J(bBefore) === J(bAfter), sameAuto: autoBefore === autoAfter }));
 }); } catch (e) { console.log('HARNESS ERROR', (e && e.stack) || e); checks.push({ name: 'HARNESS', pass: false, detail: String((e && e.message) || e) }); }
 
 let bad = 0;
