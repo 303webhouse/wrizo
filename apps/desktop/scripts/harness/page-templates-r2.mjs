@@ -513,7 +513,13 @@ async function part2() {
     await app.evalJs('window.wrizoFlushNow()'); await sleep(400);
     await toDraft(); await sleep(500);
     const nums = () => app.evalJs("[...document.querySelectorAll('.forward-only-editor .wz-row')].map((n) => n.dataset.ol ?? null)");
-    ok('X7 an Outline page in Draft draws the derived numbers (1. 1.1 1.2 2. 2.1 2.1.1 2.2 3.)', JSON.stringify(await nums()) === JSON.stringify(['1.', '1.1', '1.2', '2.', '2.1', '2.1.1', '2.2', '3.']), JSON.stringify(await nums()));
+    // the successors' reader: the same rows, outside page breaks' measuring copy (.wz-letter-measure), whose rows carry no numbers
+    const numsB = () => app.evalJs("[...document.querySelectorAll('.forward-only-editor .wz-row')].filter((n) => !n.closest('.wz-letter-measure')).map((n) => n.dataset.ol ?? null)");
+    const WANT7 = ['1.', '1.1', '1.2', '2.', '2.1', '2.1.1', '2.2', '3.'];
+    // SUPERSEDED (Nov 20, Fable's ruling 2a): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts) with the page's own classes, and this reader matched it too (train C's pair 44818849039, 5e820dbb). Verbatim:
+    // ok('X7 an Outline page in Draft draws the derived numbers (1. 1.1 1.2 2. 2.1 2.1.1 2.2 3.)', JSON.stringify(await nums()) === JSON.stringify(['1.', '1.1', '1.2', '2.', '2.1', '2.1.1', '2.2', '3.']), JSON.stringify(await nums()));
+    ok('X7-B an Outline page in Draft draws the derived numbers (1. 1.1 1.2 2. 2.1 2.1.1 2.2 3.) on the live page (its rows, not the measuring copy\'s)', JSON.stringify(await numsB()) === JSON.stringify(WANT7), JSON.stringify(await numsB()));
+    ok('MUT-X7-B the reader without the skip is RED on the same page (the copy\'s rows read as null) while X7-B\'s is green: the skip is what holds it', JSON.stringify(await nums()) !== JSON.stringify(WANT7) && (await nums()).length > (await numsB()).length && JSON.stringify(await numsB()) === JSON.stringify(WANT7), JSON.stringify({ plain: await nums(), b: await numsB() }));
     ok('X7 THE NUMBERS ARE NOT TEXT: the editor\'s text is the stored text, byte for byte (and the stored text has no digit it did not have)',
       (await app.evalJs("(document.querySelector('.forward-only-editor')?.textContent || '').replace(/\\u200b/g, '')")) === OUTLINE && ((await rowOf('tpl-r2-outline')) || {}).text === OUTLINE, '');
     const shown = await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor .wz-row[data-ol]'); return n ? getComputedStyle(n, '::before').content : null; })()");
@@ -522,9 +528,13 @@ async function part2() {
     await caretToEnd(); await app.key('Tab'); await sleep(500);
     const afterTab = async () => ((await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'tpl-r2-outline')?.text ?? null")) || '');
     await waitSoft("(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'tpl-r2-outline')?.text || '').endsWith('\\n\\tThe crossing')", { label: 'tab stored', timeout: 4000 });
-    ok('X7 Tab indents the caret\'s row one level (stored as a leading tab) and the numbers follow (the last row becomes 2.3)', (await afterTab()).endsWith('\n\tThe crossing') && (await nums()).slice(-1)[0] === '2.3', JSON.stringify({ tail: (await afterTab()).slice(-20), nums: await nums() }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts) with the page's own classes, and this reader matched it too (train C's pair 44818849039, 5e820dbb). Verbatim:
+    // ok('X7 Tab indents the caret\'s row one level (stored as a leading tab) and the numbers follow (the last row becomes 2.3)', (await afterTab()).endsWith('\n\tThe crossing') && (await nums()).slice(-1)[0] === '2.3', JSON.stringify({ tail: (await afterTab()).slice(-20), nums: await nums() }));
+    ok('X7-B Tab indents the caret\'s row one level (stored as a leading tab) and the live page\'s numbers follow (the last row becomes 2.3)', (await afterTab()).endsWith('\n\tThe crossing') && (await numsB()).slice(-1)[0] === '2.3', JSON.stringify({ tail: (await afterTab()).slice(-20), nums: await numsB() }));
     await app.key('Tab', { shift: true }); await sleep(500);
-    ok('X7 Shift+Tab outdents it again (back to 3.)', (await nums()).slice(-1)[0] === '3.', JSON.stringify(await nums()));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts) with the page's own classes, and this reader matched it too (train C's pair 44818849039, 5e820dbb). Verbatim:
+    // ok('X7 Shift+Tab outdents it again (back to 3.)', (await nums()).slice(-1)[0] === '3.', JSON.stringify(await nums()));
+    ok('X7-B Shift+Tab outdents it again (back to 3.) on the live page', (await numsB()).slice(-1)[0] === '3.', JSON.stringify(await numsB()));
     await app.key('Tab'); await sleep(300); await app.key('Enter'); await sleep(300); await app.typeKeys('Sea'); await sleep(500);
     await waitSoft("(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'tpl-r2-outline')?.text || '').endsWith('\\n\\tSea')", { label: 'enter stored', timeout: 4000 });
     ok('X7 Enter opens the next row at the SAME level and typing goes into it (stored: the new row carries one tab)', (await afterTab()).endsWith('\n\tThe crossing\n\tSea'), JSON.stringify((await afterTab()).slice(-30)));
