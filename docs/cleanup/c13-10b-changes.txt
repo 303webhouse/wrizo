@@ -7,3 +7,10 @@
 +   // stored legacy data: no code reads or writes it (Nick, Oct 29)
 +   // (DM1's fragment substrate; its code was deleted in #13 step 12d. The field is kept as stored and travels whole with the record;
 +   // the server has never stored it - bug #88.)
+# REORG phase 3 (INK, Nov 19): the Parts layer's four per-Part keys inside PageSettings (reorg/parts.ts).
++   // REORG PHASE 3 (the Parts, src/reorg/parts.ts; Fable's saved-data ruling Nov 19: saved to the ACCOUNT, no migration - the whole-blob page_settings jsonb carries them). All ABSENT, never null, on every page that never chose; none is dress:
++   // store/pageDefaults.ts strips them, so "Set as my default" on one Part never names, colours or limits every future page.
++   name?: string;                                          // a Part's own name; absent, its first few words stand in
++   level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
++   color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
++   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part

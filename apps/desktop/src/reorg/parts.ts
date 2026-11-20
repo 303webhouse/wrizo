@@ -31,6 +31,7 @@ import {
 import { restoreEntry } from '../store/persistence/restore';
 import { reorderSections } from '../store/place';
 import { firstPlainLine } from '../store/entryText';
+import { wordCount } from '../store/wordCount';   // the ONE word counter (c13-10f: no private copy)
 import { getUserPageDefaults } from '../store/pageDefaults';
 
 // ---------------------------------------------------------------- the saved keys
@@ -73,13 +74,12 @@ export interface Part {
   carries: boolean;
 }
 
-const wordCount = (text: string): number => { const t = text.trim(); return t ? t.split(/\s+/).length : 0; };
 const FIRST_WORDS = 6;
 const firstWords = (text: string): string => {
   const line = firstPlainLine(text);
   if (!line) return '';
-  const w = line.split(/\s+/);
-  return w.length > FIRST_WORDS ? `${w.slice(0, FIRST_WORDS).join(' ')}...` : line;
+  const w = [...line.matchAll(/\S+/g)];
+  return w.length > FIRST_WORDS ? `${line.slice(0, (w[FIRST_WORDS - 1].index ?? 0) + w[FIRST_WORDS - 1][0].length)}...` : line;
 };
 export const cleanName = (name: string): string => name.replace(/\s+/g, ' ').trim().slice(0, PART_NAME_MAX);
 

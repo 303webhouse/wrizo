@@ -58,7 +58,7 @@ function load(src) {
   const { S, api } = makeStore();
   const mods = {
     '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK },
-    '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api,
+    '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api, '../store/wordCount': { wordCount: (t) => { const s = String(t ?? '').trim(); return s ? s.split(/\s+/).length : 0; } },
   };
   const module = { exports: {} };
   new Function('require', 'exports', 'module', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, module.exports, module);
