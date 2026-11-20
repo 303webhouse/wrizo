@@ -140,6 +140,16 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     };
     let userScrolled = false;
     const onUserScroll = () => { userScrolled = true; };
+    // #113 (ARBOR; Fable, Nov 19, 8:10 pm, RULED): OPENING lands at the writing line AT ONCE (a cut); the glide stays only for the FOLLOW while typing. Opening a long page put the
+    // caret's line thousands of px below the hold, and that backlog was paid by the staircase meant for typing (two lines per 160 ms glide, ~340 px/s): at 20k words it was still moving 25 s
+    // later, and a writer who scrolled away to look had the page drift back down under her. So until she types - or two seconds have passed since this mount, whichever comes first -
+    // whatever is owed is paid in ONE step (the first engage and any late layout that follows it: a font arriving, the page finishing). Her first keystroke ends the opening for good:
+    // from then on every advance is the one-line glide it always was.
+    const OPENING_MS = 2000;
+    const mountedAt = performance.now();
+    let typedSinceMount = false;
+    const onTyped = () => { typedSinceMount = true; };
+    const opening = () => !typedSinceMount && performance.now() - mountedAt < OPENING_MS;
     // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
     // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
     // to line 1) is exactly the drop to 0 that takenOver() excuses as the editor's re-render clamp - the glide would carry on and drag the writer back down.
@@ -322,6 +332,19 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // anchor (43.7%, the band's top fade over it, A3). The line's measured excess below the hold is the cap; a line already at or above it owes nothing.
       const owedAdvance = docCaretBottom - (prevDocCaretBottom as number);
       const advance = holdEl ? Math.min(owedAdvance, within - thresholdPx) : owedAdvance;
+      if (advance > 1 && opening()) {
+        // #113: the opening cut. Land at the writing line now, never past what the box can scroll to, and owe nothing; no glide, no verify timer, no waiting for one.
+        stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
+        const maxTopCut = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+        const toCut = Math.min(box.scrollTop + advance, maxTopCut);
+        const landed = Math.max(0, toCut - box.scrollTop);
+        if (landed > 0) box.setScrollTop(toCut, false);
+        if (trace) trace.push({ d: 'cut', from: Math.round(box.scrollTop), to: Math.round(toCut), advance: Math.round(advance) });
+        // paid in full: nothing is owed, and what the box could not scroll (its bottom stop) can never be paid, so it is not owed either
+        prevDocCaretBottom = docCaretBottom;
+        setScrolled();
+        return;
+      }
       if (advance > 1) {
         // Never more than one line-height per call, however large the raw
         // advance is (a deep first-engage on a long page, or a multi-line
@@ -384,6 +407,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const mo = new MutationObserver(schedule);
     mo.observe(container, { childList: true, subtree: true, characterData: true });
     container.addEventListener('input', schedule);
+    container.addEventListener('beforeinput', onTyped, true);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
@@ -396,6 +420,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       if (trace) trace.push({ d: 'unmount', at: Math.round(performance.now()) });
       mo.disconnect();
       container.removeEventListener('input', schedule);
+      container.removeEventListener('beforeinput', onTyped, true);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
