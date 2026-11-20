@@ -51,6 +51,7 @@ import { Tutor } from './Tutor';
 import { useActionToast } from './ActionToast';
 import type { PageFaceSubject } from './PageFace';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
+import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { DeckWizard } from './DeckWizard';
 import { DECKS } from '../decks/library';
 import { StepHelp } from './StepHelp';
@@ -158,6 +159,8 @@ export function BoardEditor({ id }: { id: string }) {
   // by design — matches w1.mjs's existing "board never gets mode tabs"
   // assertion), so DeskFrame mounts here with no modeStrip prop.
   const framed = useDeskFrameViewport();
+  // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
+  const reorgTop = useReorgTop();
   // AB1 S3 — the vanishing law, generalized to Board too. A Board has no
   // live pen-stroke authoring (J4: ink boxes only ever arrive via a port,
   // never drawn here), but committing text inside a selected text box IS
@@ -1559,6 +1562,44 @@ export function BoardEditor({ id }: { id: string }) {
     </>
   );
 
+  // the board's name and its nest chain, one JSX for both headers: the switch-off crumb and the reorg's top rail (the same DOM either way)
+  const boardNameControl = (
+    <>
+      {/* the nest chain, outermost first: each ancestor is pressable and travels straight there, so the way out is one press at any depth; boardNestChain's guarded walk keeps a cyclic graph finite [BoardEditor §58] */}
+      {nestChain.map((a) => (
+        <Fragment key={a.id}>
+          <button type="button" className="crumb-item wz-crumb-nest"
+            onClick={() => { flushNow(); navigate(`/page/${a.id}`); }}>{a.title}</button>
+          <span className="crumb-sep">/</span>
+        </Fragment>
+      ))}
+      {/* ancestors come before the name, and the name itself is the rename control [BoardEditor §59] */}
+      {/* the name is edited where it is displayed: Enter or blur commits, Escape reverts, an empty name reverts; board.text is a pure label, so writing it IS the rename [BoardEditor §60] */}
+      {renaming ? (
+        <input
+          className="crumb-here crumb-rename"
+          value={nameDraft}
+          autoFocus
+          aria-label={t('boardRenameLabel')}
+          onChange={ev => setNameDraft(ev.target.value)}
+          onKeyDown={ev => {
+            if (ev.key === 'Enter') { ev.preventDefault(); commitRename(); }
+            else if (ev.key === 'Escape') { ev.preventDefault(); setRenaming(false); }
+          }}
+          onBlur={commitRename}
+        />
+      ) : (
+        <button
+          type="button"
+          className="crumb-here crumb-rename-btn"
+          title={t('boardRenameLabel')}
+          // the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step [BoardEditor §61]
+          onClick={() => { setNameDraft(fullBoardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
+        >{title}</button>
+      )}
+    </>
+  );
+
   // AB4 S5 — framed (>=1100px): DeskFrame now carries the strip, the
   // cascade's reach/survey layers, and the board's own sliver — the
   // standing gap CD2 left behind ("Board still passes nothing here...
@@ -1571,45 +1612,19 @@ export function BoardEditor({ id }: { id: string }) {
         {/* FX18 S3 (SV27): the board's top menu parallels the Page's mode strip — right-
             aligned. Crumb stays left (marginRight:auto); the mode bar + actions group right
             (actions' CSS margin-left:auto neutralized below so they stay adjacent). */}
-        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }}>
+        <div className="chrome-fade chrome-top sprint-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12 }} data-reorg-top-row={reorgTop ? 'true' : undefined}>
+          {reorgTop ? (
+            // the Board's own rename control and nest chain, unchanged, in the top rail's name slot; its views stand where a page's stages stand
+            <TopRail kind="board" entry={initialEntry} views={boardModeBar} boardName={boardNameControl} boardAfter={gapsLine} />
+          ) : <>
           <div className="sprint-crumb" aria-label="Location" style={{ marginRight: 'auto' }}>
             {drawer && <><span className="crumb-item">{drawer.name}</span><span className="crumb-sep">/</span></>}
             {project && <><span className="crumb-item">{project.title}</span><span className="crumb-sep">/</span></>}
-            {/* the nest chain, outermost first: each ancestor is pressable and travels straight there, so the way out is one press at any depth; boardNestChain's guarded walk keeps a cyclic graph finite [BoardEditor §58] */}
-            {nestChain.map((a) => (
-              <Fragment key={a.id}>
-                <button type="button" className="crumb-item wz-crumb-nest"
-                  onClick={() => { flushNow(); navigate(`/page/${a.id}`); }}>{a.title}</button>
-                <span className="crumb-sep">/</span>
-              </Fragment>
-            ))}
-            {/* ancestors come before the name, and the name itself is the rename control [BoardEditor §59] */}
-            {/* the name is edited where it is displayed: Enter or blur commits, Escape reverts, an empty name reverts; board.text is a pure label, so writing it IS the rename [BoardEditor §60] */}
-            {renaming ? (
-              <input
-                className="crumb-here crumb-rename"
-                value={nameDraft}
-                autoFocus
-                aria-label={t('boardRenameLabel')}
-                onChange={ev => setNameDraft(ev.target.value)}
-                onKeyDown={ev => {
-                  if (ev.key === 'Enter') { ev.preventDefault(); commitRename(); }
-                  else if (ev.key === 'Escape') { ev.preventDefault(); setRenaming(false); }
-                }}
-                onBlur={commitRename}
-              />
-            ) : (
-              <button
-                type="button"
-                className="crumb-here crumb-rename-btn"
-                title={t('boardRenameLabel')}
-                // the draft derives with an empty fallback, so a nameless board opens a nameless field, with no sentinel string to keep in step [BoardEditor §61]
-                onClick={() => { setNameDraft(fullBoardName(getJournalEntry(id)?.text, '')); setRenaming(true); }}
-              >{title}</button>
-            )}
+            {boardNameControl}
             {gapsLine}
           </div>
           {boardModeBar}
+          </>}
           <div className="sprint-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 0 }}>
             {!isSystemBoard && !pairedPageId && <button type="button" className="btn-quiet board-pair" onClick={pairWithNewPage}>{t('boardPairWithPage')}</button>}
             {canUndo && <button type="button" className="btn-quiet" onClick={undo}>Undo</button>}

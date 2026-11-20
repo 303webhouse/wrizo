@@ -1,6 +1,7 @@
 import type { PageSettings } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { FLUX3 } from '../flux3/flag';
+import { REORG } from '../reorg/flag';
 
 // the writer's default page dress: the per-page value lives on the entry, this file holds the per-user default, one shape; local first (read synchronously at birth), the server is the durable copy [pageDefaults §1]
 
@@ -71,4 +72,9 @@ export function setUserPageDefaults(input: PageSettings | null): void {
     credentials: 'include',
     body: JSON.stringify({ pageDefaults: next }),
   }).catch(() => { /* offline: the local copy stands, boot re-pulls */ });
+}
+
+// THE REORG'S CHECK (reorg-top-rail.mjs D1): the door itself, read through a window seam that exists only under the switch
+if (REORG && typeof window !== 'undefined') {
+  (window as unknown as { wrizoPageDefaultsDress?: typeof dressOnly }).wrizoPageDefaultsDress = dressOnly;
 }
