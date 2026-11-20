@@ -145,12 +145,20 @@ const LOCATIONS = [
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"]' },
-    { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Wire"]' },
+  // ---- PARKED - SUPERSEDED by Nick's ruling (Nov 19, 2:01 pm, via Fable): the "?" beside the stage names in the top strip is REMOVED in every theme (help moves to right-click menus later; the
+  // sentence stays in the lexicon). Free Write's "?" is gone, so this location can never be found. Kept VERBATIM and no longer run; the successor (the strip's "?" is ABSENT, in both themes) follows the
+  // loop, and strip-no-help.mjs reads it in every theme and tone.
+  //
+  //    { key: 'helpFreeWrite', subject: 'Free Write', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Free"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Wire"]' },
   // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the "?" names its tab, and Flux's tab is Uplink - the selector takes either theme's own word.
   // Kept VERBATIM below and no longer run; the live successor follows.
   //
   // { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"]' },
-    { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Uplink"]' },
+  // ---- PARKED - SUPERSEDED by Nick's ruling (Nov 19, 2:01 pm, via Fable): the "?" beside the stage names in the top strip is REMOVED in every theme (help moves to right-click menus later; the
+  // sentence stays in the lexicon). Publish's "?" is gone, so this location can never be found. Kept VERBATIM and no longer run; the successor (the strip's "?" is ABSENT, in both themes) follows the
+  // loop, and strip-no-help.mjs reads it in every theme and tone.
+  //
+  //    { key: 'helpPublish', subject: 'Publish', reach: async () => {}, sel: '.desk-mode-tab-wrap .wz-help[aria-label^="What is Publish"], .desk-mode-tab-wrap .wz-help[aria-label^="What is Uplink"]' },
   { key: 'helpGrafts', subject: 'Grafts/Links', reach: openTutorDrawer, sel: '.wz-drawer-tabnotes .wz-help' },
 ];
 
@@ -235,6 +243,12 @@ await withHarness(async (app) => {
     await freshPage(app, theme, { id: page }); await openDraftSliverSettings(app);
     const there = await app.evalJs("!!document.querySelector('.wz-help[aria-label=\"What is Recede depth?\"], .wz-help[aria-label=\"What is Dissolve?\"]')");
     ok(`S1 [${theme}] Recede depth [polish #10 item 23 successor]: the row and its "?" are gone (Nick: removed)`, there === false, String(there));
+  }
+  // successor to the parked Free Write and Publish rows (Nick, Nov 19): the stage strip carries no "?" at all, in both themes; the strip itself is live
+  for (const [theme, page] of [['plateau', 'hb-s1-plateau'], ['flux', 'hb-s1-flux']]) {
+    await freshPage(app, theme, { id: page });
+    const strip = await app.evalJs("(() => { const s = document.querySelector('.desk-mode-strip'); return s ? { tabs: s.querySelectorAll('.desk-mode-tab[data-mode-key]').length, helps: s.querySelectorAll('.wz-help').length, wraps: s.querySelectorAll('.desk-mode-tab-wrap').length } : null; })()");
+    ok(`S1 [${theme}] Free Write / Publish [Nov 19 successor]: the stage strip is live and carries no "?" (Nick: removed)`, !!strip && strip.tabs >= 4 && strip.helps === 0 && strip.wraps === 0, JSON.stringify(strip));
   }
   ok('S1b Arbor: none of the five picker rows carry a "?" (Arbor\'s own five words are the canonical baseline, none renamed)',
     arborRowHelps === 0, String(arborRowHelps));
