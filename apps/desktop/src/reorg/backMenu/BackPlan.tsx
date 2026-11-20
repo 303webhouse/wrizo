@@ -17,15 +17,15 @@ import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renam
 // in the page (which saves the PAGE, never this board) changes neither. It is mounted only while the Plan tab is the one showing.
 
 interface PlanSnap { boardId: string | null; boxes: readonly Box[] | undefined; hiddenKey: string }
-let memo: (PlanSnap & { pageId: string }) | null = null;
+let planMemo: (PlanSnap & { pageId: string }) | null = null;
 function planSnapshot(pageId: string): PlanSnap {
   const boardId = getPlanBoardId(pageId);
   const board = boardId ? getJournalEntry(boardId) : null;
   const hiddenKey = (getJournalEntry(pageId)?.pageSettings?.hiddenPlanCards ?? []).join(',');
   const boxes = board?.boxes;
-  if (memo && memo.pageId === pageId && memo.boardId === (board ? boardId : null) && memo.boxes === boxes && memo.hiddenKey === hiddenKey) return memo;
-  memo = { pageId, boardId: board ? boardId : null, boxes, hiddenKey };
-  return memo;
+  if (planMemo && planMemo.pageId === pageId && planMemo.boardId === (board ? boardId : null) && planMemo.boxes === boxes && planMemo.hiddenKey === hiddenKey) return planMemo;
+  planMemo = { pageId, boardId: board ? boardId : null, boxes, hiddenKey };
+  return planMemo;
 }
 
 const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60);
