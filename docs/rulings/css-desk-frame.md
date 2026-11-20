@@ -561,6 +561,8 @@ From `apps/desktop/src/styles/13-desk-frame.css`, line 1111 at `25112784` (the c
    unit without disturbing the strip's own tight gap between every OTHER tab. */
 ```
 
+Retired Nov 19 (Nick's ruling, 2:01 pm, via Fable): the stage strip carries no "?" in any theme, so no comment stays: the code it explained is gone. Help moves to right-click menus later; the help words stay in the lexicon (strip-no-help.mjs).
+
 ## desk-frame §32
 
 From `apps/desktop/src/styles/13-desk-frame.css`, line 1155 at `25112784` (the comment that stays: "THE POP-OUT HOLD: a foot pop-out fades after fifteen words written or a period entered, never on a clock (Sliver.tsx sets data-popout-hold). It adds no fade: while the flag stands it out-specifies the two recede rules (0,5,0 and 0,4,0 over 0,3,0 and 0,2,0), and [data-open='true'] keeps a closed drawer closed").
