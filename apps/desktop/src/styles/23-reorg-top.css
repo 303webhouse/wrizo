@@ -151,3 +151,50 @@
 [data-theme='machina'] .reorg-top-part-count:focus-visible{ outline:1px solid #3F6183; outline-offset:2px; }
 [data-theme='machina'] .reorg-top-part{ position:relative; }
 [data-theme='machina'] .reorg-top-parts-drop{ padding:10px 12px; max-height:320px; overflow-y:auto; }
+
+/* PUBLISHING AS A VIEW (reorg/PublishView.tsx; the prototype's FINALIZE page: reorg.css .whole-part, .whole-label). A sheet laid over the paper from its overlay slot, so the paper, the column and
+   the editor under it never move, resize or unmount (page primacy). Every rule is scoped to Machina and to .reorg-pub, which only the view renders: with the switch off nothing here matches. */
+[data-theme='machina'] .reorg-pub{ position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; box-sizing:border-box; outline:none;
+  background:var(--paper); color:var(--ink-on-paper); border-radius:inherit; }
+[data-theme='machina'] .reorg-pub-label{ flex:none; display:flex; align-items:center; height:40px; box-sizing:border-box; padding:0 var(--wz-page-pad-x, 38px);
+  font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:#525A62; white-space:nowrap; border-bottom:1px solid #D2D6DA; }
+[data-theme='machina'] .reorg-pub-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; padding:18px var(--wz-page-pad-x, 38px) 28px; font-family:var(--font-prose); font-size:15px; line-height:1.6; }
+[data-theme='machina'] .reorg-pub-title{ margin:0 0 18px; font-size:1.5em; font-weight:600; line-height:1.25; }
+[data-theme='machina'] .reorg-pub-part{ position:relative; }
+[data-theme='machina'] .reorg-pub-part + .reorg-pub-part{ margin-top:30px; padding-top:22px; border-top:1px solid #D2D6DA; }
+[data-theme='machina'] .reorg-pub-part.is-off{ opacity:.4; }
+[data-theme='machina'] .reorg-pub-head{ margin:0 0 8px; padding-right:28px; font-weight:600; line-height:1.3; }
+[data-theme='machina'] h2.reorg-pub-head{ font-size:1.2em; }
+[data-theme='machina'] h3.reorg-pub-head{ font-size:1.08em; }
+[data-theme='machina'] h4.reorg-pub-head{ font-size:1em; }
+[data-theme='machina'] .reorg-pub-words{ white-space:pre-wrap; overflow-wrap:anywhere; }
+[data-theme='machina'] .reorg-pub-empty{ margin:0; color:#6A727B; font-style:italic; }
+[data-theme='machina'] .reorg-pub-tick{ position:absolute; right:0; top:22px; display:flex; align-items:center; cursor:pointer; }
+[data-theme='machina'] .reorg-pub-part:first-of-type .reorg-pub-tick{ top:0; }
+[data-theme='machina'] .reorg-pub-tick input{ margin:0; width:15px; height:15px; accent-color:#3F6183; cursor:pointer; }
+[data-theme='machina'] .reorg-pub-foot{ flex:none; display:flex; align-items:center; gap:10px; box-sizing:border-box; padding:10px var(--wz-page-pad-x, 38px); border-top:1px solid #D2D6DA;
+  font-family:var(--font-chromeLabel, monospace); font-size:11px; color:#525A62; }
+[data-theme='machina'] .reorg-pub-count{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .reorg-pub-said{ flex:0 1 auto; min-width:0; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .reorg-pub-btn{ flex:none; box-sizing:border-box; height:24px; padding:0 10px; margin:0; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047;
+  font:inherit; letter-spacing:inherit; cursor:pointer; }
+[data-theme='machina'] .reorg-pub-btn.is-quiet{ border-color:transparent; background:none; }
+[data-theme='machina'] .reorg-pub-btn:hover:not([disabled]){ background:#E6E8EA; }
+[data-theme='machina'] .reorg-pub-btn:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
+[data-theme='machina'] .reorg-pub-btn[disabled]{ opacity:.35; cursor:default; }
+/* FINALIZE (Fable, Nov 20, 1:27 pm): the foot carries two rows (what goes out / how it goes), the Front menu's TEXT and INK tabs are greyed while the view is open, and its PARTS tab only ticks and orders. Machina only. */
+[data-theme='machina'] .reorg-pub-foot{ flex-wrap:wrap; row-gap:8px; }
+[data-theme='machina'] .reorg-pub-break{ flex:0 0 100%; height:0; }
+[data-theme='machina'] .reorg-pub-exportlabel{ flex:none; margin-left:8px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#6A727B; }
+[data-theme='machina'] .wz-drawer-tab[data-disabled='true']{ opacity:.4; cursor:default; }
+[data-theme='machina'] .reorg-pubparts-note{ margin:0 0 10px; font-size:12px; line-height:1.45; color:#6A727B; }
+[data-theme='machina'] .reorg-pubparts-one{ margin:0; font-size:12px; color:#6A727B; }
+[data-theme='machina'] .reorg-pubparts-row{ display:flex; align-items:center; gap:8px; min-height:28px; box-sizing:border-box; border-top:1px solid #D2D6DA; }
+[data-theme='machina'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ opacity:.4; }
+[data-theme='machina'] .reorg-pubparts-row input{ flex:none; margin:0; width:15px; height:15px; accent-color:#3F6183; cursor:pointer; }
+[data-theme='machina'] .reorg-pubparts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+[data-theme='machina'] .reorg-pubparts-n{ color:#6A727B; }
+[data-theme='machina'] .reorg-pubparts-move{ flex:none; box-sizing:border-box; width:24px; height:24px; padding:0; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047; font-size:13px; line-height:1; cursor:pointer; }
+[data-theme='machina'] .reorg-pubparts-move:hover:not([disabled]){ background:#E6E8EA; }
+[data-theme='machina'] .reorg-pubparts-move:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
+[data-theme='machina'] .reorg-pubparts-move[disabled]{ opacity:.35; cursor:default; }

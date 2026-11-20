@@ -11,28 +11,30 @@ export interface ModeStripProps {
   reviseEnabled?: boolean;
   // Renders at the end of the same tight cluster (the page's Plan door).
   end?: ReactNode;
+  // THE REORG: the whole-Doc publishing view is open over the paper, so the Publish tab is the one selected. Absent everywhere else.
+  publishActive?: boolean;
 }
 
-export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true, end }: ModeStripProps) {
+export function ModeStrip({ mode, onSwitch, onPublish, freeWriteEnabled = true, reviseEnabled = true, end, publishActive }: ModeStripProps) {
   const { t } = useDeskLexicon();
   const [soon, setSoon] = useState<string | null>(null);
   const flashSoon = (label: string) => { setSoon(label); setTimeout(() => setSoon(null), 1800); };
 
   const items: { key: string; label: string; live: boolean; active: boolean; onClick: () => void }[] = [
     {
-      key: 'freewrite', label: t('modeFreeWrite'), live: freeWriteEnabled, active: mode === 'journal',
+      key: 'freewrite', label: t('modeFreeWrite'), live: freeWriteEnabled, active: !publishActive && mode === 'journal',
       onClick: () => (freeWriteEnabled ? onSwitch('journal') : flashSoon(t('modeFreeWrite'))),
     },
     {
-      key: 'draft', label: t('modeDraft'), live: true, active: mode === 'drafting',
+      key: 'draft', label: t('modeDraft'), live: true, active: !publishActive && mode === 'drafting',
       onClick: () => onSwitch('drafting'),
     },
     {
-      key: 'revise', label: t('modeRevise'), live: reviseEnabled, active: mode === 'revise',
+      key: 'revise', label: t('modeRevise'), live: reviseEnabled, active: !publishActive && mode === 'revise',
       onClick: () => (reviseEnabled ? onSwitch('revise') : flashSoon(t('modeRevise'))),
     },
     // Workshop is absent until it is built, every theme's word for it with it; re-add the item here to bring it back [ModeStrip §2]
-    { key: 'publish', label: t('modePublish'), live: true, active: false, onClick: onPublish },
+    { key: 'publish', label: t('modePublish'), live: true, active: !!publishActive, onClick: onPublish },
   ];
 
   return (

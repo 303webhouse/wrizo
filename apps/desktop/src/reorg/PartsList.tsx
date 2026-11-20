@@ -38,7 +38,10 @@ export interface PartsHost {
   splitHere?: () => { ok: true; token: SplitToken } | { ok: false; why: 'caret' | 'text' };
 }
 
-const COLOUR_KEY: Record<PartColor, DeskTermId> = { clay: 'reorgPartColourClay', amber: 'reorgPartColourAmber', moss: 'reorgPartColourMoss', teal: 'reorgPartColourTeal', slate: 'reorgPartColourSlate', plum: 'reorgPartColourPlum' };
+// THE SLOTS (Fable, Nov 20: the saved colour is a slot a-f, never a name; each theme draws its own six). Until the restyle draws the slots, slot a to f wear the six hues and words this list was built with:
+// the SAVED value is the slot, the old name here is only which stylesheet rule paints it and which word it carries.
+const SLOT_HUE: Record<PartColor, string> = { a: 'clay', b: 'amber', c: 'moss', d: 'teal', e: 'slate', f: 'plum' };
+const COLOUR_KEY: Record<PartColor, DeskTermId> = { a: 'reorgPartColourClay', b: 'reorgPartColourAmber', c: 'reorgPartColourMoss', d: 'reorgPartColourTeal', e: 'reorgPartColourSlate', f: 'reorgPartColourPlum' };
 
 export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost }) {
   const { t } = useDeskLexicon();
@@ -179,7 +182,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
                 onClick={() => open(p.id)}>
                 <span className="reorg-parts-num">{p.n}</span>
-                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? label.charAt(0).toUpperCase() : ''}</span>
+                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ? SLOT_HUE[p.color] : undefined} aria-hidden="true">{p.color ? label.charAt(0).toUpperCase() : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
@@ -203,7 +206,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
                     <button type="button" className="reorg-part-swatch" data-part-colour="none" aria-pressed={!p.color} aria-label={t('reorgPartColourNone')} title={t('reorgPartColourNone')}
                       onClick={() => colour(p, null)} />
                     {PART_COLORS.map((c) => (
-                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(COLOUR_KEY[c])} title={t(COLOUR_KEY[c])}
+                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={SLOT_HUE[c]} aria-pressed={p.color === c} aria-label={t(COLOUR_KEY[c])} title={t(COLOUR_KEY[c])}
                         onClick={() => colour(p, c)} />
                     ))}
                   </div>
