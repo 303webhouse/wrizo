@@ -9,7 +9,8 @@ import { REORG } from './flag';
 
 // MOVING BETWEEN PARTS (Fable's add-on, Nov 19 3:55 pm; plan: "forward and back arrows that show with the scrollbar", Nick's idea; built to the
 // prototype's page, docs/mockups/reorg/app.js arrowBtn and partFoot, frame P2-12D). Behind ?reorg=1 in Machina, on a Page.
-//   PartArrows: two arrows capping the page's own scrollbar (.mode-scroll's), previous above and next below, disabled at either end. They sit in
+//   PartArrows: two arrows capping the page's own scrollbar (.mode-scroll's; on a screenplay, .desk-frame-scroll-cap's, the arrows a direct
+//   child of the script stage: Fable, Nov 19 7:55 pm, ask e), previous above and next below, disabled at either end. They sit in
 //     the paper's overlay slot (ModeStage's `readouts`, absolutely placed inside .mode-page), measured from the scroller's own layout box, so
 //     neither the paper, the column nor the editor moves (page primacy).
 //   PartFoot: the quiet line at a Part's foot, after her words in the same scroll: "< 1 · name", "end of Part 2", "Next · 3 · name >". Only in
@@ -67,10 +68,12 @@ function PartArrowsImpl({ entry, beforeLeave }: MovesProps) {
   // the scroller's own layout box inside the paper (offset* are layout pixels, untouched by the paper's scale), so the arrows cap its bar
   useLayoutEffect(() => {
     const host = ref.current?.parentElement;
-    const scroll = host?.querySelector<HTMLElement>(':scope > .mode-scroll');
+    const scroll = host?.querySelector<HTMLElement>(':scope > .mode-scroll, :scope > .desk-frame-scroll-cap');
     if (!host || !scroll) return;
     const measure = () => {
-      const bar = Math.max(0, scroll.offsetWidth - scroll.clientWidth);
+      // a both-edges gutter (the screenplay's scroller) reserves the bar's width on the left too: the bar is the right-hand half
+      const gutter = Math.max(0, scroll.offsetWidth - scroll.clientWidth);
+      const bar = /both-edges/.test(getComputedStyle(scroll).scrollbarGutter || '') ? gutter / 2 : gutter;
       const right = host.clientWidth - (scroll.offsetLeft + scroll.offsetWidth) + bar / 2;
       setBox((b) => (b && b.top === scroll.offsetTop && b.height === scroll.offsetHeight && b.right === right ? b : { top: scroll.offsetTop, height: scroll.offsetHeight, right }));
     };

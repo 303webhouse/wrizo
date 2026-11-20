@@ -38,6 +38,7 @@ import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSetting
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { PartArrows } from '../reorg/PartMoves';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, setCaretOffset } from './script/caret';
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
@@ -75,6 +76,10 @@ export function ScriptEditor({ id }: { id: string }) {
   const [structureConfirm, setStructureConfirm] = useState(false);
   // the screenplay surface does not run the typewriter (useTypewriterFade is not called here); the scroll cap is the containment fix and stays [ScriptEditor §5]
   const scrollCapRef = useRef<HTMLDivElement>(null);
+  // THE REORG - the Part arrows' leave: her script is saved before a move. The arrows keep one stable handle (they never re-render while she
+  // types); it calls the newest flushScriptNow, set below once it exists.
+  const leaveRef = useRef<() => void>(() => {});
+  const [leaveStable] = useState(() => () => leaveRef.current());
   // ITEM 84, TD4 — the selected stretch, read by this surface's owner exactly as
   // PageEditor reads its own, and handed to the Tutor as a plain read-only string.
   // A screenplay page IS a Draft page (this file mounts the Tutor with
@@ -464,6 +469,7 @@ export function ScriptEditor({ id }: { id: string }) {
     flushNow();
     return scenes;
   };
+  leaveRef.current = () => { flushScriptNow(); };
   const downloadThisPage = (format: 'md' | 'txt') => {
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     const liveEntry = { ...initialEntry, script: { v: 1 as const, scenes } };
@@ -724,6 +730,8 @@ export function ScriptEditor({ id }: { id: string }) {
           <div ref={scrollCapRef} className="desk-frame-scroll-cap" data-typewriter="false">
             <div className="mode-pagecol">{scriptSheet}</div>
           </div>
+          {/* THE REORG - the Part arrows cap the script scroller's bar, on the stage beside it (absolute: the sheet does not move); switch off: nothing */}
+          {reorgTop && <PartArrows entry={initialEntry} beforeLeave={leaveStable} />}
         </DeskFrame>
 
         {portOpen && <PortToBoardSheet sourceIds={[id]} onClose={() => setPortOpen(false)} />}
