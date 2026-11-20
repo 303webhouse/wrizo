@@ -1,0 +1,471 @@
+/*
+  Team B · "The organised cockpit" · Machina · a mockup, not app code.
+  Loaded after ../../reorg.css. It changes the look only: no place moves, and the page's
+  rectangle (set once, on .page, in reorg.css) is never touched here but for its edge colour.
+
+  Three levels of weight, used the same way everywhere:
+    Level 1  where she is (brass, the Part's colour) and the one main act of a zone (a solid button)
+    Level 2  zones, groups and names (Plex Sans, 600 or 500)
+    Level 3  facts and quiet controls (Plex Mono for numbers, Plex Sans 400 for the rest)
+  Lines: a hairline (G2) is structure, a G4 line is a control, the page's edge is ink.
+  Colour: brass is where she is; blue is help; a Part's colour is that Part and nothing else.
+  No motion: every state is a cut.
+*/
+
+html {
+  --room: #E6E8EA;       /* G1 */
+  --panel: #F4F5F6;      /* G0 */
+  --strip: #E6E8EA;      /* G1: a group's name strip, a pressed or leading control */
+  --head: #D2D6DA;       /* G2: a zone's header bar */
+  --hair: #D2D6DA;       /* G2: hairlines */
+  --ctl: #5E666E;        /* G4: the edge of a control */
+  --name: #23272B;       /* G6: names */
+  --label: #3A4047;      /* G5: labels and buttons */
+  --quiet: #5E666E;      /* G4: facts */
+  --off: #5E666E;        /* G4: not offered in this stage. It keeps the label floor; what it loses is its edge and its weight. */
+  --solid: #3A4047;      /* G5: the one main act of a zone */
+  --solid-ink: #F4F5F6;
+  --field: #FBFBFA;
+  --field-ink: #1C1C1C;
+  --blue: #3F6183;       /* help and guidance */
+  --page-edge: #3A4047;
+  --tag-edge: #6A727B;
+}
+/* The dark room (NOT RULED: the brief gives the light room only). The bars are dark in both tones;
+   the page keeps its light tone. */
+html.b-dark {
+  --room: #151719;       /* G7 */
+  --panel: #23272B;      /* G6 */
+  --strip: #2E3A46;
+  --head: #3A4047;       /* G5 */
+  --hair: #3A4047;
+  --ctl: #9AA1A8;        /* G3 */
+  --name: #F4F5F6;
+  --label: #E6E8EA;
+  --quiet: #B4BAC0;
+  --off: #9AA1A8;
+  --solid: #E6E8EA;
+  --solid-ink: #151719;
+  --field: #151719;
+  --field-ink: #F4F5F6;
+  --blue: #7FA0BC;
+  --tag-edge: #151719;
+}
+
+html, body { background: var(--room); }
+.shell { background: var(--room); color: var(--label); }
+/* Machina has no motion: SPRINT's fade is a cut too. */
+.bar > *, .stages > *, .rail, #pop, #menus, .foot, #drop, #changed,
+.shell.is-typing .bar > *, .shell.is-typing .stages > *, .shell.is-typing .rail, .shell.is-typing #pop,
+.shell.is-typing #menus, .shell.is-typing .foot, .shell.is-typing #drop, .shell.is-typing #changed { transition: none; }
+html.b-dark button:focus-visible { outline-color: #7FA0BC; }
+
+/* ---------- a Part's colour: a lettered tag, and a muted tint behind what belongs to the Part she is in ---------- */
+.b-tag {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; box-sizing: border-box; border: 1px solid var(--tag-edge);
+  font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: .04em; font-style: normal;
+}
+.b-tag.none { border: 0; background: none; }
+.b-tag.c-pale { background: #C9CED3; color: #1C1C1C; }
+.b-tag.c-grey { background: #6A727B; color: #FFFFFF; }
+.b-tag.c-blue { background: #41658A; color: #FFFFFF; }
+.b-tag.c-yellow { background: #B9A03A; color: #1C1C1C; }
+.b-tag.c-brass { background: #FF9800; color: #1C1C1C; }
+/* On a dark surface: the rail's tints from the frames, with the bar's own ink. */
+.bar .b-tag, html.b-dark .menu .b-tag, html.b-dark .drop .b-tag, html.b-dark .beside-head .b-tag { border-color: #1E262E; color: #1E262E; }
+.bar .b-tag.none, html.b-dark .b-tag.none { border: 0; }
+.bar .b-tag.c-pale, html.b-dark .menu .b-tag.c-pale, html.b-dark .drop .b-tag.c-pale, html.b-dark .beside-head .b-tag.c-pale { background: #C3C8CD; }
+.bar .b-tag.c-grey, html.b-dark .menu .b-tag.c-grey, html.b-dark .drop .b-tag.c-grey, html.b-dark .beside-head .b-tag.c-grey { background: #9AA1A8; }
+.bar .b-tag.c-blue, html.b-dark .menu .b-tag.c-blue, html.b-dark .drop .b-tag.c-blue, html.b-dark .beside-head .b-tag.c-blue { background: #8FA9C4; }
+.bar .b-tag.c-yellow, html.b-dark .menu .b-tag.c-yellow, html.b-dark .drop .b-tag.c-yellow, html.b-dark .beside-head .b-tag.c-yellow { background: #CDB75A; }
+
+.b-tint-none { --tint: var(--strip); }
+.b-tint-pale { --tint: #E2E5E8; }
+.b-tint-grey { --tint: #DADDE0; }
+.b-tint-blue { --tint: #D5DDE6; }
+.b-tint-yellow { --tint: #EAE4C6; }
+.b-tint-brass { --tint: #F3E2C3; }
+html.b-dark .b-tint-pale { --tint: #40464B; }
+html.b-dark .b-tint-grey { --tint: #3A4148; }
+html.b-dark .b-tint-blue { --tint: #2C3D4F; }
+html.b-dark .b-tint-yellow { --tint: #4B4630; }
+html.b-dark .b-tint-brass { --tint: #57431F; }
+
+/* ---------- the top bar: where she is · the stages · three quiet tools ---------- */
+.bar { gap: 10px; }
+.crumb { display: inline-flex; align-items: center; gap: 6px; box-sizing: border-box; }
+.crumb-project { font-size: 12px; letter-spacing: 0; text-transform: none; color: #9AA1A8; }
+.crumb-doc { font-size: 13px; color: #D2D6DA; min-width: 0; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; display: block; line-height: 37px; }
+.crumb-part { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 13px; color: #D2D6DA; padding: 0 4px 0 0; }
+.crumb-part .b-crumb-name { font-weight: 600; color: #F4F5F6; }
+.crumb-part .b-crumb-dot { color: #9AA1A8; }
+.crumb-part svg { color: #9AA1A8; }
+.crumb-part.is-open, .crumb-part.is-open .b-crumb-place { color: #F4F5F6; }
+.crumb-sep { color: #5E666E; }
+
+.stages { gap: 0; }
+.stages-tag { margin-right: 8px; }
+.stage-btn {
+  height: 39px; padding: 0 12px; box-sizing: border-box; font-size: 11px; font-weight: 500; letter-spacing: .1em;
+  color: #9AA1A8; border-bottom: 3px solid transparent; border-top: 3px solid transparent;
+}
+.stage-btn:hover { color: #E6E8EA; }
+/* Level 1: the stage she is in. Brass on the dark bar stands alone. */
+.stage-btn.is-here { background: #2E3A46; color: #F4F5F6; font-weight: 600; border-bottom-color: #FF9800; }
+.stages.is-faded .stage-btn:hover { color: #56616B; }
+.stages.is-faded .stage-btn.is-here, .stages.is-faded .stage-btn.is-here:hover { color: #F4F5F6; }
+.stages.views .stage-btn { padding: 0 9px; }
+
+.b-utils { display: flex; align-items: center; gap: 2px; height: 22px; margin-left: 2px; padding-left: 10px; border-left: 1px solid #2E3A46; }
+.b-utils .changed-btn, .b-utils .bar-cmd, .b-utils .bar-search {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 7px; margin: 0; box-sizing: border-box;
+  border: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11.5px; color: #9AA1A8; white-space: nowrap;
+}
+.b-utils .changed-btn:hover, .b-utils .bar-search:hover { color: #E6E8EA; }
+.b-utils .changed-btn.is-open, .b-utils .bar-search.is-open { color: #F4F5F6; background: #2E3A46; }
+.b-key { display: none; font-family: var(--mono); font-size: 10px; color: #9AA1A8; border: 1px solid #56616B; padding: 0 3px; line-height: 14px; }
+@media (min-width: 1500px) { .b-key { display: inline-block; } }
+
+/* ---------- the page: the one bright sheet, with an ink edge. Its rectangle is reorg.css's. ---------- */
+.page { border-color: var(--page-edge); }
+.page h1 .b-tag { margin-right: 8px; vertical-align: 2px; }
+.foot { gap: 8px; color: var(--quiet); }
+.foot .b-lead { color: var(--label); font-weight: 500; }
+
+/* ---------- a zone: one of the two side menus, or a pop-out. A header bar, then boxed groups. ---------- */
+/* Each menu keeps its place and its outer edge. It gives 8 px to a gutter beside the page; the page gives none. */
+.menu { width: 280px; background: var(--panel); border: 1px solid var(--hair); }
+.menu-front { border-right: 1px solid var(--hair); }
+.menu-back { left: calc(var(--page-left) + 628px); border-left: 1px solid var(--hair); }
+.menu.over-beside { left: calc(var(--split-x, 725px) + 1px); }
+.handle { background: var(--panel); border-color: var(--ctl); color: var(--label); }
+
+.tabs { height: 36px; padding: 0 6px; gap: 2px; align-items: flex-end; background: var(--head); border-bottom: 1px solid var(--hair); }
+.tab {
+  height: 30px; padding: 0 11px; box-sizing: border-box; font-size: 11px; font-weight: 500; letter-spacing: .1em;
+  color: var(--label); border: 0; border-top: 2px solid transparent;
+}
+.tab:hover { color: var(--name); }
+/* The tab she is on: lifted onto the panel's own ground, under an ink edge. Not brass: brass is where she is in her writing. */
+.tab.is-on { background: var(--panel); color: var(--name); font-weight: 600; border-top-color: var(--name); border-bottom: 0; }
+
+.menu-body { padding: 8px 6px; gap: 8px; }
+.session { max-height: none; overflow: visible; border-top: 0; padding: 0 6px 6px; }
+.search-slot { padding: 8px 6px 0; border-bottom: 0; }
+.search-field { height: 30px; background: var(--field); border-color: var(--ctl); color: var(--label); }
+.search-field.is-live, .search-field:focus-within { border-color: var(--name); box-shadow: 0 0 0 1px var(--name); }
+.search-field input { font-size: 13px; color: var(--field-ink); }
+.search-field input::placeholder { color: var(--quiet); }
+
+/* A group: boxed, with its name on a strip. Never only a line of grey capitals. */
+.b-group { position: relative; border: 1px solid var(--hair); background: var(--panel); }
+.b-ghead {
+  position: relative; display: flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px 0 8px; box-sizing: border-box;
+  background: var(--strip); border-bottom: 1px solid var(--hair);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0; color: var(--name);
+}
+.b-ghead.is-tinted { background: var(--tint); }
+.b-ghead.is-here { padding-left: 12px; }
+.b-ghead .here-bar { left: 2px; top: 4px; bottom: 4px; }
+.b-gname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-count { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--quiet); }
+.b-ghead.is-tinted .b-count { color: var(--label); }
+.b-grow { flex: 1 1 auto; }
+.b-sub + .b-sub { border-top: 1px solid var(--hair); }
+.b-sublabel { display: flex; align-items: center; gap: 6px; padding: 6px 6px 0 8px; font-size: 11px; font-weight: 600; color: var(--label); }
+.b-tools { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; }
+.b-sub .b-tools { padding-top: 5px; }
+.b-line { padding: 8px; font-size: 12px; line-height: 1.4; color: var(--quiet); }
+
+/* Buttons. Plain: a secondary act. Lead: the first act of its group. Solid: the one main act of the zone. */
+.b-btn {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 7px; box-sizing: border-box;
+  background: transparent; border: 1px solid var(--ctl);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 12px; font-weight: 500; color: var(--label); white-space: nowrap;
+}
+.b-btn:hover { background: var(--strip); color: var(--name); }
+.b-btn.is-lead { background: var(--strip); border-color: var(--label); color: var(--name); font-weight: 600; }
+.b-btn.is-lead:hover { border-color: var(--name); }
+.b-btn.is-solid, .b-btn.is-solid:hover { background: var(--solid); border-color: var(--solid); color: var(--solid-ink); font-weight: 600; }
+.b-btn.is-solid:hover { box-shadow: 0 0 0 1px var(--solid); }
+/* Not offered in this stage: it keeps its place, and loses its edge, its ground and its weight. */
+.b-btn[disabled], .b-btn[disabled]:hover, .b-btn.is-solid[disabled] {
+  background: transparent; border: 1px dotted var(--off); color: var(--off); font-weight: 400; cursor: default; box-shadow: none;
+}
+.b-btn[disabled] svg { opacity: .55; }
+
+/* "More": the rare acts of a group, one click away. */
+.b-more { position: relative; flex: 0 0 auto; display: inline-flex; }
+.b-morebtn {
+  display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 3px 0 6px;
+  font-size: 11.5px; font-weight: 500; color: var(--label);
+}
+.b-morebtn:hover, .b-morebtn[aria-expanded="true"] { background: var(--panel); color: var(--name); box-shadow: inset 0 0 0 1px var(--ctl); }
+.b-morebtn[disabled], .b-morebtn[disabled]:hover { color: var(--off); background: none; box-shadow: none; cursor: default; }
+.b-menu {
+  position: absolute; right: 0; top: calc(100% + 2px); z-index: 6; min-width: 190px; box-sizing: border-box; padding: 3px;
+  display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--name);
+}
+.b-menu.up { top: auto; bottom: calc(100% + 2px); }
+.b-mi {
+  display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; box-sizing: border-box;
+  font-size: 12px; font-weight: 500; color: var(--label); white-space: nowrap;
+}
+.b-mi:hover, .b-mi:focus-visible { background: var(--strip); color: var(--name); }
+.b-mi[disabled], .b-mi[disabled]:hover { color: var(--off); background: none; cursor: default; font-weight: 400; }
+.b-mi-fact { font-size: 11px; font-weight: 400; color: var(--quiet); }
+
+/* ---------- the Front menu, PARTS: this doc · its Parts · the Part she is in ---------- */
+.b-order {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 24px; padding: 0 6px 0 8px;
+  border-bottom: 1px solid var(--hair); font-size: 11px; color: var(--quiet);
+}
+.b-order b { font-weight: 500; color: var(--label); }
+.b-quietbtn { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 4px; font-size: 11px; font-weight: 500; color: var(--label); }
+.b-quietbtn:hover { color: var(--name); box-shadow: inset 0 0 0 1px var(--ctl); }
+
+.b-prow {
+  position: relative; display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 4px 0 10px; box-sizing: border-box;
+  border-bottom: 1px solid var(--hair);
+}
+.b-parts > :last-child { border-bottom: 0; }
+.b-prow.is-here { background: var(--tint); }
+.b-prow .here-bar { left: 2px; top: 5px; bottom: 5px; }
+.b-num { flex: 0 0 auto; width: 10px; font-family: var(--mono); font-size: 11px; color: var(--quiet); }
+.b-prow.is-here .b-num { color: var(--label); }
+.b-prow-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 5px 0; }
+.b-pname { font-size: 13px; font-weight: 500; color: var(--name); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-prow-main:hover .b-pname { text-decoration: underline; }
+/* Level 1: the Part she is in. Its tint, its tag, a heavier name, and brass on top. */
+.b-prow.is-here .b-pname { font-weight: 600; }
+.b-fact { font-size: 11px; color: var(--quiet); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-fact.mono { font-family: var(--mono); font-size: 10.5px; }
+.b-prow.is-here .b-fact { color: var(--label); }
+
+/* One shape for "how many assets are connected": the same chip in the Parts list and on the Assets group. */
+.b-links {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 6px; box-sizing: border-box;
+  border: 1px solid var(--ctl); background: transparent; font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--label);
+}
+.b-links:hover { background: var(--panel); color: var(--name); }
+.b-links[aria-pressed="true"] { background: var(--panel); border-color: var(--name); box-shadow: inset 0 0 0 1px var(--name); color: var(--name); }
+.b-toggle { flex: 0 0 auto; width: 20px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--label); }
+.b-toggle:hover { color: var(--name); box-shadow: inset 0 0 0 1px var(--ctl); }
+.b-toggle.none { visibility: hidden; }
+
+/* A Part expanded in place: up to four of its assets show; more scroll behind a very thin bar. */
+.b-exp { border-bottom: 1px solid var(--hair); background: var(--panel); padding: 2px 0 4px; }
+.b-exp-list { max-height: 104px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--ctl) var(--hair); }
+@supports selector(::-webkit-scrollbar) {
+  .b-exp-list { scrollbar-width: auto; scrollbar-color: auto; }
+  .b-exp-list::-webkit-scrollbar { width: 3px; }
+  .b-exp-list::-webkit-scrollbar-track { background: var(--hair); }
+  .b-exp-list::-webkit-scrollbar-thumb { background: var(--ctl); }
+}
+.b-exp-row { width: 100%; height: 26px; padding: 0 8px 0 28px; box-sizing: border-box; display: flex; align-items: center; gap: 7px; }
+.b-exp-row:hover .b-exp-name { text-decoration: underline; }
+.b-exp-name { flex: 1 1 auto; min-width: 0; font-size: 12px; color: var(--name); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b-exp-date { flex: 0 0 auto; font-family: var(--mono); font-size: 10px; color: var(--quiet); }
+
+/* ---------- the Back menu, ASSETS: the doc's tools, then a group for each Part, each asset a compact card ---------- */
+/* One shape for "what kind of thing": a small tile with its sign and its word. */
+.b-kind {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 3px; height: 18px; padding: 0 5px 0 4px; box-sizing: border-box;
+  background: var(--strip); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 9.5px; font-weight: 600; letter-spacing: .06em; color: var(--label);
+}
+.b-agroup { display: flex; flex-direction: column; gap: 4px; }
+.b-ahead { border: 1px solid var(--hair); min-height: 28px; }
+.b-agroup.is-here .b-ahead { border-color: var(--ctl); }
+.b-card { display: flex; flex-direction: column; gap: 5px; padding: 7px 8px; border: 1px solid var(--hair); background: var(--panel); }
+.b-card-top { display: flex; align-items: flex-start; gap: 7px; }
+.b-card-name { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 500; line-height: 18px; color: var(--name); }
+.b-card-foot { display: flex; align-items: center; gap: 6px; min-height: 24px; }
+.b-card-foot .b-fact { flex: 1 1 auto; min-width: 0; }
+.b-card .b-btn { height: 24px; font-size: 11.5px; }
+.b-filter { display: flex; align-items: center; gap: 6px; }
+.b-filter-label { font-weight: 400; color: var(--label); }
+
+/* The Consultant is help: it wears the guidance blue, and nothing else here does. */
+.b-group.is-help > .b-ghead { color: var(--blue); box-shadow: inset 3px 0 0 var(--blue); }
+
+/* ---------- Compact (PROPOSED; not saved) ---------- */
+html.b-compact .menu-body { padding: 6px; gap: 6px; }
+html.b-compact .b-ghead { min-height: 22px; }
+html.b-compact .b-tools { padding: 5px 6px; gap: 3px; }
+html.b-compact .b-btn { height: 22px; font-size: 11.5px; padding: 0 6px; }
+html.b-compact .b-prow { min-height: 32px; }
+html.b-compact .b-prow-main { flex-direction: row; align-items: baseline; gap: 8px; padding: 0; }
+html.b-compact .b-prow-main .b-pname { flex: 0 1 auto; }
+html.b-compact .b-order { min-height: 20px; }
+html.b-compact .b-sublabel { padding-top: 4px; }
+html.b-compact .b-sub .b-tools { padding-top: 3px; }
+html.b-compact .b-agroup { gap: 3px; }
+html.b-compact .b-ahead { min-height: 24px; }
+html.b-compact .b-card { padding: 4px 8px; gap: 2px; }
+html.b-compact .b-card .b-btn { height: 20px; }
+html.b-compact .b-card-foot { min-height: 20px; }
+html.b-compact .b-exp-row { height: 22px; }
+html.b-compact .b-exp-list { max-height: 88px; }
+html.b-compact .session { padding-bottom: 6px; }
+.b-seg { display: inline-flex; border: 1px solid var(--ctl); }
+.b-seg button { height: 24px; padding: 0 9px; font-size: 12px; font-weight: 500; color: var(--label); }
+.b-seg button[aria-pressed="true"] { background: var(--solid); color: var(--solid-ink); }
+
+/* ---------- pop-outs (the Docs drawer and the rest): the same zone dress ---------- */
+.pop { background: var(--panel); border-right: 1px solid var(--hair); }
+.pop-head { height: 36px; padding: 0 12px; background: var(--head); border-bottom: 1px solid var(--hair); }
+.pop-title { letter-spacing: .1em; color: var(--name); }
+.pop-count { color: var(--label); }
+.pop-body { padding: 8px 6px; gap: 8px; box-sizing: border-box; }
+.group-head.b-ghead, .pin-head.b-ghead { padding: 0 6px 0 8px; gap: 8px; }
+/* The prototype writes these heads in capitals. Here they read as a sentence: Level 2 is weight, not shouting. */
+.group-head.b-ghead > span:first-child { display: inline-block; text-transform: lowercase; }
+.group-head.b-ghead > span:first-child::first-letter { text-transform: uppercase; }
+.pin-head.b-ghead { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--label); }
+.b-group > .new-row:last-child, .b-group > .row:last-child, .b-group > .set-row:last-child, .b-group > .new-pair:last-child { border-bottom: 0; }
+.new-row { padding: 0 10px; color: var(--name); font-weight: 500; border-bottom-color: var(--hair); }
+.new-row .plus { color: var(--label); }
+.new-row.sub-kind { background: var(--strip); }
+.new-pair { border-bottom-color: var(--hair); }
+.new-pair-div { background: var(--hair); }
+.row { padding-left: 12px; border-bottom-color: var(--hair); }
+.row.is-here { background: var(--strip); }
+.row-name { color: var(--name); font-weight: 500; }
+.row-meta { color: var(--quiet); }
+.row.is-here .row-meta { color: var(--label); }
+.set-row { padding: 0 10px; color: var(--name); border-bottom-color: var(--hair); }
+.switch { border-color: var(--ctl); }
+.switch span { color: var(--label); }
+.switch span.is-set { background: var(--solid); color: var(--solid-ink); }
+.quiet-line { padding: 8px 10px; color: var(--quiet); }
+.icon-btn { color: var(--label); }
+.icon-btn.edged { border-color: var(--ctl); }
+.icon-btn.edged[aria-expanded="true"] { background: var(--strip); border-color: var(--name); }
+.chip-btn {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: 0;
+  color: var(--label); border-color: var(--ctl); padding: 3px 7px;
+}
+.chip-btn:hover { background: var(--strip); color: var(--name); }
+.chip-btn.solid { background: var(--solid); color: var(--solid-ink); border-color: var(--solid); }
+.chip-btn[disabled], .chip-btn[disabled]:hover { background: none; color: var(--off); border-color: var(--hair); }
+.kind-tag {
+  border: 0; background: var(--strip); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 9.5px; font-weight: 600;
+  letter-spacing: .06em; color: var(--label); padding: 2px 5px; min-width: 0;
+}
+.row.is-here .kind-tag, .beside-head .kind-tag, .beside-row.is-on .kind-tag { background: var(--panel); }
+.sub { background: var(--strip); border-bottom-color: var(--hair); }
+.sub-head { color: var(--label); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0; }
+.sub-row { color: var(--name); }
+.sub-row.link { color: var(--name); font-weight: 500; }
+.box-foot { background: var(--strip); border-top-color: var(--hair); }
+.box-foot-caret, .box-foot-label { color: var(--name); }
+.box-foot-label { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .08em; }
+.box-foot-name { color: var(--label); }
+.box-editor { background: var(--strip); }
+.box-line-label { color: var(--label); }
+.box-hint { color: var(--label); }
+.pop-divider { border-top-color: var(--hair); border-bottom-color: var(--name); background: var(--room); }
+.trash-foot { background: var(--strip); color: var(--name); }
+
+/* The list of Parts dropped from the top bar, and the "What changed" panel. */
+.drop, .changed { background: var(--panel); border-color: var(--name); }
+.drop-head, .changed-menu { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--label); }
+.drop-row { border-bottom-color: var(--hair); }
+.drop-row.is-here { background: var(--tint, var(--strip)); }
+.drop-name { color: var(--name); font-weight: 500; }
+.drop-row .part-num { color: var(--quiet); }
+.changed-head, .changed-vs { border-bottom-color: var(--hair); }
+.changed-key { color: var(--name); }
+.changed-job, .changed-page, .changed-row li { color: var(--label); }
+.changed-row { border-bottom-color: var(--hair); }
+.changed-row .sign { color: var(--name); }
+.changed-row li.lose, .changed-row li.same, .changed-detail, .changed-page.quiet, .changed-foot { color: var(--quiet); }
+.changed-foot { border-top-color: var(--hair); }
+.changed-tab { color: var(--name); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; }
+.changed-tab.plain { color: var(--label); }
+.changed-scopes, .scopes { border-color: var(--ctl); }
+.scope { color: var(--label); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 500; }
+.scope[aria-pressed="true"] { background: var(--solid); color: var(--solid-ink); }
+.scope[disabled] { color: var(--off); }
+
+/* The search menu. Blue stays on the one line that guides ("Not here? Widen to..."). */
+.search-top { height: 36px; padding: 0 10px; background: var(--head); border-bottom-color: var(--hair); }
+.search-back { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: 0; color: var(--name); }
+.search-head { border-bottom-color: var(--hair); padding: 8px 6px; }
+.search-count, .scope-line, .later, .replace-label { color: var(--quiet); }
+.menu-back.is-search .menu-body { padding: 0; gap: 0; }
+.hit-head { background: var(--strip); border-bottom-color: var(--hair); color: var(--label); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 600; letter-spacing: .04em; }
+.hit-head.top { background: var(--head); color: var(--name); border-bottom-color: var(--ctl); }
+.hit { border-bottom-color: var(--hair); }
+.hit.is-here { background: var(--strip); }
+.hit-main { color: var(--label); }
+.hit-more { color: var(--name); border-bottom-color: var(--hair); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-weight: 500; }
+.hit-widen { color: var(--blue); font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11.5px; }
+.replace-line, .replace-box { background: var(--strip); border-bottom-color: var(--hair); }
+
+/* ---------- the split: the asset's side is a zone too ---------- */
+.beside { border-left-color: var(--ctl); }
+html.b-dark .beside { background: #1B1E21; }
+.beside-head { background: var(--head); border-bottom-color: var(--hair); gap: 8px; }
+.beside-name { color: var(--name); }
+.beside-v { color: var(--label); }
+.beside-meta { display: flex; align-items: center; gap: 5px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11.5px; color: var(--label); }
+.beside-meta > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.beside-meta .b-conn { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; font-weight: 500; color: var(--name); }
+.beside-drop { background: var(--panel); border-color: var(--name); }
+.beside-drop-head { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--label); }
+.beside-row { border-top-color: var(--hair); }
+.beside-row.is-on { background: var(--strip); box-shadow: inset 3px 0 0 var(--name); }
+.beside-row-name { color: var(--name); }
+.beside-body > .quiet-line { color: var(--label); }
+html.b-dark .beside-body > .quiet-line { color: var(--quiet); }
+.grip { background: var(--panel); border-color: var(--ctl); }
+.grip span { background: var(--label); }
+/* The prototype writes CLOSE and RESTORE in capitals; as buttons they read as words. */
+.beside-head .chip-btn, .blk-pop-foot .chip-btn, .changed-head .chip-btn { text-transform: lowercase; }
+.beside-head .chip-btn::first-letter, .blk-pop-foot .chip-btn::first-letter, .changed-head .chip-btn::first-letter { text-transform: uppercase; }
+
+/* ---------- review notes: one quiet tag style, and one strip. They are notes for the walk, not the product. ---------- */
+.tag, .tag-ruled, .tag-proposed, .tag-not {
+  padding: 0; background: none; border: 0; border-bottom: 1px dotted currentColor;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 10px; font-style: italic; font-weight: 400; letter-spacing: 0; line-height: 13px;
+  text-transform: lowercase; color: var(--quiet);
+}
+/* The stage strip's own tag stays in view always (Fable's ruling), in the same quiet hand, light on the bar. */
+.stages-tag .tag-not { color: #D2D6DA; border-color: #D2D6DA; background: none; }
+.toast .tag, .toast .tag-not, .toast .tag-proposed { color: #D2D6DA; border-color: #D2D6DA; }
+html.b-dark .toast { background: #E6E8EA; color: #151719; }
+html.b-dark .toast .tag, html.b-dark .toast .tag-not, html.b-dark .toast .tag-proposed { color: #3A4047; border-color: #3A4047; }
+/* The prototype's corner legend is read into the strip and not drawn. */
+.state-tag { display: none; }
+
+.b-notes {
+  position: absolute; left: 100px; right: 12px; bottom: 5px; z-index: 8;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 11px; font-style: italic; color: var(--quiet);
+}
+.b-notes.in-split { right: calc(100% - var(--split-x, 725px) + 12px); }
+.b-notes-bar {
+  display: flex; align-items: center; gap: 8px; width: 100%; height: 22px; box-sizing: border-box; padding: 0 2px;
+  border-top: 1px dotted var(--quiet); font-style: italic; color: var(--quiet); white-space: nowrap;
+}
+.b-notes-bar:hover .b-notes-title { text-decoration: underline; }
+.b-notes-title { flex: 0 0 auto; font-weight: 600; color: var(--label); }
+.b-notes-n { flex: 0 0 auto; font-family: var(--mono); font-style: normal; font-size: 10.5px; }
+.b-notes-first { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.b-notes-key { flex: 0 0 auto; }
+.b-notes-list {
+  position: absolute; left: 0; right: 0; bottom: 23px; max-height: 320px; overflow-y: auto; scrollbar-width: thin; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 7px; padding: 10px 12px;
+  background: var(--panel); border: 1px dotted var(--quiet);
+}
+.b-note { display: flex; align-items: baseline; gap: 10px; font-size: 11.5px; line-height: 1.45; color: var(--label); }
+.b-note .tag { flex: 0 0 58px; text-align: left; border-bottom: 0; text-decoration: underline dotted; text-underline-offset: 2px; }
+.b-notes-off { display: flex; justify-content: flex-end; }
+.b-notes-off button { height: 22px; padding: 0 2px; font-style: italic; color: var(--quiet); }
+.b-notes-off button:hover, .b-notes-foot button:hover { text-decoration: underline; }
+.b-notes-foot { display: flex; justify-content: flex-end; padding-top: 2px; }
+.b-notes-foot button { font-style: italic; font-size: 11.5px; color: var(--label); }
+/* Off (F9): every review mark goes, but the stage strip's tag. */
+html.b-notes-off .tag { display: none; }
+html.b-notes-off .stages-tag .tag { display: inline-block; }

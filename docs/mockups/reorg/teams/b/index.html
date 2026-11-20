@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo reorg prototype · Machina · Team B, "The organised cockpit" · a mockup, not app code</title>
+<!-- Fonts as in the prototype. With no network the page falls back to system fonts. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;family=Source+Sans+3:wght@400;600&amp;display=swap">
+<!-- The prototype's own styles, untouched, then Team B's dress over them. -->
+<link rel="stylesheet" href="../../reorg.css">
+<link rel="stylesheet" href="b.css">
+</head>
+<body>
+<!--
+  Team B's redesign of the prototype's look (machina-reorg-two-teams-brief, section 8).
+  A throwaway mockup with made-up content. Nothing here ships.
+
+  The prototype's data and scripts are imported, not edited: ../../stage-table.js, ../../data.js
+  and ../../app.js run exactly as in ../../index.html, so every place, every door and every ruled
+  word is the same. b.js runs after them and only re-dresses what app.js has drawn.
+
+  Doors: #build (BUILD, Part 3, Parts and Assets open), #sprint, #split (Ledger sample sheet
+  beside the page), #dark. Also #compact and #notes-off. Every door of ../../index.html works here too.
+  Opens by double-click: plain HTML, CSS and JavaScript, no build, no server.
+-->
+<div id="shell" class="shell">
+  <header id="bar" class="bar"></header>
+  <nav id="rail" class="rail" aria-label="Left rail"></nav>
+  <div id="pop"></div>
+  <div id="menus"></div>
+  <main id="page" class="page"></main>
+  <div id="foot" class="foot"></div>
+  <div id="beside"></div>
+  <div id="board"></div>
+  <div id="drop"></div>
+  <div id="changed"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="state-tag" class="state-tag"></div>
+  <input id="pick-colour" type="color" class="offstage" tabindex="-1" aria-hidden="true">
+  <input id="pick-picture" type="file" accept="image/*" class="offstage" tabindex="-1" aria-hidden="true">
+  <div id="b-notes"></div>
+</div>
+<script src="../../stage-table.js"></script>
+<script src="../../data.js"></script>
+<script src="../../app.js"></script>
+<script src="b.js"></script>
+</body>
+</html>
