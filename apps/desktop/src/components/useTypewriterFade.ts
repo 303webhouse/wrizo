@@ -143,12 +143,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // #113 (ARBOR; Fable, Nov 19, 8:10 pm, RULED): OPENING lands at the writing line AT ONCE (a cut); the glide stays only for the FOLLOW while typing. Opening a long page put the
     // caret's line thousands of px below the hold, and that backlog was paid by the staircase meant for typing (two lines per 160 ms glide, ~340 px/s): at 20k words it was still moving 25 s
     // later, and a writer who scrolled away to look had the page drift back down under her. So until she types - or two seconds have passed since this mount, whichever comes first -
-    // whatever is owed is paid in ONE step (the first engage and any late layout that follows it: a font arriving, the page finishing). Her first keystroke ends the opening for good:
-    // from then on every advance is the one-line glide it always was.
+    // whatever is owed is paid in ONE step (the first engage and any late layout that follows it: a font arriving, the page finishing). Her first act ends the opening for good - a key,
+    // a press (a pen stroke's), the wheel, a touch - from then on every advance is the one-line glide it always was (a pen stroke committed inside the window had its own page cut by 25 px
+    // under it: ink-foot K2 in the zoom).
     const OPENING_MS = 2000;
     const mountedAt = performance.now();
     let typedSinceMount = false;
-    const onTyped = () => { typedSinceMount = true; };
+    const onTyped = () => { typedSinceMount = true; };   // (named for the first use; any act of hers ends the opening: see the listeners below)
     const opening = () => !typedSinceMount && performance.now() - mountedAt < OPENING_MS;
     // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
     // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
@@ -411,6 +412,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
+    for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.addEventListener(ev, onTyped, { passive: true, capture: true });
     scrollListenTarget.addEventListener('keydown', onUserKey as EventListener, { passive: true });
     window.addEventListener('resize', measure);
     measure();
@@ -421,6 +423,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       mo.disconnect();
       container.removeEventListener('input', schedule);
       container.removeEventListener('beforeinput', onTyped, true);
+      for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.removeEventListener(ev, onTyped, true);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
