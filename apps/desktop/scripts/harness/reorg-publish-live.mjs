@@ -214,6 +214,8 @@ await withHarness(async (app) => {
   ok('E4 a loose page: no title, no number, no ticks; its words are the whole file',
     !!e4 && e4.title === '' && e4.parts.length === 1 && e4.parts[0].head === '' && !e4.parts[0].tick && e4f.length === 1 && e4f[0].text === 'A loose page, alone.\n' && e4f[0].name === 'A loose page, alone.md', { e4, e4f });
 
+  // a missing node or a thrown page eval ends the FINALIZE checks with one honest failure, never a crash that hides every verdict above it
+  try {
   // ---- FINALIZE (Fable, Nov 20, 1:27 pm) ---------------------------------------------------------------------------------------------------
   // F1 Export > Web (HTML) beside Markdown and Plain Text
   await open(app, 'machina', true, 'pub-2');
@@ -277,6 +279,7 @@ await withHarness(async (app) => {
   ok('F5 an order made in the Front menu is the Doc\'s order: the sheet, the file and the stored order agree and no word moved; going back to writing gives TEXT its tab and its body again',
     order === 'pub-3,pub-1,pub-2' && side === order && moved.length === 1 && /^# Budget\n\n## Close\n\nClosing words\.\n\n## Opening\n\nOpening words here\./.test(moved[0].text) && /^pub-3:/.test(stored) && /pub-1=Opening words here\.\nSecond line \*\*bold\*\*\.\|pub-2=Middle words unnamed\.\|pub-3=Closing words\./.test(texts)
     && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120) });
+  } catch (err) { ok('F0 the FINALIZE checks ran to their end (a driver that cannot find what it must press fails here, it does not crash the run)', false, String(err && err.message).slice(0, 300)); }
 });
 
 // ---- WORDS (source) --------------------------------------------------------------------------------------------------------------------
