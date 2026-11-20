@@ -281,7 +281,11 @@ await withHarness(async (app) => {
     await sleep(600);
     const rz = await read();
     say('zoom-turned', { pages: [r.st.total, rz.st.total] });
+    // the zoomed page's glide to the writing line after a long page opens is slow today (bug #113, FIX's): the check takes the scroller to the end
+    // of the text itself (where the writing line is) rather than waiting on that glide, then reads the pair the writing just made
+    await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); s.scrollTop = s.scrollHeight; return true; })()");
     const M = await marks();
+    say('zoom-read', { scrollTop: M.scrollTop, vh: M.vh, last: M.pairs.length ? (M.pairs[M.pairs.length - 1].sides[0] || {}).stem : null });
     // zoom 1.6 at k 1: stem 22, arm 13, stroke 3, tip 19 (12 x 1.6 = 19.2); the break line is not checked here (Free Write has no rows to read it from)
     const P = judgePair(M, rz.st.total, false, { stem: 22, arm: 13, stroke: 3, tip: 19, whole: true });
     ok('P zoomed Free Write: 22 / 13 / 3 / 19, both sides on one line, on whole pixels', P.pass, P.why);
