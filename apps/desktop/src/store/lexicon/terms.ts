@@ -116,6 +116,10 @@ export type DeskTermId =
   | 'reorgBoxSettings' | 'reorgLetters' | 'reorgNoLetters' | 'reorgColour' | 'reorgOwnColour' | 'reorgPicture' | 'reorgChoosePicture' | 'reorgRemovePicture' | 'reorgSwatchPale' | 'reorgSwatchGrey' | 'reorgSwatchBlue' | 'reorgSwatchBrass' | 'reorgSwatchOrange'
   // THE REORG'S RAIL, step 5 (DOCS) and step 6 (UNFILED and the Trash)
   | 'reorgNewDocHeading' | 'reorgKindBlank' | 'reorgKindScreenplay' | 'reorgKindResearch' | 'reorgKindMore' | 'reorgRecent' | 'reorgDefaults' | 'reorgTypewriter' | 'reorgProgressBars' | 'reorgOff' | 'reorgOn' | 'reorgWordsOne' | 'reorgWordsMany' | 'reorgNoProjectHeading' | 'reorgFile' | 'reorgTrashOne' | 'reorgTrash' | 'reorgUnfiledEmpty'
+  // THE REORG'S BACK MENU (src/reorg/backMenu/, behind ?reorg=1 in Machina): new words only; the tab row reads PLAN, ASSETS (drawerLinks), FEEDBACK (tutorTabTutor)
+  | 'reorgBackPlan' | 'reorgBackTabsLabel'
+  | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
+  | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
