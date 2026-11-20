@@ -24,13 +24,19 @@ const TOP: Level[] = [
 // attributes of the live chain that say where the page is (zoomed, which sheet), never how its lines lay out
 const DROP = new Set(['data-zoom', 'data-page', 'data-scrolled', 'data-writing', 'contenteditable']);
 
+// what changes while she writes but never lays a line out: the Typewriter's own variables (written on the scroller and the column per key) and
+// the page's focus class. Left in, they would re-key the copy and rebuild it at every pause [pageMeasure §1b]
+const VOLATILE_CLASS = new Set(['focused']);
+const steadyStyle = (s: string) => s.split(';').map((d) => d.trim()).filter((d) => d && !d.startsWith('--tw')).join('; ');
+
 /** The live chain from .mode-pagecol down to the editor (outermost first). Null when the editor is not in a page column. */
 export function liveChain(ed: HTMLElement): Level[] | null {
   const out: Level[] = [];
   for (let e: HTMLElement | null = ed; e; e = e.parentElement) {
     const data: Record<string, string> = {};
     for (const a of Array.from(e.attributes)) if (a.name.startsWith('data-') && !DROP.has(a.name)) data[a.name] = a.value;
-    out.push({ tag: e.tagName.toLowerCase(), cls: e.getAttribute('class') || '', style: e.getAttribute('style') || '', data });
+    const cls = (e.getAttribute('class') || '').split(/\s+/).filter((c) => c && !VOLATILE_CLASS.has(c)).join(' ');
+    out.push({ tag: e.tagName.toLowerCase(), cls, style: steadyStyle(e.getAttribute('style') || ''), data });
     if (e.classList.contains('mode-pagecol')) return out.reverse();
   }
   return null;

@@ -125,6 +125,8 @@ export function usePageBreaks(scrollRef: RefObject<HTMLElement | null>, pageId: 
     const onSel = () => {
       clearTimeout(selT);
       selT = window.setTimeout(() => {
+        // while she types the caret moves with every key: the pause publishes the count with the marks (they move together)
+        if (Date.now() - lastKeyAt < PAUSE_MS) return;
         const ed = editor();
         if (!ed || !ed.contains(document.getSelection()?.focusNode ?? null)) return;
         const c = cleanCaret(ed);
@@ -154,7 +156,15 @@ export function usePageBreaks(scrollRef: RefObject<HTMLElement | null>, pageId: 
     ro.observe(scroll);
     // the chain's own attributes (the zoom, the dress on the page, the face and size on the editor), never the attributes inside the text
     const col = scroll.closest('.mode-pagecol');
-    const attrs = new MutationObserver((recs) => { const ed = editor(); if (recs.some((r) => !mine(r.target) && (r.target === ed || !(ed && ed.contains(r.target))))) onResize(); });
+    // (the Typewriter writes its variables on the scroller's and the column's style per key: those are not the chain changing)
+    const relevant = (r: MutationRecord) => {
+      const t = r.target as Element;
+      const ed = editor();
+      if (mine(t) || (ed && t !== ed && ed.contains(t))) return false;
+      if (r.attributeName === 'style' && (t.classList.contains('mode-scroll') || t.classList.contains('mode-pagecol'))) return false;
+      return true;
+    };
+    const attrs = new MutationObserver((recs) => { if (recs.some(relevant)) onResize(); });
     if (col) attrs.observe(col, { attributes: true, subtree: true, attributeFilter: ['data-zoom', 'style', 'class'] });
     attrs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-page', 'data-cast', 'data-arbor2-room'] });
     scroll.addEventListener('keydown', onKey, true);
