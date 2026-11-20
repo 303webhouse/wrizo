@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { getPref, setPref } from '../prefsSaved';
-import { MIN_LETTERS, type Reach } from './searchFind';
+import { MIN_LETTERS, type Hit, type Reach } from './searchFind';
+import { canUndoReplace, forgetReplaces, replaceHits, undoReplace, type ReplaceSaid } from './replace';
 
 // THE REORG'S SEARCH, its state (in memory, this session): whether it is open, where it was opened from, how far it looks, the word, the find she
 // is on. It lives outside the Back menu because the search outlives a page: Enter into the next Part, or a find in another Doc, opens another page
@@ -23,9 +24,14 @@ export interface SearchState {
   more: Record<string, boolean>;
   /** bumped by each opening: the menu selects the field's word once for each */
   opened: number;
+  /** Find and Replace (reorg/search/replace.ts): its box open, the WITH word, what the last press said, whether there is a step to undo */
+  replaceOpen: boolean;
+  repl: string;
+  said: ReplaceSaid | null;
+  canUndo: boolean;
 }
 
-let state: SearchState = { open: false, from: 'bar', wasOpen: null, reach: 'doc', q: '', cur: null, more: {}, opened: 0 };
+let state: SearchState = { open: false, from: 'bar', wasOpen: null, reach: 'doc', q: '', cur: null, more: {}, opened: 0, replaceOpen: false, repl: '', said: null, canUndo: false };
 /** what the Back menu should go back to when the search closes: open (on the tab it was on) or shut */
 let restoreOpen = false;
 const subs = new Set<() => void>();
@@ -49,11 +55,21 @@ export function closeSearch(): void {
   if (!state.open) return;
   keepWord();
   restoreOpen = !!state.wasOpen;
-  set({ open: false, wasOpen: null, q: '', cur: null, more: {} });
+  forgetReplaces();
+  set({ open: false, wasOpen: null, q: '', cur: null, more: {}, replaceOpen: false, repl: '', said: null, canUndo: false });
 }
 /** what the Back menu goes back to after the search closed */
 export const restoreAfterSearch = (): boolean => restoreOpen;
-export const setSearchQ = (q: string): void => set({ q, cur: null, more: {} });
+export const setSearchQ = (q: string): void => set({ q, cur: null, more: {}, said: null });
+export const toggleReplace = (): void => set({ replaceOpen: !state.replaceOpen });
+export const setReplaceWith = (repl: string): void => set({ repl });
+/** replace these finds of this Doc with the WITH word: one press, one step to undo */
+export function doReplace(hits: Hit[]): void {
+  const said = replaceHits(hits, state.q.trim(), state.repl);
+  keepWord();
+  set({ said, cur: null, canUndo: canUndoReplace() });
+}
+export function doUndoReplace(): void { const said = undoReplace(); set({ said, cur: null, canUndo: canUndoReplace() }); }
 export const setSearchReach = (reach: Reach): void => set({ reach, cur: null, more: {} });
 export function setSearchCur(cur: string | null): void { keepWord(); set({ cur }); }
 export const openMore = (id: string): void => set({ more: { ...state.more, [id]: true } });

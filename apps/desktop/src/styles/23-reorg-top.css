@@ -148,3 +148,16 @@
 [data-theme='machina'] :is(.reorg-search-back, .reorg-search-scopes > button, .reorg-search-hit, .reorg-search-more, .reorg-search-widen):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 [data-theme='machina'] ::highlight(wz-search){ background-color:rgba(246, 236, 190, .6); }
 [data-theme='machina'] ::highlight(wz-search-cur){ background-color:rgba(232, 196, 92, .85); color:#1C1C1C; }
+/* FIND AND REPLACE (reorg/search/replace.ts): the line under the scopes, its box, and a Replace beside each find of this Doc */
+[data-theme='machina'] .reorg-replace{ border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .reorg-replace-line{ display:flex; align-items:center; gap:6px; width:100%; padding:8px 12px; border:0; background:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); text-align:left; cursor:pointer; }
+[data-theme='machina'] .reorg-replace-line::before{ content:'\203A'; }
+[data-theme='machina'] .reorg-replace-line[aria-expanded='true']::before{ content:'\2304'; }
+[data-theme='machina'] .reorg-replace-acts{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:2px 12px 8px; }
+[data-theme='machina'] :is(.reorg-replace-acts > button, .reorg-replace-one){ padding:0; border:0; background:none; font-family:var(--font-ui); font-size:12px; color:var(--accent-rest); cursor:pointer; }
+[data-theme='machina'] :is(.reorg-replace-acts > button, .reorg-replace-one)[disabled]{ color:var(--text-mid); opacity:.55; cursor:default; }
+[data-theme='machina'] .reorg-replace-said{ padding:0 12px 8px; font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-search-row{ display:flex; align-items:flex-start; }
+[data-theme='machina'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }
+[data-theme='machina'] .reorg-replace-one{ flex:none; padding:5px 12px 5px 6px; }
+[data-theme='machina'] :is(.reorg-replace-line, .reorg-replace-acts > button, .reorg-replace-one):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
