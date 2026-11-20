@@ -23,6 +23,8 @@ export const CANONICAL_CHROME = {
   flipEmpty: 'Nothing here yet.',
   // the Deck's progress fact under its thumbnail: how many of its cards the writer has BEGUN (kindled: words, or a graft to a page). It says so in words - never a bare 4 / 9 - so it cannot be read as the Walk's position (Flux: TRK n/m).
   deckFact: '{n} of {m} begun',
+  // PAGE BREAKS (spec draft 3, section 3): the count row under the page, after the word count
+  pageOfPages: 'p. {n} of {m}',
   gapsLead: 'Nothing yet:',
   deckStack: 'Stack',
   walkLit: 'Mark lit',

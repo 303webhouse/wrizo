@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
@@ -27,6 +27,9 @@ import { isArbor2 } from '../arbor2/flag';   // ARBOR v2 mockup r7: the dark pag
 import { editorPlainText, rowsFor, rowsOffsetOf } from '../store/lineRows';
 import { tuckDrawers } from '../store/menusDrawers';
 import { ZOOM_ANCHOR } from '../store/pageScale';
+import { usePageBreaks } from './usePageBreaks';
+import { PageCount } from './PageCount';
+import { getPageBreaks, subscribePageBreaks } from '../store/pageBreaks';
 import { Seg } from './settings/Seg';
 import { progressOptions, PageToneRow } from './settings/rows';
 export { Seg } from './settings/Seg';   // Sliver and ThemePicker import it from here
@@ -287,8 +290,6 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // itself no longer tracks page fill — it's the word/time goal lap (see
   // WritingIncentives.tsx); a page turn and a goal-lap completion are
   // independent rewards now.
-  const [pageNum, setPageNum] = useState(0);
-  const pageNumRef = useRef(0);
   const pageIdRef = useRef(pageId);
   pageIdRef.current = pageId;
 
@@ -352,47 +353,22 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     // zoomed, the writing line is held at ZOOM_ANCHOR of the page column, the anchor the band mask is drawn against [ModeStage §13]
     zoom: zoomed ? { holdRef: pagecolRef, anchor: ZOOM_ANCHOR } : undefined });
 
-  // Pagination: watch the editor's content height against the sheet height. On
-  // crossing a sheet boundary, the page turns: the sound (when the writer has it on for this theme), never an animation. Height-
-  // based, so the boundary always matches the visible sheet at any type scale.
+  // PAGE BREAKS (Fable, Nov 19; the Wrizors' spec draft 3): a page is a US Letter page at the Doc's Page setup, from the laid-out lines of the clean
+  // text in a hidden letter page, never the window and never stored (components/usePageBreaks.ts, store/pageBreaks.ts). It replaces the sheet-height
+  // count (`Math.floor(content / sheet)`, retired). The marks, the count and this sound all read its one list.
   // #63: the sound rings only for a turn the writing made (a key within the last 1.5 s; a long page opening, a way back or a resize is not a turn), and once per
   // page per sitting: going back over the line and writing past it again is quiet, a page further on rings.
-  useEffect(() => {
-    const scroll = scrollRef.current;
-    if (!scroll) return;
-    let raf = 0;
-    let lastKeyAt = 0;
-    const turn = (page: number) => {
-      const id = pageIdRef.current ?? '';
-      const done = turnSounded.get(id) ?? 0;
-      if (page <= done) return;
-      turnSounded.set(id, page);
-      if (Date.now() - lastKeyAt > 1500) return;
-      const theme = getTheme();
-      if (getTurnSound(theme) === 'on') playPageTurn(theme);
-    };
-    const measure = () => {
-      const ed = scroll.querySelector('.forward-only-editor') as HTMLElement | null;
-      if (!ed) return;
-      const sheet = scroll.clientHeight || 1;
-      const content = ed.scrollHeight;
-      const page = Math.floor(content / sheet);
-      if (page !== pageNumRef.current) {
-        const turned = page > pageNumRef.current;
-        pageNumRef.current = page;
-        setPageNum(page);
-        if (turned) turn(page);
-      }
-    };
-    const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); };
-    const onKey = () => { lastKeyAt = Date.now(); };
-    const mo = new MutationObserver(schedule);
-    mo.observe(scroll, { childList: true, subtree: true, characterData: true });
-    scroll.addEventListener('input', schedule);
-    scroll.addEventListener('keydown', onKey, true);
-    schedule();
-    return () => { mo.disconnect(); scroll.removeEventListener('input', schedule); scroll.removeEventListener('keydown', onKey, true); cancelAnimationFrame(raf); };
-  }, []);
+  const onTurnRef = useRef((page: number, fromKey: boolean) => {
+    const id = pageIdRef.current ?? '';
+    const done = turnSounded.get(id) ?? 0;
+    if (page <= done) return;
+    turnSounded.set(id, page);
+    if (!fromKey) return;
+    const theme = getTheme();
+    if (getTurnSound(theme) === 'on') playPageTurn(theme);
+  });
+  usePageBreaks(scrollRef, pageId, (page, fromKey) => onTurnRef.current(page, fromKey));
+  const pageNum = useSyncExternalStore(subscribePageBreaks, () => { const st = getPageBreaks(); return st.id === (pageId ?? null) ? st.page - 1 : 0; });
 
   // Glow warmth: cumulative for the session (never resets), eased so early
   // words give visible warmth. The progress BAR below is a repeating lap
@@ -646,7 +622,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                 <MilestoneBar
                   milestones={milestones!}
                   rightSlot={<>
-                    {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
+                    <PageCount entryId={pageId ?? null} className="mode-pagenum" />
                     {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
                   </>}
                 />
@@ -660,7 +636,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                     hidden={effectiveProgress === 'off'}
                     samePageLine
                     rightSlot={<>
-                      {pageNum > 0 && <span className="mode-pagenum">p.{pageNum + 1}</span>}
+                      <PageCount entryId={pageId ?? null} className="mode-pagenum" />
                       {settings.timer && <span className="mode-timer" aria-label="Session time">⏱ {elapsedClock}</span>}
                     </>}
                   />
