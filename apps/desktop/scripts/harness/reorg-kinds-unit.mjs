@@ -129,7 +129,22 @@ ok('the real docKinds.ts exists', exists, 'src/reorg/docKinds.ts is missing');
 const base = exists ? suite(srcText) : {};
 for (const k of ['NAMES', 'SETUP', 'SPECIAL', 'PRESETS', 'PLAN']) ok(`${k} on the real docKinds.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
-const MUT = [];
+const MUT = [
+  ['APA calls the sources Part Works Cited', 'NAMES', (t) => t.replace("apa: 'References'", () => "apa: 'Works Cited'")],
+  ['a name of her own is renamed with the style', 'NAMES', (t) => t.replace('word && SOURCE_WORDS.includes(name.trim().toLowerCase()) ? word : name', () => 'word ? word : name')],
+  ['AP has a sources Part', 'NAMES', (t) => t.replace("ap: null }", () => "ap: 'Sources' }")],
+  ['MLA is not double spaced', 'SETUP', (t) => t.replace("mla: { margins: 'normal', lineSpacing: 2,", () => "mla: { margins: 'normal', lineSpacing: 1.6,")],
+  ['None sets a Page Setup', 'SETUP', (t) => t.replace("style === 'none' ? null :", () => "style === 'none' ? SETUP.mla :")],
+  ['the table is handed out, not copied', 'SETUP', (t) => t.replace('JSON.parse(JSON.stringify(SETUP[style])) as PageSetupPatch', () => 'SETUP[style]')],
+  ['the Appendix is not last: the sources go after it', 'SPECIAL', (t) => t.replace("if (specialOf(p) !== 'appendix') afterId = p.id;", () => 'afterId = p.id;')],
+  ['a Special Part is made twice', 'SPECIAL', (t) => t.replace('if (there) return { afterId: null, existing: there.id };', () => '')],
+  ['the front Parts do not keep their order', 'SPECIAL', (t) => t.replace('abstract: 1, toc: 2,', () => 'abstract: 2, toc: 1,')],
+  ['MLA keeps the Title Page and the Abstract', 'PRESETS', (t) => t.replace('const list = preset.variants?.[style] ?? preset.parts;', () => 'const list = preset.parts;')],
+  ['AP gets a sources Part', 'PRESETS', (t) => t.replace('(n === S ? (word ? [word] : []) : [n])', () => "(n === S ? [word ?? 'Sources'] : [n])")],
+  ['a preset is missing', 'PRESETS', (t) => t.replace("  scr('short-film', 'Short Film', ['Beginning', 'Middle', 'End']),\n", () => '')],
+  ['a Doc with words has a blank Part taken for the Doc', 'PLAN', (t) => t.replace('const empty = parts.length > 0 && parts.every(', () => 'const empty = parts.length > 0 && parts.some(')],
+  ['the new Parts go to the front, not after hers', 'PLAN', (t) => t.replace('after: parts.length ? parts[parts.length - 1].id : null }', () => 'after: null }')],
+];
 for (const [name, key, fn] of MUT) {
   const after = exists ? fn(srcText) : srcText;
   const landed = exists && after !== srcText;
