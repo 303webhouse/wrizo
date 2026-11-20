@@ -50,7 +50,6 @@ function Name({ id, text, editable, onCommit, why }: { id: string; text: string;
           data-top-rename={id}
           value={draft}
           autoFocus
-          spellCheck={false}
           aria-label={fill(t('reorgTopRename'), { name: text })}
           onChange={(ev) => setDraft(ev.target.value)}
           onKeyDown={(ev) => {
