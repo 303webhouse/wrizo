@@ -1,0 +1,44 @@
+/* THE REORG'S BACK MENU (phase 4, behind ?reorg=1 in Machina): the Assets list grouped by board and the Plan tab. Every rule below is reached only by markup the switch draws
+   (.wz-back-*), so with the switch off nothing here matches. Colours are the drawer's own tokens; no new colour. */
+.wz-back-assets{ display:flex; flex-direction:column; gap:10px; }
+.wz-back-group{ display:flex; flex-direction:column; gap:4px; }
+.wz-back-boardhead{ display:flex; align-items:center; gap:8px; margin-top:6px; }
+.wz-back-boardname{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-back-openboard{ flex:none; height:22px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; letter-spacing:.04em; text-transform:none; cursor:pointer; }
+.wz-back-openboard:hover, .wz-back-openboard:focus-visible{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-back-headx{ position:static; flex:none; }
+.wz-back-asset-kind{ margin-left:auto; flex:none; font-family:var(--font-ui); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+
+.wz-back-plan{ display:flex; flex-direction:column; gap:8px; padding:16px 14px; }
+.wz-back-quiet{ font-family:var(--font-ui); font-size:12px; color:var(--text-low); }
+.wz-back-plan-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.wz-back-plan-row{ display:flex; align-items:center; gap:8px; min-height:32px; }
+.wz-back-plan-num{ flex:none; min-width:24px; font-family:var(--font-ui); font-size:11px; color:var(--text-low); font-variant-numeric:tabular-nums; }
+.wz-back-plan-name{ flex:1 1 auto; min-width:0; font-family:var(--font-ui); font-size:13px; color:var(--text-mid); }
+.wz-back-plan-input{ box-sizing:border-box; height:28px; padding:0 6px; background:none; border:1px solid transparent; color:var(--text-hi); font-family:var(--font-ui); font-size:13px; }
+.wz-back-plan-input:hover{ border-color:var(--ink-border-strong); }
+.wz-back-plan-input:focus-visible{ border-color:var(--text-low); outline:none; }
+.wz-back-plan-input:disabled{ opacity:.45; }
+.wz-back-plan-acts{ display:flex; flex:none; gap:2px; }
+.wz-back-plan-btn{ position:static; width:22px; height:22px; padding:0; background:none; border:1px solid transparent; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; cursor:pointer; }
+.wz-back-plan-btn:hover:not(:disabled), .wz-back-plan-btn:focus-visible{ color:var(--text-hi); border-color:var(--ink-border-strong); outline:none; }
+.wz-back-plan-btn:disabled{ opacity:.3; cursor:default; }
+.wz-back-plan-add{ margin-top:6px; }
+.wz-back-plan-add .wz-back-plan-input{ width:100%; border-color:var(--ink-border-strong); }
+
+/* THE SPLIT SCREEN (behind ?reorg=1, Machina, a prose page; SplitHost sets data-split and --wz-split-shift on the stage). The page moves by a SHIFT and nothing else:
+   `left` on the page's own stage (already position:relative), so no new containing block appears and its size and top never change; closing the split removes the
+   attribute and the property and the page is where it was. Both menus are hidden, not closed (visibility also takes them out of the tab order), so they come back as she left them. */
+.desk-frame-stage[data-split='true'] > .mode-stage{ left:var(--wz-split-shift, 0px); }
+.desk-frame-stage[data-split='true'] :is(.desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-sliver-anchor){ visibility:hidden; }
+.wz-split-asset{ position:fixed; z-index:2; box-sizing:border-box; display:flex; flex-direction:column; background:var(--desk-ground); border:1px solid var(--ink-border); border-radius:0; }
+.wz-split-grip{ position:absolute; left:-9px; top:0; bottom:0; width:12px; cursor:col-resize; touch-action:none; z-index:1; }
+.wz-split-grip::after{ content:''; position:absolute; left:5px; top:calc(50% - 22px); width:2px; height:44px; background:var(--text-low); }
+.wz-split-grip:hover::after, .wz-split-grip:focus-visible::after{ background:var(--text-hi); }
+.wz-split-grip:focus-visible{ outline:none; }
+.wz-split-reader{ display:flex; flex-direction:column; gap:8px; height:100%; padding:12px 14px; box-sizing:border-box; overflow:hidden; }
+.wz-split-head{ display:flex; align-items:center; justify-content:space-between; }
+.wz-split-card{ margin:0 0 .9em; }
+.wz-split-card strong{ color:var(--text-hi); font-weight:600; }
+.wz-back-beside{ flex:none; }
+.wz-back-beside:disabled{ opacity:.45; cursor:default; }
