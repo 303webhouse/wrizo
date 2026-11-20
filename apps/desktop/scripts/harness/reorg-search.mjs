@@ -102,7 +102,7 @@ async function seed(app) {
     page('o-1', 'A toll road far away', { origin: 'project', projectId: far.id, orderIndex: 0 });
     page('l-1', 'A toll left unfiled', { origin: 'loose' });
     W.wrizoFlushNow();
-    return { harbor: harbor.id, other: other.id, tolls: tolls.id };
+    return { harbor: harbor.id, other: other.id, tolls: tolls.id, ferry: ferry.id };
   })()`);
 }
 async function open(app, id, reorg = true) {
@@ -177,7 +177,7 @@ await withHarness(async (app) => {
   const w1 = await app.evalJs(MENU);
   ok('W1: "Widen to This Project" - Tolls (two rows shown, "+ 1 more in this Doc"), Ferry (1), the board Harbor map (1 card); 5 in Harbor',
     w0.widen === 'Widen to This Project' && w1.reach.find((r) => r[0] === 'project')?.[2] === 'true'
-    && q(w1.groups.map((g) => [g[0], g[1]])) === q([[ids.tolls, '3'], ['f-1', '1'], ['m-b', '1']])
+    && q(w1.groups.map((g) => [g[0], g[1]])) === q([[ids.tolls, '3'], [ids.ferry, '1'], ['m-b', '1']])
     && w1.hits.filter((h) => ['t-1', 't-2', 't-3'].includes(h[0])).length === 2 && q(w1.more) === q(['+ 1 more in this Doc'])
     && w1.hits.some((h) => h[0] === 'f-1') && w1.hits.some((h) => h[0] === 'm-b') && w1.count === '5 in Harbor', { widen: w0.widen, w1 });
   await app.evalJs(click('[data-search-menu] [data-search-reach="all"]')); await sleep(600);
@@ -217,11 +217,14 @@ await withHarness(async (app) => {
   await key(app, 'Escape');
   const t2a = await app.evalJs("({ menu: !!document.querySelector('[data-search-menu]'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), tab: document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-selected') })");
   await app.evalJs(click('.wz-tutor-grip')); await sleep(500);
+  const shutFirst = await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open')");
   await app.evalJs(click('[data-top-search]')); await sleep(600);
+  // the search must have been open for its Esc to mean anything (on a tree with no search, both halves below would hold without it)
+  const t2open = await app.evalJs("!!document.querySelector('[data-search-menu]')");
   await key(app, 'Escape');
   const t2b = await app.evalJs("({ menu: !!document.querySelector('[data-search-menu]'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') })");
-  ok('T2: Esc gives the Back menu back on the tab she came from (ASSETS); from the top rail with the menu shut, Esc shuts it',
-    !t2a.menu && t2a.open === 'true' && t2a.tab === 'true' && !t2b.menu && t2b.open === 'false', { t2a, t2b });
+  ok('T2: Esc gives the Back menu back on the tab she came from (ASSETS); from the top rail with the menu shut, Esc shuts it (each time the search was open first)',
+    tAssets.open && !t2a.menu && t2a.open === 'true' && t2a.tab === 'true' && shutFirst === 'false' && t2open && !t2b.menu && t2b.open === 'false', { searchWasOpen: [tAssets.open, t2open], shutFirst, t2a, t2b });
 
   // SAVED
   const pref = await app.evalJs(PREF);
