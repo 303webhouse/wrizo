@@ -790,7 +790,9 @@ if (process.env.HARNESS_PARKED === '1') {
   return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
            headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
 })()`);
-    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft's foot menu carries Progress Tracking alone now (the Typewriter Mode heading mounts on Free Write only); the generation-5 record keeps its other conditions. The original line, verbatim:
+    // const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Progress Tracking') && !f.headings.includes('Typewriter Mode') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
     pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) — PR #7 (4d3c84e): each surface\'s foot is ONE three-dot menu whose aria-label and title agree, disclosing Typewriter Mode and Progress, and Full Screen lives in the desk corner menu; script and prose identical',
       footOkPR7(scriptFootPR7) && footOkPR7(proseFootPR7) && scriptFootPR7.menuLabel === proseFootPR7.menuLabel,
       JSON.stringify({ scriptFootPR7, proseFootPR7 }));

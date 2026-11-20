@@ -140,7 +140,9 @@ await withHarness(async (app) => {
   ok('fixture: the seams are up', true);
 
   for (const th of THEMES) {
-    for (const zoom of [false, true]) {
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write always runs the Typewriter, so the normal view of a Free Write page (the three "normal" cases) no longer exists; the hint is a Free Write claim and every theme's Free Write is the zoom. The original line, verbatim:
+    // for (const zoom of [false, true]) {
+    for (const zoom of [true]) {
       const view = zoom ? 'zoom' : 'normal';
       const tag = `${th.name} ${view}`;
       const id = `${pid(th.id)}-${view}`;

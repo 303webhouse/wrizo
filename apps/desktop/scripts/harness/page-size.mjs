@@ -112,11 +112,13 @@ const HELPERS = `(() => {
     }
     return lines;
   };
+  // Free Write (the Typewriter's home now) keeps no selection caret in its editor; the engine reads the last character's rect then (useTypewriterFade), and so does this probe
+  window.__psLastChar = () => { const e = ed(); if (!e) return null; const w = document.createTreeWalker(e, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement && n.parentElement.closest('.fo-placeholder')) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT }); let last = null; let n; while ((n = w.nextNode())) { if (n.data.trim()) last = n; } if (!last) return null; const end = last.data.trimEnd().length; const rr = document.createRange(); rr.setStart(last, Math.max(0, end - 1)); rr.setEnd(last, end); const xs = rr.getClientRects(); const q = xs[xs.length - 1]; return q && q.height ? { top: q.top, bottom: q.bottom, mid: (q.top + q.bottom) / 2 } : null; };
   window.__psCaret = () => {
-    const s = getSelection(); const e = ed(); if (!s || !s.rangeCount || !e || !e.contains(s.anchorNode)) return null;
+    const s = getSelection(); const e = ed(); if (!e) return null; if (!s || !s.rangeCount || !e.contains(s.anchorNode)) return window.__psLastChar();   // Free Write keeps no selection caret: the writing line is the end of the text (the engine's own fallback)
     const r = s.getRangeAt(0); let rs = r.getClientRects(); let q = rs[rs.length - 1];
     if ((!q || !q.height) && r.startContainer.nodeType === 3 && r.startOffset > 0) { const rr = document.createRange(); rr.setStart(r.startContainer, r.startOffset - 1); rr.setEnd(r.startContainer, r.startOffset); const x = rr.getClientRects(); q = x[x.length - 1]; }
-    return q && q.height ? { top: q.top, bottom: q.bottom, mid: (q.top + q.bottom) / 2 } : null;
+    return q && q.height ? { top: q.top, bottom: q.bottom, mid: (q.top + q.bottom) / 2 } : window.__psLastChar();
   };
   window.__psCaretToEnd = () => {
     const e = ed(); if (!e) return false; e.focus();
@@ -261,7 +263,7 @@ const gripShown = (app) => app.evalJs("(() => { const g = document.querySelector
 const pressTypewriter = async (app) => {
   const was = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
   const target = was ? 'Draft' : 'Free Write';
-  const hit = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.desk-mode-tab')].find((x) => (x.textContent || '').trim() === ${J(target)}); if (!b) return false; b.click(); return true; })()`);
+  const hit = await app.evalJs(`(() => { const b = document.querySelector('[data-mode-key="${was ? 'draft' : 'freewrite'}"]'); if (!b) return false; b.click(); return true; })()`);
   await sleep(1100);
   const now = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') === 'true'");
   return { pressed: now ? 'true' : 'false', at: { hits: !!hit, mode: target } };
@@ -412,16 +414,23 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     await waitSoft(app, `document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true' && ${settledSliver}`, { label: 'the Sliver settled open', timeout: 3000 });
     const fxProbe = () => app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); const col = document.querySelector('.mode-pagecol'); const p = document.querySelector('.mode-page'); const r = p ? p.getBoundingClientRect() : null; const q = b ? b.getBoundingClientRect() : null;
       return { toggle: !!b, display: b ? getComputedStyle(b).display : null, w: q ? Math.round(q.width) : null, zoom: col ? col.getAttribute('data-zoom') : null, pageW: r ? Math.round(r.width * 10) / 10 : null, stored: localStorage.getItem('wrizo-typewriter-page-${id}') }; })()`);
-    const fxOk = (r) => !!r && r.toggle && r.display === 'none' && r.w === 0 && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Flux offered a hidden Typewriter toggle (display:none); there is no Typewriter toggle in any theme now. The original line, verbatim:
+    // const fxOk = (r) => !!r && r.toggle && r.display === 'none' && r.w === 0 && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
+    const fxOk = (r) => !!r && r.toggle === false && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
     const fx = await fxProbe();
     psParks.FZ.push({ tag, ok: fxOk(fx), fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
     ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
     if (mutants) {
       // MFZ: the toggle forced back on (inline !important beats the sheet's) - the SAME read must go RED
-      const landedFz = await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.style.setProperty('display', 'block', 'important'); return getComputedStyle(b).display; })()`);
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter toggle does not exist in any theme, so it cannot be forced back on; this mutant now puts the zoom itself back on the Flux page (the attribute the no-zoom read looks at). The original three lines, verbatim:
+      // const landedFz = await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (!b) return null; b.style.setProperty('display', 'block', 'important'); return getComputedStyle(b).display; })()`);
+      // const fxM = await fxProbe();
+      // await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (b) b.style.removeProperty('display'); return true; })()`);
+      // ok(`${th.name} ${w}x${h} MFZ (mutant) [Wire In successor]: with the Typewriter toggle forced back on (LANDED: display ${landedFz}), the no-control read FAILS`, landedFz === 'block' && !fxOk(fxM), J(fxM));
+      const landedFz = await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'); if (!col) return null; col.setAttribute('data-zoom', 'true'); return col.getAttribute('data-zoom'); })()`);
       const fxM = await fxProbe();
-      await app.evalJs(`(() => { const b = document.querySelector(${J(TOGGLE)}); if (b) b.style.removeProperty('display'); return true; })()`);
-      ok(`${th.name} ${w}x${h} MFZ (mutant) [Wire In successor]: with the Typewriter toggle forced back on (LANDED: display ${landedFz}), the no-control read FAILS`, landedFz === 'block' && !fxOk(fxM), J(fxM));
+      await app.evalJs(`(() => { const col = document.querySelector('.mode-pagecol'); if (col) col.removeAttribute('data-zoom'); return true; })()`);
+      ok(`${th.name} ${w}x${h} MFZ (mutant) [Free Write = Typewriter successor]: with the zoom put back on the Flux Draft page (LANDED: data-zoom ${landedFz}), the not-zoomed read FAILS`, landedFz === 'true' && !fxOk(fxM), J(fxM));
     }
     return;
   }
@@ -441,7 +450,9 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   ok(`${tag} B: the line breaks are IDENTICAL in both views - scale, never reflow`, sameStarts(l0, l1),
     J({ normal: (l0 || []).length, zoom: (l1 || []).length, firstDiff: (l0 || []).findIndex((l, i) => !l1 || !l1[i] || l1[i].start !== l.start) }));
   if (kind === 'fw') { await pressTypewriter(app); return; }
-  ok(`${tag} U: the editor is the SAME node in the zoom (no unmount)`, await app.evalJs('window.__psMarked()'));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the zoom is entered by the mode switch (Draft to Free Write), and the editor is keyed on its mode, so the switch mounts the Free Write editor; the claim that survives is that the zoomed editor is never replaced while the writer stays in the zoom. The original line, verbatim:
+  // ok(`${tag} U: the editor is the SAME node in the zoom (no unmount)`, await app.evalJs('window.__psMarked()'));
+  ok(`${tag} U [Free Write = Typewriter successor]: the zoom's editor is mounted (the mode switch mounts it) and is marked here, to be the SAME node through the writing and the drawers until the writer leaves by the strip`, await app.evalJs('window.__psMark()'));
   const sliverOpen = await attr(app, '.wz-sliver', 'data-open'); const tutorNow = await attr(app, '.wz-tutor-panel', 'data-open');
   ok(`${tag} P (premise): the Tutor was OPEN before the zoom`, tutorOpen, '');
   ok(`${tag} P: panels tucked - the Sliver and the Tutor are closed in the zoom`, tutorOpen && sliverOpen !== 'true' && tutorNow !== 'true', J({ sliverOpen, tutorNow }));
@@ -532,11 +543,14 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     ok(`${tag} G: a new line glides - the scroll passes through ${GLIDE_MIN} or more values`, !!v && moved > 0 && distinct.length >= GLIDE_MIN, J({ moved, values: distinct.length, lh, before: g0, after: gEnd, late: gLate, trace: (gTrace || []).slice(-12) }));
   }
   // leave the zoom through the same control
+  const zoomKept = await app.evalJs('window.__psMarked()');   // the marked zoom editor, read before the writer leaves
   const pressedOff = await pressTypewriter(app);
   const g3 = await app.evalJs('window.__psGeom()');
   ok(`${tag} zoom (premise): the writer's control turned the zoom OFF again (the press HIT the button)`, (await typewriterIs(app, id)) === 'off' && !!pressedOff.at && pressedOff.at.hits,
     J({ pressedOff, key: await typewriterIs(app, id) }));
-  ok(`${tag} U: the editor is still the SAME node after leaving the zoom`, await app.evalJs('window.__psMarked()'));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): leaving the zoom is the mode switch back to Draft, which mounts the Draft editor; the successor reads the zoom editor kept its identity until then, and the Draft editor is there. The original line, verbatim:
+  // ok(`${tag} U: the editor is still the SAME node after leaving the zoom`, await app.evalJs('window.__psMarked()'));
+  ok(`${tag} U [Free Write = Typewriter successor]: the zoom's editor was the SAME node through the whole stay in the zoom (writing, the glide, the drawers), and the writer's Draft editor is mounted after leaving`, zoomKept === true && (await app.evalJs("!!document.querySelector('.forward-only-editor')")));
   const same = g0 && g3 && ['left', 'top', 'width', 'height'].every((k) => Math.abs(g0.page[k] - g3.page[k]) <= 0.5);
   ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
 };

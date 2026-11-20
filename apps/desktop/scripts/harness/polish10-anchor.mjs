@@ -32,6 +32,7 @@ const PROBE = `(() => {
   const rg = document.createRange(); rg.selectNodeContents(ed); const lines = [...rg.getClientRects()].filter((q) => q.height >= 4);
   const s = getSelection(); let cr = null; if (s && s.rangeCount && ed.contains(s.anchorNode)) { const rr = s.getRangeAt(0); const rs = rr.getClientRects(); cr = rs[rs.length - 1] || null;
     if ((!cr || !cr.height) && rr.startContainer.nodeType === 3 && rr.startOffset > 0) { const c2 = document.createRange(); c2.setStart(rr.startContainer, rr.startOffset - 1); c2.setEnd(rr.startContainer, rr.startOffset); const xs = c2.getClientRects(); cr = xs[xs.length - 1] || null; } }
+  if (!cr || !cr.height) { const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let lastT = null, nn; while ((nn = tw.nextNode())) if (nn.data.trim()) lastT = nn; if (lastT) { const e2 = lastT.data.trimEnd().length; const c3 = document.createRange(); c3.setStart(lastT, Math.max(0, e2 - 1)); c3.setEnd(lastT, e2); const xs3 = c3.getClientRects(); cr = xs3[xs3.length - 1] || cr; } }   // Free Write keeps no selection caret: the writing line is the end of the text, as the engine reads it
   const page = document.querySelector('.desk-frame-stage--prose .mode-page'); const sc = page && page.offsetWidth ? page.getBoundingClientRect().width / page.offsetWidth : 1;
   const lh = (parseFloat(getComputedStyle(ed).lineHeight) || 27.2) * sc;
   const firstTop = lines.length ? Math.min(...lines.map((q) => q.top)) : null;
@@ -71,7 +72,9 @@ await withHarness(async (app) => {
       await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text: 'One line to start.', createdAt: new Date().toISOString(), origin: null, source: 'page' })})`);
       // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
       // await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
-      await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);   // Free Write: the Typewriter's zoom and band
+      // Flux keeps its claim (a Draft page with a stored 'on' runs NO Typewriter: Draft never zooms); the other themes' zoom is Free Write.
+      if (th.id === 'flux') await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
+      else await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);   // Free Write: the Typewriter's zoom and band
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       if (!(await openPage(app, id))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
       const g1 = await app.evalJs(PROBE);

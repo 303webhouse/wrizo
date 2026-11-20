@@ -196,7 +196,7 @@ function fwClaims(s, row, tw, pr) {
   const sl = noC(s.sliver), st = noC(s.stage), rowN = fnText(sl, 'function SliverInstrumentRow(') || '', twN = fnText(sl, 'function TypewriterFields(') || '', prN = fnText(sl, 'function ProgressFields(') || '';
   const head = row.slice(row.indexOf('wz-sliver-instruments-head'));
   const rowDiv = row.slice(row.indexOf('wz-sliver-instruments-row"'), row.indexOf('wz-sliver-instruments-modes'));
-  const prBtn = /<button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"\s+aria-label=\{t\('modeToggleProgress'\)\} title=\{t\('modeToggleProgress'\)\}\s+aria-pressed=\{settings\.instrumentsOn\}\s+onClick=\{\(\) => setWritingSettings\(\{ instrumentsOn: !settings\.instrumentsOn \}\)\}>/.test(rowN);
+  const prBtn = /<button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"\s+aria-label=\{t\('modeToggleProgress'\)\} title=\{t\('modeToggleProgress'\)\}\s+aria-pressed=\{settings\.instrumentsOn\}\s+onClick=\{\(\) => setWritingSettings\(\{ instrumentsOn: !settings\.instrumentsOn \}\)\}>\s*<ProgressModeIcon \/>\s*<\/button>/.test(rowN);
   return {
     noTypewriterButton: !/data-mode-toggle="typewriter"/.test(sl) && !/setTypewriterExplicit/.test(sl),
     prBtn, inHead: head.includes('wz-sliver-instruments-row') && head.includes('wz-sliver-instruments-modes'),
@@ -205,7 +205,7 @@ function fwClaims(s, row, tw, pr) {
     menuOnFreeWriteOnly: /typewriterAvailable=\{content\.kind === 'freewrite'\}/.test(sl),
     twRowsNeverGreyed: /const off = false;/.test(twN) && countOf(twN, /<Seg /g) === 3 && countOf(twN, /<Seg [^>]*disabled=\{off\}/g) === 3,
     prRowsGreyedByTheirMode: countOf(prN, /<Seg /g) === 4 && countOf(prN, /<Seg [^>]*disabled=\{off\}/g) === 4 && /const off = !settings\.instrumentsOn;/.test(prN),
-    narrowBar: countOf(st, /disabled=\{typewriterOn\}/g) === 9 && /const typewriterOn = typewriterRun && !fluxJack;/.test(st),
+    narrowBar: countOf(st, /disabled=\{typewriterOn\}/g) === 9 && /const typewriterOn = typewriterRun && !fluxJack;/.test(st) && /const typewriterRun = stageTheme === 'flux' \? fluxJack && mode === 'journal' : mode === 'journal';/.test(st),
   };
 }
 function verdict(c) {
@@ -424,7 +424,9 @@ mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rai
 mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barFW');
 // FLUX WIRE IN (Nov 12) - the four narrow-bar mutants above were retargeted from barPP to barWI: barPP is permanently false on the new source (it pins the pre-guard text), so a
 // mutant reading it would "pass" without the mutation doing anything. This one is the successor's own: the Flux guard is dropped, the shared field runs the Typewriter in Flux again.
-mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barFW');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the guard text this mutant removed (`stageTheme !== 'flux' && ... && settings.typewriter;`) is gone from the source (the run is Free Write's, one line); the mutant could not land. The original, verbatim:
+// mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barFW');
+mutant('the narrow bar loses the Flux guard (Free Write runs the paper Typewriter in Flux again) [Free Write = Typewriter successor]', 'stage', (t) => mutate(t, "const typewriterRun = stageTheme === 'flux' ? fluxJack && mode === 'journal' : mode === 'journal';", "const typewriterRun = mode === 'journal';"), 'barFW');
 
 let failed = 0;
 for (const c of checks) {

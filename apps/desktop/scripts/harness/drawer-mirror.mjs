@@ -209,7 +209,9 @@ await withHarness(async (app) => {
     await app.emulateDpr(1, 1366, 768);
     // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms a Draft page (it is read by nothing); the page is zoomed by being in Free Write. The original line, verbatim:
     // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
-    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);
+    // Flux keeps its claim (a stored 'on' on a Draft page is inert: Draft never zooms); the other themes' zoom is Free Write.
+    if (th.id === 'flux') await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${id}', 'on')`);
+    else await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);
     if (await openPage(app, id)) {
       const z0 = await app.evalJs(GEO);
       const zl = z0 && z0.page && z0.stage ? z0.page.left - z0.stage.left : null; const zr = z0 && z0.page && z0.stage ? z0.stage.right - z0.page.right : null;
