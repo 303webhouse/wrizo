@@ -102,11 +102,7 @@ const raiseHint = async (app, pre) => {
   }
   for (let i = 0; i < 60; i += 1) {
     await app.key('Backspace'); await sleep(40);
-    // STAGING CHANGED 2026-11-20 (#113; no assertion is touched): the read was taken 400 ms after the hint appeared. The typewriter's own re-measure (its verify look, ~270 ms after a glide) can move the
-    // scroller, and the text with it, by a few dozen px at about that time; the hint re-places itself on the next frame after it moves (ForwardOnlyEditor: a resize observer, a scroll listener and a
-    // 250 ms look), but a read taken in that frame saw the hint where the line used to be (Flux, H1: hint 587, line 590). The read now waits 1.2 s: the layout at rest, which is what H1 is about.
-    // Original: `{ await sleep(400); return i + 1; }`
-    if (await app.evalJs("!!document.querySelector('.fo-nudge')")) { await sleep(1200); return i + 1; }
+    if (await app.evalJs("!!document.querySelector('.fo-nudge')")) { await sleep(400); return i + 1; }
   }
   return null;
 };
