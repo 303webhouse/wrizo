@@ -7,7 +7,7 @@
 // is ever stored [pageMeasure §1]
 import type { JournalEntry } from '../types';
 import { EOF_GUARD } from './draftDecoration';
-import { rowMarkupFor, rowsFor, rowsCaretOffset, rowsDomPoint } from './lineRows';
+import { lineOf, rowMarkupFor, rowsFor, rowsCaretOffset, rowsDomPoint } from './lineRows';
 import { walkLines, PAGE_TEXT_H, type LineUnit } from './pageBreaks';
 import { getJournalEntries, getJournalEntry, getProject, getSystemKind, isAutoSet, isPairedPlanBoard } from './persistence';
 import { compareSections } from './place';
@@ -249,6 +249,20 @@ export function cleanCaret(ed: HTMLElement): number | null {
 
 /** A DOM point for clean offset `o` on the live page (the mark's character). */
 export function cleanPoint(ed: HTMLElement, o: number): { node: Node; offset: number } | null {
+  // Draft and Revise: the row that holds the offset, and the character inside it - a page opens at a row's start, which a plain DOM point
+  // resolves to the '\n' between rows (no box to measure); an empty row answers with the row itself
+  const R = rowsFor(ed);
+  if (R && !R.stale) {
+    const i = lineOf(R, o);
+    const row = R.rows[i];
+    if (row) {
+      const local = o - R.starts[i];
+      const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+      let p = 0, t: Node | null;
+      while ((t = w.nextNode())) { const x = t as Text; if (local < p + x.data.length) return { node: x, offset: local - p }; p += x.data.length; }
+      return { node: row, offset: 0 };
+    }
+  }
   const r = rowsDomPoint(ed, o);
   if (r !== undefined) return r;
   const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);

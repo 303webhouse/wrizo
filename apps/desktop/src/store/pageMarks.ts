@@ -33,7 +33,9 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
   if (!L) return;
   const wrap = L.parentElement as HTMLElement;
   const wr = wrap.getBoundingClientRect();
-  const s = wrap.offsetWidth ? wr.width / wrap.offsetWidth : 1;   // the page's painted scale (k, times the zoom)
+  // the page's painted scale (k, times the zoom): the painted width over the LAYOUT width, both fractional (offsetWidth rounds: 462 for 462.109)
+  const layoutW = parseFloat(getComputedStyle(wrap).width) || wrap.offsetWidth;
+  const s = layoutW ? wr.width / layoutW : 1;
   if (!(s > 0)) return;
   const dpr = window.devicePixelRatio || 1;
   const fine = document.documentElement.getAttribute('data-theme') === 'machina';
@@ -52,6 +54,8 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
   for (const o of at) {
     const pt = cleanPoint(ed, o);
     let y: number | null = null;
+    // an empty row (a blank line opening the page): its own box top is the line's top
+    if (pt && pt.node.nodeType === Node.ELEMENT_NODE && (pt.node as Element).classList.contains('wz-row')) y = (pt.node as Element).getBoundingClientRect().top;
     if (pt && pt.node.nodeType === Node.TEXT_NODE) {
       const t = pt.node as Text;
       const row = t.parentElement?.closest('.wz-row') as HTMLElement | null;

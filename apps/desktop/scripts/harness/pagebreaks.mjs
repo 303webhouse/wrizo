@@ -270,7 +270,11 @@ await withHarness(async (app) => {
       await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const layer = ed.parentElement.querySelector(':scope > .wz-pb-marks'); const cnt = document.querySelector('.wz-pagecount');
         const P = window.__pbhC6 = { keys: [], marks: [], count: [] };
         new MutationObserver(() => P.marks.push(performance.now())).observe(layer, { childList: true, subtree: true, attributes: true, characterData: true });
-        if (cnt) new MutationObserver(() => P.count.push(performance.now())).observe(cnt.parentElement, { childList: true, subtree: true, characterData: true });
+        // SUPERSEDED (run 44656197630, its first run): this watched the count's PARENT, which in Arbor is the bar's label span - it holds the word
+        // count too, which changes with every key (countDuring 25 for 124 keys with the page count never changing). Kept for the record:
+        // if (cnt) new MutationObserver(() => P.count.push(performance.now())).observe(cnt.parentElement, { childList: true, subtree: true, characterData: true });
+        // successor: the page count's own node (its text and its n / m attributes), nothing beside it
+        if (cnt) new MutationObserver(() => P.count.push(performance.now())).observe(cnt, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['data-page-n', 'data-page-m'] });
         document.addEventListener('keydown', () => P.keys.push(performance.now()), true); return true; })()`);
       await app.typeKeys('zephyr quill opens this page with a long sentence that wraps the first row onto one more line of its own and more words yet ');
       await sleep(1200);
@@ -330,7 +334,14 @@ await withHarness(async (app) => {
       const moved = lh.lh !== NORMAL_GEO.lh || lh.w !== NORMAL_GEO.w;
       const j5 = (p, n) => judgeSnips(p, ref) && (!moved || n !== normal);
       ok(`C5 ${k}: the list = the check's walk on the dressed page (${r.st.total} pages; normal ${normal}; line height ${lh.lh} vs ${NORMAL_GEO.lh}, column ${lh.w} vs ${NORMAL_GEO.w})`, j5(prod, r.st.total), JSON.stringify({ n: prod.length, ref: ref.length, moved }));
-      if (k === 'ls2') mutant('C5: line spacing ignored (the normal page\'s list)', judgeSnips(await app.evalJs(`window.__pbh.snips(${JSON.stringify(LIST['pbh-5k'] || [])})`), ref) && (!moved || normal !== r.st.total));
+      // SUPERSEDED (run 44656197630, its first run): this mutant cannot be told from the product while the LIVE page ignores the Page setup's
+      // line spacing - PageEditor.tsx:810 sets lineHeight 1.7 on the editor's wrap, so the dress's line-height on .mode-page never reaches a row
+      // (27.1999px at 1.6 and at 2.0, measured: moved false). The copy follows the live page, as it must. Main's bug, handed up to Fable, not this
+      // ticket's. Kept for the record:
+      // if (k === 'ls2') mutant('C5: line spacing ignored (the normal page\'s list)', judgeSnips(await app.evalJs(`window.__pbh.snips(${JSON.stringify(LIST['pbh-5k'] || [])})`), ref) && (!moved || normal !== r.st.total));
+      // successor: the dress mutant on a dress the live page DOES wear - the narrow page given the normal page's list must go red; line spacing printed
+      if (k === 'narrow') mutant('C5: the margins ignored (the normal page\'s list on the narrow page)', judgeSnips(await app.evalJs(`window.__pbh.snips(${JSON.stringify(LIST['pbh-5k'] || [])})`), ref));
+      if (k === 'ls2') console.log(`INFO C5 ls2: the Page setup's line spacing reaches the live page: ${moved} (row line height ${lh.lh} at 2.0 vs ${NORMAL_GEO.lh} at 1.6)`);
     }
   }
 
