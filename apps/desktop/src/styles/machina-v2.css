@@ -258,3 +258,13 @@
 :root[data-machina2][data-theme='machina'] .machina2-sheet{ position:fixed; z-index:0; pointer-events:none; }
 .machina2-sheet{ display:none; }
 @media print{ .machina2-sheet{ display:none !important; } }
+
+/* ==========================================================================================================================================
+   THE WRIZORS' PASS 1 MUSTS (Fable, Nov 20, 3:15 pm). (a) In the light room the Run's brass notch gets a 1 px ink edge (#23272B) on both sides
+   (brass alone on the light room is about 1.9:1; the edge carries it, as every brass mark on a light surface does here). (b) The caret is brass on
+   the dark page (the browser's own caret; !important because Free Write's pen ink reaches the caret INLINE, as Arbor's rule found). The light
+   page's caret is held for a ruling: an edge needs a drawn caret, and Arbor's was scrapped by Nick (Nov 14) for its cost at every key.
+   Static rules on the room and page state: nothing restyles at a key. Checked by scripts/harness/machina-look-musts.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .machina-run-strip > i.here::after{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
+:root[data-machina2][data-theme='machina'][data-page='dark'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--brass) !important; }
