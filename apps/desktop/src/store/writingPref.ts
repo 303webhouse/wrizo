@@ -1,6 +1,6 @@
 import { getPref, prefsHeardServer, setPref, subscribePrefs } from '../reorg/prefsSaved';
 import { onRailReset } from '../reorg/railSavedKey';
-import { getWritingSettings, hasStoredWritingSettings, resetWritingSettings, sanitizeWritingFields, setWritingSettings, subscribeWritingSettings, writingDefaults, type WritingSettings } from './writingSettings';
+import { getWritingSettings, hasStoredWritingSettings, resetWritingSettings, setWritingSettings, subscribeWritingSettings, writingDefaults, type WritingSettings } from './writingSettings';
 
 // THE SESSION'S WRITING SETTINGS, SAVED TO THE ACCOUNT (Fable, Nov 20, 12:15 pm: "Mirror the device key wrizo-writing-settings into a `writing` fact in users.prefs, saved with the
 // reorg switch OFF, as ARBOR's room is (add it to SWITCHLESS). Red-first: two devices, reload, every theme"; Nick's SAVED DATA ruling, Nov 19: everything a writer changes is saved
@@ -16,6 +16,32 @@ import { getWritingSettings, hasStoredWritingSettings, resetWritingSettings, san
 //     inherits this one's and its device never adopts them.
 // The first-run seed (setWritingSettings({ typewriter: true }), what the default already is) is not an act: a call that changes nothing writes nothing.
 export const WRITING_FACT = 'writing';
+
+// THE ONE PLACE THAT KNOWS WHICH VALUES ARE VALID: a value this build does not know (a newer build's field, a damaged value, a stranger's PUT) is never applied
+const isEnum = <T extends string>(...ok: T[]) => (v: unknown): v is T => typeof v === 'string' && (ok as string[]).includes(v);
+const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
+const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1000;
+const VALID: { [K in keyof WritingSettings]: (v: unknown) => boolean } = {
+  progress: isEnum('words', 'time', 'project', 'off'),
+  fadeDepth: isEnum('partial', 'full'),
+  timer: isBool,
+  typewriter: isBool,
+  progressStyle: isEnum('bar', 'rhizome'),
+  instrumentsOn: isBool,
+  forwardLockUnit: isEnum('words', 'sentences'),
+  forwardLockCount: isCount,
+  lineFadeOn: isBool,
+  lineFadeLines: isCount,
+  writingLine: isEnum('top', 'center', 'bottom'),
+  pageScroll: isBool,
+  flicker: isBool,
+};
+/** The settings this build knows, each of a value it accepts; anything else is left out. */
+export function sanitizeWritingFields(raw: unknown): Partial<WritingSettings> {
+  const out: Record<string, unknown> = {};
+  if (raw && typeof raw === 'object') for (const k of Object.keys(VALID) as (keyof WritingSettings)[]) if (VALID[k]((raw as Record<string, unknown>)[k])) out[k] = (raw as Record<string, unknown>)[k];
+  return out as Partial<WritingSettings>;
+}
 
 const canonOf = (o: Record<string, unknown>): string => JSON.stringify(Object.keys(o).sort().map((k) => [k, o[k]]));
 const mine = (): Partial<WritingSettings> => sanitizeWritingFields(getWritingSettings());

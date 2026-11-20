@@ -126,33 +126,8 @@ export function setWritingSettings(patch: Partial<WritingSettings>): void {
   subs.forEach(fn => fn(current));
 }
 
-// THE ACCOUNT'S COPY (Fable, Nov 20, 12:15 pm: "the session's settings saved to the account ... mirror the device key wrizo-writing-settings into a `writing` fact in users.prefs";
-// store/writingPref.ts is the bridge). These four are all it needs: a subscription that is not a React hook, the one place that knows which values are valid, whether this
-// device has ever saved a setting, and the sign-out reset (the next account never inherits this one's settings).
-const isEnum = <T extends string>(...ok: T[]) => (v: unknown): v is T => typeof v === 'string' && (ok as string[]).includes(v);
-const isBool = (v: unknown): v is boolean => typeof v === 'boolean';
-const isCount = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1000;
-const VALID: { [K in keyof WritingSettings]: (v: unknown) => boolean } = {
-  progress: isEnum('words', 'time', 'project', 'off'),
-  fadeDepth: isEnum('partial', 'full'),
-  timer: isBool,
-  typewriter: isBool,
-  progressStyle: isEnum('bar', 'rhizome'),
-  instrumentsOn: isBool,
-  forwardLockUnit: isEnum('words', 'sentences'),
-  forwardLockCount: isCount,
-  lineFadeOn: isBool,
-  lineFadeLines: isCount,
-  writingLine: isEnum('top', 'center', 'bottom'),
-  pageScroll: isBool,
-  flicker: isBool,
-};
-/** The settings this build knows, each of a value it accepts; anything else (a newer build's field, a damaged value) is left out. */
-export function sanitizeWritingFields(raw: unknown): Partial<WritingSettings> {
-  const out: Record<string, unknown> = {};
-  if (raw && typeof raw === 'object') for (const k of Object.keys(VALID) as (keyof WritingSettings)[]) if (VALID[k]((raw as Record<string, unknown>)[k])) out[k] = (raw as Record<string, unknown>)[k];
-  return out as Partial<WritingSettings>;
-}
+// THE ACCOUNT'S COPY (Fable, Nov 20, 12:15 pm; store/writingPref.ts is the bridge): a subscription that is not a React hook, whether this device has saved a setting of its own,
+// and the sign-out reset (the next account never inherits this one's).
 export function subscribeWritingSettings(fn: (s: WritingSettings) => void): () => void {
   subs.add(fn);
   return () => { subs.delete(fn); };
