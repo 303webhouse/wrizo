@@ -162,3 +162,7 @@ reorgSplitGrip=Resize the split
 reorgSplitBoardEmpty=Nothing here yet.
 reorgSplitNoFreewrite=There is no split screen in Free Writing.
 reorgSplitNoTypewriter=Typewriter mode is off in a split: turn it off first.
+# PAGE BREAKS (ARBOR, train C, Nov 20) - the page count under the page: "p. 2 of 5"; Flux and Machina read their own
+pageOfPages=p. {n} of {m}
+pageOfPages@flux=PG {n}/{m}
+pageOfPages@machina=page {n} of {m}
