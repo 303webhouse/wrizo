@@ -300,6 +300,11 @@ export const CANONICAL_CHROME = {
   // THE TEAM B RESTYLE, slice 3 (reorg/backMenu/AssetPartGroups.tsx; Nick, Nov 20: 1F, 1H): the Assets tab's head and each Part's fold. {n} a count, {part} a Part's name
   reorgAssetsHead: 'Assets ({n})',
   reorgAssetsPartToggle: 'Show or hide the assets of {part}',
+  // THE TEAM B RESTYLE, slice 5 (reorg/TextFolds.tsx; Fable, Nov 20, 1:27 pm; the stage menus, draft 3): the TEXT tab's folds. {symbol} the character
+  reorgTextParagraph: 'Paragraph',
+  reorgTextMore: 'More',
+  reorgTextSymbols: 'Insert Symbol',
+  reorgTextSymbolAria: 'Insert {symbol}',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
   reorgSplitLabel: 'Opened beside',

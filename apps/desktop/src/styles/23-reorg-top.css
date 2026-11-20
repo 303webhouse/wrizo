@@ -229,3 +229,14 @@
 [data-theme='machina'] .reorg-parts-structure-body{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0 2px; }
 [data-theme='machina'] .reorg-parts-structure-body[hidden]{ display:none; }
 [data-theme='machina'] .reorg-parts-structure-body .reorg-parts-tool[disabled]{ color:var(--text-low); cursor:default; text-decoration:none; }
+
+/* THE TEAM B RESTYLE, slice 5 (ARBOR, Nov 20; reorg/TextFolds.tsx): the TEXT tab's folds. "Paragraph" and "More" are quiet bars folded by default;
+   their rows are today's own; Insert Symbol's characters wrap in the drawer's width. No motion: a cut. */
+[data-theme='machina'] .reorg-text-fold{ margin:6px 0 0; }
+[data-theme='machina'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-text-fold-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-text-fold-mark{ font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-text-fold-body[hidden]{ display:none; }
+[data-theme='machina'] .reorg-text-fold .reorg-text-fold{ margin-left:10px; }
+[data-theme='machina'] .reorg-text-symbols{ flex-wrap:wrap; }

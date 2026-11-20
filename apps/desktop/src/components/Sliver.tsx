@@ -38,6 +38,7 @@ import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
 import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
+import { SymbolPicker, TextFold } from '../reorg/TextFolds';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
 
@@ -603,6 +604,8 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
   // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
   // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
   const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
+  // the Team B restyle (slice 5): the TEXT tab's folds, only in the reorg's Front menu (frontTab is set only behind ?reorg=1 in Machina)
+  const textFolds = !!frontTab;
   // the Team B restyle: the Doc's kind at the tab's head opens today's style guide and templates, through the host's own acts (Draft passes them)
   const docMenu = content.kind === 'draft' ? { styleGuide: content.styleGuide, onPickStyleGuide: content.onPickStyleGuide, templates: content.templates } : undefined;
   if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} /></div>;
@@ -642,7 +645,16 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
           (TypewriterToggle's own aria-label, WritingIncentives.tsx,
           unchanged) even though no visible text remains anywhere. */}
 
-      {content.kind === 'draft' && content.format && allowed('format') && (
+      {content.kind === 'draft' && content.format && allowed('format') && (() => {
+        // H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21]
+        const headingControls = (<>
+          <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+          {content.format.headingLevel ? (<>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
+          </>) : null}
+        </>);
+        return (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* PHASE 1 (S4) - a native disabled fieldset: every button inside (the bullet menu's too) is unusable and announced as unavailable, with
@@ -664,17 +676,15 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
                 has learned. The glyph wears its own mark (<s>) exactly as B/I/U
                 wear theirs — the control demonstrates itself. */}
             <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
-            {/* H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21] */}
-            <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
-            {content.format.headingLevel ? (<>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
-            </>) : null}
+            {!textFolds && headingControls}
           </div>
+          {/* THE TEAM B RESTYLE (slice 5): behind ?reorg=1 the heading and the paragraph rows fold under "Paragraph"; off the switch they stand as today */}
+          <TextFold k="paragraph" on={textFolds} label={t('reorgTextParagraph')}>
+          {textFolds && <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>{headingControls}</div>}
           {/* lists and quotes ride the existing `- ` and `> ` conventions; indent and alignment are line-prefix directives (store/draftFormat.ts documents why they are not metadata) [Sliver §22] */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <BulletControl onFormat={content.format!.onFormat} t={t} />
-            <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
+            <button type="button" className="mode-tbtn" data-format-act="quote" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
             {/* outdent, the exact decrement of Indent (floored at zero, counted in leading tabs, one shared helper); outdent before indent so the pair reads left to right [Sliver §23] */}
             <button type="button" className="mode-tbtn" data-format-glyph="outdent" title={t('draftOutdent')} aria-label={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}><FormatMark kind="outdent" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="indent" title={t('draftIndent')} aria-label={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}><FormatMark kind="indent" /></button>
@@ -685,9 +695,16 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
             <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
+          </TextFold>
+          {textFolds && (
+            <TextFold k="more" on label={t('reorgTextMore')}>
+              <TextFold k="symbols" on label={t('reorgTextSymbols')}><SymbolPicker /></TextFold>
+            </TextFold>
+          )}
           </fieldset>
         </div>
-      )}
+        );
+      })()}
 
       {/* Structure is the tab's last zone before the foot; the `-zone` suffix is load-bearing: `wz-sliver-structure` is the retired tablist's class, whose absence a harness reads [Sliver §24] */}
       {/* ACTIONS sits between Format and Templates [Sliver §25] */}
