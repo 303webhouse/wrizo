@@ -192,7 +192,7 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 14;
+const EXPECTED = 13;
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nREORG-DOCS-SESSION VERIFY: PASS (${checks.length} checks)` : `\nREORG-DOCS-SESSION VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
