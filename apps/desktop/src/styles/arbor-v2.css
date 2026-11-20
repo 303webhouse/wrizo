@@ -1088,3 +1088,7 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#241811; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b'][data-page='dark']{ --paper:#100C09; --paper-dim:#0B0705; --paper-border:#2F241A; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-brown='b']{ --arbor2-tw-night-paper:#100C09; }   /* Typewriter's night fill steps with the dark page */
+/* MOVED from 09-board-card.css (Fable Nov 19, 12:35 pm: arbor2-1 F1 - with the flag OFF no stylesheet holds an arbor2 rule; ARBOR's file carries the pop-out's two Arbor rules). Same effect: both are scoped under :root[data-arbor2]. */
+/* ARBOR (the veil is ruled, Fable Nov 18 12:50 pm: the front door dims under the pop-out; the spec veil is #0A0503 at 72% over the WHOLE front door, spec 1 and 3). The Arbor front layer (.arbor2-front, z 2) stays under this ::after (z 7) while the panel (z 8) is open. */
+:root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='signin']::after, :root[data-arbor2][data-theme='plateau'] .wz-arrival[data-stage='account']::after{ background:rgba(10,5,3,.72); }
+:root[data-arbor2][data-theme='plateau'] .arbor2-front.behind{ pointer-events:none; }

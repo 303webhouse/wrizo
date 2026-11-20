@@ -1,0 +1,4 @@
+PASS plateau: html data-theme=plateau; front door's Sign in door present=true; panel={"w":396,"h":288,"stage":"signin","fields":2,"heading":true}
+PASS flux: html data-theme=flux; front door's Sign in door present=true; panel={"w":396,"h":305,"stage":"signin","fields":2,"heading":true}
+PASS machina: html data-theme=machina; front door's Sign in door present=true; panel={"w":416,"h":220,"stage":"signin","fields":2,"heading":true}
+FRONT-DOOR PROBE: PASS (3 themes)

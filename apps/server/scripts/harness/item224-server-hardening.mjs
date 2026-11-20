@@ -183,19 +183,19 @@ async function callRoute(router, routePath, method, body, session) {
 {
   resetEnv('', 50);
   const router = loadAuth();
-  const closedResult = await callRoute(router, '/register', 'post', { email: 'a@example.com', password: 'longenough1', name: 'A', code: 'anything' });
+  const closedResult = await callRoute(router, '/register', 'post', { email: 'a@example.com', password: 'longenough1', name: 'A', code: 'anything', adult: true });
   ok('(a) CLOSED: no INVITE_CODES configured -> 503 "Registration is not open right now", and the database is NEVER touched (fails before the expensive path)',
     closedResult.status === 503 && closedResult.body?.error === 'Registration is not open right now' && fakeDb.calls.length === 0,
     JSON.stringify({ status: closedResult.status, body: closedResult.body, dbCalls: fakeDb.calls }));
 
   resetEnv('ABC123,xyz-999', 50);
   const router2 = loadAuth();
-  const wrongResult = await callRoute(router2, '/register', 'post', { email: 'b@example.com', password: 'longenough1', name: 'B', code: 'wrong-code' });
+  const wrongResult = await callRoute(router2, '/register', 'post', { email: 'b@example.com', password: 'longenough1', name: 'B', code: 'wrong-code', adult: true });
   ok('(a) WRONG CODE: a configured list rejects a non-matching code with 403, DB still untouched',
     wrongResult.status === 403 && wrongResult.body?.error === 'Invalid invite code' && fakeDb.calls.length === 0,
     JSON.stringify({ status: wrongResult.status, dbCalls: fakeDb.calls }));
 
-  const rightResult = await callRoute(router2, '/register', 'post', { email: 'c@example.com', password: 'longenough1', name: 'C', code: 'xyz-999' });
+  const rightResult = await callRoute(router2, '/register', 'post', { email: 'c@example.com', password: 'longenough1', name: 'C', code: 'xyz-999', adult: true });
   ok('(a) RIGHT CODE: the second configured code succeeds (201) and DOES reach the database',
     rightResult.status === 201 && fakeDb.calls.some((c) => /insert into users/i.test(c)),
     JSON.stringify({ status: rightResult.status, body: rightResult.body }));
@@ -210,7 +210,7 @@ async function callRoute(router, routePath, method, body, session) {
   const mutatedSrc = realAuthSrc.replace(mutatedAnchor, '');
   resetEnv('ABC123,xyz-999', 50);
   const mutatedRouter = loadAuth({ authSourceOverride: mutatedSrc });
-  const mutantResult = await callRoute(mutatedRouter, '/register', 'post', { email: 'mutant@example.com', password: 'longenough1', name: 'M', code: 'wrong-code' });
+  const mutantResult = await callRoute(mutatedRouter, '/register', 'post', { email: 'mutant@example.com', password: 'longenough1', name: 'M', code: 'wrong-code', adult: true });
   ok('(a) MUTATION KILLED: with the invite-code check removed (in memory only — the real file is untouched), the SAME wrong-code request now succeeds (201) instead of 403 — confirms the real check is what blocks it',
     mutantResult.status === 201, JSON.stringify(mutantResult));
 }
@@ -222,11 +222,11 @@ async function callRoute(router, routePath, method, body, session) {
 {
   resetEnv('ABC123', 50);
   const router = loadAuth();
-  const short = await callRoute(router, '/register', 'post', { email: 'short@example.com', password: '1234567', name: null, code: 'ABC123' });
+  const short = await callRoute(router, '/register', 'post', { email: 'short@example.com', password: '1234567', name: null, code: 'ABC123', adult: true });
   ok('(d) a 7-character password is REFUSED (400) before the database is touched',
     short.status === 400 && /at least 8 characters/.test(short.body?.error ?? '') && fakeDb.calls.length === 0,
     JSON.stringify({ status: short.status, body: short.body, dbCalls: fakeDb.calls }));
-  const exact = await callRoute(router, '/register', 'post', { email: 'exact8@example.com', password: '12345678', name: null, code: 'ABC123' });
+  const exact = await callRoute(router, '/register', 'post', { email: 'exact8@example.com', password: '12345678', name: null, code: 'ABC123', adult: true });
   ok('(d) an exactly-8-character password clears the length check (the boundary itself, not just "long enough")',
     exact.status === 201, JSON.stringify(exact));
 
@@ -241,7 +241,7 @@ async function callRoute(router, routePath, method, body, session) {
   if (!authSrcForLogin.includes(mutAnchor)) throw new Error('(d) mutation anchor not found — update this harness');
   resetEnv('ABC123', 50);
   const mutRouter = loadAuth({ authSourceOverride: authSrcForLogin.replace(mutAnchor, '') });
-  const mutShort = await callRoute(mutRouter, '/register', 'post', { email: 'mut-short@example.com', password: '1234567', name: null, code: 'ABC123' });
+  const mutShort = await callRoute(mutRouter, '/register', 'post', { email: 'mut-short@example.com', password: '1234567', name: null, code: 'ABC123', adult: true });
   ok('(d) MUTATION KILLED: with the length check removed, the SAME 7-character password now succeeds (201) — confirms the real check is what refuses it',
     mutShort.status === 201, JSON.stringify(mutShort));
 }
@@ -254,7 +254,7 @@ async function callRoute(router, routePath, method, body, session) {
   const router = loadAuth();
   const sess1 = makeSession();
   const idBefore1 = sess1.id;
-  const reg = await callRoute(router, '/register', 'post', { email: 'sess-reg@example.com', password: 'longenough1', name: null, code: 'ABC123' }, sess1);
+  const reg = await callRoute(router, '/register', 'post', { email: 'sess-reg@example.com', password: 'longenough1', name: null, code: 'ABC123', adult: true }, sess1);
   ok('(c) REGISTER: a fresh session id is issued (not the pre-auth id) AND userId is set, in that order being provable by both having happened',
     reg.status === 201 && reg.session.id !== idBefore1 && typeof reg.session.userId === 'string',
     JSON.stringify({ idBefore: idBefore1, idAfter: reg.session.id, userId: reg.session.userId }));
@@ -559,8 +559,8 @@ async function callRoute(router, routePath, method, body, session) {
 {
   resetEnv('X', 50);
   const router = loadAuth();
-  const first = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'longenough1', name: null, code: 'X' });
-  const second = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'anotherlongone1', name: null, code: 'X' });
+  const first = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'longenough1', name: null, code: 'X', adult: true });
+  const second = await callRoute(router, '/register', 'post', { email: 'dupe@example.com', password: 'anotherlongone1', name: null, code: 'X', adult: true });
   ok('(3b) the duplicate attempt is refused with a NEUTRAL message — it does not say "already exists," and shares the same 400 status family as every other register refusal',
     first.status === 201 && second.status === 400 && !/already exists/i.test(second.body?.error ?? ''),
     JSON.stringify({ first: first.status, second: second.status, body: second.body }));
@@ -570,8 +570,8 @@ async function callRoute(router, routePath, method, body, session) {
   if (!realAuthSrc3.includes(neutralAnchor)) throw new Error('(3b) mutation anchor not found — update this harness');
   resetEnv('X', 50);
   const mutRouter2 = loadAuth({ authSourceOverride: realAuthSrc3.replace(neutralAnchor, "      res.status(409).json({ error: 'An account with that email already exists' });\r\n") });
-  await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'longenough1', name: null, code: 'X' });
-  const mutSecond = await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'anotherlongone1', name: null, code: 'X' });
+  await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'longenough1', name: null, code: 'X', adult: true });
+  const mutSecond = await callRoute(mutRouter2, '/register', 'post', { email: 'dupe2@example.com', password: 'anotherlongone1', name: null, code: 'X', adult: true });
   ok('(3b) MUTATION KILLED: with the old wording restored, a duplicate email is confirmed again (409, "already exists") — proves the neutral reply is what suppresses it',
     mutSecond.status === 409 && /already exists/i.test(mutSecond.body?.error ?? ''), JSON.stringify(mutSecond));
 }

@@ -778,6 +778,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // rebuilt the whole page's decorated string (the profile's 'redecorate: string build', 4.5 / 10 ms at 20k / 50k) for React to compare
   // and discard - the page itself is written by the rows (store/lineRows.ts), never by this string after mount.
   const freeHtml = useMemo(() => (freeEdit ? decorateMarkdownForCard(initialText, null) : ''), [freeEdit, initialText]);
+  const committedHtml = useMemo(() => (freeEdit || content.length === 0 ? '' : content.map(run => run.struck
+    ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
+    : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')), [freeEdit, content]);
   const html = freeEdit
     // ITEM 122 — first paint collapses its markers too, with a NULL caret:
     // nothing is adjacent to nothing before the writer has placed one, and a
@@ -791,11 +794,21 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // untouched. A STRUCK run is history, not prose, so it stays a plain struck span and a mark pair cannot reach across it;
       // an unstruck run is decorated with a null caret (the runway owns the caret, so nothing is ever revealed here). The
       // `.fo-run` wrapper is kept, so a reader of its textContent still gets every character.
-      : content.map(run => run.struck
-        ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
-        : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')
-        // #70: a page whose last character is a newline (Enter just pressed) draws no line for it, so the caret stayed at the end of the line above until the next letter; the guard (Draft's own) gives that line a character to hold the caret
-        + `<span class="fo-word">${word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : typedHtml(word)}</span>`;
+      // FREE WRITE PER-KEY (Fable Nov 19: #85's remainder): the committed runs' html is built when the runs CHANGE (a committed word, a strike), not on every letter, and the host's html holds an EMPTY word span: a letter writes only that span (the layout effect below), so the page's own nodes are never replaced by a letter. At 50 000 words a letter cost ~49 ms (the whole editable replaced, then the caret put back over it) against ~16 ms at 500.
+      : `${committedHtml}<span class="fo-word"></span>`;
+  // #70: a page whose last character is a newline (Enter just pressed) draws no line for it, so the caret stayed at the end of the line above until the next letter; the guard (Draft's own) gives that line a character to hold the caret
+  const wordHtml = word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : typedHtml(word);
+  const wordWritten = useRef<{ el: Element | null; html: string }>({ el: null, html: '' });
+  // the active word's span is written here, only when its html (or the span itself, after the host's html was set again) changed: the same "React skips an unchanged string" rule the whole-host string had, for an unrelated parent re-render mid-composition
+  useLayoutEffect(() => {
+    if (freeEdit) return;
+    const host = hostRef.current;
+    const el = host && host.lastElementChild && host.lastElementChild.classList.contains('fo-word') ? host.lastElementChild : null;
+    if (!el) { wordWritten.current = { el: null, html: '' }; return; }
+    if (wordWritten.current.el === el && wordWritten.current.html === wordHtml) return;
+    el.innerHTML = wordHtml;
+    wordWritten.current = { el, html: wordHtml };
+  });
 
   return (
     <div className="forward-only-editor-wrap" style={{ position: 'relative', display: 'flex', flexDirection: 'column', ...style }}>

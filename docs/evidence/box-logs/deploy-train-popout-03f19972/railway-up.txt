@@ -1,0 +1,17 @@
+Indexing...
+Uploading...
+CI mode enabled
+fetched snapshot sha256:ea4731df2e2994dcbfc8f70838fa10c6babfd7123cf1cc4f2c98e4af7fc3ef11 (16 MB bytes)
+fetching snapshot
+unpacking archive
+downloading build driver nixpacks-v1.41.0 from https://github.com/railwayapp/nixpacks/releases/download/v1.41.0/nixpacks-v1.41.0-x86_64-unknown-linux-musl.tar.gz
+using build driver nixpacks-v1.41.0
+
+╔══════════════════════════════ Nixpacks v1.41.0 ═════════════════════════════�
+[... build output trimmed ...]
+image.name: production-dpsjc-b.railway-registry.com/d9a7894f-c7a0-415a-9fb5-48a34624fd18:43ac4404-1a9d-486f-bf72-d7f989006fa2
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6NzIyMjI4YzYxMDNmYjgyNWE4MDU1MGMxNjM0MzYxMmJiZDA0ZDUxOTdmM2E3ZTQ3MThmZWQ4M
+containerimage.config.digest: sha256:505794b3715bcf5b8ab4b79dc8a64cf37269bc9e5ca210ff4f35d784a9623ba4
+railway.push.duration: 3.69155829s
+containerimage.digest: sha256:722228c6103fb825a80550c16343612bbd04d5197f3a7e4718fed81a28225941
+Deploy complete
