@@ -7,7 +7,7 @@ import { withoutFontMarks } from '../store/markRuns';
 import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
-import { AssetGroups } from '../reorg/backMenu/AssetGroups';
+import { AssetGroups } from '../reorg/backMenu/AssetGroupsList';
 import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';

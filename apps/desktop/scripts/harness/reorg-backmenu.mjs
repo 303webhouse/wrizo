@@ -66,6 +66,8 @@ async function seed(app) {
 }
 
 async function openPage(app, id, { theme = 'machina', reorg = true } = {}) {
+  // the theme seam exists once the app has mounted: wait for it, never assume it (the first look after a reload or a seed can come before it)
+  await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
   await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
   await app.reload();
