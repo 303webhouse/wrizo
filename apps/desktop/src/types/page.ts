@@ -94,6 +94,10 @@ export interface PageSettings {
   // board). A type only: the existing whole-blob page_settings jsonb carries it (schema change: none). A fact about THIS page, never dress:
   // store/pageDefaults.ts strips it from the per-user default. Stale ids are pruned on read (store/grafts.ts), never written back.
   hiddenPlanCards?: string[];
+  // THE REORG (Nick's ruling, Nov 19, via Fable): a Part's own name, saved with the account by the whole-blob page_settings column it already rides
+  // (schema change: none). Absent, never null and never '', on every page that was never named: the page reads its first line (the Sep 12 rule).
+  // A fact about THIS page, never dress: store/pageDefaults.ts strips it from the per-user default. Written by reorg/partsSeam.ts renamePart.
+  name?: string;
 }
 
 export type PageTemplate = 'outline' | 'title' | 'bibliography';
