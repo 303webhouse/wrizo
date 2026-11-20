@@ -772,10 +772,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     // a layout move raises no event of its own (the typewriter's measures move the padding the text sits in, and the scroller with it): the hint is up only while she is not writing, so it
     // looks again four times a second while it shows
     const tick = window.setInterval(place, 250);
-    // and at once when the scroller or the page changes size (the typewriter's start offset grows the scroller upward by a few dozen px and the text with it)
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(again) : null;
-    if (ro) { if (scroller) ro.observe(scroller); ro.observe(page); ro.observe(host); }
-    return () => { scroller?.removeEventListener('scroll', again); window.removeEventListener('resize', again); window.clearInterval(tick); ro?.disconnect(); if (raf) cancelAnimationFrame(raf); };
+    return () => { scroller?.removeEventListener('scroll', again); window.removeEventListener('resize', again); window.clearInterval(tick); if (raf) cancelAnimationFrame(raf); };
   }, [nudge]);
   const isEmpty = content.length === 0 && word.length === 0;
 
