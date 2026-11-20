@@ -416,10 +416,11 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // #113: the measures (--tw-start-offset, --tw-end-pad, the band's line unit) are read from boxes that are still SETTLING when the page opens - the zoom's transform runs for a
     // moment - and until now they were only refreshed because the opening staircase ran band() (which measures) for seconds afterwards. With the opening landing at once, band() runs once or
     // twice, so the measures are taken again when the boxes they read settle: a resize of the scroller or of the hold box, and the end of the page's own transform.
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => measure()) : null;
+    // while she has done nothing yet, a settled box also LANDS the writing line again (the hold it was landed at may be a hold that has since moved: a drawer shut, the zoom arrived)
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { measure(); if (opening()) schedule(); }) : null;
     if (ro) { ro.observe(container); if (zoom?.holdRef.current) ro.observe(zoom.holdRef.current); }
     const pageEl = container.closest('.mode-page');
-    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform') measure(); };
+    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform') { measure(); if (opening()) schedule(); } };
     pageEl?.addEventListener('transitionend', onPageTransition);
     measure();
     setScrolled();

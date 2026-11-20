@@ -50,6 +50,7 @@ await withHarness(async (app) => {
       try {
         const id = `so-${theme}-${words}`;
         await d.ev(`location.hash = '#/'`); await sleep(200);
+        await app.waitFor('!!window.wrizoCreateJournalPage', { label: 'the page seam', timeout: 20000 });
         await d.ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: pageOf(words), createdAt: new Date().toISOString(), origin: 'journal', source: 'page' })})`);
         await d.ev(`localStorage.setItem('wrizo-mode-page-${id}', 'journal')`);
         await d.ev(SAMPLER);
