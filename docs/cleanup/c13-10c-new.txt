@@ -244,3 +244,6 @@ reorgSpecialBibliography=Bibliography
 reorgPartsStructure=Structure
 reorgPartAssetsOne={n} asset
 reorgPartAssetsMany={n} assets
+# THE TEAM B RESTYLE, slice 3 (ARBOR, Nov 20): the Assets tab's head and each Part's fold
+reorgAssetsHead=Assets ({n})
+reorgAssetsPartToggle=Show or hide the assets of {part}

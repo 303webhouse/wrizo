@@ -84,3 +84,23 @@
 [data-theme='machina'] .wz-back-tag[data-colour-slot='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
 .wz-back-colour-menu button{ display:flex; align-items:center; }
 .wz-back-colour-menu button[aria-pressed='true'] .wz-back-colour-name{ text-decoration:underline; text-underline-offset:3px; }
+
+/* THE TEAM B RESTYLE, slice 3 (ARBOR, Nov 20; reorg/backMenu/AssetPartGroups.tsx, AssetGroupsList.tsx). The Assets tab, wide to narrow: "Assets (n)",
+   then a group per Part with assets in the Doc's order, its head (fold, tag, name, count) a quiet bar; her Part's group opens with the tab, the others
+   closed (1H). Open Beside and each kind are icons in the label colour, their words on hover and for a screen reader (1F, 1G). No motion: a cut. */
+[data-theme='machina'] .wz-back-assets-head{ margin:0 0 6px; }
+[data-theme='machina'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left;
+  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+[data-theme='machina'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-icon{ display:block; flex:none; }
+[data-theme='machina'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+
+/* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys) */
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }

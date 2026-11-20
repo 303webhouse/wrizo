@@ -7,10 +7,12 @@ import { withoutFontMarks } from '../store/markRuns';
 import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
-import { AssetGroups, type PartChoice } from '../reorg/backMenu/AssetGroupsList';
+import { AssetGroups } from '../reorg/backMenu/AssetGroupsList';
 import { partsOfDoc } from '../reorg/partsSeam';
 import { connectAssetToPart } from '../reorg/assetConnect';
 import { assetColour, setAssetColour } from '../reorg/assetColour';
+import { assetCountOf } from '../reorg/partAssets';
+import { AssetPartGroups, type PartAssets } from '../reorg/backMenu/AssetPartGroups';
 import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -112,13 +114,23 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
   const backGroups = back && g && !snap ? assetGroupsOf(g, plan, (id) => titleOf(getJournalEntry(id)?.text)) : null;
   // AN ASSET ONTO A PART (reorg/assetConnect.ts): "→ Part" lists the Doc's OTHER Parts, named as the Parts tab names them
   const docParts = backGroups && page ? partsOfDoc(page).parts : [];
-  const partChoices: PartChoice[] = docParts.filter((p) => p.id !== page?.id).map((p) => ({ id: p.id, word: p.name || t('reorgUntitled') }));
-  const toPart = (asset: { entryId: string; boxId?: string }, title: string, partId: string) => {
-    const part = partChoices.find((p) => p.id === partId)?.word ?? '';
-    const r = connectAssetToPart(partId, asset, page?.id);
+  // `fromId`: the Part whose list the asset was picked in (everything in it is already connected to that Part); her own Part by default
+  const toPartFrom = (fromId: string | undefined) => (asset: { entryId: string; boxId?: string }, title: string, partId: string) => {
+    const part = docParts.find((p) => p.id === partId)?.name || t('reorgUntitled');
+    const r = connectAssetToPart(partId, asset, fromId);
     const fill = (k: 'reorgConnectedLine' | 'reorgAlreadyConnected' | 'reorgConnectRefused') => t(k).replace('{title}', title).replace('{part}', part);
     if (r.made === 'link') { const id = r.linkId; setUndo({ line: fill('reorgConnectedLine'), run: () => { removePageLink(id); } }); }
     else setUndo({ line: fill(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused') });
+  };
+  // THE TEAM B RESTYLE (slice 3): a group per Part with assets, in the Doc's order (her Part's list is today's; another Part's is read the same way
+  // and its acts are bound to that Part); "Assets (n)" counts them all
+  const partAssets: PartAssets[] = backGroups && page ? docParts.map((p) => ({
+    id: p.id, name: p.name || t('reorgUntitled'), color: p.color ?? null, count: assetCountOf(p.id),
+    groups: p.id === page.id ? backGroups : assetGroupsOf(graftsOf({ entryId: p.id }), planGroupOf(p.id), (id) => titleOf(getJournalEntry(id)?.text)),
+  })).filter((p) => p.count > 0) : [];
+  const hideFor = (partId: string) => (cardId: string, title: string) => {
+    hidePlanCard(partId, cardId);
+    setUndo({ line: t('graftHiddenLine').replace('{title}', title), run: () => unhidePlanCard(partId, cardId) });
   };
 
   return (
@@ -135,14 +147,18 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
           {t('graftPlaceThis')}
         </button>
       )}
-      {backGroups && (
-        <AssetGroups groups={backGroups} t={t} besideOffered={!!page && !!prose}
-          besideNote={(() => { const why = splitBlocked(mode); return why === 'freewrite' ? t('reorgSplitNoFreewrite') : why === 'typewriter' ? t('reorgSplitNoTypewriter') : null; })()}
-          kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
-          onRemove={remove} onHide={hide}
-          onBeside={(entryId, boxId) => { if (page && !splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
-          onOpenBoard={(id) => navigate(`/page/${id}`)} parts={partChoices} onToPart={toPart}
-          colourOf={assetColour} onColour={(asset, slot) => { setAssetColour(asset, slot); }} />
+      {backGroups && page && (
+        <AssetPartGroups hereId={page.id} parts={partAssets} total={partAssets.reduce((n, p) => n + p.count, 0)} t={t}
+          render={(p) => (
+            <AssetGroups groups={p.groups} t={t} besideOffered={!!prose}
+              besideNote={(() => { const why = splitBlocked(mode); return why === 'freewrite' ? t('reorgSplitNoFreewrite') : why === 'typewriter' ? t('reorgSplitNoTypewriter') : null; })()}
+              kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
+              onRemove={remove} onHide={p.id === page.id ? hide : hideFor(p.id)}
+              onBeside={(entryId, boxId) => { if (!splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
+              onOpenBoard={(id) => navigate(`/page/${id}`)}
+              parts={docParts.filter((d) => d.id !== p.id).map((d) => ({ id: d.id, word: d.name || t('reorgUntitled') }))} onToPart={toPartFrom(p.id)}
+              colourOf={assetColour} onColour={(asset, slot) => { setAssetColour(asset, slot); }} />
+          )} />
       )}
       {!backGroups && paired && only !== 'grafts' && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>

@@ -297,6 +297,9 @@ export const CANONICAL_CHROME = {
   reorgPartsStructure: 'Structure',
   reorgPartAssetsOne: '{n} asset',
   reorgPartAssetsMany: '{n} assets',
+  // THE TEAM B RESTYLE, slice 3 (reorg/backMenu/AssetPartGroups.tsx; Nick, Nov 20: 1F, 1H): the Assets tab's head and each Part's fold. {n} a count, {part} a Part's name
+  reorgAssetsHead: 'Assets ({n})',
+  reorgAssetsPartToggle: 'Show or hide the assets of {part}',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
   reorgSplitLabel: 'Opened beside',

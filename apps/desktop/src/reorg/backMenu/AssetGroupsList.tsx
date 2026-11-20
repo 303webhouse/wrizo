@@ -84,9 +84,31 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
       </span>
     );
   };
+  // THE TEAM B RESTYLE (slice 3, 1G): the broad kinds as icons (a Doc, a Board, a Card, which Machina calls a Block; a source reads as a Doc), the
+  // word on hover and for a screen reader. No Graphic icon: there are no pictures yet.
+  const kindIcon = (kind: AssetItem['kind'], word: string) => {
+    const k = kind === 'source' ? 'page' : kind;
+    return (
+      <span className="wz-back-asset-kind" data-kind-icon={k} title={word}>
+        <svg className="wz-back-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+          {k === 'page' && <><path d="M3.5 1.5h6l3 3v10h-9z" fill="none" stroke="currentColor" strokeWidth="1.2" /><path d="M5.5 7.5h5M5.5 10h5" stroke="currentColor" strokeWidth="1.2" /></>}
+          {k === 'board' && <><rect x="1.5" y="2.5" width="13" height="11" fill="none" stroke="currentColor" strokeWidth="1.2" /><rect x="4" y="5" width="3.5" height="3" fill="currentColor" /><rect x="9" y="8" width="3.5" height="3" fill="currentColor" /></>}
+          {k === 'card' && <><rect x="2.5" y="4" width="11" height="8" fill="none" stroke="currentColor" strokeWidth="1.2" /><path d="M4.5 7h7" stroke="currentColor" strokeWidth="1.2" /></>}
+        </svg>
+        <span className="wz-sr-only">{word}</span>
+      </span>
+    );
+  };
   const beside = (entryId: string, boxId: string | undefined, title: string) => besideOffered && (
-    <button type="button" className="wz-graft-dock wz-back-beside" data-back-beside="" disabled={!!besideNote} title={besideNote ?? undefined}
-      aria-label={`${t('reorgSplitOpen')}: ${title}`} onClick={() => onBeside(entryId, boxId)}>{t('reorgSplitOpen')}</button>
+    // THE TEAM B RESTYLE (slice 3, 1F): an icon, a split screen with a ">" (it opens beside the page); its words on hover and for a screen reader
+    <button type="button" className="wz-graft-dock wz-back-beside" data-back-beside="" disabled={!!besideNote} title={besideNote ?? t('reorgSplitOpen')}
+      aria-label={`${t('reorgSplitOpen')}: ${title}`} onClick={() => onBeside(entryId, boxId)}>
+      <svg className="wz-back-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+        <rect x="1.5" y="2.5" width="13" height="11" fill="none" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M8 2.5v11" stroke="currentColor" strokeWidth="1.2" /><path d="M10 6l2 2-2 2" fill="none" stroke="currentColor" strokeWidth="1.2" />
+      </svg>
+      <span className="wz-sr-only">{t('reorgSplitOpen')}</span>
+    </button>
   );
   const row = (it: AssetItem) => {
     const r = it.row;
@@ -98,7 +120,7 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
         <span className={`wz-links-thumb wz-links-thumb--${it.kind === 'source' ? 'page' : it.kind}`} aria-hidden="true" />
         {tagOf(asset)}
         <span className="wz-links-label wz-graft-title" title={kindWord(it.kind)}>{r.title}</span>
-        <span className="wz-back-asset-kind">{kindWord(it.kind)}</span>
+        {kindIcon(it.kind, kindWord(it.kind))}
         {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
         {beside(r.entryId, r.boxId, r.title)}
         {toPart(`a:${it.key}`, asset, r.title)}
@@ -140,6 +162,7 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
           <div key={grp.key} className="wz-graft-group wz-back-group" data-back-group="board" data-back-board={grp.boardId} data-back-own={grp.own ? 'true' : 'false'}>
             <div className="wz-graft-gh wz-back-boardhead" draggable onDragStart={dragFrom({ entryId: grp.boardId as string })}>
               {tagOf({ entryId: grp.boardId as string })}
+              {kindIcon('board', kindWord('board'))}
               <span className="wz-back-boardname" data-back-board-name="">{grp.own ? `${t('reorgAssetsOwnBoard')} · ${grp.title}` : grp.title}</span>
               {beside(grp.boardId as string, undefined, grp.title)}
               {toPart(`b:${grp.key}`, { entryId: grp.boardId as string }, grp.title)}
