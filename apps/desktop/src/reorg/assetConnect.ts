@@ -43,7 +43,7 @@ export type ConnectResult = { made: 'link'; linkId: string } | { made: 'already'
 /** Connect an asset to a Part. `hereId` is the Part she is on: everything her Assets tab lists is already connected to it, so it writes nothing. */
 export function connectAssetToPart(partId: string, asset: GraftTarget, hereId?: string): ConnectResult {
   if (!getJournalEntry(partId)) return { made: 'refused' };
-  if (partId === hereId || isGrafted({ entryId: partId }, asset)) return { made: 'already' };
+  void hereId; if (isGrafted({ entryId: partId }, asset)) return { made: 'already' };   // MUTANT: the Part-she-is-on rule removed (D4 must go red)
   const r = graftTo({ entryId: partId }, asset);
   return r && r.made === 'link' ? { made: 'link', linkId: r.linkId } : { made: 'refused' };
 }
