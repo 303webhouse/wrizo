@@ -91,3 +91,30 @@
 [data-theme='machina'] .reorg-parts-num{ flex:none; width:18px; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); text-align:right; }
 [data-theme='machina'] .reorg-parts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 [data-theme='machina'] .reorg-parts-words{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
+
+/* MOVING BETWEEN PARTS (reorg/PartMoves.tsx; the prototype's .part-arrow and .part-foot, frame P2-12D). The arrows ride the paper's overlay
+   slot, placed by measure on the page's own scroller, so nothing in the page moves; the scroller's bar steps in from either end to make room. */
+[data-theme='machina'] .reorg-part-arrows{ position:absolute; z-index:3; width:0; pointer-events:none; }
+[data-theme='machina'] .reorg-part-arrow{ position:absolute; left:-11px; width:22px; height:22px; box-sizing:border-box; padding:0; margin:0;
+  display:flex; align-items:center; justify-content:center; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047;
+  cursor:pointer; pointer-events:auto; }
+[data-theme='machina'] .reorg-part-arrow.is-up{ top:4px; }
+[data-theme='machina'] .reorg-part-arrow.is-down{ bottom:4px; }
+[data-theme='machina'] .reorg-part-arrow:hover:not([disabled]){ background:#E6E8EA; }
+[data-theme='machina'] .reorg-part-arrow:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
+[data-theme='machina'] .reorg-part-arrow[disabled]{ opacity:.35; cursor:default; }
+@supports selector(::-webkit-scrollbar){
+  [data-theme='machina'] .mode-page:has(> .reorg-part-arrows) > .mode-scroll::-webkit-scrollbar-track{ margin-block:30px; }
+}
+[data-theme='machina'] .reorg-part-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:26px; padding-top:12px;
+  border-top:1px solid #D2D6DA; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:#525A62; user-select:none; }
+[data-theme='machina'] .reorg-part-foot-go{ border:0; background:none; padding:0; font:inherit; color:inherit; cursor:pointer; }
+[data-theme='machina'] .reorg-part-foot-go.is-next{ color:#3F6183; }
+[data-theme='machina'] .reorg-part-foot-go:hover{ text-decoration:underline; }
+[data-theme='machina'] .reorg-part-foot-go:focus-visible{ outline:1px solid #3F6183; outline-offset:2px; }
+/* the Part line is a button now (it drops the Parts list); it keeps the line's look */
+[data-theme='machina'] .reorg-top-part-count{ border:0; background:none; padding:0; margin:0; font:inherit; color:inherit; cursor:pointer; }
+[data-theme='machina'] .reorg-top-part-count:hover, [data-theme='machina'] .reorg-top-part-count.is-open{ text-decoration:underline; }
+[data-theme='machina'] .reorg-top-part-count:focus-visible{ outline:1px solid #3F6183; outline-offset:2px; }
+[data-theme='machina'] .reorg-top-part{ position:relative; }
+[data-theme='machina'] .reorg-top-parts-drop{ padding:10px 12px; max-height:320px; overflow-y:auto; }

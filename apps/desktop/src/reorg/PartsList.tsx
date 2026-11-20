@@ -14,7 +14,7 @@ import { partsOfDoc } from './partsSeam';
 
 const fill = (s: string, vals: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vals ? String(vals[k]) : m));
 
-export function PartsList({ entry }: { entry: JournalEntry }) {
+export function PartsList({ entry, beforeLeave }: { entry: JournalEntry; beforeLeave?: () => void }) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   // follows the store (a rename in the top rail, a pull), never her keystrokes: the signature changes only with what the list draws
@@ -28,7 +28,8 @@ export function PartsList({ entry }: { entry: JournalEntry }) {
     if (id === latest.id) return;
     const target = getJournalEntry(id);
     if (!target) return;
-    flushNow();
+    // the top rail's drop hands in the host's flush (her typing first); the Front menu's tab needs none (the press there blurs the editor)
+    if (beforeLeave) beforeLeave(); else flushNow();
     navigate(routeForEntry(target));
   };
   return (
