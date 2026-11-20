@@ -26,6 +26,9 @@ import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { SplitHost } from '../reorg/split/SplitHost';
+import { SearchMenu } from '../reorg/search/SearchMenu';
+import { SearchField } from '../reorg/search/SearchField';
+import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -152,6 +155,18 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const setRightTab = (v: RightTab | 'plan'): void => { if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
   useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+  // THE REORG'S SEARCH (reorg/search/, POLISH): while it is open it takes this menu's place (the tab row and every tab's body give way to the
+  // search menu) and the drawer stands open; closing it gives the menu back as it was (open on its tab, or shut). The search outlives a page,
+  // so a page that opens while it is open opens this drawer on it. With the switch off `back` is false and none of this runs.
+  const search = useSearch();
+  const searching = back && search.open;
+  const searchSeen = useRef(false);
+  useEffect(() => {
+    if (!back) return;
+    if (search.open) { noteWasOpen(open); searchSeen.current = true; setOpen(true); return; }
+    if (searchSeen.current) { searchSeen.current = false; setOpen(restoreAfterSearch()); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.open]);
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
   // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
   // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
@@ -780,8 +795,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           {/* while a linked card or page stands docked, the docked panel is its reader [Tutor §34] */}
-          {linkDock && docked ? <LinkDockReader dock={linkDock} onClose={closeLinkDock} /> : (
+          {linkDock && docked ? <LinkDockReader dock={linkDock} onClose={closeLinkDock} /> : searching ? (
+            <SearchMenu entry={entry} open={open} backWord={search.wasOpen ? ((l) => (typeof l === 'string' ? l : null))(rightTabs.items.find((i) => i.id === rightTab)?.label) : null} />
+          ) : (
           <SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>
+          {/* THE REORG'S SEARCH DOOR: a field atop every Back menu tab; a press turns the menu into the search menu (reorg/search/SearchField.tsx) */}
+          {back && <SearchField from={rightTab === 'plan' ? 'plan' : rightTab === 'links' ? 'links' : 'tutor'} />}
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
               the panel's own top level (not inside the `{open && …}` content
               body below), so closing/reopening the Tutor never remounts it and

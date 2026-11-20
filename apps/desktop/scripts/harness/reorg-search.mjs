@@ -100,7 +100,7 @@ async function seed(app) {
     page('o-1', 'A toll road far away', { origin: 'project', projectId: far.id, orderIndex: 0 });
     page('l-1', 'A toll left unfiled', { origin: 'loose' });
     W.wrizoFlushNow();
-    return { harbor: harbor.id, other: other.id, tolls: tolls.id };
+    return { harbor: harbor.id, other: other.id, tolls: tolls.id, ferry: ferry.id };
   })()`);
 }
 async function open(app, id, reorg = true) {
@@ -175,7 +175,7 @@ await withHarness(async (app) => {
   const w1 = await app.evalJs(MENU);
   ok('W1: "Widen to This Project" - Tolls (two rows shown, "+ 1 more in this Doc"), Ferry (1), the board Harbor map (1 card); 5 in Harbor',
     w0.widen === 'Widen to This Project' && w1.reach.find((r) => r[0] === 'project')?.[2] === 'true'
-    && q(w1.groups.map((g) => [g[0], g[1]])) === q([[ids.tolls, '3'], ['f-1', '1'], ['m-b', '1']])
+    && q(w1.groups.map((g) => [g[0], g[1]])) === q([[ids.tolls, '3'], [ids.ferry, '1'], ['m-b', '1']])
     && w1.hits.filter((h) => ['t-1', 't-2', 't-3'].includes(h[0])).length === 2 && q(w1.more) === q(['+ 1 more in this Doc'])
     && w1.hits.some((h) => h[0] === 'f-1') && w1.hits.some((h) => h[0] === 'm-b') && w1.count === '5 in Harbor', { widen: w0.widen, w1 });
   await app.evalJs(click('[data-search-menu] [data-search-reach="all"]')); await sleep(600);
