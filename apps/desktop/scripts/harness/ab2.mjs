@@ -1179,9 +1179,10 @@ if (process.env.HARNESS_PARKED === '1') {
 })()`);
     // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft's foot menu carries Progress Tracking alone now (the Typewriter Mode heading mounts on Free Write only); the generation-5 record keeps its other conditions. The original line, verbatim:
     // const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
-    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Progress Tracking') && !f.headings.includes('Typewriter Mode') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // the SCRIPT surface is Draft's (Progress Tracking alone); the PROSE surface of this fixture is Free Write, whose menu mounts the Typewriter Mode section too.
+    const footOkPR7 = (f, withTypewriter) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Progress Tracking') && f.headings.includes('Typewriter Mode') === withTypewriter && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
     pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) - PR #7 (4d3c84e): the foot is ONE three-dot menu holding Typewriter Mode and Progress on BOTH surfaces, and Full Screen lives in the desk corner menu, not the drawer',
-      footOkPR7(footScriptPR7) && footOkPR7(footProsePR7),
+      footOkPR7(footScriptPR7, false) && footOkPR7(footProsePR7, true),
       JSON.stringify({ footScriptPR7, footProsePR7 }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is

@@ -458,7 +458,9 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   ok(`${tag} P: panels tucked - the Sliver and the Tutor are closed in the zoom`, tutorOpen && sliverOpen !== 'true' && tutorNow !== 'true', J({ sliverOpen, tutorNow }));
 
   // the writing line: caret to the end, one trusted letter so the typewriter engages, then let any glide settle
-  await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(1200);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the writing line is held in Free Write now, entered by a mode switch that mounts a fresh editor (Machina's hold settled later than 1.2 s on Actions 44653744825: the unfaded and painted reads were taken mid-glide). The original line, verbatim:
+  // await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(1200);
+  await app.evalJs('window.__psCaretToEnd()'); await app.typeKeys('x'); await sleep(3000);
   const lines = await app.evalJs('window.__psLines()'); const caret = await app.evalJs('window.__psCaret()'); const g2 = await app.evalJs('window.__psGeom()');
   await snap(app, `${th.id}-${w}x${h}-${kind}-zoom-writing`);
   const wi = lines && caret ? lines.findIndex((l) => caret.mid >= l.top && caret.mid <= l.bottom) : -1;
@@ -531,7 +533,9 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
         caretTop: c ? Math.round(c.top) : null, anchorY: cr ? Math.round(cr.top + cr.height * 0.6) : null, scrollTop: Math.round(sc?.scrollTop ?? -1), maxTop: sc ? Math.round(sc.scrollHeight - sc.clientHeight) : null, traceLen: (window.__wzTwTrace || []).length }; })()`;
     const g0 = await app.evalJs(gProbe);
     const p = app.evalJs(sample);
-    await sleep(30); await app.key('Enter'); await app.typeKeys('y');
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the glide is read in Free Write now, whose editor takes a new line from the typed newline (the key's character), not from a raw Enter press with no text. The original line, verbatim:
+    // await sleep(30); await app.key('Enter'); await app.typeKeys('y');
+    await sleep(30); await app.typeKeys('\n'); await app.typeKeys('y');
     const v = await p; const distinct = v ? [...new Set(v)] : [];
     const gEnd = await app.evalJs(gProbe);
     await sleep(1500);
@@ -729,7 +733,9 @@ await withHarness(async (app) => {
         }
         // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's control and its stored per-page key are gone / read by nothing; the zoom is Free Write and the normal view is Draft. The original, verbatim:
         // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
-        await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'journal')`);
+        // Flux keeps its claim (a Draft page with its stored value ON never zooms); Arbor's and Machina's zoom is Free Write.
+        if (th.id === 'flux') await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'drafting'); localStorage.setItem('wrizo-typewriter-page-${did}', 'on')`);
+        else await app.evalJs(`localStorage.setItem('wrizo-mode-page-${did}', 'journal')`);
         const zoomed = (await openPage(app, did)) ? await app.evalJs(IDENT_PROBE) : null;
         // MIZ (the mutant, once) [Wire In successor]: the zoom attribute written onto Flux dark's column while the probe reads - the no-zoom read below must go RED (the attribute is put back as it was)
         if (th.id === 'flux' && tone === 'dark' && iw === 1366 && zoomed) {
@@ -862,7 +868,9 @@ await withHarness(async (app) => {
     const sample = `(() => new Promise((res) => { const sc = document.querySelector('.forward-only-editor')?.closest('.mode-scroll'); if (!sc) return res(null);
       const v = [sc.scrollTop]; const t0 = performance.now(); const f = () => { v.push(sc.scrollTop); if (performance.now() - t0 < 1000) requestAnimationFrame(f); else res(v); }; requestAnimationFrame(f); }))()`;
     const p = app.evalJs(sample);
-    await sleep(30); await app.key('Enter'); await app.typeKeys('y');
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the glide is read in Free Write now, whose editor takes a new line from the typed newline (the key's character), not from a raw Enter press with no text. The original line, verbatim:
+    // await sleep(30); await app.key('Enter'); await app.typeKeys('y');
+    await sleep(30); await app.typeKeys('\n'); await app.typeKeys('y');
     const v = await p; const distinct = v ? [...new Set(v)] : [];
     const moved = v ? v[v.length - 1] - v[0] : null;
     ok(`Arbor 1366x768 G (reduced motion): a new line moves the scroll with no glide - ${INSTANT_MAX} values at most (the start and whole-line steps)`,
