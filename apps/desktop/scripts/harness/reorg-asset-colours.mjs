@@ -28,7 +28,8 @@
 //         C5  "No colour" on x1 REMOVES the key (no color on x1, nothing null); the tag is gone
 // LOOK    C6  dark room: each slot's tag, drawn, reads the sheet's fill and letter (A: no fill, its edge); letter against fill (A: against the
 //             panel) 4.5:1 or better, the tag against the panel (A and B: their edge) 3:1 or better
-//         C7  light room (data-machina2-room='light', machina/look's switch): each slot's tokens read the sheet's light values, letter 4.5:1,
+//         C7  (SUCCESSOR, Nov 20: Yellow's tag stands off the light panel by its 1 px G4 edge, as the sheet measures it)
+//             light room (data-machina2-room='light', machina/look's switch): each slot's tokens read the sheet's light values, letter 4.5:1,
 //             tag 3:1 against the sheet's light panel #F4F5F6
 // KEPT    R1  coloured again and reloaded: x1 still holds 'c' and its row draws "C"
 // OFF     O1  switch off, Machina, the same page: no "Colour" button and no tag, though x1 is coloured
@@ -257,8 +258,20 @@ await withHarness(async (app) => {
     const ground = fill || '#F4F5F6';
     return { s, tokens: tk[s], match: (fill ? tf === fill : tf === 'TRANSPARENT') && ti === ink && (edge ? te === edge : true), letter: +ratio(ink, ground).toFixed(2), tag: +ratio(edge || fill, '#F4F5F6').toFixed(2) };
   });
-  ok('C7 light room (data-machina2-room=light): each slot\'s tokens read the sheet\'s light values; letter 4.5:1, tag 3:1 against the sheet\'s panel #F4F5F6',
-    light.every((l) => l.match && l.letter >= 4.5 && l.tag >= 3), light);
+  // SUPERSEDED (Nov 20, ARBOR; Actions 44820660173, tree 57f69680): this C7 read the sheet with NO edge on the light room's Yellow (D) tag, so it
+  // asked a #B9A03A fill to stand 3:1 off #F4F5F6 (it is 2.36:1). The sheet's own "tag 5.3" for Yellow is measured on its G4 edge, and the brief
+  // says it ("A yellow tag bar on a card gets a 1 px edge"): the light Yellow tag stands off its panel by that edge. Verbatim:
+  //   ok('C7 light room (data-machina2-room=light): each slot\'s tokens read the sheet\'s light values; letter 4.5:1, tag 3:1 against the sheet\'s panel #F4F5F6',
+  //     light.every((l) => l.match && l.letter >= 4.5 && l.tag >= 3), light);
+  const SHEET_LIGHT_V2 = { ...SHEET.light, d: ['#B9A03A', '#151719', '#5E666E'] };   // Yellow's 1 px G4 edge
+  const light2 = [...'abcdef'].map((s) => {
+    const [fill, ink, edge] = SHEET_LIGHT_V2[s];
+    const [tf, ti, te] = (tk[s] || []).map((v) => (v || '').toUpperCase());
+    const ground = fill || '#F4F5F6';
+    return { s, tokens: tk[s], match: (fill ? tf === fill : tf === 'TRANSPARENT') && ti === ink && (edge ? te === edge : true), letter: +ratio(ink, ground).toFixed(2), tag: +ratio(edge || fill, '#F4F5F6').toFixed(2) };
+  });
+  ok('C7 light room (data-machina2-room=light): each slot\'s tokens read the sheet\'s light values (Yellow with its G4 edge); letter 4.5:1, the tag (or its edge) 3:1 against the sheet\'s panel #F4F5F6',
+    light2.every((l) => l.match && l.letter >= 4.5 && l.tag >= 3), light2);
 
   // ---- KEPT ------------------------------------------------------------------------------------------------------------------------------
   await app.evalJs(pick(ROW('x1'), 'c'));
