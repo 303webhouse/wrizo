@@ -53,7 +53,9 @@ const q = (s) => JSON.stringify(s);
 const MENU = `(() => {
   const m = document.querySelector('[data-search-menu]');
   const panel = document.querySelector('.wz-tutor-panel');
-  if (!m) return { open: false, panelOpen: panel ? panel.getAttribute('data-open') : null, tabs: !!(panel && panel.querySelector('[role="tablist"]')) };
+  // a closed menu reads as empty lists, so a check that needs the menu FAILS on it rather than crashing the run
+  if (!m) return { open: false, panelOpen: panel ? panel.getAttribute('data-open') : null, tabs: !!(panel && panel.querySelector('[role="tablist"]')),
+    q: null, focused: false, sel: null, back: '', reach: [], count: '', line: '', groups: [], hits: [], more: [], widen: null };
   const i = m.querySelector('[data-search-q]');
   return { open: true, panelOpen: panel ? panel.getAttribute('data-open') : null, tabs: !!(panel && panel.querySelector('[role="tablist"]')),
     q: i ? i.value : null, focused: !!i && document.activeElement === i, sel: i ? [i.selectionStart, i.selectionEnd] : null,

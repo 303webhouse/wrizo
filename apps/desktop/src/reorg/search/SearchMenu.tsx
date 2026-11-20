@@ -14,7 +14,7 @@ import { useSearchMarks } from './searchMarks';
 // THE SEARCH MENU (the reorg's search, reorg/search/searchFind.ts for what it finds): it takes the whole Back menu's place, the tab row gone (the
 // prototype's searchMenu, frames P3-26A and P3-26A2). A way back (to the tab she came from, or Close), the field with its count, one row of
 // scopes and a line saying what that scope looks in, then the finds under their heads. Out in a Project a Doc shows two rows and a line for the
-// rest (the find she is on is never hidden). "Widen to" sits under the finds. Enter: the next find in this Doc (Shift+Enter the one before),
+// rest (the find she is on is never hidden). The widen line sits under the finds. Enter: the next find in this Doc (Shift+Enter the one before),
 // into another Part when this one has no more. A find in another Part opens it as moving between Parts does; a find in another Doc, or on a
 // Board, opens it with the return chip. Esc closes the search.
 
