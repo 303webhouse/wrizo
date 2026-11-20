@@ -119,7 +119,7 @@ await withHarness(async (app) => {
     before.t3 === T3 && r2.t3 === 'A fee booth stood empty' && r2.t1 === T1 && r2.t2 === T2 && r2.f1 === F1 && r2box.said === 'Replaced one: “toll” is now “fee”.', { before, r2, said: r2box.said });
   await press(app, '[data-search-menu] [data-replace-undo]');
   const r3 = await storedIs(app, { t3: T3 });
-  ok('R3: Undo - t-3 is its old words again, exactly', r3.t3 === T3 && r3.t1 === T1 && r3.t2 === T2 && r3.f1 === F1, r3);
+  ok('R3: Undo - t-3 is its old words again, exactly (after the replace above landed)', r2.t3 === 'A fee booth stood empty' && r3.t3 === T3 && r3.t1 === T1 && r3.t2 === T2 && r3.f1 === F1, r3);
 
   await word(app, 'toll');
   await app.evalJs(setInput('[data-search-menu] [data-replace-with]', 'fee')); await sleep(400);
@@ -133,7 +133,7 @@ await withHarness(async (app) => {
   const r5 = await storedIs(app, { t1: T1, t3: T3 });
   await app.waitFor(`${EDTEXT} === ${q(T1)}`, { timeout: 6000, label: 'the page adopts the undo' }).catch(() => {});
   const r5ed = await app.evalJs(EDTEXT);
-  ok('R5: Undo - every text as it was, exactly; the open page shows them', r5.t1 === T1 && r5.t2 === T2 && r5.t3 === T3 && r5.f1 === F1 && r5ed === T1, { r5, r5ed });
+  ok('R5: Undo - every text as it was, exactly; the open page shows them (after the replace above landed)', r4.t1 === 'The fees rose at dawn. Fees again.' && r5.t1 === T1 && r5.t2 === T2 && r5.t3 === T3 && r5.f1 === F1 && r5ed === T1, { r5, r5ed });
 
   await word(app, 'toll');
   await press(app, '[data-search-menu] [data-search-reach="project"]');
@@ -154,7 +154,7 @@ await withHarness(async (app) => {
 
   const chrome = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
   const dir = path.join(SRC, 'reorg', 'search');
-  const src = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith('.tsx')).map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n') : '';
+  const src = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => /\.tsx?$/.test(f)).map((f) => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n') : '';
   const keys = [['reorgReplaceLine', 'Find and Replace'], ['reorgReplaceInDoc', 'in this Doc'], ['reorgReplaceWith', 'Replace with'], ['reorgReplaceAll', 'Replace all {n} in this Doc'],
     ['reorgReplaceOne', 'Replace'], ['reorgReplaceUndo', 'Undo'], ['reorgReplacedOne', 'Replaced one: “{q}” is now “{with}”.'],
     ['reorgReplacedMany', 'Replaced {n} in this Doc: “{q}” is now “{with}”.'], ['reorgReplaceUndone', 'Undone.'], ['reorgReplaceUndoNo', 'Not undone: the words have changed since.']];
