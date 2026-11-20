@@ -38,6 +38,8 @@ import './store/fluxThemeFx';
 import './store/deleteSeams';
 // THE ROOM, SAVED TO THE ACCOUNT (Fable, Nov 19): the saved choice onto <html data-room> before either theme's room module loads, and her picks into the account
 import './store/roomPref';
+// THE SESSION'S WRITING SETTINGS, SAVED TO THE ACCOUNT (Fable, Nov 20): the device key mirrored into the `writing` fact, in every theme and with the reorg's switch off
+import './store/writingPref';
 // FLUX3 - the redesign's styles and root mark load only under ?flux3=1 (a separate chunk, never fetched without the flag)
 import { FLUX3 } from './flux3/flag';
 if (FLUX3) void import('./flux3/boot');

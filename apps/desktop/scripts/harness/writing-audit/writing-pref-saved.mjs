@@ -9,8 +9,8 @@
 //   W1  a reload keeps her settings: the device key AND a `writing` fact in the existing prefs key, in the server's shape
 //   W2  a second device: after a round it has her settings, and the server holds { writing: {...fields, at} }
 //   W3  a change on that device reaches the first, and keeps the first's other settings
-//   W4  two devices change at once: the later stamp wins on both
-//   W5  a change made signed out reaches the account at sign-in
+//   W4  two devices change at once: a DIFFERENT setting each keeps both (a stamp per setting), the SAME setting is settled by the later stamp on both
+//   W5  a change made signed out reaches the account at sign-in, and does not overwrite her other settings with defaults
 //   W6  a device with the reorg's switch ON reads the same settings
 //   W7  a fresh account writes nothing: no fact, and the first-run seed (typewriter: true, what the default already is) is not an act
 //   W8  an older device with settings but no fact: its settings reach the account after the first round (adoption), and a second fresh device gets them
@@ -188,11 +188,16 @@ if (!hasBridge || !hasSaved || !rules) {
   ok(cur(A2).timer === true && cur(A2).progress === 'time' && cur(A2).lineFadeLines === 5 && !!serverW() && serverW().timer === true && serverW().progress === 'time',
     `W3 B turns the timer on: A reads timer ${cur(A2).timer}, progress ${cur(A2).progress}, lineFadeLines ${cur(A2).lineFadeLines}; the server ${JSON.stringify(serverW())}`);
 
-  // W4 two devices change at once: the later stamp wins on both
+  // W4 two devices change at once: a DIFFERENT setting each keeps both; the SAME setting is settled by the later stamp
   await set(A2, { writingLine: 'top' }); tick(5);
+  await set(B, { pageScroll: false }); tick();
+  await round(A2); await round(B); await round(A2);
+  const both = cur(A2).writingLine === 'top' && cur(A2).pageScroll === false && cur(B).writingLine === 'top' && cur(B).pageScroll === false && !!serverW() && serverW().writingLine === 'top' && serverW().pageScroll === false;
+  await set(A2, { writingLine: 'center' }); tick(5);
   await set(B, { writingLine: 'bottom' }); tick();
   await round(A2); await round(B); await round(A2);
-  ok(cur(A2).writingLine === 'bottom' && cur(B).writingLine === 'bottom' && !!serverW() && serverW().writingLine === 'bottom', `W4 top on A, then bottom on B a moment later: both read ${cur(A2).writingLine} / ${cur(B).writingLine}; the server ${serverW() && serverW().writingLine}`);
+  ok(both && cur(A2).writingLine === 'bottom' && cur(B).writingLine === 'bottom' && !!serverW() && serverW().writingLine === 'bottom' && serverW().pageScroll === false,
+    `W4 top on A and pageScroll off on B at once: both kept (${both}); then center on A and bottom on B a moment later: both read ${cur(A2).writingLine} / ${cur(B).writingLine}; the server ${serverW() && serverW().writingLine}, pageScroll ${serverW() && serverW().pageScroll}`);
 
   // W5 a change made signed out reaches the account at sign-in
   tick(60000);
@@ -200,7 +205,7 @@ if (!hasBridge || !hasSaved || !rules) {
   await set(C, { flicker: false }); tick();
   const before = clone(serverW());
   await syncDev(C); await C.runTimers(); tick();
-  ok(before && before.flicker !== false && serverW() && serverW().flicker === false, `W5 flicker off picked signed out reaches the account at sign-in: ${before && before.flicker} -> ${serverW() && serverW().flicker}`);
+  ok(before && before.flicker !== false && serverW() && serverW().flicker === false && serverW().progress === 'time', `W5 flicker off picked signed out reaches the account at sign-in: ${before && before.flicker} -> ${serverW() && serverW().flicker}`);
 
   // W6 a device with the reorg's switch ON reads the same settings
   const D = await loadDevice('D', 'D', { reorg: true });
@@ -245,7 +250,7 @@ if (!hasBridge || !hasSaved || !rules) {
 // ---- the mutants ----
 const asMutant = async (m, run) => { MUTANT = { ...m, landed: false }; bundleCode = null; db.prefs = null; try { return { landed: false, ...(await run()), landedSrc: MUTANT.landed }; } finally { MUTANT = null; bundleCode = null; } };
 if (hasBridge && hasSaved && rules) {
-  const m1 = await asMutant({ file: 'src/store/writingPref.ts', from: '  subscribePrefs(apply);' + NL, to: NL }, async () => {
+  const m1 = await asMutant({ file: 'src/store/writingPref.ts', from: 'subscribePrefs(apply);' + NL, to: NL }, async () => {
     const X = await loadDevice('M1a'); await set(X, { progress: 'time' }); tick(); await syncDev(X); await X.runTimers(); tick();
     const Y = await loadDevice('M1b'); await syncDev(Y); await Y.runTimers(); tick();
     return { w2: cur(Y).progress === 'time' && !!serverW(), y: cur(Y).progress };
@@ -256,12 +261,12 @@ if (hasBridge && hasSaved && rules) {
     return { w1: !!(local('M2a') && local('M2a').writing), copy: local('M2a') };
   });
   ok(m2.landedSrc && !m2.w1, `MUT2 no switchless fact (LANDED: ${m2.landedSrc}): the copy holds ${JSON.stringify(m2.copy)} - W1's read goes RED`);
-  const m3 = await asMutant({ file: 'src/store/writingPref.ts', from: 'if (now === base) return;', to: '' }, async () => {
+  const m3 = await asMutant({ file: 'src/store/writingPref.ts', from: 'if (!changed.length) return;', to: '' }, async () => {
     const X = await loadDevice('M3a'); X.mod.ws.setWritingSettings({ typewriter: true }); await turns(); await X.runTimers(); tick();
     return { w7: local('M3a') === null, copy: local('M3a') };
   });
   ok(m3.landedSrc && !m3.w7, `MUT3 every call is an act (LANDED: ${m3.landedSrc}): a fresh device's seed leaves ${JSON.stringify(m3.copy)} - W7's read goes RED`);
-  const m4 = await asMutant({ file: 'src/store/writingPref.ts', from: 'onRailReset(resetWritingSettings);', to: '' }, async () => {
+  const m4 = await asMutant({ file: 'src/store/writingPref.ts', from: 'onRailReset(resetSettings);', to: '' }, async () => {
     const X = await loadDevice('M4a'); await set(X, { progress: 'time' }); tick(); X.mod.rk.clearRailLocal(); await turns();
     return { w10: cur(X).progress === 'words', p: cur(X).progress };
   });

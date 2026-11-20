@@ -31,8 +31,8 @@ export const PREFS_KEY = PREFS_LOCAL_KEY;
 const ROUND_AFTER_ACT_MS = 1000;
 const CAS_TRIES = 3;
 const FACT_RE = /^[a-z][A-Za-z0-9]{0,31}$/;
-/** The facts saved whatever the reorg's switch (Fable, Nov 19, 11:20 pm): the room, account data in every theme. */
-export const SWITCHLESS: ReadonlySet<string> = new Set(['room']);
+/** The facts saved whatever the reorg's switch (Fable, Nov 19, 11:20 pm: the room; Nov 20, 12:15 pm: the session's writing settings): account data in every theme. */
+export const SWITCHLESS: ReadonlySet<string> = new Set(['room']).add('writing');
 const allowed = (name: string): boolean => REORG || SWITCHLESS.has(name);
 
 // ---- the merge (pure) ---------------------------------------------------------------------------------------------------
@@ -57,6 +57,31 @@ function normalize(v: unknown): PrefsRecord | null {
   return out;
 }
 
+// A fact that is MANY small preferences at once (the writing settings: a dozen switches in one fact) may carry `fieldAt`, a stamp per field: two devices that each changed a
+// DIFFERENT field then both keep their change, and the later stamp wins only per field. Without `fieldAt` on either side the merge is exactly the whole-fact rule above (every
+// older fact, the room, the split). A field with no stamp of its own counts as stamped by its fact's `at`. Still commutative and idempotent: the tie of a field settles by value.
+function fieldStamps(f: PrefFact): Record<string, string> {
+  const out: Record<string, string> = {};
+  const fa = isMap(f.fieldAt) ? f.fieldAt : {};
+  for (const k of Object.keys(f)) if (k !== 'at' && k !== 'fieldAt') out[k] = isStamp(fa[k]) ? (fa[k] as string) : f.at;
+  return out;
+}
+function mergeFields(x: PrefFact, y: PrefFact): PrefFact {
+  const sx = fieldStamps(x);
+  const sy = fieldStamps(y);
+  const out: PrefFact = { at: y.at > x.at ? y.at : x.at };
+  const stamps: Record<string, string> = {};
+  for (const k of new Set([...Object.keys(sx), ...Object.keys(sy)])) {
+    const inX = k in sx;
+    const inY = k in sy;
+    const useY = !inX || (inY && (sy[k] > sx[k] || (sy[k] === sx[k] && canon(y[k]) > canon(x[k]))));
+    out[k] = useY ? y[k] : x[k];
+    stamps[k] = useY ? sy[k] : sx[k];
+  }
+  out.fieldAt = stamps;
+  return out;
+}
+
 export function mergePrefs(aIn: unknown, bIn: unknown): PrefsRecord {
   const a = normalize(aIn);
   const b = normalize(bIn);
@@ -68,6 +93,7 @@ export function mergePrefs(aIn: unknown, bIn: unknown): PrefsRecord {
     const y = b[k];
     if (!x) out[k] = y;
     else if (!y) out[k] = x;
+    else if (isMap(x.fieldAt) || isMap(y.fieldAt)) out[k] = mergeFields(x, y);
     else if (x.at !== y.at) out[k] = y.at > x.at ? y : x;
     else out[k] = canon(y) > canon(x) ? y : x;   // equal stamps: the larger value, arbitrary but symmetric
   }
@@ -88,6 +114,9 @@ function readLocal(): PrefsRecord {
 let prefs: PrefsRecord = emptyPrefs();
 let signedIn = false;
 let version = 0;
+// true once a round has HEARD the account (a GET that answered): until then a fact missing here may only be one that has not arrived yet, so a bridge must not adopt a device's own values as the account's
+let heard = false;
+export function prefsHeardServer(): boolean { return heard; }
 const listeners = new Set<() => void>();
 
 function notify(): void {
@@ -166,6 +195,7 @@ export async function syncPrefs(): Promise<void> {
       const remote = ((await g.json()) as { prefs?: unknown })?.prefs ?? null;
       live();
       prefs = mergePrefs(prefs, remote);
+      heard = true;
       persist();
       notify();
       if (remote !== null && canon(prefs) === canon(mergePrefs(remote, null))) return;   // the server already holds every fact
@@ -203,6 +233,7 @@ let roundsThisSignIn = 0;
     again = false;
     prefs = emptyPrefs();
     signedIn = false;
+    heard = false;
     roundsThisSignIn = 0;
     try { localStorage.removeItem(PREFS_KEY); } catch { /* storage blocked */ }
     if (roundTimer) { clearTimeout(roundTimer); roundTimer = null; }
