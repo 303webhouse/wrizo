@@ -9,6 +9,7 @@
 //   EMPTY a Part with no words and no name goes out as nothing; a named Part with no words keeps its heading
 //   LVL   a level outside 0..2 is held to the range; the heading never grows past ####
 //   HTML  Export > Web (HTML): the same Parts in the Doc's order as one web page; headings h1 (title), h2 to h4 by level; names and the title are escaped; the page is whole (doctype, charset, title) (Fable, Nov 20)
+//   HTMLMD  the page's words as web markup (publishingHtml.ts): strong, em, u, s, headings, quote, list, align and indent, typed escapes as the character; no marker or app class left (Fable, Nov 20)
 // Run: node scripts/harness/reorg-publish-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -166,6 +167,65 @@ for (const [name, key, fn] of MUT) {
   try { res = landed ? suite(after) : null; } catch (e) { err = e; }
   const red = !!res && res[key] && res[key].pass === false;
   ok(`MUT ${name}: it LANDED and ${key} goes RED`, landed && !err && red, JSON.stringify({ landed, err: err && String(err.message).slice(0, 120), key, pass: res && res[key] && res[key].pass }));
+}
+
+// ---- THE PAGE'S WORDS AS WEB MARKUP (publishingHtml.ts): the same readers the page paints from, semantic tags out, no marker left behind ------------------------------------------
+const HSRC = new URL('../../src/reorg/publishingHtml.ts', import.meta.url);
+const hExists = fs.existsSync(HSRC);
+const hText = hExists ? lf(fs.readFileSync(HSRC, 'utf8')) : '';
+const MARKRUNS = (() => { const o = ts.transpileModule(lf(fs.readFileSync(new URL('../../src/store/markRuns.ts', import.meta.url), 'utf8')), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText; const m = { exports: {} }; new Function('module', 'exports', o)(m, m.exports); return m.exports; })();
+function loadHtml(src) {
+  const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const m = { exports: {} };
+  new Function('require', 'module', 'exports', out)((p) => { if (p === '../store/markRuns') return MARKRUNS; throw new Error('unstubbed import ' + p); }, m, m.exports);
+  return m.exports;
+}
+const HCASES = [
+  ['**b** and *i* and __u__ and ~~s~~', '<p><strong>b</strong> and <em>i</em> and <u>u</u> and <s>s</s></p>'],
+  ['***x*** y', '<p><strong><em>x</em></strong> y</p>'],
+  ['**outer *inner* more**', '<p><strong>outer <em>inner</em> more</strong></p>'],
+  ['# Head\nbody', '<h1>Head</h1>\n<p>body</p>'],
+  ['## Sub\n\nline one\nline two\n\nnext', '<h2>Sub</h2>\n<p>line one<br>\nline two</p>\n<p>next</p>'],
+  ['a < b & c > d', '<p>a &lt; b &amp; c &gt; d</p>'],
+  ['2 * 3 * 4', '<p>2 * 3 * 4</p>'],
+  ['typed \\*not italic\\* here', '<p>typed *not italic* here</p>'],
+  ['> a quote', '<blockquote><p>a quote</p></blockquote>'],
+  ['- one\n- two\n\nafter', '<ul><li>one</li><li>two</li></ul>\n<p>after</p>'],
+  ['>< centred', '<p style="text-align:center">centred</p>'],
+  ['>> right', '<p style="text-align:right">right</p>'],
+  ['>| indented', '<p style="margin-left:2em">indented</p>'],
+  ['\tfirst line', '<p style="text-indent:2em">first line</p>'],
+  ['[sized]{.size-14} plain', '<p><span style="font-size:14pt">sized</span> plain</p>'],
+  ['', ''],
+];
+function suiteHtml(src) {
+  const R = {};
+  if (!src) return R;
+  const X = loadHtml(src);
+  const bad = HCASES.map(([i, want]) => [i, want, X.markdownToHtml(i)]).filter(([, want, got]) => want !== got);
+  const all = HCASES.map(([i]) => X.markdownToHtml(i)).join('\n');
+  const residue = /\*\*|~~|__|md-mark|md-h|class=/.test(all.replace('2 * 3 * 4', ''));
+  const plain = X.plainToHtml('a<b\nc\n\n') === '<p>a&lt;b<br>\nc</p>' && X.plainToHtml('   ') === '';
+  R.HTMLMD = { pass: bad.length === 0 && !residue && plain, detail: JSON.stringify({ bad: bad.slice(0, 3), residue, plain }) };
+  return R;
+}
+ok('the real publishingHtml.ts exists', hExists, 'src/reorg/publishingHtml.ts is missing');
+const hBase = suiteHtml(hText);
+ok('HTMLMD on the real publishingHtml.ts: the page\'s conventions become strong, em, u, s, h1-h6, blockquote, ul, aligned and indented paragraphs; typed escapes are the character; no marker or app class is left in the text', hBase.HTMLMD && hBase.HTMLMD.pass, hBase.HTMLMD ? hBase.HTMLMD.detail : 'missing');
+const HMUT = [
+  ['an escape\'s backslash is left in the text', (t) => t.replace('if (!escapes.has(i)) out += escH(rest[i]);', () => 'out += escH(rest[i]);')],
+  ['bold is not marked up', (t) => t.replace("bold: '<strong>'", () => "bold: ''").replace("bold: '</strong>'", () => "bold: ''")],
+  ['the words are not escaped', (t) => t.replace('out += escH(rest[i]);', () => 'out += rest[i];')],
+  ['the lines of a paragraph are run together', (t) => t.replace('prev.html += `<br>\\n${html}`', () => 'prev.html += html')],
+  ['a heading is read as a paragraph', (t) => t.replace("kind = 'h';", () => "kind = 'p';")],
+  ['a block indent is dropped', (t) => t.replace("block ? `margin-left:${block * 2}em` : ''", () => "''")],
+];
+for (const [name, fn] of HMUT) {
+  const after = hExists ? fn(hText) : hText;
+  const landed = hExists && after !== hText;
+  let res = null, err = null;
+  try { res = landed ? suiteHtml(after) : null; } catch (e) { err = e; }
+  ok(`MUT ${name}: it LANDED and HTMLMD goes RED`, landed && !err && !!res && res.HTMLMD && res.HTMLMD.pass === false, JSON.stringify({ landed, err: err && String(err.message).slice(0, 120) }));
 }
 
 let bad = 0;

@@ -228,7 +228,7 @@ await withHarness(async (app) => {
   ok('F1 Export > Web (HTML): the labels read Markdown, Plain Text, Web (HTML) after "Export"; the page is whole (doctype, charset, title), holds the title, the headings she named and every Part\'s words in the Doc\'s order, no heading for the unnamed Part, no script, and is named Budget.html',
     labels.exportLabel.startsWith('Export') && labels.md === 'Markdown' && labels.txt === 'Plain Text' && labels.html === 'Web (HTML)' && labels.copyText === 'Copy Text' && labels.copyFormatted === 'Copy as Formatted'
     && web.length === 1 && web[0].name === 'Budget.html' && /text\/html/.test(web[0].type) && /^<!doctype html>/.test(h) && /<meta charset="utf-8">/.test(h) && /<title>Budget<\/title>/.test(h)
-    && inOrder.every((v, i) => v >= 0 && (i === 0 || v > inOrder[i - 1])) && !/<h[1-6]>[^<]*Middle/.test(h) && !/<script/i.test(h), { labels, name: web[0] && web[0].name, inOrder, head: h.slice(0, 200) });
+    && inOrder.every((v, i) => v >= 0 && (i === 0 || v > inOrder[i - 1])) && !/<h[1-6]>[^<]*Middle/.test(h) && !/<script/i.test(h) && /Second line <strong>bold<\/strong>\./.test(h) && !/\*\*|class="md-/.test(h), { labels, name: web[0] && web[0].name, inOrder, head: h.slice(0, 200) });
 
   // F2 Copy Text and Copy as Formatted: through the clipboard's own door, for the Parts chosen
   await app.evalJs("window.__pbClip = []; Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t) => { window.__pbClip.push({ kind: 'writeText', plain: t }); }, write: async (items) => { for (const it of items) { const o = { kind: 'write' }; for (const ty of it.types) o[ty] = await (await it.getType(ty)).text(); window.__pbClip.push(o); } } } }); null");
@@ -241,7 +241,7 @@ await withHarness(async (app) => {
   const wantCopy = 'Budget\n\nOpening\n\nOpening words here.\nSecond line bold.\n\nClose\n\nClosing words.\n';
   ok('F2 Copy Text puts the plain words of the Parts chosen on the clipboard; Copy as Formatted puts the web markup and the plain words (Part 2 unticked: neither holds it); each says "Copied"',
     clip.length === 2 && clip[0].kind === 'writeText' && clip[0].plain === wantCopy && clip[1].kind === 'write' && clip[1]['text/plain'] === wantCopy && /<h1>Budget<\/h1>/.test(clip[1]['text/html']) && /<h2>Close<\/h2>/.test(clip[1]['text/html'])
-    && !/Middle words/.test(clip[0].plain + clip[1]['text/html']) && saidText === 'Copied' && saidFmt === 'Copied', { clip, saidText, saidFmt });
+    && !/Middle words/.test(clip[0].plain + clip[1]['text/html']) && /<strong>bold<\/strong>/.test(clip[1]['text/html']) && !/\*\*|class="md-/.test(clip[1]['text/html']) && saidText === 'Copied' && saidFmt === 'Copied', { clip, saidText, saidFmt });
   await app.evalJs("document.querySelector('[data-pub-all]').click(); null"); await sleep(200);
 
   // F3 the Front menu while the sheet is open: TEXT and INK greyed with a note, PARTS only ticks and orders

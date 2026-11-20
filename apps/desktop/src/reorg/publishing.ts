@@ -8,6 +8,7 @@ import { copyText } from '../store/clipboard';
 import { recordShadow } from '../store/voiceWall';
 import { partsOfDoc } from './parts';
 import { publicationText, chosenParts, wrapHtml, type PubFormat, type PubPart } from './publishingText';
+import { markdownToHtml, plainToHtml } from './publishingHtml';
 import { REORG } from './flag';
 
 // PUBLISHING AS A VIEW, AND EXPORT (reorg-plan-v2 #5 and #6; Fable Nov 20, 11:45 am: "the whole Doc as one read-only scroll, each Part under its heading, as the prototype draws it
@@ -23,6 +24,8 @@ export interface PubViewPart extends PubPart {
   /** the heading drawn: her own name, else the Part's first words (the Parts list's own rule) */
   heading: string;
   words: number;
+  /** the Part's words as the sheet paints them (the app's own marks, collapsed by its stylesheet): only for the sheet; the files and the clipboard take `html`, which stands on its own */
+  view: string;
   /** no words and no ink: the view says so in a line, the file says nothing */
   empty: boolean;
 }
@@ -58,7 +61,8 @@ export function readPublication(entryId: string): PubDoc | null {
     parts.push({
       id: e.id, name: r.name, level: r.level, md: files.md, txt: files.txt,
       n: i + 1, heading: r.heading, words,
-      html: prose ? decorateMarkdownForCard(e.text ?? '', null) : esc(files.txt),
+      html: prose ? markdownToHtml(files.md) : plainToHtml(files.txt),
+      view: prose ? decorateMarkdownForCard(e.text ?? '', null) : esc(files.txt),
       empty: words === 0 && !(e.strokes && e.strokes.length > 0),
     });
   });

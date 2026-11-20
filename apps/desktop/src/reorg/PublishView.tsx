@@ -63,7 +63,7 @@ function PublishViewImpl({ entryId, onClose }: Props) {
                 </label>
               )}
               {head(p)}
-              {p.empty ? <p className="reorg-pub-empty">{t('reorgPubEmptyPart')}</p> : <div className="reorg-pub-words" dangerouslySetInnerHTML={{ __html: p.html }} />}
+              {p.empty ? <p className="reorg-pub-empty">{t('reorgPubEmptyPart')}</p> : <div className="reorg-pub-words" dangerouslySetInnerHTML={{ __html: p.view }} />}
             </section>
           );
         })}
