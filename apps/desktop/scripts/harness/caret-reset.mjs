@@ -43,6 +43,11 @@ await withHarness(async (app) => {
     await sleep(800);
     await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
       const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+    // STAGING CHANGED 2026-11-19 (#113, Fable's ruling "opening lands at the writing line at once"; no assertion is touched): the click scenarios click a word that is ON SCREEN (wordXY). The page used to
+    // open at the top, the opening staircase still climbing, so the first lines were in view; it now opens AT the writing line, where the first lines are above the view. The writer is put back at the
+    // top of her page (she scrolled up to the words she means to click) and the typing that follows is the scenario as before. Original staging: nothing here.
+    await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = 0; return true; })()");
+    await sleep(200);
     // log every Selection write the page makes (time, method, the top of the stack)
     await app.evalJs(`(() => { window.__selw = []; window.__selT0 = performance.now(); const P = Selection.prototype;
       for (const m of ['addRange', 'removeAllRanges', 'collapse', 'setBaseAndExtent', 'setPosition', 'extend', 'selectAllChildren', 'removeRange', 'collapseToStart', 'collapseToEnd']) {
