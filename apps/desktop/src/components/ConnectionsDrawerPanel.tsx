@@ -10,6 +10,7 @@ import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
 import { AssetGroups, type PartChoice } from '../reorg/backMenu/AssetGroupsList';
 import { partsOfDoc } from '../reorg/partsSeam';
 import { connectAssetToPart } from '../reorg/assetConnect';
+import { assetColour, setAssetColour } from '../reorg/assetColour';
 import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -140,7 +141,8 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
           kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
           onRemove={remove} onHide={hide}
           onBeside={(entryId, boxId) => { if (page && !splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
-          onOpenBoard={(id) => navigate(`/page/${id}`)} parts={partChoices} onToPart={toPart} />
+          onOpenBoard={(id) => navigate(`/page/${id}`)} parts={partChoices} onToPart={toPart}
+          colourOf={assetColour} onColour={(asset, slot) => { setAssetColour(asset, slot); }} />
       )}
       {!backGroups && paired && only !== 'grafts' && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>

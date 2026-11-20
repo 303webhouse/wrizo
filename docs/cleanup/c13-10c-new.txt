@@ -169,3 +169,13 @@ reorgToPartMenu=Connect to which Part
 reorgConnectedLine={title} connected to {part}.
 reorgAlreadyConnected={title} is already connected to {part}.
 reorgConnectRefused={title} could not be connected to {part}.
+# COLOURS ON ASSETS (ARBOR, reorg plan 5.1, Nov 20) - the "Colour" menu; the six tag names are Nick's (Nov 11); the aria line, the menu name and "No colour" PROPOSED; no theme overrides them yet
+reorgColourAria=Colour for {title}
+reorgColourMenu=Colour tags
+reorgColourNone=No colour
+reorgTagA=Outline
+reorgTagB=Pale
+reorgTagC=Blue
+reorgTagD=Yellow
+reorgTagE=Mid
+reorgTagF=Solid

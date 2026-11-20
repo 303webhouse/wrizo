@@ -12,3 +12,9 @@
 +   // (schema change: none). Absent, never null and never '', on every page that was never named: the page reads its first line (the Sep 12 rule).
 +   // A fact about THIS page, never dress: store/pageDefaults.ts strips it from the per-user default. Written by reorg/partsSeam.ts renamePart.
 +   name?: string;
+# COLOURS ON ASSETS (ARBOR, Nov 20): a card's colour, Box.color, a slot a-f (Nick's saved-data sheet #14 A; Fable's slot ruling); the whole-blob boxes jsonb carries it
++   // A CARD'S COLOUR IS A SLOT (the reorg's colours on assets, plan 5.1 / tech D4; Nick's saved-data sheet #14 "A", Nov 19; Fable's ruling Nov 20:
++   // "store slots a–f, never a colour name or a hex"). One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the
++   // blob whole); ABSENT = no colour ("No colour" removes the key). Read through reorg/colourSlots.ts isColourSlot, so a value that is not a slot
++   // draws nothing; written by reorg/assetColour.ts setAssetColour, which stamps this box's updatedAt so the newer pick wins a merge.
++   color?: string;

@@ -272,6 +272,17 @@ export const CANONICAL_CHROME = {
   reorgConnectedLine: '{title} connected to {part}.',
   reorgAlreadyConnected: '{title} is already connected to {part}.',
   reorgConnectRefused: '{title} could not be connected to {part}.',
+  // COLOURS ON ASSETS (reorg/assetColour.ts, reorg/colourSlots.ts) - the six tags' names are Nick's (Nov 11, 1:46 am; Fable's slot ruling, Nov 20);
+  // the button reads reorgColour ('Colour'). {title} the asset's title. PROPOSED (ARBOR, Nov 20): the aria line, the menu's name and 'No colour'
+  reorgColourAria: 'Colour for {title}',
+  reorgColourMenu: 'Colour tags',
+  reorgColourNone: 'No colour',
+  reorgTagA: 'Outline',
+  reorgTagB: 'Pale',
+  reorgTagC: 'Blue',
+  reorgTagD: 'Yellow',
+  reorgTagE: 'Mid',
+  reorgTagF: 'Solid',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
   reorgSplitLabel: 'Opened beside',

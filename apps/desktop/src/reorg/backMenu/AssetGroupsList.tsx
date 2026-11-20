@@ -4,6 +4,7 @@ import type { GraftRow, GraftTarget } from '../../store/grafts';
 import type { DeskTermId } from '../../store/deskLexicon';
 import type { AssetGroup, AssetItem } from './assetGroups';
 import { writeAssetDrag } from '../assetConnect';
+import { COLOUR_SLOTS, SLOT_WORD, slotLetter, type ColourSlot } from '../colourSlots';
 
 /** A Part she can connect an asset to: the Doc's OTHER Parts, in her order, named as the Parts tab names them. */
 export interface PartChoice { id: string; word: string }
@@ -28,9 +29,12 @@ interface Props {
    *  board head is also a drag source the Parts tab takes. */
   parts: readonly PartChoice[];
   onToPart: (asset: GraftTarget, title: string, partId: string) => void;
+  /** COLOURS ON ASSETS (reorg/assetColour.ts): each asset's slot (null: none), and the pick (null: "No colour"). The row draws the tag. */
+  colourOf: (asset: GraftTarget) => ColourSlot | null;
+  onColour: (asset: GraftTarget, slot: ColourSlot | null) => void;
 }
 
-export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, onRemove, onHide, onBeside, onOpenBoard, parts, onToPart }: Props): ReactNode {
+export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, onRemove, onHide, onBeside, onOpenBoard, parts, onToPart, colourOf, onColour }: Props): ReactNode {
   // which row's "→ Part" list is open (one at a time); Escape closes it and gives the focus back to its button
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const btnRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -53,6 +57,33 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
       )}
     </span>
   );
+  // the tag: the letter first (the signal), the colour second; its name for a screen reader and on hover
+  const tag = (s: ColourSlot) => <span className="wz-back-tag" data-colour-slot={s} title={t(SLOT_WORD[s])} aria-label={t(SLOT_WORD[s])}>{slotLetter(s)}</span>;
+  const tagOf = (asset: GraftTarget) => { const s = colourOf(asset); return s ? tag(s) : null; };
+  // "Colour": the six tags in order and "No colour"; the same one-open-at-a-time list as "→ Part" (key 'c:' + the row's key)
+  const colour = (key: string, asset: GraftTarget, title: string) => {
+    const k = `c:${key}`;
+    const done = (s: ColourSlot | null) => { setMenuFor(null); onColour(asset, s); btnRefs.current.get(k)?.focus(); };
+    return (
+      <span className="wz-back-topart-wrap wz-back-colour-wrap">
+        <button type="button" className="wz-back-topart wz-back-colour" data-asset-colour="" aria-haspopup="true" aria-expanded={menuFor === k ? 'true' : 'false'}
+          aria-label={t('reorgColourAria').replace('{title}', title)}
+          ref={(el) => { if (el) btnRefs.current.set(k, el); else btnRefs.current.delete(k); }}
+          onClick={() => setMenuFor((m) => (m === k ? null : k))}>{t('reorgColour')}</button>
+        {menuFor === k && (
+          <span className="wz-back-topart-menu wz-back-colour-menu" data-asset-colour-menu="" role="group" aria-label={t('reorgColourMenu')}
+            onKeyDown={(e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMenu(k); } }}>
+            {COLOUR_SLOTS.map((s, i) => (
+              <button key={s} type="button" data-colour-pick={s} autoFocus={i === 0} aria-pressed={colourOf(asset) === s ? 'true' : 'false'} onClick={() => done(s)}>
+                {tag(s)}<span className="wz-back-colour-name">{t(SLOT_WORD[s])}</span>
+              </button>
+            ))}
+            <button type="button" data-colour-pick="" aria-pressed={colourOf(asset) === null ? 'true' : 'false'} onClick={() => done(null)}>{t('reorgColourNone')}</button>
+          </span>
+        )}
+      </span>
+    );
+  };
   const beside = (entryId: string, boxId: string | undefined, title: string) => besideOffered && (
     <button type="button" className="wz-graft-dock wz-back-beside" data-back-beside="" disabled={!!besideNote} title={besideNote ?? undefined}
       aria-label={`${t('reorgSplitOpen')}: ${title}`} onClick={() => onBeside(entryId, boxId)}>{t('reorgSplitOpen')}</button>
@@ -65,11 +96,13 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
         data-link-via={r.via ?? (it.hideId ? 'plan' : undefined)} data-trashed={r.trashed ? 'true' : 'false'}
         data-graft-entry={r.entryId} {...(r.boxId ? { 'data-graft-box': r.boxId } : {})}>
         <span className={`wz-links-thumb wz-links-thumb--${it.kind === 'source' ? 'page' : it.kind}`} aria-hidden="true" />
+        {tagOf(asset)}
         <span className="wz-links-label wz-graft-title" title={kindWord(it.kind)}>{r.title}</span>
         <span className="wz-back-asset-kind">{kindWord(it.kind)}</span>
         {r.placeDiffers && r.place && <span className="wz-graft-place">{r.place}</span>}
         {beside(r.entryId, r.boxId, r.title)}
         {toPart(`a:${it.key}`, asset, r.title)}
+        {colour(`a:${it.key}`, asset, r.title)}
         {it.hideId
           ? <button type="button" className="wz-links-x wz-graft-x" data-graft-hide="" aria-label={`${t('graftHideAria')}: ${r.title}`} onClick={() => onHide(it.hideId as string, r.title)}>×</button>
           : <button type="button" className="wz-links-x wz-graft-x" aria-label={`${t('linksRemoveAria')}: ${r.title}`} onClick={() => onRemove(r)}>×</button>}
@@ -106,9 +139,11 @@ export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, on
         return (
           <div key={grp.key} className="wz-graft-group wz-back-group" data-back-group="board" data-back-board={grp.boardId} data-back-own={grp.own ? 'true' : 'false'}>
             <div className="wz-graft-gh wz-back-boardhead" draggable onDragStart={dragFrom({ entryId: grp.boardId as string })}>
+              {tagOf({ entryId: grp.boardId as string })}
               <span className="wz-back-boardname" data-back-board-name="">{grp.own ? `${t('reorgAssetsOwnBoard')} · ${grp.title}` : grp.title}</span>
               {beside(grp.boardId as string, undefined, grp.title)}
               {toPart(`b:${grp.key}`, { entryId: grp.boardId as string }, grp.title)}
+              {colour(`b:${grp.key}`, { entryId: grp.boardId as string }, grp.title)}
               <button type="button" className="wz-back-openboard" data-back-open-board={grp.boardId} aria-label={`${t('reorgAssetsOpenBoard')}: ${grp.title}`}
                 onClick={() => onOpenBoard(grp.boardId as string)}>{t('reorgAssetsOpenBoard')}</button>
               {grp.head && !grp.own && (
