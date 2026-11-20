@@ -104,3 +104,6 @@
 /* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys) */
 [data-theme='machina'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
 [data-theme='machina'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* the asset's side is drawn into <body> (reorg/split/SplitHost.tsx's portal), outside the stage: the same rule on it */
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }

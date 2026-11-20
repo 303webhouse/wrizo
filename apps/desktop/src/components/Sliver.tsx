@@ -688,7 +688,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
           {/* lists and quotes ride the existing `- ` and `> ` conventions; indent and alignment are line-prefix directives (store/draftFormat.ts documents why they are not metadata) [Sliver §22] */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <BulletControl onFormat={content.format!.onFormat} t={t} />
-            <button type="button" className="mode-tbtn" data-format-act="quote" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
+            <button type="button" className="mode-tbtn" title={t('draftQuote')} onClick={() => content.format!.onFormat('quote')}>&ldquo;</button>
             {/* outdent, the exact decrement of Indent (floored at zero, counted in leading tabs, one shared helper); outdent before indent so the pair reads left to right [Sliver §23] */}
             <button type="button" className="mode-tbtn" data-format-glyph="outdent" title={t('draftOutdent')} aria-label={t('draftOutdent')} onClick={() => content.format!.onFormat('outdent')}><FormatMark kind="outdent" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="indent" title={t('draftIndent')} aria-label={t('draftIndent')} onClick={() => content.format!.onFormat('indent')}><FormatMark kind="indent" /></button>

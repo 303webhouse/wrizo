@@ -134,7 +134,8 @@ await withHarness(async (app) => {
   await openBuild(app, 'wb-1');
   await app.evalJs("document.querySelector('[data-assets-part=\"wb-1\"] [data-back-asset][data-graft-box=\"x1\"] [data-back-beside]')?.click(); null"); await sleep(900);
   const h1 = await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage[data-split="true"]'); if (!st) return null;
-    const scrollers = [...st.querySelectorAll('*')].filter((e) => { const cs = getComputedStyle(e); return /auto|scroll/.test(cs.overflowY) && e.scrollHeight > e.clientHeight + 4; });
+    // the asset's side is portalled into <body> (SplitHost), outside the stage: both are searched (Nov 20, Actions 44825171366: the stage alone found no side)
+    const scrollers = [...st.querySelectorAll('*'), ...document.querySelectorAll('.wz-split-asset, .wz-split-asset *')].filter((e) => { const cs = getComputedStyle(e); return /auto|scroll/.test(cs.overflowY) && e.scrollHeight > e.clientHeight + 4; });
     const out = scrollers.map((e) => { const before = e.scrollTop; e.scrollTop = before + 40; const moved = e.scrollTop !== before; e.scrollTop = before;
       return { cls: String(e.className).slice(0, 40), sw: getComputedStyle(e).scrollbarWidth, gutter: e.offsetWidth - e.clientWidth - parseFloat(getComputedStyle(e).borderLeftWidth) - parseFloat(getComputedStyle(e).borderRightWidth), moved }; });
     return { n: out.length, page: !!scrollers.find((e) => e.contains(document.querySelector('.forward-only-editor'))), side: !!scrollers.find((e) => e.closest('.wz-split-asset')), out }; })()`);

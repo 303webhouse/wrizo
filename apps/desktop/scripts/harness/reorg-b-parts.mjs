@@ -131,8 +131,12 @@ await withHarness(async (app) => {
   const w1a = k3a.find((e) => e.id === 'wb-1') || {}, w1b = k3b.find((e) => e.id === 'wb-1') || {};
   const othersSame = JSON.stringify(k3a.filter((e) => e.id !== 'wb-1')) === JSON.stringify(k3b.filter((e) => e.id !== 'wb-1'));
   const psDiff = Object.keys({ ...(w1a.pageSettings || {}), ...(w1b.pageSettings || {}) }).filter((k) => JSON.stringify((w1a.pageSettings || {})[k]) !== JSON.stringify((w1b.pageSettings || {})[k]));
-  ok('K3 Style Guide ▸ APA stores pageSettings.styleGuide \'apa\' on wb-1, and nothing else changes',
-    (w1b.pageSettings || {}).styleGuide === 'apa' && psDiff.join(',') === 'styleGuide' && w1a.text === w1b.text && othersSame, { ps: w1b.pageSettings, psDiff, othersSame });
+  // (Nov 20, before this file's first green; Actions 44825171366: wb-1 had no pageSettings, so the host's existing act wrote the default dress beside the
+  // pick) every other key that changed was ABSENT before and now reads the app's default dress; nothing she had set changes
+  const DRESS = { margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' } };
+  const onlyDress = psDiff.filter((k) => k !== 'styleGuide').every((k) => !((w1a.pageSettings || {})[k] !== undefined) && JSON.stringify((w1b.pageSettings || {})[k]) === JSON.stringify(DRESS[k]));
+  ok('K3 Style Guide ▸ APA stores pageSettings.styleGuide \'apa\' on wb-1, and nothing she set changes (keys that were absent read the default dress)',
+    (w1b.pageSettings || {}).styleGuide === 'apa' && psDiff.includes('styleGuide') && onlyDress && w1a.text === w1b.text && othersSame, { ps: w1b.pageSettings, psDiff, othersSame });
 
   const t4a = await app.evalJs(TEXTS);
   await app.evalJs(click(`.wz-sliver [data-reorg-parts] [data-doc-kind]`)); await sleep(250);

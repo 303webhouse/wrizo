@@ -39,6 +39,8 @@ const caretAt = (n) => `(() => { const ed = document.querySelector('.forward-onl
 const press = (sel) => `(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b || b.disabled) return false;
   const d = new MouseEvent('mousedown', { bubbles: true, cancelable: true }); b.dispatchEvent(d); if (!d.defaultPrevented) document.activeElement?.blur?.(); b.click(); return true; })()`;
 async function settle(app) { await sleep(400); await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(500); }
+// wait for the STORED text to read `want` (the editor saves on its own debounce; a flush does not save it), then settle
+async function storedIs(app, want) { await app.waitFor(`${STORED} === ${JSON.stringify(want)}`, { label: 'the stored text', timeout: 6000 }).catch(() => {}); await settle(app); }
 
 async function seed(app) {
   await app.emulateDpr(1, 1920, 1080);
@@ -90,8 +92,8 @@ await withHarness(async (app) => {
   const f1 = await app.evalJs(FOLDS);
   const r1 = await app.evalJs(PAGE);
   await app.evalJs(caretAt(3)); await sleep(150);
-  await app.evalJs(press('[data-text-fold-body="paragraph"] .mode-tbtn[data-format-act="quote"]'));
-  await settle(app);
+  await app.evalJs(press('[data-text-fold-body="paragraph"] .mode-tbtn[title="Block quote"]'));
+  await storedIs(app, '> Chapter one');
   const quoted = await app.evalJs(STORED);
   const want = ['outdent', 'indent', 'align-left', 'align-center', 'align-right'];
   ok('X2 Paragraph opened holds today\'s controls (heading, bullets, quote, outdent, indent, spacing, the alignments); its Quote still quotes the caret\'s line',
@@ -99,14 +101,14 @@ await withHarness(async (app) => {
 
   // undo the quote through the same control, so the next check starts from the plain line
   await app.evalJs(caretAt(3)); await sleep(150);
-  await app.evalJs(press('[data-text-fold-body="paragraph"] .mode-tbtn[data-format-act="quote"]')); await settle(app);
+  await app.evalJs(press('[data-text-fold-body="paragraph"] .mode-tbtn[title="Block quote"]')); await storedIs(app, 'Chapter one');
   const plain = await app.evalJs(STORED);
   await app.evalJs("document.querySelector('[data-text-fold=\"more\"]')?.click(); null"); await sleep(250);
   await app.evalJs("document.querySelector('[data-text-fold=\"symbols\"]')?.click(); null"); await sleep(250);
   const syms = await app.evalJs("[...document.querySelectorAll('[data-text-fold-body=\"symbols\"] [data-symbol]')].map((b) => b.getAttribute('data-symbol'))");
   await app.evalJs(caretAt('Chapter'.length)); await sleep(150);
   await app.evalJs(press('[data-text-fold-body="symbols"] [data-symbol="—"]'));
-  await settle(app);
+  await storedIs(app, 'Chapter— one');
   const after = await app.evalJs(STORED);
   const focusIn = await app.evalJs("!!document.activeElement && !!document.activeElement.closest('.forward-only-editor')");
   const r2 = await app.evalJs(PAGE);

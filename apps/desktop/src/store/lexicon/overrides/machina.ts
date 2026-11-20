@@ -186,7 +186,7 @@ export const MACHINA_OVERRIDES = {
     reorgPartJoin: 'Merge',
     reorgPartColourNone: 'No Colour',
     reorgPartsJoinDone: 'Merged into Part {n}.',
-    reorgPartJoinCarries: 'Not merged: this Part holds ink, cards, links or a Consultant thread, and merging would drop them.',
+    reorgPartJoinCarries: 'Not merged: this Part holds ink, blocks, linked assets or a Consultant thread, and merging would drop them.',
     reorgPartJoinScript: 'Not merged: a screenplay Part has no plain text to merge.',
     reorgPartJoinNo: 'Not merged.',
     reorgSplitOpen: 'Open Beside',
