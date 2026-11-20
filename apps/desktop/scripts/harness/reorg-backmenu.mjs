@@ -65,10 +65,12 @@ async function seed(app) {
   })()`);
 }
 
-async function openPage(app, id, { theme = 'machina', reorg = true } = {}) {
+async function openPage(app, id, { theme = 'machina', reorg = true, mode = 'drafting' } = {}) {
   // the theme seam exists once the app has mounted: wait for it, never assume it (the first look after a reload or a seed can come before it)
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
+  // STAGING (Fable, Nov 20: SPRINT's Back menu locks Plan and Assets): these pages open in BUILD (Draft), where the three tabs are the Back menu this file proves; SPRINT has its own file (reorg-sprint-back.mjs)
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
   await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
@@ -301,7 +303,11 @@ await withHarness(async (app) => {
   await openDrawer(app); await tab(app, 'links');
   const fw = await pressBeside('Xcard one'); await sleep(400);
   const fwOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  // SUPERSEDED (Fable, Nov 20, 3:15 pm; Nick, Nov 20, 1:20 pm: in SPRINT - Free Write - the Back menu keeps only FEEDBACK, and Plan and Assets are greyed with a note), so the Assets tab
+  // holds no "Open beside" to grey in Free Writing: the split is unreachable there before the button. Parked, not deleted; the original, verbatim:
+  //   ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  const fwLocked = await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-disabled') === 'true'");
+  ok('SP10 [successor]: in Free Writing (SPRINT) the Assets tab is locked, so there is no "Open beside" to press and nothing opens beside the page (Free Writing is the Typewriter, always)', fwLocked === true && !fwOpen, JSON.stringify({ fwLocked, fwOpen }));
   // the Typewriter on (a Draft page whose own setting is on): not offered
   await app.evalJs("localStorage.setItem('wrizo-typewriter-page-bm-p', 'on')");
   await openPage(app, 'bm-p'); await toMode('draft'); await openDrawer(app); await tab(app, 'links');

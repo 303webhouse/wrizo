@@ -131,7 +131,7 @@ await withHarness(async (app) => {
   // ---- the switch off ----
   await openPage(app, 'sp-p', 'journal', { reorg: false });
   await openDrawer(app);
-  const off = await app.evalJs("(() => ({ tabs: [...document.querySelectorAll('.wz-drawer-tab')].map((b) => ({ t: b.textContent.trim(), disabled: b.getAttribute('aria-disabled'), locked: b.getAttribute('data-locked') })), composer: !!document.querySelector('.wz-tutor-convo-input'), roster: document.querySelectorAll('.wz-tutor-fw-preset').length, sprint: !!document.querySelector('.wz-sprint-feedback') }))()");
+  const off = await app.evalJs("(() => ({ tabs: [...document.querySelectorAll('[id^=wz-tutor-tab-]')].map((b) => ({ t: b.textContent.trim(), disabled: b.getAttribute('aria-disabled'), locked: b.getAttribute('data-locked') })), composer: !!document.querySelector('.wz-tutor-convo-input'), roster: document.querySelectorAll('.wz-tutor-fw-preset').length, sprint: !!document.querySelector('.wz-sprint-feedback') }))()");
   ok('S11 with the switch off, Machina Free Write has today\'s Consultant tab: two tabs, none locked, the composer, the three presets, no sprint panel',
     !!off && off.tabs.length === 2 && off.tabs.every((t) => t.disabled === null && t.locked === null) && off.composer === true && off.roster === 3 && off.sprint === false, JSON.stringify(off));
 
