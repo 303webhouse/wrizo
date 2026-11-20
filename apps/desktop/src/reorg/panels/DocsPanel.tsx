@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { CascadeContext } from '../../components/cascade/shared';
 import type { JournalEntry } from '../../types';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
@@ -13,11 +14,22 @@ import { useProjectName, useWhereSheIs } from '../ReorgRail';
 // DOCS (step 5, frame R7). NEW DOC: Blank, Screenplay, Research paper, More kinds, and Board (Nick's first door for a Board, Nov 14, 11:14 am),
 // each through today's own route into the Project she is in (an unborn page or board in its set, made by the first keystroke): Blank and
 // Screenplay are today's presets; Research paper is today's research-paper deck; More kinds is today's library; Board is today's new board.
-// In Unfiled writing they land loose, as today. RECENT: her three most recently changed Docs, anywhere, each with its Project and its words.
+// In Unfiled writing they land loose, as today. RECENT: her most recently changed Docs, anywhere, each with its Project and its words.
+// LONG (Fable, Nov 20, 12:15 pm and 1:27 pm): up to 25 of them in a box five rows tall that scrolls past the fifth (a thin scrollbar), with a
+// sort: Changed (newest first, the default), Name (A to Z, numbers as numbers), Words (most first); a tie keeps the newest first. The sort is
+// the menu's own state while it is open: nothing is stored (a saved sort would be a new users.prefs key, which waits on Nick's word).
 // PAGE DEFAULTS, EVERY DOC: Typewriter mode and Progress bars are today's two saved settings (the Tools strip's own switches), unchanged in
 // meaning; this is one more door to them. Opening a Recent row is a departure with the return chip.
 
-const RECENT = 3;
+const RECENT = 25;
+/** the rows the box shows before it scrolls */
+const RECENT_SHOWN = 5;
+type RecentSort = 'changed' | 'name' | 'words';
+const SORTS: { id: RecentSort; word: DeskTermId }[] = [
+  { id: 'changed', word: 'reorgSortChanged' },
+  { id: 'name', word: 'reorgSortName' },
+  { id: 'words', word: 'reorgSortWords' },
+];
 const fill = (s: string, k: string, v: string | number): string => s.replace(`{${k}}`, String(v));
 
 function titleOf(e: JournalEntry, t: (k: DeskTermId) => string): string {
@@ -30,6 +42,13 @@ function recentDocs(): JournalEntry[] {
     .filter((e) => !e.deletedAt && !e.purgedAt && !getSystemKind(e) && !isPairedPlanBoard(e.id) && e.pageType !== 'board')
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))
     .slice(0, RECENT);
+}
+
+/** Recent in the chosen order. `recentDocs` is newest first, so a stable sort leaves a tie newest first. */
+function sortRecent(rows: { e: JournalEntry; title: string; words: number }[], by: RecentSort) {
+  if (by === 'name') return [...rows].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
+  if (by === 'words') return [...rows].sort((a, b) => b.words - a.words);
+  return rows;
 }
 
 function Toggle({ id, label, on, onPick, t }: { id: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
@@ -50,7 +69,25 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const nameOf = useProjectName();
   const here = useWhereSheIs(subject.entry);
   const settings = useWritingSettings();
-  const recent = recentDocs();
+  const [sort, setSort] = useState<RecentSort>('changed');
+  const recent = sortRecent(recentDocs().map((e) => ({ e, title: titleOf(e, t), words: wordCount(e.text) })), sort);
+  // the box is five rows tall: measured from the rows themselves (a row is two lines, set by the theme's type), again whenever the box
+  // changes size (the pop-out opens from no width at all) and when a sort brings other rows to the top; a short list is never held to it
+  const rowsRef = useRef<HTMLUListElement>(null);
+  useLayoutEffect(() => {
+    const ul = rowsRef.current;
+    if (!ul) return undefined;
+    const fit = () => {
+      const rows = ul.children;
+      const h = rows.length > RECENT_SHOWN ? rows[RECENT_SHOWN].getBoundingClientRect().top - rows[0].getBoundingClientRect().top : 0;
+      const want = h > 0 ? `${h}px` : '';
+      if (ul.style.maxHeight !== want) ul.style.maxHeight = want;
+    };
+    fit();
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null;
+    ro?.observe(ul);
+    return () => ro?.disconnect();
+  }, [recent.length, sort]);
   const base = () => (here == null ? { origin: 'loose' as const } : newTargetOf(here, t('reorgUntitled')));
   const go = (extra: Partial<UnbornDescriptor>) => {
     const b = base();
@@ -79,14 +116,20 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
         </ul>
       </section>
       <section className="wz-reorg-group" data-reorg-group="recent" aria-label={t('reorgRecent')}>
-        <div className="wz-reorg-group-head">{t('reorgRecent')}</div>
-        <ul className="wz-reorg-rows">
-          {recent.map((e) => {
-            const words = wordCount(e.text);
+        <div className="wz-reorg-group-head wz-reorg-recent-head">
+          <span>{t('reorgRecent')}</span>
+          <span className="wz-reorg-recent-sort" role="group" aria-label={t('reorgRecentSort')} data-recent-sort>
+            {SORTS.map((o) => (
+              <button key={o.id} type="button" data-sort={o.id} aria-pressed={sort === o.id} onClick={() => setSort(o.id)}>{t(o.word)}</button>
+            ))}
+          </span>
+        </div>
+        <ul className="wz-reorg-rows wz-reorg-recent-rows" ref={rowsRef}>
+          {recent.map(({ e, title, words }) => {
             return (
               <li key={e.id} className="wz-reorg-list-row" data-entry-id={e.id} aria-current={e.id === subject.entry.id ? 'page' : undefined}>
                 <button type="button" className="wz-reorg-list-open wz-reorg-two-line" onClick={() => travelFromCascade(e)}>
-                  <span className="wz-reorg-list-title">{titleOf(e, t)}</span>
+                  <span className="wz-reorg-list-title">{title}</span>
                   <span className="wz-reorg-row-meta">{nameOf(projectOfEntry(e))} · {fill(t(words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), 'n', words.toLocaleString('en-US'))}</span>
                 </button>
               </li>

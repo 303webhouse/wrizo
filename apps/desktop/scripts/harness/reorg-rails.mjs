@@ -56,6 +56,7 @@
 //           Project she is in: Blank and Screenplay as today's presets, Research paper as today's deck, Board as today's new board, More kinds
 //           as today's library
 //       D2  RECENT: her three most recently changed Docs, newest first, each with its Project and its words; a row is a departure with the chip
+//           [successor, Nov 20: up to 25, the three touched last leading; the box and the sort are reorg-docs-recent.mjs]
 //       D3  PAGE DEFAULTS: Typewriter mode and Progress bars are today's two saved settings, and a press changes that one setting and nothing else
 // STEP 6, UNFILED and the Trash (frame R6):
 // UNF   U1  UNFILED lists writing with no Project and only that (the loose page, the page in a set with no Drawer; never the Notebook's page),
@@ -559,8 +560,14 @@ await withHarness(async (app) => {
   await sleep(200);
   await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
   const d2 = await app.evalJs(DOCS);
-  ok('D2: RECENT - her three most recently changed Docs, newest first (A second note, A loose page, Budget three), each with its Project and its words',
-    !!d2 && JSON.stringify(d2.recent.map((r) => r[0])) === JSON.stringify(['rr-top-2', 'rr-l-1', 'rr-g-3'])
+  // SUPERSEDED (POLISH, Nov 20; Fable 12:15 pm, "long DOCS lists (Recent) show five with a scrollbar and a sort"): Recent holds up to 25 Docs
+  // now, so EXACTLY three rows is no longer the behaviour; the successor reads the same three leading the list (reorg-docs-recent.mjs covers
+  // the box, the scroll and the sort). The original, verbatim:
+  // ok('D2: RECENT - her three most recently changed Docs, newest first (A second note, A loose page, Budget three), each with its Project and its words',
+  //   !!d2 && JSON.stringify(d2.recent.map((r) => r[0])) === JSON.stringify(['rr-top-2', 'rr-l-1', 'rr-g-3'])
+  //   && d2.recent[0][1] === `${shell ? shell.words.root : '?'} · 3 words` && d2.recent[1][1] === 'Unfiled · 3 words' && d2.recent[2][1] === 'Grants · 2 words', JSON.stringify(d2 && d2.recent));
+  ok('D2 [successor]: RECENT - her most recently changed Docs, newest first: the three touched last lead it (A second note, A loose page, Budget three), each with its Project and its words',
+    !!d2 && d2.recent.length >= 3 && JSON.stringify(d2.recent.slice(0, 3).map((r) => r[0])) === JSON.stringify(['rr-top-2', 'rr-l-1', 'rr-g-3'])
     && d2.recent[0][1] === `${shell ? shell.words.root : '?'} · 3 words` && d2.recent[1][1] === 'Unfiled · 3 words' && d2.recent[2][1] === 'Grants · 2 words', JSON.stringify(d2 && d2.recent));
   await click('[data-reorg-group="recent"] [data-entry-id="rr-g-3"] .wz-reorg-list-open');
   await app.waitFor("location.hash === '#/page/rr-g-3' && !!document.querySelector('.forward-only-editor')", { label: 'the recent doc', timeout: 12000 }).catch(() => {});

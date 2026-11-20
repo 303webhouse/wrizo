@@ -301,6 +301,11 @@ export const CANONICAL_CHROME = {
   reorgKindResearch: 'Research paper',
   reorgKindMore: 'More kinds',
   reorgRecent: 'Recent',
+  // DOCS' Recent, its sort (reorg/panels/DocsPanel.tsx; Fable, Nov 20): placeholder words until the Wrizors word them
+  reorgRecentSort: 'Sort Recent',
+  reorgSortChanged: 'Changed',
+  reorgSortName: 'Name',
+  reorgSortWords: 'Words',
   reorgDefaults: 'Page defaults · every doc',
   reorgTypewriter: 'Typewriter mode',
   reorgProgressBars: 'Progress bars',
