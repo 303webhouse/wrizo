@@ -44,6 +44,11 @@ await withHarness(async (app) => {
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 }).catch(() => {});
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs("window.wrizoTheme.set('machina'); null"); await sleep(800);
+  // FIXTURE (Nov 20, before this file's first green; Actions 44828019693 read data-machina2 null on both checks): Machina is BOOTED from storage,
+  // as machina-look.mjs's visits are, and the look's own mark is waited for before anything is read. No assertion changes.
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'machina'); null"); await app.reload();
+  await app.waitFor("document.documentElement.getAttribute('data-theme') === 'machina' && document.documentElement.getAttribute('data-machina2') === 'true'", { label: "Machina's look on", timeout: 20000 }).catch(() => {});
+  await sleep(600);
 
   const light = await app.evalJs(NOTCH('light'));
   const dark = await app.evalJs(NOTCH('dark'));
