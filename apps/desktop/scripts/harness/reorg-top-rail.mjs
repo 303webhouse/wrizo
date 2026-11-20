@@ -35,8 +35,10 @@
 // CONNECT C1  PARKED Nov 19 (SUPERSEDED: a pick now WRITES, Fable's GO Nov 19 6:05 pm, ask d; reorg-connect-doc.mjs holds the write). Original:
 //           Connect Doc opens a list: recent Docs first, then "A new doc"; picking one writes nothing (the connect write is HELD, Fable Nov 14
 //           ruling B) and says so
-//       C1b Connect Doc opens a list: recent Docs first, then "A new doc"; "A new doc" writes nothing (still held: a page is born when it has
-//           a word) and says so
+//       C1b PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original: Connect Doc opens a list: recent Docs first, then "A new doc"; "A new doc" writes
+//           nothing (still held: a page is born when it has a word) and says so
+//       C1c Connect Doc opens a list: recent Docs first, then "A new doc"; "A new doc" opens a new empty page carrying the Board (sb=),
+//           and stores no page (reorg-connect-doc.mjs N1 holds the birth)
 // STAGES S1  cycling the stages from the top rail leaves the page's text identical and the stage is today's (data-mode-key active)
 // PAGE  G1  [1366, 1920, 2000] the page's rect (column, paper, editor) is the same with the switch off, on at rest, with a rename open, with a
 //           long name, and with the Connect list open on a Board's sibling page; the editor is the same node throughout
@@ -279,8 +281,13 @@ await withHarness(async (app) => {
   // PARKED Nov 19 (SUPERSEDED - a pick writes now: Fable's GO, Nov 19 6:05 pm, ask d; reorg-connect-doc.mjs X1-X5 hold the write). Original, verbatim:
   // ok('C1 Connect Doc lists recent Docs first, then "A new doc"; picking one writes nothing and says what it would do',
   //   !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && !!said && dc.length === 0, { list, said, dc });
-  ok('C1b Connect Doc lists recent Docs first, then "A new doc"; "A new doc" writes nothing (still held) and says so',
-    !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && !!said && dc.length === 0, { list, said, dc });
+  // PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original, verbatim:
+  // ok('C1b Connect Doc lists recent Docs first, then "A new doc"; "A new doc" writes nothing (still held) and says so',
+  //   !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && !!said && dc.length === 0, { list, said, dc });
+  const hashC = await app.evalJs('location.hash');
+  ok('C1c Connect Doc lists recent Docs first, then "A new doc"; "A new doc" opens a new empty page carrying the Board (sb=), and stores no page',
+    !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && /\/page\/new\?/.test(hashC) && /[?&]sb=tr-m-b(&|$)/.test(hashC)
+      && dc.every((x) => x[0] === 'writer-studio-projects' && x[2][0] === '(added)') && dc.length <= 1, { list, hashC, said, dc });
 
   // ---- NAMES ---------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'tr-g-2');

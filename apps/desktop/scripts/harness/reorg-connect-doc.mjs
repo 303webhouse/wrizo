@@ -21,11 +21,19 @@
 //        X3  reopened, Budget reads "connected" and is aria-disabled; picking it again writes nothing
 //        X4  picking a one-Part Doc ("Notes on the ledgers") adds a second link, to that page; the place reads "Board · 2 docs"
 //        X5  after a reload the place still reads "Board · 2 docs" and the Board's stored record holds exactly the two live links
-// HELD   X6  "A new doc" writes nothing and says why (a page is born when it has a word, PB1)
+// HELD   X6  PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original: "A new doc" writes nothing and says why (a page is born when it has a word, PB1)
+// NEW    X6b "A new doc" opens a new EMPTY page carrying the Board in its address (sb=); no page is stored at the press (PB1), and at most
+//            the empty set the left rail's rule makes on the click for a Project holding only sets she made (railData newTargetOf)
+//        N1  her first word births the page into that new set, and in the same act the Board owns ONE new card-less PageLink to it;
+//            nothing else stored changes but the store's own stamps
+//        N2  back on the Board, the place reads "Board · 3 docs", and the list marks the new page's Doc connected
 // READ   X7  a Board a page has grafted (the page owns the record) reads that page's Doc: "Board · A loose page", and the list marks it connected
 //        X8  a Board not yet kept (the unborn slot: no card) is not born by a side door: a pick writes nothing and says to add a card first
+//        N3  and on that Board "A new doc" opens nothing and writes nothing, and says the same
 // OFF    X9  switch off on the connected Board: no top rail, no Connect Doc; the Board is drawn
-// WORDS  W1  every new word is a lexicon key (terms.ts and the canonical table), and the retired "held" line for a pick is gone
+// WORDS  W1  PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original: every new word is a lexicon key (terms.ts and the canonical table), and the retired
+//            "held" line for a pick is gone
+//        W1b every new word is a lexicon key, and both retired "held" lines (a pick, "A new doc") are gone
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-connect-doc.mjs
 import fs from 'node:fs';
@@ -177,14 +185,58 @@ await withHarness(async (app) => {
   ok('X5 after a reload the place still reads "Board · 2 docs" and the Board\'s stored record holds exactly the two live links',
     p5.place === 'Board · 2 docs' && links5.length === 2 && links5.map((l) => l.bEntryId).sort().join(',') === 'cd-g-1,cd-top-1', { p5, links5 });
 
-  // ---- HELD ------------------------------------------------------------------------------------------------------------------------------
+  // PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original, verbatim:
+  // // ---- HELD ------------------------------------------------------------------------------------------------------------------------------
+  // await app.evalJs(toggle); await sleep(400);
+  // const s6a = await app.evalJs(COLLECTIONS);
+  // await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row=\"new\"]')?.click(); null");
+  // await settle(app);
+  // const said6 = await app.evalJs(said);
+  // const s6b = await app.evalJs(COLLECTIONS);
+  // ok('X6 "A new doc" writes nothing and says so (a page is born when it has a word)', !!said6 && diffStores(s6a, s6b).length === 0, { said6, d: diffStores(s6a, s6b) });
+
+  // ---- A NEW DOC ---------------------------------------------------------------------------------------------------------------------------
   await app.evalJs(toggle); await sleep(400);
   const s6a = await app.evalJs(COLLECTIONS);
   await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row=\"new\"]')?.click(); null");
-  await settle(app);
-  const said6 = await app.evalJs(said);
+  await app.waitFor("location.hash.indexOf('/page/new') >= 0 && !!document.querySelector('.forward-only-editor')", { timeout: 8000, label: 'the new page' }).catch(() => {});
+  await sleep(700);
+  await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(400);
+  const hash6 = await app.evalJs('location.hash');
   const s6b = await app.evalJs(COLLECTIONS);
-  ok('X6 "A new doc" writes nothing and says so (a page is born when it has a word)', !!said6 && diffStores(s6a, s6b).length === 0, { said6, d: diffStores(s6a, s6b) });
+  const d6 = diffStores(s6a, s6b);
+  const newSets = d6.filter((x) => x[0] === 'writer-studio-projects' && x[2][0] === '(added)');
+  const madeSet = newSets.length === 1 ? (s6b['writer-studio-projects'] || []).find((p) => p.id === newSets[0][1]) : null;
+  ok('X6b "A new doc" opens a new empty page carrying the Board (sb=); no page stored at the press, at most the rail\'s empty set in the Board\'s Project',
+    /\/page\/new\?/.test(hash6) && /[?&]sb=cd-m-b(&|$)/.test(hash6) && d6.every((x) => x[0] === 'writer-studio-projects' && x[2][0] === '(added)') && newSets.length <= 1
+      && (!madeSet || (madeSet.drawerId === ids.grants && new RegExp('binder=' + madeSet.id).test(hash6))), { hash6, d6, madeSet });
+
+  // her first word, as the left rail's speed check types: a trusted click into the editor, then real keys
+  const spot6 = await app.evalJs("(() => { const r = document.querySelector('.forward-only-editor')?.getBoundingClientRect(); return r ? { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + Math.min(30, r.height / 2)) } : null; })()");
+  if (spot6) { await app.mouseDown(spot6.x, spot6.y); await app.mouseUp(spot6.x, spot6.y); }
+  await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(300);
+  for (const ch of 'Fresh pages') { await app.typeKeys(ch); await sleep(50); }
+  const bornQ = "(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).find((e) => /^Fresh pages/.test(e.text || '') && !e.deletedAt)";
+  await app.waitFor(`!!${bornQ}`, { timeout: 8000, label: 'the page born' }).catch(() => {});
+  await settle(app); await sleep(600);
+  const s6c = await app.evalJs(COLLECTIONS);
+  const born = (s6c['writer-studio-journal-entries'] || []).find((e) => /^Fresh pages/.test(e.text || '') && !e.deletedAt) || null;
+  const links6 = liveLinks(s6c, 'cd-m-b');
+  const toBorn = born ? links6.filter((l) => l.bEntryId === born.id) : [];
+  const d6c = diffStores(s6b, s6c);
+  const others = d6c.filter((x) => !(x[0] === 'writer-studio-journal-entries' && born && x[1] === born.id) && !(x[0] === 'writer-studio-journal-entries' && x[1] === 'cd-m-b' && x[2].every((k) => k === 'pageLinks' || k === 'updatedAt'))
+    && !(x[0] === 'writer-studio-projects' && x[2].every((k) => ['updatedAt', 'lastActivityAt', 'lastActivityType', 'lastActivePageId'].includes(k))));
+  ok('N1 her first word births the page in that set, and the Board owns ONE new card-less PageLink to it; nothing else but the store\'s stamps',
+    !!born && (!madeSet || born.projectId === madeSet.id) && links6.length === 3 && toBorn.length === 1 && toBorn[0].aEntryId === 'cd-m-b' && !('aBoxId' in toBorn[0]) && !('bBoxId' in toBorn[0])
+      && others.length === 0 && Object.entries(words(s6b)).every(([id, w]) => words(s6c)[id] === w), { born: born && { id: born.id, projectId: born.projectId, text: born.text }, links6, others });
+
+  await open(app, true, '/page/cd-m-b');
+  const p6 = await app.evalJs(PLACE);
+  await app.evalJs(toggle); await sleep(400);
+  const l6 = await app.evalJs(LIST);
+  const freshRow = (l6 || []).find((r) => r.kind === 'doc' && /^Fresh pages/.test(r.name));
+  ok('N2 back on the Board the place reads "Board · 3 docs", and the list marks the new page\'s Doc connected', p6.place === 'Board · 3 docs' && !!freshRow && freshRow.on, { p6, freshRow });
+  await app.evalJs(toggle); await sleep(200);
 
   // ---- READ ------------------------------------------------------------------------------------------------------------------------------
   await open(app, true, '/page/cd-x-b');
@@ -206,6 +258,12 @@ await withHarness(async (app) => {
   const s8b = await app.evalJs(COLLECTIONS);
   ok('X8 a Board not yet kept (no card) is not born by a side door: a pick writes nothing and says to add a card first',
     hasConnect && picked8 && !!said8 && /card/i.test(said8) && diffStores(s8a, s8b).length === 0, { hasConnect, picked8, said8, d: diffStores(s8a, s8b) });
+  const hash8 = await app.evalJs('location.hash');
+  await app.evalJs("(() => { const s = document.querySelector('[data-top-connect-said]'); if (s) s.textContent = ''; return null; })()");
+  await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row=\"new\"]')?.click(); null");
+  await settle(app);
+  const n3 = { hash: await app.evalJs('location.hash'), said: await app.evalJs(said), d: diffStores(s8b, await app.evalJs(COLLECTIONS)) };
+  ok('N3 on a Board not yet kept, "A new doc" opens nothing and writes nothing, and says to add a card first', n3.hash === hash8 && !!n3.said && /card/i.test(n3.said) && n3.d.length === 0, { hash8, n3 });
 
   // ---- OFF -------------------------------------------------------------------------------------------------------------------------------
   await open(app, false, '/page/cd-m-b');
@@ -221,11 +279,16 @@ await withHarness(async (app) => {
   const need = ['reorgTopConnectOn', 'reorgTopConnectUnborn', 'reorgTopConnectNewHeld'];
   const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !top.includes(`t('${k}')`));
   const retired = ['reorgTopConnectHeld'].filter((k) => terms.includes(`'${k}'`) || canon.includes(`${k}:`) || top.includes(`'${k}'`));
-  ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used by the top rail), and the retired "held" line for a pick is gone', missing.length === 0 && retired.length === 0, { missing, retired });
+  // PARKED Nov 20 (SUPERSEDED - "A new doc" opens a new empty page and writes the link at its first word: Fable, Nov 19 7:55 pm, ask (a)). Original, verbatim:
+  // ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used by the top rail), and the retired "held" line for a pick is gone', missing.length === 0 && retired.length === 0, { missing, retired });
+  const needB = ['reorgTopConnectOn', 'reorgTopConnectUnborn', 'reorgTopConnectNew'];
+  const missingB = needB.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !top.includes(`t('${k}')`));
+  const retiredB = ['reorgTopConnectHeld', 'reorgTopConnectNewHeld'].filter((k) => terms.includes(`'${k}'`) || canon.includes(`${k}:`) || top.includes(`'${k}'`));
+  ok('W1b every new word is a lexicon key, and both retired "held" lines (a pick, "A new doc") are gone', missingB.length === 0 && retiredB.length === 0, { missingB, retiredB });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 11;
+const EXPECTED = 14;   // 11 - X6, W1 (parked) + X6b, N1, N2, N3, W1b
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CONNECT-DOC VERIFY: PASS (${checks.length} checks)`
