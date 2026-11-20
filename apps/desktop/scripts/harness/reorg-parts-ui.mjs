@@ -5,18 +5,25 @@
 //
 // The fixture (seeded through the app's own seams; WS_PLACE=1 so the account gets its Top Drawer and its app-made set):
 //   Grants       a set she made, "Ledger": four Parts - "Ledger one opens here. The tail goes below." / "Ledger two" (one level in, moss) /
+//                [successor, Nov 20: "Ledger two" in slot 'c'; "Ledger three" STORED with the old name 'moss' (raw, through the entry seam);
+//                "Ledger four" stored with 'mauve', a name that is neither a slot nor an old name: the mutant]
 //                "Ledger three" / "Ledger four holds a link" (it owns a PageLink, so a join must refuse it)
 //   Top Drawer   its app-made set: "A lone page" (a one-Part Doc)
 //
 // OFF    P0  switch off in Machina, and on in Arbor and Flux: no Parts tools anywhere
 // STAGES G1  BUILD: "New part" and "Split here" over the list; a row's menu offers up, down, in, out, join and the seven colour choices
+//            [successor, Nov 20: the seven choices are none and the slots a to f]
 //        G2  EDIT: "Split here" and no "New part"; a row's menu offers up, down, join and the colours (no level)
 //        G3  SPRINT: "New part" only: no "Split here", no row menus
 //        G4  the top rail's Parts drop is a plain list: no tools in it
 // LIST   L1  a Part one level in is drawn further in than the Part above it; a coloured Part's tag is its first letter on its colour; a Part with no
 //            colour has an empty place of the same size
+//            [successor, Nov 20: the coloured Part's tag carries its slot, 'c']
+// OLD    O1  an old name still reads as its slot: "Ledger three" stored 'moss' reads as 'c' (the layer and its tag) and its stored value is never
+//            written back; THE MUTANT: 'mauve' reads as no colour at all; and setPartColor refuses an old name, writing nothing
 // COLOUR C1  a colour from a row's menu is stored as the token name (pageSettings.color) and drawn, its letter readable on it (contrast >= 4.5);
 //            "None" removes the key; no text changes
+//            [successor, Nov 20: the colour is stored as its slot, 'd']
 // LEVEL  V1  "In" puts a Part one level under the one above (drawn and stored); "Out" brings it back; the first Part cannot go in
 // MOVE   M1  "Down" moves a Part below the next one, "Up" brings it back: only the order changes, every text is identical, and she stays on her page
 // JOIN   J3  a Part that holds a link is not joined: the list says why, and nothing is written
@@ -96,7 +103,15 @@ async function seed(app) {
     // the page seam carries no pageLinks: the link goes on through the entry seam
     W.wrizoPatchEntry('pu-4', { pageLinks: [{ id: 'pu-link', aEntryId: 'pu-4', bEntryId: 'pu-lone', createdAt: now, updatedAt: now }] });
     const P = W.wrizoParts;
-    if (P) { P.setPartLevel(ledger.id, 'pu-2', 1); P.setPartColor('pu-2', 'moss'); }
+    // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): the seed's old name is refused now. The original, verbatim:
+    // if (P) { P.setPartLevel(ledger.id, 'pu-2', 1); P.setPartColor('pu-2', 'moss'); }
+    if (P) { P.setPartLevel(ledger.id, 'pu-2', 1); P.setPartColor('pu-2', 'c'); }
+    W.wrizoFlushNow();
+    // O1's fixture: an old name STORED (as a page saved before the ruling holds it), and the mutant, a name that is neither; both raw through the
+    // entry seam, each keeping the page's own settings
+    const settingsOf = (id) => (JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === id) || {}).pageSettings || {};
+    W.wrizoPatchEntry('pu-3', { pageSettings: { ...settingsOf('pu-3'), color: 'moss' } });
+    W.wrizoPatchEntry('pu-4', { pageSettings: { ...settingsOf('pu-4'), color: 'mauve' } });
     W.wrizoFlushNow();
     const linked = ((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'pu-4') || {}).pageLinks || []).length === 1;
     return { ledger: ledger.id, topSet: ${q(topSet)}, door: !!P && linked };
@@ -152,9 +167,13 @@ await withHarness(async (app) => {
   // ---- STAGES ----------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pu-1'); await stage(app, 'draft'); await partsTab(app);
   const g1 = { tools: await app.evalJs(TOOLS), menu: await menu(app, 'pu-3') };
-  ok('G1 BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices',
+  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): the choices are the slots now. The original, verbatim:
+  // ok('G1 BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices',
+  //   !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
+  //     && g1.menu.colours.join(',') === 'none,clay,amber,moss,teal,slate,plum', g1);
+  ok('G1 [successor]: BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices: none and the slots a to f',
     !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
-      && g1.menu.colours.join(',') === 'none,clay,amber,moss,teal,slate,plum', g1);
+      && g1.menu.colours.join(',') === 'none,a,b,c,d,e,f', g1);
   await stage(app, 'revise'); await partsTab(app);
   const g2 = { tools: await app.evalJs(TOOLS), menu: await menu(app, 'pu-3') };
   ok('G2 EDIT: "Split here" and no "New part"; a row\'s menu offers up, down, join and the colours (no level)',
@@ -172,14 +191,29 @@ await withHarness(async (app) => {
   await open(app, 'machina', true, 'pu-1'); await stage(app, 'draft'); await partsTab(app);
   const l1 = await app.evalJs(ROWS);
   const r1 = l1 && l1.find((r) => r.id === 'pu-1'), r2 = l1 && l1.find((r) => r.id === 'pu-2');
-  ok('L1 a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its colour; no colour is an empty place of the same size',
-    !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'moss' && r2.tag.letter === 'L'
+  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): the tag carries the slot. The original, verbatim:
+  // ok('L1 a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its colour; no colour is an empty place of the same size',
+  //   !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'moss' && r2.tag.letter === 'L'
+  //     && r1.tag && r1.tag.colour === null && r1.tag.letter === '' && r1.tag.w === r2.tag.w && r1.tag.w > 0, l1);
+  ok('L1 [successor]: a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its slot (\'c\'); no colour is an empty place of the same size',
+    !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'c' && r2.tag.letter === 'L'
       && r1.tag && r1.tag.colour === null && r1.tag.letter === '' && r1.tag.w === r2.tag.w && r1.tag.w > 0, l1);
+  // O1: an old name reads as its slot, never written back; the mutant reads as nothing; an old name is refused as a write
+  const r3 = l1 && l1.find((r) => r.id === 'pu-3'), r4 = l1 && l1.find((r) => r.id === 'pu-4');
+  const o1 = await app.evalJs(`(() => { const P = window.wrizoParts; if (!P) return null; const ps = P.partsOfDoc(${q(L)}); const of = (id) => (ps.find((p) => p.id === id) || {}).color ?? null;
+    const stored = (id) => ((${ALL}.find((e) => e.id === id) || {}).pageSettings || {}).color ?? null;
+    const before = stored('pu-1'); const refused = P.setPartColor('pu-1', 'moss'); window.wrizoFlushNow && window.wrizoFlushNow();
+    return { read3: of('pu-3'), read4: of('pu-4'), stored3: stored('pu-3'), stored4: stored('pu-4'), refused, before1: before, after1: stored('pu-1') }; })()`);
+  ok('O1 an old name still reads as its slot: "Ledger three" stored \'moss\' reads as \'c\' (the layer and its tag), its stored value never written back; THE MUTANT \'mauve\' reads as no colour; setPartColor refuses an old name, writing nothing',
+    !!o1 && o1.read3 === 'c' && !!r3 && !!r3.tag && r3.tag.colour === 'c' && o1.stored3 === 'moss'
+      && o1.read4 === null && !!r4 && !!r4.tag && r4.tag.colour === null && o1.stored4 === 'mauve'
+      && o1.refused === false && o1.before1 === null && o1.after1 === null, { o1, r3: r3 && r3.tag, r4: r4 && r4.tag });
 
   await flushed(app);
   const c0 = await app.evalJs(TEXTS);
   await menu(app, 'pu-1');
-  await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="teal"]')); await sleep(500); await flushed(app);
+  // [successor, Nov 20] the slot 'd' (it was 'teal', parked below)
+  await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="d"]')); await sleep(500); await flushed(app);
   const c1 = {
     stored: await app.evalJs(`(${ALL}.find((e) => e.id === 'pu-1') || {}).pageSettings?.color ?? null`),
     drawn: await app.evalJs(`(() => { const t = document.querySelector('li[data-part-li] [data-part-row="pu-1"]')?.closest('li')?.querySelector('[data-part-tag]'); if (!t) return null; const cs = getComputedStyle(t);
@@ -190,8 +224,11 @@ await withHarness(async (app) => {
   await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="none"]')); await sleep(500); await flushed(app);
   c1.cleared = await app.evalJs(`(() => { const ps = (${ALL}.find((e) => e.id === 'pu-1') || {}).pageSettings || {}; return !('color' in ps); })()`);
   const c2 = await app.evalJs(TEXTS);
-  ok('C1 a colour is stored as its token name and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
-    c1.stored === 'teal' && c1.drawn && c1.drawn.colour === 'teal' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
+  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): a colour is stored as its slot. The original, verbatim (its press was [data-part-colour="teal"]):
+  // ok('C1 a colour is stored as its token name and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
+  //   c1.stored === 'teal' && c1.drawn && c1.drawn.colour === 'teal' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
+  ok('C1 [successor]: a colour is stored as its slot (\'d\') and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
+    c1.stored === 'd' && c1.drawn && c1.drawn.colour === 'd' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
 
   const v0 = await menu(app, 'pu-1');
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); null"); await sleep(200);
@@ -316,7 +353,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 20;
+const EXPECTED = 21;   // 20 + O1 (Nov 20, the slot ruling)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PARTS-UI VERIFY: PASS (${checks.length} checks)`
