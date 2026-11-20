@@ -37,7 +37,7 @@ import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
-import { PartsList } from '../reorg/PartsList';
+import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
 
@@ -192,7 +192,7 @@ export interface SliverProps {
   hasMilestones?: boolean;
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
-  front?: { entry: JournalEntry };
+  front?: { entry: JournalEntry; host?: PartsHost };
 }
 
 export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
@@ -367,7 +367,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} />
         </SideDrawer>
       </div>
     </div>
@@ -587,7 +587,7 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
@@ -600,8 +600,10 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
   const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
-  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list alone (read-only, step 3.2)
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} /></div>;
+  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
+  // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
+  const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} stage={partsStage} host={frontHost} /></div>;
 
   return (
     <div className="wz-sliver-body">
