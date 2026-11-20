@@ -1,3 +1,11 @@
+import { liveQuery, liveQueryAll, registerLiveSite } from '../store/liveDom';
+
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the visible page and its progress row are always the live page's
+const arbor2Page = (): HTMLElement | null => liveQuery<HTMLElement>('.mode-page');
+const arbor2Progress = (): Element[] => liveQueryAll('.mode-progress, .mode-progress *');
+registerLiveSite('arbor2.page', arbor2Page);
+registerLiveSite('arbor2.progress', arbor2Progress);
 // ARBOR v2 MOCKUP - the page stays a whole sheet, and the room's light never crosses it (Fable, Oct 29, after the CI frames).
 //
 // Free Write runs Typewriter's zoom: the column carries a band mask that fades the words AND the paper into the room above and below the
@@ -48,7 +56,7 @@ const px = (n: number) => `${Math.round(n * 10) / 10}px`;
 type Box = { l: number; t: number; r: number; b: number };
 
 export function visiblePage(): { box: Box; zoomed: boolean; paper: string; room: Box } | null {
-  const p = document.querySelector('.mode-page') as HTMLElement | null;
+  const p = arbor2Page();
   if (!p) return null;
   const a = p.getBoundingClientRect();
   if (a.width < 2 || a.height < 2) return null;
@@ -60,7 +68,7 @@ export function visiblePage(): { box: Box; zoomed: boolean; paper: string; room:
   // read the row's box alone and the sheet still ran under "31 words")
   let foot = Infinity;
   const row = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
-  document.querySelectorAll('.mode-progress, .mode-progress *').forEach((el) => {
+  arbor2Progress().forEach((el) => {
     const r = el.getBoundingClientRect();
     if (r.width > 0 && r.height > 0 && r.top > a.top + 40 && r.left < a.right && r.right > a.left) {
       foot = Math.min(foot, r.top);
