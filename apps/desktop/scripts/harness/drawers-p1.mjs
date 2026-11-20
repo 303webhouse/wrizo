@@ -373,6 +373,8 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
     tutorShell: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{rightTabs\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
     // successors (ARBOR, Nov 10): the same shell claim, accepting Arbor's flag-only tab config beside the plain one
     sliverShellB: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{(?:sideTabs|\(arborTabs \?\? sideTabs\) as DrawerTabsConfig<string> \| undefined)\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
+    // successor (POLISH, Nov 19): the reorg's Front menu tabs (reorg/frontTabs.ts, ?reorg=1 in Machina only) lead the same chain
+    sliverShellC: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{(?:sideTabs|\((?:frontTabs \?\? )?arborTabs \?\? sideTabs\) as DrawerTabsConfig<string> \| undefined)\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
     tutorShellB: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{(?:rightTabs|\(arborRightTabs \?\? rightTabs\) as DrawerTabsConfig<string>)\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
     noHandWrapper: !/<div className="wz-drawer-slide wz-drawer-slide--(left|right)">/.test(sliver + tutor),
     ungated: gated.filter((s) => !sliver.includes("allowed('" + s + "')")),
@@ -383,7 +385,10 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
   const h = partH();
   // PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
   // ok('(H1) both hands render through <SideDrawer> (left carries the TEXT|INK config and the foot; right carries the TUTOR|links config) - the S1 hand-written wrappers are gone', h.sliverShell && h.tutorShell && h.noHandWrapper, JSON.stringify(h));
-  ok('(H1b [Arbor-tabs successor]) both hands render through <SideDrawer> (plain or Arbor tab config) - the S1 hand-written wrappers are gone', h.sliverShellB && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
+  // PARKED 2026-11-19 (SUPERSEDED - the reorg's Front menu, POLISH, Fable's GO Nov 19 4:20 pm: the left drawer passes `(frontTabs ?? arborTabs ?? sideTabs)`, the
+  // Front menu's TEXT · INK · PARTS under ?reorg=1 in Machina only; switch off it is undefined and the chain is today's). Original, verbatim:
+  // ok('(H1b [Arbor-tabs successor]) both hands render through <SideDrawer> (plain or Arbor tab config) - the S1 hand-written wrappers are gone', h.sliverShellB && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
+  ok('(H1c [Front-menu successor]) both hands render through <SideDrawer> (plain, Arbor or the reorg\'s Front menu tab config) - the S1 hand-written wrappers are gone', h.sliverShellC && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
   ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
   ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
 }

@@ -37,6 +37,7 @@ import { TEMPLATE_ORDER, type TemplateKey } from './TemplateSketch';
 import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSettings';   // PHASE 1 (S5) / typewriter-scope: per-page typewriter memory
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
+import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, setCaretOffset } from './script/caret';
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
@@ -62,6 +63,8 @@ export function ScriptEditor({ id }: { id: string }) {
   // this renders its exact pre-AB1 markup (findings 4 and 5 both live only
   // in the framed branch, since a <1100px script surface is untouched).
   const framed = useDeskFrameViewport();
+  // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
+  const reorgTop = useReorgTop();
   const [showPublish, setShowPublish] = useState(false);
   // E1 S2 — the same quiet confirmation line PageEditor.tsx's own Publish
   // dialog uses (ActionToast, reused — not a second pattern).
@@ -668,7 +671,11 @@ export function ScriptEditor({ id }: { id: string }) {
     return (
       <div className="desk-frame-host" data-chrome-receded={scriptDissolve.dissolved ? 'true' : 'false'}>
         {/* the nav row recedes with the rest of the framed chrome [ScriptEditor §15] */}
-        <div className="chrome-fade chrome-top sprint-nav">
+        <div className="chrome-fade chrome-top sprint-nav" data-reorg-top-row={reorgTop ? 'true' : undefined}>
+          {reorgTop ? (
+            <TopRail kind="script" entry={initialEntry} beforeWrite={() => { flushScriptNow(); flushNow(); }}
+              stages={<ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} reviseEnabled={false} />} />
+          ) : <>
           {/* the address line: the same LocationCrumb the Page uses, in the board's row shape, so the framed surfaces cannot drift [ScriptEditor §16] */}
           <LocationCrumb entry={initialEntry} project={project} drawer={drawer} title={title} />
           {/* ITEM 112-A — `reviseEnabled={false}` for the SAME reason
@@ -678,9 +685,14 @@ export function ScriptEditor({ id }: { id: string }) {
               coming-soon here, exactly as Free Write does. The screenplay
               surface is byte-identical to pre-112-A in every other respect. */}
           <ModeStrip mode="drafting" onSwitch={() => {}} onPublish={() => setShowPublish(true)} freeWriteEnabled={false} reviseEnabled={false} />
+          </>}
           <div className="sprint-actions">
             {/* the Pages/Plan toggle sits beside Done: a script page is a Pages view [ScriptEditor §17] */}
-            {project && (
+            {project && reorgTop && (
+              // the old Pages button leaves the bar; its hidden strut keeps the row's height
+              <div className="sprint-toggle" data-top-strut aria-hidden="true"><button type="button" tabIndex={-1} className="sprint-toggle-btn active">{lexMany('page')}</button></div>
+            )}
+            {project && !reorgTop && (
               <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
                 {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
                     retired on the script page bar too, same as PageEditor's — the legacy
@@ -704,7 +716,7 @@ export function ScriptEditor({ id }: { id: string }) {
           pageKind="screenplay"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
-          sliver={<Sliver content={sliverContent} goalText={goalText} />}
+          sliver={<Sliver content={sliverContent} goalText={goalText} front={reorgTop ? { entry: initialEntry } : undefined} />}
           tutor={<Tutor entry={initialEntry} project={project} pageText={goalText} pageKind="screenplay" mode="drafting" selectionText={scriptSelection} />}
           goalGlow={<GoalGlow text={goalText} />}
           dissolved={scriptDissolve.dissolved}
