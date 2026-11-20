@@ -3,7 +3,7 @@ import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
 import { useChromeDissolve } from './useChromeDissolve';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 // FLUX WIRE IN (Fable, Nov 12 6:50 pm) - a mount point only: in Flux a page's free-writing mode is Wire In, the Corridor (src/flux3/FluxJackedIn.tsx); no flag, and in no other theme anything mounts
 import { fluxJackMode } from '../flux3/jackIn';
@@ -12,7 +12,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { useAssistResponse } from '../store/aiAssist';
 import { ChromeHandle } from './WritingShell';
 import { useTypewriterFade, CONTAINER_HOLD_BAND } from './useTypewriterFade';
-import { AmbientGlow, MilestoneBar, ProgressBar, TypewriterToggle, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
+import { AmbientGlow, MilestoneBar, ProgressBar, useGoalProgress, WORD_GOAL, TIME_GOAL_MS } from './WritingIncentives';
 import type { Milestones } from '../store/milestones';
 import { useTheme, setTheme, getTheme, type ThemeId } from '../store/theme';
 import { getTurnSound } from '../store/pageTurnSound';
@@ -200,11 +200,16 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   // no surface of Flux runs it and none offers its toggle (flux-wirein.css); every stored value is kept as data and read again in any other theme
   const stageTheme = useTheme();
   const fluxJack = fluxJackMode(stageTheme) && pageId != null;
-  const typewriterOn = mode === 'drafting' && pageId != null
-    ? typewriterForPage(pageId, words === 0)
-    : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // FREE WRITE IS THE TYPEWRITER (Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write ALWAYS runs it, in every theme, and Draft NEVER does; the switch is gone from both stages and every stored value (wrizo-typewriter-page-*, settings.typewriter) is kept as data and read by nothing.
+  // SUPERSEDED (the switch's two reads: Draft asked typewriterForPage(pageId, words === 0), Free Write and pageId-less callers asked settings.typewriter, Flux none); the old lines, verbatim:
+  //   const typewriterOn = mode === 'drafting' && pageId != null
+  //     ? typewriterForPage(pageId, words === 0)
+  //     : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;
+  // Flux keeps its own rule (Wire In needs a page: a pageId-less Flux surface runs nothing); every other theme runs it for the whole of Free Write.
+  const typewriterRun = stageTheme === 'flux' ? fluxJack && mode === 'journal' : mode === 'journal';
+  // typewriterOn is the paper Typewriter as the format bar and the gear read it: Free Write outside Flux (Flux's Wire In never locked the format bar)
+  const typewriterOn = typewriterRun && !fluxJack;
   // ... and Flux's Jacked In is the free-writing MODE: it runs the Typewriter whatever the setting says, and BUILD (Draft) never does (typewriterRun is typewriterOn in every other theme)
-  const typewriterRun = fluxJack ? mode === 'journal' : typewriterOn;
   // the zoom: on the framed prose page Typewriter scales the same page ~1.6x by a transform, so no line reflows and the editor never unmounts (page primacy's one exception); entering tucks both drawers [ModeStage §7]
   const zoomed = !!framed && typewriterRun;
   const pagecolRef = useRef<HTMLDivElement>(null);
@@ -661,12 +666,6 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
                   />
                 )
               )}
-              {(mode === 'journal' || mode === 'drafting') && (
-                // FX2 S2 — a hand-click here must outrank any later
-                // Draft-open seed for the rest of the session (see
-                // setTypewriterExplicit's own comment).
-                <TypewriterToggle on={typewriterOn} onToggle={() => setTypewriterExplicit(!typewriterOn)} />
-              )}
             </div>
           )}
         </div>
@@ -762,7 +761,6 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
           sliver's own TypewriterToggle), and both must arm the same
           session-explicit flag so neither can be silently overridden by a
           later Draft-open seed. */}
-      {typewriterAvailable && settingsTheme !== 'flux' && <Seg label="Typewriter" value={settings.typewriter ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setTypewriterExplicit(v === 'on')} />}
     </div>
   );
 }

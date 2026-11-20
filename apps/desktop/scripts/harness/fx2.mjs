@@ -312,8 +312,11 @@ await withHarness(async (app) => {
     shortDom === 'false', String(shortDom));
   // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 4
   const shortPageSetting = await typewriterPageSetting(app, 'fx2-draft');
-  ok('typewriter-scope successor: a ~3-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
-    shortPageSetting === 'off', String(shortPageSetting));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('typewriter-scope successor: a ~3-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
+  // shortPageSetting === 'off', String(shortPageSetting));
+  ok('S5 [Free Write = Typewriter successor]: a ~3-line page opens Draft with typewriter OFF and NOTHING is stored for it (no per-page value; the retired shared mirror untouched)',
+    shortPageSetting === null, String(shortPageSetting));
 
   await freshDraftPage(app, longDraftText);
   const longMode = await activeModeTab(app);
@@ -324,8 +327,11 @@ await withHarness(async (app) => {
     longDom === 'false', String(longDom));
   // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 5
   const longPageSetting = await typewriterPageSetting(app, 'fx2-draft');
-  ok('typewriter-scope successor: a ~15-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
-    longPageSetting === 'off', String(longPageSetting));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('typewriter-scope successor: a ~15-line page opens Draft with typewriter OFF — THIS page\'s own stored value (wrizo-typewriter-page-fx2-draft), not the retired shared mirror',
+  // longPageSetting === 'off', String(longPageSetting));
+  ok('S5 [Free Write = Typewriter successor]: a ~15-line page opens Draft with typewriter OFF and NOTHING is stored for it (no per-page value)',
+    longPageSetting === null, String(longPageSetting));
 
   // ==========================================================================
   // S2 — the explicit toggle wins for the rest of the session: still on the
@@ -369,16 +375,22 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]')?.click()");
   await sleep(150);
   const afterExplicitClick = await typewriterDom(app);
-  ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
-    afterExplicitClick === 'true', String(afterExplicitClick));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('S2: the sliver\'s typewriter toggle actually flips it ON by hand, overriding the ~15-line OFF seed',
+  // afterExplicitClick === 'true', String(afterExplicitClick));
+  ok('S2 [Free Write = Typewriter successor]: there is no typewriter toggle to press - the press finds nothing and Draft stays OFF',
+    afterExplicitClick === 'false', String(afterExplicitClick));
 
   await clickModeTab(app, 'Free Write');
   await sleep(200);
   await clickModeTab(app, 'Draft');
   await sleep(200);
   const afterRoundTrip = await typewriterDom(app);
-  ok('S2: Draft -> Free Write -> Draft within the SAME mount does not re-run the seed — the explicit ON survives the round trip',
-    afterRoundTrip === 'true', String(afterRoundTrip));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('S2: Draft -> Free Write -> Draft within the SAME mount does not re-run the seed — the explicit ON survives the round trip',
+  // afterRoundTrip === 'true', String(afterRoundTrip));
+  ok('S2 [Free Write = Typewriter successor]: Draft -> Free Write -> Draft within the SAME mount: the MODE decides, nothing is carried - Draft is OFF again after the round trip',
+    afterRoundTrip === 'false', String(afterRoundTrip));
   const afterRoundTripSetting = await typewriterSetting(app);
   ok('S2: ...and the stored setting itself reflects the same explicit ON, not a reverted OFF',
     afterRoundTripSetting === true, String(afterRoundTripSetting));
@@ -443,8 +455,11 @@ await withHarness(async (app) => {
   await sleep(150);
   const pageAExplicitOff = await typewriterDom(app);
   // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 7
-  ok('S5 successor (cross-page): explicit click on page A actually flips it ON by hand (it opened OFF)',
-    pageAExplicitOff === 'true', String(pageAExplicitOff));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('S5 successor (cross-page): explicit click on page A actually flips it ON by hand (it opened OFF)',
+  // pageAExplicitOff === 'true', String(pageAExplicitOff));
+  ok('S5 [Free Write = Typewriter successor] (cross-page): there is no toggle to press on page A - it stays OFF',
+    pageAExplicitOff === 'false', String(pageAExplicitOff));
 
   await gotoPage(app, 'fx2-draft-b');
   const pageBMode = await activeModeTab(app);
@@ -457,14 +472,20 @@ await withHarness(async (app) => {
     pageBDom === 'false', String(pageBDom));
   // ARCHIVED PARK (#13 step 14): archive/fx2.mjs.parked.md record 9
   const pageBPageSetting = await typewriterPageSetting(app, 'fx2-draft-b');
-  ok('typewriter-scope successor (cross-page): ...and page B\'s OWN stored value (wrizo-typewriter-page-fx2-draft-b) is OFF, never touched by page A\'s explicit ON or the retired shared mirror',
-    pageBPageSetting === 'off', String(pageBPageSetting));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('typewriter-scope successor (cross-page): ...and page B\'s OWN stored value (wrizo-typewriter-page-fx2-draft-b) is OFF, never touched by page A\'s explicit ON or the retired shared mirror',
+  // pageBPageSetting === 'off', String(pageBPageSetting));
+  ok('S5 [Free Write = Typewriter successor] (cross-page): page B has NO stored Typewriter value either (nothing is written for any page)',
+    pageBPageSetting === null, String(pageBPageSetting));
 
   // S5 (new): and A, turned ON by hand, is still ON when the writer comes back to it - the page remembers.
   await gotoPage(app, 'fx2-draft-a');
   const pageAAgain = await typewriterDom(app);
-  ok('S5 (cross-page): page A, turned ON by hand, is still ON when the writer returns to it - per-page memory, not a session flag',
-    pageAAgain === 'true', String(pageAAgain));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, its toggle is gone and no per-page value is stored; the original check, verbatim:
+  // ok('S5 (cross-page): page A, turned ON by hand, is still ON when the writer returns to it - per-page memory, not a session flag',
+  // pageAAgain === 'true', String(pageAAgain));
+  ok('S5 [Free Write = Typewriter successor] (cross-page): page A is still OFF when the writer returns to it - Draft never runs the Typewriter, nothing is remembered per page',
+    pageAAgain === 'false', String(pageAAgain));
 
   // ==========================================================================
   // S2 — Free Write is unaffected: a genuinely fresh session's loose page
