@@ -11,6 +11,7 @@
 //   JR    a join refuses a Part that carries ink, cards, links or a Tutor thread (with a reason), rather than dropping them; and the first Part cannot be joined upward
 //   UN    undo of a split and of a join restores the exact earlier text, and is refused when either half changed since
 //   OD    "make it its own Doc": the new set is written FIRST, then the Parts move; the run keeps its order and rebased levels; the only Part of a Doc is refused; the count of Parts and every text are conserved
+//   ED    a split (or a new Part) on a page the APP filed (an auto-set) or nobody filed gives ONE Doc with TWO Parts: the set is written first, in the same Drawer, and nothing else in the old set moves; a made set gets no new set
 //   NP    a new Part follows the Part asked for (after its subsections), is deeper only when asked, and a Doc with no Part starts at level 0
 // Run: node scripts/harness/reorg-parts-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -49,6 +50,7 @@ function makeStore() {
     reorderSections: (ids) => { let n = 0; ids.forEach((id, i) => { const e = api.getJournalEntry(id); if (!e || e.orderIndex === i) return; api.saveJournalEntry({ ...e, orderIndex: i }); n += 1; }); return n; },
     firstPlainLine: (t) => { for (const l of String(t).split('\n')) { const s = l.replace(/[*_#>]/g, '').trim(); if (s) return s; } return undefined; },
     getUserPageDefaults: () => S.defaults,
+    isAutoSet: (p) => !!p && (p.id.startsWith('top-set-') || p.id.startsWith('auto-set-')),
   };
   return { S, api };
 }
@@ -270,12 +272,52 @@ function suite(src) {
     const names = L.P.partsOfDoc(DOC).map((p) => p.name);
     R.NP = { pass: !!x && !!y && !!z && w === null && names.join('|') === 'a|Sub|b|Inserted|c|Untitled' && levelsOf(L).join('') === '011000' && !!e1 && levelsOf(E).join('') === '0', detail: JSON.stringify({ names, lv: levelsOf(L), e: levelsOf(E) }) };
   }
+  // ED
+  {
+    const mk = () => {
+      const L = load(src);
+      L.S.projects.push({ id: 'auto-set-dr1', title: 'Drawer One', type: 'creative', storyPlanId: null, createdAt: 'x', updatedAt: 'x', drawerId: 'dr1' });
+      const a = L.api.createBinderPage('auto-set-dr1', 'manuscript'); const b = L.api.createBinderPage('auto-set-dr1', 'manuscript');
+      L.api.saveJournalEntry({ ...L.api.getJournalEntry(a.id), text: 'Loose page words here and there' });
+      L.api.saveJournalEntry({ ...L.api.getJournalEntry(b.id), text: 'Another loose page' });
+      L.S.log.length = 0;
+      return { L, a: a.id, b: b.id };
+    };
+    // a page in an auto-set: ONE Doc, TWO Parts, the Drawer kept, the set first, the neighbour and the app's set untouched
+    const { L, a, b } = mk();
+    const autoBefore = JSON.stringify(L.api.getProject('auto-set-dr1')), bBefore = JSON.stringify(L.api.getJournalEntry(b));
+    const projects0 = L.S.projects.length;
+    const r = L.P.splitPart(a, 10);
+    const moved = L.api.getJournalEntry(a);
+    const doc = r.ok ? L.api.getProject(moved.projectId) : null;
+    const parts = doc ? L.P.partsOfDoc(doc.id) : [];
+    const firstProject = L.S.log.findIndex((l) => l.op === 'project'), firstEntryWrite = L.S.log.findIndex((l) => l.op === 'create' || l.op === 'save');
+    const autoStill = L.P.partsOfDoc('auto-set-dr1');
+    const autoOk = r.ok && !!doc && moved.projectId !== 'auto-set-dr1' && doc.drawerId === 'dr1' && doc.title === 'Loose page words here and there' && parts.length === 2 && L.S.projects.length === projects0 + 1
+      && firstProject >= 0 && firstProject < firstEntryWrite && autoBefore === JSON.stringify(L.api.getProject('auto-set-dr1')) && bBefore === JSON.stringify(L.api.getJournalEntry(b)) && autoStill.length === 1 && autoStill[0].id === b;
+    // a page in NO set: its own Doc too, in no Drawer
+    const N = load(src);
+    N.api.saveJournalEntry({ id: 'loose1', text: 'A loose page with words in it', projectId: null, source: 'page', origin: 'loose', createdAt: 'y', updatedAt: 'y' });
+    const rn = N.P.splitPart('loose1', 8);
+    const nd = rn.ok ? N.api.getProject(N.api.getJournalEntry('loose1').projectId) : null;
+    const noSetOk = rn.ok && !!nd && nd.drawerId === undefined && N.P.partsOfDoc(nd.id).length === 2;
+    // a page in a set the writer made: no new set
+    const M = fixture(src, ['Made set page words']);
+    const rm = M.P.splitPart(M.ids[0], 4);
+    const madeOk = rm.ok && M.S.log.every((l) => l.op !== 'project') && M.P.partsOfDoc(DOC).length === 2;
+    // a new Part grown from an app-filed page is its Doc's second Part; with no page to grow from, an app-made set is refused
+    const G = mk();
+    const nid = G.L.P.newPart(null, { afterId: G.a, name: 'Second' });
+    const gd = nid ? G.L.api.getProject(G.L.api.getJournalEntry(G.a).projectId) : null;
+    const newOk = !!nid && !!gd && G.L.P.partsOfDoc(gd.id).length === 2 && G.L.P.partsOfDoc('auto-set-dr1').length === 1 && G.L.P.newPart('auto-set-dr1') === null;
+    R.ED = { pass: autoOk && noSetOk && madeOk && newOk, detail: JSON.stringify({ autoOk, noSetOk, madeOk, newOk, parts: parts.map((p) => p.name) }) };
+  }
   return R;
 }
 
 // ---- baseline: every check green on the real source ------------------------------------------------------------------------------------------------
 const base = suite(partsText);
-const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP'];
+const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED'];
 for (const k of KEYS) ok(`${k} on the real parts.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 // DEF: pageDefaults strips a Part's own facts at the door (a source read: the strip is one destructure)
@@ -297,6 +339,10 @@ const MUT = [
   ['a join drops ink and cards without a word', 'JR', (t) => t.replace("  if (carriesMore(me)) return { ok: false, reason: 'carries' };\n", () => '')],
   ['the undo forces the join back even when a half changed', 'UN', (t) => t.replace('if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;', () => 'if (!src || !tail) return false;')],
   ['a split puts the tail after the whole run of the source, below its subsections', 'SJ', (t) => t.replace('  placeRun(docId, [born.id], partId);', () => '  { const rl = me ? runOf(parts.map(p => p.level), me.index)[1] : parts.length; placeRun(docId, [born.id], parts[Math.max(0, rl - 1)]?.id ?? partId); }')],
+  ['a split adds the tail to the page\'s own set even when the app made it', 'ED', (t) => t.replace("const doc = ensureDoc(partId);\n  if (!doc.ok) return { ok: false, reason: 'unknown' };\n  const docId = doc.docId;", () => 'const docId = first.projectId as string;')],
+  ['a new Part grown from an app-filed page joins that set as a sibling', 'ED', (t) => t.replace("if (from && (!set || isAutoSet(set))) { const r = ensureDoc(from.id); if (!r.ok) return null; docId = r.docId; }", () => 'if (from && from.projectId) docId = from.projectId;')],
+  ['ensureDoc makes a new set even for a set the writer made', 'ED', (t) => t.replace('if (set && !isAutoSet(set)) return { ok: true, docId: set.id, created: false };', () => '')],
+  ['ensureDoc forgets the Drawer', 'ED', (t) => t.replace('set ? set.drawerId : undefined', () => 'undefined')],
   ['make-it-its-own-Doc keeps the old levels', 'OD', (t) => t.replace('const lvl = Math.max(0, p.level - run[0].level);', () => 'const lvl = p.level;')],
   ['a new Part follows the run\'s top, splitting its subsections from it', 'NP', (t) => t.replace("if (after && level <= after.level) { const end = runOf(parts.map(p => p.level), after.index)[1]; place = parts[end - 1].id; }", () => '')],
 ];

@@ -25,7 +25,7 @@
 import type { JournalEntry, PageSettings, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import {
-  createBinder, createBinderPage, flushNow, getJournalEntries, getJournalEntry, getProject, getSystemKind, isPairedPlanBoard, saveJournalEntry,
+  createBinder, createBinderPage, flushNow, getJournalEntries, getJournalEntry, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, saveJournalEntry,
   softDeleteEntry,
 } from '../store/persistence';
 import { restoreEntry } from '../store/persistence/restore';
@@ -269,13 +269,43 @@ export function setPartLevel(docId: string, partId: string, level: number): Part
   return want;
 }
 
+// ---------------------------------------------------------------- the Doc a page grows into
+
+export type EnsureDocResult = { ok: true; docId: string; created: boolean } | { ok: false; reason: 'unknown' | 'not-page' };
+
+/**
+ * THE DOC A PAGE GROWS INTO (Fable, Nov 19, 9:20 pm). A page in a set the WRITER made already is a Part of a Doc: nothing happens. A page in a set the APP made (Top Drawer's set, the lazy set of an empty
+ * Drawer: store isAutoSet) or in NO set (a loose page, the Journal) is a one-Part Doc by the rail's read-time rule, and adding a Part to that SET would make a sibling, which the rail shows as a second
+ * one-Part Doc. So: a new set is written FIRST, titled with the page's name, in the SAME Drawer (none, for a page with no set), and only then the page moves into it. Nothing else in the old set moves.
+ */
+export function ensureDoc(partId: string): EnsureDocResult {
+  const e = getJournalEntry(partId);
+  if (!e) return { ok: false, reason: 'unknown' };
+  if (e.pageType === 'board' || getSystemKind(e) || isPairedPlanBoard(e.id)) return { ok: false, reason: 'not-page' };
+  const set = e.projectId ? getProject(e.projectId) : null;
+  if (set && !isAutoSet(set)) return { ok: true, docId: set.id, created: false };
+  const own = typeof keysOf(e).name === 'string' ? cleanName(keysOf(e).name as string) : '';
+  const title = own || firstWords(e.pageType === 'script' ? '' : (e.text ?? '')) || 'Untitled';
+  const doc = createBinder(title, set ? set.kind : undefined, set ? set.drawerId : undefined, set ? set.type : 'creative');
+  const again = getJournalEntry(partId);
+  if (again) saveJournalEntry({ ...again, projectId: doc.id });
+  return { ok: true, docId: doc.id, created: true };
+}
+
 // ---------------------------------------------------------------- a new Part
 
 export interface NewPartOptions { afterId?: string | null; name?: string; template?: PageTemplate | null; level?: number }
 
 /** A blank Part in a Doc: at the end, or right after `afterId`. It starts at the level of the Part it follows (or the one asked), under the Doc's own name rules. Returns its id, or null when the Doc is unknown. */
-export function newPart(docId: string, opts: NewPartOptions = {}): string | null {
-  if (!getProject(docId)) return null;
+export function newPart(docIdIn: string | null, opts: NewPartOptions = {}): string | null {
+  // growing from a page the app (or nobody) filed makes that page's own Doc first, so the new Part is its second Part and not a sibling Doc; an app-made set with no page to grow from is refused
+  let docId = docIdIn ?? '';
+  if (opts.afterId) {
+    const from = getJournalEntry(opts.afterId);
+    const set = from && from.projectId ? getProject(from.projectId) : null;
+    if (from && (!set || isAutoSet(set))) { const r = ensureDoc(from.id); if (!r.ok) return null; docId = r.docId; }
+  } else if (isAutoSet(getProject(docId))) return null;
+  if (!docId || !getProject(docId)) return null;
   const parts = partsOfDoc(docId);
   const after = opts.afterId === undefined || opts.afterId === null ? (opts.afterId === null ? null : (parts[parts.length - 1] ?? null)) : (parts.find(p => p.id === opts.afterId) ?? null);
   const born = createBinderPage(docId, 'manuscript');
@@ -328,12 +358,16 @@ function inheritedSettings(e: JournalEntry): PageSettings | undefined {
  * `between` runs after the first write (a test seam: the harness reads storage there).
  */
 export function splitPart(partId: string, offset: number, liveText?: string, between?: () => void): SplitResult {
-  const src = getJournalEntry(partId);
-  if (!src || !src.projectId) return { ok: false, reason: 'unknown' };
-  if (src.pageType === 'script' || src.pageType === 'board') return { ok: false, reason: 'not-text' };
+  const first = getJournalEntry(partId);
+  if (!first) return { ok: false, reason: 'unknown' };
+  if (first.pageType === 'script' || first.pageType === 'board') return { ok: false, reason: 'not-text' };
+  // a page the app or nobody filed becomes its own Doc first (written before the move), so the split gives ONE Doc with TWO Parts
+  const doc = ensureDoc(partId);
+  if (!doc.ok) return { ok: false, reason: 'unknown' };
+  const docId = doc.docId;
+  const src = getJournalEntry(partId) as JournalEntry;
   const text = liveText ?? src.text ?? '';
   const { head, tail } = splitText(text, offset);
-  const docId = src.projectId;
   const parts = partsOfDoc(docId);
   const me = parts.find(p => p.id === partId);
   const born = createBinderPage(docId, (src.pageType ?? 'manuscript') as NonNullable<JournalEntry['pageType']>);
@@ -432,7 +466,8 @@ if (typeof window !== 'undefined') {
   (window as unknown as { wrizoParts?: unknown }).wrizoParts = {
     partsOfDoc: (docId: string) => partsOfDoc(docId),
     partById: (id: string) => partById(id),
-    newPart: (docId: string, o?: NewPartOptions) => durable(newPart(docId, o)),
+    newPart: (docId: string | null, o?: NewPartOptions) => durable(newPart(docId, o)),
+    ensureDoc: (id: string) => durable(ensureDoc(id)),
     renamePart: (id: string, name: string) => durable(renamePart(id, name)),
     setPartColor: (id: string, c: PartColor | null) => durable(setPartColor(id, c)),
     setPartTemplate: (id: string, t: PageTemplate | null) => durable(setPartTemplate(id, t)),
