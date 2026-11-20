@@ -271,9 +271,19 @@ await withHarness(async (app) => {
     const r = await read();
     say('open-freewrite-zoom', o.st);
     ok('C2 zoomed Free Write: the page is zoomed and its breaks are 1366 Draft\'s', o.up && o.st.zoom === true && same(r.st.breaks, base20), JSON.stringify({ zoom: o.st.zoom, scale: o.st.scale, n: r.st.breaks.length }));
-    const M = await marks('mid');
+    // SUPERSEDED (run 44664802106): a scroll to the middle pair - the Typewriter holds the writing line, so the scroll is pulled back (rested at
+    // 42,203, no pair on screen to read). That is the product doing its job, not the marks. Kept for the record:
+    // const M = await marks('mid');
+    // successor: write in Free Write until a page turns, as a writer does - the new break sits at the writing line, which the zoom holds on screen
+    const end = await app.evalJs('window.__pbh.cleanText().length');
+    await app.evalJs(`window.__pbh.caretAt(${end})`); await sleep(300);
+    for (let i = 0; i < 40 && (await read()).st.total === r.st.total; i++) { await app.typeKeys('\nthe writer kept going past midnight and the river ran on under the window '); await sleep(450); }
+    await sleep(600);
+    const rz = await read();
+    say('zoom-turned', { pages: [r.st.total, rz.st.total] });
+    const M = await marks();
     // zoom 1.6 at k 1: stem 22, arm 13, stroke 3, tip 19 (12 x 1.6 = 19.2); the break line is not checked here (Free Write has no rows to read it from)
-    const P = judgePair(M, r.st.total, false, { stem: 22, arm: 13, stroke: 3, tip: 19, whole: true });
+    const P = judgePair(M, rz.st.total, false, { stem: 22, arm: 13, stroke: 3, tip: 19, whole: true });
     ok('P zoomed Free Write: 22 / 13 / 3 / 19, both sides on one line, on whole pixels', P.pass, P.why);
     // DIAGNOSTIC (readings, not a gate): the first pair's left stem against the wrapper, before and after a dispatched scroll (the marks redraw
     // 150 ms after a scroll rests) - tells a stale draw from a placement that is never on the grid
