@@ -75,7 +75,7 @@ function lib() {
       if (rows.length) { const k = text.slice(0, o).split(NL).length - 1; const row = rows[k]; const local = o - (text.slice(0, o).lastIndexOf(NL) + 1); const RT = nodes(row); q = rectAt(RT, local); if (!q) return null;
         const u = L.rowUnit(row); const rr = row.getBoundingClientRect(); const idx = u.starts.filter((st, i) => i > 0 && st <= local).length; return rr.top + idx * (rr.height / u.n); }
       return null; };
-    return { s, scrollTop: ed ? ed.closest('.mode-scroll').scrollTop : null, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
+    return { s, vh: innerHeight, scrollTop: ed ? ed.closest('.mode-scroll').scrollTop : null, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
   L.read = () => { const st = window.wrizoPageBreaks(); const c = document.querySelectorAll('.wz-pagecount'); return { st, count: [...c].map((x) => x.textContent), n: c.length, dataPage: document.querySelector('.mode-page')?.getAttribute('data-page') ?? null }; };
   return true;
 }
@@ -86,6 +86,7 @@ const judgePair = (M, pages, head, geo) => {
   const want = pages - 1 + (head ? 1 : 0);
   if (M.pairs.length !== want) return { pass: false, why: `pairs ${M.pairs.length} want ${want}` };
   if (!head && M.pairs.some((p) => p.at === 0)) return { pass: false, why: 'a pair on page 1' };
+  let seen = 0;
   for (const p of M.pairs) {
     const L = p.sides.find((x) => x.side === 'left'), Rt = p.sides.find((x) => x.side === 'right');
     if (p.sides.length !== 2 || !L || !Rt || !L.stem || !Rt.stem || !L.arm || !Rt.arm) return { pass: false, why: `pair at ${p.at}: sides ${p.sides.map((x) => x.side)}` };
@@ -108,10 +109,19 @@ const judgePair = (M, pages, head, geo) => {
       const eq = (a, b) => Math.abs(a - b) <= LU;
       if (!eq(g.stemH, geo.stem) || !eq(g.armW, geo.arm) || !eq(g.stemW, geo.stroke) || !eq(g.armH, geo.stroke) || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
       if (p.lineTop != null && Math.abs(L.stem.y + L.stem.h / 2 - p.lineTop) > 1.01) return { pass: false, why: `pair at ${p.at}: stem centre ${L.stem.y + L.stem.h / 2} vs break line ${p.lineTop}` };
-      if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
+      // SUPERSEDED (runs 44661387878 and 44662258660): the whole-pixel read on EVERY pair - a rect far below the viewport is mapped to
+      // the screen through 32-bit floats, so its reading drifts with depth (x exact; y 0.047 off at 41,379 px, 0.074 at 58,796 zoomed, the same
+      // pair every run), while the mark's own layout is on the grid. Kept for the record:
+      // if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
+      // successor: the pairs ON SCREEN (what she sees), read up close; the harness scrolls to the middle and the last pair to read those too, and a
+      // whole-pixel judgment that read no pair at all is a FAIL (a guard can pass while blind)
+      const onScreen = L.stem.y > -40 && L.stem.y < (M.vh || 800) + 40;
+      if (onScreen) seen += 1;
+      if (geo.whole && onScreen && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
     }
   }
-  return { pass: true, why: `${M.pairs.length} pairs` };
+  if (geo && geo.whole && seen === 0) return { pass: false, why: `no pair on screen to read (${M.pairs.length} pairs, scrollTop ${M.scrollTop})` };
+  return { pass: true, why: `${M.pairs.length} pairs; ${seen} read on screen` };
 };
 
 await withHarness(async (app) => {
@@ -150,7 +160,11 @@ await withHarness(async (app) => {
   // DIAGNOSTIC (readings only): a pair's left stem against the wrapper, by its break offset (null: the first pair)
   const diagAt = async (at) => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const wrap = ed.parentElement; const w = wrap.getBoundingClientRect(); const sel = ${JSON.stringify(at)} == null ? '.wz-pb-pair' : '.wz-pb-pair[data-at="' + ${JSON.stringify(at)} + '"]'; const i = wrap.querySelector(sel + ' .wz-pb-mark i');
     if (!i) return null; const b = i.getBoundingClientRect(); const t = getComputedStyle(i).top; return { wrapTop: +w.top.toFixed(4), wrapLeft: +w.left.toFixed(4), stemTop: +b.top.toFixed(4), stemLeft: +b.left.toFixed(4), styleTop: i.style.top, computedTop: t, offsetTop: i.offsetTop, scrollTop: wrap.closest('.mode-scroll').scrollTop, layoutW: getComputedStyle(wrap).width, paintW: +w.width.toFixed(4) }; })()`);
-  const marks = async () => { let prev = null; for (let k = 0; k < 20; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
+  const marks = async (bring = null) => {
+    if (bring !== null) await app.evalJs(`(() => { const sc = document.querySelector('.mode-scroll'); const ps = [...document.querySelectorAll('.wz-pb-marks .wz-pb-pair')]; if (!ps.length) return false;
+      const k = ${JSON.stringify(bring)} === 'last' ? ps.length - 1 : ${JSON.stringify(bring)} === 'mid' ? Math.floor(ps.length / 2) : Math.min(ps.length - 1, +${JSON.stringify(bring)}); const i = ps[k].querySelector('i'); const page = sc.closest('.mode-page');
+      const s = page && page.offsetWidth ? page.getBoundingClientRect().width / parseFloat(getComputedStyle(page).width) : 1; sc.scrollTop += (i.getBoundingClientRect().top - sc.getBoundingClientRect().top - 200) / s; return true; })()`);
+    let prev = null; for (let k = 0; k < 20; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
 
   // ---- seeds (through the seams) ----
   const T5 = pageOf(5000), T20 = pageOf(20000, 3);
@@ -183,10 +197,11 @@ await withHarness(async (app) => {
     mutant(`C1 ${words}: a break dropped`, judgeSnips(prod.slice(1), ref));
     const old = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const sc = ed.closest('.mode-scroll'); return Math.floor(ed.scrollHeight / (sc.clientHeight || 1)) + 1; })()`);
     mutant(`C1 ${words}: today's height rule (${old} pages against ${ref.length + 1})`, old === ref.length + 1);
-    const M = await marks();
+    const M = await marks(0);
     const P = judgePair(M, r.st.total, r.st.sectionHead, { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true });
     ok(`P ${words} words at 1366: pairs = pages - 1, both sides on one line, stem 14 / arm 8 / stroke 2 / tip 12, whole px`, P.pass, P.why);
     { const m = /pair at (d+)/.exec(P.why || ''); if (!P.pass && m) say(`diag-${words}`, await diagAt(+m[1])); }
+    if (words === 20000) for (const at of ['mid', 'last']) { const Mx = await marks(at); const Px = judgePair(Mx, r.st.total, r.st.sectionHead, { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true }); ok(`P ${words} words at 1366, the ${at} pair up close: on whole pixels`, Px.pass, Px.why); }
     if (M.pairs.length) {
       const drop = { ...M, pairs: M.pairs.map((p, i) => (i === 0 ? { ...p, sides: p.sides.filter((x) => x.side === 'left') } : p)) };
       mutant('P: one side dropped', judgePair(drop, r.st.total, false, null).pass);
@@ -194,7 +209,8 @@ await withHarness(async (app) => {
       mutant('P: a pair on page 1', judgePair(first, r.st.total + 1, false, null).pass);
       // the LayoutUnit successor still tells a wrong mark: a stem one pixel short, and a mark half a pixel off the grid, must each go red
       const G = { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true };
-      const tweak = (f) => ({ ...M, pairs: M.pairs.map((p, i) => (i === 0 ? { ...p, sides: p.sides.map((x) => (x.side === 'left' ? f(x) : x)) } : p)) });
+      const vis = Math.max(0, M.pairs.findIndex((p) => { const l = p.sides.find((x) => x.side === 'left'); return l && l.stem && l.stem.y > -40 && l.stem.y < (M.vh || 800) + 40; }));
+      const tweak = (f) => ({ ...M, pairs: M.pairs.map((p, i) => (i === vis ? { ...p, sides: p.sides.map((x) => (x.side === 'left' ? f(x) : x)) } : p)) });
       mutant('P: a stem one pixel short', judgePair(tweak((x) => ({ ...x, stem: { ...x.stem, h: x.stem.h - 1 } })), r.st.total, false, G).pass);
       mutant('P: a mark half a pixel off the grid', judgePair({ ...tweak((x) => ({ ...x, stem: { ...x.stem, x: x.stem.x + 0.5 }, arm: { ...x.arm, x: x.arm.x + 0.5 } })) }, r.st.total, false, G).pass);
     }
@@ -233,9 +249,10 @@ await withHarness(async (app) => {
     ok(`C2 ${tag}: the same breaks as 1366 (${base20.length + 1} pages)`, o.up && base20.length > 0 && same(r.st.breaks, base20), JSON.stringify({ up: o.up, n: r.st.breaks.length, framed: o.st.framed }));
     const old = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const sc = ed.closest('.mode-scroll'); return Math.floor(ed.scrollHeight / (sc.clientHeight || 1)) + 1; })()`);
     mutant(`C2 ${tag}: today's height rule (${old} pages)`, old === base20.length + 1);
-    const M = await marks();
+    const M = await marks(0);
     const P = judgePair(M, r.st.total, false, tag === '1920' ? { stem: 15, arm: 9, stroke: 2, tip: 13, whole: true } : { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true });
     ok(`P ${tag}: the pairs on whole pixels at the page's scale (${o.st.scale})`, P.pass, P.why);
+    for (const at of ['mid', 'last']) { const Mx = await marks(at); const Px = judgePair(Mx, r.st.total, false, tag === '1920' ? { stem: 15, arm: 9, stroke: 2, tip: 13, whole: true } : { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true }); ok(`P ${tag}, the ${at} pair up close: on whole pixels`, Px.pass, Px.why); }
   }
   await set(1366, 768); await sleep(1000);
   await app.evalJs("localStorage.setItem('wrizo-writing-settings', JSON.stringify({ typewriter: true })); true");
@@ -246,7 +263,7 @@ await withHarness(async (app) => {
     const r = await read();
     say('open-freewrite-zoom', o.st);
     ok('C2 zoomed Free Write: the page is zoomed and its breaks are 1366 Draft\'s', o.up && o.st.zoom === true && same(r.st.breaks, base20), JSON.stringify({ zoom: o.st.zoom, scale: o.st.scale, n: r.st.breaks.length }));
-    const M = await marks();
+    const M = await marks('mid');
     // zoom 1.6 at k 1: stem 22, arm 13, stroke 3, tip 19 (12 x 1.6 = 19.2); the break line is not checked here (Free Write has no rows to read it from)
     const P = judgePair(M, r.st.total, false, { stem: 22, arm: 13, stroke: 3, tip: 19, whole: true });
     ok('P zoomed Free Write: 22 / 13 / 3 / 19, both sides on one line, on whole pixels', P.pass, P.why);
@@ -379,7 +396,7 @@ await withHarness(async (app) => {
     const ra = await read();
     const b = await open('pbh-doc-b', 'drafting');
     const rb = await read();
-    const Mb = await marks();
+    const Mb = await marks(0);
     const aPages = ra.st.breaks.length + 1, bPages = rb.st.breaks.length + 1;
     const obs = { up: a.up && b.up, aBefore: ra.st.before, aTotal: ra.st.total, aHead: ra.st.sectionHead, bBefore: rb.st.before, bTotal: rb.st.total, bHead: rb.st.sectionHead, bPage: rb.st.page, aPages, bPages, headPair: Mb.pairs.some((p) => p.at === 0), count: rb.count };
     say('c4', obs);
