@@ -743,21 +743,33 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   useLayoutEffect(() => {
     const page = nudge ? (hostRef.current?.closest('.desk-frame-stage--prose .mode-page') as HTMLElement | null) : null;
     if (!nudge || !page || !hostRef.current) { setNudgePlace(null); return; }
-    const pr = page.getBoundingClientRect();
-    const scale = page.offsetWidth > 0 ? pr.width / page.offsetWidth : 1;
-    const cs = getComputedStyle(page);
-    const padB = parseFloat(cs.paddingBottom) || 0;
-    const left = parseFloat(cs.paddingLeft) || 0; const right = parseFloat(cs.paddingRight) || 0;
-    const zoomed = page.closest('.mode-pagecol')?.getAttribute('data-zoom') === 'true';
-    let top: number;
-    if (zoomed) {
-      const rg = document.createRange(); rg.selectNodeContents(hostRef.current);
-      const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
-      top = (bottom - pr.top) / scale + 6;
-    } else {
-      top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
-    }
-    setNudgePlace({ host: page, top, left, right });
+    const host = hostRef.current;
+    // placed where the writing line is NOW, and again whenever the page moves under it (#113: the line's place on screen can change after the hint is up - the typewriter's landing, a measure,
+    // the writer's own scroll - and a hint placed once stayed where the line used to be, on top of it: polish10-hint H1 in Flux)
+    const place = () => {
+      const pr = page.getBoundingClientRect();
+      const scale = page.offsetWidth > 0 ? pr.width / page.offsetWidth : 1;
+      const cs = getComputedStyle(page);
+      const padB = parseFloat(cs.paddingBottom) || 0;
+      const left = parseFloat(cs.paddingLeft) || 0; const right = parseFloat(cs.paddingRight) || 0;
+      const zoomed = page.closest('.mode-pagecol')?.getAttribute('data-zoom') === 'true';
+      let top: number;
+      if (zoomed) {
+        const rg = document.createRange(); rg.selectNodeContents(host);
+        const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
+        top = (bottom - pr.top) / scale + 6;
+      } else {
+        top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
+      }
+      setNudgePlace((was) => (was && was.host === page && was.top === top && was.left === left && was.right === right ? was : { host: page, top, left, right }));
+    };
+    place();
+    const scroller = host.closest('.mode-scroll');
+    let raf = 0;
+    const again = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; place(); }); };
+    scroller?.addEventListener('scroll', again, { passive: true });
+    window.addEventListener('resize', again);
+    return () => { scroller?.removeEventListener('scroll', again); window.removeEventListener('resize', again); if (raf) cancelAnimationFrame(raf); };
   }, [nudge]);
   const isEmpty = content.length === 0 && word.length === 0;
 
