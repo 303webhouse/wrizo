@@ -13,6 +13,8 @@
 //   OD    "make it its own Doc": the new set is written FIRST, then the Parts move; the run keeps its order and rebased levels; the only Part of a Doc is refused; the count of Parts and every text are conserved
 //   ED    a split (or a new Part) on a page the APP filed (an auto-set) or nobody filed gives ONE Doc with TWO Parts: the set is written first, in the same Drawer, and nothing else in the old set moves; a made set gets no new set
 //   NP    a new Part follows the Part asked for (after its subsections), is deeper only when asked, and a Doc with no Part starts at level 0
+//   BOLD  a cut inside a styled run (bold, italic, underline, strike, a font span, nested) closes the style at the cut and reopens it in the tail; a join gives the text back byte for byte; the cut never lands inside a mark (Fable, Nov 20)
+//   COL   PART_COLORS is the slots a to f (each theme draws its own six); an old clay, amber, moss, teal, slate or plum is READ as its slot and never written back (Fable, Nov 20)
 // Run: node scripts/harness/reorg-parts-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -55,11 +57,12 @@ function makeStore() {
   return { S, api };
 }
 
+const MARKRUNS = (() => { const o = ts.transpileModule(lf(fs.readFileSync(new URL('../../src/store/markRuns.ts', import.meta.url), 'utf8')), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText; const m = { exports: {} }; new Function('module', 'exports', o)(m, m.exports); return m.exports; })();
 function load(src) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const { S, api } = makeStore();
   const mods = {
-    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK },
+    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/markRuns': MARKRUNS,
     '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api, '../store/wordCount': { wordCount: (t) => { const s = String(t ?? '').trim(); return s ? s.split(/\s+/).length : 0; } },
   };
   const module = { exports: {} };
@@ -136,6 +139,87 @@ function suite(src) {
     }
     R.SN = { pass: bad === null, detail: JSON.stringify(bad) };
   }
+  // BOLD (Fable, Nov 20: "a cut inside bold closes the style at the cut and reopens it in the tail"): the cut never leaves a marker open on one side and orphaned on the other
+  {
+    const CASES = [
+      ['She said **a very bold| word** today.', 'She said **a very bold**', ' **word** today.'],
+      ['She said **a very bo|ld word** today.', 'She said **a very bo**', '**ld word** today.'],
+      ['**outer *inner wo|rds* more** after', '**outer *inner wo***', '***rds* more** after'],
+      ['***both at| once*** here', '***both at***', ' ***once*** here'],
+      ['z [in a| face]{.font-serif} w', 'z [in a]{.font-serif}', ' [face]{.font-serif} w'],
+      ['x ~~struck out| words~~ y', 'x ~~struck out~~', ' ~~words~~ y'],
+      ['a __under li|ned__ b', 'a __under li__', '__ned__ b'],
+      ['soft *italic wo|rds here* end', 'soft *italic wo*', '*rds here* end'],
+      // outside a run: nothing is added
+      ['**bold**| and more', '**bold**', ' and more'],
+      ['one **b** two| three', 'one **b** two', ' three'],
+      ['plain words| only', 'plain words', ' only'],
+      // at the very edge of a run, or inside a marker itself: the cut moves out of the run, never into its mark
+      ['go **|bold word** now', 'go ', '**bold word** now'],
+      ['go *|*bold word** now', 'go ', '**bold word** now'],
+      ['go **bold word|** now', 'go **bold word**', ' now'],
+      ['go **bold word*|* now', 'go **bold word**', ' now'],
+      // a styled run never crosses a line: the cut in the second line leaves the first alone
+      ['**a\nb|c** d', '**a\nb', 'c** d'],
+    ];
+    const bad = []; let n = 0;
+    const X = load(src).P;
+    for (const [spec, wantHead, wantTail] of CASES) {
+      const at = spec.indexOf('|'), text = spec.slice(0, at) + spec.slice(at + 1);
+      const r = X.splitText(text, at);
+      n += 1;
+      if (r.head !== wantHead || r.tail !== wantTail) bad.push({ spec, head: r.head, tail: r.tail });
+      if (X.joinText(r.head, r.tail) !== text) bad.push({ spec, join: X.joinText(r.head, r.tail) });
+    }
+    // every offset of every styled line: the join gives the text back, byte for byte, and each half has its marks in pairs
+    const LINES = CASES.map((c) => c[0].replace('|', '')).concat(['**a** and _b_ and ~~c~~ and __d__ end', 'k ***x _y_ z*** m']);
+    let cuts = 0;
+    for (const text of LINES) {
+      for (let off = 0; off <= text.length; off += 1) {
+        const r = X.splitText(text, off); cuts += 1;
+        if (X.joinText(r.head, r.tail) !== text) bad.push({ text, off, join: X.joinText(r.head, r.tail) });
+        const dangling = (s) => s.split('\n').some((ln) => { const runs = MARKRUNS.readMarks(ln); return /\*\*\*\*|(^|\s)\*\*(\s|$)/.test(ln) && runs.length === 0; });
+        if (!text.includes('\n') && (dangling(r.head) || dangling(r.tail))) bad.push({ text, off, dangling: [r.head, r.tail] });
+      }
+    }
+    // through the store: the two Parts hold the closed and the reopened halves, a join gives the text back, an undo gives it back
+    const T = 'She said **a very bo|ld word** today.', cut = T.indexOf('|'), whole = T.replace('|', '');
+    const L = fixture(src, [whole, 'next']);
+    const sp = L.P.splitPart(L.ids[0], cut);
+    const stored = sp.ok ? [textOf(L, L.ids[0]), textOf(L, sp.tailId)] : [];
+    const jn = sp.ok ? L.P.joinPart(sp.tailId) : null;
+    const afterJoin = textOf(L, L.ids[0]);
+    const L2 = fixture(src, [whole, 'next']);
+    const sp2 = L2.P.splitPart(L2.ids[0], cut);
+    const undone = sp2.ok && L2.P.undoSplit(sp2.token) ? textOf(L2, L2.ids[0]) : null;
+    const NAT = '**a** **b**', LN = fixture(src, [NAT, 'next']);
+    const spn = LN.P.splitPart(LN.ids[0], 5);
+    const natUndo = spn.ok && LN.P.undoSplit(spn.token) ? textOf(LN, LN.ids[0]) : null;
+    const natJoin = X.joinText('**a**', ' **b**');
+    const viaStore = natUndo === NAT && natJoin === '**a b**' && sp.ok && stored[0] === 'She said **a very bo**' && stored[1] === '**ld word** today.' && !!jn && jn.ok && afterJoin === whole && undone === whole;
+    R.BOLD = { pass: bad.length === 0 && viaStore && n === CASES.length && cuts > 100, detail: JSON.stringify({ bad: bad.slice(0, 3), viaStore, stored, afterJoin, undone, cuts }) };
+  }
+  // COL (Fable, Nov 20: "PART_COLORS becomes slots a-f; each theme draws its own six; read any old clay...plum name once and map it to a slot")
+  {
+    const X = load(src).P;
+    const slots = JSON.stringify(X.PART_COLORS) === JSON.stringify(['a', 'b', 'c', 'd', 'e', 'f']);
+    const accepts = X.isPartColor('a') && X.isPartColor('f') && !X.isPartColor('clay') && !X.isPartColor('g') && !X.isPartColor('#ff0000');
+    const LEGACY = { clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f', a: 'a', c: 'c', f: 'f', chartreuse: null, '#ff0000': null };
+    const L = fixture(src, ['one', 'two']);
+    const read = {};
+    for (const [old, want] of Object.entries(LEGACY)) {
+      L.api.saveJournalEntry({ ...L.api.getJournalEntry(L.ids[0]), pageSettings: { ...FALLBACK, size: 11, color: old } });
+      const writes = L.S.log.length;
+      read[old] = { got: L.P.partsOfDoc(DOC)[0].color, want, wrote: L.S.log.length - writes };
+    }
+    const mapped = Object.values(read).every((r) => r.got === r.want && r.wrote === 0);
+    // writing: a slot is stored as the slot; an old name is not written back
+    const L3 = fixture(src, ['one']);
+    L3.P.setPartColor(L3.ids[0], 'c'); const stored = L3.api.getJournalEntry(L3.ids[0]).pageSettings.color;
+    const refusedOld = L3.P.setPartColor(L3.ids[0], 'clay') === false && L3.api.getJournalEntry(L3.ids[0]).pageSettings.color === 'c';
+    // a Part carrying an old name, split: the tail takes no colour (a per-Part fact, as before)
+    R.COL = { pass: slots && accepts && mapped && stored === 'c' && refusedOld, detail: JSON.stringify({ slots, accepts, read, stored, refusedOld }) };
+  }
   // NL-S: after every write of a split, the tail words and the head words are both in a stored live row
   {
     const text = MATRIX.plain, off = 12;
@@ -198,7 +282,9 @@ function suite(src) {
     const named = L.api.getJournalEntry(a).pageSettings.name;
     L.P.renamePart(a, '   ');
     const cleared = L.api.getJournalEntry(a).pageSettings;
-    L.P.setPartColor(a, 'plum'); const col1 = L.api.getJournalEntry(a).pageSettings.color;
+    // ORIGINAL, SUPERSEDED Nov 20 (Fable: PART_COLORS is the slots a-f; the old colour names are read as slots, never written). The check stands on the slot below:
+    // L.P.setPartColor(a, 'plum'); const col1 = L.api.getJournalEntry(a).pageSettings.color;
+    L.P.setPartColor(a, 'f'); const col1 = L.api.getJournalEntry(a).pageSettings.color;
     const bad = L.P.setPartColor(a, '#ff0000'); const col2 = L.api.getJournalEntry(a).pageSettings.color;
     L.P.setPartColor(a, null); const col3 = L.api.getJournalEntry(a).pageSettings;
     L.P.setPartLimit(a, { unit: 'words', max: 800.7 }); const lim = L.api.getJournalEntry(a).pageSettings.lengthLimit;
@@ -209,7 +295,9 @@ function suite(src) {
     L.P.renamePart(b, ''); L.P.setPartColor(b, null);
     const untouchedStill = L.api.getJournalEntry(b).pageSettings === undefined || JSON.stringify(L.api.getJournalEntry(b).pageSettings) === JSON.stringify(untouched);
     R.KEY = {
-      pass: noKeys && fw.name === 'One two three four five six...' && fw.named === false && named === 'The Opening' && !('name' in cleared) && col1 === 'plum' && bad === false && col2 === 'plum' && !('color' in col3)
+      // ORIGINAL, SUPERSEDED Nov 20 (Fable: PART_COLORS is the slots a-f; the old colour names are read as slots, never written). The check stands on the slot below:
+      // pass: noKeys && fw.name === 'One two three four five six...' && fw.named === false && named === 'The Opening' && !('name' in cleared) && col1 === 'plum' && bad === false && col2 === 'plum' && !('color' in col3)
+      pass: noKeys && fw.name === 'One two three four five six...' && fw.named === false && named === 'The Opening' && !('name' in cleared) && col1 === 'f' && bad === false && col2 === 'f' && !('color' in col3)
         && lim && lim.max === 800 && lim.unit === 'words' && badLim === false && !('lengthLimit' in lim2) && noop === false && L.S.log.length === writesAfter && untouchedStill
         && JSON.stringify(L.api.getJournalEntry(a).pageSettings).indexOf('null') < 0,
       detail: JSON.stringify({ noKeys, first: fw.name, named, cleared, col1, bad, col2, lim, badLim, noop }),
@@ -317,7 +405,7 @@ function suite(src) {
 
 // ---- baseline: every check green on the real source ------------------------------------------------------------------------------------------------
 const base = suite(partsText);
-const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED'];
+const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL'];
 for (const k of KEYS) ok(`${k} on the real parts.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 // DEF: pageDefaults strips a Part's own facts at the door (a source read: the strip is one destructure)
@@ -329,7 +417,17 @@ ok('DEF pageDefaults strips name, level, color and lengthLimit (the Part\'s own 
 const MUT = [
   ['the split writes the SHORTENED source before the tail', 'NL-S', (t) => t.replace('  saveJournalEntry(row);\n', () => '').replace("  if (again) saveJournalEntry({ ...again, text: head });", () => "  if (again) saveJournalEntry({ ...again, text: head });\n  saveJournalEntry(row);")],
   ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
-  ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('export const joinText = (above: string, below: string): string => above + below;', () => 'export const joinText = (above: string, below: string): string => above;')],
+  // ORIGINAL, SUPERSEDED Nov 20 (joinText now heals a styled seam, so its one-line body is gone; the mutant stands on the line that carries the lower Part's words):
+  // ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('export const joinText = (above: string, below: string): string => above + below;', () => 'export const joinText = (above: string, below: string): string => above;')],
+  ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('const plain = above + below;', () => 'const plain = above;')],
+  ['a cut inside a styled run reopens nothing in the tail', 'BOLD', (t) => t.replace('tail: tSpace + openers + t.slice(tSpace.length)', () => 'tail: t')],
+  ['the closing marks go after the head\'s trailing space', 'BOLD', (t) => t.replace('head: h.slice(0, h.length - hSpace.length) + closers + hSpace', () => 'head: h + closers')],
+  ['a join leaves the seam of a split in a styled run', 'BOLD', (t) => t.replace('return across.length === peeled.length && across.every((m, i) => m === peeled[i]) ? healed : plain;', () => 'return plain;')],
+  ['a cut may land inside a run\'s own mark', 'BOLD', (t) => t.replace('if (p > r.open && p <= o1) { p = r.open; again = true; } else if (p >= c1 && p < c2) { p = c2; again = true; }', () => '')],
+  ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
+  ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
+  ['the slots stop at e', 'COL', (t) => t.replace("['a', 'b', 'c', 'd', 'e', 'f'] as const", () => "['a', 'b', 'c', 'd', 'e'] as const")],
   ['a cut may land between the halves of an emoji', 'SN', (t) => t.replace('if (a >= 0xD800 && a <= 0xDBFF && b >= 0xDC00 && b <= 0xDFFF) return o - 1;', () => '')],
   ['a move leaves the subsections behind', 'RUN-move', (t) => t.replace('const [s, t] = runOf(parts.map(p => p.level), i);\n  const run = parts.slice(s, t);\n  const rest', () => 'const s = i, t = i + 1;\n  const run = parts.slice(s, t);\n  const rest')],
   ['a level may be set deeper than one under the Part above', 'RUN-clamp', (t) => t.replace('const cap = i === 0 ? 0 : Math.min(MAX_PART_LEVEL, parts[i - 1].level + 1);\n  const want', () => 'const cap = MAX_PART_LEVEL;\n  const want')],
