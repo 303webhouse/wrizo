@@ -142,15 +142,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const onUserScroll = () => { userScrolled = true; };
     // #113 (ARBOR; Fable, Nov 19, 8:10 pm, RULED): OPENING lands at the writing line AT ONCE (a cut); the glide stays only for the FOLLOW while typing. Opening a long page put the
     // caret's line thousands of px below the hold, and that backlog was paid by the staircase meant for typing (two lines per 160 ms glide, ~340 px/s): at 20k words it was still moving 25 s
-    // later, and a writer who scrolled away to look had the page drift back down under her. So until she types - or two seconds have passed since this mount, whichever comes first -
-    // whatever is owed is paid in ONE step (the first engage and any late layout that follows it: a font arriving, the page finishing). Her first act ends the opening for good - a key,
-    // a press (a pen stroke's), the wheel, a touch - from then on every advance is the one-line glide it always was (a pen stroke committed inside the window had its own page cut by 25 px
-    // under it: ink-foot K2 in the zoom).
-    const OPENING_MS = 2000;
-    const mountedAt = performance.now();
+    // later, and a writer who scrolled away to look had the page drift back down under her. So until her first act - a key, a press (a pen stroke's), the wheel, a touch - the writing line is
+    // LANDED at the hold whenever it stands below it, in ONE step: the first engage, any late layout that follows it (a font arriving, the page finishing), and a stray focus() that scrolled a tall
+    // editable to its top. Her first act ends the opening for good; from then on every advance is the one-line glide it always was (a pen stroke committed inside an opening that lasted two
+    // seconds had its own page cut by 25 px under it: ink-foot K2 in the zoom, hence the act and not a clock).
     let typedSinceMount = false;
     const onTyped = () => { typedSinceMount = true; };   // (named for the first use; any act of hers ends the opening: see the listeners below)
-    const opening = () => !typedSinceMount && performance.now() - mountedAt < OPENING_MS;
+    const opening = () => !typedSinceMount;
     // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
     // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
     // to line 1) is exactly the drop to 0 that takenOver() excuses as the editor's re-render clamp - the glide would carry on and drag the writer back down.
@@ -310,6 +308,18 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         ? (holdEl.getBoundingClientRect().top + holdEl.getBoundingClientRect().height * zoom!.anchor - box.top) / sc + lineHeight()
         : box.clientHeight * holdBandValue;
 
+      if (opening() && within - thresholdPx > 1) {
+        // #113: the opening landing. The line is below the hold: land it AT the hold now, never past what the box can scroll to, and owe nothing (what the box cannot scroll can never be paid).
+        stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
+        const maxTopCut = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+        const toCut = Math.min(box.scrollTop + (within - thresholdPx), maxTopCut);
+        if (trace) trace.push({ d: 'cut', from: Math.round(box.scrollTop), to: Math.round(toCut), over: Math.round(within - thresholdPx) });
+        if (toCut > box.scrollTop) box.setScrollTop(toCut, false);
+        engaged = true;
+        prevDocCaretBottom = docCaretBottom;
+        setScrolled();
+        return;
+      }
       if (!engaged) {
         if (within - thresholdPx <= 1) { if (trace) trace.push({ d: 'fresh', within: Math.round(within), threshold: Math.round(thresholdPx) }); setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
         // First engage (S1 a: "must not lurch"): owe exactly the same delta
@@ -333,19 +343,6 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       // anchor (43.7%, the band's top fade over it, A3). The line's measured excess below the hold is the cap; a line already at or above it owes nothing.
       const owedAdvance = docCaretBottom - (prevDocCaretBottom as number);
       const advance = holdEl ? Math.min(owedAdvance, within - thresholdPx) : owedAdvance;
-      if (advance > 1 && opening()) {
-        // #113: the opening cut. Land at the writing line now, never past what the box can scroll to, and owe nothing; no glide, no verify timer, no waiting for one.
-        stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
-        const maxTopCut = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
-        const toCut = Math.min(box.scrollTop + advance, maxTopCut);
-        const landed = Math.max(0, toCut - box.scrollTop);
-        if (landed > 0) box.setScrollTop(toCut, false);
-        if (trace) trace.push({ d: 'cut', from: Math.round(box.scrollTop), to: Math.round(toCut), advance: Math.round(advance) });
-        // paid in full: nothing is owed, and what the box could not scroll (its bottom stop) can never be paid, so it is not owed either
-        prevDocCaretBottom = docCaretBottom;
-        setScrolled();
-        return;
-      }
       if (advance > 1) {
         // Never more than one line-height per call, however large the raw
         // advance is (a deep first-engage on a long page, or a multi-line
@@ -409,6 +406,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     mo.observe(container, { childList: true, subtree: true, characterData: true });
     container.addEventListener('input', schedule);
     container.addEventListener('beforeinput', onTyped, true);
+    container.addEventListener('focusin', schedule);   // a stray focus() scrolls a tall editable to its top: while she has done nothing yet, the next frame lands the writing line again
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
@@ -431,6 +429,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       mo.disconnect();
       container.removeEventListener('input', schedule);
       container.removeEventListener('beforeinput', onTyped, true);
+      container.removeEventListener('focusin', schedule);
       for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.removeEventListener(ev, onTyped, true);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
