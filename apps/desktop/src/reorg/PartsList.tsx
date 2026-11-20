@@ -94,7 +94,8 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
   const split = () => {
     if (!host?.splitHere) return;
     const r = host.splitHere();
-    if (!r.ok) { say(t(r.why === 'caret' ? 'reorgPartsSplitCaret' : 'reorgPartsSplitNo')); return; }
+    // tsconfig is strict:false, so `!r.ok` does not narrow the union: each refusal's field is read by its presence
+    if (!r.ok) { say(t(('why' in r ? r.why : 'text') === 'caret' ? 'reorgPartsSplitCaret' : 'reorgPartsSplitNo')); return; }
     say(fill(t('reorgPartsSplitDone'), { n: here + 1 }), { kind: 'split', token: r.token });
   };
   const run = (i: number): [number, number] => runOf(parts.map((p) => p.level), i);
@@ -129,7 +130,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
       return;
     }
     const r = joinPart(p.id);
-    if (!r.ok) { say(refusal(r.reason)); return; }
+    if (!r.ok) { say(refusal('reason' in r ? r.reason : 'unknown')); return; }
     flushNow();
     say(fill(t('reorgPartsJoinDone'), { n: p.n - 1 }), { kind: 'join', token: r.token });
   };
