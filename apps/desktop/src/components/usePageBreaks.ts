@@ -150,6 +150,10 @@ export function usePageBreaks(scrollRef: RefObject<HTMLElement | null>, pageId: 
 
     // the marks' own layer is not the text: its redraw must never count as a change (or every pause would schedule the next)
     const mine = (n: Node) => !!(n instanceof Element ? n : n.parentElement)?.closest('.wz-pb-marks');
+    // a scroll can land on a fractional offset (the Typewriter, a restored position): the marks are redrawn on whole device pixels once it rests
+    let scrollT = 0;
+    const onScroll = () => { clearTimeout(scrollT); scrollT = window.setTimeout(() => { const ed = editor(); if (ed && breaks.length + (head ? 1 : 0) > 0) drawMarks(ed, head ? [0, ...breaks] : breaks); }, 150); };
+    scroll.addEventListener('scroll', onScroll, { passive: true });
     const mo = new MutationObserver((recs) => { if (recs.some((r) => !mine(r.target))) onChange(); });
     mo.observe(scroll, { childList: true, subtree: true, characterData: true });
     const ro = new ResizeObserver(onResize);
@@ -176,6 +180,8 @@ export function usePageBreaks(scrollRef: RefObject<HTMLElement | null>, pageId: 
       dead = true;
       mo.disconnect(); ro.disconnect(); attrs.disconnect();
       scroll.removeEventListener('keydown', onKey, true);
+      scroll.removeEventListener('scroll', onScroll);
+      clearTimeout(scrollT);
       document.removeEventListener('selectionchange', onSel);
       cancelAnimationFrame(firstRaf); clearTimeout(first); clearTimeout(pauseT); clearTimeout(sliceT); clearTimeout(selT); clearTimeout(marksT); cancelAnimationFrame(raf);
       clearMarks(editor());

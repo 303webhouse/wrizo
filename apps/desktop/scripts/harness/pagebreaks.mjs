@@ -75,7 +75,7 @@ function lib() {
       if (rows.length) { const k = text.slice(0, o).split(NL).length - 1; const row = rows[k]; const local = o - (text.slice(0, o).lastIndexOf(NL) + 1); const RT = nodes(row); q = rectAt(RT, local); if (!q) return null;
         const u = L.rowUnit(row); const rr = row.getBoundingClientRect(); const idx = u.starts.filter((st, i) => i > 0 && st <= local).length; return rr.top + idx * (rr.height / u.n); }
       return null; };
-    return { s, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
+    return { s, scrollTop: ed ? ed.closest('.mode-scroll').scrollTop : null, colL, colR, inEditor: ed ? ed.querySelectorAll('.wz-pb-marks, .wz-pb-pair, .wz-pb-mark').length : -1, layerParent: layer ? layer.parentElement.className : null, pairs: pairs.map((p) => ({ ...p, lineTop: lineTop(p.at) })) }; };
   L.read = () => { const st = window.wrizoPageBreaks(); const c = document.querySelectorAll('.wz-pagecount'); return { st, count: [...c].map((x) => x.textContent), n: c.length, dataPage: document.querySelector('.mode-page')?.getAttribute('data-page') ?? null }; };
   return true;
 }
@@ -104,7 +104,7 @@ const judgePair = (M, pages, head, geo) => {
       const eq = (a, b) => Math.abs(a - b) <= LU;
       if (!eq(g.stemH, geo.stem) || !eq(g.armW, geo.arm) || !eq(g.stemW, geo.stroke) || !eq(g.armH, geo.stroke) || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
       if (p.lineTop != null && Math.abs(L.stem.y + L.stem.h / 2 - p.lineTop) > 1.01) return { pass: false, why: `pair at ${p.at}: stem centre ${L.stem.y + L.stem.h / 2} vs break line ${p.lineTop}` };
-      if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels` };
+      if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels ${JSON.stringify([L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].map((v) => +v.toFixed(4)))} (LU ${LU.toFixed(4)}, scrollTop ${M.scrollTop})` };
     }
   }
   return { pass: true, why: `${M.pairs.length} pairs` };
