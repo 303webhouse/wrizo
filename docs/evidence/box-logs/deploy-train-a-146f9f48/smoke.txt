@@ -1,0 +1,3 @@
+SMOKE: PASS (6/6)
+healthz 200 {"ok":true,"build":"index-DaKt1WrM"}
+served index-DaKt1WrM.js 1090665 bytes md5 6b5e90b79b4f ; index-BG1OKmnD.css 279146 bytes md5 711150d2a72d (identical to the tested build)

@@ -34,6 +34,12 @@ import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 import { wordCount } from '../store/wordCount';
+import type { JournalEntry } from '../types';
+import { useReorgTop } from '../reorg/useReorg';
+import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
+import { PartsList } from '../reorg/PartsList';
+import { PageSetupZone } from './cascade/PagePanel';
+import { getJournalEntry } from '../store/persistence';
 
 // the rosters and their lexicon keys in one place each, in order: Normal (preselected), Screenplay, Research; MLA (default), APA, Chicago, AP [Sliver §1]
 const PAGE_KINDS: readonly PageKindSetting[] = ['normal', 'screenplay', 'research'];
@@ -184,9 +190,12 @@ export interface SliverProps {
   // ModeStage.tsx's own gear always has (M1, canon Q3) — absent/false reads
   // as "no plan to project," exactly like a plan-less project already did.
   hasMilestones?: boolean;
+  // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
+  // drawer is byte-for-byte today's
+  front?: { entry: JournalEntry };
 }
 
-export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
+export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const target = useWritingGoal();
@@ -197,6 +206,9 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
   const sliverTheme = useTheme();
   const arbor2 = isArbor2() && sliverTheme === 'plateau';
   const [arborPick, setArborPick] = useState<ArborToolTab>('format');
+  // THE REORG'S FRONT MENU (plan step 3.1, ?reorg=1 in Machina): TEXT · INK · PARTS. In-session state; off the switch it is unused
+  const reorgFront = useReorgTop() && !!front;
+  const [frontPick, setFrontPick] = useState<FrontTab>('text');
 
   // the open/close announcement is a layout effect keyed on `open`: a setState updater stays pure, every path that changes `open` announces, and the one-drawer hand-over lands before paint [Sliver §7]
   useLayoutEffect(() => {
@@ -292,6 +304,26 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
       }
     : undefined;
 
+  // THE REORG'S FRONT MENU - TEXT · INK · PARTS (the prototype's frontMenu). As Arbor's tabs, the INK tab IS the instrument: picking it, or
+  // leaving it, calls the host's own instrument switch, so the page's mode and the tab never disagree.
+  const frontInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
+  const frontList = reorgFront ? frontTabsFor(content.kind as DrawerKind, !!frontInstrument) : [];
+  const frontTab: FrontTab | undefined = !frontList.length ? undefined
+    : frontInstrument?.value === 'ink' ? 'ink'
+    : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
+  const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
+  const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
+    ? {
+        items: frontList.map((id) => ({ id, label: t(FRONT_WORD[id]) })),
+        value: frontTab,
+        onChange: (v: FrontTab) => {
+          setFrontPick(v);
+          if (frontInstrument && (v === 'ink') !== (frontInstrument.value === 'ink')) frontInstrument.onChange(v === 'ink' ? 'ink' : 'text');
+        },
+        label: t('reorgFrontLabel'),
+      }
+    : undefined;
+
   return (
     // data-menus-dock / data-menus-handle are behaviour-free contract markers the menus probe binds to, so it keeps testing the invariant if class names change [Sliver §10]
     <div className="wz-sliver" ref={rootRef} data-open={open ? 'true' : 'false'} data-menus-dock="">
@@ -315,7 +347,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
       <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
-        <SideDrawer side="left" idPrefix="wz-sliver" tabs={(arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
+        <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
         <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
@@ -335,7 +367,7 @@ export function Sliver({ content, goalText, hasMilestones }: SliverProps) {
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} />
         </SideDrawer>
       </div>
     </div>
@@ -555,7 +587,7 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab }: { content: SliverContent; arborTab?: ArborToolTab }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
@@ -568,7 +600,10 @@ function SliverToolsBody({ content, arborTab }: { content: SliverContent; arborT
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
-  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
+  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
+    : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
+  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list alone (read-only, step 3.2)
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} /></div>;
 
   return (
     <div className="wz-sliver-body">
@@ -767,6 +802,8 @@ function SliverToolsBody({ content, arborTab }: { content: SliverContent; arborT
           {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
         </div>
       )}
+      {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}
+      {frontTab === 'text' && frontEntry && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
     </div>
   );
 }

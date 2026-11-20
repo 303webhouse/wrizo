@@ -203,6 +203,12 @@ export async function runMigrations(): Promise<void> {
   //           boxes: { "<drawerId>": { letters?, lettersAt?, colour?, colourAt?, picture?: "<sha>"|"", pictureAt? } } }
   // The merge is the client's (apps/desktop/src/reorg/railSaved.ts); the server compares-and-swaps and enforces a purge (rail.ts).
   await pool.query(`alter table users add column if not exists rail jsonb`);
+  // THE REORG'S ACCOUNT PREFERENCES (Nick's SAVED DATA ruling Nov 19, 4:05 pm; Fable Nov 19, 7:00 pm: "a NEW users.prefs jsonb column with its own GET/PUT, built the way
+  // users.rail was built, NOT inside rail"). ONE nullable jsonb column, the same recipe: no default, no CHECK, no backfill - null on every existing writer, so nobody's row changes
+  // until she sets one. A record is a map of FACTS, each a map with its own stamp (`at`):
+  //   prefs: { split?: { side: 'right', width: <0.2-0.8>, at }, linkedAssets?: { on, at }, searchWord?: { word, at }, templates?: { items: [...], at } ... }
+  // The merge is the client's (apps/desktop/src/reorg/prefsSaved.ts); the server compares-and-swaps and checks the shape and the size (prefs.ts).
+  await pool.query(`alter table users add column if not exists prefs jsonb`);
   // A box's picture: at most one row per Project, 64 KB at most, WebP/JPEG/PNG by its own first bytes (rail.ts). Last picked wins on picked_at.
   await pool.query(
     `create table if not exists box_pictures (

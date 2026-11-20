@@ -44,7 +44,7 @@ export function PagePanel({ subject, navigate }: { subject: PageFaceSubject; nav
 // nothing is capped) and scopes it to where the writer is.
 
 // page setup: the paper is the preview (margins and spacing write custom properties on the live sheet, no Apply); numbers, headers and footers are stored for print and export and do not paint on screen [CascadePanels §5]
-function PageSetupZone({ entry }: { entry: JournalEntry }) {
+export function PageSetupZone({ entry }: { entry: JournalEntry }) {
   const { t } = useDeskLexicon();
   const [saved, setSaved] = useState(false);
   const current = entry.pageSettings ?? PAGE_SETTINGS_FALLBACK;

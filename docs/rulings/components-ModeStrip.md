@@ -73,3 +73,5 @@ From `apps/desktop/src/components/ModeStrip.tsx`, line 92 at `e2898deb` (the com
         // span only for the two tabs that carry one, so the other three's
         // DOM shape is untouched.
 ```
+
+Retired Nov 19 (Nick's ruling, 2:01 pm, via Fable): the stage strip carries no "?" in any theme, so no comment stays: the code it explained is gone. Help moves to right-click menus later; the help words stay in the lexicon (strip-no-help.mjs).
