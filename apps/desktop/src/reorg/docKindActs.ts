@@ -86,7 +86,7 @@ export function applyPreset(entryId: string, presetId: string): PresetResult {
   if (!preset) return { ok: false, reason: 'unknown-preset' };
   const doc = ensureDoc(entryId);
   if (!doc.ok) return { ok: false, reason: 'no-doc' };
-  const isScreenplay = getProject(doc.docId)?.kind === 'screenplay';
+  const isScreenplay = getProject(doc.docId)?.kind === 'screenplay' || e.pageType === 'script' || e.pageSettings?.kind === 'screenplay';
   if ((preset.kind === 'screenplay') !== isScreenplay) return { ok: false, reason: 'wrong-kind' };
   const style = styleOf(entryId);
   const plan = planPreset(preset, style, partsOfDoc(doc.docId).map(p => ({ id: p.id, name: p.named ? p.name : '', words: p.words, template: p.template })));

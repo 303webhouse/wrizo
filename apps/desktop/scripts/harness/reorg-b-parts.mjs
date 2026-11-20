@@ -116,9 +116,13 @@ await withHarness(async (app) => {
   await app.evalJs("document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); null"); await sleep(250);
   const esc = await app.evalJs(`(() => ({ menu: !!document.querySelector('[data-doc-menu]'), focusBack: document.activeElement === ${L}?.querySelector('[data-doc-kind]') }))()`);
   const want = [['style', 'Style Guide'], ['setup', 'Page Setup'], ['special', 'Special Parts'], ['presets', 'Presets']];
-  ok('K2 pressed, it lists Style Guide, Page Setup, Special Parts, Presets, each folded; Style Guide opens MLA, APA, Chicago, AP (MLA marked); Escape closes and gives the focus back',
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:15 pm: the kind menu's acts are INK's: the Style Guide is the DOC's own and offers None, there are six Special Parts, and the sources Part wears the style guide's word). The original, verbatim:
+  // ok('K2 pressed, it lists Style Guide, Page Setup, Special Parts, Presets, each folded; Style Guide opens MLA, APA, Chicago, AP (MLA marked); Escape closes and gives the focus back',
+  // !!items && items.length === 4 && want.every(([k, w], i) => items[i][0] === k && items[i][1].startsWith(w) && items[i][2] === 'false')
+  // && !!guides && guides.map((g) => g[0]).join(',') === 'mla,apa,chicago,ap' && guides[0][2] === 'true' && !esc.menu && esc.focusBack, { items, guides, esc });
+  ok('K2 [successor] pressed, it lists Style Guide, Page Setup, Special Parts, Presets, each folded; Style Guide opens None, MLA, APA, Chicago, AP (None marked: the Doc has none yet); Escape closes and gives the focus back',
     !!items && items.length === 4 && want.every(([k, w], i) => items[i][0] === k && items[i][1].startsWith(w) && items[i][2] === 'false')
-      && !!guides && guides.map((g) => g[0]).join(',') === 'mla,apa,chicago,ap' && guides[0][2] === 'true' && !esc.menu && esc.focusBack, { items, guides, esc });
+      && !!guides && guides.map((g) => g[0]).join(',') === 'none,mla,apa,chicago,ap' && guides[0][2] === 'true' && guides.slice(1).every((g) => g[2] === 'false') && !esc.menu && esc.focusBack, { items, guides, esc });
 
   const r0 = await app.evalJs(PAGE);
   await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor'); if (n) n.__bpMark = 1; return null; })()");
@@ -128,6 +132,7 @@ await withHarness(async (app) => {
   await app.evalJs(click('[data-doc-menu] [data-style-pick="apa"]'));
   await settle(app);
   const k3b = await app.evalJs(`${ALL}`);
+  const docRec = await app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')).find((p) => p.id === ${q(ids.novel)}) || null`);
   const w1a = k3a.find((e) => e.id === 'wb-1') || {}, w1b = k3b.find((e) => e.id === 'wb-1') || {};
   const othersSame = JSON.stringify(k3a.filter((e) => e.id !== 'wb-1')) === JSON.stringify(k3b.filter((e) => e.id !== 'wb-1'));
   const psDiff = Object.keys({ ...(w1a.pageSettings || {}), ...(w1b.pageSettings || {}) }).filter((k) => JSON.stringify((w1a.pageSettings || {})[k]) !== JSON.stringify((w1b.pageSettings || {})[k]));
@@ -135,25 +140,52 @@ await withHarness(async (app) => {
   // pick) every other key that changed was ABSENT before and now reads the app's default dress; nothing she had set changes
   const DRESS = { margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' } };
   const onlyDress = psDiff.filter((k) => k !== 'styleGuide').every((k) => !((w1a.pageSettings || {})[k] !== undefined) && JSON.stringify((w1b.pageSettings || {})[k]) === JSON.stringify(DRESS[k]));
-  ok('K3 Style Guide ▸ APA stores pageSettings.styleGuide \'apa\' on wb-1, and nothing she set changes (keys that were absent read the default dress)',
-    (w1b.pageSettings || {}).styleGuide === 'apa' && psDiff.includes('styleGuide') && onlyDress && w1a.text === w1b.text && othersSame, { ps: w1b.pageSettings, psDiff, othersSame });
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:15 pm: the kind menu's acts are INK's: the Style Guide is the DOC's own and offers None, there are six Special Parts, and the sources Part wears the style guide's word). The original, verbatim:
+  // ok('K3 Style Guide ▸ APA stores pageSettings.styleGuide \'apa\' on wb-1, and nothing she set changes (keys that were absent read the default dress)',
+  // (w1b.pageSettings || {}).styleGuide === 'apa' && psDiff.includes('styleGuide') && onlyDress && w1a.text === w1b.text && othersSame, { ps: w1b.pageSettings, psDiff, othersSame });
+  const APA = { margins: 'normal', lineSpacing: 2, size: 12, pageNumbers: { on: true, placement: 'top-right' }, headers: { on: false, text: '' }, footers: { on: false, text: '' } };
+  const inDoc = (e) => e.projectId === ids.novel;
+  const everyPartSet = k3b.filter((e) => inDoc(e) && !e.deletedAt).every((e) => Object.keys(APA).every((k) => JSON.stringify((e.pageSettings || {})[k]) === JSON.stringify(APA[k])));
+  const outsideSame = JSON.stringify(k3a.filter((e) => !inDoc(e))) === JSON.stringify(k3b.filter((e) => !inDoc(e)));
+  const textsSame = k3a.every((e) => (k3b.find((x) => x.id === e.id) || {}).text === e.text);
+  ok('K3 [successor] Style Guide > APA is saved to the DOC\'s own record (docSettings.styleGuide), sets APA\'s Page Setup on every Part of the Doc, writes no word, and touches nothing outside the Doc; the page\'s own styleGuide key is no longer the store',
+    !!docRec && !!docRec.docSettings && docRec.docSettings.styleGuide === 'apa' && everyPartSet && textsSame && outsideSame && (w1b.pageSettings || {}).styleGuide === undefined, { docRec: docRec && docRec.docSettings, everyPartSet, textsSame, outsideSame });
 
   const t4a = await app.evalJs(TEXTS);
   await app.evalJs(click(`.wz-sliver [data-reorg-parts] [data-doc-kind]`)); await sleep(250);
   await app.evalJs(click('[data-doc-menu] [data-doc-menu-item="special"]')); await sleep(250);
+  const specials = await app.evalJs("[...document.querySelectorAll('[data-doc-menu] [data-special-pick]')].map((b) => [b.getAttribute('data-special-pick'), (b.textContent || '').trim()])");
   await app.evalJs(click('[data-doc-menu] [data-special-pick="title"]')); await settle(app);
   await app.evalJs(click(`.wz-sliver [data-reorg-parts] [data-doc-kind]`)); await sleep(250);
   await app.evalJs(click('[data-doc-menu] [data-doc-menu-item="special"]')); await sleep(250);
-  await app.evalJs(click('[data-doc-menu] [data-special-pick="bibliography"]')); await settle(app);
+  await app.evalJs(click('[data-doc-menu] [data-special-pick="sources"]')); await settle(app);   // the sources Part is one pick now, named by the style guide (APA: References)
   const order = await app.evalJs(ORDER(ids.novel));
   const t4b = await app.evalJs(TEXTS);
   const r1 = await app.evalJs(PAGE);
   const sameNode = await app.evalJs("!!(document.querySelector('.forward-only-editor') || {}).__bpMark");
   const here = await app.evalJs("location.hash");
   const kept = Object.keys(t4a).every((id) => t4b[id] === t4a[id]);
-  ok('K4 Special Parts ▸ Title Page adds "Title Page" (template title) FIRST; Bibliography adds "Bibliography" (template bibliography) LAST; she stays on her page; no other text changes',
-    order.length === 6 && order[0][1] === 'Title Page' && order[0][2] === 'title' && order[5][1] === 'Bibliography' && order[5][2] === 'bibliography'
-      && order.slice(1, 5).map((o) => o[0]).join(',') === 'wb-1,wb-2,wb-3,wb-4' && kept && r0 === r1 && sameNode && /wb-1/.test(here), { order, kept, r0, r1, sameNode, here });
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:15 pm: the kind menu's acts are INK's: the Style Guide is the DOC's own and offers None, there are six Special Parts, and the sources Part wears the style guide's word). The original, verbatim:
+  // ok('K4 Special Parts ▸ Title Page adds "Title Page" (template title) FIRST; Bibliography adds "Bibliography" (template bibliography) LAST; she stays on her page; no other text changes',
+  // order.length === 6 && order[0][1] === 'Title Page' && order[0][2] === 'title' && order[5][1] === 'Bibliography' && order[5][2] === 'bibliography'
+  // && order.slice(1, 5).map((o) => o[0]).join(',') === 'wb-1,wb-2,wb-3,wb-4' && kept && r0 === r1 && sameNode && /wb-1/.test(here), { order, kept, r0, r1, sameNode, here });
+  ok('K4 [successor] Special Parts lists Title Page, Abstract, Table of Contents, Acknowledgements, References (APA\'s word), Appendix; Title Page adds "Title Page" (template title) FIRST; the sources pick adds "References" (template bibliography) LAST; she stays on her page; no other text changes',
+    JSON.stringify(specials) === JSON.stringify([['title', 'Title Page'], ['abstract', 'Abstract'], ['toc', 'Table of Contents'], ['ack', 'Acknowledgements'], ['sources', 'References'], ['appendix', 'Appendix']])
+      && order.length === 6 && order[0][1] === 'Title Page' && order[0][2] === 'title' && order[5][1] === 'References' && order[5][2] === 'bibliography'
+      && order.slice(1, 5).map((o) => o[0]).join(',') === 'wb-1,wb-2,wb-3,wb-4' && kept && r0 === r1 && sameNode && /wb-1/.test(here), { specials, order, kept, r0, r1, sameNode, here });
+
+  // K5 Presets (Fable, Nov 20, 4:15 pm; the approved draft): the Standard Doc's four groups (3 academic, 4 business, 4 web and journalism, 3 creative); a preset in a Doc with words adds its Parts after hers
+  const t5a = await app.evalJs(TEXTS);
+  await app.evalJs(click(`.wz-sliver [data-reorg-parts] [data-doc-kind]`)); await sleep(250);
+  await app.evalJs(click('[data-doc-menu] [data-doc-menu-item="presets"]')); await sleep(250);
+  const groups = await app.evalJs("[...document.querySelectorAll('[data-doc-menu] [data-preset-group]')].map((g) => [g.getAttribute('data-preset-group'), g.querySelectorAll('[data-preset-pick]').length])");
+  await app.evalJs(click('[data-doc-menu] [data-preset-pick="memo"]')); await settle(app);
+  const order5 = await app.evalJs(ORDER(ids.novel));
+  const t5b = await app.evalJs(TEXTS);
+  const ps5 = await app.evalJs(`${ALL}.filter((e) => e.projectId === ${q(ids.novel)} && !e.deletedAt).sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)).slice(6).map((e) => [e.pageSettings?.lineSpacing, e.pageSettings?.size, e.text])`);
+  ok('K5 Presets lists academic 3, business 4, web 4, creative 3; Memo adds Header, Purpose, Discussion, Action Needed AFTER her six Parts (which keep their order and every word), empty, in APA\'s Page Setup; she stays on her page',
+    JSON.stringify(groups) === JSON.stringify([['academic', 3], ['business', 4], ['web', 4], ['creative', 3]]) && order5.length === 10 && order5.slice(0, 6).map((o) => o[0]).join() === order.map((o) => o[0]).join()
+      && order5.slice(6).map((o) => o[1]).join('|') === 'Header|Purpose|Discussion|Action Needed' && Object.keys(t5a).every((id) => t5b[id] === t5a[id]) && ps5.length === 4 && ps5.every((p) => p[0] === 2 && p[1] === 12 && p[2] === '') && /wb-1/.test(await app.evalJs('location.hash')), { groups, order5, ps5 });
 
   // ---- STRUCTURE -------------------------------------------------------------------------------------------------------------------------
   const s0 = await app.evalJs(STRUCT);
@@ -217,7 +249,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 11;
+const EXPECTED = 12;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`

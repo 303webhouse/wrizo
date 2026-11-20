@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { JournalEntry, StyleGuide } from '../types';
-import { STYLE_GUIDE_DEFAULT } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { flushNow } from '../store/persistence';
-import { ensureDoc, newPart } from './parts';
+import { flushNow, subscribe } from '../store/persistence';
+import { applyPreset, applyStyleGuide, addSpecialPart } from './docKindActs';
+import { PRESETS, STYLES, specialName, type DocStyle, type PresetGroup, type SpecialKind } from './docKinds';
+import { styleGuideOf } from './docSettings';
 import { PageSetupZone } from '../components/cascade/PagePanel';
 
 // THE DOC'S KIND AT THE HEAD OF THE PARTS TAB (the Team B restyle, slice 2; Nick, Nov 20, 1A: "the head of the Front menu's PARTS tab shows the
@@ -13,18 +14,23 @@ import { PageSetupZone } from '../components/cascade/PagePanel';
 // and Special Parts"; Fable's cut: "its menu holds what exists today"). Every act is one that exists: the style guide is the page's own setting
 // through the host's act (the Front menu's); Page Setup is today's zone; a Special Part is INK's newPart with today's template, in its place (a
 // Title Page first, a Bibliography last); Presets are today's templates for the Part she is on. The menu drops down inside the drawer: the page
-// never moves. Escape closes it and gives the focus back; a press outside closes it.
+// never moves.
+// THE ACTS ARE INK'S (Fable, Nov 20, 4:15 pm; the approved draft claude/wrizors/kind-menu-presets-draft.md): Style Guide is the DOC's own (None, MLA, APA, Chicago, AP: saved in its record, its Page Setup set on every Part, the sources
+// Part named by the style); Special Parts are six, each in its right place; Presets are the draft's 18 (the Parts, empty and named, in an empty Doc or after hers). Every act is reorg/docKindActs.ts; this file is the shell and the words. Escape closes it and gives the focus back; a press outside closes it.
 
+/** What the page's host used to lend the menu (today's per-page style guide and templates). Kept so the host's call stays as it is; the acts are the Doc's own now (docKindActs.ts) and read none of it. */
 export interface DocMenuHost {
   styleGuide?: StyleGuide;
   onPickStyleGuide?: (next: StyleGuide) => void;
   templates?: { key: string; label: string; selected?: boolean; onApply: () => void }[];
 }
 type Item = 'style' | 'setup' | 'special' | 'presets';
-const GUIDES: readonly StyleGuide[] = ['mla', 'apa', 'chicago', 'ap'];
-const GUIDE_WORD = { mla: 'styleGuideMla', apa: 'styleGuideApa', chicago: 'styleGuideChicago', ap: 'styleGuideAp' } as const;
+const GUIDE_WORD = { none: 'reorgDocStyleNone', mla: 'styleGuideMla', apa: 'styleGuideApa', chicago: 'styleGuideChicago', ap: 'styleGuideAp' } as const;
+const SPECIALS: readonly SpecialKind[] = ['title', 'abstract', 'toc', 'ack', 'sources', 'appendix'];
+const GROUPS: readonly PresetGroup[] = ['academic', 'business', 'web', 'creative', 'screenplay'];
+const GROUP_WORD = { academic: 'reorgPresetGroupAcademic', business: 'reorgPresetGroupBusiness', web: 'reorgPresetGroupWeb', creative: 'reorgPresetGroupCreative', screenplay: 'reorgPresetGroupScreenplay' } as const;
 
-export function DocKindMenu({ entry, docId, host, beforeWrite }: { entry: JournalEntry; docId: string | null; host?: DocMenuHost; beforeWrite: () => void }) {
+export function DocKindMenu({ entry, beforeWrite }: { entry: JournalEntry; docId: string | null; host?: DocMenuHost; beforeWrite: () => void }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
   const [sub, setSub] = useState<Item | null>(null);
@@ -42,25 +48,15 @@ export function DocKindMenu({ entry, docId, host, beforeWrite }: { entry: Journa
   }, [open]);
 
   const items: Item[] = [
-    ...(!screenplay && host?.onPickStyleGuide ? ['style' as const] : []),
+    ...(!screenplay ? ['style' as const] : []),
     'setup',
     ...(!screenplay ? ['special' as const] : []),
-    ...(host?.templates && host.templates.length ? ['presets' as const] : []),
+    'presets',
   ];
   const WORD: Record<Item, Parameters<typeof t>[0]> = { style: 'reorgDocStyleGuide', setup: 'reorgDocPageSetup', special: 'reorgDocSpecialParts', presets: 'reorgDocPresets' };
-  const guide = host?.styleGuide ?? STYLE_GUIDE_DEFAULT;
-
-  // a Special Part: INK's newPart with today's template, a Title Page first and a Bibliography last; a page no Doc holds yet becomes its own Doc first
-  const special = (kind: 'title' | 'bibliography') => {
-    beforeWrite();
-    let into = docId;
-    if (!into) { const r = ensureDoc(entry.id); if (!r.ok) { close(true); return; } into = r.docId; }
-    newPart(into, kind === 'title'
-      ? { afterId: null, template: 'title', name: t('reorgSpecialTitle') }
-      : { template: 'bibliography', name: t('reorgSpecialBibliography') });
-    flushNow();
-    close(true);
-  };
+  // the Doc's own style guide (its record, else the page's own), followed live: choosing one writes the Doc, and the check mark moves
+  const guide: DocStyle = useSyncExternalStore(subscribe, () => styleGuideOf(entry.id) ?? 'none');
+  const act = (run: () => void) => { beforeWrite(); run(); flushNow(); close(true); };
 
   const onKey = (e: ReactKeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } };
   return (
@@ -79,9 +75,9 @@ export function DocKindMenu({ entry, docId, host, beforeWrite }: { entry: Journa
               </button>
               {sub === it && it === 'style' && (
                 <div className="reorg-dockind-sub" data-doc-sub="style" role="radiogroup" aria-label={t('reorgDocStyleGuide')}>
-                  {GUIDES.map((g) => (
+                  {STYLES.map((g) => (
                     <button key={g} type="button" role="radio" data-style-pick={g} aria-checked={guide === g ? 'true' : 'false'}
-                      onClick={() => { host?.onPickStyleGuide?.(g); close(true); }}>{t(GUIDE_WORD[g])}</button>
+                      onClick={() => act(() => { applyStyleGuide(entry.id, g); })}>{t(GUIDE_WORD[g])}</button>
                   ))}
                 </div>
               )}
@@ -90,14 +86,20 @@ export function DocKindMenu({ entry, docId, host, beforeWrite }: { entry: Journa
               )}
               {sub === it && it === 'special' && (
                 <div className="reorg-dockind-sub" data-doc-sub="special">
-                  <button type="button" data-special-pick="title" onClick={() => special('title')}>{t('reorgSpecialTitle')}</button>
-                  <button type="button" data-special-pick="bibliography" onClick={() => special('bibliography')}>{t('reorgSpecialBibliography')}</button>
+                  {SPECIALS.filter((k) => specialName(k, guide) !== null).map((k) => (
+                    <button key={k} type="button" data-special-pick={k} onClick={() => act(() => { addSpecialPart(entry.id, k); })}>{specialName(k, guide)}</button>
+                  ))}
                 </div>
               )}
               {sub === it && it === 'presets' && (
                 <div className="reorg-dockind-sub" data-doc-sub="presets">
-                  {(host?.templates ?? []).map((tpl) => (
-                    <button key={tpl.key} type="button" data-preset-pick={tpl.key} aria-pressed={tpl.selected ? 'true' : 'false'} onClick={() => { tpl.onApply(); close(true); }}>{tpl.label}</button>
+                  {GROUPS.filter((g) => PRESETS.some((p) => p.group === g && (p.kind === 'screenplay') === screenplay)).map((g) => (
+                    <div key={g} className="reorg-dockind-group" data-preset-group={g} role="group" aria-label={t(GROUP_WORD[g])}>
+                      <div className="reorg-dockind-grouphead">{t(GROUP_WORD[g])}</div>
+                      {PRESETS.filter((p) => p.group === g).map((p) => (
+                        <button key={p.id} type="button" data-preset-pick={p.id} onClick={() => act(() => { applyPreset(entry.id, p.id); })}>{p.label}</button>
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
