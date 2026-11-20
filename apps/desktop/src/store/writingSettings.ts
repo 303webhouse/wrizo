@@ -126,6 +126,25 @@ export function setWritingSettings(patch: Partial<WritingSettings>): void {
   subs.forEach(fn => fn(current));
 }
 
+// THE ACCOUNT'S COPY (Fable, Nov 20, 12:15 pm; store/writingPref.ts is the bridge): a subscription that is not a React hook, whether this device has saved a setting of its own,
+// and the sign-out reset (the next account never inherits this one's).
+export function subscribeWritingSettings(fn: (s: WritingSettings) => void): () => void {
+  subs.add(fn);
+  return () => { subs.delete(fn); };
+}
+/** The defaults, for a bridge that must tell a device that holds only them from one that holds her own. */
+export function writingDefaults(): WritingSettings { return { ...DEFAULTS }; }
+/** True once this device has saved a setting of its own (its key exists). */
+export function hasStoredWritingSettings(): boolean {
+  try { return typeof localStorage !== 'undefined' && localStorage.getItem(KEY) !== null; } catch { return false; }
+}
+/** Sign-out: back to the defaults and the key gone, so the next account starts clean (its own settings arrive from its account). */
+export function resetWritingSettings(): void {
+  current = { ...DEFAULTS };
+  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  subs.forEach(fn => fn(current));
+}
+
 // Subscribe a React component to the settings. Returns the live value; re-renders
 // on any change made anywhere (the gear, another surface).
 export function useWritingSettings(): WritingSettings {
