@@ -88,7 +88,7 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
     const stemTop = Y - Math.round(H / 2), armTop = Y - Math.round(T / 2);
     const lTip = colL - G, rTip = colR + G;
     const piece = (x: number, top: number, w: number, h: number) =>
-      `<i style="left:${toLocalX(x).toFixed(3)}px;top:${toLocalY(top).toFixed(3)}px;width:${len(w).toFixed(3)}px;height:${len(h).toFixed(3)}px"></i>`;
+      `<i style="left:${toLocalX(x).toFixed(4)}px;top:${toLocalY(top).toFixed(4)}px;width:${len(w).toFixed(4)}px;height:${len(h).toFixed(4)}px"></i>`;
     out.push(`<span class="wz-pb-pair" data-at="${o}">`
       + `<span class="wz-pb-mark" data-side="left">${piece(lTip - A, stemTop, T, H)}${piece(lTip - A, armTop, A, T)}</span>`
       + `<span class="wz-pb-mark" data-side="right">${piece(rTip + A - T, stemTop, T, H)}${piece(rTip, armTop, A, T)}</span>`

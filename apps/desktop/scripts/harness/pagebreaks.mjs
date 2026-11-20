@@ -100,7 +100,11 @@ const judgePair = (M, pages, head, geo) => {
       // if (g.stemH !== geo.stem || g.armW !== geo.arm || g.stemW !== geo.stroke || g.armH !== geo.stroke || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
       // if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > 0.01)) return { pass: false, why: `pair at ${p.at}: off whole pixels` };
       // successor: within one LayoutUnit at the page's scale (1/64 px x s, and 0.005 for the read), still far inside a pixel (a wrong size is a whole px off)
-      const LU = (M.s || 1) / 64 + 0.005;
+      // SUPERSEDED (run 44660665511): one LayoutUnit was too fine - the layer's origin (the editor's wrapper) sits on its own LayoutUnit, and each
+      // piece on another, so a whole-pixel mark reads up to two LayoutUnits off (measured 0.0312 = 2/64 at 1366, 0.0254 at 1.088). Kept for the record:
+      // const LU = (M.s || 1) / 64 + 0.005;
+      // successor: two LayoutUnits at the page's scale (the half-pixel mutant is still 10x past it)
+      const LU = 2 * (M.s || 1) / 64 + 0.002;
       const eq = (a, b) => Math.abs(a - b) <= LU;
       if (!eq(g.stemH, geo.stem) || !eq(g.armW, geo.arm) || !eq(g.stemW, geo.stroke) || !eq(g.armH, geo.stroke) || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
       if (p.lineTop != null && Math.abs(L.stem.y + L.stem.h / 2 - p.lineTop) > 1.01) return { pass: false, why: `pair at ${p.at}: stem centre ${L.stem.y + L.stem.h / 2} vs break line ${p.lineTop}` };
@@ -142,7 +146,8 @@ await withHarness(async (app) => {
     return { up: up && s, st };
   };
   const read = async () => app.evalJs('window.__pbh.read()');
-  const marks = async () => app.evalJs('window.__pbh.marks()');
+  // the marks are read once the scroller rests (the Typewriter scrolls after a page opens; a mark is redrawn 150 ms after a scroll ends): the same scrollTop over 600 ms, then 300 ms more
+  const marks = async () => { let prev = null; for (let k = 0; k < 20; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
 
   // ---- seeds (through the seams) ----
   const T5 = pageOf(5000), T20 = pageOf(20000, 3);
