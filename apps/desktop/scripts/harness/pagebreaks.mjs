@@ -147,6 +147,9 @@ await withHarness(async (app) => {
   };
   const read = async () => app.evalJs('window.__pbh.read()');
   // the marks are read once the scroller rests (the Typewriter scrolls after a page opens; a mark is redrawn 150 ms after a scroll ends): the same scrollTop over 600 ms, then 300 ms more
+  // DIAGNOSTIC (readings only): a pair's left stem against the wrapper, by its break offset (null: the first pair)
+  const diagAt = async (at) => app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const wrap = ed.parentElement; const w = wrap.getBoundingClientRect(); const sel = ${JSON.stringify(at)} == null ? '.wz-pb-pair' : '.wz-pb-pair[data-at="' + ${JSON.stringify(at)} + '"]'; const i = wrap.querySelector(sel + ' .wz-pb-mark i');
+    if (!i) return null; const b = i.getBoundingClientRect(); const t = getComputedStyle(i).top; return { wrapTop: +w.top.toFixed(4), wrapLeft: +w.left.toFixed(4), stemTop: +b.top.toFixed(4), stemLeft: +b.left.toFixed(4), styleTop: i.style.top, computedTop: t, offsetTop: i.offsetTop, scrollTop: wrap.closest('.mode-scroll').scrollTop, layoutW: getComputedStyle(wrap).width, paintW: +w.width.toFixed(4) }; })()`);
   const marks = async () => { let prev = null; for (let k = 0; k < 20; k++) { const st = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); return s ? s.scrollTop : null; })()"); if (st === prev) break; prev = st; await sleep(600); } await sleep(300); return app.evalJs('window.__pbh.marks()'); };
 
   // ---- seeds (through the seams) ----
@@ -183,6 +186,7 @@ await withHarness(async (app) => {
     const M = await marks();
     const P = judgePair(M, r.st.total, r.st.sectionHead, { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true });
     ok(`P ${words} words at 1366: pairs = pages - 1, both sides on one line, stem 14 / arm 8 / stroke 2 / tip 12, whole px`, P.pass, P.why);
+    { const m = /pair at (d+)/.exec(P.why || ''); if (!P.pass && m) say(`diag-${words}`, await diagAt(+m[1])); }
     if (M.pairs.length) {
       const drop = { ...M, pairs: M.pairs.map((p, i) => (i === 0 ? { ...p, sides: p.sides.filter((x) => x.side === 'left') } : p)) };
       mutant('P: one side dropped', judgePair(drop, r.st.total, false, null).pass);
@@ -246,6 +250,12 @@ await withHarness(async (app) => {
     // zoom 1.6 at k 1: stem 22, arm 13, stroke 3, tip 19 (12 x 1.6 = 19.2); the break line is not checked here (Free Write has no rows to read it from)
     const P = judgePair(M, r.st.total, false, { stem: 22, arm: 13, stroke: 3, tip: 19, whole: true });
     ok('P zoomed Free Write: 22 / 13 / 3 / 19, both sides on one line, on whole pixels', P.pass, P.why);
+    // DIAGNOSTIC (readings, not a gate): the first pair's left stem against the wrapper, before and after a dispatched scroll (the marks redraw
+    // 150 ms after a scroll rests) - tells a stale draw from a placement that is never on the grid
+    const diag = async () => diagAt(null);
+    const d0 = await diag();
+    await app.evalJs("document.querySelector('.mode-scroll').dispatchEvent(new Event('scroll'))"); await sleep(500);
+    say('zoom-diag', { before: d0, after: await diag() });
     // C8 on the zoomed Free Write page
     const c8 = await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const layer = ed.parentElement.querySelector(':scope > .wz-pb-marks'); if (!layer) return { none: true };
       const snap = () => { const sel = getSelection(); const r = document.createRange(); r.selectNodeContents(ed); sel.removeAllRanges(); sel.addRange(r); const picked = sel.toString(); sel.removeAllRanges();
