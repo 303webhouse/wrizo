@@ -162,3 +162,10 @@ reorgSplitGrip=Resize the split
 reorgSplitBoardEmpty=Nothing here yet.
 reorgSplitNoFreewrite=There is no split screen in Free Writing.
 reorgSplitNoTypewriter=Typewriter mode is off in a split: turn it off first.
+# AN ASSET ONTO A PART (ARBOR, reorg plan 5.2, Nov 20) - the drag and "→ Part"; PROPOSED placeholder words until the Wrizors word them; no theme overrides them yet
+reorgToPart=→ Part
+reorgToPartAria=Connect {title} to a Part
+reorgToPartMenu=Connect to which Part
+reorgConnectedLine={title} connected to {part}.
+reorgAlreadyConnected={title} is already connected to {part}.
+reorgConnectRefused={title} could not be connected to {part}.
