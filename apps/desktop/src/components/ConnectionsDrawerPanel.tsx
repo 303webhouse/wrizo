@@ -6,12 +6,15 @@ import { requestDelete } from '../store/deleteGate';
 import { withoutFontMarks } from '../store/markRuns';
 import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
+import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
+import { AssetGroups } from '../reorg/backMenu/AssetGroups';
+import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
 import { GraftPicker, type CameFrom } from './GraftPicker';
 import { useUnborn } from './UnbornSurface';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // the Grafts pane: the subject is the open page, or on a board its selected card (or the board); + Graft first, then the paired page, the plan board folded, and the graft groups; with nothing grafted it is the + Graft control alone [ConnectionsDrawerPanel §3]
 type Undo = { line: string; run: () => void } | null;
@@ -23,8 +26,11 @@ const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? 
 // caller off the flag) = the whole pane, byte-for-byte today's. A filter on what is drawn:
 // no new behaviour, no new state.
 // ARBOR v2 MOCKUP r18 - `help`: a "?" drawn at the end of the "+ Graft..." row (the Arbor mockup's Grafts help, off the folder tab); absent = today's row.
-export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'grafts'; help?: ReactNode } = {}) {
+// THE REORG'S BACK MENU (`back`, ?reorg=1 in Machina, a page only): the SAME pane, the SAME + Graft control, picker, remove-with-undo and dock, but the list is the Assets tab's,
+// grouped by board (reorg/backMenu/assetGroups.ts). Absent (every other caller) = today's pane, byte for byte.
+export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only?: 'board' | 'grafts'; help?: ReactNode; back?: boolean; mode?: string; prose?: boolean } = {}) {
   const { t } = useDeskLexicon();
+  const navigate = useNavigate();
   const snap = useBoardSnapshot();
   const location = useLocation();
   const [, setTick] = useState(0);
@@ -98,6 +104,8 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
   const kindWord = (k: string) => (k === 'page' ? t('linksKindPage') : k === 'board' ? t('linksKindBoard') : t('linksKindCard'));
   const groups: Array<[GraftRow['group'], string]> = [['Cards', t('graftGroupCards')], ['Sources', t('graftGroupSources')], ['Boards', t('graftGroupBoards')], ['Pages', t('graftGroupPages')]];
   const planWord = plan ? (plan.count === 1 ? t('graftPlanCardsOne') : t('graftPlanCardsMany').replace('{n}', String(plan.count))) : '';
+  // the Assets tab's list: grouped by board, the Page's own board first (a page only; the Back menu is not drawn on a board)
+  const backGroups = back && g && !snap ? assetGroupsOf(g, plan, (id) => titleOf(getJournalEntry(id)?.text)) : null;
 
   return (
     <div className="wz-links-pane" data-links-pane="">
@@ -113,17 +121,25 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
           {t('graftPlaceThis')}
         </button>
       )}
-      {paired && only !== 'grafts' && (
+      {backGroups && (
+        <AssetGroups groups={backGroups} t={t} besideOffered={!!page && !!prose}
+          besideNote={(() => { const why = splitBlocked(mode); return why === 'freewrite' ? t('reorgSplitNoFreewrite') : why === 'typewriter' ? t('reorgSplitNoTypewriter') : null; })()}
+          kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
+          onRemove={remove} onHide={hide}
+          onBeside={(entryId, boxId) => { if (page && !splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
+          onOpenBoard={(id) => navigate(`/page/${id}`)} />
+      )}
+      {!backGroups && paired && only !== 'grafts' && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
           <span className="wz-links-thumb wz-links-thumb--page" aria-hidden="true" />
           <span className="wz-graft-from">{t('graftPairedPage')}</span>
           <span className="wz-graft-title">{paired.title}</span>
         </div>
       )}
-      {hasConnected && (
+      {!backGroups && hasConnected && (
         <div className="wz-graft-connected" data-graft-connected="">{t('graftConnectedTo')} <b>{subjectTitle}</b></div>
       )}
-      {plan && only !== 'grafts' && (
+      {!backGroups && plan && only !== 'grafts' && (
         <div className="wz-graft-plan-group">
           <button type="button" className="wz-graft-plan" data-graft-plan="" aria-expanded={planOpen ? 'true' : 'false'} onClick={() => setPlanOpen((o) => !o)}>
             <span className="wz-graft-chev" aria-hidden="true" />
@@ -143,7 +159,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
           )}
         </div>
       )}
-      {g && groups.map(([key, label]) => g[key].length > 0 && (only == null || (only === 'board') === (key === 'Boards')) && (
+      {!backGroups && g && groups.map(([key, label]) => g[key].length > 0 && (only == null || (only === 'board') === (key === 'Boards')) && (
         <div key={key} className="wz-graft-group" data-graft-group={key}>
           <div className="wz-graft-gh">{label}</div>
           <ul className="wz-links-list" data-links-list="">
@@ -164,7 +180,7 @@ export function ConnectionsDrawerPanel({ only, help }: { only?: 'board' | 'graft
           </ul>
         </div>
       ))}
-      {g && only !== 'board' && g.sharedTags.length > 0 && (
+      {!backGroups && g && only !== 'board' && g.sharedTags.length > 0 && (
         <div className="wz-graft-group" data-graft-group="SharedTags">
           <div className="wz-graft-gh">{t('graftSharedTags')}</div>
           <ul className="wz-links-list">
