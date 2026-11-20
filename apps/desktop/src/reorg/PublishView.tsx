@@ -31,7 +31,8 @@ function PublishViewImpl({ entryId, onClose }: Props) {
   if (!doc) return null;
   const many = doc.parts.length > 1;
   const chosen = doc.parts.filter((p) => !off.has(p.id)).map((p) => p.id);
-  const toggle = (id: string) => setOff((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const choose = (next: ReadonlySet<string>) => { setSaid(null); setOff(next); };
+  const toggle = (id: string) => choose((() => { const n = new Set(off); if (off.has(id)) n.delete(id); else n.add(id); return n; })());
   const go = (format: PubFormat) => setSaid(downloadPublication(doc, format, many ? chosen : null) ? t('publishDownloadConfirm') : t('publishDownloadFailed'));
   const head = (p: PubViewPart) => {
     if (!many && !p.name) return null;
@@ -61,11 +62,12 @@ function PublishViewImpl({ entryId, onClose }: Props) {
       </div>
       <div className="reorg-pub-foot">
         <button type="button" className="reorg-pub-btn" data-pub-back onClick={onClose}>{t('reorgPubBack')}</button>
-        <span className="reorg-pub-count" role="status" data-pub-count>{said ?? (many ? fill(t('reorgPubCount'), { n: chosen.length, total: doc.parts.length }) : '')}</span>
+        <span className="reorg-pub-count" data-pub-count>{many ? fill(t('reorgPubCount'), { n: chosen.length, total: doc.parts.length }) : ''}</span>
+        <span className="reorg-pub-said" role="status" data-pub-said>{said ?? ''}</span>
         {many && (
           <>
-            <button type="button" className="reorg-pub-btn is-quiet" data-pub-all onClick={() => setOff(new Set())}>{t('reorgPubAll')}</button>
-            <button type="button" className="reorg-pub-btn is-quiet" data-pub-none onClick={() => setOff(new Set(doc.parts.map((p) => p.id)))}>{t('reorgPubNone')}</button>
+            <button type="button" className="reorg-pub-btn is-quiet" data-pub-all onClick={() => choose(new Set())}>{t('reorgPubAll')}</button>
+            <button type="button" className="reorg-pub-btn is-quiet" data-pub-none onClick={() => choose(new Set(doc.parts.map((p) => p.id)))}>{t('reorgPubNone')}</button>
           </>
         )}
         <button type="button" className="reorg-pub-btn" data-pub-export="md" disabled={many && chosen.length === 0} onClick={() => go('md')}>{t('reorgPubMd')}</button>

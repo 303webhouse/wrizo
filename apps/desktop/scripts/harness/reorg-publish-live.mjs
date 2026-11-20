@@ -135,7 +135,7 @@ await withHarness(async (app) => {
     await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]'));
     await sheetOpen(app);
     const openRect = await app.evalJs(PAGE);
-    const sheetFits = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'), p = document.querySelector('.mode-page'); if (!s || !p) return null; const a = s.getBoundingClientRect(), b = p.getBoundingClientRect(); return Math.abs(a.left - b.left) < 1.5 && Math.abs(a.top - b.top) < 1.5 && Math.abs(a.width - b.width) < 1.5 && Math.abs(a.height - b.height) < 1.5; })()");
+    const sheetFits = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'), p = document.querySelector('.mode-page'); if (!s || !p) return null; const a = s.getBoundingClientRect(), b = p.getBoundingClientRect(); const k = b.width / p.offsetWidth || 1; const d = [a.left - (b.left + p.clientLeft * k), a.top - (b.top + p.clientTop * k), a.width - p.clientWidth * k, a.height - p.clientHeight * k].map((x) => Math.round(x * 10) / 10); return d.every((x) => Math.abs(x) < 1.5) ? true : d; })()");
     await app.evalJs(press('[data-pub-back]'));
     await sheetGone(app);
     const closed1 = await app.evalJs(PAGE);
@@ -145,7 +145,7 @@ await withHarness(async (app) => {
     geo[w] = { closed0, openRect, closed1, same, sheetFits, caretKept: JSON.stringify(caret) === JSON.stringify(caretBefore) };
   }
   ok('V3 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same closed, open and closed again; the sheet lies exactly over the paper; the editor is the same node; her caret is where she left it',
-    Object.values(geo).every((g) => g.closed0 && g.closed0 === g.openRect && g.openRect === g.closed1 && g.same && g.sheetFits && g.caretKept), geo);
+    Object.values(geo).every((g) => g.closed0 && g.closed0 === g.openRect && g.openRect === g.closed1 && g.same && g.sheetFits === true && g.caretKept), geo);
 
   // the way back
   await open(app, 'machina', true, 'pub-2');

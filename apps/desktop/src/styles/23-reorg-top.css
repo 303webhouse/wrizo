@@ -144,6 +144,7 @@
 [data-theme='machina'] .reorg-pub-foot{ flex:none; display:flex; align-items:center; gap:10px; box-sizing:border-box; padding:10px var(--wz-page-pad-x, 38px); border-top:1px solid #D2D6DA;
   font-family:var(--font-chromeLabel, monospace); font-size:11px; color:#525A62; }
 [data-theme='machina'] .reorg-pub-count{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .reorg-pub-said{ flex:0 1 auto; min-width:0; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .reorg-pub-btn{ flex:none; box-sizing:border-box; height:24px; padding:0 10px; margin:0; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047;
   font:inherit; letter-spacing:inherit; cursor:pointer; }
 [data-theme='machina'] .reorg-pub-btn.is-quiet{ border-color:transparent; background:none; }
