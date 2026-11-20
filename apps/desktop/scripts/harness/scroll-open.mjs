@@ -68,7 +68,7 @@ await withHarness(async (app) => {
         if (words === 5000) {
           // O4 - the follow still glides
           await d.ev("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(800);
-          await d.ev(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+          await d.ev(`(() => { const ed = document.querySelector('${ED}'); ed.focus({ preventScroll: true }); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
           await sleep(600);
           await d.ev(SAMPLER);
           for (let i = 1; i <= 6; i += 1) { await app.typeKeys(`\nAnd the writer goes on, line ${i} of the new ones.`); await sleep(160); }

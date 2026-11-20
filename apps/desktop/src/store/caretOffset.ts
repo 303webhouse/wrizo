@@ -109,7 +109,9 @@ export function setSelectionOffsets(el: HTMLElement, start: number, end: number)
 // Place the caret at a linear offset within `el`, clamping to the end if the
 // target exceeds the current content (e.g. the page changed elsewhere since
 // the offset was captured — never throw, just land somewhere reasonable).
-export function setCaretOffset(el: HTMLElement, target: number): void {
+// `preventScroll` (#112): focusing a tall editable scrolls the page to the editor's own top, so a press on a long page that only wants the caret placed (a pen stroke's click, a press
+// below the last line) set the scroll to 0 under the writer. A caller that is not asking to bring the caret into view says so.
+export function setCaretOffset(el: HTMLElement, target: number, opts?: { preventScroll?: boolean }): void {
   const resolved = resolveOffset(el, target);
   const sel = window.getSelection();
   if (!sel) return;
@@ -122,5 +124,5 @@ export function setCaretOffset(el: HTMLElement, target: number): void {
   range.collapse(!!resolved);
   sel.removeAllRanges();
   sel.addRange(range);
-  el.focus();
+  if (opts?.preventScroll) el.focus({ preventScroll: true }); else el.focus();
 }

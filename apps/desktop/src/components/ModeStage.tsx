@@ -428,7 +428,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const es = Math.floor(elapsedMs / 1000);
   const elapsedClock = `${Math.floor(es / 60)}:${String(es % 60).padStart(2, '0')}`;
 
-  const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
+  // preventScroll (#112): these are presses that only want the caret in the editor; focusing a tall editable otherwise scrolls the page to the editor's top (a pen stroke's click on a long page set the scroll to 0)
+  const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus({ preventScroll: true });
   // a press on the paper off the text: below the last line, the caret goes to the end; beside a line, to the nearest spot on that line (caret-from-point, read at press time, applied next frame); on the text, the browser's own [ModeStage §14]
   const onPaperPress = (e: React.MouseEvent<HTMLDivElement>) => {
     const scroll = scrollRef.current;
@@ -436,7 +437,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
     // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
-    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
+    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus({ preventScroll: true }); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at, { preventScroll: true }); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
@@ -456,8 +457,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
       const R = rowsFor(ed);
       offset = range && R && ed.contains(range.startContainer) ? rowsOffsetOf(R, range.startContainer, range.startOffset) : null;
     }
-    ed.focus();
-    if (offset != null) { const at = offset; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); }
+    ed.focus({ preventScroll: true });
+    if (offset != null) { const at = offset; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at, { preventScroll: true }); }); }
   };
   const exec = (cmd: string) => { focusEditor(); try { document.execCommand(cmd, false); } catch { /* execCommand unsupported */ } };
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };
