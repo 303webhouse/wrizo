@@ -743,21 +743,32 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   useLayoutEffect(() => {
     const page = nudge ? (hostRef.current?.closest('.desk-frame-stage--prose .mode-page') as HTMLElement | null) : null;
     if (!nudge || !page || !hostRef.current) { setNudgePlace(null); return; }
-    const pr = page.getBoundingClientRect();
-    const scale = page.offsetWidth > 0 ? pr.width / page.offsetWidth : 1;
-    const cs = getComputedStyle(page);
-    const padB = parseFloat(cs.paddingBottom) || 0;
-    const left = parseFloat(cs.paddingLeft) || 0; const right = parseFloat(cs.paddingRight) || 0;
-    const zoomed = page.closest('.mode-pagecol')?.getAttribute('data-zoom') === 'true';
-    let top: number;
-    if (zoomed) {
-      const rg = document.createRange(); rg.selectNodeContents(hostRef.current);
-      const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
-      top = (bottom - pr.top) / scale + 6;
-    } else {
-      top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
-    }
-    setNudgePlace({ host: page, top, left, right });
+    const host = hostRef.current;
+    const place = () => {
+      const pr = page.getBoundingClientRect();
+      const scale = page.offsetWidth > 0 ? pr.width / page.offsetWidth : 1;
+      const cs = getComputedStyle(page);
+      const padB = parseFloat(cs.paddingBottom) || 0;
+      const left = parseFloat(cs.paddingLeft) || 0; const right = parseFloat(cs.paddingRight) || 0;
+      const zoomed = page.closest('.mode-pagecol')?.getAttribute('data-zoom') === 'true';
+      let top: number;
+      if (zoomed) {
+        const rg = document.createRange(); rg.selectNodeContents(host);
+        const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
+        top = (bottom - pr.top) / scale + 6;
+      } else {
+        top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
+      }
+      // unchanged = no render: the hint is re-read while it shows, and most reads find the line where it was
+      setNudgePlace((was) => (was && was.host === page && Math.abs(was.top - top) < 0.5 && was.left === left && was.right === right ? was : { host: page, top, left, right }));
+    };
+    place();
+    // THE LINE MOVES AFTER THE HINT IS PLACED (polish10-hint, Flux H1; Fable, Nov 20: "the Flux hint re-places below the line once it settles"): the Typewriter measures its
+    // start offset again a moment after a page opens, and in Flux that moves the text by tens of pixels under a hint placed once. The hint follows the line for as long as it shows.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
+    ro?.observe(page); ro?.observe(host);
+    const poll = window.setInterval(place, 120);
+    return () => { ro?.disconnect(); window.clearInterval(poll); };
   }, [nudge]);
   const isEmpty = content.length === 0 && word.length === 0;
 

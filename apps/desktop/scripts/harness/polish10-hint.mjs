@@ -116,7 +116,9 @@ const PROBE = `(() => {
   const lines = [...rg.getClientRects()].filter((q) => q.height >= 4 && q.bottom > vis.top && q.top < vis.bottom).map(R);
   const last = lines.reduce((m, q) => (!m || q.bottom > m.bottom ? q : m), null);
   const cs = getComputedStyle(n); const root = getComputedStyle(document.documentElement);
-  return { nudge: R(nr), text: n.textContent, page: R(pr), stage: R(sr), vh: innerHeight, vw: innerWidth, lines: lines.length, writing: last,
+  const allr = [...rg.getClientRects()].filter((q) => q.height >= 4); const maxAll = allr.reduce((m, q) => Math.max(m, q.bottom), -1e9);
+  const dbg = { styleTop: n.style.top, maxAll, nAll: allr.length, pageTop: pr.top, pageH: pr.height, pageOffH: page.offsetHeight, pagePos: getComputedStyle(page).position, nudgeParent: n.parentElement && n.parentElement.className, scrollTop: document.querySelector('.mode-scroll') && document.querySelector('.mode-scroll').scrollTop, twStart: getComputedStyle(document.querySelector('.mode-scroll') || document.body).getPropertyValue('--tw-start-offset') };
+  return { dbg, nudge: R(nr), text: n.textContent, page: R(pr), stage: R(sr), vh: innerHeight, vw: innerWidth, lines: lines.length, writing: last,
     hit: lines.filter((q) => q.left < nr.right - 0.5 && nr.left < q.right - 0.5 && q.top < nr.bottom - 0.5 && nr.top < q.bottom - 0.5).length,
     zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null,
     family: cs.fontFamily, style: cs.fontStyle, prose: root.getPropertyValue('--font-prose').trim(), label: root.getPropertyValue('--font-contentLabel').trim(),
@@ -166,7 +168,7 @@ await withHarness(async (app) => {
       ok(`${tag} H0 (premise, successor): Backspace past the runway raises the hint (after ${presses} presses), on a page in the ${wantZoom ? 'zoom' : 'normal'} view (${flux1 ? 'Flux Free Write is Wire In: always zoomed, the Typewriter control is hidden' : "set through the writer's Typewriter control"}) with text on screen, the hold settled and the writer's line on screen before it`,
         h0(g), J({ presses, zoom: g && g.zoom, viewNow, lines: g && g.lines, text: g && g.text, pre }));
       if (!g) continue;
-      ok(`${tag} H1: the hint meets NO line of text on screen - the writing line included`, g.hit === 0, J({ nudge: g.nudge, writing: g.writing, hit: g.hit }));
+      ok(`${tag} H1: the hint meets NO line of text on screen - the writing line included`, g.hit === 0, J({ nudge: g.nudge, writing: g.writing, hit: g.hit, dbg: g.dbg }));
       ok(`${tag} H2: the hint is on screen - inside the viewport and the stage${zoom ? '' : ', and inside the page'}`, onScreen(g), J({ nudge: g.nudge, page: g.page, stage: g.stage }));
       ok(`${tag} H3: the hint wears ${th.name}'s own type - ${th.id === 'plateau' ? 'its italic prose serif' : 'its own content face, upright'}`, typeOk(th.id, g),
         J({ family: g.family, style: g.style, prose: g.proseUsed, label: g.label }));
