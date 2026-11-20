@@ -31,7 +31,7 @@
 import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
-const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${String(detail).slice(0, 600)}]` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
 const STORE = "JSON.stringify([localStorage, sessionStorage].map((s) => Object.keys(s).sort().map((k) => [k, s.getItem(k)])))";
@@ -127,13 +127,13 @@ await withHarness(async (app) => {
     head: g.querySelector('[data-back-board-name]')?.textContent || null, open: !!g.querySelector('[data-back-open-board]'),
     rows: [...g.querySelectorAll('[data-back-asset]')].map((r) => [r.querySelector('.wz-graft-title')?.textContent, r.querySelector('.wz-back-asset-kind')?.textContent]) })))()`;
   const groups = await app.evalJs(ASSETS);
-  const shape = (gs) => JSON.stringify(gs.map((g) => [g.group, g.board, g.own, g.rows.map((r) => r[0])]));
+  const shape = (gs) => JSON.stringify(gs.filter(Boolean).map((g) => [g.group, g.board, g.own, g.rows.map((r) => r[0])]));
   const want = JSON.stringify([['board', 'bm-own', 'true', ['Alpha', 'Beta', 'Gamma']], ['board', 'bm-x', 'false', ['Xcard one']], ['board', 'bm-y', 'false', []], ['pages', null, null, ['A linked doc']]]);
   ok('A1: the Assets tab lists today\'s links grouped by board - the Page\'s own board first (Alpha, Beta, Gamma in the board\'s order), then X board with its linked card, then Y board (linked whole, no card), then the Docs linked directly; kinds in Machina\'s words',
     Array.isArray(groups) && shape(groups) === want && /Own board/.test(groups[0].head || '') && groups[1].head === 'X board' && groups[2].head === 'Y board'
     && groups[0].rows.every((r) => r[1] === 'Block') && groups[3].rows[0][1] === 'Doc' && groups.slice(0, 3).every((g) => g.open), JSON.stringify(groups));
   // MUTANT: the groups read in the order the links were made (own board last): A1's read goes RED
-  const mutated = Array.isArray(groups) ? [...groups.slice(1), groups[0]] : [];
+  const mutated = Array.isArray(groups) && groups.length ? [...groups.slice(1), groups[0]] : [];
   ok('A1-M: the same read on groups with the Page\'s own board LAST goes red (the mutant is read by A1\'s own predicate)', Array.isArray(groups) && shape(mutated) !== want, shape(mutated));
 
   await click(app, '[data-back-open-board="bm-x"]'); await sleep(900);
@@ -178,12 +178,12 @@ await withHarness(async (app) => {
   ok('P3b: Outdent puts Gamma back at the top level, right after Beta (3), and the parent is gone', rows2b.map((r) => `${r.num} ${r.name}`).join('|') === '1 Alpha|2 Beta|3 Gamma' && !own2b.find((c) => c.id === 'a3')?.parentId, JSON.stringify(rows2b.map((r) => `${r.num} ${r.name}`)));
 
   // rename: type into Beta's name, Enter
-  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="a2"] [data-plan-name]'); i.focus(); i.value = 'Beta two'; i.dispatchEvent(new Event('input', { bubbles: true })); i.blur(); return true; })()`);
+  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="a2"] [data-plan-name]'); if (!i) return false; i.focus(); i.value = 'Beta two'; i.dispatchEvent(new Event('input', { bubbles: true })); i.blur(); return true; })()`);
   await sleep(500);
   const renamed = boardCards(await app.evalJs(ENTRY('bm-own'))).find((c) => c.id === 'a2');
   ok('P4: Rename changes the first line only - the card\'s text is "Beta two" then its body, untouched', renamed?.text === 'Beta two\nbody of beta', JSON.stringify(renamed?.text));
   const stampBefore = renamed?.updatedAt;
-  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="a2"] [data-plan-name]'); i.focus(); i.blur(); return true; })()`);
+  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="a2"] [data-plan-name]'); if (!i) return false; i.focus(); i.blur(); return true; })()`);
   await sleep(500);
   const renamed2 = boardCards(await app.evalJs(ENTRY('bm-own'))).find((c) => c.id === 'a2');
   ok('P4b: a rename to the name it already has writes nothing (the card keeps its own stamp)', renamed2?.updatedAt === stampBefore, JSON.stringify({ stampBefore, now: renamed2?.updatedAt }));
@@ -199,7 +199,7 @@ await withHarness(async (app) => {
   await openPage(app, 'bm-e'); await openDrawer(app); await tab(app, 'plan');
   const emptyShown = await app.evalJs("(() => ({ line: document.querySelector('[data-back-plan-empty]')?.textContent || null, rows: document.querySelectorAll('[data-plan-row]').length, board: window.wrizoPairing.planBoardId('bm-e') }))()");
   ok('P1b: a Page with no board - ONE quiet line, no rows, and no board is born by looking', emptyShown.line === 'Nothing is in this doc\'s plan.' && emptyShown.rows === 0 && emptyShown.board === null, JSON.stringify(emptyShown));
-  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-add]'); i.focus(); return true; })()`);
+  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-add]'); if (!i) return false; i.focus(); return true; })()`);
   await app.typeKeys('Opening scene'); await app.evalJs("document.querySelector('[data-plan-add]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))"); await sleep(700);
   const added = await app.evalJs("(() => ({ rows: [...document.querySelectorAll('[data-plan-row] [data-plan-name]')].map((n) => n.value ?? n.textContent), board: window.wrizoPairing.planBoardId('bm-e') }))()");
   const born = added.board ? boardCards(await app.evalJs(ENTRY(added.board))) : [];
@@ -308,7 +308,6 @@ await withHarness(async (app) => {
   return checks;
 });
 
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nREORG-BACKMENU VERIFY: PASS (${checks.length} checks)` : `\nREORG-BACKMENU VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
 process.exit(passed === checks.length ? 0 : 1);
