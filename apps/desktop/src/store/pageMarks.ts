@@ -57,10 +57,16 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
     // an empty row (a blank line opening the page): its own box top is the line's top
     if (pt && pt.node.nodeType === Node.ELEMENT_NODE && (pt.node as Element).classList.contains('wz-row')) y = (pt.node as Element).getBoundingClientRect().top;
     if (pt && pt.node.nodeType === Node.TEXT_NODE) {
-      const t = pt.node as Text;
-      const row = t.parentElement?.closest('.wz-row') as HTMLElement | null;
-      for (let k = pt.offset; k < Math.min(t.data.length, pt.offset + 4) && y === null; k++) {
+      const row = (pt.node as Text).parentElement?.closest('.wz-row') as HTMLElement | null;
+      // the first DRAWN character from the point on (a heading's hidden marker - "## " - has no box), within its row
+      const w = document.createTreeWalker(row ?? ed, NodeFilter.SHOW_TEXT);
+      w.currentNode = pt.node;
+      let t: Text | null = pt.node as Text, k = pt.offset, tries = 0;
+      while (t && y === null && tries < 60) {
+        if (k >= t.data.length) { t = w.nextNode() as Text | null; k = 0; continue; }
+        tries++;
         R.setStart(t, k); R.setEnd(t, k + 1);
+        k++;
         const q = Array.from(R.getClientRects()).find((r) => r.height >= 4);
         if (!q) continue;
         if (row) {
@@ -75,6 +81,7 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
           y = q.top - (Number.isFinite(lh) ? (lh * s - q.height) / 2 : 0);
         }
       }
+      if (y === null && row) y = row.getBoundingClientRect().top;   // a row with nothing drawn: its own top is its line's
     }
     if (y === null) continue;
     const Y = Math.round(y * dpr);

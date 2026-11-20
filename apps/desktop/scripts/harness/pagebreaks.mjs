@@ -94,9 +94,17 @@ const judgePair = (M, pages, head, geo) => {
       const r = (v) => Math.round(v * 100) / 100;
       const g = { stemH: r(L.stem.h), stemW: r(L.stem.w), armW: r(L.arm.w), armH: r(L.arm.h), tipL: r(M.colL - (L.arm.x + L.arm.w)), tipR: r(Rt.arm.x - M.colR) };
       const near = (a, b) => Math.abs(a - b) <= 0.6;   // the column edge is fractional; the marks snap to whole px
-      if (g.stemH !== geo.stem || g.armW !== geo.arm || g.stemW !== geo.stroke || g.armH !== geo.stroke || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
+      // SUPERSEDED (runs 44656197630 and 44659181783): exact size equality and a 0.01 px whole-pixel tolerance - finer than Chromium lays a box out:
+      // positions and sizes are held in LayoutUnits of 1/64 px, so a box placed on a whole device pixel reads up to 1/64 px off it (x 1.6 zoomed:
+      // 0.025), measured 13.98 for 14 and 14.99 for 15. Kept for the record:
+      // if (g.stemH !== geo.stem || g.armW !== geo.arm || g.stemW !== geo.stroke || g.armH !== geo.stroke || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
+      // if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > 0.01)) return { pass: false, why: `pair at ${p.at}: off whole pixels` };
+      // successor: within one LayoutUnit at the page's scale (1/64 px x s, and 0.005 for the read), still far inside a pixel (a wrong size is a whole px off)
+      const LU = (M.s || 1) / 64 + 0.005;
+      const eq = (a, b) => Math.abs(a - b) <= LU;
+      if (!eq(g.stemH, geo.stem) || !eq(g.armW, geo.arm) || !eq(g.stemW, geo.stroke) || !eq(g.armH, geo.stroke) || !near(g.tipL, geo.tip) || !near(g.tipR, geo.tip)) return { pass: false, why: `pair at ${p.at}: geometry ${JSON.stringify(g)} want ${JSON.stringify(geo)}` };
       if (p.lineTop != null && Math.abs(L.stem.y + L.stem.h / 2 - p.lineTop) > 1.01) return { pass: false, why: `pair at ${p.at}: stem centre ${L.stem.y + L.stem.h / 2} vs break line ${p.lineTop}` };
-      if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > 0.01)) return { pass: false, why: `pair at ${p.at}: off whole pixels` };
+      if (geo.whole && [L.stem.x, L.stem.y, L.arm.x, L.arm.y, Rt.stem.x, Rt.arm.x].some((v) => Math.abs(v - Math.round(v)) > LU)) return { pass: false, why: `pair at ${p.at}: off whole pixels` };
     }
   }
   return { pass: true, why: `${M.pairs.length} pairs` };
@@ -175,6 +183,11 @@ await withHarness(async (app) => {
       mutant('P: one side dropped', judgePair(drop, r.st.total, false, null).pass);
       const first = { ...M, pairs: [{ ...M.pairs[0], at: 0 }, ...M.pairs] };
       mutant('P: a pair on page 1', judgePair(first, r.st.total + 1, false, null).pass);
+      // the LayoutUnit successor still tells a wrong mark: a stem one pixel short, and a mark half a pixel off the grid, must each go red
+      const G = { stem: 14, arm: 8, stroke: 2, tip: 12, whole: true };
+      const tweak = (f) => ({ ...M, pairs: M.pairs.map((p, i) => (i === 0 ? { ...p, sides: p.sides.map((x) => (x.side === 'left' ? f(x) : x)) } : p)) });
+      mutant('P: a stem one pixel short', judgePair(tweak((x) => ({ ...x, stem: { ...x.stem, h: x.stem.h - 1 } })), r.st.total, false, G).pass);
+      mutant('P: a mark half a pixel off the grid', judgePair({ ...tweak((x) => ({ ...x, stem: { ...x.stem, x: x.stem.x + 0.5 }, arm: { ...x.arm, x: x.arm.x + 0.5 } })) }, r.st.total, false, G).pass);
     }
   }
 
