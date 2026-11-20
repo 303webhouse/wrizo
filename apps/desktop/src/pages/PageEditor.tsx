@@ -7,6 +7,7 @@ import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { PartArrows, PartFoot } from '../reorg/PartMoves';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -458,6 +459,11 @@ function PageEditorView({ id }: { id: string }) {
   const reconcileRef = useRef<() => boolean>(() => false);
   const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
   const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text, reconcileRef });
+  // THE REORG - moving between Parts (reorg/PartMoves.tsx) saves her typing first, then goes: one stable function, so the memoized moves never
+  // need this render's closure (they render on a move, never on a keystroke)
+  const leaveRef = useRef<() => void>(() => {});
+  leaveRef.current = () => { flush(); flushNow(); };
+  const [leaveStable] = useState(() => () => leaveRef.current());
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
   const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
@@ -817,6 +823,8 @@ function PageEditorView({ id }: { id: string }) {
       {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
           the sheet's first child, so no first-child rule can ever take it for the page. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
+      {/* THE REORG - the quiet line at a Part's foot, after her words in the same scroll (only under the switch, only in a Doc of 2+ Parts) */}
+      {reorgTop && framed && !unborn && !titleSheet && <PartFoot entry={entry} beforeLeave={leaveStable} />}
       {warm.rect && (
         <div
           aria-hidden="true"
@@ -1330,7 +1338,10 @@ function PageEditorView({ id }: { id: string }) {
                instrument: a Draft page is not "in TEXT", it is a word processor
                with ink on it. */
             inkPermission={inkPermission}
-            readouts={unborn ? undefined : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
+            /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
+            readouts={unborn ? undefined : reorgTop
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} /><PartArrows entry={entry} beforeLeave={leaveStable} /></>
+              : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}
           >

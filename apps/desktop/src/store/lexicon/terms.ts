@@ -119,7 +119,7 @@ export type DeskTermId =
   // THE REORG'S TOP RAIL (src/reorg/TopRail.tsx, behind ?reorg=1 in Machina): new words only
   | 'reorgTopWhere' | 'reorgTopRename' | 'reorgTopPlace' | 'reorgTopPartOf' | 'reorgTopPlaceNoDoc' | 'reorgTopPlaceOne' | 'reorgTopPlaceMany' | 'reorgTopConnect' | 'reorgTopConnectAnother' | 'reorgTopConnectRecent' | 'reorgTopConnectNew' | 'reorgTopConnectOn' | 'reorgTopConnectUnborn' | 'reorgTopConnectNewHeld' | 'reorgTopSearch' | 'reorgTopSearchSoon'
   // THE REORG'S FRONT MENU (plan steps 3.1 and 3.2: reorg/frontTabs.ts, reorg/PartsList.tsx)
-  | 'reorgFrontLabel' | 'reorgFrontParts' | 'reorgPartsHead' | 'reorgPartsOf' | 'reorgPartN'
+  | 'reorgFrontLabel' | 'reorgFrontParts' | 'reorgPartsHead' | 'reorgPartsOf' | 'reorgPartN' | 'reorgTopPartsDrop' | 'reorgPartPrevTo' | 'reorgPartNextTo' | 'reorgPartNoPrev' | 'reorgPartNoNext' | 'reorgPartEnd' | 'reorgPartNext'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]

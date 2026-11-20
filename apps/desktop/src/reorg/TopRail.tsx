@@ -6,6 +6,7 @@ import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
+import { PartsList } from './PartsList';
 import { REORG } from './flag';
 
 // THE REORG'S TOP RAIL (plan step 2.1, behind ?reorg=1 in Machina; Fable's GO Nov 19, 4:20 pm; built to Cursor's prototype's top bar,
@@ -208,6 +209,24 @@ function sigOf(e: JournalEntry): string {
 
 interface NamesProps { entry: JournalEntry; canRename: boolean; beforeWrite: () => void }
 
+/** The Part line's drop: the Front menu's Parts list under the top rail, over the page (it moves nothing). A row saves her typing, then opens
+ *  that Part. A press outside, or Escape, closes it. */
+function PartsDrop({ entry, beforeLeave, onClose }: { entry: JournalEntry; beforeLeave: () => void; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const away = (ev: MouseEvent) => { if (ref.current && !ref.current.contains(ev.target as Node) && !(ev.target as Element).closest?.('[data-top-part-count]')) onClose(); };
+    const esc = (ev: KeyboardEvent) => { if (ev.key === 'Escape') onClose(); };
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', away); document.removeEventListener('keydown', esc); };
+  }, [onClose]);
+  return (
+    <div ref={ref} className="reorg-top-drop reorg-top-parts-drop" data-top-parts-drop>
+      <PartsList entry={entry} beforeLeave={beforeLeave} />
+    </div>
+  );
+}
+
 function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   useSyncExternalStore(subscribe, () => namesSig(entry.id));
   namesRenders += 1;
@@ -218,6 +237,8 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   const part = parts.parts[parts.here - 1];
   const docName = parts.doc.name || t('reorgUntitled');
   const write = (fn: () => void) => { beforeWrite(); fn(); };
+  // the Part line drops every Part of the Doc (the prototype's parts drop, frame P2-12C, ruled B): the Front menu's own Parts list
+  const [dropped, setDropped] = useState(false);
   return (
     <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
       <ProjectName entry={latest} />
@@ -230,7 +251,9 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
         })} />
       <Sep />
       <span className="reorg-top-part" data-top-part>
-        <span className="reorg-top-part-count" data-top-part-count>{fill(t('reorgTopPartOf'), { n: parts.here, m: parts.parts.length })}</span>
+        <button type="button" className={`reorg-top-part-count${dropped ? ' is-open' : ''}`} data-top-part-count aria-expanded={dropped}
+          title={t('reorgTopPartsDrop')} onClick={() => setDropped((v) => !v)}>{fill(t('reorgTopPartOf'), { n: parts.here, m: parts.parts.length })}</button>
+        {dropped && <PartsDrop entry={latest} beforeLeave={beforeWrite} onClose={() => setDropped(false)} />}
         {made && part && (
           <>
             <span className="reorg-top-dot" aria-hidden="true">·</span>

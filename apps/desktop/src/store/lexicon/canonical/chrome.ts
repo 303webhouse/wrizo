@@ -315,6 +315,13 @@ export const CANONICAL_CHROME = {
   reorgPartsHead: 'Parts of this doc',
   reorgPartsOf: 'The parts of {name}',
   reorgPartN: 'Part {n}',
+  reorgTopPartsDrop: 'All the Parts of this doc',
+  reorgPartPrevTo: 'Previous Part: {part}',
+  reorgPartNextTo: 'Next Part: {part}',
+  reorgPartNoPrev: 'No Part before this one',
+  reorgPartNoNext: 'No Part after this one',
+  reorgPartEnd: 'end of Part {n}',
+  reorgPartNext: 'Next',
   // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
   // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
   flux3JackedExit: 'Wired in · {key} to unplug',
