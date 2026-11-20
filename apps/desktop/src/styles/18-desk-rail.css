@@ -114,6 +114,8 @@
   margin-top: calc(-1 * var(--tw-start-offset, 0px)); padding-top: var(--tw-start-offset, 0px);
   margin-bottom: calc(-1 * max(30vh, var(--tw-end-pad, 30vh))); padding-bottom: max(30vh, var(--tw-end-pad, 30vh));
 }
+/* #111 (Nick: ink is cut off along a straight line under the last line of text; Fable's ruling Nov 19): the sheet is the scroller's content wrapper and ended where the text ended, so a stroke could not START below the last line and one that ran down past it was clipped. In the plain view it now reaches over the scroller's own bottom padding (30vh, the blank paper below the last line) with a matching negative margin, as the zoom's rule above does, so the ink covers the whole visible paper down to the scroller's foot and the scroll height is unchanged. */
+.mode-scroll > .wz-ink-sheet{ margin-bottom:calc(-1 * 30vh); padding-bottom:30vh; min-height:calc(100% + 30vh) !important; }   /* the sheet's own inline min-height is 100% of the scroller's content box; with the padding inside the sheet's box it must be that plus the padding, or a short page's sheet stops short of the scroller's foot */
 /* the modes move toward the right and Done stays rightmost with a fixed gap, on the framed host only (the legacy sprint-nav layout is untouched); a trial value: delete this block to revert [desk-rail §3] */
 .desk-frame-host .sprint-nav{ justify-content:flex-end; }
 .desk-frame-host .sprint-actions{ margin-left:28px; }

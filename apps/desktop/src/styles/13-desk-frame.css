@@ -798,8 +798,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .desk-mode-tab.deferred{ color:var(--text-low); cursor:not-allowed; }
 .desk-mode-tab.deferred:hover{ background:none; color:var(--text-low); }
 .desk-mode-soon{ margin-left:10px; font-family:var(--font-ui); font-size:11px; color:var(--text-mid); font-style:italic; }
-/* the "?" sits beside a tab, never inside it (a button cannot nest a button): an inline-flex wrapper reads the pair as one unit without changing the strip's gap [desk-frame §31] */
-.desk-mode-tab-wrap{ display:inline-flex; align-items:center; gap:4px; }
 /* PHASE 1 - the band's Free Write hover menu (TEXT | INK) is RETIRED: the same choice is the first tab of the left drawer (DrawerTabs). One control for one state. */
 
 /* CD1 S2/S7 — the sliver (components/Sliver.tsx). ToolRail's retired

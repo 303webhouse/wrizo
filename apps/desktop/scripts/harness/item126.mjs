@@ -196,10 +196,24 @@ await withHarness(async (app) => {
     const near = (a, b) => a != null && b != null && Math.abs(a - b) <= 0.6;
     ok(`C1 (${label}): the stratum is MOUNTED — the ink is the PAGE'S, not Free Write's decoration (item 121 §7A said "Free Write only"; this is the inversion this ticket exists for)`,
       !!canvas, JSON.stringify({ canvas: !!canvas, mode: label }));
-    ok(`C1 (${label}): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before`,
-      !!sheet && !!canvas && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
-        && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
-      JSON.stringify({ sheet, canvas }));
+    // PARKED 2026-11-19 (SUPERSEDED by C1b - Fable's ruling on #111: ink is shown anywhere on the paper she sees, so the canvas is no longer the sheet's box on the BOTTOM edge: it reaches the paper's visible foot and the lowest stroke,
+    // and no further (a canvas the size of a 40 000 px page was reallocated on every Enter: #101's follow-up; ink-enter.mjs). Left, right and top are still the sheet's: the anchor law. Original, verbatim:
+    // ok(`C1 (${label}): and its canvas box IS the sheet's box on every edge (within 0.6px) — the anchor law holds in a mode that never had a canvas before`,
+    //   !!sheet && !!canvas && near(sheet.left, canvas.left) && near(sheet.right, canvas.right)
+    //     && near(sheet.top, canvas.top) && near(sheet.bottom, canvas.bottom),
+    //   JSON.stringify({ sheet, canvas }));
+    // SUCCESSOR C1b: left, right and top are the sheet's (within 0.6 px); the bottom is at or below the paper's visible foot (the scroller's foot) AND the lowest stroke's foot, and no lower than the sheet's.
+    const scrollBox = await app.evalJs(rectOf('.mode-scroll'));
+    const lowest = await app.evalJs(`(() => { const rows = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const e = rows.find((x) => x.id === ${JSON.stringify(pageId)}); const sh = document.querySelector('${SHEET}'); if (!e || !e.strokes || !sh) return null; const r = sh.getBoundingClientRect(); const k = sh.offsetWidth > 0 ? r.width / sh.offsetWidth : 1; const oy = (parseFloat(getComputedStyle(sh).paddingTop) || 0) * k; return r.top + oy + Math.max(...e.strokes.flatMap((st) => st.points.map((p) => p.y))) * r.width; })()`);
+    const c1b = (sh, cv, sc, low) => !!sh && !!cv && !!sc && low != null && near(sh.left, cv.left) && near(sh.right, cv.right) && near(sh.top, cv.top) && cv.bottom >= sc.bottom - 0.6 && cv.bottom >= low - 0.6 && cv.bottom <= sh.bottom + 0.6;
+    ok(`C1b (${label}): the canvas's left, right and top are the sheet's, and its bottom reaches the paper's visible foot and the lowest stroke (no further than the sheet)`,
+      c1b(sheet, canvas, scrollBox, lowest), JSON.stringify({ sheet, canvas, scrollBottom: scrollBox && scrollBox.bottom, lowest }));
+    // MUTANT: the canvas ending at the TEXT's foot (the old cut): asserted landed (its bottom at the editor's foot, above the scroller's foot), C1b's read goes RED
+    const keepH = await app.evalJs(`(() => { const cv = document.querySelector('${CANVAS}'); const ed = document.querySelector('.forward-only-editor'); const sh = document.querySelector('${SHEET}'); const r = sh.getBoundingClientRect(); const k = sh.offsetWidth > 0 ? r.width / sh.offsetWidth : 1; const keep = cv.style.height; cv.style.setProperty('height', (Math.max(8, ed.getBoundingClientRect().bottom - r.top) / k) + 'px', 'important'); window.__c1bKeep = keep; return keep; })()`);
+    const mutCanvas = await app.evalJs(rectOf(CANVAS));
+    await app.evalJs(`(() => { const cv = document.querySelector('${CANVAS}'); cv.style.removeProperty('height'); cv.style.height = window.__c1bKeep; return true; })()`);
+    ok(`C1b-M (${label}): the canvas ending at the text's foot (landed: bottom ${mutCanvas && Math.round(mutCanvas.bottom)}, the scroller's foot ${scrollBox && Math.round(scrollBox.bottom)}): C1b's read goes RED`,
+      !!mutCanvas && !!scrollBox && mutCanvas.bottom < scrollBox.bottom - 1 && !c1b(sheet, mutCanvas, scrollBox, lowest), JSON.stringify({ mutCanvas, keepH }));
   }
 
   // ==========================================================================
