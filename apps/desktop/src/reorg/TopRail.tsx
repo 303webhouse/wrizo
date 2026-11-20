@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { getDrawer, getJournalEntries, getJournalEntry, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, renameDrawer, saveProject, subscribe } from '../store/persistence';
+import { addPageLink, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
@@ -80,31 +80,49 @@ function ProjectName({ entry }: { entry: JournalEntry }) {
   );
 }
 
-/** The Docs a Board serves, by today's data, read-time: the page it is paired with, or the set she made that it sits in with pages. */
-function boardDocs(board: JournalEntry): string[] {
+/** The Docs a Board serves, read-time: the page it is paired with; the set she made that it sits in with pages; and every Doc a PageLink joins
+ *  to the Board itself, a card at neither end, whichever end owns the record (Connect Doc's write is owned by the Board; a page's Graft to the
+ *  Board is owned by the page). One row per Doc. */
+function boardDocs(board: JournalEntry): { id: string; name: string }[] {
+  const out = new Map<string, string>();
+  const add = (e: JournalEntry | null | undefined) => {
+    if (!e || e.deletedAt || e.purgedAt || e.pageType === 'board' || getSystemKind(e)) return;
+    const d = partsOfDoc(e).doc;
+    if (!out.has(d.id)) out.set(d.id, d.name);
+  };
   const paired = getPairedPageId(board.id);
-  const page = paired ? getJournalEntry(paired) : null;
-  if (page) return [partsOfDoc(page).doc.name];
+  if (paired) add(getJournalEntry(paired));
   const set = board.projectId ? getProject(board.projectId) : null;
-  if (set && !isAutoSet(set) && getJournalEntries().some((e) => e.projectId === set.id && !e.deletedAt && !e.purgedAt && e.pageType !== 'board')) return [set.title];
-  return [];
+  if (set && !isAutoSet(set) && !out.has(set.id) && getJournalEntries().some((e) => e.projectId === set.id && !e.deletedAt && !e.purgedAt && e.pageType !== 'board')) out.set(set.id, set.title);
+  for (const l of getPageLinksOf(board.id)) if (!l.aBoxId && !l.bBoxId) add(getJournalEntry(l.bEntryId));
+  for (const l of getPageLinksTo(board.id)) if (!l.aBoxId && !l.bBoxId) add(getJournalEntry(l.aEntryId));
+  return [...out].map(([id, name]) => ({ id, name }));
 }
 
-/** Connect Doc's list (Nick, Nov 14, 5:47 pm): her recent Docs first, on a scroll, then "A new doc". The connect WRITE is held (Fable, Nov 14,
- *  ruling B): a pick says what it would do and changes nothing. */
-function ConnectList({ onClose }: { onClose: () => void }) {
+/** Connect Doc's list (Nick, Nov 14, 5:47 pm): her recent Docs first, on a scroll, then "A new doc". A pick WRITES (Fable, Nov 19, 6:05 pm, ask
+ *  d; Nick: saved with the account): one PageLink owned by the Board, to the Doc's first Part in her order (a Doc is its Parts; a set has no
+ *  entry of its own), a card at neither end, through the store's own addPageLink (idempotent, either direction). The list closes and she stays
+ *  on the Board. A Doc it already serves reads "connected" and a pick on it writes nothing. "A new doc" stays held: a page is born when it has
+ *  a word (PB1), so an empty Doc cannot be stored for it. A Board not yet kept (no card: the unborn slot) is not born by a side door. */
+function ConnectList({ board, served, onClose }: { board: JournalEntry; served: ReadonlySet<string>; onClose: () => void }) {
   const { t } = useDeskLexicon();
   const [said, setSaid] = useState<string | null>(null);
   const seen = new Set<string>();
-  const docs: { id: string; name: string }[] = [];
+  const docs: { id: string; name: string; anchor: string }[] = [];
   for (const e of getJournalEntries()
     .filter((x) => !x.deletedAt && !x.purgedAt && !getSystemKind(x) && !isPairedPlanBoard(x.id) && x.pageType !== 'board')
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))) {
-    const d = partsOfDoc(e).doc;
-    if (seen.has(d.id)) continue;
-    seen.add(d.id);
-    docs.push({ id: d.id, name: d.name || t('reorgUntitled') });
+    const p = partsOfDoc(e);
+    if (seen.has(p.doc.id)) continue;
+    seen.add(p.doc.id);
+    docs.push({ id: p.doc.id, name: p.doc.name || t('reorgUntitled'), anchor: p.parts[0]?.id ?? e.id });
   }
+  const pick = (d: { id: string; anchor: string }) => {
+    if (served.has(d.id)) return;
+    if (isUnborn(board.id)) { setSaid(t('reorgTopConnectUnborn')); return; }
+    addPageLink(board.id, { bEntryId: d.anchor });
+    onClose();
+  };
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const away = (ev: MouseEvent) => { if (ref.current && !ref.current.contains(ev.target as Node) && !(ev.target as Element).closest?.('[data-top-connect]')) onClose(); };
@@ -117,10 +135,16 @@ function ConnectList({ onClose }: { onClose: () => void }) {
     <div ref={ref} className="reorg-top-drop" data-top-connect-list role="dialog" aria-label={t('reorgTopConnect')}>
       <div className="reorg-top-drop-head">{t('reorgTopConnectRecent')}</div>
       <div className="reorg-top-drop-scroll">
-        {docs.map((d) => (
-          <button key={d.id} type="button" className="reorg-top-drop-row" data-connect-row="doc"
-            onClick={() => setSaid(fill(t('reorgTopConnectHeld'), { name: d.name }))}>{d.name}</button>
-        ))}
+        {docs.map((d) => {
+          const on = served.has(d.id);
+          return (
+            <button key={d.id} type="button" className={`reorg-top-drop-row${on ? ' is-on' : ''}`} data-connect-row="doc" data-connect-doc={d.id}
+              aria-disabled={on || undefined} onClick={() => pick(d)}>
+              <span className="reorg-top-drop-name">{d.name}</span>
+              {on && <span className="reorg-top-drop-meta">{t('reorgTopConnectOn')}</span>}
+            </button>
+          );
+        })}
       </div>
       <button type="button" className="reorg-top-drop-row reorg-top-drop-new" data-connect-row="new"
         onClick={() => setSaid(t('reorgTopConnectNewHeld'))}><span aria-hidden="true">+</span> {t('reorgTopConnectNew')}</button>
@@ -243,7 +267,7 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
   const [connecting, setConnecting] = useState(false);
   const latest = getJournalEntry(entry.id) ?? entry;
   const docs = boardDocs(latest);
-  const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0] || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
+  const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0].name || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
   return (
     <div className="reorg-top" data-reorg-top="board">
       <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
@@ -260,7 +284,7 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
           onClick={() => setConnecting((v) => !v)}>
           {docs.length ? '+' : t('reorgTopConnect')}
         </button>
-        {connecting && <ConnectList onClose={() => setConnecting(false)} />}
+        {connecting && <ConnectList board={latest} served={new Set(docs.map((d) => d.id))} onClose={() => setConnecting(false)} />}
       </span>
       <span className="reorg-top-spring" />
       <div className="reorg-top-right">{views}</div>

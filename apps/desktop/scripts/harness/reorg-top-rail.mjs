@@ -32,8 +32,11 @@
 //       R4  a one-Part Doc's name is its page's pageSettings.name (one record, one name), and the Part line still names no Part
 //       R5  Escape leaves the name and stores nothing; the rename opens in the same box (the row's height does not change)
 //       R6  the stored name is what the rail reads after a reload
-// CONNECT C1  Connect Doc opens a list: recent Docs first, then "A new doc"; picking one writes nothing (the connect write is HELD, Fable Nov 14
+// CONNECT C1  PARKED Nov 19 (SUPERSEDED: a pick now WRITES, Fable's GO Nov 19 6:05 pm, ask d; reorg-connect-doc.mjs holds the write). Original:
+//           Connect Doc opens a list: recent Docs first, then "A new doc"; picking one writes nothing (the connect write is HELD, Fable Nov 14
 //           ruling B) and says so
+//       C1b Connect Doc opens a list: recent Docs first, then "A new doc"; "A new doc" writes nothing (still held: a page is born when it has
+//           a word) and says so
 // STAGES S1  cycling the stages from the top rail leaves the page's text identical and the stage is today's (data-mode-key active)
 // PAGE  G1  [1366, 1920, 2000] the page's rect (column, paper, editor) is the same with the switch off, on at rest, with a rename open, with a
 //           long name, and with the Connect list open on a Board's sibling page; the editor is the same node throughout
@@ -264,14 +267,19 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.reorg-top [data-top-connect]')?.click(); null");
   await sleep(400);
   const list = await app.evalJs("(() => { const l = document.querySelector('[data-top-connect-list]'); if (!l) return null; return { rows: [...l.querySelectorAll('[data-connect-row]')].map((b) => [b.getAttribute('data-connect-row'), (b.textContent || '').trim()]) }; })()");
-  await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row]')?.click(); null");
+  // PARKED Nov 19 (SUPERSEDED - a pick writes now; C1b presses "A new doc", which is still held). Original, verbatim:
+  // await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row]')?.click(); null");
+  await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row=\"new\"]')?.click(); null");
   await sleep(400);
   const said = await app.evalJs("document.querySelector('[data-top-connect-said]')?.textContent?.trim() ?? null");
   await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null');
   await sleep(400);
   const after = await app.evalJs(COLLECTIONS);
   const dc = diffStores(before, after);
-  ok('C1 Connect Doc lists recent Docs first, then "A new doc"; picking one writes nothing and says what it would do',
+  // PARKED Nov 19 (SUPERSEDED - a pick writes now: Fable's GO, Nov 19 6:05 pm, ask d; reorg-connect-doc.mjs X1-X5 hold the write). Original, verbatim:
+  // ok('C1 Connect Doc lists recent Docs first, then "A new doc"; picking one writes nothing and says what it would do',
+  //   !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && !!said && dc.length === 0, { list, said, dc });
+  ok('C1b Connect Doc lists recent Docs first, then "A new doc"; "A new doc" writes nothing (still held) and says so',
     !!list && list.rows.length >= 2 && list.rows[list.rows.length - 1][0] === 'new' && list.rows.slice(0, -1).every((x) => x[0] === 'doc') && !!said && dc.length === 0, { list, said, dc });
 
   // ---- NAMES ---------------------------------------------------------------------------------------------------------------------------

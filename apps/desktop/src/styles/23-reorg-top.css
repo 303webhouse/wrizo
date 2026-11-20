@@ -61,6 +61,10 @@
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
 [data-theme='machina'] .reorg-top-drop-row:hover{ background:#E6E8EA; }
 [data-theme='machina'] .reorg-top-drop-row:focus-visible{ outline:1px solid #3F6183; outline-offset:-2px; }
+[data-theme='machina'] .reorg-top-drop-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; }
+[data-theme='machina'] .reorg-top-drop-meta{ flex:0 0 auto; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5A626B; }
+[data-theme='machina'] .reorg-top-drop-row.is-on{ cursor:default; }
+[data-theme='machina'] .reorg-top-drop-row.is-on:hover{ background:transparent; }
 [data-theme='machina'] .reorg-top-drop-new{ border-bottom:0; color:#3F6183; }
 [data-theme='machina'] .reorg-top-drop-said{ padding:8px 14px 10px; border-top:1px solid #D2D6DA; font-size:12px; line-height:1.4; color:#3A4047; white-space:normal; }
 
