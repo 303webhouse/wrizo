@@ -10,15 +10,16 @@
 // (ap-1, the Part she is on, whose plan board is ap-own), "Chapter two" (ap-2), "Chapter three" (ap-3). ap-1 links a card of board ap-x (x1),
 // the whole board ap-y and the doc ap-q.
 //
-// PREMISE D0  at 1920 both drawers stand open on ap-1: the Parts tab lists the three Parts (ap-1 here), the Assets tab lists x1, ap-y's head and
-//             ap-q; every asset row and board head is draggable, every Part row is not
+// PREMISE D0  at 1920 both drawers stand open on ap-1: the Parts tab lists the three Parts (ap-1 here), the Assets tab lists x1, ap-y's head,
+//             ap-q and the own plan card a1; every asset row and board head is draggable, every Part row is not
 // DRAG   D1  dragging x1 onto "Chapter two" stores ONE new live PageLink on ap-2's own record { aEntryId ap-2, bEntryId ap-x, bBoxId x1 }, with
 //            id, createdAt and updatedAt; nothing else stored changes but ap-2's stamp and its set's resume pointer; every text and box identical;
 //            the drag carried the asset type and no text/plain (so a drop on the page can never type it)
 //        D2  the Parts tab says so (role status) with Undo, naming the card and the Part; the page's column, paper and editor rects and the editor
 //            node are the same before and after
 //        D3  the same drop again writes nothing and says it is already connected
-//        D4  a drop on the Part she is on writes nothing and says it is already connected (everything in her Assets tab already is)
+//        D4  a drop on the Part she is on writes nothing and says it is already connected (everything in her Assets tab already is): her own
+//            plan card a1, which no PageLink joins, so the rule itself is what is tested (MUTANT: drop the rule in assetConnect.ts, D4 goes red)
 //        D5  a drag that is not an asset (text/plain only) is not taken by a Part row (dragover not accepted) and its drop writes nothing
 //        D6  Undo on the line takes the connection back (the record's deletedAt is set; no live link left on ap-2)
 // KEYS   K1  each asset row and board head has a "→ Part" button; pressed, it lists the OTHER Parts in her order ("Chapter two", "Chapter three")
@@ -161,8 +162,9 @@ await withHarness(async (app) => {
   const x1 = st0.assets.find((a) => a.box === 'x1');
   const q1 = st0.assets.find((a) => a.entry === 'ap-q');
   const y = st0.heads.find((h) => h.board === 'ap-y');
+  const a1 = st0.assets.find((a) => a.box === 'a1' && a.entry === 'ap-own');
   ok('D0 at 1920 both drawers stand open on ap-1: three Parts (ap-1 here), the Assets tab lists x1, ap-y\'s head and ap-q; asset rows and heads draggable, Part rows not',
-    ids.links && st0.tools && st0.back && st0.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st0.parts[0].here && !!x1 && !!q1 && !!y
+    ids.links && st0.tools && st0.back && st0.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st0.parts[0].here && !!x1 && !!q1 && !!y && !!a1
       && st0.assets.every((a) => a.drag === 'true') && st0.heads.every((h) => h.drag === 'true') && st0.parts.every((p) => p.drag !== 'true'), { ids, st0 });
 
   // ---- DRAG ------------------------------------------------------------------------------------------------------------------------------
@@ -191,11 +193,13 @@ await withHarness(async (app) => {
   const line3 = await app.evalJs(LINE);
   ok('D3 the same drop again writes nothing and says it is already connected', diffStores(s3a, s3b).length === 0 && !!line3 && /already/i.test(line3.text) && !line3.undo, { d: diffStores(s3a, s3b), line3 });
 
-  await app.evalJs(drag('[data-back-assets] [data-back-asset][data-graft-entry="ap-q"]', 'ap-1'));
+  // D4 drops a card of ap-1's OWN plan board (a1): connected by the plan, not by a PageLink, so only the Part-she-is-on rule stops a write here
+  // (ap-q would be refused by graftTo's own isGrafted, which would leave the rule untested)
+  await app.evalJs(drag('[data-back-assets] [data-back-asset][data-graft-box="a1"]', 'ap-1'));
   await settle(app);
   const s4 = await app.evalJs(COLLECTIONS);
   const line4 = await app.evalJs(LINE);
-  ok('D4 a drop on the Part she is on writes nothing and says it is already connected', diffStores(s3b, s4).length === 0 && !!line4 && /already/i.test(line4.text) && line4.text.includes('Chapter one'), { d: diffStores(s3b, s4), line4 });
+  ok('D4 a drop on the Part she is on (her own plan card) writes nothing and says it is already connected', diffStores(s3b, s4).length === 0 && !!line4 && /already/i.test(line4.text) && line4.text.includes('Chapter one') && line4.text.includes('Alpha'), { d: diffStores(s3b, s4), line4 });
 
   const f5 = await app.evalJs(foreign('ap-3'));
   await settle(app);
