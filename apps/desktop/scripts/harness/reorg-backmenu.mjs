@@ -1,6 +1,6 @@
 // THE REORG'S BACK MENU, phase 4 (Fable, Nov 19, 6:05 pm: "the Back menu behind ?reorg=1, Machina: Feedback = today's Tutor moved whole; Assets from today's links
 // grouped by Board; the Plan tab; then split screen. Red-first."). Plan: reorg-plan.md section 9 and reorg-plan-tech.md section 3; Cursor's frames (reorg/ app.js).
-// This file holds the first three slices; the split screen's checks are appended to it when that slice lands.
+// This file holds the three slices and the split screen's (SP1 to SP11).
 //
 // The fixture (seeded through the app's own seams, a loose page and four more entries):
 //   bm-p     the page she is on, "The thesis page"; its OWN board is bm-own (paired by planBoardId) holding three cards Alpha, Beta, Gamma (seq 0, 1, 2; Beta has a body)
@@ -237,6 +237,74 @@ await withHarness(async (app) => {
     const closedAgain = await app.evalJs(PAGE);
     ok(`G1 [${w}]: the page's rect is the same with the drawer closed (${closed}) and open on Plan, Assets and Feedback`, !!closed && rects.every((r) => r === closed) && closedAgain === closed, JSON.stringify({ closed, rects, closedAgain }));
   }
+
+  // ---- SPLIT --------------------------------------------------------------------------------------------------------------------------
+  await app.emulateDpr(1, 1366, 900);
+  const toMode = async (key) => { await app.evalJs(`document.querySelector('[data-mode-key="${key}"]')?.click()`); await sleep(1500); };
+  const GEO = "(() => { const a = document.querySelector('.wz-split-asset'); const r = a ? a.getBoundingClientRect() : null; const p = document.querySelector('.desk-frame-stage .mode-page')?.getBoundingClientRect(); const stage = document.querySelector('.desk-frame-stage'); const s = document.querySelector('.desk-frame-strip')?.getBoundingClientRect(); const vis = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).visibility : null; };"
+    + " return { asset: r && [r.left, r.right, r.top, r.height].map((n) => Math.round(n * 100) / 100), page: p && [p.left, p.top, p.width, p.height].map((n) => Math.round(n * 100) / 100), stageMark: stage?.getAttribute('data-split') || null, railRight: s && s.right, win: window.innerWidth, tutorGrip: vis('.desk-frame-tutor-anchor'), sliverGrip: vis('.desk-frame-sliver-anchor') }; })()";
+  const pressBeside = (rowTitle) => app.evalJs(`(() => { const row = [...document.querySelectorAll('[data-back-asset]')].find((r) => r.querySelector('.wz-graft-title')?.textContent === ${q(rowTitle)}); const b = row?.querySelector('[data-back-beside]'); if (!b) return null; const was = b.disabled; b.click(); return { disabled: was, title: b.title }; })()`);
+  await openPage(app, 'bm-p'); await toMode('draft');
+  await openDrawer(app); await tab(app, 'links');
+  const pageBefore = (await app.evalJs(GEO)).page;
+  const prefsBefore = await app.evalJs("localStorage.getItem('wrizo-reorg-prefs')");
+  const KEYS_BUT_PREFS = "JSON.stringify(Object.keys(localStorage).filter((k) => k !== 'wrizo-reorg-prefs').sort().map((k) => [k, localStorage.getItem(k)]))";
+  const storeBefore = await app.evalJs(KEYS_BUT_PREFS);
+  await pressBeside('Xcard one');
+  await sleep(900);
+  const sp = await app.evalJs(GEO);
+  const [aLeft, aRight] = sp.asset || [0, 0];
+  const half = sp.railRight + (sp.win - sp.railRight) / 2;
+  const sideMid = sp.page ? sp.page[0] + sp.page[2] / 2 : 0;
+  const wantMid = sp.railRight + 16 + (aLeft - 5 - (sp.railRight + 16)) / 2;
+  ok(`SP1: Open beside on a linked Block opens it on the RIGHT: its side ends 16 px short of the window (${sp.win}) and starts at half the room right of the rail (${Math.round(half)}) or where the page's own side needs it, with a grip on its edge`,
+    !!sp.asset && Math.abs(aRight - (sp.win - 16)) <= 1 && aLeft >= half - 1 && aLeft <= half + 41 && (await app.evalJs("!!document.querySelector('.wz-split-asset [role=separator]')")), JSON.stringify(sp));
+  ok('SP2: the page keeps its size and its top and sits in the middle of its own side (a shift, nothing else); the stage is marked',
+    !!sp.page && !!pageBefore && sp.page[1] === pageBefore[1] && sp.page[2] === pageBefore[2] && sp.page[3] === pageBefore[3] && Math.abs(sideMid - wantMid) <= 1.5 && sp.stageMark === 'true', JSON.stringify({ before: pageBefore, page: sp.page, sideMid, wantMid }));
+  ok("SP3: both menus are off in a split (hidden, not closed): the Tutor's and the Tools' anchors are not visible", sp.tutorGrip === 'hidden' && sp.sliverGrip === 'hidden', JSON.stringify({ t: sp.tutorGrip, s: sp.sliverGrip }));
+  const body = await app.evalJs("document.querySelector('.wz-split-asset .wz-link-dock-title')?.textContent + '|' + document.querySelector('.wz-split-asset .wz-link-dock-kind')?.textContent");
+  ok("SP4: the asset is read in its side: the Block's name, and its kind in Machina's word", body === 'Xcard one|Block', body);
+  // the grip: a key moves it 16 px and the width is kept
+  await app.evalJs("document.querySelector('.wz-split-asset [role=separator]')?.focus()");
+  await app.evalJs("document.querySelector('.wz-split-asset [role=separator]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))"); await sleep(600);
+  const moved = await app.evalJs(GEO);
+  const savedPrefs = await app.evalJs("localStorage.getItem('wrizo-reorg-prefs')");
+  ok('SP5: the grip moves 16 px on an arrow key (the page re-centres in its side, size unchanged) and the width is kept in the prefs record { split: { side: "right", width } }',
+    !!moved.asset && Math.abs(moved.asset[0] - (aLeft + 16)) <= 1 && moved.page[2] === sp.page[2] && /"split":\{"side":"right","width":0\.\d+/.test(savedPrefs || '') && prefsBefore === null, JSON.stringify({ moved, savedPrefs, prefsBefore }));
+  // close: the page is where it was; the menus are as she left them (the drawer open on ASSETS)
+  await click(app, '[data-split-close]'); await sleep(900);
+  const back = await app.evalJs(GEO);
+  const stillOn = await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true' && document.getElementById('wz-tutor-tab-links')?.getAttribute('aria-selected') === 'true'");
+  ok('SP6: closing the split gives the page back exactly (its rect equals the one before), takes the mark off, and the menus are as she left them (the drawer open on Assets)',
+    !back.asset && JSON.stringify(back.page) === JSON.stringify(pageBefore) && back.stageMark === null && back.tutorGrip === 'visible' && stillOn, JSON.stringify({ pageBefore, back: back.page, mark: back.stageMark, tg: back.tutorGrip, stillOn }));
+  // MUTANT: the same rule on a page left shifted (the rect read while the split stood) goes red
+  ok("SP6-M: a page left shifted after the close fails SP6's rule (the mutant is read by SP6's own comparison)", JSON.stringify(sp.page) !== JSON.stringify(pageBefore), JSON.stringify({ shifted: sp.page, before: pageBefore }));
+  const storeAfter = await app.evalJs(KEYS_BUT_PREFS);
+  ok('SP7: opening, moving the grip and closing wrote nothing to any page, board or setting (every key but the prefs record is byte-identical)', storeBefore === storeAfter, `lens ${storeBefore.length}/${storeAfter.length}`);
+  // the next split opens at the width she left (the account's record, device-first)
+  await pressBeside('Xcard one'); await sleep(900);
+  const again = await app.evalJs(GEO);
+  ok("SP8: the next split opens at the width she left (the grip's last place), not at half again", !!again.asset && !!moved.asset && Math.abs(again.asset[0] - moved.asset[0]) <= 1, JSON.stringify({ again: again.asset, moved: moved.asset }));
+  await click(app, '[data-split-close]'); await sleep(500);
+  // a Board beside the page: its cards, in its own order
+  await app.evalJs(`document.querySelector('[data-back-board="bm-x"] [data-back-beside]')?.click()`); await sleep(900);
+  const boardBody = await app.evalJs("[...document.querySelectorAll('.wz-split-asset [data-split-card]')].map((c) => c.querySelector('strong')?.textContent).join('|') + '#' + document.querySelector('.wz-split-asset .wz-link-dock-kind')?.textContent");
+  ok("SP9: a Board opens beside the page as its cards in the board's own order", boardBody === 'Xcard one|Xcard two#Board', boardBody);
+  await click(app, '[data-split-close]'); await sleep(500);
+  // Free Writing: no split
+  await toMode('freewrite');
+  await openDrawer(app); await tab(app, 'links');
+  const fw = await pressBeside('Xcard one'); await sleep(400);
+  const fwOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  // the Typewriter on (a Draft page whose own setting is on): not offered
+  await app.evalJs("localStorage.setItem('wrizo-typewriter-page-bm-p', 'on')");
+  await openPage(app, 'bm-p'); await toMode('draft'); await openDrawer(app); await tab(app, 'links');
+  const twOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");
+  const tw = await pressBeside('Xcard one'); await sleep(400);
+  const twOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  ok('SP11: with the Typewriter on, "Open beside" is greyed with its reason and opens nothing (the Typewriter is not available in a split)', twOn && !!tw && tw.disabled && /Typewriter/.test(tw.title) && !twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  await app.evalJs("localStorage.removeItem('wrizo-typewriter-page-bm-p')");
   return checks;
 });
 

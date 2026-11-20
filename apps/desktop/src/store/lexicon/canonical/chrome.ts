@@ -264,6 +264,13 @@ export const CANONICAL_CHROME = {
   reorgAssetsOwnBoard: "This doc's board",
   reorgAssetsOpenBoard: 'Open the board',
   reorgAssetsLinkedDirectly: 'Docs linked directly',
+  reorgSplitOpen: 'Open beside',
+  reorgSplitClose: 'Close',
+  reorgSplitLabel: 'Beside the page',
+  reorgSplitGrip: 'Resize the split',
+  reorgSplitBoardEmpty: 'Nothing is on this board yet.',
+  reorgSplitNoFreewrite: 'There is no split screen in Free Writing.',
+  reorgSplitNoTypewriter: 'Typewriter mode is off in a split: turn it off first.',
   // THE REORG'S RAIL, step 3 (a Project's own list) and step 4 (Box settings, frame R5; the five swatch names are the radio buttons' names)
   reorgListTitle: 'Project',
   reorgNewDoc: 'New doc',

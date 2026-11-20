@@ -25,6 +25,7 @@ import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
+import { SplitHost } from '../reorg/split/SplitHost';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -748,6 +749,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
   return (
     <>
+      {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
+      {back && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
@@ -1018,7 +1021,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
-          {rightTab === 'links' && <ConnectionsDrawerPanel back={back} only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}
+          {rightTab === 'links' && <ConnectionsDrawerPanel back={back} mode={mode} prose={pageKind === 'prose'} only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}

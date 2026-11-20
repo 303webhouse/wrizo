@@ -8,6 +8,7 @@ import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
 import { AssetGroups } from '../reorg/backMenu/AssetGroups';
+import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
 import { GraftPicker, type CameFrom } from './GraftPicker';
@@ -27,7 +28,7 @@ const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? 
 // ARBOR v2 MOCKUP r18 - `help`: a "?" drawn at the end of the "+ Graft..." row (the Arbor mockup's Grafts help, off the folder tab); absent = today's row.
 // THE REORG'S BACK MENU (`back`, ?reorg=1 in Machina, a page only): the SAME pane, the SAME + Graft control, picker, remove-with-undo and dock, but the list is the Assets tab's,
 // grouped by board (reorg/backMenu/assetGroups.ts). Absent (every other caller) = today's pane, byte for byte.
-export function ConnectionsDrawerPanel({ only, help, back }: { only?: 'board' | 'grafts'; help?: ReactNode; back?: boolean } = {}) {
+export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only?: 'board' | 'grafts'; help?: ReactNode; back?: boolean; mode?: string; prose?: boolean } = {}) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   const snap = useBoardSnapshot();
@@ -121,10 +122,11 @@ export function ConnectionsDrawerPanel({ only, help, back }: { only?: 'board' | 
         </button>
       )}
       {backGroups && (
-        <AssetGroups groups={backGroups} t={t} canDock={!!page}
+        <AssetGroups groups={backGroups} t={t} besideOffered={!!page && !!prose}
+          besideNote={(() => { const why = splitBlocked(mode); return why === 'freewrite' ? t('reorgSplitNoFreewrite') : why === 'typewriter' ? t('reorgSplitNoTypewriter') : null; })()}
           kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
           onRemove={remove} onHide={hide}
-          onDock={(r) => { if (!page) return; setLinkDock(page.id, { entryId: r.entryId, ...(r.boxId ? { boxId: r.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); }}
+          onBeside={(entryId, boxId) => { if (page && !splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
           onOpenBoard={(id) => navigate(`/page/${id}`)} />
       )}
       {!backGroups && paired && only !== 'grafts' && (

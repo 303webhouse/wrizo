@@ -120,6 +120,7 @@ export type DeskTermId =
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
+  | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
   // the right-click menus, the "Send to Trash?" dialog, the Settings row and the toasts [deskLexicon §5]
