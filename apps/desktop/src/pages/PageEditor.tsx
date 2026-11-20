@@ -6,6 +6,8 @@ import { pageTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
+import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { PartArrows, PartFoot } from '../reorg/PartMoves';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -113,6 +115,8 @@ function PageEditorView({ id }: { id: string }) {
   // component's legacy JSX (byte-identical to pre-AB1) renders instead. See
   // docs/wrizo-alpha/ab1-shell-inventory.md.
   const framed = useDeskFrameViewport();
+  // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
+  const reorgTop = useReorgTop();
   // non-null only while this surface has no row yet; every use below reads "if this page is still unborn", so the born path is the ordinary one, and `entry` resolves from the unborn slot meanwhile [PageEditor §1]
   const unborn = useUnborn(id);
   // ITEM 104 (THIRD) — `entry` MUST NOT be able to change this component's HOOK
@@ -455,6 +459,11 @@ function PageEditorView({ id }: { id: string }) {
   const reconcileRef = useRef<() => boolean>(() => false);
   const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
   const { flush, onTextChange } = usePageAutosave({ unbornRef, id, textRef, lastSavedRef, setText, text, reconcileRef });
+  // THE REORG - moving between Parts (reorg/PartMoves.tsx) saves her typing first, then goes: one stable function, so the memoized moves never
+  // need this render's closure (they render on a move, never on a keystroke)
+  const leaveRef = useRef<() => void>(() => {});
+  leaveRef.current = () => { flush(); flushNow(); };
+  const [leaveStable] = useState(() => () => leaveRef.current());
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
   const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
@@ -814,6 +823,8 @@ function PageEditorView({ id }: { id: string }) {
       {/* A1: said to a screen reader, never drawn (1px, clipped) - so it cannot move or resize the page. AFTER the editor, never
           the sheet's first child, so no first-child rule can ever take it for the page. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
+      {/* THE REORG - the quiet line at a Part's foot, after her words in the same scroll (only under the switch, only in a Doc of 2+ Parts) */}
+      {reorgTop && framed && !unborn && !titleSheet && <PartFoot entry={entry} beforeLeave={leaveStable} />}
       {warm.rect && (
         <div
           aria-hidden="true"
@@ -1218,7 +1229,13 @@ function PageEditorView({ id }: { id: string }) {
     return (
       <div ref={pageRef} className="desk-frame-host" data-chrome-receded={receded ? 'true' : 'false'}>
         <FirstRunVeil active={gateActive}>
-          <div className="chrome-fade chrome-top sprint-nav">
+          <div className="chrome-fade chrome-top sprint-nav" data-reorg-top-row={reorgTop ? 'true' : undefined}>
+            {reorgTop ? (
+              <TopRail kind="page" entry={entry} canRename={!unborn} beforeWrite={() => { flush(); flushNow(); }}
+                // the PLAN door leaves the bar; a hidden strut keeps its height in its own place, so the row (and the page under it) never moves
+                stages={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)}
+                  end={<button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
+            ) : <>
             {/* the address: crumb (marginRight:auto) · strip · actions, the shape the Board uses [PageEditor §33] */}
             <LocationCrumb entry={entry} project={project} drawer={drawer} title={pageTitle} />
             {/* ITEM 121 I3 — the TEXT | INK switch, in the band, immediately
@@ -1241,8 +1258,13 @@ function PageEditorView({ id }: { id: string }) {
                 </button>
               )}
             />
+            </>}
             {(project || fromBoard) && <div className="sprint-actions">
-              {project && (
+              {project && reorgTop && (
+                // the old Pages button leaves the bar; its hidden strut keeps the row's height
+                <div className="sprint-toggle" data-top-strut aria-hidden="true"><button type="button" tabIndex={-1} className="sprint-toggle-btn active">{lexMany('page')}</button></div>
+              )}
+              {project && !reorgTop && (
                 <div className="sprint-toggle" role="tablist" aria-label={`${lex('binder')} view`}>
                   {/* CD4 S2 — the elder "Plan" flight tab (→ the legacy StructureBoard) is
                       retired; the arrow-dressed PLAN → door below is the bar's only Plan
@@ -1269,7 +1291,7 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
           // The Tutor is absent while the first-run gate holds (first run stays pure), not veiled-but-mounted: the veil's filter:blur would make a new containing block and break the Tutor's two absolute anchors (they need .desk-frame-stage). Otherwise the right hand mounts from first paint, unborn pages included, as BoardEditor, ScriptEditor and JournalEntry do; `entry` already carries the minted per-surface id (UnbornProvider registers it before children render), and Tutor.send() refuses on an unborn surface. [PageEditor §34]
           tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
@@ -1316,7 +1338,10 @@ function PageEditorView({ id }: { id: string }) {
                instrument: a Draft page is not "in TEXT", it is a word processor
                with ink on it. */
             inkPermission={inkPermission}
-            readouts={unborn ? undefined : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
+            /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
+            readouts={unborn ? undefined : reorgTop
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} /><PartArrows entry={entry} beforeLeave={leaveStable} /></>
+              : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}
           >
