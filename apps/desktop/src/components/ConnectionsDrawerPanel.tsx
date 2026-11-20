@@ -7,7 +7,9 @@ import { withoutFontMarks } from '../store/markRuns';
 import { setLinkDock } from '../store/linkDock';
 import { graftsOf, hidePlanCard, pairedPageRow, planGroupOf, restorePageLink, unhidePlanCard, type GraftRow, type GraftSubject } from '../store/grafts';
 import { assetGroupsOf } from '../reorg/backMenu/assetGroups';
-import { AssetGroups } from '../reorg/backMenu/AssetGroupsList';
+import { AssetGroups, type PartChoice } from '../reorg/backMenu/AssetGroupsList';
+import { partsOfDoc } from '../reorg/partsSeam';
+import { connectAssetToPart } from '../reorg/assetConnect';
 import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -17,7 +19,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // the Grafts pane: the subject is the open page, or on a board its selected card (or the board); + Graft first, then the paired page, the plan board folded, and the graft groups; with nothing grafted it is the + Graft control alone [ConnectionsDrawerPanel §3]
-type Undo = { line: string; run: () => void } | null;
+// `run` absent: a line with nothing to undo (the reorg's "→ Part" when it wrote nothing)
+type Undo = { line: string; run?: () => void } | null;
 const titleOf = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60) || 'Untitled';
 
 // ARBOR v2 MOCKUP (?arbor2=1, Arbor only): `only` shows ONE VIEW of this pane under the Tutor drawer's cloth tabs. 'board' = the board parts
@@ -106,6 +109,16 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
   const planWord = plan ? (plan.count === 1 ? t('graftPlanCardsOne') : t('graftPlanCardsMany').replace('{n}', String(plan.count))) : '';
   // the Assets tab's list: grouped by board, the Page's own board first (a page only; the Back menu is not drawn on a board)
   const backGroups = back && g && !snap ? assetGroupsOf(g, plan, (id) => titleOf(getJournalEntry(id)?.text)) : null;
+  // AN ASSET ONTO A PART (reorg/assetConnect.ts): "→ Part" lists the Doc's OTHER Parts, named as the Parts tab names them
+  const docParts = backGroups && page ? partsOfDoc(page).parts : [];
+  const partChoices: PartChoice[] = docParts.filter((p) => p.id !== page?.id).map((p) => ({ id: p.id, word: p.name || t('reorgUntitled') }));
+  const toPart = (asset: { entryId: string; boxId?: string }, title: string, partId: string) => {
+    const part = partChoices.find((p) => p.id === partId)?.word ?? '';
+    const r = connectAssetToPart(partId, asset, page?.id);
+    const fill = (k: 'reorgConnectedLine' | 'reorgAlreadyConnected' | 'reorgConnectRefused') => t(k).replace('{title}', title).replace('{part}', part);
+    if (r.made === 'link') { const id = r.linkId; setUndo({ line: fill('reorgConnectedLine'), run: () => { removePageLink(id); } }); }
+    else setUndo({ line: fill(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused') });
+  };
 
   return (
     <div className="wz-links-pane" data-links-pane="">
@@ -127,7 +140,7 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
           kindWord={(k) => (k === 'card' ? t('linksKindCard') : k === 'board' ? t('linksKindBoard') : t('linksKindPage'))}
           onRemove={remove} onHide={hide}
           onBeside={(entryId, boxId) => { if (page && !splitBlocked(mode)) openSplit(page.id, { entryId, ...(boxId ? { boxId } : {}) }); }}
-          onOpenBoard={(id) => navigate(`/page/${id}`)} />
+          onOpenBoard={(id) => navigate(`/page/${id}`)} parts={partChoices} onToPart={toPart} />
       )}
       {!backGroups && paired && only !== 'grafts' && (
         <div className="wz-graft-paired" data-graft-paired="" data-graft-entry={paired.entryId}>
@@ -197,7 +210,7 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
       {undo && (
         <div className="wz-graft-undo" data-graft-undo="">
           <span>{undo.line}</span>
-          <button type="button" onClick={() => { undo.run(); setUndo(null); }}>{t('graftUndo')}</button>
+          {undo.run && <button type="button" onClick={() => { undo.run?.(); setUndo(null); }}>{t('graftUndo')}</button>}
         </div>
       )}
       {pickerOpen && subject && <GraftPicker subject={subject} boxes={boxes} anchor={addRef.current} cameFrom={cameFrom} onClose={closePicker} beforePick={birthFirst} />}

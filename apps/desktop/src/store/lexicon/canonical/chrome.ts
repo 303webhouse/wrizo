@@ -264,6 +264,14 @@ export const CANONICAL_CHROME = {
   reorgAssetsOwnBoard: "This doc's board",
   reorgAssetsOpenBoard: 'Open',
   reorgAssetsLinkedDirectly: 'Docs linked directly',
+  // AN ASSET ONTO A PART (reorg/assetConnect.ts) - {title} the asset's title, {part} a Part's name. PROPOSED (ARBOR, Nov 20): placeholder words
+  // until the Wrizors word them ("→ Part" is the Machina spec's own command word)
+  reorgToPart: '→ Part',
+  reorgToPartAria: 'Connect {title} to a Part',
+  reorgToPartMenu: 'Connect to which Part',
+  reorgConnectedLine: '{title} connected to {part}.',
+  reorgAlreadyConnected: '{title} is already connected to {part}.',
+  reorgConnectRefused: '{title} could not be connected to {part}.',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
   reorgSplitLabel: 'Opened beside',

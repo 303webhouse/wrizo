@@ -147,7 +147,7 @@ const foreign = (partId) => `(() => {
   tgt.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }));
   return { accepted: over.defaultPrevented };
 })()`;
-const LINE = "(() => { const l = document.querySelector('.wz-sliver [data-reorg-connect-line]'); return l ? { text: (l.querySelector('[data-line-text]')?.textContent || '').trim(), role: l.getAttribute('role'), undo: !!l.querySelector('[data-line-undo]') } : null; })()";
+const LINE = "(() => { const l = document.querySelector('.wz-sliver [data-reorg-connect-line]'); return l ? { text: (l.querySelector('[data-line-text]')?.textContent || '').trim(), role: l.closest('[role]')?.getAttribute('role') ?? null, undo: !!l.querySelector('[data-line-undo]') } : null; })()";
 const PANEL_LINE = "(() => { const l = document.querySelector('[data-graft-undo]'); return l ? { text: (l.querySelector('span')?.textContent || '').trim(), undo: !!l.querySelector('button'), role: l.getAttribute('role') } : null; })()";
 async function settle(app) { await sleep(300); await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(400); }
 const X1 = '[data-back-assets] [data-back-asset][data-graft-box="x1"]';

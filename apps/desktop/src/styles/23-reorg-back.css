@@ -42,3 +42,13 @@
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
+/* AN ASSET ONTO A PART (reorg/assetConnect.ts): "→ Part" on each asset row and board head, and its list of the Doc's other Parts, laid over the
+   drawer below the button (the list never pushes the rows). Rows and heads are drag sources: the grab cursor says so. */
+.wz-back-asset[draggable='true'], .wz-back-boardhead[draggable='true']{ cursor:grab; }
+.wz-back-topart-wrap{ position:relative; flex:none; }
+.wz-back-topart{ flex:none; height:22px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; cursor:pointer; }
+.wz-back-topart:hover, .wz-back-topart:focus-visible, .wz-back-topart[aria-expanded='true']{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-back-topart-menu{ position:absolute; top:calc(100% + 4px); right:0; z-index:20; min-width:180px; display:flex; flex-direction:column; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
+.wz-back-topart-menu button{ display:block; width:100%; padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+.wz-back-topart-menu button:hover, .wz-back-topart-menu button:focus-visible{ text-decoration:underline; text-underline-offset:3px; outline:1px solid var(--text-low); outline-offset:-2px; }

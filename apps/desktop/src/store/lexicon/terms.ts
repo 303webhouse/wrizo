@@ -124,6 +124,8 @@ export type DeskTermId =
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
+  // AN ASSET ONTO A PART (reorg plan 5.2, reorg/assetConnect.ts): the drag's lines and the keyboard path's "→ Part"
+  | 'reorgToPart' | 'reorgToPartAria' | 'reorgToPartMenu' | 'reorgConnectedLine' | 'reorgAlreadyConnected' | 'reorgConnectRefused'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
   | 'flux3JackedExit' | 'flux3JackedNudge' | 'flux3JackedLeave' | 'flux3JackedLeaveHint'
