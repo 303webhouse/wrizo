@@ -415,12 +415,13 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     window.addEventListener('resize', measure);
     // #113: the measures (--tw-start-offset, --tw-end-pad, the band's line unit) are read from boxes that are still SETTLING when the page opens - the zoom's transform runs for a
     // moment - and until now they were only refreshed because the opening staircase ran band() (which measures) for seconds afterwards. With the opening landing at once, band() runs once or
-    // twice, so the measures are taken again when the boxes they read settle: a resize of the scroller or of the hold box, and the end of the page's own transform.
+    // twice, so the measures are taken again when the boxes they read settle: a resize of the scroller or of the hold box, and the end of the page's own transform - and ONLY until her first
+    // act: after it the measures are taken where they always were (band), because a measure moves the padding the text sits in, and a hint appearing must not move her line (polish10-hint H1).
     // while she has done nothing yet, a settled box also LANDS the writing line again (the hold it was landed at may be a hold that has since moved: a drawer shut, the zoom arrived)
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { measure(); if (opening()) schedule(); }) : null;
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { if (opening()) { measure(); schedule(); } }) : null;
     if (ro) { ro.observe(container); if (zoom?.holdRef.current) ro.observe(zoom.holdRef.current); }
     const pageEl = container.closest('.mode-page');
-    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform') { measure(); if (opening()) schedule(); } };
+    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform' && opening()) { measure(); schedule(); } };
     pageEl?.addEventListener('transitionend', onPageTransition);
     measure();
     setScrolled();
