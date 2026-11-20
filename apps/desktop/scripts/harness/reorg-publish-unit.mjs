@@ -1,0 +1,142 @@
+// REORG PUBLISHING AS A VIEW + EXPORT, BROWSERLESS (Fable, Nov 20, 11:45 am; apps/desktop/src/reorg/publishingText.ts). No browser, no box: the real publishingText.ts is transpiled and run, and each law
+// is given a mutant (a text rewrite of the source) that must land and turn its own check red.
+//   ORD   the file is in the DOC's order whatever order the Parts were chosen in
+//   ALL   no Parts chosen (null) = every Part; an empty choice goes out as nothing (count 0, no content)
+//   SUB   only the chosen Parts' words are in the file; an unchosen Part's words are nowhere in it
+//   WORDS every chosen Part's words are in the file byte for byte (md and txt), in order; strip the title and the headings and the rest is the Parts' own words, nothing added
+//   HEAD  md headings go by the level as drawn (## ### ####), a Part the writer did not name has none, and with no title the base is one deeper up (# ## ###); txt headings are the plain name
+//   TITLE a Doc of one loose page (title null) puts nothing above its words; a Doc with a title leads with it (md: # title)
+//   EMPTY a Part with no words and no name goes out as nothing; a named Part with no words keeps its heading
+//   LVL   a level outside 0..2 is held to the range; the heading never grows past ####
+// Run: node scripts/harness/reorg-publish-unit.mjs   (from apps/desktop; browserless: needs no box turn)
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const ts = require('typescript');
+const SRC = new URL('../../src/reorg/publishingText.ts', import.meta.url);
+const lf = (s) => s.split('\r\n').join('\n');
+const exists = fs.existsSync(SRC);
+const srcText = exists ? lf(fs.readFileSync(SRC, 'utf8')) : '';
+
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+
+function load(src) {
+  const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+  const m = { exports: {} };
+  new Function('module', 'exports', out)(m, m.exports);
+  return m.exports;
+}
+
+const P = (id, name, level, md, txt = md) => ({ id, name, level, md, txt });
+const PARTS = [
+  P('a', 'Opening', 0, 'It was **dark**.\nVery dark.', 'It was dark.\nVery dark.'),
+  P('b', '', 0, 'Unnamed words, kept.'),
+  P('c', 'The turn', 1, 'Then a light.\r\nAnd a door.', 'Then a light.\nAnd a door.'),
+  P('d', 'Deeper', 2, 'Down here.'),
+  P('e', '', 0, ''),
+  P('f', 'Named but empty', 0, ''),
+  P('g', 'Close', 0, 'The end \u{1F600} of it.'),
+];
+
+function suite(src) {
+  const R = {};
+  if (!src) return R;
+  const X = load(src);
+  const out = (title, fmt, ids) => X.publicationText(title, PARTS, fmt, ids);
+  const idsOf = (c) => c;
+  // ORD
+  {
+    const asked = out('T', 'md', ['g', 'a', 'c']);
+    const natural = out('T', 'md', ['a', 'c', 'g']);
+    const iA = asked.content.indexOf('Opening'), iC = asked.content.indexOf('The turn'), iG = asked.content.indexOf('Close');
+    R.ORD = { pass: asked.content === natural.content && iA >= 0 && iA < iC && iC < iG, detail: JSON.stringify({ iA, iC, iG }) };
+  }
+  // ALL
+  {
+    const all = out('T', 'md', null), every = out('T', 'md', PARTS.map((p) => p.id)), none = out('T', 'md', []);
+    R.ALL = { pass: all.content === every.content && all.count === PARTS.length && none.count === 0 && none.content === '', detail: JSON.stringify({ allCount: all.count, none }) };
+  }
+  // SUB
+  {
+    const sub = out('T', 'txt', ['a', 'g']);
+    const pass = sub.count === 2 && sub.content.includes('It was dark.') && sub.content.includes('The end \u{1F600} of it.') && !sub.content.includes('Then a light') && !sub.content.includes('Unnamed words') && !sub.content.includes('Down here');
+    R.SUB = { pass, detail: JSON.stringify(sub) };
+  }
+  // WORDS: strip title and headings; what is left is the bodies, joined by blank lines
+  for (const fmt of ['md', 'txt']) {
+    const ids = ['a', 'b', 'c', 'd', 'g'];
+    const r = out('T', fmt, ids);
+    const bodies = PARTS.filter((p) => ids.includes(p.id)).map((p) => (fmt === 'md' ? p.md : p.txt).replace(/\s+$/, ''));
+    let left = r.content;
+    left = left.replace(fmt === 'md' ? /^# T\n\n/ : /^T\n\n/, '');
+    for (const p of PARTS) if (p.name) left = left.replace(fmt === 'md' ? new RegExp(`^#{2,4} ${p.name}\\n\\n`, 'm') : new RegExp(`^${p.name}\\n\\n`, 'm'), '');
+    R[`WORDS-${fmt}`] = { pass: left === bodies.join('\n\n') + '\n', detail: JSON.stringify({ left: left.slice(0, 160) }) };
+  }
+  // HEAD
+  {
+    const md = out('T', 'md', null).content, tx = out('T', 'txt', null).content;
+    const heads = md.split('\n').filter((l) => /^#+ /.test(l));
+    const want = ['# T', '## Opening', '### The turn', '#### Deeper', '## Named but empty', '## Close'];
+    const noTitle = out(null, 'md', null).content.split('\n').filter((l) => /^#+ /.test(l));
+    const wantNo = ['# Opening', '## The turn', '### Deeper', '# Named but empty', '# Close'];
+    const plain = !/^#/m.test(tx) && tx.includes('\n\nOpening\n\nIt was dark.') && tx.startsWith('T\n\n');
+    R.HEAD = { pass: JSON.stringify(heads) === JSON.stringify(want) && JSON.stringify(noTitle) === JSON.stringify(wantNo) && plain && !md.includes('Unnamed words, kept.\n\n## '), detail: JSON.stringify({ heads, noTitle, plain }) };
+  }
+  // TITLE
+  {
+    const one = [P('x', '', 0, 'Just a loose page.')];
+    const a = X.publicationText(null, one, 'md', null), b = X.publicationText('A Doc', one, 'md', null);
+    R.TITLE = { pass: a.content === 'Just a loose page.\n' && b.content === '# A Doc\n\nJust a loose page.\n', detail: JSON.stringify({ a: a.content, b: b.content }) };
+  }
+  // EMPTY
+  {
+    const md = out('T', 'md', ['e']).content, named = out('T', 'md', ['f']).content;
+    R.EMPTY = { pass: md === '# T\n' && named === '# T\n\n## Named but empty\n', detail: JSON.stringify({ md, named }) };
+  }
+  // LVL
+  {
+    const odd = [P('p', 'Neg', -3, 'one'), P('q', 'Deep', 9, 'two')];
+    const md = X.publicationText('T', odd, 'md', null).content.split('\n').filter((l) => /^#+ /.test(l));
+    R.LVL = { pass: JSON.stringify(md) === JSON.stringify(['# T', '## Neg', '#### Deep']), detail: JSON.stringify(md) };
+  }
+  void idsOf;
+  return R;
+}
+
+// ---- baseline ---------------------------------------------------------------------------------------------------------------------------------------
+ok('the real publishingText.ts exists', exists, 'src/reorg/publishingText.ts is missing');
+const base = exists ? suite(srcText) : {};
+const KEYS = ['ORD', 'ALL', 'SUB', 'WORDS-md', 'WORDS-txt', 'HEAD', 'TITLE', 'EMPTY', 'LVL'];
+for (const k of KEYS) ok(`${k} on the real publishingText.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
+
+// ---- mutants ----------------------------------------------------------------------------------------------------------------------------------------
+const MUT = [
+  ['the file follows the order the Parts were ticked in', 'ORD', (t) => t.replace('return parts.filter((p) => want.has(p.id));', () => 'return ids.map((i) => parts.find((p) => p.id === i)).filter((p) => !!p) as PubPart[];')],
+  ['no choice (null) goes out as nothing', 'ALL', (t) => t.replace('if (!ids) return parts.slice();', () => 'if (!ids) return [];')],
+  ['an empty choice goes out as every Part', 'ALL', (t) => t.replace('if (chosen.length === 0) return { content: \'\', count: 0 };', () => '')],
+  ['an unchosen Part still goes out', 'SUB', (t) => t.replace('return parts.filter((p) => want.has(p.id));', () => 'return parts.slice();')],
+  ['the file trims a Part\'s words from the front', 'WORDS-md', (t) => t.replace("const body = (format === 'md' ? p.md : p.txt).replace(/\\s+$/, '');", () => "const body = (format === 'md' ? p.md : p.txt).trim().replace(/^\\S+\\s*/, '');")],
+  ['the .txt carries the .md conventions', 'WORDS-txt', (t) => t.replace("const body = (format === 'md' ? p.md : p.txt)", () => 'const body = (p.md)')],
+  ['an unnamed Part gets a heading of its own words', 'HEAD', (t) => t.replace('const name = p.name.trim();', () => "const name = p.name.trim() || body.split('\\n')[0];")],
+  ['the headings ignore the level', 'HEAD', (t) => t.replace("Math.max(0, Math.min(2, p.level))", () => '0')],
+  ['a titleless Doc keeps the deeper base', 'HEAD', (t) => t.replace('const base = title === null ? 1 : 2;', () => 'const base = 2;')],
+  ['a loose page gets a title anyway', 'TITLE', (t) => t.replace('if (title !== null) blocks.push', () => "if (true) blocks.push")],
+  ['an empty unnamed Part leaves a blank block', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body && !name) blocks.push(\'\');')],
+  ['a named empty Part loses its heading', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body) continue;')],
+  ['a level above the range is not held', 'LVL', (t) => t.replace('Math.max(0, Math.min(2, p.level))', () => 'Math.max(0, p.level)')],
+];
+for (const [name, key, fn] of MUT) {
+  const after = exists ? fn(srcText) : srcText;
+  const landed = exists && after !== srcText;
+  let res = null, err = null;
+  try { res = landed ? suite(after) : null; } catch (e) { err = e; }
+  const red = !!res && res[key] && res[key].pass === false;
+  ok(`MUT ${name}: it LANDED and ${key} goes RED`, landed && !err && red, JSON.stringify({ landed, err: err && String(err.message).slice(0, 120), key, pass: res && res[key] && res[key].pass }));
+}
+
+let bad = 0;
+for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`); if (!c.pass) bad += 1; }
+console.log(bad ? `\nREORG-PUBLISH-UNIT VERIFY: FAIL - ${bad}/${checks.length} failed` : `\nREORG-PUBLISH-UNIT VERIFY: PASS (${checks.length} checks)`);
+process.exit(bad ? 1 : 0);

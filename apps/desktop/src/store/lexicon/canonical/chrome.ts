@@ -343,6 +343,16 @@ export const CANONICAL_CHROME = {
   reorgPartNoNext: 'No Part after this one',
   reorgPartEnd: 'end of Part {n}',
   reorgPartNext: 'Next',
+  // PUBLISHING AS A VIEW (reorg/PublishView.tsx, behind ?reorg=1 in Machina): the whole Doc as one read-only scroll, and the two files. Placeholder words until the Wrizors word them
+  reorgPubLabel: 'Publishing · the whole doc, read-only, as it will go out',
+  reorgPubBack: 'Back to writing',
+  reorgPubEmptyPart: 'Nothing written in this Part yet.',
+  reorgPubTick: 'Send Part {n} out',
+  reorgPubCount: '{n} of {total} Parts go out',
+  reorgPubAll: 'All',
+  reorgPubNone: 'None',
+  reorgPubMd: 'Download .md',
+  reorgPubTxt: 'Download .txt',
   // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
   // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
   flux3JackedExit: 'Wired in · {key} to unplug',
