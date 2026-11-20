@@ -97,7 +97,8 @@
 [data-theme='machina'] .reorg-parts-words{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
 
 /* MOVING BETWEEN PARTS (reorg/PartMoves.tsx; the prototype's .part-arrow and .part-foot, frame P2-12D). The arrows ride the paper's overlay
-   slot, placed by measure on the page's own scroller, so nothing in the page moves; the scroller's bar steps in from either end to make room. */
+   slot, placed by measure on the page's own scroller, so nothing in the page moves. They sit over the bar's two ends: the bar itself is not
+   inset, because the webkit scrollbar mechanism lives in ONE place only (styles/02-scrollbars.css; scrollbar-flush-source T5). */
 [data-theme='machina'] .reorg-part-arrows{ position:absolute; z-index:3; width:0; pointer-events:none; }
 [data-theme='machina'] .reorg-part-arrow{ position:absolute; left:-11px; width:22px; height:22px; box-sizing:border-box; padding:0; margin:0;
   display:flex; align-items:center; justify-content:center; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047;
@@ -107,9 +108,6 @@
 [data-theme='machina'] .reorg-part-arrow:hover:not([disabled]){ background:#E6E8EA; }
 [data-theme='machina'] .reorg-part-arrow:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
 [data-theme='machina'] .reorg-part-arrow[disabled]{ opacity:.35; cursor:default; }
-@supports selector(::-webkit-scrollbar){
-  [data-theme='machina'] .mode-page:has(> .reorg-part-arrows) > .mode-scroll::-webkit-scrollbar-track{ margin-block:30px; }
-}
 [data-theme='machina'] .reorg-part-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:26px; padding-top:12px;
   border-top:1px solid #D2D6DA; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:#525A62; user-select:none; }
 [data-theme='machina'] .reorg-part-foot-go{ border:0; background:none; padding:0; font:inherit; color:inherit; cursor:pointer; }
