@@ -415,6 +415,14 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.addEventListener(ev, onTyped, { passive: true, capture: true });
     scrollListenTarget.addEventListener('keydown', onUserKey as EventListener, { passive: true });
     window.addEventListener('resize', measure);
+    // #113: the measures (--tw-start-offset, --tw-end-pad, the band's line unit) are read from boxes that are still SETTLING when the page opens - the zoom's transform runs for a
+    // moment - and until now they were only refreshed because the opening staircase ran band() (which measures) for seconds afterwards. With the opening landing at once, band() runs once or
+    // twice, so the measures are taken again when the boxes they read settle: a resize of the scroller or of the hold box, and the end of the page's own transform.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => measure()) : null;
+    if (ro) { ro.observe(container); if (zoom?.holdRef.current) ro.observe(zoom.holdRef.current); }
+    const pageEl = container.closest('.mode-page');
+    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform') measure(); };
+    pageEl?.addEventListener('transitionend', onPageTransition);
     measure();
     setScrolled();
     schedule();
@@ -428,6 +436,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
       window.removeEventListener('resize', measure);
+      ro?.disconnect();
+      pageEl?.removeEventListener('transitionend', onPageTransition);
       cancelAnimationFrame(raf);
       stopGlide();
       if (verifyTimer) clearTimeout(verifyTimer);
