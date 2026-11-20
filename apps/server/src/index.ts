@@ -6,6 +6,7 @@ import { sessionMiddleware } from './session';
 import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { railRouter } from './railRoutes';
+import { prefsRouter } from './prefsRoutes';
 import { tutorRouter } from './tutor';
 import { logError } from './logSafe';
 import { getServerBuild } from './build';
@@ -105,6 +106,8 @@ app.use('/api/sync', requireAuth, express.json({ limit: SYNC_BODY_LIMIT }));
 app.use('/api', syncRouter);
 // The reorg's rail, saved with the account (POLISH; Nick, Nov 18): GET/PUT /api/rail and /api/box-picture/:drawerId, each behind requireAuth.
 app.use('/api', railRouter);
+// The reorg's account preferences (Fable, Nov 19): GET/PUT /api/prefs, its own door and its own column, behind requireAuth.
+app.use('/api', prefsRouter);
 // TU1 S5 — the Tutor's one new route (POST /api/tutor/chat).
 app.use('/api', tutorRouter);
 

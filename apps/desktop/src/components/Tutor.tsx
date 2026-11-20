@@ -23,6 +23,9 @@ import { DrawerNote } from './DrawerNote';
 import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
+import { REORG } from '../reorg/flag';
+import { BackPlan } from '../reorg/backMenu/BackPlan';
+import { SplitHost } from '../reorg/split/SplitHost';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -137,11 +140,21 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   // PHASE 1 (S3) - the right drawer's tab: the Tutor (today's contents, untouched) or the theme's links word (empty for now).
-  const [rightTab, setRightTab] = useState<RightTab>('tutor');
+  // THE REORG'S BACK MENU (phase 4, behind ?reorg=1, Machina only, on a page - a board keeps its two tabs): the drawer's tab row reads PLAN | ASSETS | FEEDBACK
+  // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
+  // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
+  const tutorTheme = useTheme();
+  const back = REORG && tutorTheme === 'machina' && pageKind !== 'board';
+  // (the two source shapes drawers-p1 K5/K5b read stay verbatim: the state below opens on the TUTOR tab, and the tab body lines read `rightTab`; PLAN is its own flag, folded into `rightTab`)
+  const [tabState, setTabState] = useState<RightTab>('tutor');
+  const [planOn, setPlanOn] = useState(false);
+  const rightTab: RightTab | 'plan' = planOn ? 'plan' : tabState;
+  const setRightTab = (v: RightTab | 'plan'): void => { if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
+  // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
+  useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
   // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
   // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
-  const tutorTheme = useTheme();
   const arbor2 = isArbor2() && tutorTheme === 'plateau';
   const [arborBoard, setArborBoard] = useState(false);
   const [docked, setDocked] = useState(false);
@@ -723,11 +736,16 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: 'board', label: t('railBoard') }],
     // ARBOR v2 MOCKUP r18 (the Wrizors, Nov 4: a stray "?" stood in the room beside the GRAFTS folder tab): the Grafts "?" is drawn on the Grafts
     // pane's own first row instead (ConnectionsDrawerPanel's `help`), inside the drawer
-    value: rightTab === 'links' && arborBoard ? 'board' : rightTab,
+    value: rightTab === 'links' && arborBoard ? 'board' : (rightTab === 'plan' ? RIGHT_TABS[0] : rightTab),
     onChange: (v: RightTab | 'board') => { setArborBoard(v === 'board'); setRightTab(v === 'board' ? 'links' : v); },
     label: t('drawerRightTabsLabel'),
   } : undefined;
-  const rightTabs: DrawerTabsConfig<RightTab> = {
+  const rightTabs: DrawerTabsConfig<RightTab | 'plan'> = back ? {
+    items: [{ id: 'plan', label: t('reorgBackPlan') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: RIGHT_TABS[0], label: t('tutorTabTutor') }],
+    value: rightTab,
+    onChange: setRightTab,
+    label: t('reorgBackTabsLabel'),
+  } : {
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }],
     notes: { links: <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> },
     value: rightTab,
@@ -737,6 +755,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
   return (
     <>
+      {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
+      {back && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
@@ -1006,7 +1026,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             )}
             </div>
           )}
-          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}
+          {back && rightTab === 'plan' && <BackPlan entry={entry} />}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}
