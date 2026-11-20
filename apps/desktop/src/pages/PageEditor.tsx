@@ -1296,7 +1296,7 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry, publishing } : undefined} /></FirstRunVeil>}
           // The Tutor is absent while the first-run gate holds (first run stays pure), not veiled-but-mounted: the veil's filter:blur would make a new containing block and break the Tutor's two absolute anchors (they need .desk-frame-stage). Otherwise the right hand mounts from first paint, unborn pages included, as BoardEditor, ScriptEditor and JournalEntry do; `entry` already carries the minted per-surface id (UnbornProvider registers it before children render), and Tutor.send() refuses on an unborn surface. [PageEditor §34]
           tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already

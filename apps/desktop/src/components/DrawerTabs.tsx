@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 
 // a real tablist: role=tab, aria-selected and a roving tabindex; the chosen tab reads olive (where you are), brass stays for action controls; controlled by the host [DrawerTabs §1]
 
-export interface DrawerTabItem<T extends string> { id: T; label: ReactNode }
+/** `disabled`: the tab is greyed and does nothing (the reorg's FINALIZE greys TEXT and INK; `title` says why). It stays in the row, so the row does not change shape. */
+export interface DrawerTabItem<T extends string> { id: T; label: ReactNode; disabled?: boolean; title?: string }
 
 /** Which tab a key press chooses. Pure so it is tested without a DOM. Null = the key means nothing here. */
 export function nextTab<T extends string>(ids: readonly T[], current: T, key: string): T | null {
@@ -35,6 +36,7 @@ export function DrawerTabs<T extends string>({ items, notes, value, onChange, la
     const next = nextTab(ids, value, e.key);
     if (next === null) return;
     e.preventDefault();
+    if (items.find(i => i.id === next)?.disabled) return;
     onChange(next);
     refs.current.get(next)?.focus();
   };
@@ -54,7 +56,8 @@ export function DrawerTabs<T extends string>({ items, notes, value, onChange, la
           aria-controls={`${idPrefix}-panel`}
           tabIndex={value === it.id ? 0 : -1}
           data-on={value === it.id ? 'true' : 'false'}
-          onClick={() => onChange(it.id)}
+          {...(it.disabled ? { 'data-disabled': 'true', 'aria-disabled': true, title: it.title } : {})}
+          onClick={() => { if (!it.disabled) onChange(it.id); }}
         >
           {it.label}
         </button>
