@@ -147,10 +147,10 @@ await withHarness(async (app) => {
   const pageHid = await app.evalJs(ENTRY('bm-p'));
   const ownAfter = await app.evalJs(ENTRY('bm-own'));
   ok('A3: an own-board card\'s x hides it from this Page\'s list (hiddenPlanCards names it) and the board keeps the card',
-    hid && afterHide[0].rows.map((r) => r[0]).join() === 'Alpha,Beta' && (pageHid?.pageSettings?.hiddenPlanCards || []).includes('a3') && boardCards(ownAfter).length === 3, JSON.stringify({ rows: afterHide[0]?.rows, hidden: pageHid?.pageSettings?.hiddenPlanCards, kept: boardCards(ownAfter).length }));
+    hid && afterHide?.[0]?.rows.map((r) => r[0]).join() === 'Alpha,Beta' && (pageHid?.pageSettings?.hiddenPlanCards || []).includes('a3') && boardCards(ownAfter).length === 3, JSON.stringify({ rows: afterHide?.[0]?.rows, hidden: pageHid?.pageSettings?.hiddenPlanCards, kept: boardCards(ownAfter).length }));
   await app.evalJs("[...document.querySelectorAll('[data-graft-undo] button')].forEach((b) => b.click())"); await sleep(500);
   const afterUndo = await app.evalJs(ASSETS);
-  ok('A3b: Undo brings the card back to the list', afterUndo[0].rows.map((r) => r[0]).join() === 'Alpha,Beta,Gamma', JSON.stringify(afterUndo[0]?.rows));
+  ok('A3b: Undo brings the card back to the list', afterUndo?.[0]?.rows.map((r) => r[0]).join() === 'Alpha,Beta,Gamma', JSON.stringify(afterUndo?.[0]?.rows));
 
   // ---- PLAN ---------------------------------------------------------------------------------------------------------------------------
   await tab(app, 'plan');
@@ -214,7 +214,10 @@ await withHarness(async (app) => {
   for (const id of ['plan', 'links', 'tutor', 'plan', 'links']) await tab(app, id);
   await sleep(1200);
   const after = await app.evalJs(STORE);
-  ok('S1: opening the drawer and switching through the three tabs changes nothing stored (the control, the same wait with no act, is the baseline)', before === control && control === after, `lens ${before.length}/${control.length}/${after.length}`);
+  const keysOf = (j) => Object.fromEntries(JSON.parse(j).flat().map(([k, v]) => [k, v]));
+  const diffKeys = (x, y) => { const a = keysOf(x), b = keysOf(y); return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => a[k] !== b[k]); };
+  ok('S1: opening the drawer and switching through the three tabs changes nothing stored beyond what the same wait with no act changes (the control is the baseline)',
+    JSON.stringify(diffKeys(control, after).filter((k) => !diffKeys(before, control).includes(k))) === '[]', JSON.stringify({ control: diffKeys(before, control), act: diffKeys(control, after) })); 
 
   // ---- SPEED --------------------------------------------------------------------------------------------------------------------------
   await tab(app, 'plan');

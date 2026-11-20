@@ -3,6 +3,7 @@ import type { Box, JournalEntry } from '../../types';
 import { useDeskLexicon } from '../../store/deskLexicon';
 import { generateId, getJournalEntry, getPlanBoardId, isUnborn, saveJournalEntry, subscribe } from '../../store/persistence';
 import { getOrCreatePlanBoard } from '../../store/persistence/planPairing';
+import { cache } from '../../store/persistence/core';
 import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
 import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
@@ -16,15 +17,18 @@ import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renam
 // IT NEVER RE-RENDERS ON A KEYSTROKE (law L): the snapshot is the board's own `boxes` array plus the hidden cards' ids as a string, so a keystroke
 // in the page (which saves the PAGE, never this board) changes neither. It is mounted only while the Plan tab is the one showing.
 
-interface PlanSnap { boardId: string | null; boxes: readonly Box[] | undefined; hiddenKey: string }
+interface PlanSnap { key: string; boardId: string | null; boxes: readonly Box[] | undefined; hiddenKey: string }
 let planMemo: (PlanSnap & { pageId: string }) | null = null;
+// read from the store's own cache, never through getJournalEntry (which CLONES the whole entry, text and all, on every call): this runs on every store
+// notification, including each keystroke's save, and must cost nothing and return the SAME object until the board or the hidden list has changed
 function planSnapshot(pageId: string): PlanSnap {
-  const boardId = getPlanBoardId(pageId);
-  const board = boardId ? getJournalEntry(boardId) : null;
-  const hiddenKey = (getJournalEntry(pageId)?.pageSettings?.hiddenPlanCards ?? []).join(',');
-  const boxes = board?.boxes;
-  if (planMemo && planMemo.pageId === pageId && planMemo.boardId === (board ? boardId : null) && planMemo.boxes === boxes && planMemo.hiddenKey === hiddenKey) return planMemo;
-  planMemo = { pageId, boardId: board ? boardId : null, boxes, hiddenKey };
+  const page = cache.journalEntries.find((e) => e.id === pageId && !e.deletedAt);
+  const boardId = page?.planBoardId ?? null;
+  const board = boardId ? cache.journalEntries.find((e) => e.id === boardId && !e.deletedAt) : undefined;
+  const hiddenKey = (page?.pageSettings?.hiddenPlanCards ?? []).join(',');
+  const key = `${board ? boardId : ''}|${board?.updatedAt ?? ''}|${hiddenKey}`;
+  if (planMemo && planMemo.pageId === pageId && planMemo.key === key) return planMemo;
+  planMemo = { pageId, key, boardId: board ? boardId : null, boxes: board?.boxes, hiddenKey };
   return planMemo;
 }
 

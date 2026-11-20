@@ -111,7 +111,8 @@ function SplitOpen({ asset }: { pageId: string; asset: SplitRef }) {
 
   if (!geo) return null;
   return createPortal(
-    <aside className="wz-split-asset" data-split-asset={asset.entryId} {...(asset.boxId ? { 'data-split-box': asset.boxId } : {})}
+    // a key pressed in the split's side is not the page's and not the menus': the Tutor's own document-level key rule would close its (hidden) drawer on the grip's arrow keys, and the menus must come back as she left them
+    <aside className="wz-split-asset" onKeyDown={(e) => e.nativeEvent.stopPropagation()} data-split-asset={asset.entryId} {...(asset.boxId ? { 'data-split-box': asset.boxId } : {})}
       style={{ left: `${geo.left}px`, top: `${geo.top}px`, height: `${geo.height}px`, width: `${geo.width}px` }} aria-label={t('reorgSplitLabel')}>
       <div className="wz-split-grip" role="separator" aria-orientation="vertical" aria-label={t('reorgSplitGrip')} tabIndex={0}
         aria-valuemin={Math.round(geo.min)} aria-valuemax={Math.round(Math.max(geo.min, geo.max))} aria-valuenow={Math.round(geo.left)}
