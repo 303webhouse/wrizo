@@ -298,9 +298,15 @@ await withHarness(async (app) => {
     const md = await app.evalJs("(() => ({ bold: document.querySelectorAll('.md-bold').length, marks: document.querySelectorAll('.md-mark').length }))()");
     // ARCHIVED PARK (#13 step 14): archive/item112a.mjs.parked.md record 1
     const mdLit = await app.evalJs("(() => ({ bold: document.querySelectorAll('.forward-only-editor .md-bold').length, escapes: document.querySelectorAll('.forward-only-editor .md-escape.md-mark-hidden').length }))()");
+    // the successor's reader: the same counts, outside page breaks' measuring copy (.wz-letter-measure)
+    const mdLitB = await app.evalJs("(() => { const live = (s) => [...document.querySelectorAll(s)].filter((e) => !e.closest('.wz-letter-measure')).length; return { bold: live('.forward-only-editor .md-bold'), escapes: live('.forward-only-editor .md-escape.md-mark-hidden') }; })()");
     tlParks.s0 = { md, mdLit };
-    ok("S2/§3 S0 [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold: typed formatting characters are literal",
-      md.marks >= 4 && mdLit.escapes === 4 && mdLit.bold === 0, JSON.stringify({ md, mdLit }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok("S2/§3 S0 [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold: typed formatting characters are literal",
+    //   md.marks >= 4 && mdLit.escapes === 4 && mdLit.bold === 0, JSON.stringify({ md, mdLit }));
+    ok("S2/§3 S0-B [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator on the live page - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold",
+      md.marks >= 4 && mdLitB.escapes === 4 && mdLitB.bold === 0, JSON.stringify({ md, mdLitB }));
+    ok('MUT-S0-B the plain reader is RED on the same page (it counts the copy\'s escapes too) while S0-B\'s is green: the skip is what holds it', mdLit.escapes > mdLitB.escapes && mdLitB.escapes === 4, JSON.stringify({ mdLit, mdLitB }));
 
     const plain = await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); return e ? e.innerText.replace(/\\u200b/g, '') : null; })()");
     // ARCHIVED PARK (#13 step 14): archive/item112a.mjs.parked.md record 2
