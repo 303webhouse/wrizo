@@ -8,7 +8,7 @@ import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
 import {
-  ensureDoc, joinPart, movePart, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
+  ensureDoc, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
 
@@ -110,14 +110,24 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
     flushNow();
     setOpenMenu(null);
   };
+  const refusal = (reason: string) => t(reason === 'carries' ? 'reorgPartJoinCarries' : reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo');
   const join = (p: PartRow) => {
     save();
-    const r = joinPart(p.id);
     setOpenMenu(null);
-    if (!r.ok) { say(t(r.reason === 'carries' ? 'reorgPartJoinCarries' : r.reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo')); return; }
+    // the Part she is on: deleting the open page first would let the page's own not-found guard send her to the Desk. INK's refusals are read
+    // first; then she goes to the Part above, and the join runs once that page is hers (it adopts the joined words through #76)
+    if (p.id === latest.id) {
+      const me = partById(p.id), above = parts[p.n - 2] ? getJournalEntry(parts[p.n - 2].id) : null;
+      if (!me || !above || p.n < 2) { say(refusal('unknown')); return; }
+      if (me.carries) { say(refusal('carries')); return; }
+      if (me.kind === 'script' || above.pageType === 'script') { say(refusal('not-text')); return; }
+      navigate(routeForEntry(above));
+      window.setTimeout(() => { joinPart(p.id); flushNow(); }, 0);
+      return;
+    }
+    const r = joinPart(p.id);
+    if (!r.ok) { say(refusal(r.reason)); return; }
     flushNow();
-    // she joined the Part she is on: it is gone, so she goes to the Part above, which now ends with her words
-    if (p.id === latest.id) { const keep = getJournalEntry(r.keepId); if (keep) navigate(routeForEntry(keep)); return; }
     say(fill(t('reorgPartsJoinDone'), { n: p.n - 1 }), { kind: 'join', token: r.token });
   };
   const colour = (p: PartRow, c: PartColor | null) => { setPartColor(p.id, c); flushNow(); setOpenMenu(null); };

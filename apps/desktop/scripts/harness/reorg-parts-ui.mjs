@@ -92,11 +92,14 @@ async function seed(app) {
     page('pu-2', 'Ledger two', { origin: 'project', projectId: ledger.id, orderIndex: 1 });
     page('pu-3', 'Ledger three', { origin: 'project', projectId: ledger.id, orderIndex: 2 });
     const now = '2026-04-01T00:00:09.000Z';
-    page('pu-4', 'Ledger four holds a link', { origin: 'project', projectId: ledger.id, orderIndex: 3, pageLinks: [{ id: 'pu-link', aEntryId: 'pu-4', bEntryId: 'pu-lone', createdAt: now, updatedAt: now }] });
+    page('pu-4', 'Ledger four holds a link', { origin: 'project', projectId: ledger.id, orderIndex: 3 });
+    // the page seam carries no pageLinks: the link goes on through the entry seam
+    W.wrizoPatchEntry('pu-4', { pageLinks: [{ id: 'pu-link', aEntryId: 'pu-4', bEntryId: 'pu-lone', createdAt: now, updatedAt: now }] });
     const P = W.wrizoParts;
     if (P) { P.setPartLevel(ledger.id, 'pu-2', 1); P.setPartColor('pu-2', 'moss'); }
     W.wrizoFlushNow();
-    return { ledger: ledger.id, topSet: ${q(topSet)}, door: !!P };
+    const linked = ((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'pu-4') || {}).pageLinks || []).length === 1;
+    return { ledger: ledger.id, topSet: ${q(topSet)}, door: !!P && linked };
   })()`);
 }
 
@@ -120,7 +123,11 @@ async function partsTab(app) {
   await sleep(500);
   await app.evalJs(pick('parts')); await sleep(400);
 }
-async function menu(app, id) { await app.evalJs(click(`[data-part-more="${id}"]`)); await sleep(300); return app.evalJs(MENU(id)); }
+async function menu(app, id) {
+  const isOpen = await app.evalJs(`document.querySelector('[data-part-more="${id}"]')?.getAttribute('aria-expanded') === 'true'`);
+  if (!isOpen) { await app.evalJs(click(`[data-part-more="${id}"]`)); await sleep(300); }
+  return app.evalJs(MENU(id));
+}
 async function act(app, id, a) { await menu(app, id); const r = await app.evalJs(click(`[data-part-menu="${id}"] [data-part-act="${a}"]`)); await sleep(500); return r; }
 async function flushed(app) { await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(400); }
 // the caret at a plain-text offset in the page, the way a press would leave it (the editor's own text nodes, in reading order)
@@ -260,7 +267,8 @@ await withHarness(async (app) => {
   const n1a = { hash: await app.evalJs('location.hash'), same: JSON.stringify(n0.e) === JSON.stringify(await app.evalJs(ENTRIES)) };
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(200);
   for (const ch of 'Fresh') { await app.typeKeys(ch); await sleep(40); }
-  await sleep(1200); await flushed(app);
+  await app.waitFor(`window.wrizoParts && window.wrizoParts.partsOfDoc(${q(L)}).some((p) => p.name === 'Fresh')`, { timeout: 8000, label: 'Fresh stored' }).catch(() => {});
+  await sleep(300);
   const n1 = { ...n1a, rows: await app.evalJs(`window.wrizoParts ? window.wrizoParts.partsOfDoc(${q(L)}).map((p) => [p.id, p.name]) : null`), line: await app.evalJs("(document.querySelector('.reorg-top [data-top-part-count]')?.textContent || '').trim()") };
   const last = n1.rows && n1.rows[n1.rows.length - 1];
   ok('N1 "New part" opens a fresh empty page (nothing stored at the press); her first word births it as Ledger\'s last Part',
@@ -277,7 +285,8 @@ await withHarness(async (app) => {
   const lone = await app.evalJs(`(${ALL}.find((e) => e.id === 'pu-lone') || {}).projectId ?? null`);
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(200);
   for (const ch of 'Second') { await app.typeKeys(ch); await sleep(40); }
-  await sleep(1200); await flushed(app);
+  await app.waitFor(`window.wrizoParts && ${q(made[0] ? made[0][0] : '')} && window.wrizoParts.partsOfDoc(${q(made[0] ? made[0][0] : '')}).some((p) => p.name === 'Second')`, { timeout: 8000, label: 'Second stored' }).catch(() => {});
+  await sleep(300);
   const n2 = { made, lone, hash: await app.evalJs('location.hash'), rows: made[0] ? await app.evalJs(`window.wrizoParts.partsOfDoc(${q(made[0][0])}).map((p) => [p.id, p.name])`) : null, line: await app.evalJs("(document.querySelector('.reorg-top [data-top-part-count]')?.textContent || '').trim()") };
   ok('N2 on a lone page "New part" makes it its own Doc (one set, named after it, the page moved in) and opens a fresh page there; her first word makes it Part 2 of 2',
     made.length === 1 && made[0][1] === 'A lone page' && lone === made[0][0] && !!n2.rows && n2.rows.length === 2 && n2.rows[0][0] === 'pu-lone' && n2.rows[1][1] === 'Second' && n2.line === 'Part 2 of 2', n2);
