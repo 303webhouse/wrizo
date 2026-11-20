@@ -90,7 +90,7 @@ try { await withHarness(async (app) => {
   await reloadBack();
   const w1 = await snap();
   const order = (await P(`p.partsOfDoc(${J(doc)})`)).map((x) => x.id);
-  ok('L5 a re-order and a level change write no word: every Part\'s stored text is identical before and after, across a reload; the order is the one asked for', J(w0) === J(w1) && order.length === 4 && order[0] === ids[3] && order[3] === ids[0], J({ order: order.map((id) => ids.indexOf(id)) }));
+  ok('L5 a re-order and a level change write no word: every Part\'s stored text is identical before and after, across a reload; the order is the one asked for (the first Part moves to the end WITH its subsection, then the last comes to the front)', J(w0) === J(w1) && order.length === 4 && order.map((id) => ids.indexOf(id)).join('') === '3201', J({ order: order.map((id) => ids.indexOf(id)) }));
 
   // L6 make it its own Doc
   const run = await P(`p.partsOfDoc(${J(doc)})`);

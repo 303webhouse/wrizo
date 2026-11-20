@@ -346,9 +346,8 @@ export function splitPart(partId: string, offset: number, liveText?: string, bet
     pageSettings: { ...(settings ?? baseSettings(born)), ...(level ? { level } : {}) } as PageSettings,
   };
   saveJournalEntry(row);
-  // the tail follows the source's whole run: the subsections stay under the head, where they were
-  const runEnd = me ? runOf(parts.map(p => p.level), me.index)[1] : parts.length;
-  placeRun(docId, [born.id], parts[Math.max(0, runEnd - 1)]?.id ?? partId);
+  // the tail sits directly below the head: the text reads on from one to the other, and a join of the tail puts it back onto exactly the Part it was cut from. Subsections follow the tail, in the order they read.
+  placeRun(docId, [born.id], partId);
   if (between) between();
   // second: the source loses the tail
   const again = getJournalEntry(partId);

@@ -113,7 +113,13 @@ function suite(src) {
         if (!j.ok || back !== text || orderNames(L).join() !== [L.ids[0], L.ids[1]].join()) { all = false; first = first || { name, off, back: String(back).slice(0, 40), j }; }
       }
     }
-    R.SJ = { pass: all && count > 500, detail: JSON.stringify({ count, first }) };
+    // a Part with subsections: the tail sits right below the head (reading order), a join puts it back, and the subsections never move
+    const C = fixture(src, ['Head and tail words here', 'child one', 'sibling'], [0, 1, 0]);
+    const cs = C.P.splitPart(C.ids[0], 9);
+    const afterSplit = cs.ok ? orderNames(C).map((id) => textOf(C, id)).join('|') : '';
+    const cj = cs.ok ? C.P.joinPart(cs.tailId) : null;
+    const runOk = cs.ok && afterSplit === 'Head and |tail words here|child one|sibling' && !!cj && cj.ok && cj.keepId === C.ids[0] && textOf(C, C.ids[0]) === 'Head and tail words here' && orderNames(C).join() === C.ids.join();
+    R.SJ = { pass: all && runOk && count > 500, detail: JSON.stringify({ count, first, runOk }) };
   }
   // SN: a cut never lands inside a surrogate pair
   {
@@ -290,6 +296,7 @@ const MUT = [
   ['any colour string is accepted', 'KEY', (t) => t.replace("export const isPartColor = (v: unknown): v is PartColor => typeof v === 'string' && (PART_COLORS as readonly string[]).includes(v);", () => "export const isPartColor = (v: unknown): v is PartColor => typeof v === 'string';")],
   ['a join drops ink and cards without a word', 'JR', (t) => t.replace("  if (carriesMore(me)) return { ok: false, reason: 'carries' };\n", () => '')],
   ['the undo forces the join back even when a half changed', 'UN', (t) => t.replace('if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;', () => 'if (!src || !tail) return false;')],
+  ['a split puts the tail after the whole run of the source, below its subsections', 'SJ', (t) => t.replace('  placeRun(docId, [born.id], partId);', () => '  { const rl = me ? runOf(parts.map(p => p.level), me.index)[1] : parts.length; placeRun(docId, [born.id], parts[Math.max(0, rl - 1)]?.id ?? partId); }')],
   ['make-it-its-own-Doc keeps the old levels', 'OD', (t) => t.replace('const lvl = Math.max(0, p.level - run[0].level);', () => 'const lvl = p.level;')],
   ['a new Part follows the run\'s top, splitting its subsections from it', 'NP', (t) => t.replace("if (after && level <= after.level) { const end = runOf(parts.map(p => p.level), after.index)[1]; place = parts[end - 1].id; }", () => '')],
 ];
