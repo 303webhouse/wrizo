@@ -259,7 +259,8 @@ async function upsertProjects(userId: string, records: any[], acked: string[] = 
            last_active_page_id = excluded.last_active_page_id,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
            tutor = excluded.tutor,
-           doc_settings = excluded.doc_settings,
+           -- THE GUARD (Fable, Nov 20): a device on an older build re-sends a project WITHOUT docSettings (SQL null); the settings already stored are kept. Clearing writes {} (never null), so a clear still wins.
+           doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),
            synced_at = now()
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at

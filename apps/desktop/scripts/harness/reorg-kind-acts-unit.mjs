@@ -113,7 +113,9 @@ function suite(acts) {
     const apName = ps(L, L.ids[2]).name === 'References';   // AP has no word: the name stays
     L.A.applyStyleGuide(L.ids[0], 'chicago');
     const none = L.A.applyStyleGuide(L.ids[0], 'none');
-    const cleared = !('docSettings' in L.api.getProject(DOC));
+    // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: clearing leaves {} on the Doc's record, never absence). The original, verbatim:
+    // const cleared = !('docSettings' in L.api.getProject(DOC));
+    const cleared = JSON.stringify(L.api.getProject(DOC).docSettings) === '{}';
     const untouched = setupOf(L, L.ids[0]) === setupOf(L, L.ids[1]) && ps(L, L.ids[2]).name === 'Sources';
     L.S.log.length = 0;
     const again = L.A.applyStyleGuide(L.ids[0], 'none');

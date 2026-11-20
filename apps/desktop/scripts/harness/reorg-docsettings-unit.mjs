@@ -124,7 +124,9 @@ function suite(src) {
     L.D.setDocSetting('p1', { styleGuide: 'ap' });
     L.D.setDocSetting('p1', { styleGuide: 'none' });
     const afterNone = proj(L);
-    R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && !('docSettings' in afterNone), detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
+    // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: clearing leaves {} on the record, never absence). The original, verbatim:
+    // R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && !('docSettings' in afterNone), detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
+    R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && JSON.stringify(afterNone.docSettings) === '{}', detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
   }
   return R;
 }
@@ -153,7 +155,9 @@ ok('COL the column reaches the server and back (types, migrate, the projects ups
 // ---- mutants ---------------------------------------------------------------------------------------------------------------------------------------------
 const MUT = [
   ['a write to the Doc also rewrites a Part\'s row', 'SET', (t) => t.replace('saveProject(row);\n  return true;', () => 'saveProject(row); { const p1 = getJournalEntry(entryId); if (p1) saveJournalEntry({ ...p1 }); }\n  return true;')],
-  ['a clear leaves an empty docSettings behind', 'SET', (t) => t.replace('if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings', () => 'row.docSettings')],
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: clearing leaves {} on the record, never absence). The original, verbatim:
+  // ['a clear leaves an empty docSettings behind', 'SET', (t) => t.replace('if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings', () => 'row.docSettings')],
+  ['the last key removed deletes docSettings, so a device that never chose and a Doc that cleared look the same to the server', 'SET', (t) => t.replace('row.docSettings = next as DocSettings;', () => 'if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings = next as DocSettings;')],
   ['the same value is written again', 'SET', (t) => t.replace('if (JSON.stringify(next) === JSON.stringify(cur)) return false;', () => '')],
   ['a write drops a key it does not know', 'SET', (t) => t.replace('const next: Record<string, unknown> = { ...cur };', () => 'const next: Record<string, unknown> = {};')],
   ['the Doc\'s own style guide is not read', 'READ', (t) => t.replace('if (set && isStyleGuide(set.docSettings?.styleGuide)) return set.docSettings.styleGuide;', () => '')],
