@@ -34,6 +34,7 @@ import { firstPlainLine } from '../store/entryText';
 import { wordCount } from '../store/wordCount';   // the ONE word counter (c13-10f: no private copy)
 import { getUserPageDefaults } from '../store/pageDefaults';
 import { readMarks, closeMark } from '../store/markRuns';
+import { liveBoxes } from '../store/boxTombstones';
 
 // ---------------------------------------------------------------- the saved keys
 
@@ -93,7 +94,7 @@ const firstWords = (text: string): string => {
 export const cleanName = (name: string): string => name.replace(/\s+/g, ' ').trim().slice(0, PART_NAME_MAX);
 
 const carriesMore = (e: JournalEntry): boolean =>
-  !!(e.strokes && e.strokes.length) || !!(e.boxes && e.boxes.length) || !!(e.pageLinks && e.pageLinks.length) || !!(e.tutor && (e.tutor as { messages?: unknown[] }).messages?.length);
+  !!(e.strokes && e.strokes.length) || liveBoxes(e.boxes).length > 0 || !!(e.pageLinks && e.pageLinks.length) || !!(e.tutor && (e.tutor as { messages?: unknown[] }).messages?.length);
 
 /** The entries a Doc lists as Parts: its live, non-board entries (a system board and a page's plan face are never Parts), in the writer's order. */
 function entriesOfDoc(docId: string): JournalEntry[] {

@@ -38,6 +38,7 @@ import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
 import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
+import { PublishParts } from '../reorg/PublishParts';
 import { SymbolPicker, TextFold } from '../reorg/TextFolds';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
@@ -193,7 +194,7 @@ export interface SliverProps {
   hasMilestones?: boolean;
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
-  front?: { entry: JournalEntry; host?: PartsHost };
+  front?: { entry: JournalEntry; host?: PartsHost; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
 }
 
 export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
@@ -310,14 +311,16 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const frontInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
   const frontList = reorgFront ? frontTabsFor(content.kind as DrawerKind, !!frontInstrument) : [];
   const frontTab: FrontTab | undefined = !frontList.length ? undefined
+    : front?.publishing ? 'parts'
     : frontInstrument?.value === 'ink' ? 'ink'
     : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
   const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
   const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
     ? {
-        items: frontList.map((id) => ({ id, label: t(FRONT_WORD[id]) })),
+        items: frontList.map((id) => (front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })),
         value: frontTab,
         onChange: (v: FrontTab) => {
+          if (front?.publishing && v !== 'parts') return;
           setFrontPick(v);
           if (frontInstrument && (v === 'ink') !== (frontInstrument.value === 'ink')) frontInstrument.onChange(v === 'ink' ? 'ink' : 'text');
         },
@@ -368,7 +371,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} frontPublishing={reorgFront && !!front?.publishing} />
         </SideDrawer>
       </div>
     </div>
@@ -588,7 +591,7 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, frontPublishing }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost; frontPublishing?: boolean }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
@@ -608,7 +611,8 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
   const textFolds = !!frontTab;
   // the Team B restyle: the Doc's kind at the tab's head opens today's style guide and templates, through the host's own acts (Draft passes them)
   const docMenu = content.kind === 'draft' ? { styleGuide: content.styleGuide, onPickStyleGuide: content.onPickStyleGuide, templates: content.templates } : undefined;
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} /></div>;
+  // FINALIZE (INK): while the publishing view is open, PARTS only orders and ticks what goes out
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body">{frontPublishing ? <PublishParts entry={frontEntry} /> : <PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} />}</div>;
 
   return (
     <div className="wz-sliver-body">

@@ -15,6 +15,7 @@
 //   NP    a new Part follows the Part asked for (after its subsections), is deeper only when asked, and a Doc with no Part starts at level 0
 //   BOLD  a cut inside a styled run (bold, italic, underline, strike, a font span, nested) closes the style at the cut and reopens it in the tail; a join gives the text back byte for byte; the cut never lands inside a mark (Fable, Nov 20)
 //   COL   PART_COLORS is the slots a to f (each theme draws its own six); an old clay, amber, moss, teal, slate or plum is READ as its slot and never written back (Fable, Nov 20)
+//   TOMB  a card deleted from a Part's page (a tombstone, or a purge marker) is not carried by the Part: a join is not refused for it; a live card still refuses (ARBOR's T11 report, Nov 20)
 // Run: node scripts/harness/reorg-parts-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -62,7 +63,7 @@ function load(src) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const { S, api } = makeStore();
   const mods = {
-    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/markRuns': MARKRUNS,
+    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/markRuns': MARKRUNS, '../store/boxTombstones': { liveBoxes: (b) => (b ?? []).filter((x) => !x.deletedAt && !x.purgedAt) },
     '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api, '../store/wordCount': { wordCount: (t) => { const s = String(t ?? '').trim(); return s ? s.split(/\s+/).length : 0; } },
   };
   const module = { exports: {} };
@@ -219,6 +220,23 @@ function suite(src) {
     const refusedOld = L3.P.setPartColor(L3.ids[0], 'clay') === false && L3.api.getJournalEntry(L3.ids[0]).pageSettings.color === 'c';
     // a Part carrying an old name, split: the tail takes no colour (a per-Part fact, as before)
     R.COL = { pass: slots && accepts && mapped && stored === 'c' && refusedOld, detail: JSON.stringify({ slots, accepts, read, stored, refusedOld }) };
+  }
+  // TOMB (ARBOR's report, Nov 20: box-tombstones T11 reads parts.ts's raw `.boxes`): a card deleted from a Part's page is a tombstone, hidden from every reader; the Part does not carry it, so a join is not refused for it
+  {
+    const mk = (boxes) => { const L = fixture(src, ['above words', 'below words']); L.api.saveJournalEntry({ ...L.api.getJournalEntry(L.ids[1]), boxes }); return L; };
+    const dead = mk([{ id: 'b1', kind: 'note', text: 'gone', x: 0, y: 0, deletedAt: '2026-01-01T00:00:00.000Z' }]);
+    const purged = mk([{ id: 'b1', purgedAt: '2026-01-01T00:00:00.000Z' }]);
+    const live = mk([{ id: 'b1', kind: 'note', text: 'here', x: 0, y: 0 }]);
+    const mixed = mk([{ id: 'b1', kind: 'note', text: 'gone', x: 0, y: 0, deletedAt: '2026-01-01T00:00:00.000Z' }, { id: 'b2', kind: 'note', text: 'here', x: 0, y: 0 }]);
+    const carries = (L) => (L.P.partsOfDoc(DOC)[1] || {}).carries;
+    const cs = { dead: carries(dead), purged: carries(purged), live: carries(live), mixed: carries(mixed) };   // read BEFORE any join (a join soft-deletes the Part it joins)
+    const dj = dead.P.joinPart(dead.ids[1]);
+    const lj = live.P.joinPart(live.ids[1]);
+    const mj = mixed.P.joinPart(mixed.ids[1]);
+    R.TOMB = {
+      pass: cs.dead === false && cs.purged === false && cs.live === true && cs.mixed === true && dj.ok === true && lj.ok === false && lj.reason === 'carries' && mj.ok === false,
+      detail: JSON.stringify({ cs, dj: dj.ok, lj, mj: mj.ok }),
+    };
   }
   // NL-S: after every write of a split, the tail words and the head words are both in a stored live row
   {
@@ -405,7 +423,7 @@ function suite(src) {
 
 // ---- baseline: every check green on the real source ------------------------------------------------------------------------------------------------
 const base = suite(partsText);
-const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL'];
+const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL', 'TOMB'];
 for (const k of KEYS) ok(`${k} on the real parts.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 // DEF: pageDefaults strips a Part's own facts at the door (a source read: the strip is one destructure)
@@ -425,6 +443,7 @@ const MUT = [
   ['a join leaves the seam of a split in a styled run', 'BOLD', (t) => t.replace('return across.length === peeled.length && across.every((m, i) => m === peeled[i]) ? healed : plain;', () => 'return plain;')],
   ['a cut may land inside a run\'s own mark', 'BOLD', (t) => t.replace('if (p > r.open && p <= o1) { p = r.open; again = true; } else if (p >= c1 && p < c2) { p = c2; again = true; }', () => '')],
   ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  ['a join is refused for a deleted card too (the raw read)', 'TOMB', (t) => t.replace('liveBoxes(e.boxes).length > 0', () => '!!(e.boxes && e.boxes.length)')],
   ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
   ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
   ['the slots stop at e', 'COL', (t) => t.replace("['a', 'b', 'c', 'd', 'e', 'f'] as const", () => "['a', 'b', 'c', 'd', 'e'] as const")],
