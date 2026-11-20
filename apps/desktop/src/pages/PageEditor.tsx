@@ -8,6 +8,8 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
+import type { PartsHost } from '../reorg/PartsList';
+import { splitPart } from '../reorg/parts';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -464,6 +466,22 @@ function PageEditorView({ id }: { id: string }) {
   const leaveRef = useRef<() => void>(() => {});
   leaveRef.current = () => { flush(); flushNow(); };
   const [leaveStable] = useState(() => () => leaveRef.current());
+  // THE REORG - the Parts tab's "Split here" (Fable, Nov 19 9:20 pm; INK's splitPart): her words are saved first, then the Part is cut at her
+  // caret (the editor's own plain offsets, the coordinates its text is stored in). The tail is a new Part directly below; this page keeps the head,
+  // which the editor adopts through #76's own path (nothing unsaved here, so the stored head is shown). No caret in the page: nothing is cut.
+  const splitRef = useRef<NonNullable<PartsHost['splitHere']>>(() => ({ ok: false, why: 'text' }));
+  splitRef.current = () => {
+    if (unbornRef.current) return { ok: false, why: 'text' };
+    const ed = editorRef.current;
+    const sel = ed && ed.isConnected ? getSelectionOffsets(ed) : null;
+    if (!sel) return { ok: false, why: 'caret' };
+    flush(); flushNow();
+    const r = splitPart(id, sel.start, textRef.current);
+    if (!r.ok) return { ok: false, why: 'text' };
+    flushNow();
+    return { ok: true, token: r.token };
+  };
+  const [partsHost] = useState<PartsHost>(() => ({ flush: () => leaveRef.current(), splitHere: () => splitRef.current() }));
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
   const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
@@ -1291,7 +1309,7 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
+          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry, host: partsHost } : undefined} /></FirstRunVeil>}
           // The Tutor is absent while the first-run gate holds (first run stays pure), not veiled-but-mounted: the veil's filter:blur would make a new containing block and break the Tutor's two absolute anchors (they need .desk-frame-stage). Otherwise the right hand mounts from first paint, unborn pages included, as BoardEditor, ScriptEditor and JournalEntry do; `entry` already carries the minted per-surface id (UnbornProvider registers it before children render), and Tutor.send() refuses on an unborn surface. [PageEditor §34]
           tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
