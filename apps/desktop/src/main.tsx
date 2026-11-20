@@ -40,6 +40,7 @@ import './store/deleteSeams';
 import { FLUX3 } from './flux3/flag';
 if (FLUX3) void import('./flux3/boot');
 import { isArbor2, arbor2Enabled } from './arbor2/flag';
+import { isMachina2, machina2Enabled } from './machina2/flag';
 import { subscribeTheme } from './store/theme';
 
 // TH1 — apply the theme + preference attributes to <html> before the first
@@ -51,6 +52,10 @@ initThemeCast();
 // first time a writer switches to Arbor in the session; under the test-only ?arbor2=0 nothing is fetched.
 if (isArbor2()) void import('./arbor2/mount');
 else if (arbor2Enabled()) { const off = subscribeTheme((t) => { if (t === 'plateau') { off(); void import('./arbor2/mount'); } }); }
+// MACHINA'S LOOK (src/machina2/flag.ts): on by default in Machina (Fable, Nov 19), loaded the same way - Machina at boot, or the first switch to it;
+// under the test-only ?machina2=0 nothing is fetched.
+if (isMachina2()) void import('./machina2/mount');
+else if (machina2Enabled()) { const off = subscribeTheme((t) => { if (t === 'machina') { off(); void import('./machina2/mount'); } }); }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
