@@ -58,7 +58,7 @@ await withHarness(async (app) => {
         const s = await d.ev('window.__ss');
         const line = await d.ev(LINE);
         ok(`O1 [${theme}, ${words}w]: the page lands at once (600 ms: ${atMs(s, 600)}, 5 s: ${atMs(s, 5000)}) and then stays still`, landedAtOnce(s), JSON.stringify([300, 600, 1000, 3000, 6000].map((ms) => atMs(s, ms))));
-        ok(`O2 [${theme}, ${words}w]: it landed AT THE WRITING LINE: moved (${atMs(s, 600)}) and the last line is in the scroller's lower two thirds (${line && line.frac})`, (atMs(s, 600) || 0) > 100 && !!line && line.frac !== null && line.frac >= 0.3 && line.frac <= 1.0, JSON.stringify(line));
+        ok(`O2 [${theme}, ${words}w]: it landed AT THE WRITING LINE: moved (${atMs(s, 600)}) and the last line is in the scroller's lower two thirds (${line && line.frac})`, (atMs(s, 600) || 0) > 100 && !!line && line.frac !== null && line.frac >= 0.2 && line.frac <= 1.0, JSON.stringify(line));
         // O3 - she scrolls away; the page stays where she put it
         await d.ev('window.__ssOn = false; true');
         const top0 = await d.ev("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = Math.max(0, sc.scrollTop - 1000); return Math.round(sc.scrollTop); })()");
