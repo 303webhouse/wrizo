@@ -68,7 +68,7 @@ svg { display: block; flex: 0 0 auto; }
   --quiet: #9AA1A8;       /* G3 */
   --name: #F4F5F6;        /* G0 */
   --strong: #F4F5F6;      /* G0 */
-  --hover: #3A4047;       /* G5 */
+  --hover: #2E3338;       /* between G6 and G5: the quiet ink still reads 4.5:1 on it */
   --field: #151719;
   --blue-text: #7FA0BC;
   --tint-yellow: #37321F;
@@ -165,7 +165,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--strong); ou
 .where { display: flex; align-items: center; gap: 9px; margin-left: 16px; min-width: 0; }
 .crumb { height: 39px; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; border-bottom: 2px solid transparent; box-sizing: border-box; }
 .crumb:hover > span:not(.ptag) { text-decoration: underline; }
-.crumb-project { font-size: 12px; color: #9AA1A8; }                       /* Level 3: the widest */
+.crumb-project { font-size: 12px; color: #B4BAC0; }                       /* Level 3: the widest. A name, so 7:1 on the bar. */
 .crumb-doc { font-size: 13px; font-weight: 500; color: #E6E8EA; }          /* Level 2 */
 .crumb-part { font-size: 13px; font-weight: 600; color: #F4F5F6; }         /* Level 1: where she is, wearing the Part's colour */
 .crumb-part.is-open { border-bottom-color: #FF9800; }
@@ -334,8 +334,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--strong); ou
 .tab.is-on { color: var(--strong); font-weight: 600; border-bottom-color: var(--strong); }
 .pin-both[aria-pressed="true"] { color: var(--strong); background: var(--hover); }
 .menu-body {
-  position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  position: relative; flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto;
+  scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--ctl) transparent;
   display: flex; flex-direction: column;
+}
+/* The scrollbar's 4 px are kept in every stage, so a row is the same width whether the list scrolls or not. */
+@supports selector(::-webkit-scrollbar) {
+  .menu-body { scrollbar-width: auto; scrollbar-color: auto; }
+  .menu-body::-webkit-scrollbar { width: 4px; }
+  .menu-body::-webkit-scrollbar-track { background: transparent; }
+  .menu-body::-webkit-scrollbar-thumb { background: var(--ctl); }
 }
 .menu-body > * { flex: 0 0 auto; }
 

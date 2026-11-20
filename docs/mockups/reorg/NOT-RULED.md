@@ -278,6 +278,44 @@ The brief rules three things here: pressing a stage changes what the two menus o
 175. **The stage strip's own tag** (Fable, Nov 19). A NOT RULED tag stands just left of SPRINT in the top bar, drawn light on the dark bar with the tag's dashed edge. It is there in every stage, in a split (where the buttons fade and the tag does not), and in SPRINT's fade (where the buttons fade with the rest and the tag does not). Its tooltip says the stages and what the page draws are NOT RULED. It is not on a Board, where the Board's views stand in the strip's place.
 176. **Two more doors:** `#sprint-faded` (SPRINT, both menus open, the chrome and the stage buttons already faded, as after a keystroke) and `#finalize-search` (FINALIZE with "toll" found across the whole Doc).
 
+## Team A, "The quiet desk" (`teams/a/`, the two-teams brief of Nov 20)
+
+One of two competing redesigns of the look. These lines are numbered A1 on, so they cannot collide with the list above or with Team B's. Each is flagged on screen in the review notes layer (F2). The words are in `teams/a/WORDS.md`, the colour pairs in `teams/a/PAIRS.md`.
+
+- A1. **One side menu open at a time** (PROPOSED, the brief's bet for Team A). Opening one folds the other to a handle against the page; the handle says which tab the folded menu holds.
+- A2. **`#build` opens with PARTS open and the Back menu folded on ASSETS.** The brief's state 1 has both tabs open; `#build-both` draws that.
+- A3. **Two menus at once:** the pin in a menu's head, or Alt+\. It lasts until the app closes. Lasting longer would be one new saved setting: **[DATA]**, Nick decides.
+- A4. **Letting go of the pin** keeps the menu whose pin was pressed and folds the other; with Alt+\ it keeps the Front menu.
+- A5. **Alt+[ and Alt+]** open and fold the Front and Back menus. The keys are a guess.
+- A6. **The sort of the PARTS offers into two levels:** "New part", Page setup, Kind and Style guide act on the whole Doc; Split here, Join, Move, Name, Level, Colour and Make it its own Doc act on the Part she is in. The stage table does not say which is which.
+- A7. **Which three Part acts show:** Split here, Join, Move, because they are the only Part acts offered in both BUILD and EDIT. The rest are under "More".
+- A8. **An act not offered in the stage she is in fades where it stands** (38%) and cannot be pressed, so nothing moves between stages. The prototype takes it away. It reads under the 4.5:1 floor.
+- A9. **The Part she is in starts expanded** in the Parts list, showing its connected assets. In the prototype every Part starts folded.
+- A10. **Which ASSETS offer shows:** "Connect". The other three are under "More".
+- A11. **PLAN and FEEDBACK** show a stage's first three offers and put the rest under "More". Not tuned.
+- A12. **ASSETS shows this Part's assets first, then "Other Parts", folded.** With it unfolded the other Parts follow in order, then "Connected to no Part".
+- A13. **One visible act on an asset row: "Open beside".** "Open" (a Board only, as in the prototype) is on the row's own menu and on Shift+Enter.
+- A14. **The Part tints** (PROPOSED colour role): yellow `#F1EBCF`, blue `#E0E8F0`, grey `#E6E8EA`; in the dark room `#37321F`, `#24313D`, `#2E3338`. Tinted: the Part she is in (its row, its tools, its assets), the head of ASSETS when it is filtered to one Part, and the head of the asset's side in a split.
+- A15. **Where the Part's tag also stands:** the top bar, the page's left margin beside the heading, the readout under the page, the ASSETS groups, the head of the asset's side. On the page it is in the margin and is not one of her words.
+- A16. **The top bar's left zone:** the Project at Level 3, the Doc at Level 2, the Part at Level 1, with arrows between. "Thesis" is written as the Project is named, not in capitals.
+- A17. **The stage she is in** is a lit cell (`#2E3A46`) with larger, bolder letters over the brass line.
+- A18. **What changed, the command line and search are icons,** after the stages. Their words and keys show on hover and on keyboard focus, at once.
+- A19. **The three icons' drawings** (a plus over a minus, a prompt, a lens) are guesses.
+- A20. **Words on hover** are a dark chip with a blue left edge, shown with no delay. The prototype uses the browser's own.
+- A21. **The review notes layer:** small dashed flags reading NR, P or D in the quiet grey; a flag's words show when it is pointed at, focused or pressed; F2 and a switch at the bottom right turn the layer off and on. Off, the flags keep their place and are only not drawn.
+- A22. **The stage bands are gone as bands.** A stage's offers are the tab's own tools; each tab keeps one NR flag that says the cell is NOT RULED and carries the table's aside.
+- A23. **The blue edge on a chip** (157: new with the reorg) is not drawn. Blue is kept for guidance.
+- A24. **"What changed with this stage"** is drawn with a dashed edge, as a note, and lists only what each menu gained and lost. The prototype's panel says more.
+- A25. **"page 2 of 3"** is the brief's example, drawn as given for Part 3. The page-break marks spec was not in this lane's reading folder; the line for the other Parts ("page 1 of N", 260 words a page) is a guess.
+- A26. **The dark room** (PROPOSED): the grey ramp turned over (room G7, panels G6, hairlines G5, labels G2, quiet text G3). The bars stay as they are. The page stays paper, with its ink.
+- A27. **The way into the dark room** is the "Dark" switch in THEME, which only flipped in the prototype (45).
+- A28. **SPRINT's fade is a cut, not a fade,** because Machina has no motion. The prototype fades over about a second (171). The notes switch stays, with the strip's tag.
+- A29. **Capitals.** The tabs, the stages, the rail and the drawers' titles keep theirs. Group heads and "Close" are set in sentence case (`WORDS.md`, table 4).
+- A30. **A menu's scrollbar** is 4 px, and its room is kept whether the list scrolls or not, so a row has one width in every stage.
+- A31. **In a split the notes switch** moves under the page's side, as the prototype's corner tag does.
+- A32. **Not redrawn by Team A:** the search and its results, a Board on its own, FINALIZE's whole-Doc page, renaming, and the rail's drawers past their first screen. Each shows a note when pressed and works as in the prototype.
+- A33. **Team A's doors:** `teams/a/index.html#build`, `#sprint`, `#split`, `#dark`, and for checking `#build-assets`, `#build-both`, `#desk`, `#more`, `#other-parts`, `#docs`, `#notes-off`, `#sprint-typing`, `#edit`, `#changed`.
+
 ## For checking only
 
 131. **Doors by address:** `index.html#docs`, `#projects`, `#box`, `#unfiled`, `#trash`, `#list`, `#list-grants`, `#list-notebook`, `#pins-list`, `#day-one`, `#theme`, `#controls`, `#unfiled-piece`, `#parts-drop`, `#part-end`, `#front`, `#parts-expanded`, `#marker`, `#assets`, `#plan`, `#feedback`, `#search`, `#search-assets`, `#search-plan`, `#search-feedback`, `#search-project`, `#search-everything`, `#replace`, `#split`, `#split-pop`, `#split-drop`, `#split-block`, `#split-pdf`, `#split-doc`, `#split-same-doc`, `#split-search`, `#board`, `#board-connect`, `#board-connected`, `#board-pop`, `#board-plan`, `#board-flip`, `#board-walk`, `#board-storyboard`, `#board-thumbnails`, `#sprint`, `#sprint-faded`, `#build`, `#edit`, `#finalize`, `#finalize-search`, `#text`, `#ink`, `#session`, `#changed` open one state directly. The search doors arrive with "toll" already typed; `#replace` also has "due" in "Replace with". The Board doors open "Harbor map". The four stage doors open both menus in that stage, each on the tab it was on; `#session` is SPRINT with the Front menu on TEXT; `#changed` is EDIT against BUILD with the panel and both menus open.
