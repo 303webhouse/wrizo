@@ -231,3 +231,16 @@ reorgSplitLabel@machina=Opened Beside
 reorgAssetsOwnBoard@machina=This Doc's Board
 reorgAssetsLinkedDirectly@machina=Docs Linked Directly
 reorgColourNone@machina=No Colour
+# THE TEAM B RESTYLE, slice 2 (ARBOR, Nov 20): the Doc's kind and its menu, Structure, the link badge (Machina's headings in Title Case)
+reorgDocKindStandard=Standard
+reorgDocKindScreenplay=Screenplay
+reorgDocKindAria=The kind of this doc: {kind}
+reorgDocStyleGuide=Style Guide
+reorgDocPageSetup=Page Setup
+reorgDocSpecialParts=Special Parts
+reorgDocPresets=Presets
+reorgSpecialTitle=Title Page
+reorgSpecialBibliography=Bibliography
+reorgPartsStructure=Structure
+reorgPartAssetsOne={n} asset
+reorgPartAssetsMany={n} assets

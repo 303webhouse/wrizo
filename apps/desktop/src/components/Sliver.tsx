@@ -603,7 +603,9 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost }:
   // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
   // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
   const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} stage={partsStage} host={frontHost} /></div>;
+  // the Team B restyle: the Doc's kind at the tab's head opens today's style guide and templates, through the host's own acts (Draft passes them)
+  const docMenu = content.kind === 'draft' ? { styleGuide: content.styleGuide, onPickStyleGuide: content.onPickStyleGuide, templates: content.templates } : undefined;
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} /></div>;
 
   return (
     <div className="wz-sliver-body">

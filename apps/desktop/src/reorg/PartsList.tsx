@@ -8,11 +8,13 @@ import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
 import {
-  ensureDoc, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
+  ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
 import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
 import { SLOT_WORD, slotLetter } from './colourSlots';
+import { assetCountOf } from './partAssets';
+import { DocKindMenu, type DocMenuHost } from './DocKindMenu';
 
 // THE FRONT MENU'S PARTS TAB (plan step 3.2; the prototype's frontMenu PARTS rows, frame P2-13A). Every Part of the Doc she is in, in her order
 // (reorg/partsSeam.ts over INK's reorg/parts.ts): its number, its colour tag (its slot's letter on its colour; no colour, an empty place of the
@@ -44,14 +46,20 @@ export interface PartsHost {
 // Yellow, Mid, Solid: reorg/colourSlots.ts SLOT_WORD, the Assets tab's own names) and drawn by the same tokens; its tag reads the SLOT's letter
 // ("a label first, the colour second", Nick, Nov 11), so a Part and its assets read as one thread.
 
-export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost }) {
+// THE TEAM B RESTYLE (slice 2, Nov 20): in BUILD and EDIT the Doc's kind heads the tab (./DocKindMenu.tsx); "New Part" stays the zone's one main
+// act, and Split, Move, Merge and Nest / Unnest for the Part she is on sit in "Structure", closed by default (1D; the row menus keep them too, "also
+// in the Structure section"); the Part she is on wears the brass bar only on a default colour (1C; all six slots are the defaults until the picker
+// arrives) and its tile's tint when it has one; each Part with assets carries its link badge (Decision 2), the count of its Assets tab's rows, which
+// POLISH wires to open the Assets tab at that Part.
+export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost; docMenu?: DocMenuHost }) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   // follows the store (a rename in the top rail, a pull, a tool's write), never her keystrokes: the signature changes only with what the list draws
   useSyncExternalStore(subscribe, () => {
     const latest = getJournalEntry(entry.id) ?? entry;
-    return partsOfDoc(latest).parts.map((p) => `${p.id}:${p.name}:${p.words}:${p.level}:${p.color ?? ''}`).join('\u0001');
+    return partsOfDoc(latest).parts.map((p) => `${p.id}:${p.name}:${p.words}:${p.level}:${p.color ?? ''}:${assetCountOf(p.id)}`).join('\u0001');
   });
+  const [structOpen, setStructOpen] = useState(false);
   const latest = getJournalEntry(entry.id) ?? entry;
   const { doc, parts, here } = partsOfDoc(latest);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -169,9 +177,14 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
     say(t(done ? 'reorgPartsUndone' : 'reorgPartsUndoNo'));
   };
 
-  const tools = canNew || canSplit;
+  const tools = canNew;
+  // Structure: the acts for the Part she is on, the row menu's own (move, level, join) and the host's split
+  const hp = parts[here - 1];
+  const [hs, he] = hp ? run(here - 1) : [0, 0];
+  const hcap = here <= 1 ? 0 : Math.min(MAX_PART_LEVEL, parts[here - 2].level + 1);
   return (
     <section ref={listRef} className="reorg-parts" data-reorg-parts aria-label={fill(t('reorgPartsOf'), { name: doc.name || t('reorgUntitled') })}>
+      {menus && <DocKindMenu entry={latest} docId={docId} host={docMenu} beforeWrite={save} />}
       <div className="reorg-parts-head">{fill(t('reorgPartsHead'), { n: parts.length })}</div>
       {tools && (
         <div className="reorg-parts-tools" data-parts-tools>
@@ -180,10 +193,25 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
               <span aria-hidden="true">+</span> {t('reorgPartsNew')}
             </button>
           )}
-          {canSplit && (
-            // a press keeps her caret where it is: the button never takes the focus from the page on the way down
-            <button type="button" className="reorg-parts-tool" data-parts-split onMouseDown={(e) => e.preventDefault()} onClick={split}>{t('reorgPartsSplit')}</button>
-          )}
+        </div>
+      )}
+      {menus && hp && (
+        <div className="reorg-parts-structure" data-parts-structure="">
+          <button type="button" className="reorg-parts-structure-btn" data-parts-structure-toggle="" aria-expanded={structOpen ? 'true' : 'false'}
+            onClick={() => setStructOpen((o) => !o)}>
+            <span>{t('reorgPartsStructure')}</span><span className="reorg-parts-structure-fold" aria-hidden="true">{structOpen ? '▾' : '▸'}</span>
+          </button>
+          <div className="reorg-parts-structure-body" hidden={!structOpen}>
+            {canSplit && (
+              // a press keeps her caret where it is: the button never takes the focus from the page on the way down
+              <button type="button" className="reorg-parts-tool" data-parts-split data-structure-act="split" onMouseDown={(e) => e.preventDefault()} onClick={split}>{t('reorgPartsSplit')}</button>
+            )}
+            <button type="button" className="reorg-parts-tool" data-structure-act="up" disabled={!docId || hs === 0} onClick={() => move(hp, -1)}>{t('reorgPartUp')}</button>
+            <button type="button" className="reorg-parts-tool" data-structure-act="down" disabled={!docId || he >= parts.length} onClick={() => move(hp, 1)}>{t('reorgPartDown')}</button>
+            {stage === 'build' && <button type="button" className="reorg-parts-tool" data-structure-act="in" disabled={!docId || hp.level >= hcap} onClick={() => level(hp, 1)}>{t('reorgPartIn')}</button>}
+            {stage === 'build' && <button type="button" className="reorg-parts-tool" data-structure-act="out" disabled={!docId || hp.level === 0} onClick={() => level(hp, -1)}>{t('reorgPartOut')}</button>}
+            <button type="button" className="reorg-parts-tool" data-structure-act="join" disabled={here <= 1} onClick={() => join(hp)}>{t('reorgPartJoin')}</button>
+          </div>
         </div>
       )}
       {said && (
@@ -200,15 +228,24 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
           const [s, e] = run(i);
           const cap = i === 0 ? 0 : Math.min(MAX_PART_LEVEL, parts[i - 1].level + 1);
           const menuOpen = openMenu === p.id;
+          const assets = assetCountOf(p.id);
           return (
             <li key={p.id} data-part-li={p.id} data-part-level={p.level} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
+                data-here-bar={on && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.color ? p.color : undefined}
                 onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDragLeave={() => { if (over === p.id) setOver(null); }} onDrop={onDrop(p)}>
                 <span className="reorg-parts-num">{p.n}</span>
                 <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
+              {assets > 0 && (
+                // the link badge (Decision 2): its count only; POLISH wires its press to open the Assets tab at this Part
+                <span className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}
+                  title={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}>
+                  <span aria-hidden="true">⛓</span> {assets}
+                </span>
+              )}
               {menus && (
                 <button type="button" className={`reorg-parts-more${menuOpen ? ' is-open' : ''}`} data-part-more={p.id} aria-expanded={menuOpen}
                   aria-label={fill(t('reorgPartMore'), { part: shown })} title={fill(t('reorgPartMore'), { part: shown })}
