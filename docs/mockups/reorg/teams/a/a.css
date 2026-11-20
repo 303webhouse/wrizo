@@ -1,0 +1,641 @@
+/*
+  Wrizo reorg · Machina · Team A, "The quiet desk" · mockup only.
+
+  The fixed frame is the prototype's (brief, section 4): top bar 40 high, left rail 84 wide,
+  the page 620 x 640 at left 415, top 64 in a 1366 x 768 window, each side menu 288 wide and
+  flush against the page. The page's rectangle is set once, on .page, and no state touches it
+  outside the split.
+
+  Three levels of weight, used the same way everywhere:
+    Level 1  where she is, and the one thing that is hers now   600, the strongest ink, brass beside it
+    Level 2  groups and their names                             500 to 600, the name ink
+    Level 3  details and facts                                  400, the quiet ink; numbers in Plex Mono
+  Colour means one thing each: brass = me, here, now · blue = help and guidance ·
+  a Part's colour = which Part this belongs to.
+  No motion: nothing here has a transition. States change with a cut.
+
+  Every colour pair is measured in PAIRS.md.
+*/
+
+html, body { margin: 0; height: 100%; }
+body { background: #E6E8EA; overflow: auto; }
+
+button {
+  background: none; border: 0; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer; text-align: left;
+}
+button[disabled] { cursor: default; }
+svg { display: block; flex: 0 0 auto; }
+
+.shell {
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --page-left: 415px;
+
+  /* Machina, light room (the grey ramp G0 to G7). */
+  --room: #E6E8EA;        /* G1 */
+  --panel: #F4F5F6;       /* G0 */
+  --line: #D2D6DA;        /* G2, hairlines */
+  --ctl: #5E666E;         /* G4, the edge of a control and its icon */
+  --label: #3A4047;       /* G5 */
+  --quiet: #5E666E;       /* G4, Level 3 */
+  --name: #23272B;        /* G6, Level 2 */
+  --strong: #151719;      /* G7, Level 1 */
+  --hover: #E6E8EA;       /* G1 */
+  --field: #FBFBFA;
+  --blue-text: #3F6183;   /* guidance */
+  --blue-mark: #7FA0BC;
+  --brass: #FF9800;
+  --keyline: #23272B;     /* brass never stands alone on a light surface */
+  /* PROPOSED: a Part's tint, a pale wash behind the things that belong to that Part. */
+  --tint-yellow: #F1EBCF;
+  --tint-blue: #E0E8F0;
+  --tint-grey: #E6E8EA;
+  --tint-none: #E6E8EA;
+
+  position: relative; width: 100%; height: 100%;
+  min-width: 1366px; min-height: 768px; overflow: hidden;
+  background: var(--room);
+  font-family: var(--sans); color: var(--label);
+}
+/* PROPOSED: the dark room is the same ramp turned over. The bars are dark in both tones. The page stays paper. */
+.shell.is-dark {
+  --room: #151719;        /* G7 */
+  --panel: #23272B;       /* G6 */
+  --line: #3A4047;        /* G5 */
+  --ctl: #9AA1A8;         /* G3 */
+  --label: #D2D6DA;       /* G2 */
+  --quiet: #9AA1A8;       /* G3 */
+  --name: #F4F5F6;        /* G0 */
+  --strong: #F4F5F6;      /* G0 */
+  --hover: #3A4047;       /* G5 */
+  --field: #151719;
+  --blue-text: #7FA0BC;
+  --tint-yellow: #37321F;
+  --tint-blue: #24313D;
+  --tint-grey: #2E3338;
+  --tint-none: #2E3338;
+}
+body:has(.shell.is-dark) { background: #151719; }
+
+button:focus-visible, input:focus-visible { outline: 2px solid var(--strong); outline-offset: 1px; }
+.bar button:focus-visible, .rail button:focus-visible { outline-color: #E6E8EA; }
+
+/* ---------- shared pieces ---------- */
+
+.facts { font: 400 11.5px/15px var(--sans); color: var(--quiet); }
+.num { font-family: var(--mono); font-size: 11px; }
+.head2 { font: 600 12px/16px var(--sans); color: var(--name); }
+.grow { flex: 1 1 auto; min-width: 0; }
+
+/* One button for every act. "More" is words only, a level quieter. */
+.btn {
+  flex: 0 0 auto; height: 26px; padding: 0 9px; box-sizing: border-box;
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--ctl); background: transparent;
+  font: 500 12px/1 var(--sans); color: var(--name); white-space: nowrap;
+}
+.btn.sm { height: 24px; padding: 0 7px; font-size: 11.5px; }
+.btn:hover:not([disabled]), .btn[aria-expanded="true"] { background: var(--hover); }
+.more {
+  flex: 0 0 auto; height: 26px; padding: 0 5px; box-sizing: border-box;
+  display: inline-flex; align-items: center; gap: 4px;
+  font: 400 12px/1 var(--sans); color: var(--label); white-space: nowrap;
+}
+.more:hover:not([disabled]), .more[aria-expanded="true"] { background: var(--hover); }
+.more svg { width: 10px; height: 10px; }
+/* Faded in place: not offered in this stage. It keeps its spot, so nothing below it moves. */
+.is-off, .btn[disabled], .more[disabled] { opacity: .38; }
+.textbtn { font: 400 11.5px/15px var(--sans); color: var(--label); text-decoration: underline; text-underline-offset: 2px; }
+.icon-btn {
+  flex: 0 0 auto; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ctl);
+}
+.icon-btn:hover, .icon-btn[aria-expanded="true"] { background: var(--hover); color: var(--name); }
+.icon-gap { flex: 0 0 auto; width: 24px; }
+
+/* A Part's colour tag: the first letter of its name on the Part's colour. The letter carries the meaning. */
+.ptag {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; box-sizing: border-box; border: 1px solid #6A727B;
+  font: 500 9.5px/1 var(--mono); letter-spacing: .04em; user-select: none;
+}
+.ptag.none { border: 0; }
+.ptag-blue { background: #41658A; color: #FFFFFF; }
+.ptag-yellow { background: #B9A03A; color: #1C1C1C; }
+.ptag-grey { background: #6A727B; color: #FFFFFF; }
+.ptag-pale { background: #C9CED3; color: #1C1C1C; }
+/* On the dark bar, and on a dark panel: the rail's tints, dark letters. */
+.ptag.on-bar, .is-dark .ptag:not(.on-page) { border-color: transparent; color: #1E262E; }
+.ptag-blue.on-bar, .is-dark .ptag-blue:not(.on-page) { background: #8FA9C4; }
+.ptag-yellow.on-bar, .is-dark .ptag-yellow:not(.on-page) { background: #CDB75A; }
+.ptag-grey.on-bar, .is-dark .ptag-grey:not(.on-page) { background: #9AA1A8; }
+.ptag-pale.on-bar, .is-dark .ptag-pale:not(.on-page) { background: #C3C8CD; }
+
+.tint-yellow { background: var(--tint-yellow); }
+.tint-blue { background: var(--tint-blue); }
+.tint-grey { background: var(--tint-grey); }
+.tint-none { background: var(--tint-none); }
+
+/* The count of connected assets has one shape everywhere: the link and a number. */
+.links { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; font: 400 11px/1 var(--mono); color: var(--label); }
+/* The kind of an asset: a small mark and its word, Level 3. */
+.kind { display: inline-flex; align-items: center; gap: 3px; font: 600 10px/15px var(--sans); letter-spacing: .06em; color: var(--quiet); vertical-align: top; }
+.kind svg { width: 11px; height: 11px; }
+
+/* Brass on a light panel: a 1 px ink keyline on both sides. */
+.here-bar {
+  position: absolute; left: 1px; top: 5px; bottom: 5px; width: 3px; background: var(--brass);
+  box-shadow: -1px 0 0 var(--keyline), 1px 0 0 var(--keyline);
+}
+.is-dark .here-bar { box-shadow: none; }
+
+/* ---------- top bar: two zones. Left, where I am. Right, the stages. ---------- */
+.bar {
+  position: absolute; left: 0; top: 0; width: 100%; height: 40px; box-sizing: border-box;
+  background: #1E262E; border-bottom: 1px solid #2E3A46;
+  display: flex; align-items: center; padding: 0 12px 0 16px; z-index: 5;
+}
+.brand { flex: 0 0 auto; width: 84px; margin-left: -16px; text-align: center; }
+.brand-word {
+  position: relative; display: inline-block; padding: 4px 5px 4px calc(5px + .26em);
+  font-size: 13px; font-weight: 500; letter-spacing: .26em; color: #E6E8EA;
+}
+.brand-mark { position: absolute; right: 7px; bottom: 0; width: 5px; height: 2px; background: #FF9800; }
+.where { display: flex; align-items: center; gap: 9px; margin-left: 16px; min-width: 0; }
+.crumb { height: 39px; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; border-bottom: 2px solid transparent; box-sizing: border-box; }
+.crumb:hover > span:not(.ptag) { text-decoration: underline; }
+.crumb-project { font-size: 12px; color: #9AA1A8; }                       /* Level 3: the widest */
+.crumb-doc { font-size: 13px; font-weight: 500; color: #E6E8EA; }          /* Level 2 */
+.crumb-part { font-size: 13px; font-weight: 600; color: #F4F5F6; }         /* Level 1: where she is, wearing the Part's colour */
+.crumb-part.is-open { border-bottom-color: #FF9800; }
+.crumb-v { color: #9AA1A8; }
+.crumb-v svg { width: 10px; height: 10px; }
+.crumb-sep { color: #9AA1A8; }
+.crumb-sep svg { width: 10px; height: 10px; }
+.bar-spring { flex: 1 1 auto; }
+.stages { display: flex; align-items: center; height: 40px; }
+.stage-btn {
+  width: 84px; height: 39px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; letter-spacing: .12em; color: #9AA1A8;
+  border-top: 3px solid transparent; border-bottom: 3px solid transparent;
+}
+.stage-btn:hover:not([disabled]) { color: #E6E8EA; }
+/* The stage she is in: Level 1. A lit cell, the strongest letters in the bar, the brass line under it. */
+.stage-btn.is-here { color: #F4F5F6; font-size: 12.5px; font-weight: 600; background: #2E3A46; border-bottom-color: #FF9800; }
+/* In a split the stage buttons fade; the stage she is in stays readable. */
+.stages.is-faded .stage-btn { color: #56616B; }
+.stages.is-faded .stage-btn.is-here { color: #F4F5F6; }
+/* The stage strip keeps its own NOT RULED tag, always in view (Fable's ruling). */
+.stages-tag { display: flex; align-items: center; margin-right: 10px; cursor: help; }
+.tag {
+  display: inline-block; flex: 0 0 auto; box-sizing: border-box; padding: 1px 5px;
+  font: 500 9.5px/14px var(--mono); letter-spacing: .08em; white-space: nowrap;
+}
+.stages-tag .tag { background: transparent; color: #E6E8EA; border: 1px dashed #9AA1A8; }
+.bar-div { flex: 0 0 auto; width: 1px; height: 16px; margin: 0 8px 0 12px; background: #2E3A46; }
+.bar-tools { display: flex; align-items: center; gap: 2px; }
+.bar-icon { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center; color: #9AA1A8; }
+.bar-icon:hover, .bar-icon[aria-expanded="true"] { color: #F4F5F6; background: #2E3A46; }
+
+/* ---------- left rail (as ruled; only what is under it changes its dress) ---------- */
+.rail {
+  position: absolute; left: 0; top: 80px; width: 84px; height: calc(100% - 120px); box-sizing: border-box;
+  background: #1E262E; border: 1px solid #2E3A46; border-left: 0;
+  display: flex; flex-direction: column; padding: 0 0 6px; z-index: 4;
+}
+.rail-here {
+  position: relative; flex: 0 0 auto; width: 84px; height: 76px; background: #27323C;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+}
+.rail-here.is-open { box-shadow: inset 0 0 0 1px #9AA1A8; }
+.rail-here-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #FF9800; }
+.rail-label {
+  font-size: 10.5px; line-height: 12px; letter-spacing: .06em; text-transform: uppercase;
+  color: #9AA1A8; text-align: center; max-width: 76px;
+}
+.rail-label.lit { color: #F4F5F6; font-weight: 600; }
+.rail-rule { height: 2px; margin: 7px 0; background: #727C86; flex: 0 0 auto; }
+.rail-gap { height: 6px; flex: 0 0 auto; }
+.pins { flex: 0 1 auto; min-height: 46px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #727C86 transparent; }
+.pins-grid { display: grid; grid-template-columns: 34px 34px; gap: 6px; justify-content: center; padding: 4px 0 8px; }
+.pin-btn.is-open .box { box-shadow: 0 0 0 1px #1E262E, 0 0 0 2px #E6E8EA; }
+.pin-switch { display: flex; justify-content: flex-start; gap: 2px; padding: 2px 0 0 5px; flex: 0 0 auto; }
+.pin-switch button { width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #414D59; }
+.pin-switch svg { width: 10px; height: 10px; }
+.pin-switch button[aria-pressed="true"] { color: #6A7682; }
+.pin-switch button:hover, .pin-switch button:focus-visible { color: #B4BAC0; }
+.rail-item {
+  position: relative; flex: 0 0 auto; width: 84px; color: #9AA1A8;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+}
+.rail-item.h58 { height: 58px; }
+.rail-item.h54 { height: 54px; }
+.rail-item .rail-label { color: inherit; }
+.rail-item:hover { color: #E6E8EA; }
+.rail-item.is-open { box-shadow: inset 0 0 0 1px #9AA1A8; color: #F4F5F6; }
+.rail-spring { flex: 1 1 auto; }
+.box {
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  font-family: var(--mono); font-weight: 500; letter-spacing: .04em; text-transform: uppercase;
+}
+.box-38 { width: 38px; height: 38px; font-size: 12px; }
+.box-34 { width: 34px; height: 34px; font-size: 11px; }
+.box-30 { width: 30px; height: 30px; font-size: 11px; border: 1px solid #6A727B; flex: 0 0 auto; }
+
+/* ---------- a rail drawer (DOCS, PROJECTS, UNFILED, THEME, CONTROLS, a Project's own list) ---------- */
+.pop {
+  position: absolute; left: 84px; top: 40px; width: 288px; height: calc(100% - 40px); box-sizing: border-box;
+  background: var(--panel); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; z-index: 3;
+}
+.pop-head {
+  height: 44px; flex: 0 0 auto; padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line);
+}
+.pop-title { font-size: 11px; font-weight: 600; letter-spacing: .12em; color: var(--strong); text-transform: uppercase; }
+.pop-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; display: flex; flex-direction: column; }
+.pop-body > * { flex: 0 0 auto; }
+.group-head { position: relative; padding: 16px 16px 6px; display: flex; align-items: center; gap: 8px; }
+.new-row {
+  width: 100%; height: 34px; padding: 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--name);
+}
+.new-row:hover, .row-main:hover .row-name { text-decoration: underline; }
+.plus { font-family: var(--mono); color: var(--ctl); }
+.new-pair { display: flex; border-bottom: 1px solid var(--line); }
+.row {
+  position: relative; min-height: 44px; padding: 6px 10px 6px 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--line);
+}
+.row.is-here { background: var(--hover); }
+.row-main { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.row-name { font-size: 13px; font-weight: 500; color: var(--name); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row.is-here .row-name { font-weight: 600; color: var(--strong); }
+.row.wrap .row-name { white-space: normal; font-weight: 400; line-height: 18px; }
+.set-row {
+  height: 44px; padding: 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--line); font-size: 13px; color: var(--name);
+}
+.switch { display: inline-flex; border: 1px solid var(--ctl); }
+.switch span {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 22px;
+  font: 500 10px/1 var(--mono); letter-spacing: .06em; color: var(--quiet);
+}
+.switch span.is-set { background: var(--name); color: var(--panel); }
+.pop-foot {
+  flex: 0 0 auto; width: 100%; height: 44px; padding: 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); background: var(--hover);
+  font-size: 13px; color: var(--name);
+}
+.quiet-line { padding: 10px 16px; font-size: 12.5px; line-height: 1.45; color: var(--quiet); }
+
+/* ---------- the two side menus: flush against the page, never moving it ---------- */
+/* An open menu's handle rides its outer edge, as in the prototype. */
+.handle {
+  position: absolute; top: 76px; width: 16px; height: 34px; box-sizing: border-box;
+  border: 1px solid var(--line); background: var(--panel); z-index: 2;
+  display: flex; align-items: center; justify-content: center; color: var(--ctl);
+}
+.handle svg { width: 10px; height: 10px; }
+.handle:hover { color: var(--strong); }
+.handle-front { left: calc(var(--page-left) - 304px); border-right: 0; }
+.handle-back { left: calc(var(--page-left) + 908px); border-left: 0; }
+/* PROPOSED: a folded menu's handle says which tab it holds. It sits against the page. */
+.fold {
+  position: absolute; top: 76px; height: 34px; padding: 0 9px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 7px; z-index: 2;
+  background: var(--panel); border: 1px solid var(--line);
+  font-size: 11px; font-weight: 600; letter-spacing: .12em; color: var(--label); white-space: nowrap;
+}
+.fold svg { width: 10px; height: 10px; color: var(--ctl); }
+.fold:hover { color: var(--strong); background: var(--hover); }
+.fold-front { right: calc(100% - var(--page-left)); border-right: 0; }
+.fold-back { left: calc(var(--page-left) + 620px); border-left: 0; }
+
+.menu {
+  position: absolute; top: 64px; width: 288px; height: calc(100% - 128px); box-sizing: border-box;
+  background: var(--panel); border: 1px solid var(--line);
+  display: flex; flex-direction: column; overflow: hidden; z-index: 2;
+}
+.menu-front { left: calc(var(--page-left) - 288px); border-right: 0; }
+.menu-back { left: calc(var(--page-left) + 620px); border-left: 0; }
+.tabs {
+  height: 44px; flex: 0 0 auto; padding: 0 8px 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--line);
+}
+.tab {
+  height: 43px; font-size: 11px; letter-spacing: .12em; color: var(--quiet); font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--strong); }
+.tab.is-on { color: var(--strong); font-weight: 600; border-bottom-color: var(--strong); }
+.pin-both[aria-pressed="true"] { color: var(--strong); background: var(--hover); }
+.menu-body {
+  position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin;
+  display: flex; flex-direction: column;
+}
+.menu-body > * { flex: 0 0 auto; }
+
+/* The widest level in a menu: the Doc, its facts, and the tools that act on the whole Doc. */
+.lvl-doc {
+  position: relative; padding: 10px 12px 11px 16px; border-bottom: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.lvl-doc-name { font: 600 13px/18px var(--sans); color: var(--name); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 22px; }
+.acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; }
+
+/* A plain row of a menu: the offers of TEXT and INK. */
+.opt-row {
+  width: 100%; height: 40px; padding: 0 12px 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 500; color: var(--name);
+}
+.opt-row:hover { background: var(--hover); }
+.opt-row svg { width: 10px; height: 10px; color: var(--ctl); }
+
+/* The Parts list. Each Part is Level 2; the one she is in is Level 1 and keeps its own tools beside it. */
+.list-head {
+  position: relative; height: 28px; padding: 0 12px 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line);
+}
+.pgroup { position: relative; border-bottom: 1px solid var(--line); }
+.prow {
+  position: relative; min-height: 42px; padding: 4px 8px 4px 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 9px;
+}
+.part-num { flex: 0 0 auto; width: 10px; font: 400 11px/1 var(--mono); color: var(--quiet); }
+.prow-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.prow-name { font: 500 13px/17px var(--sans); color: var(--name); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow-main:hover .prow-name { text-decoration: underline; }
+.pgroup.is-here .prow { min-height: 46px; }
+.pgroup.is-here .prow-name { font-size: 13.5px; font-weight: 600; color: var(--strong); }
+.marker { height: 22px; padding: 0 6px; box-sizing: border-box; display: inline-flex; align-items: center; border: 1px solid transparent; }
+.marker:hover { border-color: var(--ctl); }
+.marker[aria-pressed="true"] { border-color: var(--strong); background: var(--hover); }
+.part-toggle { flex: 0 0 auto; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--ctl); }
+.part-toggle svg { width: 11px; height: 11px; }
+.part-toggle:hover { color: var(--strong); background: var(--hover); }
+.part-toggle.none { visibility: hidden; }
+/* This Part's own acts sit with the Part: three and "More". */
+.pacts { position: relative; padding: 1px 8px 9px 16px; display: flex; align-items: center; gap: 6px; }
+/* A Part expanded in place: its connected assets, up to four showing, then a very thin scrollbar. */
+.pa-list { max-height: 156px; overflow-y: auto; padding: 0 8px 4px 16px; scrollbar-width: thin; scrollbar-color: var(--ctl) var(--line); }
+@supports selector(::-webkit-scrollbar) {
+  .pa-list { scrollbar-width: auto; scrollbar-color: auto; }
+  .pa-list::-webkit-scrollbar { width: 3px; }
+  .pa-list::-webkit-scrollbar-track { background: var(--line); }
+  .pa-list::-webkit-scrollbar-thumb { background: var(--ctl); }
+}
+.pa-row { min-height: 38px; padding: 3px 0; box-sizing: border-box; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--line); }
+.pa-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.pa-name { font: 500 12.5px/16px var(--sans); color: var(--name); }
+.guide { padding: 4px 12px 8px 16px; font: 400 11.5px/15px var(--sans); color: var(--blue-text); }
+
+/* The session: at the Front menu's foot, under every tab, in the same place in every stage. */
+.session { position: relative; flex: 0 0 auto; padding: 8px 12px 10px 16px; border-top: 1px solid var(--line); }
+.session .acts { margin-top: 6px; }
+
+/* The Back menu. */
+.search-slot { flex: 0 0 auto; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.search-field {
+  display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; box-sizing: border-box;
+  background: var(--field); border: 1px solid var(--ctl); color: var(--ctl); cursor: text;
+}
+.search-field:focus-within { border-color: var(--strong); box-shadow: 0 0 0 1px var(--strong); }
+.search-field input {
+  flex: 1 1 auto; min-width: 0; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0; outline: 0; background: none;
+  font-family: var(--sans); font-size: 13.5px; color: var(--strong);
+}
+.search-field input::placeholder { color: var(--quiet); opacity: 1; }
+.agroup { position: relative; border-bottom: 1px solid var(--line); }
+.ahead { position: relative; min-height: 40px; padding: 0 12px 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; }
+.ahead-name { flex: 1 1 auto; min-width: 0; font: 500 13px/17px var(--sans); color: var(--name); }
+.agroup.is-here .ahead { min-height: 44px; }
+.agroup.is-here .ahead-name { font-size: 13.5px; font-weight: 600; color: var(--strong); }
+.arow { min-height: 46px; padding: 6px 4px 6px 16px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); }
+.arow-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.arow-name { font: 500 13px/17px var(--sans); color: var(--name); }
+.arow.wrap .arow-name { font-weight: 400; line-height: 18px; }
+.fold-row {
+  position: relative; width: 100%; height: 42px; padding: 0 12px 0 16px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line);
+}
+.fold-row svg.chev { width: 11px; height: 11px; color: var(--ctl); }
+.fold-row:hover { background: var(--hover); }
+.filter-head { position: relative; min-height: 44px; padding: 6px 12px 6px 16px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.filter-text { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+.filter-name { font: 600 13px/17px var(--sans); color: var(--strong); }
+.sub-head { position: relative; padding: 14px 12px 7px 16px; display: flex; align-items: center; gap: 8px; }
+
+/* The list of Parts dropped from the Part's place in the top bar. */
+.drop {
+  position: absolute; top: 40px; width: 300px; max-height: calc(100% - 60px); box-sizing: border-box;
+  background: var(--panel); border: 1px solid var(--keyline); border-top: 0;
+  display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; z-index: 6;
+}
+.is-dark .drop, .is-dark .float, .is-dark .changed { border-color: #9AA1A8; }
+.drop > * { flex: 0 0 auto; }
+.drop-head { padding: 10px 14px 7px; }
+.drop-row {
+  position: relative; width: 100%; height: 36px; padding: 0 12px 0 14px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 9px; border-top: 1px solid var(--line);
+}
+.drop-row:hover { background: var(--hover); }
+.drop-row.is-here { background: var(--hover); }
+.drop-row .here-bar { top: 4px; bottom: 4px; }
+.drop-name { flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 500; color: var(--name); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drop-row.is-here .drop-name { font-weight: 600; color: var(--strong); }
+
+/* A "More" list, and a row's own menu: one click, cut in, no motion. */
+.float {
+  position: absolute; width: 232px; max-height: 320px; overflow-y: auto; box-sizing: border-box; z-index: 8;
+  background: var(--panel); border: 1px solid var(--keyline); display: flex; flex-direction: column; scrollbar-width: thin;
+}
+.float-head { position: relative; padding: 8px 12px 6px; border-bottom: 1px solid var(--line); }
+.float-row {
+  width: 100%; min-height: 34px; padding: 6px 12px; box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  font-size: 13px; font-weight: 500; color: var(--name); border-top: 1px solid var(--line);
+}
+.float-row:first-child, .float-head + .float-row { border-top: 0; }
+.float-row:hover, .float-row.is-on { background: var(--hover); }
+.float-row.is-on { font-weight: 600; color: var(--strong); }
+
+/* ---------- the page: set once, never touched by a state ---------- */
+.page {
+  position: absolute; left: var(--page-left); top: 64px; width: 620px; height: calc(100% - 128px); box-sizing: border-box;
+  background: #FBFBFA; border: 1px solid #D2D6DA; padding: 56px 64px; overflow: hidden;
+}
+.page h1 {
+  margin: 0 0 18px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif;
+  font-size: 17px; font-weight: 600; color: #1C1C1C;
+}
+.page p {
+  margin: 0 0 14px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif;
+  font-size: 14.67px; line-height: 1.55; color: #1C1C1C;
+}
+.part-scroll {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0; box-sizing: border-box;
+  padding: 56px 64px; overflow-y: auto; scrollbar-width: none;
+}
+.part-scroll::-webkit-scrollbar { display: none; }
+/* The Part's colour tag in the page's left margin, beside its heading. It is not one of her words. */
+.page-tag { position: absolute; left: 36px; top: 57px; }
+.page-words { outline: none; caret-color: #1C1C1C; }
+.part-track { position: absolute; right: 15px; top: 40px; bottom: 40px; width: 4px; background: #D2D6DA; }
+.part-thumb { position: absolute; right: 15px; top: 40px; width: 4px; height: 60px; background: #8A9199; }
+.part-arrow {
+  position: absolute; right: 6px; width: 22px; height: 22px; box-sizing: border-box;
+  border: 1px solid #6A727B; background: #F4F5F6; color: #3A4047;
+  display: flex; align-items: center; justify-content: center;
+}
+.part-arrow.up { top: 10px; }
+.part-arrow.down { bottom: 10px; }
+.part-arrow[disabled] { opacity: .35; }
+.part-arrow:focus-visible { outline-color: #151719; }
+.part-foot {
+  margin-top: 26px; padding-top: 12px; border-top: 1px solid #D2D6DA;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  font: 400 11.5px/15px 'IBM Plex Sans', system-ui, sans-serif; color: #5E666E;
+}
+.part-foot button { color: #3A4047; }
+.part-foot button:hover { text-decoration: underline; }
+.part-foot button:focus-visible { outline-color: #151719; }
+
+/* The readout under the page: numbers, so Plex Mono. */
+.foot {
+  position: absolute; left: var(--page-left); top: calc(100% - 54px); width: 620px; height: 18px;
+  display: flex; gap: 9px; align-items: center; white-space: nowrap;
+  font: 400 11px/1 var(--mono); color: var(--quiet);
+}
+.foot .ptag { width: 16px; height: 16px; margin-right: -3px; }
+.foot .rn { margin-left: 2px; }
+
+/* ---------- the split screen ---------- */
+.beside {
+  position: absolute; left: var(--split-x, 725px); top: 40px; right: 0; bottom: 0; box-sizing: border-box;
+  background: var(--room); border-left: 1px solid var(--ctl);
+  display: flex; flex-direction: column;
+}
+.beside-head {
+  position: relative; height: 44px; flex: 0 0 auto; padding: 0 12px 0 16px;
+  display: flex; align-items: center; gap: 9px; border-bottom: 1px solid var(--line);
+}
+.beside-name {
+  flex: 0 1 auto; min-width: 0; height: 30px; padding: 0 4px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 600; color: var(--strong);
+}
+.beside-name > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.beside-name:hover, .beside-name[aria-expanded="true"] { background: var(--hover); }
+.beside-name svg { width: 10px; height: 10px; color: var(--ctl); }
+.beside-meta { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.beside-body { position: relative; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+.beside-body > .quiet-line { padding: 0 24px 20px; }
+/* Blocks: the same card as in the other themes (288 x 96, the colour tag down its left edge). */
+.blk-grid { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, 288px); gap: 16px; }
+.blk {
+  position: relative; min-height: 96px; box-sizing: border-box; background: #FBFBFA; border: 1px solid #D2D6DA;
+  padding: 12px 14px 12px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.blk-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.blk-bar.edged { box-shadow: 0 0 0 1px #6A727B; }
+.blk-title { font-size: 13px; font-weight: 600; color: #3A4047; }
+.blk-text {
+  min-height: 18px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 13px; line-height: 1.4; color: #525A62;
+  cursor: text; outline: 0; overflow-wrap: anywhere;
+}
+.blk-text:focus { color: #1C1C1C; box-shadow: 0 0 0 3px #FBFBFA, 0 0 0 4px #23272B; }
+.sheet {
+  width: min(520px, calc(100% - 48px)); min-height: 560px; margin: 24px auto; box-sizing: border-box;
+  background: #FBFBFA; border: 1px solid #D2D6DA; padding: 40px 44px;
+}
+.sheet h2 { margin: 0 0 14px; font-family: 'Source Sans 3', 'IBM Plex Sans', sans-serif; font-size: 16px; font-weight: 600; color: #1C1C1C; }
+.sheet-kicker { margin-bottom: 14px; font: 400 11px/1 'IBM Plex Mono', monospace; color: #5E666E; }
+.sheet-line { display: block; height: 8px; margin: 0 0 10px; background: #E6E8EA; }
+.sheet-gap { display: block; height: 14px; }
+.grip {
+  position: absolute; left: calc(var(--split-x, 725px) - 5px); top: calc(50% - 14px); width: 10px; height: 44px; box-sizing: border-box;
+  background: var(--panel); border: 1px solid var(--ctl); z-index: 4;
+  display: flex; align-items: center; justify-content: center; gap: 2px; cursor: col-resize; touch-action: none;
+}
+.grip::before { content: ''; position: absolute; left: -7px; right: -7px; top: -8px; bottom: -8px; }
+.grip span { width: 1px; height: 18px; background: var(--label); }
+
+/* ---------- "What changed with this stage": Nick's review panel, kept, drawn as a note ---------- */
+.changed {
+  position: absolute; top: 40px; left: calc(var(--page-left) + 100px); width: 420px; max-height: calc(100% - 104px); box-sizing: border-box;
+  background: var(--panel); border: 1px dashed var(--keyline); border-top: 0;
+  display: flex; flex-direction: column; z-index: 6;
+}
+.changed > * { flex: 0 0 auto; }
+.changed-head { height: 42px; padding: 0 12px 0 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.changed-sub { padding: 10px 14px 8px; display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid var(--line); }
+.changed-key { font-size: 12.5px; font-weight: 600; letter-spacing: .12em; color: var(--strong); }
+.changed-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-bottom: 8px; }
+.changed-row { display: flex; gap: 10px; padding: 7px 14px; border-bottom: 1px solid var(--line); }
+.changed-tab { flex: 0 0 96px; font-size: 11px; font-weight: 600; letter-spacing: .1em; color: var(--name); padding-top: 2px; }
+.changed-row ul { flex: 1 1 auto; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.changed-row li { display: flex; gap: 6px; font-size: 12.5px; line-height: 1.4; color: var(--name); }
+.changed-row li.lose { color: var(--quiet); text-decoration: line-through; }
+.changed-row .sign { flex: 0 0 10px; font-family: var(--mono); text-decoration: none; }
+
+/* ---------- review notes: one layer, on by default, off with one key (F2) ---------- */
+/* A review note is not the product. It is a small dashed flag in a margin, in the quiet ink, with no
+   fill and no colour of its own. Its words show when it is pointed at, focused or pressed.
+   Switched off, the flags keep their place and only stop being drawn, so nothing moves. */
+.rn {
+  flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  height: 14px; min-width: 19px; padding: 0 3px; box-sizing: border-box;
+  border: 1px dashed var(--quiet); background: transparent;
+  font: 500 9px/1 var(--mono); letter-spacing: .04em; color: var(--quiet); cursor: help;
+}
+.rn.abs { position: absolute; }
+.rn.tr { position: absolute; right: 6px; top: 6px; }
+.rn:hover, .rn:focus-visible { color: var(--strong); border-color: var(--strong); }
+.bar .rn { color: #9AA1A8; border-color: #9AA1A8; margin-left: 6px; }
+.bar .rn:hover { color: #F4F5F6; border-color: #F4F5F6; }
+.page .rn, .rn.on-paper { color: #5E666E; border-color: #5E666E; }
+.shell.notes-off .rn { visibility: hidden; }
+.rn-pop {
+  position: absolute; z-index: 20; width: 272px; box-sizing: border-box; padding: 8px 10px 9px;
+  background: #FBFBFA; border: 1px dashed #23272B; color: #23272B;
+  font: 400 12px/1.45 'IBM Plex Sans', system-ui, sans-serif;
+}
+.rn-pop[hidden] { display: none; }
+.rn-pop b { display: block; margin-bottom: 3px; font: 500 9.5px/14px 'IBM Plex Mono', monospace; letter-spacing: .08em; color: #3A4047; }
+.shell.notes-off .rn-pop { display: none; }
+/* The switch for the layer, in the strip under the page. It says how many notes this screen carries. */
+.notes-chip {
+  position: absolute; right: 12px; bottom: 8px; height: 22px; padding: 0 7px; box-sizing: border-box; z-index: 9;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px dashed var(--quiet); font: 400 11px/1 var(--sans); color: var(--quiet); white-space: nowrap;
+}
+.notes-chip:hover { color: var(--strong); border-color: var(--strong); }
+.notes-chip kbd { font: 400 10.5px/1 var(--mono); }
+.notes-chip.in-split { right: auto; left: calc(var(--split-x, 725px) - 12px); transform: translateX(-100%); }
+
+/* Words on hover and on keyboard focus: help, so it wears the guidance blue. */
+.tip {
+  position: absolute; z-index: 21; padding: 5px 9px; box-sizing: border-box;
+  background: #1E262E; color: #F4F5F6; border: 1px solid #5E666E; border-left: 3px solid #7FA0BC;
+  font: 400 12px/16px 'IBM Plex Sans', system-ui, sans-serif; white-space: nowrap; pointer-events: none;
+}
+.tip[hidden] { display: none; }
+.tip kbd { margin-left: 9px; font: 400 11px/16px 'IBM Plex Mono', monospace; color: #D2D6DA; }
+
+.toast {
+  position: absolute; right: 12px; bottom: 40px; max-width: 320px; box-sizing: border-box; z-index: 19;
+  padding: 8px 10px; background: #23272B; color: #E6E8EA; border: 1px solid #5E666E; cursor: pointer;
+  font-size: 12px; line-height: 1.45;
+}
+.toast[hidden] { display: none; }
+.toast .tag { margin-right: 6px; vertical-align: 1px; color: #F4F5F6; border: 1px dashed #9AA1A8; }
+
+/* SPRINT as she types: everything but the page, the stage strip's tag and the notes switch goes faint.
+   A cut, not a fade: Machina has no motion. Nothing moves or closes. */
+.shell.is-typing .bar > :not(.stages), .shell.is-typing .stages > :not(.stages-tag), .shell.is-typing .rail,
+.shell.is-typing #pop, .shell.is-typing #menus, .shell.is-typing .foot, .shell.is-typing #drop,
+.shell.is-typing #changed, .shell.is-typing #float { opacity: .1; }

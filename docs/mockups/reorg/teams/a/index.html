@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrizo reorg · Machina · Team A, the quiet desk · a mockup, not app code</title>
+<!-- Fonts as in the prototype. With no network the page falls back to system fonts. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=Source+Sans+3:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="a.css">
+</head>
+<body>
+<!--
+  Team A, "The quiet desk": one of two competing redesigns of the prototype's look
+  (the Wrizors' two-teams brief, Nov 20, 2026). A throwaway mockup with made-up content.
+  The look changes. The content and the places do not.
+
+  Doors: #build, #sprint, #split, #dark (the four states of the brief), and for checking:
+  #build-assets, #build-both, #desk, #more, #other-parts, #docs, #notes-off, #sprint-typing, #edit, #changed.
+
+  The prototype's data.js and stage-table.js are imported as they are, not edited.
+  Opens by double-click: plain HTML, CSS and JavaScript, no build, no server.
+-->
+<div id="shell" class="shell">
+  <header id="bar" class="bar"></header>
+  <nav id="rail" class="rail" aria-label="Left rail"></nav>
+  <div id="pop"></div>
+  <div id="menus"></div>
+  <main id="page" class="page"></main>
+  <div id="foot" class="foot"></div>
+  <div id="beside"></div>
+  <div id="drop"></div>
+  <div id="changed"></div>
+  <div id="float"></div>
+  <div id="chip"></div>
+  <div id="rn-pop" class="rn-pop" hidden></div>
+  <div id="tip" class="tip" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+<script src="../../stage-table.js"></script>
+<script src="../../data.js"></script>
+<script src="a.js"></script>
+</body>
+</html>
