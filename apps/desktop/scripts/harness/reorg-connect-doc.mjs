@@ -234,8 +234,10 @@ await withHarness(async (app) => {
   const p6 = await app.evalJs(PLACE);
   await app.evalJs(toggle); await sleep(400);
   const l6 = await app.evalJs(LIST);
-  const freshRow = (l6 || []).find((r) => r.kind === 'doc' && /^Fresh pages/.test(r.name));
-  ok('N2 back on the Board the place reads "Board · 3 docs", and the list marks the new page\'s Doc connected', p6.place === 'Board · 3 docs' && !!freshRow && freshRow.on, { p6, freshRow });
+  // the new page's Doc is the rail's new set when one was made (named by that set's title), else the page itself: select its row by the Doc's id
+  const freshDoc = madeSet ? madeSet.id : born ? born.id : null;
+  const freshRow = await app.evalJs(`(() => { const b = document.querySelector('[data-top-connect-list] [data-connect-doc="${freshDoc}"]'); return b ? { name: ((b.querySelector('.reorg-top-drop-name') || b).textContent || '').trim(), on: b.getAttribute('aria-disabled') === 'true' } : null; })()`);
+  ok('N2 back on the Board the place reads "Board · 3 docs", and the list marks the new page\'s Doc connected', p6.place === 'Board · 3 docs' && !!freshDoc && !!freshRow && freshRow.on, { p6, freshDoc, freshRow, l6 });
   await app.evalJs(toggle); await sleep(200);
 
   // ---- READ ------------------------------------------------------------------------------------------------------------------------------
@@ -259,11 +261,12 @@ await withHarness(async (app) => {
   ok('X8 a Board not yet kept (no card) is not born by a side door: a pick writes nothing and says to add a card first',
     hasConnect && picked8 && !!said8 && /card/i.test(said8) && diffStores(s8a, s8b).length === 0, { hasConnect, picked8, said8, d: diffStores(s8a, s8b) });
   const hash8 = await app.evalJs('location.hash');
-  await app.evalJs("(() => { const s = document.querySelector('[data-top-connect-said]'); if (s) s.textContent = ''; return null; })()");
+  await app.evalJs(toggle); await sleep(300); await app.evalJs(toggle); await sleep(400);
+  const said8b = await app.evalJs(said);
   await app.evalJs("document.querySelector('[data-top-connect-list] [data-connect-row=\"new\"]')?.click(); null");
   await settle(app);
   const n3 = { hash: await app.evalJs('location.hash'), said: await app.evalJs(said), d: diffStores(s8b, await app.evalJs(COLLECTIONS)) };
-  ok('N3 on a Board not yet kept, "A new doc" opens nothing and writes nothing, and says to add a card first', n3.hash === hash8 && !!n3.said && /card/i.test(n3.said) && n3.d.length === 0, { hash8, n3 });
+  ok('N3 on a Board not yet kept, "A new doc" opens nothing and writes nothing, and says to add a card first', said8b === null && n3.hash === hash8 && !!n3.said && /card/i.test(n3.said) && n3.d.length === 0, { hash8, said8b, n3 });
 
   // ---- OFF -------------------------------------------------------------------------------------------------------------------------------
   await open(app, false, '/page/cd-m-b');
