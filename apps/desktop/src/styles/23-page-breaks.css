@@ -1,0 +1,23 @@
+/* PAGE BREAKS (the Wrizors' spec draft 3, APPROVED Nick Nov 19; store/pageMarks.ts, components/PageCount.tsx).
+   THE MARKS: a layer in the editor's wrapper (never inside the editable), at the wrapper's top-left with no box of its own, so the page's rect and
+   every line are untouched (law 1); each piece is placed in page units by pageMarks.ts. Quiet: the theme's quiet label colour, never brass; no
+   motion, flash or glow; it appears with a cut (no transition at all, so reduced motion is the same). [page-breaks §1] */
+.wz-pb-marks{ position:absolute; left:0; top:0; width:0; height:0; overflow:visible; pointer-events:none; z-index:1; color:#6B5F4E; }
+.wz-pb-marks i{ position:absolute; display:block; background:currentColor; transition:none; animation:none; }
+:root[data-theme='plateau'][data-page='dark'] .wz-pb-marks{ color:#B9AA8C; }
+:root[data-theme='flux'] .wz-pb-marks{ color:#7EB4C4; }
+:root[data-theme='machina'] .wz-pb-marks{ color:#5E666E; }
+:root[data-theme='machina'][data-page='dark'] .wz-pb-marks{ color:#9AA1A8; }
+
+/* THE COUNT: one reading in every theme (section 3). Arbor after the word count; Flux the same place; Machina right of the Run's count after a
+   1 px hairline 12 px tall with 16 px either side, or alone, centred under the page. [page-breaks §2] */
+.wz-pagecount{ white-space:nowrap; font-variant-numeric:tabular-nums; }
+:root[data-theme='plateau'] .wz-pagecount, :root[data-theme='plateau'] .wz-pagecount-sep{ color:#6B5F4E; }
+:root[data-theme='plateau'][data-page='dark'] .wz-pagecount, :root[data-theme='plateau'][data-page='dark'] .wz-pagecount-sep{ color:#B9AA8C; }
+:root[data-theme='flux'] .wz-pagecount, :root[data-theme='flux'] .wz-pagecount-sep{ color:#7EB4C4; }
+:root[data-theme='machina'] .wz-pagecount{ color:#878E9C; font-family:'IBM Plex Mono', var(--font-mono, monospace); }
+.wz-pagecount-div{ display:inline-block; width:1px; height:12px; margin:0 16px; background:currentColor; opacity:.5; vertical-align:middle; }
+.machina-run .wz-pagecount-div, .machina-run .wz-pagecount{ align-self:center; }
+.wz-pagecount-alone{ display:flex; justify-content:center; }
+.wz-pagecount-alone-inline{ display:flex; justify-content:center; margin-top:2px; }
+.flux3-glitchbar .wz-pagecount{ margin-left:10px; }

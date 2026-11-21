@@ -47,7 +47,9 @@ const freshDraftPage = async (app) => {
   // and fail a check (rather than die) if the toggle is missing or the state did not flip.
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); })()`);
   await sleep(250);
-  const typewriterAfterToggle = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // const typewriterAfterToggle = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const typewriterAfterToggle = await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`);
   ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Format is pressed', typewriterAfterToggle === 'false', String(typewriterAfterToggle));
 };
 

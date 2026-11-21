@@ -1,6 +1,8 @@
 // RED-FIRST CHECK for #63's page-turn sound switch (the left rail's Settings, "Page-turn sound: On / Off", remembered per theme on the device; Arbor on, Flux on, Machina off; nothing stored until she touches it; once per page per sitting).
 // A ring is counted at the sound itself: the page's AudioContext buffer sources and any audio element played are counted from a hook the script installs. The page turns when the text crosses the sheet's height
 // (14 lines, then Shift+Enter four times); the writing makes the turn.
+// (Nov 20: page breaks made a page a US Letter page; S1, S2 and S4 are parked verbatim, their successors S1-B, S2-B, S4-B write the turn across a
+// Letter page's end MEASURED from the app's own list, window.wrizoPageBreaks; MUT-S12-B: the same writing short of that end rings nothing)
 //   S1  the default: Arbor and Flux ring once, Machina is quiet; opening a page that is already long rings nothing
 //   S2  once per page per sitting: Backspace back over the line and write past it again: no second ring; a page further on: one more
 //   S3  nothing is stored until she touches the switch (the storage key is absent)
@@ -41,67 +43,156 @@ await withHarness(async (app) => {
   const press = (value) => ev(`(() => { const row = document.querySelector('.wz-cascade-turnsound'); if (!row) return 'no Page-turn sound row in the rail Settings'; const b = row.querySelector('[data-turn-sound-option=' + JSON.stringify(${JSON.stringify(value.toLowerCase())}) + ']'); if (!b) return 'no ' + ${JSON.stringify(value)} + ' button'; b.click(); return 'ok'; })()`);
   const closeSettings = async () => { await d.key('Escape'); await sleep(400); };
 
-  // S1 - the default, and a long page opening rings nothing
-  const f1 = [];
+  // SUPERSEDED (Nov 20; page breaks, Fable Nov 19: a page is a US Letter page from the laid-out lines, replacing the sheet-height count; Chat 1's control ctl-c-pb run 44852256659 and train C's pair 44852661502: 14 lines + 4 no longer reach a page's end, so nothing turned and nothing rang); S2 continues S1's page, so it parks with it. Verbatim:
+  // // S1 - the default, and a long page opening rings nothing
+  // const f1 = [];
+  // try {
+  //   await open(lines(40));
+  //   const r0 = await rings(); if (r0 !== 0) f1.push(`opening a page that is already 40 lines long rang ${r0} time(s)`);
+  //   await open(lines(14));
+  //   const before = await rings();
+  //   await shiftEnters(4);
+  //   const got = (await rings()) - before;
+  //   const want = DEFAULT_ON ? 1 : 0;
+  //   if (got !== want) f1.push(`the page turned and the default (${DEFAULT_ON ? 'on' : 'off'}) rang ${got} time(s), want ${want}`);
+  //   if (DEFAULT_ON) fileFails(await lastFile(), wantFile, f1, 'the default turn');
+  // } catch (e) { f1.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  // check('S1 the default and a long page opening', f1);
+  // 
+  // // S2 - once per page per sitting (the page just turned is the open one)
+  // const f2 = [];
+  // try {
+  //   const a = await rings();
+  //   await backspaces(4); await shiftEnters(4);
+  //   const again = (await rings()) - a;
+  //   if (again !== 0) f2.push(`going back over the line and writing past it again rang ${again} time(s), want 0`);
+  //   const b = await rings();
+  //   await shiftEnters(18);
+  //   const next = (await rings()) - b;
+  //   const want = DEFAULT_ON ? 1 : 0;
+  //   if (next !== want) f2.push(`a page further on rang ${next} time(s), want ${want}`);
+  // } catch (e) { f2.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  // check('S2 once per page per sitting', f2);
+  // THE SUCCESSORS' FIXTURE (Nov 20; page breaks, Fable Nov 19: a page is a US Letter page at the Doc's Page setup, from the laid-out lines of the
+  // clean text - components/usePageBreaks.ts, store/pageBreaks.ts - replacing the sheet-height count this file's 14 + 4 lines were sized for):
+  // the lines a Letter page holds are MEASURED, through the app's own list (window.wrizoPageBreaks: the open section's clean offsets of each
+  // page's first character), and the turn is written across that page's end. Every assertion below is the original's, on that fixture.
+  const LONG = 120;
+  let perPage = null;   // the lines on page 1 of a lines(LONG) page
+  const measure = async () => {
+    await app.waitFor(`(() => { const s = window.wrizoPageBreaks && window.wrizoPageBreaks(); return !!s && Array.isArray(s.breaks) && s.breaks.length > 0; })()`, { label: 'the page list (a page break)', timeout: 10000 }).catch(() => {});
+    const b0 = await ev(`(() => { const s = window.wrizoPageBreaks && window.wrizoPageBreaks(); return s && s.breaks.length ? s.breaks[0] : null; })()`);
+    return typeof b0 === 'number' ? lines(LONG).slice(0, b0).split(NL).length - 1 : null;
+  };
+
+  // S1-B - the default, and a long page opening rings nothing (the turn written across a measured Letter page's end)
+  const f1b = [];
   try {
     await open(lines(40));
-    const r0 = await rings(); if (r0 !== 0) f1.push(`opening a page that is already 40 lines long rang ${r0} time(s)`);
-    await open(lines(14));
+    const r0 = await rings(); if (r0 !== 0) f1b.push(`opening a page that is already 40 lines long rang ${r0} time(s)`);
+    await open(lines(LONG));
+    const r1 = await rings(); if (r1 !== 0) f1b.push(`opening a page that is already ${LONG} lines long rang ${r1} time(s)`);
+    perPage = await measure();
+    console.log(`NOTE ${TAG} a Letter page holds ${perPage} of these lines`);
+    if (!(perPage > 6)) throw new Error(`no page break measured on a ${LONG}-line page (perPage ${perPage})`);
+    await open(lines(perPage - 2));
     const before = await rings();
     await shiftEnters(4);
     const got = (await rings()) - before;
     const want = DEFAULT_ON ? 1 : 0;
-    if (got !== want) f1.push(`the page turned and the default (${DEFAULT_ON ? 'on' : 'off'}) rang ${got} time(s), want ${want}`);
-    if (DEFAULT_ON) fileFails(await lastFile(), wantFile, f1, 'the default turn');
-  } catch (e) { f1.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
-  check('S1 the default and a long page opening', f1);
+    if (got !== want) f1b.push(`the page turned and the default (${DEFAULT_ON ? 'on' : 'off'}) rang ${got} time(s), want ${want}`);
+    if (DEFAULT_ON) fileFails(await lastFile(), wantFile, f1b, 'the default turn');
+  } catch (e) { f1b.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  check('S1-B the default and a long page opening (the turn across a measured Letter page)', f1b);
 
-  // S2 - once per page per sitting (the page just turned is the open one)
-  const f2 = [];
+  // S2-B - once per page per sitting (the page just turned is the open one; a page further on is written across page 2's end)
+  const f2b = [];
   try {
+    if (!(perPage > 6)) throw new Error('S1-B measured no Letter page');
     const a = await rings();
     await backspaces(4); await shiftEnters(4);
     const again = (await rings()) - a;
-    if (again !== 0) f2.push(`going back over the line and writing past it again rang ${again} time(s), want 0`);
+    if (again !== 0) f2b.push(`going back over the line and writing past it again rang ${again} time(s), want 0`);
     const b = await rings();
-    await shiftEnters(18);
+    await shiftEnters(perPage + 2);   // from line perPage + 2 to 2 x perPage + 4: page 3, not page 4
     const next = (await rings()) - b;
     const want = DEFAULT_ON ? 1 : 0;
-    if (next !== want) f2.push(`a page further on rang ${next} time(s), want ${want}`);
-  } catch (e) { f2.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
-  check('S2 once per page per sitting', f2);
+    if (next !== want) f2b.push(`a page further on rang ${next} time(s), want ${want}`);
+  } catch (e) { f2b.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  check('S2-B once per page per sitting', f2b);
+
+  // MUT-S12-B - the same writing short of the page's end turns nothing and rings nothing: what rang in S1-B was the crossing (on a theme
+  // whose default is off there is no ring to take away, and S4-B's ring after On is its proof)
+  const fm = [];
+  try {
+    if (!(perPage > 6)) throw new Error('S1-B measured no Letter page');
+    await open(lines(perPage - 8));
+    const b = await rings();
+    await shiftEnters(4);
+    const short = (await rings()) - b;
+    if (short !== 0) fm.push(`writing to line ${perPage - 4} of a ${perPage}-line page rang ${short} time(s), want 0`);
+  } catch (e) { fm.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  check('MUT-S12-B the same writing short of the Letter page\'s end rings nothing', fm);
 
   // S3 - nothing stored until touched
   const f3 = [];
   const s3 = await stored(); if (s3 !== null) f3.push(`the storage key holds ${JSON.stringify(s3)} before she touched the switch`);
   check('S3 nothing is stored until she touches the switch', f3);
 
-  // S4 - she presses the other value
-  const f4 = [];
+  // SUPERSEDED (Nov 20; page breaks, Fable Nov 19: a page is a US Letter page from the laid-out lines, replacing the sheet-height count; Chat 1's control ctl-c-pb run 44852256659 and train C's pair 44852661502: 14 lines + 4 no longer reach a page's end, so nothing turned and nothing rang). Verbatim:
+  // // S4 - she presses the other value
+  // const f4 = [];
+  // try {
+  //   await open(lines(14));
+  //   const op = await openSettings(); if (op !== 'ok') f4.push(op);
+  //   // #94: the On and Off buttons sit together (Cast's Cool and Neutral sit 8 px apart): the gap between them is read here
+  //   const gap = await ev(`(() => { const r = document.querySelector('.wz-cascade-turnsound'); if (!r) return null; const b = [...r.querySelectorAll('button')].map((x) => x.getBoundingClientRect()); if (b.length !== 2) return null; return Math.round((b[1].left - b[0].right) * 10) / 10; })()`);
+  //   console.log(`NOTE ${TAG} the gap between On and Off is ${gap} px`);
+  //   if (gap === null) f4.push('no On / Off pair to measure'); else if (gap > 12) f4.push(`the On and Off buttons sit ${gap} px apart, want about 8 (Cast's pair)`);
+  //   const other = DEFAULT_ON ? 'Off' : 'On';
+  //   const res = await press(other);
+  //   if (res !== 'ok') f4.push(res);
+  //   await closeSettings();
+  //   const st = JSON.parse((await stored()) || 'null');
+  //   const want = DEFAULT_ON ? 'off' : 'on';
+  //   if (!st || st[cfg.theme] !== want || Object.keys(st).length !== 1) f4.push(`the stored choice is ${JSON.stringify(st)}, want only ${cfg.theme}:${want}`);
+  //   for (const t of ['plateau', 'flux', 'machina']) { if (t === cfg.theme) continue; const g = await ev(`window.wrizoTurnSound ? window.wrizoTurnSound.get(${JSON.stringify(t)}) : null`); const dw = t === 'machina' ? 'off' : 'on'; if (g !== dw) f4.push(`${t} reads ${g}, its default is ${dw}`); }
+  //   await open(lines(14));
+  //   const b = await rings();
+  //   await shiftEnters(4);
+  //   const got = (await rings()) - b;
+  //   const wantRings = DEFAULT_ON ? 0 : 1;
+  //   if (got !== wantRings) f4.push(`after pressing ${other} the turn rang ${got} time(s), want ${wantRings}`);
+  //   if (wantRings === 1) fileFails(await lastFile(), wantFile, f4, `after pressing ${other}`);
+  // } catch (e) { f4.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  // check('S4 pressing the other value (stored per theme, followed at once)', f4);
+  // S4-B - she presses the other value (the turn written across the measured Letter page, as S1-B's)
+  const f4b = [];
   try {
-    await open(lines(14));
-    const op = await openSettings(); if (op !== 'ok') f4.push(op);
+    if (!(perPage > 6)) throw new Error('S1-B measured no Letter page');
+    await open(lines(perPage - 2));
+    const op = await openSettings(); if (op !== 'ok') f4b.push(op);
     // #94: the On and Off buttons sit together (Cast's Cool and Neutral sit 8 px apart): the gap between them is read here
     const gap = await ev(`(() => { const r = document.querySelector('.wz-cascade-turnsound'); if (!r) return null; const b = [...r.querySelectorAll('button')].map((x) => x.getBoundingClientRect()); if (b.length !== 2) return null; return Math.round((b[1].left - b[0].right) * 10) / 10; })()`);
     console.log(`NOTE ${TAG} the gap between On and Off is ${gap} px`);
-    if (gap === null) f4.push('no On / Off pair to measure'); else if (gap > 12) f4.push(`the On and Off buttons sit ${gap} px apart, want about 8 (Cast's pair)`);
+    if (gap === null) f4b.push('no On / Off pair to measure'); else if (gap > 12) f4b.push(`the On and Off buttons sit ${gap} px apart, want about 8 (Cast's pair)`);
     const other = DEFAULT_ON ? 'Off' : 'On';
     const res = await press(other);
-    if (res !== 'ok') f4.push(res);
+    if (res !== 'ok') f4b.push(res);
     await closeSettings();
     const st = JSON.parse((await stored()) || 'null');
     const want = DEFAULT_ON ? 'off' : 'on';
-    if (!st || st[cfg.theme] !== want || Object.keys(st).length !== 1) f4.push(`the stored choice is ${JSON.stringify(st)}, want only ${cfg.theme}:${want}`);
-    for (const t of ['plateau', 'flux', 'machina']) { if (t === cfg.theme) continue; const g = await ev(`window.wrizoTurnSound ? window.wrizoTurnSound.get(${JSON.stringify(t)}) : null`); const dw = t === 'machina' ? 'off' : 'on'; if (g !== dw) f4.push(`${t} reads ${g}, its default is ${dw}`); }
-    await open(lines(14));
+    if (!st || st[cfg.theme] !== want || Object.keys(st).length !== 1) f4b.push(`the stored choice is ${JSON.stringify(st)}, want only ${cfg.theme}:${want}`);
+    for (const t of ['plateau', 'flux', 'machina']) { if (t === cfg.theme) continue; const g = await ev(`window.wrizoTurnSound ? window.wrizoTurnSound.get(${JSON.stringify(t)}) : null`); const dw = t === 'machina' ? 'off' : 'on'; if (g !== dw) f4b.push(`${t} reads ${g}, its default is ${dw}`); }
+    await open(lines(perPage - 2));
     const b = await rings();
     await shiftEnters(4);
     const got = (await rings()) - b;
     const wantRings = DEFAULT_ON ? 0 : 1;
-    if (got !== wantRings) f4.push(`after pressing ${other} the turn rang ${got} time(s), want ${wantRings}`);
-    if (wantRings === 1) fileFails(await lastFile(), wantFile, f4, `after pressing ${other}`);
-  } catch (e) { f4.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
-  check('S4 pressing the other value (stored per theme, followed at once)', f4);
+    if (got !== wantRings) f4b.push(`after pressing ${other} the turn rang ${got} time(s), want ${wantRings}`);
+    if (wantRings === 1) fileFails(await lastFile(), wantFile, f4b, `after pressing ${other}`);
+  } catch (e) { f4b.push('harness: ' + String((e && e.message) || e).slice(0, 200)); }
+  check('S4-B pressing the other value (stored per theme, followed at once)', f4b);
 
   // S5 - after a reload
   const f5 = [];

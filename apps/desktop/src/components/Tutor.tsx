@@ -33,6 +33,14 @@ import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
 import { assembleTutorDelta, capSelection, assembleBible } from './tutor/assemble';
 import { FREE_WRITE_PRESETS, NO_DRAWS, DRAFT_ASKS } from './tutor/presets';
+import { liveQuery, registerLiveSite } from '../store/liveDom';
+
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the stage and the paper this panel measures against are always the live page's
+const tutorStage = (): Element | null => liveQuery('.desk-frame-stage');
+const tutorPaper = (): Element | null => liveQuery('.desk-frame-stage--prose .mode-page') ?? liveQuery('.mode-pagecol, .entry-full, .board-canvas-wrap');
+registerLiveSite('tutor.stage', tutorStage);
+registerLiveSite('tutor.paper', tutorPaper);
 
 // the Tutor: two DeskFrame anchors (the grip's small safe box; the open panel pinned to the stage's edge), rendered bare; it receives only entry/project/pageText/selectionText - nothing that could write onto a page; no badge, toast or count ever knocks [Tutor §2]
 const DOCK_FLOOR_PX = 120;
@@ -58,16 +66,16 @@ const METER_TOTAL_MS = METER_VISIBLE_MS + METER_FADE_MS; // ~4s, the brief's own
 
 // the margin past the paper's right edge, measured (the mirror of Cascade's availableCascadeMargin); .board-canvas-wrap is a paper too, or a board reads an unlimited margin; linkDockRoom: the true margin, so the page is never covered [Tutor §7]
 function linkDockRoom(): boolean {
-  const stage = document.querySelector('.desk-frame-stage');
-  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+  const stage = tutorStage();
+  const paper = tutorPaper();
   return !!stage && !!paper && stage.getBoundingClientRect().right - paper.getBoundingClientRect().right >= DRAWER_MIN;
 }
 function availableTutorMargin(): number {
   if (typeof document === 'undefined') return Infinity;
-  const stage = document.querySelector('.desk-frame-stage');
+  const stage = tutorStage();
   // PAGE-SIZE - the prose page is PAINTED by a transform, ~1.6x and in a stage-wide column while zoomed: the margin is the painted page's (lane 3,
   // tu1 S2: read from the column it was ~0, and the dock control closed the panel)
-  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+  const paper = tutorPaper();
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
@@ -364,9 +372,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
     if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
-      const stage = document.querySelector('.desk-frame-stage');
+      const stage = tutorStage();
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
-      const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full, .board-canvas-wrap');
+      const paper = tutorPaper();
       if (!stage || !paper) { setPanelWidthPx(null); return; }
       const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
@@ -393,7 +401,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {
-      const stage = document.querySelector('.desk-frame-stage');
+      const stage = tutorStage();
       const panel = document.querySelector('.wz-tutor-panel');
       if (!stage || !panel) { setGripLeftPx(null); return; }
       const stageRect = stage.getBoundingClientRect();

@@ -231,6 +231,13 @@ const formatLockNow = {
   formatLockedReadsPerPage: /const formatLocked = content\.kind === 'draft' \? typewriterForPage\(content\.pageId, content\.pageEmpty\) : settings\.typewriter;/.test(sliverSrc),
   fieldsetGatedByIt: /disabled=\{formatLocked\}/.test(sliverSrc),
 };
+// FREE WRITE = TYPEWRITER successor reads: the source with its comments stripped, by this file's own noComments above (a SUPERSEDED note quoting the old line must not satisfy a live read)
+const formatLockFW = {
+  pureFalse: /export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*return false;\s*\}/.test(noComments(ws)),
+  lockedEverywhereButDraft: /const formatLocked = content\.kind !== 'draft';/.test(noComments(sliverSrc)) && !/typewriterForPage|settings\.typewriter/.test(noComments(sliverSrc)),
+  fieldsetGatedByIt: /disabled=\{formatLocked\}/.test(noComments(sliverSrc)),
+};
+formatLockFW.ok = formatLockFW.pureFalse && formatLockFW.lockedEverywhereButDraft && formatLockFW.fieldsetGatedByIt;
 // ---- PARKED - SUPERSEDED (Nov 12, Wire In: Fable's go "BUILD the Corridor on its own in today's Flux"): typewriterForPage now opens with its Flux early return (the paper Typewriter is retired in Flux),
 // which outran `pureRead`'s literal body match. The claim itself never broke (an empty ARBOR Draft page still opens with Typewriter ON; Arbor's read is unchanged). Kept VERBATIM below and no longer run;
 // the successor follows (it reads the same body with the early return allowed), and the original is run as a PARKED RECORD (HARNESS_PARKED=1). ----
@@ -238,9 +245,12 @@ const formatLockNow = {
 //   formatLockNow.arborDefaultOn && formatLockNow.pureRead && formatLockNow.pageIdEmptyWired
 //   && formatLockNow.formatLockedReadsPerPage && formatLockNow.fieldsetGatedByIt, JSON.stringify(formatLockNow));
 // ------------------------------------------------------------------
-ok('FORMAT LOCK [Wire In successor]: a new, empty Arbor Draft page opens with Typewriter ON (the theme\'s own default for an empty page) and the Format section is disabled while it is (typewriterForPage answers false for Flux first, where the paper Typewriter is retired, then reads as before)',
-  formatLockNow.arborDefaultOn && formatLockNow.pureReadWI && formatLockNow.pageIdEmptyWired
-  && formatLockNow.formatLockedReadsPerPage && formatLockNow.fieldsetGatedByIt, JSON.stringify(formatLockNow));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter (typewriterForPage answers false, no page opens with it ON) and the Format section is locked on every surface but Draft; the original, verbatim:
+// ok('FORMAT LOCK [Wire In successor]: a new, empty Arbor Draft page opens with Typewriter ON (the theme\'s own default for an empty page) and the Format section is disabled while it is (typewriterForPage answers false for Flux first, where the paper Typewriter is retired, then reads as before)',
+//   formatLockNow.arborDefaultOn && formatLockNow.pureReadWI && formatLockNow.pageIdEmptyWired
+//   && formatLockNow.formatLockedReadsPerPage && formatLockNow.fieldsetGatedByIt, JSON.stringify(formatLockNow));
+ok('FORMAT LOCK [Free Write = Typewriter successor]: Draft never runs the Typewriter (typewriterForPage answers false and reads no storage), so the Format section is locked on every surface but Draft and its fieldset is gated by that one value (comments stripped)',
+  formatLockFW.ok, JSON.stringify(formatLockFW));
 coreParks.formatLock = formatLockNow;
 ok('SCREENPLAY: absent, not greyed — the screenplay editor passes no `type` to its sliver content (its face is the format\'s)',
   !/\btype:\s*(typeMember|\{)/.test(noComments(src('components/ScriptEditor.tsx'))), '');
@@ -286,10 +296,17 @@ await mutant('M11 the unchosen label keeps the " Variable" suffix (the package\'
   const captioned = t.replace('<div className="wz-type"', '<div className="wz-sliver-h">Type</div><div className="wz-type"');
   ok('FALSIFICATION M10 a heading is added above the control — must go RED', landed(captioned) && ctlShape(captioned).caption, '');
 }
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter (typewriterForPage answers false, no page opens with it ON) and the Format section is locked on every surface but Draft; the original, verbatim:
+// {
+//   // M12 [Wire In successor]: typewriterForPage loses its Flux early return (the retired paper Typewriter would read a stored ON in Flux again) - the SAME source read FORMAT LOCK [Wire In successor] makes (pureReadWIRe) must go RED
+//   const noGuard = ws.replace("  if (getTheme() === 'flux') return false;\n", '');
+//   ok('FALSIFICATION M12 [Wire In successor] typewriterForPage loses its Flux early return - the FORMAT LOCK read of its body must go RED', noGuard !== ws && pureReadWIRe.test(ws) && !pureReadWIRe.test(noGuard), '');
+// }
 {
-  // M12 [Wire In successor]: typewriterForPage loses its Flux early return (the retired paper Typewriter would read a stored ON in Flux again) - the SAME source read FORMAT LOCK [Wire In successor] makes (pureReadWIRe) must go RED
-  const noGuard = ws.replace("  if (getTheme() === 'flux') return false;\n", '');
-  ok('FALSIFICATION M12 [Wire In successor] typewriterForPage loses its Flux early return - the FORMAT LOCK read of its body must go RED', noGuard !== ws && pureReadWIRe.test(ws) && !pureReadWIRe.test(noGuard), '');
+  // M12 [Free Write = Typewriter successor]: typewriterForPage reads this page's saved value again - the SAME source read FORMAT LOCK makes (pureFalse) must go RED
+  const live = noComments(ws);
+  const mutated = live.replace(/(export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*)return false;/, '$1return readPageTypewriter(_id) === true;');
+  ok('FALSIFICATION M12 [Free Write = Typewriter successor] typewriterForPage reads the page\'s stored value again - the FORMAT LOCK read of its body must go RED', mutated !== live && /export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*return false;\s*\}/.test(live) && !/export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*return false;\s*\}/.test(mutated), '');
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 300)}]` : ''}`);
@@ -329,7 +346,10 @@ if (process.env.HARNESS_PARKED === '1') {
   // WIRE IN (Nov 12) - a SEVENTH park: FORMAT LOCK [typewriter-scope successor]'s literal typewriterForPage body match, outrun by the Flux early return (the claim itself never broke).
   // Record frozen; it re-verifies the new truth from the default leg's observation (coreParks.formatLock, now read with the early return allowed).
   { const f = coreParks.formatLock; parkedChecks.push({ name: 'PARKED (was "FORMAT LOCK [typewriter-scope successor]: a new, empty Arbor Draft page opens with Typewriter ON (the theme\'s own default for an empty page) and the Format section is disabled while it is") - Wire In (Nov 12): typewriterForPage gained its Flux early return and the literal body match was outrun (the claim itself never broke); live successor: FORMAT LOCK [Wire In successor]',
-    pass: !!f && f.arborDefaultOn && f.pureReadWI && f.pageIdEmptyWired && f.formatLockedReadsPerPage && f.fieldsetGatedByIt, detail: JSON.stringify(f) }); }
+    // SUPERSEDED (Free Write = Typewriter, Nov 19): the record re-verified the OLD claim from these reads; the original pass line, verbatim:
+    //   pass: !!f && f.arborDefaultOn && f.pureReadWI && f.pageIdEmptyWired && f.formatLockedReadsPerPage && f.fieldsetGatedByIt, detail: JSON.stringify(f) }); }
+    // it now records the truth the run measures: Draft never runs the Typewriter, the Format section is locked on every surface but Draft, and its fieldset is gated by that value
+    pass: !!f && f.fieldsetGatedByIt && formatLockFW.ok, detail: JSON.stringify({ f, formatLockFW }) }); }
   console.log(parkedChecks.every((c) => c.pass)
     ? `\nITEM207-CORE PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; SEVEN parks (the seventh: FORMAT LOCK's typewriterForPage body match, Wire In), the first six: page-size's two (11 = TODAY's explicit 11, SIZE's 17px formula), MOUNT [C3 successor]'s literal-shape match, MINIMAL's three buttons, FORMS' literal Draft form (font-span), and FORMS [font-span successor]'s own fixed-window regex (typewriter-scope)`
     : `\nITEM207-CORE PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
