@@ -183,10 +183,19 @@ await withHarness(async (app) => {
     SIZES.map(([w]) => ({ w, dots: read[w].pass2 && read[w].pass2.dots, search: read[w].pass2 && read[w].pass2.search, run: read[w].pass2 && read[w].pass2.run })));
   const cap = Number.isFinite(big.barH) && Number.isFinite(b.barH) ? big.barH - b.barH + 2 : NaN;
   const k12 = (c, cp) => !!c && Number.isFinite(cp) && c.after <= cp + 0.5 && c.pageAfter === c.pageBefore;
-  ok('K12 at 2560 an unrelated 400 px overflow leaves the budget\'s extra at or under its cap (the bar at 2560 minus the bar at 1366, plus 2 px) and the page\'s height unchanged',
-    k12(big.k12, cap), { cap, ...big.k12 });
+  // SUPERSEDED (Nov 21, before this file's first green; Actions 44960231602 on 3355a59e: the extra held at 16 and the page's height held at 1217, but
+  // K12 compared the whole rect, and the 400 px block's own window scrollbar narrowed the layout, so the page stood 5 px further left - not the
+  // budget's doing): K12's claim is the extra and the page's HEIGHT. K12-B compares the page's top and height. Verbatim:
+  //   ok('K12 at 2560 an unrelated 400 px overflow leaves the budget\'s extra at or under its cap (the bar at 2560 minus the bar at 1366, plus 2 px) and the page\'s height unchanged',
+  //     k12(big.k12, cap), { cap, ...big.k12 });
+  const vert = (s) => { const p = (s || '').split(','); return p.length === 4 ? `${p[1]},${p[3]}` : ''; };   // "left,top,width,height" -> "top,height"
+  const k12b = (c, cp) => !!c && Number.isFinite(cp) && c.after <= cp + 0.5 && !!vert(c.pageBefore) && vert(c.pageAfter) === vert(c.pageBefore);
+  ok('K12-B at 2560 an unrelated 400 px overflow leaves the budget\'s extra at or under its cap (the bar at 2560 minus the bar at 1366, plus 2 px) and the page\'s top and height unchanged',
+    k12b(big.k12, cap), { cap, ...big.k12 });
   const uncapped = big.k12 ? { ...big.k12, after: big.k12.before + 400 } : null;
-  ok('MUT-K12 the uncapped loop (the extra grown by the 400 px) turns K12\'s test red', !!uncapped && uncapped.after !== big.k12.after && !k12(uncapped, cap), uncapped && { cap, after: uncapped.after });
+  // SUPERSEDED with K12 (the same run): its mutant moves to K12-B's test. Verbatim:
+  //   ok('MUT-K12 the uncapped loop (the extra grown by the 400 px) turns K12\'s test red', !!uncapped && uncapped.after !== big.k12.after && !k12(uncapped, cap), uncapped && { cap, after: uncapped.after });
+  ok('MUT-K12-B the uncapped loop (the extra grown by the 400 px) turns K12-B\'s test red', !!uncapped && uncapped.after !== big.k12.after && !k12b(uncapped, cap), uncapped && { cap, after: uncapped.after });
   const mid = (b) => b ? b.l + b.w / 2 : NaN;
   const k13 = (R) => !!R.runC && Math.abs(R.runC.run - R.runC.page) <= 2 && !!R.split.run && !!R.split.page && Math.abs(mid(R.split.run) - mid(R.split.page)) <= 2;
   ok('K13 the readout under the page is centred on her page within 2 px, plain and in the split, at 1366, 1920 and 2560', SIZES.every(([w]) => k13(read[w])),
