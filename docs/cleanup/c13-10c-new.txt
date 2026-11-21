@@ -456,3 +456,6 @@ reorgSplitViews=Show As
 reorgSplitZoomIn=Zoom In
 reorgSplitZoomOut=Zoom Out
 reorgSplitZoomFit=Fit
+# FULL SCREEN FROM THE SPLIT (ARBOR, reorg plan v2.1 §3b item 3, Nov 21) - the Wrizors' lexicon words (Title Case); no theme overrides them yet
+reorgSplitFull=Full Screen
+reorgFullBack=Back
