@@ -118,8 +118,18 @@ await withHarness(async (app) => {
   ok('K2 the rail is 84 x k px wide and its first door k times as tall as at 1366 (5%)', SIZES.every(([w]) => k2(read[w], WANT_K[w])), SIZES.map(([w]) => ({ w, rail: read[w].rail && read[w].rail.w, door: read[w].door && read[w].door.h })));
   ok('K3 the bar\'s BUILD tab is k times as tall as at 1366 (5%)', SIZES.every(([w]) => !!read[w].tab && ratioOk(read[w].tab.h, b.tab && b.tab.h, WANT_K[w])), SIZES.map(([w]) => ({ w, tab: read[w].tab && read[w].tab.h })));
   const k4 = (R, k) => !!R.front.tab && ratioOk(R.front.tab.h, b.front.tab && b.front.tab.h, k) && !!R.front.panel && (k === 1 || R.front.panel.w > b.front.panel.w + 1) && R.front.spill !== null && R.front.spill <= b.front.spill;
-  ok('K4 the Front menu\'s tab is k times as tall as at 1366 (5%), the drawer is wider where the desk allows, and no more controls spill past its edge than at 1366',
-    SIZES.every(([w]) => k4(read[w], WANT_K[w])), SIZES.map(([w]) => ({ w, ...read[w].front })));
+  // SUPERSEDED (Nov 21, before this file's first green; Actions 44952123641, build 092aa428): K4's premise, the Front drawer's words at k, is false where the bigger page leaves
+  // less desk: at 2560 the drawer's track was 222 px and its words at 1.874 spilled 12 controls. The drawer's contents now grow by its OWN scale,
+  // min(k, its track / 200) (reorg/chromeScale.ts); K4-B reads that scale from the drawer's width. Verbatim:
+  // ok('K4 the Front menu\'s tab is k times as tall as at 1366 (5%), the drawer is wider where the desk allows, and no more controls spill past its edge than at 1366',
+  //   SIZES.every(([w]) => k4(read[w], WANT_K[w])), SIZES.map(([w]) => ({ w, ...read[w].front })));
+  const fk = (R, k) => (R.front.panel ? Math.max(1, Math.min(k, (R.front.panel.w + 16) / 200)) : NaN);
+  const k4b = (R, k) => !!R.front.tab && ratioOk(R.front.tab.h, b.front.tab && b.front.tab.h, fk(R, k)) && !!R.front.panel && (k === 1 || R.front.panel.w > b.front.panel.w + 1) && R.front.spill !== null && R.front.spill <= b.front.spill;
+  ok('K4-B the Front menu\'s tab grows by the drawer\'s own scale - min(k, its track / 200) - within 5%, the drawer is wider where the desk allows, and no more controls spill past its edge than at 1366',
+    SIZES.every(([w]) => k4b(read[w], WANT_K[w])), SIZES.map(([w]) => ({ w, fk: fk(read[w], WANT_K[w]), ...read[w].front })));
+  // MUT-K4-B: the 2560 reading with more controls past the edge than at 1366 turns K4-B red (the mutant LANDED: the reading changed)
+  const spilled = { ...read[2560], front: { ...read[2560].front, spill: (b.front.spill || 0) + 8 } };
+  ok('MUT-K4-B a 2560 Front drawer spilling more than at 1366 turns K4-B red', spilled.front.spill !== read[2560].front.spill && !k4b(spilled, WANT_K[2560]), spilled.front);
   const k5 = (R, k) => !!R.back.tab && ratioOk(R.back.tab.h, b.back.tab && b.back.tab.h, k) && !!R.back.panel && !!R.back.stage && !!R.back.paper
     && (k === 1 || near(R.back.panel.w, Math.min(320 * k, R.back.stage.r - R.back.paper.r - 16), 3) || R.back.panel.w >= 320 * k - 3);
   ok('K5 the Back menu\'s tab is k times as tall as at 1366 (5%), and it opens 320 x k px wide where the desk allows', SIZES.every(([w]) => k5(read[w], WANT_K[w])),
@@ -140,7 +150,7 @@ await withHarness(async (app) => {
 
 function J(v) { return JSON.stringify(v); }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 10;
+const EXPECTED = 11;   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CHROME-SCALE VERIFY: PASS (${checks.length} checks)`

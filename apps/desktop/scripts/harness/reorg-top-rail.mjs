@@ -360,8 +360,19 @@ await withHarness(async (app) => {
     const same = await app.evalJs("document.querySelector('.forward-only-editor') === window.__trEditor");
     geo[w] = { off, rest, renaming, long, same };
   }
-  ok('G1 [1366, 1920, 2000] the page\'s rect is the same with the switch off, on at rest, with a rename open and with a long name; the editor is the same node',
-    Object.values(geo).every((g) => g.off && g.off === g.rest && g.rest === g.renaming && g.rest === g.long && g.same), geo);
+  // SUPERSEDED (Nov 21; §3b ARBOR item 4, Fable Nov 21 11:45 am: "one chrome scale from the window's width / 1366 ... the page's rect rule untouched";
+  // Actions 44952123641, build 092aa428): G1 held the page where it stood with the switch OFF at every width. Above 1366 the reorg's chrome now grows with the window (the bar is
+  // taller, the rail wider), so at 1920 and 2000 the page stands lower and further left than with the switch off - set by the window, never by a state.
+  // The rule itself is in-window: G1-B holds the page still across the states (at rest, a rename open, a long name; the same editor) at every width,
+  // and exactly where the switch-off page stands at 1366, where the scale is 1. Verbatim:
+  // ok('G1 [1366, 1920, 2000] the page\'s rect is the same with the switch off, on at rest, with a rename open and with a long name; the editor is the same node',
+  //   Object.values(geo).every((g) => g.off && g.off === g.rest && g.rest === g.renaming && g.rest === g.long && g.same), geo);
+  const g1b = (G) => Object.entries(G).every(([w, g]) => !!g.rest && g.rest === g.renaming && g.rest === g.long && g.same && (Number(w) > 1366 || g.off === g.rest));
+  ok('G1-B [1366, 1920, 2000] the page\'s rect is the same at rest, with a rename open and with a long name, the editor the same node; at 1366 (scale 1) exactly where it stands with the switch off',
+    g1b(geo), geo);
+  // MUT-G1-B: the same readings with the page moved by a rename at 1920 turn G1-B red (the mutant LANDED: the reading changed)
+  const movedGeo = { ...geo, 1920: { ...geo[1920], renaming: String(geo[1920] && geo[1920].renaming) + ' moved' } };
+  ok('MUT-G1-B a page moved by a rename at 1920 turns G1-B red', movedGeo[1920].renaming !== (geo[1920] && geo[1920].renaming) && !g1b(movedGeo), movedGeo[1920]);
 
   // ---- SPEED -------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'tr-g-1');
@@ -410,7 +421,7 @@ if (CAPTURE) {
   process.exit(0);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 1 + THEMES.length * 4 + 2 * 4 + 6 + 1 + 1 + 9 + 1 + 1 + 1 + 1;
+const EXPECTED = 1 + THEMES.length * 4 + 2 * 4 + 6 + 1 + 1 + 9 + 1 + 1 + 1 + 1 + 1;   // + MUT-G1-B (G1 parked, G1-B its successor; Nov 21, §3b item 4)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-TOP-RAIL VERIFY: PASS (${checks.length} checks)`

@@ -342,5 +342,6 @@
 :root[data-wz-chrome-scale='on'] .chrome-top.sprint-nav > *{ zoom:var(--wz-chrome-k, 1); }
 :root[data-wz-chrome-scale='on'] .machina2-nameplate-mark{ zoom:var(--wz-chrome-k, 1); }
 :root[data-wz-chrome-scale='on'] .desk-frame-sliver-anchor{ --sliver-anchor-w:min(calc(200px * var(--wz-chrome-k, 1)), calc(var(--sliver-margin) + var(--sliver-overflow))); }
-:root[data-wz-chrome-scale='on'] :is(.wz-sliver-panel, .wz-tutor-panel) > *{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] .wz-sliver-panel > *{ zoom:var(--wz-front-k, var(--wz-chrome-k, 1)); }   /* min(k, its track / 200): chromeScale.ts */
+:root[data-wz-chrome-scale='on'] .wz-tutor-panel > *{ zoom:var(--wz-chrome-k, 1); }
 :root[data-wz-chrome-scale='on'] :is(.wz-split-reader > :not(.wz-split-board), .wz-split-board-bar){ zoom:var(--wz-chrome-k, 1); }

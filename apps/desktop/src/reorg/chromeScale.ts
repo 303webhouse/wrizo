@@ -16,6 +16,12 @@ import { REORG } from './flag';
 export const CHROME_BASE_W = 1366;
 const ATTR = 'data-wz-chrome-scale';
 const VAR = '--wz-chrome-k';
+// THE FRONT DRAWER'S OWN SCALE: its track is the desk beside the page (min(200 x k, that desk)); a bigger page leaves less desk, so its contents grow
+// only as far as its track allows - min(k, its width / 200) - and never run past its edge (Actions 44952123641: at 2560 a 222 px drawer at 1.874
+// spilled 12 controls). Measured from the drawer's anchor (a box CSS places; reading it is a read only).
+const FRONT_VAR = '--wz-front-k';
+const FRONT_BASE = 200;
+export const frontScaleFor = (k: number, anchorW: number): number => (Number.isFinite(anchorW) && anchorW > 0 ? Math.max(1, Math.min(k, Math.round((anchorW / FRONT_BASE) * 1000) / 1000)) : k);
 
 /** The chrome scale for a window this wide: 1 at 1366 and below, rounded to three places. */
 export const chromeScaleFor = (w: number): number => (Number.isFinite(w) && w > CHROME_BASE_W ? Math.round((w / CHROME_BASE_W) * 1000) / 1000 : 1);
@@ -36,20 +42,34 @@ export function useChromeScale(): void {
     if (!REORG || theme !== 'machina') return;
     const r = document.documentElement;
     let last = '';
+    let lastFront = '';
+    const front = () => {
+      const a = document.querySelector<HTMLElement>('.desk-frame-sliver-anchor');
+      const fk = String(frontScaleFor(chromeScaleFor(window.innerWidth), a ? a.getBoundingClientRect().width : NaN));
+      if (fk === lastFront) return;
+      lastFront = fk;
+      r.style.setProperty(FRONT_VAR, fk);
+    };
     const set = () => {
       const k = chromeScaleFor(window.innerWidth);
       const s = String(k);
-      if (s === last) return;
-      last = s;
-      r.style.setProperty(VAR, s);
-      r.setAttribute(ATTR, k > 1 ? 'on' : 'base');
-      window.dispatchEvent(new Event('wz-chrome-scale'));
+      if (s !== last) {
+        last = s;
+        r.style.setProperty(VAR, s);
+        r.setAttribute(ATTR, k > 1 ? 'on' : 'base');
+        window.dispatchEvent(new Event('wz-chrome-scale'));
+      }
+      front();
     };
     set();
     window.addEventListener('resize', set);
+    // the drawer's track also follows the page (another page, the zoom): re-read twice a second, writing only on a change (never on a keystroke)
+    const tick = window.setInterval(front, 500);
     return () => {
       window.removeEventListener('resize', set);
+      window.clearInterval(tick);
       r.style.removeProperty(VAR);
+      r.style.removeProperty(FRONT_VAR);
       r.removeAttribute(ATTR);
       window.dispatchEvent(new Event('wz-chrome-scale'));
     };
