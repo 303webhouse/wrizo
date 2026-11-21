@@ -274,3 +274,13 @@
    ========================================================================================================================================== */
 :root[data-machina2][data-theme='machina'][data-machina2-room='light'] .machina-run-strip > i.here::after{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
 :root[data-machina2][data-theme='machina'][data-page='dark'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--brass) !important; }
+
+/* ==========================================================================================================================================
+   §2e (Law 3; Fable, Nov 9, 6:35 pm, the Wrizors' default ruled as Machina's rule): ON A LIGHT SURFACE BRASS NEVER STANDS ALONE. In the light room a
+   chosen option in a drawer, a pop-out or the theme picker keeps its words in the label colour (--text-mid, #3A4047: 9.6:1 on the light panel)
+   and draws its brass outline as a ring inside its edge (nothing moves) with a 1 px ink keyline (#23272B) outside it - Arbor's day rule's five
+   kinds (arbor-v2.css r19 §18.4). The dark room is unchanged. (The Wrizors' carry, chrome scale pass 2, Nov 21: "Whole document" and the
+   chosen Form were brass words on the light drawer, about 1.9:1.) Checked by scripts/harness/machina-brass-chosen.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true'], .wz-template-row[aria-pressed='true']){
+  color:var(--text-mid); border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass), 0 0 0 1px #23272B; }
