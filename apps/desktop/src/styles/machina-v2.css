@@ -221,6 +221,19 @@
 :root[data-machina2][data-cast='neutral'] .machina2-nameplate-tick{ background:#332F2A; }
 :root[data-machina2][data-wz-writing='true'] .machina2-nameplate{ opacity:0; }   /* it recedes with the bar while she types, as the door does */
 :root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .brand-mark{ display:none; }
+/* ==========================================================================================================================================
+   THE MARK IS WRIZO (Nick, Nov 21, via Fable 1:30 pm: "the logo in the top left corner was made for the mockup"; the mockup's mark, cursor/reorg-
+   prototype docs/mockups/reorg/reorg.css 45-52). The corner mark and the bar's nameplate both draw machina2/wordmark.tsx: WRIZO in Plex Sans 500
+   at 13 px, .26em apart, the left padding making up the spacing after the last letter, and one brass notch 6 x 2 px under the O, centred on the
+   O's inked middle (the O is its own box without the spacing after it). No line above, below or beside it: the corner mark's WRIZ and square
+   (05-machina.css) are not drawn. Where the mark sits on the light room's ground (the corner) the notch wears the 1 px ink edge the Run's notch
+   wears there; the bars are dark in both rooms. Checked by scripts/harness/machina-logo-wrizo.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::before, :root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::after{ content:none; display:none; }
+.machina2-wm{ display:inline-block; font:500 13px/1 'IBM Plex Sans', sans-serif; letter-spacing:.26em; padding-left:.26em; white-space:nowrap; }
+.machina2-wm-o{ position:relative; display:inline-block; letter-spacing:0; margin-right:.26em; }
+.machina2-wm-notch{ position:absolute; left:50%; top:calc(100% + 1px); width:6px; height:2px; margin-left:-3px; background:var(--brass); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .brand-mark .machina2-wm-notch{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
 :root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-top.sprint-nav{ padding-left:calc(16px + var(--machina2-plate-w, 62px) + 12px); }
 
 /* r5 - the Lighting row's "?" (spec draft 9 §2f: "a '?' explains it in one line") */
