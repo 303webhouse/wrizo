@@ -148,12 +148,11 @@
 [data-theme='machina'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
 [data-theme='machina'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
 
-/* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys) */
+/* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys). scrollbar-width:none is the one mechanism (no
+   ::-webkit-scrollbar rules: dead under Chromium >= 121 wherever scrollbar-width is set, and index.css keeps them to its one exception, scrollbar-flush-source T5) */
 [data-theme='machina'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
-[data-theme='machina'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
 /* the asset's side is drawn into <body> (reorg/split/SplitHost.tsx's portal), outside the stage: the same rule on it */
 [data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
-[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
 /* FOOTNOTES (Nick, Nov 21): the note lines at a Part's end are set apart on the page: smaller and quieter, still real characters (reorg/footnotes.ts; draftDecoration wraps them only under the switch) */
 .md-note{ font-size:.85em; opacity:.72; }
 /* THE ASSETS "+" (reorg-plan-v2 3b item 1): the head's beside "Assets (n)", each Part's at its head's right edge; the menu and the short lists draw over

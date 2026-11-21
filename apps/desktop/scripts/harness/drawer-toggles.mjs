@@ -121,6 +121,12 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     hookBeforeReturn: hook > 0 && early > hook,
     formatLockedPP,
     wrapsFourRows: countOf(fBody, /className="wz-sliver-format/g) === 3 && /onFormat\('bold'\)/.test(fBody) && /onFormat\('align-right'\)/.test(fBody) && /<BulletControl/.test(fBody),
+    // T7-B (Nov 21, train F): the reorg's TEXT tab adds format rows (ARBOR's Paragraph fold, INK's P / H picker and note rows) - every one INSIDE the
+    // same fieldset. The claim is that the whole format group sits in it: at least the original three rows inside, and no format row outside it
+    // (the Ink tool's own tip and nib rows are not the format group and sit in the Ink panel, as before)
+    rowsIn: countOf(fBody, /className="wz-sliver-format/g),
+    rowsOutside: countOf(tools, /className="wz-sliver-format(?! wz-ink-)/g) - countOf(fBody, /className="wz-sliver-format(?! wz-ink-)/g),
+    wrapsRows: countOf(fBody, /className="wz-sliver-format/g) >= 3 && countOf(tools, /className="wz-sliver-format(?! wz-ink-)/g) === countOf(fBody, /className="wz-sliver-format(?! wz-ink-)/g) && /onFormat\('bold'\)/.test(fBody) && /onFormat\('align-right'\)/.test(fBody) && /<BulletControl/.test(fBody),
     sectionOnly: countOf(tools, /<fieldset /g) === 1,
     // the greyed group says why: a tooltip from the lexicon on the fieldset, a legend for assistive tech, and buttons that let the pointer through to it
     tooltip: /<fieldset [^>]*title=\{formatLocked \? t\('formatLockedByTypewriter'\) : undefined\}>/.test(tools)
@@ -238,6 +244,8 @@ function verdict(c) {
     // not a replacement - hookBeforeReturn's own claim is unchanged and still true, only its
     // anchor moved; see the comment above `hook` in claims()).
     format: f.disabledBound && f.hookBeforeReturn && f.formatLockedPP && f.wrapsFourRows && f.sectionOnly && f.tooltip,
+    // T7-B (Nov 21): the same claims, the rows counted as "every format row inside the one fieldset" (wrapsRows) instead of exactly three
+    formatB: f.disabledBound && f.hookBeforeReturn && f.formatLockedPP && f.wrapsRows && f.sectionOnly && f.tooltip,
   };
 }
 const base = claims();
@@ -350,8 +358,19 @@ if (false) ok('(T5) when a mode is off every row that stays is disabled: Typewri
 ok('(T5) [Free Write = Typewriter successor] the Typewriter menu\'s rows (Forward Lock, Line Fade, Page Scroll: 3 of 3) are NEVER greyed - there is no switch to turn the Typewriter off in Free Write - and Progress\' rows are still greyed by their own mode (4 of 4 and the Goal number)',
   v.greyedFW === true, JSON.stringify({ fw: base.fw, prInput: base.greyed.prInput }));
 ok('(T6) "disabled" is real: Seg marks the row (data-disabled) and disables its option buttons, so a greyed row cannot be focused or pressed', v.seg === true, JSON.stringify(base.seg));
-ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
+// SUPERSEDED (Nov 21, train F pair 44944613263: wrapsFourRows false): T7 counted EXACTLY three format rows in the fieldset; the reorg's TEXT tab (behind
+// ?reorg=1 in Machina: ARBOR's Paragraph fold, INK's P / H picker and note rows) adds rows, every one inside the same fieldset. T7-B reads the claim itself -
+// the whole format group in the one fieldset - with its MUTANT below. Parked in this file's idiom, the original verbatim:
+if (false) ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
   v.format === true, JSON.stringify(base.format));
+ok('(T7-B) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on: every format row (at least the original three, with B/I/U/S/H, bullets and alignment) is inside it and none outside; the setting is read above the early return so the hook order holds',
+  v.formatB === true, JSON.stringify(base.format));
+{ // MUTANT: a format row moved OUTSIDE the fieldset turns T7-B red (the mutation LANDED: one more row outside, in the source the claims read)
+  const row = '<div className="wz-sliver-format" data-mutant="t7b" />';
+  const mutSliver = sliverSrc.replace('<fieldset className="wz-sliver-fieldset"', row + '<fieldset className="wz-sliver-fieldset"');
+  let mc = null; try { mc = claims({ sliver: mutSliver, stage: stageSrc, lex: lexSrc, pe: peSrc, icons: iconsSrc, css }); } catch { mc = null; }
+  ok('(T7-B) MUTANT: a format row moved outside the fieldset turns T7-B red', mutSliver !== sliverSrc && !!mc && mc.format.rowsOutside === base.format.rowsOutside + 1 && verdict(mc).formatB !== true, JSON.stringify(mc && mc.format));
+}
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if
 // (false)`: pinned applyRailFormat's guard as the shared getWritingSettings().typewriter.
 // Successor (T8) below reads v.shortcutsPP - the guard now reads THIS page's own
