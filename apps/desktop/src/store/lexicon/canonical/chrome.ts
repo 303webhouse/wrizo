@@ -261,6 +261,10 @@ export const CANONICAL_CHROME = {
   reorgBxEmptyOne: '{n} Part with no words',
   reorgBxEmptyMany: '{n} Parts with no words',
   reorgBxClear: 'Nothing is in the way.',
+  reorgBxAttachedOne: '{n} Asset attached',
+  reorgBxAttachedMany: '{n} Assets attached',
+  reorgAttachHead: 'Attach to what goes out',
+  reorgAttachTick: 'Attach {title} to what goes out',
   reorgPlanInclude: 'Include the Plan in what goes out',
   reorgPlanIncludeNone: 'The Plan is empty: nothing to include.',
   // SPRINT's Back menu: Plan and Assets are locked, and the one prompt she presses for

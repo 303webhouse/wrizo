@@ -6,7 +6,7 @@
 //   - possible grammar or spelling issues left: the page's check is the browser's own and no count of it can be read back;
 //   - Plan rows never attached to a Part: no row is stored as attached to a Part yet (the "→ Part" act, FIX's);
 //   - quotations with no source filled in: a quotation ("> ") has no place to hold a source (citations are a later bet);
-//   - assets she chose to attach: attaching assets to an export is queue item 5 (A4).
+// BUILT since: the assets she chose to attach (item 5b, A4) are a reminder of what is going out, a count beside the notes; they never block and never announce a problem.
 // A line is added here when its data lands: `notes` is a list, in the stage menus' order, for that.
 
 /** One Part as the publishing sheet draws it: the facts this reads. */
@@ -14,10 +14,10 @@ export interface BxPart { id: string; n: number; heading: string; empty: boolean
 
 export type BxBlock = { kind: 'noneTicked' };
 export type BxNote = { kind: 'emptyParts'; count: number; partIds: string[] };
-export interface BxResult { blocked: boolean; blocks: BxBlock[]; notes: BxNote[] }
+export interface BxResult { blocked: boolean; blocks: BxBlock[]; notes: BxNote[]; /** the assets she ticked to attach (a reminder, never a problem) */ attached: number }
 
 /** `off` is the set of Parts ticked OUT. A Doc of one Part has no ticks (it always goes out); a Doc of none has nothing to block. */
-export function beforeExport(parts: readonly BxPart[], off: ReadonlySet<string>): BxResult {
+export function beforeExport(parts: readonly BxPart[], off: ReadonlySet<string>, attached = 0): BxResult {
   const many = parts.length > 1;
   const going = many ? parts.filter((p) => !off.has(p.id)) : parts.slice();
   const blocks: BxBlock[] = [];
@@ -27,5 +27,5 @@ export function beforeExport(parts: readonly BxPart[], off: ReadonlySet<string>)
   const empties = going.filter((p) => p.empty);
   if (empties.length > 0) notes.push({ kind: 'emptyParts', count: empties.length, partIds: empties.map((p) => p.id) });
   const blocked = blocks.length > 0;
-  return { blocked, blocks, notes };
+  return { blocked, blocks, notes, attached: blocks.length > 0 ? 0 : Math.max(0, Math.trunc(attached)) };
 }

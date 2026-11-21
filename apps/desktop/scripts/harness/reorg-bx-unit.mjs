@@ -4,6 +4,7 @@
 // the source) that must LAND and turn its own check red.
 //   BLOCK   nothing ticked in a Doc of two or more Parts blocks the export and says why; one tick, or a one-Part Doc (which has no ticks), blocks nothing
 //   NOTE    "Parts with no words" counts only the Parts that GO OUT (an empty Part she ticked out is not announced), names them in the Doc's order, and is absent at zero; it never blocks
+//   ATTACH  (item 5b, Nov 21) the assets she ticked to attach are a REMINDER: a count beside the notes (0 when none), never a block and never a note; with the export blocked (nothing ticked to go out) there is nothing going out to remind of
 //   QUIET   the answer is a pure reading: the same input twice gives the same answer, and the input is not changed
 // Run: node scripts/harness/reorg-bx-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -57,12 +58,17 @@ function suite(src) {
     const a = J(BX.beforeExport(parts, off)), b = J(BX.beforeExport(parts, off));
     R.QUIET = { pass: a === b && before === J(parts) + J([...off]), detail: J({ a, b }) };
   }
+  // ATTACH
+  {
+    const none = run(three, []), two = BX.beforeExport(three, new Set(), 2), blocked = BX.beforeExport(three, new Set(['p1', 'p2', 'p3']), 2), odd = BX.beforeExport(three, new Set(), -1);
+    R.ATTACH = { pass: none.attached === 0 && two.attached === 2 && two.blocked === false && two.notes.length === 1 && blocked.attached === 0 && odd.attached === 0, detail: J({ none, two, blocked, odd }) };
+  }
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['BLOCK', 'NOTE', 'QUIET']) ok(`${k} on the real beforeExportRules.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExportRules.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['BLOCK', 'NOTE', 'ATTACH', 'QUIET']) ok(`${k} on the real beforeExportRules.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExportRules.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 // the mutants: [name, the check it must turn red, the rewrite]
 const MUT = [
@@ -71,6 +77,9 @@ const MUT = [
   ['the empty Parts are counted among the ones ticked OUT too', 'NOTE', (t) => t.replace('const empties = going.filter', () => 'const empties = parts.filter')],
   ['a zero count is announced', 'NOTE', (t) => t.replace('if (empties.length > 0) notes.push', () => 'if (true) notes.push')],
   ['the empty Parts are listed in a changed order', 'NOTE', (t) => t.replace('partIds: empties.map((p) => p.id)', () => 'partIds: empties.map((p) => p.id).reverse()')],
+  ['the attached count is not given at all', 'ATTACH', (t) => t.replace('attached: blocks.length > 0 ? 0 : Math.max(0, Math.trunc(attached))', () => 'attached: 0')],
+  ['the attached count is shown while the export is blocked', 'ATTACH', (t) => t.replace('blocks.length > 0 ? 0 : Math.max(0, Math.trunc(attached))', () => 'Math.max(0, Math.trunc(attached))')],
+  ['a reminder of the assets blocks the export', 'ATTACH', (t) => t.replace('const blocked = blocks.length > 0', () => 'const blocked = blocks.length > 0 || attached > 0')],
   ['an empty Part blocks the export', 'NOTE', (t) => t.replace('const blocked = blocks.length > 0', () => 'const blocked = blocks.length > 0 || notes.length > 0')],
 ];
 for (const [name, key, fn] of MUT) {

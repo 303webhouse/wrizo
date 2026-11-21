@@ -3,8 +3,8 @@ import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { subscribe } from '../store/persistence';
 import { beforeExport } from './beforeExportRules';
-import { publicationFacts, publicationSignature } from './publishing';
-import { usePickOff } from './publishPick';
+import { publicationAttach, publicationFacts, publicationSignature } from './publishing';
+import { useAttached, usePickOff } from './publishPick';
 
 // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4; the stage menus, F4; Nick, Nov 20, 1:20 pm: FINALIZE keeps the Back menu, and Before You Export stays there). A tab of the Back menu that exists only while the
 // publishing sheet is open (Tutor.tsx). It READS what the sheet is showing (the Parts, and which are ticked out: publishPick.ts) and says, in plain lines, what would stop the export (no Part ticked) and what is
@@ -26,7 +26,10 @@ export function BeforeExport({ entry }: { entry: JournalEntry }) {
   const sig = useSyncExternalStore(subscribe, () => publicationSignature(entry.id));
   const parts = useMemo(() => publicationFacts(entry.id), [entry.id, sig]);   // eslint-disable-line react-hooks/exhaustive-deps
   const off = usePickOff(entry.id);
-  const r = beforeExport(parts, off);
+  const picked = useAttached(entry.id);
+  // the assets she ticked that are still there (a reminder of what is going out, item 5b)
+  const attached = publicationAttach(entry.id, '', '', picked)?.items.length ?? 0;
+  const r = beforeExport(parts, off, attached);
   const clear = r.blocks.length === 0 && r.notes.length === 0;
   return (
     <section className="reorg-bx" data-back-export aria-label={t('reorgBxLabel')}>
@@ -38,6 +41,7 @@ export function BeforeExport({ entry }: { entry: JournalEntry }) {
           {fill(n.count === 1 ? t('reorgBxEmptyOne') : t('reorgBxEmptyMany'), { n: n.count })}
         </button>
       ))}
+      {r.attached > 0 && <p className="reorg-bx-attached" data-bx-attached={r.attached}>{fill(r.attached === 1 ? t('reorgBxAttachedOne') : t('reorgBxAttachedMany'), { n: r.attached })}</p>}
       {clear && <p className="reorg-bx-clear" data-bx-clear>{t('reorgBxClear')}</p>}
     </section>
   );
