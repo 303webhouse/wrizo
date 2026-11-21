@@ -288,7 +288,7 @@ if (hasBridge && hasSaved && rules) {
     return { g1: !!(local('M2a') && local('M2a').goal), copy: local('M2a') };
   });
   ok(m2.landedSrc && !m2.g1, `MUT2 no switchless fact (LANDED: ${m2.landedSrc}): the copy holds ${JSON.stringify(m2.copy)} - G1's read goes RED`);
-  const m3 = await asMutant({ file: 'src/store/writingGoalPref.ts', from: 'if (c === base) return;', to: '' }, async () => {
+  const m3 = await asMutant({ file: 'src/store/writingGoalPref.ts', from: 'if (base === c) return;', to: '' }, async () => {
     const X = await dev('M3a'); X.mod.gb.observeGoal(clone(DEFAULT)); await turns(); await X.runTimers(); tick();
     return { g7: local('M3a') === null, copy: local('M3a') };
   });
