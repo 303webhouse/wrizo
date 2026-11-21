@@ -355,7 +355,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
 
   const boxes = liveBoxes(cur.boxes);
   const pending = textRef.current;
-  const drawn = [...boxes.filter((b) => DRAWN.has(b.kind)), ...(fresh ? [fresh] : [])].map((b) => {
+  const drawn = boxes.filter((b) => DRAWN.has(b.kind)).concat(fresh ? [fresh] : []).map((b) => {
     let x = b;
     if (pending && pending.id === b.id) x = { ...x, text: pending.text };
     if (ghost && ghost.kind === 'move' && ghost.ids.includes(b.id)) x = { ...x, x: b.x + ghost.dx, y: b.y + ghost.dy };
@@ -419,7 +419,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
         </div>
       )}
       {popupBox && view === 'open' && (
-        <BoardCardPopup key={popupBox.id} scoped initialText={popupBox.text ?? ''} prompt={!popupBox.sourceEntryId ? popupBox.prompt : undefined}
+        <BoardCardPopup key={popupBox.id} scoped initialText={popupBox.text ?? ''} prompt={promptToShow({ ...popupBox, text: '' }) ?? undefined}
           fontFace={popupBox.fontFace} fontSize={popupBox.fontSize}
           onCommit={(text) => popupRef.current.onText(popupBox.id, text)}
           onType={(patch) => popupRef.current.onType(popupBox.id, patch)}
