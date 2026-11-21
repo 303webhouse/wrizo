@@ -103,6 +103,11 @@
    tab draws, so a Part and its assets read as one thread. */
 [data-theme='machina'] .reorg-parts-list > li{ display:flex; flex-wrap:wrap; align-items:center; }
 [data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row{ flex:1 1 0; width:auto; min-width:0; padding-left:calc(12px + var(--part-level, 0) * 14px); }
+/* a row draws inside its own box (POLISH's reading, Actions 44870378376: in the Sliver at 1920 the word count, which did not give way, ran past
+   the row's edge and under the link badge, and the row, being position:relative, took the badge's press). The name gives way first (its
+   ellipsis), then the count (its own); and nothing is ever painted past the row's edge. */
+[data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row{ overflow:hidden; }
+[data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row .reorg-parts-words{ flex:0 0.001 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .reorg-parts-tag{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; box-sizing:border-box;
   font-family:var(--font-chromeLabel, monospace); font-size:9.5px; font-weight:500; letter-spacing:.04em; }
 [data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour]{ border:1px solid #6A727B; }
