@@ -174,15 +174,29 @@ await withHarness(async (app) => {
 
   // double-clicks, inside the N1 window: on a card and on the empty canvas
   const c1 = z3 && z3.cards.find((c) => c.id === 'c1');
+  // FIXTURE (Nov 21; §3b item 2b, arbor/reorg-split-edit): a double-click on a text card now opens the Board's own card editor, and one on the empty canvas
+  // makes a card there and opens it; each editor is closed (Escape) without a word before the next step, so the canvas is in reach again. A card closed
+  // without a word was never written, so N1's window still holds. No assertion changes.
   if (c1) await app.evalJs(dbl(c1.l + 8, c1.t + 6));
+  await sleep(400); await app.key('Escape'); await sleep(300);
   const e1 = await app.evalJs(EMPTY);
   if (e1) await app.evalJs(dbl(e1.x, e1.y));
+  await sleep(400); await app.key('Escape'); await sleep(300);
   await settle(app);
 
   // ---- LOOK ------------------------------------------------------------------------------------------------------------------------------
   const look = await app.evalJs(`(() => { const a = document.querySelector('.wz-split-asset'); if (!a) return null; return { ce: a.querySelectorAll('[contenteditable="true"], [contenteditable=""]').length,
     fields: [...a.querySelectorAll('input, textarea')].filter((f) => !f.readOnly && !f.disabled).length, handles: a.querySelectorAll('.board-handle').length }; })()`);
-  ok('R1 nothing in the split is editable: no contenteditable, no text field that is not read-only, no card handle', !!look && look.ce === 0 && look.fields === 0 && look.handles === 0, look);
+  // SUPERSEDED (Nov 21; §3b ARBOR item 2b, Fable Nov 21 12:10 am: the split's Board is EDITED on its Open canvas - arbor/reorg-split-edit): R1's premise,
+  // "nothing in the split is editable", is the look-only 2a it guarded; 2b gives the selected card a corner handle by design (reorg-split-edit.mjs Z1).
+  // What still holds - a card's words are never edited in place in the split, only in the Board's own card editor, closed here - is R1-B's. Verbatim:
+  // ok('R1 nothing in the split is editable: no contenteditable, no text field that is not read-only, no card handle', !!look && look.ce === 0 && look.fields === 0 && look.handles === 0, look);
+  const popupOpen = await app.evalJs("!!document.querySelector('.board-popup')");
+  const r1b = (l, p) => !!l && l.ce === 0 && l.fields === 0 && !p;
+  ok('R1-B with the card editor closed, nothing in the split is a text field: no contenteditable, no text field that is not read-only, and no card editor open', r1b(look, popupOpen), { look, popupOpen });
+  // MUT-R1-B: a card editable in place (one contenteditable in the split) turns R1-B red (the mutant LANDED: the reading changed)
+  const mutLook = look ? { ...look, ce: look.ce + 1 } : null;
+  ok('MUT-R1-B a card editable in place in the split turns R1-B red', !!mutLook && mutLook.ce !== look.ce && !r1b(mutLook, popupOpen), { mutLook });
 
   // ---- Z2: none of it is kept ------------------------------------------------------------------------------------------------------------
   const zz = await app.evalJs(READ);
@@ -213,7 +227,16 @@ await withHarness(async (app) => {
   const code = sb.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
   const writes = ['saveBoardBoxes', 'saveJournalEntry', 'setPref', 'localStorage', 'setBoardMode', 'wrizoPatchEntry'].filter((w) => code.includes(w));
   const global = /(window|document)\.addEventListener/.test(code);
-  ok('S1 the split\'s Board writes nothing (no save, no prefs, no storage, no board-mode write) and listens on no window or document', !!sb && writes.length === 0 && !global, { exists: !!sb, writes, global });
+  // SUPERSEDED (Nov 21; §3b ARBOR item 2b, Fable Nov 21 12:10 am: "saveBoardBoxes with tombstones" - arbor/reorg-split-edit): the split's Board now
+  // writes the board, through the Board's own saveBoardBoxes and stashDeletedBoxes. What still holds - no other write (no prefs, no storage, no
+  // board-mode write, no raw entry save) and no window or document listener - is S1-B's. Verbatim:
+  // ok('S1 the split\'s Board writes nothing (no save, no prefs, no storage, no board-mode write) and listens on no window or document', !!sb && writes.length === 0 && !global, { exists: !!sb, writes, global });
+  const s1b = (c) => { const bad = ['saveJournalEntry', 'setPref', 'localStorage', 'setBoardMode', 'wrizoPatchEntry'].filter((w) => c.includes(w)); return { pass: !!c && bad.length === 0 && !/(window|document)\.addEventListener/.test(c), bad }; };
+  const s1r = s1b(code);
+  ok('S1-B the split\'s Board writes only the board (no prefs, no storage, no board-mode write, no raw entry save) and listens on no window or document', s1r.pass, { exists: !!sb, ...s1r, global });
+  // MUT-S1-B: the same source with a storage write turns S1-B red (the mutant LANDED: the source changed)
+  const mutCode = code + "\nlocalStorage.setItem('x', '1');";
+  ok('MUT-S1-B a split Board that wrote storage turns S1-B red', mutCode !== code && !s1b(mutCode).pass, s1b(mutCode));
   const terms = read('store/lexicon/terms.ts');
   const canon = read('store/lexicon/canonical/chrome.ts');
   const need = ['reorgSplitViews', 'reorgSplitZoomIn', 'reorgSplitZoomOut', 'reorgSplitZoomFit'];
@@ -222,7 +245,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 11;   // 10 - V2 (parked) + V2-B + MUT-V2-B (Nov 21)
+const EXPECTED = 13;   // 10 - V2 (parked) + V2-B + MUT-V2-B (Nov 21); - R1 - S1 (parked, 2b) + R1-B + MUT-R1-B + S1-B + MUT-S1-B (Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-SPLIT-BOARD VERIFY: PASS (${checks.length} checks)`

@@ -319,15 +319,29 @@ await withHarness(async (app) => {
   const mut = sb.replace(/\nexport function SplitBoard/, "\nconst __mut = () => localStorage.setItem('x', '1');\nexport function SplitBoard");
   ok('MUT-S1 a SplitBoard that wrote localStorage turns S1 red', mut !== sb && !s1(mut).pass, { landed: mut !== sb, mutant: s1(mut) });
   const pop = strip(read('components/board/BoardCardPopup.tsx'));
-  const ed = strip(read('components/BoardEditor.tsx'));
   const docListen = /document\.addEventListener\('keydown', onKeyDown\)/.test(pop);
   const scopedProp = /\bscoped\??:\s*boolean/.test(pop);
-  const boardPasses = /<BoardCardPopup[^>]*\bscoped\b/.test(ed.replace(/\n/g, ' '));
-  ok('S2 the Board\'s card editor listens on the document exactly as before unless `scoped` is passed, and the Board screen passes no `scoped`', docListen && scopedProp && !boardPasses, { docListen, scopedProp, boardPasses });
+  // SUPERSEDED (Nov 21, before this file's first green; c13-10g-readers --standing named this file: since #13 step 10g the Board module is split into
+  // parts, so a bare read of its own file reads half the board, and `[^>]*` stops at the first `=>` inside a tag): S2 read the module's own file for the
+  // Board's call sites. S2-B finds EVERY <BoardCardPopup call site in src - the Board's parts included - and counts them. Verbatim:
+  //   const ed = strip(read('components/BoardEditor.tsx'));
+  //   const boardPasses = /<BoardCardPopup[^>]*\bscoped\b/.test(ed.replace(/\n/g, ' '));
+  //   ok('S2 the Board\'s card editor listens on the document exactly as before unless `scoped` is passed, and the Board screen passes no `scoped`', docListen && scopedProp && !boardPasses, { docListen, scopedProp, boardPasses });
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? walk(path.join(dir, d.name)) : /\.tsx$/.test(d.name) ? [path.join(dir, d.name)] : []));
+  const SPLIT = 'reorg/split/SplitBoard.tsx';
+  const sitesIn = (files) => files.flatMap(([file, text]) => [...strip(text).matchAll(/<BoardCardPopup\b[\s\S]*?\/>/g)].map((m) => ({ file, scoped: /\bscoped\b/.test(m[0]) })));
+  const files = walk(SRC).map((f) => [path.relative(SRC, f).replace(/\\/g, '/'), fs.readFileSync(f, 'utf8')]);
+  const s2b = (sites) => { const board = sites.filter((s) => s.file !== SPLIT); return { pass: docListen && scopedProp && board.length >= 2 && board.every((s) => !s.scoped) && sites.some((s) => s.file === SPLIT && s.scoped), board: board.map((s) => `${s.file}${s.scoped ? ' SCOPED' : ''}`), split: sites.filter((s) => s.file === SPLIT).map((s) => s.scoped) }; };
+  const s2 = s2b(sitesIn(files));
+  ok('S2-B the Board\'s card editor listens on the document exactly as before unless `scoped` is passed; every call site in src but the split\'s (at least the Board\'s two) passes no `scoped`, and the split\'s does', s2.pass, { docListen, scopedProp, ...s2 });
+  // MUT-S2-B: a Board call site that passed `scoped` turns S2-B red (the mutant LANDED: a site now reads scoped)
+  const mutFiles = files.map(([f, text]) => [f, f !== SPLIT && text.includes('<BoardCardPopup') ? text.replace('<BoardCardPopup', '<BoardCardPopup scoped') : text]);
+  const mutSites = sitesIn(mutFiles);
+  ok('MUT-S2-B a Board call site passing `scoped` turns S2-B red', mutSites.some((s) => s.file !== SPLIT && s.scoped) && !s2b(mutSites).pass, s2b(mutSites));
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;
+const EXPECTED = 17;   // 16 - S2 (parked, before the first green) + S2-B + MUT-S2-B (Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-SPLIT-EDIT VERIFY: PASS (${checks.length} checks)`
