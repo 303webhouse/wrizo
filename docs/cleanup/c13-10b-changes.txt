@@ -14,3 +14,8 @@
 +   level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
 +   color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
 +   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
+# PLAN PRESETS (FIX, Nov 21): Box.planHint - a preset heading's one grey prompt, additive optional inside the board's `boxes` jsonb (zero schema; reorg/backMenu/planPresetOps.ts). Not `prompt`: that is a dealt step's question.
++   // A PLAN PRESET'S PROMPT (reorg/backMenu/planPresetOps.ts, Nov 20): the one grey line a preset's heading carries ("What exactly are you and your readers disagreeing about?"). Additive optional inside the board's `boxes` jsonb
++   // (zero schema, like `prompt`): guidance, never her text (it is not in `text`, so it is never exported, copied, counted or read by the Tutor as her words); the Plan draws it under the heading until a Part under that heading has words.
++   // Not `prompt`: that is a dealt step's question and the Walk and the Open view read it.
++   planHint?: string;
