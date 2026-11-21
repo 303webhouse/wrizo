@@ -332,3 +332,29 @@
   font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-dockind-group > button:hover, [data-theme='machina'] .reorg-dockind-group > button:focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 [data-theme='machina'] .reorg-dockind-group > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+
+/* ==========================================================================================================================================
+   THE CHROME SCALE (§3b ARBOR item 4; Fable, Nov 21 11:45 am, RULED: one chrome scale from the window's width / 1366, Machina under the reorg only,
+   the page's rect rule untouched). reorg/chromeScale.ts publishes k as --wz-chrome-k with data-wz-chrome-scale='on' above 1366 ('base' at 1366 and
+   below, where nothing here applies). The CONTENTS of the chrome are zoomed - the rail's, the bar's, the nameplate's mark, the two drawers' and the
+   split's side - and their tracks widen by the same k: the rail's --strip-width, the Front drawer's cap (200 px), the Back drawer's open width
+   (Tutor.tsx, 320 px). No box that script places by measuring is zoomed (a zoomed box's own left and top scale too), and the page is not touched:
+   it already grows with its stage (store/pageScale.ts). Checked by scripts/harness/reorg-chrome-scale.mjs.
+   ========================================================================================================================================== */
+:root[data-wz-chrome-scale='on']{ --strip-width:calc(84px * var(--wz-chrome-k, 1)); }
+:root[data-wz-chrome-scale='on'] .desk-frame-strip > *{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] .chrome-top.sprint-nav > *{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] .machina2-nameplate-mark{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] .desk-frame-sliver-anchor{ --sliver-anchor-w:min(calc(200px * var(--wz-chrome-k, 1)), max(calc(var(--sliver-margin) + var(--sliver-overflow)), var(--wz-front-desk, 0px))); }   /* the desk beside the page, measured (chromeScale.ts) */
+:root[data-wz-chrome-scale='on'] .wz-sliver-panel > *{ zoom:var(--wz-front-k, var(--wz-chrome-k, 1)); }   /* min(k, its track / 200): chromeScale.ts */
+:root[data-wz-chrome-scale='on'] .wz-tutor-panel > *{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] :is(.wz-split-reader > :not(.wz-split-board), .wz-split-board-bar){ zoom:var(--wz-chrome-k, 1); }
+/* THE WRIZORS' PASS 2 (Nov 21, 3:20 pm; Fable 3:20 pm). REAL 1: the crumb's current Part ("Part 1 of 3") read the bar's own ink, #3A4047 on #1E262E (1.46:1);
+   it takes the bar's label colour, as "Chapter One" beside it does (--accent-rest, the look's bar label: #E6E8EA COOL, #E6E2DB NEUTRAL). REAL 2: the scaled
+   layout fits the window - the chrome budget grows by what the taller bar adds (chromeScale.ts measures it); 167 px is 01-tokens.css's own value.
+   And the "...", the search door and the readout under the page (the Run and its count) grow by k: the "..." by zoom (its place is measured from its
+   own box by machina2/chrome.ts), the readout by a scale about its foot (it is placed by left:50% and a translate; nothing is laid out again). */
+:root[data-machina2][data-theme='machina'] .reorg-top .reorg-top-part-count{ color:var(--accent-rest, #E6E8EA); }
+:root[data-wz-chrome-scale='on']{ --fx3-chrome-budget:calc(167px + var(--wz-chrome-extra, 0px)); }
+:root[data-wz-chrome-scale='on'] .gh-corner-glyph{ zoom:var(--wz-chrome-k, 1); }
+:root[data-wz-chrome-scale='on'] .machina-run{ transform:translateX(-50%) scale(var(--wz-chrome-k, 1)); transform-origin:50% 100%; }   /* the scale AFTER its own centring translate: the 'scale' property composes outside 'transform', which scaled the -50% too and set the readout off its page's centre (the Wrizors' pass 3 NIT) */
