@@ -29,6 +29,7 @@ import { BeforeExport } from '../reorg/BeforeExport';
 import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
+import { chromeK } from '../reorg/chromeScale';
 import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
@@ -413,7 +414,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
       const paper = tutorPaper();
       if (!stage || !paper) { setPanelWidthPx(null); return; }
-      const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460)); // --tutor-panel-open-w
+      // §3b item 4 (reorg/chromeScale.ts): under the reorg's chrome scale the drawer opens k times as wide (its words are k times as large); k is 1 everywhere else
+      const ck = chromeK();
+      const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       if (geoMargin >= DRAWER_MIN) {
@@ -429,7 +432,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     document.addEventListener('wz-board-moved', measure);    // the board narrows after the drawer opens [Tutor §23]
-    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); };
+    window.addEventListener('wz-chrome-scale', measure);     // §3b item 4: the chrome scale arrived or changed
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); window.removeEventListener('wz-chrome-scale', measure); };
   }, [open, docked, pageKind, linkDock]);
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
