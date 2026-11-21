@@ -17,6 +17,7 @@ import { assetDragFromDoc, assetTitle, connectAssetToPart, readAssetDrag } from 
 import { assetColour, setAssetColour } from '../reorg/assetColour';
 import { assetCountOf } from '../reorg/partAssets';
 import { AssetPartGroups, type PartAssets } from '../reorg/backMenu/AssetPartGroups';
+import { ExportAttach } from '../reorg/ExportAttach';
 import { openSplit, splitBlocked } from '../reorg/split/splitStore';
 import { searchSteps } from '../store/writePlace';
 import { liveBoxes } from '../store/boxTombstones';
@@ -190,6 +191,7 @@ export function ConnectionsDrawerPanel({ only, help, back, mode, prose }: { only
           {t('graftPlaceThis')}
         </button>
       )}
+      {backGroups && page && madeDoc && <ExportAttach pageId={page.id} />}
       {backGroups && page && (
         <AssetPartGroups hereId={page.id} parts={partAssets} total={partAssets.reduce((n, p) => n + p.count, 0) + assetCount(docGroups)} t={t}
           plus={(target, partName) => {
