@@ -9,7 +9,7 @@
 //   cn-x          a Board linked WHOLE to cn-1 and to cn-2; its cards by seq: "X second" (seq 1), "X first" (seq 0), "X third" (seq 2)
 //   cn-y          a Board holding a card linked to cn-1 ("Y linked"), and another card that is not ("Y other"); seq: Y other 0, Y linked 1
 //   cn-z          a Board linked to nothing
-//   C1  cn-1's Plan: its own rows first (Alpha, Beta, numbered 1, 2), then the group of cn-x then the group of cn-y; cn-z is not there
+//   C1  cn-1's Plan: its own rows first (Alpha, Beta, numbered 1, 2), then the groups in the Assets tab's own order (a board holding a card linked to the Page first, in the order the links were made, then boards linked whole): cn-y, then cn-x; cn-z is not there
 //   C2  a group is headed by its board's name with an Open door, and lists ALL its cards in that board's own order (cn-x: X first, X second, X third; cn-y: Y other, Y linked), not only the linked ones
 //   C3  a group's rows are a view: no up, down, indent, outdent or remove, no rename field; each has the "-> Part" door
 //   C4  one card, two views: cn-2's Plan also lists cn-x's three cards, and a re-order done on cn-x itself shows in both Plans
@@ -83,8 +83,8 @@ await withHarness(async (app) => {
   const own = await app.evalJs(OWN);
   const groups = await app.evalJs(GROUPS);
   const gx = groups.find((g) => g.board === 'cn-x'), gy = groups.find((g) => g.board === 'cn-y');
-  ok("C1 the Plan lists its own rows first (Alpha, Beta, numbered 1, 2), then the group of cn-x and the group of cn-y; the unconnected cn-z is not there",
-    own.map((r) => `${r.num} ${r.name}`).join('|') === '1 Alpha|2 Beta' && groups.map((g) => g.board).join() === 'cn-x,cn-y', { own, groups: groups.map((g) => g.board) });
+  ok("C1 the Plan lists its own rows first (Alpha, Beta, numbered 1, 2), then the groups in the Assets tab's order (cn-y, which holds a card linked to the Page, then cn-x, linked whole); the unconnected cn-z is not there",
+    own.map((r) => `${r.num} ${r.name}`).join('|') === '1 Alpha|2 Beta' && groups.map((g) => g.board).join() === 'cn-y,cn-x', { own, groups: groups.map((g) => g.board) });
   ok("C2 a group is headed by its board's name with an Open door and lists ALL its cards in that board's own order (cn-x: first, second, third; cn-y: other, linked)",
     !!gx && !!gy && gx.head === 'X board' && gx.open && names(gx) === 'X first|X second|X third' && gy.head === 'Y board' && gy.open && names(gy) === 'Y other|Y linked', { gx, gy });
   ok('C3 a group\'s rows are a view: no up, down, indent, outdent or remove, no rename field; each has the "-> Part" door',

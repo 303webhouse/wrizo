@@ -92,6 +92,9 @@ const load = async (app, id, preset) => {
   await openBoard(app, id, 'outline');
   await click(app, '[data-plan-presets]'); await sleep(300);
   await click(app, `[data-plan-preset="${preset}"]`); await sleep(900);
+  // the board saves its own cards a moment after a change: wait until they are stored (a preset's rows have no plain card in storage until then)
+  await app.waitFor(`(() => { const e = ${ALL}.find((x) => x.id === ${q(id)}); return !!e && (e.boxes || []).filter((b) => b.planHint).length > 0; })()`, { timeout: 12000, label: 'the rows stored' }).catch(() => {});
+  await sleep(300);
 };
 
 await withHarness(async (app) => {
@@ -145,9 +148,11 @@ await withHarness(async (app) => {
   // ---- B6 ----
   await openBoard(app, 'bd-2', 'outline', { reorg: false });
   const offBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length + document.querySelectorAll('[data-plan-hint]').length");
+  const offTheme = await app.evalJs("document.documentElement.getAttribute('data-theme') || (window.wrizoTheme && window.wrizoTheme.get && window.wrizoTheme.get()) || null");
   await openBoard(app, 'bd-2', 'outline', { theme: 'arbor' });
   const arborBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length + document.querySelectorAll('[data-plan-hint]').length");
-  ok('B6 with the switch off (Machina) and in Arbor with it on, the Outline has no Presets control and draws no prompt', offBtn === 0 && arborBtn === 0, { offBtn, arborBtn });
+  const arborTheme = await app.evalJs("document.documentElement.getAttribute('data-theme') || (window.wrizoTheme && window.wrizoTheme.get && window.wrizoTheme.get()) || null");
+  ok('B6 with the switch off (Machina) and in Arbor with it on, the Outline has no Presets control and draws no prompt', offBtn === 0 && arborBtn === 0, { offBtn, arborBtn, offTheme, arborTheme });
   return checks;
 });
 
