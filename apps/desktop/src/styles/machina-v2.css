@@ -234,8 +234,14 @@
    right drawer rtl (its bar on the left, the page's side); their contents stay left to right. The sliding box now meets the tab and the strip
    lies between it and the page; the closed box is still parked a strip further in (above), so box and tab travel the same distance. */
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ direction:ltr; }
-:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ direction:rtl; }
-:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel > *{ direction:ltr; }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ direction:rtl; --machina2-tutor-rtl:on; }
+/* Train E (arbor-keyflip KF-SCAN-HAS): this was ":not(:has(...)) .wz-tutor-panel > *" - a universal subject under a :has(), which Chrome answers by
+   invalidating the whole document on every key (Arbor's bug #80, Actions run 43295952339). The panel carries the condition (above); what it holds
+   reads it through a style query, as arbor-v2.css does. Same direction, same specificity (the repeated [data-machina2] stands in for the stage and
+   its :has). scripts/harness/arbor-keyflip.mjs */
+@container style(--machina2-tutor-rtl: on){
+  :root[data-machina2][data-machina2][data-machina2][data-machina2][data-theme='machina'] .wz-tutor-panel > *{ direction:ltr; }
+}
 /* ...and the strip reads as the drawer's own: the scrollbar's track is painted in the drawer's ground (--desk-ground, the sliding box's own
    background in every theme), so no sliver of room shows between the drawer and the page (green leg g3: a transparent track did). */
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) :is(.wz-sliver-panel, .wz-tutor-panel){ scrollbar-color:color-mix(in srgb, var(--text-low) 28%, transparent) var(--desk-ground); }
