@@ -46,14 +46,27 @@ export function chosenParts(parts: readonly PubPart[], ids: readonly string[] | 
   return parts.filter((p) => want.has(p.id));
 }
 
-/** One file's text. `title` null: the Doc is one loose page, whose words are the whole document, so nothing is put above them. For html this is the fragment (wrapHtml makes the page). */
-export function publicationText(title: string | null, parts: readonly PubPart[], format: PubFormat, ids: readonly string[] | null): PubText {
+/** THE PLAN, WHEN SHE TICKS "Include the Plan" (reorg-plan-v2 item 5a; stage menus L4): her own rows in her own order, as an outline. Opt-in: the caller passes it only when she has ticked it. */
+export interface PubPlanRow { number: string; depth: number; title: string }
+export interface PubPlan { label: string; rows: PubPlanRow[] }
+
+function planBlock(plan: PubPlan, format: PubFormat): string {
+  const rows = plan.rows;
+  if (format === 'md') return rows.map((r) => `${'  '.repeat(r.depth)}- ${r.number} ${r.title}`).join('\n');
+  if (format === 'html') return '<ul>\n' + rows.map((r) => `<li style="margin-left:${r.depth * 1.5}em">${esc(`${r.number} ${r.title}`)}</li>`).join('\n') + '\n</ul>';
+  return rows.map((r) => `${'  '.repeat(r.depth)}${r.number} ${r.title}`).join('\n');
+}
+
+/** One file's text. `title` null: the Doc is one loose page, whose words are the whole document, so nothing is put above them. For html this is the fragment (wrapHtml makes the page).
+ *  `plan`, when given with rows, goes after the title and before the first Part, under a heading of the Parts' own level; with no Part chosen nothing goes out, the Plan included. */
+export function publicationText(title: string | null, parts: readonly PubPart[], format: PubFormat, ids: readonly string[] | null, plan?: PubPlan | null): PubText {
   const chosen = chosenParts(parts, ids);
   if (chosen.length === 0) return { content: '', count: 0 };
   const blocks: string[] = [];
   const base = title === null ? 1 : 2;
   const head = (name: string, level: number): string => (format === 'md' ? `${'#'.repeat(level)} ${name}` : format === 'html' ? `<h${level}>${esc(name)}</h${level}>` : name);
   if (title !== null) blocks.push(head(title, 1));
+  if (plan && plan.rows.length > 0) blocks.push(head(plan.label, base), planBlock(plan, format));
   for (const p of chosen) {
     const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt).replace(/\s+$/, '');
     const name = p.name.trim();

@@ -2,6 +2,7 @@ import type { Box } from '../../types';
 import { boardStructure, flattenLane, isCardBox, withParent, withSeqOrder, type OutlineNode } from '../../store/boardStructure';
 import { liveBoxes } from '../../store/boxTombstones';
 import { outlineNumber, outlineTitleEdit, splitOutlineText } from '../../store/outlineRow';
+import { withoutFontMarks } from '../../store/markRuns';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina; reorg-plan.md section 9): "an ordered outline of the assets marked as
 // Plan. Rows can be dragged, indented and renamed." The Plan IS the Page's own board's ordered view (Machina calls the Outline view "Plan"), so it
@@ -25,6 +26,9 @@ export interface PlanRow {
   canIndent: boolean;
   canOutdent: boolean;
 }
+
+/** A page's first line, as a Plan row names a pinned page (the Plan tab and the file that carries the Plan read the same name). */
+export const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60);
 
 const stampNow = (): string => new Date().toISOString();
 

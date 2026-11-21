@@ -259,6 +259,8 @@ export const CANONICAL_CHROME = {
   reorgBxEmptyOne: '{n} Part with no words',
   reorgBxEmptyMany: '{n} Parts with no words',
   reorgBxClear: 'Nothing is in the way.',
+  reorgPlanInclude: 'Include the Plan in what goes out',
+  reorgPlanIncludeNone: 'The Plan is empty: nothing to include.',
   reorgPlanEmpty: "Nothing is in this doc's plan.",
   reorgPlanRename: 'Name of the plan row',
   reorgPlanUp: 'Move up',

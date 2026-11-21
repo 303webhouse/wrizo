@@ -6,9 +6,9 @@ import { liveBoxes } from '../../store/boxTombstones';
 import { getOrCreatePlanBoard } from '../../store/persistence/planPairing';
 import { cache } from '../../store/persistence/core';
 import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
-import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
-import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow } from './planOps';
+import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow, titleOfText } from './planOps';
+import { usePublishing, useIncludePlan, setIncludePlan } from '../publishPick';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina). An ordered outline of this Page's own board: numbered rows, indented
 // as the board's Plan view indents them, each with Up, Down, Indent, Outdent and "Remove from the plan" (a keyboard path for every move, no drag
@@ -34,7 +34,6 @@ function planSnapshot(pageId: string): PlanSnap {
   return planMemo;
 }
 
-const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60);
 
 // THE SPEED CHECK'S COUNTER (the rail's wrizoRailRenders pattern): how many times the Plan has rendered, read through a window seam that exists only under the switch.
 let planRenders = 0;
@@ -82,9 +81,18 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
     addRef.current?.focus();
   };
   const canAdd = !isUnborn(pageId);
+  // INCLUDE THE PLAN IN WHAT GOES OUT (item 5a, stage menus L4): only while the publishing sheet is open; the tick is the sheet's own state (publishPick.ts), never stored
+  const publishing = usePublishing(pageId);
+  const includePlan = useIncludePlan(pageId);
 
   return (
     <div className="wz-back-plan" data-back-plan="">
+      {publishing && (
+        <label className="reorg-plan-include" data-plan-include="">
+          <input type="checkbox" checked={includePlan && rows.length > 0} disabled={rows.length === 0} onChange={(e) => setIncludePlan(pageId, e.target.checked)} />
+          <span>{rows.length === 0 ? t('reorgPlanIncludeNone') : t('reorgPlanInclude')}</span>
+        </label>
+      )}
       {rows.length === 0 ? (
         <div className="wz-back-quiet" data-back-plan-empty="">{t('reorgPlanEmpty')}</div>
       ) : (

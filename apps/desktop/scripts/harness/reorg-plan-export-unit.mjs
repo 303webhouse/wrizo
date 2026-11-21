@@ -53,7 +53,7 @@ function suite(src) {
   {
     const md = go(null, [PARTS[0]], 'md', null, PLAN);
     // a loose Part's own name is still its heading (publicationText's rule: a name she gave); the Plan leads, at the top level
-    R.LOOSE = { pass: md.content === '# Plan\n\n- 1 Alpha\n  - 1.1 Sub\n- 2 Beta\n\n## Opening\n\nOpen words.\n', detail: J({ md }) };
+    R.LOOSE = { pass: md.content === '# Plan\n\n- 1 Alpha\n  - 1.1 Sub\n- 2 Beta\n\n# Opening\n\nOpen words.\n', detail: J({ md }) };
   }
   // NONE
   {

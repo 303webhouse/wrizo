@@ -17,6 +17,8 @@
 .reorg-bx-clear{ margin:0; font-family:var(--font-ui); font-size:12px; color:var(--text-low); }
 .reorg-bx-note{ box-sizing:border-box; text-align:left; background:none; border:1px solid var(--ink-border-strong); padding:6px 8px; color:var(--text-mid); font-family:var(--font-ui); font-size:13px; line-height:1.45; cursor:pointer; }
 .reorg-bx-note:hover, .reorg-bx-note:focus-visible{ color:var(--text-hi); outline:none; }
+.reorg-plan-include{ display:flex; align-items:center; gap:8px; font-family:var(--font-ui); font-size:13px; color:var(--text-mid); cursor:pointer; }
+.reorg-plan-include input:disabled + span{ color:var(--text-low); }
 .wz-back-plan-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
 .wz-back-plan-row{ display:flex; align-items:center; gap:8px; min-height:32px; }
 .wz-back-plan-num{ flex:none; min-width:24px; font-family:var(--font-ui); font-size:11px; color:var(--text-low); font-variant-numeric:tabular-nums; }
