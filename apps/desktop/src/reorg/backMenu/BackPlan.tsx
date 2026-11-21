@@ -9,6 +9,7 @@ import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
 import { REORG } from '../flag';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow, titleOfText } from './planOps';
 import { usePublishing, useIncludePlan, setIncludePlan } from '../publishPick';
+import { setDocSetting } from '../docSettings';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina). An ordered outline of this Page's own board: numbered rows, indented
 // as the board's Plan view indents them, each with Up, Down, Indent, Outdent and "Remove from the plan" (a keyboard path for every move, no drag
@@ -89,7 +90,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
     <div className="wz-back-plan" data-back-plan="">
       {publishing && (
         <label className="reorg-plan-include" data-plan-include="">
-          <input type="checkbox" checked={includePlan && rows.length > 0} disabled={rows.length === 0} onChange={(e) => setIncludePlan(pageId, e.target.checked)} />
+          <input type="checkbox" checked={includePlan && rows.length > 0} disabled={rows.length === 0} onChange={(e) => { setIncludePlan(pageId, e.target.checked); setDocSetting(pageId, { export: { includePlan: e.target.checked ? true : null } }); }} />
           <span>{rows.length === 0 ? t('reorgPlanIncludeNone') : t('reorgPlanInclude')}</span>
         </label>
       )}

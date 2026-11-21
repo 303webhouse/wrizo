@@ -107,7 +107,7 @@ export type BinderKind =
   | 'other';
 
 /** A Doc's own settings (Project.docSettings): `styleGuide` is the Doc's style guide (Page Setup and the sources Part's name follow it; 'none' is the key's absence), `export.format` the format the publishing view offers first. Every key is absent until she chooses; an unknown key (a newer client's) is carried through untouched. */
-export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html' } };
+export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean } };
 export interface Project {
   id: string;
   title: string;

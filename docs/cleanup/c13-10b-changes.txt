@@ -16,7 +16,7 @@
 +   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
 # REORG Doc-wide settings (INK, Nov 20): Project.docSettings, the Doc's own record (reorg/docSettings.ts; one nullable jsonb column on projects, the tutor recipe).
 + /** A Doc's own settings (Project.docSettings): `styleGuide` is the Doc's style guide (Page Setup and the sources Part's name follow it; 'none' is the key's absence), `export.format` the format the publishing view offers first. Every key is absent until she chooses; an unknown key (a newer client's) is carried through untouched. */
-+ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html' } };
++ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean } };
 +   // THE DOC'S OWN SETTINGS (Fable, Nov 20, Nick ruled: a Doc-wide setting lives in the Doc's own record, never in whichever Part is first). ONE additive nullable jsonb column on `projects`
 +   // (`doc_settings`), the exact `tutor` recipe above: absent on every Doc that never chose (never null, never {}), so a project that never chose syncs byte-identically to today. A made Doc (a set the
 +   // writer made) only: a loose page is its own Doc and keeps the one key that already exists on a page (pageSettings.styleGuide). Read and written only through reorg/docSettings.ts.

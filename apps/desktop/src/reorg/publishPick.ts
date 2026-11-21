@@ -10,7 +10,7 @@ const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
 /** Start a pick for a page (the view opened). */
-export function openPick(key: string): void { pick = { key, off: EMPTY, plan: false }; emit(); }
+export function openPick(key: string, plan = false): void { pick = { key, off: EMPTY, plan }; emit(); }
 /** End it (the view closed). */
 export function closePick(key: string): void { if (pick.key === key) { pick = { key: null, off: EMPTY, plan: false }; emit(); } }
 /** The Parts ticked out of this page's publication; empty when the pick is not this page's. */

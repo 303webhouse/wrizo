@@ -19,7 +19,7 @@ const EXPORT_FORMATS = ['md', 'txt', 'html'] as const;
 const isExportFormat = (v: unknown): v is 'md' | 'txt' | 'html' => typeof v === 'string' && (EXPORT_FORMATS as readonly string[]).includes(v);
 
 /** What a write may carry. `null` (or 'none' for the style guide) clears the key; absent leaves it alone. */
-export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html' } | null }
+export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null } | null }
 
 /** The set she made that this page is a Part of; null for a loose page (the app's own set, or none). */
 function madeDocOf(entry: JournalEntry): Project | null {
@@ -52,6 +52,8 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   // validate first: one bad value writes nothing at all
   if ('styleGuide' in patch && !isClear(patch.styleGuide) && !isStyleGuide(patch.styleGuide)) return false;
   if ('export' in patch && patch.export !== null && patch.export !== undefined && patch.export.format !== undefined && !isExportFormat(patch.export.format)) return false;
+  // the "Include the Plan" tick (Fable, Nov 21: remembered per Doc, beside the format): only true is stored; null takes the key off
+  if ('export' in patch && patch.export && patch.export.includePlan !== undefined && patch.export.includePlan !== null && patch.export.includePlan !== true) return false;
   const set = madeDocOf(e);
   if (!set) {
     // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting
@@ -70,7 +72,11 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   if ('styleGuide' in patch) { if (isClear(patch.styleGuide)) delete next.styleGuide; else next.styleGuide = patch.styleGuide; }
   if ('export' in patch) {
     if (patch.export === null) delete next.export;
-    else if (patch.export !== undefined) next.export = { ...(cur.export as object | undefined), ...patch.export };
+    else if (patch.export !== undefined) {
+      const merged: Record<string, unknown> = { ...(cur.export as object | undefined), ...patch.export };
+      if (merged.includePlan === null) delete merged.includePlan;
+      if (Object.keys(merged).length === 0) delete next.export; else next.export = merged;
+    }
   }
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
@@ -80,7 +86,12 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   return true;
 }
 
+/** Whether this Doc remembers "Include the Plan" as ticked: true only for a stored true on the Doc this page is a Part of (a loose page, a missing page and a malformed value read false). */
+export function includePlanOf(entryId: string): boolean {
+  return docSettingsOf(entryId).export?.includePlan === true;
+}
+
 // the harness's door, present only under the reorg switch
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting };
+  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting, includePlan: includePlanOf };
 }

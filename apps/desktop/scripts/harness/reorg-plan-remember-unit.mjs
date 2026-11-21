@@ -64,8 +64,6 @@ function suite(src) {
     L.D.setDocSetting('p1', { export: { format: 'html', includePlan: true } });
     const c1 = L.D.setDocSetting('p1', { export: { includePlan: null } });
     const withFormat = J(ds(L));
-    L.D.setDocSetting('p1', { export: { includePlan: true } });
-    L.D.setDocSetting('p1', { export: { format: null } });
     const L2 = load(src);
     L2.D.setDocSetting('p1', { export: { includePlan: true } });
     const c2 = L2.D.setDocSetting('p1', { export: { includePlan: null } });
@@ -103,8 +101,8 @@ for (const k of ['SET', 'KEEP', 'CLEAR', 'VAL', 'LOOSE', 'READ']) ok(`${k} on th
 
 // the mutants: [name, the check it must turn red, the rewrite]
 const MUT = [
-  ['a non-boolean includePlan is stored', 'VAL', (t) => t.replace("typeof patch.export.includePlan !== 'boolean'", () => 'false')],
-  ['false is stored as a value', 'VAL', (t) => t.replace('patch.export.includePlan !== true', () => 'false')],
+  ['a non-boolean includePlan is stored', 'VAL', (t) => t.replace("&& patch.export.includePlan !== true) return false;", () => ') {}')],
+  ['false is stored as a value', 'VAL', (t) => t.replace('&& patch.export.includePlan !== true) return false;', () => "&& typeof patch.export.includePlan !== 'boolean') return false;")],
   ['clearing writes false, not the absence', 'CLEAR', (t) => t.replace('delete merged.includePlan;', () => 'merged.includePlan = false;')],
   ['a write of one export key drops the other', 'KEEP', (t) => t.replace('const merged: Record<string, unknown> = { ...(cur.export as object | undefined), ...patch.export };', () => 'const merged: Record<string, unknown> = { ...patch.export };')],
   ['an empty export object is left behind', 'CLEAR', (t) => t.replace('if (Object.keys(merged).length === 0) delete next.export;', () => 'if (false) delete next.export;')],

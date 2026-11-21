@@ -3,7 +3,9 @@
 // The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Parts, pe-1 "Opening" (its own board pe-own holds three cards: Alpha, Beta, Gamma) and pe-2 "Close" (no board).
 //   PE1  the Plan tab holds a checkbox "Include the Plan in what goes out", unticked, only while the sheet is open; with the sheet closed the tab has none
 //   PE2  unticked, the Markdown file is as today (no Plan); ticked, it carries "## Plan" and the three rows, numbered, in her order, before the Parts; unticked again, it is as today
+// SUPERSEDED, kept verbatim (Fable, Nov 21, 12:10 am: the tick is remembered per Doc, so it is no longer session-only and does store one thing):
 //   PE3  the tick is the view's own state: opening it, ticking and exporting store NOTHING (every entry, board and page setting is byte-identical; no new localStorage key), and closing the sheet clears it
+//   PE3  the tick is REMEMBERED per Doc (docSettings export.includePlan, beside the format): ticking stores exactly { export: { includePlan: true } } on the Doc's own record and nothing else (every entry and page setting byte-identical, no new localStorage key); closing the sheet and opening it again finds it ticked; unticking takes the key off and leaves docSettings {} (never null)
 //   PE4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after the tick and the export; the editor is the same node
 //   PE5  a page with no board (pe-2 opened): the checkbox is there but disabled, and says there is nothing to include; nothing is added to a file
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-plan-export-live.mjs
@@ -21,6 +23,7 @@ const KEYS = "Object.keys(localStorage).sort()";
 const CATCH = "(() => { window.__pbBlobs = []; const B = window.__pbRealBlob || (window.__pbRealBlob = window.Blob); window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
+const DS = "(() => { const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => x.title === 'Brief'); return p ? (p.docSettings === undefined ? 'absent' : p.docSettings) : 'noproject'; })()";
 const BOX = "(() => { const b = document.querySelector('[data-plan-include]'); if (!b) return null; const i = b.querySelector('input[type=checkbox]'); return { checked: !!i && i.checked, disabled: !!i && i.disabled, text: (b.textContent || '').trim() }; })()";
 const WANT_MD = '# Brief\n\n## Plan\n\n- 1 Alpha\n- 2 Beta\n- 3 Gamma\n\n## Opening\n\nOpening words.\n\n## Close\n\nClosing words.\n';
 const AS_TODAY = '# Brief\n\n## Opening\n\nOpening words.\n\n## Close\n\nClosing words.\n';
@@ -84,13 +87,24 @@ await withHarness(async (app) => {
 
   const after = await app.evalJs(PAGE);
   const same = await app.evalJs("!!document.querySelector('.forward-only-editor').__peMark");
+  const tickSel = '[data-plan-include] input[type=checkbox]';
+  const flushed = async () => { await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(300); };
+  await flushed();
+  const dsAfterUntick = await app.evalJs(DS);
+  await app.evalJs(press(tickSel)); await sleep(400); await flushed();
+  const dsOn = await app.evalJs(DS);
   const s1 = await app.evalJs(STORE), k1 = await app.evalJs(KEYS);
-  await app.evalJs(press('[data-plan-include] input[type=checkbox]')); await sleep(300);
   await sheet(app, false); await sheet(app, true);
   await drawer(app); await tab(app, 'plan');
-  const cleared = await app.evalJs(BOX);
-  ok('PE3 the tick is the view\'s own state: ticking and exporting store nothing (entries and projects byte-identical, no new key), and closing the sheet clears it',
-    JSON.stringify(s0) === JSON.stringify(s1) && JSON.stringify(k0) === JSON.stringify(k1) && !!cleared && cleared.checked === false, { storeSame: JSON.stringify(s0) === JSON.stringify(s1), keysSame: JSON.stringify(k0) === JSON.stringify(k1), cleared });
+  const remembered = await app.evalJs(BOX);
+  await app.evalJs(press(tickSel)); await sleep(400); await flushed();
+  const dsEnd = await app.evalJs(DS);
+  // ORIGINAL, SUPERSEDED (kept verbatim):
+  // ok('PE3 the tick is the view\'s own state: ticking and exporting store nothing (entries and projects byte-identical, no new key), and closing the sheet clears it',
+  //   JSON.stringify(s0) === JSON.stringify(s1) && JSON.stringify(k0) === JSON.stringify(k1) && !!cleared && cleared.checked === false, { storeSame: JSON.stringify(s0) === JSON.stringify(s1), keysSame: JSON.stringify(k0) === JSON.stringify(k1), cleared });
+  ok('PE3 the tick is remembered per Doc: ticking stores exactly { export: { includePlan: true } } on the Doc\'s record and no entry changes (no new key); closing the sheet and opening it again finds it ticked; unticking leaves docSettings {} (never null)',
+    JSON.stringify(dsAfterUntick) === '{}' && JSON.stringify(dsOn) === JSON.stringify({ export: { includePlan: true } }) && JSON.stringify(s0[0]) === JSON.stringify(s1[0]) && JSON.stringify(k0) === JSON.stringify(k1)
+    && !!remembered && remembered.checked === true && JSON.stringify(dsEnd) === '{}' && !JSON.stringify(dsEnd).includes('null'), { dsAfterUntick, dsOn, entriesSame: JSON.stringify(s0[0]) === JSON.stringify(s1[0]), keysSame: JSON.stringify(k0) === JSON.stringify(k1), remembered, dsEnd });
 
   const geo = { w1366: mark === after && same };
   await open(app, 'pe-1', 1920);
