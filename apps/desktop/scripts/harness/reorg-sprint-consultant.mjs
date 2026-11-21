@@ -36,7 +36,7 @@ async function seed(app) {
 async function openPage(app, { consult = true, reorg = true, writerOff = false } = {}) {
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs("window.wrizoTheme.set('machina'); localStorage.setItem('wrizo-mode-page-sc-p', 'journal')");
-  if (writerOff) await app.evalJs("(() => { try { const k = 'wrizo-writing-settings'; const o = JSON.parse(localStorage.getItem(k) || '{}'); o.consultant = false; localStorage.setItem(k, JSON.stringify(o)); } catch {} })()");
+  if (writerOff) await app.evalJs("(() => { try { const o = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); o.consultant = false; localStorage.setItem('wrizo-writing-settings', JSON.stringify(o)); } catch {} })()");
   const qs = `${reorg ? '?reorg=1&arbor2=0' : '?arbor2=0'}${consult ? '' : '&sprint=deck'}`;
   await app.evalJs(`history.replaceState(null, '', '/${qs}#/page/sc-p')`);
   await app.reload();
