@@ -1,4 +1,4 @@
-import type { DocSettings, JournalEntry, Project, StyleGuide } from '../types';
+import type { DocAsset, DocSettings, JournalEntry, Project, StyleGuide } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getJournalEntry, getProject, isAutoSet, saveJournalEntry, saveProject } from '../store/persistence';
 import { getUserPageDefaults } from '../store/pageDefaults';
@@ -19,7 +19,7 @@ const EXPORT_FORMATS = ['md', 'txt', 'html'] as const;
 const isExportFormat = (v: unknown): v is 'md' | 'txt' | 'html' => typeof v === 'string' && (EXPORT_FORMATS as readonly string[]).includes(v);
 
 /** What a write may carry. `null` (or 'none' for the style guide) clears the key; absent leaves it alone. */
-export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html' } | null }
+export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null } | null }
 
 /** The set she made that this page is a Part of; null for a loose page (the app's own set, or none). */
 function madeDocOf(entry: JournalEntry): Project | null {
@@ -52,6 +52,8 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   // validate first: one bad value writes nothing at all
   if ('styleGuide' in patch && !isClear(patch.styleGuide) && !isStyleGuide(patch.styleGuide)) return false;
   if ('export' in patch && patch.export !== null && patch.export !== undefined && patch.export.format !== undefined && !isExportFormat(patch.export.format)) return false;
+  // the "Include the Plan" tick (Fable, Nov 21: remembered per Doc, beside the format): only true is stored; null takes the key off
+  if ('export' in patch && patch.export && patch.export.includePlan !== undefined && patch.export.includePlan !== null && patch.export.includePlan !== true) return false;
   const set = madeDocOf(e);
   if (!set) {
     // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting
@@ -70,7 +72,11 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   if ('styleGuide' in patch) { if (isClear(patch.styleGuide)) delete next.styleGuide; else next.styleGuide = patch.styleGuide; }
   if ('export' in patch) {
     if (patch.export === null) delete next.export;
-    else if (patch.export !== undefined) next.export = { ...(cur.export as object | undefined), ...patch.export };
+    else if (patch.export !== undefined) {
+      const merged: Record<string, unknown> = { ...(cur.export as object | undefined), ...patch.export };
+      if (merged.includePlan === null) delete merged.includePlan;
+      if (Object.keys(merged).length === 0) delete next.export; else next.export = merged;
+    }
   }
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
@@ -80,7 +86,58 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   return true;
 }
 
+/** Whether this Doc remembers "Include the Plan" as ticked: true only for a stored true on the Doc this page is a Part of (a loose page, a missing page and a malformed value read false). */
+export function includePlanOf(entryId: string): boolean {
+  return docSettingsOf(entryId).export?.includePlan === true;
+}
+
+// THE DOC'S OWN ASSETS (Nick ruled A, Nov 20, 11:55 pm: "Doc-level assets YES. Home: the Doc's settings column, key `assets` = [{entryId, boxId?, at}]").
+// A made Doc only: a loose page is its own Doc of one Part, so its assets are that page's own links (the caller grafts instead; refused here).
+// Each asset once (an entry, or a card of a board); `at` is when it joined. The last one removed leaves the key absent (docSettings {} when nothing else).
+const sameAsset = (a: { entryId: string; boxId?: string }, b: { entryId: string; boxId?: string }): boolean => a.entryId === b.entryId && (a.boxId ?? '') === (b.boxId ?? '');
+const isDocAsset = (v: unknown): v is DocAsset => !!v && typeof (v as DocAsset).entryId === 'string' && !!(v as DocAsset).entryId && typeof (v as DocAsset).at === 'string'
+  && ((v as DocAsset).boxId === undefined || typeof (v as DocAsset).boxId === 'string');
+
+/** Whether this Part belongs to a Doc she made (one that can hold Doc-level assets). */
+export function hasMadeDoc(entryId: string): boolean {
+  const e = getJournalEntry(entryId);
+  return !!e && !!madeDocOf(e);
+}
+
+/** The Doc's own assets, in the order they joined (an empty list for a loose page or a Doc with none). */
+export function docAssetsOf(entryId: string): DocAsset[] {
+  const a = docSettingsOf(entryId).assets;
+  return Array.isArray(a) ? a.filter(isDocAsset).map((x) => ({ ...x })) : [];
+}
+
+function writeDocAssets(entryId: string, next: DocAsset[]): boolean {
+  const e = getJournalEntry(entryId);
+  const set = e ? madeDocOf(e) : null;
+  if (!set) return false;
+  const cur = (set.docSettings ?? {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = { ...cur };
+  if (next.length > 0) out.assets = next; else delete out.assets;
+  if (JSON.stringify(out) === JSON.stringify(cur)) return false;
+  saveProject({ ...set, docSettings: out as DocSettings });
+  return true;
+}
+
+/** Connect an asset to the whole Doc this Part belongs to. False: a loose page, a missing asset, or one already there. */
+export function addDocAsset(entryId: string, asset: { entryId: string; boxId?: string }): boolean {
+  if (!asset.entryId || !getJournalEntry(asset.entryId)) return false;
+  const list = docAssetsOf(entryId);
+  if (list.some((a) => sameAsset(a, asset))) return false;
+  return writeDocAssets(entryId, [...list, { entryId: asset.entryId, ...(asset.boxId ? { boxId: asset.boxId } : {}), at: new Date().toISOString() }]);
+}
+
+/** Take an asset off the Doc (its Parts' own links are untouched). */
+export function removeDocAsset(entryId: string, asset: { entryId: string; boxId?: string }): boolean {
+  const list = docAssetsOf(entryId);
+  const next = list.filter((a) => !sameAsset(a, asset));
+  return next.length !== list.length && writeDocAssets(entryId, next);
+}
+
 // the harness's door, present only under the reorg switch
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting };
+  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting, includePlan: includePlanOf, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
 }

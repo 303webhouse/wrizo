@@ -15,6 +15,7 @@
 //   NP    a new Part follows the Part asked for (after its subsections), is deeper only when asked, and a Doc with no Part starts at level 0
 //   BOLD  a cut inside a styled run (bold, italic, underline, strike, a font span, nested) closes the style at the cut and reopens it in the tail; a join gives the text back byte for byte; the cut never lands inside a mark (Fable, Nov 20)
 //   COL   PART_COLORS is the slots a to f (each theme draws its own six); an old clay, amber, moss, teal, slate or plum is READ as its slot and never written back (Fable, Nov 20)
+//   FN    footnotes and endnotes ride the Parts layer (Nick ruled A, Nov 21): a split sends each note to the half holding its marker, a join brings the lower Part's notes after the upper's and renames a label already taken, a split then a join gives the text back byte for byte, and both undos restore the exact earlier texts
 //   TOMB  a card deleted from a Part's page (a tombstone, or a purge marker) is not carried by the Part: a join is not refused for it; a live card still refuses (ARBOR's T11 report, Nov 20)
 // Run: node scripts/harness/reorg-parts-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -59,11 +60,12 @@ function makeStore() {
 }
 
 const MARKRUNS = (() => { const o = ts.transpileModule(lf(fs.readFileSync(new URL('../../src/store/markRuns.ts', import.meta.url), 'utf8')), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText; const m = { exports: {} }; new Function('module', 'exports', o)(m, m.exports); return m.exports; })();
+const FOOTNOTES = (() => { const o = ts.transpileModule(lf(fs.readFileSync(new URL('../../src/reorg/footnotes.ts', import.meta.url), 'utf8')), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText; const m = { exports: {} }; new Function('module', 'exports', o)(m, m.exports); return m.exports; })();
 function load(src) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const { S, api } = makeStore();
   const mods = {
-    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/markRuns': MARKRUNS, '../store/boxTombstones': { liveBoxes: (b) => (b ?? []).filter((x) => !x.deletedAt && !x.purgedAt) },
+    '../types': { PAGE_SETTINGS_FALLBACK: FALLBACK }, '../store/markRuns': MARKRUNS, './footnotes': FOOTNOTES, '../store/boxTombstones': { liveBoxes: (b) => (b ?? []).filter((x) => !x.deletedAt && !x.purgedAt) },
     '../store/persistence': api, '../store/persistence/restore': api, '../store/place': api, '../store/entryText': api, '../store/pageDefaults': api, '../store/wordCount': { wordCount: (t) => { const s = String(t ?? '').trim(); return s ? s.split(/\s+/).length : 0; } },
   };
   const module = { exports: {} };
@@ -418,12 +420,32 @@ function suite(src) {
     const newOk = !!nid && !!gd && G.L.P.partsOfDoc(gd.id).length === 2 && G.L.P.partsOfDoc('auto-set-dr1').length === 1 && G.L.P.newPart('auto-set-dr1') === null;
     R.ED = { pass: autoOk && noSetOk && madeOk && newOk, detail: JSON.stringify({ autoOk, noSetOk, madeOk, newOk, parts: parts.map((p) => p.name) }) };
   }
+  // FN: footnotes and endnotes ride the Parts layer
+  {
+    const text = 'A[^1] B[^2]\n\n[^1]: n1\n[^2]: n2';
+    const S1 = fixture(src, [text, 'next']);
+    const sp = S1.P.splitPart(S1.ids[0], 6);
+    const heads = sp.ok ? [textOf(S1, S1.ids[0]), textOf(S1, sp.tailId)] : [];
+    const jn = sp.ok ? S1.P.joinPart(sp.tailId) : null;
+    const back = textOf(S1, S1.ids[0]);
+    const S2 = fixture(src, [text, 'next']);
+    const sp2 = S2.P.splitPart(S2.ids[0], 6);
+    const un = sp2.ok ? S2.P.undoSplit(sp2.token) : false;
+    const J = fixture(src, ['A[^1]\n\n[^1]: a', 'B[^1]\n\n[^1]: b']);
+    const jj = J.P.joinPart(J.ids[1]);
+    const joined = textOf(J, J.ids[0]);
+    const uj = jj.ok ? J.P.undoJoin(jj.token) : false;
+    R.FN = { pass: sp.ok && heads[0] === 'A[^1] \n\n[^1]: n1' && heads[1] === 'B[^2]\n\n[^2]: n2' && !!jn && jn.ok && back === text
+      && un && textOf(S2, S2.ids[0]) === text
+      && jj.ok && joined === 'A[^1]B[^2]\n\n[^1]: a\n[^2]: b' && uj && textOf(J, J.ids[0]) === 'A[^1]\n\n[^1]: a' && textOf(J, J.ids[1]) === 'B[^1]\n\n[^1]: b',
+      detail: JSON.stringify({ heads, back, un, joined, uj, after: [textOf(J, J.ids[0]), textOf(J, J.ids[1])] }) };
+  }
   return R;
 }
 
 // ---- baseline: every check green on the real source ------------------------------------------------------------------------------------------------
 const base = suite(partsText);
-const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL', 'TOMB'];
+const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL', 'TOMB', 'FN'];
 for (const k of KEYS) ok(`${k} on the real parts.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 // DEF: pageDefaults strips a Part's own facts at the door (a source read: the strip is one destructure)
@@ -434,7 +456,9 @@ ok('DEF pageDefaults strips name, level, color and lengthLimit (the Part\'s own 
 // ---- mutants: each rewrite of parts.ts must land exactly once and turn its own check red -----------------------------------------------------------------
 const MUT = [
   ['the split writes the SHORTENED source before the tail', 'NL-S', (t) => t.replace('  saveJournalEntry(row);\n', () => '').replace("  if (again) saveJournalEntry({ ...again, text: head });", () => "  if (again) saveJournalEntry({ ...again, text: head });\n  saveJournalEntry(row);")],
-  ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
+  // SUPERSEDED (footnotes, Nov 21: joinPart now writes joinWithNotes(...) into a `joined` first, so this anchor no longer lands; the law is unchanged, its successor stands below), kept verbatim:
+  // ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
+  ['the join soft-deletes the emptied Part BEFORE the words are appended (successor)', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joined });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joined });")],
   // ORIGINAL, SUPERSEDED Nov 20 (joinText now heals a styled seam, so its one-line body is gone; the mutant stands on the line that carries the lower Part's words):
   // ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('export const joinText = (above: string, below: string): string => above + below;', () => 'export const joinText = (above: string, below: string): string => above;')],
   ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('const plain = above + below;', () => 'const plain = above;')],
@@ -442,7 +466,9 @@ const MUT = [
   ['the closing marks go after the head\'s trailing space', 'BOLD', (t) => t.replace('head: h.slice(0, h.length - hSpace.length) + closers + hSpace', () => 'head: h + closers')],
   ['a join leaves the seam of a split in a styled run', 'BOLD', (t) => t.replace('return across.length === peeled.length && across.every((m, i) => m === peeled[i]) ? healed : plain;', () => 'return plain;')],
   ['a cut may land inside a run\'s own mark', 'BOLD', (t) => t.replace('if (p > r.open && p <= o1) { p = r.open; again = true; } else if (p >= c1 && p < c2) { p = c2; again = true; }', () => '')],
-  ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  // SUPERSEDED (footnotes, Nov 21: the undo now joins through joinWithNotes, so this anchor no longer lands), kept verbatim:
+  // ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  ['an undo joins by the halves, not by the whole it was cut from (successor)', 'BOLD', (t) => t.replace('text: t.whole ?? joinWithNotes(t.head, t.tail, joinText)', () => 'text: joinWithNotes(t.head, t.tail, joinText)')],
   ['a join is refused for a deleted card too (the raw read)', 'TOMB', (t) => t.replace('liveBoxes(e.boxes).length > 0', () => '!!(e.boxes && e.boxes.length)')],
   ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
   ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
@@ -462,6 +488,9 @@ const MUT = [
   ['ensureDoc forgets the Drawer', 'ED', (t) => t.replace('set ? set.drawerId : undefined', () => 'undefined')],
   ['make-it-its-own-Doc keeps the old levels', 'OD', (t) => t.replace('const lvl = Math.max(0, p.level - run[0].level);', () => 'const lvl = p.level;')],
   ['a new Part follows the run\'s top, splitting its subsections from it', 'NP', (t) => t.replace("if (after && level <= after.level) { const end = runOf(parts.map(p => p.level), after.index)[1]; place = parts[end - 1].id; }", () => '')],
+  ['a split ignores the notes (the stand-in alone)', 'FN', (t) => t.replace('splitWithNotes(text, offset, splitText)', () => 'splitText(text, offset)')],
+  ['a join ignores the notes (the stand-in alone)', 'FN', (t) => t.replace('joinWithNotes(above, below, joinText)', () => 'joinText(above, below)')],
+  ['undo of a join compares against the plain concatenation', 'FN', (t) => t.replace('(t.joined ?? t.above + t.below)', () => 't.above + t.below')],
 ];
 for (const [name, key, fn] of MUT) {
   const before = partsText, after = fn(partsText);

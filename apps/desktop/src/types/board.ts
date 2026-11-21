@@ -117,6 +117,10 @@ export interface Box {
   fontSize?: number;  // points; read through the default 11 (= today's card rendering)
   // A DEALT STEP IS A QUESTION, NOT TEXT. Two additive optional fields inside the board's `boxes` jsonb (zero schema: sync stores the blob whole, as with fontFace / seq / onCanvas), written ONLY by a NEW deal of a Tier 1 deck: prompt - the step's question, resolved at deal time (store/guided.ts, decks/content.ts). The card's PLACEHOLDER, shown while it has no body, never in `text`, so it is never exported, copied, counted, synced as body or read by the Tutor as the writer's words (harness guided-w3 pins that no reader names `.prompt`). A written card keeps the field and stops showing it; delete the words and the question returns. deckStep - which step of which deck this card was dealt as ({ deck: 'three-act', step: 'hook' }): the key the "?" reads its sentence and example by, and what the Walk and coverage read. The card owes the deck nothing else. [index §8]
   prompt?: string;
+  // A PLAN PRESET'S PROMPT (reorg/backMenu/planPresetOps.ts, Nov 20): the one grey line a preset's heading carries ("What exactly are you and your readers disagreeing about?"). Additive optional inside the board's `boxes` jsonb
+  // (zero schema, like `prompt`): guidance, never her text (it is not in `text`, so it is never exported, copied, counted or read by the Tutor as her words); the Plan draws it under the heading until a Part under that heading has words.
+  // Not `prompt`: that is a dealt step's question and the Walk and the Open view read it.
+  planHint?: string;
   deckStep?: { deck: string; step: string };
   // The writer marks a step FINISHED by hand. One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the blob whole, like seq / onCanvas / deckStep). `true` = lit; ABSENT = not lit (unmarking REMOVES the key, so there is one way to be unlit), unmarked from the same door. A statement of the writer's, never a measurement: it never counts toward coverage (kindled() ignores it), never completes a Deck and never celebrates (store/guided.ts withLit, store/deckRewards.ts). [index §9]
   lit?: boolean;

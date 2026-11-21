@@ -245,8 +245,15 @@ await withHarness(async (app) => {
   e1.st = await app.evalJs(STRUCT);
   await stage(app, 'freewrite');
   const f1 = { kind: await app.evalJs(KIND), st: await app.evalJs(STRUCT) };
-  ok('T1 EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither',
-    !!e1.kind && !!e1.kind.kind && !!e1.st && e1.st.acts.map((a) => a[0]).join(',') === 'split,up,down,join' && !!f1.kind && !f1.kind.kind && !f1.st, { e1, f1 });
+  // SUPERSEDED (Nov 21, train F pair 44944613263; main's sprint-no-menus, live in train E: SPRINT draws no Front menu at all): T1 asked SPRINT for the Parts list WITHOUT the kind toggle (!!f1.kind && !f1.kind.kind); SPRINT now draws no list. T1-B keeps
+  // the claim - in SPRINT neither the kind toggle nor Structure - with no list counting as neither. Verbatim:
+  // ok('T1 EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither',
+  //   !!e1.kind && !!e1.kind.kind && !!e1.st && e1.st.acts.map((a) => a[0]).join(',') === 'split,up,down,join' && !!f1.kind && !f1.kind.kind && !f1.st, { e1, f1 });
+  const t1b = (e, f) => !!e.kind && !!e.kind.kind && !!e.st && e.st.acts.map((a) => a[0]).join(',') === 'split,up,down,join' && !(f.kind && f.kind.kind) && !f.st;
+  ok('T1-B EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither (no list at all counts as neither)', t1b(e1, f1), { e1, f1 });
+  // MUT-T1-B: a SPRINT reading that draws the kind toggle turns T1-B red (the mutant LANDED: the reading changed)
+  const fk = { ...f1, kind: { ...(f1.kind || {}), kind: 'Standard' } };
+  ok('MUT-T1-B a SPRINT that draws the kind toggle turns T1-B red', fk.kind.kind !== (f1.kind && f1.kind.kind) && !t1b(e1, fk), fk);
 });
 
 // ---- WORDS (source) --------------------------------------------------------------------------------------------------------------------
@@ -273,7 +280,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 14;   // 13 + R4 (Nov 20)
+const EXPECTED = 15;   // 13 + R4 (Nov 20); - T1 (parked, Nov 21) + T1-B + MUT-T1-B
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`

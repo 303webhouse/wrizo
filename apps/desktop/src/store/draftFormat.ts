@@ -1,3 +1,4 @@
+import { insertNote } from '../reorg/footnotes';
 import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMark, stripLine, withoutFontMarks, BLOCK_TOKEN } from './markRuns';
 
 // Draft's tools: pure string transforms on `entry.text` (markdown conventions, no rich-text state) given a selection's linear offsets; the caller owns the DOM [draftFormat §1]
@@ -8,14 +9,17 @@ import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMar
 // supersedes Chamber 1's deferral of alignment/indentation ("until a real need
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
-  | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
+  | 'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
+  | 'para' | 'h1' | 'h2' | 'h3'
   | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
-  | 'align-left' | 'align-center' | 'align-right';
+  | 'align-left' | 'align-center' | 'align-right'
+  // reorg, More ▸ Footnote / Endnote (reorg/footnotes.ts): a [^1] marker after the caret's words, an empty note line at the Part's end, the caret on it
+  | 'footnote' | 'endnote';
 export type StructureKind = 'prose' | 'screenplay';
 
 // FORMAT_MARK: one source for the marker characters (bold, italic, `__underline__`, `~~strike~~`), so forward-only insertion and a Draft wrap never drift; plain-text honest, export-stripped [draftFormat §2]
-export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike', string> =
-  { bold: '**', italic: '*', underline: '__', strike: '~~' };
+export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub', string> =
+  { bold: '**', italic: '*', underline: '__', strike: '~~', sup: '^', sub: '~' };
 
 // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B, +I, +U. The keyboard door to the SAME formatter the toolbar buttons call (the one
 // map, here, so the page and the card popup cannot drift). Until now these keys did nothing at all (frames Draft-ctrl-b/i/u:
@@ -199,7 +203,7 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
       for (let k = 0; k < closeMark(r).length; k++) fontMarkAt.add(r.close + k);
     }
     for (let i = A; i < B; i++) {
-      if (/[\s*_~]/.test(line[i]) || fontMarkAt.has(i)) continue;
+      if (/[\s*_~^]/.test(line[i]) || fontMarkAt.has(i)) continue;
       if (!fulls.some(r => i >= r.open && i < r.close + ml)) bare++;
     }
     const marked = !!inner || (fulls.length > 0 && bare === 0);
@@ -240,8 +244,8 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
       out = out.slice(0, out.length - (pl.a - (pl.ls + r.open)));
       // what is left of the run on either side is re-wrapped only if it holds words; a bare neighbouring mark (the italic
       // inside a bold-italic, say) is kept as it is, not wrapped in a pair of its own
-      const wrapBefore = /[^\s*_~]/.test(before);
-      const wrapAfter = /[^\s*_~]/.test(after);
+      const wrapBefore = /[^\s*_~^]/.test(before);
+      const wrapAfter = /[^\s*_~^]/.test(after);
       piece = (wrapBefore ? mark + before + mark : before) + mid + (wrapAfter ? mark + after + mark : after);
       contentAt = wrapBefore ? ml + before.length + ml : before.length;
       contentLen = mid.length;
@@ -280,6 +284,37 @@ function setHeading(text: string, at: number, level: number | null): FormatResul
   const delta = ins.length - (e - s);
   const caret = at >= e ? at + delta : at >= s ? s + ins.length : at;
   return { text: next, start: caret, end: caret };
+}
+// THE PARAGRAPH PICKER (reorg-plan-v2, INK queue item 1: P / H1 / H2 / H3): it SETS a level, it never toggles (P takes the mark off, H1 to H3 put exactly that level on; a line already there is left as it is), on every line the
+// selection touches (a selection ending right after a line break leaves the next line alone) and not on a line with no words in it. The mark goes where the one lead reader puts it (after a quote, a bullet, a tab, an alignment) and
+// no other byte changes; both ends of the selection stay on their own words.
+function headingEdit(text: string, at: number, level: number | null): { s: number; e: number; ins: string } {
+  const { ls, le, tok } = headingAt(text, at);
+  const ins = level === null ? '' : '#'.repeat(level) + ' ';
+  const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;
+  return { s, e: tok ? tok.end : s, ins };
+}
+function setHeadingLines(text: string, start: number, end: number, level: number | null): FormatResult {
+  const last = end > start && text[end - 1] === '\n' ? end - 1 : end;
+  const starts: number[] = [];
+  for (let at = lineBounds(text, start).start; ;) {
+    starts.push(at);
+    const le = lineBounds(text, at).end;
+    if (le >= last || le >= text.length) break;
+    at = le + 1;
+  }
+  let out = text, a = start, b = end;
+  const move = (p: number, ed: { s: number; e: number; ins: string }): number => (p >= ed.e ? p + ed.ins.length - (ed.e - ed.s) : p >= ed.s ? ed.s + ed.ins.length : p);
+  for (let i = starts.length - 1; i >= 0; i--) {
+    const { start: ls, end: le } = lineBounds(out, starts[i]);
+    const line = out.slice(ls, le);
+    if (!line.slice(readLead(line, { headings: false }).length).trim()) continue;
+    const ed = headingEdit(out, ls, level);
+    if (out.slice(ed.s, ed.e) === ed.ins) continue;
+    out = out.slice(0, ed.s) + ed.ins + out.slice(ed.e);
+    a = move(a, ed); b = move(b, ed);
+  }
+  return { text: out, start: a, end: b };
 }
 /** The heading level (1-6) of the caret's line, or null. What lights the H button. */
 export function headingLevelAt(text: string, at: number): number | null {
@@ -477,7 +512,7 @@ const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-ri
 const BULLET_PREFIXES = [LINE_DIRECTIVE.bullet, LINE_DIRECTIVE['bullet-circle'], LINE_DIRECTIVE['bullet-square']] as const;
 
 // what the caret is inside, pure (text in, flags out) so it is testable without a browser [draftFormat §10]
-export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean } {
+export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean; sup: boolean; sub: boolean } {
   // one reader: a mark is active when the character to the caret's LEFT carries it (the rule typing follows), so a caret past a styled word's closing marks lights nothing; an empty pair just made counts [draftFormat §11]
   const ls = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
   let le = text.indexOf('\n', ls);
@@ -485,7 +520,7 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
   const line = text.slice(ls, le);
   const lead = readLead(line).length;
   const at = caret - ls - lead;
-  const out = { bold: false, italic: false, underline: false, strike: false };
+  const out = { bold: false, italic: false, underline: false, strike: false, sup: false, sub: false };
   for (const r of readMarks(line.slice(lead))) {
     if (r.kind === 'font') continue;   // FONT-SPAN: a face is not one of the strip's four styles (fontFaceAt reads it)
     const ml = r.mark.length;
@@ -498,10 +533,19 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
+  if (action === 'footnote' || action === 'endnote') {
+    const r = insertNote(text, end, action);
+    if (!r) return { text, start, end };   // a caret inside the notes: nothing to cite from there
+    return { text: r.text, start: r.caret, end: r.caret };
+  }
   if (action === 'bold') return toggleInline(text, start, end, FORMAT_MARK.bold);
   if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
   if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
+  if (action === 'sup') return toggleInline(text, start, end, FORMAT_MARK.sup);
+  if (action === 'sub') return toggleInline(text, start, end, FORMAT_MARK.sub);
+  if (action === 'para') return setHeadingLines(text, start, end, null);
+  if (action === 'h1' || action === 'h2' || action === 'h3') return setHeadingLines(text, start, end, Number(action[1]));
   if (action === 'heading') { const cur = headingLevelAt(text, start); return setHeading(text, start, cur === null ? 2 : null); }
   if (action === 'heading-up' || action === 'heading-down') {
     const cur = headingLevelAt(text, start);
@@ -681,7 +725,7 @@ export function fontFaceAt(text: string, selStart: number, selEnd: number): stri
     const fl = readFontLine(text.slice(sg.ls, le));
     const a = fl.toBase[sg.a - sg.ls - fl.lead];
     const b = fl.toBase[sg.b - sg.ls - fl.lead];
-    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.faces[i]);
+    for (let i = a; i < b; i++) if (/[^\s*_~^]/.test(fl.base[i])) seen.add(fl.faces[i]);
   }
   if (seen.size === 0) return null;
   return seen.size === 1 ? [...seen][0] : 'mixed';
@@ -699,7 +743,7 @@ export function fontSizeAt(text: string, selStart: number, selEnd: number): numb
     const fl = readFontLine(text.slice(sg.ls, le));
     const a = fl.toBase[sg.a - sg.ls - fl.lead];
     const b = fl.toBase[sg.b - sg.ls - fl.lead];
-    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.styles[i].points);
+    for (let i = a; i < b; i++) if (/[^\s*_~^]/.test(fl.base[i])) seen.add(fl.styles[i].points);
   }
   if (seen.size === 0) return null;
   return seen.size === 1 ? [...seen][0] : 'mixed';

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { countLineEquivalents } from './lineEquivalents';
 import { readLead, readMarks, removeMarkers } from './markRuns';
+import { wordsOnly } from '../reorg/footnotes';
 
 // CD1 S6 — the goal system's one writer-level target. A tiny
 // module-level store, the EXACT shape of store/forwardLock.ts (KEY
@@ -81,10 +82,10 @@ export function useWritingGoal(): WritingGoal | null {
   return value;
 }
 
-/** Words the writer wrote: line tokens and emphasis markers are not words, and neither is a lone mark like "—". */
+/** Words the writer wrote: line tokens and emphasis markers are not words, neither is a lone mark like "—", and neither is a footnote (its marker and its note line). */
 export function countGoalWords(text: string): number {
   let n = 0;
-  for (const line of text.split('\n')) {
+  for (const line of wordsOnly(text).split('\n')) {
     const rest = line.slice(readLead(line, { headings: true }).length);
     for (const w of removeMarkers(rest, readMarks(rest)).split(/\s+/)) if (/[\p{L}\p{N}]/u.test(w)) n++;
   }

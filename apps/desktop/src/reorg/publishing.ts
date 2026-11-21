@@ -1,3 +1,4 @@
+import type { JournalEntry } from '../types';
 import { getJournalEntry, getProject, isAutoSet } from '../store/persistence';
 import { exportPageFiles, safeFilenameBase, dateStampFallback } from '../store/pageExport';
 import { firstLine } from '../store/entryText';
@@ -7,8 +8,13 @@ import { triggerDownload } from '../store/download';
 import { copyText } from '../store/clipboard';
 import { recordShadow } from '../store/voiceWall';
 import { partsOfDoc } from './parts';
-import { publicationText, chosenParts, wrapHtml, type PubFormat, type PubPart } from './publishingText';
-import { markdownToHtml, plainToHtml } from './publishingHtml';
+import { publicationText, chosenParts, wrapHtml, noteMarker, type PubFormat, type PubNote, type PubPart, type PubPlan } from './publishingText';
+import { planRows, titleOfText } from './backMenu/planOps';
+import { liveBoxes } from '../store/boxTombstones';
+import { markdownToHtml, plainToHtml, inlineHtml } from './publishingHtml';
+import type { BxPart } from './beforeExportRules';
+import { readNotes, writeMarkers } from './footnotes';
+import { stripLine } from '../store/markRuns';
 import { REORG } from './flag';
 
 // PUBLISHING AS A VIEW, AND EXPORT (reorg-plan-v2 #5 and #6; Fable Nov 20, 11:45 am: "the whole Doc as one read-only scroll, each Part under its heading, as the prototype draws it
@@ -42,6 +48,17 @@ export interface PubDoc {
 
 const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/** A Part with no words and no ink: the one rule the sheet's "Nothing written in this Part yet." and Before You Export's count both use. */
+const isEmptyPart = (e: JournalEntry, words: number): boolean => words === 0 && !(e.strokes && e.strokes.length > 0);
+
+/** What Before You Export reads (reorg/beforeExportRules.ts): each Part of the Doc in its order, with its number, its heading and whether it has no words. Light: no markup is built. */
+export function publicationFacts(entryId: string): BxPart[] {
+  return publicationList(entryId).rows.map((r) => {
+    const e = getJournalEntry(r.id);
+    return { id: r.id, n: r.n, heading: r.heading, empty: !e || isEmptyPart(e, wordCount(exportPageFiles(e).txt)) };
+  });
+}
+
 /** The Doc this page is a Part of, read from the store (the caller flushes the open page's typing first). Null: no such page. */
 export function readPublication(entryId: string): PubDoc | null {
   const e0 = getJournalEntry(entryId);
@@ -55,19 +72,32 @@ export function readPublication(entryId: string): PubDoc | null {
   rows.forEach((r, i) => {
     const e = getJournalEntry(r.id);
     if (!e) return;
-    const files = exportPageFiles(e);
     const prose = e.pageType !== 'script' && e.pageType !== 'board' && !e.pageSettings?.template;
+    // footnotes and endnotes (Nick ruled A, Nov 21): the note lines leave the words, each [^label] in them becomes a private marker the file's own numbering replaces (publishingText.ts layNotes), and the notes go beside the Part already written for the three formats
+    const nb = REORG && prose ? readNotes(e.text ?? '') : null;
+    const notes: PubNote[] = nb ? nb.notes.map((n) => ({ label: n.label, endnote: n.endnote, md: n.text, txt: stripLine(n.text), html: inlineHtml(n.text) })) : [];
+    const files = exportPageFiles(nb && nb.notes.length > 0 ? { ...e, text: writeMarkers(nb.body, nb.notes.map((n) => n.label), noteMarker) } : e);
     const words = wordCount(files.txt);
     parts.push({
-      id: e.id, name: r.name, level: r.level, md: files.md, txt: files.txt,
+      id: e.id, name: r.name, level: r.level, md: files.md, txt: files.txt, ...(notes.length > 0 ? { notes } : {}),
       n: i + 1, heading: r.heading, words,
       html: prose ? markdownToHtml(files.md) : plainToHtml(files.txt),
       view: prose ? decorateMarkdownForCard(e.text ?? '', null) : esc(files.txt),
-      empty: words === 0 && !(e.strokes && e.strokes.length > 0),
+      empty: isEmptyPart(e, words),
     });
   });
   const title = made && set ? set.title : null;
   return { docId: made && set ? set.id : null, title, name: title ?? parts[0]?.heading ?? '', parts };
+}
+
+/** The open page's own Plan as the file carries it (item 5a): the rows of the board its Plan tab shows, hidden cards left out, in her order and indents. Null: no board, or nothing on it. Read at the moment of export, so a row she moved while the sheet was open is as she left it. */
+export function publicationPlan(entryId: string, label: string, untitled: string): PubPlan | null {
+  const page = getJournalEntry(entryId);
+  const board = page?.planBoardId ? getJournalEntry(page.planBoardId) : null;
+  if (!page || !board) return null;
+  const hidden = new Set<string>(page.pageSettings?.hiddenPlanCards ?? []);
+  const rows = planRows(liveBoxes(board.boxes), hidden, (b) => (b.entryId ? titleOfText(getJournalEntry(b.entryId)?.text) : ''));
+  return rows.length === 0 ? null : { label, rows: rows.map((r) => ({ number: r.number, depth: r.depth, title: r.title || untitled })) };
 }
 
 /** What the view's list is made of, as one string: the Parts, their order, their names. The view re-reads when it changes (a Part moved from the Front menu), never on her words. */
@@ -94,8 +124,8 @@ export interface PubFile { filename: string; content: string; count: number; mim
 const MIME: Record<PubFormat, string> = { md: 'text/markdown', txt: 'text/plain', html: 'text/html' };
 
 /** The file for the Parts chosen (`ids` null: every Part), in the Doc's own order. Nothing chosen: no file (count 0). */
-export function publicationFile(doc: PubDoc, format: PubFormat, ids: readonly string[] | null): PubFile | null {
-  const text = publicationText(doc.title, doc.parts, format, ids);
+export function publicationFile(doc: PubDoc, format: PubFormat, ids: readonly string[] | null, plan: PubPlan | null = null): PubFile | null {
+  const text = publicationText(doc.title, doc.parts, format, ids, plan);
   if (text.count === 0) return null;
   const some = ids !== null && chosenParts(doc.parts, ids).length < doc.parts.length;
   const base = safeFilenameBase(doc.name, dateStampFallback()) + (some ? ` (${text.count} of ${doc.parts.length} Parts)` : '');
@@ -103,21 +133,21 @@ export function publicationFile(doc: PubDoc, format: PubFormat, ids: readonly st
 }
 
 /** Hand the file to the browser's own download (the app's one mechanism). False when nothing was chosen or the download could not start. */
-export function downloadPublication(doc: PubDoc, format: PubFormat, ids: readonly string[] | null): boolean {
-  const f = publicationFile(doc, format, ids);
+export function downloadPublication(doc: PubDoc, format: PubFormat, ids: readonly string[] | null, plan: PubPlan | null = null): boolean {
+  const f = publicationFile(doc, format, ids, plan);
   return !!f && triggerDownload(f.filename, f.content, f.mime);
 }
 
 /** What the clipboard is given, for the Parts chosen: the plain words (Copy Text) or the words as the page draws them with the plain words beside (Copy as Formatted). Null: nothing chosen. */
-export function publicationCopy(doc: PubDoc, kind: 'text' | 'formatted', ids: readonly string[] | null): { plain: string; html: string | null } | null {
-  const plain = publicationText(doc.title, doc.parts, 'txt', ids);
+export function publicationCopy(doc: PubDoc, kind: 'text' | 'formatted', ids: readonly string[] | null, plan: PubPlan | null = null): { plain: string; html: string | null } | null {
+  const plain = publicationText(doc.title, doc.parts, 'txt', ids, plan);
   if (plain.count === 0) return null;
-  return { plain: plain.content, html: kind === 'formatted' ? publicationText(doc.title, doc.parts, 'html', ids).content : null };
+  return { plain: plain.content, html: kind === 'formatted' ? publicationText(doc.title, doc.parts, 'html', ids, plan).content : null };
 }
 
 /** Copy the Parts chosen. Formatted puts web markup AND the plain words on the clipboard (the receiving app takes the one it reads); where the browser cannot, the plain words go. True only when something landed. */
-export async function copyPublication(doc: PubDoc, kind: 'text' | 'formatted', ids: readonly string[] | null): Promise<boolean> {
-  const c = publicationCopy(doc, kind, ids);
+export async function copyPublication(doc: PubDoc, kind: 'text' | 'formatted', ids: readonly string[] | null, plan: PubPlan | null = null): Promise<boolean> {
+  const c = publicationCopy(doc, kind, ids, plan);
   if (!c) return false;
   if (c.html !== null && typeof navigator !== 'undefined' && navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
     recordShadow(c.plain);   // the writer's own words, copied out: pasting them back passes the wall (copyText's own rule)

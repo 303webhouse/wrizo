@@ -131,7 +131,9 @@ async function openPage(app, theme, reorg) {
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
   // (the Arbor redesign is on by default since Nov 15; this file was written for today's Arbor, so its own address carries the harness's pin, ?arbor2=0 -
   // FABLE RULED, Nov 15, 10:40 pm. It wrote its own address and so skipped the driver's pin: O1/O2 read the redesign's strip against today's golden.)
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/rr-top-1')`);
+  // (Machina's look, on by default since machina/look: the same pin for Machina, ?machina2=0 - FABLE ACCEPTED the Machina pin, Nov 20, 12:05 am, "as Arbor's Nov 15
+  // pin". Actions 44691517313 read the look's Themes pop-out - its Room row - against today's golden: O1 [machina] [theme]. This file is on the pinned list.)
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -594,10 +596,37 @@ await withHarness(async (app) => {
   await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'on' : 'off'}"]`); await sleep(200);
   const wsC = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
   const others = (a, b, k) => Object.keys({ ...a, ...b }).filter((x) => x !== k && JSON.stringify(a[x]) !== JSON.stringify(b[x]));
-  ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
-    Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
-    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
-    JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): PAGE DEFAULTS no longer carries a Typewriter mode switch (the Typewriter switch left every stage); the original D3 [successor], verbatim:
+  // ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
+  // Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
+  // && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  // JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // successor: PAGE DEFAULTS is the Progress bars switch alone; pressing it flips only `instrumentsOn` (every other stored key, `typewriter` included, keeps its value), and the Typewriter row is not there to press
+  const d3tw = await app.evalJs("document.querySelectorAll('[data-reorg-default=\"typewriter\"]').length");
+  ok('D3 [Free Write = Typewriter successor]: PAGE DEFAULTS offers Progress bars alone - there is no Typewriter mode switch (' + d3tw + ' found) - and pressing it changes only `instrumentsOn`: every other stored key (the old `typewriter` value included) keeps its value',
+    d3tw === 0 && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['progress', pr ? 'off' : 'on']]) && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0 && wsA.typewriter === wsC.typewriter,
+    JSON.stringify({ d3tw, defaults: d3 && d3.defaults, pr: [wsB.instrumentsOn, wsC.instrumentsOn], prOthers: others(wsB, wsC, 'instrumentsOn'), twKept: [wsA.typewriter, wsC.typewriter] }));
+  // SUPERSEDED (Fable, Nov 20, 12:15 pm: the session's writing settings are saved to the ACCOUNT, switch on or off - store/writingPref.ts mirrors the settings key into the `writing` fact of the existing prefs key,
+  // so a press now stores the settings key AND that key); it was written against the Typewriter row that Free Write = Typewriter has since removed, so it is parked beside main's own successor and COMBINED with it below.
+  // The original [successor 2], verbatim:
+  // ok('D3 [successor 2]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key and its account mirror, the existing prefs key (a `writing` fact stamped per setting)',
+  //   Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
+  //   && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings']) && !!mirror && Object.keys(mirror.fieldAt || {}).every((k) => k === 'typewriter' || k === 'instrumentsOn' || k in wsA) && mirror.typewriter === wsC.typewriter && mirror.instrumentsOn === wsC.instrumentsOn && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  //   JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // [successor 3: Free Write = Typewriter + the account mirror] BOTH rulings at once: main's successor above (the Typewriter row is gone, PAGE DEFAULTS is Progress bars alone, only `instrumentsOn` changes) AND the account's: the press stored the settings key
+  // and its mirror, the existing prefs key (a `writing` fact stamped per setting), and no other key. The mirror rule is one pure function, so it can be shown to FAIL (the mutant).
+  const mirror = await app.evalJs("(() => { try { return (JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}')).writing || null; } catch { return null; } })()");
+  const mirrorKept = (changed, m, ws) => JSON.stringify(changed) === JSON.stringify(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings']) && !!m && m.instrumentsOn === ws.instrumentsOn && Object.keys(m.fieldAt || {}).every((k) => k in ws) && !('typewriter' in (m.fieldAt || {}));
+  ok('D3 [successor 3: Free Write = Typewriter + account mirror]: PAGE DEFAULTS is Progress bars alone (no Typewriter row), and the press stored the settings key and its account mirror (the existing prefs key, a `writing` fact whose `instrumentsOn` follows the switch and whose stamps name only settings that exist; `typewriter` is not among them) and no other key',
+    d3tw === 0 && mirrorKept(diffKeys(st0, st1), mirror, wsC),
+    JSON.stringify({ d3tw, changed: diffKeys(st0, st1), mirror: mirror && { instrumentsOn: mirror.instrumentsOn, fieldAt: Object.keys(mirror.fieldAt || {}) } }));
+  ok('D3 [successor 3] MUTANT: the mirror rule catches a press that stores a third key, a mirror that does not follow the switch, and a stamp for a setting that does not exist; and passes the right shape',
+    mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false, typewriter: true }) === true
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings', 'local:other'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: true, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { nonsense: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false,
+    'mirrorKept over synthetic inputs');
   await click(`[data-reorg-default="typewriter"] [data-toggle="${wsA.typewriter ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'off' : 'on'}"]`); await sleep(200);
 
   // ---- STEP 6: UNFILED and the Trash ---------------------------------------------------------------------------------------------------
