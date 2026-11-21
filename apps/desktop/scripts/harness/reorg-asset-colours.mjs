@@ -240,6 +240,8 @@ await withHarness(async (app) => {
   // (Nov 21, fcf79914 run 44950077230: slot A was read while the room's colours were still easing from light to dark - B..F read dark. The fixture waits
   // for the dark room and lets the colours settle before the first pick. No assertion changes.)
   await app.waitFor("document.documentElement.getAttribute('data-machina2-room') !== 'light'", { label: 'the dark room', timeout: 6000 }).catch(() => {}); await sleep(1600);
+  // the pin, printed (Chat 1, Nov 21: so a run shows the room C6 reads in): the look, the room in force, the clock seam, and the panel's ground as drawn
+  console.log('C6 ROOM ' + JSON.stringify(await app.evalJs("(() => { const r = document.documentElement; const pn = document.querySelector('.wz-sliver-panel'); return { look: r.getAttribute('data-machina2'), room: r.getAttribute('data-machina2-room'), due: r.getAttribute('data-machina2-room-due'), clock: typeof window.machina2Clock, panel: pn ? getComputedStyle(pn).backgroundColor : null }; })()")));
   const dark = [];
   for (const s of 'abcdef') {
     await app.evalJs(pick(ROW('x1'), s)); await sleep(250);
