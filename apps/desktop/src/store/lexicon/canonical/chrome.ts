@@ -316,6 +316,8 @@ export const CANONICAL_CHROME = {
   reorgStyleSup: 'Superscript',
   reorgStyleSub: 'Subscript',
   reorgTextMore: 'More',
+  reorgNoteFootnote: 'Footnote',
+  reorgNoteEndnote: 'Endnote',
   reorgTextSymbols: 'Insert Symbol',
   reorgTextSymbolAria: 'Insert {symbol}',
   reorgSplitOpen: 'Open beside',

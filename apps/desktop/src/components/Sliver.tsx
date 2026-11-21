@@ -714,6 +714,11 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
           </TextFold>
           {textFolds && (
             <TextFold k="more" on label={t('reorgTextMore')}>
+              {/* FOOTNOTE AND ENDNOTE (reorg-plan-v2, INK queue item 3): a [^1] marker after the caret's words and an empty note line at the Part's end; stored as plain text (reorg/footnotes.ts) */}
+              <div className="wz-sliver-format reorg-text-notes" onMouseDown={e => e.preventDefault()}>
+                <button type="button" className="mode-tbtn" data-note-pick="footnote" title={t('reorgNoteFootnote')} aria-label={t('reorgNoteFootnote')} onClick={() => content.format!.onFormat('footnote')}>{t('reorgNoteFootnote')}</button>
+                <button type="button" className="mode-tbtn" data-note-pick="endnote" title={t('reorgNoteEndnote')} aria-label={t('reorgNoteEndnote')} onClick={() => content.format!.onFormat('endnote')}>{t('reorgNoteEndnote')}</button>
+              </div>
               <TextFold k="symbols" on label={t('reorgTextSymbols')}><SymbolPicker /></TextFold>
             </TextFold>
           )}

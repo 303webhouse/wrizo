@@ -1,3 +1,4 @@
+import { insertNote } from '../reorg/footnotes';
 import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMark, stripLine, withoutFontMarks, BLOCK_TOKEN } from './markRuns';
 
 // Draft's tools: pure string transforms on `entry.text` (markdown conventions, no rich-text state) given a selection's linear offsets; the caller owns the DOM [draftFormat §1]
@@ -11,7 +12,9 @@ export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
   | 'para' | 'h1' | 'h2' | 'h3'
   | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
-  | 'align-left' | 'align-center' | 'align-right';
+  | 'align-left' | 'align-center' | 'align-right'
+  // reorg, More ▸ Footnote / Endnote (reorg/footnotes.ts): a [^1] marker after the caret's words, an empty note line at the Part's end, the caret on it
+  | 'footnote' | 'endnote';
 export type StructureKind = 'prose' | 'screenplay';
 
 // FORMAT_MARK: one source for the marker characters (bold, italic, `__underline__`, `~~strike~~`), so forward-only insertion and a Draft wrap never drift; plain-text honest, export-stripped [draftFormat §2]
@@ -530,6 +533,11 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
 export function applyFormat(text: string, selStart: number, selEnd: number, action: FormatAction): FormatResult {
   const start = Math.min(selStart, selEnd);
   const end = Math.max(selStart, selEnd);
+  if (action === 'footnote' || action === 'endnote') {
+    const r = insertNote(text, end, action);
+    if (!r) return { text, start, end };   // a caret inside the notes: nothing to cite from there
+    return { text: r.text, start: r.caret, end: r.caret };
+  }
   if (action === 'bold') return toggleInline(text, start, end, FORMAT_MARK.bold);
   if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
