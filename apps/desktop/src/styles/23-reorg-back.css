@@ -148,3 +148,26 @@
 [data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
 /* FOOTNOTES (Nick, Nov 21): the note lines at a Part's end are set apart on the page: smaller and quieter, still real characters (reorg/footnotes.ts; draftDecoration wraps them only under the switch) */
 .md-note{ font-size:.85em; opacity:.72; }
+/* THE ASSETS "+" (reorg-plan-v2 3b item 1): the head's beside "Assets (n)", each Part's at its head's right edge; the menu and the short lists draw over
+   the list inside the drawer (absolute: nothing moves, the page least of all); the sort row under the head */
+[data-theme='machina'] .wz-back-assets-headrow{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin:0 0 6px; }
+[data-theme='machina'] .wz-back-assets-headrow > .wz-back-assets-head{ margin:0; }
+[data-theme='machina'] .wz-assets-add-wrap{ position:relative; flex:none; }
+[data-theme='machina'] .wz-back-part.has-add{ position:relative; }
+[data-theme='machina'] .wz-back-part.has-add > .wz-back-part-head{ padding-right:30px; }
+[data-theme='machina'] .wz-back-part.has-add > .wz-assets-add-wrap{ position:absolute; top:3px; right:2px; }
+[data-theme='machina'] .wz-assets-add{ width:22px; height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; line-height:1; cursor:pointer; }
+[data-theme='machina'] .wz-assets-add:hover, [data-theme='machina'] .wz-assets-add:focus-visible, [data-theme='machina'] .wz-assets-add[aria-expanded='true']{ border-color:var(--text-low); color:var(--text-hi); }
+[data-theme='machina'] .wz-assets-add-pop{ position:absolute; top:calc(100% + 4px); right:0; z-index:5; display:flex; flex-direction:column; min-width:180px; padding:4px;
+  background:var(--surface-raised, var(--paper, #1b1e22)); border:1px solid var(--ink-border-strong); box-shadow:0 6px 18px rgba(0,0,0,.28); }
+[data-theme='machina'] .wz-assets-add-pop > button{ display:block; width:100%; padding:6px 8px; background:none; border:0; text-align:left; font:inherit; font-size:12px; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-assets-add-pop > button:hover, [data-theme='machina'] .wz-assets-add-pop > button:focus-visible{ background:var(--hover-bg, rgba(127,127,127,.12)); }
+[data-theme='machina'] .wz-assets-picker{ min-width:240px; max-width:300px; }
+[data-theme='machina'] .wz-assets-picker-body{ display:flex; flex-direction:column; max-height:260px; overflow-y:auto; margin-top:4px; }
+[data-theme='machina'] .wz-assets-picker-none{ padding:6px 8px; font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .wz-assets-sort{ display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+[data-theme='machina'] .wz-assets-sort > button{ height:20px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-chromeLabel, monospace);
+  font-size:10px; color:var(--text-mid); cursor:pointer; }
+[data-theme='machina'] .wz-assets-sort > button[aria-pressed='true']{ color:var(--text-hi); border-color:var(--text-low); }
+[data-theme='machina'] .wz-back-docassets{ margin:0 0 8px; }

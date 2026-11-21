@@ -11,9 +11,10 @@ import {
   ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
-import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { assetDragFromDoc, assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
 import { SLOT_WORD, slotLetter } from './colourSlots';
 import { assetCountOf } from './partAssets';
+import { focusAssetsPart } from './backMenu/assetsFocus';
 import { DocKindMenu, type DocMenuHost } from './DocKindMenu';
 
 // THE FRONT MENU'S PARTS TAB (plan step 3.2; the prototype's frontMenu PARTS rows, frame P2-13A). Every Part of the Doc she is in, in her order
@@ -111,7 +112,8 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     const asset = readAssetDrag(e.dataTransfer);
     if (!asset) return;
     const vals = { title: assetTitle(asset) || t('reorgUntitled'), part: partWord(p) };
-    const r = connectAssetToPart(p.id, asset, latest.id);
+    // from the Doc's own list, her own Part is a real connection too (her Part's list is not where it came from)
+    const r = connectAssetToPart(p.id, asset, assetDragFromDoc(e.dataTransfer) ? undefined : latest.id);
     if (r.made === 'link') { const id = r.linkId; setLine({ text: fill(t('reorgConnectedLine'), vals), undo: () => { removePageLink(id); } }); }
     else setLine({ text: fill(t(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused'), vals) });
   };
@@ -241,11 +243,11 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
               {assets > 0 && (
-                // the link badge (Decision 2): its count only; POLISH wires its press to open the Assets tab at this Part
-                <span className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}
-                  title={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}>
+                // the link badge (Decision 2): its count, and a press that opens the Assets tab at this Part (reorg/backMenu/assetsFocus.ts)
+                <button type="button" className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}
+                  title={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })} onClick={() => focusAssetsPart(p.id)}>
                   <span aria-hidden="true">⛓</span> {assets}
-                </span>
+                </button>
               )}
               {menus && (
                 <button type="button" className={`reorg-parts-more${menuOpen ? ' is-open' : ''}`} data-part-more={p.id} aria-expanded={menuOpen}

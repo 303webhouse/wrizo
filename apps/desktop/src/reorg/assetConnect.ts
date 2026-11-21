@@ -12,8 +12,9 @@ import { liveBoxes } from '../store/boxTombstones';
 
 export const ASSET_DRAG_TYPE = 'application/x-wrizo-asset';
 
-export function writeAssetDrag(dt: DataTransfer, asset: GraftTarget): void {
-  dt.setData(ASSET_DRAG_TYPE, JSON.stringify(asset.boxId ? { entryId: asset.entryId, boxId: asset.boxId } : { entryId: asset.entryId }));
+// `from: 'doc'`: dragged from the Doc's own list (the Assets "+"), so even her own Part is a real connection (her Part's list is not where it came from)
+export function writeAssetDrag(dt: DataTransfer, asset: GraftTarget, from?: 'doc'): void {
+  dt.setData(ASSET_DRAG_TYPE, JSON.stringify({ ...(asset.boxId ? { entryId: asset.entryId, boxId: asset.boxId } : { entryId: asset.entryId }), ...(from ? { from } : {}) }));
   dt.effectAllowed = 'link';
 }
 
@@ -27,6 +28,12 @@ export function readAssetDrag(dt: DataTransfer | null): GraftTarget | null {
     if (typeof v.entryId !== 'string' || !v.entryId) return null;
     return typeof v.boxId === 'string' && v.boxId ? { entryId: v.entryId, boxId: v.boxId } : { entryId: v.entryId };
   } catch { return null; }
+}
+
+/** Whether the drag came from the Doc's own list (readable at the drop). */
+export function assetDragFromDoc(dt: DataTransfer | null): boolean {
+  if (!dt) return false;
+  try { return (JSON.parse(dt.getData(ASSET_DRAG_TYPE)) as { from?: unknown }).from === 'doc'; } catch { return false; }
 }
 
 /** The asset's title as the Assets tab draws it (the panel's titleOf: the first line, 60 characters; a sketch card reads "A sketch"). '' when gone (a deleted card is gone: liveBoxes). */

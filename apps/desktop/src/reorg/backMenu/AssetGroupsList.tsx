@@ -32,14 +32,16 @@ interface Props {
   /** COLOURS ON ASSETS (reorg/assetColour.ts): each asset's slot (null: none), and the pick (null: "No colour"). The row draws the tag. */
   colourOf: (asset: GraftTarget) => ColourSlot | null;
   onColour: (asset: GraftTarget, slot: ColourSlot | null) => void;
+  /** The Doc's own list (the Assets "+"): its drags say so (assetConnect.ts assetDragFromDoc). */
+  fromDoc?: boolean;
 }
 
-export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, onRemove, onHide, onBeside, onOpenBoard, parts, onToPart, colourOf, onColour }: Props): ReactNode {
+export function AssetGroups({ groups, t, kindWord, besideOffered, besideNote, onRemove, onHide, onBeside, onOpenBoard, parts, onToPart, colourOf, onColour, fromDoc }: Props): ReactNode {
   // which row's "→ Part" list is open (one at a time); Escape closes it and gives the focus back to its button
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const btnRefs = useRef(new Map<string, HTMLButtonElement>());
   const closeMenu = (key: string) => { setMenuFor(null); btnRefs.current.get(key)?.focus(); };
-  const dragFrom = (asset: GraftTarget) => (e: DragEvent) => { writeAssetDrag(e.dataTransfer, asset); };
+  const dragFrom = (asset: GraftTarget) => (e: DragEvent) => { writeAssetDrag(e.dataTransfer, asset, fromDoc ? 'doc' : undefined); };
   const toPart = (key: string, asset: GraftTarget, title: string) => parts.length > 0 && (
     <span className="wz-back-topart-wrap">
       <button type="button" className="wz-back-topart" data-to-part="" aria-haspopup="true" aria-expanded={menuFor === key ? 'true' : 'false'}
