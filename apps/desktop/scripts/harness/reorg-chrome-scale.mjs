@@ -21,6 +21,9 @@
 //             no wider than the window); K10 the crumb's current Part reads in the bar's label colour, 7:1 or better against the bar, at every size;
 //             K11 the "...", the search door and the readout under the page (the Run and its count) are k times as large as at 1366 (5%)
 //         MUT-K9  a reading 16 px taller than the window turns K9's test red    MUT-K10  the crumb read at #3A4047 turns K10's test red
+// CAP     K12 (Fable, Nov 21 3:52 pm) at 2560, an unrelated 400 px overflow (a block added to the page's foot) leaves the chrome budget's extra at or
+//             under its cap - the bar's height at 2560 minus its height at 1366, plus 2 px - and the page's height unchanged
+//         MUT-K12  the uncapped loop (the extra grown by the 400 px) turns K12's test red
 // RUN     R1  in the split the Run stands under her page - its middle inside the page's left and right, and none of it under the Doc beside - at
 //             1366, 1920 and 2560
 // MUTANTS MUT-K2  a 2560 reading with the rail's width unscaled turns K2's test red    MUT-R1  a split reading with the Run left unshifted turns R1's test red
@@ -104,6 +107,16 @@ await withHarness(async (app) => {
     const R = { scale: await app.evalJs(SCALE), rail: await app.evalJs(box('.desk-frame-strip')), door: await app.evalJs(box('.wz-reorg-rail button')), tab: await app.evalJs(box('.reorg-top .desk-mode-tab[data-mode-key="draft"]')) };
     R.page0 = await app.evalJs(PAGE);
     R.pass2 = await app.evalJs(PASS2);
+    R.barH = await app.evalJs("(() => { const b = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((x) => x.getBoundingClientRect().height > 0); return b ? b.getBoundingClientRect().height : null; })()");
+    if (w === 2560) {
+      // K12's reading: the extra and the page before, a 400 px block added at the page's foot (an overflow the budget does not govern), 2 s, then after
+      const EXTRA = "parseFloat(document.documentElement.style.getPropertyValue('--wz-chrome-extra')) || 0";
+      R.k12 = { before: await app.evalJs(EXTRA), pageBefore: await app.evalJs(PAGE) };
+      await app.evalJs("(() => { const d = document.createElement('div'); d.id = 'k12-overflow'; d.style.cssText = 'height:400px;width:10px;'; document.body.appendChild(d); return true; })()");
+      await sleep(2000);
+      R.k12.after = await app.evalJs(EXTRA); R.k12.pageAfter = await app.evalJs(PAGE); R.k12.scroll = await app.evalJs('document.scrollingElement.scrollHeight - innerHeight');
+      await app.evalJs("document.getElementById('k12-overflow')?.remove(); null"); await sleep(300);
+    }
     await toggle(app, '.wz-sliver-grip', '.wz-sliver', true);
     R.front = { panel: await app.evalJs(box('.wz-sliver-panel')), tab: await app.evalJs(box('.wz-sliver [role="tab"]')), spill: await app.evalJs(SPILL('.wz-sliver-panel')) };
     R.page1 = await app.evalJs(PAGE);
@@ -164,6 +177,12 @@ await withHarness(async (app) => {
   const k11 = (p, k) => !!p && ['dots', 'search', 'run'].every((n) => !!p[n] && !!b2[n] && ratioOk(p[n].h, b2[n].h, k));
   ok('K11 the "...", the search door and the readout under the page are k times as tall as at 1366 (5%)', SIZES.every(([w]) => k11(read[w].pass2, WANT_K[w])),
     SIZES.map(([w]) => ({ w, dots: read[w].pass2 && read[w].pass2.dots, search: read[w].pass2 && read[w].pass2.search, run: read[w].pass2 && read[w].pass2.run })));
+  const cap = Number.isFinite(big.barH) && Number.isFinite(b.barH) ? big.barH - b.barH + 2 : NaN;
+  const k12 = (c, cp) => !!c && Number.isFinite(cp) && c.after <= cp + 0.5 && c.pageAfter === c.pageBefore;
+  ok('K12 at 2560 an unrelated 400 px overflow leaves the budget\'s extra at or under its cap (the bar at 2560 minus the bar at 1366, plus 2 px) and the page\'s height unchanged',
+    k12(big.k12, cap), { cap, ...big.k12 });
+  const uncapped = big.k12 ? { ...big.k12, after: big.k12.before + 400 } : null;
+  ok('MUT-K12 the uncapped loop (the extra grown by the 400 px) turns K12\'s test red', !!uncapped && uncapped.after !== big.k12.after && !k12(uncapped, cap), uncapped && { cap, after: uncapped.after });
   const taller = big.pass2 ? { ...big.pass2, sh: big.pass2.ih + 16 } : null;
   ok('MUT-K9 a reading 16 px taller than the window turns K9\'s test red', !!taller && taller.sh !== big.pass2.sh && !k9(taller), taller && { sh: taller.sh, ih: taller.ih });
   const dim = big.pass2 ? { ...big.pass2, part: 'rgb(58, 64, 71)' } : null;
@@ -188,7 +207,7 @@ await withHarness(async (app) => {
 
 function J(v) { return JSON.stringify(v); }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 18;   // 13 + K9, K10, K11, MUT-K9, MUT-K10 (the Wrizors' pass 2, Nov 21)   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
+const EXPECTED = 20;   // 13 + K9, K10, K11, MUT-K9, MUT-K10 (the Wrizors' pass 2, Nov 21) + K12, MUT-K12 (the cap, Fable 3:52 pm)   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CHROME-SCALE VERIFY: PASS (${checks.length} checks)`
