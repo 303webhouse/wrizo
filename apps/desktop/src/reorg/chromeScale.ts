@@ -33,7 +33,8 @@ const DESK_VAR = '--wz-front-desk';
 // measured and added to the budget (--wz-chrome-extra, read by 23-reorg-top.css), and it is BOUNDED (Fable, Nov 21 3:52 pm: an overflow the
 // budget does not govern - a popover, a long panel - must not shrink the page tick by tick): it never exceeds what the scaled bar adds, the bar's
 // height at k less its height at 1, plus 2 px (the bar is its padding and its zoomed contents, so that is the contents' height x (1 - 1/k)), and it
-// is measured only while the scale settles - 3 s from the scale being set or the window resized - then held. It restarts from 0 on a resize.
+// is measured only while the scale settles - until the layout first fits (two quiet reads in a row, the fonts loaded), at most 3 s from the scale
+// being set or the window resized - then held, so an overflow that comes later (K12: a 400 px block at 2 s) changes nothing. A resize restarts it.
 const EXTRA_VAR = '--wz-chrome-extra';
 const SETTLE_MS = 3000;
 /** What the scaled bar adds to its own height: its contents (the zoomed children) are k times as tall as at 1, its padding is not. */
@@ -64,6 +65,7 @@ export function useChromeScale(): void {
     let lastDesk = '';
     let extra = 0;
     let settleUntil = 0;
+    let quiet = 0;
     const cap = (): number => {
       const bar = [...document.querySelectorAll<HTMLElement>('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0);
       if (!bar) return 0;
@@ -76,7 +78,13 @@ export function useChromeScale(): void {
       const se = document.scrollingElement;
       if (!se) return;
       const over = Math.ceil(se.scrollHeight - window.innerHeight);
-      if (over <= 0) return;
+      if (over <= 0) {
+        // the layout fits: two quiet reads in a row with the fonts loaded, and the measuring is over until the next resize
+        quiet = document.fonts && document.fonts.status !== 'loaded' ? 0 : quiet + 1;
+        if (quiet >= 2) settleUntil = 0;
+        return;
+      }
+      quiet = 0;
       const next = Math.min(extra + over, cap());
       if (next === extra) return;
       extra = next;
@@ -101,6 +109,7 @@ export function useChromeScale(): void {
         last = s;
         extra = 0;
         settleUntil = performance.now() + SETTLE_MS;
+        quiet = 0;
         r.style.removeProperty(EXTRA_VAR);
         r.style.setProperty(VAR, s);
         r.setAttribute(ATTR, k > 1 ? 'on' : 'base');
