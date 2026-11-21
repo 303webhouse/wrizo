@@ -61,6 +61,8 @@ const lineHtml = (lines: string[], i: number, local: number | null) => {
 };
 // no content-visibility here: a skipped row carries no text for innerText, Ctrl+End left the caret off screen, and the way-back restored scroll over estimated rows [lineRows §2]
 const rowSpan = (html: string) => `<span class="wz-row">${html}</span>`;
+/** PAGE BREAKS: the markup row `i` of `lines` carries with no caret, so the hidden letter page (store/pageMeasure.ts) lays out the very rows the editor draws. */
+export function rowMarkupFor(lines: string[], i: number): string { return rowSpan(lineHtml(lines, i, null)); }
 
 const localCaret = (R: Rows, i: number, caret: number | null) => {
   if (caret === null) return null;

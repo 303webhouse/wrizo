@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { liveQuery, registerLiveSite } from './liveDom';
 
 // the two-drawer law: coexistence is a decision about both drawers, so it lives in one store (the useSyncExternalStore pub-sub shape); measuring here is a policy, not an anchor [menusDrawers §1]
 
@@ -21,7 +22,7 @@ const CLOSED_CASCADE_W = 300; // .wz-cascade-panel width:min(300px, 86vw)
 
 function measuredWidth(sel: string, fallback: number): number {
   if (typeof document === 'undefined') return fallback;
-  const el = document.querySelector(sel);
+  const el = liveQuery(sel);
   if (!el) return fallback;
   const w = el.getBoundingClientRect().width;
   return w > 1 ? w : fallback;
@@ -36,10 +37,16 @@ function measuredWidth(sel: string, fallback: number): number {
  */
 // the paper, per surface: name the box the writer SEES (.mode-page, .board-canvas-wrap, .script-sheet), single-sourced with scripts/menus-probe.mjs; naming the wrong box disabled the law on screenplay [menusDrawers §3]
 const PAPER_SEL = '.mode-page, .board-canvas-wrap, .script-sheet';
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the paper and the stage the drawers lay out against are always the live page's
+const menusPaper = (): Element | null => liveQuery(PAPER_SEL);
+const menusStage = (): Element | null => liveQuery('.desk-frame-stage');
+registerLiveSite('menus.paper', menusPaper);
+registerLiveSite('menus.stage', menusStage);
 
 export function canCoexist(): boolean {
   if (typeof document === 'undefined') return true;
-  const paper = document.querySelector(PAPER_SEL);
+  const paper = menusPaper();
   const rail = document.querySelector('.desk-frame-strip');
   if (!paper || !rail) return true;
 
@@ -70,8 +77,8 @@ export function canCoexist(): boolean {
 export const DRAWER_MIN = 200;   // a drawer's narrowest open width, px - page-size.mjs and the drawer harnesses read the same number
 export function canHoldBoth(): boolean {
   if (typeof document === 'undefined') return true;
-  const paper = document.querySelector(PAPER_SEL);
-  const stage = document.querySelector('.desk-frame-stage');
+  const paper = menusPaper();
+  const stage = menusStage();
   if (!paper || !stage) return true;
   const p = paper.getBoundingClientRect();
   const s = stage.getBoundingClientRect();

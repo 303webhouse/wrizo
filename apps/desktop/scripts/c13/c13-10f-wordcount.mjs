@@ -31,6 +31,8 @@ const KNOWN = [
   // names - classified; neither counts words)
   ['arbor2/folderTabs.ts', "(document.documentElement.getAttribute('data-arbor2-off') || '').split(' ')", "offTabs: the Mood switch list (<html data-arbor2-off>, switch names such as 'tabs'), not words"],
   ['arbor2/shoots.ts', "(r.getAttribute('data-arbor2-off') || '').split(/\\s+/)", "the Mood switch list (<html data-arbor2-off>, switch names such as 'variation'), not words"],
+  // (Nov 20, train C's local gate, via Chat 1: the page-breaks measure copies the page column's chain; it splits each level's class attribute)
+  ['store/pageMeasure.ts', "(e.getAttribute('class') || '').split(/\\s+/)", "liveChain: an element's class list (the measuring copy's classes), not words"],
 ];
 const SURFACES = ['components/FirstRunGate.tsx', 'components/HomeFlow.tsx', 'components/ScriptEditor.tsx', 'components/Sliver.tsx', 'pages/JournalEntry.tsx', 'pages/PageEditor.tsx', 'pages/QuickSprint.tsx'];
 

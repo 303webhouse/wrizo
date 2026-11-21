@@ -301,6 +301,7 @@ await withHarness(async (app) => {
   await openDrawer(app); await tab(app, 'links');
   const fw = await pressBeside('Xcard one'); await sleep(400);
   const fwOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  const fwTwOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");   // SP11-M reads the split rule on this state
   ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
   // the Typewriter on (a Draft page whose own setting is on): not offered
   await app.evalJs("localStorage.setItem('wrizo-typewriter-page-bm-p', 'on')");
@@ -308,7 +309,13 @@ await withHarness(async (app) => {
   const twOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");
   const tw = await pressBeside('Xcard one'); await sleep(400);
   const twOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('SP11: with the Typewriter on, "Open beside" is greyed with its reason and opens nothing (the Typewriter is not available in a split)', twOn && !!tw && tw.disabled && /Typewriter/.test(tw.title) && !twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft NEVER: a Draft page's stored Typewriter setting is read by nothing, so a Draft page with the Typewriter on cannot exist and its twOn reads false; the Typewriter in a split is SP10's, on Free Writing). The original, verbatim:
+  // ok('SP11: with the Typewriter on, "Open beside" is greyed with its reason and opens nothing (the Typewriter is not available in a split)', twOn && !!tw && tw.disabled && /Typewriter/.test(tw.title) && !twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  // SUCCESSOR: the same seeded setting (stored 'on' on a Draft page) runs NO Typewriter, so "Open beside" is offered and opens the split; the rule is one predicate, and SP11-M reads it on Free Writing (the Typewriter) and must reject it
+  const splitOffered = (s) => !s.twOn && !!s.tw && !s.tw.disabled;
+  ok('SP11 [successor]: a Draft page whose stored Typewriter setting says on runs no Typewriter (Draft never does), so "Open beside" is offered and opens the split', splitOffered({ twOn, tw }) && twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  ok('SP11-M [mutant]: the same predicate read on Free Writing (the Typewriter, always) rejects it - SP11\'s rule is the split rule, not a constant', !splitOffered({ twOn: fwTwOn, tw: fw }) && fwTwOn === true, JSON.stringify({ fwTwOn, fw }));
+  if (twOpen) { await click(app, '[data-split-close]'); await sleep(500); }
   await app.evalJs("localStorage.removeItem('wrizo-typewriter-page-bm-p')");
   return checks;
 });

@@ -424,9 +424,16 @@ await withHarness(async (app) => {
       legacyRow: !!document.querySelector('.mode-incentive-row'),
       legacyTrack: !!document.querySelector('.mode-incentive-row .mode-ptrack'),
     })`);
-    ok('Legacy (<1100px): NOTHING from M4 S3/S4 mounts — no lane, no flare, no DeskFrame; the legacy incentive row and its own track render exactly as before, byte-identical',
-      legacy.framed === false && legacy.lane === false && legacy.flare === false
-      && legacy.legacyRow === true && legacy.legacyTrack === true, JSON.stringify(legacy));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('Legacy (<1100px): NOTHING from M4 S3/S4 mounts — no lane, no flare, no DeskFrame; the legacy incentive row and its own track render exactly as before, byte-identical',
+    //   legacy.framed === false && legacy.lane === false && legacy.flare === false
+    //   && legacy.legacyRow === true && legacy.legacyTrack === true, JSON.stringify(legacy));
+    const legacyB = await app.evalJs(`(() => { const liveQ = (s) => [...document.querySelectorAll(s)].find((e) => !e.closest('.wz-letter-measure')) || null; return {
+      framed: !!liveQ('.desk-frame-stage'), lane: !!liveQ('.desk-frame-instrument'), flare: !!liveQ('.desk-frame-goalflare'),
+      legacyRow: !!liveQ('.mode-incentive-row'), legacyTrack: !!liveQ('.mode-incentive-row .mode-ptrack') }; })()`);
+    ok('Legacy-B (<1100px): NOTHING from M4 S3/S4 mounts on the live page (the measuring copy aside) — no lane, no flare, no DeskFrame; the legacy incentive row and its own track render as before',
+      legacyB.framed === false && legacyB.lane === false && legacyB.flare === false && legacyB.legacyRow === true && legacyB.legacyTrack === true, JSON.stringify(legacyB));
+    ok('MUT-Legacy-B the plain reader is RED on the same page (framed: it finds the copy\'s stage) while Legacy-B\'s is green: the skip is what holds it', legacy.framed === true && legacyB.framed === false, JSON.stringify({ legacy, legacyB }));
   }
 
   return checks;

@@ -121,8 +121,9 @@ const INSTRUMENT = `(() => {
 // ---- the landed mutants: an anchor (a RegExp with its replacement) found exactly once in the served index-*.js, replaced in flight
 const MUTANTS = {
   noPrevent: [/\(\w+\.ctrlKey\|\|\w+\.metaKey\)&&\((\w+)\.preventDefault\(\),/g, (m, e) => m.replace(`${e}.preventDefault(),`, '0,')],
-  noClamp: [/const (\w+)=(\w+)\(\),(\w+)=(\w+)\((\w+),(\w+)\(\)\);if\(\3===\1\)return;const (\w+)=(\w+)\.getBoundingClientRect\(\)/g, (m, q, pn, L, Lg, M) => `const ${q}=${pn}(),${L}=${M};if(${L}===${q})return;const ${m.split('const ').pop()}`],
-  dragNotScaled: [/(\.clientX-\w+\)\/)\((\w+)\*\w+\(\)\)(,\w+=\(\w+\.clientY-\w+\)\/)\(\2\*\w+\(\)\)/g, '$1$2$3$2'],
+  // (Nov 19, #113's pair: these two anchors matched 0 once the bundle's names moved - the minifier names an identifier `$X`, which `\w+` cannot match; the identifier slots are `[\w$]+` now, as homeNoop's were on Nov 18. The cuts and their checks are unchanged.)
+  noClamp: [/const ([\w$]+)=([\w$]+)\(\),([\w$]+)=([\w$]+)\(([\w$]+),([\w$]+)\(\)\);if\(\3===\1\)return;const ([\w$]+)=([\w$]+)\.getBoundingClientRect\(\)/g, (m, q, pn, L, Lg, M) => `const ${q}=${pn}(),${L}=${M};if(${L}===${q})return;const ${m.split('const ').pop()}`],
+  dragNotScaled: [/(\.clientX-[\w$]+\)\/)\(([\w$]+)\*[\w$]+\(\)\)(,[\w$]+=\([\w$]+\.clientY-[\w$]+\)\/)\(\2\*[\w$]+\(\)\)/g, '$1$2$3$2'],
   // the camera drawn by CSS zoom instead of a transform: zoom changes LAYOUT, so the board's frame (auto height) would move and resize
   zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
   layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
