@@ -1,3 +1,4 @@
+import { useWritingGoalMirror } from './store/writingGoalPref';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTheme } from './store/theme';
@@ -229,6 +230,8 @@ export function App() {
   const [, forceRender] = useReducer((n: number) => n + 1, 0);
 
   useEffect(() => subscribe(forceRender), []);
+  // the writing goal's mirror on the account (store/writingGoalPref.ts): mounted for the whole session, whatever the route or sign-in state
+  useWritingGoalMirror();
   // installed once for the whole session (App.tsx mounts regardless of route or auth state), not tied to SyncIndicator's own mount, which renders in more than one place; see beforeUnloadGuard.ts for the reasoning and the Electron exclusion [App §3]
   useEffect(() => installBeforeUnloadGuard(), []);
 
