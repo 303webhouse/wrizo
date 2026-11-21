@@ -103,12 +103,12 @@
 [data-theme='machina'] .reorg-parts-tag{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; box-sizing:border-box;
   font-family:var(--font-chromeLabel, monospace); font-size:9.5px; font-weight:500; letter-spacing:.04em; }
 [data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour]{ border:1px solid #6A727B; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='clay']{ background:#9C4F2E; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='amber']{ background:#B9A03A; color:#1C1C1C; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='moss']{ background:#56703A; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='teal']{ background:#2C7272; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='slate']{ background:#41658A; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='plum']{ background:#74476F; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='a']{ background:#9C4F2E; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='b']{ background:#B9A03A; color:#1C1C1C; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='c']{ background:#56703A; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='d']{ background:#2C7272; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='e']{ background:#41658A; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='f']{ background:#74476F; color:#FFFFFF; }
 [data-theme='machina'] .reorg-parts-more{ flex:none; width:26px; height:26px; margin-right:4px; padding:0; border:0; background:none; color:var(--text-mid); cursor:pointer; font-size:14px; line-height:1; }
 [data-theme='machina'] .reorg-parts-more:hover, [data-theme='machina'] .reorg-parts-more.is-open{ color:var(--text-hi); }
 [data-theme='machina'] .reorg-parts-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
