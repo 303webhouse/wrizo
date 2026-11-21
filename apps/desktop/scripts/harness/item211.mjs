@@ -214,7 +214,8 @@ await withHarness(async (app) => {
 
     // An existing goal keeps its old meaning: a bare number in storage is lines.
     await app.goto('/');
-    await app.evalJs(`localStorage.setItem('${GOAL}', '2')`);
+    // STAGING (the goal is saved to the account now, store/writingGoalPref.ts): a device from before units existed has never met the account, so it holds no prefs copy; the earlier presses of this run left one (24 words), which would rightly win at boot over a key written behind the app's back
+    await app.evalJs(`localStorage.removeItem('wrizo-reorg-prefs'); localStorage.setItem('${GOAL}', '2')`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/${id}'`);
     await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'page after legacy goal' });
