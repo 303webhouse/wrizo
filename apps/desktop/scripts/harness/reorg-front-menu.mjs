@@ -181,8 +181,15 @@ await withHarness(async (app) => {
     JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && inst0 !== 'ink' && inst1 === 'ink' && tabsInk.find((x) => x.id === 'ink')?.on && inst2 !== 'ink', { tabs, inst0, inst1, inst2 });
   await open(app, 'machina', true, 'tr-top-s'); await openDrawer(app);
   onSections.script = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
-  ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
-    ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (Find in the Front menu's TEXT tab, stage menus T3, Nick's word; Fable, Nov 21, 12:35 am: TEXT gains Find in BUILD and EDIT, above Page
+  // setup; Actions 44881500925 read the Find row after the drawer's sections on the Draft Part and the screenplay, both in BUILD). The original, verbatim:
+  // ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // [successor] the same, but TEXT in BUILD (the Draft Part, the screenplay) ends with the one Find row; Free Write's has none
+  const findRow = 'wz-sliver-section wz-front-find-row';
+  const wantOn = (s) => (s === 'freewrite' ? offSections[s] : [...(offSections[s] || []), findRow]);
+  ok('F3 [successor] [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Find in BUILD (none in Free Write), then Page setup at its foot',
+    ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(wantOn(s)) && onSections[s].setup), { offSections, onSections });
 
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   const s0 = await app.evalJs(COLLECTIONS);
