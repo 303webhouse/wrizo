@@ -126,7 +126,7 @@ export type DeskTermId =
   | 'reorgSprintLocked' | 'reorgSprintAnother' | 'reorgSprintEmpty'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
   // THE FEEDBACK LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): lens names, the composer's "Ask Your Own", and the approved prompts that are not already a Draft ask
-  | 'reorgLensLabel' | 'reorgLensStructure' | 'reorgLensTone' | 'reorgLensConsistency' | 'reorgLensUsage' | 'reorgLensPunctuation' | 'reorgLensCitations' | 'reorgLensAskOwn' | 'reorgLensClaim' | 'reorgLensReader' | 'reorgLensTerm'
+  | 'reorgLensLabel' | 'reorgLensStructure' | 'reorgLensTone' | 'reorgLensConsistency' | 'reorgLensUsage' | 'reorgLensPunctuation' | 'reorgLensCitations' | 'reorgLensAskOwn' | 'reorgLenStructure1' | 'reorgLenStructure2' | 'reorgLenStructure3' | 'reorgLenTone1' | 'reorgLenTone2' | 'reorgLenTone3' | 'reorgLenConsistency1' | 'reorgLenConsistency2' | 'reorgLenConsistency3' | 'reorgLenUsage1' | 'reorgLenUsage2' | 'reorgLenUsage3' | 'reorgLenPunctuation1' | 'reorgLenPunctuation2' | 'reorgLenPunctuation3' | 'reorgLenCitations1' | 'reorgLenCitations2' | 'reorgLenCitations3' | 'reorgLensAskPlaceholder'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)

@@ -935,7 +935,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                   className="wz-tutor-convo-input"
                   type="text"
                   value={composerText}
-                  placeholder={t('tutorConversationPlaceholder')}
+                  placeholder={lensFrame ? t('reorgLensAskPlaceholder') : t('tutorConversationPlaceholder')}
                   onChange={(e) => setComposerText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void send(); } }}
                 />

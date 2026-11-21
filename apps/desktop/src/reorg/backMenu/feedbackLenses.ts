@@ -3,9 +3,9 @@ import type { DeskTermId } from '../../store/lexicon/terms';
 // THE FEEDBACK LENS FRAME (the reorg's Back menu, FEEDBACK; Nick's F2 and F3, claude/wrizors/machina-stage-menus-decide.md draft 3; Fable, Nov 20, 11:15 pm). In BUILD the Consultant's tab is three lenses,
 // Structure, Tone and Consistency ("replacing the asks"), each opening to AT MOST THREE prompts, plus "Ask Your Own" (her own question, the existing composer). In EDIT three more sit ABOVE them: Usage
 // (grammar, diction, repetitive phrasing; the old Fragments lens folds in later), Punctuation and Citations. SPRINT has none (it keeps its one writing prompt).
-// This file is the whole rule, pure: which lenses a stage shows, in which order, and how many prompts each opens to. The words are a TABLE of lexicon keys, and the table holds only RULED words: Structure's
-// three (Nick's approved asks) and Consistency's two. A lens with no ruled prompt is not drawn, so the frame never shows an empty promise; the Wrizors' words for Tone, Usage, Punctuation and Citations (and
-// Consistency's third) are dropped into this table when Nick rules them, and nothing else changes.
+// This file is the whole rule, pure: which lenses a stage shows, in which order, and how many prompts each opens to. The words are a TABLE of lexicon keys, all eighteen ruled (Nick, Nov 20, 11:43 pm;
+// claude/wrizors/feedback-lens-prompts-draft.md draft 2: prompts in sentence case, lens names in Title Case). A lens with no prompt in the table is not drawn, so a lens added later never shows an empty promise.
+// Citations 2 reads "Are my citations in one style?" until a Doc has a style guide (the draft's own fallback).
 export type LensId = 'structure' | 'tone' | 'consistency' | 'usage' | 'punctuation' | 'citations';
 export type LensStage = 'build' | 'edit';
 export interface Lens { id: LensId; name: DeskTermId; prompts: DeskTermId[] }
@@ -14,12 +14,12 @@ export interface Lens { id: LensId; name: DeskTermId; prompts: DeskTermId[] }
 export const LENS_MAX = 3;
 
 export const LENS_PROMPTS: Record<LensId, DeskTermId[]> = {
-  structure: ['tutorDraftAskLoadBearing', 'reorgLensClaim', 'reorgLensReader'],
-  tone: [],
-  consistency: ['tutorDraftAskThreadSlip', 'reorgLensTerm'],
-  usage: [],
-  punctuation: [],
-  citations: [],
+  structure: ['reorgLenStructure1', 'reorgLenStructure2', 'reorgLenStructure3'],
+  tone: ['reorgLenTone1', 'reorgLenTone2', 'reorgLenTone3'],
+  consistency: ['reorgLenConsistency1', 'reorgLenConsistency2', 'reorgLenConsistency3'],
+  usage: ['reorgLenUsage1', 'reorgLenUsage2', 'reorgLenUsage3'],
+  punctuation: ['reorgLenPunctuation1', 'reorgLenPunctuation2', 'reorgLenPunctuation3'],
+  citations: ['reorgLenCitations1', 'reorgLenCitations2', 'reorgLenCitations3'],
 };
 
 const NAME: Record<LensId, DeskTermId> = {
