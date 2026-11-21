@@ -246,6 +246,14 @@ function placeRun(docId: string, ids: string[], afterId: string | null): void {
   writeOrder(final);
 }
 
+/** A Part just born into a Doc goes to the END of the Doc's Parts as they are read now (Fable, Nov 20, 10:45 pm: "never sorted by creation time among them"). A page filed with no orderIndex sorts among the unnumbered Parts by creation time, so a Doc whose Parts were numbered by a move, or created later by another device's clock, would show it ahead of them. Placed through placeRun, like every other Part. */
+export function placeAtEnd(partId: string): void {
+  const e = getJournalEntry(partId);
+  if (!e || !e.projectId) return;
+  const rest = entriesOfDoc(e.projectId).filter(x => x.id !== partId);
+  placeRun(e.projectId, [partId], rest.length ? rest[rest.length - 1].id : null);
+}
+
 /** Move a Part WITH its subsections so it lands at `toIndex` among the other Parts (0 = first). Its level is brought to at most one under the Part above, the run's own levels shifting with it. Writes `orderIndex` and `level` only. */
 export function movePart(docId: string, partId: string, toIndex: number): boolean {
   const parts = partsOfDoc(docId);
