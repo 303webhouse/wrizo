@@ -99,7 +99,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
     const board = snap.boardId ? getJournalEntry(snap.boardId) : getOrCreatePlanBoard(pageId);
     if (!board) return;
     const made = presetBoxes(liveBoxes(board.boxes), preset, (k) => t(k), generateId);
-    saveBoardBoxes(board.id, made.boxes);
+    saveBoardBoxes(board.id, made.next);
     if (made.leaders.length) setFolded((was) => new Set([...was, ...made.leaders]));
   };
   const toggleFold = (id: string): void => setFolded((was) => { const n = new Set(was); if (n.has(id)) n.delete(id); else n.add(id); return n; });

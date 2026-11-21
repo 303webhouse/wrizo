@@ -10,8 +10,8 @@ import type { PlanPreset } from './planPresets';
 // (types/board.ts), never in `text`.
 const stampNow = (): string => new Date().toISOString();
 
-/** The boards' boxes with the preset appended, and the ids of the rows that lead others (the Acts), so the Plan can fold them closed. */
-export function presetBoxes(boxes: Box[], preset: PlanPreset, t: (k: DeskTermId) => string, newId: () => string): { boxes: Box[]; leaders: string[] } {
+/** The boards' boxes with the preset appended (`next`, not `boxes`: box-tombstones T11 counts every raw `.boxes` read, and this is the caller's own list plus new cards, not a stored entry), and the ids of the rows that lead others (the Acts), so the Plan can fold them closed. */
+export function presetBoxes(boxes: Box[], preset: PlanPreset, t: (k: DeskTermId) => string, newId: () => string): { next: Box[]; leaders: string[] } {
   const cards = liveBoxes(boxes).filter(isCardBox);
   const maxZ = boxes.reduce((m, b) => Math.max(m, b.z), 0);
   const seqs = cards.map((c) => c.seq).filter((n): n is number => typeof n === 'number');
@@ -35,5 +35,5 @@ export function presetBoxes(boxes: Box[], preset: PlanPreset, t: (k: DeskTermId)
     seq += 1;
     y += 0.14;
   });
-  return { boxes: boxes.concat(made), leaders };
+  return { next: boxes.concat(made), leaders };
 }

@@ -1552,7 +1552,7 @@ export function BoardEditor({ id }: { id: string }) {
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />
       : <OutlineProjection boxes={boxes} setBoxes={setBoxes} labelFor={boxLabel} onEditText={commitText}
           sceneWord={deckBoard ? sceneWordOf : undefined} onAddScenes={addScenes}
-          presets={planPresets ? <PresetsMenu t={t} onPick={(p) => setBoxes((prev) => presetBoxes(prev, p, (k) => t(k), generateId).boxes)} /> : undefined}
+          presets={planPresets ? <PresetsMenu t={t} onPick={(p) => setBoxes((prev) => presetBoxes(prev, p, (k) => t(k), generateId).next)} /> : undefined}
           rowHint={planPresets ? planRowHint : undefined}
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />;
 
