@@ -125,6 +125,8 @@ export type DeskTermId =
   | 'reorgPubCopyText' | 'reorgPubCopyFormatted' | 'reorgPubExport' | 'reorgPubHtml' | 'reorgPubFrozen' | 'reorgPubOnePart' | 'reorgPubPartsHint' | 'reorgPubPartsLabel' | 'reorgPubUp' | 'reorgPubDown'
   // THE REORG'S BACK MENU (src/reorg/backMenu/, behind ?reorg=1 in Machina): new words only; the tab row reads PLAN, ASSETS (drawerLinks), FEEDBACK (tutorTabTutor)
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
+  // BEFORE YOU EXPORT (src/reorg/BeforeExport.tsx: the Back menu's tab while the publishing sheet is open)
+  | 'reorgBackExport' | 'reorgBxLabel' | 'reorgBxNoneTicked' | 'reorgBxEmptyOne' | 'reorgBxEmptyMany' | 'reorgBxClear'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'

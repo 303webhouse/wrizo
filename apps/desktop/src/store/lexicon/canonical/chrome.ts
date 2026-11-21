@@ -253,6 +253,12 @@ export const CANONICAL_CHROME = {
   // THE REORG'S BACK MENU (behind ?reorg=1 in Machina): the first tab's word and the tab row's accessible name
   reorgBackPlan: 'Plan',
   reorgBackTabsLabel: 'Plan, assets and feedback',
+  reorgBackExport: 'Before You Export',
+  reorgBxLabel: 'Before you export: what to look at first',
+  reorgBxNoneTicked: 'Nothing is ticked to go out. Tick at least one Part to export.',
+  reorgBxEmptyOne: '{n} Part with no words',
+  reorgBxEmptyMany: '{n} Parts with no words',
+  reorgBxClear: 'Nothing is in the way.',
   reorgPlanEmpty: "Nothing is in this doc's plan.",
   reorgPlanRename: 'Name of the plan row',
   reorgPlanUp: 'Move up',

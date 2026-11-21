@@ -1,3 +1,4 @@
+import type { JournalEntry } from '../types';
 import { getJournalEntry, getProject, isAutoSet } from '../store/persistence';
 import { exportPageFiles, safeFilenameBase, dateStampFallback } from '../store/pageExport';
 import { firstLine } from '../store/entryText';
@@ -9,6 +10,7 @@ import { recordShadow } from '../store/voiceWall';
 import { partsOfDoc } from './parts';
 import { publicationText, chosenParts, wrapHtml, type PubFormat, type PubPart } from './publishingText';
 import { markdownToHtml, plainToHtml } from './publishingHtml';
+import type { BxPart } from './beforeExportRules';
 import { REORG } from './flag';
 
 // PUBLISHING AS A VIEW, AND EXPORT (reorg-plan-v2 #5 and #6; Fable Nov 20, 11:45 am: "the whole Doc as one read-only scroll, each Part under its heading, as the prototype draws it
@@ -42,6 +44,17 @@ export interface PubDoc {
 
 const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+/** A Part with no words and no ink: the one rule the sheet's "Nothing written in this Part yet." and Before You Export's count both use. */
+const isEmptyPart = (e: JournalEntry, words: number): boolean => words === 0 && !(e.strokes && e.strokes.length > 0);
+
+/** What Before You Export reads (reorg/beforeExportRules.ts): each Part of the Doc in its order, with its number, its heading and whether it has no words. Light: no markup is built. */
+export function publicationFacts(entryId: string): BxPart[] {
+  return publicationList(entryId).rows.map((r) => {
+    const e = getJournalEntry(r.id);
+    return { id: r.id, n: r.n, heading: r.heading, empty: !e || isEmptyPart(e, wordCount(exportPageFiles(e).txt)) };
+  });
+}
+
 /** The Doc this page is a Part of, read from the store (the caller flushes the open page's typing first). Null: no such page. */
 export function readPublication(entryId: string): PubDoc | null {
   const e0 = getJournalEntry(entryId);
@@ -63,7 +76,7 @@ export function readPublication(entryId: string): PubDoc | null {
       n: i + 1, heading: r.heading, words,
       html: prose ? markdownToHtml(files.md) : plainToHtml(files.txt),
       view: prose ? decorateMarkdownForCard(e.text ?? '', null) : esc(files.txt),
-      empty: words === 0 && !(e.strokes && e.strokes.length > 0),
+      empty: isEmptyPart(e, words),
     });
   });
   const title = made && set ? set.title : null;

@@ -24,6 +24,10 @@ export function togglePick(key: string, partId: string): void {
 }
 
 const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
+/** Whether the publishing view is open on this page (the pick exists only while it is): the Back menu's Before You Export tab is there exactly then. */
+export function usePublishing(key: string): boolean {
+  return useSyncExternalStore(subscribe, () => pick.key === key);
+}
 export function usePickOff(key: string): ReadonlySet<string> {
   return useSyncExternalStore(subscribe, () => pickOff(key));
 }

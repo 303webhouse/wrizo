@@ -1,6 +1,6 @@
 // REORG BEFORE YOU EXPORT, THE RULES, BROWSERLESS (reorg-plan-v2, INK queue item 4; the stage menus, F4: "Blocks the export (only what makes it impossible): no Part ticked to go out. Doesn't block, but is announced
 // (each line a count she can click to jump to it): Parts with no words" - and the lines whose data does not exist yet are NOT built here: possible grammar or spelling issues left, Plan rows never attached to a Part,
-// quotations with no source filled in, assets she chose to attach; see reorg/beforeExport.ts). No browser, no box: the real beforeExport.ts is transpiled and run; each law is given a mutant (a text rewrite of
+// quotations with no source filled in, assets she chose to attach; see reorg/beforeExportRules.ts). No browser, no box: the real beforeExportRules.ts is transpiled and run; each law is given a mutant (a text rewrite of
 // the source) that must LAND and turn its own check red.
 //   BLOCK   nothing ticked in a Doc of two or more Parts blocks the export and says why; one tick, or a one-Part Doc (which has no ticks), blocks nothing
 //   NOTE    "Parts with no words" counts only the Parts that GO OUT (an empty Part she ticked out is not announced), names them in the Doc's order, and is absent at zero; it never blocks
@@ -14,7 +14,7 @@ const ts = require('typescript');
 const lf = (s) => s.split('\r\n').join('\n');
 const TS_OPTS = { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } };
 let SRC = '';
-try { SRC = lf(fs.readFileSync(new URL('../../src/reorg/beforeExport.ts', import.meta.url), 'utf8')); } catch { SRC = ''; }
+try { SRC = lf(fs.readFileSync(new URL('../../src/reorg/beforeExportRules.ts', import.meta.url), 'utf8')); } catch { SRC = ''; }
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -62,7 +62,7 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['BLOCK', 'NOTE', 'QUIET']) ok(`${k} on the real beforeExport.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExport.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['BLOCK', 'NOTE', 'QUIET']) ok(`${k} on the real beforeExportRules.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExportRules.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 // the mutants: [name, the check it must turn red, the rewrite]
 const MUT = [
