@@ -11,6 +11,7 @@
 // COUNT   B3  (the Wrizors' chrome scale pass 3, REAL, Nov 21 4:00 pm) in the light room the readout's "page n of m" under the page reads 4.5:1 or better on
 //             the room it sits on (spec: the quiet G4 #5E666E, 4.75:1; it read #878E9C, 3.0:1)
 //         MUT-B3  the light reading at #878E9C turns B3's test red
+//         B4  (Fable, Nov 21 4:07 pm: "4.5:1 or better on light and dark") in the dark room the same readout reads 4.5:1 or better on its room
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/machina-brass-chosen.mjs
 process.env.WS_MACHINA2 = process.env.WS_MACHINA2 || 'default';
@@ -61,12 +62,16 @@ await withHarness(async (app) => {
   // FIXTURE (Nov 21, B3): the Part is 30 paragraphs long, so the readout counts its pages. No assertion changes to B1 and B2.
   await open(app, '12:00');
   const light = await app.evalJs(READ);
-  const count = await app.evalJs("(() => { const c = document.querySelector('.wz-pagecount'); if (!c) return null; let g = null; for (let n = c.parentElement; n && !g; n = n.parentElement) { const bg = getComputedStyle(n).backgroundColor; if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') g = bg; } return { text: (c.textContent || '').trim(), color: getComputedStyle(c).color, ground: g || getComputedStyle(document.body).backgroundColor, room: document.documentElement.getAttribute('data-machina2-room') }; })()");
+  const COUNT = "(() => { const c = document.querySelector('.wz-pagecount'); if (!c) return null; let g = null; for (let n = c.parentElement; n && !g; n = n.parentElement) { const bg = getComputedStyle(n).backgroundColor; if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') g = bg; } return { text: (c.textContent || '').trim(), color: getComputedStyle(c).color, ground: g || getComputedStyle(document.body).backgroundColor, room: document.documentElement.getAttribute('data-machina2-room') }; })()";
+  const count = await app.evalJs(COUNT);
   await open(app, '23:00');
   const dark = await app.evalJs(READ);
+  const countDark = await app.evalJs(COUNT);
   console.log('BRASS-CHOSEN READINGS ' + JSON.stringify({ light, dark, count }));
   const b3 = (c) => !!c && c.room === 'light' && /page \d+ of \d+/i.test(c.text) && contrast(c.color, c.ground) >= 4.5;
   ok('B3 in the light room the readout\'s "page n of m" reads 4.5:1 or better on the room it sits on', b3(count), count && { ...count, ratio: +contrast(count.color, count.ground).toFixed(2) });
+  ok('B4 in the dark room the readout\'s "page n of m" reads 4.5:1 or better on the room it sits on', !!countDark && countDark.room === 'dark' && /page \d+ of \d+/i.test(countDark.text) && contrast(countDark.color, countDark.ground) >= 4.5,
+    countDark && { ...countDark, ratio: +contrast(countDark.color, countDark.ground).toFixed(2) });
   const faint = count ? { ...count, color: 'rgb(135, 142, 156)' } : null;
   ok('MUT-B3 the light reading at #878E9C turns B3\'s test red', !!faint && faint.color !== count.color && !b3(faint), faint);
   // SUPERSEDED (Nov 21, before this file's first green; Actions 44958991137 and 44959200615 on 147c939b / 83a35151): B1 measured every chosen option against the drawer panel's OWN background, which reads transparent (the drawer's ground is
@@ -84,7 +89,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 5;   // 3 + B3 + MUT-B3 (the Wrizors' pass 3 REAL, Nov 21)
+const EXPECTED = 6;   // + B4, the dark room (Fable, 4:07 pm)   // 3 + B3 + MUT-B3 (the Wrizors' pass 3 REAL, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nMACHINA-BRASS-CHOSEN VERIFY: PASS (${checks.length} checks)`
