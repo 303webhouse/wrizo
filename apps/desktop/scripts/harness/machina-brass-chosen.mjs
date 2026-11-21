@@ -44,7 +44,7 @@ async function open(app, clock) {
   await sleep(900);
 }
 const b1b = (r) => !!r && r.room === 'light' && r.chosen.length >= 2 && r.chosen.every((c) => contrast(c.color, c.ground) >= 7 && c.shadow.includes(BRASS) && c.shadow.includes(INK));
-const b1 = !!r && r.room === 'light' && r.chosen.length >= 2 && r.chosen.every((c) => contrast(c.color, r.ground) >= 7 && c.shadow.includes(BRASS) && c.shadow.includes(INK));
+const b1 = (r) => !!r && r.room === 'light' && r.chosen.length >= 2 && r.chosen.every((c) => contrast(c.color, r.ground) >= 7 && c.shadow.includes(BRASS) && c.shadow.includes(INK));
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
