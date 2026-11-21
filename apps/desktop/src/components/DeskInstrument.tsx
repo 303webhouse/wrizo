@@ -2,7 +2,8 @@ import { useWritingSettings } from '../store/writingSettings';
 import { ProgressBar, useGoalProgress, WORD_GOAL } from './WritingIncentives';
 import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
-import { RunStrip } from './RunStrip';
+import { RunStrip, useRunStripActive } from './RunStrip';
+import { PageCount } from './PageCount';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
 // (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
@@ -26,6 +27,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   glitch?: boolean;
 }) {
   const jacked = useJacked();
+  const runOn = useRunStripActive(text);
   // Both children self-gate on the settings (RhizomeField already did, and
   // still does, verbatim) — rendered as SIBLINGS rather than as a ternary so
   // the rhizome's own mount lifecycle is byte-identical to pre-M4: toggling
@@ -40,7 +42,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
       {FLUX3 && glitch && !jacked && <FluxRoomGround />}   {/* Jacked In is the whole window (the corridor covers the room): the room's ground and its drifting points are not drawn behind it */}
       {glitch && <FluxBurstEdge unitCount={unitCount} />}   {/* Wire In's own: self-gated on Flux and a running Wire In, no flag */}
       {glitch && <FluxCheckpointPop unitCount={unitCount} />}   {/* likewise: the CHECKPOINT letters and the pop */}
-      <DeskGoalLane unitCount={unitCount} />
+      <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />
     </>
   );
 }
@@ -53,21 +55,25 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
 // it. Time / Drawer / Off keep the framed home they have today (none): the
 // brief names the bar-and-rhizome PAIR, and giving the other three metrics a
 // framed home is a different question from the one SV15 answered.
-function DeskGoalLane({ unitCount }: { unitCount: number }) {
+function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; entryId: string; runShown: boolean }) {
   const settings = useWritingSettings();
   const theme = useTheme();
   // The SAME pure hook the bar itself calls, on the SAME unit the host
   // already computes — the M2 precedent (RhizomeField.tsx's own header) for
   // "one celebration grammar, two consumers", not a second timing engine.
   const { frac, celebrating } = useGoalProgress(unitCount, WORD_GOAL);
-  if (settings.progress !== 'words') return null;
+  // PAGE BREAKS (spec draft 3, section 3): the count is shown in all three themes - after the word count (Arbor, Flux), right of the Run's count
+  // (Machina, drawn by RunStrip), and where neither is drawn, alone, centred under the page
+  const count = <PageCount entryId={entryId} />;
+  const alone = <div className="desk-frame-instrument wz-pagecount-alone" data-style="count">{count}</div>;
+  if (settings.progress !== 'words') return runShown ? null : alone;
   // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
   // below stays exactly as it is for every other case (th-machina-source M19 reads its gate)
   if (FLUX3 && theme === 'flux' && settings.progressStyle === 'bar') {
     return (
       <div className="desk-frame-instrument" data-style={settings.progressStyle}>
         <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
-        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} />
+        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={count} />
       </div>
     );
   }
@@ -84,8 +90,10 @@ function DeskGoalLane({ unitCount }: { unitCount: number }) {
           label={`${unitCount} word${unitCount === 1 ? '' : 's'}`}
           metricLabel="words"
           samePageLine={theme !== 'flux'}   /* Flux carries the line in its page frame's header readouts instead */
+          labelAfter={<><span className="wz-pagecount-sep" aria-hidden="true"> · </span>{count}</>}
         />
       )}
+      {!(settings.progressStyle === 'bar' && theme !== 'machina') && !runShown && <div className="wz-pagecount-alone-inline">{count}</div>}
     </div>
   );
 }

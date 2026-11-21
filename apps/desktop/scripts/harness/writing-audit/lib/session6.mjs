@@ -137,7 +137,9 @@ export async function main({ title }) {
     await run('TW4', '#76 part 2: in a Typewriter the line is hidden with its count row', async (fails, notes) => {
       const pid = `wa-warn4-${Date.now().toString(36)}`;
       await mkPage(pid, 'Base. ');
-      await ev(`localStorage.setItem('wrizo-typewriter-page-${pid}', 'on')`);
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value is read by nothing; the page is in the Typewriter by being in Free Write. The original line, verbatim:
+      // await ev(`localStorage.setItem('wrizo-typewriter-page-${pid}', 'on')`);
+      await ev(`localStorage.setItem('wrizo-mode-page-${pid}', 'journal')`);
       await openA(pid);
       await tabBd();
       await sleep(4500);

@@ -1,5 +1,6 @@
 import type { Box, JournalEntry } from '../../types';
 import { firstLine } from '../../store/entryText';
+import { liveBoxes } from '../../store/boxTombstones';
 import { getDrawers, getJournalEntry } from '../../store/persistence';
 import { partsOfDoc } from '../partsSeam';
 import { listOf, NOTEBOOK, projectOfEntry, unfiledMembers, type RailDoc } from '../railData';
@@ -52,7 +53,7 @@ function boardName(b: JournalEntry): string { return firstLine(b.text ?? '').tri
 function boardHits(b: JournalEntry, q: string): Hit[] {
   const name = boardName(b);
   const out: Hit[] = findAll(name, q).map((at) => ({ key: hitKey(b.id, null, at), entryId: b.id, boxId: null, at, len: q.length, text: name }));
-  for (const box of (b.boxes ?? []) as Box[]) {
+  for (const box of liveBoxes(b.boxes) as Box[]) {   // a deleted card (a tombstone) is not a hit; box-tombstones T11 counts raw `.boxes` reads
     if (box.kind !== 'text') continue;
     const title = (box as Box & { title?: string }).title ?? '';
     const words = [title, box.text ?? ''].filter(Boolean).join(' · ');

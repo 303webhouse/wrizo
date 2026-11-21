@@ -7,6 +7,7 @@ import { variationOn, pacedFrac, shootClass } from '../arbor2/shoots';   // ARBO
 import { isArbor2 } from '../arbor2/flag';
 import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
 import { ArborVines, type Room } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
+import { liveQueryAll, registerLiveSite } from '../store/liveDom';
 
 // the goal rhizome: shoots grow out of existing stems, flash brass at the goal and leave a seed; drawn behind the page and clipped from the rail, strip, header and open menus; ambient, framed stage only [RhizomeField §1]
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
@@ -30,6 +31,10 @@ const LIVE_CHROME = [
   '.desk-frame-corkboard',
 ];
 
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the chrome it keeps clear of is always the live chrome
+registerLiveSite('rhizome.rects', () => [...STABLE_CHROME, ...LIVE_CHROME].flatMap((sel) => liveQueryAll(sel)));
+
 function isShown(el: Element): boolean {
   let node: Element | null = el;
   while (node && node !== document.documentElement) {
@@ -46,7 +51,7 @@ function isShown(el: Element): boolean {
 function rectsInStage(selectors: string[], stage: DOMRect): Rect[] {
   const out: Rect[] = [];
   for (const sel of selectors) {
-    for (const el of document.querySelectorAll(sel)) {
+    for (const el of liveQueryAll(sel)) {
       if (el.closest('.brand-mark')) continue;
       if (!isShown(el)) continue;
       const r = el.getBoundingClientRect();

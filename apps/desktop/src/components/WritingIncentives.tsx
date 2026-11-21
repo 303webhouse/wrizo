@@ -103,13 +103,14 @@ interface ProgressBarProps {
   metricLabel: string;      // "words" / "session"
   hidden?: boolean;         // Off metric — render nothing (glow still warms via `m` elsewhere)
   rightSlot?: React.ReactNode; // e.g. page number, timer readout
+  labelAfter?: React.ReactNode; // PAGE BREAKS: the page count, right after the word count (spec draft 3, section 3)
   samePageLine?: boolean;   // #76: this is the page's own count row, so the "open in another window" line stands last in it
 }
 
 // `hidden` suppresses the track + word/time label (the "Off" progress metric)
 // while still rendering the meta row, so a rightSlot (page number, opt-in
 // timer) can show on its own — matches the pre-existing off-but-timer-on case.
-export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rightSlot, samePageLine }: ProgressBarProps) {
+export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rightSlot, labelAfter, samePageLine }: ProgressBarProps) {
   const pct = celebrating ? 100 : Math.max(0, Math.min(100, frac * 100));
   // TH2 Slice 2 — Flux restyles this SAME bar (canon §9): lime fill, blue
   // caret notch in flight; on celebrate, an ignition sweep + 14-spark burst
@@ -140,7 +141,7 @@ export function ProgressBar({ frac, celebrating, label, metricLabel, hidden, rig
         </div>
       )}
       <div className="mode-pmeta">
-        <span>{hidden ? '' : label}</span>
+        <span>{hidden ? '' : label}{labelAfter}</span>
         <span className="mode-pmetric">
           {rightSlot}
           {!hidden && <span>{metricLabel}</span>}

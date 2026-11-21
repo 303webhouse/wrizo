@@ -5,10 +5,21 @@ import { goalCount, useWritingGoal } from '../store/writingGoal';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { useGoalProgress } from './WritingIncentives';
 import { SamePageLine } from './SamePageNotice';
+import { PageCount } from './PageCount';
 
 // Run, Machina's only progress instrument (not behind the style slot): twenty units, an orange notch on the unit in progress, the whole strip orange at the goal; sparks under NEUTRAL only; fixed counts and angles; a still state under reduced motion [RunStrip §1]
 const UNITS = 20;
 const BURST_ANGLES = [-90, -64, -38, -12, 12, 38, 64, 90];
+
+/** True when the Run strip draws (the same gate RunStrip reads). */
+export function useRunStripActive(text: string): boolean {
+  const theme = useTheme();
+  const settings = useWritingSettings();
+  const goal = useWritingGoal();
+  void text;
+  const n = goal?.n ?? 0;
+  return theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0;
+}
 
 export function RunStrip({ text }: { text: string }) {
   const theme = useTheme();
@@ -19,7 +30,7 @@ export function RunStrip({ text }: { text: string }) {
   const n = goal?.n ?? 0;
   const count = goal ? goalCount(text, goal) : 0;
   const { frac, celebrating } = useGoalProgress(count, n);
-  const active = theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0;
+  const active = useRunStripActive(text);   // ONE gate (DeskInstrument's lane reads it too, for where the page count stands)
   if (!active) return null;
 
   const done = celebrating ? UNITS : Math.min(UNITS, Math.floor(frac * UNITS));
@@ -40,6 +51,7 @@ export function RunStrip({ text }: { text: string }) {
         )}
       </div>
       <div className="machina-run-count">{shown} / {n}</div>
+      <span className="wz-pagecount-div" aria-hidden="true" /><PageCount />   {/* PAGE BREAKS (spec draft 3, section 3): the open page's count, right of the Run's count */}
       <SamePageLine />
     </div>
   );

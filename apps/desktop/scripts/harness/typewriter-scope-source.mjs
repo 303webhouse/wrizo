@@ -32,6 +32,8 @@ const pageEditorSrc = read('pages/PageEditor.tsx');
 const modeStageSrc = read('components/ModeStage.tsx');
 const sliverSrc = read('components/Sliver.tsx');
 const scriptEditorSrc = read('components/ScriptEditor.tsx');
+// the source with its comments stripped: a SUPERSEDED note quoting the old line verbatim must not satisfy (or be mutated in place of) the live line
+const noComments = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 
 // --- the live checks, against the real tree -----------------------------
 // WIRE IN (Nov 12): typewriterForPage now opens with `if (getTheme() === 'flux') return false;` (the paper Typewriter is retired in Flux), after one comment line; the rest of the body is unchanged
@@ -57,17 +59,31 @@ function checkReaderUsesPageScope(text, label, pattern) {
     pattern.test(text), '(no match)');
 }
 
-checkTypewriterForPage(writingSettingsSrc, '(writingSettings)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// checkTypewriterForPage(writingSettingsSrc, '(writingSettings)');
+ok('(writingSettings): typewriterForPage [Free Write = Typewriter successor] answers false for every page and reads no storage (comments stripped: the body is `return false;`)',
+  /export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*return false;\s*\}/.test(noComments(writingSettingsSrc)), '(no match)');
+{ const fn = (noComments(writingSettingsSrc).match(/export function enterPageTypewriter\([\s\S]*?\n\}/) || [''])[0], fn2 = (noComments(writingSettingsSrc).match(/export function setTypewriterExplicit\([\s\S]*?\n\}/) || [''])[0];
+  ok('(writingSettings): enterPageTypewriter and setTypewriterExplicit [Free Write = Typewriter successor] write NOTHING (comments stripped: no writePageTypewriter, no setWritingSettings in either body)',
+    !!fn && !!fn2 && !/writePageTypewriter|setWritingSettings|localStorage/.test(fn + fn2), (fn + fn2).slice(0, 240)); }
 checkMirrorGone(writingSettingsSrc, '(writingSettings)');
 checkReaderUsesPageScope(pageEditorSrc, 'PageEditor.tsx applyRailFormat', /if \(typewriterForPage\(id, textRef\.current\.trim\(\)\.length === 0\)\) return;\s*\/\/ PHASE 1 \(S4\) \/ typewriter-scope/);
 checkReaderUsesPageScope(pageEditorSrc, 'PageEditor.tsx applyLensKey (Outline Tab/Enter gate)', /if \(typewriterForPage\(id, textRef\.current\.trim\(\)\.length === 0\)\) return false;\s*\/\/ typewriter-scope/);
 checkReaderUsesPageScope(pageEditorSrc, 'PageEditor.tsx outlineKeysRef Tab/keyup gates', /outlineKeysRef\.current && !typewriterForPage\(id, textRef\.current\.trim\(\)\.length === 0\)\) return;/g);
-checkReaderUsesPageScope(modeStageSrc, 'ModeStage.tsx typewriterOn', /const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)/);
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// checkReaderUsesPageScope(modeStageSrc, 'ModeStage.tsx typewriterOn', /const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)/);
+ok('ModeStage.tsx typewriterRun [Free Write = Typewriter successor]: Free Write runs the Typewriter in every theme and Draft never does; Flux keeps its Wire In rule (comments stripped)',
+  /const typewriterRun = stageTheme === 'flux' \? fluxJack && mode === 'journal' : mode === 'journal';/.test(noComments(modeStageSrc)) && !/typewriterForPage|settings\.typewriter/.test(noComments(modeStageSrc)), '(no match, or the old reads are still there)');
 // WIRE IN (Nov 12): the page-less branch of typewriterOn (Free Write, pageId-less callers) is off in Flux too - no surface of Flux runs the paper Typewriter
 const MS_PAGELESS_FLUX = /:\s*stageTheme !== 'flux' && \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/;
-ok('ModeStage.tsx typewriterOn [Wire In]: the page-less branch is off in Flux (`stageTheme !== \'flux\' &&`) - the paper Typewriter is retired in Flux, everywhere', MS_PAGELESS_FLUX.test(modeStageSrc), '(no match)');
-checkReaderUsesPageScope(sliverSrc, 'Sliver.tsx formatLocked', /const formatLocked = content\.kind === 'draft' \? typewriterForPage\(content\.pageId, content\.pageEmpty\) : settings\.typewriter;/);
-checkReaderUsesPageScope(sliverSrc, 'Sliver.tsx SliverInstrumentRow typewriterOn', /const typewriterOn = pageId != null \? typewriterForPage\(pageId, pageEmpty \?\? false\) : settings\.typewriter;/);
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// ok('ModeStage.tsx typewriterOn [Wire In]: the page-less branch is off in Flux (`stageTheme !== \'flux\' &&`) - the paper Typewriter is retired in Flux, everywhere', MS_PAGELESS_FLUX.test(modeStageSrc), '(no match)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// checkReaderUsesPageScope(sliverSrc, 'Sliver.tsx formatLocked', /const formatLocked = content\.kind === 'draft' \? typewriterForPage\(content\.pageId, content\.pageEmpty\) : settings\.typewriter;/);
+ok('Sliver.tsx formatLocked [Free Write = Typewriter successor]: the Format group is locked on every surface but Draft (comments stripped), and reads no stored switch',
+  /const formatLocked = content\.kind !== 'draft';/.test(noComments(sliverSrc)) && !/typewriterForPage|settings\.typewriter|setTypewriterExplicit/.test(noComments(sliverSrc)), '(no match, or a switch read is still there)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// checkReaderUsesPageScope(sliverSrc, 'Sliver.tsx SliverInstrumentRow typewriterOn', /const typewriterOn = pageId != null \? typewriterForPage\(pageId, pageEmpty \?\? false\) : settings\.typewriter;/);
 
 // pageId/pageEmpty actually threaded from both 'draft' content constructors.
 ok('PageEditor.tsx: sliverContent carries this page\'s own pageId/pageEmpty for the "draft" kind',
@@ -92,12 +108,18 @@ function mutant(name, run) {
 }
 
 // (M1) enterPageTypewriter's mirror comes back — the exact pre-fix shape.
-mutant('enterPageTypewriter mirrors into the shared field again', () => {
-  const mutated = mutate(writingSettingsSrc,
-    'export function enterPageTypewriter(id: string, empty: boolean): void {\n  const saved = readPageTypewriter(id);\n  if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n}',
-    'export function enterPageTypewriter(id: string, empty: boolean): void {\n  const saved = readPageTypewriter(id);\n  const on = saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n  setWritingSettings({ typewriter: on });\n  if (saved == null) writePageTypewriter(id, on);\n}');
-  const fn = (mutated.match(/export function enterPageTypewriter\([\s\S]*?\n\}/) || [''])[0];
-  ok('(M) enterPageTypewriter mirrors into the shared field again: the proof goes RED', /setWritingSettings\(\{\s*typewriter:/.test(fn), fn.slice(0, 200));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('enterPageTypewriter mirrors into the shared field again', () => {
+//   const mutated = mutate(writingSettingsSrc,
+//     'export function enterPageTypewriter(id: string, empty: boolean): void {\n  const saved = readPageTypewriter(id);\n  if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n}',
+//     'export function enterPageTypewriter(id: string, empty: boolean): void {\n  const saved = readPageTypewriter(id);\n  const on = saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n  setWritingSettings({ typewriter: on });\n  if (saved == null) writePageTypewriter(id, on);\n}');
+//   const fn = (mutated.match(/export function enterPageTypewriter\([\s\S]*?\n\}/) || [''])[0];
+//   ok('(M) enterPageTypewriter mirrors into the shared field again: the proof goes RED', /setWritingSettings\(\{\s*typewriter:/.test(fn), fn.slice(0, 200));
+// });
+mutant('enterPageTypewriter writes a page value again [Free Write = Typewriter successor]', () => {
+  const fn0 = (noComments(writingSettingsSrc).match(/export function enterPageTypewriter\([\s\S]*?\n\}/) || [''])[0];
+  const mutated = fn0.replace(/\{\s*\}\s*$/, '{ writePageTypewriter(_id, true); }');
+  ok('(M) enterPageTypewriter writes a page value again: the "writes NOTHING" read goes RED (the live body is clean, the mutated one is not)', !/writePageTypewriter/.test(fn0) && /writePageTypewriter/.test(mutated) && mutated !== fn0, fn0.slice(0, 200));
 });
 
 // (M2) applyRailFormat reverts to reading the shared field.
@@ -120,22 +142,34 @@ mutant('applyRailFormat reverts to the shared `typewriter` field', () => {
 //     /const typewriterOn = \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(mutated), '(reverted shape present)');
 // });
 // ------------------------------------------------------------------
-mutant('ModeStage.tsx typewriterOn reverts to the shared field for Draft too [Wire In successor]', () => {
-  const mutated = mutate(modeStageSrc,
-    "const typewriterOn = mode === 'drafting' && pageId != null\n    ? typewriterForPage(pageId, words === 0)\n    : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;",
-    "const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;");
-  ok('(M) ModeStage.tsx typewriterOn reverts to the shared field for Draft too [Wire In successor]: the proof goes RED',
-    /const typewriterOn = \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(mutated)
-    && !/const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)/.test(mutated), '(reverted shape present)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('ModeStage.tsx typewriterOn reverts to the shared field for Draft too [Wire In successor]', () => {
+//   const mutated = mutate(modeStageSrc,
+//     "const typewriterOn = mode === 'drafting' && pageId != null\n    ? typewriterForPage(pageId, words === 0)\n    : stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;",
+//     "const typewriterOn = (mode === 'journal' || mode === 'drafting') && settings.typewriter;");
+//   ok('(M) ModeStage.tsx typewriterOn reverts to the shared field for Draft too [Wire In successor]: the proof goes RED',
+//     /const typewriterOn = \(mode === 'journal' \|\| mode === 'drafting'\) && settings\.typewriter;/.test(mutated)
+//     && !/const typewriterOn = mode === 'drafting' && pageId != null\s*\?\s*typewriterForPage\(pageId, words === 0\)/.test(mutated), '(reverted shape present)');
+// });
+mutant('ModeStage.tsx typewriterRun reads the shared switch again [Free Write = Typewriter successor]', () => {
+  const live = noComments(modeStageSrc);
+  const mutated = live.replace("const typewriterRun = stageTheme === 'flux' ? fluxJack && mode === 'journal' : mode === 'journal';", "const typewriterRun = (mode === 'journal' || mode === 'drafting') && settings.typewriter;");
+  ok('(M) ModeStage.tsx typewriterRun reads the shared switch again: the proof goes RED', mutated !== live && /settings\.typewriter/.test(mutated) && !/const typewriterRun = stageTheme === 'flux'/.test(mutated), '(reverted shape present)');
 });
 
 // (M4) Sliver's formatLocked reverts to the bare hook read for Draft too.
-mutant('Sliver.tsx formatLocked reverts to the shared field for Draft too', () => {
-  const mutated = mutate(sliverSrc,
-    "const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;",
-    "const formatLocked = settings.typewriter;");
-  ok('(M) Sliver.tsx formatLocked reverts to the shared field for Draft too: the proof goes RED',
-    /const formatLocked = settings\.typewriter;/.test(mutated), '(reverted shape present)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('Sliver.tsx formatLocked reverts to the shared field for Draft too', () => {
+//   const mutated = mutate(sliverSrc,
+//     "const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;",
+//     "const formatLocked = settings.typewriter;");
+//   ok('(M) Sliver.tsx formatLocked reverts to the shared field for Draft too: the proof goes RED',
+//     /const formatLocked = settings\.typewriter;/.test(mutated), '(reverted shape present)');
+// });
+mutant('Sliver.tsx formatLocked reads the shared switch again [Free Write = Typewriter successor]', () => {
+  const live = noComments(sliverSrc);
+  const mutated = live.replace("const formatLocked = content.kind !== 'draft';", 'const formatLocked = settings.typewriter;');
+  ok('(M) Sliver.tsx formatLocked reads the shared switch again: the proof goes RED', mutated !== live && /const formatLocked = settings\.typewriter;/.test(mutated), '(reverted shape present)');
 });
 
 // (M5) typewriterForPage itself loses its own saved-value precedence
@@ -151,24 +185,43 @@ mutant('Sliver.tsx formatLocked reverts to the shared field for Draft too', () =
 //   ok('(M) typewriterForPage ignores its own saved value: the proof goes RED', !/readPageTypewriter\(id\)/.test(fn), fn);
 // });
 // ------------------------------------------------------------------
-mutant('typewriterForPage ignores its own saved value [Wire In successor]', () => {
-  const mutated = mutate(writingSettingsSrc,
-    "  if (getTheme() === 'flux') return false;\n  const saved = readPageTypewriter(id);\n  return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n}",
-    "  if (getTheme() === 'flux') return false;\n  return empty ? THEME_CONFIG[getTheme()].typewriterDefault : false;\n}");
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('typewriterForPage ignores its own saved value [Wire In successor]', () => {
+//   const mutated = mutate(writingSettingsSrc,
+//     "  if (getTheme() === 'flux') return false;\n  const saved = readPageTypewriter(id);\n  return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);\n}",
+//     "  if (getTheme() === 'flux') return false;\n  return empty ? THEME_CONFIG[getTheme()].typewriterDefault : false;\n}");
+//   const fn = (mutated.match(/export function typewriterForPage\([\s\S]*?\n\}/) || [''])[0];
+//   ok('(M) typewriterForPage ignores its own saved value [Wire In successor]: the proof goes RED', !/readPageTypewriter\(id\)/.test(fn) && !TWFP_WI.test(mutated), fn);
+// });
+mutant('typewriterForPage reads this page\'s saved value again [Free Write = Typewriter successor]', () => {
+  const live = noComments(writingSettingsSrc);
+  const mutated = live.replace(/(export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*)return false;/, '$1return readPageTypewriter(_id) === true;');
   const fn = (mutated.match(/export function typewriterForPage\([\s\S]*?\n\}/) || [''])[0];
-  ok('(M) typewriterForPage ignores its own saved value [Wire In successor]: the proof goes RED', !/readPageTypewriter\(id\)/.test(fn) && !TWFP_WI.test(mutated), fn);
+  ok('(M) typewriterForPage reads this page\'s saved value again: the "answers false, reads no storage" read goes RED', mutated !== live && /readPageTypewriter/.test(fn) && !/\{\s*return false;\s*\}/.test(fn), fn);
 });
 
 // (M6, Wire In) typewriterForPage loses its Flux early return (a stored ON would run the retired paper Typewriter in Flux again) - the successor read of its body (TWFP_WI) must go RED.
-mutant('typewriterForPage loses its Flux early return [Wire In successor]', () => {
-  const mutated = mutate(writingSettingsSrc, "  if (getTheme() === 'flux') return false;\n  const saved = readPageTypewriter(id);", '  const saved = readPageTypewriter(id);');
-  ok('(M) typewriterForPage loses its Flux early return: the proof goes RED', TWFP_WI.test(writingSettingsSrc) && !TWFP_WI.test(mutated), '(guard gone, the successor read no longer matches)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('typewriterForPage loses its Flux early return [Wire In successor]', () => {
+//   const mutated = mutate(writingSettingsSrc, "  if (getTheme() === 'flux') return false;\n  const saved = readPageTypewriter(id);", '  const saved = readPageTypewriter(id);');
+//   ok('(M) typewriterForPage loses its Flux early return: the proof goes RED', TWFP_WI.test(writingSettingsSrc) && !TWFP_WI.test(mutated), '(guard gone, the successor read no longer matches)');
+// });
+mutant('typewriterForPage gives Flux the theme default again [Free Write = Typewriter successor]', () => {
+  const live = noComments(writingSettingsSrc);
+  const mutated = live.replace(/(export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*)return false;/, '$1return THEME_CONFIG[getTheme()].typewriterDefault;');
+  ok('(M) typewriterForPage gives a theme its default again: the "answers false" read goes RED', mutated !== live && !/export function typewriterForPage\(_id: string, _empty: boolean\): boolean \{\s*return false;\s*\}/.test(mutated), '(guard gone)');
 });
 
 // (M7, Wire In) ModeStage's page-less typewriterOn loses its Flux gate (Free Write in Flux would read the shared field again) - the page-less read (MS_PAGELESS_FLUX) must go RED.
-mutant('ModeStage.tsx page-less typewriterOn loses its Flux gate [Wire In]', () => {
-  const mutated = mutate(modeStageSrc, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;");
-  ok('(M) ModeStage.tsx page-less typewriterOn loses its Flux gate: the proof goes RED', MS_PAGELESS_FLUX.test(modeStageSrc) && !MS_PAGELESS_FLUX.test(mutated), '(gate gone, the read no longer matches)');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and the per-page read is retired; the original, verbatim:
+// mutant('ModeStage.tsx page-less typewriterOn loses its Flux gate [Wire In]', () => {
+//   const mutated = mutate(modeStageSrc, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;");
+//   ok('(M) ModeStage.tsx page-less typewriterOn loses its Flux gate: the proof goes RED', MS_PAGELESS_FLUX.test(modeStageSrc) && !MS_PAGELESS_FLUX.test(mutated), '(gate gone, the read no longer matches)');
+// });
+mutant('ModeStage.tsx typewriterRun loses Flux\'s Wire In rule [Free Write = Typewriter successor]', () => {
+  const live = noComments(modeStageSrc);
+  const mutated = live.replace("stageTheme === 'flux' ? fluxJack && mode === 'journal' : mode === 'journal'", "mode === 'journal'");
+  ok('(M) ModeStage.tsx typewriterRun loses Flux\'s Wire In rule (a pageId-less Flux surface would run it): the proof goes RED', mutated !== live && /const typewriterRun = stageTheme === 'flux'/.test(live) && !/const typewriterRun = stageTheme === 'flux'/.test(mutated), '(rule gone)');
 });
 
 const pass = checks.every((c) => c.pass);

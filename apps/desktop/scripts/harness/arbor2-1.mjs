@@ -249,7 +249,20 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
   await pickBar(app, 'Day'); await sleep(150);
   const t2d = await state(app);
   ok('T2 the Room switch overrides the tone in-session (Night, then Day)', t2n.room === 'night' && t2d.room === 'day', JSON.stringify({ n: t2n.room, d: t2d.room }));
-  ok('T2 nothing is stored: localStorage byte-equal before and after every switch', t2d.ls === lsBefore && t2n.ls === lsBefore, '');
+  // PARKED 2026-11-20 (ARBOR, arbor/room-pref). SUPERSEDED by Fable, Nov 19, 11:20 pm: "The room choice (Automatic / Day / Night) is SAVED TO THE ACCOUNT, for Machina
+  // AND Arbor ... Store it as a `room` fact in users.prefs ... No fallback item." A Room pick is now meant to be stored (store/roomPref.ts writes the fact into the
+  // account preferences' existing key), so "byte-equal" can no longer hold. Original, verbatim:
+  // ok('T2 nothing is stored: localStorage byte-equal before and after every switch', t2d.ls === lsBefore && t2n.ls === lsBefore, '');
+  // SUCCESSOR T2b: the ONLY storage change a Room pick makes is the room fact in the prefs key (wrizo-reorg-prefs): { room: { value: 'dark' } } after Night,
+  // 'light' after Day; every other key byte-equal. M-T2b (mutant, LANDED asserted): an unrelated key written beside the pick - T2b's read goes RED.
+  const t2bRead = (ls) => { const all = JSON.parse(ls); const other = JSON.stringify(all.filter(([k]) => k !== 'wrizo-reorg-prefs')); const p = all.find(([k]) => k === 'wrizo-reorg-prefs'); let rec = null; try { rec = p ? JSON.parse(p[1]) : null; } catch { rec = null; } return { other, room: rec && rec.room ? rec.room.value : null, keys: rec ? Object.keys(rec) : [] }; };
+  const t2bOk = (base, n, d) => n.other === base.other && d.other === base.other && n.room === 'dark' && d.room === 'light' && JSON.stringify(d.keys) === JSON.stringify(['room']);
+  const t2b0 = t2bRead(lsBefore), t2bN = t2bRead(t2n.ls), t2bD = t2bRead(t2d.ls);
+  ok(`T2b the only thing a Room pick stores is the room fact in the prefs key (Night -> ${t2bN.room}, Day -> ${t2bD.room}; its facts ${JSON.stringify(t2bD.keys)}); every other key byte-equal`, t2bOk(t2b0, t2bN, t2bD), JSON.stringify({ n: t2bN.room, d: t2bD.room, keys: t2bD.keys, otherSame: t2bN.other === t2b0.other && t2bD.other === t2b0.other }));
+  await app.evalJs("localStorage.setItem('wrizo-mutant-t2b', '1'); true");
+  const t2bM = t2bRead((await state(app)).ls);
+  await app.evalJs("localStorage.removeItem('wrizo-mutant-t2b'); true");
+  ok(`M-T2b (mutant): an unrelated key written beside the pick (LANDED: ${t2bM.other.includes('wrizo-mutant-t2b')}) - T2b's read goes RED`, t2bM.other.includes('wrizo-mutant-t2b') && !t2bOk(t2b0, t2bN, t2bM), '');
 
   // ---- P1 / C1 / L1 / L2 per room, both sizes
   for (const room of ['night', 'day']) {
