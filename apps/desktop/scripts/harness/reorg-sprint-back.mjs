@@ -129,8 +129,8 @@ await withHarness(async (app) => {
   // ok('S10 in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is today\'s Tutor (the composer, the lenses, the Draft asks)',
   //   buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections >= 2 && bb.draftRoster === true, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb }));
   const lensN = await app.evalJs("document.querySelectorAll('.wz-tutor-panel [data-lens]').length");
-  ok('S10 [successor: the lens frame] in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is the lens frame and the composer (two ruled lenses, no Draft asks, no computed sections)',
-    buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections === 0 && bb.draftRoster === false && lensN === 2, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb, lensN }));
+  ok('S10 [successor: the lens frame] in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is the lens frame and the composer (three lenses, no Draft asks, no computed sections)',
+    buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections === 0 && bb.draftRoster === false && lensN === 3, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb, lensN }));
 
   // ---- the switch off ----
   await openPage(app, 'sp-p', 'journal', { reorg: false });

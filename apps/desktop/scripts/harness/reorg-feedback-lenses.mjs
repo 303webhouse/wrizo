@@ -1,14 +1,14 @@
 // THE FEEDBACK LENS FRAME (Fable, Nov 20, 11:15 pm: "your section 3b item 1, the FEEDBACK lens rebuild (Structure / Tone / Consistency, <=3 prompts each, plus Ask Your Own; EDIT adds Usage / Punctuation /
 // Citations above them). Build the frame now; the Wrizors draft the prompts' words for Nick's yes, and you drop them in when ruled."). Nick's F2 and F3 (machina-stage-menus-decide.md, draft 3): BUILD's FEEDBACK
 // is Structure, Tone, Consistency "replacing the asks", each opening to at most three prompts, plus "Ask Your Own"; EDIT adds Usage, Punctuation, Citations above them. Behind ?reorg=1, Machina, on a page.
-// Only RULED words are drawn: Structure's three (Nick's approved asks) and Consistency's two; Tone, Usage, Punctuation and Citations have no ruled prompt yet, so they are not drawn (the frame never shows an
-// empty promise) and appear when the table (reorg/backMenu/feedbackLenses.ts) is given their words. The rules (order, the cap of three, empty lenses undrawn) are proved on a full dummy table by
+// THE WORDS ARE RULED (Nick, Nov 20, 11:43 pm: all 18 prompts and the placeholder, claude/wrizors/feedback-lens-prompts-draft.md draft 2; prompts in sentence case, lens names in Title Case): all six lenses are drawn.
+// [successor to the first frame, which drew only Structure and Consistency with the words ruled so far.] The rules (order, the cap of three, empty lenses undrawn) are proved on a full dummy table by
 // reorg-feedback-lenses-unit.mjs; this file proves what the Back menu draws and does.
-//   FL1  BUILD: FEEDBACK draws the lens frame: Structure and Consistency (the ruled ones), each a disclosure closed by default; today's four-ask roster and the three computed sections (Consistency, Structure, Fragments) are gone
-//   FL2  opening a lens shows its ruled prompts verbatim: Structure three, Consistency two
+//   FL1  BUILD: FEEDBACK draws Structure, Tone, Consistency, each a disclosure closed by default; today's four-ask roster and the three computed sections (Consistency, Structure, Fragments) are gone
+//   FL2  opening a lens shows its three approved prompts verbatim (Structure, Tone, Consistency)
 //   FL3  pressing a prompt STAGES it in the composer, caret at the end, and sends nothing (no request); a second press REPLACES it
-//   FL4  the composer is "Ask Your Own" (the heading), empty it cannot send, staged it can
-//   FL5  EDIT (Revise): the same frame, and a press stages there too (the old asks were BUILD-only)
+//   FL4  the composer is "Ask Your Own" (the heading) with the placeholder "Ask about this Doc…"; empty it cannot send, staged it can
+//   FL5  EDIT (Revise): Usage, Punctuation, Citations ABOVE Structure, Tone, Consistency, each lens's three prompts verbatim, and a press stages there too (the old asks were BUILD-only)
 //   FL6  with the switch off (Machina) today's Consultant stands: the four-ask roster, no lens frame; in Arbor with the switch on, none either
 //   FL7  the dock button and the Bible are still there in BUILD
 //   FL8  SPRINT draws no lens (it keeps its one writing prompt)
@@ -26,8 +26,17 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass, deta
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
 
-const STRUCTURE = ["What's load-bearing here — and what could go?", 'What is the claim here, and where is the evidence?', 'Who is the reader, and what do they need first?'];
-const CONSISTENCY = ['Where does the thread slip?', 'Which term is doing two jobs?'];
+// THE APPROVED WORDS, VERBATIM (feedback-lens-prompts-draft.md draft 2). Citations 2 reads "Are my citations in one style?" until a Doc has a style guide (the draft's own fallback: the Doc's style guide is not built yet).
+const W = {
+  structure: ['Where does my main point first show up?', 'Which paragraph could move or go?', 'Does each Part do one job?'],
+  tone: ['Where does my tone shift?', 'Who does this sound written for?', 'Which lines sound stiffer or looser than the rest?'],
+  consistency: ['Which term is doing two jobs?', 'Where do names, dates or numbers disagree?', 'Where do tense or point of view slip?'],
+  usage: ['Which words am I using wrong?', 'Where am I wordy?', 'Which words do I repeat too much?'],
+  punctuation: ['Where are my commas off?', 'Which sentences run on?', 'Are my quotation marks and apostrophes right?'],
+  citations: ['Which claims need a source?', 'Are my citations in one style?', 'Is every source I cite in my sources list?'],
+};
+const NAMES = { structure: 'Structure', tone: 'Tone', consistency: 'Consistency', usage: 'Usage', punctuation: 'Punctuation', citations: 'Citations' };
+const PLACEHOLDER = 'Ask about this Doc\u2026';
 
 async function seed(app) {
   await app.emulateDpr(1, 1366, 768);
@@ -64,13 +73,14 @@ await withHarness(async (app) => {
   await openPage(app, 'fl-p', 'drafting'); await openDrawer(app); await feedbackTab(app);
   const lenses = await app.evalJs(LENSES);
   const old = await app.evalJs(OLD);
-  ok('FL1 BUILD: FEEDBACK draws the lens frame: Structure and Consistency (the ruled ones), each closed by default; the four-ask roster and the three computed sections are gone',
-    !!lenses && lenses.map((l) => l.id).join() === 'structure,consistency' && lenses.every((l) => l.expanded === 'false' && l.prompts.length === 0) && old.roster === 0 && old.sections.length === 0, { lenses, old });
+  ok('FL1 BUILD: FEEDBACK draws Structure, Tone, Consistency, each closed by default; the four-ask roster and the three computed sections are gone',
+    !!lenses && lenses.map((l) => l.id).join() === 'structure,tone,consistency' && lenses.every((l) => l.expanded === 'false' && l.prompts.length === 0) && old.roster === 0 && old.sections.length === 0, { lenses, old });
 
-  await click(app, '[data-lens="structure"] .wz-lens-head'); await click(app, '[data-lens="consistency"] .wz-lens-head'); await sleep(300);
+  for (const id of ['structure', 'tone', 'consistency']) await click(app, `[data-lens="${id}"] .wz-lens-head`);
+  await sleep(300);
   const open = await app.evalJs(LENSES);
-  ok('FL2 opening a lens shows its ruled prompts verbatim: Structure three, Consistency two',
-    !!open && open[0].expanded === 'true' && open[0].prompts.map(norm).join('|') === STRUCTURE.join('|') && open[1].prompts.map(norm).join('|') === CONSISTENCY.join('|'), open);
+  ok('FL2 opening a lens shows its three approved prompts verbatim (Structure, Tone, Consistency), and the names read in Title Case',
+    !!open && open.length === 3 && open.every((l) => l.expanded === 'true' && l.prompts.map(norm).join('|') === W[l.id].join('|') && norm(l.name).replace(/[\u25B8\u25BE]/g, '') === NAMES[l.id]), open);
 
   // ---- FL3 ----
   await app.evalJs("window.__reqs = 0; const f = window.fetch; window.fetch = function () { window.__reqs += 1; return f.apply(this, arguments); }; const o = XMLHttpRequest.prototype.open; XMLHttpRequest.prototype.open = function () { window.__reqs += 1; return o.apply(this, arguments); }; true");
@@ -83,13 +93,13 @@ await withHarness(async (app) => {
   const reqs = await app.evalJs('window.__reqs');
   const logAfter = await app.evalJs("document.querySelectorAll('.wz-tutor-convo-log .wz-tutor-msg').length");
   ok('FL3 a press STAGES the prompt in the composer (caret at the end) and sends nothing; a second press REPLACES it',
-    !!s1 && norm(s1.v) === STRUCTURE[0] && s1.at === s1.len && !!s2 && norm(s2.v) === CONSISTENCY[1] && reqs === 0 && logAfter === logBefore, { s1, s2, reqs, logBefore, logAfter });
+    !!s1 && norm(s1.v) === W.structure[0] && s1.at === s1.len && !!s2 && norm(s2.v) === W.consistency[1] && reqs === 0 && logAfter === logBefore, { s1, s2, reqs, logBefore, logAfter });
 
   // ---- FL4 ----
-  const own = await app.evalJs("(() => ({ head: (document.querySelector('.wz-tutor-convo > .wz-tutor-h') || {}).textContent, sendOn: !document.querySelector('.wz-tutor-convo-send').disabled }))()");
+  const own = await app.evalJs("(() => ({ head: (document.querySelector('.wz-tutor-convo > .wz-tutor-h') || {}).textContent, ph: (document.querySelector('.wz-tutor-convo-input') || {}).placeholder, sendOn: !document.querySelector('.wz-tutor-convo-send').disabled }))()");
   await app.evalJs("(() => { const i = document.querySelector('.wz-tutor-convo-input'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, ''); i.dispatchEvent(new Event('input', { bubbles: true })); })()"); await sleep(300);
   const emptied = await app.evalJs("!document.querySelector('.wz-tutor-convo-send').disabled");
-  ok('FL4 the composer is headed "Ask Your Own"; staged it can send, empty it cannot', norm(own.head) === 'Ask Your Own' && own.sendOn === true && emptied === false, { own, emptied });
+  ok('FL4 the composer is headed "Ask Your Own" with the placeholder "Ask about this Doc…"; staged it can send, empty it cannot', norm(own.head) === 'Ask Your Own' && own.ph === PLACEHOLDER && own.sendOn === true && emptied === false, { own, emptied });
 
   // ---- FL7 ----
   const keep = await app.evalJs("(() => ({ dock: !!document.querySelector('.wz-tutor-dock-btn'), convo: !!document.querySelector('.wz-tutor-convo-log') }))()");
@@ -97,12 +107,14 @@ await withHarness(async (app) => {
 
   // ---- FL5 ----
   await openPage(app, 'fl-p', 'revise'); await openDrawer(app); await feedbackTab(app);
+  for (const id of ['usage', 'punctuation', 'citations', 'structure', 'tone', 'consistency']) await click(app, `[data-lens="${id}"] .wz-lens-head`);
+  await sleep(300);
   const editLenses = await app.evalJs(LENSES);
-  await click(app, '[data-lens="structure"] .wz-lens-head'); await sleep(300);
-  await app.evalJs("document.querySelectorAll('[data-lens=\"structure\"] [data-lens-prompt]')[1]?.click()"); await sleep(400);
+  await app.evalJs("document.querySelectorAll('[data-lens=\"usage\"] [data-lens-prompt]')[1]?.click()"); await sleep(400);
   const e1 = await app.evalJs("(document.querySelector('.wz-tutor-convo-input') || {}).value");
   const editOld = await app.evalJs(OLD);
-  ok('FL5 EDIT (Revise): the same frame, no roster, and a press stages there too', !!editLenses && editLenses.map((l) => l.id).join() === 'structure,consistency' && norm(e1) === STRUCTURE[1] && editOld.roster === 0, { editLenses: editLenses && editLenses.map((l) => l.id), e1, editOld });
+  ok('FL5 EDIT (Revise): Usage, Punctuation, Citations above Structure, Tone, Consistency, every prompt verbatim; no roster; a press stages there too',
+    !!editLenses && editLenses.map((l) => l.id).join() === 'usage,punctuation,citations,structure,tone,consistency' && editLenses.every((l) => l.prompts.map(norm).join('|') === W[l.id].join('|')) && norm(e1) === W.usage[1] && editOld.roster === 0, { ids: editLenses && editLenses.map((l) => l.id), e1, editOld });
 
   // ---- FL8 ----
   await openPage(app, 'fl-p', 'journal'); await openDrawer(app); await feedbackTab(app);
@@ -120,7 +132,7 @@ await withHarness(async (app) => {
   const read = (f) => fs.readFileSync(path.join(SRC, f), 'utf8');
   const code = ['components/Tutor.tsx', 'reorg/backMenu/LensPanel.tsx', 'reorg/backMenu/feedbackLenses.ts'].map((f) => (fs.existsSync(path.join(SRC, f)) ? read(f) : '').replace(/\/\/.*$/gm, '')).join('\n');
   const lex = read('store/lexicon/canonical/chrome.ts');
-  const words = [...STRUCTURE, ...CONSISTENCY, 'Ask Your Own', 'Structure', 'Consistency', 'Tone', 'Usage', 'Punctuation', 'Citations'];
+  const words = [...Object.values(W).flat(), PLACEHOLDER, 'Ask Your Own', ...Object.values(NAMES)];
   const inCode = words.filter((w) => code.includes(`'${w}'`) || code.includes(`"${w}"`) || code.includes(`>${w}<`));
   const missing = words.filter((w) => !lex.includes(`"${w}"`) && !lex.includes(`'${w}'`));
   ok('FL9 every prompt and lens name is a lexicon word, none written into the components', inCode.length === 0 && missing.length === 0, { inCode, missing });

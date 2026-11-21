@@ -126,8 +126,8 @@ await withHarness(async (app) => {
   // ok('T2: the Feedback tab is today\'s Tutor, moved whole - the same classes and the same controls as the Consultant tab with the switch off',
   //   !!onBody && !!offBody && onBody.composer && JSON.stringify(onBody.classes) === JSON.stringify(offBody.classes) && onBody.controls === offBody.controls, JSON.stringify({ onBody, offBody }));
   const lensOn = await app.evalJs("(() => ({ lenses: [...document.querySelectorAll('.wz-tutor-panel [data-lens]')].map((s) => s.getAttribute('data-lens')), roster: document.querySelectorAll('.wz-tutor-panel .wz-tutor-draft-roster').length, convoHead: (document.querySelector('.wz-tutor-convo > .wz-tutor-h') || {}).textContent || null }))()");
-  ok('T2 [successor: the lens frame]: the Feedback tab is the lens frame and the composer headed "Ask Your Own" (the lenses Structure and Consistency, no four-ask roster); with the switch off the Consultant tab is untouched (its composer)',
-    !!onBody && !!offBody && onBody.composer && JSON.stringify(lensOn.lenses) === JSON.stringify(['structure', 'consistency']) && lensOn.roster === 0 && lensOn.convoHead === 'Ask Your Own' && offBody.composer, JSON.stringify({ lensOn, offBody }));
+  ok('T2 [successor: the lens frame]: the Feedback tab is the lens frame and the composer headed "Ask Your Own" (the lenses Structure, Tone and Consistency, no four-ask roster); with the switch off the Consultant tab is untouched (its composer)',
+    !!onBody && !!offBody && onBody.composer && JSON.stringify(lensOn.lenses) === JSON.stringify(['structure', 'tone', 'consistency']) && lensOn.roster === 0 && lensOn.convoHead === 'Ask Your Own' && offBody.composer, JSON.stringify({ lensOn, offBody }));
 
   // ---- ASSETS -------------------------------------------------------------------------------------------------------------------------
   await tab(app, 'links');
