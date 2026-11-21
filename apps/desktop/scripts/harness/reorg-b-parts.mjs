@@ -21,6 +21,8 @@
 //         R2  the Part she is on wears the brass bar (a default colour, or none); on a coloured Part (wb-3, slot c) the row wears its tile's
 //             tint and its name reads 4.5:1 or better on it
 //         R3  wb-1's row carries [data-part-assets="wb-1"] reading 3 (its Assets tab's rows); wb-2 has none (no assets)
+//         R4  (Nov 20, POLISH's reading, Actions 44870378376) every row draws inside its own box (nothing past its edge, so nothing under the
+//             link badge), and a press at the badge's centre reaches the badge
 // STAGES  T1  EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither (New Part only)
 // WORDS   W1  every new word is a lexicon key (terms.ts, the canonical table, used in the source); Machina's in Title Case
 //
@@ -224,6 +226,18 @@ await withHarness(async (app) => {
   ok('R3 wb-1\'s row carries [data-part-assets="wb-1"] reading 3 (its Assets tab\'s rows), with words for a screen reader; wb-2 has none',
     !!badge && /\b3\b/.test(badge.b1 || '') && !!badge.b1label && /3/.test(badge.b1label) && !badge.b2, badge);
 
+  // R4 (Nov 20; POLISH's reading, Actions 44870378376: in the Sliver at 1920 a row's word count ran past its box and under the link badge, the
+  // row being position:relative, so a press at the badge's centre landed on the row and opened the Part). A child's rect is read, not what is
+  // painted: a clip alone (overflow:hidden) would still leave the words past the edge, and this stays red.
+  const fit = await app.evalJs(`(() => { const l = ${L}; if (!l) return null; const rows = [...l.querySelectorAll('li[data-part-li] > .reorg-parts-row')];
+    const each = rows.map((r) => { const b = r.getBoundingClientRect(); const out = [...r.children].filter((c) => c.getBoundingClientRect().right > b.right + 0.5).map((c) => String(c.className));
+      const nm = r.querySelector('.reorg-parts-name'); return { id: r.getAttribute('data-part-row'), w: Math.round(b.width), sw: r.scrollWidth, cw: r.clientWidth, out, name: nm ? Math.round(nm.getBoundingClientRect().width) : null }; });
+    const g = l.querySelector('[data-part-assets="wb-1"]'); let reach = null, hit = null;
+    if (g) { const r = g.getBoundingClientRect(); const x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); reach = !!x && (x === g || g.contains(x)); hit = x ? x.tagName + '.' + String(x.className).slice(0, 40) : null; }
+    return { n: rows.length, spill: each.filter((o) => o.out.length || o.sw > o.cw + 1), widths: each.map((o) => o.w), names: each.map((o) => o.name), reach, hit }; })()`);
+  ok('R4 every row draws inside its own box (nothing past its edge, nothing under the link badge), and a press at the badge\'s centre reaches the badge',
+    !!fit && fit.n >= 4 && fit.spill.length === 0 && fit.reach === true, fit);
+
   // ---- STAGES ----------------------------------------------------------------------------------------------------------------------------
   await openAt(app, 'wb-1', 'revise');
   const e1 = { kind: await app.evalJs(KIND), st: null };
@@ -241,15 +255,25 @@ await withHarness(async (app) => {
   const canon = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
   const mach = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'overrides', 'machina.ts'), 'utf8');
   const used = ['reorg/PartsList.tsx', 'reorg/DocKindMenu.tsx'].map((f) => fs.existsSync(path.join(SRC, f)) ? fs.readFileSync(path.join(SRC, f), 'utf8') : '').join('\n');
+  // ORIGINAL, SUPERSEDED Nov 21 (the kind menu's Special Parts are drawn from reorg/docKinds.ts, six of them, the sources Part wearing the style guide's word: the menu no longer draws the two words the old list did, so those two keys are
+  // declared but not drawn there). The original, verbatim:
+  // const need = ['reorgDocKindStandard', 'reorgDocKindScreenplay', 'reorgDocKindAria', 'reorgDocStyleGuide', 'reorgDocPageSetup', 'reorgDocSpecialParts', 'reorgDocPresets',
+  //   'reorgSpecialTitle', 'reorgSpecialBibliography', 'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
+  // const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
+  // ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
   const need = ['reorgDocKindStandard', 'reorgDocKindScreenplay', 'reorgDocKindAria', 'reorgDocStyleGuide', 'reorgDocPageSetup', 'reorgDocSpecialParts', 'reorgDocPresets',
-    'reorgSpecialTitle', 'reorgSpecialBibliography', 'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
-  const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
+    'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
+  const gone = (src) => need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !src.includes(`'${k}'`));
+  const missing = gone(used);
   const title = ['reorgDocStyleGuide: \'Style Guide\'', 'reorgDocPageSetup: \'Page Setup\'', 'reorgDocSpecialParts: \'Special Parts\'', 'reorgPartsStructure: \'Structure\''].filter((s) => !canon.includes(s) && !mach.includes(s));
-  ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
+  ok('W1 [successor] every word the menu and the list draw is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
+  // the successor's mutant: the Doc menu stops drawing one of its words (its key taken out of the source it reads); the check must go red, and the cut must have LANDED
+  const mutated = used.split("'reorgDocPresets'").join("'x'");
+  ok('W1 (mutant) a word the menu stops drawing turns the check RED (the cut landed)', mutated !== used && gone(mutated).includes('reorgDocPresets'), { landed: mutated !== used, red: gone(mutated) });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 12;
+const EXPECTED = 14;   // 13 + R4 (Nov 20)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`
