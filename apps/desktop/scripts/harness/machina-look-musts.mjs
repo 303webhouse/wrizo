@@ -12,7 +12,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { withHarness } from '../runtime-verify.mjs';
+// FIXTURE (Nov 20, before this file's first green; Actions 44837454359 still read data-machina2 null): the driver pins ?machina2=0 for any file that
+// does not ASK for the look (runtime-verify.mjs, Machina's pin); this file asks, as arbor-bug108.mjs asks for Arbor's. No assertion changes.
+process.env.WS_MACHINA2 = process.env.WS_MACHINA2 || 'default';
+const { withHarness } = await import('../runtime-verify.mjs');
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(HERE, '..', '..', 'src');
