@@ -76,6 +76,14 @@ try { await withHarness(async (app) => {
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"bb-d\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
     await splashGone();
+    // FIXTURE (Nov 21; Chat 1, train E6 pair 44934821926: MUT-outside [machina/light] and MUT-outside-power red on both legs; the same bytes, machina/look
+    // c207bd2e, PASS in E4's pair at 08:2x-08:5xZ and FAIL 2/62 alone at 19:13Z, Actions 44939687309): MACHINA'S ROOM FOLLOWS THE CLOCK TOO since Machina's look
+    // (machina2/room.ts: Nick's pick, Nov 1, day 07:00-19:00 local), and by day its light room's stage behind the board is the paper's colour, so the pixel
+    // half of MUT-outside is BLIND by day exactly as Arbor's was on Nov 19 (veil-off pixel [108,109,110] by day against [46,48,50] by night; the outside
+    // share 0.84/0.82/0.82 against 1.80/1.75/1.76). Machina's room is pinned to night with the look's own harness clock (window.machina2Clock, in memory,
+    // never stored; absent where the look is off, and in Arbor and Flux, which this leaves as they were). No assertion changes.
+    const machinaRoom = await ev("window.machina2Clock ? window.machina2Clock('23:00') : null");
+    if (theme === 'machina') console.log(`FOG-A FIXTURE [${theme}/${tone}] Machina's room pinned to night: ${machinaRoom}`);
     await sleep(900);
   };
   const openCard = async () => {
