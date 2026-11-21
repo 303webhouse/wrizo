@@ -38,10 +38,13 @@ await withHarness(async (app) => {
     await app.evalJs(`location.hash = '#/page/${id}'`);
     await app.waitFor(`!!document.querySelector(${JSON.stringify(LABEL)})`, { label: 'count row', timeout: 12000 });
     await sleep(1200);
-    const read = async (label) => {
-      const info = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(LABEL)}); if (!s) return null; const r = s.getBoundingClientRect(); const root = document.documentElement;
-        return { framed: !!s.closest('.desk-frame-instrument'), text: s.textContent, color: getComputedStyle(s).color, l: r.left, t: r.top, w: r.width, h: r.height, theme: root.getAttribute('data-theme'), tone: root.getAttribute('data-page'), arbor2: root.hasAttribute('data-arbor2'), search: location.search }; })()`);
-      if (!info || !(info.w > 4 && info.h > 4)) { reads[`${tone}-${label}`] = { error: 'no label box', info }; return; }
+    // the box: 'span' = the whole label (today's reader); 'words' = the word count's own text node only (ROW-*-C, Nov 20: the label now carries " · " and the
+    // page count after the words, in the count's own colour by design, so the whole span is no longer one colour)
+    const read = async (label, box = 'span') => {
+      const info = await app.evalJs(`(() => { const s = document.querySelector(${JSON.stringify(LABEL)}); if (!s) return null; const tn = [...s.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+        const rg = ${JSON.stringify(box)} === 'words' && tn ? (() => { const g = document.createRange(); g.selectNodeContents(tn); return g; })() : null; const r = (rg || s).getBoundingClientRect(); const root = document.documentElement;
+        return { framed: !!s.closest('.desk-frame-instrument'), text: s.textContent, words: tn ? tn.textContent : null, box: ${JSON.stringify(box)}, color: getComputedStyle(s).color, l: r.left, t: r.top, w: r.width, h: r.height, theme: root.getAttribute('data-theme'), tone: root.getAttribute('data-page'), arbor2: root.hasAttribute('data-arbor2'), search: location.search }; })()`);
+      if (!info || !(info.w > 4 && info.h > 4)) { reads[`${tone}-${label}${box === 'words' ? '-w' : ''}`] = { error: 'no label box', info }; return; }
       const clip = { x: Math.max(0, Math.floor(info.l) - 3), y: Math.max(0, Math.floor(info.t) - 3), width: Math.ceil(info.w) + 6, height: Math.ceil(info.h) + 6, scale: 1 };
       const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip })).data;
       const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0); const D = x.getImageData(0, 0, c.width, c.height).data;
@@ -60,12 +63,13 @@ await withHarness(async (app) => {
         let peak2 = desk2, best2 = 1; for (let i = 0; i < D.length; i += 4) { const p = [D[i], D[i + 1], D[i + 2]]; const k = cr(p, desk2); if (k > best2) { best2 = k; peak2 = p; } }
         return { w: c.width, h: c.height, desk, deskShare: +(count.get(deskKey) / (D.length / 4)).toFixed(2), peak, peakContrast: +best.toFixed(2), computedContrast: comp ? +cr(comp, desk).toFixed(2) : null,
           desk2, ringN: ring.length, ringFlat: +ringFlat.toFixed(2), peak2, peakContrast2: +best2.toFixed(2), computedContrast2: comp ? +cr(comp, desk2).toFixed(2) : null }; })()`);
-      reads[`${tone}-${label}`] = { ...info, px };
+      reads[`${tone}-${label}${box === 'words' ? '-w' : ''}`] = { ...info, px };
     };
     await read('now');
+    await read('now', 'words');
     // the OLD colour as a mutant: --text-low #80766A, forced over the fix
     await app.evalJs(`(() => { const s = document.createElement('style'); s.id = 'mut-old'; s.textContent = ':root .mode-pmeta{ color:${OLD} !important; }'; document.head.appendChild(s); })()`);
-    await sleep(200); await read('old');
+    await sleep(200); await read('old'); await read('old', 'words');
     await app.evalJs("document.getElementById('mut-old').remove()"); await sleep(150);
   }
   // ROW-SCOPE live: under Flux and Machina a probe row (the same classes, in the body) still draws that theme's own --text-low, never the Arbor colour
@@ -99,14 +103,24 @@ for (const t of TONES) {
   // PARKED (SUPERSEDED by ROW-PIXELS-B, Nov 11): an instrument fault, not the colour. Actions run 43154584284 (b3997146) drew the glyph rgb(160,146,127) (#9C9081 within 4) at 5.45:1, but the desk
   // under the row is grained: its commonest exact colour covered 10% of the box, under this reader's 25% premise, so it went red on a sound page. Kept verbatim:
   // ok(`ROW-PIXELS ${t}: read from the drawn pixels of its own box, the glyph drew ${TARGET} (within 12 a channel) and stands 4.5:1 or better on the drawn desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast + ':1' : 'n/a'})`, pixelsOk(cell(t)), JSON.stringify(cell(t)));
-  ok(`ROW-PIXELS-B ${t}: read from the drawn pixels, the desk around the label (the ring's median, 90%+ of it within 12 a channel) and the glyph drew ${TARGET} (within 12 a channel), the label 4.5:1 or better on that desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast2 + ':1' : 'n/a'})`, pixelsOk2(cell(t)), JSON.stringify(cell(t)));
+  // PARKED (SUPERSEDED by ROW-PIXELS-C, Nov 20 - NICK RULED via Fable, 3:15 pm: the count row reads "p. 1 of 1" in every theme). Train C's pair 44818849039
+  // (5e820dbb): the dark leg's fullest pixel was the PAGE COUNT's (rgb(187,171,140), its own #B9AA8C by design), not the words', because this reader boxes the
+  // whole label span, which now carries " · p. 1 of 1" after the words. The colour is sound (computed 5.98:1); the one-colour premise of the box is not. Verbatim:
+  // ok(`ROW-PIXELS-B ${t}: read from the drawn pixels, the desk around the label (the ring's median, 90%+ of it within 12 a channel) and the glyph drew ${TARGET} (within 12 a channel), the label 4.5:1 or better on that desk (printed: ${cell(t) && cell(t).px ? cell(t).px.computedContrast2 + ':1' : 'n/a'})`, pixelsOk2(cell(t)), JSON.stringify(cell(t)));
+  ok(`ROW-PIXELS-C ${t}: read from the drawn pixels of the WORD COUNT's own box ("${cell(t, 'now-w') ? cell(t, 'now-w').words : '?'}"), the ring desk flat and the glyph drew ${TARGET} (within 12 a channel), 4.5:1 or better on that desk (printed: ${cell(t, 'now-w') && cell(t, 'now-w').px ? cell(t, 'now-w').px.computedContrast2 + ':1' : 'n/a'})`,
+    !!cell(t, 'now-w') && cell(t, 'now-w').box === 'words' && /^\d+ words?$/.test((cell(t, 'now-w').words || '').trim()) && pixelsOk2(cell(t, 'now-w')), JSON.stringify(cell(t, 'now-w')));
 }
 // PARKED 2026-11-16 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default and the harness pins today's Arbor with ?arbor2=0
 // for a file that doesn't ask for the redesign; ?arbor2=0 IS the live Arbor build this premise means, so "no ?arbor2 flag" read literally is
 // falsified by the pin - Actions 43811706392: arbor2 false, the label right, only the query read). Original, verbatim:
 // ok('ROW-LIVE the fixture was the live Arbor build: theme plateau, no ?arbor2 flag, the Page tone as asked, the label is the count row ("<n> word(s)")', TONES.every((t) => { const r = cell(t); return r && r.theme === 'plateau' && r.arbor2 === false && !/arbor2/.test(r.search || '') && r.tone === t && /^\d+ words?$/.test((r.text || '').trim()); }), JSON.stringify(TONES.map((t) => cell(t) && { theme: cell(t).theme, tone: cell(t).tone, arbor2: cell(t).arbor2, text: cell(t).text, framed: cell(t).framed })));
 // SUCCESSOR ROW-LIVE-B: the same premise, the pin's ?arbor2=0 allowed (any other arbor2 value still fails it; data-arbor2 must still be absent)
-ok('ROW-LIVE-B the fixture was today\'s Arbor build: theme plateau, the redesign off (no ?arbor2 flag, or the harness\'s pin ?arbor2=0), the Page tone as asked, the label is the count row ("<n> word(s)")', TONES.every((t) => { const r = cell(t); return r && r.theme === 'plateau' && r.arbor2 === false && !/arbor2=(?!0\b)/.test(r.search || '') && r.tone === t && /^\d+ words?$/.test((r.text || '').trim()); }), JSON.stringify(TONES.map((t) => cell(t) && { theme: cell(t).theme, tone: cell(t).tone, arbor2: cell(t).arbor2, text: cell(t).text, framed: cell(t).framed })));
+// PARKED (SUPERSEDED by ROW-LIVE-C, Nov 20 - NICK RULED via Fable, 3:15 pm: the count row reads "p. 1 of 1" in every theme): the label is no longer "<n> word(s)"
+// alone but "<n> word(s) · p. N of M" (pair 44818849039: "1 word · p. 1 of 1"). Verbatim:
+// ok('ROW-LIVE-B the fixture was today\'s Arbor build: theme plateau, the redesign off (no ?arbor2 flag, or the harness\'s pin ?arbor2=0), the Page tone as asked, the label is the count row ("<n> word(s)")', TONES.every((t) => { const r = cell(t); return r && r.theme === 'plateau' && r.arbor2 === false && !/arbor2=(?!0\b)/.test(r.search || '') && r.tone === t && /^\d+ words?$/.test((r.text || '').trim()); }), JSON.stringify(TONES.map((t) => cell(t) && { theme: cell(t).theme, tone: cell(t).tone, arbor2: cell(t).arbor2, text: cell(t).text, framed: cell(t).framed })));
+// SUCCESSOR ROW-LIVE-C: the same premise; the label is the word count, " · ", then Arbor's page count ("p. N of M"), and its word-count text node alone is "<n> word(s)"
+const liveC = (r, t) => !!r && r.theme === 'plateau' && r.arbor2 === false && !/arbor2=(?!0\b)/.test(r.search || '') && r.tone === t && /^\d+ words? · p\. \d+ of \d+$/.test((r.text || '').trim()) && /^\d+ words?$/.test((r.words || '').trim());
+ok('ROW-LIVE-C the fixture was today\'s Arbor build: theme plateau, the redesign off (no ?arbor2 flag, or the pin ?arbor2=0), the Page tone as asked, the label is the count row ("<n> word(s) · p. N of M")', TONES.every((t) => liveC(cell(t, 'now-w'), t)), JSON.stringify(TONES.map((t) => cell(t, 'now-w') && { theme: cell(t, 'now-w').theme, tone: cell(t, 'now-w').tone, arbor2: cell(t, 'now-w').arbor2, text: cell(t, 'now-w').text, words: cell(t, 'now-w').words })));
 const CSS = fs.readFileSync(path.join(HERE, '..', '..', 'src', 'styles', '12-studio-chrome.css'), 'utf8');
 const rules = CSS.split('\n').filter((l) => /\.mode-pmeta\b/.test(l) && /9C9081/i.test(l));
 ok(`ROW-SCOPE the colour lives under [data-theme='plateau'] only: ${rules.length} rule, scoped; Flux and Machina draw their own --text-low there`, rules.length === 1 && /^:root\[data-theme='plateau'\] \.mode-pmeta\{/.test(rules[0].trim())
@@ -122,6 +136,13 @@ ok('MUT-ROW-LAW-B the readers go RED on synthetic bad values: a label under 4.5:
   !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 3.8, ringFlat: 0.95, ringN: 400 } }) && !pixelsOk2({ px: { peak2: rgb(OLD), computedContrast2: 5.4, ringFlat: 0.95, ringN: 400 } })
   && !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.4, ringFlat: 0.6, ringN: 400 } }) && !pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.4, ringFlat: 1, ringN: 0 } })
   && !colourOk({ color: 'rgb(128, 118, 106)' }) && colourOk({ color: 'rgb(156, 144, 129)' }) && pixelsOk2({ px: { peak2: rgb(TARGET), computedContrast2: 5.46, ringFlat: 0.95, ringN: 400 } }), '');
+// the successors' mutants: the old colour forced turns the WORDS' reader red in both tones (on a flat desk); ROW-LIVE-C's predicate goes red on a label
+// with no page count, on Machina's and Flux's words for it, and on a page count that stands in for the word count; and green on the ruled one
+ok(`MUT-ROW-OLD-C the words' pixel reader goes RED on the OLD colour (${OLD}, forced) in both tones, on a desk the reader accepted (ring 90%+ flat)`, TONES.every((t) => { const r = cell(t, 'old-w'); return r && r.px && r.box === 'words' && r.px.ringFlat >= 0.9 && !pixelsOk2(r); }), JSON.stringify(TONES.map((t) => show2(t, 'old-w'))));
+{ const base = { theme: 'plateau', arbor2: false, search: '?arbor2=0', tone: 'dark', words: '1 word' };
+  ok('MUT-ROW-LIVE-C ROW-LIVE-C\'s predicate goes RED on "1 word" (no page count), "1 word · page 1 of 1", "1 word · PG 1/1" and on words that are not a word count; GREEN on "1 word · p. 1 of 1"',
+    !liveC({ ...base, text: '1 word' }, 'dark') && !liveC({ ...base, text: '1 word · page 1 of 1' }, 'dark') && !liveC({ ...base, text: '1 word · PG 1/1' }, 'dark')
+      && !liveC({ ...base, text: '1 word · p. 1 of 1', words: 'p. 1 of 1' }, 'dark') && liveC({ ...base, text: '1 word · p. 1 of 1' }, 'dark'), ''); }
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 console.log(failed.length ? `\nBUG83-COUNT-ROW VERIFY: FAIL - ${failed.length}/${checks.length} failed` : `\nBUG83-COUNT-ROW VERIFY: PASS (${checks.length} checks)`);

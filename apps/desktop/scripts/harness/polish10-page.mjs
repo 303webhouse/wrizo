@@ -184,11 +184,15 @@ await withHarness(async (app) => {
     // P5-ALIGN (ruled (a), Fable Oct 30). The three strokes are on the canvas. Read the ink's bands (one per stroke) in the zoom, leave it (the writer's own control), read again, return, read again.
     const zBands = await app.evalJs(INKBANDS); const zg = await app.evalJs(P5PROBE);
     await app.evalJs("location.hash = '#/'"); await sleep(300);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'off')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'drafting')`);   // leave the zoom: the normal view is Draft
     let nBands = null; let ng = null; let viewNormal = null;
     if (await openPage(app, fid)) { viewNormal = (await setView(app, false)) === false; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(400); nBands = await app.evalJs(INKBANDS); ng = await app.evalJs(P5PROBE); }
     await app.evalJs("location.hash = '#/'"); await sleep(300);
-    await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): a stored per-page Typewriter value no longer zooms or un-zooms a page (read by nothing); the zoom is Free Write and the normal view is Draft. The original line, verbatim:
+    // await app.evalJs(`localStorage.setItem('wrizo-typewriter-page-${fid}', 'on')`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${fid}', 'journal')`);   // back to the zoom: Free Write
     let rBands = null; let rg = null; let viewZoom = null;
     if (await openPage(app, fid)) { viewZoom = (await setView(app, true)) === true; await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(500); rBands = await app.evalJs(INKBANDS); rg = await app.evalJs(P5PROBE); }
     const rel = (bands, g) => (bands && g ? bands.map((b) => (b.top - g.lineTop) / g.scale) : null);
@@ -196,8 +200,12 @@ await withHarness(async (app) => {
     const fmt = (a) => (a ? a.map((x) => x.toFixed(1)).join(', ') : 'none');
     ok(`${tag} P5-ALIGN (premise): the zoom holds three strokes (the first above the line) and the normal view shows two - the stroke above the first line is zoom-only (zoom [${fmt(dz)}], normal [${fmt(dn)}])`,
       !!dz && dz.length === 3 && dz[0] < -20 && !!dn && dn.length === 2 && !!ng && ng.zoom !== 'true', J({ zBands, nBands, viewNormal }));
-    ok(`${tag} P5-ALIGN: the strokes ON and BELOW the first line keep their place relative to the text in both views - ink tops from the line's top in page units, zoom [${fmt(dz && dz.slice(-2))}] vs normal [${fmt(dn)}] (within 2px each)`,
-      !!dz && !!dn && dz.length === 3 && dn.length === 2 && Math.abs(dz[1] - dn[0]) <= 2 && Math.abs(dz[2] - dn[1]) <= 2, J({ zg, ng, zBands, nBands }));
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the two views are two MODES now (the zoom is Free Write, the normal view is Draft), and the two modes lay the first line out a constant few page units apart (Free Write 9.5 and 57.6 against Draft 12.0 and 59.9, Actions 44636596893); a zoom that did not scale the ink would drift by tens. The original check, verbatim:
+    // ok(`${tag} P5-ALIGN: the strokes ON and BELOW the first line keep their place relative to the text in both views - ink tops from the line's top in page units, zoom [${fmt(dz && dz.slice(-2))}] vs normal [${fmt(dn)}] (within 2px each)`,
+    // !!dz && !!dn && dz.length === 3 && dn.length === 2 && Math.abs(dz[1] - dn[0]) <= 2 && Math.abs(dz[2] - dn[1]) <= 2, J({ zg, ng, zBands, nBands }));
+    const offOn = dz && dn && dz.length === 3 && dn.length === 2 ? dz[1] - dn[0] : null; const offBelow = dz && dn && dz.length === 3 && dn.length === 2 ? dz[2] - dn[1] : null;
+    ok(`${tag} P5-ALIGN [Free Write = Typewriter successor]: the strokes ON and BELOW the first line keep their place relative to the text across the two views - the same spacing between them (within 2px) and one constant first-line offset between the modes (ON ${offOn && offOn.toFixed(1)}, BELOW ${offBelow && offBelow.toFixed(1)}: within 2px of each other and no more than 5px) - zoom [${fmt(dz && dz.slice(-2))}] vs normal [${fmt(dn)}]`,
+      offOn != null && Math.abs((dz[2] - dz[1]) - (dn[1] - dn[0])) <= 2 && Math.abs(offOn - offBelow) <= 2 && Math.abs(offOn) <= 5 && Math.abs(offBelow) <= 5, J({ zg, ng, zBands, nBands }));
     ok(`${tag} P5-ALIGN (return): entering the zoom again, all three strokes are back where they were - [${fmt(dr)}] vs [${fmt(dz)}] (within 2px each)`,
       !!dz && !!dr && viewZoom === true && dr.length === 3 && dr.every((d, k) => Math.abs(d - dz[k]) <= 2), J({ rg, rBands, viewZoom }));
     // the parked form's old state, recorded for HARNESS_PARKED=1: the above stroke's top in the normal view equals the zoom's (within 2px) - gone: the normal view's first ink is the ON stroke

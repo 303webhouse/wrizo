@@ -67,7 +67,11 @@ await withHarness(async (app) => {
     if (tabbed) { await app.evalJs("document.querySelector('#wz-sliver-tab-ink').click()"); await sleep(400); }
     if (words > 200) { await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()"); await sleep(700); }
     const g = await app.evalJs(GEOM);
-    ok(`(premise) ${tag}: the page and the INK instrument are there (zoom reads ${g && g.zoom})`, !!g && tabbed && (zoom ? g.zoom === 'true' : g.zoom !== 'true'), JSON.stringify(g));
+    // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter, in every theme; the stored setting this scenario writes to turn it off is read by nothing, so the "plain" page this file measured against the zoom control no longer exists: every Free Write page is the zoom). The original, verbatim:
+    // ok(`(premise) ${tag}: the page and the INK instrument are there (zoom reads ${g && g.zoom})`, !!g && tabbed && (zoom ? g.zoom === 'true' : g.zoom !== 'true'), JSON.stringify(g));
+    // SUCCESSOR: both scenarios read the zoom, whatever the stored Typewriter setting says; the "plain" scenario keeps its measures (the sheet reaches the foot and the pointer is routed to the ink) on the zoomed page, which is the surface a writer has now.
+    ok(`(premise) ${tag}: the page and the INK instrument are there (zoom reads ${g && g.zoom}; Free Write is the Typewriter whatever the stored setting says)`, !!g && tabbed && g.zoom === 'true', JSON.stringify(g));
+    if (!zoom) ok(`(premise-M) ${tag}: the OLD premise (no zoom with the Typewriter stored off) is read FALSE on this page - the successor's rule is the ruling, not a constant`, !!g && !(g.zoom !== 'true'), JSON.stringify({ zoom: g && g.zoom }));
     if (!g || !tabbed) return;
     ok(`K1 ${tag}: the sheet reaches the paper's visible foot (sheet bottom ${Math.round(g.sheet.bottom)} vs ${Math.round(g.foot)}: the scroller's foot or the window's) and the pointer is routed to the ink where stroke B starts (64 px above that foot)`, g.sheet.bottom >= g.foot - 1 && g.hitSheet, JSON.stringify({ hitSheet: g.hitSheet, lastLine: g.lastLine }));
     const footY = g.foot - 24;

@@ -217,11 +217,14 @@ await withHarness(async (app) => {
   await key(app, 'Escape');
   const t2a = await app.evalJs("({ menu: !!document.querySelector('[data-search-menu]'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), tab: document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-selected') })");
   await app.evalJs(click('.wz-tutor-grip')); await sleep(500);
+  const shutFirst = await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open')");
   await app.evalJs(click('[data-top-search]')); await sleep(600);
+  // the search must have been open for its Esc to mean anything (on a tree with no search, both halves below would hold without it)
+  const t2open = await app.evalJs("!!document.querySelector('[data-search-menu]')");
   await key(app, 'Escape');
   const t2b = await app.evalJs("({ menu: !!document.querySelector('[data-search-menu]'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') })");
-  ok('T2: Esc gives the Back menu back on the tab she came from (ASSETS); from the top rail with the menu shut, Esc shuts it',
-    !t2a.menu && t2a.open === 'true' && t2a.tab === 'true' && !t2b.menu && t2b.open === 'false', { t2a, t2b });
+  ok('T2: Esc gives the Back menu back on the tab she came from (ASSETS); from the top rail with the menu shut, Esc shuts it (each time the search was open first)',
+    tAssets.open && !t2a.menu && t2a.open === 'true' && t2a.tab === 'true' && shutFirst === 'false' && t2open && !t2b.menu && t2b.open === 'false', { searchWasOpen: [tAssets.open, t2open], shutFirst, t2a, t2b });
 
   // SAVED
   const pref = await app.evalJs(PREF);

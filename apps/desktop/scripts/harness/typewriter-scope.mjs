@@ -102,8 +102,12 @@ await withHarness(async (app) => {
   // harness in this file family already uses.
   await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()");
   await sleep(400);
-  const scriptTypewriterOn = await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed')");
-  ok('S2 (premise): the new, empty Screenplay page opens with ITS OWN Typewriter on (Arbor default) — the state this bug depends on existing at all', scriptTypewriterOn === 'true', String(scriptTypewriterOn));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft and Screenplay NEVER run the Typewriter and its toggle is gone, so a Screenplay page cannot open with its own Typewriter on; the original S2, verbatim:
+  // const scriptTypewriterOn = await app.evalJs("document.querySelector('[data-mode-toggle=\"typewriter\"]')?.getAttribute('aria-pressed')");
+  // ok('S2 (premise): the new, empty Screenplay page opens with ITS OWN Typewriter on (Arbor default) — the state this bug depends on existing at all', scriptTypewriterOn === 'true', String(scriptTypewriterOn));
+  // successor: the premise is now that the new Screenplay page offers NO Typewriter switch (nothing for S3's leak to come from) and the Draft scroller, where one is mounted, reads off
+  const scriptTypewriterOn = await app.evalJs("JSON.stringify({ toggle: document.querySelector('[data-mode-toggle=\"typewriter\"]') ? 'present' : 'absent', scroll: document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? null })");
+  ok('S2 (premise) [Free Write = Typewriter successor]: the new, empty Screenplay page offers NO Typewriter switch and runs no Typewriter - there is no state of its own for S3 to leak', JSON.parse(scriptTypewriterOn).toggle === 'absent' && JSON.parse(scriptTypewriterOn).scroll !== 'true', String(scriptTypewriterOn));
 
   // S3 — THE REPRO. Back to the Draft page: Ctrl+B must STILL work. This
   // page never asked for Typewriter; its own per-page memory (resolved and
