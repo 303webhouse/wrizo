@@ -22,7 +22,9 @@ const SRC = join(here, '..', 'src');
 const FILES = ['draftFormat.ts', 'markRuns.ts', 'draftDecoration.ts', 'tabChord.ts', 'entryText.ts', 'hiddenMarks.ts', 'fontRoster.ts', 'fontSize.ts'];
 // SUPERSEDED (Nov 2026, Wire In): fontRoster.ts now imports ../flux3/flag (the FLUX3 query flag), so a bundle of the copied store files above cannot resolve it. The scratch dir holds those files flat, so ../flux3/flag is <tmp>/flux3/flag.ts:
 // SIBLINGS are the files outside src/store/ that a listed file imports, copied verbatim to the same relative place. FILES above is unchanged.
-const SIBLINGS = [['flux3', 'flag.ts']];
+// SUPERSEDED (Nov 21, footnotes): draftDecoration.ts now imports ../reorg/flag and ../reorg/footnotes, and draftFormat.ts imports ../reorg/footnotes, so the scratch copy needs them at <tmp>/reorg/ (footnotes.ts imports nothing). Kept verbatim:
+// const SIBLINGS = [['flux3', 'flag.ts']];
+const SIBLINGS = [['flux3', 'flag.ts'], ['reorg', 'flag.ts'], ['reorg', 'footnotes.ts']];
 const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
@@ -286,7 +288,9 @@ function run(mod) {
     const { marksAt, snapCaret, snapCaretAfterClick } = mod;
     const L1 = '**BOLD** *TEST* ~~FINAL~~ (hopefully)';          // his line
     const L2 = 'plain words then **BOLD**';                       // a line that ENDS in a styled word
-    const none = { bold: false, italic: false, underline: false, strike: false };
+    // SUPERSEDED (Nov 21, Sup/Sub: the strip's marks now also name sup and sub, both off where nothing is lit; the four checks that read this expect them). Kept verbatim:
+    // const none = { bold: false, italic: false, underline: false, strike: false };
+    const none = { bold: false, italic: false, underline: false, strike: false, sup: false, sub: false };
     check('CLICK: a click past the end of a line that ends in a bold word lands AFTER its closing marks (the line\'s end), not inside the word', snapCaretAfterClick(L2, L2.length), L2.length);
     check('CLICK: ...and the strip lights NOTHING there', marksAt(L2, L2.length), none);
     check('CLICK: a click just after "BOLD" mid-line (raw 8, after the hidden `**`) stays after the marks - the strip lights nothing', [snapCaretAfterClick(L1, 8), marksAt(L1, snapCaretAfterClick(L1, 8))], [8, none]);
