@@ -4,6 +4,7 @@
 // the source) that must LAND and turn its own check red.
 //   BLOCK   nothing ticked in a Doc of two or more Parts blocks the export and says why; one tick, or a one-Part Doc (which has no ticks), blocks nothing
 //   NOTE    "Parts with no words" counts only the Parts that GO OUT (an empty Part she ticked out is not announced), names them in the Doc's order, and is absent at zero; it never blocks
+//   PLAN    (Nov 21; train E is live, FIX's partOfRow) "Plan rows never attached to a Part" is a count the caller reads (the rows of the open page's Plan with no Part), announced as a note BEFORE "Parts with no words" (the stage menus' order), absent at zero or on a bad count, a whole number, and never a block
 //   ATTACH  (item 5b, Nov 21) the assets she ticked to attach are a REMINDER: a count beside the notes (0 when none), never a block and never a note; with the export blocked (nothing ticked to go out) there is nothing going out to remind of
 //   QUIET   the answer is a pure reading: the same input twice gives the same answer, and the input is not changed
 // Run: node scripts/harness/reorg-bx-unit.mjs   (from apps/desktop; browserless: needs no box turn)
@@ -58,6 +59,14 @@ function suite(src) {
     const a = J(BX.beforeExport(parts, off)), b = J(BX.beforeExport(parts, off));
     R.QUIET = { pass: a === b && before === J(parts) + J([...off]), detail: J({ a, b }) };
   }
+  // PLAN
+  {
+    const two = BX.beforeExport(three, new Set(), 0, 2), kinds = (r) => r.notes.map((n) => n.kind).join(','), one = BX.beforeExport(three, new Set(), 0, 1);
+    const zero = BX.beforeExport(three, new Set(), 0, 0), bad = [-3, NaN, 'x', undefined].map((v) => kinds(BX.beforeExport(three, new Set(), 0, v)));
+    const frac = BX.beforeExport(three, new Set(), 0, 2.9), solo = BX.beforeExport([P(1)], new Set(), 0, 3);
+    const note = (r) => r.notes.find((n) => n.kind === 'planRows');
+    R.PLAN = { pass: kinds(two) === 'planRows,emptyParts' && note(two).count === 2 && note(one).count === 1 && two.blocked === false && kinds(zero) === 'emptyParts' && bad.every((k) => k === 'emptyParts') && note(frac).count === 2 && kinds(solo) === 'planRows' && note(solo).count === 3 && typeof two.attached === 'number', detail: J({ two, one, zero, bad, frac, solo }) };
+  }
   // ATTACH
   {
     const none = run(three, []), two = BX.beforeExport(three, new Set(), 2), blocked = BX.beforeExport(three, new Set(['p1', 'p2', 'p3']), 2), odd = BX.beforeExport(three, new Set(), -1);
@@ -68,7 +77,7 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['BLOCK', 'NOTE', 'ATTACH', 'QUIET']) ok(`${k} on the real beforeExportRules.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExportRules.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['BLOCK', 'NOTE', 'PLAN', 'ATTACH', 'QUIET']) ok(`${k} on the real beforeExportRules.ts`, !!base && base[k] && base[k].pass, base ? base[k].detail : 'beforeExportRules.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 // the mutants: [name, the check it must turn red, the rewrite]
 const MUT = [
@@ -80,6 +89,9 @@ const MUT = [
   ['the attached count is not given at all', 'ATTACH', (t) => t.replace('attached: blocks.length > 0 ? 0 : Math.max(0, Math.trunc(attached))', () => 'attached: 0')],
   ['the attached count is shown while the export is blocked', 'ATTACH', (t) => t.replace('blocks.length > 0 ? 0 : Math.max(0, Math.trunc(attached))', () => 'Math.max(0, Math.trunc(attached))')],
   ['a reminder of the assets blocks the export', 'ATTACH', (t) => t.replace('const blocked = blocks.length > 0', () => 'const blocked = blocks.length > 0 || attached > 0')],
+  ['the Plan rows are announced after the empty Parts', 'PLAN', (t) => t.replace("  if (rows > 0) notes.push({ kind: 'planRows', count: rows });\n", () => '').replace('  const blocked = blocks.length > 0', () => "  if (rows > 0) notes.push({ kind: 'planRows', count: rows });\n  const blocked = blocks.length > 0")],
+  ['a zero count of Plan rows is announced', 'PLAN', (t) => t.replace('if (rows > 0) notes.push', () => 'if (true) notes.push')],
+  ['a Plan row with no Part blocks the export', 'PLAN', (t) => t.replace('const blocked = blocks.length > 0', () => 'const blocked = blocks.length > 0 || notes.some((n) => n.kind === "planRows")')],
   ['an empty Part blocks the export', 'NOTE', (t) => t.replace('const blocked = blocks.length > 0', () => 'const blocked = blocks.length > 0 || notes.length > 0')],
 ];
 for (const [name, key, fn] of MUT) {
