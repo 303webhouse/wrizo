@@ -38,7 +38,7 @@ async function seed(app) {
 async function openPage(app, id, mode, { reorg = true } = {}) {
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs(`window.wrizoTheme.set('machina'); localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&sprint=deck' : '/?arbor2=0'}#/page/${id}')`);   // &sprint=deck: the Consultant is ON by default now (Nov 21, Nick); this file's S4-S10 are the LOCAL DECK's, so they ask for it
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);

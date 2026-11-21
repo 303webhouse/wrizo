@@ -36,6 +36,7 @@ const VALID: { [K in keyof WritingSettings]: (v: unknown) => boolean } = {
   pageScroll: isBool,
   flicker: isBool,
   themeTracker: isBool,
+  consultant: isBool,
 };
 /** The settings this build knows, each of a value it accepts; anything else is left out. */
 export function sanitizeWritingFields(raw: unknown): Partial<WritingSettings> {
