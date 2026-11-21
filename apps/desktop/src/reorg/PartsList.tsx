@@ -8,10 +8,11 @@ import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
 import {
-  ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
+  ensureDoc, isPartColor, joinPart, movePart, partById, partsOfDoc as inkPartsOf, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
 import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { bandAt, isPartDrag, makeDrop, planDrop, DWELL_MS, PART_DRAG, type Band, type DropKind, type Refusal } from './partDrag';
 import { SLOT_WORD, slotLetter } from './colourSlots';
 import { assetCountOf } from './partAssets';
 import { DocKindMenu, type DocMenuHost } from './DocKindMenu';
@@ -99,13 +100,15 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
   useEffect(() => { setLine(null); setOver(null); }, [latest.id]);
   const partWord = (p: { n: number; name: string }) => (parts.length > 1 ? (p.name || t('reorgUntitled')) : fill(t('reorgPartN'), { n: p.n }));
   const onOver = (id: string) => (e: DragEvent) => {
+    if (partOver(id, e)) return;
     if (!isAssetDrag(e.dataTransfer)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'link';
     if (over !== id) setOver(id);
   };
-  const onDrop = (p: { id: string; n: number; name: string }) => (e: DragEvent) => {
+  const onDrop = (p: PartRow) => (e: DragEvent) => {
     setOver(null);
+    if (partDrop(p, e)) return;
     if (!isAssetDrag(e.dataTransfer)) return;
     e.preventDefault();
     const asset = readAssetDrag(e.dataTransfer);
@@ -114,6 +117,75 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     const r = connectAssetToPart(p.id, asset, latest.id);
     if (r.made === 'link') { const id = r.linkId; setLine({ text: fill(t('reorgConnectedLine'), vals), undo: () => { removePageLink(id); } }); }
     else setLine({ text: fill(t(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused'), vals) });
+  };
+  const refusal = (reason: string) => t(reason === 'carries' ? 'reorgPartJoinCarries' : reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo');
+  // DRAG TO MOVE, MERGE AND NEST (reorg plan v2.1 §3b, ARBOR item 1; ./partDrag.ts): a row is dragged in BUILD and EDIT on a Doc of its own; the
+  // row under the pointer names the act (data-drop, and its words for nest, merge and a refusal) and the release makes it through INK's acts.
+  // Nesting is BUILD's (the row menu's In / Out are); a merge arms only on a dwell. The drawer holds the list: the page never moves.
+  const canDrag = menus && !!docId;
+  const dragRef = useRef<string | null>(null);
+  const dwellRef = useRef<{ id: string; since: number; armed: boolean } | null>(null);
+  const [drop, setDrop] = useState<{ id: string; kind: DropKind; why?: Refusal } | null>(null);
+  const clearDrag = () => { dragRef.current = null; dwellRef.current = null; setDrop(null); };
+  const readBand = (e: DragEvent): Band => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); return bandAt(e.clientY, r.top, r.height); };
+  const onDragStart = (p: PartRow) => (e: DragEvent) => {
+    if (!canDrag) return;
+    e.dataTransfer.setData(PART_DRAG, p.id);
+    e.dataTransfer.effectAllowed = 'move';
+    dragRef.current = p.id; dwellRef.current = null;
+    setOpenMenu(null);
+  };
+  // the pointer's dwell on one row's middle: armed once it has held there DWELL_MS (a real drag sends dragover every few tens of ms while it holds)
+  const dwell = (id: string, band: Band): boolean => {
+    if (band !== 'middle') { dwellRef.current = null; return false; }
+    const now = performance.now(), d = dwellRef.current;
+    if (!d || d.id !== id) { dwellRef.current = { id, since: now, armed: false }; return false; }
+    if (!d.armed && now - d.since >= DWELL_MS) d.armed = true;
+    return d.armed;
+  };
+  const partOver = (id: string, e: DragEvent): boolean => {
+    const from = dragRef.current;
+    if (!from || !docId || !isPartDrag(e.dataTransfer)) return false;
+    const band = readBand(e);
+    const plan = planDrop(inkPartsOf(docId), from, id, band, dwell(id, band), stage === 'build');
+    if (plan.kind !== 'none' && plan.kind !== 'no') { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+    else e.dataTransfer.dropEffect = 'none';
+    if (plan.kind === 'none') { if (drop) setDrop(null); return true; }
+    if (!drop || drop.id !== id || drop.kind !== plan.kind || drop.why !== plan.why) setDrop({ id, kind: plan.kind, why: plan.why });
+    return true;
+  };
+  const partDrop = (p: PartRow, e: DragEvent): boolean => {
+    const from = dragRef.current;
+    if (!from || !docId || !isPartDrag(e.dataTransfer)) return false;
+    e.preventDefault();
+    const band = readBand(e);
+    const held = band === 'middle' && !!dwellRef.current && dwellRef.current.id === p.id && dwellRef.current.armed;
+    const moved = parts.find((x) => x.id === from);
+    clearDrag();
+    if (!moved) return true;
+    // a refusal is said and writes nothing: not even her own flush runs for it
+    const plan = planDrop(inkPartsOf(docId), from, p.id, band, held, stage === 'build');
+    if (plan.kind === 'none') return true;
+    if (plan.kind === 'no') { say(plan.why === 'deep' ? fill(t('reorgDragNestNo'), { part: p.name || t('reorgUntitled') }) : refusal(plan.why ?? 'unknown')); return true; }
+    save();
+    const r = makeDrop(docId, from, p.id, band, held, stage === 'build', latest.id);
+    flushNow();
+    const name = (x: PartRow) => x.name || t('reorgUntitled');
+    if (r.done === 'moved') say(fill(t('reorgDragMoved'), { part: name(moved) }));
+    else if (r.done === 'nested') say(fill(t('reorgDragNested'), { part: name(moved), target: name(p) }));
+    else if (r.done === 'merged') say(fill(t('reorgPartsJoinDone'), { n: (inkPartsOf(docId).findIndex((x) => x.id === p.id) + 1) || p.n }), { kind: 'join', token: r.token });
+    else if (r.done === 'merge-open') { const target = getJournalEntry(p.id); if (target) navigate(routeForEntry(target), { state: { [REORG_JOIN_STATE]: from } }); }
+    // tsconfig is strict:false, so r.done does not narrow the union: the refusal is read by its presence
+    else { const why = (r as { why?: Refusal }).why; if (why) say(why === 'deep' ? fill(t('reorgDragNestNo'), { part: name(p) }) : refusal(why)); }
+    return true;
+  };
+  const dropWords = (p: PartRow): string | null => {
+    if (!drop || drop.id !== p.id) return null;
+    const part = p.name || t('reorgUntitled');
+    if (drop.kind === 'nest') return fill(t('reorgDragNest'), { part });
+    if (drop.kind === 'merge') return fill(t('reorgDragMerge'), { part });
+    if (drop.kind === 'no') return drop.why === 'deep' ? fill(t('reorgDragNestNo'), { part }) : refusal(drop.why ?? 'unknown');
+    return null;
   };
   const fresh = () => {
     save();
@@ -149,7 +221,6 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     flushNow();
     setOpenMenu(null);
   };
-  const refusal = (reason: string) => t(reason === 'carries' ? 'reorgPartJoinCarries' : reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo');
   const join = (p: PartRow) => {
     save();
     setOpenMenu(null);
@@ -231,15 +302,18 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
           const menuOpen = openMenu === p.id;
           const assets = assetCountOf(p.id);
           return (
-            <li key={p.id} data-part-li={p.id} data-part-level={p.level} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
+            <li key={p.id} data-part-li={p.id} data-part-level={p.level} data-drop={drop && drop.id === p.id ? drop.kind : undefined} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
                 data-here-bar={on && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.color ? p.color : undefined}
-                onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDragLeave={() => { if (over === p.id) setOver(null); }} onDrop={onDrop(p)}>
+                onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDrop={onDrop(p)}
+                onDragLeave={(e) => { if (e.currentTarget.contains(e.relatedTarget as Node)) return; if (over === p.id) setOver(null); if (drop && drop.id === p.id) setDrop(null); }}
+                draggable={canDrag ? true : undefined} onDragStart={onDragStart(p)} onDragEnd={clearDrag}>
                 <span className="reorg-parts-num">{p.n}</span>
                 <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
+              {dropWords(p) && <span className="reorg-parts-droplabel" data-drop-label="" aria-hidden="true">{dropWords(p)}</span>}
               {assets > 0 && (
                 // the link badge (Decision 2): its count only; POLISH wires its press to open the Assets tab at this Part
                 <span className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}

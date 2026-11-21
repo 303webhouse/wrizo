@@ -268,3 +268,9 @@ reorgTextParagraph=Paragraph
 reorgTextMore=More
 reorgTextSymbols=Insert Symbol
 reorgTextSymbolAria=Insert {symbol}
+# DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20) - PROPOSED placeholder words until the Wrizors word them; no theme overrides them yet
+reorgDragNest=Release to nest under {part}
+reorgDragMerge=Release to merge into {part}
+reorgDragNestNo={part} is as deep as Parts go
+reorgDragMoved={part} moved.
+reorgDragNested={part} is now under {target}.

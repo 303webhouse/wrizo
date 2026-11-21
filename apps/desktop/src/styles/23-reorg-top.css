@@ -167,6 +167,19 @@
 /* AN ASSET ONTO A PART (reorg/assetConnect.ts): a Part row under an asset drag wears a dashed edge (a shape, never colour alone; not brass, which
    marks the Part she is on); the line below the list says what happened, inside the drawer, so the page never moves. */
 [data-theme='machina'] .reorg-parts-row.is-drop{ outline:1px dashed var(--text-hi); outline-offset:-3px; }
+/* DRAG TO MOVE, MERGE AND NEST (reorg/partDrag.ts): the row under the pointer names the act. A move is a line on the edge it lands at; nest a
+   dashed edge, merge a solid brass one; a refusal the quiet ink. The words sit OVER the row (absolute, pointer-transparent): the list never
+   reflows under a drag, and the page never moves. */
+[data-theme='machina'] .reorg-parts-list > li{ position:relative; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='before'] > .reorg-parts-row{ box-shadow:inset 0 2px 0 var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='after'] > .reorg-parts-row{ box-shadow:inset 0 -2px 0 var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='nest'] > .reorg-parts-row{ outline:1px dashed var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='merge'] > .reorg-parts-row{ outline:2px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='no'] > .reorg-parts-row{ outline:1px dashed var(--text-low); outline-offset:-2px; cursor:no-drop; }
+[data-theme='machina'] .reorg-parts-droplabel{ position:absolute; z-index:2; right:6px; bottom:calc(100% - 6px); max-width:calc(100% - 12px); box-sizing:border-box; padding:2px 6px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none; font-family:var(--font-ui); font-size:11px; color:var(--text-hi);
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='no'] > .reorg-parts-droplabel{ color:var(--text-mid); }
 [data-theme='machina'] .reorg-parts-live:empty{ display:none; }
 [data-theme='machina'] .reorg-parts-line{ display:flex; align-items:baseline; gap:8px; padding:8px 4px 2px; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
 [data-theme='machina'] .reorg-parts-line [data-line-undo]{ flex:none; background:none; border:0; padding:0; font:inherit; color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
