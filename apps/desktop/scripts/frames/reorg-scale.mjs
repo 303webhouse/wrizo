@@ -58,7 +58,20 @@ const split = (w) => async (app) => {
   await report(app, `scale-split-${w}`);
 };
 
+// ---- PROTO (item 4, design only: a candidate chrome scale injected as a style, no product change) ----
+const kOf = (w) => Math.max(1, w / 1366);
+const PROTO = (k) => `:root{ --k:${k}; --strip-width: calc(84px * var(--k)); } .desk-frame-strip > *{ zoom: var(--k); } .chrome-top.sprint-nav > *{ zoom: var(--k); } .machina2-nameplate-mark{ zoom: var(--k); } .wz-sliver-panel > *, .wz-tutor-panel > *{ zoom: var(--k); } .wz-split-reader > :not(.wz-split-board), .wz-split-board-bar{ zoom: var(--k); }`;
+const inject = async (app, w) => { await app.evalJs(`(() => { const s = document.createElement('style'); s.id = 'proto-scale'; s.textContent = ${JSON.stringify(PROTO(kOf(w)))}; document.head.appendChild(s); return true; })()`); await app.evalJs("window.dispatchEvent(new Event('resize')); null"); await sleep(900); };
+const ppage = (w) => async (app) => { const ids = await fixture(app); await at(app, w, ids); await inject(app, w); await frontMenu(app); await app.mouseMove(4, 4); await sleep(300); await report(app, `proto-page-${w}`); };
+const psplit = (w) => async (app) => {
+  const ids = await fixture(app); await at(app, w, ids); await inject(app, w);
+  await app.evalJs(`window.wrizoSplit && window.wrizoSplit.open(${q(ids.one)}, { entryId: ${q(ids.notes)} }); null`);
+  await app.waitFor("!!document.querySelector('.wz-split-asset')", { label: 'the split', timeout: 6000 }).catch(() => {});
+  await sleep(900); await app.mouseMove(4, 4); await sleep(300);
+  await report(app, `proto-split-${w}`);
+};
 export default {
   'scale-page-1366': page(1366), 'scale-page-1920': page(1920), 'scale-page-2560': page(2560),
   'scale-split-1366': split(1366), 'scale-split-1920': split(1920), 'scale-split-2560': split(2560),
+  'proto-page-1920': ppage(1920), 'proto-page-2560': ppage(2560), 'proto-split-1920': psplit(1920), 'proto-split-2560': psplit(2560),
 };
