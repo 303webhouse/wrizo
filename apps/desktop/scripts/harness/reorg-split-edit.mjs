@@ -157,6 +157,13 @@ await withHarness(async (app) => {
 
   await app.evalJs(press('[data-split-zoom="in"]')); await sleep(200);
   await app.evalJs(press('[data-split-zoom="in"]')); await sleep(300);
+  // FIXTURE (Nov 21, before this file's first green; Actions 44890996020 read moved 0 at scale 1.563 on both legs): Zoom In zooms about the middle, which
+  // carries Alpha's top-left card wholly out of the canvas's view, so the press landed outside it. A plain wheel on the canvas (a pan; the scale is
+  // untouched) now brings Alpha's corner to 40px inside the view before the drag. No assertion changes.
+  await app.evalJs(`(() => { const b = ${B}; const w = b?.querySelector('[data-split-board-wrap]'); const a = b?.querySelector('[data-split-box="c1"]'); if (!w || !a) return false;
+    const wr = w.getBoundingClientRect(), ar = a.getBoundingClientRect();
+    w.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaX: ar.left - (wr.left + 40), deltaY: ar.top - (wr.top + 40), clientX: wr.left + 10, clientY: wr.top + 10 })); return true; })()`);
+  await sleep(300);
   const z = await app.evalJs(READ);
   const a1 = cardAt(z, 'c1');
   if (a1) await drag(app, a1, 100, 0);
