@@ -109,11 +109,15 @@ const toDraft = async (app) => {
   // PHASE 1 S5 (fixture) - MEASURED, not assumed (Chat 1's run, 2026-10-12: the E3 line-scope successors, the Tab fence and the Bulleted-list control read as if the first Indent/Bullet press
   // did nothing). A fresh chapter page is EMPTY when it first reaches Draft, so under S5 it takes Arbor's default (typewriter ON), which greys and disables the Format group - a disabled
   // button ignores click(), exactly the symptom. The state is read first (and recorded), then turned OFF through the REAL toggle, then read again, so the premise is in the run itself.
-  const twBefore = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // const twBefore = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const twBefore = await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`);
   const fmtLockedBefore = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); })()`);
   await sleep(250);
-  const twAfter = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // const twAfter = await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`);
+  const twAfter = await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`);
   const fmtLockedAfter = await app.evalJs(`document.querySelector('.wz-sliver-fieldset')?.disabled ?? 'absent'`);
   ok('fixture (Phase 1 S5): the Format group is usable (typewriter OFF, via the real toggle) before Format is pressed',
     twAfter === 'false' && fmtLockedAfter === false, JSON.stringify({ twBefore, fmtLockedBefore, twAfter, fmtLockedAfter }));

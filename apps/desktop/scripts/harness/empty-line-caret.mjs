@@ -102,8 +102,13 @@ else {
   }
   ok(`all ${MUTANTS.length} mutations landed and ${MUTANTS.length} were killed`, landed === MUTANTS.length && killed === MUTANTS.length, `${landed} landed / ${killed} killed`);
   // the paths that need a layout, pinned in source
-  ok('P1 one lineHtml feeds every write path: mountRows, replaceRegion, the kept-row compare, the revealed rows (writeRows and revealRowsAtCaret) - no path appends a guard after a row',
-    (src.match(/lineHtml\(/g) || []).length === 5 &&!/\+ \(text\.endsWith\('\\n'\) \? GUARD_HTML : ''\)/.test(src) && !/\(next \? '\\n' : \(lastLine/.test(src), `lineHtml x${(src.match(/lineHtml\(/g) || []).length}`);
+  // SUPERSEDED (Nov 20; Chat 1's control run 44826232522, main + page-breaks alone): page breaks' measure builds its rows through the SAME lineHtml (store/lineRows.ts rowMarkupFor, a sixth call site that appends no guard), so the count of five is no longer the law. Verbatim:
+  // ok('P1 one lineHtml feeds every write path: mountRows, replaceRegion, the kept-row compare, the revealed rows (writeRows and revealRowsAtCaret) - no path appends a guard after a row',
+  //   (src.match(/lineHtml\(/g) || []).length === 5 &&!/\+ \(text\.endsWith\('\\n'\) \? GUARD_HTML : ''\)/.test(src) && !/\(next \? '\\n' : \(lastLine/.test(src), `lineHtml x${(src.match(/lineHtml\(/g) || []).length}`);
+    const p1Law = (s) => (s.match(/lineHtml\(/g) || []).length === 6 && /export function rowMarkupFor\(lines: string\[\], i: number\): string \{ return rowSpan\(lineHtml\(lines, i, null\)\); \}/.test(s)
+      && !/\+ \(text\.endsWith\('\\n'\) \? GUARD_HTML : ''\)/.test(s) && !/\(next \? '\\n' : \(lastLine/.test(s);
+    ok('P1-B one lineHtml feeds every write path: mountRows, replaceRegion, the kept-row compare, the revealed rows and the page measure\'s rows (rowMarkupFor, through lineHtml alone) - no path appends a guard after a row', p1Law(src), `lineHtml x${(src.match(/lineHtml\(/g) || []).length}`);
+    ok('MUT-P1-B the law goes RED on a seventh call site and on a guard appended after a row', !p1Law(src + "\nconst extra = lineHtml(lines, 0, null);") && !p1Law(src + "\nconst bad = body + (text.endsWith('\\n') ? GUARD_HTML : '');"), '');
   ok('P2 the caret point for the end of a newline-ended text is found INSIDE the last row (rowsPointFor looks in R.rows[last], offset 0), not in an editor-level last child',
     /const last = R\.rows\[R\.rows\.length - 1\];\s*const g = last\?\.querySelector\('\.md-eof-guard'\);/.test(src) && !/el\.lastElementChild/.test(src.slice(src.indexOf('export function rowsPointFor'), src.indexOf('export function rowsPointFor') + 900)), '');
   ok('P3 the shadow-line verify reads a row\'s text without its guard (a row that holds the guard still equals its line)', /row\.textContent \?\? ''\)\.split\(EOF_GUARD\)\.join\(''\) !== R\.lines\[i\]/.test(src), '');
@@ -143,6 +148,17 @@ async function part2() {
       const lr = last.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(last).paddingLeft) || 0;
       return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, caretBottom: Math.round(rc.bottom * 10) / 10, rowBottom: Math.round(lr.bottom * 10) / 10, lh: parseFloat(getComputedStyle(last).lineHeight) || null, inLast: last.contains(r.startContainer), rows: rows.length, guards: document.querySelectorAll('${ED} .md-eof-guard').length };
     })()`);
+    // the successors' reader (Nov 20): the caret() reader with the rows and the guards counted OUTSIDE page breaks' measuring copy (.wz-letter-measure)
+    const caretB = () => app.evalJs(`(() => {
+      const sel = getSelection(); if (!sel || !sel.rangeCount) return null;
+      const r = sel.getRangeAt(0); const out = (e) => !e.closest('.wz-letter-measure');
+      const rows = [...document.querySelectorAll('${ED} .wz-row')].filter(out); const last = rows[rows.length - 1]; if (!last) return null;
+      const rects = r.getClientRects(); const rc = rects.length ? rects[0] : r.getBoundingClientRect();
+      const lr = last.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(last).paddingLeft) || 0;
+      return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, inLast: last.contains(r.startContainer), rows: rows.length, guards: [...document.querySelectorAll('${ED} .md-eof-guard')].filter(out).length,
+        // (added Nov 20, for E3-B / E4-B: caret()'s three remaining fields, read the same way on the live page's last row; E1-B and E2-B read none of them)
+        caretBottom: Math.round(rc.bottom * 10) / 10, rowBottom: Math.round(lr.bottom * 10) / 10, lh: parseFloat(getComputedStyle(last).lineHeight) || null };
+    })()`);
     const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? null`);
 
     const up = await open('elc1', 'A title');
@@ -151,26 +167,45 @@ async function part2() {
     await app.typeKeys('\n');
     await sleep(500);
     const c1 = await caret();
-    ok('E1 after Enter on a title the caret is INSIDE the new last row, at its left padding - not at the right edge (the bug put it at the row\'s right end)',
-      !!c1 && c1.inLast === true && Math.abs(c1.x - (c1.rowLeft + c1.pad)) <= 2 && c1.x < c1.rowRight - 100, JSON.stringify(c1));
-    ok('E1 and exactly one guard exists, inside that row', !!c1 && c1.guards === 1 && c1.rows === 2, JSON.stringify(c1));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E1 after Enter on a title the caret is INSIDE the new last row, at its left padding - not at the right edge (the bug put it at the row\'s right end)',
+    //   !!c1 && c1.inLast === true && Math.abs(c1.x - (c1.rowLeft + c1.pad)) <= 2 && c1.x < c1.rowRight - 100, JSON.stringify(c1));
+    // ok('E1 and exactly one guard exists, inside that row', !!c1 && c1.guards === 1 && c1.rows === 2, JSON.stringify(c1));
+    const c1b = await caretB();
+    ok('E1-B after Enter on a title the caret is INSIDE the live page\'s new last row, at its left padding - not at the right edge',
+      !!c1b && c1b.inLast === true && Math.abs(c1b.x - (c1b.rowLeft + c1b.pad)) <= 2 && c1b.x < c1b.rowRight - 100, JSON.stringify(c1b));
+    ok('E1-B and exactly one guard exists on the live page, inside that row', !!c1b && c1b.guards === 1 && c1b.rows === 2, JSON.stringify(c1b));
+    ok('MUT-E1-B the plain reader is RED on the same page (it takes the copy\'s last row and counts its guard) while E1-B\'s is green: the skip is what holds it', !!c1 && !!c1b && (c1.rows > c1b.rows || c1.guards > c1b.guards) && c1b.guards === 1, JSON.stringify({ c1, c1b }));
     await app.typeKeys('\n');
     await sleep(400);
     const c2 = await caret();
-    ok('E2 a second Enter (a blank line, then the empty last row): the caret is again at the left padding of the last row', !!c2 && c2.inLast === true && Math.abs(c2.x - (c2.rowLeft + c2.pad)) <= 2 && c2.rows === 3 && c2.guards === 1, JSON.stringify(c2));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E2 a second Enter (a blank line, then the empty last row): the caret is again at the left padding of the last row', !!c2 && c2.inLast === true && Math.abs(c2.x - (c2.rowLeft + c2.pad)) <= 2 && c2.rows === 3 && c2.guards === 1, JSON.stringify(c2));
+    const c2b = await caretB();
+    ok('E2-B a second Enter (a blank line, then the empty last row): the caret is again at the left padding of the live page\'s last row', !!c2b && c2b.inLast === true && Math.abs(c2b.x - (c2b.rowLeft + c2b.pad)) <= 2 && c2b.rows === 3 && c2b.guards === 1, JSON.stringify(c2b));
     // fx1.mjs tracks the caret line by `ed.lastElementChild`'s bottom (its stand-in for what useTypewriterFade reads). With the guard inside the last row that child is the LAST ROW, whose bottom is the
     // line box's bottom - one half-leading below the caret's own glyph bottom (the guard span used to BE the caret's box). fx1 reads only line-to-line deltas of it, so a constant offset leaves
     // its checks standing; this holds the two claims that make that true: the offset is bounded by half a line, and it does not change from one Enter to the next.
     const off1 = c1 && c1.rowBottom - c1.caretBottom, off2 = c2 && c2.rowBottom - c2.caretBottom;
-    ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
-      !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Actions 44837069382 on 697da898 read off1 -103.8: the plain reader's last row is the copy's, at top -29536 px): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+    //   !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
+    const off1b = c1b && c1b.rowBottom - c1b.caretBottom, off2b = c2b && c2b.rowBottom - c2b.caretBottom;
+    ok('E4-B the live page\'s last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+      !!c1b && !!c2b && c1b.lh > 0 && off1b >= -1 && off1b <= c1b.lh / 2 + 1 && Math.abs(off2b - off1b) <= 1, JSON.stringify({ off1b, off2b, lh: c1b && c1b.lh }));
+    ok('MUT-E4-B the plain reader\'s offset is RED on the same page (the copy\'s last row sits far from the caret) while E4-B\'s is green: the skip is what holds it',
+      !!c1 && !!c1b && c1.lh > 0 && !(off1 >= -1 && off1 <= c1.lh / 2 + 1) && off1b >= -1 && off1b <= c1b.lh / 2 + 1, JSON.stringify({ off1, off1b }));
     await app.typeKeys('Next');
     await sleep(300);
     // the stored text is read AFTER the debounced save lands (the standing lesson: wait on the STORED value, never on elapsed time) - up to 8 s, then read whatever is there
     await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'elc1')) || {}).text) === ${JSON.stringify('A title\n\nNext')}`, { label: 'the typed text has been saved', timeout: 8000 });
     const c3 = await caret();
     const text = await stored('elc1');
-    ok('E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3 && c3.inLast === true && c3.x > c3.rowLeft + c3.pad && c3.x < c3.rowLeft + 200 && c3.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3, text }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Actions 44837069382 on 697da898 read rowLeft -29536.1 and inLast false: the copy's last row): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3 && c3.inLast === true && c3.x > c3.rowLeft + c3.pad && c3.x < c3.rowLeft + 200 && c3.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3, text }));
+    const c3b = await caretB();
+    ok('E3-B typing carries on from the left of the live page\'s last row (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3b && c3b.inLast === true && c3b.x > c3b.rowLeft + c3b.pad && c3b.x < c3b.rowLeft + 200 && c3b.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3b, text }));
+    ok('MUT-E3-B the plain reader is RED on the same page (its last row is the copy\'s, so the caret is not in it) while E3-B\'s is green: the skip is what holds it', !!c3 && !!c3b && c3.inLast === false && c3b.inLast === true, JSON.stringify({ c3, c3b }));
   });
 }
 

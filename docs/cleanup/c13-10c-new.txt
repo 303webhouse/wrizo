@@ -211,3 +211,7 @@ reorgPubPartsHint=Tick what goes out. Move a Part up or down to put it in order.
 reorgPubPartsLabel=Parts, in order, for publishing
 reorgPubUp=Move Part {n} up
 reorgPubDown=Move Part {n} down
+# PAGE BREAKS (ARBOR, train C, Nov 20) - the page count under the page: "p. 2 of 5"; Flux and Machina read their own
+pageOfPages=p. {n} of {m}
+pageOfPages@flux=PG {n}/{m}
+pageOfPages@machina=page {n} of {m}

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { getPref, setPref, subscribePrefs } from '../prefsSaved';
+import { liveQuery, registerLiveSite } from '../../store/liveDom';
 
 // THE SPLIT SCREEN'S STATE (the reorg, phase 4.2, behind ?reorg=1 in Machina; reorg-plan.md section 9, Nick's ruling Nov 10: "a true split screen is allowed, and the page
 // may move when she opts into it"; Nov 19: the asset opens on the RIGHT, at HALF width, with a GRIP to drag).
@@ -78,10 +79,15 @@ export function useSplitWidth(): number {
   return useSyncExternalStore(subscribeSplit, getSplitWidth);
 }
 
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the Typewriter is read from the live page, never the copy (which keeps the page's data attributes)
+const splitTypewriter = (): Element | null => liveQuery('.mode-scroll[data-typewriter="true"], .mode-pagecol[data-zoom="true"]');
+registerLiveSite('split.typewriter', splitTypewriter);
+
 /** Why the split is not offered right now, or null when it is. Free Writing is the Typewriter, always (Nick, Nov 19), and the Typewriter is not available in a split. */
 export function splitBlocked(mode: string | undefined): 'freewrite' | 'typewriter' | null {
   if (mode === 'journal') return 'freewrite';
-  if (typeof document !== 'undefined' && document.querySelector('.mode-scroll[data-typewriter="true"], .mode-pagecol[data-zoom="true"]')) return 'typewriter';
+  if (typeof document !== 'undefined' && splitTypewriter()) return 'typewriter';
   return null;
 }
 
