@@ -50,7 +50,7 @@ const SHEET = `(() => {
     md: !!s.querySelector('[data-pub-export="md"]'), mdOff: !!s.querySelector('[data-pub-export="md"]')?.disabled, txtOff: !!s.querySelector('[data-pub-export="txt"]')?.disabled };
 })()`;
 const TABS = "[...document.querySelectorAll('.reorg-top .desk-mode-tab')].map((b) => b.getAttribute('data-mode-key') + ':' + b.getAttribute('aria-selected')).join(',')";
-const CATCH = "(() => { window.__pbBlobs = []; const B = window.Blob; window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
+const CATCH = "(() => { window.__pbBlobs = []; const B = window.Blob; window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null, stk: String(new Error().stack || '').split('\\n').slice(2, 5).map((s) => s.trim().slice(-70)).join(' < ') }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
 const at = (id) => `location.hash.indexOf('/page/${id}') >= 0`;
 const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if (!b || b.disabled) return false; b.click(); return true; })()`;
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
@@ -278,7 +278,7 @@ await withHarness(async (app) => {
   const after = await app.evalJs("(() => { const tabs = [...document.querySelectorAll('.wz-sliver .wz-drawer-tab')].map((b) => b.getAttribute('data-disabled')); return { anyGrey: tabs.some((x) => x === 'true'), pubparts: !!document.querySelector('.wz-sliver [data-reorg-pubparts]'), textOn: document.querySelector('.wz-sliver #wz-sliver-tab-text')?.getAttribute('data-on') }; })()");
   ok('F5 an order made in the Front menu is the Doc\'s order: the sheet, the file and the stored order agree and no word moved; going back to writing gives TEXT its tab and its body again',
     order === 'pub-3,pub-1,pub-2' && side === order && moved.length === 1 && /^# Budget\n\n## Close\n\nClosing words\.\n\n## Opening\n\nOpening words here\./.test(moved[0].text) && /^pub-3:/.test(stored) && /pub-1=Opening words here\.\nSecond line \*\*bold\*\*\.\|pub-2=Middle words unnamed\.\|pub-3=Closing words\./.test(texts)
-    && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120), blobs: moved.map((b) => [b.type, b.name, String(b.text).slice(0, 40)]) });
+    && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120), blobs: moved.map((b) => [b.type, b.name, String(b.text).slice(0, 40), b.stk]) });
   } catch (err) { ok('F0 the FINALIZE checks ran to their end (a driver that cannot find what it must press fails here, it does not crash the run)', false, String(err && err.message).slice(0, 300)); }
 });
 
