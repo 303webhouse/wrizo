@@ -17,6 +17,12 @@
 //       E3  nothing ticked: both downloads are disabled
 //       E4  a loose page: no title, no number, no ticks; its words are the whole file
 // QUIET S1  open, tick, export, close store NOTHING: every entry's text, boxes, page settings and links are byte-identical, and no localStorage key is new
+// FINALIZE (Fable, Nov 20, 1:27 pm)
+//       F1  Export > Web (HTML) beside Markdown and Plain Text: the labels, a whole web page in the Doc's order, named Budget.html
+//       F2  Copy Text and Copy as Formatted on the clipboard's own door, for the Parts chosen, each saying Copied
+//       F3  the Front menu while the sheet is open: TEXT (and INK) greyed and doing nothing, PARTS holding the note, the ticks and the order
+//       F4  a tick in the Front menu is the sheet's tick, and the other way round
+//       F5  an order made in the Front menu is the Doc's order (sheet, file and stored order agree, no word moved); going back gives TEXT its tab again
 // WORDS W1  every word the sheet draws is a lexicon key (terms.ts and the canonical table), and none is written into the component
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-publish-live.mjs
@@ -207,22 +213,89 @@ await withHarness(async (app) => {
   const e4f = await app.evalJs('window.__pbBlobs');
   ok('E4 a loose page: no title, no number, no ticks; its words are the whole file',
     !!e4 && e4.title === '' && e4.parts.length === 1 && e4.parts[0].head === '' && !e4.parts[0].tick && e4f.length === 1 && e4f[0].text === 'A loose page, alone.\n' && e4f[0].name === 'A loose page, alone.md', { e4, e4f });
+
+  // a missing node or a thrown page eval ends the FINALIZE checks with one honest failure, never a crash that hides every verdict above it
+  try {
+  // ---- FINALIZE (Fable, Nov 20, 1:27 pm) ---------------------------------------------------------------------------------------------------
+  // F1 Export > Web (HTML) beside Markdown and Plain Text
+  await open(app, 'machina', true, 'pub-2');
+  await app.evalJs(CATCH);
+  await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]')); await sheetOpen(app);
+  const labels = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'); return { exportLabel: (s.querySelector('[data-pub-exportlabel]')?.textContent || '').trim(), md: (s.querySelector('[data-pub-export=\"md\"]')?.textContent || '').trim(), txt: (s.querySelector('[data-pub-export=\"txt\"]')?.textContent || '').trim(), html: (s.querySelector('[data-pub-export=\"html\"]')?.textContent || '').trim(), copyText: (s.querySelector('[data-pub-copy=\"text\"]')?.textContent || '').trim(), copyFormatted: (s.querySelector('[data-pub-copy=\"formatted\"]')?.textContent || '').trim() }; })()");
+  await app.evalJs(press('[data-pub-export="html"]')); await sleep(250);
+  const web = await app.evalJs('window.__pbBlobs');
+  const h = web[0] ? web[0].text : '';
+  const at1 = (s) => h.indexOf(s);
+  const inOrder = [at1('<h1>Budget</h1>'), at1('<h2>Opening</h2>'), at1('Opening words here.'), at1('Middle words unnamed.'), at1('<h2>Close</h2>'), at1('Closing words.')];
+  ok('F1 Export > Web (HTML): the labels read Markdown, Plain Text, Web (HTML) after "Export"; the page is whole (doctype, charset, title), holds the title, the headings she named and every Part\'s words in the Doc\'s order, no heading for the unnamed Part, no script, and is named Budget.html',
+    labels.exportLabel.startsWith('Export') && labels.md === 'Markdown' && labels.txt === 'Plain Text' && labels.html === 'Web (HTML)' && labels.copyText === 'Copy Text' && labels.copyFormatted === 'Copy as Formatted'
+    && web.length === 1 && web[0].name === 'Budget.html' && /text\/html/.test(web[0].type) && /^<!doctype html>/.test(h) && /<meta charset="utf-8">/.test(h) && /<title>Budget<\/title>/.test(h)
+    && inOrder.every((v, i) => v >= 0 && (i === 0 || v > inOrder[i - 1])) && !/<h[1-6]>[^<]*Middle/.test(h) && !/<script/i.test(h) && /Second line <strong>bold<\/strong>\./.test(h) && !/\*\*|class="md-/.test(h), { labels, name: web[0] && web[0].name, inOrder, head: h.slice(0, 200) });
+
+  // F2 Copy Text and Copy as Formatted: through the clipboard's own door, for the Parts chosen
+  await app.evalJs("window.__pbClip = []; Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t) => { window.__pbClip.push({ kind: 'writeText', plain: t }); }, write: async (items) => { for (const it of items) { const o = { kind: 'write' }; for (const ty of it.types) o[ty] = await (await it.getType(ty)).text(); window.__pbClip.push(o); } } } }); null");
+  await app.evalJs("document.querySelector('[data-pub-part=\"pub-2\"] input[type=checkbox]').click(); null"); await sleep(200);
+  await app.evalJs(press('[data-pub-copy="text"]')); await sleep(300);
+  const saidText = await app.evalJs("(document.querySelector('[data-pub-said]')?.textContent || '').trim()");
+  await app.evalJs(press('[data-pub-copy="formatted"]')); await sleep(300);
+  const saidFmt = await app.evalJs("(document.querySelector('[data-pub-said]')?.textContent || '').trim()");
+  const clip = await app.evalJs('window.__pbClip');
+  const wantCopy = 'Budget\n\nOpening\n\nOpening words here.\nSecond line bold.\n\nClose\n\nClosing words.\n';
+  ok('F2 Copy Text puts the plain words of the Parts chosen on the clipboard; Copy as Formatted puts the web markup and the plain words (Part 2 unticked: neither holds it); each says "Copied"',
+    clip.length === 2 && clip[0].kind === 'writeText' && clip[0].plain === wantCopy && clip[1].kind === 'write' && clip[1]['text/plain'] === wantCopy && /<h1>Budget<\/h1>/.test(clip[1]['text/html']) && /<h2>Close<\/h2>/.test(clip[1]['text/html'])
+    && !/Middle words/.test(clip[0].plain + clip[1]['text/html']) && /<strong>bold<\/strong>/.test(clip[1]['text/html']) && !/\*\*|class="md-/.test(clip[1]['text/html']) && saidText === 'Copied' && saidFmt === 'Copied', { clip, saidText, saidFmt });
+  await app.evalJs("document.querySelector('[data-pub-all]').click(); null"); await sleep(200);
+
+  // F3 the Front menu while the sheet is open: TEXT and INK greyed with a note, PARTS only ticks and orders
+  const drawer = await app.evalJs("(() => { const d = document.querySelector('.wz-sliver'); if (!d) return null; if (d.getAttribute('data-open') !== 'true') document.querySelector('[data-menus-handle]')?.click(); return true; })()");
+  await sleep(700);
+  const fm = await app.evalJs("(() => { const tabs = [...document.querySelectorAll('.wz-sliver .wz-drawer-tab')].map((b) => ({ id: b.id.replace('wz-sliver-tab-', ''), on: b.getAttribute('data-on'), disabled: b.getAttribute('data-disabled') })); const body = document.querySelector('.wz-sliver [data-reorg-pubparts]'); return { tabs, hasBody: !!body, note: (body?.querySelector('[data-pubparts-note]')?.textContent || '').trim(), plainList: !!document.querySelector('.wz-sliver .reorg-parts:not([data-reorg-pubparts])'), rows: [...document.querySelectorAll('.wz-sliver [data-pubparts-row]')].map((r) => r.getAttribute('data-pubparts-row')) }; })()");
+  await app.evalJs("document.querySelector('.wz-sliver #wz-sliver-tab-text')?.click(); null"); await sleep(250);
+  const stillParts = await app.evalJs("!!document.querySelector('.wz-sliver [data-reorg-pubparts]')");
+  ok('F3 FINALIZE in the Front menu: TEXT (and INK where it has one) are greyed and do nothing, PARTS is the one that is on and holds the note and the Parts to tick and order',
+    !!drawer && fm.tabs.length >= 2 && fm.tabs.filter((x) => x.id !== 'parts').every((x) => x.disabled === 'true' && x.on === 'false') && fm.tabs.find((x) => x.id === 'parts').on === 'true' && fm.hasBody && /fixed here/.test(fm.note) && !fm.plainList
+    && fm.rows.join(',') === 'pub-1,pub-2,pub-3' && stillParts, { drawer, fm, stillParts });
+
+  // F4 a tick in the Front menu is the sheet's tick, and the other way round; the count follows
+  await app.evalJs("document.querySelector('.wz-sliver [data-pubparts-row=\"pub-2\"] input').click(); null"); await sleep(250);
+  const t1 = await app.evalJs(SHEET);
+  await app.evalJs("document.querySelector('[data-reorg-pub] [data-pub-part=\"pub-2\"] input[type=checkbox]').click(); null"); await sleep(250);
+  const t2 = await app.evalJs("({ side: document.querySelector('.wz-sliver [data-pubparts-row=\"pub-2\"]')?.getAttribute('data-in'), count: (document.querySelector('[data-pub-count]')?.textContent || '').trim() })");
+  ok('F4 a tick in the Front menu is the sheet\'s tick and the other way round (the count follows); nothing is stored for either',
+    t1.parts[1].on === 'false' && /2 of 3 Parts go out/.test(t1.count) && t2.side === 'true' && /3 of 3 Parts go out/.test(t2.count), { t1: { on: t1.parts[1].on, count: t1.count }, t2 });
+
+  // F5 an order made in the Front menu is the Doc's order: the sheet, the file and the stored order agree; Back restores TEXT
+  await app.evalJs(CATCH);
+  await app.evalJs("document.querySelector('.wz-sliver [data-pubparts-row=\"pub-1\"] [data-pubparts-down]').click(); null"); await sleep(500);
+  const order = await app.evalJs("[...document.querySelectorAll('[data-reorg-pub] [data-pub-part]')].map((p) => p.getAttribute('data-pub-part')).join(',')");
+  const side = await app.evalJs("[...document.querySelectorAll('.wz-sliver [data-pubparts-row]')].map((r) => r.getAttribute('data-pubparts-row')).join(',')");
+  await app.evalJs(press('[data-pub-export="md"]')); await sleep(250);
+  const moved = await app.evalJs('window.__pbBlobs');
+  await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(500);
+  const stored = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).filter((e) => /^pub-[123]$/.test(e.id)).sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)).map((e) => e.id + ':' + (e.text || '').length).join(',')");
+  const texts = await app.evalJs("(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).filter((e) => /^pub-[123]$/.test(e.id)).map((e) => e.id + '=' + e.text).sort().join('|')");
+  await app.evalJs(press('[data-pub-back]')); await sheetGone(app); await sleep(400);
+  const after = await app.evalJs("(() => { const tabs = [...document.querySelectorAll('.wz-sliver .wz-drawer-tab')].map((b) => b.getAttribute('data-disabled')); return { anyGrey: tabs.some((x) => x === 'true'), pubparts: !!document.querySelector('.wz-sliver [data-reorg-pubparts]'), textOn: document.querySelector('.wz-sliver #wz-sliver-tab-text')?.getAttribute('data-on') }; })()");
+  ok('F5 an order made in the Front menu is the Doc\'s order: the sheet, the file and the stored order agree and no word moved; going back to writing gives TEXT its tab and its body again',
+    order === 'pub-3,pub-1,pub-2' && side === order && moved.length === 1 && /^# Budget\n\n## Close\n\nClosing words\.\n\n## Opening\n\nOpening words here\./.test(moved[0].text) && /^pub-3:/.test(stored) && /pub-1=Opening words here\.\nSecond line \*\*bold\*\*\.\|pub-2=Middle words unnamed\.\|pub-3=Closing words\./.test(texts)
+    && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120) });
+  } catch (err) { ok('F0 the FINALIZE checks ran to their end (a driver that cannot find what it must press fails here, it does not crash the run)', false, String(err && err.message).slice(0, 300)); }
 });
 
 // ---- WORDS (source) --------------------------------------------------------------------------------------------------------------------
 {
   const terms = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'terms.ts'), 'utf8');
   const canon = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8') + fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'settings.ts'), 'utf8');
-  const file = path.join(SRC, 'reorg', 'PublishView.tsx');
-  const src = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const files = ['PublishView.tsx', 'PublishParts.tsx'].map((n) => path.join(SRC, 'reorg', n));
+  const src = files.map((file) => (fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '')).join('\n');
   const used = [...new Set([...src.matchAll(/\bt\('([a-zA-Z0-9]+)'\)/g)].map((m) => m[1]))];
   const missing = used.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon));
   const quoted = [...src.matchAll(/>\s*([A-Z][a-z]+(?: [a-z]+)+)\s*</g)].map((m) => m[1]);
-  ok('W1 every word the sheet draws is a lexicon key (terms.ts and the canonical table), and none is written into the component', used.length >= 9 && missing.length === 0 && quoted.length === 0, { used, missing, quoted });
+  ok('W1 every word the sheet draws is a lexicon key (terms.ts and the canonical table), and none is written into the component', used.length >= 16 && missing.length === 0 && quoted.length === 0, { used, missing, quoted });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;
+const EXPECTED = 18;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PUBLISH-LIVE VERIFY: PASS (${checks.length} checks)`

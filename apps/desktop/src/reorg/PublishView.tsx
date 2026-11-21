@@ -1,14 +1,17 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { readPublication, downloadPublication, type PubViewPart } from './publishing';
+import { subscribe } from '../store/persistence';
+import { readPublication, downloadPublication, copyPublication, publicationSignature, type PubViewPart } from './publishing';
+import { closePick, openPick, setPickOff, togglePick, usePickOff } from './publishPick';
 import type { PubFormat } from './publishingText';
 
 // PUBLISHING AS A VIEW (reorg-plan-v2 #5; the prototype's FINALIZE page, docs/mockups/reorg/app.js renderPage "whole", reorg.css .whole-part and .whole-label): the whole Doc as one read-only scroll,
-// each Part under its heading, with what goes out and the two files at the foot. Behind ?reorg=1 in Machina, on a Page, and only after she presses Publish.
+// each Part under its heading, with what goes out and how at the foot. Behind ?reorg=1 in Machina, on a Page, and only after she presses Publish.
 //
 // PAGE IS PRIMARY: this is a sheet laid over the paper from the paper's own overlay slot (ModeStage's `readouts`), inside .mode-page, absolutely placed. The paper, the column and the editor do not move,
 // resize or unmount; her caret, her scroll and her words are exactly where she left them. The way back is one tap: Back to writing, the Publish tab again, a stage tab, or Escape.
-// It is a READ: it never writes the store (the ticks that choose what goes out are this component's own state, saved nowhere), and it takes no typing.
+// It is a READ: it never writes the store (the ticks that choose what goes out are session state, publishPick.ts, shared with the Front menu's PARTS tab and saved nowhere), and it takes no typing.
+// Out of it (Fable, Nov 20, 1:27 pm): Copy Text, Copy as Formatted, and Export > Markdown, Plain Text, Web (HTML).
 
 const fill = (s: string, vals: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vals ? String(vals[k]) : m));
 // a press on the sheet is never a press on the paper (ModeStage onPaperPress would put the caret into the editor under it)
@@ -18,22 +21,27 @@ interface Props { entryId: string; onClose: () => void }
 
 function PublishViewImpl({ entryId, onClose }: Props) {
   const { t } = useDeskLexicon();
-  // read once, as she opened it: the host flushed the open page's typing first, so this is the newest
-  const doc = useMemo(() => readPublication(entryId), [entryId]);
-  const [off, setOff] = useState<ReadonlySet<string>>(() => new Set());
+  // read as she opened it (the host flushed the open page's typing first, so this is the newest), and again only when the LIST changes (a Part moved from the Front menu): never on her words
+  const sig = useSyncExternalStore(subscribe, () => publicationSignature(entryId));
+  const doc = useMemo(() => readPublication(entryId), [entryId, sig]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const off = usePickOff(entryId);
   const [said, setSaid] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    openPick(entryId);
     const was = document.activeElement as HTMLElement | null;
     ref.current?.focus({ preventScroll: true });
-    return () => { if (was && was.isConnected) was.focus({ preventScroll: true }); };
-  }, []);
+    return () => { closePick(entryId); if (was && was.isConnected) was.focus({ preventScroll: true }); };
+  }, [entryId]);
   if (!doc) return null;
   const many = doc.parts.length > 1;
   const chosen = doc.parts.filter((p) => !off.has(p.id)).map((p) => p.id);
-  const choose = (next: ReadonlySet<string>) => { setSaid(null); setOff(next); };
-  const toggle = (id: string) => choose((() => { const n = new Set(off); if (off.has(id)) n.delete(id); else n.add(id); return n; })());
-  const go = (format: PubFormat) => setSaid(downloadPublication(doc, format, many ? chosen : null) ? t('publishDownloadConfirm') : t('publishDownloadFailed'));
+  const ids = many ? chosen : null;
+  const choose = (next: ReadonlySet<string>) => { setSaid(null); setPickOff(entryId, next); };
+  const toggle = (id: string) => { setSaid(null); togglePick(entryId, id); };
+  const go = (format: PubFormat) => setSaid(downloadPublication(doc, format, ids) ? t('publishDownloadConfirm') : t('publishDownloadFailed'));
+  const copy = async (kind: 'text' | 'formatted') => setSaid((await copyPublication(doc, kind, ids)) ? t('publishCopyWordsConfirm') : t('publishCopyFailed'));
+  const none = many && chosen.length === 0;
   const head = (p: PubViewPart) => {
     if (!many && !p.name) return null;
     const label = many ? `${p.n}. ${p.heading}` : p.name;
@@ -55,7 +63,7 @@ function PublishViewImpl({ entryId, onClose }: Props) {
                 </label>
               )}
               {head(p)}
-              {p.empty ? <p className="reorg-pub-empty">{t('reorgPubEmptyPart')}</p> : <div className="reorg-pub-words" dangerouslySetInnerHTML={{ __html: p.html }} />}
+              {p.empty ? <p className="reorg-pub-empty">{t('reorgPubEmptyPart')}</p> : <div className="reorg-pub-words" dangerouslySetInnerHTML={{ __html: p.view }} />}
             </section>
           );
         })}
@@ -70,8 +78,13 @@ function PublishViewImpl({ entryId, onClose }: Props) {
             <button type="button" className="reorg-pub-btn is-quiet" data-pub-none onClick={() => choose(new Set(doc.parts.map((p) => p.id)))}>{t('reorgPubNone')}</button>
           </>
         )}
-        <button type="button" className="reorg-pub-btn" data-pub-export="md" disabled={many && chosen.length === 0} onClick={() => go('md')}>{t('reorgPubMd')}</button>
-        <button type="button" className="reorg-pub-btn" data-pub-export="txt" disabled={many && chosen.length === 0} onClick={() => go('txt')}>{t('reorgPubTxt')}</button>
+        <span className="reorg-pub-break" aria-hidden="true" />
+        <button type="button" className="reorg-pub-btn" data-pub-copy="text" disabled={none} onClick={() => { void copy('text'); }}>{t('reorgPubCopyText')}</button>
+        <button type="button" className="reorg-pub-btn" data-pub-copy="formatted" disabled={none} onClick={() => { void copy('formatted'); }}>{t('reorgPubCopyFormatted')}</button>
+        <span className="reorg-pub-exportlabel" data-pub-exportlabel>{t('reorgPubExport')} <span aria-hidden="true">{'▸'}</span></span>
+        <button type="button" className="reorg-pub-btn" data-pub-export="md" disabled={none} onClick={() => go('md')}>{t('reorgPubMd')}</button>
+        <button type="button" className="reorg-pub-btn" data-pub-export="txt" disabled={none} onClick={() => go('txt')}>{t('reorgPubTxt')}</button>
+        <button type="button" className="reorg-pub-btn" data-pub-export="html" disabled={none} onClick={() => go('html')}>{t('reorgPubHtml')}</button>
       </div>
     </div>
   );

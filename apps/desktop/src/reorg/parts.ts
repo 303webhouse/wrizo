@@ -10,7 +10,7 @@
 //   name        a Part's name. Absent: the first few words of its text stand in (the Sep 12 rule).
 //   level       0, 1 or 2: a Part can sit one or two levels under the one above (Act, then Scene). A flat ordered list with levels, no parent pointers, so a move can never leave a
 //               child pointing at a missing parent under last-writer-wins.
-//   color       a TOKEN NAME from PART_COLORS, never a hex: the theme draws it.
+//   color       a SLOT from PART_COLORS ('a' to 'f'), never a colour name or a hex: each theme draws its own six (Fable, Nov 20). An old clay..plum is READ as its slot, never written back.
 //   template    the existing `PageTemplate` lens key (outline / title / bibliography), set through here too.
 //   lengthLimit { unit, max }: the writer's own ceiling for this Part.
 // None of them is dress: store/pageDefaults.ts strips all four new ones, so "Set as my default" on one Part never names, colours or limits every future page.
@@ -33,13 +33,23 @@ import { ensureSet, reorderSections } from '../store/place';
 import { firstPlainLine } from '../store/entryText';
 import { wordCount } from '../store/wordCount';   // the ONE word counter (c13-10f: no private copy)
 import { getUserPageDefaults } from '../store/pageDefaults';
+import { readMarks, closeMark } from '../store/markRuns';
+import { liveBoxes } from '../store/boxTombstones';
 
 // ---------------------------------------------------------------- the saved keys
 
-/** The fixed set of Part colours, by TOKEN NAME. The theme draws each one (Machina's own hues; colour is never the only signal: the row pairs it with a label or a shape). */
-export const PART_COLORS = ['clay', 'amber', 'moss', 'teal', 'slate', 'plum'] as const;
+/** The fixed set of Part colours, by SLOT (Fable, Nov 20: "store slots a-f, never a colour name or a hex"). Each theme draws its own six (Machina's tags A-F, Flux 01-06); colour is never the only signal: the row pairs it with a label or a shape. */
+export const PART_COLORS = ['a', 'b', 'c', 'd', 'e', 'f'] as const;
 export type PartColor = (typeof PART_COLORS)[number];
 export const isPartColor = (v: unknown): v is PartColor => typeof v === 'string' && (PART_COLORS as readonly string[]).includes(v);
+
+/** The names this key held before the slots (Nov 19 to 20), in the order they become the slots. Read once, as the slot: nothing is rewritten by a read. */
+const OLD_COLOR_NAMES: Record<string, PartColor> = { clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' };
+/** A stored colour as a slot: a slot as itself, an old name as its slot, anything else (a hex, a stray word) as none. */
+export function colorSlot(v: unknown): PartColor | null {
+  if (isPartColor(v)) return v;
+  return typeof v === 'string' && Object.prototype.hasOwnProperty.call(OLD_COLOR_NAMES, v) ? OLD_COLOR_NAMES[v] : null;
+}
 
 export type PartLevel = 0 | 1 | 2;
 export const MAX_PART_LEVEL = 2;
@@ -84,7 +94,7 @@ const firstWords = (text: string): string => {
 export const cleanName = (name: string): string => name.replace(/\s+/g, ' ').trim().slice(0, PART_NAME_MAX);
 
 const carriesMore = (e: JournalEntry): boolean =>
-  !!(e.strokes && e.strokes.length) || !!(e.boxes && e.boxes.length) || !!(e.pageLinks && e.pageLinks.length) || !!(e.tutor && (e.tutor as { messages?: unknown[] }).messages?.length);
+  !!(e.strokes && e.strokes.length) || liveBoxes(e.boxes).length > 0 || !!(e.pageLinks && e.pageLinks.length) || !!(e.tutor && (e.tutor as { messages?: unknown[] }).messages?.length);
 
 /** The entries a Doc lists as Parts: its live, non-board entries (a system board and a page's plan face are never Parts), in the writer's order. */
 function entriesOfDoc(docId: string): JournalEntry[] {
@@ -130,7 +140,7 @@ function toPart(e: JournalEntry, docId: string, index: number, level: PartLevel)
     name: own || firstWords(text) || 'Untitled',
     named: !!own,
     level, storedLevel: typeof k.level === 'number' ? k.level : undefined,
-    color: isPartColor(k.color) ? k.color : null,
+    color: colorSlot(k.color),
     template: (e.pageSettings?.template as PageTemplate | undefined) ?? null,
     lengthLimit: k.lengthLimit && typeof k.lengthLimit.max === 'number' && (k.lengthLimit.unit === 'words' || k.lengthLimit.unit === 'characters') ? { unit: k.lengthLimit.unit, max: k.lengthLimit.max } : null,
     kind: isScript ? 'script' : 'text',
@@ -331,15 +341,69 @@ export function snapOffset(text: string, offset: number): number {
   }
   return o;
 }
-/** PURE: the two halves of a cut. head + tail is always the original, byte for byte. */
-export function splitText(text: string, offset: number): { head: string; tail: string; at: number } {
-  const at = snapOffset(text, offset);
-  return { head: text.slice(0, at), tail: text.slice(at), at };
+/** PURE: where a cut inside one line may fall with respect to the line's styled runs (bold, italic, underline, strike, a font span). A cut in the opening or closing MARK, or right against it, moves out of the run (a mark is never cut in two, and a run is never left holding nothing on one side). Returns the cut and the runs it still falls inside, outermost first. */
+function cutThroughRuns(text: string, at0: number): { at: number; runs: Array<{ open: string; close: string }> } {
+  const ls = at0 === 0 ? 0 : text.lastIndexOf('\n', at0 - 1) + 1;
+  const nl = text.indexOf('\n', at0);
+  const line = text.slice(ls, nl < 0 ? text.length : nl);
+  const runs = readMarks(line);
+  let p = at0 - ls;
+  for (let again = true, guard = 0; again && guard < 8; guard += 1) {
+    again = false;
+    for (const r of runs) {
+      const o1 = r.open + r.mark.length, c1 = r.close, c2 = r.close + closeMark(r).length;
+      if (p > r.open && p <= o1) { p = r.open; again = true; } else if (p >= c1 && p < c2) { p = c2; again = true; }
+    }
+  }
+  const inside = runs.filter(r => p > r.open + r.mark.length && p < r.close).sort((a, b) => a.open - b.open);
+  return { at: ls + p, runs: inside.map(r => ({ open: r.mark, close: closeMark(r) })) };
 }
-/** PURE: the join of a Part onto the one above. */
-export const joinText = (above: string, below: string): string => above + below;
 
-export interface SplitToken { kind: 'split'; docId: string; sourceId: string; tailId: string; head: string; tail: string }
+/**
+ * PURE: the two halves of a cut. A cut in plain words gives head + tail = the original, byte for byte. A cut INSIDE a styled run (Fable, Nov 20) closes the style at the cut and reopens it
+ * in the tail, so each Part keeps its own words styled and neither holds an orphaned mark: the closing marks go after the head's last word, the opening marks before the tail's first (a mark
+ * never follows a space it would have to hug), and the cut moves out of a run's own mark. `joinText` gives the original back.
+ */
+export function splitText(text: string, offset: number): { head: string; tail: string; at: number } {
+  const { at, runs } = cutThroughRuns(text, snapOffset(text, offset));
+  if (runs.length === 0) return { head: text.slice(0, at), tail: text.slice(at), at };
+  const h = text.slice(0, at), t = text.slice(at);
+  const hSpace = /[ \t]*$/.exec(h)?.[0] ?? '', tSpace = /^[ \t]*/.exec(t)?.[0] ?? '';
+  const closers = runs.map(r => r.close).reverse().join(''), openers = runs.map(r => r.open).join('');
+  return { head: h.slice(0, h.length - hSpace.length) + closers + hSpace, tail: tSpace + openers + t.slice(tSpace.length), at };
+}
+
+// the closing marks a split writes, tried longest first at the end of the Part above (the font span's own closing mark has a class list)
+const SEAM_EMPHASIS = ['**', '__', '~~', '*'];
+const SEAM_FONT_CLOSE = /\]\{[^}\n]{1,80}\}$/;
+/**
+ * PURE: the join of a Part onto the one above. The seam a split inside a styled run left (the head's closing marks, the tail's opening marks, with only spaces beside them) is taken out again, so
+ * a split then a join gives the original; it is taken out only when the text read back has ONE run across the seam of just those kinds, else the two are joined as they stand.
+ * (The one text this reads differently is two runs of the same style cut in the space between them, `**a** **b**`: joined, they are one run, `**a b**`.)
+ */
+export function joinText(above: string, below: string): string {
+  const plain = above + below;
+  const aSpace = /[ \t]*$/.exec(above)?.[0] ?? '', bSpace = /^[ \t]*/.exec(below)?.[0] ?? '';
+  let x = above.slice(0, above.length - aSpace.length), y = below.slice(bSpace.length);
+  const peeled: string[] = [];   // outermost first
+  for (;;) {
+    const font = SEAM_FONT_CLOSE.exec(x);
+    if (font && y.startsWith('[')) { peeled.push('['); x = x.slice(0, x.length - font[0].length); y = y.slice(1); continue; }
+    const m = SEAM_EMPHASIS.find(k => x.endsWith(k) && y.startsWith(k));
+    if (!m) break;
+    peeled.push(m); x = x.slice(0, x.length - m.length); y = y.slice(m.length);
+  }
+  if (peeled.length === 0) return plain;
+  const healed = x + aSpace + bSpace + y;
+  const seam = x.length + aSpace.length;
+  const ls = seam === 0 ? 0 : healed.lastIndexOf('\n', seam - 1) + 1;
+  const nl = healed.indexOf('\n', seam);
+  const line = healed.slice(ls, nl < 0 ? healed.length : nl), p = seam - ls;
+  const across = readMarks(line).filter(r => p > r.open + r.mark.length && p < r.close).sort((a, b) => a.open - b.open).map(r => r.mark);
+  return across.length === peeled.length && across.every((m, i) => m === peeled[i]) ? healed : plain;
+}
+
+export interface SplitToken { kind: 'split'; docId: string; sourceId: string; tailId: string; head: string; tail: string; whole: string }
 export interface JoinToken { kind: 'join'; docId: string; keepId: string; goneId: string; above: string; below: string }
 export type SplitResult = { ok: true; tailId: string; token: SplitToken } | { ok: false; reason: 'unknown' | 'not-text' };
 export type JoinResult = { ok: true; keepId: string; token: JoinToken } | { ok: false; reason: 'unknown' | 'first' | 'not-text' | 'carries' };
@@ -386,7 +450,7 @@ export function splitPart(partId: string, offset: number, liveText?: string, bet
   // second: the source loses the tail
   const again = getJournalEntry(partId);
   if (again) saveJournalEntry({ ...again, text: head });
-  return { ok: true, tailId: born.id, token: { kind: 'split', docId, sourceId: partId, tailId: born.id, head, tail } };
+  return { ok: true, tailId: born.id, token: { kind: 'split', docId, sourceId: partId, tailId: born.id, head, tail, whole: text } };
 }
 
 /**
@@ -417,7 +481,7 @@ export function joinPart(partId: string, liveTexts?: { above?: string; below?: s
 export function undoSplit(t: SplitToken): boolean {
   const src = getJournalEntry(t.sourceId), tail = getJournalEntry(t.tailId);
   if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;
-  saveJournalEntry({ ...src, text: t.head + t.tail });
+  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });
   softDeleteEntry(t.tailId);
   return true;
 }
