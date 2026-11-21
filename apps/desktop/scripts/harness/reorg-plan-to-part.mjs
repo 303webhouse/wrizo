@@ -39,7 +39,7 @@ const q = (s) => JSON.stringify(s);
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
 
 const ALL = "(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'))";
-const STORE = `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
+const STORE = () => `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
 const ENTRY = (id) => `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return ${ALL}.find((x) => x.id === ${q(id)}) || null; })()`;
 const ROWS = `(() => [...document.querySelectorAll('[data-back-plan] [data-plan-row]')].map((r) => ({ id: r.dataset.planRow, name: (r.querySelector('[data-plan-name]')?.value ?? r.querySelector('[data-plan-name]')?.textContent), door: r.querySelector('[data-plan-part]') ? { text: r.querySelector('[data-plan-part]').textContent.trim(), label: r.querySelector('[data-plan-part]').getAttribute('aria-label'), mode: r.querySelector('[data-plan-part]').getAttribute('data-plan-part') } : null, tick: !!r.querySelector('[data-plan-tick]') })))()`;
 
@@ -99,12 +99,12 @@ await withHarness(async (app) => {
     rows0);
 
   // ---- P2 ----
-  const before = await app.evalJs(STORE);
+  const before = await app.evalJs(STORE());
   await press(app, '[data-plan-row="o1"] [data-plan-part]');
   await app.waitFor("location.hash.indexOf('/page/new') >= 0 && !!document.querySelector('.forward-only-editor')", { timeout: 8000, label: 'a fresh page' }).catch(() => {});
   await sleep(900);
   const hash = await app.evalJs('location.hash');
-  const afterPress = await app.evalJs(STORE);
+  const afterPress = await app.evalJs(STORE());
   const params = new URLSearchParams((hash.split('?')[1] || ''));
   ok('P2 the press writes nothing and opens a fresh page whose address names Ledger, the board and the card',
     afterPress === before && params.get('binder') === ledgerId && params.get('gb') === 'pt-own' && params.get('gc') === 'o1', { hash, same: afterPress === before });
@@ -122,7 +122,7 @@ await withHarness(async (app) => {
   ok('P3 her first word births the Part: Ledger\'s LAST Part, named "Opening", its words stored; the board holds the link card -> Part',
     !!lastP && lastP[1] === 'Opening' && lastP[2] >= 1 && parts.length === 4 && !!link && link.bEntryId === lastP[0] && !!born && born.pageSettings?.name === 'Opening' && /Once upon/.test(born.text || ''), { parts, link, name: born && born.pageSettings });
   const bornMode = lastP ? await app.evalJs(`localStorage.getItem('wrizo-mode-page-${lastP[0]}')`) : 'x';
-  ok('P4 the Part is not opened in Free Write (it is a section of the Doc, not a sprint): the stage this device remembers for it is not "journal"', bornMode !== 'journal', String(bornMode));
+  ok('P4 the Part is not opened in Free Write (it is a section of the Doc, not a sprint): the Part exists and the stage this device remembers for it is not "journal"', !!lastP && lastP[1] === 'Opening' && bornMode !== 'journal', String(bornMode));
 
   // ---- P5 ----
   await openPage(app, 'pt-1'); await openDrawer(app); await planTab(app);
@@ -131,17 +131,17 @@ await withHarness(async (app) => {
     by(rows1, 'o1').tick === true && by(rows1, 'o1').door?.mode === 'open' && by(rows1, 'o2').tick === true && by(rows1, 'o3').tick === false && by(rows1, 'o3').door?.mode === 'open', rows1);
 
   // ---- P7 (before P6 moves her) ----
-  const s0 = await app.evalJs(STORE); await sleep(1200); await planTab(app); await sleep(500);
-  const s1 = await app.evalJs(STORE);
+  const s0 = await app.evalJs(STORE()); await sleep(1200); await planTab(app); await sleep(500);
+  const s1 = await app.evalJs(STORE());
   ok('P7 the tick is read, never written: looking at the Plan again changes nothing stored', s0 === s1);
 
   // ---- P6 ----
-  const c0 = await app.evalJs(STORE);
+  const c0 = await app.evalJs(STORE());
   await press(app, '[data-plan-row="o2"] [data-plan-part]');
   await app.waitFor("location.hash.indexOf('/page/pt-2') >= 0", { timeout: 8000, label: 'pt-2 opened' }).catch(() => {});
   await sleep(700);
   const h2 = await app.evalJs('location.hash');
-  const c1 = await app.evalJs(STORE);
+  const c1 = await app.evalJs(STORE());
   ok('P6 "Open Part" on Midpoint opens pt-2 and creates nothing', /\/page\/pt-2/.test(h2) && c1 === c0, { h2, same: c1 === c0 });
 
   // ---- P8 ----
