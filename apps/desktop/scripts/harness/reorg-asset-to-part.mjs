@@ -10,6 +10,8 @@
 // (ap-1, the Part she is on, whose plan board is ap-own), "Chapter two" (ap-2), "Chapter three" (ap-3). ap-1 links a card of board ap-x (x1),
 // the whole board ap-y and the doc ap-q.
 //
+// (Nov 21: D0 is parked verbatim, a Part row being draggable as a Part since §3b item 1; D0-B holds its premise and that a Part row's drag is
+// never an asset drag, MUT-D0-B its mutant)
 // PREMISE D0  at 1920 both drawers stand open on ap-1: the Parts tab lists the three Parts (ap-1 here), the Assets tab lists x1, ap-y's head,
 //             ap-q and the own plan card a1; every asset row and board head is draggable, every Part row is not
 // DRAG   D1  dragging x1 onto "Chapter two" stores ONE new live PageLink on ap-2's own record { aEntryId ap-2, bEntryId ap-x, bBoxId x1 }, with
@@ -163,9 +165,25 @@ await withHarness(async (app) => {
   const q1 = st0.assets.find((a) => a.entry === 'ap-q');
   const y = st0.heads.find((h) => h.board === 'ap-y');
   const a1 = st0.assets.find((a) => a.box === 'a1' && a.entry === 'ap-own');
-  ok('D0 at 1920 both drawers stand open on ap-1: three Parts (ap-1 here), the Assets tab lists x1, ap-y\'s head and ap-q; asset rows and heads draggable, Part rows not',
-    ids.links && st0.tools && st0.back && st0.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st0.parts[0].here && !!x1 && !!q1 && !!y && !!a1
-      && st0.assets.every((a) => a.drag === 'true') && st0.heads.every((h) => h.drag === 'true') && st0.parts.every((p) => p.drag !== 'true'), { ids, st0 });
+  // SUPERSEDED (Nov 21; §3b ARBOR item 1, drag to move, merge and nest Parts, Fable Nov 20 11:15 pm: a Part row IS draggable now, in BUILD and EDIT,
+  // carrying its own type, application/x-wrizo-part, never the Assets tab's; arbor/reorg-drag 3941129f, Actions 44875464384: D0 read drag "true" on
+  // every Part row). What D0 guarded, that a Part row is never an ASSET drag, is D0-B's. Verbatim:
+  // ok('D0 at 1920 both drawers stand open on ap-1: three Parts (ap-1 here), the Assets tab lists x1, ap-y\'s head and ap-q; asset rows and heads draggable, Part rows not',
+  //   ids.links && st0.tools && st0.back && st0.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st0.parts[0].here && !!x1 && !!q1 && !!y && !!a1
+  //     && st0.assets.every((a) => a.drag === 'true') && st0.heads.every((h) => h.drag === 'true') && st0.parts.every((p) => p.drag !== 'true'), { ids, st0 });
+  // D0-B: the same premise, and a Part row's drag carries the Part's own type and never the asset type (a dragstart on ap-2's row, read off the
+  // DataTransfer the app filled; the drag is ended at once, nothing is dropped)
+  const partDt = await app.evalJs(`(() => { const s = document.querySelector('.wz-sliver [data-part-row="ap-2"]'); if (!s) return null; const dt = new DataTransfer();
+    s.dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: dt })); const types = Array.from(dt.types);
+    s.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt })); return types; })()`);
+  const d0b = (st, types) => ids.links && st.tools && st.back && st.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st.parts[0].here && !!x1 && !!q1 && !!y && !!a1
+    && st.assets.every((a) => a.drag === 'true') && st.heads.every((h) => h.drag === 'true')
+    && Array.isArray(types) && types.includes('application/x-wrizo-part') && !types.includes('application/x-wrizo-asset');
+  ok('D0-B at 1920 both drawers stand open on ap-1: three Parts (ap-1 here), the Assets tab lists x1, ap-y\'s head and ap-q; asset rows and heads draggable; a Part row\'s drag carries the Part type, never the asset type',
+    d0b(st0, partDt), { ids, st0, partDt });
+  // MUT-D0-B: the same reading with the asset type added to the Part row's drag must turn D0-B red (the mutant LANDED: the list changed)
+  const mutTypes = Array.isArray(partDt) ? [...partDt, 'application/x-wrizo-asset'] : null;
+  ok('MUT-D0-B a Part row whose drag carried the asset type turns D0-B red', !!mutTypes && mutTypes.length === partDt.length + 1 && !d0b(st0, mutTypes), { mutTypes });
 
   // ---- DRAG ------------------------------------------------------------------------------------------------------------------------------
   await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor'); if (n) n.__apMark = 1; return null; })()");
@@ -268,7 +286,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;
+const EXPECTED = 14;   // 13 - D0 (parked) + D0-B + MUT-D0-B (Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ASSET-TO-PART VERIFY: PASS (${checks.length} checks)`
