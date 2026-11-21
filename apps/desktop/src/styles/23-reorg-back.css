@@ -56,3 +56,8 @@
 /* a Board's Plan (the Outline view, Machina, ?reorg=1): a preset row's grey prompt, on its own line under the title, and the Presets control below the rows */
 .board-outline-hint{ flex:0 0 100%; display:block; padding:0 6px 4px 22px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
 .board-projection .wz-back-plan-presets{ margin-top:10px; padding-left:6px; }
+/* the Plan's groups of cards from other connected Boards (planConnected.ts): a heading with the board's name and its Open door, then its cards as a plain list, a view */
+.wz-back-plan-group{ display:flex; flex-direction:column; gap:2px; margin-top:12px; }
+.wz-back-plan-group-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:28px; border-bottom:1px solid var(--ink-border-strong); }
+.wz-back-plan-group-name{ flex:1 1 0; min-width:0; font-family:var(--font-ui); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-back-plan-group-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }

@@ -12,6 +12,7 @@ import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
 import { ensureDoc } from '../parts';
 import { docOfPage, partOfRow, toPartHref } from './planPart';
+import { connectedBoardIds } from './planConnected';
 import type { PlanPreset } from './planPresets';
 import { PresetsMenu } from './PresetsMenu';
 import { presetBoxes } from './planPresetOps';
@@ -117,11 +118,18 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   // "-> PART": W2's "Write this" aimed at the Doc (planPart.ts). A row that has its Part opens it; otherwise the door opens a fresh page in this Doc for the card, named for the row.
   // The press writes nothing for the Part (her first word births it and the link in one act); a page with no Doc of her own is made one first, as the Parts list's "New part" does.
   const docNow = docOfPage(pageId);
-  const toPart = (r: { boxId: string; title: string }): void => {
+  // THE GROUPS (planConnected.ts): each other board connected to this Page, its cards in THAT board's own order. A view: nothing here moves, renames or removes a card (that is done on the board itself); a group's row has the door and the tick only.
+  const groups = connectedBoardIds(pageId, snap.boardId).flatMap((bid) => {
+    const b = cache.journalEntries.find((e) => e.id === bid && !e.deletedAt);
+    if (!b) return [];
+    const first = titleOfText(b.text);
+    return [{ id: bid, board: b, title: first || t('reorgUntitled'), rows: planRows(liveBoxes(b.boxes), new Set(), (x) => (x.entryId ? titleOfText(getJournalEntry(x.entryId)?.text) : '')) }];
+  });
+  const toPart = (r: { boxId: string; title: string }, boardId: string | null = snap.boardId): void => {
     flushNow();
-    const have = partOfRow(snap.boardId, r.boxId, docNow);
+    const have = partOfRow(boardId, r.boxId, docNow);
     if (have) { const e = getJournalEntry(have.id); if (e) navigate(routeForEntry(e)); return; }
-    if (!snap.boardId) return;
+    if (!boardId) return;
     let into = docNow;
     if (!into) {
       const made = ensureDoc(pageId);
@@ -129,14 +137,14 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
       into = made.docId;
       flushNow();
     }
-    navigate(toPartHref(into, snap.boardId, r.boxId, r.title));
+    navigate(toPartHref(into, boardId, r.boxId, r.title));
   };
 
   return (
     <div className="wz-back-plan" data-back-plan="">
-      {rows.length === 0 ? (
+      {rows.length === 0 && groups.length === 0 ? (
         <div className="wz-back-quiet" data-back-plan-empty="">{t('reorgPlanEmpty')}</div>
-      ) : (
+      ) : rows.length === 0 ? null : (
         <ol className="wz-back-plan-list" aria-label={t('reorgBackPlan')}>
           {shownRows.map((r) => (
             <li key={r.boxId} className="wz-back-plan-row" data-plan-row={r.boxId} data-plan-depth={r.depth} style={{ paddingLeft: `${r.depth * 14}px` }}>
@@ -181,6 +189,31 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
           ))}
         </ol>
       )}
+      {groups.map((g) => (
+        <section key={g.id} className="wz-back-plan-group" data-plan-group={g.id}>
+          <div className="wz-back-plan-group-head">
+            <span className="wz-back-plan-group-name" data-plan-group-name="">{g.title}</span>
+            <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-group-open="" onClick={() => { flushNow(); navigate(routeForEntry(g.board)); }}>{t('reorgAssetsOpenBoard')}</button>
+          </div>
+          <ol className="wz-back-plan-group-list" aria-label={g.title}>
+            {g.rows.map((r) => {
+              const part = r.isPin || r.isInk ? null : partOfRow(g.id, r.boxId, docNow);
+              return (
+                <li key={r.boxId} className="wz-back-plan-row" data-plan-row={r.boxId} data-plan-depth={r.depth} style={{ paddingLeft: `${r.depth * 14}px` }}>
+                  <span className="wz-back-plan-num" aria-hidden="true">{r.number}</span>
+                  <span className="wz-graft-title wz-back-plan-name" data-plan-name="">{r.isInk ? t('reorgSketch') : (r.title || t('reorgUntitled'))}</span>
+                  {part && part.written && <span className="wz-back-plan-tick" data-plan-tick="" role="img" aria-label={t('reorgPlanTick')} title={t('reorgPlanTick')}>{'\u2713'}</span>}
+                  {!r.isPin && !r.isInk && (
+                    <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-part={part ? 'open' : 'new'} aria-label={`${part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}: ${r.number}`} onClick={() => toPart(r, g.id)}>
+                      {part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))}
       {undo && (
         <div className="wz-graft-undo" data-graft-undo="">
           <span>{undo.line}</span>
