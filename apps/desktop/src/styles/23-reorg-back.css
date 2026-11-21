@@ -40,5 +40,19 @@
 .wz-split-head{ display:flex; align-items:center; justify-content:space-between; }
 .wz-split-card{ margin:0 0 .9em; }
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
+/* A BOARD IN THE SPLIT (§3b item 2a, reorg/split/SplitBoard.tsx): its views and zoom over a canvas that fills the side; the canvas is drawn at the side's
+   width and moved by a transform only (pan and zoom), so nothing in the split reflows and the page never moves. */
+.wz-split-board{ display:flex; flex-direction:column; gap:8px; flex:1 1 auto; min-height:0; }
+.wz-split-board-bar{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; }
+.wz-split-board-views, .wz-split-board-zoom{ display:flex; gap:4px; }
+.wz-split-board-bar button{ min-width:26px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border); border-radius:0; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); cursor:pointer; }
+.wz-split-board-bar button[aria-pressed='true']{ border-color:var(--text-hi); color:var(--text-hi); }
+.wz-split-board-bar button:disabled{ opacity:.4; cursor:default; }
+.wz-split-board-wrap{ position:relative; flex:1 1 auto; min-height:0; overflow:hidden; border:1px solid var(--ink-border); cursor:grab; touch-action:none; outline:none; }
+.wz-split-board-wrap[data-panning='true']{ cursor:grabbing; }
+.wz-split-board-wrap:focus-visible{ border-color:var(--text-hi); }
+.wz-split-board-canvas{ position:absolute; left:0; top:0; transform-origin:0 0; background:var(--paper); }
+.wz-split-board-list{ flex:1 1 auto; min-height:0; overflow:auto; }
+.wz-split-board-empty{ position:absolute; left:12px; top:8px; z-index:1; margin:0; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); pointer-events:none; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }

@@ -166,3 +166,8 @@ reorgSplitNoTypewriter=Typewriter mode is off in a split: turn it off first.
 pageOfPages=p. {n} of {m}
 pageOfPages@flux=PG {n}/{m}
 pageOfPages@machina=page {n} of {m}
+# A BOARD IN THE SPLIT (ARBOR, reorg plan v2.1 §3b item 2a, Nov 21) - PROPOSED placeholder words until the Wrizors word them; no theme overrides them yet
+reorgSplitViews=Show As
+reorgSplitZoomIn=Zoom In
+reorgSplitZoomOut=Zoom Out
+reorgSplitZoomFit=Fit

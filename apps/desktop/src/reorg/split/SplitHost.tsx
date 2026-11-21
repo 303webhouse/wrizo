@@ -6,6 +6,7 @@ import { plainLines } from '../../store/entryText';
 import { liveBoxes } from '../../store/boxTombstones';
 import { recordShadow } from '../../store/voiceWall';
 import { clampFrac, closeSplit, dragSplit, setSplitWidth, useSplit, useSplitWidth, type SplitRef } from './splitStore';
+import { SplitBoard } from './SplitBoard';
 
 // THE SPLIT SCREEN (the reorg, phase 4.2, behind ?reorg=1 in Machina). An asset opens on the RIGHT at half the room right of the rail, with a grip between the
 // two sides. THE PAGE MOVES - Nick's one exception to "the page never moves" (Nov 10) - and only by a shift: its size and its top never change, it sits in the
@@ -123,7 +124,8 @@ function SplitOpen({ asset }: { pageId: string; asset: SplitRef }) {
   );
 }
 
-// the asset, read-only: a Block (one card's words), a Doc (its text) or a Board (its cards as a list, in the board's own order)
+// the asset, read-only: a Block (one card's words), a Doc (its text) or a Board (on its own canvas, with its views, pans and zooms: ./SplitBoard.tsx, §3b item 2a;
+// it was its cards as a list, in the board's own order, until Nov 21)
 function SplitReader({ asset }: { asset: SplitRef }) {
   const { t } = useDeskLexicon();
   const snap = useSyncExternalStore(subscribe, () => {
@@ -136,7 +138,6 @@ function SplitReader({ asset }: { asset: SplitRef }) {
   let title = t('linkDockGone');
   let kind = t('linksKindPage');
   let lines: string[] = [];
-  let cards: { id: string; title: string; body: string[] }[] = [];
   if (e) {
     if (asset.boxId) {
       const b = liveBoxes(e.boxes).find((x) => x.id === asset.boxId);
@@ -145,10 +146,6 @@ function SplitReader({ asset }: { asset: SplitRef }) {
     } else if (isBoard) {
       kind = t('linksKindBoard');
       title = plainLines(e.text ?? '')[0] || t('reorgUntitledBoard');
-      cards = liveBoxes(e.boxes).filter((b) => b.kind === 'text').slice().sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)).map((b) => {
-        const ls = plainLines(b.text ?? '');
-        return { id: b.id, title: ls[0] ?? '', body: ls.slice(1) };
-      });
     } else {
       lines = plainLines(e.text ?? '');
       title = lines[0] ?? t('linkDockGone');
@@ -163,11 +160,10 @@ function SplitReader({ asset }: { asset: SplitRef }) {
         <button type="button" className="wz-link-dock-close" data-split-close="" aria-label={t('reorgSplitClose')} onClick={closeSplit}>{t('reorgSplitClose')}</button>
       </div>
       <div className="wz-link-dock-title">{title}</div>
-      <div className="wz-link-dock-text">
-        {isBoard
-          ? (cards.length ? cards.map((c) => <div key={c.id} className="wz-split-card" data-split-card={c.id}><strong>{c.title}</strong>{c.body.map((l, i) => <p key={i}>{l}</p>)}</div>) : <p>{t('reorgSplitBoardEmpty')}</p>)
-          : lines.map((l, i) => <p key={i}>{l}</p>)}
-      </div>
+      {isBoard && e
+        // keyed by the asset: another Board, or the split opened again, starts at home (Open, scale 1, the pan home): nothing of the view is kept
+        ? <SplitBoard key={asset.entryId} entry={e} />
+        : <div className="wz-link-dock-text">{lines.map((l, i) => <p key={i}>{l}</p>)}</div>}
     </div>
   );
 }
