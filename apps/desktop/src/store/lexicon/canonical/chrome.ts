@@ -259,6 +259,7 @@ export const CANONICAL_CHROME = {
   reorgSprintLocked: 'Plan and Assets are locked in Sprint. Move to Build to use them.',
   reorgSprintAnother: 'Another Prompt',
   reorgSprintEmpty: 'A prompt to get you writing again.',
+  reorgSprintTravels: 'A press asks the Consultant for one prompt. Nothing of your page goes with it.',
   reorgPlanEmpty: "Nothing is in this doc's plan.",
   reorgPlanRename: 'Name of the plan row',
   reorgPlanUp: 'Move up',

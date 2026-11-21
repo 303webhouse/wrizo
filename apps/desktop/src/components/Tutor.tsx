@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
-import { apiTutorChat } from '../store/api';
+import { apiSprintPrompt, apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
 // FX12 S1 — the computeNudges import is retired; store/tutorNudges.ts sleeps dormant.
@@ -23,7 +23,7 @@ import { DrawerNote } from './DrawerNote';
 import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
-import { REORG } from '../reorg/flag';
+import { REORG, SPRINT_CONSULTANT } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
@@ -611,6 +611,31 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     setRefillNote(null);                    // a real draw answers any standing note
   };
 
+  // SPRINT'S PROMPT FROM THE CONSULTANT (FIX's queue item 6; behind ?sprint=consultant, default OFF: the deck press above is what ships for Monday and stays untouched). The press asks the server for ONE prompt under the strict rules
+  // (server/tutor.ts POST /tutor/sprint-prompt): the body is exactly { seen: [the last prompts shown] }, nothing of her page. The ceiling is the deck's. Any failure answers from the local deck, so a press always answers. A press in flight
+  // is ignored (busy), so one press is one request.
+  const [sprintBusy, setSprintBusy] = useState(false);
+  const sprintBusyRef = useRef(false);
+  const sprintSeenRef = useRef<string[]>([]);
+  const pressSprint = () => {
+    if (!SPRINT_CONSULTANT) { pressPreset('writingPrompt'); return; }
+    if (!freeWrite || sprintBusyRef.current) return;
+    const used = drawCounts.writingPrompt;
+    if (used >= DRAW_CEILING) { setRefillNote('writingPrompt'); return; }   // the spent ask answers with its note and makes no request
+    sprintBusyRef.current = true;
+    setSprintBusy(true);
+    void apiSprintPrompt(sprintSeenRef.current.slice(-3)).then((text) => {
+      sprintBusyRef.current = false;
+      setSprintBusy(false);
+      if (!text) { pressPreset('writingPrompt'); return; }   // offline, an error, "not configured", a daily limit: the local deck answers
+      sprintSeenRef.current = [...sprintSeenRef.current, text].slice(-3);
+      if (used + 1 >= DRAW_CEILING) spentAnchorRef.current.writingPrompt = pageWords;
+      setDraw({ preset: 'writingPrompt', text });          // REPLACES - never appends
+      setDrawCounts((c) => ({ ...c, writingPrompt: c.writingPrompt + 1 }));
+      setRefillNote(null);
+    });
+  };
+
   // ITEM 84, THE DRAFT ROSTER — THE PRESS. Staging, not sending: the ask lands in
   // the composer as ordinary editable text and NOTHING goes on the wire. As with
   // the deck phase's own press, what matters most is what is NOT here — no fetch,
@@ -833,7 +858,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             {sprint ? (
-              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={() => pressPreset('writingPrompt')} noteId="wz-sprint-note" />
+              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={pressSprint} busy={sprintBusy} travels={SPRINT_CONSULTANT} noteId="wz-sprint-note" />
             ) : (<>
             {/* no standing header (the tab row names it); the dock toggle is icon-only, its full wording on aria-label and title [Tutor §36] */}
             <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} title={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>

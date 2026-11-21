@@ -72,6 +72,8 @@
 .wz-sprint-press{ align-self:flex-start; height:28px; padding:0 12px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.04em; cursor:pointer; }
 .wz-sprint-press:hover, .wz-sprint-press:focus-visible{ border-color:var(--text-low); outline:none; }
 .wz-sprint-refill{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-sprint-travels{ margin:10px 0 0; font-family:var(--font-ui); font-size:11px; line-height:1.4; color:var(--text-mid); }
+.wz-sprint-press[aria-busy='true']{ opacity:.6; cursor:progress; }
 
 /* THE FEEDBACK LENSES (BUILD and EDIT; feedbackLenses.ts): each lens a disclosure that opens to its prompts; a prompt is a plain button that stages its words in the composer */
 .wz-lenses{ display:flex; flex-direction:column; gap:2px; margin:0 0 14px; }
