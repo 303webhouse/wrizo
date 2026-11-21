@@ -284,3 +284,6 @@
    ========================================================================================================================================== */
 :root[data-machina2][data-theme='machina'][data-machina2-room='light'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true'], .wz-template-row[aria-pressed='true']){
   color:var(--text-mid); border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass), 0 0 0 1px #23272B; }
+/* (the Wrizors' chrome scale pass 3, REAL, Nov 21 4:00 pm) the readout's "page n of m" under the page read #878E9C on the light room, 3.0:1: in the light room it is
+   the quiet G4, --text-low #5E666E (4.75:1), as the spec's readouts are. Checked by machina-brass-chosen.mjs B3. */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .wz-pagecount{ color:var(--text-low); }
