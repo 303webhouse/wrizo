@@ -8,6 +8,7 @@ import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
 import { REORG } from './flag';
+import { openSearch } from './search/searchStore';
 
 // THE REORG'S TOP RAIL (plan step 2.1, behind ?reorg=1 in Machina; Fable's GO Nov 19, 4:20 pm; built to Cursor's prototype's top bar,
 // docs/mockups/reorg/app.js renderBar and boardBar). It replaces the header row's CONTENT only, in the same row (.sprint-nav), so the page below
@@ -153,13 +154,15 @@ function ConnectList({ board, served, onClose }: { board: JournalEntry; served: 
   );
 }
 
-function SearchDoor() {
+// the search door: on a page it opens the reorg's search in the Back menu (reorg/search/, starting on This Doc); a Board has no search yet, so
+// there it still says so
+function SearchDoor({ live = false }: { live?: boolean }) {
   const { t } = useDeskLexicon();
   const [soon, setSoon] = useState(false);
   useEffect(() => { if (!soon) return; const h = setTimeout(() => setSoon(false), 2200); return () => clearTimeout(h); }, [soon]);
   return (
     <span className="reorg-top-search-wrap">
-      <button type="button" className="reorg-top-search" data-top-search aria-label={t('reorgTopSearch')} title={t('reorgTopSearch')} onClick={() => setSoon(true)}>
+      <button type="button" className="reorg-top-search" data-top-search aria-label={t('reorgTopSearch')} title={t('reorgTopSearch')} onClick={() => (live ? openSearch('bar') : setSoon(true))}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
       </button>
       {soon && <span className="reorg-top-soon" role="status">{t('reorgTopSearchSoon')}</span>}
@@ -276,7 +279,7 @@ export function TopRail({ kind, entry, stages, views, boardName, boardAfter, bef
       <PageNames entry={entry} canRename={canRename} beforeWrite={stableWrite} />
       <span className="reorg-top-spring" />
       <div className="reorg-top-right">{stages}</div>
-      <SearchDoor />
+      <SearchDoor live />
     </div>
   );
 }
