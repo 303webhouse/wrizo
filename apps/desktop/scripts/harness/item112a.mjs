@@ -300,7 +300,7 @@ await withHarness(async (app) => {
     const mdLit = await app.evalJs("(() => ({ bold: document.querySelectorAll('.forward-only-editor .md-bold').length, escapes: document.querySelectorAll('.forward-only-editor .md-escape.md-mark-hidden').length }))()");
     // the successor's reader: the same counts, outside page breaks' measuring copy (.wz-letter-measure)
     const mdLitB = await app.evalJs("(() => { const live = (s) => [...document.querySelectorAll(s)].filter((e) => !e.closest('.wz-letter-measure')).length; return { bold: live('.forward-only-editor .md-bold'), escapes: live('.forward-only-editor .md-escape.md-mark-hidden') }; })()");
-    tlParks.s0 = { md, mdLit };
+    tlParks.s0 = { md, mdLit, mdLitB };
     // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
     // ok("S2/§3 S0 [typed-literal successor]: Revise's rendered text RUNS THROUGH the decorator - the four typed stars render as literal stars with their escapes hidden (`.md-escape`), and nothing is bold: typed formatting characters are literal",
     //   md.marks >= 4 && mdLit.escapes === 4 && mdLit.bold === 0, JSON.stringify({ md, mdLit }));
@@ -840,8 +840,13 @@ if (process.env.HARNESS_PARKED === '1') {
       typeof b.plain === 'string' && b.plain === b.wantLit, JSON.stringify(b)); }
   // TYPED-LITERAL (2026-10-16) - TWO parks: S2/§3 S0's `.md-bold` from typed stars, and item112a-deterministic's S2/§3 successor (its
   // count of the typed stars). Records frozen; each re-verifies the new truth from the default leg's own readings (tlParks).
-  { const a = tlParks.s0 || {}; pok('PARKED (was "S2/§3 S0: Revise\'s rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present) ...") - typed-literal: typed stars are literal; live successor: S2/§3 S0 [typed-literal successor]',
-      !!a.mdLit && a.mdLit.escapes === 4 && a.mdLit.bold === 0, JSON.stringify(a)); }
+  // SUPERSEDED (Nov 20, Fable's ruling 2a; Actions 44837069382 on 697da898, parked leg: mdLit.escapes 8, the copy's four counted too): this record's
+  // re-verification read the plain reader, which matches page breaks' hidden measuring copy (.wz-letter-measure). Verbatim:
+  // { const a = tlParks.s0 || {}; pok('PARKED (was "S2/§3 S0: Revise\'s rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present) ...") - typed-literal: typed stars are literal; live successor: S2/§3 S0 [typed-literal successor]',
+  //     !!a.mdLit && a.mdLit.escapes === 4 && a.mdLit.bold === 0, JSON.stringify(a)); }
+  // the same record, re-verified on the live page (S0-B's reader); the default leg's MUT-S0-B shows the plain reader red on the same page
+  { const a = tlParks.s0 || {}; pok('PARKED (was "S2/§3 S0: Revise\'s rendered text RUNS THROUGH `decorateEditorFor` — markdown decorates live (`.md-bold`/`.md-mark` present) ...") - typed-literal: typed stars are literal; live successor: S2/§3 S0-B [typed-literal successor, on the live page]',
+      !!a.mdLitB && a.mdLitB.escapes === 4 && a.mdLitB.bold === 0, JSON.stringify(a)); }
   { const b = tlParks.s23 || {}; pok('PARKED (was "S2/§3 [deterministic successor]: and `entry.text` stays PLAIN — every convention character typed is still a REAL character in the surface: the four `*` all present and the count preserved 1:1 (wherever the 211 rules\' reabsorb puts the closing pair)") - typed-literal: typed stars are stored escaped; live successor: S2/§3 [typed-literal successor]',
       typeof b.plain === 'string' && b.plain === b.wantLit, JSON.stringify(b)); }
   // eslint-disable-next-line no-console

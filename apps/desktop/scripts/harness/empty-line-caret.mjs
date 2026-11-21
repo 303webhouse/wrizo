@@ -155,7 +155,9 @@ async function part2() {
       const rows = [...document.querySelectorAll('${ED} .wz-row')].filter(out); const last = rows[rows.length - 1]; if (!last) return null;
       const rects = r.getClientRects(); const rc = rects.length ? rects[0] : r.getBoundingClientRect();
       const lr = last.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(last).paddingLeft) || 0;
-      return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, inLast: last.contains(r.startContainer), rows: rows.length, guards: [...document.querySelectorAll('${ED} .md-eof-guard')].filter(out).length };
+      return { x: Math.round(rc.left * 10) / 10, rowLeft: Math.round(lr.left * 10) / 10, pad, rowRight: Math.round(lr.right * 10) / 10, inLast: last.contains(r.startContainer), rows: rows.length, guards: [...document.querySelectorAll('${ED} .md-eof-guard')].filter(out).length,
+        // (added Nov 20, for E3-B / E4-B: caret()'s three remaining fields, read the same way on the live page's last row; E1-B and E2-B read none of them)
+        caretBottom: Math.round(rc.bottom * 10) / 10, rowBottom: Math.round(lr.bottom * 10) / 10, lh: parseFloat(getComputedStyle(last).lineHeight) || null };
     })()`);
     const stored = (id) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === ${JSON.stringify(id)}) || {}).text ?? null`);
 
@@ -185,15 +187,25 @@ async function part2() {
     // line box's bottom - one half-leading below the caret's own glyph bottom (the guard span used to BE the caret's box). fx1 reads only line-to-line deltas of it, so a constant offset leaves
     // its checks standing; this holds the two claims that make that true: the offset is bounded by half a line, and it does not change from one Enter to the next.
     const off1 = c1 && c1.rowBottom - c1.caretBottom, off2 = c2 && c2.rowBottom - c2.caretBottom;
-    ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
-      !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Actions 44837069382 on 697da898 read off1 -103.8: the plain reader's last row is the copy's, at top -29536 px): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E4 the last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+    //   !!c1 && !!c2 && c1.lh > 0 && off1 >= -1 && off1 <= c1.lh / 2 + 1 && Math.abs(off2 - off1) <= 1, JSON.stringify({ off1, off2, lh: c1 && c1.lh }));
+    const off1b = c1b && c1b.rowBottom - c1b.caretBottom, off2b = c2b && c2b.rowBottom - c2b.caretBottom;
+    ok('E4-B the live page\'s last row bottom (what the lastElementChild proxy in fx1.mjs now reads) is the caret line bottom to within half a line-height, and the offset is the SAME after a second Enter (so line-to-line deltas of the proxy are unchanged)',
+      !!c1b && !!c2b && c1b.lh > 0 && off1b >= -1 && off1b <= c1b.lh / 2 + 1 && Math.abs(off2b - off1b) <= 1, JSON.stringify({ off1b, off2b, lh: c1b && c1b.lh }));
+    ok('MUT-E4-B the plain reader\'s offset is RED on the same page (the copy\'s last row sits far from the caret) while E4-B\'s is green: the skip is what holds it',
+      !!c1 && !!c1b && c1.lh > 0 && !(off1 >= -1 && off1 <= c1.lh / 2 + 1) && off1b >= -1 && off1b <= c1b.lh / 2 + 1, JSON.stringify({ off1, off1b }));
     await app.typeKeys('Next');
     await sleep(300);
     // the stored text is read AFTER the debounced save lands (the standing lesson: wait on the STORED value, never on elapsed time) - up to 8 s, then read whatever is there
     await waitSoft(`(((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'elc1')) || {}).text) === ${JSON.stringify('A title\n\nNext')}`, { label: 'the typed text has been saved', timeout: 8000 });
     const c3 = await caret();
     const text = await stored('elc1');
-    ok('E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3 && c3.inLast === true && c3.x > c3.rowLeft + c3.pad && c3.x < c3.rowLeft + 200 && c3.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3, text }));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Actions 44837069382 on 697da898 read rowLeft -29536.1 and inLast false: the copy's last row): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('E3 typing carries on from the left (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3 && c3.inLast === true && c3.x > c3.rowLeft + c3.pad && c3.x < c3.rowLeft + 200 && c3.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3, text }));
+    const c3b = await caretB();
+    ok('E3-B typing carries on from the left of the live page\'s last row (the guard is gone once the row has a letter) and the stored text is exactly what was typed (no guard character stored)', !!c3b && c3b.inLast === true && c3b.x > c3b.rowLeft + c3b.pad && c3b.x < c3b.rowLeft + 200 && c3b.guards === 0 && text === 'A title\n\nNext', JSON.stringify({ c3b, text }));
+    ok('MUT-E3-B the plain reader is RED on the same page (its last row is the copy\'s, so the caret is not in it) while E3-B\'s is green: the skip is what holds it', !!c3 && !!c3b && c3.inLast === false && c3b.inLast === true, JSON.stringify({ c3, c3b }));
   });
 }
 
