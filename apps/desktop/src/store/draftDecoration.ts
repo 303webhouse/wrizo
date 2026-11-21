@@ -47,7 +47,7 @@ function decorateInlineForCard(text: string, caret: number | null): string {
     }
     return out + escHtml(text.slice(from, b));
   };
-  const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
+  const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike', sup: 'md-sup', sub: 'md-sub' };
   const emit = (lo: number, hi: number, within: MarkRun[]): string => {
     let out = '';
     let cur = lo;

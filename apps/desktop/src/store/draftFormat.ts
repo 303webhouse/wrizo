@@ -8,15 +8,15 @@ import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMar
 // supersedes Chamber 1's deferral of alignment/indentation ("until a real need
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
-  | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
+  | 'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
   | 'para' | 'h1' | 'h2' | 'h3'
   | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
 
 // FORMAT_MARK: one source for the marker characters (bold, italic, `__underline__`, `~~strike~~`), so forward-only insertion and a Draft wrap never drift; plain-text honest, export-stripped [draftFormat §2]
-export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike', string> =
-  { bold: '**', italic: '*', underline: '__', strike: '~~' };
+export const FORMAT_MARK: Record<'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub', string> =
+  { bold: '**', italic: '*', underline: '__', strike: '~~', sup: '^', sub: '~' };
 
 // WRITING-SURFACE S0 STEP 2 - Ctrl/Cmd+B, +I, +U. The keyboard door to the SAME formatter the toolbar buttons call (the one
 // map, here, so the page and the card popup cannot drift). Until now these keys did nothing at all (frames Draft-ctrl-b/i/u:
@@ -200,7 +200,7 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
       for (let k = 0; k < closeMark(r).length; k++) fontMarkAt.add(r.close + k);
     }
     for (let i = A; i < B; i++) {
-      if (/[\s*_~]/.test(line[i]) || fontMarkAt.has(i)) continue;
+      if (/[\s*_~^]/.test(line[i]) || fontMarkAt.has(i)) continue;
       if (!fulls.some(r => i >= r.open && i < r.close + ml)) bare++;
     }
     const marked = !!inner || (fulls.length > 0 && bare === 0);
@@ -241,8 +241,8 @@ function toggleInline(text: string, start: number, end: number, mark: string): F
       out = out.slice(0, out.length - (pl.a - (pl.ls + r.open)));
       // what is left of the run on either side is re-wrapped only if it holds words; a bare neighbouring mark (the italic
       // inside a bold-italic, say) is kept as it is, not wrapped in a pair of its own
-      const wrapBefore = /[^\s*_~]/.test(before);
-      const wrapAfter = /[^\s*_~]/.test(after);
+      const wrapBefore = /[^\s*_~^]/.test(before);
+      const wrapAfter = /[^\s*_~^]/.test(after);
       piece = (wrapBefore ? mark + before + mark : before) + mid + (wrapAfter ? mark + after + mark : after);
       contentAt = wrapBefore ? ml + before.length + ml : before.length;
       contentLen = mid.length;
@@ -509,7 +509,7 @@ const ALIGN_PREFIXES = [LINE_DIRECTIVE['align-center'], LINE_DIRECTIVE['align-ri
 const BULLET_PREFIXES = [LINE_DIRECTIVE.bullet, LINE_DIRECTIVE['bullet-circle'], LINE_DIRECTIVE['bullet-square']] as const;
 
 // what the caret is inside, pure (text in, flags out) so it is testable without a browser [draftFormat §10]
-export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean } {
+export function marksAt(text: string, caret: number): { bold: boolean; italic: boolean; underline: boolean; strike: boolean; sup: boolean; sub: boolean } {
   // one reader: a mark is active when the character to the caret's LEFT carries it (the rule typing follows), so a caret past a styled word's closing marks lights nothing; an empty pair just made counts [draftFormat §11]
   const ls = text.lastIndexOf('\n', Math.max(0, caret - 1)) + 1;
   let le = text.indexOf('\n', ls);
@@ -517,7 +517,7 @@ export function marksAt(text: string, caret: number): { bold: boolean; italic: b
   const line = text.slice(ls, le);
   const lead = readLead(line).length;
   const at = caret - ls - lead;
-  const out = { bold: false, italic: false, underline: false, strike: false };
+  const out = { bold: false, italic: false, underline: false, strike: false, sup: false, sub: false };
   for (const r of readMarks(line.slice(lead))) {
     if (r.kind === 'font') continue;   // FONT-SPAN: a face is not one of the strip's four styles (fontFaceAt reads it)
     const ml = r.mark.length;
@@ -534,6 +534,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
   if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
+  if (action === 'sup') return toggleInline(text, start, end, FORMAT_MARK.sup);
+  if (action === 'sub') return toggleInline(text, start, end, FORMAT_MARK.sub);
   if (action === 'para') return setHeadingLines(text, start, end, null);
   if (action === 'h1' || action === 'h2' || action === 'h3') return setHeadingLines(text, start, end, Number(action[1]));
   if (action === 'heading') { const cur = headingLevelAt(text, start); return setHeading(text, start, cur === null ? 2 : null); }
@@ -715,7 +717,7 @@ export function fontFaceAt(text: string, selStart: number, selEnd: number): stri
     const fl = readFontLine(text.slice(sg.ls, le));
     const a = fl.toBase[sg.a - sg.ls - fl.lead];
     const b = fl.toBase[sg.b - sg.ls - fl.lead];
-    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.faces[i]);
+    for (let i = a; i < b; i++) if (/[^\s*_~^]/.test(fl.base[i])) seen.add(fl.faces[i]);
   }
   if (seen.size === 0) return null;
   return seen.size === 1 ? [...seen][0] : 'mixed';
@@ -733,7 +735,7 @@ export function fontSizeAt(text: string, selStart: number, selEnd: number): numb
     const fl = readFontLine(text.slice(sg.ls, le));
     const a = fl.toBase[sg.a - sg.ls - fl.lead];
     const b = fl.toBase[sg.b - sg.ls - fl.lead];
-    for (let i = a; i < b; i++) if (/[^\s*_~]/.test(fl.base[i])) seen.add(fl.styles[i].points);
+    for (let i = a; i < b; i++) if (/[^\s*_~^]/.test(fl.base[i])) seen.add(fl.styles[i].points);
   }
   if (seen.size === 0) return null;
   return seen.size === 1 ? [...seen][0] : 'mixed';
