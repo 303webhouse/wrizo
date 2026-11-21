@@ -125,6 +125,8 @@ export type DeskTermId =
   // SPRINT's Back menu: FEEDBACK only, writing prompts only (src/reorg/backMenu/SprintFeedback.tsx)
   | 'reorgSprintLocked' | 'reorgSprintAnother' | 'reorgSprintEmpty'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
+  // THE FEEDBACK LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): lens names, the composer's "Ask Your Own", and the approved prompts that are not already a Draft ask
+  | 'reorgLensLabel' | 'reorgLensStructure' | 'reorgLensTone' | 'reorgLensConsistency' | 'reorgLensUsage' | 'reorgLensPunctuation' | 'reorgLensCitations' | 'reorgLensAskOwn' | 'reorgLensClaim' | 'reorgLensReader' | 'reorgLensTerm'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)

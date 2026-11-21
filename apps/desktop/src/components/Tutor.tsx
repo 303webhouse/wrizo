@@ -25,6 +25,7 @@ import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
+import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
 import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
@@ -151,6 +152,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const back = REORG && tutorTheme === 'machina' && pageKind !== 'board';
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
   const sprint = back && mode === 'journal';
+  // THE LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): in BUILD and EDIT the Back menu's FEEDBACK is Structure / Tone / Consistency (EDIT adds Usage / Punctuation / Citations above them) plus "Ask Your Own"; it replaces the four-ask roster and the three computed sections
+  const lensFrame = back && !sprint;
+  const lensStage = mode === 'revise' ? 'edit' : 'build';
   // (the two source shapes drawers-p1 K5/K5b read stay verbatim: the state below opens on the TUTOR tab, and the tab body lines read `rightTab`; PLAN is its own flag, folded into `rightTab`)
   const [tabState, setTabState] = useState<RightTab>('tutor');
   const [planOn, setPlanOn] = useState(false);
@@ -612,6 +616,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // arm rather than leaving it: ask 1's button names no selection, so ask 1's press
   // must not inherit ask 4's payload. One chip cannot consent for another's wire,
   // and here that is a line of code rather than a paragraph of intent.
+  // a lens prompt STAGES its words in the composer as ordinary editable text and sends nothing, in BUILD and in EDIT; like ask 1's press it names no selection, so any armed one is cleared
+  const pressLens = (text: string) => {
+    setArmedSelection(null);
+    setSelectionTruncated(false);
+    setSelectionSentWords(0);
+    setComposerText(text);
+    setStageTick((n) => n + 1);
+  };
   const pressAsk = (ask: typeof DRAFT_ASKS[number]) => {
     if (!drafting) return;
     const text = t(ask.term);
@@ -830,8 +842,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 `.wz-tutor-convo-log` for the full before/after) — it grows
                 with its content now, the panel's single `overflow-y:auto`
                 is the only scrollbar in this whole subtree. */}
+            {lensFrame && <FeedbackLenses t={t} stage={lensStage} onPress={pressLens} />}
             <div className="wz-tutor-convo">
-              <div className="wz-tutor-h">{t('tutorConversationTitle')}</div>
+              <div className="wz-tutor-h">{lensFrame ? t('reorgLensAskOwn') : t('tutorConversationTitle')}</div>
               <div className="wz-tutor-convo-log">
                 {messages.length === 0 && !draw
                   ? <div className="wz-tutor-empty">{t('tutorConversationEmpty')}</div>
@@ -885,7 +898,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 <div className="wz-tutor-fw-note" data-note-for={refillNote}>{t('tutorFreeWriteRefill')}</div>
               )}
               {/* the Draft roster takes the same slot in its own mode; chips render with the panel, never animate in, never reshuffle; the two rosters never co-render [Tutor §41] */}
-              {drafting && (
+              {drafting && !lensFrame && (
                 <div className="wz-tutor-draft-roster" role="group" aria-label={t('tutorDraftRoster')}>
                   {DRAFT_ASKS.map((ask) => {
                     // TD4 is the ONE lawful disabled-visible chip in this roster:
@@ -941,6 +954,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 scroll-within-scroll" applies just as much to these as to the
                 conversation log). */}
             <div className="wz-tutor-sections">
+            {!lensFrame && (<>
             <div className="wz-tutor-section">
               <div className="wz-tutor-h">{t('tutorLensConsistency')}</div>
               {consistencyObservations.length === 0
@@ -977,6 +991,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                   </div>
                 )}
             </div>
+            </>)}
 
             {/* the nudges sleep: their section does not render and the engine (tutorNudges.ts) has no caller; the engine and its data stay, dormant [Tutor §44] */}
 

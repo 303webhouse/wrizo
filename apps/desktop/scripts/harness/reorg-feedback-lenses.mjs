@@ -118,7 +118,7 @@ await withHarness(async (app) => {
 
   // ---- FL9 ----
   const read = (f) => fs.readFileSync(path.join(SRC, f), 'utf8');
-  const code = ['components/Tutor.tsx', 'reorg/backMenu/FeedbackLenses.tsx', 'reorg/backMenu/feedbackLenses.ts'].map((f) => (fs.existsSync(path.join(SRC, f)) ? read(f) : '').replace(/\/\/.*$/gm, '')).join('\n');
+  const code = ['components/Tutor.tsx', 'reorg/backMenu/LensPanel.tsx', 'reorg/backMenu/feedbackLenses.ts'].map((f) => (fs.existsSync(path.join(SRC, f)) ? read(f) : '').replace(/\/\/.*$/gm, '')).join('\n');
   const lex = read('store/lexicon/canonical/chrome.ts');
   const words = [...STRUCTURE, ...CONSISTENCY, 'Ask Your Own', 'Structure', 'Consistency', 'Tone', 'Usage', 'Punctuation', 'Citations'];
   const inCode = words.filter((w) => code.includes(`'${w}'`) || code.includes(`"${w}"`) || code.includes(`>${w}<`));
