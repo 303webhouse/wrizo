@@ -31,6 +31,7 @@ import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
+import { pendingAssetsFocus, subscribeAssetsFocus, takeAssetsFocus } from '../reorg/backMenu/assetsFocus';
 import { assembleTutorDelta, capSelection, assembleBible } from './tutor/assemble';
 import { FREE_WRITE_PRESETS, NO_DRAWS, DRAFT_ASKS } from './tutor/presets';
 
@@ -152,6 +153,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const setRightTab = (v: RightTab | 'plan'): void => { if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
   useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+  // A PART ROW'S LINK BADGE (reorg/backMenu/assetsFocus.ts): its press opens this drawer on ASSETS; the Assets tab opens that Part (mounting
+  // fresh or already drawn). Off the Back menu there is no Assets tab to take it, so the ask is spent here.
+  useEffect(() => subscribeAssetsFocus(() => {
+    const f = pendingAssetsFocus();
+    if (!f) return;
+    if (!back) { takeAssetsFocus(f.tick); return; }
+    setPlanOn(false); setTabState('links'); setOpen(true);
+  }), [back]);
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
   // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
   // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
