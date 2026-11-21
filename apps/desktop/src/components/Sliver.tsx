@@ -135,7 +135,7 @@ export type SliverContent =
       // exactly as before.
       format?: {
         onFormat: (action: FormatAction) => void;
-        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean;
+        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean; supOn?: boolean; subOn?: boolean;
         // the caret line's heading level (1-6), or null: H lights on a heading line [Sliver §3]
         headingLevel?: number | null;
       };
@@ -680,6 +680,9 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
                 has learned. The glyph wears its own mark (<s>) exactly as B/I/U
                 wear theirs — the control demonstrates itself. */}
             <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
+            {/* SUPERSCRIPT AND SUBSCRIPT (reorg-plan-v2, INK queue item 2): two more in the styling row, only in the reorg's Front menu; stored as ^sup^ and ~sub~ in the words (store/markRuns.ts) */}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sup" data-on={content.format.supOn ? 'true' : 'false'} aria-pressed={!!content.format.supOn} title={t('reorgStyleSup')} aria-label={t('reorgStyleSup')} onClick={() => content.format!.onFormat('sup')}>x<sup>2</sup></button>}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sub" data-on={content.format.subOn ? 'true' : 'false'} aria-pressed={!!content.format.subOn} title={t('reorgStyleSub')} aria-label={t('reorgStyleSub')} onClick={() => content.format!.onFormat('sub')}>x<sub>2</sub></button>}
             {!textFolds && headingControls}
           </div>
           {/* THE TEAM B RESTYLE (slice 5): behind ?reorg=1 the heading and the paragraph rows fold under "Paragraph"; off the switch they stand as today */}

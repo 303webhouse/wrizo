@@ -313,6 +313,8 @@ export const CANONICAL_CHROME = {
   reorgParaH1: 'Heading 1',
   reorgParaH2: 'Heading 2',
   reorgParaH3: 'Heading 3',
+  reorgStyleSup: 'Superscript',
+  reorgStyleSub: 'Subscript',
   reorgTextMore: 'More',
   reorgTextSymbols: 'Insert Symbol',
   reorgTextSymbolAria: 'Insert {symbol}',
