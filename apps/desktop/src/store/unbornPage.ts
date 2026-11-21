@@ -1,5 +1,6 @@
 import { generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
 import { graftTo } from './grafts';
+import { placeAtEnd } from '../reorg/parts';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
@@ -168,6 +169,8 @@ export function birth(
     updatedAt: now,
   };
   saveJournalEntry(born);
+  // a Part born through the Plan row's door lands at the END of the Doc's Parts, never sorted among them by creation time (reorg/parts.ts placeAtEnd, through INK's placeRun)
+  if (d.partName !== null && d.partName !== undefined && d.binderId) placeAtEnd(born.id);
   // relationships of the same act are applied here, so the row and its relationship are never observable apart; the pin can come from the address, so it survives a reload [unbornPage §6]
   const pinTo = opts.pinToBoardId ?? d.pinBoardId;
   // PW1 S3 — BOARD-SIDE: this page was opened FROM a board's own door (the
