@@ -79,10 +79,14 @@ try { await withHarness(async (app) => {
 
   // L4 an unknown key survives
   await ev(`window.wrizoPatchEntry(${J(ids[3])}, { pageSettings: { margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }, fromANewerClient: { keep: 'me' } } })`);
-  await P(`p.renamePart(${J(ids[3])}, 'Last')`); await P(`p.setPartColor(${J(ids[3])}, 'plum')`); await P(`p.setPartLevel(${J(doc)}, ${J(ids[3])}, 1)`);
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable: PART_COLORS is the slots a-f). The check stands on the slot below:
+  // await P(`p.renamePart(${J(ids[3])}, 'Last')`); await P(`p.setPartColor(${J(ids[3])}, 'plum')`); await P(`p.setPartLevel(${J(doc)}, ${J(ids[3])}, 1)`);
+  await P(`p.renamePart(${J(ids[3])}, 'Last')`); await P(`p.setPartColor(${J(ids[3])}, 'f')`); await P(`p.setPartLevel(${J(doc)}, ${J(ids[3])}, 1)`);
   await reloadBack();
   const s3 = await stored(ids[3]);
-  ok('L4 a pageSettings key this client does not know (a newer client\'s) survives a rename, a colour and a level change, and a reload', !!s3 && s3.ps.fromANewerClient && s3.ps.fromANewerClient.keep === 'me' && s3.ps.name === 'Last' && s3.ps.color === 'plum', J(s3 && s3.ps));
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable: PART_COLORS is the slots a-f). The check stands on the slot below:
+  // ok('L4 a pageSettings key this client does not know (a newer client\'s) survives a rename, a colour and a level change, and a reload', !!s3 && s3.ps.fromANewerClient && s3.ps.fromANewerClient.keep === 'me' && s3.ps.name === 'Last' && s3.ps.color === 'plum', J(s3 && s3.ps));
+  ok('L4 a pageSettings key this client does not know (a newer client\'s) survives a rename, a colour and a level change, and a reload', !!s3 && s3.ps.fromANewerClient && s3.ps.fromANewerClient.keep === 'me' && s3.ps.name === 'Last' && s3.ps.color === 'f', J(s3 && s3.ps));
 
   // L5 a re-order and a level change write no word
   const snap = async () => { const out = {}; for (const id of ids) out[id] = (await stored(id)).text; return out; };
