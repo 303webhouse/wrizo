@@ -231,10 +231,10 @@ await withHarness(async (app) => {
   // painted: a clip alone (overflow:hidden) would still leave the words past the edge, and this stays red.
   const fit = await app.evalJs(`(() => { const l = ${L}; if (!l) return null; const rows = [...l.querySelectorAll('li[data-part-li] > .reorg-parts-row')];
     const each = rows.map((r) => { const b = r.getBoundingClientRect(); const out = [...r.children].filter((c) => c.getBoundingClientRect().right > b.right + 0.5).map((c) => String(c.className));
-      return { id: r.getAttribute('data-part-row'), w: Math.round(b.width), sw: r.scrollWidth, cw: r.clientWidth, out }; });
+      const nm = r.querySelector('.reorg-parts-name'); return { id: r.getAttribute('data-part-row'), w: Math.round(b.width), sw: r.scrollWidth, cw: r.clientWidth, out, name: nm ? Math.round(nm.getBoundingClientRect().width) : null }; });
     const g = l.querySelector('[data-part-assets="wb-1"]'); let reach = null, hit = null;
     if (g) { const r = g.getBoundingClientRect(); const x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); reach = !!x && (x === g || g.contains(x)); hit = x ? x.tagName + '.' + String(x.className).slice(0, 40) : null; }
-    return { n: rows.length, spill: each.filter((o) => o.out.length || o.sw > o.cw + 1), widths: each.map((o) => o.w), reach, hit }; })()`);
+    return { n: rows.length, spill: each.filter((o) => o.out.length || o.sw > o.cw + 1), widths: each.map((o) => o.w), names: each.map((o) => o.name), reach, hit }; })()`);
   ok('R4 every row draws inside its own box (nothing past its edge, nothing under the link badge), and a press at the badge\'s centre reaches the badge',
     !!fit && fit.n >= 4 && fit.spill.length === 0 && fit.reach === true, fit);
 
