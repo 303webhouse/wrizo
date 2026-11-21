@@ -337,8 +337,11 @@ await withHarness(async (app) => {
   await sleep(200);
   // ARCHIVED PARK (#13 step 14): archive/fx3.mjs.parked.md record 5
   const scriptMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
-  ok('S4 successor (Phase 1): on a script page the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
-    !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === false && !!scriptMenuToggle && scriptMenuToggle.label === 'Typewriter mode' && scriptMenuToggle.text === '' && (scriptMenuToggle.pressed === 'true' || scriptMenuToggle.pressed === 'false'), JSON.stringify({ scriptMenu, scriptMenuToggle }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S4 successor (Phase 1): on a script page the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+  // !!scriptMenu && scriptMenu.headings[0] === 'Typewriter Mode' && scriptMenu.typewriterRow === false && !!scriptMenuToggle && scriptMenuToggle.label === 'Typewriter mode' && scriptMenuToggle.text === '' && (scriptMenuToggle.pressed === 'true' || scriptMenuToggle.pressed === 'false'), JSON.stringify({ scriptMenu, scriptMenuToggle }));
+  ok('S4 [Free Write = Typewriter successor]: on a script page the typewriter is NOT offered - there is no icon toggle beside the "..." (none found), no on/off row in the Settings menu, and the menu itself is there (power)',
+    !!scriptMenu && scriptMenu.headings.length >= 1 && !scriptMenu.headings.includes('Typewriter Mode') && scriptMenu.typewriterRow === false && scriptMenuToggle === null, JSON.stringify({ scriptMenu, scriptMenuToggle }));
 
   // Repeat the same three assertions on prose (the brief names both
   // surfaces; S7's mirroring convention applies to S5 too).
@@ -377,8 +380,11 @@ await withHarness(async (app) => {
   await sleep(200);
   // ARCHIVED PARK (#13 step 14): archive/fx3.mjs.parked.md record 7
   const proseMenuToggle = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle=\"typewriter\"]'); return b ? { label: b.getAttribute('aria-label'), pressed: b.getAttribute('aria-pressed'), text: (b.textContent || '').trim() } : null; })()");
-  ok('S4 successor (Phase 1): on prose the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
-    !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === false && !!proseMenuToggle && proseMenuToggle.label === 'Typewriter mode' && proseMenuToggle.text === '' && (proseMenuToggle.pressed === 'true' || proseMenuToggle.pressed === 'false'), JSON.stringify({ proseMenu, proseMenuToggle }));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S4 successor (Phase 1): on prose the typewriter is still offered - as the icon toggle beside the "...", (named, icon-only, aria-pressed) - and the Settings menu still opens on Typewriter Mode with NO on/off row (its remaining rows greyed or not by the mode)',
+  // !!proseMenu && proseMenu.headings[0] === 'Typewriter Mode' && proseMenu.typewriterRow === false && !!proseMenuToggle && proseMenuToggle.label === 'Typewriter mode' && proseMenuToggle.text === '' && (proseMenuToggle.pressed === 'true' || proseMenuToggle.pressed === 'false'), JSON.stringify({ proseMenu, proseMenuToggle }));
+  ok('S4 [Free Write = Typewriter successor]: on prose the typewriter is NOT offered as a switch - there is no icon toggle beside the "..." (none found), no on/off row in the Settings menu, and the menu itself is there (power)',
+    !!proseMenu && proseMenu.headings.length >= 1 && proseMenu.typewriterRow === false && proseMenuToggle === null, JSON.stringify({ proseMenu, proseMenuToggle }));
 
   // -- The instruments panel: opens, carries the three controls (on/off,
   // unit preference, target value), and closes on a keystroke through the
@@ -784,9 +790,12 @@ if (process.env.HARNESS_PARKED === '1') {
   return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
            headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
 })()`);
-    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft's foot menu carries Progress Tracking alone now (the Typewriter Mode heading mounts on Free Write only); the generation-5 record keeps its other conditions. The original line, verbatim:
+    // const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // the SCRIPT surface is Draft's (Progress Tracking alone); the PROSE surface of this fixture is Free Write, whose menu mounts the Typewriter Mode section too.
+    const footOkPR7 = (f, withTypewriter) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Progress Tracking') && f.headings.includes('Typewriter Mode') === withTypewriter && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
     pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) — PR #7 (4d3c84e): each surface\'s foot is ONE three-dot menu whose aria-label and title agree, disclosing Typewriter Mode and Progress, and Full Screen lives in the desk corner menu; script and prose identical',
-      footOkPR7(scriptFootPR7) && footOkPR7(proseFootPR7) && scriptFootPR7.menuLabel === proseFootPR7.menuLabel,
+      footOkPR7(scriptFootPR7, false) && footOkPR7(proseFootPR7, true) && scriptFootPR7.menuLabel === proseFootPR7.menuLabel,
       JSON.stringify({ scriptFootPR7, proseFootPR7 }));
 
     return parkedChecks;

@@ -214,7 +214,8 @@ await withHarness(async (app) => {
 
     // An existing goal keeps its old meaning: a bare number in storage is lines.
     await app.goto('/');
-    await app.evalJs(`localStorage.setItem('${GOAL}', '2')`);
+    // STAGING (the goal is saved to the account now, store/writingGoalPref.ts): a device from before units existed has never met the account, so it holds no prefs copy; the earlier presses of this run left one (24 words), which would rightly win at boot over a key written behind the app's back
+    await app.evalJs(`localStorage.removeItem('wrizo-reorg-prefs'); localStorage.setItem('${GOAL}', '2')`);
     await app.reload();
     await app.evalJs(`location.hash = '#/page/${id}'`);
     await app.waitFor(`!!document.querySelector('${ED}')`, { label: 'page after legacy goal' });
@@ -249,7 +250,9 @@ await withHarness(async (app) => {
       probe.remove(); brass.remove(); return out; })()`);
     // ARCHIVED PARK (#13 step 14): archive/item211.mjs.parked.md record 5
     c4Seen = heads;
-    ok("C4 [recede-depth-removed successor]: every Settings heading (two, since the Preferences block went) is the theme's olive (--accent-rest), not brass", heads.h4.length === 2 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Settings menu on Draft has ONE section now (Progress Tracking: the Typewriter Mode section mounts on Free Write only); the original check, verbatim:
+    //   ok("C4 [recede-depth-removed successor]: every Settings heading (two, since the Preferences block went) is the theme's olive (--accent-rest), not brass", heads.h4.length === 2 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
+    ok("C4 [Free Write = Typewriter successor]: every Settings heading (at least one: Draft's menu carries Progress Tracking alone) is the theme's olive (--accent-rest), not brass", heads.h4.length >= 1 && heads.h4.every((c) => c === heads.olive) && heads.olive !== heads.brass, JSON.stringify(heads));
   }
 
   // ---- FABLE'S REVIEW (2026-10-03) ----

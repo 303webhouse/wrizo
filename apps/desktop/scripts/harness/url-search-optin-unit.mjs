@@ -7,6 +7,7 @@
 //       U1L proves U1b can fail.
 //   U2  the unset value IS '/': the declaration evaluated with an empty environment gives '/', so `${base}${URL_SEARCH}#x` === `${base}/#x`.
 //       [U1b(c), U1L and U2 PARKED Nov 15 - the Arbor pin (Fable's ruling): successors U1b(c2), U1L2, U2b and its liveness U2L]
+//       [U1b(c2) and U1L2 PARKED Nov 20 - the Machina pin (Machina's look on by default): successors U1b(c3), U1L3; U2M and its liveness U2ML]
 //   U3  every page the driver opens goes through the opt-in: no `${base}/#` is left, and the three opens (goto, the reset, the launch) use it.
 //   U4  liveness: set, it does reach the URL - '?arbor2=1' and '/?arbor2=1' both give '/?arbor2=1' (a check that cannot fail is not run).
 //   U5  nothing opts in by accident: no harness or frames file sets WS_URL_SEARCH (only this proof names it).   [PARKED Nov 10 - see U5b]
@@ -27,6 +28,8 @@ const norm = (s) => s.split('\r\n').join('\n');
 const now = norm(fs.readFileSync(RV, 'utf8'));
 const DECL = /\/\/ WS_URL_SEARCH \(opt-in[^\n]*\n\/\/[^\n]*\nconst URL_SEARCH = ([^\n]*);\n\n/;
 const m = now.match(DECL);
+// the Machina pin (ARBOR, Nov 20, machina/look; Machina's look on by default, Fable Nov 19): one named block after Arbor's, ending in its one statement and a blank line
+const MPIN = /\/\/ MACHINA'S LOOK IS ON BY DEFAULT[^\n]*\n(?:\/\/[^\n]*\n)*\{ const s = process\.env\.WS_URL_SEARCH;[^\n]*\n\n/;
 // the Arbor pin (Nov 15): one named block before the opt-in's comment, ending in its one assignment and a blank line
 const PIN = /\/\/ THE ARBOR REDESIGN IS ON BY DEFAULT[^\n]*\n(?:\/\/[^\n]*\n)*if \(!process\.env\.WS_URL_SEARCH && process\.env\.WS_ARBOR2 !== 'default'\) process\.env\.WS_URL_SEARCH = '\?arbor2=0';\n\n/;
 ok('U0 the opt-in declaration is found (the proof reads the real file)', !!m);
@@ -58,8 +61,14 @@ ok('U1b(b) today\'s declaration is the one the opt-in introduced, unchanged', !!
 // PARKED 2026-11-15 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default, and the harness pins today's Arbor (?arbor2=0) for any file that doesn't ask for the redesign - runtime-verify.mjs sets WS_URL_SEARCH to '?arbor2=0' before the opt-in's declaration when no query is named and WS_ARBOR2 is not 'default': the opt-in now has one more foothold, the pin, by ruling). Original, verbatim:
 // { const u = unsetOf(now); ok('U1b(c) today, unset, nothing named URL_SEARCH is left', u != null && !u.includes('URL_SEARCH'), u == null ? 'no declaration' : `${(u.match(/URL_SEARCH/g) || []).length} left`); }
 // SUCCESSOR U1b(c2): today, unset, nothing named URL_SEARCH is left but the declaration and the ONE ruled foothold, the Arbor pin block
-{ const u = unsetOf(now); const p = now.match(PIN); const v = u == null ? null : u.replace(PIN, '');
-  ok('U1b(c2) today, unset, nothing named URL_SEARCH is left but the declaration and the Arbor pin (one block, Fable Nov 15)', !!p && v != null && !v.includes('URL_SEARCH'), v == null ? 'no declaration' : `pin ${!!p}; ${(v.match(/URL_SEARCH/g) || []).length} left`); }
+// PARKED 2026-11-20 (ARBOR, machina/look; SUPERSEDED by Machina's look shipping on by default, Fable Nov 19: "Machina's look SHIPS this weekend" - the driver
+// carries a SECOND pin block, Machina's (?machina2=0 unless WS_MACHINA2=default), on Arbor's ruled pattern; measured: 6 uses left outside the Arbor block).
+// Original, verbatim:
+// { const u = unsetOf(now); const p = now.match(PIN); const v = u == null ? null : u.replace(PIN, '');
+//   ok('U1b(c2) today, unset, nothing named URL_SEARCH is left but the declaration and the Arbor pin (one block, Fable Nov 15)', !!p && v != null && !v.includes('URL_SEARCH'), v == null ? 'no declaration' : `pin ${!!p}; ${(v.match(/URL_SEARCH/g) || []).length} left`); }
+// SUCCESSOR U1b(c3): today, unset, nothing named URL_SEARCH is left but the declaration and the TWO named pin blocks, Arbor's and Machina's (each one block)
+{ const u = unsetOf(now); const p = now.match(PIN), q = now.match(MPIN); const v = u == null ? null : u.replace(PIN, '').replace(MPIN, '');
+  ok('U1b(c3) today, unset, nothing named URL_SEARCH is left but the declaration, the Arbor pin and the Machina pin (one block each)', !!p && !!q && v != null && !v.includes('URL_SEARCH'), v == null ? 'no declaration' : `pin ${!!p}, machina pin ${!!q}; ${(v.match(/URL_SEARCH/g) || []).length} left`); }
 // PARKED 2026-11-15 (SUPERSEDED - FABLE RULED, Nov 15, 10:40 pm: the redesign is on by default, and the harness pins today's Arbor (?arbor2=0) for any file that doesn't ask for the redesign - runtime-verify.mjs sets WS_URL_SEARCH to '?arbor2=0' before the opt-in's declaration when no query is named and WS_ARBOR2 is not 'default': today's file carries the pin, so "footholdFree(today)" is false by ruling). Original, verbatim:
 // // U1L liveness (a check that cannot fail is not run): the same test REJECTS today's file with a stray use, and with a changed declaration
 // {
@@ -70,12 +79,22 @@ ok('U1b(b) today\'s declaration is the one the opt-in introduced, unchanged', !!
 // }
 // SUCCESSOR U1L2: the same liveness with the pin block taken out first (it is U1b(c2)'s one named foothold) - the test still rejects a stray use and a
 // changed declaration
+// PARKED 2026-11-20 (ARBOR, machina/look; SUPERSEDED with U1b(c2) above: the Machina pin is a second named block, so "the pin block out" leaves its uses).
+// Original, verbatim:
+// {
+//   const noPin = (t) => t.replace(PIN, '');
+//   const stray = now.replace(DECL, (d) => d + 'const STRAY = URL_SEARCH;\n');
+//   const changed = now.replace(DECL, (d) => d.replace(/;\n\n$/, ' || \'/\';\n\n'));
+//   const live = !!now.match(PIN) && footholdFree(noPin(now), introDecl) && stray !== now && !footholdFree(noPin(stray), introDecl) && changed !== now && !footholdFree(noPin(changed), introDecl);
+//   ok('U1L2 liveness: with the pin block out, U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ pin: !!now.match(PIN), today: footholdFree(noPin(now), introDecl), stray: footholdFree(noPin(stray), introDecl), changed: footholdFree(noPin(changed), introDecl) }));
+// }
+// SUCCESSOR U1L3: the same liveness with BOTH pin blocks taken out first - the test still rejects a stray use and a changed declaration
 {
-  const noPin = (t) => t.replace(PIN, '');
+  const noPins = (t) => t.replace(PIN, '').replace(MPIN, '');
   const stray = now.replace(DECL, (d) => d + 'const STRAY = URL_SEARCH;\n');
   const changed = now.replace(DECL, (d) => d.replace(/;\n\n$/, ' || \'/\';\n\n'));
-  const live = !!now.match(PIN) && footholdFree(noPin(now), introDecl) && stray !== now && !footholdFree(noPin(stray), introDecl) && changed !== now && !footholdFree(noPin(changed), introDecl);
-  ok('U1L2 liveness: with the pin block out, U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ pin: !!now.match(PIN), today: footholdFree(noPin(now), introDecl), stray: footholdFree(noPin(stray), introDecl), changed: footholdFree(noPin(changed), introDecl) }));
+  const live = !!now.match(PIN) && !!now.match(MPIN) && footholdFree(noPins(now), introDecl) && stray !== now && !footholdFree(noPins(stray), introDecl) && changed !== now && !footholdFree(noPins(changed), introDecl);
+  ok('U1L3 liveness: with both pin blocks out, U1b passes today\'s file and fails both mutants (a stray use; a changed declaration)', live, JSON.stringify({ pin: !!now.match(PIN), mpin: !!now.match(MPIN), today: footholdFree(noPins(now), introDecl), stray: footholdFree(noPins(stray), introDecl), changed: footholdFree(noPins(changed), introDecl) }));
 }
 
 // U2 / U4: the declaration's own expression, evaluated
@@ -92,6 +111,17 @@ ok('U2b unset (and empty) give "/?arbor2=0" (today\'s Arbor pinned); WS_ARBOR2=d
 // U2L liveness: with the pin taken out, U2b's read goes red (unset is '/' again)
 const q0 = evalPinned({}, '');
 ok('U2L liveness: without the pin, unset gives "/" - U2b\'s read goes RED', q0 === '/' && q0 !== '/?arbor2=0', JSON.stringify({ q0 }));
+// U2M (ARBOR, Nov 20, machina/look): both pins and the declaration evaluated together, as the driver runs them: unset (and empty) give
+// '/?arbor2=0&machina2=0'; WS_MACHINA2=default gives '/?arbor2=0' (the look); WS_ARBOR2=default gives '/?machina2=0'; both default give '/'; a named query wins
+const mpinCode = (now.match(MPIN) || [''])[0].split('\n').filter((l) => /^\{ const s = /.test(l)).join('\n');
+const both = `${pinCode}\n${mpinCode}`;
+const mp = [evalPinned({}, both), evalPinned({ WS_URL_SEARCH: '' }, both), evalPinned({ WS_MACHINA2: 'default' }, both), evalPinned({ WS_ARBOR2: 'default' }, both),
+  evalPinned({ WS_ARBOR2: 'default', WS_MACHINA2: 'default' }, both), evalPinned({ WS_URL_SEARCH: '?arbor2=1' }, both)];
+ok('U2M both pins: unset/empty "/?arbor2=0&machina2=0"; WS_MACHINA2=default "/?arbor2=0"; WS_ARBOR2=default "/?machina2=0"; both "/"; a named query wins',
+  !!mpinCode && JSON.stringify(mp) === JSON.stringify(['/?arbor2=0&machina2=0', '/?arbor2=0&machina2=0', '/?arbor2=0', '/?machina2=0', '/', '/?arbor2=1']), JSON.stringify({ mpinCode: !!mpinCode, mp }));
+// U2ML liveness: without the Machina pin, unset gives '/?arbor2=0' - U2M's read goes RED
+const mq = evalPinned({}, pinCode);
+ok('U2ML liveness: without the Machina pin, unset gives "/?arbor2=0" - U2M\'s read goes RED', mq === '/?arbor2=0' && mq !== '/?arbor2=0&machina2=0', JSON.stringify({ mq }));
 const a1 = evalWith({ WS_URL_SEARCH: '?arbor2=1' }), a2 = evalWith({ WS_URL_SEARCH: '/?arbor2=1' });
 ok('U4 liveness: set, the query reaches the URL', a1 === '/?arbor2=1' && a2 === '/?arbor2=1', JSON.stringify({ a1, a2 }));
 

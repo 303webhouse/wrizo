@@ -65,10 +65,12 @@ async function seed(app) {
   })()`);
 }
 
-async function openPage(app, id, { theme = 'machina', reorg = true } = {}) {
+async function openPage(app, id, { theme = 'machina', reorg = true, mode = 'drafting' } = {}) {
   // the theme seam exists once the app has mounted: wait for it, never assume it (the first look after a reload or a seed can come before it)
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
+  // STAGING (Fable, Nov 20: SPRINT's Back menu locks Plan and Assets): these pages open in BUILD (Draft), where the three tabs are the Back menu this file proves; SPRINT has its own file (reorg-sprint-back.mjs)
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
   await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
@@ -87,7 +89,9 @@ const click = (app, sel) => app.evalJs(`(() => { const b = document.querySelecto
 const TABS = "(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); if (!row) return null; return { label: row.getAttribute('aria-label'), tabs: [...row.querySelectorAll('.wz-drawer-tab')].map((b) => [b.id.replace('wz-tutor-tab-', ''), b.textContent, b.getAttribute('aria-selected')]) }; })()";
 // the Feedback / Consultant tab's body, as a SHAPE: every class used inside it and the count of its controls (the words differ by theme switch, the structure must not)
 const BODY = "(() => { const b = document.querySelector('.wz-tutor-panel .wz-tutor-body'); if (!b) return null; const cls = new Set(); b.querySelectorAll('*').forEach((e) => (e.getAttribute('class') || '').split(/\\s+/).filter(Boolean).forEach((c) => cls.add(c))); return { classes: [...cls].sort(), controls: b.querySelectorAll('button, input, textarea, select').length, composer: !!b.querySelector('input, textarea') }; })()";
-const PLAN_ROWS = "(() => [...document.querySelectorAll('[data-back-plan] [data-plan-row]')].map((r) => ({ id: r.dataset.planRow, depth: Number(r.dataset.planDepth), num: r.querySelector('.wz-back-plan-num')?.textContent, name: (r.querySelector('[data-plan-name]')?.value ?? r.querySelector('[data-plan-name]')?.textContent), up: !r.querySelector('[data-plan-up]')?.disabled, down: !r.querySelector('[data-plan-down]')?.disabled, indent: !r.querySelector('[data-plan-indent]')?.disabled, outdent: !r.querySelector('[data-plan-outdent]')?.disabled })))()";
+// SUPERSEDED (the Plan's groups of cards from other connected Boards, Fable's ruling Nov 21, 12:35 am: below the Page's own rows the Plan now lists each connected Board's cards as a group, and bm-p is connected to bm-x, bm-y and bm-q, so the groups' rows sit inside [data-back-plan] too): these checks read the PAGE'S OWN rows, which are the direct rows of its own list. The original, verbatim:
+// const PLAN_ROWS = "(() => [...document.querySelectorAll('[data-back-plan] [data-plan-row]')].map((r) => ({ id: r.dataset.planRow, depth: Number(r.dataset.planDepth), num: r.querySelector('.wz-back-plan-num')?.textContent, name: (r.querySelector('[data-plan-name]')?.value ?? r.querySelector('[data-plan-name]')?.textContent), up: !r.querySelector('[data-plan-up]')?.disabled, down: !r.querySelector('[data-plan-down]')?.disabled, indent: !r.querySelector('[data-plan-indent]')?.disabled, outdent: !r.querySelector('[data-plan-outdent]')?.disabled })))()";
+const PLAN_ROWS = "(() => [...document.querySelectorAll('[data-back-plan] > .wz-back-plan-list > [data-plan-row]')].map((r) => ({ id: r.dataset.planRow, depth: Number(r.dataset.planDepth), num: r.querySelector('.wz-back-plan-num')?.textContent, name: (r.querySelector('[data-plan-name]')?.value ?? r.querySelector('[data-plan-name]')?.textContent), up: !r.querySelector('[data-plan-up]')?.disabled, down: !r.querySelector('[data-plan-down]')?.disabled, indent: !r.querySelector('[data-plan-indent]')?.disabled, outdent: !r.querySelector('[data-plan-outdent]')?.disabled })))()";
 const boardCards = (e) => ((e && e.boxes) || []).filter((b) => b.kind === 'text' && !b.deletedAt).slice().sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
 
 await withHarness(async (app) => {
@@ -120,8 +124,12 @@ await withHarness(async (app) => {
     && tabs.label === 'Plan, assets and feedback', JSON.stringify(tabs));
   await tab(app, 'tutor');
   const onBody = await app.evalJs(BODY);
-  ok('T2: the Feedback tab is today\'s Tutor, moved whole - the same classes and the same controls as the Consultant tab with the switch off',
-    !!onBody && !!offBody && onBody.composer && JSON.stringify(onBody.classes) === JSON.stringify(offBody.classes) && onBody.controls === offBody.controls, JSON.stringify({ onBody, offBody }));
+  // SUPERSEDED (the FEEDBACK lens frame, Fable, Nov 20, 11:15 pm; Nick's F2: in BUILD the Back menu's FEEDBACK is Structure / Tone / Consistency 'replacing the asks', plus Ask Your Own: the tab is no longer today's Tutor moved whole). The original, verbatim:
+  // ok('T2: the Feedback tab is today\'s Tutor, moved whole - the same classes and the same controls as the Consultant tab with the switch off',
+  //   !!onBody && !!offBody && onBody.composer && JSON.stringify(onBody.classes) === JSON.stringify(offBody.classes) && onBody.controls === offBody.controls, JSON.stringify({ onBody, offBody }));
+  const lensOn = await app.evalJs("(() => ({ lenses: [...document.querySelectorAll('.wz-tutor-panel [data-lens]')].map((s) => s.getAttribute('data-lens')), roster: document.querySelectorAll('.wz-tutor-panel .wz-tutor-draft-roster').length, convoHead: (document.querySelector('.wz-tutor-convo > .wz-tutor-h') || {}).textContent || null }))()");
+  ok('T2 [successor: the lens frame]: the Feedback tab is the lens frame and the composer headed "Ask Your Own" (the lenses Structure, Tone and Consistency, no four-ask roster); with the switch off the Consultant tab is untouched (its composer)',
+    !!onBody && !!offBody && onBody.composer && JSON.stringify(lensOn.lenses) === JSON.stringify(['structure', 'tone', 'consistency']) && lensOn.roster === 0 && lensOn.convoHead === 'Ask Your Own' && offBody.composer, JSON.stringify({ lensOn, offBody }));
 
   // ---- ASSETS -------------------------------------------------------------------------------------------------------------------------
   await tab(app, 'links');
@@ -301,14 +309,25 @@ await withHarness(async (app) => {
   await openDrawer(app); await tab(app, 'links');
   const fw = await pressBeside('Xcard one'); await sleep(400);
   const fwOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  const fwTwOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");   // SP11-M reads the split rule on this state
+  // SUPERSEDED (Fable, Nov 20, 3:15 pm; Nick, Nov 20, 1:20 pm: in SPRINT - Free Write - the Back menu keeps only FEEDBACK, and Plan and Assets are greyed with a note), so the Assets tab
+  // holds no "Open beside" to grey in Free Writing: the split is unreachable there before the button. Parked, not deleted; the original, verbatim:
+  //   ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  const fwLocked = await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-disabled') === 'true'");
+  ok('SP10 [successor]: in Free Writing (SPRINT) the Assets tab is locked, so there is no "Open beside" to press and nothing opens beside the page (Free Writing is the Typewriter, always)', fwLocked === true && !fwOpen, JSON.stringify({ fwLocked, fwOpen }));
   // the Typewriter on (a Draft page whose own setting is on): not offered
   await app.evalJs("localStorage.setItem('wrizo-typewriter-page-bm-p', 'on')");
   await openPage(app, 'bm-p'); await toMode('draft'); await openDrawer(app); await tab(app, 'links');
   const twOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");
   const tw = await pressBeside('Xcard one'); await sleep(400);
   const twOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('SP11: with the Typewriter on, "Open beside" is greyed with its reason and opens nothing (the Typewriter is not available in a split)', twOn && !!tw && tw.disabled && /Typewriter/.test(tw.title) && !twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft NEVER: a Draft page's stored Typewriter setting is read by nothing, so a Draft page with the Typewriter on cannot exist and its twOn reads false; the Typewriter in a split is SP10's, on Free Writing). The original, verbatim:
+  // ok('SP11: with the Typewriter on, "Open beside" is greyed with its reason and opens nothing (the Typewriter is not available in a split)', twOn && !!tw && tw.disabled && /Typewriter/.test(tw.title) && !twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  // SUCCESSOR: the same seeded setting (stored 'on' on a Draft page) runs NO Typewriter, so "Open beside" is offered and opens the split; the rule is one predicate, and SP11-M reads it on Free Writing (the Typewriter) and must reject it
+  const splitOffered = (s) => !s.twOn && !!s.tw && !s.tw.disabled;
+  ok('SP11 [successor]: a Draft page whose stored Typewriter setting says on runs no Typewriter (Draft never does), so "Open beside" is offered and opens the split', splitOffered({ twOn, tw }) && twOpen, JSON.stringify({ twOn, tw, twOpen }));
+  ok('SP11-M [mutant]: the same predicate read on Free Writing (the Typewriter, always) rejects it - SP11\'s rule is the split rule, not a constant', !splitOffered({ twOn: fwTwOn, tw: fw }) && fwTwOn === true, JSON.stringify({ fwTwOn, fw }));
+  if (twOpen) { await click(app, '[data-split-close]'); await sleep(500); }
   await app.evalJs("localStorage.removeItem('wrizo-typewriter-page-bm-p')");
   return checks;
 });

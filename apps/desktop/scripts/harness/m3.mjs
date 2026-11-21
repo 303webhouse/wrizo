@@ -329,8 +329,12 @@ await withHarness(async (app) => {
   {
     await freshRhizomePage(app, LEGACY_W, 900);
     await app.emulateDpr(1, LEGACY_W, 900); await sleep(200);
-    ok('Legacy (<1100px): the Rhizome field does NOT mount (framed-only) — legacy chrome unconditionally byte-identical',
-      await app.evalJs("!document.querySelector('.wz-rhizome-field') && !document.querySelector('.desk-frame-stage')"));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a; Chat 1's control run 44826232522, main + page-breaks alone): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts, its root a .desk-frame-stage--prose) and this reader matched it too. Verbatim:
+    // ok('Legacy (<1100px): the Rhizome field does NOT mount (framed-only) — legacy chrome unconditionally byte-identical',
+    //   await app.evalJs("!document.querySelector('.wz-rhizome-field') && !document.querySelector('.desk-frame-stage')"));
+    const legacyB = await app.evalJs("(() => { const liveQ = (s) => [...document.querySelectorAll(s)].find((e) => !e.closest('.wz-letter-measure')) || null; return { field: !!liveQ('.wz-rhizome-field'), stage: !!liveQ('.desk-frame-stage'), plainStage: !!document.querySelector('.desk-frame-stage') }; })()");
+    ok('Legacy-B (<1100px): the Rhizome field does NOT mount (framed-only) and no LIVE DeskFrame stage exists (the measuring copy aside)', !legacyB.field && !legacyB.stage, JSON.stringify(legacyB));
+    ok('MUT-Legacy-B the plain reader is RED on the same page (it finds the copy\'s stage) while Legacy-B\'s is green: the skip is what holds it', legacyB.plainStage && !legacyB.stage && !legacyB.field, JSON.stringify(legacyB));
   }
 
   return checks;

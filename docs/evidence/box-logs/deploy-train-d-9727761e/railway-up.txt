@@ -1,0 +1,25 @@
+Indexing...
+Uploading...
+[... 263 lines of build output trimmed ...]
+
+> @writer-studio/server@0.0.1 build /app/apps/server
+> tsc -p tsconfig.json
+
+
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to image
+exporting to image
+exporting cache to Amazon S3
+exporting to image
+exporting cache to Amazon S3
+exporting to image
+containerimage.config.digest: sha256:f9b3ab0403012a3040112dca1884fafb6140ea9729702c65a08a4742d54e5fc7
+containerimage.digest: sha256:61a0322df2caf32e77a7ad07e252e59596f20d2303d90c2a27f67adc95257cac
+image.name: production-dpsjc-b.railway-registry.com/d9a7894f-c7a0-415a-9fb5-48a34624fd18:d5721ab7-4989-4009-b8ad-fee8106e7ac0
+railway.push.duration: 3.620173965s
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6NjFhMDMyMmRmMmNhZjMyZTc3YTdhZDA3ZTI1MmU1OTU5NmYyMGQyMzAzZDkwYzJhMjdmNjdhZGM5NTI1N2NhYyIsInNpemUiOjI5NTgsInBsYXRmb3JtIjp7ImFyY2hpdGVjdHVyZSI6ImFtZDY0Iiwib3MiOiJsaW51eCJ9fQ==
+Deploy complete

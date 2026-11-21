@@ -23,6 +23,16 @@
 .wz-back-plan-btn{ position:static; width:22px; height:22px; padding:0; background:none; border:1px solid transparent; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; cursor:pointer; }
 .wz-back-plan-btn:hover:not(:disabled), .wz-back-plan-btn:focus-visible{ color:var(--text-hi); border-color:var(--ink-border-strong); outline:none; }
 .wz-back-plan-btn:disabled{ opacity:.3; cursor:default; }
+/* "-> Part" / "Open Part" (a word, not a glyph) and the tick a Part with words earns: the tick is a shape and a name, never colour alone */
+.wz-back-plan-part{ width:auto; padding:0 6px; height:22px; white-space:nowrap; font-size:11px; border-color:var(--ink-border-strong); }
+/* a preset's prompt: one grey line under its heading, in the same column as the name (the row wraps; the Part's tick or the writer's words retire it) */
+.wz-back-plan-row{ flex-wrap:wrap; }
+.wz-back-plan-row > .wz-back-plan-name{ flex:1 1 0; }   /* a zero basis: the wrap is for the prompt's own line only, never the row's buttons */
+.wz-back-plan-hint{ flex:0 0 100%; box-sizing:border-box; padding:0 6px 4px 32px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.wz-back-plan-fold{ flex:none; width:18px; }
+.wz-back-plan-presets{ position:relative; margin-top:6px; }
+.wz-back-plan-preset-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.wz-back-plan-tick{ flex:none; font-family:var(--font-ui); font-size:13px; line-height:1; color:var(--text-hi); }
 .wz-back-plan-add{ margin-top:6px; }
 .wz-back-plan-add .wz-back-plan-input{ width:100%; border-color:var(--ink-border-strong); }
 
@@ -42,3 +52,32 @@
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
+
+/* a Board's Plan (the Outline view, Machina, ?reorg=1): a preset row's grey prompt, on its own line under the title, and the Presets control below the rows */
+.board-outline-hint{ flex:0 0 100%; display:block; padding:0 6px 4px 22px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.board-projection .wz-back-plan-presets{ margin-top:10px; padding-left:6px; }
+/* the Plan's groups of cards from other connected Boards (planConnected.ts): a heading with the board's name and its Open door, then its cards as a plain list, a view */
+.wz-back-plan-group{ display:flex; flex-direction:column; gap:2px; margin-top:12px; }
+.wz-back-plan-group-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:28px; border-bottom:1px solid var(--ink-border-strong); }
+.wz-back-plan-group-name{ flex:1 1 0; min-width:0; font-family:var(--font-ui); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-back-plan-group-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+/* SPRINT'S BACK MENU (Free Write, behind ?reorg=1 in Machina): Plan and Assets stay in the tab row, greyed and not pressable, with a note; Feedback is the one standing writing prompt and the
+   button that draws the next. Locked tabs read at 3:1 (--text-low on the drawer), the note at 4.5:1 (--text-mid). */
+.wz-drawer-tab[data-locked='true']{ color:var(--text-low); border-style:dashed; cursor:default; }
+.wz-drawer-tab[data-locked='true']:hover{ color:var(--text-low); border-color:var(--ink-border); }
+.wz-sprint-feedback{ display:flex; flex-direction:column; gap:14px; padding:16px 14px; }
+.wz-sprint-note{ margin:0; font-family:var(--font-ui); font-size:12px; line-height:1.45; color:var(--text-mid); }
+.wz-sprint-prompt{ min-height:3.2em; font-family:var(--font-prose); font-size:16px; line-height:1.5; color:var(--text-hi); }
+.wz-sprint-empty{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-sprint-press{ align-self:flex-start; height:28px; padding:0 12px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.04em; cursor:pointer; }
+.wz-sprint-press:hover, .wz-sprint-press:focus-visible{ border-color:var(--text-low); outline:none; }
+.wz-sprint-refill{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+
+/* THE FEEDBACK LENSES (BUILD and EDIT; feedbackLenses.ts): each lens a disclosure that opens to its prompts; a prompt is a plain button that stages its words in the composer */
+.wz-lenses{ display:flex; flex-direction:column; gap:2px; margin:0 0 14px; }
+.wz-lens-head{ position:static; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; min-height:32px; padding:0 8px; background:none; border:1px solid transparent; border-bottom-color:var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.08em; text-transform:uppercase; text-align:left; cursor:pointer; }
+.wz-lens-head:hover, .wz-lens-head:focus-visible{ border-color:var(--ink-border-strong); outline:none; }
+.wz-lens-chev{ flex:none; margin-left:8px; color:var(--text-mid); }
+.wz-lens-prompts{ list-style:none; margin:0; padding:4px 0 8px 8px; display:flex; flex-direction:column; gap:4px; }
+.wz-lens-prompt{ position:static; display:block; width:100%; box-sizing:border-box; padding:6px 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:13px; line-height:1.35; text-align:left; cursor:pointer; }
+.wz-lens-prompt:hover, .wz-lens-prompt:focus-visible{ color:var(--text-hi); border-color:var(--text-low); outline:none; }

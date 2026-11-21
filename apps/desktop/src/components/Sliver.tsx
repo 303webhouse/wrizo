@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
@@ -37,7 +37,8 @@ import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
-import { PartsList } from '../reorg/PartsList';
+import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
+import { PublishParts } from '../reorg/PublishParts';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
 
@@ -192,7 +193,7 @@ export interface SliverProps {
   hasMilestones?: boolean;
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
-  front?: { entry: JournalEntry };
+  front?: { entry: JournalEntry; host?: PartsHost; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
 }
 
 export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
@@ -309,14 +310,16 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const frontInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
   const frontList = reorgFront ? frontTabsFor(content.kind as DrawerKind, !!frontInstrument) : [];
   const frontTab: FrontTab | undefined = !frontList.length ? undefined
+    : front?.publishing ? 'parts'
     : frontInstrument?.value === 'ink' ? 'ink'
     : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
   const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
   const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
     ? {
-        items: frontList.map((id) => ({ id, label: t(FRONT_WORD[id]) })),
+        items: frontList.map((id) => (front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })),
         value: frontTab,
         onChange: (v: FrontTab) => {
+          if (front?.publishing && v !== 'parts') return;
           setFrontPick(v);
           if (frontInstrument && (v === 'ink') !== (frontInstrument.value === 'ink')) frontInstrument.onChange(v === 'ink' ? 'ink' : 'text');
         },
@@ -362,12 +365,12 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           pageId={content.kind === 'draft' ? content.pageId : undefined}
           pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
-          typewriterAvailable
+          typewriterAvailable={content.kind === 'freewrite'}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} frontPublishing={reorgFront && !!front?.publishing} />
         </SideDrawer>
       </div>
     </div>
@@ -587,21 +590,25 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, frontPublishing }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost; frontPublishing?: boolean }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
   const settings = useWritingSettings();
 
   if (content.kind === 'empty') return null;
-  const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  // FREE WRITE IS THE TYPEWRITER (Nick, Nov 19): the Format group is greyed everywhere the Typewriter runs, which is every surface but Draft (Draft never runs it, so its Format is never locked); the stored switch is read by nothing.
+  // SUPERSEDED, verbatim: const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  const formatLocked = content.kind !== 'draft';
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
   const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
-  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list alone (read-only, step 3.2)
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} /></div>;
+  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
+  // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
+  const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body">{frontPublishing ? <PublishParts entry={frontEntry} /> : <PartsList entry={frontEntry} stage={partsStage} host={frontHost} />}</div>;
 
   return (
     <div className="wz-sliver-body">
@@ -884,8 +891,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
-  // a Draft or Screenplay page asks typewriterForPage; Free Write (no pageId) reads the shared field [Sliver §28]
-  const typewriterOn = pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter;
 
   // the foot is one three-dot menu: Typewriter, Progress and the remaining preferences open together under their headings; one instrument open at a time [Sliver §29]
   const [open, setOpen] = useState(false);
@@ -935,14 +940,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
-        {typewriterAvailable && (
-          <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
-            aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
-            aria-pressed={typewriterOn}
-            onClick={() => setTypewriterExplicit(!typewriterOn)}>
-            <TypewriterModeIcon />
-          </button>
-        )}
         <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
           aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
           aria-pressed={settings.instrumentsOn}
@@ -985,7 +982,8 @@ function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: 
   const forwardLock = useForwardLock();
 
   // the on/off row is the icon toggle beside the "..."; while it is off these rows are greyed (values kept); same pageId fallback as the toggle [Sliver §35]
-  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);
+  // FREE WRITE IS THE TYPEWRITER: this menu mounts only on Free Write (typewriterAvailable), where the Typewriter always runs, so its rows are never greyed by a switch
+  const off = false;
   return (
     <>
 
