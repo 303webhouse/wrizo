@@ -1,7 +1,10 @@
 import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { addPageLink, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
+import { routeForEntry } from '../store/routeForEntry';
+import { pressTripBack, useBoardTrip } from './split/fullTrip';
+import { addPageLink, flushNow, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
@@ -290,8 +293,20 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
   const latest = getJournalEntry(entry.id) ?? entry;
   const docs = boardDocs(latest);
   const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0].name || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
+  // BACK (§3b item 3, split/fullTrip.ts): this Board opened from Full Screen beside a page; Back returns to that page, which puts its split, scroll and
+  // caret back. Reached any other way, the Board shows no Back.
+  const trip = useBoardTrip(entry.id);
+  const navigate = useNavigate();
+  const tripPage = trip ? getJournalEntry(trip.pageId) : undefined;
+  const goBack = () => {
+    if (!tripPage) return;
+    pressTripBack();
+    flushNow();
+    navigate(routeForEntry(tripPage));
+  };
   return (
     <div className="reorg-top" data-reorg-top="board">
+      {tripPage && <button type="button" className="reorg-top-back" data-top-back="" onClick={goBack}>{t('reorgFullBack')}</button>}
       <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
         <ProjectName entry={latest} />
         <Sep />

@@ -46,6 +46,10 @@
 [data-theme='machina'] .reorg-top-connect{ height:24px; padding:0 9px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px;
   background:none; border:1px solid var(--text-mid); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi);
   white-space:nowrap; cursor:pointer; }
+/* §3b item 3: Back, on a Board opened from Full Screen beside a page (reorg/split/fullTrip.ts): the top rail's own button, first in the row */
+[data-theme='machina'] .reorg-top-back{ flex:none; height:24px; padding:0 9px; margin-right:12px; box-sizing:border-box; display:inline-flex; align-items:center;
+  background:none; border:1px solid var(--text-mid); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi); white-space:nowrap; cursor:pointer; }
+[data-theme='machina'] .reorg-top-back:focus-visible{ outline:1px solid var(--text-hi); outline-offset:2px; }
 [data-theme='machina'] .reorg-top-connect.is-icon{ width:24px; padding:0; justify-content:center; font-size:15px; line-height:1; }
 [data-theme='machina'] .reorg-top-connect[aria-expanded='true']{ border-color:var(--text-hi); }
 [data-theme='machina'] .reorg-top-connect:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }

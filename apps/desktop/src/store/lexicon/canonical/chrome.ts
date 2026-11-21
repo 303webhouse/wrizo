@@ -268,6 +268,9 @@ export const CANONICAL_CHROME = {
   reorgAssetsLinkedDirectly: 'Docs linked directly',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
+  // §3b item 3 (Team B row 2; Fable, Nov 21 11:45 am): Full Screen on the split's asset, and Back from it (the Wrizors: lexicon words, Title Case)
+  reorgSplitFull: 'Full Screen',
+  reorgFullBack: 'Back',
   reorgSplitLabel: 'Opened beside',
   reorgSplitGrip: 'Resize the split',
   reorgSplitBoardEmpty: 'Nothing here yet.',
