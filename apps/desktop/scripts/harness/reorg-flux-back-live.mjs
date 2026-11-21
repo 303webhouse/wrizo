@@ -1,7 +1,7 @@
 // THE REORG'S BACK MENU IN FLUX, IN THE APP (Fable, Nov 21: Flux piece 2; claude/wrizors/flux-reorg-spec.md section 5). Flux theme, the dark room, ?reorg=1 with the PREVIEW DOOR (&reorglift=flux.back: reorg/themeGate.ts keeps flux.back OFF in the table until
 // Fable clears it; the door only shows the piece). The stylesheet's half is reorg-flux-back-css-unit.mjs; this proves what only the app can.
 // The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Parts, fb-1 "Arrival" (its Plan is the board fb-own: three cards, one attached to it), fb-2 "The town"; the Doc's own assets: a page and a card.
-//   FB1  the tab row reads SPINE, INPUTS, OPERATOR, in that order, and Spine is the one open
+//   FB1  the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS (the Back menu opens on its assets tab, as Machina's does)
 //   FB2  the search door is in Flux's field dress: fill #020C10, a 1 px #5F8F95 edge; opened, the search field's focus is a cyan edge with the 3 x 24 brass bar
 //   FB3  nothing is left raw: the sort row, the group heads and the "+" are drawn in Flux's dress (no browser-grey button fill, no white field), and Flux's words are the ones shown ("→ Track", "Inputs", "THIS DOC")
 //   FB4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
@@ -66,8 +66,8 @@ await withHarness(async (app) => {
   await drawer(app);
   const mark = await app.evalJs("document.querySelector('.forward-only-editor').__fbMark = 1; " + PAGE);
   const tabs = await app.evalJs(TABS);
-  ok('FB1 the tab row reads SPINE, INPUTS, OPERATOR, in that order, and Spine is the one open',
-    Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'SPINE,INPUTS,OPERATOR' && tabs[0].on === true, tabs);
+  ok('FB1 the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS',
+    Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'SPINE,INPUTS,OPERATOR' && tabs.map((x) => x.on).join(',') === 'false,true,false', tabs);
 
   await tab(app, 'plan');
   const door = await app.evalJs(CS('.reorg-search-door', ['background-color', 'border-top-color', 'border-top-width', 'border-top-style']));
