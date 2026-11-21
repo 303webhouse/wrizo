@@ -110,7 +110,10 @@ await withHarness(async (app) => {
   // ---- BUTTON ----------------------------------------------------------------------------------------------------------------------------
   const b1 = await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver [data-reorg-parts] [data-part-assets="wb-2"]'); if (!b) return null;
     const r = b.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    return { tag: b.tagName, type: b.getAttribute('type'), label: b.getAttribute('aria-label'), words: ${txt('b')}, reach: !!hit && (hit === b || b.contains(hit)) }; })()`);
+    return { tag: b.tagName, type: b.getAttribute('type'), label: b.getAttribute('aria-label'), words: ${txt('b')}, reach: !!hit && (hit === b || b.contains(hit)),
+    // what the point hits instead, when it misses (a veil, an inert ancestor, a drawer in motion)
+    rect: [r.left, r.top, r.width, r.height].map(Math.round), hit: hit ? hit.tagName + '.' + String(hit.className).slice(0, 50) : null, inert: b.closest('[inert]') ? String(b.closest('[inert]').className).slice(0, 50) : null,
+    sliver: document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null }; })()`);
   ok('B1 wb-2\'s badge is a button (type=button) a press can reach, keeping its words ("1 asset")',
     !!b1 && b1.tag === 'BUTTON' && b1.type === 'button' && b1.reach && b1.label === '1 asset' && /\b1\b/.test(b1.words), { b1, ids });
 
