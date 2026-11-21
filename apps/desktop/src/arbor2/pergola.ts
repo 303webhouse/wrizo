@@ -16,6 +16,7 @@
 // REST <-> WRITING rides the existing recede hook (<html data-wz-writing>, useChromeDissolve): opacity transitions on these two layers and the
 // rhizome's, nothing else (arbor-v2.css). Nothing is stored.
 import svgText from './pergola-shadow.svg?raw';
+import { liveQueryAll, registerLiveSite } from '../store/liveDom';
 
 // r21 LATENCY FIX (Fable's ruling, Nov 5: the attribution turn put the r21 day room's typing at 62 ms a key against r20's 25, and 25 again with the
 // shade off): the copies r21 added - the top bar, the rail, the open drawers, the rail's pop-outs, the Mood menu - each held the whole live drawing
@@ -148,6 +149,11 @@ export function mountPergola(): void {
   // every surface that stands over the day room - the page, the open drawers, the rail's pop-outs, the Mood menu, the top bar and the rail -
   // each beneath its own words, each placed where the room's drawing stands on the screen, so it reads as one shadow over everything.
   const HOSTS = [".desk-frame-stage .mode-page",".wz-sliver-panel[data-open='true'] > .wz-drawer-slide",".wz-tutor-panel[data-open='true'] > .wz-drawer-slide",".wz-cascade-panel",".chrome-top.sprint-nav",".desk-frame-strip",".arbor2-bar"];
+  // THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable's ruling, Nov 20; store/liveDom.ts): page breaks' hidden copy in <body> carries a
+  // .desk-frame-stage .mode-page, so a document-wide look gave it a live copy whose breeze ran out of step with the room's (Chat 1's pair
+  // 44852661502 on train C 9eb8cdbe: arbor-gusts G1b/G2b/G4b, a phase spread of 550 ms). The hosts are looked up outside it.
+  const liveHosts = (): HTMLElement[] => HOSTS.flatMap((sel) => liveQueryAll<HTMLElement>(sel));
+  registerLiveSite('arbor2.hosts', liveHosts);
   const copies = new Map<HTMLElement, { layer: HTMLDivElement; drift: HTMLDivElement }>();
   const ro = new ResizeObserver(() => placeAll());
   // a copy's drawing stands where the room's does: offset by its host's own position, in the host's own units (a host may be scaled)
@@ -180,7 +186,7 @@ export function mountPergola(): void {
   };
   const attach = () => {
     const now = new Set<HTMLElement>();
-    for (const sel of HOSTS) document.querySelectorAll<HTMLElement>(sel).forEach((h) => { if (h.getBoundingClientRect().width > 0) now.add(h); });
+    liveHosts().forEach((h) => { if (h.getBoundingClientRect().width > 0) now.add(h); });
     for (const [h, c] of copies) if (!now.has(h) || !h.contains(c.layer)) { c.layer.remove(); ro.unobserve(h); copies.delete(h); }
     for (const h of now) {
       if (copies.has(h)) continue;

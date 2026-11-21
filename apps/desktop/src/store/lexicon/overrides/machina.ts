@@ -35,6 +35,7 @@ export const MACHINA_OVERRIDES = {
     walkBlockOf: 'Block {n} / {m}',
     walkKeysHint: '← → Step · Esc Plan',
     deckFact: '{n} of {m} filled',
+    pageOfPages: 'page {n} of {m}',
     deckFactKind: 'Agenda',
     deckStepHelpEg: 'E.G.',
     helpBegin: 'Create Agenda',

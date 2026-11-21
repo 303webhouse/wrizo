@@ -24,6 +24,14 @@ import { nodeHex } from '../flux3/FluxNodeRecord';
 import { REORG } from '../reorg/flag';
 import { ReorgRail } from '../reorg/ReorgRail';
 import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
+import { liveQuery, registerLiveSite } from '../store/liveDom';
+
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the margin is read against the live page
+const cascadeStage = (): Element | null => liveQuery('.desk-frame-stage');
+const cascadePaper = (): Element | null => liveQuery('.desk-frame-stage--prose .mode-page') ?? liveQuery('.mode-pagecol, .entry-full');
+registerLiveSite('cascade.stage', cascadeStage);
+registerLiveSite('cascade.paper', cascadePaper);
 
 // PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
 // page carries its first line; neither is ever allowed to be blank, because the
@@ -147,9 +155,9 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
 // (never silently blocking a legitimate dock) is the safer default.
 function availableCascadeMargin(): number {
   if (typeof document === 'undefined') return Infinity;
-  const stage = document.querySelector('.desk-frame-stage');
+  const stage = cascadeStage();
   // zoomed, the prose page is painted by a transform in a stage-wide column, so the margin is the painted page's - the twin of Tutor.tsx's availableTutorMargin [Cascade §3]
-  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full');
+  const paper = cascadePaper();
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
