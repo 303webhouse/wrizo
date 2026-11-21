@@ -17,7 +17,7 @@
 //   P4  two devices set the SAME preference at once: the later stamp wins on both, and a tie settles by value, the same on both
 //   P5  two devices' rounds interleave (GET, GET, PUT, PUT): the second PUT is refused 409, merged again, and nothing is lost
 //   P6  sign-out clears the local copy and the memory
-//   P7  switch off: no storage key, no prefs request
+//   P7  switch off: no storage key, no prefs request (PARKED Nov 20: the room is saved with the switch off - successor P7b below, with its mutant)
 //   P8  the wiring: an act made signed in reaches the server by itself one second later
 //   P9  a width she has not set is the default (half); setting the width she already has writes nothing
 //   U1-U3 the merge: same result from either side, merging twice changes nothing, a tie settles by value
@@ -100,10 +100,20 @@ const stubApi = { name: 'stub-api', setup(b) {
   b.onLoad({ filter: /.*/, namespace: 'stub-api' }, () => ({ contents: 'export class SyncHttpError extends Error { constructor(status) { super("sync failed: " + status); this.status = status; } } export const apiSync = (p) => globalThis.__apiSync(p); export const postJson = async () => ({ ok: true, status: 200, json: async () => ({}) });', loader: 'js' }));
 } };
 let bundleCode = null;
+// MUT-P7b (ARBOR, Nov 20): one source file changed in memory (the file on disk untouched) for the next devices loaded
+let MUTANT = null;
+const mutate = { name: 'mutate', setup(b) {
+  b.onLoad({ filter: /\.ts$/ }, (a) => {
+    if (!MUTANT || !a.path.split(path.sep).join('/').endsWith(MUTANT.file)) return null;
+    const src = fs.readFileSync(a.path, 'utf8').split('\r\n').join(NL);
+    MUTANT.landed = src.includes(MUTANT.from);
+    return { contents: src.replace(MUTANT.from, MUTANT.to), loader: 'ts' };
+  });
+} };
 async function bundle() {
   if (bundleCode) return bundleCode;
   const entry = ["export * as persist from './store/persistence';", "export { syncOnce } from './store/sync';", hasSaved ? "export * as saved from './reorg/prefsSaved';" : '', hasSaved ? "export * as split from './reorg/split/splitStore';" : ''].join(NL);
-  const built = await esbuild.build({ stdin: { contents: entry, resolveDir: SRC, sourcefile: 'entry-prefs.ts', loader: 'ts' }, bundle: true, format: 'esm', write: false, platform: 'node', plugins: [stubApi], logLevel: 'silent', define: { 'process.env.NODE_ENV': '"production"' } });
+  const built = await esbuild.build({ stdin: { contents: entry, resolveDir: SRC, sourcefile: 'entry-prefs.ts', loader: 'ts' }, bundle: true, format: 'esm', write: false, platform: 'node', plugins: [stubApi, mutate], logLevel: 'silent', define: { 'process.env.NODE_ENV': '"production"' } });
   bundleCode = built.outputFiles[0].text;
   return bundleCode;
 }
@@ -246,12 +256,34 @@ if (!hasSaved) {
   ok(!stores.B.has('wrizo-reorg-prefs') && Object.keys(B.mod.saved.getSavedPrefs()).length === 0 && widthOf(B) === 0.5, `P6 sign-out clears the local copy and the memory (key ${stores.B.has('wrizo-reorg-prefs') ? 'KEPT' : 'gone'}, facts ${Object.keys(B.mod.saved.getSavedPrefs()).length}, width ${widthOf(B)})`);
 
   // P7 - switch off
-  {
-    const O = await loadDevice('O', 'O', { reorg: false });
+  // PARKED 2026-11-20 (ARBOR, arbor/room-pref). SUPERSEDED by Fable, Nov 19, 11:20 pm: "The room choice (Automatic / Day / Night) is SAVED TO THE ACCOUNT, for Machina
+  // AND Arbor ... Store it as a `room` fact in users.prefs". The room is not a reorg feature, so prefsSaved.ts keeps it SWITCHLESS: a switch-off device must ask the account
+  // for the room another device chose, so "no prefs request" can no longer hold (measured: 1 request, the GET of the round, on the room build). Original, verbatim:
+  // {
+  //   const O = await loadDevice('O', 'O', { reorg: false });
+  //   await syncDev(O);
+  //   O.mod.saved.setPref('split', { side: 'right', width: 0.4 }); O.mod.split.setSplitWidth(0.4);
+  //   await O.runTimers(); await round(O);
+  //   ok(!stores.O.has('wrizo-reorg-prefs') && !requests.some((r) => r.startsWith('O ')), `P7 switch off: no storage key, no prefs request (${requests.filter((r) => r.startsWith('O ')).length} requests)`);
+  // }
+  // SUCCESSOR P7b: switch off - no storage key (the account's reorg facts are never kept on the device), no reorg fact set, and the only prefs request a GET: the round
+  // reads the account (for the room) and writes nothing, since she set nothing switchless. MUT-P7b: persist()'s switch-off filter removed (in memory): the account's reorg
+  // facts land in the key and P7b goes RED. (The room itself: room-pref-saved.mjs.)
+  const p7b = async (tag) => {
+    const O = await loadDevice(tag, tag, { reorg: false });
     await syncDev(O);
     O.mod.saved.setPref('split', { side: 'right', width: 0.4 }); O.mod.split.setSplitWidth(0.4);
     await O.runTimers(); await round(O);
-    ok(!stores.O.has('wrizo-reorg-prefs') && !requests.some((r) => r.startsWith('O ')), `P7 switch off: no storage key, no prefs request (${requests.filter((r) => r.startsWith('O ')).length} requests)`);
+    const reqs = requests.filter((r) => r.startsWith(`${tag} `));
+    return { key: stores[tag].has('wrizo-reorg-prefs'), reqs, pass: !stores[tag].has('wrizo-reorg-prefs') && reqs.length >= 1 && reqs.every((r) => r === `${tag} GET /api/prefs`) && !(db.prefs && db.prefs.split && db.prefs.split.width === 0.4) };
+  };
+  {
+    const r = await p7b('O');
+    ok(r.pass, `P7b switch off: no storage key (${r.key ? 'KEPT' : 'none'}), no reorg fact set, the only prefs requests GETs (${JSON.stringify(r.reqs)})`);
+    MUTANT = { file: 'src/reorg/prefsSaved.ts', from: 'const mine: PrefsRecord = REORG ? prefs : {', to: 'const mine: PrefsRecord = true ? prefs : {', landed: false }; bundleCode = null;
+    let m = null;
+    try { m = await p7b('OM'); } finally { const landed = MUTANT.landed; MUTANT = null; bundleCode = null; m = m && { ...m, landed }; }
+    ok(!!m && m.landed && !m.pass, `MUT-P7b persist()'s switch-off filter removed (LANDED: ${m && m.landed}): the key is ${m && m.key ? 'written' : 'absent'} - P7b's read goes RED`);
   }
 
   // P8 - the wiring
