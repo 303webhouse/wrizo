@@ -210,9 +210,11 @@ await withHarness(async (app) => {
   // ---- P10 ----
   await openPage(app, 'pt-1', { reorg: false }); await openDrawer(app);
   const offDoor = await app.evalJs("document.querySelectorAll('[data-plan-part]').length");
-  await openPage(app, 'pt-1', { theme: 'arbor' }); await openDrawer(app);
-  const arborDoor = await app.evalJs("document.querySelectorAll('[data-plan-part]').length");
-  ok('P10 with the switch off (Machina) and in Arbor with it on, no "→ Part" door is drawn anywhere', offDoor === 0 && arborDoor === 0, { offDoor, arborDoor });
+  await openPage(app, 'pt-1', { theme: 'plateau' }); await openDrawer(app);
+  const arborDoor = await app.evalJs("document.querySelectorAll('[data-plan-part]').length + (document.getElementById('wz-tutor-tab-plan') ? 1 : 0)");
+  const arborTheme = await app.evalJs("document.documentElement.getAttribute('data-theme')");
+  // [P10's Arbor leg is theme 'plateau': Arbor's id in the theme store is 'plateau' and 'arbor' is no registered theme, so its first form ran in Machina with the Plan tab never opened and proved nothing; it now asserts the theme took and that the Plan tab does not exist there]
+  ok('P10 with the switch off (Machina) and in Arbor with it on, no "→ Part" door is drawn anywhere', offDoor === 0 && arborDoor === 0 && arborTheme === 'plateau', { offDoor, arborDoor, arborTheme });
 
   // ---- P9 ----
   const read = (f) => fs.readFileSync(path.join(SRC, f), 'utf8');

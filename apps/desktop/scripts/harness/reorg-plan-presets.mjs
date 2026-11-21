@@ -222,9 +222,11 @@ await withHarness(async (app) => {
   // ---- PR10 ----
   await openPage(app, 'pr-e', { reorg: false }); await openDrawer(app);
   const offBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length");
-  await openPage(app, 'pr-e', { theme: 'arbor' }); await openDrawer(app);
-  const arborBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length");
-  ok('PR10 with the switch off (Machina) and in Arbor with it on, no Presets control is drawn', offBtn === 0 && arborBtn === 0, { offBtn, arborBtn });
+  await openPage(app, 'pr-e', { theme: 'plateau' }); await openDrawer(app);
+  const arborBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length + (document.getElementById('wz-tutor-tab-plan') ? 1 : 0)");
+  const arborTheme = await app.evalJs("document.documentElement.getAttribute('data-theme')");
+  // [PR10's Arbor leg is theme 'plateau' (Arbor's id in the theme store; 'arbor' is no registered theme, so the first form ran in Machina and proved nothing): it asserts the theme took and the Plan tab does not exist there]
+  ok('PR10 with the switch off (Machina) and in Arbor with it on, no Presets control is drawn', offBtn === 0 && arborBtn === 0 && arborTheme === 'plateau', { offBtn, arborBtn, arborTheme });
 
   // ---- PR9 ----
   const read = (f) => fs.readFileSync(path.join(SRC, f), 'utf8');

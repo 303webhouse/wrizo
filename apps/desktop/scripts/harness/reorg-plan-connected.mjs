@@ -124,9 +124,11 @@ await withHarness(async (app) => {
   // ---- C7 ----
   await openPage(app, 'cn-1', { reorg: false }); await openDrawer(app);
   const off = await app.evalJs("document.querySelectorAll('[data-plan-group]').length");
-  await openPage(app, 'cn-1', { theme: 'arbor' }); await openDrawer(app);
-  const arbor = await app.evalJs("document.querySelectorAll('[data-plan-group]').length");
-  ok('C7 with the switch off (Machina) and in Arbor with it on, no group is drawn', off === 0 && arbor === 0, { off, arbor });
+  await openPage(app, 'cn-1', { theme: 'plateau' }); await openDrawer(app);
+  const arbor = await app.evalJs("document.querySelectorAll('[data-plan-group]').length + (document.getElementById('wz-tutor-tab-plan') ? 1 : 0)");
+  const arborTheme = await app.evalJs("document.documentElement.getAttribute('data-theme')");
+  // [C7's Arbor leg is theme 'plateau' (Arbor's id in the theme store; 'arbor' is no registered theme): it asserts the theme took and the Plan tab does not exist there]
+  ok('C7 with the switch off (Machina) and in Arbor with it on, no group is drawn', off === 0 && arbor === 0 && arborTheme === 'plateau', { off, arbor, arborTheme });
   return checks;
 });
 
