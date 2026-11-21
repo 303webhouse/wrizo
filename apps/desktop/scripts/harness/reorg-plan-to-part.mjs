@@ -21,6 +21,10 @@
 //   P6  "Open Part" on Midpoint opens pt-2 and creates nothing
 //   P7  the tick is read, never written: looking at the Plan again changes nothing stored
 //   P8  a loose page: the door first makes the page a Doc of its own (one set, titled for it, the page moved in), then opens the fresh page in that set
+//   O1  THE END OF THE DOC (Fable, Nov 20, 10:45 pm): a Part born through the door lands LAST among the Doc's Parts, even when the Parts carry an explicit orderIndex from a move and the others carry none, and
+//       even when those others were created LATER than the new Part (a Part pulled from a device whose clock ran ahead, an import): never sorted by creation time among them. Two Docs: Skew (one Part numbered, two
+//       not, created in 2027) and Moved (all numbered by a real move). The stored orderIndex is not left unset in a way that lets a later sort reorder it
+//   O1m THE MUTANT: the same Part born WITHOUT the placement (a page filed in the Skew-shaped Doc 'Control' the way an unplaced birth files it) does NOT land last - the fixture can see the fault
 //   P9  every word the door draws is a lexicon key (none written into the component)
 //   P10 the door is hidden with the switch off (today's Plan is not drawn at all) and in Arbor, where the Back menu is Machina's alone
 // Run (the Actions harness):  node apps/desktop/scripts/harness/reorg-plan-to-part.mjs
@@ -67,6 +71,22 @@ async function seed(app) {
     W.wrizoPatchEntry('pt-loose', { planBoardId: 'pt-lown' });
     W.wrizoAddPageLink('pt-own', { aBoxId: 'o2', bEntryId: 'pt-2' });
     W.wrizoAddPageLink('pt-own', { aBoxId: 'o3', bEntryId: 'pt-3' });
+    // O1's Docs: Skew (sk-1 numbered by a move; sk-2 and sk-3 unnumbered and created LATER than any Part born in this run), Moved (all three numbered by a real move), Control (the Skew shape, for the mutant)
+    const skew = W.wrizoCreateProject('Skew'); W.wrizoSetProjectDrawer(skew.id, grants.id);
+    const moved = W.wrizoCreateProject('Moved'); W.wrizoSetProjectDrawer(moved.id, grants.id);
+    const ctl = W.wrizoCreateProject('Control'); W.wrizoSetProjectDrawer(ctl.id, grants.id);
+    const late = (id, text, set, extra) => page(id, text, { origin: 'project', projectId: set.id, createdAt: '2027-03-0' + (extra.n) + 'T00:00:00.000Z', ...extra.rest });
+    for (const [pre, set] of [['sk', skew], ['ct', ctl]]) {
+      late(pre + '-1', 'First part of ' + pre, set, { n: 1, rest: { orderIndex: 0 } });
+      late(pre + '-2', 'Second part of ' + pre, set, { n: 2, rest: {} });
+      late(pre + '-3', 'Third part of ' + pre, set, { n: 3, rest: {} });
+    }
+    for (let i = 1; i <= 3; i++) page('mv-' + i, 'Moved part ' + i, { origin: 'project', projectId: moved.id, orderIndex: i - 1, createdAt: '2027-03-0' + i + 'T00:00:00.000Z' });
+    page('sk-own', 'Skew plan', { pageType: 'board', boxes: ${q([card('s1', 'Skew step', 0, 0.05)])} });
+    page('mv-own', 'Moved plan', { pageType: 'board', boxes: ${q([card('m1', 'Moved step', 0, 0.05)])} });
+    W.wrizoPatchEntry('sk-1', { planBoardId: 'sk-own' });
+    W.wrizoPatchEntry('mv-1', { planBoardId: 'mv-own' });
+    if (W.wrizoParts) W.wrizoParts.movePart(moved.id, 'mv-3', 0);
     W.wrizoFlushNow();
     return ledger.id;
   })()`);
@@ -157,6 +177,35 @@ await withHarness(async (app) => {
   const nProj1 = await app.evalJs("JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').length");
   ok('P8 a loose page: the door first makes it a Doc of its own (one new set, titled for it, the page moved in), then opens the fresh page in that set',
     !!loose && !!loose.projectId && nProj1 === nProj0 + 1 && !!proj && /loose page/i.test(proj.title || proj.name || '') && lp.get('binder') === loose.projectId && lp.get('gb') === 'pt-lown' && lp.get('gc') === 'l1', { lh, project: proj && (proj.title || proj.name), nProj0, nProj1 });
+
+  // ---- O1 / O1m ----
+  const docId = (n) => app.evalJs(`(JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((p) => (p.title || p.name) === ${q(n)}) || {}).id || null`);
+  const docs = { skew: await docId('Skew'), moved: await docId('Moved'), ctl: await docId('Control') };
+  const order = (doc) => app.evalJs(`window.wrizoParts ? window.wrizoParts.partsOfDoc(${q(doc)}).map((p) => p.id) : null`);
+  const bornVia = async (page, rowId, doc, word) => {
+    await openPage(app, page); await openDrawer(app); await planTab(app);
+    await press(app, `[data-plan-row="${rowId}"] [data-plan-part]`);
+    await app.waitFor("location.hash.indexOf('/page/new') >= 0 && !!document.querySelector('.forward-only-editor')", { timeout: 8000, label: 'a fresh page' }).catch(() => {});
+    await sleep(900);
+    await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(200);
+    for (const ch of word) { await app.typeKeys(ch); await sleep(40); }
+    await app.waitFor(`window.wrizoParts && window.wrizoParts.partsOfDoc(${q(doc)}).length >= 4 && window.wrizoParts.partsOfDoc(${q(doc)}).some((p) => p.words >= 2 && !/^(sk|mv|ct)-/.test(p.id))`, { timeout: 8000, label: 'the Part born' }).catch(() => {});
+    await sleep(600);
+    return order(doc);
+  };
+  const skewBefore = await order(docs.skew);
+  const skewAfter = await bornVia('sk-1', 's1', docs.skew, 'Skew words');
+  const movedBefore = await order(docs.moved);
+  const movedAfter = await bornVia('mv-1', 'm1', docs.moved, 'Moved words');
+  const lastIsNew = (before, after) => !!after && after.length === before.length + 1 && after.slice(0, before.length).join() === before.join() && !before.includes(after[after.length - 1]);
+  ok('O1 a Part born through the door lands LAST: in Skew (one Part numbered, two unnumbered and created later) and in Moved (all numbered by a move); the Parts before it keep their order',
+    lastIsNew(skewBefore, skewAfter) && lastIsNew(movedBefore, movedAfter), { skewBefore, skewAfter, movedBefore, movedAfter });
+  // the mutant: filed the way an unplaced birth files it (no orderIndex), it does not land last in the Skew shape
+  const ctlBefore = await order(docs.ctl);
+  await app.evalJs(`window.wrizoCreateJournalPage({ id: 'ct-raw', text: 'Unplaced words', createdAt: new Date().toISOString(), source: 'page', origin: 'project', projectId: ${q(docs.ctl)} }); window.wrizoFlushNow(); true`);
+  await sleep(500);
+  const ctlAfter = await order(docs.ctl);
+  ok('O1m THE MUTANT: the same Part born WITHOUT the placement does not land last in the Skew shape (the fixture can see the fault)', !!ctlAfter && ctlAfter.length === ctlBefore.length + 1 && ctlAfter[ctlAfter.length - 1] !== 'ct-raw', { ctlBefore, ctlAfter });
 
   // ---- P10 ----
   await openPage(app, 'pt-1', { reorg: false }); await openDrawer(app);
