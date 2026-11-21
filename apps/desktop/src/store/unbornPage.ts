@@ -1,5 +1,7 @@
 import { generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
 import { graftTo } from './grafts';
+import { placeAtEnd } from '../reorg/parts';
+import { addDocAsset } from '../reorg/docSettings';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
@@ -40,9 +42,16 @@ export interface UnbornDescriptor {
   // W2 - "WRITE THIS": the card on a board this page is being written FOR. It rides the address (`gb` board, `gc` card) like `pin` and `deck`, so a reload keeps the door's meaning with no storage, and nothing is
   // written until `birth` (the first keystroke): then the page and its graft to that card are one act. Null for every other door.
   graft: { boardId: string; boxId: string } | null;
+  // "-> PART" FROM A PLAN ROW (reorg/backMenu/planPart.ts): the same door aimed at the Doc. The name the Part is born with (the row's title; '' when the row has none, null for every other door). It rides the address (`pn`) like `gb` and `gc`, nothing
+  // is written until birth, and a page born WITH a name is a Part of a Doc, so birth() leaves its stage alone (the "Write this" page opens in Free Write; a Part is a section of the Doc, not a sprint).
+  partName: string | null;
   // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
   // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
   landing: HelpLanding | null;
+  // THE ASSETS "+" (reorg-plan-v2 3b item 1): New Board / New Doc opened from a Part's "+" (`ap`, that Part) or the Doc's (`ad`, a Part of that Doc). Rides the
+  // address like `graft`, so nothing is written until `birth`; then the new page or board and its connection are one act (the Part's PageLink through
+  // graftTo, or the Doc's docSettings.assets). Null for every other door.
+  asset: { part: string } | { doc: string } | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -86,7 +95,9 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
+    partName: q.has('pn') ? (q.get('pn') ?? '').replace(/\s+/g, ' ').trim().slice(0, 120) : null,
     landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
+    asset: q.get('ap')?.trim() ? { part: q.get('ap')!.trim() } : q.get('ad')?.trim() ? { doc: q.get('ad')!.trim() } : null,
   };
 }
 
@@ -101,7 +112,9 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
+  if (d.partName !== null && d.partName !== undefined) q.set('pn', d.partName);
   if (d.deck && d.landing) q.set('land', landingToken(d.landing));
+  if (d.asset) { if ('part' in d.asset) q.set('ap', d.asset.part); else q.set('ad', d.asset.doc); }
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
@@ -130,6 +143,8 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? newPageSize(), template: d.template };
   // a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word; a board has no page size [unbornPage §3]
   else if (d.kind === 'prose') base.pageSettings = bornPageSettings();
+  // a Part born from a Plan row carries the row's name (the `name` key a Part already has; it travels with the page like the rest of its settings)
+  if (d.partName && d.kind === 'prose' && base.pageSettings) base.pageSettings = { ...base.pageSettings, name: d.partName };
   return base;
 }
 
@@ -161,6 +176,8 @@ export function birth(
     updatedAt: now,
   };
   saveJournalEntry(born);
+  // a Part born through the Plan row's door lands at the END of the Doc's Parts, never sorted among them by creation time (reorg/parts.ts placeAtEnd, through INK's placeRun)
+  if (d.partName !== null && d.partName !== undefined && d.binderId) placeAtEnd(born.id);
   // relationships of the same act are applied here, so the row and its relationship are never observable apart; the pin can come from the address, so it survives a reload [unbornPage §6]
   const pinTo = opts.pinToBoardId ?? d.pinBoardId;
   // PW1 S3 — BOARD-SIDE: this page was opened FROM a board's own door (the
@@ -171,7 +188,12 @@ export function birth(
   if (d.graft) {
     const board = getJournalEntry(d.graft.boardId);
     if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
-    try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ }
+    if (d.partName === null || d.partName === undefined) { try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ } }
+  }
+  // THE ASSETS "+": the Part's own link, or the Doc's asset; a Part or Doc gone since the door was pressed connects nothing (the page stands on its own)
+  if (d.asset) {
+    if ('part' in d.asset) { if (getJournalEntry(d.asset.part)) graftTo({ entryId: d.asset.part }, { entryId: born.id }); }
+    else addDocAsset(d.asset.doc, { entryId: born.id });
   }
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most

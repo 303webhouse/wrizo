@@ -481,8 +481,17 @@ await withHarness(async (app) => {
   // "Waiting for you" anywhere, no 4th section). The A14 no-badge/no-knock checks
   // (the grip-identical check above and the document sweep below) SURVIVE — this
   // retires the nudges implementation, not A14's principle.
-  ok('A14: no badge/toast/count/dot element exists anywhere in the whole document',
-    (await app.evalJs("!document.querySelector('[class*=\"badge\"],[class*=\"toast\"],[class*=\"count\"],[class*=\"dot\"]')")));
+  // SUPERSEDED (Nov 20; Chat 1's control run 44826232522, main + page-breaks alone): [class*="count"] matched the PAGE COUNT (.wz-pagecount, Nick's ruled "p. 1 of 1" under every page), which is not a notification; A14's principle is no notification badge, toast, count or dot. Verbatim:
+  // ok('A14: no badge/toast/count/dot element exists anywhere in the whole document',
+  //   (await app.evalJs("!document.querySelector('[class*=\"badge\"],[class*=\"toast\"],[class*=\"count\"],[class*=\"dot\"]')")));
+  // the successor's reader: every class that names a badge, toast, count or dot, except the page count's own (wz-pagecount and its parts)
+  const A14B = (plant) => app.evalJs(`(() => { ${plant ? "const p = document.createElement('span'); p.className = 'wz-nudge-count'; p.id = 'a14b-plant'; document.body.appendChild(p);" : ''}
+    const hits = [...document.querySelectorAll('[class*="badge"],[class*="toast"],[class*="count"],[class*="dot"]')].filter((e) => [...e.classList].some((c) => /badge|toast|count|dot/.test(c) && !/^wz-pagecount(-[a-z]+)?$/.test(c)));
+    const plain = !!document.querySelector('[class*="badge"],[class*="toast"],[class*="count"],[class*="dot"]');
+    document.getElementById('a14b-plant')?.remove(); return { n: hits.length, hits: hits.slice(0, 4).map((e) => e.className), plain }; })()`);
+  const a14b = await A14B(false), a14m = await A14B(true);
+  ok('A14-B: no badge/toast/count/dot element exists anywhere in the whole document, the ruled page count aside', a14b.n === 0, JSON.stringify(a14b));
+  ok('MUT-A14-B a planted notification count (.wz-nudge-count) turns A14-B RED; the plain reader is red today on the page count alone', a14m.n === 1 && a14b.plain === true && a14b.n === 0, JSON.stringify({ a14b, a14m }));
 
   // ==========================================================================
   // S6 — defense-in-depth A13 walk: every control actually rendered inside

@@ -35,6 +35,7 @@ import { wordCount } from '../store/wordCount';   // the ONE word counter (c13-1
 import { getUserPageDefaults } from '../store/pageDefaults';
 import { readMarks, closeMark } from '../store/markRuns';
 import { liveBoxes } from '../store/boxTombstones';
+import { joinWithNotes, splitWithNotes } from './footnotes';   // footnotes and endnotes are the last lines of a Part's text: a split and a join carry them (Nick ruled A, Nov 21)
 
 // ---------------------------------------------------------------- the saved keys
 
@@ -246,6 +247,14 @@ function placeRun(docId: string, ids: string[], afterId: string | null): void {
   writeOrder(final);
 }
 
+/** A Part just born into a Doc goes to the END of the Doc's Parts as they are read now (Fable, Nov 20, 10:45 pm: "never sorted by creation time among them"). A page filed with no orderIndex sorts among the unnumbered Parts by creation time, so a Doc whose Parts were numbered by a move, or created later by another device's clock, would show it ahead of them. Placed through placeRun, like every other Part. */
+export function placeAtEnd(partId: string): void {
+  const e = getJournalEntry(partId);
+  if (!e || !e.projectId) return;
+  const rest = entriesOfDoc(e.projectId).filter(x => x.id !== partId);
+  placeRun(e.projectId, [partId], rest.length ? rest[rest.length - 1].id : null);
+}
+
 /** Move a Part WITH its subsections so it lands at `toIndex` among the other Parts (0 = first). Its level is brought to at most one under the Part above, the run's own levels shifting with it. Writes `orderIndex` and `level` only. */
 export function movePart(docId: string, partId: string, toIndex: number): boolean {
   const parts = partsOfDoc(docId);
@@ -409,7 +418,7 @@ export function joinText(above: string, below: string): string {
 }
 
 export interface SplitToken { kind: 'split'; docId: string; sourceId: string; tailId: string; head: string; tail: string; whole: string }
-export interface JoinToken { kind: 'join'; docId: string; keepId: string; goneId: string; above: string; below: string }
+export interface JoinToken { kind: 'join'; docId: string; keepId: string; goneId: string; above: string; below: string; /** the text the Part above was left with (a join that renamed a note label is not above + below) */ joined?: string }
 export type SplitResult = { ok: true; tailId: string; token: SplitToken } | { ok: false; reason: 'unknown' | 'not-text' };
 export type JoinResult = { ok: true; keepId: string; token: JoinToken } | { ok: false; reason: 'unknown' | 'first' | 'not-text' | 'carries' };
 
@@ -436,7 +445,7 @@ export function splitPart(partId: string, offset: number, liveText?: string, bet
   const docId = doc.docId;
   const src = getJournalEntry(partId) as JournalEntry;
   const text = liveText ?? src.text ?? '';
-  const { head, tail } = splitText(text, offset);
+  const { head, tail } = splitWithNotes(text, offset, splitText);
   const parts = partsOfDoc(docId);
   const me = parts.find(p => p.id === partId);
   const born = createBinderPage(docId, (src.pageType ?? 'manuscript') as NonNullable<JournalEntry['pageType']>);
@@ -476,17 +485,18 @@ export function joinPart(partId: string, liveTexts?: { above?: string; below?: s
   if (carriesMore(me)) return { ok: false, reason: 'carries' };
   const above = liveTexts?.above ?? aboveE.text ?? '';
   const below = liveTexts?.below ?? me.text ?? '';
-  saveJournalEntry({ ...aboveE, text: joinText(above, below) });
+  const joined = joinWithNotes(above, below, joinText);
+  saveJournalEntry({ ...aboveE, text: joined });
   if (between) between();
   softDeleteEntry(partId);
-  return { ok: true, keepId: aboveE.id, token: { kind: 'join', docId, keepId: aboveE.id, goneId: partId, above, below } };
+  return { ok: true, keepId: aboveE.id, token: { kind: 'join', docId, keepId: aboveE.id, goneId: partId, above, below, joined } };
 }
 
 /** Undo a split: join the tail back, only when neither half changed since (else it is refused, not forced). */
 export function undoSplit(t: SplitToken): boolean {
   const src = getJournalEntry(t.sourceId), tail = getJournalEntry(t.tailId);
   if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;
-  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });
+  saveJournalEntry({ ...src, text: t.whole ?? joinWithNotes(t.head, t.tail, joinText) });
   softDeleteEntry(t.tailId);
   return true;
 }
@@ -494,7 +504,7 @@ export function undoSplit(t: SplitToken): boolean {
 /** Undo a join: bring the emptied Part back and cut the Part above back to what it was, only when it still holds exactly what the join left. */
 export function undoJoin(t: JoinToken): boolean {
   const keep = getJournalEntry(t.keepId);
-  if (!keep || keep.text !== t.above + t.below) return false;
+  if (!keep || keep.text !== (t.joined ?? t.above + t.below)) return false;
   restoreEntry(t.goneId);
   const back = getJournalEntry(t.goneId);
   if (!back) return false;

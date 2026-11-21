@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
@@ -37,8 +37,9 @@ import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
-import { PartsList } from '../reorg/PartsList';
+import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
 import { PublishParts } from '../reorg/PublishParts';
+import { SymbolPicker, TextFold } from '../reorg/TextFolds';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
 
@@ -134,7 +135,7 @@ export type SliverContent =
       // exactly as before.
       format?: {
         onFormat: (action: FormatAction) => void;
-        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean;
+        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean; supOn?: boolean; subOn?: boolean;
         // the caret line's heading level (1-6), or null: H lights on a heading line [Sliver §3]
         headingLevel?: number | null;
       };
@@ -193,7 +194,7 @@ export interface SliverProps {
   hasMilestones?: boolean;
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
-  front?: { entry: JournalEntry; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
+  front?: { entry: JournalEntry; host?: PartsHost; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
 }
 
 export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
@@ -365,12 +366,12 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           pageId={content.kind === 'draft' ? content.pageId : undefined}
           pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
-          typewriterAvailable
+          typewriterAvailable={content.kind === 'freewrite'}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontPublishing={reorgFront && !!front?.publishing} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} frontPublishing={reorgFront && !!front?.publishing} />
         </SideDrawer>
       </div>
     </div>
@@ -590,21 +591,30 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontPublishing }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontPublishing?: boolean }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, frontPublishing }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost; frontPublishing?: boolean }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
   const settings = useWritingSettings();
 
   if (content.kind === 'empty') return null;
-  const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  // FREE WRITE IS THE TYPEWRITER (Nick, Nov 19): the Format group is greyed everywhere the Typewriter runs, which is every surface but Draft (Draft never runs it, so its Format is never locked); the stored switch is read by nothing.
+  // SUPERSEDED, verbatim: const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  const formatLocked = content.kind !== 'draft';
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
   const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
-  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list alone (read-only, step 3.2)
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body">{frontPublishing ? <PublishParts entry={frontEntry} /> : <PartsList entry={frontEntry} />}</div>;
+  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
+  // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
+  const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
+  // the Team B restyle (slice 5): the TEXT tab's folds, only in the reorg's Front menu (frontTab is set only behind ?reorg=1 in Machina)
+  const textFolds = !!frontTab;
+  // the Team B restyle: the Doc's kind at the tab's head opens today's style guide and templates, through the host's own acts (Draft passes them)
+  const docMenu = content.kind === 'draft' ? { styleGuide: content.styleGuide, onPickStyleGuide: content.onPickStyleGuide, templates: content.templates } : undefined;
+  // FINALIZE (INK): while the publishing view is open, PARTS only orders and ticks what goes out
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body">{frontPublishing ? <PublishParts entry={frontEntry} /> : <PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} />}</div>;
 
   return (
     <div className="wz-sliver-body">
@@ -641,7 +651,16 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontPublish
           (TypewriterToggle's own aria-label, WritingIncentives.tsx,
           unchanged) even though no visible text remains anywhere. */}
 
-      {content.kind === 'draft' && content.format && allowed('format') && (
+      {content.kind === 'draft' && content.format && allowed('format') && (() => {
+        // H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21]
+        const headingControls = (<>
+          <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+          {content.format.headingLevel ? (<>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
+          </>) : null}
+        </>);
+        return (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* PHASE 1 (S4) - a native disabled fieldset: every button inside (the bullet menu's too) is unusable and announced as unavailable, with
@@ -663,13 +682,23 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontPublish
                 has learned. The glyph wears its own mark (<s>) exactly as B/I/U
                 wear theirs — the control demonstrates itself. */}
             <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
-            {/* H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21] */}
-            <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
-            {content.format.headingLevel ? (<>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
-            </>) : null}
+            {/* SUPERSCRIPT AND SUBSCRIPT (reorg-plan-v2, INK queue item 2): two more in the styling row, only in the reorg's Front menu; stored as ^sup^ and ~sub~ in the words (store/markRuns.ts) */}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sup" data-on={content.format.supOn ? 'true' : 'false'} aria-pressed={!!content.format.supOn} title={t('reorgStyleSup')} aria-label={t('reorgStyleSup')} onClick={() => content.format!.onFormat('sup')}>x<sup>2</sup></button>}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sub" data-on={content.format.subOn ? 'true' : 'false'} aria-pressed={!!content.format.subOn} title={t('reorgStyleSub')} aria-label={t('reorgStyleSub')} onClick={() => content.format!.onFormat('sub')}>x<sub>2</sub></button>}
+            {!textFolds && headingControls}
           </div>
+          {/* THE TEAM B RESTYLE (slice 5): behind ?reorg=1 the heading and the paragraph rows fold under "Paragraph"; off the switch they stand as today */}
+          <TextFold k="paragraph" on={textFolds} label={t('reorgTextParagraph')}>
+          {/* THE P / H1 / H2 / H3 PICKER (reorg-plan-v2, INK queue item 1; the stage menus: "a small Paragraph picker, quiet by default, for writers exporting to Substack or WordPress"): it SETS the level of every line the selection touches (store/draftFormat.ts) */}
+          {textFolds && (
+            <div className="wz-sliver-format reorg-para-picker" role="group" aria-label={t('reorgParaPicker')} data-para-picker onMouseDown={e => e.preventDefault()}>
+              {([['para', 'P', 'reorgParaP', 0], ['h1', 'H1', 'reorgParaH1', 1], ['h2', 'H2', 'reorgParaH2', 2], ['h3', 'H3', 'reorgParaH3', 3]] as const).map(([act, glyph, word, level]) => {
+                const on = (content.format!.headingLevel ?? 0) === level;
+                return <button key={act} type="button" className="mode-tbtn" data-para-pick={act} data-on={on ? 'true' : 'false'} aria-pressed={on} title={t(word)} aria-label={t(word)} onClick={() => content.format!.onFormat(act)}>{glyph}</button>;
+              })}
+            </div>
+          )}
+          {textFolds && <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>{headingControls}</div>}
           {/* lists and quotes ride the existing `- ` and `> ` conventions; indent and alignment are line-prefix directives (store/draftFormat.ts documents why they are not metadata) [Sliver §22] */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <BulletControl onFormat={content.format!.onFormat} t={t} />
@@ -684,9 +713,21 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontPublish
             <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
+          </TextFold>
+          {textFolds && (
+            <TextFold k="more" on label={t('reorgTextMore')}>
+              {/* FOOTNOTE AND ENDNOTE (reorg-plan-v2, INK queue item 3): a [^1] marker after the caret's words and an empty note line at the Part's end; stored as plain text (reorg/footnotes.ts) */}
+              <div className="wz-sliver-format reorg-text-notes" onMouseDown={e => e.preventDefault()}>
+                <button type="button" className="mode-tbtn" data-note-pick="footnote" title={t('reorgNoteFootnote')} aria-label={t('reorgNoteFootnote')} onClick={() => content.format!.onFormat('footnote')}>{t('reorgNoteFootnote')}</button>
+                <button type="button" className="mode-tbtn" data-note-pick="endnote" title={t('reorgNoteEndnote')} aria-label={t('reorgNoteEndnote')} onClick={() => content.format!.onFormat('endnote')}>{t('reorgNoteEndnote')}</button>
+              </div>
+              <TextFold k="symbols" on label={t('reorgTextSymbols')}><SymbolPicker /></TextFold>
+            </TextFold>
+          )}
           </fieldset>
         </div>
-      )}
+        );
+      })()}
 
       {/* Structure is the tab's last zone before the foot; the `-zone` suffix is load-bearing: `wz-sliver-structure` is the retired tablist's class, whose absence a harness reads [Sliver §24] */}
       {/* ACTIONS sits between Format and Templates [Sliver §25] */}
@@ -887,8 +928,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
-  // a Draft or Screenplay page asks typewriterForPage; Free Write (no pageId) reads the shared field [Sliver §28]
-  const typewriterOn = pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter;
 
   // the foot is one three-dot menu: Typewriter, Progress and the remaining preferences open together under their headings; one instrument open at a time [Sliver §29]
   const [open, setOpen] = useState(false);
@@ -938,14 +977,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
-        {typewriterAvailable && (
-          <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
-            aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
-            aria-pressed={typewriterOn}
-            onClick={() => setTypewriterExplicit(!typewriterOn)}>
-            <TypewriterModeIcon />
-          </button>
-        )}
         <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
           aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
           aria-pressed={settings.instrumentsOn}
@@ -988,7 +1019,8 @@ function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: 
   const forwardLock = useForwardLock();
 
   // the on/off row is the icon toggle beside the "..."; while it is off these rows are greyed (values kept); same pageId fallback as the toggle [Sliver §35]
-  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);
+  // FREE WRITE IS THE TYPEWRITER: this menu mounts only on Free Write (typewriterAvailable), where the Typewriter always runs, so its rows are never greyed by a switch
+  const off = false;
   return (
     <>
 

@@ -250,9 +250,16 @@ await withHarness(async (app) => {
     await app.typeKeys(' [sic]');
     await sleep(400);
     const f9 = await app.evalJs(`[...document.querySelectorAll('${ED} .md-font')].map((s) => [...s.childNodes].filter((c) => !(c.nodeType === 1 && c.classList.contains('md-mark-hidden'))).map((c) => c.textContent).join(''))`);
+    // the successor's reader: the same spans, outside page breaks' measuring copy (.wz-letter-measure)
+    const f9b = await app.evalJs(`[...document.querySelectorAll('${ED} .md-font')].filter((s) => !s.closest('.wz-letter-measure')).map((s) => [...s.childNodes].filter((c) => !(c.nodeType === 1 && c.classList.contains('md-mark-hidden'))).map((c) => c.textContent).join(''))`);
     const st9 = await settledBy(() => pageText(app, 'tl9'));
-    ok('L9: the span stays whole - one span, its words "counted [sic] gulls", the typed brackets shown as themselves',
-      Array.isArray(f9) && f9.length === 1 && f9[0] === 'counted [sic] gulls', JSON.stringify(f9));
+    // SUPERSEDED (Nov 20, Fable's ruling 2a): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts) with the page's own classes, and this reader matched it too (train C's pair 44818849039, 5e820dbb). Verbatim:
+    // ok('L9: the span stays whole - one span, its words "counted [sic] gulls", the typed brackets shown as themselves',
+    //   Array.isArray(f9) && f9.length === 1 && f9[0] === 'counted [sic] gulls', JSON.stringify(f9));
+    ok('L9-B: the span stays whole on the live page - one span, its words "counted [sic] gulls", the typed brackets shown as themselves',
+      Array.isArray(f9b) && f9b.length === 1 && f9b[0] === 'counted [sic] gulls', JSON.stringify(f9b));
+    ok('MUT-L9-B the reader without the skip is RED on the same page (it reads the copy\'s span too) while L9-B\'s is green: the skip is what holds it',
+      Array.isArray(f9) && f9.length > 1 && Array.isArray(f9b) && f9b.length === 1 && f9b[0] === 'counted [sic] gulls', JSON.stringify({ plain: f9, b: f9b }));
     ok('L9: ...stored with both typed brackets escaped, inside the span\'s own marks', unz(st9) === `Ada [counted ${B}[sic${B}] gulls]{.font-courier-prime} now`, JSON.stringify(st9));
   }
 });

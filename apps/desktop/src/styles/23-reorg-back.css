@@ -31,6 +31,16 @@
 .wz-back-plan-btn{ position:static; width:22px; height:22px; padding:0; background:none; border:1px solid transparent; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; cursor:pointer; }
 .wz-back-plan-btn:hover:not(:disabled), .wz-back-plan-btn:focus-visible{ color:var(--text-hi); border-color:var(--ink-border-strong); outline:none; }
 .wz-back-plan-btn:disabled{ opacity:.3; cursor:default; }
+/* "-> Part" / "Open Part" (a word, not a glyph) and the tick a Part with words earns: the tick is a shape and a name, never colour alone */
+.wz-back-plan-part{ width:auto; padding:0 6px; height:22px; white-space:nowrap; font-size:11px; border-color:var(--ink-border-strong); }
+/* a preset's prompt: one grey line under its heading, in the same column as the name (the row wraps; the Part's tick or the writer's words retire it) */
+.wz-back-plan-row{ flex-wrap:wrap; }
+.wz-back-plan-row > .wz-back-plan-name{ flex:1 1 0; }   /* a zero basis: the wrap is for the prompt's own line only, never the row's buttons */
+.wz-back-plan-hint{ flex:0 0 100%; box-sizing:border-box; padding:0 6px 4px 32px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.wz-back-plan-fold{ flex:none; width:18px; }
+.wz-back-plan-presets{ position:relative; margin-top:6px; }
+.wz-back-plan-preset-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.wz-back-plan-tick{ flex:none; font-family:var(--font-ui); font-size:13px; line-height:1; color:var(--text-hi); }
 .wz-back-plan-add{ margin-top:6px; }
 .wz-back-plan-add .wz-back-plan-input{ width:100%; border-color:var(--ink-border-strong); }
 
@@ -50,3 +60,122 @@
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
+
+/* a Board's Plan (the Outline view, Machina, ?reorg=1): a preset row's grey prompt, on its own line under the title, and the Presets control below the rows */
+.board-outline-hint{ flex:0 0 100%; display:block; padding:0 6px 4px 22px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.board-projection .wz-back-plan-presets{ margin-top:10px; padding-left:6px; }
+/* the Plan's groups of cards from other connected Boards (planConnected.ts): a heading with the board's name and its Open door, then its cards as a plain list, a view */
+.wz-back-plan-group{ display:flex; flex-direction:column; gap:2px; margin-top:12px; }
+.wz-back-plan-group-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:28px; border-bottom:1px solid var(--ink-border-strong); }
+.wz-back-plan-group-name{ flex:1 1 0; min-width:0; font-family:var(--font-ui); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-hi); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-back-plan-group-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+/* SPRINT'S BACK MENU (Free Write, behind ?reorg=1 in Machina): Plan and Assets stay in the tab row, greyed and not pressable, with a note; Feedback is the one standing writing prompt and the
+   button that draws the next. Locked tabs read at 3:1 (--text-low on the drawer), the note at 4.5:1 (--text-mid). */
+.wz-drawer-tab[data-locked='true']{ color:var(--text-low); border-style:dashed; cursor:default; }
+.wz-drawer-tab[data-locked='true']:hover{ color:var(--text-low); border-color:var(--ink-border); }
+.wz-sprint-feedback{ display:flex; flex-direction:column; gap:14px; padding:16px 14px; }
+.wz-sprint-note{ margin:0; font-family:var(--font-ui); font-size:12px; line-height:1.45; color:var(--text-mid); }
+.wz-sprint-prompt{ min-height:3.2em; font-family:var(--font-prose); font-size:16px; line-height:1.5; color:var(--text-hi); }
+.wz-sprint-empty{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+.wz-sprint-press{ align-self:flex-start; height:28px; padding:0 12px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.04em; cursor:pointer; }
+.wz-sprint-press:hover, .wz-sprint-press:focus-visible{ border-color:var(--text-low); outline:none; }
+.wz-sprint-refill{ font-family:var(--font-ui); font-size:12px; color:var(--text-mid); }
+
+/* THE FEEDBACK LENSES (BUILD and EDIT; feedbackLenses.ts): each lens a disclosure that opens to its prompts; a prompt is a plain button that stages its words in the composer */
+.wz-lenses{ display:flex; flex-direction:column; gap:2px; margin:0 0 14px; }
+.wz-lens-head{ position:static; display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box; min-height:32px; padding:0 8px; background:none; border:1px solid transparent; border-bottom-color:var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-ui); font-size:12px; letter-spacing:.08em; text-transform:uppercase; text-align:left; cursor:pointer; }
+.wz-lens-head:hover, .wz-lens-head:focus-visible{ border-color:var(--ink-border-strong); outline:none; }
+.wz-lens-chev{ flex:none; margin-left:8px; color:var(--text-mid); }
+.wz-lens-prompts{ list-style:none; margin:0; padding:4px 0 8px 8px; display:flex; flex-direction:column; gap:4px; }
+.wz-lens-prompt{ position:static; display:block; width:100%; box-sizing:border-box; padding:6px 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:13px; line-height:1.35; text-align:left; cursor:pointer; }
+.wz-lens-prompt:hover, .wz-lens-prompt:focus-visible{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+/* AN ASSET ONTO A PART (reorg/assetConnect.ts): "→ Part" on each asset row and board head, and its list of the Doc's other Parts, laid over the
+   drawer below the button (the list never pushes the rows). Rows and heads are drag sources: the grab cursor says so. */
+.wz-back-asset[draggable='true'], .wz-back-boardhead[draggable='true']{ cursor:grab; }
+.wz-back-topart-wrap{ position:relative; flex:none; }
+.wz-back-topart{ flex:none; height:22px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; cursor:pointer; }
+.wz-back-topart:hover, .wz-back-topart:focus-visible, .wz-back-topart[aria-expanded='true']{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-back-topart-menu{ position:absolute; top:calc(100% + 4px); right:0; z-index:20; min-width:180px; display:flex; flex-direction:column; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
+.wz-back-topart-menu button{ display:block; width:100%; padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+.wz-back-topart-menu button:hover, .wz-back-topart-menu button:focus-visible{ text-decoration:underline; text-underline-offset:3px; outline:1px solid var(--text-low); outline-offset:-2px; }
+
+/* COLOURS ON ASSETS (reorg/assetColour.ts; the slot ruling in reorg/colourSlots.ts). What is stored is a slot a-f; Machina draws it as Nick's six
+   lettered tags (Nov 11, 1:46 am; Downloads\reorg-colour-tags-v3.png, measured on its own pixels): A Outline, B Pale, C Blue, D Yellow, E Mid, F Solid.
+   The letter is the signal, the colour helps the eye; no brass (brass is her act). Floors: the letter 4.5:1 on its tag (A: on the panel), the tag
+   3:1 on the panel (A and B: their edge). DARK is Machina's chrome today and machina/look's dark room; LIGHT is machina/look's light room
+   (data-machina2-room, src/machina2/room.ts). Cool and Warm draw the same six. Flux's 01-06 come with Flux's re-dress (after the trip). */
+:root[data-theme='machina']{
+  --reorg-tag-a-fill:transparent; --reorg-tag-a-ink:#FFFFFF; --reorg-tag-a-edge:#9AA1A8;
+  --reorg-tag-b-fill:#3A4047;     --reorg-tag-b-ink:#FFFFFF; --reorg-tag-b-edge:#9AA1A8;
+  --reorg-tag-c-fill:#8FA9C4;     --reorg-tag-c-ink:#151719; --reorg-tag-c-edge:#8FA9C4;
+  --reorg-tag-d-fill:#CDB75A;     --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#CDB75A;
+  --reorg-tag-e-fill:#9AA1A8;     --reorg-tag-e-ink:#151719; --reorg-tag-e-edge:#9AA1A8;
+  --reorg-tag-f-fill:#F4F5F6;     --reorg-tag-f-ink:#151719; --reorg-tag-f-edge:#F4F5F6;
+}
+:root[data-theme='machina'][data-machina2-room='light']{
+  --reorg-tag-a-fill:transparent; --reorg-tag-a-ink:#151719; --reorg-tag-a-edge:#5E666E;
+  --reorg-tag-b-fill:#D2D6DA;     --reorg-tag-b-ink:#151719; --reorg-tag-b-edge:#5E666E;
+  --reorg-tag-c-fill:#41658A;     --reorg-tag-c-ink:#FFFFFF; --reorg-tag-c-edge:#41658A;
+  --reorg-tag-d-fill:#B9A03A;     --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#5E666E;   /* Yellow stands off the light panel by its 1 px G4 edge (5.34:1; its fill alone is 2.36:1), as the sheet measures it */
+  --reorg-tag-e-fill:#5E666E;     --reorg-tag-e-ink:#FFFFFF; --reorg-tag-e-edge:#5E666E;
+  --reorg-tag-f-fill:#23272B;     --reorg-tag-f-ink:#FFFFFF; --reorg-tag-f-edge:#23272B;
+}
+[data-theme='machina'] .wz-back-tag{ display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; flex:none; width:16px; height:16px; margin-right:6px;
+  border:1px solid transparent; font-family:var(--font-mono, 'IBM Plex Mono', monospace); font-size:10px; font-weight:600; line-height:1; }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
+.wz-back-colour-menu button{ display:flex; align-items:center; }
+.wz-back-colour-menu button[aria-pressed='true'] .wz-back-colour-name{ text-decoration:underline; text-underline-offset:3px; }
+
+/* THE TEAM B RESTYLE, slice 3 (ARBOR, Nov 20; reorg/backMenu/AssetPartGroups.tsx, AssetGroupsList.tsx). The Assets tab, wide to narrow: "Assets (n)",
+   then a group per Part with assets in the Doc's order, its head (fold, tag, name, count) a quiet bar; her Part's group opens with the tab, the others
+   closed (1H). Open Beside and each kind are icons in the label colour, their words on hover and for a screen reader (1F, 1G). No motion: a cut. */
+[data-theme='machina'] .wz-back-assets-head{ margin:0 0 6px; }
+[data-theme='machina'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left;
+  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+[data-theme='machina'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-icon{ display:block; flex:none; }
+[data-theme='machina'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+
+/* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys) */
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* the asset's side is drawn into <body> (reorg/split/SplitHost.tsx's portal), outside the stage: the same rule on it */
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* FOOTNOTES (Nick, Nov 21): the note lines at a Part's end are set apart on the page: smaller and quieter, still real characters (reorg/footnotes.ts; draftDecoration wraps them only under the switch) */
+.md-note{ font-size:.85em; opacity:.72; }
+/* THE ASSETS "+" (reorg-plan-v2 3b item 1): the head's beside "Assets (n)", each Part's at its head's right edge; the menu and the short lists draw over
+   the list inside the drawer (absolute: nothing moves, the page least of all); the sort row under the head */
+[data-theme='machina'] .wz-back-assets-headrow{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin:0 0 6px; }
+[data-theme='machina'] .wz-back-assets-headrow > .wz-back-assets-head{ margin:0; }
+[data-theme='machina'] .wz-assets-add-wrap{ position:relative; flex:none; }
+[data-theme='machina'] .wz-back-part.has-add{ position:relative; }
+[data-theme='machina'] .wz-back-part.has-add > .wz-back-part-head{ padding-right:30px; }
+[data-theme='machina'] .wz-back-part.has-add > .wz-assets-add-wrap{ position:absolute; top:3px; right:2px; }
+[data-theme='machina'] .wz-assets-add{ width:22px; height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none;
+  border:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; line-height:1; cursor:pointer; }
+[data-theme='machina'] .wz-assets-add:hover, [data-theme='machina'] .wz-assets-add:focus-visible, [data-theme='machina'] .wz-assets-add[aria-expanded='true']{ border-color:var(--text-low); color:var(--text-hi); }
+[data-theme='machina'] .wz-assets-add-pop{ position:absolute; top:calc(100% + 4px); right:0; z-index:5; display:flex; flex-direction:column; min-width:180px; padding:4px;
+  background:var(--surface-raised, var(--paper, #1b1e22)); border:1px solid var(--ink-border-strong); box-shadow:0 6px 18px rgba(0,0,0,.28); }
+[data-theme='machina'] .wz-assets-add-pop > button{ display:block; width:100%; padding:6px 8px; background:none; border:0; text-align:left; font:inherit; font-size:12px; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-assets-add-pop > button:hover, [data-theme='machina'] .wz-assets-add-pop > button:focus-visible{ background:var(--hover-bg, rgba(127,127,127,.12)); }
+[data-theme='machina'] .wz-assets-picker{ min-width:240px; max-width:300px; }
+[data-theme='machina'] .wz-assets-picker-body{ display:flex; flex-direction:column; max-height:260px; overflow-y:auto; margin-top:4px; }
+[data-theme='machina'] .wz-assets-picker-none{ padding:6px 8px; font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .wz-assets-sort{ display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+[data-theme='machina'] .wz-assets-sort > button{ height:20px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-chromeLabel, monospace);
+  font-size:10px; color:var(--text-mid); cursor:pointer; }
+[data-theme='machina'] .wz-assets-sort > button[aria-pressed='true']{ color:var(--text-hi); border-color:var(--text-low); }
+[data-theme='machina'] .wz-back-docassets{ margin:0 0 8px; }

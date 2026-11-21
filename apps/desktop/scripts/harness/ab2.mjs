@@ -255,15 +255,24 @@ await withHarness(async (app) => {
       JSON.stringify(draftRail));
 
   const pageRectAfter = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
-    JSON.stringify(pageRectBefore) === JSON.stringify(pageRectAfter), `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write now runs the Typewriter (the page is ZOOMED) and Draft never does, so the rect across a mode switch changes by exactly the Typewriter's zoom - the one ruled page-size exception (docs/page-primacy-canon.md); the original check, verbatim:
+  //   ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode switch with the rail populated',
+  //     JSON.stringify(pageRectBefore) === JSON.stringify(pageRectAfter), `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)}`);
+  // successor: the rail populating moves nothing - the page is the SAME page: same top, same height, same centre (the zoom is about the centre), it is not zoomed in Draft, and it was the Typewriter's zoom (wider) in Free Write
+  const dxC = (r) => r.left + r.width / 2;
+  const draftZoom = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+  ok('PAGE IS PRIMARY [Free Write = Typewriter successor]: across a mode switch with the rail populated the page keeps its top, its height and its centre (Free Write\'s rect is the Typewriter\'s zoom of the same page, Draft\'s is the normal page, not zoomed), so nothing the rail did moved it',
+    !!pageRectBefore && !!pageRectAfter && pageRectBefore.top === pageRectAfter.top && pageRectBefore.height === pageRectAfter.height && Math.abs(dxC(pageRectBefore) - dxC(pageRectAfter)) <= 1 && pageRectBefore.width > pageRectAfter.width && draftZoom !== 'true',
+    `${JSON.stringify(pageRectBefore)} -> ${JSON.stringify(pageRectAfter)} zoom=${String(draftZoom)}`);
 
   // === S3 — Bold writes ** conventions into entry.text (the storage ruling
   // proven at the seam) + the iA register decorates it. ======================
   // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
   await sleep(250);
-  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('plain words');
   await sleep(100);
@@ -513,7 +522,9 @@ await withHarness(async (app) => {
   // PHASE 1 S5 (fixture): a fresh chapter reaches Draft EMPTY, which takes Arbor's default (typewriter ON) and greys the Format group - a disabled button ignores a press. Turn it OFF through the REAL toggle first.
   await app.evalJs(`(() => { const b = document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]'); if (b && b.getAttribute('aria-pressed') === 'true') b.click(); return true; })()`);
   await sleep(250);
-  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's toggle is gone from both stages and Draft NEVER runs the Typewriter, so this read of the toggle's aria-pressed read 'absent'; the premise it proved (the Typewriter is OFF in Draft) now holds by construction and is read off the Draft scroller's own flag, below. The original line, verbatim:
+  // ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.wz-sliver-instruments-modes [data-mode-toggle="typewriter"]')?.getAttribute('aria-pressed') ?? 'absent'`)) === 'false', 'typewriter state before Format');
+  ok('fixture (Phase 1 S5): the typewriter is OFF (via the real toggle) before Bold is pressed', (await app.evalJs(`document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? 'absent'`)) === 'false', 'typewriter state before Format');
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('hello');
   await sleep(100);
@@ -658,8 +669,12 @@ await withHarness(async (app) => {
       const scriptSettingsHeads = await app.evalJs(`[...document.querySelectorAll('.wz-sliver-instruments .mode-settings h4')].map(h => (h.textContent || '').trim())`);
       await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
       await sleep(150);
-      ok('SC1 S3 [PR #7 successor]: the typewriter option IS PRESENT on a screenplay page - R12 stands; it now lives as "Typewriter Mode" inside the foot\'s one Settings menu',
-        Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.includes('Typewriter Mode'),
+      // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter switch left every stage (Draft and Screenplay never run it); the original check, verbatim:
+      //   ok('SC1 S3 [PR #7 successor]: the typewriter option IS PRESENT on a screenplay page - R12 stands; it now lives as "Typewriter Mode" inside the foot\'s one Settings menu',
+      //     Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.includes('Typewriter Mode'),
+      //     JSON.stringify(scriptSettingsHeads));
+      ok('SC1 S3 [Free Write = Typewriter successor]: a screenplay page offers NO Typewriter option - the foot\'s one Settings menu carries Progress Tracking only (the menu is there: power)',
+        Array.isArray(scriptSettingsHeads) && scriptSettingsHeads.length >= 1 && !scriptSettingsHeads.includes('Typewriter Mode') && scriptSettingsHeads.includes('Progress Tracking'),
         JSON.stringify(scriptSettingsHeads));
   // close the gear again — hygiene for the typing run below
   await app.evalJs(`(() => { const row = document.querySelector('.wz-sliver-instruments-row'); const gear = row ? [...row.querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '') === 'Writing settings') : null; if (gear) gear.click(); })()`);
@@ -1162,9 +1177,12 @@ if (process.env.HARNESS_PARKED === '1') {
   return { iconCount: btns.length, menuLabel: menuBtn ? menuBtn.getAttribute('aria-label') : null, menuTitle: menuBtn ? menuBtn.getAttribute('title') : null,
            headings, fullScreenInFoot: !!document.querySelector('.wz-sliver-panel [data-foot-fullscreen], .wz-sliver-panel [aria-label*="full screen" i]'), fullScreenInCorner };
 })()`);
-    const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft's foot menu carries Progress Tracking alone now (the Typewriter Mode heading mounts on Free Write only); the generation-5 record keeps its other conditions. The original line, verbatim:
+    // const footOkPR7 = (f) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Typewriter Mode') && f.headings.includes('Progress Tracking') && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
+    // the SCRIPT surface is Draft's (Progress Tracking alone); the PROSE surface of this fixture is Free Write, whose menu mounts the Typewriter Mode section too.
+    const footOkPR7 = (f, withTypewriter) => !!f && f.iconCount === 1 && !!f.menuLabel && f.menuLabel === f.menuTitle && Array.isArray(f.headings) && f.headings.includes('Progress Tracking') && f.headings.includes('Typewriter Mode') === withTypewriter && f.fullScreenInFoot === false && f.fullScreenInCorner === true;
     pok('PARKED, generation 5 (was the generation-4 two-in-the-row count with Full Screen on the progress line) - PR #7 (4d3c84e): the foot is ONE three-dot menu holding Typewriter Mode and Progress on BOTH surfaces, and Full Screen lives in the desk corner menu, not the drawer',
-      footOkPR7(footScriptPR7) && footOkPR7(footProsePR7),
+      footOkPR7(footScriptPR7, false) && footOkPR7(footProsePR7, true),
       JSON.stringify({ footScriptPR7, footProsePR7 }));
 
     // Re-seed the parked SCRIPT fixture. The prose half of the probe above is

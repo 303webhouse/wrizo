@@ -14,9 +14,23 @@
 +   level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
 +   color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
 +   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
+# PLAN PRESETS (FIX, Nov 21): Box.planHint - a preset heading's one grey prompt, additive optional inside the board's `boxes` jsonb (zero schema; reorg/backMenu/planPresetOps.ts). Not `prompt`: that is a dealt step's question.
++   // A PLAN PRESET'S PROMPT (reorg/backMenu/planPresetOps.ts, Nov 20): the one grey line a preset's heading carries ("What exactly are you and your readers disagreeing about?"). Additive optional inside the board's `boxes` jsonb
++   // (zero schema, like `prompt`): guidance, never her text (it is not in `text`, so it is never exported, copied, counted or read by the Tutor as her words); the Plan draws it under the heading until a Part under that heading has words.
++   // Not `prompt`: that is a dealt step's question and the Walk and the Open view read it.
++   planHint?: string;
+# COLOURS ON ASSETS (ARBOR, Nov 20): a card's colour, Box.color, a slot a-f (Nick's saved-data sheet #14 A; Fable's slot ruling); the whole-blob boxes jsonb carries it
++   // A CARD'S COLOUR IS A SLOT (the reorg's colours on assets, plan 5.1 / tech D4; Nick's saved-data sheet #14 "A", Nov 19; Fable's ruling Nov 20:
++   // "store slots a–f, never a colour name or a hex"). One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the
++   // blob whole); ABSENT = no colour ("No colour" removes the key). Read through reorg/colourSlots.ts isColourSlot, so a value that is not a slot
++   // draws nothing; written by reorg/assetColour.ts setAssetColour, which stamps this box's updatedAt so the newer pick wins a merge.
++   color?: string;
 # REORG Doc-wide settings (INK, Nov 20): Project.docSettings, the Doc's own record (reorg/docSettings.ts; one nullable jsonb column on projects, the tutor recipe).
 + /** A Doc's own settings (Project.docSettings): `styleGuide` is the Doc's style guide (Page Setup and the sources Part's name follow it; 'none' is the key's absence), `export.format` the format the publishing view offers first. Every key is absent until she chooses; an unknown key (a newer client's) is carried through untouched. */
-+ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean } };
++ /** A Doc-level asset (Nick ruled A, Nov 20, 11:55 pm): connected to the whole Doc, not to a Part. `at` is when it was connected. Listed under the Assets tab's
++  *  head; dragged into a Part it also becomes that Part's own PageLink (graftTo) and stays here. Read and written only through reorg/docSettings.ts. */
++ export interface DocAsset { entryId: string; boxId?: string; at: string }
++ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean }; assets?: DocAsset[] };
 +   // THE DOC'S OWN SETTINGS (Fable, Nov 20, Nick ruled: a Doc-wide setting lives in the Doc's own record, never in whichever Part is first). ONE additive nullable jsonb column on `projects`
 +   // (`doc_settings`), the exact `tutor` recipe above: absent on every Doc that never chose (never null, never {}), so a project that never chose syncs byte-identically to today. A made Doc (a set the
 +   // writer made) only: a loose page is its own Doc and keeps the one key that already exists on a page (pageSettings.styleGuide). Read and written only through reorg/docSettings.ts.

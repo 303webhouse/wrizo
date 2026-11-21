@@ -4,13 +4,13 @@ import { readEscapes, readLead, readMarks, closeMark, type MarkRun } from '../st
 // The app's own on-screen markup (store/draftDecoration.ts) is built to be painted by the app's stylesheet (its marks are hidden by a class, its bold is a class), so it means nothing outside the
 // app. This turns the page's conventions into plain semantic HTML that reads the same anywhere: the SAME readers the page paints from (store/markRuns.ts readLead, readMarks, readEscapes), so
 // "2 * 3 * 4" stays as it shows, a typed `\*` is the character, and no marker is ever left in the text.
-//   bold <strong>, italic <em>, underline <u>, strike <s>, a size span <span style="font-size:Npt">; # headings <h1>..<h6>; "> " a <blockquote>; "- " a <ul>; "><" and ">>" align;
+//   bold <strong>, italic <em>, underline <u>, strike <s>, superscript <sup>, subscript <sub>, a size span <span style="font-size:Npt">; # headings <h1>..<h6>; "> " a <blockquote>; "- " a <ul>; "><" and ">>" align;
 //   ">| " a block indent; a leading tab a first-line indent; lines of one paragraph are joined by <br>; a blank line ends a paragraph.
 
 const escH = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const OPEN: Record<string, string> = { bold: '<strong>', italic: '<em>', underline: '<u>', strike: '<s>' };
-const CLOSE: Record<string, string> = { bold: '</strong>', italic: '</em>', underline: '</u>', strike: '</s>' };
+const OPEN: Record<string, string> = { bold: '<strong>', italic: '<em>', underline: '<u>', strike: '<s>', sup: '<sup>', sub: '<sub>' };
+const CLOSE: Record<string, string> = { bold: '</strong>', italic: '</em>', underline: '</u>', strike: '</s>', sup: '</sup>', sub: '</sub>' };
 const openTag = (r: MarkRun): string => (r.kind === 'font' ? (r.points != null ? `<span style="font-size:${r.points}pt">` : '<span>') : OPEN[r.kind]);
 const closeTag = (r: MarkRun): string => (r.kind === 'font' ? '</span>' : CLOSE[r.kind]);
 

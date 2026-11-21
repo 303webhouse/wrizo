@@ -126,9 +126,15 @@ const KEEP = {
   reorgNewBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoardsNoDoc: 'the reorg rail, Machina only: never rendered in Flux',
   reorgUntitledBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoxSettings: 'the reorg rail, Machina only: never rendered in Flux',
   reorgDefaults: 'the reorg rail, Machina only: never rendered in Flux',
+  // THE ASSETS "+" (POLISH, Nov 21, reorg-plan-v2 3b item 1): read only in the reorg's Assets tab under ?reorg=1 in Machina; Flux never renders it. Each names Machina's Board.
+  reorgAddNewBoard: 'the reorg Assets tab, Machina only: never rendered in Flux', reorgAddExistingBoard: 'the reorg Assets tab, Machina only: never rendered in Flux',
+  reorgAddSearchBoards: 'the reorg Assets tab, Machina only: never rendered in Flux',
   // THE REORG'S TOP RAIL (POLISH, Nov 19): read only under ?reorg=1 in Machina (src/reorg/TopRail.tsx); Flux never renders it. Each names Machina's Board or doc.
   reorgTopPlaceNoDoc: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopPlaceOne: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopPlaceMany: 'the reorg top rail, Machina only: never rendered in Flux',
-  reorgTopConnectAnother: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopConnectUnborn: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopConnectNewHeld: 'the reorg top rail, Machina only: never rendered in Flux',
+  reorgTopConnectAnother: 'the reorg top rail, Machina only: never rendered in Flux', reorgTopConnectUnborn: 'the reorg top rail, Machina only: never rendered in Flux', reorgSearchLineProject: 'the reorg search, Machina only: never rendered in Flux', reorgSearchBoardHead: 'the reorg search, Machina only: never rendered in Flux', reorgPartJoinCarries: 'the reorg Parts tools, Machina only: never rendered in Flux', reorgTopConnectNewHeld: 'the reorg top rail, Machina only: never rendered in Flux',
+  // THE DOC'S KIND MENU (INK's build, ARBOR's restyle, Nov 20; POLISH found them red in LX2b, Nov 21): read only under ?reorg=1 in Machina (src/reorg/DocKindMenu.tsx); Flux never
+  // renders the kind menu (INK confirms, Nov 21: reorgDocPageSetup's one reader is DocKindMenu.tsx; reorgSpecialTitle has no reader at all). Each names Machina's printed page.
+  reorgDocPageSetup: 'the reorg kind menu, Machina only: never rendered in Flux', reorgSpecialTitle: 'declared with the kind menu but read by nothing in src (the menu names its Special Parts from reorg/docKinds.ts): never rendered in any theme',
 };
 const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
 function deskIdsFromSource() {
