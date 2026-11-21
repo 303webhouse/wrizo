@@ -72,6 +72,8 @@ const callers2 = (srcDir, mutate = {}) => {
     if (rel === 'store/persistence.ts' || rel.startsWith('store/persistence/')) continue;   // #13 step 10h: the persistence layer is a folder now
     // a PAGE's delete reaches softDeleteEntry through pageActions.onDelete, which DrawerActions calls ONLY inside requestDelete(...) - S3 pins that
     if (rel === 'store/pageActions.ts') continue;
+    // the Parts layer's TWO named bypasses live in reorg/parts.ts alone and are read by partsBypass below (Fable, Nov 20, ruling B); no other file is skipped
+    if (rel === 'reorg/parts.ts') continue;
     const text = live(mutate[rel] ? mutate[rel](noCR(fs.readFileSync(f, 'utf8'))) : noCR(fs.readFileSync(f, 'utf8')));
     const lines = text.split('\n');
     lines.forEach((l, i) => {
@@ -98,6 +100,33 @@ const callers2 = (srcDir, mutate = {}) => {
   }
   return bad;
 };
+// THE PARTS LAYER'S TWO SANCTIONED BYPASSES (Fable, Nov 20, ruling B on S1). reorg/parts.ts is not read by the gate rule above (callers2 skips it); it is read HERE, and it may call softDeleteEntry in exactly two
+// places, each only after the person's words are safe:
+//   joinPart  the emptied Part is deleted AFTER the joined words are saved onto the Part above, and only after a Part that carries ink, cards, links or a Tutor thread was refused
+//   undoSplit the tail is deleted AFTER the words went back into the source, and only if neither half changed since the split
+// No confirmation dialog on a join (a join is the writer's own act and undoJoin brings the Part back). Returns the problems found ([] = the two, in their order, and no third).
+const partsBypass = (raw) => {
+  const text = live(noCR(raw));
+  const bad = [];
+  const calls = text.split('\n').filter((l) => /softDeleteEntry\(/.test(l) && !/^\s*import\b/.test(l));
+  const body = (name) => { const a = text.indexOf('export function ' + name + '('); if (a < 0) return null; const b = text.indexOf('\n}\n', a); return b < 0 ? null : text.slice(a, b); };
+  const jp = body('joinPart'), us = body('undoSplit');
+  if (calls.length !== 2) bad.push('softDeleteEntry calls in parts.ts: ' + calls.length + ' (the two named ones, no third)');
+  if (!jp || !us) { bad.push('joinPart or undoSplit not found'); return bad; }
+  const n = (s) => (s.match(/softDeleteEntry\(/g) || []).length;
+  if (n(jp) !== 1) bad.push('joinPart calls ' + n(jp));
+  if (n(us) !== 1) bad.push('undoSplit calls ' + n(us));
+  const at = (s, re) => { const m = re.exec(s); return m ? m.index : -1; };
+  const jRefuse = at(jp, /if \(carriesMore\(me\)\) return \{ ok: false/), jSave = at(jp, /saveJournalEntry\(\{ \.\.\.aboveE, text: joinText\(/), jDel = at(jp, /softDeleteEntry\(partId\)/);
+  if (jRefuse < 0) bad.push('joinPart: the carries refusal is gone');
+  if (jSave < 0 || jDel < 0 || jDel < jSave) bad.push('joinPart: the delete is not after the words are saved onto the Part above');
+  if (jRefuse >= 0 && jSave >= 0 && jSave < jRefuse) bad.push('joinPart: the words are saved before the carries refusal');
+  const uGuard = at(us, /src\.text !== t\.head \|\| tail\.text !== t\.tail\) return false/), uSave = at(us, /saveJournalEntry\(\{ \.\.\.src, text: /), uDel = at(us, /softDeleteEntry\(t\.tailId\)/);
+  if (uGuard < 0) bad.push('undoSplit: the neither-half-changed guard is gone');
+  if (uSave < 0 || uDel < 0 || uDel < uSave) bad.push('undoSplit: the delete is not after the words go back into the source');
+  if (uGuard >= 0 && uSave >= 0 && uSave < uGuard) bad.push('undoSplit: the words are saved before the guard');
+  return bad;
+};
 {
   const be = noCR(srcText(SRC, 'components/BoardEditor.tsx'));   // #13 step 10g: the module and its parts, joined
   const app = noCR(fs.readFileSync(path.join(SRC, 'App.tsx'), 'utf8'));
@@ -107,10 +136,25 @@ const callers2 = (srcDir, mutate = {}) => {
   const ds = noCR(fs.readFileSync(path.join(SRC, 'store/deleteSeams.ts'), 'utf8'));
   const seamBad = bad.filter((x) => x.startsWith('store/deleteSeams.ts:'));
   const seamGated = /softAll: \(\) => \{\n\s*gate\(\);/.test(ds) && (live(ds).match(/softDeleteEntry\(/g) || []).length === 1 && /if \(!isDestructiveUnlocked\(\)\) throw/.test(ds);
-  ok('S1 [delete-for-good successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except ONE named bypass, softAll on the delete seam (store/deleteSeams.ts), which first passes its own gate (it refuses unless the in-app typed confirmation happened this page session)',
-    seamBad.length === 1 && bad.length === seamBad.length && seamGated, JSON.stringify({ bad, seamGated }));
+  // SUPERSEDED (Fable, Nov 20, ruling B - the Parts layer: a join and an undo-split delete a Part the writer's own words have just left, after they are saved elsewhere, with no dialog). The original S1 [delete-for-good successor], verbatim:
+  // ok('S1 [delete-for-good successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except ONE named bypass, softAll on the delete seam (store/deleteSeams.ts), which first passes its own gate (it refuses unless the in-app typed confirmation happened this page session)',
+  // seamBad.length === 1 && bad.length === seamBad.length && seamGated, JSON.stringify({ bad, seamGated }));
+  const PARTS_RAW = noCR(fs.readFileSync(path.join(SRC, 'reorg/parts.ts'), 'utf8'));
+  const partsReal = partsBypass(PARTS_RAW);
+  ok('S1 [parts successor]: every call of softDeleteEntry outside persistence.ts sits inside requestDelete(...) - except THREE named bypasses: softAll on the delete seam (store/deleteSeams.ts, behind its own typed-confirmation gate), and TWO in reorg/parts.ts - joinPart (after the joined words are saved onto the Part above; a Part that carries ink, cards, links or a Tutor thread is refused first) and undoSplit (after the words go back into the source, only if neither half changed). A join asks nothing.',
+    seamBad.length === 1 && bad.length === seamBad.length && seamGated && partsReal.length === 0, JSON.stringify({ bad, seamGated, partsReal }));
   const mut = callers2(SRC, { 'components/cascade/PlanPanel.tsx': (t) => t.replace('onClick={() => requestDelete(() => { softDeleteEntry(id); })}', 'onClick={() => { softDeleteEntry(id); }}') });
   ok('S1 (mutant): a delete that skips the gate turns the guard RED (the mutation landed)', mut.length > 0, JSON.stringify(mut));
+  // each mutant is a text rewrite of reorg/parts.ts; it must LAND (the text changed) and turn partsBypass red
+  const pm = (name, fn) => { const m = fn(PARTS_RAW); const r = m !== PARTS_RAW ? partsBypass(m) : null; ok('S1 (parts mutant): ' + name + ' turns the guard RED (the mutation landed)', m !== PARTS_RAW && !!r && r.length > 0, JSON.stringify({ landed: m !== PARTS_RAW, problems: r })); };
+  pm('a THIRD raw softDeleteEntry in parts.ts', (t) => t.replace('  return { ok: true, keepId: aboveE.id', () => '  softDeleteEntry(aboveE.id);\n  return { ok: true, keepId: aboveE.id'));
+  pm('joinPart deleting the Part BEFORE the words are saved onto the Part above', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();"));
+  pm('undoSplit deleting the tail BEFORE the words go back into the source', (t) => t.replace("  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });\n  softDeleteEntry(t.tailId);", () => "  softDeleteEntry(t.tailId);\n  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });"));
+  pm('joinPart no longer refusing a Part that carries ink, cards, links or a Tutor thread', (t) => t.replace("  if (carriesMore(me)) return { ok: false, reason: 'carries' };\n", () => ''));
+  pm('undoSplit deleting the tail although a half changed', (t) => t.replace('if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;', () => 'if (!src || !tail) return false;'));
+  // a raw call anywhere ELSE is the gate rule's: a Parts-layer sibling file calling softDeleteEntry must be RED even though parts.ts is skipped
+  const sib = callers2(SRC, { 'reorg/panels/UnfiledPanel.tsx': (t) => t + '\nfunction sneak(id: string) { softDeleteEntry(id); }\n' });
+  ok('S1 (parts mutant): a raw softDeleteEntry in a sibling file in the Parts area (reorg/panels/UnfiledPanel.tsx) turns the gate rule RED - the skip is for reorg/parts.ts alone', sib.some((x) => x.startsWith('reorg/panels/UnfiledPanel.tsx')), JSON.stringify(sib));
   // successor: the callee-following path has its own mutant - deleteThisBoard reached WITHOUT requestDelete must be RED, and the
   // mutation must have LANDED (the text really changed), else a green here would mean nothing
   const gateLine = 'onSelect: () => requestDelete(deleteThisBoard)';

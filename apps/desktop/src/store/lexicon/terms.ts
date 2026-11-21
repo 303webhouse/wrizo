@@ -121,6 +121,9 @@ export type DeskTermId =
   // THE REORG'S FRONT MENU (plan steps 3.1 and 3.2: reorg/frontTabs.ts, reorg/PartsList.tsx)
   | 'reorgFrontLabel' | 'reorgFrontParts' | 'reorgPartsHead' | 'reorgPartsOf' | 'reorgPartN' | 'reorgTopPartsDrop' | 'reorgPartPrevTo' | 'reorgPartNextTo' | 'reorgPartNoPrev' | 'reorgPartNoNext' | 'reorgPartEnd' | 'reorgPartNext'
   | 'reorgPartsNew' | 'reorgPartsSplit' | 'reorgPartsNewNo' | 'reorgPartsSplitCaret' | 'reorgPartsSplitNo' | 'reorgPartsSplitDone' | 'reorgPartJoinCarries' | 'reorgPartJoinScript' | 'reorgPartJoinNo' | 'reorgPartsJoinDone' | 'reorgPartsUndo' | 'reorgPartsUndone' | 'reorgPartsUndoNo' | 'reorgPartMore' | 'reorgPartMenu' | 'reorgPartUp' | 'reorgPartDown' | 'reorgPartIn' | 'reorgPartOut' | 'reorgPartJoin' | 'reorgPartColour' | 'reorgPartColourNone' | 'reorgPartColourClay' | 'reorgPartColourAmber' | 'reorgPartColourMoss' | 'reorgPartColourTeal' | 'reorgPartColourSlate' | 'reorgPartColourPlum'
+  // PUBLISHING AS A VIEW (src/reorg/PublishView.tsx, behind ?reorg=1 in Machina)
+  | 'reorgPubLabel' | 'reorgPubBack' | 'reorgPubEmptyPart' | 'reorgPubTick' | 'reorgPubCount' | 'reorgPubAll' | 'reorgPubNone' | 'reorgPubMd' | 'reorgPubTxt'
+  | 'reorgPubCopyText' | 'reorgPubCopyFormatted' | 'reorgPubExport' | 'reorgPubHtml' | 'reorgPubFrozen' | 'reorgPubOnePart' | 'reorgPubPartsHint' | 'reorgPubPartsLabel' | 'reorgPubUp' | 'reorgPubDown'
   // THE REORG'S BACK MENU (src/reorg/backMenu/, behind ?reorg=1 in Machina): new words only; the tab row reads PLAN, ASSETS (drawerLinks), FEEDBACK (tutorTabTutor)
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
   | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
