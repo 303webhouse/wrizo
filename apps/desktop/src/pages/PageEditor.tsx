@@ -1291,10 +1291,12 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          // SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 pm, via Fable 3:15 pm): in Free Write, in every theme, the Front menu is not drawn at all - no drawer,
-          // no tab, so no Text, Ink or Parts tools and no pen (the instrument stays 'text': only the drawer's INK tab ever changed it). The drawer is an
-          // overlay in its own anchor (DeskFrame), so leaving it out moves nothing on the page. Draft and Revise keep it as today.
-          sliver={mode === 'journal' ? undefined : <FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
+          // SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 pm and 1:20 pm, via Fable 3:15 pm; Fable 5:05 pm: behind the reorg's switch, Machina, for Monday;
+          // each other theme takes it with its own reorg build): in Free Write the Front menu is not drawn at all - no drawer, no tab, so no Text, Ink or
+          // Parts tools and no pen (the instrument stays 'text': only the drawer's INK tab ever changed it). The drawer is an overlay in its own anchor
+          // (DeskFrame), so leaving it out moves nothing on the page. Draft and Revise keep it; with the switch off, or in any other theme, Free Write
+          // keeps today's drawer.
+          sliver={mode === 'journal' && reorgTop ? undefined : <FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
           // The Tutor is absent while the first-run gate holds (first run stays pure), not veiled-but-mounted: the veil's filter:blur would make a new containing block and break the Tutor's two absolute anchors (they need .desk-frame-stage). Otherwise the right hand mounts from first paint, unborn pages included, as BoardEditor, ScriptEditor and JournalEntry do; `entry` already carries the minted per-surface id (UnbornProvider registers it before children render), and Tutor.send() refuses on an unborn surface. [PageEditor §34]
           tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already

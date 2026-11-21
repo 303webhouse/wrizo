@@ -1,14 +1,16 @@
-// SPRINT HAS NO MENUS (POLISH; Nick, Nov 20, 1:13 pm, through Fable 3:15 pm: "SPRINT has no menus in every theme. T1, I1, P1 retire (the pen
-// too)"). On a page in Free Write (SPRINT), in every theme and with the reorg's switch on or off, the Front menu (the Tools drawer, the Sliver) is
-// not drawn at all: no drawer, no tab, so no Text, Ink or Parts tools there, and no pen. BUILD (Draft) keeps it as today. The drawer is an overlay
-// in its own anchor (components/DeskFrame.tsx), so leaving it out moves nothing on the page (no new geometry is asserted here).
+// SPRINT HAS NO MENUS (POLISH; Nick, Nov 20, 1:13 pm and 1:20 pm, through Fable 3:15 pm: "SPRINT has no menus ... T1, I1, P1 retire (the pen
+// too)"; the Back menu keeps FEEDBACK, FIX's). Fable, 5:05 pm: for Monday it ships BEHIND THE REORG'S SWITCH (Machina); each other theme takes it
+// with its own reorg build, parking that theme's Free Write checks then. So: with ?reorg=1 in Machina, a page in Free Write (SPRINT) draws no
+// Front menu at all (the Tools drawer, the Sliver): no drawer, no tab, so no Text, Ink or Parts tools there, and no pen. BUILD (Draft) keeps it.
+// With the switch off, and in Arbor and Flux, Free Write keeps today's drawer. The drawer is an overlay in its own anchor (components/DeskFrame.tsx),
+// so leaving it out moves nothing on the page (no new geometry is asserted here).
 //
 // The fixture (seeded through the app's own seams; WS_PLACE=1 so the account gets its Top Drawer): one page in Top Drawer's set, "Sprint page".
 //
 // BUILD  N0  in Draft, in Arbor, Flux and Machina, the Front menu's tab is drawn (today's drawer)
-// SPRINT N1  in Free Write, in Arbor, Flux and Machina, no Front menu: no drawer, no tab; the page is there
-//        N2  the reorg's switch on (Machina): no Front menu in SPRINT; BUILD still has it, with its PARTS tab
-//        N3  no pen in SPRINT: no INK tab, no ink mark on any tab, in any theme
+// OFF    N1  the switch off, in Arbor, Flux and Machina: Free Write keeps today's drawer (its tab and its INK tab)
+// SPRINT N2  the reorg's switch on (Machina): no Front menu in SPRINT (no drawer, no tab; the page is there); BUILD still has it, with its PARTS tab
+//        N3  no pen in SPRINT with the switch on: no INK tab, no ink mark on any tab
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/sprint-no-menus.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -65,17 +67,18 @@ await withHarness(async (app) => {
     await stage(app, 'draft');
   }
   ok('N0: in Draft, in Arbor, Flux and Machina, the Front menu\'s tab is drawn (today\'s drawer)', THEMES.every((t) => n0[t].inDraft && n0[t].grip && n0[t].editor), n0);
-  ok('N1: in Free Write, in Arbor, Flux and Machina, no Front menu - no drawer, no tab; the page is there', THEMES.every((t) => n1[t].inSprint && !n1[t].sliver && !n1[t].grip && n1[t].editor), n1);
+  ok('N1: the switch off, in Arbor, Flux and Machina - Free Write keeps today\'s drawer (its tab and its INK tab)', THEMES.every((t) => n1[t].inSprint && n1[t].sliver && n1[t].grip && n1[t].ink && n1[t].editor), n1);
 
   await open(app, 'machina', true);
   const onDraft = await stage(app, 'draft');
   const rDraft = await app.evalJs(MENU);
   const onSprint = await stage(app, 'freewrite');
   const rSprint = await app.evalJs(MENU);
-  ok('N2: the reorg\'s switch on (Machina) - no Front menu in SPRINT; BUILD still has it, with its PARTS tab',
-    onDraft && rDraft.grip && onSprint && !rSprint.sliver && !rSprint.grip && rSprint.editor, { onDraft, rDraft, onSprint, rSprint });
+  ok('N2: the reorg\'s switch on (Machina) - no Front menu in SPRINT (no drawer, no tab; the page is there); BUILD still has it, with its PARTS tab',
+    onDraft && rDraft.grip && rDraft.parts && onSprint && !rSprint.sliver && !rSprint.grip && rSprint.editor, { onDraft, rDraft, onSprint, rSprint });
   await stage(app, 'draft');
-  ok('N3: no pen in SPRINT - no INK tab, no ink mark on any tab, in any theme', THEMES.every((t) => n1[t].inSprint && !n1[t].ink) && !rSprint.ink, { n1, rSprint });
+  // the pen's absence means something only where the drawer offered it before (N1's INK tab, switch off)
+  ok('N3: no pen in SPRINT with the switch on - no INK tab, no ink mark on any tab', onSprint && !rSprint.ink && n1.machina && n1.machina.ink, { rSprint, offInk: n1.machina && n1.machina.ink });
   return checks;
 });
 
