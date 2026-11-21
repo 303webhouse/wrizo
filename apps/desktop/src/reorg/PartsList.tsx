@@ -38,7 +38,9 @@ export interface PartsHost {
   splitHere?: () => { ok: true; token: SplitToken } | { ok: false; why: 'caret' | 'text' };
 }
 
-const COLOUR_KEY: Record<PartColor, DeskTermId> = { clay: 'reorgPartColourClay', amber: 'reorgPartColourAmber', moss: 'reorgPartColourMoss', teal: 'reorgPartColourTeal', slate: 'reorgPartColourSlate', plum: 'reorgPartColourPlum' };
+// the slot ruling (INK's reorg/parts.ts on ink/reorg-finalize): a colour is a SLOT a-f; until the restyle names the slots (ARBOR, train E) each
+// slot keeps the word of the colour it replaced, in the same order as INK's old-name map (clay a, amber b, moss c, teal d, slate e, plum f)
+const COLOUR_KEY: Record<PartColor, DeskTermId> = { a: 'reorgPartColourClay', b: 'reorgPartColourAmber', c: 'reorgPartColourMoss', d: 'reorgPartColourTeal', e: 'reorgPartColourSlate', f: 'reorgPartColourPlum' };
 
 export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost }) {
   const { t } = useDeskLexicon();
