@@ -65,6 +65,8 @@ export interface WritingSettings {
   // anywhere." Flux's Glitch meter only (components/GlitchMeter.tsx); the ambient Signal Loss texture has its own Ambiance dial. On by
   // default (the approved mockup's switch starts ON); a pre-meter stored blob merges to it through load()'s `{ ...DEFAULTS, ...parsed }`.
   flicker: boolean;
+  // THE PLAIN PROGRESS TRACKER's switch (POLISH, Fable Nov 20, 5:25 pm): true = the theme's own tracker (today's behaviour), false = the plain tracker in every theme; saved to the account with the rest
+  themeTracker: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -100,6 +102,7 @@ const DEFAULTS: WritingSettings = {
   writingLine: 'center',
   pageScroll: true,
   flicker: true,
+  themeTracker: true,
 };
 
 function load(): WritingSettings {

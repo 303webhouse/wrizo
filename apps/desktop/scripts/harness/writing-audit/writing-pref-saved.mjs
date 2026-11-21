@@ -18,6 +18,7 @@
 //   W10 sign-out forgets them: the settings are the defaults, the key and the copy are gone
 //   W11 the reorg's OWN facts keep their switch: with it off, the split width writes no fact
 //   W12 no new storage key: only wrizo-writing-settings and the existing prefs key
+//   W13 themeTracker (POLISH's "Use Theme Progress Tracker"): true by default, false travels to a second device, a value that is not a boolean is never applied
 //   MUT1 the bridge deaf to the account (its subscribePrefs line removed): W2 goes RED
 //   MUT2 no switchless fact ('writing' out of SWITCHLESS): W1 goes RED
 //   MUT3 every call is an act (the unchanged-value guard removed): W7 goes RED
@@ -160,7 +161,7 @@ const serverW = () => (db.prefs && db.prefs.writing) || null;
 const same = (a, b, keys) => keys.every((k) => a[k] === b[k]);
 
 if (!hasBridge || !hasSaved || !rules) {
-  for (const n of ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12']) ok(false, `${n} no bridge (src/store/writingPref.ts): the settings stay on the device - another device or a fresh sign-in starts at the defaults`);
+  for (const n of ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12', 'W13']) ok(false, `${n} no bridge (src/store/writingPref.ts): the settings stay on the device - another device or a fresh sign-in starts at the defaults`);
 } else {
   // W7 first, on a fresh account: nothing is written
   const F = await loadDevice('F');
@@ -240,6 +241,19 @@ if (!hasBridge || !hasSaved || !rules) {
   const G = await loadDevice('G');
   G.mod.split.setSplitWidth(0.7); await turns();
   ok(!(local('G') && local('G').split) && !(G.mod.saved.getPref('split')), `W11 with the reorg's switch off, the split width writes no fact (${JSON.stringify(local('G'))})`);
+
+  // W13 the theme-tracker switch (POLISH's "Use Theme Progress Tracker", Fable Nov 20 5:25 pm): true by default, false travels, a value that is not a boolean is never applied
+  db.prefs = null; tick(60000);
+  const P = await loadDevice('P');
+  const dflt = cur(P).themeTracker === true;
+  await set(P, { themeTracker: false }); tick(); await syncDev(P); await P.runTimers(); tick();
+  const Q = await loadDevice('Q');
+  await syncDev(Q); await Q.runTimers(); tick();
+  const travelled = cur(Q).themeTracker === false && !!serverW() && serverW().themeTracker === false;
+  db.prefs = { writing: { themeTracker: 'maybe', typewriter: false, at: new Date(fakeNow + 1000).toISOString() } }; tick(2000);
+  const R = await loadDevice('R');
+  await syncDev(R); await R.runTimers(); tick();
+  ok(dflt && travelled && cur(R).themeTracker === true, `W13 themeTracker: true by default (${dflt}); false travels to a second device (${cur(Q).themeTracker}, server ${serverW() && serverW().themeTracker}); 'maybe' is not applied (${cur(R).themeTracker})`);
 
   // W12 no new storage key
   const keys = new Set(); for (const s of Object.values(stores)) for (const k of s.keys()) keys.add(k);

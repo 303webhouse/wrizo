@@ -35,6 +35,7 @@ const VALID: { [K in keyof WritingSettings]: (v: unknown) => boolean } = {
   writingLine: isEnum('top', 'center', 'bottom'),
   pageScroll: isBool,
   flicker: isBool,
+  themeTracker: isBool,
 };
 /** The settings this build knows, each of a value it accepts; anything else is left out. */
 export function sanitizeWritingFields(raw: unknown): Partial<WritingSettings> {

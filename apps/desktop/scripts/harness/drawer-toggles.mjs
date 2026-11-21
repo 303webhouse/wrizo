@@ -261,12 +261,27 @@ if (false) ok('(T3b) the toggles flip the SAME values the old rows flipped (type
 // (T3c) successor: T3b's claim with one allowance - forwardLock.ts and writingGoal.ts may lose ONLY the two unused getters #13 step 11 deletes:
 // no line added, and no removed line touches storage, a key or a stored field. It holds before the delete (no diff) and after it.
 const STEP11_GETTERS = ['getForwardLock', 'getWritingGoal'];
-ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+// SUPERSEDED (Fable, Nov 20, 5:25 pm: POLISH's "Use Theme Progress Tracker" is a saved writing setting, `themeTracker`, so writingSettings.ts gains ONE interface field and ONE DEFAULTS entry and
+// T3c's "changes no line of its interface or its DEFAULTS" no longer holds for exactly that key). Parked, not deleted; the original, verbatim:
+// ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+//   v.buttonsPP === true && (() => {
+//     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+//     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+//     const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+//     const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+//     const body = (other || '').split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
+//     const added = body.filter((l) => l.startsWith('+'));
+//     const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+//     const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
+//     base.storeDiff = { added: added.length, storageTouched, exportsGone, removedOrKeyTouched };
+//     return other !== null && added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && removedOrKeyTouched === false;
+//   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
+ok('(T3c) [successor: themeTracker] the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
   v.buttonsPP === true && (() => {
     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
     const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
-    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));   // the one allowance: the themeTracker lines (its interface field, its DEFAULTS entry, its comment)
     const body = (other || '').split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
     const added = body.filter((l) => l.startsWith('+'));
     const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
