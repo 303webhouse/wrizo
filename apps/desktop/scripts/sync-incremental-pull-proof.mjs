@@ -78,8 +78,12 @@ const realConsoleError = console.error;
 // ---------------------------------------------------------------------------
 // THE FAKE POOL
 // ---------------------------------------------------------------------------
-const norm = (sql) => sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim();
-const splitTop = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
+// ORIGINAL, SUPERSEDED Nov 21 (the projects upsert holds a `-- THE GUARD ...` line comment, which Postgres ignores and this did not), kept verbatim:
+// const norm = (sql) => sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim();
+const norm = (sql) => sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/--[^\n]*/g, '').replace(/\s+/g, ' ').trim();
+// ORIGINAL, SUPERSEDED Nov 21 (a comma inside coalesce(...) is not a separator: the Doc column's guard), kept verbatim:
+// const splitTop = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
+const splitTop = (s) => { const out = []; let depth = 0, cur = ''; for (const ch of s) { if (ch === '(') depth += 1; else if (ch === ')') depth -= 1; if (ch === ',' && depth === 0) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out.map((x) => x.trim()).filter(Boolean); };
 
 // Which tables does migrate.ts give a `synced_at` column, and with what default? Read from its text.
 function syncedAtTablesFrom(migrateText) {
@@ -90,6 +94,10 @@ function syncedAtTablesFrom(migrateText) {
 
 // CONNECTOR-B's old-client guard on journal_entries.page_links (the one SET that is not "col = excluded.col"); the fake models it, it does not skip it.
 const OLD_CLIENT_GUARD = /^case when excluded\.page_links is null or excluded\.page_links = 'null'::jsonb then journal_entries\.page_links else excluded\.page_links end$/i;
+
+// THE DOC COLUMN'S GUARD on projects.doc_settings (Fable, Nov 20, 4:50 pm: a device on an older build re-sends a project without docSettings and must not wipe hers): coalesce(excluded.doc_settings, projects.doc_settings). Modelled like the page_links guard above:
+// a push that carries none (SQL NULL) keeps what is stored; one that carries a value (an empty {} included) replaces it.
+const DOC_SETTINGS_GUARD = /^coalesce\(excluded\.doc_settings, projects\.doc_settings\)$/i;
 
 function makePool(migrateText) {
   const syncedAt = syncedAtTablesFrom(migrateText);
@@ -115,7 +123,9 @@ function makePool(migrateText) {
         cols.forEach((c, i) => { row[c] = /::jsonb$/i.test(phs[i]) ? (params[i] == null ? null : JSON.parse(params[i])) : params[i]; });
         for (const { l, r } of sets) {
           if (l === 'synced_at') need(t);
-          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
+          // ORIGINAL, SUPERSEDED Nov 21 (the projects upsert has carried the Doc column's coalesce guard since 1e03008c, which this line could not interpret, so every project push threw and K1 [projects] never saw A's edit), kept verbatim:
+          // if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
+          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)) || (l === 'doc_settings' && DOC_SETTINGS_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
         }
         if (syncedAt.has(t)) row.synced_at = stamp;      // the column DEFAULT now()
         // THE COMMIT: a gated write has taken its stamp but is not yet visible to any other statement.
@@ -128,6 +138,7 @@ function makePool(migrateText) {
           for (const { l, r } of sets) {
             if (r === 'now()') ex[l] = stamp;
             else if (OLD_CLIENT_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // CONNECTOR-B: a sender that does not speak page_links (null / jsonb null) keeps what is stored
+            else if (DOC_SETTINGS_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // the Doc column's guard: a sender that does not speak docSettings (SQL NULL) keeps what is stored
             else ex[l] = row[r.replace('excluded.', '')];
           }
         }

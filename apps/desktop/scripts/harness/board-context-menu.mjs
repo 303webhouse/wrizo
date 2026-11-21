@@ -117,7 +117,9 @@ const partsBypass = (raw) => {
   if (n(jp) !== 1) bad.push('joinPart calls ' + n(jp));
   if (n(us) !== 1) bad.push('undoSplit calls ' + n(us));
   const at = (s, re) => { const m = re.exec(s); return m ? m.index : -1; };
-  const jRefuse = at(jp, /if \(carriesMore\(me\)\) return \{ ok: false/), jSave = at(jp, /saveJournalEntry\(\{ \.\.\.aboveE, text: joinText\(/), jDel = at(jp, /softDeleteEntry\(partId\)/);
+  // SUPERSEDED (Nov 21, footnotes: joinPart saves the text joinWithNotes made, `joined`, not joinText(...) inline; the order the ruling guards, save BEFORE delete, is unchanged), kept verbatim:
+  // const jRefuse = at(jp, /if \(carriesMore\(me\)\) return \{ ok: false/), jSave = at(jp, /saveJournalEntry\(\{ \.\.\.aboveE, text: joinText\(/), jDel = at(jp, /softDeleteEntry\(partId\)/);
+  const jRefuse = at(jp, /if \(carriesMore\(me\)\) return \{ ok: false/), jSave = at(jp, /saveJournalEntry\(\{ \.\.\.aboveE, text: joined \}\)/), jDel = at(jp, /softDeleteEntry\(partId\)/);
   if (jRefuse < 0) bad.push('joinPart: the carries refusal is gone');
   if (jSave < 0 || jDel < 0 || jDel < jSave) bad.push('joinPart: the delete is not after the words are saved onto the Part above');
   if (jRefuse >= 0 && jSave >= 0 && jSave < jRefuse) bad.push('joinPart: the words are saved before the carries refusal');
@@ -148,8 +150,12 @@ const partsBypass = (raw) => {
   // each mutant is a text rewrite of reorg/parts.ts; it must LAND (the text changed) and turn partsBypass red
   const pm = (name, fn) => { const m = fn(PARTS_RAW); const r = m !== PARTS_RAW ? partsBypass(m) : null; ok('S1 (parts mutant): ' + name + ' turns the guard RED (the mutation landed)', m !== PARTS_RAW && !!r && r.length > 0, JSON.stringify({ landed: m !== PARTS_RAW, problems: r })); };
   pm('a THIRD raw softDeleteEntry in parts.ts', (t) => t.replace('  return { ok: true, keepId: aboveE.id', () => '  softDeleteEntry(aboveE.id);\n  return { ok: true, keepId: aboveE.id'));
-  pm('joinPart deleting the Part BEFORE the words are saved onto the Part above', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();"));
-  pm('undoSplit deleting the tail BEFORE the words go back into the source', (t) => t.replace("  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });\n  softDeleteEntry(t.tailId);", () => "  softDeleteEntry(t.tailId);\n  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });"));
+  // SUPERSEDED (Nov 21, footnotes: the anchor read joinText(above, below) inline; joinPart now saves `joined`, so this mutant no longer landed), kept verbatim:
+  //   pm('joinPart deleting the Part BEFORE the words are saved onto the Part above', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();"));
+  pm('joinPart deleting the Part BEFORE the words are saved onto the Part above (successor)', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joined });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  saveJournalEntry({ ...aboveE, text: joined });\n  if (between) between();"));
+  // SUPERSEDED (Nov 21, footnotes: undoSplit now joins through joinWithNotes, so the anchor no longer landed), kept verbatim:
+  //   pm('undoSplit deleting the tail BEFORE the words go back into the source', (t) => t.replace("  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });\n  softDeleteEntry(t.tailId);", () => "  softDeleteEntry(t.tailId);\n  saveJournalEntry({ ...src, text: t.whole ?? joinText(t.head, t.tail) });"));
+  pm('undoSplit deleting the tail BEFORE the words go back into the source (successor)', (t) => t.replace("  saveJournalEntry({ ...src, text: t.whole ?? joinWithNotes(t.head, t.tail, joinText) });\n  softDeleteEntry(t.tailId);", () => "  softDeleteEntry(t.tailId);\n  saveJournalEntry({ ...src, text: t.whole ?? joinWithNotes(t.head, t.tail, joinText) });"));
   pm('joinPart no longer refusing a Part that carries ink, cards, links or a Tutor thread', (t) => t.replace("  if (carriesMore(me)) return { ok: false, reason: 'carries' };\n", () => ''));
   pm('undoSplit deleting the tail although a half changed', (t) => t.replace('if (!src || !tail || src.text !== t.head || tail.text !== t.tail) return false;', () => 'if (!src || !tail) return false;'));
   // a raw call anywhere ELSE is the gate rule's: a Parts-layer sibling file calling softDeleteEntry must be RED even though parts.ts is skipped
