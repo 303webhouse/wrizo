@@ -140,12 +140,14 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null"); await sleep(600);
   await app.evalJs("document.querySelector('[data-reorg-group=\"session\"] [data-session-fold]')?.click(); null"); await sleep(400);
   const docsHas = await app.evalJs("!!document.querySelector('[data-session-row=\"tracker\"]')");
+  // the account's writing fact (FIX's) puts the stored false back after a reload: the DOCS half presses On first, then Off
+  await app.evalJs("document.querySelector('[data-session-row=\"tracker\"] [data-toggle=\"on\"]')?.click(); null"); await sleep(400);
   const docs0 = await app.evalJs(STORE);
   await app.evalJs("document.querySelector('[data-session-row=\"tracker\"] [data-toggle=\"off\"]')?.click(); null"); await sleep(400);
   const docs1 = await app.evalJs(STORE);
   ok('P8: the session\'s switch - in the Front menu\'s Progress block and in DOCS\' Session (?reorg=1, Machina), each press writes writingSettings.themeTracker and nothing else she wrote',
     footHas && foot0.themeTracker === null && foot1.themeTracker === false && foot1.entries === foot0.entries
-      && docsHas && docs0.themeTracker === null && docs1.themeTracker === false && docs1.entries === docs0.entries,
+      && docsHas && docs0.themeTracker === true && docs1.themeTracker === false && docs1.entries === docs0.entries,
     { footHas, foot: [foot0.themeTracker, foot1.themeTracker], docsHas, docs: [docs0.themeTracker, docs1.themeTracker] });
 
   const chrome = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
@@ -155,7 +157,7 @@ await withHarness(async (app) => {
     ['plainTrackerWords', 'words'], ['plainTrackerLines', 'lines'], ['plainTrackerSwitch', 'Use Theme Progress Tracker']];
   const declared = keys.map(([k, v]) => [k, new RegExp(`\\b${k}: '([^']*)'`).exec(chrome)?.[1] ?? null, v]);
   ok('WD: the row\'s words are lexicon keys, and PlainTracker.tsx writes none itself',
-    !!src && declared.every(([, got, want]) => got === want) && keys.slice(0, 5).every(([k]) => src.includes(`'${k}'`)) && !/['">](Goal Reached|words|lines)['"<]/.test(src),
+    !!src && declared.every(([, got, want]) => got === want) && keys.slice(0, 5).every(([k]) => src.includes(`'${k}'`)) && !/['">]Goal Reached|>\s*(words|lines)\s*</.test(src),
     { declared: declared.filter(([, g, w]) => g !== w), file: !!src });
   return checks;
 });

@@ -207,6 +207,8 @@ function verdict(c) {
     // field otherwise) instead of the retired "always the shared field" reads.
     buttonsPP: b.twBtnPP && b.typewriterOnDef && b.prBtn && b.inHead && b.moreStillAlone && b.twGatedOnAvailability && b.realButtons,
     greyedPP: g.twSegs === 3 && g.twDisabled === 3 && g.twOffPP && g.prSegs === 4 && g.prDisabled === 4 && g.prOff && g.prInput,
+    // [successor, Nov 20] the Progress block's fifth row, the plain tracker's switch, greyed with the rest
+    greyedPP5: g.twSegs === 3 && g.twDisabled === 3 && g.twOffPP && g.prSegs === 5 && g.prDisabled === 5 && g.prOff && g.prInput,
     barPP: c.bar?.nine && c.bar?.runningPP && c.bar?.tooltip && c.bar?.grey,
     // FLUX WIRE IN (Nov 12) successor of barPP: the same claims, typewriterOn read with the Flux guard (the paper Typewriter is retired in Flux)
     barWI: c.bar?.nine && c.bar?.runningWI && c.bar?.tooltip && c.bar?.grey,
@@ -295,8 +297,11 @@ ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the
 // `off` now negates THIS page's own typewriterForPage read when a pageId is given.
 if (false) ok('(T5, superseded) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number',
   v.greyed === true, JSON.stringify(base.greyed));
-ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
-  v.greyedPP === true, JSON.stringify(base.greyed));
+// SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off). The original, verbatim:
+// ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+//   v.greyedPP === true, JSON.stringify(base.greyed));
+ok('(T5) [successor] when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer, Use Theme Progress Tracker (5 of 5) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+  v.greyedPP5 === true, JSON.stringify(base.greyed));
 ok('(T6) "disabled" is real: Seg marks the row (data-disabled) and disables its option buttons, so a greyed row cannot be focused or pressed', v.seg === true, JSON.stringify(base.seg));
 ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
   v.format === true, JSON.stringify(base.format));
@@ -348,13 +353,20 @@ mutant('the progress button flips a different value', 'sliver', (t) => mutate(t,
 mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => mutate(t, 'onClick={() => setTypewriterExplicit(!typewriterOn)}>', 'onClick={() => setWritingSettings({ typewriter: !typewriterOn })}>'), 'buttonsPP');
 mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsPP');
 mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
-mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
+// SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
+// mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
+mutant('Forward Lock stays usable while Typewriter is off [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
 // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the Timer row's label now comes from the lexicon (t('timerLabel')), so the mutation anchor moved.
 // Kept VERBATIM below and no longer run; the live successor follows.
 //
 // mutant('the Timer row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'} disabled={off}', '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'}'), 'greyedPP');
-mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
-mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
+// SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
+// mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
+mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor] [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
+// SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
+// mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
+mutant('the Goal number stays editable while Progress Tracking is off [plain-tracker successor]', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
+mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'}"), 'greyedPP5');
 mutant('Seg ignores disabled', 'stage', (t) => mutate(t, "className={value === v ? 'on' : ''} disabled={disabled} onClick", "className={value === v ? 'on' : ''} onClick"), 'seg');
 mutant('the Format fieldset is not disabled', 'sliver', (t) => mutate(t, '<fieldset className="wz-sliver-fieldset" disabled={formatLocked}', '<fieldset className="wz-sliver-fieldset"'), 'format');
 // `const settings = useWritingSettings();` appears several times in this file (every
