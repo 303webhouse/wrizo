@@ -137,7 +137,9 @@ await withHarness(async (app) => {
     !!d1 && d1.groups[d1.groups.length - 1] === 'session' && !!d1.fold && d1.fold.expanded === 'false' && d1.fold.word === 'Session' && d1.rows.length === 0, d1);
   const d2 = await session(app);
   const pageOpen = await app.evalJs(PAGE);
-  ok('D2: SPRINT - the goal, what it counts, the timer, progress, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress']), d2);
+  // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
+  // ok('D2: SPRINT - the goal, what it counts, the timer, progress, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress']), d2);
+  ok('D2 [successor]: SPRINT - the goal, what it counts, the timer, progress, the tracker switch, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress', 'tracker']), d2);
   ok('R1: the page\'s rect is the same with DOCS closed and with the Session open (1366)', !!pageShut && pageShut === pageOpen, { pageShut, pageOpen });
 
   // WRITES, on the SPRINT page (every row there)
@@ -173,10 +175,14 @@ await withHarness(async (app) => {
 
   await open(app, 'ss-2');
   const d3 = await session(app);
-  ok('D3: BUILD - the goal, the timer, progress', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress']), d3);
+  // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
+  // ok('D3: BUILD - the goal, the timer, progress', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress']), d3);
+  ok('D3 [successor]: BUILD - the goal, the timer, progress, the tracker switch', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress', 'tracker']), d3);
   await open(app, 'ss-3');
   const d4 = await session(app);
-  ok('D4: EDIT - progress only', !!d4 && q(d4.rows) === q(['progress']), d4);
+  // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
+  // ok('D4: EDIT - progress only', !!d4 && q(d4.rows) === q(['progress']), d4);
+  ok('D4 [successor]: EDIT - progress and the tracker switch', !!d4 && q(d4.rows) === q(['progress', 'tracker']), d4);
 
   const chrome = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
   const panel = fs.readFileSync(path.join(SRC, 'reorg', 'panels', 'DocsPanel.tsx'), 'utf8');

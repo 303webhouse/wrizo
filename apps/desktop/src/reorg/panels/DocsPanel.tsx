@@ -57,10 +57,11 @@ function sortRecent(rows: { e: JournalEntry; title: string; words: number }[], b
   return rows;
 }
 
-const SESSION_ROWS: Record<PageStage, ('goal' | 'counts' | 'timer' | 'progress')[]> = {
-  sprint: ['goal', 'counts', 'timer', 'progress'],
-  build: ['goal', 'timer', 'progress'],
-  edit: ['progress'],
+// the plain Progress Tracker's switch ('tracker', components/PlainTracker.tsx) is the last row wherever the session shows progress
+const SESSION_ROWS: Record<PageStage, ('goal' | 'counts' | 'timer' | 'progress' | 'tracker')[]> = {
+  sprint: ['goal', 'counts', 'timer', 'progress', 'tracker'],
+  build: ['goal', 'timer', 'progress', 'tracker'],
+  edit: ['progress', 'tracker'],
 };
 
 function SessionToggle({ row, label, on, onPick, t }: { row: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
@@ -109,6 +110,7 @@ function Session({ stage, t }: { stage: PageStage; t: (k: DeskTermId) => string 
           </div>
         );
         if (row === 'timer') return <SessionToggle key={row} row="timer" label={t('reorgSessionTimer')} on={settings.timer} onPick={(on) => setWritingSettings({ timer: on })} t={t} />;
+        if (row === 'tracker') return <SessionToggle key={row} row="tracker" label={t('plainTrackerSwitch')} on={settings.themeTracker !== false} onPick={(on) => setWritingSettings({ themeTracker: on })} t={t} />;
         return <SessionToggle key={row} row="progress" label={t('reorgSessionProgress')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />;
       })}
     </section>

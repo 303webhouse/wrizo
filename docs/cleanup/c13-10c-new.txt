@@ -78,6 +78,13 @@ reorgKindScreenplay=Screenplay
 reorgKindResearch=Research paper
 reorgKindMore=More kinds
 reorgRecent=Recent
+# THE PLAIN PROGRESS TRACKER (POLISH, Nov 20): the row under the page when Use Theme Progress Tracker is off, every theme
+plainTrackerOf={n} / {goal} {unit}
+plainTrackerReached=Goal Reached · {goal} {unit}
+plainTrackerCount={n} {unit}
+plainTrackerWords=words
+plainTrackerLines=lines
+plainTrackerSwitch=Use Theme Progress Tracker
 # DOCS' Recent, long (POLISH, Nov 20): the sort over Recent in the reorg rail's DOCS menu, behind ?reorg=1 in Machina
 reorgRecentSort=Sort Recent
 reorgSortChanged=Changed

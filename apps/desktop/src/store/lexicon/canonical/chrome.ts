@@ -301,6 +301,13 @@ export const CANONICAL_CHROME = {
   reorgKindResearch: 'Research paper',
   reorgKindMore: 'More kinds',
   reorgRecent: 'Recent',
+  // THE PLAIN PROGRESS TRACKER (components/PlainTracker.tsx; POLISH, Nov 20; the Wrizors' spec draft 2): every theme
+  plainTrackerOf: '{n} / {goal} {unit}',
+  plainTrackerReached: 'Goal Reached · {goal} {unit}',
+  plainTrackerCount: '{n} {unit}',
+  plainTrackerWords: 'words',
+  plainTrackerLines: 'lines',
+  plainTrackerSwitch: 'Use Theme Progress Tracker',
   // DOCS' Recent, its sort (reorg/panels/DocsPanel.tsx; Fable, Nov 20): placeholder words until the Wrizors word them
   reorgRecentSort: 'Sort Recent',
   reorgSortChanged: 'Changed',

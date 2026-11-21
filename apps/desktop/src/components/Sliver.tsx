@@ -1074,6 +1074,10 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
       )}
       <Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      {/* the session's "Use Theme Progress Tracker" switch: off, every theme shows the plain row under the page (components/PlainTracker.tsx) */}
+      <div data-tracker-switch>
+        <Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off} opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]} onPick={v => setWritingSettings({ themeTracker: v === 'on' })} />
+      </div>
     </>
   );
 }
