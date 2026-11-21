@@ -109,6 +109,12 @@ async function seed(app) {
     W.wrizoFlushNow();
     // O1's fixture: an old name STORED (as a page saved before the ruling holds it), and the mutant, a name that is neither; both raw through the
     // entry seam, each keeping the page's own settings
+    // A page holding an old name was coloured through setPartColor before the ruling, which dresses its settings (the page's own floor beside the
+    // colour). So each is coloured through the seam FIRST (a slot), then its stored colour is overwritten raw, its full settings spread: the shape a
+    // pre-ruling page has. (The first form patched pu-3's settings with { color } alone, a shape no page ever holds, and pu-3's page then drew nothing:
+    // J4 and N1 red on train D4, diag-j4 run 44852373785.)
+    if (P) { P.setPartColor('pu-3', 'c'); P.setPartColor('pu-4', 'e'); }
+    W.wrizoFlushNow();
     const settingsOf = (id) => (JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === id) || {}).pageSettings || {};
     W.wrizoPatchEntry('pu-3', { pageSettings: { ...settingsOf('pu-3'), color: 'moss' } });
     W.wrizoPatchEntry('pu-4', { pageSettings: { ...settingsOf('pu-4'), color: 'mauve' } });
