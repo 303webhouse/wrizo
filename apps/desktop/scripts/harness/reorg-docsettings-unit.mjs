@@ -3,7 +3,8 @@
 // No browser, no box: the real docSettings.ts is transpiled and run against an in-memory store that LOGS EVERY WRITE; the three files that carry the column (types, migrate, sync) are read as source;
 // each law is given a mutant (a text rewrite) that must LAND and turn its own check red.
 //   SET   a setting is written to the Doc's own record (the projects row's docSettings) and to nothing else: no entry row, no other project key but updatedAt; a clear removes the key, and the last key
-//         removes docSettings altogether (absent, never null, never {}); the same value again writes nothing; a key this client does not know (a newer client's) survives a write
+//         leaves docSettings as {} (an empty record, never null: a null is a device that never chose, and the server keeps what it has for it); the same value again writes nothing; a key this client does not know (a newer client's) survives a write
+//         (the first reading, SUPERSEDED Nov 20: "removes docSettings altogether (absent, never null, never {})")
 //   READ  the style guide a Part is under is its Doc's own; with none on the Doc, the page's own pageSettings.styleGuide (what a page held before the column); with neither, none
 //   LOOSE a loose page (the app's own set, one Part) is its own Doc: its style guide is its own pageSettings.styleGuide, and the app's shared set is never written
 //   VAL   only mla, apa, chicago and ap are stored; "none" is stored as the key's absence; anything else is refused and writes nothing; an export format outside md, txt, html is refused
@@ -90,7 +91,10 @@ function suite(src) {
     const q2 = proj(L); q2.docSettings = { styleGuide: 'mla' }; L.S.projects[0] = q2;
     L.D.setDocSetting('p1', { styleGuide: null });
     const c3 = proj(L);
-    const cleared = !('styleGuide' in (c1 || {})) && (c1 || {}).fromANewerClient && c3 && !('docSettings' in c3) && !JSON.stringify(c1).includes('null') && !JSON.stringify(c2.docSettings || {}).includes('null') && !('export' in (c2.docSettings || {}));
+    // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: an older device that re-sends a project without docSettings must not wipe the stored ones, so the server keeps what it has when a push carries none; CLEARING therefore writes {}, never null and never absence). The original, verbatim:
+    // const cleared = !('styleGuide' in (c1 || {})) && (c1 || {}).fromANewerClient && c3 && !('docSettings' in c3) && !JSON.stringify(c1).includes('null') && !JSON.stringify(c2.docSettings || {}).includes('null') && !('export' in (c2.docSettings || {}));
+    // SUCCESSOR: the last key removed leaves docSettings = {} on the Doc's record (never absent, never null); the other readings stand
+    const cleared = !('styleGuide' in (c1 || {})) && (c1 || {}).fromANewerClient && c3 && JSON.stringify(c3.docSettings) === '{}' && !JSON.stringify(c1).includes('null') && !JSON.stringify(c2.docSettings || {}).includes('null') && !('export' in (c2.docSettings || {}));
     R.SET = { pass: w1 === true && onlyProject && keysKept && noWrite && survives && cleared, detail: JSON.stringify({ w1, onlyProject, keysKept, noWrite, survives, cleared, c1, c3: c3 && Object.keys(c3) }) };
   }
   // READ
@@ -120,17 +124,33 @@ function suite(src) {
     L.D.setDocSetting('p1', { styleGuide: 'ap' });
     L.D.setDocSetting('p1', { styleGuide: 'none' });
     const afterNone = proj(L);
-    R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && !('docSettings' in afterNone), detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
+    // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: clearing leaves {} on the record, never absence). The original, verbatim:
+    // R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && !('docSettings' in afterNone), detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
+    R.VAL = { pass: bad.every((b) => b === false) && wrote === 0 && JSON.stringify(afterNone.docSettings) === '{}', detail: JSON.stringify({ bad, wrote, afterNone: Object.keys(afterNone) }) };
   }
   return R;
 }
 
 // ---- COL (source) -----------------------------------------------------------------------------------------------------------------------------------
+// the 16th parameter of the projects upsert, EVALUATED for three projects: one that never chose (docSettings absent), one that cleared ({}), one that chose
+function sendsRight(sync) {
+  const m = /\n\s*((?:JSON\.stringify\()?p\.docSettings[^\n]*?)\],/.exec(sync);
+  if (!m) return false;
+  let send; try { send = new Function('p', 'return ' + m[1]); } catch { return false; }
+  try { return send({}) === null && send({ docSettings: undefined }) === null && send({ docSettings: {} }) === '{}' && send({ docSettings: { styleGuide: 'apa' } }) === '{"styleGuide":"apa"}'; } catch { return false; }
+}
+
 function colSuite(files) {
   const { records, migrate, sync } = files;
   const types = /docSettings\?: DocSettings/.test(records) && /export type DocSettings = /.test(records);
   const mig = /alter table projects add column if not exists doc_settings jsonb/.test(migrate);
-  const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = excluded\.doc_settings/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: an older device that re-sends a project without docSettings must not wipe the stored ones, so the server keeps what it has when a push carries none; CLEARING therefore writes {}, never null and never absence). The original, verbatim:
+  // const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = excluded\.doc_settings/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
+  // SUCCESSOR: the update on conflict KEEPS the stored settings when the push carries none (coalesce)
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 5:05 pm: proved on a real Postgres 16, JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null and not SQL NULL, so coalesce keeps it and the stored settings are wiped; the absent case must send a true JS null). The original, verbatim:
+  // const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = coalesce\(excluded\.doc_settings, projects\.doc_settings\)/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
+  // SUCCESSOR: the 16th parameter is evaluated, not read: absent -> JS null (so SQL NULL), {} -> '{}', a set value -> its JSON
+  const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = coalesce\(excluded\.doc_settings, projects\.doc_settings\)/.test(sync) && sendsRight(sync);
   const row = /docSettings: r\.doc_settings \?\? undefined/.test(sync);
   return { pass: types && mig && ins && row, detail: JSON.stringify({ types, mig, ins, row }) };
 }
@@ -146,7 +166,9 @@ ok('COL the column reaches the server and back (types, migrate, the projects ups
 // ---- mutants ---------------------------------------------------------------------------------------------------------------------------------------------
 const MUT = [
   ['a write to the Doc also rewrites a Part\'s row', 'SET', (t) => t.replace('saveProject(row);\n  return true;', () => 'saveProject(row); { const p1 = getJournalEntry(entryId); if (p1) saveJournalEntry({ ...p1 }); }\n  return true;')],
-  ['a clear leaves an empty docSettings behind', 'SET', (t) => t.replace('if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings', () => 'row.docSettings')],
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: clearing leaves {} on the record, never absence). The original, verbatim:
+  // ['a clear leaves an empty docSettings behind', 'SET', (t) => t.replace('if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings', () => 'row.docSettings')],
+  ['the last key removed deletes docSettings, so a device that never chose and a Doc that cleared look the same to the server', 'SET', (t) => t.replace('row.docSettings = next as DocSettings;', () => 'if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings = next as DocSettings;')],
   ['the same value is written again', 'SET', (t) => t.replace('if (JSON.stringify(next) === JSON.stringify(cur)) return false;', () => '')],
   ['a write drops a key it does not know', 'SET', (t) => t.replace('const next: Record<string, unknown> = { ...cur };', () => 'const next: Record<string, unknown> = {};')],
   ['the Doc\'s own style guide is not read', 'READ', (t) => t.replace('if (set && isStyleGuide(set.docSettings?.styleGuide)) return set.docSettings.styleGuide;', () => '')],
@@ -169,9 +191,15 @@ const COLMUT = [
   ['the type is not on Project', 'records', (s) => s.replace('docSettings?: DocSettings;', () => '')],
   ['the migration does not add the column', 'migrate', (s) => s.replace('add column if not exists doc_settings jsonb', () => 'add column if not exists doc_settings_x jsonb')],
   ['the upsert does not carry the column in its insert', 'sync', (s) => s.replace('updated_at, tutor, doc_settings)', () => 'updated_at, tutor)')],
-  ['the upsert does not update the column on conflict', 'sync', (s) => s.replace('doc_settings = excluded.doc_settings,', () => '')],
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: an older device that re-sends a project without docSettings must not wipe the stored ones, so the server keeps what it has when a push carries none; CLEARING therefore writes {}, never null and never absence). The original, verbatim:
+  // ['the upsert does not update the column on conflict', 'sync', (s) => s.replace('doc_settings = excluded.doc_settings,', () => '')],
+  ['the upsert does not update the column on conflict', 'sync', (s) => s.replace('doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),', () => '')],
+  ['an older device\'s project without the field wipes the stored settings', 'sync', (s) => s.replace('doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),', () => 'doc_settings = excluded.doc_settings,')],
   ['the pull does not map the column back', 'sync', (s) => s.replace('docSettings: r.doc_settings ?? undefined', () => 'docSettings: undefined')],
-  ['a project that never chose sends a literal object, not SQL null', 'sync', (s) => s.replace('JSON.stringify(p.docSettings ?? null)', () => 'JSON.stringify(p.docSettings ?? {})')],
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 5:05 pm: proved on a real Postgres 16, JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null and not SQL NULL, so coalesce keeps it and the stored settings are wiped; the absent case must send a true JS null). The original, verbatim:
+  // ['a project that never chose sends a literal object, not SQL null', 'sync', (s) => s.replace('JSON.stringify(p.docSettings ?? null)', () => 'JSON.stringify(p.docSettings ?? {})')],
+  ['the absent case sends JSON.stringify(null): the string \'null\' that ::jsonb turns into a JSON null (the stored settings are wiped)', 'sync', (s) => s.replace('p.docSettings == null ? null : JSON.stringify(p.docSettings)', () => 'JSON.stringify(p.docSettings ?? null)')],
+  ['a project that never chose sends an empty object, not SQL null', 'sync', (s) => s.replace('p.docSettings == null ? null : JSON.stringify(p.docSettings)', () => "p.docSettings == null ? '{}' : JSON.stringify(p.docSettings)")],
 ];
 for (const [name, which, fn] of COLMUT) {
   const files = { ...colFiles };

@@ -241,15 +241,25 @@ await withHarness(async (app) => {
   const canon = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
   const mach = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'overrides', 'machina.ts'), 'utf8');
   const used = ['reorg/PartsList.tsx', 'reorg/DocKindMenu.tsx'].map((f) => fs.existsSync(path.join(SRC, f)) ? fs.readFileSync(path.join(SRC, f), 'utf8') : '').join('\n');
+  // ORIGINAL, SUPERSEDED Nov 21 (the kind menu's Special Parts are drawn from reorg/docKinds.ts, six of them, the sources Part wearing the style guide's word: the menu no longer draws the two words the old list did, so those two keys are
+  // declared but not drawn there). The original, verbatim:
+  // const need = ['reorgDocKindStandard', 'reorgDocKindScreenplay', 'reorgDocKindAria', 'reorgDocStyleGuide', 'reorgDocPageSetup', 'reorgDocSpecialParts', 'reorgDocPresets',
+  //   'reorgSpecialTitle', 'reorgSpecialBibliography', 'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
+  // const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
+  // ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
   const need = ['reorgDocKindStandard', 'reorgDocKindScreenplay', 'reorgDocKindAria', 'reorgDocStyleGuide', 'reorgDocPageSetup', 'reorgDocSpecialParts', 'reorgDocPresets',
-    'reorgSpecialTitle', 'reorgSpecialBibliography', 'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
-  const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
+    'reorgPartsStructure', 'reorgPartAssetsOne', 'reorgPartAssetsMany'];
+  const gone = (src) => need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !src.includes(`'${k}'`));
+  const missing = gone(used);
   const title = ['reorgDocStyleGuide: \'Style Guide\'', 'reorgDocPageSetup: \'Page Setup\'', 'reorgDocSpecialParts: \'Special Parts\'', 'reorgPartsStructure: \'Structure\''].filter((s) => !canon.includes(s) && !mach.includes(s));
-  ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
+  ok('W1 [successor] every word the menu and the list draw is a lexicon key (terms.ts, the canonical table, used in the source); the headings read in Title Case', missing.length === 0 && title.length === 0, { missing, title });
+  // the successor's mutant: the Doc menu stops drawing one of its words (its key taken out of the source it reads); the check must go red, and the cut must have LANDED
+  const mutated = used.split("'reorgDocPresets'").join("'x'");
+  ok('W1 (mutant) a word the menu stops drawing turns the check RED (the cut landed)', mutated !== used && gone(mutated).includes('reorgDocPresets'), { landed: mutated !== used, red: gone(mutated) });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 12;
+const EXPECTED = 13;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`

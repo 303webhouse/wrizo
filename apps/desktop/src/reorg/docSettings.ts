@@ -6,8 +6,8 @@ import { REORG } from './flag';
 
 // A DOC'S OWN SETTINGS (Fable, Nov 20; Nick ruled: "build the Doc-wide settings column"). A setting that belongs to the whole Doc (its style guide, how it goes out) lives in the Doc's OWN record, the projects
 // row's `docSettings` (one nullable jsonb column, the `tutor` recipe: types/records.ts, server migrate.ts and sync.ts), and never in whichever Part happens to be first.
-//   - Saved to the ACCOUNT and synced with the project, like every other thing she changes. Every key is ABSENT until she chooses (never null; the last key removed removes docSettings itself), so a Doc that never
-//     chose syncs byte-identically to today. A key this client does not know (a newer client's) is carried through every write.
+//   - Saved to the ACCOUNT and synced with the project, like every other thing she changes. Every key is ABSENT until she chooses (never null); the last key removed leaves docSettings = {} (an empty record: a push
+//     with no field at all, from an older device, is kept as stored by the server's coalesce, so a clear has to be written), and a Doc that never chose has no docSettings and syncs byte-identically to today. A key this client does not know (a newer client's) is carried through every write.
 //   - A made Doc (a set the writer made) is the Doc. A LOOSE page (the app's own set, one Part) is its own Doc: the shared set it sits in is never written; its style guide is the key a page already has
 //     (pageSettings.styleGuide), and it has no export setting to keep (refused, not stored).
 //   - READ: a made Doc's own style guide wins for every Part; with none on the Doc, the Part's own page says (what a page held before the column), else none.
@@ -74,7 +74,8 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   }
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
-  if (Object.keys(next).length === 0) delete row.docSettings; else row.docSettings = next as DocSettings;
+  // the last key removed leaves {} on the record, never absence and never null: the server keeps what it has for a push that carries none (an older device), so a clear must say so
+  row.docSettings = next as DocSettings;
   saveProject(row);
   return true;
 }

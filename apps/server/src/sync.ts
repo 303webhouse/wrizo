@@ -259,7 +259,8 @@ async function upsertProjects(userId: string, records: any[], acked: string[] = 
            last_active_page_id = excluded.last_active_page_id,
            deleted_at = excluded.deleted_at, updated_at = excluded.updated_at,
            tutor = excluded.tutor,
-           doc_settings = excluded.doc_settings,
+           -- THE GUARD (Fable, Nov 20): a device on an older build re-sends a project WITHOUT docSettings (SQL null); the settings already stored are kept. Clearing writes {} (never null), so a clear still wins.
+           doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),
            synced_at = now()
          where projects.user_id = excluded.user_id
            and excluded.updated_at > projects.updated_at
@@ -270,8 +271,9 @@ async function upsertProjects(userId: string, records: any[], acked: string[] = 
         [p.id, userId, p.title ?? '', p.type ?? 'creative', p.sprintText ?? null,
          p.storyPlanId ?? null, p.drawerId ?? null, p.kind ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
          p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt, JSON.stringify(p.tutor ?? null),
-         // the Doc's own settings ride as the 16th param, the tutor recipe: a project that never chose sends SQL null, so the column stays null (byte-identical to today)
-         JSON.stringify(p.docSettings ?? null)],
+         // the Doc's own settings ride as the 16th param. A project that never chose (an older device) must send a TRUE null: JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null (not SQL NULL),
+         // and coalesce would keep that and wipe the stored settings (Fable, Nov 20, proved on Postgres 16). {} (a clear) and a set value ride as their JSON.
+         p.docSettings == null ? null : JSON.stringify(p.docSettings)],
       );
     } catch (err) {
       logError('sync', err, { kind: 'project', id: p.id });
