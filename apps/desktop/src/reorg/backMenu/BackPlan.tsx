@@ -1,13 +1,19 @@
 import { memo, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Box, JournalEntry } from '../../types';
 import { useDeskLexicon } from '../../store/deskLexicon';
-import { generateId, getJournalEntry, getPlanBoardId, isUnborn, saveBoardBoxes, subscribe } from '../../store/persistence';
+import { flushNow, generateId, getJournalEntry, getPlanBoardId, isUnborn, saveBoardBoxes, subscribe } from '../../store/persistence';
+import { routeForEntry } from '../../store/routeForEntry';
 import { liveBoxes } from '../../store/boxTombstones';
 import { getOrCreatePlanBoard } from '../../store/persistence/planPairing';
 import { cache } from '../../store/persistence/core';
 import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
 import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
+import { ensureDoc } from '../parts';
+import { docOfPage, partOfRow, toPartHref } from './planPart';
+import { PLAN_PRESETS, type PlanPreset } from './planPresets';
+import { presetBoxes } from './planPresetOps';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow } from './planOps';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina). An ordered outline of this Page's own board: numbered rows, indented
@@ -46,9 +52,12 @@ export const BackPlan = memo(BackPlanImpl, (a, b) => a.entry.id === b.entry.id);
 function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   planRenders += 1;
   const { t } = useDeskLexicon();
+  const navigate = useNavigate();
   const pageId = entry.id;
   const snap = useSyncExternalStore(subscribe, () => planSnapshot(pageId), () => planSnapshot(pageId));
   const [adding, setAdding] = useState('');
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const [folded, setFolded] = useState<ReadonlySet<string>>(() => new Set());
   const [undo, setUndo] = useState<{ line: string; run: () => void } | null>(null);
   const addRef = useRef<HTMLInputElement | null>(null);
   const hidden = useMemo(() => new Set(snap.hiddenKey ? snap.hiddenKey.split(',') : []), [snap.hiddenKey]);
@@ -83,15 +92,60 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   };
   const canAdd = !isUnborn(pageId);
 
+  // PRESETS (planPresets.ts): a starting shape appended to the Plan as ordinary rows. The page's board is born the first time something is put on it, as the add field does. The Acts of a grouped preset start folded
+  // closed (the Hero's Journey's twelve steps stay under three Acts, so the Plan stays short); a fold is a look, never stored.
+  const fill = (preset: PlanPreset): void => {
+    setPresetsOpen(false);
+    const board = snap.boardId ? getJournalEntry(snap.boardId) : getOrCreatePlanBoard(pageId);
+    if (!board) return;
+    const made = presetBoxes(liveBoxes(board.boxes), preset, (k) => t(k), generateId);
+    saveBoardBoxes(board.id, made.boxes);
+    if (made.leaders.length) setFolded((was) => new Set([...was, ...made.leaders]));
+  };
+  const toggleFold = (id: string): void => setFolded((was) => { const n = new Set(was); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  // rows below a folded row are not drawn (depth is the board's own indent); a folded row keeps its place and its number
+  const shownRows = useMemo(() => {
+    const out: typeof rows = [];
+    let hideDeeperThan: number | null = null;
+    for (const r of rows) {
+      if (hideDeeperThan !== null && r.depth > hideDeeperThan) continue;
+      hideDeeperThan = folded.has(r.boxId) && r.underIds.length > 1 ? r.depth : null;
+      out.push(r);
+    }
+    return out;
+  }, [rows, folded]);
+
+  // "-> PART": W2's "Write this" aimed at the Doc (planPart.ts). A row that has its Part opens it; otherwise the door opens a fresh page in this Doc for the card, named for the row.
+  // The press writes nothing for the Part (her first word births it and the link in one act); a page with no Doc of her own is made one first, as the Parts list's "New part" does.
+  const docNow = docOfPage(pageId);
+  const toPart = (r: { boxId: string; title: string }): void => {
+    flushNow();
+    const have = partOfRow(snap.boardId, r.boxId, docNow);
+    if (have) { const e = getJournalEntry(have.id); if (e) navigate(routeForEntry(e)); return; }
+    if (!snap.boardId) return;
+    let into = docNow;
+    if (!into) {
+      const made = ensureDoc(pageId);
+      if (!made.ok) return;
+      into = made.docId;
+      flushNow();
+    }
+    navigate(toPartHref(into, snap.boardId, r.boxId, r.title));
+  };
+
   return (
     <div className="wz-back-plan" data-back-plan="">
       {rows.length === 0 ? (
         <div className="wz-back-quiet" data-back-plan-empty="">{t('reorgPlanEmpty')}</div>
       ) : (
         <ol className="wz-back-plan-list" aria-label={t('reorgBackPlan')}>
-          {rows.map((r) => (
+          {shownRows.map((r) => (
             <li key={r.boxId} className="wz-back-plan-row" data-plan-row={r.boxId} data-plan-depth={r.depth} style={{ paddingLeft: `${r.depth * 14}px` }}>
               <span className="wz-back-plan-num" aria-hidden="true">{r.number}</span>
+              {r.underIds.length > 1 && (
+                <button type="button" className="wz-back-plan-btn wz-back-plan-fold" data-plan-fold={folded.has(r.boxId) ? 'closed' : 'open'} aria-expanded={!folded.has(r.boxId)}
+                  aria-label={`${folded.has(r.boxId) ? t('reorgPlanUnfold') : t('reorgPlanFold')}: ${r.number}`} onClick={() => toggleFold(r.boxId)}>{folded.has(r.boxId) ? '▸' : '▾'}</button>
+              )}
               {r.isPin || r.isInk ? (
                 <span className="wz-graft-title wz-back-plan-name" data-plan-name="">{r.isInk ? t('reorgSketch') : (r.title || t('reorgUntitled'))}</span>
               ) : (
@@ -104,6 +158,18 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
                   }}
                   onBlur={(e) => { const v = e.target.value; if (snap.boardId) writeBoxes(renamePlanRow(boxesNow(), r.boxId, v)); }} />
               )}
+              {(() => {
+                if (r.isPin || r.isInk) return null;
+                const part = partOfRow(snap.boardId, r.boxId, docNow);
+                return (
+                  <>
+                    {part && part.written && <span className="wz-back-plan-tick" data-plan-tick="" role="img" aria-label={t('reorgPlanTick')} title={t('reorgPlanTick')}>{'✓'}</span>}
+                    <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-part={part ? 'open' : 'new'} aria-label={`${part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}: ${r.number}`} onClick={() => toPart(r)}>
+                      {part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}
+                    </button>
+                  </>
+                );
+              })()}
               <span className="wz-back-plan-acts">
                 <button type="button" className="wz-back-plan-btn" data-plan-up="" disabled={!r.canUp} aria-label={`${t('reorgPlanUp')}: ${r.number}`} title={t('reorgPlanUp')} onClick={() => act((b) => movePlanRow(b, r.boxId, -1))}>↑</button>
                 <button type="button" className="wz-back-plan-btn" data-plan-down="" disabled={!r.canDown} aria-label={`${t('reorgPlanDown')}: ${r.number}`} title={t('reorgPlanDown')} onClick={() => act((b) => movePlanRow(b, r.boxId, 1))}>↓</button>
@@ -111,6 +177,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
                 <button type="button" className="wz-back-plan-btn" data-plan-outdent="" disabled={!r.canOutdent} aria-label={`${t('reorgPlanOutdent')}: ${r.number}`} title={t('reorgPlanOutdent')} onClick={() => act((b) => outdentPlanRow(b, r.boxId))}>←</button>
                 <button type="button" className="wz-back-plan-btn wz-links-x wz-graft-x" data-plan-remove="" aria-label={`${t('reorgPlanRemove')}: ${r.number}`} title={t('reorgPlanRemove')} onClick={() => remove(r.boxId, r.title)}>×</button>
               </span>
+              {r.hint && !r.underIds.some((id) => partOfRow(snap.boardId, id, docNow)?.written) && <span className="wz-back-plan-hint" data-plan-hint="">{r.hint}</span>}
             </li>
           ))}
         </ol>
@@ -121,6 +188,16 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
           <button type="button" onClick={() => { undo.run(); setUndo(null); }}>{t('graftUndo')}</button>
         </div>
       )}
+      <div className="wz-back-plan-presets">
+        <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-presets="" aria-expanded={presetsOpen} aria-haspopup="true" disabled={!canAdd} aria-label={t('reorgPlanPresetsLabel')} onClick={() => setPresetsOpen((o) => !o)}>{t('reorgPlanPresets')}</button>
+        {presetsOpen && (
+          <ul className="wz-back-plan-preset-list" data-plan-preset-list="">
+            {PLAN_PRESETS.map((p) => (
+              <li key={p.id}><button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-preset={p.id} onClick={() => fill(p)}>{t(p.name)}</button></li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="wz-back-plan-add">
         <input ref={addRef} type="text" className="wz-back-plan-input" data-plan-add="" value={adding} disabled={!canAdd}
           placeholder={t('reorgPlanAdd')} aria-label={t('reorgPlanAdd')}

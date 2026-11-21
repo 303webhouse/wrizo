@@ -23,6 +23,16 @@
 .wz-back-plan-btn{ position:static; width:22px; height:22px; padding:0; background:none; border:1px solid transparent; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; cursor:pointer; }
 .wz-back-plan-btn:hover:not(:disabled), .wz-back-plan-btn:focus-visible{ color:var(--text-hi); border-color:var(--ink-border-strong); outline:none; }
 .wz-back-plan-btn:disabled{ opacity:.3; cursor:default; }
+/* "-> Part" / "Open Part" (a word, not a glyph) and the tick a Part with words earns: the tick is a shape and a name, never colour alone */
+.wz-back-plan-part{ width:auto; padding:0 6px; height:22px; white-space:nowrap; font-size:11px; border-color:var(--ink-border-strong); }
+/* a preset's prompt: one grey line under its heading, in the same column as the name (the row wraps; the Part's tick or the writer's words retire it) */
+.wz-back-plan-row{ flex-wrap:wrap; }
+.wz-back-plan-row > .wz-back-plan-name{ flex:1 1 0; }   /* a zero basis: the wrap is for the prompt's own line only, never the row's buttons */
+.wz-back-plan-hint{ flex:0 0 100%; box-sizing:border-box; padding:0 6px 4px 32px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.wz-back-plan-fold{ flex:none; width:18px; }
+.wz-back-plan-presets{ position:relative; margin-top:6px; }
+.wz-back-plan-preset-list{ list-style:none; margin:4px 0 0; padding:0; display:flex; flex-direction:column; align-items:flex-start; gap:4px; }
+.wz-back-plan-tick{ flex:none; font-family:var(--font-ui); font-size:13px; line-height:1; color:var(--text-hi); }
 .wz-back-plan-add{ margin-top:6px; }
 .wz-back-plan-add .wz-back-plan-input{ width:100%; border-color:var(--ink-border-strong); }
 
