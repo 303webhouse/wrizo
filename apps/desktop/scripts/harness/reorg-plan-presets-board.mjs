@@ -149,10 +149,10 @@ await withHarness(async (app) => {
   await openBoard(app, 'bd-2', 'outline', { reorg: false });
   const offBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length + document.querySelectorAll('[data-plan-hint]').length");
   const offTheme = await app.evalJs("document.documentElement.getAttribute('data-theme') || (window.wrizoTheme && window.wrizoTheme.get && window.wrizoTheme.get()) || null");
-  await openBoard(app, 'bd-2', 'outline', { theme: 'arbor' });
+  await openBoard(app, 'bd-2', 'outline', { theme: 'plateau' });   // Arbor's id in the theme store is 'plateau' ('arbor' is no registered theme: the first form of this leg ran in Machina)
   const arborBtn = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length + document.querySelectorAll('[data-plan-hint]').length");
   const arborTheme = await app.evalJs("document.documentElement.getAttribute('data-theme') || (window.wrizoTheme && window.wrizoTheme.get && window.wrizoTheme.get()) || null");
-  ok('B6 with the switch off (Machina) and in Arbor with it on, the Outline has no Presets control and draws no prompt', offBtn === 0 && arborBtn === 0, { offBtn, arborBtn, offTheme, arborTheme });
+  ok('B6 with the switch off (Machina) and in Arbor with it on, the Outline has no Presets control and draws no prompt', offBtn === 0 && arborBtn === 0 && arborTheme === 'plateau', { offBtn, arborBtn, offTheme, arborTheme });
   return checks;
 });
 
