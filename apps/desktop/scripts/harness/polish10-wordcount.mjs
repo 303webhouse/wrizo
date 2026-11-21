@@ -37,6 +37,12 @@ const CORPUS = [
   ['no marks at all here', 'no marks at all here'],
   ['', ''],
   ['   \n  ', ''],
+  // footnotes (Nick, Nov 21): a marker and the note lines at the end are not words, on both sides
+  ['Body[^1] words here\n\n[^1]: Not counted at all.', 'Body words here'],
+  ['Two [^1] words[^e1]\n\n[^1]: x y z\n\n[^e1]: more words here\n', 'Two  words'],
+  ['[^1]: only a note', ''],
+  ['First\n[^1]: a mid line is words\nLast', 'First\n[^1]: a mid line is words\nLast'],
+  ['A [late]{.size-14} line[^1]\n\n[^1]: a [noted]{.font-lora .size-14} thing', 'A late line'],
 ];
 const bad = [];
 for (const [marked, plain] of CORPUS) {

@@ -143,16 +143,24 @@ const MUT = [
   ['an unchosen Part still goes out', 'SUB', (t) => t.replace('return parts.filter((p) => want.has(p.id));', () => 'return parts.slice();')],
   // ORIGINAL, SUPERSEDED Nov 20 (publishingText.ts now has a third format, so the body line names html too; the mutant stands on the new line):
   // ['the file trims a Part\'s words from the front', 'WORDS-md', (t) => t.replace("const body = (format === 'md' ? p.md : p.txt).replace(/\\s+$/, '');", () => "const body = (format === 'md' ? p.md : p.txt).trim().replace(/^\\S+\\s*/, '');")],
-  ['the file trims a Part\'s words from the front', 'WORDS-md', (t) => t.replace("const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt).replace(/\\s+$/, '');", () => "const body = (format === 'md' ? p.md : p.txt).trim().replace(/^\\S+\\s*/, '');")],
+  // ORIGINAL, SUPERSEDED Nov 21 (footnotes: publishingText.ts now lays each Part through layNotes and keeps a Part with only notes, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['the file trims a Part\'s words from the front', 'WORDS-md', (t) => t.replace("const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt).replace(/\\s+$/, '');", () => "const body = (format === 'md' ? p.md : p.txt).trim().replace(/^\\S+\\s*/, '');")],
+  ['the file trims a Part\'s words from the front', 'WORDS-md', (t) => t.replace("const body = laid.body.replace(/\\s+$/, '');", () => "const body = laid.body.trim().replace(/^\\S+\\s*/, '');")],
   // ORIGINAL, SUPERSEDED Nov 20 (publishingText.ts now has a third format, so the body line names html too; the mutant stands on the new line):
   // ['the .txt carries the .md conventions', 'WORDS-txt', (t) => t.replace("const body = (format === 'md' ? p.md : p.txt)", () => 'const body = (p.md)')],
-  ['the .txt carries the .md conventions', 'WORDS-txt', (t) => t.replace("const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt)", () => 'const body = (p.md)')],
+  // ORIGINAL, SUPERSEDED Nov 21 (footnotes: publishingText.ts now lays each Part through layNotes and keeps a Part with only notes, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['the .txt carries the .md conventions', 'WORDS-txt', (t) => t.replace("const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt)", () => 'const body = (p.md)')],
+  ['the .txt carries the .md conventions', 'WORDS-txt', (t) => t.replace("const raw = format === 'md' ? p.md : format === 'html' ? p.html : p.txt;", () => 'const raw = p.md;')],
   ['an unnamed Part gets a heading of its own words', 'HEAD', (t) => t.replace('const name = p.name.trim();', () => "const name = p.name.trim() || body.split('\\n')[0];")],
   ['the headings ignore the level', 'HEAD', (t) => t.replace("Math.max(0, Math.min(2, p.level))", () => '0')],
   ['a titleless Doc keeps the deeper base', 'HEAD', (t) => t.replace('const base = title === null ? 1 : 2;', () => 'const base = 2;')],
   ['a loose page gets a title anyway', 'TITLE', (t) => t.replace('if (title !== null) blocks.push', () => "if (true) blocks.push").replace('head(title, 1)', () => "head(String(title ?? ''), 1)")],
-  ['an empty unnamed Part leaves a blank block', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body && !name) blocks.push(\'\');')],
-  ['a named empty Part loses its heading', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body) continue;')],
+  // ORIGINAL, SUPERSEDED Nov 21 (footnotes: publishingText.ts now lays each Part through layNotes and keeps a Part with only notes, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['an empty unnamed Part leaves a blank block', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body && !name) blocks.push(\'\');')],
+  ['an empty unnamed Part leaves a blank block', 'EMPTY', (t) => t.replace('if (!body && !name && laid.foot.length === 0) continue;', () => "if (!body && !name && laid.foot.length === 0) blocks.push('');")],
+  // ORIGINAL, SUPERSEDED Nov 21 (footnotes: publishingText.ts now lays each Part through layNotes and keeps a Part with only notes, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['a named empty Part loses its heading', 'EMPTY', (t) => t.replace('if (!body && !name) continue;', () => 'if (!body) continue;')],
+  ['a named empty Part loses its heading', 'EMPTY', (t) => t.replace('if (!body && !name && laid.foot.length === 0) continue;', () => 'if (!body && laid.foot.length === 0) continue;')],
   ['a level above the range is not held', 'LVL', (t) => t.replace('Math.max(0, Math.min(2, p.level))', () => 'Math.max(0, p.level)')],
   ['the web page\'s headings ignore the level', 'HTML', (t) => t.replace('base + Math.max(0, Math.min(2, p.level))', () => 'base')],
   ['a Part\'s name goes into the web page unescaped', 'HTML', (t) => t.replace('`<h${level}>${esc(name)}</h${level}>`', () => '`<h${level}>${name}</h${level}>`')],

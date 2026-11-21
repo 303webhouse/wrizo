@@ -14,7 +14,7 @@ export interface CopyPayload {
   fallbackLines: number;
 }
 
-const KINDS = ['bold', 'italic', 'underline', 'strike'] as const;
+const KINDS = ['bold', 'italic', 'underline', 'strike', 'sup', 'sub'] as const;
 // a run's closing mark: `mark` for emphasis, `]{.font-<slug>}` for a font span
 const closeOf = closeMark;
 

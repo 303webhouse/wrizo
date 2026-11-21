@@ -13,11 +13,13 @@
 //  - Bold `**`, underline `__`, strike `~~` are exactly two characters; italic `*` is one. A star-run of three is BOTH: bold
 //    outermost, italic inside (`***x***`), which is what lets Italic and Bold un-mark each other back out of it. A run of four is
 //    an empty pair (`**` `**`). Any other length is text.
+//  - SUPERSCRIPT AND SUBSCRIPT (reorg, Fable Nov 20): a lone `^` pair is a superscript and a lone `~` pair a subscript, under the SAME flanking rule - so "a ^ b ^ c" and "a ~ b ~ c" are text, `~~` stays strike, and a typed `\^` or `\~` is only the
+//    character. An empty pair is `^^` (a sup run with nothing inside); an empty subscript is never stored (`~~` is strike), so the formatter holds its mark pending instead.
 //  - Runs may nest and may sit side by side; two that would CROSS (`**a *b** c*`) cannot both stand, so the one that opens later
 //    is dropped and its characters stay literal. Nothing is ever hidden that is not part of a run that renders.
-export type MarkKind = 'bold' | 'italic' | 'underline' | 'strike';
+export type MarkKind = 'bold' | 'italic' | 'underline' | 'strike' | 'sup' | 'sub';
 
-export const MARK_OF: Record<MarkKind, string> = { bold: '**', italic: '*', underline: '__', strike: '~~' };
+export const MARK_OF: Record<MarkKind, string> = { bold: '**', italic: '*', underline: '__', strike: '~~', sup: '^', sub: '~' };
 
 // a font or size on highlighted words is a run too, `[the words]{.font-<slug> .size-N}`; its two marks differ, so every reader of a closing mark reads closeMark(r); marks hold no whitespace, so no word counter counts one [markRuns §1]
 export type RunKind = MarkKind | 'font';
@@ -95,7 +97,7 @@ interface Tok { ch: string; pos: number; len: number; canOpen: boolean; canClose
 const isSpace = (c: string | undefined): boolean => c === undefined || /\s/.test(c);
 
 // a typed formatting character is stored with Markdown's escape (a backslash before it), so it never becomes markup and a .md export shows it literally; the backslash is a hidden mark; older text holds no escapes [markRuns §5]
-export const ESCAPABLE = new Set(['\\', '*', '_', '~', '#', '-', '>', '[', ']']);
+export const ESCAPABLE = new Set(['\\', '*', '_', '~', '^', '#', '-', '>', '[', ']']);
 
 /** The positions of the escape backslashes on one line (each escapes the character right after it). */
 export function readEscapes(line: string): number[] {
@@ -106,6 +108,9 @@ export function readEscapes(line: string): number[] {
   return out;
 }
 
+// a footnote marker is `[^label]` (reorg/footnotes.ts): the caret after an unescaped `[` that starts one is part of the marker, never a superscript's mark, so `a[^1] b[^2]` does not hold the pair `^1] b[^`
+const FOOTNOTE_MARKER_AT = /^\^[\w-]+\]/;
+
 function tokenize(line: string): Tok[] {
   const toks: Tok[] = [];
   // TYPED-LITERAL: an escaped character is text - never a marker, and never part of a marker run beside it
@@ -115,8 +120,9 @@ function tokenize(line: string): Tok[] {
   };
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
-    if (ch !== '*' && ch !== '_' && ch !== '~') continue;
+    if (ch !== '*' && ch !== '_' && ch !== '~' && ch !== '^') continue;
     if (escaped.has(i)) continue;
+    if (ch === '^' && line[i - 1] === '[' && !escaped.has(i - 1) && FOOTNOTE_MARKER_AT.test(line.slice(i))) continue;
     let j = i;
     while (j < line.length && line[j] === ch && !escaped.has(j)) j++;
     const n = j - i;
@@ -124,7 +130,11 @@ function tokenize(line: string): Tok[] {
       if (n >= 1 && n <= 3) push(ch, i, n);
       else if (n === 4) { push(ch, i, 2); push(ch, i + 2, 2); }
       else if (n === 6) { push(ch, i, 3); push(ch, i + 3, 3); }   // an empty bold-italic pair: `***` `***`
-    } else if (n === 2) push(ch, i, 2);
+    } else if (ch === '^') {
+      if (n === 1) push(ch, i, 1);
+      else if (n === 2) { push(ch, i, 1); push(ch, i + 1, 1); }   // an empty superscript pair
+    } else if (n === 1 && ch === '~') push(ch, i, 1);   // a lone tilde: a subscript's mark
+    else if (n === 2) push(ch, i, 2);
     else if (n === 4) { push(ch, i, 2); push(ch, i + 2, 2); }
     i = j - 1;
   }
@@ -140,8 +150,8 @@ export function readMarks(line: string): MarkRun[] {
     const mark = MARK_OF[kind];
     // the tokens that can carry this kind, with the marker's own start for each ROLE (a three-star run splits differently
     // when it opens - bold first, italic inside - than when it closes - italic first, bold outside)
-    const elig = toks.filter(t => (t.ch === (kind === 'underline' ? '_' : kind === 'strike' ? '~' : '*'))
-      && (kind === 'bold' ? t.len === 2 || t.len === 3 : kind === 'italic' ? t.len === 1 || t.len === 3 : t.len === 2));
+    const elig = toks.filter(t => (t.ch === (kind === 'underline' ? '_' : kind === 'strike' || kind === 'sub' ? '~' : kind === 'sup' ? '^' : '*'))
+      && (kind === 'bold' ? t.len === 2 || t.len === 3 : kind === 'italic' ? t.len === 1 || t.len === 3 : kind === 'sup' || kind === 'sub' ? t.len === 1 : t.len === 2));
     const startAs = (t: Tok, role: 'open' | 'close'): number => {
       if (t.len !== 3) return t.pos;
       if (kind === 'bold') return role === 'open' ? t.pos : t.pos + 1;
@@ -155,7 +165,7 @@ export function readMarks(line: string): MarkRun[] {
       } else if (t.canOpen) stack.push(t);
     }
   };
-  pairKind('strike'); pairKind('underline'); pairKind('bold'); pairKind('italic');
+  pairKind('strike'); pairKind('underline'); pairKind('bold'); pairKind('italic'); pairKind('sup'); pairKind('sub');
   // FONT-SPAN: font spans join the same non-crossing rule - nested in, or apart from, every other run, or the later one is text
   found.push(...fontRuns(line));
 

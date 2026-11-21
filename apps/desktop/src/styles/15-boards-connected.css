@@ -158,6 +158,10 @@
    typeface's own metrics, and it composes with underline when a writer
    wraps a run in both. */
 .md-strike{ text-decoration:line-through; }
+/* SUPERSCRIPT AND SUBSCRIPT (reorg): raised or lowered and smaller, with line-height 0 so a line never grows: the page's rect and its line pitch do not move */
+.md-sup, .md-sub{ font-size:.75em; line-height:0; position:relative; vertical-align:baseline; }
+.md-sup{ top:-.45em; }
+.md-sub{ top:.25em; }
 
 /* ITEM 133 (A) — the page's name is reachable, and looks it. Inherits the
    title's own type so the name does not become a control wearing a

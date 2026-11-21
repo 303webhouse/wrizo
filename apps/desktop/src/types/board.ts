@@ -148,6 +148,11 @@ export interface Box {
   deletedAt?: string;
   updatedAt?: string;
   purgedAt?: string;
+  // A CARD'S COLOUR IS A SLOT (the reorg's colours on assets, plan 5.1 / tech D4; Nick's saved-data sheet #14 "A", Nov 19; Fable's ruling Nov 20:
+  // "store slots a–f, never a colour name or a hex"). One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the
+  // blob whole); ABSENT = no colour ("No colour" removes the key). Read through reorg/colourSlots.ts isColourSlot, so a value that is not a slot
+  // draws nothing; written by reorg/assetColour.ts setAssetColour, which stamps this box's updatedAt so the newer pick wins a merge.
+  color?: string;
   // BOARD CONTEXT MENU - a card on the TRASH board that stands for a tombstoned CARD (not a page): where it came from. Derived by the Trash board's reconcile, never authored; the face reads the
   // tombstoned source box. Absent on every real card.
   trashedFrom?: { boardId: string; boxId: string };

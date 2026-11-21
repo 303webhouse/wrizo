@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import type { DragEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
-import type { DeskTermId } from '../store/lexicon/terms';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { flushNow, getJournalEntry, isAutoSet, subscribe } from '../store/persistence';
+import { flushNow, getJournalEntry, isAutoSet, removePageLink, subscribe } from '../store/persistence';
 import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
 import {
-  ensureDoc, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
+  ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
+import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { SLOT_WORD, slotLetter } from './colourSlots';
+import { assetCountOf } from './partAssets';
+import { DocKindMenu, type DocMenuHost } from './DocKindMenu';
 
 // THE FRONT MENU'S PARTS TAB (plan step 3.2; the prototype's frontMenu PARTS rows, frame P2-13A). Every Part of the Doc she is in, in her order
-// (reorg/partsSeam.ts over INK's reorg/parts.ts): its number, its colour tag (its first letter on its colour; no colour, an empty place of the
+// (reorg/partsSeam.ts over INK's reorg/parts.ts): its number, its colour tag (its slot's letter on its colour; no colour, an empty place of the
 // same size), its name (or its first words), its words, the one she is on marked, and a Part one or two levels in drawn further in. A row opens
 // that Part the way every list in the app opens a page (save, then go), so the left rail's return chip brings her back. A one-Part Doc lists its
 // one Part ("Part 1", Fable's ruling A, Nov 14).
@@ -38,18 +42,24 @@ export interface PartsHost {
   splitHere?: () => { ok: true; token: SplitToken } | { ok: false; why: 'caret' | 'text' };
 }
 
-// the slot ruling (INK's reorg/parts.ts on ink/reorg-finalize): a colour is a SLOT a-f; until the restyle names the slots (ARBOR, train E) each
-// slot keeps the word of the colour it replaced, in the same order as INK's old-name map (clay a, amber b, moss c, teal d, slate e, plum f)
-const COLOUR_KEY: Record<PartColor, DeskTermId> = { a: 'reorgPartColourClay', b: 'reorgPartColourAmber', c: 'reorgPartColourMoss', d: 'reorgPartColourTeal', e: 'reorgPartColourSlate', f: 'reorgPartColourPlum' };
+// THE TEAM B RESTYLE (slice 1, Nov 20): a Part's colour is a SLOT (Fable's ruling; INK's PART_COLORS), named by Machina's tags (Outline, Pale, Blue,
+// Yellow, Mid, Solid: reorg/colourSlots.ts SLOT_WORD, the Assets tab's own names) and drawn by the same tokens; its tag reads the SLOT's letter
+// ("a label first, the colour second", Nick, Nov 11), so a Part and its assets read as one thread.
 
-export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost }) {
+// THE TEAM B RESTYLE (slice 2, Nov 20): in BUILD and EDIT the Doc's kind heads the tab (./DocKindMenu.tsx); "New Part" stays the zone's one main
+// act, and Split, Move, Merge and Nest / Unnest for the Part she is on sit in "Structure", closed by default (1D; the row menus keep them too, "also
+// in the Structure section"); the Part she is on wears the brass bar only on a default colour (1C; all six slots are the defaults until the picker
+// arrives) and its tile's tint when it has one; each Part with assets carries its link badge (Decision 2), the count of its Assets tab's rows, which
+// POLISH wires to open the Assets tab at that Part.
+export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: { entry: JournalEntry; beforeLeave?: () => void; stage?: PartsStage | null; host?: PartsHost; docMenu?: DocMenuHost }) {
   const { t } = useDeskLexicon();
   const navigate = useNavigate();
   // follows the store (a rename in the top rail, a pull, a tool's write), never her keystrokes: the signature changes only with what the list draws
   useSyncExternalStore(subscribe, () => {
     const latest = getJournalEntry(entry.id) ?? entry;
-    return partsOfDoc(latest).parts.map((p) => `${p.id}:${p.name}:${p.words}:${p.level}:${p.color ?? ''}`).join('\u0001');
+    return partsOfDoc(latest).parts.map((p) => `${p.id}:${p.name}:${p.words}:${p.level}:${p.color ?? ''}:${assetCountOf(p.id)}`).join('\u0001');
   });
+  const [structOpen, setStructOpen] = useState(false);
   const latest = getJournalEntry(entry.id) ?? entry;
   const { doc, parts, here } = partsOfDoc(latest);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -81,6 +91,29 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
     // the top rail's drop hands in the host's flush (her typing first); the Front menu's tab needs none (the press there blurs the editor)
     if (beforeLeave) beforeLeave(); else save();
     navigate(routeForEntry(target));
+  };
+  // AN ASSET ONTO A PART (reorg/assetConnect.ts): a row takes a drag of the Assets tab's own type and nothing else; the line below the list says
+  // what happened (role status), with Undo when a connection was made. The list grows inside the drawer: the page never moves.
+  const [over, setOver] = useState<string | null>(null);
+  const [line, setLine] = useState<{ text: string; undo?: () => void } | null>(null);
+  useEffect(() => { setLine(null); setOver(null); }, [latest.id]);
+  const partWord = (p: { n: number; name: string }) => (parts.length > 1 ? (p.name || t('reorgUntitled')) : fill(t('reorgPartN'), { n: p.n }));
+  const onOver = (id: string) => (e: DragEvent) => {
+    if (!isAssetDrag(e.dataTransfer)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'link';
+    if (over !== id) setOver(id);
+  };
+  const onDrop = (p: { id: string; n: number; name: string }) => (e: DragEvent) => {
+    setOver(null);
+    if (!isAssetDrag(e.dataTransfer)) return;
+    e.preventDefault();
+    const asset = readAssetDrag(e.dataTransfer);
+    if (!asset) return;
+    const vals = { title: assetTitle(asset) || t('reorgUntitled'), part: partWord(p) };
+    const r = connectAssetToPart(p.id, asset, latest.id);
+    if (r.made === 'link') { const id = r.linkId; setLine({ text: fill(t('reorgConnectedLine'), vals), undo: () => { removePageLink(id); } }); }
+    else setLine({ text: fill(t(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused'), vals) });
   };
   const fresh = () => {
     save();
@@ -145,10 +178,15 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
     say(t(done ? 'reorgPartsUndone' : 'reorgPartsUndoNo'));
   };
 
-  const tools = canNew || canSplit;
+  const tools = canNew;
+  // Structure: the acts for the Part she is on, the row menu's own (move, level, join) and the host's split
+  const hp = parts[here - 1];
+  const [hs, he] = hp ? run(here - 1) : [0, 0];
+  const hcap = here <= 1 ? 0 : Math.min(MAX_PART_LEVEL, parts[here - 2].level + 1);
   return (
     <section ref={listRef} className="reorg-parts" data-reorg-parts aria-label={fill(t('reorgPartsOf'), { name: doc.name || t('reorgUntitled') })}>
-      <div className="reorg-parts-head">{t('reorgPartsHead')}</div>
+      {menus && <DocKindMenu entry={latest} docId={docId} host={docMenu} beforeWrite={save} />}
+      <div className="reorg-parts-head">{fill(t('reorgPartsHead'), { n: parts.length })}</div>
       {tools && (
         <div className="reorg-parts-tools" data-parts-tools>
           {canNew && (
@@ -156,10 +194,25 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
               <span aria-hidden="true">+</span> {t('reorgPartsNew')}
             </button>
           )}
-          {canSplit && (
-            // a press keeps her caret where it is: the button never takes the focus from the page on the way down
-            <button type="button" className="reorg-parts-tool" data-parts-split onMouseDown={(e) => e.preventDefault()} onClick={split}>{t('reorgPartsSplit')}</button>
-          )}
+        </div>
+      )}
+      {menus && hp && (
+        <div className="reorg-parts-structure" data-parts-structure="">
+          <button type="button" className="reorg-parts-structure-btn" data-parts-structure-toggle="" aria-expanded={structOpen ? 'true' : 'false'}
+            onClick={() => setStructOpen((o) => !o)}>
+            <span>{t('reorgPartsStructure')}</span><span className="reorg-parts-structure-fold" aria-hidden="true">{structOpen ? '▾' : '▸'}</span>
+          </button>
+          <div className="reorg-parts-structure-body" hidden={!structOpen}>
+            {canSplit && (
+              // a press keeps her caret where it is: the button never takes the focus from the page on the way down
+              <button type="button" className="reorg-parts-tool" data-parts-split data-structure-act="split" onMouseDown={(e) => e.preventDefault()} onClick={split}>{t('reorgPartsSplit')}</button>
+            )}
+            <button type="button" className="reorg-parts-tool" data-structure-act="up" disabled={!docId || hs === 0} onClick={() => move(hp, -1)}>{t('reorgPartUp')}</button>
+            <button type="button" className="reorg-parts-tool" data-structure-act="down" disabled={!docId || he >= parts.length} onClick={() => move(hp, 1)}>{t('reorgPartDown')}</button>
+            {stage === 'build' && <button type="button" className="reorg-parts-tool" data-structure-act="in" disabled={!docId || hp.level >= hcap} onClick={() => level(hp, 1)}>{t('reorgPartIn')}</button>}
+            {stage === 'build' && <button type="button" className="reorg-parts-tool" data-structure-act="out" disabled={!docId || hp.level === 0} onClick={() => level(hp, -1)}>{t('reorgPartOut')}</button>}
+            <button type="button" className="reorg-parts-tool" data-structure-act="join" disabled={here <= 1} onClick={() => join(hp)}>{t('reorgPartJoin')}</button>
+          </div>
         </div>
       )}
       {said && (
@@ -176,15 +229,24 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
           const [s, e] = run(i);
           const cap = i === 0 ? 0 : Math.min(MAX_PART_LEVEL, parts[i - 1].level + 1);
           const menuOpen = openMenu === p.id;
+          const assets = assetCountOf(p.id);
           return (
             <li key={p.id} data-part-li={p.id} data-part-level={p.level} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
-              <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
-                onClick={() => open(p.id)}>
+              <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
+                data-here-bar={on && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.color ? p.color : undefined}
+                onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDragLeave={() => { if (over === p.id) setOver(null); }} onDrop={onDrop(p)}>
                 <span className="reorg-parts-num">{p.n}</span>
-                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? label.charAt(0).toUpperCase() : ''}</span>
+                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
+              {assets > 0 && (
+                // the link badge (Decision 2): its count only; POLISH wires its press to open the Assets tab at this Part
+                <span className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}
+                  title={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}>
+                  <span aria-hidden="true">⛓</span> {assets}
+                </span>
+              )}
               {menus && (
                 <button type="button" className={`reorg-parts-more${menuOpen ? ' is-open' : ''}`} data-part-more={p.id} aria-expanded={menuOpen}
                   aria-label={fill(t('reorgPartMore'), { part: shown })} title={fill(t('reorgPartMore'), { part: shown })}
@@ -205,7 +267,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
                     <button type="button" className="reorg-part-swatch" data-part-colour="none" aria-pressed={!p.color} aria-label={t('reorgPartColourNone')} title={t('reorgPartColourNone')}
                       onClick={() => colour(p, null)} />
                     {PART_COLORS.map((c) => (
-                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(COLOUR_KEY[c])} title={t(COLOUR_KEY[c])}
+                      <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(SLOT_WORD[c])} title={t(SLOT_WORD[c])}
                         onClick={() => colour(p, c)} />
                     ))}
                   </div>
@@ -215,6 +277,14 @@ export function PartsList({ entry, beforeLeave, stage = null, host }: { entry: J
           );
         })}
       </ol>
+      <div className="reorg-parts-live" role="status">
+        {line && (
+          <div className="reorg-parts-line" data-reorg-connect-line="">
+            <span data-line-text="">{line.text}</span>
+            {line.undo && <button type="button" data-line-undo="" onClick={() => { line.undo?.(); setLine(null); }}>{t('graftUndo')}</button>}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

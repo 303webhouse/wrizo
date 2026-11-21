@@ -81,3 +81,70 @@
 .wz-lens-prompts{ list-style:none; margin:0; padding:4px 0 8px 8px; display:flex; flex-direction:column; gap:4px; }
 .wz-lens-prompt{ position:static; display:block; width:100%; box-sizing:border-box; padding:6px 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:13px; line-height:1.35; text-align:left; cursor:pointer; }
 .wz-lens-prompt:hover, .wz-lens-prompt:focus-visible{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+/* AN ASSET ONTO A PART (reorg/assetConnect.ts): "→ Part" on each asset row and board head, and its list of the Doc's other Parts, laid over the
+   drawer below the button (the list never pushes the rows). Rows and heads are drag sources: the grab cursor says so. */
+.wz-back-asset[draggable='true'], .wz-back-boardhead[draggable='true']{ cursor:grab; }
+.wz-back-topart-wrap{ position:relative; flex:none; }
+.wz-back-topart{ flex:none; height:22px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-family:var(--font-ui); font-size:11px; cursor:pointer; }
+.wz-back-topart:hover, .wz-back-topart:focus-visible, .wz-back-topart[aria-expanded='true']{ color:var(--text-hi); border-color:var(--text-low); outline:none; }
+.wz-back-topart-menu{ position:absolute; top:calc(100% + 4px); right:0; z-index:20; min-width:180px; display:flex; flex-direction:column; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
+.wz-back-topart-menu button{ display:block; width:100%; padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+.wz-back-topart-menu button:hover, .wz-back-topart-menu button:focus-visible{ text-decoration:underline; text-underline-offset:3px; outline:1px solid var(--text-low); outline-offset:-2px; }
+
+/* COLOURS ON ASSETS (reorg/assetColour.ts; the slot ruling in reorg/colourSlots.ts). What is stored is a slot a-f; Machina draws it as Nick's six
+   lettered tags (Nov 11, 1:46 am; Downloads\reorg-colour-tags-v3.png, measured on its own pixels): A Outline, B Pale, C Blue, D Yellow, E Mid, F Solid.
+   The letter is the signal, the colour helps the eye; no brass (brass is her act). Floors: the letter 4.5:1 on its tag (A: on the panel), the tag
+   3:1 on the panel (A and B: their edge). DARK is Machina's chrome today and machina/look's dark room; LIGHT is machina/look's light room
+   (data-machina2-room, src/machina2/room.ts). Cool and Warm draw the same six. Flux's 01-06 come with Flux's re-dress (after the trip). */
+:root[data-theme='machina']{
+  --reorg-tag-a-fill:transparent; --reorg-tag-a-ink:#FFFFFF; --reorg-tag-a-edge:#9AA1A8;
+  --reorg-tag-b-fill:#3A4047;     --reorg-tag-b-ink:#FFFFFF; --reorg-tag-b-edge:#9AA1A8;
+  --reorg-tag-c-fill:#8FA9C4;     --reorg-tag-c-ink:#151719; --reorg-tag-c-edge:#8FA9C4;
+  --reorg-tag-d-fill:#CDB75A;     --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#CDB75A;
+  --reorg-tag-e-fill:#9AA1A8;     --reorg-tag-e-ink:#151719; --reorg-tag-e-edge:#9AA1A8;
+  --reorg-tag-f-fill:#F4F5F6;     --reorg-tag-f-ink:#151719; --reorg-tag-f-edge:#F4F5F6;
+}
+:root[data-theme='machina'][data-machina2-room='light']{
+  --reorg-tag-a-fill:transparent; --reorg-tag-a-ink:#151719; --reorg-tag-a-edge:#5E666E;
+  --reorg-tag-b-fill:#D2D6DA;     --reorg-tag-b-ink:#151719; --reorg-tag-b-edge:#5E666E;
+  --reorg-tag-c-fill:#41658A;     --reorg-tag-c-ink:#FFFFFF; --reorg-tag-c-edge:#41658A;
+  --reorg-tag-d-fill:#B9A03A;     --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#5E666E;   /* Yellow stands off the light panel by its 1 px G4 edge (5.34:1; its fill alone is 2.36:1), as the sheet measures it */
+  --reorg-tag-e-fill:#5E666E;     --reorg-tag-e-ink:#FFFFFF; --reorg-tag-e-edge:#5E666E;
+  --reorg-tag-f-fill:#23272B;     --reorg-tag-f-ink:#FFFFFF; --reorg-tag-f-edge:#23272B;
+}
+[data-theme='machina'] .wz-back-tag{ display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; flex:none; width:16px; height:16px; margin-right:6px;
+  border:1px solid transparent; font-family:var(--font-mono, 'IBM Plex Mono', monospace); font-size:10px; font-weight:600; line-height:1; }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+[data-theme='machina'] .wz-back-tag[data-colour-slot='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
+.wz-back-colour-menu button{ display:flex; align-items:center; }
+.wz-back-colour-menu button[aria-pressed='true'] .wz-back-colour-name{ text-decoration:underline; text-underline-offset:3px; }
+
+/* THE TEAM B RESTYLE, slice 3 (ARBOR, Nov 20; reorg/backMenu/AssetPartGroups.tsx, AssetGroupsList.tsx). The Assets tab, wide to narrow: "Assets (n)",
+   then a group per Part with assets in the Doc's order, its head (fold, tag, name, count) a quiet bar; her Part's group opens with the tab, the others
+   closed (1H). Open Beside and each kind are icons in the label colour, their words on hover and for a screen reader (1F, 1G). No motion: a cut. */
+[data-theme='machina'] .wz-back-assets-head{ margin:0 0 6px; }
+[data-theme='machina'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left;
+  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+[data-theme='machina'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+[data-theme='machina'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-icon{ display:block; flex:none; }
+[data-theme='machina'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
+[data-theme='machina'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+
+/* Row 2: in the split, every scrollbar is hidden; both sides still scroll (the wheel, the trackpad, the keys) */
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
+[data-theme='machina'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* the asset's side is drawn into <body> (reorg/split/SplitHost.tsx's portal), outside the stage: the same rule on it */
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
+[data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* FOOTNOTES (Nick, Nov 21): the note lines at a Part's end are set apart on the page: smaller and quieter, still real characters (reorg/footnotes.ts; draftDecoration wraps them only under the switch) */
+.md-note{ font-size:.85em; opacity:.72; }

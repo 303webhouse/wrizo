@@ -12,6 +12,9 @@
 
 export type PubFormat = 'md' | 'txt' | 'html';
 
+/** One note a Part carries (reorg/footnotes.ts), already written for each format; `endnote` notes go to the Doc's end, the rest to the Part's end. */
+export interface PubNote { label: string; endnote: boolean; md: string; txt: string; html: string }
+
 export interface PubPart {
   id: string;
   /** the writer's own name for the Part; '' when she gave none */
@@ -24,6 +27,8 @@ export interface PubPart {
   txt: string;
   /** the Part's words as web markup (the page's own marks collapsed, as the view draws them) */
   html: string;
+  /** the notes this Part carries; the words hold noteMarker(label) where each was cited. Absent: none (a Part with no notes goes out exactly as it always did) */
+  notes?: readonly PubNote[];
 }
 
 export interface PubText {
@@ -33,6 +38,50 @@ export interface PubText {
 }
 
 const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// FOOTNOTES AND ENDNOTES (Nick ruled A, Nov 21; reorg/footnotes.ts): the Part's words carry a private marker where a [^label] stood (the page's own label is only its own: two Parts may both have a [^1]), and this file numbers them
+// for the Doc as it goes out - footnotes 1, 2, 3 in the order they are cited across the chosen Parts, endnotes i, ii, iii - then lays each footnote at its Part's end and every endnote at the Doc's end.
+const NOTE_OPEN = '\u0001', NOTE_CLOSE = '\u0002';
+/** The private marker a Part's words carry where `[^label]` stood. */
+export const noteMarker = (label: string): string => NOTE_OPEN + label + NOTE_CLOSE;
+const NOTE_MARKER = /\u0001([\w-]+)\u0002/g;
+const roman = (n: number): string => { const T: Array<[number, string]> = [[10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']]; let r = ''; let k = n; for (const [v, s] of T) while (k >= v) { r += s; k -= v; } return r; };
+
+/** One Part's words with its markers numbered, and its notes as lines: `foot` for its own end, `end` for the Doc's end. `counters` run across the Parts; `first` remembers which labels already carry an id (web). */
+function layNotes(p: PubPart, format: PubFormat, counters: { fn: number; en: number }, first: Set<string>): { body: string; foot: string[]; end: string[] } {
+  const raw = format === 'md' ? p.md : format === 'html' ? p.html : p.txt;
+  const notes = p.notes ?? [];
+  if (notes.length === 0) return { body: raw, foot: [], end: [] };
+  const nums = new Map<string, { n: number; end: boolean; note: PubNote }>();
+  const give = (note: PubNote): void => {
+    if (nums.has(note.label)) return;
+    const end = note.endnote;
+    const n = end ? ++counters.en : ++counters.fn;
+    nums.set(note.label, { n, end, note });
+  };
+  for (const m of raw.matchAll(NOTE_MARKER)) { const note = notes.find((x) => x.label === m[1]); if (note) give(note); }
+  for (const note of notes) give(note);
+  const lab = (x: { n: number; end: boolean }): string => (x.end ? roman(x.n) : String(x.n));
+  const body = raw.replace(NOTE_MARKER, (_m, l: string) => {
+    const x = nums.get(l);
+    if (!x) return '';
+    const k = lab(x);
+    if (format === 'md') return `[^${k}]`;
+    if (format === 'txt') return `[${k}]`;
+    const key = (x.end ? 'en' : 'fn') + k;
+    const id = first.has(key) ? '' : ` id="${x.end ? 'enref' : 'fnref'}-${k}"`;
+    first.add(key);
+    return `<sup${id}><a href="#${x.end ? 'en' : 'fn'}-${k}">${k}</a></sup>`;
+  });
+  const foot: string[] = [], end: string[] = [];
+  for (const x of [...nums.values()].sort((a, b) => a.n - b.n)) {
+    const k = lab(x), nt = x.note;
+    const line = format === 'md' ? `[^${k}]: ${nt.md}` : format === 'txt' ? `[${k}] ${nt.txt}`
+      : `<p class="note" id="${x.end ? 'en' : 'fn'}-${k}"><sup>${k}</sup> ${nt.html} <a href="#${x.end ? 'enref' : 'fnref'}-${k}">\u21a9</a></p>`;
+    (x.end ? end : foot).push(line);
+  }
+  return { body, foot, end };
+}
 
 /** The web page for a fragment: whole (doctype, charset, title), one plain readable style, nothing from the app. */
 export function wrapHtml(title: string, body: string): string {
@@ -54,12 +103,19 @@ export function publicationText(title: string | null, parts: readonly PubPart[],
   const base = title === null ? 1 : 2;
   const head = (name: string, level: number): string => (format === 'md' ? `${'#'.repeat(level)} ${name}` : format === 'html' ? `<h${level}>${esc(name)}</h${level}>` : name);
   if (title !== null) blocks.push(head(title, 1));
+  const counters = { fn: 0, en: 0 };
+  const first = new Set<string>();
+  const ends: string[] = [];
   for (const p of chosen) {
-    const body = (format === 'md' ? p.md : format === 'html' ? p.html : p.txt).replace(/\s+$/, '');
+    const laid = layNotes(p, format, counters, first);
+    const body = laid.body.replace(/\s+$/, '');
+    ends.push(...laid.end);
     const name = p.name.trim();
-    if (!body && !name) continue;
+    if (!body && !name && laid.foot.length === 0) continue;
     if (name) blocks.push(head(name, base + Math.max(0, Math.min(2, p.level))));
     if (body) blocks.push(body);
+    if (laid.foot.length > 0) blocks.push(laid.foot.join('\n'));
   }
+  if (ends.length > 0) blocks.push(ends.join('\n'));
   return { content: blocks.join(format === 'html' ? '\n' : '\n\n') + '\n', count: chosen.length };
 }

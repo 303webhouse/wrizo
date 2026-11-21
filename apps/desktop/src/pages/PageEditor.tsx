@@ -8,9 +8,9 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
+import { PublishView } from '../reorg/PublishView';
 import { REORG_JOIN_STATE, type PartsHost } from '../reorg/PartsList';
 import { joinPart, splitPart } from '../reorg/parts';
-import { PublishView } from '../reorg/PublishView';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -282,7 +282,7 @@ function PageEditorView({ id }: { id: string }) {
   // host div here (the same one `applyCaret` writes through), and
   // `getCaretOffset` is the shared reader every other caret path uses, so this
   // adds no plumbing and cannot disagree with the caret the formatter acts on.
-  const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false });
+  const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false, sup: false, sub: false });
   // the caret line's heading level, and where the small floating +/- sits while a heading is selected [PageEditor §5]
   const [headingLevel, setHeadingLevel] = useState<number | null>(null);
   const [headingPop, setHeadingPop] = useState<{ x: number; y: number } | null>(null);
@@ -353,10 +353,12 @@ function PageEditorView({ id }: { id: string }) {
       if (!el) return;
       const offset = getCaretOffset(el);
       const plain = editorPlainText(el);   // TYPING-LATENCY: the rows' shadow text (today's innerText read when it cannot be trusted)
-      const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
+      const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false, sup: false, sub: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
       if (held && !held.exit && held.mark === '*' && offset === held.at) lit.italic = true;
+      // a held superscript or subscript (an empty subscript is never stored - `~~` is strike) lights its button the same way
+      if (held && !held.exit && (held.mark === '^' || held.mark === '~') && offset === held.at) lit[held.mark === '^' ? 'sup' : 'sub'] = true;
       // card-held-italic: a style pressed OFF at its run's end is unlit while the caret waits there (the next letter will be plain)
       if (held && held.exit && offset === held.at) { const k = MARK_KIND[held.mark]; if (k) lit[k] = false; }
       setDraftMarks(lit);
@@ -1130,7 +1132,7 @@ function PageEditorView({ id }: { id: string }) {
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
-              underlineOn: draftMarks.underline, strikeOn: draftMarks.strike,
+              underlineOn: draftMarks.underline, strikeOn: draftMarks.strike, supOn: draftMarks.sup, subOn: draftMarks.sub,
               headingLevel,
             },
             // read through the default, never written at birth: a page that never chose has no `kind` key, reads 'normal', and stays byte-identical on disk [PageEditor §30]
