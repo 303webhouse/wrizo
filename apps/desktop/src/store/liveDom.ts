@@ -6,16 +6,22 @@
 export const MEASURE_COPY = 'wz-letter-measure';
 
 /** Whether an element is the measuring copy or inside it. */
-export const inMeasureCopy = (el: Element | null | undefined): boolean => !!el && !!el.closest(`.${MEASURE_COPY}`);
+export const inMeasureCopy = (el: Element | null | undefined): boolean => !!el && typeof el.closest === 'function' && !!el.closest(`.${MEASURE_COPY}`);
+
+// A root with querySelector alone (the stores' Node checks hand in a minimal document, one-drawer.mjs's among them) has no copy in it: its one
+// match is the answer, as document.querySelector was before.
+const hasAll = (root: ParentNode): boolean => typeof (root as { querySelectorAll?: unknown }).querySelectorAll === 'function';
 
 /** The first match outside the measuring copy (document order), or null. */
 export function liveQuery<T extends Element = Element>(selector: string, root: ParentNode = document): T | null {
+  if (!hasAll(root)) { const el = root.querySelector<T>(selector); return el && !inMeasureCopy(el) ? el : null; }
   for (const el of Array.from(root.querySelectorAll<T>(selector))) if (!inMeasureCopy(el)) return el;
   return null;
 }
 
 /** Every match outside the measuring copy, in document order. */
 export function liveQueryAll<T extends Element = Element>(selector: string, root: ParentNode = document): T[] {
+  if (!hasAll(root)) { const el = root.querySelector<T>(selector); return el && !inMeasureCopy(el) ? [el] : []; }
   return Array.from(root.querySelectorAll<T>(selector)).filter((el) => !inMeasureCopy(el));
 }
 

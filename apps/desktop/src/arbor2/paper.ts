@@ -1,4 +1,4 @@
-import { liveQuery, liveQueryAll, registerLiveSite } from '../store/liveDom';
+import { liveQuery, liveQueryAll, registerLiveSite } from '../store/liveDom.ts';   // the extension: arbor2-paper-unit.mjs loads this file in Node
 
 // THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
 // the visible page and its progress row are always the live page's

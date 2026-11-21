@@ -16,7 +16,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { withHarness } from '../runtime-verify.mjs';
+// FIXTURE (Nov 20, before this file's first green; Chat 1's pair 44841746075 on 877963f0: arbor2.page / arbor2.progress never registered): the
+// driver pins ?arbor2=0 and ?machina2=0 for any file that does not ask, and Arbor's paper.ts (where the two lookups live) loads only with Arbor's
+// redesign. This file asks for both looks as they ship (the product's own default, no query), as arbor-bug108.mjs asks for Arbor's. No assertion changes.
+process.env.WS_ARBOR2 = process.env.WS_ARBOR2 || 'default';
+process.env.WS_MACHINA2 = process.env.WS_MACHINA2 || 'default';
+const { withHarness } = await import('../runtime-verify.mjs');
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(HERE, '..', '..', 'src');
@@ -28,7 +33,9 @@ const NEED = ['tutor.stage', 'tutor.paper', 'cascade.stage', 'cascade.paper', 'm
 const PAPERS = ['tutor.paper', 'cascade.paper', 'menus.paper', 'arbor2.page'];
 const TEXT = Array.from({ length: 30 }, (_, i) => `Line ${i + 1} of the page, long enough to wrap across the measure at least once or twice.`).join('\n');
 
-const HOLD = `(() => { const c = document.querySelector('.wz-letter-measure'); if (!c) return { copy: false };
+// (Nov 20, item141 on the same pair: HOLD named the seam above any settle in source order; it is now defined after the seams' waitFor, which names it)
+let HOLD = '';
+const HOLD_SRC = () => `(() => { const c = document.querySelector('.wz-letter-measure'); if (!c) return { copy: false };
   const outside = !c.closest('#root'); document.body.insertBefore(c, document.body.firstChild);
   const naive = document.querySelector('.desk-frame-stage--prose .mode-page');
   const L = window.wrizoLiveDom;
@@ -41,7 +48,8 @@ await withHarness(async (app) => {
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-splash-hold', '50'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); null");
   await app.reload();
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 }).catch(() => {});
-  await app.waitFor('!!window.wrizoTheme && !!window.wrizoCreateJournalPage', { label: 'the seams', timeout: 20000 });
+  await app.waitFor('!!window.wrizoTheme && !!window.wrizoCreateJournalPage && !!window.wrizoLiveDom', { label: 'the seams', timeout: 20000 });
+  HOLD = HOLD_SRC();
   for (const theme of ['plateau', 'machina']) {
     for (const mode of ['drafting', 'journal']) {
       const pid = `lmg-${theme}-${mode}`;
