@@ -107,3 +107,5 @@
 /* the asset's side is drawn into <body> (reorg/split/SplitHost.tsx's portal), outside the stage: the same rule on it */
 [data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
 [data-theme='machina'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* FOOTNOTES (Nick, Nov 21): the note lines at a Part's end are set apart on the page: smaller and quieter, still real characters (reorg/footnotes.ts; draftDecoration wraps them only under the switch) */
+.md-note{ font-size:.85em; opacity:.72; }

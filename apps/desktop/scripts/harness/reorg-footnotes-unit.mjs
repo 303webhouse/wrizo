@@ -56,7 +56,7 @@ function suite(src) {
   });
   t('INSERT', () => {
     const a = F.insertNote('Hello world', 5, 'footnote');
-    const b = F.insertNote('Hello[^1] world\n\n[^1]: First note.', 11, 'footnote');
+    const b = F.insertNote('Hello[^1] world\n\n[^1]: First note.', 15, 'footnote');   // 15: the end of the body (a first draft of this red said 11, miscounted past the [^1] marker)
     const c = F.insertNote('Hello world', 11, 'endnote');
     const d = F.insertNote('One[^1] two[^3]\n\n[^1]: a\n[^3]: c', 3, 'footnote');
     const e = F.insertNote('Hello world\n\n[^1]: a', 17, 'footnote');
@@ -95,7 +95,8 @@ function suite(src) {
     const text = 'A[^1] B[^2]\n\n[^1]: n1\n[^2]: n2';
     const s = F.splitWithNotes(text, 6, cut);
     const back = F.joinWithNotes(s.head, s.tail, glue);
-    return { pass: j === 'AB[^2]\n\n[^1]: a\n[^2]: b' && free === 'AB[^2]\n\n[^1]: a\n[^2]: b' && end === 'AB[^e2]\n\n[^e1]: a\n[^e2]: b'
+    // (a first draft of this red expected 'AB[^2]...': it dropped the upper Part's own marker; a join keeps both Parts' words)
+    return { pass: j === 'A[^1]B[^2]\n\n[^1]: a\n[^2]: b' && free === 'A[^1]B[^2]\n\n[^1]: a\n[^2]: b' && end === 'A[^e1]B[^e2]\n\n[^e1]: a\n[^e2]: b'
       && none === 'AB' && onlyBelow === 'AB[^1]\n\n[^1]: b' && back === text,
     detail: J({ j, free, end, none, onlyBelow, back }) };
   });
@@ -109,7 +110,7 @@ for (const k of LAWS) ok(`${k} on the real footnotes.ts`, !!base && base[k] && b
 
 // the mutants: [name, the check it must turn red, the rewrite]
 const MUT = [
-  ['a note-like line in the middle of the words is read as a note', 'READ', (t) => t.replace('// MUT:endonly', () => '// MUT:endonly').replace('!/\\S/.test(lines[i + 1] ?? \'\')', () => 'true')],
+  ['a note-like line in the middle of the words is read as a note', 'READ', (t) => t.replace('(isBlank(lines[j]) || NOTE_LINE.test(lines[j]))', () => 'true')],
   ['an escaped marker is read as a marker', 'MARK', (t) => t.replace('(?<!\\\\)', () => '')],
   ['an endnote loses its label prefix', 'INSERT', (t) => t.replace("kind === 'endnote' ? 'e' : ''", () => "''")],
   ['a label already used is handed out again', 'INSERT', (t) => t.replace('while (used.has(', () => 'while (false && used.has(')],
