@@ -25,6 +25,8 @@ import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
+import { BeforeExport } from '../reorg/BeforeExport';
+import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
 import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
@@ -36,6 +38,7 @@ import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
+import { pendingAssetsFocus, subscribeAssetsFocus, takeAssetsFocus } from '../reorg/backMenu/assetsFocus';
 import { assembleTutorDelta, capSelection, assembleBible } from './tutor/assemble';
 import { FREE_WRITE_PRESETS, NO_DRAWS, DRAFT_ASKS } from './tutor/presets';
 import { liveQuery, registerLiveSite } from '../store/liveDom';
@@ -166,8 +169,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // (the two source shapes drawers-p1 K5/K5b read stay verbatim: the state below opens on the TUTOR tab, and the tab body lines read `rightTab`; PLAN is its own flag, folded into `rightTab`)
   const [tabState, setTabState] = useState<RightTab>('tutor');
   const [planOn, setPlanOn] = useState(false);
-  const rightTab: RightTab | 'plan' = sprint ? 'tutor' : planOn ? 'plan' : tabState;
-  const setRightTab = (v: RightTab | 'plan'): void => { if (sprint) return; if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
+  // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4): a fourth Back menu tab that exists only while the publishing sheet is open on this page; with the sheet closed the drawer is back on a tab that is there
+  const publishing = usePublishing(entry.id);
+  const [exportOn, setExportOn] = useState(false);
+  const exportTab = back && publishing;
+  const rightTab: RightTab | 'plan' | 'export' = sprint ? 'tutor' : exportOn && exportTab ? 'export' : planOn ? 'plan' : tabState;
+  const setRightTab = (v: RightTab | 'plan' | 'export'): void => { if (sprint) return; if (v === 'export') { setExportOn(true); return; } setExportOn(false); if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
   useEffect(() => { if (back) setTabState('links'); }, []);   // eslint-disable-line react-hooks/exhaustive-deps
   // THE REORG'S SEARCH (reorg/search/, POLISH): while it is open it takes this menu's place (the tab row and every tab's body give way to the
@@ -182,6 +189,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (searchSeen.current) { searchSeen.current = false; setOpen(restoreAfterSearch()); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.open]);
+  // A PART ROW'S LINK BADGE (reorg/backMenu/assetsFocus.ts): its press opens this drawer on ASSETS; the Assets tab opens that Part (mounting
+  // fresh or already drawn). Off the Back menu there is no Assets tab to take it, so the ask is spent here.
+  useEffect(() => subscribeAssetsFocus(() => {
+    const f = pendingAssetsFocus();
+    if (!f) return;
+    if (!back) { takeAssetsFocus(f.tick); return; }
+    setPlanOn(false); setTabState('links'); setOpen(true);
+  }), [back]);
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only; spec §9, Fable's ruling 3): a third cloth tab, BOARD - "connect this page to a board". It is a
   // VIEW of the Grafts pane (rightTab stays 'links'), showing only its board parts and the same "+ Graft..." picker: no new behaviour, no
   // new state beyond this in-session flag. Off the flag the drawer is byte-for-byte today's.
@@ -774,12 +789,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     items: [{ id: RIGHT_TABS[0], label: t('tutorTabTutor') }, { id: RIGHT_TABS[1], label: t('drawerLinks') }, { id: 'board', label: t('railBoard') }],
     // ARBOR v2 MOCKUP r18 (the Wrizors, Nov 4: a stray "?" stood in the room beside the GRAFTS folder tab): the Grafts "?" is drawn on the Grafts
     // pane's own first row instead (ConnectionsDrawerPanel's `help`), inside the drawer
-    value: rightTab === 'links' && arborBoard ? 'board' : (rightTab === 'plan' ? RIGHT_TABS[0] : rightTab),
+    value: rightTab === 'links' && arborBoard ? 'board' : (rightTab === 'plan' || rightTab === 'export' ? RIGHT_TABS[0] : rightTab),
     onChange: (v: RightTab | 'board') => { setArborBoard(v === 'board'); setRightTab(v === 'board' ? 'links' : v); },
     label: t('drawerRightTabsLabel'),
   } : undefined;
-  const rightTabs: DrawerTabsConfig<RightTab | 'plan'> = back ? {
-    items: [{ id: 'plan', label: t('reorgBackPlan'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[1], label: t('drawerLinks'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[0], label: t('tutorTabTutor') }],
+  const rightTabs: DrawerTabsConfig<RightTab | 'plan' | 'export'> = back ? {
+    items: [{ id: 'plan', label: t('reorgBackPlan'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[1], label: t('drawerLinks'), locked: sprint, lockedNote: 'wz-sprint-note' }, { id: RIGHT_TABS[0], label: t('tutorTabTutor') }, ...(exportTab ? [{ id: 'export' as const, label: t('reorgBackExport') }] : [])],
     value: rightTab,
     onChange: setRightTab,
     label: t('reorgBackTabsLabel'),
@@ -1076,6 +1091,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
+          {back && rightTab === 'export' && <BeforeExport entry={entry} />}
           {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>

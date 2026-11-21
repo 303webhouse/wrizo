@@ -97,18 +97,31 @@
 [data-theme='machina'] .reorg-parts-words{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
 /* THE PARTS TOOLS (reorg/PartsList.tsx, train D, on INK's reorg/parts.ts). A Part one or two levels in is drawn further in (--part-level, set
    on its row); its tag is its first letter on its colour (frame P2-13A), an empty place of the same size when it has none. The six colours are
-   INK's token names, drawn here in Machina's muted hues (provisional for the restyle); each letter reads at 5.5:1 or better on its colour. */
+   INK's token names, drawn here in Machina's muted hues (provisional for the restyle); each letter reads at 5.5:1 or better on its colour.
+   THE TEAM B RESTYLE (slice 1, ARBOR, Nov 20): the colours are the SLOTS a-f (Fable's ruling) and the tag reads the slot's letter; each slot is
+   drawn by Machina's tag tokens (--reorg-tag-<slot>-fill / -ink / -edge, 23-reorg-back.css: Nick's v3 sheet, measured), the same six the Assets
+   tab draws, so a Part and its assets read as one thread. */
 [data-theme='machina'] .reorg-parts-list > li{ display:flex; flex-wrap:wrap; align-items:center; }
 [data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row{ flex:1 1 0; width:auto; min-width:0; padding-left:calc(12px + var(--part-level, 0) * 14px); }
+/* a row draws inside its own box (POLISH's reading, Actions 44870378376: in the Sliver at 1920 the word count, which did not give way, ran past
+   the row's edge and under the link badge, and the row, being position:relative, took the badge's press). The rows there are 90 to 125px
+   (Actions 44871259589), too narrow for the number, the tag, the name and the count: the NAME keeps the room (its ellipsis) and the count
+   steps out of the drawn row below 180px, still read with the row by a screen reader (visually hidden, not display:none). Above that, both
+   give way together, each with its ellipsis. Nothing is ever painted past the row's edge. */
+[data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row{ overflow:hidden; container:reorg-part-row / inline-size; }
+[data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row .reorg-parts-words{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@container reorg-part-row (max-width: 179.98px){
+  [data-theme='machina'] .reorg-parts-list > li > .reorg-parts-row .reorg-parts-words{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+}
 [data-theme='machina'] .reorg-parts-tag{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; box-sizing:border-box;
   font-family:var(--font-chromeLabel, monospace); font-size:9.5px; font-weight:500; letter-spacing:.04em; }
 [data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour]{ border:1px solid #6A727B; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='a']{ background:#9C4F2E; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='b']{ background:#B9A03A; color:#1C1C1C; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='c']{ background:#56703A; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='d']{ background:#2C7272; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='e']{ background:#41658A; color:#FFFFFF; }
-[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='f']{ background:#74476F; color:#FFFFFF; }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+[data-theme='machina'] :is(.reorg-parts-tag, .reorg-part-swatch)[data-colour='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
 [data-theme='machina'] .reorg-parts-more{ flex:none; width:26px; height:26px; margin-right:4px; padding:0; border:0; background:none; color:var(--text-mid); cursor:pointer; font-size:14px; line-height:1; }
 [data-theme='machina'] .reorg-parts-more:hover, [data-theme='machina'] .reorg-parts-more.is-open{ color:var(--text-hi); }
 [data-theme='machina'] .reorg-parts-more:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
@@ -179,6 +192,31 @@
 [data-theme='machina'] :is(.reorg-search-back, .reorg-search-scopes > button, .reorg-search-hit, .reorg-search-more, .reorg-search-widen):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 [data-theme='machina'] ::highlight(wz-search){ background-color:rgba(246, 236, 190, .6); }
 [data-theme='machina'] ::highlight(wz-search-cur){ background-color:rgba(232, 196, 92, .85); color:#1C1C1C; }
+/* AN ASSET ONTO A PART (reorg/assetConnect.ts): a Part row under an asset drag wears a dashed edge (a shape, never colour alone; not brass, which
+   marks the Part she is on); the line below the list says what happened, inside the drawer, so the page never moves. */
+[data-theme='machina'] .reorg-parts-row.is-drop{ outline:1px dashed var(--text-hi); outline-offset:-3px; }
+/* DRAG TO MOVE, MERGE AND NEST (reorg/partDrag.ts): the row under the pointer names the act. A move is a line on the edge it lands at; nest a
+   dashed edge, merge a solid brass one; a refusal the quiet ink. The words sit OVER the row (absolute, pointer-transparent): the list never
+   reflows under a drag, and the page never moves. */
+[data-theme='machina'] .reorg-parts-list > li{ position:relative; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='before'] > .reorg-parts-row{ box-shadow:inset 0 2px 0 var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='after'] > .reorg-parts-row{ box-shadow:inset 0 -2px 0 var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='nest'] > .reorg-parts-row{ outline:1px dashed var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='merge'] > .reorg-parts-row{ outline:2px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='no'] > .reorg-parts-row{ outline:1px dashed var(--text-low); outline-offset:-2px; cursor:no-drop; }
+[data-theme='machina'] .reorg-parts-droplabel{ position:absolute; z-index:2; right:6px; bottom:calc(100% - 6px); max-width:calc(100% - 12px); box-sizing:border-box; padding:2px 6px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none; font-family:var(--font-ui); font-size:11px; color:var(--text-hi);
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
+[data-theme='machina'] .reorg-parts-list > li[data-drop='no'] > .reorg-parts-droplabel{ color:var(--text-mid); }
+/* the handle (P2): the tile is what a Part is dragged by */
+[data-theme='machina'] .reorg-parts-list[data-parts-drag] .reorg-parts-tag{ cursor:grab; }
+/* the merge's confirm (Nick, Nov 21): in the tools' place, above the list; the page never moves */
+[data-theme='machina'] .reorg-parts-ask{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:8px 12px; font-family:var(--font-ui); font-size:12px;
+  color:var(--text-hi); border:1px solid var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-ask > span{ flex:1 1 100%; }
+[data-theme='machina'] .reorg-parts-live:empty{ display:none; }
+[data-theme='machina'] .reorg-parts-line{ display:flex; align-items:baseline; gap:8px; padding:8px 4px 2px; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
+[data-theme='machina'] .reorg-parts-line [data-line-undo]{ flex:none; background:none; border:0; padding:0; font:inherit; color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
 
 /* PUBLISHING AS A VIEW (reorg/PublishView.tsx; the prototype's FINALIZE page: reorg.css .whole-part, .whole-label). A sheet laid over the paper from its overlay slot, so the paper, the column and
    the editor under it never move, resize or unmount (page primacy). Every rule is scoped to Machina and to .reorg-pub, which only the view renders: with the switch off nothing here matches. */
@@ -210,6 +248,59 @@
 [data-theme='machina'] .reorg-pub-btn:hover:not([disabled]){ background:#E6E8EA; }
 [data-theme='machina'] .reorg-pub-btn:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
 [data-theme='machina'] .reorg-pub-btn[disabled]{ opacity:.35; cursor:default; }
+
+/* THE TEAM B RESTYLE, slice 2 (ARBOR, Nov 20; reorg/DocKindMenu.tsx, reorg/PartsList.tsx). Wide to narrow: the Doc's kind (a toggle, its menu dropping
+   down inside the drawer), "Parts (n)", "New Part", then "Structure" (closed by default). The Part she is on wears the brass bar on a default colour
+   (1C: all six slots until the picker; her own colour would take a grey bar) and its tile's tint: an opaque 22% blend of the slot's fill over the
+   room's panel (machina/look's G6 dark / G0 light), so the name's contrast is measured on what is drawn. Outline (a) has no fill, so no tint. The
+   link badge is quiet: a count in the chrome's mono face. Counts sit a step smaller than names. Machina has no motion: every state is a cut. */
+:root[data-theme='machina']{ --reorg-tint-b:#282D31; --reorg-tint-c:#3B444D; --reorg-tint-d:#484735; --reorg-tint-e:#3D4247; --reorg-tint-f:#515458; }
+:root[data-theme='machina'][data-machina2-room='light']{ --reorg-tint-b:#EDEEF0; --reorg-tint-c:#CDD5DE; --reorg-tint-d:#E7E2CD; --reorg-tint-e:#D3D6D8; --reorg-tint-f:#C6C8C9; }
+[data-theme='machina'] .reorg-parts-row[data-tint='b']{ background:var(--reorg-tint-b); }
+[data-theme='machina'] .reorg-parts-row[data-tint='c']{ background:var(--reorg-tint-c); }
+[data-theme='machina'] .reorg-parts-row[data-tint='d']{ background:var(--reorg-tint-d); }
+[data-theme='machina'] .reorg-parts-row[data-tint='e']{ background:var(--reorg-tint-e); }
+[data-theme='machina'] .reorg-parts-row[data-tint='f']{ background:var(--reorg-tint-f); }
+[data-theme='machina'] .reorg-parts-row.is-here:not([data-here-bar='brass'])::before{ background:var(--text-low); }
+[data-theme='machina'] .reorg-parts-words{ font-size:10px; }
+[data-theme='machina'] .reorg-parts-assets{ flex:none; display:inline-flex; align-items:center; gap:3px; margin-right:4px; padding:0 4px; height:18px;
+  font-family:var(--font-chromeLabel, monospace); font-size:10px; color:var(--text-mid); border:1px solid var(--ink-border-strong); }
+/* the badge is a button (it opens the Assets tab at its Part): no button chrome, a press's cursor, its edge brightening on hover and focus */
+/* positioned so it paints above the row (the row is position:relative and its words can run under the badge; a press would open the Part) */
+[data-theme='machina'] button.reorg-parts-assets{ position:relative; z-index:1; background:none; line-height:1; cursor:pointer; }
+[data-theme='machina'] button.reorg-parts-assets:hover, [data-theme='machina'] button.reorg-parts-assets:focus-visible{ border-color:var(--text-low); color:var(--text-hi); }
+[data-theme='machina'] .reorg-dockind{ position:relative; margin:0 0 8px; }
+[data-theme='machina'] .reorg-dockind-btn{ display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong);
+  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-dockind-btn[aria-expanded='true'], [data-theme='machina'] .reorg-dockind-btn:hover{ border-color:var(--text-low); }
+[data-theme='machina'] .reorg-dockind-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-dockind-caret, [data-theme='machina'] .reorg-dockind-fold, [data-theme='machina'] .reorg-parts-structure-fold{ font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-dockind-menu{ position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20; display:flex; flex-direction:column; padding:4px 0;
+  background:var(--desk-ground); border:1px solid var(--ink-border-strong); max-height:60vh; overflow-y:auto; }
+[data-theme='machina'] .reorg-dockind-item > button, [data-theme='machina'] .reorg-dockind-sub > button{ display:flex; align-items:center; justify-content:space-between; width:100%;
+  padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-dockind-sub{ display:flex; flex-direction:column; padding:0 0 4px 12px; border-left:1px solid var(--ink-border-strong); margin-left:12px; }
+[data-theme='machina'] .reorg-dockind-sub > button[aria-checked='true'], [data-theme='machina'] .reorg-dockind-sub > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+[data-theme='machina'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):hover, [data-theme='machina'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):focus-visible{
+  outline:1px solid var(--text-low); outline-offset:-2px; }
+[data-theme='machina'] .reorg-parts-structure{ margin:4px 0 8px; }
+[data-theme='machina'] .reorg-parts-structure-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-parts-structure-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-parts-structure-body{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0 2px; }
+[data-theme='machina'] .reorg-parts-structure-body[hidden]{ display:none; }
+[data-theme='machina'] .reorg-parts-structure-body .reorg-parts-tool[disabled]{ color:var(--text-low); cursor:default; text-decoration:none; }
+
+/* THE TEAM B RESTYLE, slice 5 (ARBOR, Nov 20; reorg/TextFolds.tsx): the TEXT tab's folds. "Paragraph" and "More" are quiet bars folded by default;
+   their rows are today's own; Insert Symbol's characters wrap in the drawer's width. No motion: a cut. */
+[data-theme='machina'] .reorg-text-fold{ margin:6px 0 0; }
+[data-theme='machina'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-text-fold-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+[data-theme='machina'] .reorg-text-fold-mark{ font-size:10px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-text-fold-body[hidden]{ display:none; }
+[data-theme='machina'] .reorg-text-fold .reorg-text-fold{ margin-left:10px; }
+[data-theme='machina'] .reorg-text-symbols{ flex-wrap:wrap; }
 /* FINALIZE (Fable, Nov 20, 1:27 pm): the foot carries two rows (what goes out / how it goes), the Front menu's TEXT and INK tabs are greyed while the view is open, and its PARTS tab only ticks and orders. Machina only. */
 [data-theme='machina'] .reorg-pub-foot{ flex-wrap:wrap; row-gap:8px; }
 [data-theme='machina'] .reorg-pub-break{ flex:0 0 100%; height:0; }
@@ -226,3 +317,14 @@
 [data-theme='machina'] .reorg-pubparts-move:hover:not([disabled]){ background:#E6E8EA; }
 [data-theme='machina'] .reorg-pubparts-move:focus-visible{ outline:1px solid #3F6183; outline-offset:1px; }
 [data-theme='machina'] .reorg-pubparts-move[disabled]{ opacity:.35; cursor:default; }
+
+/* THE TEAM B RESTYLE: the kind menu's preset groups (INK's acts, reorg/DocKindMenu.tsx; Fable, Nov 20, 4:15 pm: "the restyle now also styles the
+   PARTS kind menu"). A group is a quiet label over its presets, the menu's own rhythm; no rule, no fill, no motion. */
+[data-theme='machina'] .reorg-dockind-group{ display:flex; flex-direction:column; padding:2px 0 4px; }
+[data-theme='machina'] .reorg-dockind-group + .reorg-dockind-group{ border-top:1px solid var(--ink-border-strong); margin-top:2px; padding-top:6px; }
+[data-theme='machina'] .reorg-dockind-grouphead{ padding:2px 12px 4px 0; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .reorg-dockind-group > button{ display:flex; align-items:center; width:100%; padding:5px 12px 5px 0; background:none; border:0; text-align:left;
+  font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] .reorg-dockind-group > button:hover, [data-theme='machina'] .reorg-dockind-group > button:focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
+[data-theme='machina'] .reorg-dockind-group > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }

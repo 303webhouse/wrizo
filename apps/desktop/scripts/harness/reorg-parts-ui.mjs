@@ -12,17 +12,16 @@
 //
 // OFF    P0  switch off in Machina, and on in Arbor and Flux: no Parts tools anywhere
 // STAGES G1  BUILD: "New part" and "Split here" over the list; a row's menu offers up, down, in, out, join and the seven colour choices
-//            [successor, Nov 20: the seven choices are none and the slots a to f]
+//            (SUCCESSOR, Nov 20: the seven are 'none' and the slots a-f; the words "New Part" and "Split")
 //        G2  EDIT: "Split here" and no "New part"; a row's menu offers up, down, join and the colours (no level)
 //        G3  SPRINT: "New part" only: no "Split here", no row menus
 //            [successor, Nov 21 (SPRINT has no menus, train E): in SPRINT the Front menu is not drawn at all, so no Parts tools; the page is there]
 //        G4  the top rail's Parts drop is a plain list: no tools in it
-// LIST   L1  a Part one level in is drawn further in than the Part above it; a coloured Part's tag is its first letter on its colour; a Part with no
+// LIST   L1  (SUCCESSOR, Nov 20: the tag is its SLOT's letter) a Part one level in is drawn further in than the Part above it; a coloured Part's tag is its first letter on its colour; a Part with no
 //            colour has an empty place of the same size
-//            [successor, Nov 20: the coloured Part's tag carries its slot, 'c']
+// COLOUR C1  (SUCCESSOR, Nov 20: stored as its SLOT, a-f) a colour from a row's menu is stored as the token name (pageSettings.color) and drawn, its letter readable on it (contrast >= 4.5);
 // OLD    O1  an old name still reads as its slot: "Ledger three" stored 'moss' reads as 'c' (the layer and its tag) and its stored value is never
 //            written back; THE MUTANT: 'mauve' reads as no colour at all; and setPartColor refuses an old name, writing nothing
-// COLOUR C1  a colour from a row's menu is stored as the token name (pageSettings.color) and drawn, its letter readable on it (contrast >= 4.5);
 //            "None" removes the key; no text changes
 //            [successor, Nov 20: the colour is stored as its slot, 'd']
 // LEVEL  V1  "In" puts a Part one level under the one above (drawn and stored); "Out" brings it back; the first Part cannot go in
@@ -174,11 +173,11 @@ await withHarness(async (app) => {
   // ---- STAGES ----------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pu-1'); await stage(app, 'draft'); await partsTab(app);
   const g1 = { tools: await app.evalJs(TOOLS), menu: await menu(app, 'pu-3') };
-  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): the choices are the slots now. The original, verbatim:
-  // ok('G1 BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices',
-  //   !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
-  //     && g1.menu.colours.join(',') === 'none,clay,amber,moss,teal,slate,plum', g1);
-  ok('G1 [successor]: BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices: none and the slots a to f',
+  // SUPERSEDED (Nov 20, ARBOR's restyle, on POLISH's hand-over): the seven colour choices are 'none' and the slots a-f (Fable's slot ruling; INK's PART_COLORS since 7720e1df), no longer clay..plum. The check as it stood, verbatim:
+  //  ok('G1 BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices',
+  //    !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
+  //      && g1.menu.colours.join(',') === 'none,clay,amber,moss,teal,slate,plum', g1);
+  ok('G1 BUILD: "New Part" and "Split" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices: none and the slots a to f',
     !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
       && g1.menu.colours.join(',') === 'none,a,b,c,d,e,f', g1);
   await stage(app, 'revise'); await partsTab(app);
@@ -207,12 +206,12 @@ await withHarness(async (app) => {
   await open(app, 'machina', true, 'pu-1'); await stage(app, 'draft'); await partsTab(app);
   const l1 = await app.evalJs(ROWS);
   const r1 = l1 && l1.find((r) => r.id === 'pu-1'), r2 = l1 && l1.find((r) => r.id === 'pu-2');
-  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): the tag carries the slot. The original, verbatim:
-  // ok('L1 a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its colour; no colour is an empty place of the same size',
-  //   !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'moss' && r2.tag.letter === 'L'
-  //     && r1.tag && r1.tag.colour === null && r1.tag.letter === '' && r1.tag.w === r2.tag.w && r1.tag.w > 0, l1);
-  ok('L1 [successor]: a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its slot (\'c\'); no colour is an empty place of the same size',
-    !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'c' && r2.tag.letter === 'L'
+  // SUPERSEDED (Nov 20, ARBOR's restyle, on POLISH's hand-over): a coloured Part's tag is its SLOT's letter on the slot's colour (Nick's tags A-F, Nov 11: 'a label first, the colour second'; the Assets tab's tags read the same), and the fixture's colour is slot c. The check as it stood, verbatim:
+  //  ok('L1 a Part one level in is drawn further in; a coloured Part\'s tag is its first letter on its colour; no colour is an empty place of the same size',
+  //    !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'moss' && r2.tag.letter === 'L'
+  //      && r1.tag && r1.tag.colour === null && r1.tag.letter === '' && r1.tag.w === r2.tag.w && r1.tag.w > 0, l1);
+  ok('L1 a Part one level in is drawn further in; a coloured Part\'s tag is its slot\'s letter on its colour (slot c: "C"); no colour is an empty place of the same size',
+    !!r1 && !!r2 && r1.level === '0' && r2.level === '1' && r2.nameLeft > r1.nameLeft && r2.tag && r2.tag.colour === 'c' && r2.tag.letter === 'C'
       && r1.tag && r1.tag.colour === null && r1.tag.letter === '' && r1.tag.w === r2.tag.w && r1.tag.w > 0, l1);
   // O1: an old name reads as its slot, never written back; the mutant reads as nothing; an old name is refused as a write
   const r3 = l1 && l1.find((r) => r.id === 'pu-3'), r4 = l1 && l1.find((r) => r.id === 'pu-4');
@@ -228,7 +227,8 @@ await withHarness(async (app) => {
   await flushed(app);
   const c0 = await app.evalJs(TEXTS);
   await menu(app, 'pu-1');
-  // [successor, Nov 20] the slot 'd' (it was 'teal', parked below)
+  // SUPERSEDED (Nov 20, ARBOR's restyle): the press read [data-part-colour="teal"], a name; the successor presses slot d. Verbatim:
+  //   await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="teal"]')); await sleep(500); await flushed(app);
   await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="d"]')); await sleep(500); await flushed(app);
   const c1 = {
     stored: await app.evalJs(`(${ALL}.find((e) => e.id === 'pu-1') || {}).pageSettings?.color ?? null`),
@@ -240,11 +240,11 @@ await withHarness(async (app) => {
   await app.evalJs(click('[data-part-menu="pu-1"] [data-part-colour="none"]')); await sleep(500); await flushed(app);
   c1.cleared = await app.evalJs(`(() => { const ps = (${ALL}.find((e) => e.id === 'pu-1') || {}).pageSettings || {}; return !('color' in ps); })()`);
   const c2 = await app.evalJs(TEXTS);
-  // SUPERSEDED (the slot ruling (Fable, Nov 20; INK's ink/reorg-finalize): a Part's colour is a SLOT 'a' to 'f', each theme drawing its own six; setPartColor refuses an old name; an old clay..plum READS as its slot and is never written back): a colour is stored as its slot. The original, verbatim (its press was [data-part-colour="teal"]):
-  // ok('C1 a colour is stored as its token name and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
-  //   c1.stored === 'teal' && c1.drawn && c1.drawn.colour === 'teal' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
-  ok('C1 [successor]: a colour is stored as its slot (\'d\') and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
-    c1.stored === 'd' && c1.drawn && c1.drawn.colour === 'd' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
+  // SUPERSEDED (Nov 20, ARBOR's restyle, on POLISH's hand-over): a colour is stored as its SLOT, never a name (Fable's ruling), and the tag reads the slot's letter. The check as it stood, verbatim:
+  //  ok('C1 a colour is stored as its token name and drawn, its letter readable (contrast >= 4.5); "None" removes the key; no text changes',
+  //    c1.stored === 'teal' && c1.drawn && c1.drawn.colour === 'teal' && c1.drawn.letter === 'L' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
+  ok('C1 a colour is stored as its slot (d) and drawn, its letter "D" readable (contrast >= 4.5); "None" removes the key; no text changes',
+    c1.stored === 'd' && c1.drawn && c1.drawn.colour === 'd' && c1.drawn.letter === 'D' && c1.drawn.contrast >= 4.5 && c1.cleared && JSON.stringify(c0) === JSON.stringify(c2), c1);
 
   const v0 = await menu(app, 'pu-1');
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); null"); await sleep(200);

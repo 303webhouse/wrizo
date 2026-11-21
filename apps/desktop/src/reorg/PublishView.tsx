@@ -1,8 +1,9 @@
 import { memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { subscribe } from '../store/persistence';
-import { readPublication, downloadPublication, copyPublication, publicationSignature, type PubViewPart } from './publishing';
-import { closePick, openPick, setPickOff, togglePick, usePickOff } from './publishPick';
+import { readPublication, downloadPublication, copyPublication, publicationSignature, publicationPlan, type PubViewPart } from './publishing';
+import { includePlanOf } from './docSettings';
+import { closePick, includePlanNow, openPick, setPickOff, togglePick, usePickOff } from './publishPick';
 import type { PubFormat } from './publishingText';
 
 // PUBLISHING AS A VIEW (reorg-plan-v2 #5; the prototype's FINALIZE page, docs/mockups/reorg/app.js renderPage "whole", reorg.css .whole-part and .whole-label): the whole Doc as one read-only scroll,
@@ -28,7 +29,7 @@ function PublishViewImpl({ entryId, onClose }: Props) {
   const [said, setSaid] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    openPick(entryId);
+    openPick(entryId, includePlanOf(entryId));   // the "Include the Plan" tick is remembered per Doc (docSettings export.includePlan), so the sheet opens as she left it
     const was = document.activeElement as HTMLElement | null;
     ref.current?.focus({ preventScroll: true });
     return () => { closePick(entryId); if (was && was.isConnected) was.focus({ preventScroll: true }); };
@@ -39,8 +40,10 @@ function PublishViewImpl({ entryId, onClose }: Props) {
   const ids = many ? chosen : null;
   const choose = (next: ReadonlySet<string>) => { setSaid(null); setPickOff(entryId, next); };
   const toggle = (id: string) => { setSaid(null); togglePick(entryId, id); };
-  const go = (format: PubFormat) => setSaid(downloadPublication(doc, format, ids) ? t('publishDownloadConfirm') : t('publishDownloadFailed'));
-  const copy = async (kind: 'text' | 'formatted') => setSaid((await copyPublication(doc, kind, ids)) ? t('publishCopyWordsConfirm') : t('publishCopyFailed'));
+  // the Plan goes only if she ticked "Include the Plan" in the Back menu's Plan tab (item 5a): read at the moment she presses, so it is the Plan as she left it
+  const planNow = () => (includePlanNow(entryId) ? publicationPlan(entryId, t('reorgBackPlan'), t('reorgUntitled')) : null);
+  const go = (format: PubFormat) => setSaid(downloadPublication(doc, format, ids, planNow()) ? t('publishDownloadConfirm') : t('publishDownloadFailed'));
+  const copy = async (kind: 'text' | 'formatted') => setSaid((await copyPublication(doc, kind, ids, planNow())) ? t('publishCopyWordsConfirm') : t('publishCopyFailed'));
   const none = many && chosen.length === 0;
   const head = (p: PubViewPart) => {
     if (!many && !p.name) return null;
