@@ -238,7 +238,9 @@ function suite(src) {
     L.P.setPartColor(a, null); const cleared = L.api.getJournalEntry(a).pageSettings; const clearedOk = !('color' in cleared) && JSON.stringify(cleared).indexOf('null') < 0;
     const L2 = fixture(src, ['one']);
     const REFUSED = ['#FFF', '#ff00', '#GG0000', '#ff00000', 'ff0000', ' #ff0000', '#ff0000 ', '#ff 000', 'red', '', 'plum', 'clay', 'g', '#'];
-    const w1 = L2.S.log.length; const refused = REFUSED.map((v) => L2.P.setPartColor(L2.ids[0], v)); const none = L2.S.log.length === w1 && !('color' in (L2.api.getJournalEntry(L2.ids[0]).pageSettings || {}));
+    // tried on a Part that already holds a slot: a refusal must leave it exactly as it was (a refusal that cleared the colour would show as a lost 'c')
+    L2.P.setPartColor(L2.ids[0], 'c');
+    const w1 = L2.S.log.length; const refused = REFUSED.map((v) => L2.P.setPartColor(L2.ids[0], v)); const none = L2.S.log.length === w1 && L2.api.getJournalEntry(L2.ids[0]).pageSettings.color === 'c';
     // a client never wrote a hex, or an old name: read once, write nothing
     const L3 = fixture(src, ['one']);
     const readOf = {};
@@ -511,7 +513,9 @@ const MUT = [
   ['an undo joins by the halves, not by the whole it was cut from (successor)', 'BOLD', (t) => t.replace('text: t.whole ?? joinWithNotes(t.head, t.tail, joinText)', () => 'text: joinWithNotes(t.head, t.tail, joinText)')],
   ['a join is refused for a deleted card too (the raw read)', 'TOMB', (t) => t.replace('liveBoxes(e.boxes).length > 0', () => '!!(e.boxes && e.boxes.length)')],
   ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
-  ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
+  // ORIGINAL, SUPERSEDED Nov 21 (colour B: setPartColor's refusal now reads `store === null`, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
+  ['an old colour name is written back (successor)', 'COL', (t) => t.replace('if (color !== null && store === null) return false;', () => '')],
   ['the slots stop at e', 'COL', (t) => t.replace("['a', 'b', 'c', 'd', 'e', 'f'] as const", () => "['a', 'b', 'c', 'd', 'e'] as const")],
   ['a cut may land between the halves of an emoji', 'SN', (t) => t.replace('if (a >= 0xD800 && a <= 0xDBFF && b >= 0xDC00 && b <= 0xDFFF) return o - 1;', () => '')],
   ['a move leaves the subsections behind', 'RUN-move', (t) => t.replace('const [s, t] = runOf(parts.map(p => p.level), i);\n  const run = parts.slice(s, t);\n  const rest', () => 'const s = i, t = i + 1;\n  const run = parts.slice(s, t);\n  const rest')],
