@@ -17,6 +17,10 @@
 // TRACK   K8  (Fable, Nov 21 3:05 pm, RULED: the Front drawer's track scales by k like the rest) at 1920 and 2560 the Front drawer's track is
 //             min(200 x k, the desk beside the page) - the desk measured from the rail's right edge to the page's left, less the 28 px gap - within 3 px
 //         MUT-K8  the 2560 reading with the old track (the stage's own half only) turns K8's test red
+// PASS 2  (the Wrizors' pass 2, Nov 21 3:20 pm, two REAL; Fable 3:20 pm) K9 at 1366, 1920 and 2560 the window does not scroll (the document is no taller and
+//             no wider than the window); K10 the crumb's current Part reads in the bar's label colour, 7:1 or better against the bar, at every size;
+//             K11 the "...", the search door and the readout under the page (the Run and its count) are k times as large as at 1366 (5%)
+//         MUT-K9  a reading 16 px taller than the window turns K9's test red    MUT-K10  the crumb read at #3A4047 turns K10's test red
 // RUN     R1  in the split the Run stands under her page - its middle inside the page's left and right, and none of it under the Doc beside - at
 //             1366, 1920 and 2560
 // MUTANTS MUT-K2  a 2560 reading with the rail's width unscaled turns K2's test red    MUT-R1  a split reading with the Run left unshifted turns R1's test red
@@ -41,6 +45,14 @@ const PAGE = "(() => { const p = document.querySelector('.mode-page'); if (!p) r
 const SCALE = "(() => { const r = document.documentElement; return { attr: r.getAttribute('data-wz-chrome-scale'), k: r.style.getPropertyValue('--wz-chrome-k') || null }; })()";
 const SPILL = (panel) => `(() => { const p = document.querySelector(${q(panel)}); if (!p) return null; const pr = p.getBoundingClientRect();
   return [...p.querySelectorAll('button, input, select, [role="tab"]')].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.right > pr.right + 1; }).length; })()`;
+// pass 2's readings: the window's own scroll sizes, the crumb's Part against the bar, and the "...", the search door and the readout
+const PASS2 = `(() => { const se = document.scrollingElement; const bx = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { w: r.width, h: r.height }; };
+  const part = document.querySelector('.reorg-top .reorg-top-part-count'); const bar = document.querySelector('.chrome-top.sprint-nav');
+  return { sh: se.scrollHeight, sw: se.scrollWidth, ih: innerHeight, iw: innerWidth, part: part ? getComputedStyle(part).color : null, partText: part ? (part.textContent || '').trim() : null, bar: bar ? getComputedStyle(bar).backgroundColor : null,
+    dots: bx(document.querySelector('.gh-corner-glyph')), search: bx(document.querySelector('.reorg-top .reorg-top-search')), run: bx(document.querySelector('.machina-run')) }; })()`;
+const rgbOf = (c) => { const m = /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(c || ''); return m ? [+m[1], +m[2], +m[3]] : null; };
+const lum = (c) => { const v = rgbOf(c); if (!v) return NaN; const [r, g, b] = v.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 const OPEN = (sel) => `document.querySelector(${q(sel)})?.getAttribute('data-open') === 'true'`;
 
 async function seed(app) {
@@ -91,6 +103,7 @@ await withHarness(async (app) => {
     await visit(app, w, h);
     const R = { scale: await app.evalJs(SCALE), rail: await app.evalJs(box('.desk-frame-strip')), door: await app.evalJs(box('.wz-reorg-rail button')), tab: await app.evalJs(box('.reorg-top .desk-mode-tab[data-mode-key="draft"]')) };
     R.page0 = await app.evalJs(PAGE);
+    R.pass2 = await app.evalJs(PASS2);
     await toggle(app, '.wz-sliver-grip', '.wz-sliver', true);
     R.front = { panel: await app.evalJs(box('.wz-sliver-panel')), tab: await app.evalJs(box('.wz-sliver [role="tab"]')), spill: await app.evalJs(SPILL('.wz-sliver-panel')) };
     R.page1 = await app.evalJs(PAGE);
@@ -140,6 +153,21 @@ await withHarness(async (app) => {
   ok('K6 the Doc beside the page: its kind label is k times as tall as at 1366 (5%)', SIZES.every(([w]) => !!read[w].split.kind && ratioOk(read[w].split.kind.h, b.split.kind && b.split.kind.h, WANT_K[w])),
     SIZES.map(([w]) => ({ w, kind: read[w].split.kind && read[w].split.kind.h })));
   const big = read[2560];
+  // ---- PASS 2 --------------------------------------------------------------------------------------------------------------------------
+  const k9 = (p) => !!p && p.sh <= p.ih + 0.5 && p.sw <= p.iw + 0.5;
+  ok('K9 at 1366, 1920 and 2560 the window does not scroll: the document is no taller and no wider than the window', SIZES.every(([w]) => k9(read[w].pass2)),
+    SIZES.map(([w]) => ({ w, ...(read[w].pass2 ? { sh: read[w].pass2.sh, ih: read[w].pass2.ih, sw: read[w].pass2.sw, iw: read[w].pass2.iw } : {}) })));
+  const k10 = (p) => !!p && !!p.part && /Part \d+ of \d+/.test(p.partText || '') && contrast(p.part, p.bar) >= 7;
+  ok('K10 the crumb\'s current Part ("Part n of m") reads 7:1 or better against the bar at every size', SIZES.every(([w]) => k10(read[w].pass2)),
+    SIZES.map(([w]) => ({ w, part: read[w].pass2 && read[w].pass2.part, bar: read[w].pass2 && read[w].pass2.bar, ratio: read[w].pass2 ? +contrast(read[w].pass2.part, read[w].pass2.bar).toFixed(2) : null })));
+  const b2 = b.pass2 || {};
+  const k11 = (p, k) => !!p && ['dots', 'search', 'run'].every((n) => !!p[n] && !!b2[n] && ratioOk(p[n].h, b2[n].h, k));
+  ok('K11 the "...", the search door and the readout under the page are k times as tall as at 1366 (5%)', SIZES.every(([w]) => k11(read[w].pass2, WANT_K[w])),
+    SIZES.map(([w]) => ({ w, dots: read[w].pass2 && read[w].pass2.dots, search: read[w].pass2 && read[w].pass2.search, run: read[w].pass2 && read[w].pass2.run })));
+  const taller = big.pass2 ? { ...big.pass2, sh: big.pass2.ih + 16 } : null;
+  ok('MUT-K9 a reading 16 px taller than the window turns K9\'s test red', !!taller && taller.sh !== big.pass2.sh && !k9(taller), taller && { sh: taller.sh, ih: taller.ih });
+  const dim = big.pass2 ? { ...big.pass2, part: 'rgb(58, 64, 71)' } : null;
+  ok('MUT-K10 the crumb\'s Part read at #3A4047 turns K10\'s test red', !!dim && dim.part !== big.pass2.part && !k10(dim), dim && { part: dim.part, bar: dim.bar });
   // K8: the Front drawer's track against the desk beside the page (the page's painted left edge, as read at rest, less the rail's right edge and the gap)
   const desk = (R) => { const p = (R.page0 || '').split(',').map(Number); return R.rail && p.length === 4 ? p[0] - (R.rail.l + R.rail.w) - 28 : NaN; };
   const k8 = (R, k) => !!R.front.panel && Number.isFinite(desk(R)) && near(R.front.panel.w + 16, Math.min(200 * k, desk(R)), 3);
@@ -160,7 +188,7 @@ await withHarness(async (app) => {
 
 function J(v) { return JSON.stringify(v); }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
+const EXPECTED = 18;   // 13 + K9, K10, K11, MUT-K9, MUT-K10 (the Wrizors' pass 2, Nov 21)   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CHROME-SCALE VERIFY: PASS (${checks.length} checks)`
