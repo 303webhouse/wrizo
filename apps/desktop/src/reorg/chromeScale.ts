@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTheme } from '../store/theme';
 import { REORG } from './flag';
+import { liveQuery } from '../store/liveDom';
 
 // THE CHROME GROWS WITH THE WINDOW (reorg plan v2.1 §3b, ARBOR item 4; Team B row 5, Nick: "the page takes a much larger share of the width";
 // the Wrizors: "the whole layout grows with the window, from 1366 up, by one zoom"; Fable, Nov 21 11:45 am, RULED: one chrome scale from the
@@ -21,6 +22,13 @@ const VAR = '--wz-chrome-k';
 // spilled 12 controls). Measured from the drawer's anchor (a box CSS places; reading it is a read only).
 const FRONT_VAR = '--wz-front-k';
 const FRONT_BASE = 200;
+// THE FRONT DRAWER'S TRACK (Fable, Nov 21 3:05 pm, RULED: it scales by k like the rest). The track's own formula (13-desk-frame.css, --sliver-margin)
+// counts the desk inside the stage only, as if the stage began at the window's edge; under Machina's reorg the stage is centred (at 2560 it spans
+// about 415..2134 px), so the desk between the rail and the stage was lost (a 238 px track against a 614 px desk). The desk is measured here - the
+// page's painted left edge, less the rail's right edge and the frame's 28 px gap - and published as --wz-front-desk; under the scale the track is
+// min(200 x k, the larger of the formula and that desk). A read only, written only on a change.
+const DESK_VAR = '--wz-front-desk';
+const FRAME_GAP = 28;
 export const frontScaleFor = (k: number, anchorW: number): number => (Number.isFinite(anchorW) && anchorW > 0 ? Math.max(1, Math.min(k, Math.round((anchorW / FRONT_BASE) * 1000) / 1000)) : k);
 
 /** The chrome scale for a window this wide: 1 at 1366 and below, rounded to three places. */
@@ -43,7 +51,13 @@ export function useChromeScale(): void {
     const r = document.documentElement;
     let last = '';
     let lastFront = '';
+    let lastDesk = '';
     const front = () => {
+      const page = liveQuery<HTMLElement>('.mode-page');
+      const strip = liveQuery<HTMLElement>('.desk-frame-strip');
+      const desk = page && strip ? Math.max(0, Math.floor(page.getBoundingClientRect().left - strip.getBoundingClientRect().right - FRAME_GAP)) : NaN;
+      const d = Number.isFinite(desk) ? `${desk}px` : '';
+      if (d !== lastDesk) { lastDesk = d; if (d) r.style.setProperty(DESK_VAR, d); else r.style.removeProperty(DESK_VAR); }
       const a = document.querySelector<HTMLElement>('.desk-frame-sliver-anchor');
       const fk = String(frontScaleFor(chromeScaleFor(window.innerWidth), a ? a.getBoundingClientRect().width : NaN));
       if (fk === lastFront) return;
@@ -70,6 +84,7 @@ export function useChromeScale(): void {
       window.clearInterval(tick);
       r.style.removeProperty(VAR);
       r.style.removeProperty(FRONT_VAR);
+      r.style.removeProperty(DESK_VAR);
       r.removeAttribute(ATTR);
       window.dispatchEvent(new Event('wz-chrome-scale'));
     };
