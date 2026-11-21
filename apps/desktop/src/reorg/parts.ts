@@ -22,7 +22,7 @@
 //   - A re-order, a level, a colour, a name and a limit never write a word: they write `orderIndex` and `pageSettings`, never `text`, `strokes`, `boxes` or `tutor`.
 //   - A join REFUSES a Part that carries ink, cards, links or a Tutor thread, with a reason, rather than dropping them silently.
 //   - "Make it its own Doc": the new set is written FIRST, then the Parts move into it.
-import type { JournalEntry, PageSettings, PageTemplate } from '../types';
+import type { JournalEntry, PageSettings, PageTemplate, ScriptDoc } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import {
   createBinder, createBinderPage, flushNow, getJournalEntries, getJournalEntry, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, saveJournalEntry,
@@ -304,7 +304,11 @@ export function ensureDoc(partId: string): EnsureDocResult {
 
 // ---------------------------------------------------------------- a new Part
 
-export interface NewPartOptions { afterId?: string | null; name?: string; template?: PageTemplate | null; level?: number }
+export interface NewPartOptions {
+  afterId?: string | null; name?: string; template?: PageTemplate | null; level?: number;
+  /** a screenplay Part: born as a script page holding this (empty) script and its text, as a Screenplay's own pages are */
+  seed?: { script: ScriptDoc; text: string };
+}
 
 /** A blank Part in a Doc: at the end, or right after `afterId`. It starts at the level of the Part it follows (or the one asked), under the Doc's own name rules. Returns its id, or null when the Doc is unknown. */
 export function newPart(docIdIn: string | null, opts: NewPartOptions = {}): string | null {
@@ -318,7 +322,8 @@ export function newPart(docIdIn: string | null, opts: NewPartOptions = {}): stri
   if (!docId || !getProject(docId)) return null;
   const parts = partsOfDoc(docId);
   const after = opts.afterId === undefined || opts.afterId === null ? (opts.afterId === null ? null : (parts[parts.length - 1] ?? null)) : (parts.find(p => p.id === opts.afterId) ?? null);
-  const born = createBinderPage(docId, 'manuscript');
+  const born = createBinderPage(docId, opts.seed ? 'script' : 'manuscript');
+  if (opts.seed) saveJournalEntry({ ...(getJournalEntry(born.id) as JournalEntry), script: opts.seed.script, text: opts.seed.text });
   const lvl = opts.level !== undefined ? opts.level : after ? after.level : 0;
   const cap = after ? Math.min(MAX_PART_LEVEL, after.level + 1) : 0;
   const level = Math.max(0, Math.min(cap, Math.trunc(lvl)));
