@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { CascadeContext } from '../../components/cascade/shared';
 import type { JournalEntry } from '../../types';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
@@ -7,17 +8,34 @@ import { getJournalEntries, getSystemKind, isPairedPlanBoard } from '../../store
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
+import { DEFAULT_GOAL_LINES, setWritingGoal, useWritingGoal, type GoalUnit } from '../../store/writingGoal';
+import { pageStageOf, type PageStage } from '../pageStage';
 import { newTargetOf, projectOfEntry } from '../railData';
 import { useProjectName, useWhereSheIs } from '../ReorgRail';
 
 // DOCS (step 5, frame R7). NEW DOC: Blank, Screenplay, Research paper, More kinds, and Board (Nick's first door for a Board, Nov 14, 11:14 am),
 // each through today's own route into the Project she is in (an unborn page or board in its set, made by the first keystroke): Blank and
 // Screenplay are today's presets; Research paper is today's research-paper deck; More kinds is today's library; Board is today's new board.
-// In Unfiled writing they land loose, as today. RECENT: her three most recently changed Docs, anywhere, each with its Project and its words.
+// In Unfiled writing they land loose, as today. RECENT: her most recently changed Docs, anywhere, each with its Project and its words.
+// LONG (Fable, Nov 20, 12:15 pm and 1:27 pm): up to 25 of them in a box five rows tall that scrolls past the fifth (a thin scrollbar), with a
+// sort: Changed (newest first, the default), Name (A to Z, numbers as numbers), Words (most first); a tie keeps the newest first. The sort is
+// the menu's own state while it is open: nothing is stored (a saved sort would be a new users.prefs key, which waits on Nick's word).
 // PAGE DEFAULTS, EVERY DOC: Typewriter mode and Progress bars are today's two saved settings (the Tools strip's own switches), unchanged in
 // meaning; this is one more door to them. Opening a Recent row is a departure with the return chip.
+// THE SESSION (Fable, Nov 20, 12:15 pm): DOCS' last group, closed each time DOCS opens (in-session state; nothing stored), moved here from the
+// Front menu's foot. Its rows follow the stage table (accepted as drawn, Nick's walk Nov 20): SPRINT the goal, what it counts, the timer,
+// progress; BUILD the goal, the timer, progress; EDIT progress only. Each row writes today's own saved setting (store/writingGoal.ts, the
+// timer and Progress tracking in store/writingSettings.ts): nothing new is stored. A Board has no session.
 
-const RECENT = 3;
+const RECENT = 25;
+/** the rows the box shows before it scrolls */
+const RECENT_SHOWN = 5;
+type RecentSort = 'changed' | 'name' | 'words';
+const SORTS: { id: RecentSort; word: DeskTermId }[] = [
+  { id: 'changed', word: 'reorgSortChanged' },
+  { id: 'name', word: 'reorgSortName' },
+  { id: 'words', word: 'reorgSortWords' },
+];
 const fill = (s: string, k: string, v: string | number): string => s.replace(`{${k}}`, String(v));
 
 function titleOf(e: JournalEntry, t: (k: DeskTermId) => string): string {
@@ -30,6 +48,71 @@ function recentDocs(): JournalEntry[] {
     .filter((e) => !e.deletedAt && !e.purgedAt && !getSystemKind(e) && !isPairedPlanBoard(e.id) && e.pageType !== 'board')
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))
     .slice(0, RECENT);
+}
+
+/** Recent in the chosen order. `recentDocs` is newest first, so a stable sort leaves a tie newest first. */
+function sortRecent(rows: { e: JournalEntry; title: string; words: number }[], by: RecentSort) {
+  if (by === 'name') return [...rows].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
+  if (by === 'words') return [...rows].sort((a, b) => b.words - a.words);
+  return rows;
+}
+
+const SESSION_ROWS: Record<PageStage, ('goal' | 'counts' | 'timer' | 'progress')[]> = {
+  sprint: ['goal', 'counts', 'timer', 'progress'],
+  build: ['goal', 'timer', 'progress'],
+  edit: ['progress'],
+};
+
+function SessionToggle({ row, label, on, onPick, t }: { row: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
+  return (
+    <div className="wz-reorg-default" data-session-row={row}>
+      <span className="wz-reorg-default-label" id={`wz-reorg-session-${row}`}>{label}</span>
+      <span className="wz-reorg-toggle" role="group" aria-labelledby={`wz-reorg-session-${row}`}>
+        <button type="button" data-toggle="off" aria-pressed={!on} onClick={() => onPick(false)}>{t('reorgOff')}</button>
+        <button type="button" data-toggle="on" aria-pressed={on} onClick={() => onPick(true)}>{t('reorgOn')}</button>
+      </span>
+    </div>
+  );
+}
+
+function Session({ stage, t }: { stage: PageStage; t: (k: DeskTermId) => string }) {
+  const settings = useWritingSettings();
+  const goal = useWritingGoal();
+  const [open, setOpen] = useState(false);
+  const [unit, setUnit] = useState<GoalUnit>(() => goal?.unit ?? 'lines');
+  const [draft, setDraft] = useState(() => String(goal?.n ?? DEFAULT_GOAL_LINES));
+  // the goal's number is written as the goal box in the foot wrote it: a whole number above nothing, else the goal is cleared
+  const commit = (u: GoalUnit = unit) => { const n = Number(draft); setWritingGoal(Number.isFinite(n) && n > 0 ? { n: Math.round(n), unit: u } : null); };
+  // what it counts changes the stored goal only when there is one (a unit alone is not a goal)
+  const pickUnit = (u: GoalUnit) => { setUnit(u); if (goal != null) commit(u); };
+  return (
+    <section className="wz-reorg-group" data-reorg-group="session" aria-label={t('reorgSession')}>
+      <button type="button" className="wz-reorg-group-head wz-reorg-session-fold" data-session-fold aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span>{t('reorgSession')}</span>
+      </button>
+      {open && SESSION_ROWS[stage].map((row) => {
+        if (row === 'goal') return (
+          <label key={row} className="wz-reorg-default" data-session-row="goal">
+            <span className="wz-reorg-default-label">{t('reorgSessionGoal')}</span>
+            <input type="number" min={1} className="wz-reorg-session-goal" value={draft} aria-label={t('reorgSessionGoal')}
+              onChange={(e) => setDraft(e.target.value)} onBlur={() => commit()}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
+          </label>
+        );
+        if (row === 'counts') return (
+          <div key={row} className="wz-reorg-default" data-session-row="counts">
+            <span className="wz-reorg-default-label" id="wz-reorg-session-counts">{t('reorgSessionCounts')}</span>
+            <span className="wz-reorg-toggle" role="group" aria-labelledby="wz-reorg-session-counts">
+              <button type="button" data-pick="lines" aria-pressed={unit === 'lines'} onClick={() => pickUnit('lines')}>{t('reorgSessionLines')}</button>
+              <button type="button" data-pick="words" aria-pressed={unit === 'words'} onClick={() => pickUnit('words')}>{t('reorgSessionWords')}</button>
+            </span>
+          </div>
+        );
+        if (row === 'timer') return <SessionToggle key={row} row="timer" label={t('reorgSessionTimer')} on={settings.timer} onPick={(on) => setWritingSettings({ timer: on })} t={t} />;
+        return <SessionToggle key={row} row="progress" label={t('reorgSessionProgress')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />;
+      })}
+    </section>
+  );
 }
 
 function Toggle({ id, label, on, onPick, t }: { id: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
@@ -50,7 +133,25 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const nameOf = useProjectName();
   const here = useWhereSheIs(subject.entry);
   const settings = useWritingSettings();
-  const recent = recentDocs();
+  const [sort, setSort] = useState<RecentSort>('changed');
+  const recent = sortRecent(recentDocs().map((e) => ({ e, title: titleOf(e, t), words: wordCount(e.text) })), sort);
+  // the box is five rows tall: measured from the rows themselves (a row is two lines, set by the theme's type), again whenever the box
+  // changes size (the pop-out opens from no width at all) and when a sort brings other rows to the top; a short list is never held to it
+  const rowsRef = useRef<HTMLUListElement>(null);
+  useLayoutEffect(() => {
+    const ul = rowsRef.current;
+    if (!ul) return undefined;
+    const fit = () => {
+      const rows = ul.children;
+      const h = rows.length > RECENT_SHOWN ? rows[RECENT_SHOWN].getBoundingClientRect().top - rows[0].getBoundingClientRect().top : 0;
+      const want = h > 0 ? `${h}px` : '';
+      if (ul.style.maxHeight !== want) ul.style.maxHeight = want;
+    };
+    fit();
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(fit) : null;
+    ro?.observe(ul);
+    return () => ro?.disconnect();
+  }, [recent.length, sort]);
   const base = () => (here == null ? { origin: 'loose' as const } : newTargetOf(here, t('reorgUntitled')));
   const go = (extra: Partial<UnbornDescriptor>) => {
     const b = base();
@@ -79,14 +180,20 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
         </ul>
       </section>
       <section className="wz-reorg-group" data-reorg-group="recent" aria-label={t('reorgRecent')}>
-        <div className="wz-reorg-group-head">{t('reorgRecent')}</div>
-        <ul className="wz-reorg-rows">
-          {recent.map((e) => {
-            const words = wordCount(e.text);
+        <div className="wz-reorg-group-head wz-reorg-recent-head">
+          <span>{t('reorgRecent')}</span>
+          <span className="wz-reorg-recent-sort" role="group" aria-label={t('reorgRecentSort')} data-recent-sort>
+            {SORTS.map((o) => (
+              <button key={o.id} type="button" data-sort={o.id} aria-pressed={sort === o.id} onClick={() => setSort(o.id)}>{t(o.word)}</button>
+            ))}
+          </span>
+        </div>
+        <ul className="wz-reorg-rows wz-reorg-recent-rows" ref={rowsRef}>
+          {recent.map(({ e, title, words }) => {
             return (
               <li key={e.id} className="wz-reorg-list-row" data-entry-id={e.id} aria-current={e.id === subject.entry.id ? 'page' : undefined}>
                 <button type="button" className="wz-reorg-list-open wz-reorg-two-line" onClick={() => travelFromCascade(e)}>
-                  <span className="wz-reorg-list-title">{titleOf(e, t)}</span>
+                  <span className="wz-reorg-list-title">{title}</span>
                   <span className="wz-reorg-row-meta">{nameOf(projectOfEntry(e))} · {fill(t(words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), 'n', words.toLocaleString('en-US'))}</span>
                 </button>
               </li>
@@ -99,6 +206,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
         <Toggle id="typewriter" label={t('reorgTypewriter')} on={settings.typewriter} onPick={(on) => setWritingSettings({ typewriter: on })} t={t} />
         <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
       </section>
+      {subject.entry.pageType !== 'board' && <Session stage={pageStageOf(subject.entry)} t={t} />}
     </div>
   );
 }

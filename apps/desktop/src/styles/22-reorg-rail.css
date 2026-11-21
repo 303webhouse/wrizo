@@ -49,6 +49,20 @@
 [data-theme='machina'] .wz-reorg-group-head{ display:flex; align-items:center; gap:6px; padding:12px 14px 4px; font-family:var(--font-chromeLabel);
   font-size:11px; color:var(--text-mid); }
 [data-theme='machina'] .wz-reorg-rows{ list-style:none; margin:0; padding:0; }
+/* DOCS' Recent, long (reorg/panels/DocsPanel.tsx): the box is five rows tall (its max-height is measured from the rows) and scrolls past
+   them on a thin scrollbar; the sort sits at the end of the group's head, the pressed word in the brighter ink. */
+[data-theme='machina'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+[data-theme='machina'] .wz-reorg-recent-head{ justify-content:space-between; }
+[data-theme='machina'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
+[data-theme='machina'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
+[data-theme='machina'] .wz-reorg-recent-sort > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
+[data-theme='machina'] .wz-reorg-recent-sort > button:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+/* DOCS' Session (reorg/panels/DocsPanel.tsx): its head is the fold (closed when DOCS opens); its rows are the defaults' rows */
+[data-theme='machina'] .wz-reorg-session-fold{ width:100%; justify-content:space-between; background:none; border:0; cursor:pointer; text-align:left; }
+[data-theme='machina'] .wz-reorg-session-fold::after{ content:'\25B8'; }
+[data-theme='machina'] .wz-reorg-session-fold[aria-expanded='true']::after{ content:'\25BE'; }
+[data-theme='machina'] .wz-reorg-session-fold:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+[data-theme='machina'] .wz-reorg-session-goal{ width:64px; font-family:var(--font-chromeLabel); font-size:12px; }
 [data-theme='machina'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid var(--ink-border); border-left:3px solid transparent; }
 [data-theme='machina'] .wz-reorg-row[aria-current='location']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
 [data-theme='machina'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
