@@ -304,6 +304,34 @@ if (false) ok('(T3c) the toggles flip the SAME values the old rows flipped (type
 ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu', v.rowsGone === true, JSON.stringify(base.rowsGone));
 ok('(T3c) [Free Write = Typewriter successor] the Progress toggle flips the SAME value the old row flipped (instrumentsOn, through setWritingSettings) and the Sliver calls no setTypewriterExplicit; the stores are not touched by this ticket (no line of forwardLock.ts or writingGoal.ts changes)',
   v.buttonsFW === true && base.fw.prBtn === true, JSON.stringify(base.fw));
+// (T3c) [successor: Free Write = Typewriter + themeTracker] the persisted shape is still main's, by the diff alone (no Typewriter button is asked about: it is gone, see the line above). Two writing settings changes are
+// lawful on top of main: (1) POLISH's "Use Theme Progress Tracker" is a saved setting, `themeTracker` (Fable, Nov 20, 5:25 pm), so writingSettings.ts gains ONE interface field and ONE DEFAULTS entry; (2) the writing settings and the
+// goal are saved to the account (fix-writing-prefs / fix-writing-goal), which ADDS exports to writingSettings.ts and a new store/writingGoalPref.ts and CHANGES no stored key and no existing field. So: forwardLock.ts and writingGoal.ts
+// add nothing and lose only the two unused getters #13 step 11 deletes; writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key, except the themeTracker lines. The rule is one pure function, so the
+// check below can be shown to FAIL on a diff that breaks it (the mutant).
+const persistedShapeKept = (other, ws) => {
+  if (other === null || other === undefined || ws === null || ws === undefined) return false;
+  const body = other.split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
+  const added = body.filter((l) => l.startsWith('+'));
+  const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+  const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
+  const wsTouched = ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+  return added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && !wsTouched;
+};
+ok('(T3c) [successor: Free Write = Typewriter + themeTracker] the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key except the themeTracker lines',
+  (() => {
+    const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+    const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+    const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+    return persistedShapeKept(other, ws);
+  })(), 'by the diff against main');
+ok('(T3c) [successor: Free Write = Typewriter + themeTracker] MUTANT: a diff that changes a DEFAULTS line other than themeTracker, adds a line to writingGoal.ts, or removes a non-getter export is CAUGHT, and the themeTracker lines are allowed',
+  persistedShapeKept('', '+  themeTracker: true,\n+  themeTracker: boolean;\n') === true
+  && persistedShapeKept('', '-  progress: true,\n+  progress: false,\n') === false
+  && persistedShapeKept('+const extra = 1;\n', '') === false
+  && persistedShapeKept('-export function setWritingGoal(g) {\n', '') === false
+  && persistedShapeKept('-export function getWritingGoal() {\n', '') === true,
+  'persistedShapeKept over synthetic diffs');
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if
 // (false)`: `off` pinned the shared field directly. Successor (T5) below reads v.greyedPP -
 // `off` now negates THIS page's own typewriterForPage read when a pageId is given.

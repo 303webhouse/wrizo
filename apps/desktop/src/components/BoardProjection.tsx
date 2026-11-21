@@ -36,6 +36,9 @@ interface ProjectionProps {
   // to OPEN and add cards there, which is exactly the dead end this ticket
   // removes. Absent (undefined) on a system board, where no row renders at all.
   beginnings?: ReactNode;
+  // A BOARD'S PLAN (the reorg, Machina: the Outline view is the Plan): the Presets control, and a row's grey prompt (reorg/backMenu/planPresets.ts). Both absent everywhere else, so nothing new shows there.
+  presets?: ReactNode;
+  rowHint?: (b: Box) => string;
   // ADD SCENES - the board says which top-level steps take children (`sceneWord`: null = no door) and creates them (`onAddScenes`); absent on a plain Board, so nothing new shows there.
   sceneWord?: (b: Box) => ChildWord | null;
   onAddScenes?: (b: Box, n: number) => void;
@@ -152,16 +155,17 @@ export function StoryboardProjection({ boxes, setBoxes, labelFor, readOnly, begi
 
 // --- OUTLINE (the nesting floor — render AND edit genuine nesting) ----------
 
-function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly, sceneWord, onAddScenes, path, numbered }: {
+function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth, siblings, index, readOnly, sceneWord, onAddScenes, path, numbered, rowHint }: {
   node: OutlineNode; laneId: string; boxes: Box[]; setBoxes: BoardMutator;
   labelFor: (b: Box) => string; onEditText: (boxId: string, text: string) => void;
   depth: number; siblings: string[]; index: number; readOnly?: boolean;
   path: number[];      // this row's place in the tree (zero-based indices): its Outline number
   numbered?: boolean;  // a Deck's Outline shows 1 / 5.1 numbers in place of bullets
-} & Pick<ProjectionProps, 'sceneWord' | 'onAddScenes'>) {
+} & Pick<ProjectionProps, 'sceneWord' | 'onAddScenes' | 'rowHint'>) {
   const map = byId(boxes);
   const b = map.get(node.boxId);
   if (!b) return null;
+  const hint = rowHint ? rowHint(b) : '';
   const editable = b.kind === 'text';
   // The row's <input> holds the card's TITLE (the first line - an input cannot hold a newline); the card's text shows beside it, read-only. A blur writes only a CHANGED title, through outlineTitleEdit, so the text
   // after the title always survives (it used to write the newline-less input value over the card every time: "First\nOne." became "FirstOne." on a bare click-and-leave).
@@ -213,12 +217,13 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
           {sceneWord?.(b) && onAddScenes && <ScenesDoor box={b} word={sceneWord(b)!} onAdd={onAddScenes} />}
         </span>
       )}
+      {hint && <span className="board-outline-hint" data-plan-hint="">{hint}</span>}
       {node.children.length > 0 && (
         <ul className="board-outline-children">
           {node.children.map((child, i) => (
             <OutlineRow key={child.boxId} node={child} laneId={laneId} boxes={boxes} setBoxes={setBoxes}
               labelFor={labelFor} onEditText={onEditText} depth={depth + 1}
-              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[...path, i]} numbered={numbered} />
+              siblings={node.children.map((c) => c.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[...path, i]} numbered={numbered} rowHint={rowHint} />
           ))}
         </ul>
       )}
@@ -226,7 +231,7 @@ function OutlineRow({ node, laneId, boxes, setBoxes, labelFor, onEditText, depth
   );
 }
 
-export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly, beginnings, sceneWord, onAddScenes }: ProjectionProps) {
+export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readOnly, beginnings, sceneWord, onAddScenes, presets, rowHint }: ProjectionProps) {
   const { t } = useDeskLexicon();
   const struct = boardStructure(boxes);
   const hasCards = struct.lanes.some((l) => l.items.length > 0);
@@ -234,6 +239,7 @@ export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readO
     // BG1 S1 — the row where the empty line stood (see StoryboardProjection).
     return <div className="board-projection board-outline" data-board-projection="outline">
       {beginnings ?? <p className="board-projection-empty">{t('boardOutlineEmpty')}</p>}
+      {presets}
     </div>;
   }
   return (
@@ -245,11 +251,12 @@ export function OutlineProjection({ boxes, setBoxes, labelFor, onEditText, readO
             {lane.items.map((node, i) => (
               <OutlineRow key={node.boxId} node={node} laneId={lane.id} boxes={boxes} setBoxes={setBoxes}
                 labelFor={labelFor} onEditText={onEditText} depth={0}
-                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[i]} numbered={!!sceneWord} />
+                siblings={lane.items.map((n) => n.boxId)} index={i} readOnly={readOnly} sceneWord={sceneWord} onAddScenes={onAddScenes} path={[i]} numbered={!!sceneWord} rowHint={rowHint} />
             ))}
           </ul>
         </section>
       ))}
+      {presets}
     </div>
   );
 }

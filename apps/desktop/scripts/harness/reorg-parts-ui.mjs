@@ -15,6 +15,7 @@
 //            [successor, Nov 20: the seven choices are none and the slots a to f]
 //        G2  EDIT: "Split here" and no "New part"; a row's menu offers up, down, join and the colours (no level)
 //        G3  SPRINT: "New part" only: no "Split here", no row menus
+//            [successor, Nov 21 (SPRINT has no menus, train E): in SPRINT the Front menu is not drawn at all, so no Parts tools; the page is there]
 //        G4  the top rail's Parts drop is a plain list: no tools in it
 // LIST   L1  a Part one level in is drawn further in than the Part above it; a coloured Part's tag is its first letter on its colour; a Part with no
 //            colour has an empty place of the same size
@@ -185,8 +186,17 @@ await withHarness(async (app) => {
   ok('G2 EDIT: "Split here" and no "New part"; a row\'s menu offers up, down, join and the colours (no level)',
     !!g2.tools && !g2.tools.neu && g2.tools.split && g2.tools.more === 4 && !!g2.menu && g2.menu.acts.map((a) => a[0]).join(',') === 'up,down,join' && g2.menu.colours.length === 7, g2);
   await stage(app, 'freewrite'); await partsTab(app);
-  const g3 = await app.evalJs(TOOLS);
-  ok('G3 SPRINT: "New part" only: no "Split here", no row menus', !!g3 && g3.neu && !g3.split && g3.more === 0, g3);
+  // SUPERSEDED (SPRINT has no menus: Nick, Nov 20, 1:13 pm and 1:20 pm, via Fable 3:15 pm; Fable 5:05 pm: behind the reorg's switch, Machina; Fable, Nov 21,
+  // 12:35 am: sprint-no-menus rides train E, G3 parked with a successor): in Free Write the Front menu is not drawn, so there is no PARTS tab and no
+  // "New part" in SPRINT. The original, verbatim:
+  // const g3 = await app.evalJs(TOOLS);
+  // ok('G3 SPRINT: "New part" only: no "Split here", no row menus', !!g3 && g3.neu && !g3.split && g3.more === 0, g3);
+  // [successor] SPRINT: no Front menu at all (no drawer, no grip), so no Parts tools and no row menus; the page is still drawn
+  const g3 = { tools: await app.evalJs(TOOLS), sliver: await app.evalJs("!!document.querySelector('.wz-sliver')"), grip: await app.evalJs("!!document.querySelector('.wz-sliver-grip')"),
+    more: await app.evalJs("document.querySelectorAll('[data-part-more]').length"), editor: await app.evalJs("!!document.querySelector('.forward-only-editor')"),
+    stage: await app.evalJs("document.querySelector('.reorg-top [data-mode-key=\"freewrite\"]')?.getAttribute('aria-selected') ?? null") };
+  ok('G3 [successor] SPRINT: no Front menu at all (no drawer, no grip), so no Parts tools and no row menus; the page is still drawn',
+    g3.stage === 'true' && g3.tools === null && !g3.sliver && !g3.grip && g3.more === 0 && g3.editor, g3);
   await stage(app, 'draft');
   await app.evalJs(click('.reorg-top [data-top-part-count]')); await sleep(300);
   const g4 = await app.evalJs("(() => { const d = document.querySelector('[data-top-parts-drop]'); return d ? { rows: d.querySelectorAll('[data-part-row]').length, tools: !!d.querySelector('[data-parts-tools], [data-part-more], [data-parts-new], [data-parts-split]') } : null; })()");
