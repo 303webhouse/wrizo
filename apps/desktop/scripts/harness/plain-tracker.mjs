@@ -126,7 +126,8 @@ await withHarness(async (app) => {
       && !!p1.plateau.plate && p1.plateau.plate !== 'rgba(0, 0, 0, 0)', THEMES.map((t) => [t, p1[t].countColour, p1[t].tickBg, p1[t].tickEdge, p1[t].plate]));
   ok('P6: no motion - the fill and the tick take no transition and no animation',
     THEMES.every((t) => p1[t].row && p1[t].motion.length === 2 && p1[t].motion.every(([d, a]) => /^0s(, 0s)*$/.test(d) && a === 'none')), THEMES.map((t) => [t, p1[t].motion]));
-  ok('P7: the page\'s rect is the same with the switch on and off (1366), in each theme', THEMES.every((t) => !!p7[t].on && p7[t].on === p7[t].off), p7);
+  // the off half must have drawn the plain row, or the rect would be compared with nothing changed (on the red base it held vacuously)
+  ok('P7: the page\'s rect is the same with the switch on and off (1366), in each theme (the plain row drawn when off)', THEMES.every((t) => !!p7[t].on && p7[t].on === p7[t].off && p1[t].row), p7);
 
   // P8: the switch - the Front menu's Progress block (switch off), then DOCS' Session (?reorg=1, Machina)
   await open(app, 'machina', { goal: 1000, timer: false });
