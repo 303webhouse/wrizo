@@ -22,9 +22,18 @@ export const REORG_THEME_GATE: Record<ThemeId, Record<ReorgPiece, boolean>> = {
   flux: { ...ALL_OFF },
 };
 
-/** Whether this theme has this piece (the table alone: the caller holds the switch). A theme or a piece the table does not know has none. */
+// THE PREVIEW DOOR (Flux piece 2, Nov 21): a piece the table has not switched on for a theme can still be SEEN, by frames and by the Wrizors' review, with ?reorg=1&reorglift=flux.back (comma-separated theme.piece). Read once at load,
+// honoured only under the switch, it only ADDS (no cell is ever turned off) and a token that is not a real theme.piece does nothing. It changes no stored word and no cell: with no parameter the table is the whole answer.
+const LIFT: ReadonlySet<string> = REORG && typeof location !== 'undefined'
+  ? new Set((new URLSearchParams(location.search).get('reorglift') ?? '').split(',').map((s) => s.trim()).filter((tok) => {
+    const [th, pc, ...rest] = tok.split('.');
+    return rest.length === 0 && Object.prototype.hasOwnProperty.call(REORG_THEME_GATE, th) && (REORG_PIECES as readonly string[]).includes(pc);
+  }))
+  : new Set<string>();
+
+/** Whether this theme has this piece (the table, or the preview door; the caller holds the switch). A theme or a piece the table does not know has none. */
 export function themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {
-  return (REORG_THEME_GATE as Record<string, Record<string, boolean> | undefined>)[theme ?? '']?.[piece] === true;
+  return (REORG_THEME_GATE as Record<string, Record<string, boolean> | undefined>)[theme ?? '']?.[piece] === true || LIFT.has(`${theme ?? ''}.${piece}`);
 }
 
 /** The piece is on for this page load: the switch AND the current theme has it. The function is chosen once at load, so with the switch off it calls no hook at all and the hook order never changes. */
