@@ -221,6 +221,19 @@
 [data-theme='machina'] .reorg-parts-live:empty{ display:none; }
 [data-theme='machina'] .reorg-parts-line{ display:flex; align-items:baseline; gap:8px; padding:8px 4px 2px; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
 [data-theme='machina'] .reorg-parts-line [data-line-undo]{ flex:none; background:none; border:0; padding:0; font:inherit; color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+/* FIND AND REPLACE (reorg/search/replace.ts): the line under the scopes, its box, and a Replace beside each find of this Doc */
+[data-theme='machina'] .reorg-replace{ border-bottom:1px solid var(--ink-border); }
+[data-theme='machina'] .reorg-replace-line{ display:flex; align-items:center; gap:6px; width:100%; padding:8px 12px; border:0; background:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); text-align:left; cursor:pointer; }
+[data-theme='machina'] .reorg-replace-line::before{ content:'\203A'; }
+[data-theme='machina'] .reorg-replace-line[aria-expanded='true']::before{ content:'\2304'; }
+[data-theme='machina'] .reorg-replace-acts{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:2px 12px 8px; }
+[data-theme='machina'] :is(.reorg-replace-acts > button, .reorg-replace-one){ padding:0; border:0; background:none; font-family:var(--font-ui); font-size:12px; color:var(--accent-rest); cursor:pointer; }
+[data-theme='machina'] :is(.reorg-replace-acts > button, .reorg-replace-one)[disabled]{ color:var(--text-mid); opacity:.55; cursor:default; }
+[data-theme='machina'] .reorg-replace-said{ padding:0 12px 8px; font-size:12px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-search-row{ display:flex; align-items:flex-start; }
+[data-theme='machina'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }
+[data-theme='machina'] .reorg-replace-one{ flex:none; padding:5px 12px 5px 6px; }
+[data-theme='machina'] :is(.reorg-replace-line, .reorg-replace-acts > button, .reorg-replace-one):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
 
 /* PUBLISHING AS A VIEW (reorg/PublishView.tsx; the prototype's FINALIZE page: reorg.css .whole-part, .whole-label). A sheet laid over the paper from its overlay slot, so the paper, the column and
    the editor under it never move, resize or unmount (page primacy). Every rule is scoped to Machina and to .reorg-pub, which only the view renders: with the switch off nothing here matches. */

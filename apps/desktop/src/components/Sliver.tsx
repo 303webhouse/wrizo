@@ -37,6 +37,7 @@ import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgTop } from '../reorg/useReorg';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
+import { openSearch, setSearchReach } from '../reorg/search/searchStore';
 import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
 import { PublishParts } from '../reorg/PublishParts';
 import { SymbolPicker, TextFold } from '../reorg/TextFolds';
@@ -842,6 +843,13 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
             </button>
           )}
           {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
+        </div>
+      )}
+      {/* FIND (stage menus T3, Nick's word; Fable, Nov 21: "opens YOUR Find & Replace in this Doc (no second finder)"): in BUILD and EDIT only, above Page setup.
+          It opens the one search the top rail opens (the Back menu as the search menu), on This Doc even when the search is already open on another scope. */}
+      {frontTab === 'text' && frontEntry && (content.kind === 'draft' || content.kind === 'revise') && (
+        <div className="wz-sliver-section wz-front-find-row">
+          <button type="button" className="wz-sliver-item wz-sliver-item-btn wz-front-find" data-front-find="" onClick={() => { openSearch('bar'); setSearchReach('doc'); }}>{t('reorgFrontFind')}</button>
         </div>
       )}
       {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}

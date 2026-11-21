@@ -516,6 +516,7 @@ export const CANONICAL_CHROME = {
   reorgRecent: 'Recent',
   // THE REORG'S SEARCH (reorg/search/; POLISH, Nov 20): placeholder words until the Wrizors word them
   reorgSearch: 'Search',
+  reorgFrontFind: 'Find',   // the Front menu's TEXT tab, BUILD and EDIT (stage menus T3): opens the search on This Doc
   reorgSearchClose: 'Close',
   reorgSearchBack: '‹ {where}',
   reorgSearchReachLabel: 'How far to look',
@@ -537,6 +538,17 @@ export const CANONICAL_CHROME = {
   reorgSearchBoardHead: 'Board · {name}',
   reorgSearchMore: '+ {n} more in this Doc',
   reorgSearchWiden: 'Widen to {reach}',
+  // FIND AND REPLACE (reorg/search/replace.ts; POLISH, Nov 20): placeholder words until the Wrizors word them
+  reorgReplaceLine: 'Find and Replace',
+  reorgReplaceInDoc: 'in this Doc',
+  reorgReplaceWith: 'Replace with',
+  reorgReplaceAll: 'Replace all {n} in this Doc',
+  reorgReplaceOne: 'Replace',
+  reorgReplaceUndo: 'Undo',
+  reorgReplacedOne: 'Replaced one: “{q}” is now “{with}”.',
+  reorgReplacedMany: 'Replaced {n} in this Doc: “{q}” is now “{with}”.',
+  reorgReplaceUndone: 'Undone.',
+  reorgReplaceUndoNo: 'Not undone: the words have changed since.',
   reorgDefaults: 'Page defaults · every doc',
   reorgTypewriter: 'Typewriter mode',
   reorgProgressBars: 'Progress bars',
