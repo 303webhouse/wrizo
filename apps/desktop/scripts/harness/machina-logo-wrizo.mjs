@@ -66,7 +66,7 @@ const MARK = `(() => { const root = document.documentElement; const dots = root.
   return { ...out, words, opacity: hs.opacity, brass, notches, lines, o, wsp }; })()`;
 
 const w1b = (m) => !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.wsp) - 13 * 0.26) <= 0.05;
-const w1 = !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.o.spacing) - 13 * 0.26) <= 0.05;
+const w1 = (m) => !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.o.spacing) - 13 * 0.26) <= 0.05;
 const w2 = (m) => !!m && !!m.o && m.notches.length === 1 && Math.abs(m.notches[0].w - 6) <= 0.01 && Math.abs(m.notches[0].h - 2) <= 0.01 && m.notches[0].t >= m.o.base - 4 && Math.abs(m.notches[0].cx - m.o.inkCx) <= 0.5;
 const w3 = (m) => !!m && !!m.host && m.lines.length === 0;
 const edged = (s) => !!s && s.includes(`${INK} -1px 0px 0px`) && s.includes(`${INK} 1px 0px 0px`);
