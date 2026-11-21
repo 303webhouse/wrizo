@@ -233,6 +233,10 @@ await withHarness(async (app) => {
     p5 === true && !('color' in b5) && onlyBox(s5a, s5b, 'ac-x', 'x1', ['color', 'updatedAt']) && !tag5, { p5, b5, tag5 });
 
   // ---- LOOK ------------------------------------------------------------------------------------------------------------------------------
+  // FIXTURE (Nov 21, train F pair 44944613263: C6 read the LIGHT room's panel #F4F5F6 by day): Machina's look is on by default since train E, and its room
+  // follows the clock (Nick, Nov 1: day 07:00-19:00), so by day C6's "dark room" was the light room. The dark room is pinned with the look's own harness
+  // clock (window.machina2Clock, in memory; absent where the look is off, and the dark room is then Machina's chrome as before). No assertion changes.
+  await app.evalJs("window.machina2Clock ? window.machina2Clock('23:00') : null"); await sleep(400);
   const dark = [];
   for (const s of 'abcdef') {
     await app.evalJs(pick(ROW('x1'), s)); await sleep(250);
