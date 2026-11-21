@@ -8,6 +8,9 @@
 //             ring inside its edge with a 1 px ink keyline (#23272B) outside it; at least two are on screen
 // DARK    B2  in the dark room the chosen options are as before: brass words (the rule is the light room's only)
 // MUTANT  MUT-B1  the light reading with the words back in brass turns B1's test red
+// COUNT   B3  (the Wrizors' chrome scale pass 3, REAL, Nov 21 4:00 pm) in the light room the readout's "page n of m" under the page reads 4.5:1 or better on
+//             the room it sits on (spec: the quiet G4 #5E666E, 4.75:1; it read #878E9C, 3.0:1)
+//         MUT-B3  the light reading at #878E9C turns B3's test red
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/machina-brass-chosen.mjs
 process.env.WS_MACHINA2 = process.env.WS_MACHINA2 || 'default';
@@ -48,16 +51,22 @@ await withHarness(async (app) => {
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 20000 }).catch(() => {});
   await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 }).catch(() => {});
   await app.evalJs(`(() => { const W = window; const drawer = W.wrizoCreateDrawer('Fiction'); const mill = W.wrizoCreateProject('The Mill'); W.wrizoSetProjectDrawer(mill.id, drawer.id);
-    W.wrizoCreateJournalPage({ id: 'bc-1', text: 'Chapter One\\nThe rain had not stopped.', createdAt: '2026-04-01T00:00:00.000Z', source: 'page', origin: 'project', projectId: mill.id, orderIndex: 0 });
+    W.wrizoCreateJournalPage({ id: 'bc-1', text: ['Chapter One', ...Array.from({ length: 30 }, (_, i) => 'Paragraph ' + (i + 1) + '. The rain had not stopped for three days, and the river was up past the second step of the mill.')].join('\\n'), createdAt: '2026-04-01T00:00:00.000Z', source: 'page', origin: 'project', projectId: mill.id, orderIndex: 0 });
     W.wrizoFlushNow(); return true; })()`);
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs("window.wrizoTheme.set('machina'); localStorage.setItem('wrizo-theme', 'machina'); null");
 
+  // FIXTURE (Nov 21, B3): the Part is 30 paragraphs long, so the readout counts its pages. No assertion changes to B1 and B2.
   await open(app, '12:00');
   const light = await app.evalJs(READ);
+  const count = await app.evalJs("(() => { const c = document.querySelector('.wz-pagecount'); if (!c) return null; let g = null; for (let n = c.parentElement; n && !g; n = n.parentElement) { const bg = getComputedStyle(n).backgroundColor; if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') g = bg; } return { text: (c.textContent || '').trim(), color: getComputedStyle(c).color, ground: g || getComputedStyle(document.body).backgroundColor, room: document.documentElement.getAttribute('data-machina2-room') }; })()");
   await open(app, '23:00');
   const dark = await app.evalJs(READ);
-  console.log('BRASS-CHOSEN READINGS ' + JSON.stringify({ light, dark }));
+  console.log('BRASS-CHOSEN READINGS ' + JSON.stringify({ light, dark, count }));
+  const b3 = (c) => !!c && c.room === 'light' && /page \d+ of \d+/i.test(c.text) && contrast(c.color, c.ground) >= 4.5;
+  ok('B3 in the light room the readout\'s "page n of m" reads 4.5:1 or better on the room it sits on', b3(count), count && { ...count, ratio: +contrast(count.color, count.ground).toFixed(2) });
+  const faint = count ? { ...count, color: 'rgb(135, 142, 156)' } : null;
+  ok('MUT-B3 the light reading at #878E9C turns B3\'s test red', !!faint && faint.color !== count.color && !b3(faint), faint);
   ok('B1 in the light room every chosen option in the Front menu reads its words in the label colour (7:1 or better on the drawer) with a brass ring and a 1 px ink keyline; at least two on screen',
     b1(light), light && { ground: light.ground, chosen: light.chosen.map((c) => ({ ...c, ratio: +contrast(c.color, light.ground).toFixed(2) })) });
   ok('B2 in the dark room the chosen options keep their brass words', !!dark && dark.room === 'dark' && dark.chosen.length >= 2 && dark.chosen.every((c) => c.color === BRASS), dark);
@@ -66,7 +75,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 3;
+const EXPECTED = 5;   // 3 + B3 + MUT-B3 (the Wrizors' pass 3 REAL, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nMACHINA-BRASS-CHOSEN VERIFY: PASS (${checks.length} checks)`
