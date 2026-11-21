@@ -258,6 +258,8 @@ export const CANONICAL_CHROME = {
   reorgBackExport: 'Before You Export',
   reorgBxLabel: 'Before you export: what to look at first',
   reorgBxNoneTicked: 'Nothing is ticked to go out. Tick at least one Part to export.',
+  reorgBxPlanOne: '{n} Plan row with no Part',
+  reorgBxPlanMany: '{n} Plan rows with no Part',
   reorgBxEmptyOne: '{n} Part with no words',
   reorgBxEmptyMany: '{n} Parts with no words',
   reorgBxClear: 'Nothing is in the way.',

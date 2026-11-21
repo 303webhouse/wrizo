@@ -3,7 +3,7 @@ import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { subscribe } from '../store/persistence';
 import { beforeExport } from './beforeExportRules';
-import { publicationAttach, publicationFacts, publicationSignature } from './publishing';
+import { publicationAttach, publicationFacts, publicationSignature, unattachedPlanRows } from './publishing';
 import { useAttached, usePickOff } from './publishPick';
 
 // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4; the stage menus, F4; Nick, Nov 20, 1:20 pm: FINALIZE keeps the Back menu, and Before You Export stays there). A tab of the Back menu that exists only while the
@@ -21,7 +21,7 @@ function jumpTo(partId: string): void {
   sc.scrollTop += el.getBoundingClientRect().top - sc.getBoundingClientRect().top - 12;
 }
 
-export function BeforeExport({ entry }: { entry: JournalEntry }) {
+export function BeforeExport({ entry, onShowPlan }: { entry: JournalEntry; onShowPlan?: () => void }) {
   const { t } = useDeskLexicon();
   const sig = useSyncExternalStore(subscribe, () => publicationSignature(entry.id));
   const parts = useMemo(() => publicationFacts(entry.id), [entry.id, sig]);   // eslint-disable-line react-hooks/exhaustive-deps
@@ -29,18 +29,25 @@ export function BeforeExport({ entry }: { entry: JournalEntry }) {
   const picked = useAttached(entry.id);
   // the assets she ticked that are still there (a reminder of what is going out, item 5b)
   const attached = publicationAttach(entry.id, '', '', picked)?.items.length ?? 0;
-  const r = beforeExport(parts, off, attached);
+  // the Plan rows with no Part: read again whenever the store changes (her first word in a row's Part makes one), as a number so the snapshot is stable
+  const unattached = useSyncExternalStore(subscribe, () => unattachedPlanRows(entry.id));
+  const r = beforeExport(parts, off, attached, unattached);
   const clear = r.blocks.length === 0 && r.notes.length === 0;
   return (
     <section className="reorg-bx" data-back-export aria-label={t('reorgBxLabel')}>
       {r.blocks.map((b) => (
         <p key={b.kind} className="reorg-bx-block" data-bx-block={b.kind} role="status">{t('reorgBxNoneTicked')}</p>
       ))}
-      {r.notes.map((n) => (
+      {r.notes.map((n) => (n.kind === 'planRows' ? (
+        // a press opens the Back menu's Plan tab, where each row has its "→ Part"; nothing moves on the page
+        <button key={n.kind} type="button" className="reorg-bx-note" data-bx-note={n.kind} onClick={() => onShowPlan?.()}>
+          {fill(n.count === 1 ? t('reorgBxPlanOne') : t('reorgBxPlanMany'), { n: n.count })}
+        </button>
+      ) : (
         <button key={n.kind} type="button" className="reorg-bx-note" data-bx-note={n.kind} onClick={() => jumpTo(n.partIds[0])}>
           {fill(n.count === 1 ? t('reorgBxEmptyOne') : t('reorgBxEmptyMany'), { n: n.count })}
         </button>
-      ))}
+      )))}
       {r.attached > 0 && <p className="reorg-bx-attached" data-bx-attached={r.attached}>{fill(r.attached === 1 ? t('reorgBxAttachedOne') : t('reorgBxAttachedMany'), { n: r.attached })}</p>}
       {clear && <p className="reorg-bx-clear" data-bx-clear>{t('reorgBxClear')}</p>}
     </section>

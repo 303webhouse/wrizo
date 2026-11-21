@@ -11,6 +11,7 @@ import { partsOfDoc } from './parts';
 import { publicationText, chosenParts, wrapHtml, noteMarker, type PubAsset, type PubAttach, type PubFormat, type PubNote, type PubPart, type PubPlan } from './publishingText';
 import { attachKey, docAssetsOf } from './docSettings';
 import { planRows, titleOfText } from './backMenu/planOps';
+import { docOfPage, partOfRow } from './backMenu/planPart';
 import { liveBoxes } from '../store/boxTombstones';
 import { markdownToHtml, plainToHtml, inlineHtml } from './publishingHtml';
 import type { BxPart } from './beforeExportRules';
@@ -143,6 +144,17 @@ export function publicationAttach(entryId: string, label: string, untitled: stri
     if (out) items.push(out);
   }
   return items.length === 0 ? null : { label, items };
+}
+
+/** How many of the open page's own Plan rows have no Part (Before You Export's line; stage menus F4): the rows of the board its Plan tab shows, hidden cards left out, a pinned page or an ink card never counted (neither takes a Part). A row has a Part when
+ *  FIX's partOfRow finds one in this Doc. Light: nothing is built. 0 for a page with no Plan. */
+export function unattachedPlanRows(entryId: string): number {
+  const page = getJournalEntry(entryId);
+  const board = page?.planBoardId ? getJournalEntry(page.planBoardId) : null;
+  if (!page || !board) return 0;
+  const hidden = new Set<string>(page.pageSettings?.hiddenPlanCards ?? []);
+  const docId = docOfPage(entryId);
+  return planRows(liveBoxes(board.boxes), hidden).filter((r) => !r.isPin && !r.isInk && !partOfRow(board.id, r.boxId, docId)).length;
 }
 
 /** What the view's list is made of, as one string: the Parts, their order, their names. The view re-reads when it changes (a Part moved from the Front menu), never on her words. */
