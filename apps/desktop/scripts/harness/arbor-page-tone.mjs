@@ -10,6 +10,7 @@
 //   T6 (PARKED Nov 18, below: the rail draws no tone readout in Arbor - Flux only) -> SUCCESSOR T6b: in Arbor the rail draws no tone readout,
 //      by day or at night; M3 (its mutant) puts one in and T6b goes red
 //   T7 no new key in storage: the keys after the run are the keys before it (plus none), and wrizo-theme-prefs holds the same four fields
+//      (PARKED Nov 20: the room is saved to the account - SUCCESSOR T7b: no new key but the account preferences', holding the room alone; M-T7b its mutant)
 //   M1 (mutant, across the four cells) the old rule - the page drawn in the SAVED tone, data-page forced to it (asserted LANDED in each cell): the
 //      cells' read goes red in day x dark ONLY, and stays green in the other three (the read discriminates the ruling, not the room)
 //   M2 (mutant) a Page row with a Dark choice put into the day panel (asserted LANDED): T2's "no Dark offered" read goes red
@@ -126,7 +127,20 @@ await withHarness(async (app) => {
   // T7: nothing new saved
   const keysAfter = await app.evalJs('Object.keys(localStorage).sort()');
   const newKeys = (keysAfter || []).filter((k) => !(keysBefore || []).includes(k) && k !== 'wrizo-theme-prefs');
-  ok(`T7 no new storage key (new: ${J(newKeys)}); wrizo-theme-prefs holds ${J(t4 && t4.savedKeys)}`, newKeys.length === 0 && J(t4 && t4.savedKeys) === J(['fade', 'idle', 'page', 'voice']), J({ keysBefore, keysAfter }));
+  // PARKED 2026-11-20 (ARBOR, arbor/room-pref). SUPERSEDED by Fable, Nov 19, 11:20 pm: "The room choice (Automatic / Day / Night) is SAVED TO THE ACCOUNT, for Machina
+  // AND Arbor ... Store it as a `room` fact in users.prefs" - setting the room is now meant to save it (store/roomPref.ts, in the account preferences' existing key
+  // wrizo-reorg-prefs), so that key may be new after the run. Original, verbatim:
+  // ok(`T7 no new storage key (new: ${J(newKeys)}); wrizo-theme-prefs holds ${J(t4 && t4.savedKeys)}`, newKeys.length === 0 && J(t4 && t4.savedKeys) === J(['fade', 'idle', 'page', 'voice']), J({ keysBefore, keysAfter }));
+  // SUCCESSOR T7b: no new key but the account preferences' own, and that one holds the room fact alone; wrizo-theme-prefs holds the same four fields.
+  // M-T7b (mutant, LANDED asserted): an unrelated key written - T7b's read goes RED.
+  const prefsFacts = await app.evalJs("(() => { try { return Object.keys(JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}')); } catch { return null; } })()");
+  const t7bOk = (keys) => (keys || []).filter((k) => !(keysBefore || []).includes(k) && k !== 'wrizo-theme-prefs' && k !== 'wrizo-reorg-prefs').length === 0;
+  ok(`T7b no new storage key but the account preferences' (new: ${J(newKeys)}), which holds the room alone (${J(prefsFacts)}); wrizo-theme-prefs holds ${J(t4 && t4.savedKeys)}`,
+    t7bOk(keysAfter) && J(prefsFacts) === J(['room']) && J(t4 && t4.savedKeys) === J(['fade', 'idle', 'page', 'voice']), J({ keysBefore, keysAfter, prefsFacts }));
+  await app.evalJs("localStorage.setItem('wrizo-mutant-t7b', '1'); true");
+  const keysM = await app.evalJs('Object.keys(localStorage).sort()');
+  await app.evalJs("localStorage.removeItem('wrizo-mutant-t7b'); true");
+  ok(`M-T7b (mutant): an unrelated key written (LANDED: ${(keysM || []).includes('wrizo-mutant-t7b')}) - T7b's read goes RED`, (keysM || []).includes('wrizo-mutant-t7b') && !t7bOk(keysM), J(keysM));
 
   // M1: the old rule (the page drawn in the SAVED tone) across the four cells - red in day x dark only
   const m1 = [];
@@ -149,8 +163,8 @@ await withHarness(async (app) => {
 }, { label: 'arbor-page-tone' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
-if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-PAGE-TONE PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks one original as quoted comments (T6, Nov 18: the rail\'s tone readout is Flux-only, so there is none in Arbor to follow the room), with its successor T6b and mutant M3');
-const WANT = 10;
+if (process.env.HARNESS_PARKED === '1') console.log('\nARBOR-PAGE-TONE PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks two originals as quoted comments (T6, Nov 18: the rail\'s tone readout is Flux-only, so there is none in Arbor to follow the room), with its successor T6b and mutant M3; (T7, Nov 20: the room is saved to the account, so the prefs key may be new), with its successor T7b and mutant M-T7b');
+const WANT = 11;
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-PAGE-TONE VERIFY: PASS (${checks.length} checks)` : `\nARBOR-PAGE-TONE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);
