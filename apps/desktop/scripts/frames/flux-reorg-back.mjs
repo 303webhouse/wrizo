@@ -33,7 +33,7 @@ async function open(app, lift, mode) {
   await app.reload();
   try { await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
   await sleep(900);
-  if (mode === 'journal') { await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"journal\"], [data-mode-key=\"journal\"]')?.click(); null"); await sleep(700); }
+  if (mode === 'journal') { await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()"); await sleep(900); }
 }
 async function backTab(app, id) {
   if (!(await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click(); null"); await sleep(700); }
