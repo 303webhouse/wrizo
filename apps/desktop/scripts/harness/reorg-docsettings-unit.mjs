@@ -132,6 +132,14 @@ function suite(src) {
 }
 
 // ---- COL (source) -----------------------------------------------------------------------------------------------------------------------------------
+// the 16th parameter of the projects upsert, EVALUATED for three projects: one that never chose (docSettings absent), one that cleared ({}), one that chose
+function sendsRight(sync) {
+  const m = /\n\s*((?:JSON\.stringify\()?p\.docSettings[^\n]*?)\],/.exec(sync);
+  if (!m) return false;
+  let send; try { send = new Function('p', 'return ' + m[1]); } catch { return false; }
+  try { return send({}) === null && send({ docSettings: undefined }) === null && send({ docSettings: {} }) === '{}' && send({ docSettings: { styleGuide: 'apa' } }) === '{"styleGuide":"apa"}'; } catch { return false; }
+}
+
 function colSuite(files) {
   const { records, migrate, sync } = files;
   const types = /docSettings\?: DocSettings/.test(records) && /export type DocSettings = /.test(records);
@@ -139,7 +147,10 @@ function colSuite(files) {
   // ORIGINAL, SUPERSEDED Nov 20 (Fable, 4:50 pm: an older device that re-sends a project without docSettings must not wipe the stored ones, so the server keeps what it has when a push carries none; CLEARING therefore writes {}, never null and never absence). The original, verbatim:
   // const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = excluded\.doc_settings/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
   // SUCCESSOR: the update on conflict KEEPS the stored settings when the push carries none (coalesce)
-  const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = coalesce\(excluded\.doc_settings, projects\.doc_settings\)/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 5:05 pm: proved on a real Postgres 16, JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null and not SQL NULL, so coalesce keeps it and the stored settings are wiped; the absent case must send a true JS null). The original, verbatim:
+  // const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = coalesce\(excluded\.doc_settings, projects\.doc_settings\)/.test(sync) && /JSON\.stringify\(p\.docSettings \?\? null\)/.test(sync);
+  // SUCCESSOR: the 16th parameter is evaluated, not read: absent -> JS null (so SQL NULL), {} -> '{}', a set value -> its JSON
+  const ins = /insert into projects\s*\n?\s*\([^)]*\btutor, doc_settings\)/.test(sync) && /\$16::jsonb/.test(sync) && /doc_settings = coalesce\(excluded\.doc_settings, projects\.doc_settings\)/.test(sync) && sendsRight(sync);
   const row = /docSettings: r\.doc_settings \?\? undefined/.test(sync);
   return { pass: types && mig && ins && row, detail: JSON.stringify({ types, mig, ins, row }) };
 }
@@ -185,7 +196,10 @@ const COLMUT = [
   ['the upsert does not update the column on conflict', 'sync', (s) => s.replace('doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),', () => '')],
   ['an older device\'s project without the field wipes the stored settings', 'sync', (s) => s.replace('doc_settings = coalesce(excluded.doc_settings, projects.doc_settings),', () => 'doc_settings = excluded.doc_settings,')],
   ['the pull does not map the column back', 'sync', (s) => s.replace('docSettings: r.doc_settings ?? undefined', () => 'docSettings: undefined')],
-  ['a project that never chose sends a literal object, not SQL null', 'sync', (s) => s.replace('JSON.stringify(p.docSettings ?? null)', () => 'JSON.stringify(p.docSettings ?? {})')],
+  // ORIGINAL, SUPERSEDED Nov 20 (Fable, 5:05 pm: proved on a real Postgres 16, JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null and not SQL NULL, so coalesce keeps it and the stored settings are wiped; the absent case must send a true JS null). The original, verbatim:
+  // ['a project that never chose sends a literal object, not SQL null', 'sync', (s) => s.replace('JSON.stringify(p.docSettings ?? null)', () => 'JSON.stringify(p.docSettings ?? {})')],
+  ['the absent case sends JSON.stringify(null): the string \'null\' that ::jsonb turns into a JSON null (the stored settings are wiped)', 'sync', (s) => s.replace('p.docSettings == null ? null : JSON.stringify(p.docSettings)', () => 'JSON.stringify(p.docSettings ?? null)')],
+  ['a project that never chose sends an empty object, not SQL null', 'sync', (s) => s.replace('p.docSettings == null ? null : JSON.stringify(p.docSettings)', () => "p.docSettings == null ? '{}' : JSON.stringify(p.docSettings)")],
 ];
 for (const [name, which, fn] of COLMUT) {
   const files = { ...colFiles };

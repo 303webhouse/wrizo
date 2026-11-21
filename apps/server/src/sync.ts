@@ -271,8 +271,9 @@ async function upsertProjects(userId: string, records: any[], acked: string[] = 
         [p.id, userId, p.title ?? '', p.type ?? 'creative', p.sprintText ?? null,
          p.storyPlanId ?? null, p.drawerId ?? null, p.kind ?? null, p.lastActivityAt ?? null, p.lastActivityType ?? null,
          p.lastActivePageId ?? null, p.deletedAt ?? null, p.createdAt, p.updatedAt, JSON.stringify(p.tutor ?? null),
-         // the Doc's own settings ride as the 16th param, the tutor recipe: a project that never chose sends SQL null, so the column stays null (byte-identical to today)
-         JSON.stringify(p.docSettings ?? null)],
+         // the Doc's own settings ride as the 16th param. A project that never chose (an older device) must send a TRUE null: JSON.stringify(null) is the string 'null', which ::jsonb makes a JSON null (not SQL NULL),
+         // and coalesce would keep that and wipe the stored settings (Fable, Nov 20, proved on Postgres 16). {} (a clear) and a set value ride as their JSON.
+         p.docSettings == null ? null : JSON.stringify(p.docSettings)],
       );
     } catch (err) {
       logError('sync', err, { kind: 'project', id: p.id });
