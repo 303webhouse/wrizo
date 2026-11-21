@@ -312,7 +312,9 @@ ok('(T3c) [Free Write = Typewriter successor] the Progress toggle flips the SAME
 const persistedShapeKept = (other, ws) => {
   if (other === null || other === undefined || ws === null || ws === undefined) return false;
   const body = other.split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
-  const added = body.filter((l) => l.startsWith('+'));
+  // SUPERSEDED (Nov 21, footnotes: writingGoal.ts imports wordsOnly and counts through it, three added lines that name it or say a footnote is not a word), kept verbatim:
+  // const added = body.filter((l) => l.startsWith('+'));
+  const added = body.filter((l) => l.startsWith('+') && !/wordsOnly|footnote/i.test(l));
   const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
   const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
   const wsTouched = ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
@@ -329,6 +331,11 @@ ok('(T3c) [successor: Free Write = Typewriter + themeTracker] MUTANT: a diff tha
   persistedShapeKept('', '+  themeTracker: true,\n+  themeTracker: boolean;\n') === true
   && persistedShapeKept('', '-  progress: true,\n+  progress: false,\n') === false
   && persistedShapeKept('+const extra = 1;\n', '') === false
+  // the footnotes allowance (Nov 21): the import and the counting line of writingGoal.ts are allowed ...
+  && persistedShapeKept("+import { wordsOnly } from '../reorg/footnotes';\n-  for (const line of text.split('\\n')) {\n+  for (const line of wordsOnly(text).split('\\n')) {\n", '') === true
+  // ... and nothing else rides in beside them: another added line is caught, and so is a footnote-named line that touches storage
+  && persistedShapeKept("+import { wordsOnly } from '../reorg/footnotes';\n+const extra = 1;\n", '') === false
+  && persistedShapeKept("+  localStorage.setItem('footnote-goal', '1');\n", '') === false
   && persistedShapeKept('-export function setWritingGoal(g) {\n', '') === false
   && persistedShapeKept('-export function getWritingGoal() {\n', '') === true,
   'persistedShapeKept over synthetic diffs');
