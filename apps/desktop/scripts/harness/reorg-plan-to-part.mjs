@@ -112,7 +112,7 @@ await withHarness(async (app) => {
   // ---- P3 / P4 ----
   await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(200);
   for (const ch of 'Once upon') { await app.typeKeys(ch); await sleep(40); }
-  await app.waitFor(`window.wrizoParts && window.wrizoParts.partsOfDoc(${q(ledgerId)}).some((p) => p.name === 'Opening')`, { timeout: 8000, label: 'the Part born' }).catch(() => {});
+  await app.waitFor(`window.wrizoParts && window.wrizoParts.partsOfDoc(${q(ledgerId)}).some((p) => p.name === 'Opening' && p.words >= 2)`, { timeout: 8000, label: 'the Part born' }).catch(() => {});
   await sleep(500);
   const parts = await app.evalJs(`window.wrizoParts ? window.wrizoParts.partsOfDoc(${q(ledgerId)}).map((p) => [p.id, p.name, p.words]) : null`);
   const lastP = parts && parts[parts.length - 1];

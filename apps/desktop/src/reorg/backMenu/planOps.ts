@@ -18,6 +18,10 @@ export interface PlanRow {
   title: string;
   /** Its text after the first line, read-only beside the title (the Outline row's own rule). */
   body: string;
+  /** A preset's grey prompt for this row (Box.planHint), or ''. */
+  hint: string;
+  /** This row's id and the ids of every row shown below it (its subsections): the Plan hides a prompt once a Part under the heading has words. */
+  underIds: string[];
   isPin: boolean;
   isInk: boolean;
   canUp: boolean;
@@ -41,11 +45,14 @@ export function planRows(boxes: readonly Box[] | undefined | null, hidden: Reado
       if (!b) return;
       const here = [...path, i];
       const { title, body } = splitOutlineText(b.kind === 'text' ? b.text : b.kind === 'page-pin' ? pinTitle(b) : '');
-      out.push({
-        boxId: b.id, number: outlineNumber(here), depth, title, body, isPin: b.kind === 'page-pin', isInk: b.kind === 'ink',
+      const row: PlanRow = {
+        boxId: b.id, number: outlineNumber(here), depth, title, body, hint: b.planHint ?? '', underIds: [b.id], isPin: b.kind === 'page-pin', isInk: b.kind === 'ink',
         canUp: i > 0, canDown: i < shown.length - 1, canIndent: i > 0, canOutdent: depth > 0,
-      });
+      };
+      out.push(row);
+      const from = out.length;
       walk(n.children, here, depth + 1);
+      for (let k = from; k < out.length; k++) row.underIds.push(out[k].boxId);
     });
   };
   for (const lane of boardStructure(live).lanes) walk(lane.items, [], 0);
