@@ -272,12 +272,17 @@ export const CANONICAL_CHROME = {
   reorgConnectedLine: '{title} connected to {part}.',
   reorgAlreadyConnected: '{title} is already connected to {part}.',
   reorgConnectRefused: '{title} could not be connected to {part}.',
-  // DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20): PROPOSED placeholder words until the Wrizors word them
+  // DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20): the Wrizors' words (claude/wrizors/machina-drag-parts-words.md, Nov 20 11:55 pm), sentence case; read only in Machina's reorg, so one reading for every theme
   reorgDragNest: 'Release to nest under {part}',
   reorgDragMerge: 'Release to merge into {part}',
-  reorgDragNestNo: '{part} is as deep as Parts go',
+  reorgDragNestNo: "Can't nest under {part}: Parts go no deeper.",
   reorgDragMoved: '{part} moved.',
-  reorgDragNested: '{part} is now under {target}.',
+  reorgDragNested: '{part} nested under {target}.',
+  // the merge asks first (Nick, Nov 21 12:07 am; claude/wrizors/machina-drag-parts-words.md flag 1)
+  reorgDragMergeAsk: 'Merge {part} into {target}?',
+  reorgDragMergeGo: 'Merge',
+  reorgDragMergeCancel: 'Cancel',
+  reorgDragMerged: '{part} merged into {target}.',
   // COLOURS ON ASSETS (reorg/assetColour.ts, reorg/colourSlots.ts) - the six tags' names are Nick's (Nov 11, 1:46 am; Fable's slot ruling, Nov 20);
   // the button reads reorgColour ('Colour'). {title} the asset's title. PROPOSED (ARBOR, Nov 20): the aria line, the menu's name and 'No colour'
   reorgColourAria: 'Colour for {title}',

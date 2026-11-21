@@ -131,6 +131,7 @@ export type DeskTermId =
   // AN ASSET ONTO A PART (reorg plan 5.2, reorg/assetConnect.ts): the drag's lines and the keyboard path's "→ Part"
   | 'reorgToPart' | 'reorgToPartAria' | 'reorgToPartMenu' | 'reorgConnectedLine' | 'reorgAlreadyConnected' | 'reorgConnectRefused'
   | 'reorgDragNest' | 'reorgDragMerge' | 'reorgDragNestNo' | 'reorgDragMoved' | 'reorgDragNested'
+  | 'reorgDragMergeAsk' | 'reorgDragMergeGo' | 'reorgDragMergeCancel' | 'reorgDragMerged'
   | 'reorgColourAria' | 'reorgColourMenu' | 'reorgColourNone' | 'reorgTagA' | 'reorgTagB' | 'reorgTagC' | 'reorgTagD' | 'reorgTagE' | 'reorgTagF'
   | 'reorgDocKindStandard' | 'reorgDocKindScreenplay' | 'reorgDocKindAria' | 'reorgDocStyleGuide' | 'reorgDocStyleNone' | 'reorgPresetGroupAcademic' | 'reorgPresetGroupBusiness' | 'reorgPresetGroupWeb' | 'reorgPresetGroupCreative' | 'reorgPresetGroupScreenplay' | 'reorgDocPageSetup' | 'reorgDocSpecialParts' | 'reorgDocPresets' | 'reorgSpecialTitle' | 'reorgSpecialBibliography' | 'reorgPartsStructure' | 'reorgPartAssetsOne' | 'reorgPartAssetsMany' | 'reorgAssetsHead' | 'reorgAssetsPartToggle' | 'reorgTextParagraph' | 'reorgTextMore' | 'reorgTextSymbols' | 'reorgTextSymbolAria'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'

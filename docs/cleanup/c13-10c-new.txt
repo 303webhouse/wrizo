@@ -268,9 +268,14 @@ reorgTextParagraph=Paragraph
 reorgTextMore=More
 reorgTextSymbols=Insert Symbol
 reorgTextSymbolAria=Insert {symbol}
-# DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20) - PROPOSED placeholder words until the Wrizors word them; no theme overrides them yet
+# DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20) - the Wrizors' words (claude/wrizors/machina-drag-parts-words.md); no theme overrides them
 reorgDragNest=Release to nest under {part}
 reorgDragMerge=Release to merge into {part}
-reorgDragNestNo={part} is as deep as Parts go
+reorgDragNestNo=Can't nest under {part}: Parts go no deeper.
 reorgDragMoved={part} moved.
-reorgDragNested={part} is now under {target}.
+reorgDragNested={part} nested under {target}.
+# the merge asks first (Nick, Nov 21 12:07 am; claude/wrizors/machina-drag-parts-words.md flag 1)
+reorgDragMergeAsk=Merge {part} into {target}?
+reorgDragMergeGo=Merge
+reorgDragMergeCancel=Cancel
+reorgDragMerged={part} merged into {target}.

@@ -180,6 +180,12 @@
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none; font-family:var(--font-ui); font-size:11px; color:var(--text-hi);
   background:var(--desk-ground); border:1px solid var(--ink-border-strong); }
 [data-theme='machina'] .reorg-parts-list > li[data-drop='no'] > .reorg-parts-droplabel{ color:var(--text-mid); }
+/* the handle (P2): the tile is what a Part is dragged by */
+[data-theme='machina'] .reorg-parts-list[data-parts-drag] .reorg-parts-tag{ cursor:grab; }
+/* the merge's confirm (Nick, Nov 21): in the tools' place, above the list; the page never moves */
+[data-theme='machina'] .reorg-parts-ask{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:8px 12px; font-family:var(--font-ui); font-size:12px;
+  color:var(--text-hi); border:1px solid var(--accent-rest); }
+[data-theme='machina'] .reorg-parts-ask > span{ flex:1 1 100%; }
 [data-theme='machina'] .reorg-parts-live:empty{ display:none; }
 [data-theme='machina'] .reorg-parts-line{ display:flex; align-items:baseline; gap:8px; padding:8px 4px 2px; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
 [data-theme='machina'] .reorg-parts-line [data-line-undo]{ flex:none; background:none; border:0; padding:0; font:inherit; color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }

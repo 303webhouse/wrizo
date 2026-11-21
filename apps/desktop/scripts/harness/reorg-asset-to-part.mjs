@@ -173,7 +173,9 @@ await withHarness(async (app) => {
   //     && st0.assets.every((a) => a.drag === 'true') && st0.heads.every((h) => h.drag === 'true') && st0.parts.every((p) => p.drag !== 'true'), { ids, st0 });
   // D0-B: the same premise, and a Part row's drag carries the Part's own type and never the asset type (a dragstart on ap-2's row, read off the
   // DataTransfer the app filled; the drag is ended at once, nothing is dropped)
-  const partDt = await app.evalJs(`(() => { const s = document.querySelector('.wz-sliver [data-part-row="ap-2"]'); if (!s) return null; const dt = new DataTransfer();
+  // FIXTURE (Nov 21, Fable 12:10 am: a Part is dragged by its tile, P2): the drag begins with a press on ap-2's tile and dragstart there. No assertion changes.
+  const partDt = await app.evalJs(`(() => { const s0 = document.querySelector('.wz-sliver [data-part-row="ap-2"]'); if (!s0) return null; const s = s0.querySelector('.reorg-parts-tag') || s0; const dt = new DataTransfer();
+    const r = s.getBoundingClientRect(); s.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: 1, isPrimary: true, button: 0, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }));
     s.dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: dt })); const types = Array.from(dt.types);
     s.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt })); return types; })()`);
   const d0b = (st, types) => ids.links && st.tools && st.back && st.parts.map((p) => p.id).join(',') === 'ap-1,ap-2,ap-3' && st.parts[0].here && !!x1 && !!q1 && !!y && !!a1
