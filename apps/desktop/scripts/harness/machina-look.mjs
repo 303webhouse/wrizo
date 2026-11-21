@@ -60,6 +60,8 @@ const PLATE = `(() => { const p = document.querySelector('.machina2-nameplate');
   return { plate: true, bar: true, text: (p.textContent || '').trim(), shown: getComputedStyle(p).display !== 'none' && getComputedStyle(p).opacity !== '0' && a.width > 0, dx: +(a.left - b.left).toFixed(2),
     inBar: a.top >= b.top - 1 && a.bottom <= b.bottom + 1, barTop: +b.top.toFixed(2), markHidden: !bm || getComputedStyle(bm).display === 'none' }; })()`;
 const plateOk = (p) => !!p && p.plate && p.bar && p.text === 'WRIZ' && p.shown && Math.abs(p.dx - 16) <= 1 && p.inBar && p.markHidden;
+// L10-B / M4-B (Nov 21; Nick via Fable 1:30 pm, machina/logo-wrizo: Machina's mark is the mockup's WRIZO with a brass notch on the O, no square, no tick; machina-logo-wrizo.mjs): the same reading, the nameplate's words now WRIZO
+const plateOkB = (p) => !!p && p.plate && p.bar && p.text === 'WRIZO' && p.shown && Math.abs(p.dx - 16) <= 1 && p.inBar && p.markHidden;
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1400, 900);
@@ -184,13 +186,24 @@ await withHarness(async (app) => {
 
   // ---- L10 L11 the nameplate and the flush bar ----
   const p10 = await app.evalJs(PLATE);
-  ok(`L10 the nameplate: "${p10 && p10.text}" ${p10 && p10.dx} px in from the flush bar's left edge, inside the bar; the corner mark not drawn (${p10 && p10.markHidden})`, plateOk(p10), J(p10));
+  // SUPERSEDED (Nov 21; Nick via Fable 1:30 pm, machina/logo-wrizo: Machina's mark is the mockup's WRIZO with a brass notch on the O, no square, no tick; machina-logo-wrizo.mjs): L10 read the nameplate's words as "WRIZ" (the square was an element with no text). Its successor L10-B reads WRIZO; the place in the bar is the same. Verbatim:
+  // ok(`L10 the nameplate: "${p10 && p10.text}" ${p10 && p10.dx} px in from the flush bar's left edge, inside the bar; the corner mark not drawn (${p10 && p10.markHidden})`, plateOk(p10), J(p10));
+  ok(`L10-B the nameplate: "${p10 && p10.text}" ${p10 && p10.dx} px in from the flush bar's left edge, inside the bar; the corner mark not drawn (${p10 && p10.markHidden})`, plateOkB(p10), J(p10));
   ok(`L11 the flush bar is drawn at the window's top (${p10 && p10.barTop})`, !!p10 && p10.bar && Math.abs(p10.barTop) <= 0.5, J(p10));
   // ---- L12 the mark ----
   const m12 = await app.evalJs(`(() => { const bm = document.querySelector('.brand-mark'); if (!bm) return null; const cs = getComputedStyle(bm), af = getComputedStyle(bm, '::after');
     return { font: cs.fontFamily, color: cs.color, sq: af.borderTopColor, before: getComputedStyle(bm, '::before').content }; })()`);
-  ok(`L12 the mark: WRIZ in Plex Mono (${m12 && m12.font}), its square a hairline in the mark's own colour (${m12 && m12.sq} = ${m12 && m12.color})`,
-    !!m12 && /IBM Plex Mono/.test(m12.font) && m12.sq === m12.color && /WRIZ/.test(m12.before), J(m12));
+  // SUPERSEDED (Nov 21; Nick via Fable 1:30 pm, machina/logo-wrizo: Machina's mark is the mockup's WRIZO with a brass notch on the O, no square, no tick; machina-logo-wrizo.mjs): L12 read the corner mark as WRIZ in Plex Mono with its hairline square (::before and ::after). The corner mark is now WRIZO in
+  // Plex Sans with the notch, and draws no ::before or ::after; L12-B reads that, and MUT-L12-B puts the square back in the reading. Verbatim:
+  // ok(`L12 the mark: WRIZ in Plex Mono (${m12 && m12.font}), its square a hairline in the mark's own colour (${m12 && m12.sq} = ${m12 && m12.color})`,
+  //   !!m12 && /IBM Plex Mono/.test(m12.font) && m12.sq === m12.color && /WRIZ/.test(m12.before), J(m12));
+  const m12b = await app.evalJs(`(() => { const bm = document.querySelector('.brand-mark'); if (!bm) return null; const w = bm.querySelector('.machina2-wm'); const a = getComputedStyle(bm, '::after');
+    return { text: (bm.textContent || '').trim(), font: w ? getComputedStyle(w).fontFamily : null, before: getComputedStyle(bm, '::before').content, after: a.content, afterBorder: a.borderTopWidth, notch: !!bm.querySelector('.machina2-wm-notch') }; })()`);
+  const l12b = (m) => !!m && m.text === 'WRIZO' && /IBM Plex Sans/.test(m.font || '') && !/Mono/.test(m.font || '') && ['none', 'normal'].includes(m.before) && ['none', 'normal'].includes(m.after) && m.notch;
+  ok(`L12-B the corner mark: WRIZO in Plex Sans (${m12b && m12b.font}) with its notch, and no ::before or ::after (${m12b && m12b.before} / ${m12b && m12b.after})`, l12b(m12b), J(m12b));
+  // MUT-L12-B: the same reading with the square back (an ::after drawn) turns L12-B red (the mutant LANDED: the reading changed)
+  const mut12 = m12b ? { ...m12b, after: '""', afterBorder: '1px' } : null;
+  ok('MUT-L12-B the corner mark read with its square back turns L12-B red', !!mut12 && mut12.after !== m12b.after && !l12b(mut12), J(mut12));
 
   // ---- L8 L9 L13 the room, the bars, the page ----
   const r0 = await app.evalJs(RECT);
@@ -258,13 +271,15 @@ await withHarness(async (app) => {
   ok(`M3 (mutant): a command line box put into the page (LANDED: ${J(m3)}) - L6's read goes RED`, Array.isArray(m3) && m3.includes('.machina2-cmd'), J(m3));
   await app.evalJs("(() => { const p = document.querySelector('.machina2-nameplate'); if (p) p.style.setProperty('display', 'none', 'important'); return !!p; })()");
   const m4 = await app.evalJs(PLATE);
-  ok(`M4 (mutant): the nameplate hidden (LANDED: shown ${m4 && m4.shown}) - L10's read goes RED`, !!m4 && m4.plate && m4.shown === false && !plateOk(m4), J(m4));
+  // SUPERSEDED (Nov 21; Nick via Fable 1:30 pm, machina/logo-wrizo: Machina's mark is the mockup's WRIZO with a brass notch on the O, no square, no tick; machina-logo-wrizo.mjs): M4 turned L10's read red; L10 is parked, so its mutant moves to L10-B's read. Verbatim:
+  // ok(`M4 (mutant): the nameplate hidden (LANDED: shown ${m4 && m4.shown}) - L10's read goes RED`, !!m4 && m4.plate && m4.shown === false && !plateOk(m4), J(m4));
+  ok(`M4-B (mutant): the nameplate hidden (LANDED: shown ${m4 && m4.shown}) - L10-B's read goes RED`, !!m4 && m4.plate && m4.shown === false && !plateOkB(m4), J(m4));
   return checks;
 }, { label: 'machina-look' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 if (process.env.HARNESS_PARKED === '1') console.log('\nMACHINA-LOOK PARKED: PASS (0 checks) - HARNESS_PARKED=1 armed; this file parks three originals as quoted comments (L15, L15b with M5, L15c with M5b, Nov 20: the first read the panel\'s inner box), the third the zoomed page), successor L15d and mutant M5c');
-const WANT = 20;
+const WANT = 21;   // 20 - L10, L12, M4 (parked, Nov 21: the mark is WRIZO) + L10-B, L12-B, M4-B + MUT-L12-B
 const pass = checks.length === WANT && checks.every((c) => c.pass);
 console.log(pass ? `\nMACHINA-LOOK VERIFY: PASS (${checks.length} checks)` : `\nMACHINA-LOOK VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT ? ` (${checks.length} ran, ${WANT} expected)` : ''}`);
 process.exit(pass ? 0 : 1);
