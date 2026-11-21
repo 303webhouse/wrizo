@@ -134,7 +134,7 @@ function suite(src) {
 // ---- COL (source) -----------------------------------------------------------------------------------------------------------------------------------
 // the 16th parameter of the projects upsert, EVALUATED for three projects: one that never chose (docSettings absent), one that cleared ({}), one that chose
 function sendsRight(sync) {
-  const m = /16th param[^\n]*\n\s*([^\n]*?)\],/.exec(sync);
+  const m = /\n\s*((?:JSON\.stringify\()?p\.docSettings[^\n]*?)\],/.exec(sync);
   if (!m) return false;
   let send; try { send = new Function('p', 'return ' + m[1]); } catch { return false; }
   try { return send({}) === null && send({ docSettings: undefined }) === null && send({ docSettings: {} }) === '{}' && send({ docSettings: { styleGuide: 'apa' } }) === '{"styleGuide":"apa"}'; } catch { return false; }
