@@ -443,3 +443,8 @@ reorgAssetsSortOld=Oldest
 reorgAssetsSortProject=By Project
 reorgAssetsDocList=This Doc
 authEmailPlaceholder=you@example.com
+# A BOARD IN THE SPLIT (ARBOR, reorg plan v2.1 §3b item 2a, Nov 21) - PROPOSED placeholder words until the Wrizors word them; no theme overrides them yet
+reorgSplitViews=Show As
+reorgSplitZoomIn=Zoom In
+reorgSplitZoomOut=Zoom Out
+reorgSplitZoomFit=Fit

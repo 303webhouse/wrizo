@@ -463,9 +463,17 @@ export const CANONICAL_CHROME = {
   reorgTextSymbolAria: 'Insert {symbol}',
   reorgSplitOpen: 'Open beside',
   reorgSplitClose: 'Close',
+  // §3b item 3 (Team B row 2; Fable, Nov 21 11:45 am): Full Screen on the split's asset, and Back from it (the Wrizors: lexicon words, Title Case)
+  reorgSplitFull: 'Full Screen',
+  reorgFullBack: 'Back',
   reorgSplitLabel: 'Opened beside',
   reorgSplitGrip: 'Resize the split',
   reorgSplitBoardEmpty: 'Nothing here yet.',
+  // A BOARD IN THE SPLIT (ARBOR, §3b item 2a, Nov 21): PROPOSED placeholder words until the Wrizors word them; Title Case (Machina's buttons)
+  reorgSplitViews: 'Show As',
+  reorgSplitZoomIn: 'Zoom In',
+  reorgSplitZoomOut: 'Zoom Out',
+  reorgSplitZoomFit: 'Fit',
   reorgSplitNoFreewrite: 'There is no split screen in Free Writing.',
   reorgSplitNoTypewriter: 'Typewriter mode is off in a split: turn it off first.',
   // THE REORG'S RAIL, step 3 (a Project's own list) and step 4 (Box settings, frame R5; the five swatch names are the radio buttons' names)

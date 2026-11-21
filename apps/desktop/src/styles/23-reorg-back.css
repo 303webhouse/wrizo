@@ -58,6 +58,30 @@
 .wz-split-head{ display:flex; align-items:center; justify-content:space-between; }
 .wz-split-card{ margin:0 0 .9em; }
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
+/* A BOARD IN THE SPLIT (§3b item 2a, reorg/split/SplitBoard.tsx): its views and zoom over a canvas that fills the side; the canvas is drawn at the side's
+   width and moved by a transform only (pan and zoom), so nothing in the split reflows and the page never moves. */
+.wz-split-board{ display:flex; flex-direction:column; gap:8px; flex:1 1 auto; min-height:0; }
+.wz-split-board-bar{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; }
+.wz-split-board-views, .wz-split-board-zoom{ display:flex; gap:4px; }
+.wz-split-board-bar button{ min-width:26px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border); border-radius:0; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); cursor:pointer; }
+.wz-split-board-bar button[aria-pressed='true']{ border-color:var(--text-hi); color:var(--text-hi); }
+.wz-split-board-bar button:disabled{ opacity:.4; cursor:default; }
+.wz-split-board-wrap{ position:relative; flex:1 1 auto; min-height:0; overflow:hidden; border:1px solid var(--ink-border); cursor:grab; touch-action:none; outline:none; }
+.wz-split-board-wrap[data-panning='true']{ cursor:grabbing; }
+.wz-split-board-wrap:focus-visible{ border-color:var(--text-hi); }
+.wz-split-board-canvas{ position:absolute; left:0; top:0; transform-origin:0 0; background:var(--paper); }
+.wz-split-board-list{ flex:1 1 auto; min-height:0; overflow:auto; }
+.wz-split-board-empty{ position:absolute; left:12px; top:8px; z-index:1; margin:0; font-family:var(--font-ui); font-size:12px; color:var(--text-mid); pointer-events:none; }
+/* 2b: editing on the canvas - a card takes the pointer (move), the selected text card shows one corner handle (resize) */
+.wz-split-board[data-editable='true'] .wz-split-board-canvas .board-box{ cursor:move; }
+.wz-split-handle{ position:absolute; right:-5px; bottom:-5px; width:10px; height:10px; box-sizing:border-box; background:var(--paper); border:1px solid var(--choice); cursor:nwse-resize; z-index:1; }
+/* §3b item 3: FULL SCREEN. The split's head holds Full Screen beside Close. A Block or a Doc then fills the window over a shade: the page and the split stay
+   where they are, mounted and drawn, only faded behind it (a shade over them, never a change to them). Under the dialogs (200 and up), over the chrome. */
+.wz-split-head-acts{ display:flex; gap:4px; }
+.wz-split-full{ position:fixed; inset:0; z-index:190; }
+.wz-split-full-shade{ position:absolute; inset:0; background:var(--desk-ground); opacity:.86; }
+.wz-split-full-panel{ position:absolute; top:32px; bottom:32px; left:max(32px, calc((100% - 880px) / 2)); right:max(32px, calc((100% - 880px) / 2)); box-sizing:border-box;
+  padding:16px 24px; background:var(--desk-ground); border:1px solid var(--ink-border); border-radius:0; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
 
