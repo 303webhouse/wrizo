@@ -1,4 +1,4 @@
-// THE REORG'S BACK MENU IN FLUX, IN THE APP (Fable, Nov 21: Flux piece 2; claude/wrizors/flux-reorg-spec.md section 5). Flux theme, the dark room, ?reorg=1 with the PREVIEW DOOR (&reorglift=flux.back: reorg/themeGate.ts keeps flux.back OFF in the table until
+// THE REORG'S BACK MENU IN FLUX, IN THE APP (Fable, Nov 21: Flux piece 2; claude/wrizors/flux-reorg-spec.md section 5). Flux theme ON THE REDESIGN (?flux3=1: every Flux reorg piece is built on it, Nick, Nov 21, 4:40 pm), the dark room, ?reorg=1 with the PREVIEW DOOR (&reorglift=flux.back: reorg/themeGate.ts keeps flux.back OFF in the table until
 // Fable clears it; the door only shows the piece). The stylesheet's half is reorg-flux-back-css-unit.mjs; this proves what only the app can.
 // The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Parts, fb-1 "Arrival" (its Plan is the board fb-own: three cards, one attached to it), fb-2 "The town"; the Doc's own assets: a page and a card.
 //   FB1  the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS (the Back menu opens on its assets tab, as Machina's does)
@@ -8,6 +8,7 @@
 //   FB3  [successor] the same, with the Spine row's button in Flux's case: "Open track"
 //   FB4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
+//   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
 //   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-back-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -49,10 +50,10 @@ async function seed(app) {
     return null;
   })()`);
 }
-async function open(app, id, { w = 1366, lift = 'flux.back' } = {}) {
+async function open(app, id, { w = 1366, lift = 'flux.back', flux3 = true } = {}) {
   await app.emulateDpr(1, w, 768);
   await app.evalJs("window.wrizoTheme.set('flux'); null");
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${flux3 ? '&flux3=1' : ''}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -113,10 +114,14 @@ await withHarness(async (app) => {
   const note = await app.evalJs("(() => { const n = document.querySelector('.wz-sprint-note, [data-sprint-note]'); return n ? (n.textContent || '').trim() : [...document.querySelectorAll('.wz-tutor-panel *')].map((e) => (e.children.length === 0 ? (e.textContent || '').trim() : '')).find((x) => /wired in/i.test(x)) || null; })()");
   ok('FB6 Wire In: Spine and Inputs are locked and the note reads "Wired in: the Operator sends prompts only." in Flux\'s words; the Operator is the one in use',
     mode === true && Array.isArray(wire) && wire.find((x) => x.id === 'plan')?.locked === true && wire.find((x) => x.id === 'links')?.locked === true && wire.find((x) => x.id === 'tutor')?.on === true && note === 'Wired in: the Operator sends prompts only.', { mode, wire, note });
+  await open(app, 'fb-1', { flux3: false });
+  await drawer(app);
+  const plain = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), flux3: document.documentElement.hasAttribute('data-flux3') }; })()");
+  ok('FB7 the plain Flux never has the reorg: without ?flux3=1 even the preview door gives Flux no Back menu', !!plain && plain.flux3 === false && Array.isArray(plain.tabs) && !plain.tabs.includes('wz-tutor-tab-plan') && plain.reorg === false, plain);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 6;
+const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

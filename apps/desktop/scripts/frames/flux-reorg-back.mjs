@@ -1,4 +1,4 @@
-// FLUX REORG, PIECE 2: THE BACK MENU IN FLUX (flux-reorg-spec section 5), as frames: the dark room only (Flux's light page is not live), at 1366 and 1920, through the frames job's --screens-file.
+// FLUX REORG, PIECE 2: THE BACK MENU IN FLUX (flux-reorg-spec section 5), on the Flux REDESIGN (?flux3=1: every Flux reorg piece is built on it, Nick, Nov 21, 4:40 pm), as frames: the dark room only (Flux's light page is not live), at 1366 and 1920, through the frames job's --screens-file.
 //   gh workflow run frames.yml --ref ci/actions-harness -f ref=<branch> -f screens=flux-back-spine,flux-back-inputs,flux-back-operator,flux-back-wirein,flux-back-uplink -f themes=flux -f tones=dark -f screens_file=apps/desktop/scripts/frames/flux-reorg-back.mjs
 // The piece is not switched on in reorg/themeGate.ts for Flux yet, so every frame takes it through the PREVIEW DOOR (?reorg=1&reorglift=flux.back): the door only shows a piece, it flips no cell.
 // A frame is a LOOK (a PNG a person reads), never a verdict: it writes no assertion. Seeded through the app's own seams (window.wrizo*), never raw storage.
@@ -29,7 +29,7 @@ async function seed(app) {
   await sleep(500);
 }
 async function open(app, lift, mode) {
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0&reorglift=${lift}#/page/fb-1')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0&flux3=1&reorglift=${lift}#/page/fb-1')`);
   await app.reload();
   try { await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
   await sleep(900);
