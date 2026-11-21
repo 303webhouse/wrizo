@@ -108,6 +108,9 @@ export function readEscapes(line: string): number[] {
   return out;
 }
 
+// a footnote marker is `[^label]` (reorg/footnotes.ts): the caret after an unescaped `[` that starts one is part of the marker, never a superscript's mark, so `a[^1] b[^2]` does not hold the pair `^1] b[^`
+const FOOTNOTE_MARKER_AT = /^\^[\w-]+\]/;
+
 function tokenize(line: string): Tok[] {
   const toks: Tok[] = [];
   // TYPED-LITERAL: an escaped character is text - never a marker, and never part of a marker run beside it
@@ -119,6 +122,7 @@ function tokenize(line: string): Tok[] {
     const ch = line[i];
     if (ch !== '*' && ch !== '_' && ch !== '~' && ch !== '^') continue;
     if (escaped.has(i)) continue;
+    if (ch === '^' && line[i - 1] === '[' && !escaped.has(i - 1) && FOOTNOTE_MARKER_AT.test(line.slice(i))) continue;
     let j = i;
     while (j < line.length && line[j] === ch && !escaped.has(j)) j++;
     const n = j - i;

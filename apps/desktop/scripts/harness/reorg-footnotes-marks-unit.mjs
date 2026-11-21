@@ -52,7 +52,7 @@ try { base = suite(await load(SRC)); } catch (e) { baseErr = e; }
 for (const k of ['M1', 'M2']) ok(`${k} on the real markRuns.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'markRuns.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
-  ['the reader no longer skips a footnote marker', 'M1', (t) => t.replace('FOOTNOTE_MARKER_AT', () => 'FOOTNOTE_MARKER_OFF')],
+  ['the reader no longer skips a footnote marker', 'M1', (t) => t.replace('FOOTNOTE_MARKER_AT.test(line.slice(i))', () => 'false')],
 ];
 for (const [name, key, fn] of MUT) {
   const after = fn(SRC);
