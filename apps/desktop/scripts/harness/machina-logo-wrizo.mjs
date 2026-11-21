@@ -60,10 +60,13 @@ const MARK = `(() => { const root = document.documentElement; const dots = root.
     o = { origin: rr.left, inkL: rr.left - m.actualBoundingBoxLeft, inkR: rr.left + m.actualBoundingBoxRight, inkCx: rr.left + (m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2,
       base: rr.bottom, font: cx.font, family: f.fontFamily, weight: f.fontWeight, size: f.fontSize, spacing: f.letterSpacing, fontReady: document.fonts.check(cx.font) };
   }
+  // the word's own spacing: the element that holds the W (the O's own box carries no spacing after it, by design)
+  let wsp = null; { const tw2 = document.createTreeWalker(host, NodeFilter.SHOW_TEXT); let n2; while ((n2 = tw2.nextNode())) { if (n2.textContent.includes('W')) { wsp = getComputedStyle(n2.parentElement).letterSpacing; break; } } }
   const hs = getComputedStyle(host);
-  return { ...out, words, opacity: hs.opacity, brass, notches, lines, o }; })()`;
+  return { ...out, words, opacity: hs.opacity, brass, notches, lines, o, wsp }; })()`;
 
-const w1 = (m) => !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.o.spacing) - 13 * 0.26) <= 0.05;
+const w1b = (m) => !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.wsp) - 13 * 0.26) <= 0.05;
+const w1 = !!m && m.words === 'WRIZO' && !!m.o && /IBM Plex Sans/.test(m.o.family) && !/Mono/.test(m.o.family) && m.o.weight === '500' && m.o.size === '13px' && Math.abs(parseFloat(m.o.spacing) - 13 * 0.26) <= 0.05;
 const w2 = (m) => !!m && !!m.o && m.notches.length === 1 && Math.abs(m.notches[0].w - 6) <= 0.01 && Math.abs(m.notches[0].h - 2) <= 0.01 && m.notches[0].t >= m.o.base - 4 && Math.abs(m.notches[0].cx - m.o.inkCx) <= 0.5;
 const w3 = (m) => !!m && !!m.host && m.lines.length === 0;
 const edged = (s) => !!s && s.includes(`${INK} -1px 0px 0px`) && s.includes(`${INK} 1px 0px 0px`);
@@ -86,6 +89,15 @@ async function visit(app, reorg) {
   await app.evalJs('document.fonts && document.fonts.ready.then(() => true)');
   await sleep(900);
 }
+// FIXTURE (Nov 21, before this file's first green; build 11cfd7db, Actions 44946844167): the reorg page draws the bar's nameplate too (data-machina2-dots 'in'), so the CORNER mark is read where no bar is on screen:
+// the Drawers screen. The loop's second surface is that screen. No assertion changes to W2 and W3 (their readings are the same reading, of the mark drawn).
+async function visitCorner(app) {
+  await app.evalJs("history.replaceState(null, '', '/#/drawers'); null");
+  await app.reload();
+  await app.waitFor("document.documentElement.getAttribute('data-machina2') === 'true' && !!document.querySelector('.brand-mark') && document.documentElement.getAttribute('data-machina2-dots') !== 'in'", { label: 'the Drawers screen, its corner mark', timeout: 20000 }).catch(() => {});
+  await app.evalJs('document.fonts && document.fonts.ready.then(() => true)');
+  await sleep(900);
+}
 async function room(app, clock) {
   await app.evalJs(`window.machina2Clock ? window.machina2Clock(${J(clock)}) : null`);
   await sleep(500);
@@ -94,26 +106,44 @@ async function room(app, clock) {
 await withHarness(async (app) => {
   await boot(app);
   const seen = {};
-  for (const [surface, reorg] of [['page', false], ['reorg', true]]) {
-    await visit(app, reorg);
+  for (const [surface, reorg] of [['page', false], ['drawers', null]]) {
+    if (reorg === null) await visitCorner(app); else await visit(app, reorg);
     for (const [name, clock] of [['Day', '12:00'], ['Night', '23:00']]) {
       await room(app, clock);
       seen[`${name}/${surface}`] = await app.evalJs(MARK);
     }
   }
-  ok('P0 the page draws the bar\'s nameplate and the reorg page draws the corner mark, in both rooms (Day = light, Night = dark)',
-    ['Day', 'Night'].every((r) => seen[`${r}/page`] && seen[`${r}/page`].dots && seen[`${r}/reorg`] && !seen[`${r}/reorg`].dots)
-    && seen['Day/page'].room === 'light' && seen['Night/page'].room === 'dark' && seen['Day/reorg'].room === 'light' && seen['Night/reorg'].room === 'dark',
+  // SUPERSEDED (Nov 21, before this file's first green; build 11cfd7db, Actions 44946844167): P0's premise, "the reorg page draws the corner mark", is false - under the look the reorg page has the bar too, so its mark is the
+  // nameplate. P0-B reads the corner mark where no bar is on screen (the Drawers screen). Verbatim:
+  // ok('P0 the page draws the bar\'s nameplate and the reorg page draws the corner mark, in both rooms (Day = light, Night = dark)',
+  //   ['Day', 'Night'].every((r) => seen[`${r}/page`] && seen[`${r}/page`].dots && seen[`${r}/reorg`] && !seen[`${r}/reorg`].dots)
+  //   && seen['Day/page'].room === 'light' && seen['Night/page'].room === 'dark' && seen['Day/reorg'].room === 'light' && seen['Night/reorg'].room === 'dark',
+  //   Object.fromEntries(Object.entries(seen).map(([k, v]) => [k, v && { dots: v.dots, room: v.room, host: v.host }])));
+  ok('P0-B the page draws the bar\'s nameplate and the Drawers screen (no bar) draws the corner mark, in both rooms (Day = light, Night = dark)',
+    ['Day', 'Night'].every((r) => seen[`${r}/page`] && seen[`${r}/page`].dots && seen[`${r}/drawers`] && !seen[`${r}/drawers`].dots && /brand-mark/.test(seen[`${r}/drawers`].host || ''))
+    && seen['Day/page'].room === 'light' && seen['Night/page'].room === 'dark' && seen['Day/drawers'].room === 'light' && seen['Night/drawers'].room === 'dark',
     Object.fromEntries(Object.entries(seen).map(([k, v]) => [k, v && { dots: v.dots, room: v.room, host: v.host }])));
   for (const k of Object.keys(seen)) {
     const m = seen[k];
-    ok(`W1 [${k}] the mark reads WRIZO in Plex Sans 500 at 13 px, .26em apart ("${m && m.words}", ${m && m.o && `${m.o.family} ${m.o.weight} ${m.o.size} ${m.o.spacing}`})`, w1(m), m && { words: m.words, o: m.o });
+    // SUPERSEDED (Nov 21, before this file's first green; build 11cfd7db, Actions 44946844167): W1 read the letter-spacing on the O's own element, which by design carries none (its spacing moves to its margin so its
+    // box is the glyph's). W1-B reads the word's spacing on the element that holds the W. Verbatim:
+    //   ok(`W1 [${k}] the mark reads WRIZO in Plex Sans 500 at 13 px, .26em apart ("${m && m.words}", ${m && m.o && `${m.o.family} ${m.o.weight} ${m.o.size} ${m.o.spacing}`})`, w1(m), m && { words: m.words, o: m.o });
+    ok(`W1-B [${k}] the mark reads WRIZO in Plex Sans 500 at 13 px, its letters .26em apart ("${m && m.words}", ${m && m.o && `${m.o.family} ${m.o.weight} ${m.o.size}`}, ${m && m.wsp})`, w1b(m), m && { words: m.words, o: m.o, wsp: m.wsp });
     ok(`W2 [${k}] one notch, brass, 6 x 2 px, under the O, its centre within 0.5 px of the O's inked centre (${m && m.notches.length} notch, ${m && m.notches[0] && m.o ? (m.notches[0].cx - m.o.inkCx).toFixed(2) + ' px off' : 'n/a'})`, w2(m), m && { notches: m.notches, o: m.o, brass: m.brass });
     ok(`W3 [${k}] no line above, below or beside the mark: no border, hairline, tick or square (${m && m.lines.length} found)`, w3(m), m && m.lines);
   }
-  const dayC = seen['Day/reorg'], nightC = seen['Night/reorg'];
-  ok('W5 the corner mark\'s notch wears the 1 px ink edge on both sides in the Day room, and none in the Night room',
-    !!dayC && dayC.notches.length === 1 && edged(dayC.notches[0].shadow) && !!nightC && nightC.notches.length === 1 && !(nightC.notches[0].shadow || '').includes(INK), { day: dayC && dayC.notches, night: nightC && nightC.notches });
+  // SUPERSEDED (Nov 21, before this file's first green; build 11cfd7db, Actions 44946844167): W5 read the corner mark on the reorg page, which draws the nameplate (P0's false premise). W5-B reads it on the Drawers screen. Verbatim:
+  // const dayC = seen['Day/reorg'], nightC = seen['Night/reorg'];
+  // ok('W5 the corner mark\'s notch wears the 1 px ink edge on both sides in the Day room, and none in the Night room',
+  //   !!dayC && dayC.notches.length === 1 && edged(dayC.notches[0].shadow) && !!nightC && nightC.notches.length === 1 && !(nightC.notches[0].shadow || '').includes(INK), { day: dayC && dayC.notches, night: nightC && nightC.notches });
+  const w5b = (d, n) => !!d && /brand-mark/.test(d.host || '') && d.notches.length === 1 && edged(d.notches[0].shadow) && !!n && n.notches.length === 1 && !(n.notches[0].shadow || '').includes(INK);
+  const dayD = seen['Day/drawers'], nightD = seen['Night/drawers'];
+  ok('W5-B the corner mark\'s notch wears the 1 px ink edge on both sides in the Day room, and none in the Night room', w5b(dayD, nightD), { day: dayD && dayD.notches, night: nightD && nightD.notches });
+  // MUT-W5-B: the Day reading without its edge turns W5-B red; MUT-W1-B: the reading with the word's spacing gone turns W1-B red (the mutants LANDED)
+  const flat = dayD && dayD.notches.length ? { ...dayD, notches: [{ ...dayD.notches[0], shadow: 'none' }] } : null;
+  ok('MUT-W5-B the Day corner reading without its ink edge turns W5-B red', !!flat && flat.notches[0].shadow !== dayD.notches[0].shadow && !w5b(flat, nightD), flat && flat.notches);
+  const unspaced = seen['Night/page'] ? { ...seen['Night/page'], wsp: 'normal' } : null;
+  ok('MUT-W1-B the reading with the word\'s spacing gone turns W1-B red', !!unspaced && unspaced.wsp !== seen['Night/page'].wsp && !w1b(unspaced), unspaced && unspaced.wsp);
   // MUTANTS on the readings (the mutant LANDED: the reading changed)
   const base = seen['Night/page'];
   const moved = base && base.notches.length ? { ...base, notches: [{ ...base.notches[0], cx: base.notches[0].cx + 1 }] } : null;
@@ -127,7 +157,9 @@ await withHarness(async (app) => {
     await visit(app, reorg);
     await app.evalJs("document.querySelector('.forward-only-editor')?.focus(); null"); await sleep(200);
     await app.type(' And the wheel turned.');
-    await sleep(1800);
+    // FIXTURE (Nov 21, before this file's first green; build 11cfd7db, Actions 44946844167): the recede is a fade (--fade-dur), read at 1.8 s it was still at .09; the reading now waits for the fade to end (up to 6 s). No assertion changes.
+    await app.waitFor("(() => { const r = document.documentElement; const h = r.getAttribute('data-machina2-dots') === 'in' ? document.querySelector('.machina2-nameplate') : document.querySelector('.brand-mark'); return !!h && getComputedStyle(h).opacity === '0'; })()", { label: 'the mark receded', timeout: 6000 }).catch(() => {});
+    await sleep(300);
     const m = await app.evalJs(MARK);
     recede[surface] = { writing: await app.evalJs("document.documentElement.getAttribute('data-wz-writing')"), opacity: m && m.opacity, host: m && m.host };
   }
@@ -135,7 +167,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 17;
+const EXPECTED = 19;   // 17 - P0, W1 x4, W5 (parked before the first green) + P0-B, W1-B x4, W5-B + MUT-W5-B + MUT-W1-B (Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nMACHINA-LOGO-WRIZO VERIFY: PASS (${checks.length} checks)`
