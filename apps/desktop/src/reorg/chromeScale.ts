@@ -30,9 +30,14 @@ const FRONT_BASE = 200;
 const DESK_VAR = '--wz-front-desk';
 // THE LAYOUT FITS THE WINDOW (the Wrizors' pass 2, REAL 2: at 1920 and 2560 the window scrolled a few px). The scaled bar is taller than the
 // chrome budget the stage subtracts (--fx3-chrome-budget, a fixed 167 px in 01-tokens.css), so the document ran past the window. The overflow is
-// measured and added to the budget (--wz-chrome-extra, read by 23-reorg-top.css): it only grows while the window keeps its size, and starts
-// again from 0 on a resize, so it settles in one step and cannot swing.
+// measured and added to the budget (--wz-chrome-extra, read by 23-reorg-top.css), and it is BOUNDED (Fable, Nov 21 3:52 pm: an overflow the
+// budget does not govern - a popover, a long panel - must not shrink the page tick by tick): it never exceeds what the scaled bar adds, the bar's
+// height at k less its height at 1, plus 2 px (the bar is its padding and its zoomed contents, so that is the contents' height x (1 - 1/k)), and it
+// is measured only while the scale settles - 3 s from the scale being set or the window resized - then held. It restarts from 0 on a resize.
 const EXTRA_VAR = '--wz-chrome-extra';
+const SETTLE_MS = 3000;
+/** What the scaled bar adds to its own height: its contents (the zoomed children) are k times as tall as at 1, its padding is not. */
+export const barGrowth = (contentsH: number, k: number): number => (Number.isFinite(contentsH) && contentsH > 0 && k > 1 ? contentsH - contentsH / k : 0);
 const FRAME_GAP = 28;
 export const frontScaleFor = (k: number, anchorW: number): number => (Number.isFinite(anchorW) && anchorW > 0 ? Math.max(1, Math.min(k, Math.round((anchorW / FRONT_BASE) * 1000) / 1000)) : k);
 
@@ -58,13 +63,23 @@ export function useChromeScale(): void {
     let lastFront = '';
     let lastDesk = '';
     let extra = 0;
+    let settleUntil = 0;
+    const cap = (): number => {
+      const bar = [...document.querySelectorAll<HTMLElement>('.chrome-top.sprint-nav')].find((b) => b.getBoundingClientRect().height > 0);
+      if (!bar) return 0;
+      let c = 0;
+      for (const ch of Array.from(bar.children)) c = Math.max(c, ch.getBoundingClientRect().height);
+      return Math.ceil(barGrowth(c, chromeScaleFor(window.innerWidth)) + 2);
+    };
     const fit = () => {
-      if (r.getAttribute(ATTR) !== 'on') return;
+      if (r.getAttribute(ATTR) !== 'on' || performance.now() > settleUntil) return;
       const se = document.scrollingElement;
       if (!se) return;
       const over = Math.ceil(se.scrollHeight - window.innerHeight);
       if (over <= 0) return;
-      extra += over;
+      const next = Math.min(extra + over, cap());
+      if (next === extra) return;
+      extra = next;
       r.style.setProperty(EXTRA_VAR, `${extra}px`);
     };
     const front = () => {
@@ -85,6 +100,7 @@ export function useChromeScale(): void {
       if (s !== last) {
         last = s;
         extra = 0;
+        settleUntil = performance.now() + SETTLE_MS;
         r.style.removeProperty(EXTRA_VAR);
         r.style.setProperty(VAR, s);
         r.setAttribute(ATTR, k > 1 ? 'on' : 'base');
