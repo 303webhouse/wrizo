@@ -406,3 +406,14 @@ reorgTextSymbolAria=Insert {symbol}
 pageOfPages=p. {n} of {m}
 pageOfPages@flux=PG {n}/{m}
 pageOfPages@machina=page {n} of {m}
+# DRAG TO MOVE, MERGE AND NEST PARTS (ARBOR, reorg plan v2.1 §3b item 1, Nov 20) - the Wrizors' words (claude/wrizors/machina-drag-parts-words.md); no theme overrides them
+reorgDragNest=Release to nest under {part}
+reorgDragMerge=Release to merge into {part}
+reorgDragNestNo=Can't nest under {part}: Parts go no deeper.
+reorgDragMoved={part} moved.
+reorgDragNested={part} nested under {target}.
+# the merge asks first (Nick, Nov 21 12:07 am; claude/wrizors/machina-drag-parts-words.md flag 1)
+reorgDragMergeAsk=Merge {part} into {target}?
+reorgDragMergeGo=Merge
+reorgDragMergeCancel=Cancel
+reorgDragMerged={part} merged into {target}.

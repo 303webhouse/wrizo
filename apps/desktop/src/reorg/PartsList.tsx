@@ -8,10 +8,11 @@ import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
 import {
-  ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
+  ensureDoc, isPartColor, joinPart, movePart, partById, partsOfDoc as inkPartsOf, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
 import { assetDragFromDoc, assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { bandAt, isPartDrag, makeDrop, planDrop, DWELL_MS, PART_DRAG, type Band, type DropKind, type Refusal } from './partDrag';
 import { SLOT_WORD, slotLetter } from './colourSlots';
 import { assetCountOf } from './partAssets';
 import { focusAssetsPart } from './backMenu/assetsFocus';
@@ -36,6 +37,8 @@ export const REORG_JOIN_STATE = 'reorgJoinPart';
 const fill = (s: string, vals: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vals ? String(vals[k]) : m));
 
 export type PartsStage = 'sprint' | 'build' | 'edit';
+/** How far from a row's left edge a press counts as the brass bar's (the bar is 3px; a finger's or a pointer's slack around it). */
+const BAR_ZONE = 10;
 /** What the host lends the list: its own flush (her unsaved words reach the store before a write that touches them) and, on a prose page,
  *  the split at her caret. */
 export interface PartsHost {
@@ -100,13 +103,15 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
   useEffect(() => { setLine(null); setOver(null); }, [latest.id]);
   const partWord = (p: { n: number; name: string }) => (parts.length > 1 ? (p.name || t('reorgUntitled')) : fill(t('reorgPartN'), { n: p.n }));
   const onOver = (id: string) => (e: DragEvent) => {
+    if (partOver(id, e)) return;
     if (!isAssetDrag(e.dataTransfer)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'link';
     if (over !== id) setOver(id);
   };
-  const onDrop = (p: { id: string; n: number; name: string }) => (e: DragEvent) => {
+  const onDrop = (p: PartRow) => (e: DragEvent) => {
     setOver(null);
+    if (partDrop(p, e)) return;
     if (!isAssetDrag(e.dataTransfer)) return;
     e.preventDefault();
     const asset = readAssetDrag(e.dataTransfer);
@@ -116,6 +121,102 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     const r = connectAssetToPart(p.id, asset, assetDragFromDoc(e.dataTransfer) ? undefined : latest.id);
     if (r.made === 'link') { const id = r.linkId; setLine({ text: fill(t('reorgConnectedLine'), vals), undo: () => { removePageLink(id); } }); }
     else setLine({ text: fill(t(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused'), vals) });
+  };
+  const refusal = (reason: string) => t(reason === 'carries' ? 'reorgPartJoinCarries' : reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo');
+  // DRAG TO MOVE, MERGE AND NEST (reorg plan v2.1 §3b, ARBOR item 1; ./partDrag.ts): a row is dragged in BUILD and EDIT on a Doc of its own; the
+  // row under the pointer names the act (data-drop, and its words for nest, merge and a refusal) and the release makes it through INK's acts.
+  // Nesting is BUILD's (the row menu's In / Out are); a merge arms only on a dwell. The drawer holds the list: the page never moves.
+  const canDrag = menus && !!docId;
+  const dragRef = useRef<string | null>(null);
+  // THE HANDLE (P2, Nick's word; Fable, Nov 21 12:10 am): a Part is dragged by its tile, or by the brass bar on the Part she is on; the rest of the row
+  // stays for clicking and renaming. The bar is the row's ::before (no element of its own), so the press is read where it lands: on the tile, or within
+  // BAR_ZONE of the row's left edge on the Part she is on. A drag begun anywhere else is cancelled before it starts.
+  const armRef = useRef<string | null>(null);
+  const onRowPress = (p: PartRow, on: boolean) => (e: React.PointerEvent<HTMLButtonElement>) => {
+    const onTile = !!(e.target as Element).closest?.('.reorg-parts-tag');
+    const onBar = on && e.clientX - e.currentTarget.getBoundingClientRect().left < BAR_ZONE;
+    armRef.current = canDrag && (onTile || onBar) ? p.id : null;
+  };
+  // THE MERGE ASKS FIRST (Nick, Nov 21 12:07 am; claude/wrizors/machina-drag-parts-words.md): a release that would merge writes nothing; it opens a small
+  // confirm under the tools, and only its Merge makes the join (re-read then, so a stale ask can only do what a fresh drop would).
+  const [ask, setAsk] = useState<{ from: string; target: string; part: string; into: string } | null>(null);
+  const askGo = useRef<HTMLButtonElement>(null);
+  useEffect(() => { setAsk(null); }, [latest.id]);
+  useEffect(() => { if (ask) askGo.current?.focus(); }, [ask]);
+  const dwellRef = useRef<{ id: string; since: number; armed: boolean } | null>(null);
+  const [drop, setDrop] = useState<{ id: string; kind: DropKind; why?: Refusal } | null>(null);
+  const clearDrag = () => { dragRef.current = null; dwellRef.current = null; setDrop(null); };
+  const readBand = (e: DragEvent): Band => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); return bandAt(e.clientY, r.top, r.height); };
+  const onDragStart = (p: PartRow) => (e: DragEvent) => {
+    const armed = armRef.current === p.id;
+    armRef.current = null;
+    if (!canDrag || !armed) { e.preventDefault(); return; }
+    e.dataTransfer.setData(PART_DRAG, p.id);
+    e.dataTransfer.effectAllowed = 'move';
+    dragRef.current = p.id; dwellRef.current = null;
+    setOpenMenu(null);
+  };
+  // the pointer's dwell on one row's middle: armed once it has held there DWELL_MS (a real drag sends dragover every few tens of ms while it holds)
+  const dwell = (id: string, band: Band): boolean => {
+    if (band !== 'middle') { dwellRef.current = null; return false; }
+    const now = performance.now(), d = dwellRef.current;
+    if (!d || d.id !== id) { dwellRef.current = { id, since: now, armed: false }; return false; }
+    if (!d.armed && now - d.since >= DWELL_MS) d.armed = true;
+    return d.armed;
+  };
+  const partOver = (id: string, e: DragEvent): boolean => {
+    const from = dragRef.current;
+    if (!from || !docId || !isPartDrag(e.dataTransfer)) return false;
+    const band = readBand(e);
+    const plan = planDrop(inkPartsOf(docId), from, id, band, dwell(id, band), stage === 'build');
+    if (plan.kind !== 'none' && plan.kind !== 'no') { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+    else e.dataTransfer.dropEffect = 'none';
+    if (plan.kind === 'none') { if (drop) setDrop(null); return true; }
+    if (!drop || drop.id !== id || drop.kind !== plan.kind || drop.why !== plan.why) setDrop({ id, kind: plan.kind, why: plan.why });
+    return true;
+  };
+  const partDrop = (p: PartRow, e: DragEvent): boolean => {
+    const from = dragRef.current;
+    if (!from || !docId || !isPartDrag(e.dataTransfer)) return false;
+    e.preventDefault();
+    const band = readBand(e);
+    const held = band === 'middle' && !!dwellRef.current && dwellRef.current.id === p.id && dwellRef.current.armed;
+    const moved = parts.find((x) => x.id === from);
+    clearDrag();
+    if (!moved) return true;
+    // a refusal is said and writes nothing: not even her own flush runs for it
+    const plan = planDrop(inkPartsOf(docId), from, p.id, band, held, stage === 'build');
+    if (plan.kind === 'none') return true;
+    if (plan.kind === 'no') { say(plan.why === 'deep' ? fill(t('reorgDragNestNo'), { part: p.name || t('reorgUntitled') }) : refusal(plan.why ?? 'unknown')); return true; }
+    if (plan.kind === 'merge') { say(null); setAsk({ from, target: p.id, part: moved.name || t('reorgUntitled'), into: p.name || t('reorgUntitled') }); return true; }
+    save();
+    const r = makeDrop(docId, from, p.id, band, held, stage === 'build', latest.id);
+    flushNow();
+    const name = (x: PartRow) => x.name || t('reorgUntitled');
+    if (r.done === 'moved') say(fill(t('reorgDragMoved'), { part: name(moved) }));
+    else if (r.done === 'nested') say(fill(t('reorgDragNested'), { part: name(moved), target: name(p) }));
+    // tsconfig is strict:false, so r.done does not narrow the union: the refusal is read by its presence
+    else { const why = (r as { why?: Refusal }).why; if (why) say(why === 'deep' ? fill(t('reorgDragNestNo'), { part: name(p) }) : refusal(why)); }
+    return true;
+  };
+  const mergeNow = () => {
+    const a = ask;
+    setAsk(null);
+    if (!a || !docId) return;
+    save();
+    const r = makeDrop(docId, a.from, a.target, 'middle', true, stage === 'build', latest.id);
+    flushNow();
+    if (r.done === 'merged') say(fill(t('reorgDragMerged'), { part: a.part, target: a.into }), { kind: 'join', token: r.token });
+    else if (r.done === 'merge-open') { const target = getJournalEntry(a.target); if (target) navigate(routeForEntry(target), { state: { [REORG_JOIN_STATE]: a.from } }); }
+    else { const why = (r as { why?: Refusal }).why; say(why === 'deep' ? fill(t('reorgDragNestNo'), { part: a.into }) : refusal(why ?? 'unknown')); }
+  };
+  const dropWords = (p: PartRow): string | null => {
+    if (!drop || drop.id !== p.id) return null;
+    const part = p.name || t('reorgUntitled');
+    if (drop.kind === 'nest') return fill(t('reorgDragNest'), { part });
+    if (drop.kind === 'merge') return fill(t('reorgDragMerge'), { part });
+    if (drop.kind === 'no') return drop.why === 'deep' ? fill(t('reorgDragNestNo'), { part }) : refusal(drop.why ?? 'unknown');
+    return null;
   };
   const fresh = () => {
     save();
@@ -151,7 +252,6 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     flushNow();
     setOpenMenu(null);
   };
-  const refusal = (reason: string) => t(reason === 'carries' ? 'reorgPartJoinCarries' : reason === 'not-text' ? 'reorgPartJoinScript' : 'reorgPartJoinNo');
   const join = (p: PartRow) => {
     save();
     setOpenMenu(null);
@@ -217,13 +317,21 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
           </div>
         </div>
       )}
+      {ask && (
+        <div className="reorg-parts-ask" data-parts-ask="" role="alertdialog" aria-labelledby="reorg-parts-ask-q"
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setAsk(null); } }}>
+          <span id="reorg-parts-ask-q">{fill(t('reorgDragMergeAsk'), { part: ask.part, target: ask.into })}</span>
+          <button type="button" ref={askGo} className="reorg-parts-tool" data-ask-merge="" onClick={mergeNow}>{t('reorgDragMergeGo')}</button>
+          <button type="button" className="reorg-parts-tool" data-ask-cancel="" onClick={() => setAsk(null)}>{t('reorgDragMergeCancel')}</button>
+        </div>
+      )}
       {said && (
         <div className="reorg-parts-said" data-parts-said role="status">
           <span>{said}</span>
           {undo && <button type="button" className="reorg-parts-undo" data-parts-undo onClick={back}>{t('reorgPartsUndo')}</button>}
         </div>
       )}
-      <ol className="reorg-parts-list">
+      <ol className="reorg-parts-list" data-parts-drag={canDrag ? '' : undefined}>
         {parts.map((p, i) => {
           const on = p.n === here;
           const label = p.name || t('reorgUntitled');
@@ -233,15 +341,18 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
           const menuOpen = openMenu === p.id;
           const assets = assetCountOf(p.id);
           return (
-            <li key={p.id} data-part-li={p.id} data-part-level={p.level} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
+            <li key={p.id} data-part-li={p.id} data-part-level={p.level} data-drop={drop && drop.id === p.id ? drop.kind : undefined} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
                 data-here-bar={on && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.color ? p.color : undefined}
-                onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDragLeave={() => { if (over === p.id) setOver(null); }} onDrop={onDrop(p)}>
+                onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDrop={onDrop(p)}
+                onDragLeave={(e) => { if (e.currentTarget.contains(e.relatedTarget as Node)) return; if (over === p.id) setOver(null); if (drop && drop.id === p.id) setDrop(null); }}
+                draggable={canDrag ? true : undefined} onPointerDown={onRowPress(p, on)} onDragStart={onDragStart(p)} onDragEnd={clearDrag}>
                 <span className="reorg-parts-num">{p.n}</span>
                 <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
+              {dropWords(p) && <span className="reorg-parts-droplabel" data-drop-label="" aria-hidden="true">{dropWords(p)}</span>}
               {assets > 0 && (
                 // the link badge (Decision 2): its count, and a press that opens the Assets tab at this Part (reorg/backMenu/assetsFocus.ts)
                 <button type="button" className="reorg-parts-assets" data-part-assets={p.id} aria-label={fill(t(assets === 1 ? 'reorgPartAssetsOne' : 'reorgPartAssetsMany'), { n: assets })}
