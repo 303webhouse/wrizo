@@ -95,7 +95,6 @@ async function partsTab(app) {
 const DOCS_OF = (part) => `[...document.querySelectorAll('[data-assets-part="${part}"] [data-back-asset][data-graft-entry]')].map((r) => r.getAttribute('data-graft-entry')).filter((id) => /^wa-d[ABC]$/.test(id)).map((id) => id.slice(-1)).join('')`;
 // a Part's own page links, read through the store's seam (the cache, never storage: no flush to wait for)
 const LINKS = (id) => `(window.wrizoPageLinksOf(${q(id)}) || []).filter((l) => !l.deletedAt).map((l) => l.bEntryId)`;
-const DOC_ASSETS = "(() => { const D = window.wrizoDocSettings; if (!D) return { seam: false }; const s = D.of('wa-1') || {}; return { seam: true, assets: s.assets ?? null }; })()";
 const DOC_ROWS = "[...document.querySelectorAll('[data-assets-doc] [data-back-asset][data-graft-entry]')].map((r) => r.getAttribute('data-graft-entry'))";
 const HEAD = "((document.querySelector('[data-back-assets-head]') || {}).textContent || '').replace(/\\s+/g, ' ').trim()";
 async function openMenu(app, target) {
@@ -163,6 +162,10 @@ await withHarness(async (app) => {
   const docsListed = await app.evalJs(PICKER);
   await app.evalJs(click('[data-assets-picker] [data-assets-pick][data-graft-entry="wa-d3"]')); await sleep(500);
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); null"); await sleep(250);
+  // item141 (train F): the Doc settings seam is read only after a waitFor that names it (a navigation is a request; the waitFor is the proof). If it
+  // never arrives the probe still answers { seam: false } and M3/M4 fail on it.
+  await app.waitFor("typeof window.wrizoDocSettings === 'object' && !!window.wrizoDocSettings", { label: 'the Doc settings seam', timeout: 8000 }).catch(() => {});
+  const DOC_ASSETS = "(() => { const D = window.wrizoDocSettings; if (!D) return { seam: false }; const s = D.of('wa-1') || {}; return { seam: true, assets: s.assets ?? null }; })()";
   const m3 = { stored: await app.evalJs(DOC_ASSETS), rows: await app.evalJs(DOC_ROWS), head: await app.evalJs(HEAD), wa1: await app.evalJs(LINKS('wa-1')) };
   const a3 = m3.stored.assets;
   ok('M3 Existing Doc from the Doc\'s "+": the picker lists docs only; a pick writes docSettings.assets = [{ entryId, at }], the Doc\'s list draws it, "Assets (n)" counts it, and her Part gains no link',
