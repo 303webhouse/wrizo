@@ -7,8 +7,10 @@ import { triggerDownload } from '../store/download';
 import { copyText } from '../store/clipboard';
 import { recordShadow } from '../store/voiceWall';
 import { partsOfDoc } from './parts';
-import { publicationText, chosenParts, wrapHtml, type PubFormat, type PubPart } from './publishingText';
-import { markdownToHtml, plainToHtml } from './publishingHtml';
+import { publicationText, chosenParts, wrapHtml, noteMarker, type PubFormat, type PubNote, type PubPart } from './publishingText';
+import { markdownToHtml, plainToHtml, inlineHtml } from './publishingHtml';
+import { readNotes, writeMarkers } from './footnotes';
+import { stripLine } from '../store/markRuns';
 import { REORG } from './flag';
 
 // PUBLISHING AS A VIEW, AND EXPORT (reorg-plan-v2 #5 and #6; Fable Nov 20, 11:45 am: "the whole Doc as one read-only scroll, each Part under its heading, as the prototype draws it
@@ -55,11 +57,14 @@ export function readPublication(entryId: string): PubDoc | null {
   rows.forEach((r, i) => {
     const e = getJournalEntry(r.id);
     if (!e) return;
-    const files = exportPageFiles(e);
     const prose = e.pageType !== 'script' && e.pageType !== 'board' && !e.pageSettings?.template;
+    // footnotes and endnotes (Nick ruled A, Nov 21): the note lines leave the words, each [^label] in them becomes a private marker the file's own numbering replaces (publishingText.ts layNotes), and the notes go beside the Part already written for the three formats
+    const nb = REORG && prose ? readNotes(e.text ?? '') : null;
+    const notes: PubNote[] = nb ? nb.notes.map((n) => ({ label: n.label, endnote: n.endnote, md: n.text, txt: stripLine(n.text), html: inlineHtml(n.text) })) : [];
+    const files = exportPageFiles(nb && nb.notes.length > 0 ? { ...e, text: writeMarkers(nb.body, nb.notes.map((n) => n.label), noteMarker) } : e);
     const words = wordCount(files.txt);
     parts.push({
-      id: e.id, name: r.name, level: r.level, md: files.md, txt: files.txt,
+      id: e.id, name: r.name, level: r.level, md: files.md, txt: files.txt, ...(notes.length > 0 ? { notes } : {}),
       n: i + 1, heading: r.heading, words,
       html: prose ? markdownToHtml(files.md) : plainToHtml(files.txt),
       view: prose ? decorateMarkdownForCard(e.text ?? '', null) : esc(files.txt),

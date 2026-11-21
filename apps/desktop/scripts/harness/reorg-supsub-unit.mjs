@@ -26,7 +26,7 @@ function evalModule(src, req) {
 }
 function load(srcs) {
   const MR = evalModule(srcs.markRuns, (p) => { throw new Error('unstubbed import ' + p); });
-  const stub = (p) => { if (p === './markRuns' || p === '../store/markRuns') return MR; throw new Error('unstubbed import ' + p); };
+  const stub = (p) => { if (p === './markRuns' || p === '../store/markRuns') return MR; if (p === '../reorg/footnotes') return { insertNote: () => null }; throw new Error('unstubbed import ' + p); };
   return { MR, DF: evalModule(srcs.draftFormat, stub), HT: evalModule(srcs.html, stub) };
 }
 

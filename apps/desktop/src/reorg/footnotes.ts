@@ -68,6 +68,12 @@ export function insertNote(text: string, caret: number, kind: NoteKind): { text:
   return { text: next, caret: next.length };
 }
 
+/** The words with each marker whose label is in `labels` swapped for `mark(label)` (a marker with no note, and an escaped one, stay as typed). */
+export function writeMarkers(body: string, labels: readonly string[], mark: (label: string) => string): string {
+  const have = new Set(labels);
+  return body.replace(MARKER_G, (m, l: string) => (have.has(l) ? mark(l) : m));
+}
+
 /** What a goal counts: the words without the notes and without the markers. */
 export function wordsOnly(text: string): string {
   const { body } = readNotes(text);

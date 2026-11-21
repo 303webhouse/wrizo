@@ -23,7 +23,7 @@ const J = (v) => JSON.stringify(v);
 function load(src) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
   const m = { exports: {} };
-  new Function('require', 'module', 'exports', out)((p) => { if (p === './markRuns') return MARKRUNS; throw new Error('unstubbed import ' + p); }, m, m.exports);
+  new Function('require', 'module', 'exports', out)((p) => { if (p === './markRuns') return MARKRUNS; if (p === '../reorg/footnotes') return { insertNote: () => null }; throw new Error('unstubbed import ' + p); }, m, m.exports);
   return m.exports;
 }
 

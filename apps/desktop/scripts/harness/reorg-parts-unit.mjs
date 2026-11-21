@@ -456,7 +456,9 @@ ok('DEF pageDefaults strips name, level, color and lengthLimit (the Part\'s own 
 // ---- mutants: each rewrite of parts.ts must land exactly once and turn its own check red -----------------------------------------------------------------
 const MUT = [
   ['the split writes the SHORTENED source before the tail', 'NL-S', (t) => t.replace('  saveJournalEntry(row);\n', () => '').replace("  if (again) saveJournalEntry({ ...again, text: head });", () => "  if (again) saveJournalEntry({ ...again, text: head });\n  saveJournalEntry(row);")],
-  ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
+  // SUPERSEDED (footnotes, Nov 21: joinPart now writes joinWithNotes(...) into a `joined` first, so this anchor no longer lands; the law is unchanged, its successor stands below), kept verbatim:
+  // ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
+  ['the join soft-deletes the emptied Part BEFORE the words are appended (successor)', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joined });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joined });")],
   // ORIGINAL, SUPERSEDED Nov 20 (joinText now heals a styled seam, so its one-line body is gone; the mutant stands on the line that carries the lower Part's words):
   // ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('export const joinText = (above: string, below: string): string => above + below;', () => 'export const joinText = (above: string, below: string): string => above;')],
   ['the join drops the lower Part\'s words', 'SJ', (t) => t.replace('const plain = above + below;', () => 'const plain = above;')],
@@ -464,7 +466,9 @@ const MUT = [
   ['the closing marks go after the head\'s trailing space', 'BOLD', (t) => t.replace('head: h.slice(0, h.length - hSpace.length) + closers + hSpace', () => 'head: h + closers')],
   ['a join leaves the seam of a split in a styled run', 'BOLD', (t) => t.replace('return across.length === peeled.length && across.every((m, i) => m === peeled[i]) ? healed : plain;', () => 'return plain;')],
   ['a cut may land inside a run\'s own mark', 'BOLD', (t) => t.replace('if (p > r.open && p <= o1) { p = r.open; again = true; } else if (p >= c1 && p < c2) { p = c2; again = true; }', () => '')],
-  ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  // SUPERSEDED (footnotes, Nov 21: the undo now joins through joinWithNotes, so this anchor no longer lands), kept verbatim:
+  // ['an undo joins by the halves, not by the whole it was cut from', 'BOLD', (t) => t.replace('text: t.whole ?? joinText(t.head, t.tail)', () => 'text: joinText(t.head, t.tail)')],
+  ['an undo joins by the halves, not by the whole it was cut from (successor)', 'BOLD', (t) => t.replace('text: t.whole ?? joinWithNotes(t.head, t.tail, joinText)', () => 'text: joinWithNotes(t.head, t.tail, joinText)')],
   ['a join is refused for a deleted card too (the raw read)', 'TOMB', (t) => t.replace('liveBoxes(e.boxes).length > 0', () => '!!(e.boxes && e.boxes.length)')],
   ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
   ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
