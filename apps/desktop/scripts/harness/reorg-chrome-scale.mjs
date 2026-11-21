@@ -14,6 +14,9 @@
 // BACK    K5  the Back menu's first tab is k times as tall as at 1366 (within 5%), and it opens 320 x k px wide where the desk allows
 // SPLIT   K6  the Doc beside the page: its head's kind label is k times as tall as at 1366 (within 5%)
 // PAGE    K7  at 2560, the page's rect is the same with each drawer open and closed (the rule untouched)
+// TRACK   K8  (Fable, Nov 21 3:05 pm, RULED: the Front drawer's track scales by k like the rest) at 1920 and 2560 the Front drawer's track is
+//             min(200 x k, the desk beside the page) - the desk measured from the rail's right edge to the page's left, less the 28 px gap - within 3 px
+//         MUT-K8  the 2560 reading with the old track (the stage's own half only) turns K8's test red
 // RUN     R1  in the split the Run stands under her page - its middle inside the page's left and right, and none of it under the Doc beside - at
 //             1366, 1920 and 2560
 // MUTANTS MUT-K2  a 2560 reading with the rail's width unscaled turns K2's test red    MUT-R1  a split reading with the Run left unshifted turns R1's test red
@@ -137,6 +140,13 @@ await withHarness(async (app) => {
   ok('K6 the Doc beside the page: its kind label is k times as tall as at 1366 (5%)', SIZES.every(([w]) => !!read[w].split.kind && ratioOk(read[w].split.kind.h, b.split.kind && b.split.kind.h, WANT_K[w])),
     SIZES.map(([w]) => ({ w, kind: read[w].split.kind && read[w].split.kind.h })));
   const big = read[2560];
+  // K8: the Front drawer's track against the desk beside the page (the page's painted left edge, as read at rest, less the rail's right edge and the gap)
+  const desk = (R) => { const p = (R.page0 || '').split(',').map(Number); return R.rail && p.length === 4 ? p[0] - (R.rail.l + R.rail.w) - 28 : NaN; };
+  const k8 = (R, k) => !!R.front.panel && Number.isFinite(desk(R)) && near(R.front.panel.w + 16, Math.min(200 * k, desk(R)), 3);
+  ok('K8 at 1920 and 2560 the Front drawer\'s track is min(200 x k, the desk beside the page) within 3 px', [1920, 2560].every((w) => k8(read[w], WANT_K[w])),
+    [1920, 2560].map((w) => ({ w, track: read[w].front.panel ? read[w].front.panel.w + 16 : null, desk: desk(read[w]), want: Math.min(200 * WANT_K[w], desk(read[w])) })));
+  const oldTrack = { ...big, front: { ...big.front, panel: big.front.panel ? { ...big.front.panel, w: 222 } : null } };
+  ok('MUT-K8 the 2560 reading with the old 238 px track turns K8\'s test red', !!oldTrack.front.panel && oldTrack.front.panel.w !== (big.front.panel && big.front.panel.w) && !k8(oldTrack, WANT_K[2560]), oldTrack.front.panel);
   ok('K7 at 2560 the page\'s rect is the same with each drawer open and closed', !!big.page0 && [big.page1, big.page2, big.page3, big.page4].every((p) => p === big.page0), [big.page0, big.page1, big.page2, big.page3, big.page4]);
   const runs = SIZES.map(([w]) => ({ w, run: read[w].split.run, page: read[w].split.page, split: read[w].split.side }));
   ok('R1 in the split the Run stands under her page (its middle inside the page, none of it under the Doc beside) at 1366, 1920 and 2560', runs.every((s) => r1(s)), runs);
@@ -150,7 +160,7 @@ await withHarness(async (app) => {
 
 function J(v) { return JSON.stringify(v); }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 11;   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B
+const EXPECTED = 13;   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CHROME-SCALE VERIFY: PASS (${checks.length} checks)`
