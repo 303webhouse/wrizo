@@ -308,6 +308,11 @@ export const CANONICAL_CHROME = {
   reorgAssetsPartToggle: 'Show or hide the assets of {part}',
   // THE TEAM B RESTYLE, slice 5 (reorg/TextFolds.tsx; Fable, Nov 20, 1:27 pm; the stage menus, draft 3): the TEXT tab's folds. {symbol} the character
   reorgTextParagraph: 'Paragraph',
+  reorgParaPicker: 'Paragraph Style',
+  reorgParaP: 'Paragraph',
+  reorgParaH1: 'Heading 1',
+  reorgParaH2: 'Heading 2',
+  reorgParaH3: 'Heading 3',
   reorgTextMore: 'More',
   reorgTextSymbols: 'Insert Symbol',
   reorgTextSymbolAria: 'Insert {symbol}',

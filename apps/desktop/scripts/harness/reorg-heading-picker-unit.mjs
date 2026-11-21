@@ -84,7 +84,15 @@ function suite(src) {
 const base = suite(srcText);
 for (const k of ['SET', 'LINES', 'SHAPE', 'CARET', 'OLD']) ok(`${k} on the real draftFormat.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
-const MUT = [];
+const MUT = [
+  ['a line already at the level is toggled off (the picker toggles)', 'SET', (t) => t.replace("const ins = level === null ? '' : '#'.repeat(level) + ' ';\n  const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;\n  return { s, e: tok ? tok.end : s, ins };", () => "const ins = level === null || (tok && tok.level === level) ? '' : '#'.repeat(level) + ' ';\n  const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;\n  return { s, e: tok ? tok.end : s, ins };")],
+  ['P leaves a heading mark on', 'SET', (t) => t.replace("return setHeadingLines(text, start, end, null);", () => 'return setHeadingLines(text, start, end, 6);')],
+  ['only the first line of a selection is set', 'LINES', (t) => t.replace('for (let i = starts.length - 1; i >= 0; i--) {', () => 'for (let i = 0; i >= 0; i--) {')],
+  ['a selection ending after a line break takes the next line too', 'LINES', (t) => t.replace("const last = end > start && text[end - 1] === '\\n' ? end - 1 : end;", () => 'const last = end;')],
+  ['an empty line gets a mark', 'LINES', (t) => t.replace('if (!line.slice(readLead(line, { headings: false }).length).trim()) continue;', () => '')],
+  ['the mark goes at the front of the line, before a quote or a bullet', 'SHAPE', (t) => t.replace("const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;\n  return { s, e: tok ? tok.end : s, ins };", () => "const s = tok ? tok.start : ls;\n  return { s, e: tok ? tok.end : s, ins };")],
+  ['the caret and the selection are not moved with the mark', 'CARET', (t) => t.replace('a = move(a, ed); b = move(b, ed);', () => '')],
+];
 for (const [name, key, fn] of MUT) {
   const after = fn(srcText);
   const landed = after !== srcText;

@@ -9,6 +9,7 @@ import { closeMark, fontCloseMark, spanCloseMark, readLead, readMarks, runsOfMar
 // names itself" — the founder just named it). Underline joins from R1.
 export type FormatAction =
   | 'bold' | 'italic' | 'underline' | 'strike' | 'heading' | 'heading-up' | 'heading-down' | 'spacing'
+  | 'para' | 'h1' | 'h2' | 'h3'
   | 'bullet' | 'bullet-circle' | 'bullet-square' | 'quote' | 'indent' | 'outdent' | 'block-indent' | 'block-outdent'
   | 'align-left' | 'align-center' | 'align-right';
 export type StructureKind = 'prose' | 'screenplay';
@@ -281,6 +282,37 @@ function setHeading(text: string, at: number, level: number | null): FormatResul
   const caret = at >= e ? at + delta : at >= s ? s + ins.length : at;
   return { text: next, start: caret, end: caret };
 }
+// THE PARAGRAPH PICKER (reorg-plan-v2, INK queue item 1: P / H1 / H2 / H3): it SETS a level, it never toggles (P takes the mark off, H1 to H3 put exactly that level on; a line already there is left as it is), on every line the
+// selection touches (a selection ending right after a line break leaves the next line alone) and not on a line with no words in it. The mark goes where the one lead reader puts it (after a quote, a bullet, a tab, an alignment) and
+// no other byte changes; both ends of the selection stay on their own words.
+function headingEdit(text: string, at: number, level: number | null): { s: number; e: number; ins: string } {
+  const { ls, le, tok } = headingAt(text, at);
+  const ins = level === null ? '' : '#'.repeat(level) + ' ';
+  const s = tok ? tok.start : ls + readLead(text.slice(ls, le), { headings: false }).length;
+  return { s, e: tok ? tok.end : s, ins };
+}
+function setHeadingLines(text: string, start: number, end: number, level: number | null): FormatResult {
+  const last = end > start && text[end - 1] === '\n' ? end - 1 : end;
+  const starts: number[] = [];
+  for (let at = lineBounds(text, start).start; ;) {
+    starts.push(at);
+    const le = lineBounds(text, at).end;
+    if (le >= last || le >= text.length) break;
+    at = le + 1;
+  }
+  let out = text, a = start, b = end;
+  const move = (p: number, ed: { s: number; e: number; ins: string }): number => (p >= ed.e ? p + ed.ins.length - (ed.e - ed.s) : p >= ed.s ? ed.s + ed.ins.length : p);
+  for (let i = starts.length - 1; i >= 0; i--) {
+    const { start: ls, end: le } = lineBounds(out, starts[i]);
+    const line = out.slice(ls, le);
+    if (!line.slice(readLead(line, { headings: false }).length).trim()) continue;
+    const ed = headingEdit(out, ls, level);
+    if (out.slice(ed.s, ed.e) === ed.ins) continue;
+    out = out.slice(0, ed.s) + ed.ins + out.slice(ed.e);
+    a = move(a, ed); b = move(b, ed);
+  }
+  return { text: out, start: a, end: b };
+}
 /** The heading level (1-6) of the caret's line, or null. What lights the H button. */
 export function headingLevelAt(text: string, at: number): number | null {
   return headingAt(text, at).tok?.level ?? null;
@@ -502,6 +534,8 @@ export function applyFormat(text: string, selStart: number, selEnd: number, acti
   if (action === 'italic') return toggleInline(text, start, end, FORMAT_MARK.italic);
   if (action === 'underline') return toggleInline(text, start, end, FORMAT_MARK.underline);
   if (action === 'strike') return toggleInline(text, start, end, FORMAT_MARK.strike);
+  if (action === 'para') return setHeadingLines(text, start, end, null);
+  if (action === 'h1' || action === 'h2' || action === 'h3') return setHeadingLines(text, start, end, Number(action[1]));
   if (action === 'heading') { const cur = headingLevelAt(text, start); return setHeading(text, start, cur === null ? 2 : null); }
   if (action === 'heading-up' || action === 'heading-down') {
     const cur = headingLevelAt(text, start);

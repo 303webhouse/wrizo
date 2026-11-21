@@ -684,6 +684,15 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
           </div>
           {/* THE TEAM B RESTYLE (slice 5): behind ?reorg=1 the heading and the paragraph rows fold under "Paragraph"; off the switch they stand as today */}
           <TextFold k="paragraph" on={textFolds} label={t('reorgTextParagraph')}>
+          {/* THE P / H1 / H2 / H3 PICKER (reorg-plan-v2, INK queue item 1; the stage menus: "a small Paragraph picker, quiet by default, for writers exporting to Substack or WordPress"): it SETS the level of every line the selection touches (store/draftFormat.ts) */}
+          {textFolds && (
+            <div className="wz-sliver-format reorg-para-picker" role="group" aria-label={t('reorgParaPicker')} data-para-picker onMouseDown={e => e.preventDefault()}>
+              {([['para', 'P', 'reorgParaP', 0], ['h1', 'H1', 'reorgParaH1', 1], ['h2', 'H2', 'reorgParaH2', 2], ['h3', 'H3', 'reorgParaH3', 3]] as const).map(([act, glyph, word, level]) => {
+                const on = (content.format!.headingLevel ?? 0) === level;
+                return <button key={act} type="button" className="mode-tbtn" data-para-pick={act} data-on={on ? 'true' : 'false'} aria-pressed={on} title={t(word)} aria-label={t(word)} onClick={() => content.format!.onFormat(act)}>{glyph}</button>;
+              })}
+            </div>
+          )}
           {textFolds && <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>{headingControls}</div>}
           {/* lists and quotes ride the existing `- ` and `> ` conventions; indent and alignment are line-prefix directives (store/draftFormat.ts documents why they are not metadata) [Sliver §22] */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
