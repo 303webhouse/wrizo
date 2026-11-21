@@ -50,7 +50,7 @@ const SHEET = `(() => {
     md: !!s.querySelector('[data-pub-export="md"]'), mdOff: !!s.querySelector('[data-pub-export="md"]')?.disabled, txtOff: !!s.querySelector('[data-pub-export="txt"]')?.disabled };
 })()`;
 const TABS = "[...document.querySelectorAll('.reorg-top .desk-mode-tab')].map((b) => b.getAttribute('data-mode-key') + ':' + b.getAttribute('aria-selected')).join(',')";
-const CATCH = "(() => { window.__pbBlobs = []; const B = window.Blob; window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null, stk: String(new Error().stack || '').split('\\n').slice(2, 5).map((s) => s.trim().slice(-70)).join(' < ') }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
+const CATCH = "(() => { window.__pbBlobs = []; const B = window.__pbRealBlob || (window.__pbRealBlob = window.Blob); window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null, stk: String(new Error().stack || '').split('\\n').slice(2, 5).map((s) => s.trim().slice(-70)).join(' < ') }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
 const at = (id) => `location.hash.indexOf('/page/${id}') >= 0`;
 const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if (!b || b.disabled) return false; b.click(); return true; })()`;
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
@@ -265,7 +265,16 @@ await withHarness(async (app) => {
     t1.parts[1].on === 'false' && /2 of 3 Parts go out/.test(t1.count) && t2.side === 'true' && /3 of 3 Parts go out/.test(t2.count), { t1: { on: t1.parts[1].on, count: t1.count }, t2 });
 
   // F5 an order made in the Front menu is the Doc's order: the sheet, the file and the stored order agree; Back restores TEXT
+  // THE INSTRUMENT, read first (Nov 21): the Blob hook wrapped whatever window.Blob WAS, so each further install stacked a layer and one export was recorded once per layer (the Blob list showed the same Markdown twice, the second made by 'new window.Blob').
+  // It now wraps the real Blob, kept once; the product makes ONE Blob per export, so F5's moved.length === 1 stands as written.
+  await app.evalJs(CATCH); await app.evalJs(CATCH);
+  const PROBE = "(() => { window.__pbBlobs.length = 0; new Blob(['x'], { type: 't' }); const n = window.__pbBlobs.length; window.__pbBlobs.length = 0; return n; })()";
+  const once = await app.evalJs(PROBE);
+  const stackedHook = CATCH.replace('window.__pbRealBlob || (window.__pbRealBlob = window.Blob)', 'window.Blob');
+  await app.evalJs(stackedHook); await app.evalJs(stackedHook);
+  const twice = await app.evalJs(PROBE);
   await app.evalJs(CATCH);
+  ok('F5 (instrument) the Blob hook records ONE Blob per Blob however often it is installed; the old stacking hook (the mutant, which must have LANDED) records more than one', once === 1 && stackedHook !== CATCH && twice > 1, { once, twice, landed: stackedHook !== CATCH });
   await app.evalJs("document.querySelector('.wz-sliver [data-pubparts-row=\"pub-1\"] [data-pubparts-down]').click(); null"); await sleep(500);
   const order = await app.evalJs("[...document.querySelectorAll('[data-reorg-pub] [data-pub-part]')].map((p) => p.getAttribute('data-pub-part')).join(',')");
   const side = await app.evalJs("[...document.querySelectorAll('.wz-sliver [data-pubparts-row]')].map((r) => r.getAttribute('data-pubparts-row')).join(',')");
@@ -295,7 +304,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 18;
+const EXPECTED = 19;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PUBLISH-LIVE VERIFY: PASS (${checks.length} checks)`
