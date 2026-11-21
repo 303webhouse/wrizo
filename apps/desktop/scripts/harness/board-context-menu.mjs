@@ -109,8 +109,8 @@ const partsBypass = (raw) => {
   const text = live(noCR(raw));
   const bad = [];
   const calls = text.split('\n').filter((l) => /softDeleteEntry\(/.test(l) && !/^\s*import\b/.test(l));
-  const body = (name) => { const a = text.indexOf('export function ' + name + '('); if (a < 0) return null; const b = text.indexOf('\n}\n', a); return b < 0 ? null : text.slice(a, b); };
-  const jp = body('joinPart'), us = body('undoSplit');
+  const body = (a) => { if (a < 0) return null; const e = text.indexOf('\n}\n', a); return e < 0 ? null : text.slice(a, e); };   // the two starts are literals: no built pattern for the 10g readers census
+  const jp = body(text.indexOf('export function joinPart(')), us = body(text.indexOf('export function undoSplit('));
   if (calls.length !== 2) bad.push('softDeleteEntry calls in parts.ts: ' + calls.length + ' (the two named ones, no third)');
   if (!jp || !us) { bad.push('joinPart or undoSplit not found'); return bad; }
   const n = (s) => (s.match(/softDeleteEntry\(/g) || []).length;
