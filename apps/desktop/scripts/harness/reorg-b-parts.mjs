@@ -21,6 +21,8 @@
 //         R2  the Part she is on wears the brass bar (a default colour, or none); on a coloured Part (wb-3, slot c) the row wears its tile's
 //             tint and its name reads 4.5:1 or better on it
 //         R3  wb-1's row carries [data-part-assets="wb-1"] reading 3 (its Assets tab's rows); wb-2 has none (no assets)
+//         R4  (Nov 20, POLISH's reading, Actions 44870378376) every row draws inside its own box (nothing past its edge, so nothing under the
+//             link badge), and a press at the badge's centre reaches the badge
 // STAGES  T1  EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither (New Part only)
 // WORDS   W1  every new word is a lexicon key (terms.ts, the canonical table, used in the source); Machina's in Title Case
 //
@@ -224,6 +226,18 @@ await withHarness(async (app) => {
   ok('R3 wb-1\'s row carries [data-part-assets="wb-1"] reading 3 (its Assets tab\'s rows), with words for a screen reader; wb-2 has none',
     !!badge && /\b3\b/.test(badge.b1 || '') && !!badge.b1label && /3/.test(badge.b1label) && !badge.b2, badge);
 
+  // R4 (Nov 20; POLISH's reading, Actions 44870378376: in the Sliver at 1920 a row's word count ran past its box and under the link badge, the
+  // row being position:relative, so a press at the badge's centre landed on the row and opened the Part). A child's rect is read, not what is
+  // painted: a clip alone (overflow:hidden) would still leave the words past the edge, and this stays red.
+  const fit = await app.evalJs(`(() => { const l = ${L}; if (!l) return null; const rows = [...l.querySelectorAll('li[data-part-li] > .reorg-parts-row')];
+    const each = rows.map((r) => { const b = r.getBoundingClientRect(); const out = [...r.children].filter((c) => c.getBoundingClientRect().right > b.right + 0.5).map((c) => String(c.className));
+      return { id: r.getAttribute('data-part-row'), w: Math.round(b.width), sw: r.scrollWidth, cw: r.clientWidth, out }; });
+    const g = l.querySelector('[data-part-assets="wb-1"]'); let reach = null, hit = null;
+    if (g) { const r = g.getBoundingClientRect(); const x = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); reach = !!x && (x === g || g.contains(x)); hit = x ? x.tagName + '.' + String(x.className).slice(0, 40) : null; }
+    return { n: rows.length, spill: each.filter((o) => o.out.length || o.sw > o.cw + 1), widths: each.map((o) => o.w), reach, hit }; })()`);
+  ok('R4 every row draws inside its own box (nothing past its edge, nothing under the link badge), and a press at the badge\'s centre reaches the badge',
+    !!fit && fit.n >= 4 && fit.spill.length === 0 && fit.reach === true, fit);
+
   // ---- STAGES ----------------------------------------------------------------------------------------------------------------------------
   await openAt(app, 'wb-1', 'revise');
   const e1 = { kind: await app.evalJs(KIND), st: null };
@@ -259,7 +273,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;
+const EXPECTED = 14;   // 13 + R4 (Nov 20)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`
