@@ -42,6 +42,7 @@ process.env.WS_PLACE = '1';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(HERE, '..', '..', 'src');
 const GOLDEN_FILE = path.join(HERE, 'reorg-front-menu-off-golden.json');
+const GOLDEN_TW_FILE = path.join(HERE, 'reorg-front-menu-off-golden-tw.json');   // the successor golden (Nov 20): the switch-off drawer with Free Write = the Typewriter
 const CAPTURE = process.env.REORG_FRONT_MODE === 'capture';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
@@ -147,16 +148,23 @@ await withHarness(async (app) => {
     return;
   }
   const golden = fs.existsSync(GOLDEN_FILE) ? JSON.parse(fs.readFileSync(GOLDEN_FILE, 'utf8')) : null;
+  const goldenTw = fs.existsSync(GOLDEN_TW_FILE) ? JSON.parse(fs.readFileSync(GOLDEN_TW_FILE, 'utf8')) : null;
   ok('O0: the golden of main\'s switch-off drawer is committed beside this file, with the tree it was captured from', !!golden && /^[0-9a-f]{40}$/.test(golden.capturedFrom || '') && !!golden.surfaces, GOLDEN_FILE);
+  ok('O0 [successor]: the golden of the drawer as it is now (Free Write is the Typewriter) is committed beside this file, with the tree it was captured from (Actions run 44832637395)', !!goldenTw && /^[0-9a-f]{40}$/.test(goldenTw.capturedFrom || '') && !!goldenTw.surfaces && goldenTw.capturedFrom !== golden.capturedFrom, GOLDEN_TW_FILE);
   for (const theme of THEMES) for (const [s, id] of Object.entries(SURFACES)) {
     const want = golden && golden.surfaces[theme] && golden.surfaces[theme][s];
+    const wantTw = goldenTw && goldenTw.surfaces[theme] && goldenTw.surfaces[theme][s];
     await open(app, theme, false, id); await openDrawer(app);
     const h = await app.evalJs(DRAWER());
-    ok(`O1 [${theme}.${s}]: switch OFF - the drawer is main's DOM exactly`, !!want && h === want, h === want ? '' : `got ${String(h).slice(0, 300)}`);
+    // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft never, so the Typewriter toggle is gone from every drawer: the golden of MAIN's drawer, with the toggle, no longer matches it; reorg-front-menu-off-golden-tw.json is the drawer as it is, and reorg-front-menu-golden-diff.mjs proves the two differ by that toggle alone). The original, verbatim:
+    // ok(`O1 [${theme}.${s}]: switch OFF - the drawer is main's DOM exactly`, !!want && h === want, h === want ? '' : `got ${String(h).slice(0, 300)}`);
+    ok(`O1 [successor] [${theme}.${s}]: switch OFF - the drawer is the successor golden's DOM exactly (main's, but for the Typewriter toggle)`, !!wantTw && h === wantTw, h === wantTw ? '' : `got ${String(h).slice(0, 300)}`);
     if (theme !== 'machina') {
       await open(app, theme, true, id); await openDrawer(app);
       const hOn = await app.evalJs(DRAWER());
-      ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (the Front menu is Machina's alone)`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
+      // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft never, so the Typewriter toggle is gone from every drawer: the golden of MAIN's drawer, with the toggle, no longer matches it; reorg-front-menu-off-golden-tw.json is the drawer as it is, and reorg-front-menu-golden-diff.mjs proves the two differ by that toggle alone). The original, verbatim:
+      // ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (the Front menu is Machina's alone)`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
+      ok(`O2 [successor] [${theme}.${s}]: switch ON - still the successor golden's DOM exactly (the Front menu is Machina's alone)`, !!wantTw && hOn === wantTw, hOn === wantTw ? '' : `got ${String(hOn).slice(0, 300)}`);
     }
   }
 
@@ -269,7 +277,7 @@ if (CAPTURE) {
   process.exit(0);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 1 + THEMES.length * 4 + 2 * 4 + 5 + 4 + 1 + 1;
+const EXPECTED = 1 + 1 + THEMES.length * 4 + 2 * 4 + 5 + 4 + 1 + 1;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FRONT-MENU VERIFY: PASS (${checks.length} checks)`

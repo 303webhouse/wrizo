@@ -34,6 +34,12 @@ const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }, 
 const TEXT = 'The rope was already there, and the well took the bucket back colder still. Whatever is worth carrying is already with you.';
 const FADE_WAIT = 4500;   // the slowest fade out (2.8s) and a margin
 
+// CENSUS_B (Nov 20, R9-B's): the census below with the page found OUTSIDE page breaks' measuring copy (.wz-letter-measure), and the copy itself
+// never counted; built from CENSUS's own text so the two can differ only there
+const CENSUS_B_PATCH = (src) => src
+  .replace("const page = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('.mode-page');",
+    "const live = (s) => [...document.querySelectorAll(s)].find((e) => !e.closest('.wz-letter-measure')) || null; const page = live('.desk-frame-stage--prose .mode-page') || live('.mode-page');")
+  .replace('if (keep(el)) continue;', "if (keep(el) || el.closest('.wz-letter-measure')) continue;");
 // THE CENSUS: painted elements off the page (not the page, not the tab arrows, not a ground that fills most of the viewport), with their effective opacity
 const CENSUS = `(() => {
   const vw = innerWidth, vh = innerHeight; const page = document.querySelector('.desk-frame-stage--prose .mode-page') || document.querySelector('.mode-page');
@@ -169,7 +175,12 @@ await withHarness(async (app) => {
     await typeOn(app);
     const framedNow = await app.evalJs("!!document.querySelector('.desk-frame')");
     const left9 = await app.evalJs(CENSUS);
-    ok(`Arbor 1000x800 R9: the NARROW layout (unframed: ${!framedNow}) follows the full recede - nothing off the page paints while typing${left9.length ? ` - still showing: ${left9.slice(0, 6).map((x) => x.el).join(', ')}` : ''}`, !framedNow && left9.length === 0, J(left9.slice(0, 12)));
+    const CENSUS_B = CENSUS_B_PATCH(CENSUS);
+    const left9b = CENSUS_B !== CENSUS ? await app.evalJs(CENSUS_B) : null;
+    // SUPERSEDED (Nov 20, Fable's ruling 2a): page breaks keep a hidden measuring copy of the page column in <body> (.wz-letter-measure, store/pageMeasure.ts) with the page's own classes, and this reader matched it too (train C's pair 44818849039, 5e820dbb): unframed, the live page has no --prose stage, so the census took the COPY's page for the page and counted the live page as chrome. Verbatim:
+    // ok(`Arbor 1000x800 R9: the NARROW layout (unframed: ${!framedNow}) follows the full recede - nothing off the page paints while typing${left9.length ? ` - still showing: ${left9.slice(0, 6).map((x) => x.el).join(', ')}` : ''}`, !framedNow && left9.length === 0, J(left9.slice(0, 12)));
+    ok(`Arbor 1000x800 R9-B: the NARROW layout (unframed: ${!framedNow}) follows the full recede - nothing off the LIVE page paints while typing${left9b && left9b.length ? ` - still showing: ${left9b.slice(0, 6).map((x) => x.el).join(', ')}` : ''}`, !framedNow && Array.isArray(left9b) && left9b.length === 0, J({ patched: Array.isArray(left9b), left: (left9b || []).slice(0, 12) }));
+    ok('MUT-R9-B the census without the skip is RED on the same page (it counts the live page as chrome) while R9-B\'s is green: the skip is what holds it', Array.isArray(left9b) && left9b.length === 0 && left9.length > 0, J({ plain: left9.slice(0, 6), b: (left9b || []).slice(0, 6) }));
   } else ok('R9 fixture: the narrow page opened', false, '');
   await app.emulateDpr(1, 1366, 768);
 

@@ -381,7 +381,10 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       setScrolled();
     };
     const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(band); };
-    const mo = new MutationObserver(schedule);
+    // PAGE BREAKS: the page-break marks' own layer (store/pageMarks.ts) is not the text - its redraw (which follows a resting scroll) must not
+    // schedule a glide, or the glide's scroll redraws the marks and the page never rests
+    const notMarks = (r: MutationRecord) => !((r.target instanceof Element ? r.target : r.target.parentElement)?.closest('.wz-pb-marks'));
+    const mo = new MutationObserver((recs) => { if (recs.some(notMarks)) schedule(); });
     mo.observe(container, { childList: true, subtree: true, characterData: true });
     container.addEventListener('input', schedule);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;

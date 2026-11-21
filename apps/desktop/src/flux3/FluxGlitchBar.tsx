@@ -16,9 +16,9 @@ const GLITCH_STEPS = 3;               // glyph changes before the letter resolve
 const GLITCH_STEP_MS = 360;           // their spacing (each also asks the flash budget)
 const CODE = '01#%&$@/\\<>=+*';
 
-interface Props { unitCount: number; frac: number; celebrating: boolean }
+interface Props { unitCount: number; frac: number; celebrating: boolean; pageCount?: React.ReactNode }
 
-export function FluxGlitchBar({ unitCount, frac, celebrating }: Props) {
+export function FluxGlitchBar({ unitCount, frac, celebrating, pageCount }: Props) {
   const { t } = useDeskLexicon();
   const dial = useAmbianceDial();
   const word = t('flux3Checkpoint').toUpperCase();
@@ -76,6 +76,7 @@ export function FluxGlitchBar({ unitCount, frac, celebrating }: Props) {
         ))}
       </span>
       <span className="flux3-glitchbar-count" aria-hidden="true">{unitCount} {unitCount === 1 ? t('flux3WordOne') : t('flux3WordMany')}</span>
+      {pageCount}   {/* PAGE BREAKS: spec draft 3, section 3 */}
     </div>
   );
 }
