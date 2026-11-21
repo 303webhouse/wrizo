@@ -209,7 +209,7 @@ await withHarness(async (app) => {
   ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source)', missing.length === 0, { missing });
   const rec = src('types/records.ts'), ds = src('reorg/docSettings.ts').replace(/\/\/.*$/gm, '');
   ok('D1 the Doc\'s assets are typed on DocSettings and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
-    /export type DocSettings = \{[^}]*assets\?: DocAsset\[\]/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
+    /export type DocSettings = \{[^\n]*assets\?: DocAsset\[\][^\n]*\};/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
