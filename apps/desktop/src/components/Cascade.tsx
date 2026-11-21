@@ -23,6 +23,7 @@ import { nodeHex } from '../flux3/FluxNodeRecord';
 // THE REORG'S RAIL (phase 2): ?reorg=1 in Machina only; with the switch off, or in any other theme, the strip renders exactly as before
 import { REORG } from '../reorg/flag';
 import { ReorgRail } from '../reorg/ReorgRail';
+import { useReorgPiece } from '../reorg/themeGate';
 import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
 import { liveQuery, registerLiveSite } from '../store/liveDom';
 
@@ -185,8 +186,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // L2: the command-box readouts. TRUE counts of what is already stored (the pages and boards of where she is, the Journal's pages), read when the rail renders for a new place, page or
   // open category - never per key. Nothing new is stored. "Last" is the in-session last-touched node (lastTouched.ts) in orange, the same one the Schema's footer reads.
   const boxes = FLUX3 && useTheme() === 'flux';
-  // the reorg's one gate: the switch AND Machina (read once here; the same short-circuit as Flux's above, so with the switch off no new hook runs)
-  const reorg = REORG && useTheme() === 'machina';
+  // the reorg's one gate: the switch AND a theme that has the rail piece (reorg/themeGate.ts; with the switch off no new hook runs)
+  const reorg = useReorgPiece('rail');
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
   // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)

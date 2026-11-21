@@ -26,6 +26,7 @@ import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG } from '../reorg/flag';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { BeforeExport } from '../reorg/BeforeExport';
+import { themeHas } from '../reorg/themeGate';
 import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
@@ -160,7 +161,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
-  const back = REORG && tutorTheme === 'machina' && pageKind !== 'board';
+  const back = REORG && themeHas('back', tutorTheme) && pageKind !== 'board';
+  const splitOn = REORG && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
   const sprint = back && mode === 'journal';
   // THE LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): in BUILD and EDIT the Back menu's FEEDBACK is Structure / Tone / Consistency (EDIT adds Usage / Punctuation / Citations above them) plus "Ask Your Own"; it replaces the four-ask roster and the three computed sections
@@ -809,7 +811,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   return (
     <>
       {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
-      {back && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
+      {back && splitOn && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
       <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"

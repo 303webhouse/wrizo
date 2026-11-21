@@ -7,6 +7,7 @@ import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { useReorgPiece } from '../reorg/themeGate';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
 import { PublishView } from '../reorg/PublishView';
 import { REORG_JOIN_STATE, type PartsHost } from '../reorg/PartsList';
@@ -120,6 +121,7 @@ function PageEditorView({ id }: { id: string }) {
   const framed = useDeskFrameViewport();
   // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
   const reorgTop = useReorgTop();
+  const reorgUplink = useReorgPiece('uplink');
   // non-null only while this surface has no row yet; every use below reads "if this page is still unborn", so the born path is the ordinary one, and `entry` resolves from the unborn slot meanwhile [PageEditor §1]
   const unborn = useUnborn(id);
   // ITEM 104 (THIRD) — `entry` MUST NOT be able to change this component's HOOK
@@ -1381,7 +1383,7 @@ function PageEditorView({ id }: { id: string }) {
             inkPermission={inkPermission}
             /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
             readouts={unborn ? undefined : reorgTop
-              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : <PartArrows entry={entry} beforeLeave={leaveStable} />}</>
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing && reorgUplink ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : <PartArrows entry={entry} beforeLeave={leaveStable} />}</>
               : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}

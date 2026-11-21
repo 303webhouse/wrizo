@@ -9,6 +9,8 @@
 // Run: node scripts/harness/reorg-theme-gate-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { srcText } from '../global-css.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -18,6 +20,9 @@ const TS_OPTS = { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const J = (v) => JSON.stringify(v);
+const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
+// a split file (BoardEditor.tsx) is read as its module and its parts, joined (the 10g readers rule)
+const rdSite = (p) => (p === 'components/BoardEditor.tsx' ? lf(srcText(SRCDIR, p)) : rd(p));
 const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 const THEMES = ['machina', 'plateau', 'flux'];
@@ -46,7 +51,11 @@ function suite(src) {
     const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
     const F = load(src, { reorg: true, theme: 'flux' });
     const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
-    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0, detail: J({ r, f, o, onCalls: on.n, offCalls: off.n }) };
+    // one piece lifted for Flux: the hook says yes to that piece and no to the others
+    const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
+    const L = load(lifted, { reorg: true, theme: 'flux' });
+    const one = PIECES.filter((p) => L.useReorgPiece(p));
+    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']), detail: J({ r, f, o, one, onCalls: on.n, offCalls: off.n }) };
   });
   t('LIFT', () => {
     const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
@@ -92,7 +101,7 @@ const SITES = [
 ];
 const siteOk = (text, want, old) => text.includes(want) && !text.includes(old);
 for (const [name, file, want, old] of SITES) {
-  const text = rd(file);
+  const text = rdSite(file);
   ok(`SITES ${name} reads the table (${want}) and the old literal is gone`, !!text && siteOk(text, want, old), J({ has: text.includes(want), oldLeft: text.includes(old) }));
   // the mutant puts the old Machina-only literal back: the census must see it
   const back = text ? text.replace(want, () => old) : '';
