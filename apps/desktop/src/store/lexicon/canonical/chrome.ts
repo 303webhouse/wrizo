@@ -303,6 +303,7 @@ export const CANONICAL_CHROME = {
   reorgRecent: 'Recent',
   // THE REORG'S SEARCH (reorg/search/; POLISH, Nov 20): placeholder words until the Wrizors word them
   reorgSearch: 'Search',
+  reorgFrontFind: 'Find',   // the Front menu's TEXT tab, BUILD and EDIT (stage menus T3): opens the search on This Doc
   reorgSearchClose: 'Close',
   reorgSearchBack: '‹ {where}',
   reorgSearchReachLabel: 'How far to look',
