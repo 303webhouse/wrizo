@@ -73,7 +73,7 @@ function suite(src) {
     const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.rail' });
     const off = cells({ reorg: false, search: '?reorglift=flux.back' });
     const junk = cells({ search: '?reorg=1&reorglift=flux,back,flux.nope,nonsense.back,.back,flux.,FLUX.BACK, flux.back' });
-    const M = load(src, { search: '?reorg=1&reorglift=off.rail,-rail,machina.rail' });
+    const M = load(src, { search: '?reorg=1&reorglift=machina.rail,-rail' });
     const hooked = load(src, { search: '?reorg=1&reorglift=flux.back', theme: 'flux' });
     return { pass: none.length === 0 && J(one) === J(['flux.back']) && J(two.slice().sort()) === J(['flux.back', 'flux.top', 'plateau.rail']) && off.length === 0 && J(junk) === J(['flux.back']) && PIECES.every((p) => M.themeHas(p, 'machina')) && hooked.useReorgPiece('back') === true && hooked.useReorgPiece('rail') === false, detail: J({ none, one, two, off, junk }) };
   });
@@ -92,7 +92,7 @@ const MUT = [
   ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
   ['the preview door is honoured with the switch off', 'LIFTQ', (t) => t.replace('const LIFT: ReadonlySet<string> = REORG && typeof location', () => 'const LIFT: ReadonlySet<string> = typeof location')],
   ['the preview door lifts a whole theme from a bare name', 'LIFTQ', (t) => t.replace("=== true || LIFT.has(", () => "=== true || [...LIFT].some((l) => l === theme || ") ],
-  ['the preview door can turn a Machina piece off', 'LIFTQ', (t) => t.replace('themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {', () => 'themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {\n  if (LIFT.has(`off.${piece}`)) return false;')],
+  ['the preview door can turn a Machina piece off', 'LIFTQ', (t) => t.replace('=== true || LIFT.has(', () => '=== true && !LIFT.has(')],
   ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
 ];
 for (const [name, key, fn] of MUT) {
