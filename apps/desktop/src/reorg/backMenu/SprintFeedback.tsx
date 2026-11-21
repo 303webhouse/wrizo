@@ -18,18 +18,23 @@ interface Props {
   onPress: () => void;
   /** The id the locked tabs point at (aria-describedby). */
   noteId: string;
+  /** The Consultant is answering her press (SPRINT's prompts from the Consultant, behind ?sprint=consultant): the button reads busy and cannot be pressed again. */
+  busy?: boolean;
+  /** The switch is on: say what travels (one prompt's worth, nothing of her page). */
+  travels?: boolean;
 }
 
-export function SprintFeedback({ t, prompt, refillNote, onPress, noteId }: Props) {
+export function SprintFeedback({ t, prompt, refillNote, onPress, noteId, busy, travels }: Props) {
   return (
     <div className="wz-sprint-feedback">
       <p id={noteId} className="wz-sprint-note" role="note">{t('reorgSprintLocked')}</p>
       <div className="wz-sprint-prompt" role="status" aria-live="polite" data-drawn={prompt ? 'writingPrompt' : undefined}>
         {prompt ?? <span className="wz-sprint-empty">{t('reorgSprintEmpty')}</span>}
       </div>
-      <button type="button" className="wz-sprint-press" data-preset="writingPrompt" onClick={onPress}>
+      <button type="button" className="wz-sprint-press" data-preset="writingPrompt" aria-busy={busy ? 'true' : undefined} onClick={onPress}>
         {prompt ? t('reorgSprintAnother') : t('tutorFreeWritePrompt')}
       </button>
+      {travels && <p className="wz-sprint-travels">{t('reorgSprintTravels')}</p>}
       {refillNote && <div className="wz-sprint-refill" data-note-for="writingPrompt">{t('tutorFreeWriteRefill')}</div>}
     </div>
   );

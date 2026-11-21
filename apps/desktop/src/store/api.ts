@@ -145,6 +145,19 @@ export interface TutorChatResult {
   model?: string;
 }
 
+// SPRINT'S PROMPT FROM THE CONSULTANT (server: POST /tutor/sprint-prompt). The body is exactly { seen: [the prompts already shown this session] }: nothing of her page, no conversation. Resolves to ONE line, or null for every
+// kind of failure (a network error, a non-OK answer, "not configured", an empty line) so the caller answers from the local deck.
+export async function apiSprintPrompt(seen: string[]): Promise<string | null> {
+  try {
+    const res = await postJson('/api/tutor/sprint-prompt', { seen });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { configured?: boolean; prompt?: unknown };
+    return data.configured && typeof data.prompt === 'string' && data.prompt.trim() ? data.prompt.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 // TU2 S2 / TU5 S4 — `delta` and `bible` are BOTH optional and, when present,
 // already fully assembled by Tutor.tsx (delta: sliced from the persisted
 // cursor, tail-capped, honesty line baked in if truncated; bible: the project's
