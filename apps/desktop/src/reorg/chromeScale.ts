@@ -28,6 +28,11 @@ const FRONT_BASE = 200;
 // page's painted left edge, less the rail's right edge and the frame's 28 px gap - and published as --wz-front-desk; under the scale the track is
 // min(200 x k, the larger of the formula and that desk). A read only, written only on a change.
 const DESK_VAR = '--wz-front-desk';
+// THE LAYOUT FITS THE WINDOW (the Wrizors' pass 2, REAL 2: at 1920 and 2560 the window scrolled a few px). The scaled bar is taller than the
+// chrome budget the stage subtracts (--fx3-chrome-budget, a fixed 167 px in 01-tokens.css), so the document ran past the window. The overflow is
+// measured and added to the budget (--wz-chrome-extra, read by 23-reorg-top.css): it only grows while the window keeps its size, and starts
+// again from 0 on a resize, so it settles in one step and cannot swing.
+const EXTRA_VAR = '--wz-chrome-extra';
 const FRAME_GAP = 28;
 export const frontScaleFor = (k: number, anchorW: number): number => (Number.isFinite(anchorW) && anchorW > 0 ? Math.max(1, Math.min(k, Math.round((anchorW / FRONT_BASE) * 1000) / 1000)) : k);
 
@@ -52,6 +57,16 @@ export function useChromeScale(): void {
     let last = '';
     let lastFront = '';
     let lastDesk = '';
+    let extra = 0;
+    const fit = () => {
+      if (r.getAttribute(ATTR) !== 'on') return;
+      const se = document.scrollingElement;
+      if (!se) return;
+      const over = Math.ceil(se.scrollHeight - window.innerHeight);
+      if (over <= 0) return;
+      extra += over;
+      r.style.setProperty(EXTRA_VAR, `${extra}px`);
+    };
     const front = () => {
       const page = liveQuery<HTMLElement>('.mode-page');
       const strip = liveQuery<HTMLElement>('.desk-frame-strip');
@@ -69,22 +84,26 @@ export function useChromeScale(): void {
       const s = String(k);
       if (s !== last) {
         last = s;
+        extra = 0;
+        r.style.removeProperty(EXTRA_VAR);
         r.style.setProperty(VAR, s);
         r.setAttribute(ATTR, k > 1 ? 'on' : 'base');
         window.dispatchEvent(new Event('wz-chrome-scale'));
       }
       front();
+      requestAnimationFrame(fit);
     };
     set();
     window.addEventListener('resize', set);
     // the drawer's track also follows the page (another page, the zoom): re-read twice a second, writing only on a change (never on a keystroke)
-    const tick = window.setInterval(front, 500);
+    const tick = window.setInterval(() => { front(); fit(); }, 500);
     return () => {
       window.removeEventListener('resize', set);
       window.clearInterval(tick);
       r.style.removeProperty(VAR);
       r.style.removeProperty(FRONT_VAR);
       r.style.removeProperty(DESK_VAR);
+      r.style.removeProperty(EXTRA_VAR);
       r.removeAttribute(ATTR);
       window.dispatchEvent(new Event('wz-chrome-scale'));
     };
