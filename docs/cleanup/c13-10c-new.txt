@@ -277,3 +277,7 @@ reorgNoteFootnote=Footnote
 reorgNoteEndnote=Endnote
 reorgTextSymbols=Insert Symbol
 reorgTextSymbolAria=Insert {symbol}
+# PAGE BREAKS (ARBOR, train C, Nov 20) - the page count under the page: "p. 2 of 5"; Flux and Machina read their own
+pageOfPages=p. {n} of {m}
+pageOfPages@flux=PG {n}/{m}
+pageOfPages@machina=page {n} of {m}

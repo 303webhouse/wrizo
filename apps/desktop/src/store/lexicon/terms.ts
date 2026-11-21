@@ -489,6 +489,8 @@ export type DeskTermId =
   // W1 (the Walk, board kinds and "Show as"): the three new views' words (a Board's Walk; a Book's Flip and Thumbnails), the Show-as label, the Walk's own chrome, and the Deck's progress fact.
   | 'boardModeWalk' | 'boardModeFlip' | 'boardModeThumbs' | 'showAsLabel'
   | 'walkNotes' | 'walkPrev' | 'walkNext' | 'walkRail' | 'walkResize' | 'walkOpen' | 'flipEmpty' | 'deckFact'
+  // PAGE BREAKS (the Wrizors' spec draft 3, section 3): the page the caret is on, out of the Doc's pages, one reading in every theme
+  | 'pageOfPages'
   // W2 (Write this / Place a page... / Place this...): the Walk's two doors, the page's own door, and the two filtered pickers' search words.
   | 'walkWrite' | 'walkPlace' | 'graftPlaceThis' | 'graftPlaceSearchPages' | 'graftPlaceSearchSteps'
   // W5 (gaps, rewards, Lit): the Deck header's line (its lead words and Flux's STACK) and the writer's own finished-mark door (never a verdict: she says it, the app does not)

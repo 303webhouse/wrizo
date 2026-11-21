@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { useWritingSettings, setWritingSettings, setTypewriterExplicit, typewriterForPage } from '../store/writingSettings';
+import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 import { useWritingGoal, setWritingGoal, goalCount, goalFraction, DEFAULT_GOAL_LINES, type WritingGoal, type GoalUnit } from '../store/writingGoal';
 // FX3 S5 — the writing-settings gear leaves the paper entirely and moves to
@@ -366,7 +366,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           pageId={content.kind === 'draft' ? content.pageId : undefined}
           pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
-          typewriterAvailable
+          typewriterAvailable={content.kind === 'freewrite'}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
@@ -598,7 +598,9 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   const settings = useWritingSettings();
 
   if (content.kind === 'empty') return null;
-  const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  // FREE WRITE IS THE TYPEWRITER (Nick, Nov 19): the Format group is greyed everywhere the Typewriter runs, which is every surface but Draft (Draft never runs it, so its Format is never locked); the stored switch is read by nothing.
+  // SUPERSEDED, verbatim: const formatLocked = content.kind === 'draft' ? typewriterForPage(content.pageId, content.pageEmpty) : settings.typewriter;
+  const formatLocked = content.kind !== 'draft';
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
@@ -926,8 +928,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
-  // a Draft or Screenplay page asks typewriterForPage; Free Write (no pageId) reads the shared field [Sliver §28]
-  const typewriterOn = pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter;
 
   // the foot is one three-dot menu: Typewriter, Progress and the remaining preferences open together under their headings; one instrument open at a time [Sliver §29]
   const [open, setOpen] = useState(false);
@@ -977,14 +977,6 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
-        {typewriterAvailable && (
-          <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="typewriter"
-            aria-label={t('modeToggleTypewriter')} title={t('modeToggleTypewriter')}
-            aria-pressed={typewriterOn}
-            onClick={() => setTypewriterExplicit(!typewriterOn)}>
-            <TypewriterModeIcon />
-          </button>
-        )}
         <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
           aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
           aria-pressed={settings.instrumentsOn}
@@ -1027,7 +1019,8 @@ function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: 
   const forwardLock = useForwardLock();
 
   // the on/off row is the icon toggle beside the "..."; while it is off these rows are greyed (values kept); same pageId fallback as the toggle [Sliver §35]
-  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);
+  // FREE WRITE IS THE TYPEWRITER: this menu mounts only on Free Write (typewriterAvailable), where the Typewriter always runs, so its rows are never greyed by a switch
+  const off = false;
   return (
     <>
 

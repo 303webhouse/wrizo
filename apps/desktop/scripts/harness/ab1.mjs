@@ -134,9 +134,15 @@ await withHarness(async (app) => {
   await app.evalJs("[...document.querySelectorAll('.desk-mode-tab')].find(b => b.textContent === 'Draft').click()");
   await sleep(100);
   const textRectAfterModeSwitch = await app.evalJs(rectOf('.mode-pagecol'));
-  ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode-strip toggle',
-    JSON.stringify(textRectBefore) === JSON.stringify(textRectAfterModeSwitch),
-    `${JSON.stringify(textRectBefore)} -> ${JSON.stringify(textRectAfterModeSwitch)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write now runs the Typewriter (the page is its ZOOM) and Draft never does, so the strip toggle changes the rect by exactly the zoom - the one ruled page-size exception (docs/page-primacy-canon.md); the original check, verbatim:
+  //   ok('PAGE IS PRIMARY: the page rect is byte-identical across a mode-strip toggle',
+  //     JSON.stringify(textRectBefore) === JSON.stringify(textRectAfterModeSwitch),
+  //     `${JSON.stringify(textRectBefore)} -> ${JSON.stringify(textRectAfterModeSwitch)}`);
+  const draftZoomAfter = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') ?? null");
+  const cx = (r) => r.left + r.width / 2;
+  ok('PAGE IS PRIMARY [Free Write = Typewriter successor]: across a mode-strip toggle the page keeps its top, its height and its centre (Free Write\'s rect is the Typewriter\'s zoom of the same page, Draft\'s is the normal page, not zoomed), so the strip moved nothing',
+    !!textRectBefore && !!textRectAfterModeSwitch && textRectBefore.top === textRectAfterModeSwitch.top && textRectBefore.height === textRectAfterModeSwitch.height && Math.abs(cx(textRectBefore) - cx(textRectAfterModeSwitch)) <= 1 && textRectBefore.width > textRectAfterModeSwitch.width && draftZoomAfter !== 'true',
+    `${JSON.stringify(textRectBefore)} -> ${JSON.stringify(textRectAfterModeSwitch)} zoom=${String(draftZoomAfter)}`);
 
   // FX3 S5 — "PAGE IS PRIMARY: the page rect is byte-identical while the
   // settings gear is open" retired here (parked below, SUPERSEDED): the
