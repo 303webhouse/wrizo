@@ -45,7 +45,9 @@ const JOIN = ['harness/board-click-create.mjs', 'harness/card-resize-axis.mjs', 
   'item163-drawer-line-proof.mjs', 'harness/big-projects-1a.mjs',
   // these six read the module's own file until 10g; they read the join now too, so the board has ONE reader (the brief)
   'harness/board-context-menu.mjs', 'harness/box-tombstones.mjs', 'harness/big-projects-2.mjs', 'harness/guided-w2.mjs',
-  'harness/help-choose-census.mjs', 'harness/page-scroll-return.mjs'];
+  'harness/help-choose-census.mjs', 'harness/page-scroll-return.mjs',
+  // Flux reorg piece 1 (Nov 21): the theme gate's census reads the BoardEditor site as the join (srcText)
+  'harness/reorg-theme-gate-unit.mjs'];
 const BARE = [];   // none: a bare read of the module is half the board now
 // names the file in code but reads no text of it: a browser check's own words, a comment-free label, or a tool that reads by revision
 const NOT_A_READER = ['harness/b2.mjs', 'harness/fx7.mjs', 'c13/c13-9-ts-comments.mjs', 'global-css.mjs', 'c13/c13-10g-readers.mjs',

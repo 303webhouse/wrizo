@@ -99,6 +99,7 @@ import type { LastAction } from './board/geometry';
 import { FLUX3 } from '../flux3/flag';
 import { REORG } from '../reorg/flag';
 import { PresetsMenu } from '../reorg/backMenu/PresetsMenu';
+import { themeHas } from '../reorg/themeGate';
 import { presetBoxes } from '../reorg/backMenu/planPresetOps';
 import { docOfPage, partOfRow } from '../reorg/backMenu/planPart';
 import { getBoardScale } from '../flux3/boardZoom';
@@ -208,7 +209,7 @@ export function BoardEditor({ id }: { id: string }) {
   const [boardModeRaw, setBoardModeRaw] = useBoardMode(id, homeView);
   // A BOARD'S PLAN (the reorg, behind ?reorg=1 in Machina: the Outline view is the Plan): the Presets control loads a starting shape as ordinary rows, and a row wears its grey prompt (Box.planHint) until a Part under it has words
   // (the Part is a page of the board's own Doc that the row's card is linked to: reorg/backMenu/planPart.ts). Off the switch, or in another theme, the Outline is what it was.
-  const planPresets = REORG && theme === 'machina' && !isSystemBoard;
+  const planPresets = REORG && themeHas('back', theme) && !isSystemBoard;
   const planRowHint = (b: Box): string => (b.planHint && !partOfRow(id, b.id, docOfPage(id))?.written ? b.planHint : '');
   const offeredViews: BoardView[] = isSystemBoard && boardKind !== 'book' ? ['open'] : viewsFor(boardKind, narrowBoard, deckBoard);
   const boardMode: BoardView = offeredViews.includes(boardModeRaw) ? boardModeRaw : offeredViews.includes(homeView) ? homeView : offeredViews[0];

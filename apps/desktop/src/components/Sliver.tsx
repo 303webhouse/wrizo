@@ -35,7 +35,7 @@ import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
-import { useReorgTop } from '../reorg/useReorg';
+import { useReorgPiece } from '../reorg/themeGate';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
 import { openSearch, setSearchReach } from '../reorg/search/searchStore';
 import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
@@ -210,7 +210,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const arbor2 = isArbor2() && sliverTheme === 'plateau';
   const [arborPick, setArborPick] = useState<ArborToolTab>('format');
   // THE REORG'S FRONT MENU (plan step 3.1, ?reorg=1 in Machina): TEXT · INK · PARTS. In-session state; off the switch it is unused
-  const reorgFront = useReorgTop() && !!front;
+  const reorgFront = useReorgPiece('front') && !!front;
   const [frontPick, setFrontPick] = useState<FrontTab>('text');
 
   // the open/close announcement is a layout effect keyed on `open`: a setState updater stays pure, every path that changes `open` announces, and the one-drawer hand-over lands before paint [Sliver §7]
