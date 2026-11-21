@@ -6,6 +6,7 @@
 //   HOOK   useReorgPiece reads the table for the current theme under the switch, and with the switch off returns false and calls NO hook (the hook order never changes)
 //   LIFT   lifting a Flux piece is ONE cell: with only flux.back flipped, exactly that cell changes and every other (piece, theme) reads as before
 //   LIFTQ  (Flux piece 2, Nov 21) the PREVIEW DOOR: ?reorglift=flux.back (comma-separated theme.piece) shows a piece of a theme without flipping the table's cell, so frames and the Wrizors' review can see it; honoured only with the switch on, read once at load, a token that is not a real theme.piece is ignored, it only ADDS (Machina never loses a piece), and with no parameter nothing changes
+//   FLUX3  (Nick, Nov 21, 4:40 pm) the Flux column is the REDESIGN's: a Flux cell is on only when FLUX3 (?flux3=1, flux3/flag.ts) is on; with it off a Flux cell the table has switched on, and the preview door, read OFF; Machina and Arbor (plateau) do not read the flag
 //   SITES  each gate site in the app reads the table for its own piece and the Machina-only literal is gone from it: Cascade (rail), useReorg (top), Sliver (front), Tutor (back and split), BoardEditor (the Plan presets, back), PageEditor (uplink)
 // Run: node scripts/harness/reorg-theme-gate-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -28,9 +29,9 @@ const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 const THEMES = ['machina', 'plateau', 'flux'];
 
-function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '' } = {}) {
+function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '', flux3 = true } = {}) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
-  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg } };
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg }, '../flux3/flag': { FLUX3: flux3 } };
   const m = { exports: {} };
   new Function('require', 'exports', 'module', 'location', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m, { search });
   return m.exports;
@@ -66,6 +67,16 @@ function suite(src) {
     for (const th of THEMES) for (const p of PIECES) if (G0.themeHas(p, th) !== G1.themeHas(p, th)) diff.push(th + '.' + p);
     return { pass: J(diff) === J(['flux.back']), detail: J({ diff }) };
   });
+  t('FLUX3', () => {
+    const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true, rail: true },');
+    if (lifted === src) return { pass: false, detail: 'the flux cell is not where the unit looks' };
+    const on = load(lifted, { flux3: true }), off = load(lifted, { flux3: false });
+    const door = load(src, { flux3: false, search: '?reorg=1&reorglift=flux.back,plateau.rail,machina.rail' }), doorOn = load(src, { flux3: true, search: '?reorg=1&reorglift=flux.back' });
+    const cellsOf = (G, th) => PIECES.filter((p) => G.themeHas(p, th));
+    const hooked = load(lifted, { flux3: false, theme: 'flux' });
+    const m = load(src, { flux3: false });
+    return { pass: J(cellsOf(on, 'flux')) === J(['rail', 'back']) && cellsOf(off, 'flux').length === 0 && door.themeHas('back', 'flux') === false && door.themeHas('rail', 'plateau') === true && doorOn.themeHas('back', 'flux') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false), detail: J({ on: cellsOf(on, 'flux'), off: cellsOf(off, 'flux'), door: door.themeHas('back', 'flux'), doorOn: doorOn.themeHas('back', 'flux') }) };
+  });
   t('LIFTQ', () => {
     const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.')); };
     const none = cells({ search: '?reorg=1' });
@@ -82,7 +93,7 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(GATE); } catch (e) { baseErr = e; }
-for (const k of ['TABLE', 'HOOK', 'LIFT', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['TABLE', 'HOOK', 'LIFT', 'FLUX3', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
@@ -93,6 +104,8 @@ const MUT = [
   ['the preview door is honoured with the switch off', 'LIFTQ', (t) => t.replace('const LIFT: ReadonlySet<string> = REORG && typeof location', () => 'const LIFT: ReadonlySet<string> = typeof location')],
   ['the preview door lifts a whole theme from a bare name', 'LIFTQ', (t) => t.replace("=== true || LIFT.has(", () => "=== true || [...LIFT].some((l) => l === theme || ") ],
   ['the preview door can turn a Machina piece off', 'LIFTQ', (t) => t.replace('=== true || LIFT.has(', () => '=== true && !LIFT.has(')],
+  ['the Flux column ignores the redesign flag', 'FLUX3', (t) => t.replace("if (theme === 'flux' && !FLUX3) return false;", () => '')],
+  ['the flag also switches Machina off', 'FLUX3', (t) => t.replace("if (theme === 'flux' && !FLUX3) return false;", () => 'if (!FLUX3) return false;')],
   ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
 ];
 for (const [name, key, fn] of MUT) {
