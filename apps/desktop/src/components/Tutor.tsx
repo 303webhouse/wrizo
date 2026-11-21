@@ -24,6 +24,7 @@ import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
 import { REORG, SPRINT_CONSULTANT } from '../reorg/flag';
+import { setWritingSettings, useWritingSettings } from '../store/writingSettings';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
@@ -617,8 +618,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const [sprintBusy, setSprintBusy] = useState(false);
   const sprintBusyRef = useRef(false);
   const sprintSeenRef = useRef<string[]>([]);
+  const writerConsultant = useWritingSettings().consultant;
+  const consultantOn = SPRINT_CONSULTANT && writerConsultant;   // the build has it AND the writer has not turned it off: only then does a press leave the page
   const pressSprint = () => {
-    if (!SPRINT_CONSULTANT) { pressPreset('writingPrompt'); return; }
+    if (!consultantOn) { pressPreset('writingPrompt'); return; }
     if (!freeWrite || sprintBusyRef.current) return;
     const used = drawCounts.writingPrompt;
     if (used >= DRAW_CEILING) { setRefillNote('writingPrompt'); return; }   // the spent ask answers with its note and makes no request
@@ -858,7 +861,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             {sprint ? (
-              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={pressSprint} busy={sprintBusy} travels={SPRINT_CONSULTANT} noteId="wz-sprint-note" />
+              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={pressSprint} busy={sprintBusy} travels={consultantOn} use={SPRINT_CONSULTANT ? consultantOn : undefined} onUse={(next) => setWritingSettings({ consultant: next })} noteId="wz-sprint-note" />
             ) : (<>
             {/* no standing header (the tab row names it); the dock toggle is icon-only, its full wording on aria-label and title [Tutor §36] */}
             <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} title={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>

@@ -67,6 +67,8 @@ export interface WritingSettings {
   flicker: boolean;
   // THE PLAIN PROGRESS TRACKER's switch (POLISH, Fable Nov 20, 5:25 pm): true = the theme's own tracker (today's behaviour), false = the plain tracker in every theme; saved to the account with the rest
   themeTracker: boolean;
+  // SPRINT's prompts from the Consultant (Fable, Nov 21, 10:25 am; Nick ruled it ON): the writer's own choice, true = a press in SPRINT asks the Consultant for one prompt, false = the local deck answers and nothing is sent. On by default; saved to the account with the rest through the `writing` fact (store/writingPref.ts).
+  consultant: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -103,6 +105,7 @@ const DEFAULTS: WritingSettings = {
   pageScroll: true,
   flicker: true,
   themeTracker: true,
+  consultant: true,
 };
 
 function load(): WritingSettings {

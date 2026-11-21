@@ -260,6 +260,7 @@ export const CANONICAL_CHROME = {
   reorgSprintAnother: 'Another Prompt',
   reorgSprintEmpty: 'A prompt to get you writing again.',
   reorgSprintTravels: 'A press asks the Consultant for one prompt. Nothing of your page goes with it.',
+  reorgSprintUse: 'Prompts from the Consultant',
   reorgPlanEmpty: "Nothing is in this doc's plan.",
   reorgPlanRename: 'Name of the plan row',
   reorgPlanUp: 'Move up',

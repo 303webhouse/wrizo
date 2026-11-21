@@ -22,9 +22,12 @@ interface Props {
   busy?: boolean;
   /** The switch is on: say what travels (one prompt's worth, nothing of her page). */
   travels?: boolean;
+  /** Her own choice (writingSettings.consultant): drawn only when the Consultant is on in this build; undefined draws no switch. */
+  use?: boolean;
+  onUse?: (next: boolean) => void;
 }
 
-export function SprintFeedback({ t, prompt, refillNote, onPress, noteId, busy, travels }: Props) {
+export function SprintFeedback({ t, prompt, refillNote, onPress, noteId, busy, travels, use, onUse }: Props) {
   return (
     <div className="wz-sprint-feedback">
       <p id={noteId} className="wz-sprint-note" role="note">{t('reorgSprintLocked')}</p>
@@ -34,6 +37,12 @@ export function SprintFeedback({ t, prompt, refillNote, onPress, noteId, busy, t
       <button type="button" className="wz-sprint-press" data-preset="writingPrompt" aria-busy={busy ? 'true' : undefined} onClick={onPress}>
         {prompt ? t('reorgSprintAnother') : t('tutorFreeWritePrompt')}
       </button>
+      {use !== undefined && onUse && (
+        <button type="button" role="switch" className="wz-sprint-use" data-sprint-use aria-checked={use ? 'true' : 'false'} onClick={() => onUse(!use)}>
+          <span className="wz-sprint-use-track" aria-hidden="true"><span className="wz-sprint-use-knob" /></span>
+          <span>{t('reorgSprintUse')}</span>
+        </button>
+      )}
       {travels && <p className="wz-sprint-travels">{t('reorgSprintTravels')}</p>}
       {refillNote && <div className="wz-sprint-refill" data-note-for="writingPrompt">{t('tutorFreeWriteRefill')}</div>}
     </div>
