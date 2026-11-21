@@ -1,4 +1,5 @@
 import { REORG } from './flag';
+import { reorgInMachina } from './useReorg';
 import { subscribeSyncStatus } from '../store/sync';
 import { onRailReset, PREFS_LOCAL_KEY } from './railSavedKey';
 
@@ -17,7 +18,8 @@ import { onRailReset, PREFS_LOCAL_KEY } from './railSavedKey';
 //     this same key in this same shape, so a copy made then reads unchanged);
 //   - sign-out clears the copy (railSavedKey.ts's hook), so the next account never sees this one's preferences.
 //
-// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on.
+// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on. OUTSIDE MACHINA (the
+// switch-over, Nov 20): it writes none and calls no server either (persist, setPref and syncPrefs start on reorgInMachina).
 
 export interface PrefFact { at: string; [field: string]: unknown }
 export type PrefsRecord = Record<string, PrefFact>;
@@ -90,7 +92,7 @@ function notify(): void {
 // read, merge, write: another window of this device may have written since (its acts are kept, never written over). Written ONLY when what it holds changed: a record she
 // never touched leaves storage exactly as it was (no key at all).
 function persist(): void {
-  if (!REORG) return;
+  if (!reorgInMachina()) return;
   const stored = readLocal();
   prefs = mergePrefs(prefs, stored);
   try {
@@ -119,7 +121,7 @@ function stampAfter(prev: string | undefined): string {
 
 /** Her act: this preference becomes `value` (its fields, without a stamp), stamped now. A fact of the same value is not an act: nothing is written. */
 export function setPref(name: string, value: Record<string, unknown>): void {
-  if (!REORG || !FACT_RE.test(name)) return;
+  if (!reorgInMachina() || !FACT_RE.test(name)) return;
   const was = prefs[name];
   if (was) { const { at: _at, ...fields } = was; void _at; if (canon(fields) === canon(value)) return; }
   prefs = { ...prefs, [name]: { ...value, at: stampAfter(was?.at) } };
@@ -144,7 +146,7 @@ function scheduleRound(ms: number): void {
 
 /** One round with the server. Offline, signed out, or a server without the route: the local copy governs and the next round merges. */
 export async function syncPrefs(): Promise<void> {
-  if (!REORG) return;
+  if (!reorgInMachina()) return;
   if (inRound) { again = true; return; }
   inRound = true;
   const gen = generation;

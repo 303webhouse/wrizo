@@ -59,6 +59,10 @@ function noLandingIndex(body) {
   // W1 (the Walk, board kinds, Show as): the Journal is a BOOK and opens in Flip; ~15 older harnesses reach its board by the canvas (pins, empty points, cards), which is its third view, Open. They get Open as the Book's home
   // (window.__wrizoBookHome, read by store/boardKind.ts homeViewOf) unless WS_KEEP_BOOK=1 - the W1 harnesses (guided-w1-part2.mjs), which test Flip and Thumbnails themselves.
   if (process.env.WS_KEEP_BOOK !== '1') flags += "window.__wrizoBookHome='open';";
+  // THE SWITCH-OVER (Fable, Nov 20, 6:00 pm): the reorg is on by default in Machina. A harness file that does not ask for it keeps the Machina it
+  // was written against: window.__wrizoReorgOff (read by src/reorg/flag.ts) unless WS_REORG=1. A file that asks with ?reorg=1 in its URL still
+  // gets it (the URL wins), and ?reorg=0 is off either way. Read per request, so a file may flip WS_REORG between loads (reorg-switchover.mjs).
+  if (process.env.WS_REORG !== '1') flags += 'window.__wrizoReorgOff=true;';
   if (!flags) return body;
   return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }
