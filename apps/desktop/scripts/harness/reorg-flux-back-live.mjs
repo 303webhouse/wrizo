@@ -3,7 +3,9 @@
 // The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Parts, fb-1 "Arrival" (its Plan is the board fb-own: three cards, one attached to it), fb-2 "The town"; the Doc's own assets: a page and a card.
 //   FB1  the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS (the Back menu opens on its assets tab, as Machina's does)
 //   FB2  the search door is in Flux's field dress: fill #020C10, a 1 px #5F8F95 edge; opened, the search field's focus is a cyan edge with the 3 x 24 brass bar
-//   FB3  nothing is left raw: the sort row, the group heads and the "+" are drawn in Flux's dress (no browser-grey button fill, no white field), and Flux's words are the ones shown ("→ Track", "Inputs", "THIS DOC")
+// SUPERSEDED (Nov 21, the Wrizors' case ruling: Flux's own case, sentence case for buttons, so the Spine row's button reads "Open track"), kept verbatim:
+//   FB3  nothing is left raw: the sort row, the group heads and the "+" are drawn in Flux's dress (no browser-grey button fill, no white field), and Flux's words are the ones shown ("→ Track", "Open Track", "Inputs", "This Doc")
+//   FB3  [successor] the same, with the Spine row's button in Flux's case: "Open track"
 //   FB4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
 //   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
@@ -83,8 +85,8 @@ await withHarness(async (app) => {
   await tab(app, 'links');
   const raw = await app.evalJs("(() => { const bad = []; const root = document.querySelector('.wz-tutor-panel'); for (const b of root.querySelectorAll('.wz-assets-sort > button, .wz-assets-add, .wz-back-part-head')) { const c = getComputedStyle(b); if (/^rgb\\((239|233|240), \\1, \\1\\)$/.test(c.backgroundColor) || c.borderTopColor === 'rgb(118, 118, 118)') bad.push(b.className || b.textContent.slice(0, 12)); } const f = document.querySelector('.reorg-search-door'); const text = (root.textContent || ''); return { bad, sortBtns: root.querySelectorAll('.wz-assets-sort > button').length, heads: root.querySelectorAll('.wz-back-part-head').length, hasThisDoc: /this doc/i.test(text), inputs: /inputs/i.test(text) }; })()");
   await tab(app, 'plan');
-  const spine = await app.evalJs("(() => { const root = document.querySelector('.wz-tutor-panel'); return { toTrack: [...root.querySelectorAll('button')].some((b) => /^\\u2192 Track$/.test((b.textContent || '').trim())), openTrack: [...root.querySelectorAll('button')].some((b) => /^Open Track$/.test((b.textContent || '').trim())) }; })()");
-  ok('FB3 nothing is left raw: the sort row, group heads and "+" are drawn in Flux\'s dress (no browser-grey fill or border), and Flux\'s words show ("→ Track", "Open Track", "Inputs", "This Doc")',
+  const spine = await app.evalJs("(() => { const root = document.querySelector('.wz-tutor-panel'); return { toTrack: [...root.querySelectorAll('button')].some((b) => /^\\u2192 Track$/.test((b.textContent || '').trim())), openTrack: [...root.querySelectorAll('button')].some((b) => /^Open track$/.test((b.textContent || '').trim())) }; })()");
+  ok('FB3 nothing is left raw: the sort row, group heads and "+" are drawn in Flux\'s dress (no browser-grey fill or border), and Flux\'s words show ("→ Track", "Open track", "Inputs", "This Doc")',
     !!raw && raw.bad.length === 0 && raw.sortBtns === 4 && raw.heads >= 1 && raw.hasThisDoc && raw.inputs && !!spine && spine.toTrack && spine.openTrack, { raw, spine });
 
   await tab(app, 'tutor'); await tab(app, 'links'); await tab(app, 'plan');
