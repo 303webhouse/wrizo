@@ -4,7 +4,16 @@ import type { ReactNode } from 'react';
 // a real tablist: role=tab, aria-selected and a roving tabindex; the chosen tab reads olive (where you are), brass stays for action controls; controlled by the host [DrawerTabs §1]
 
 /** `disabled`: the tab is greyed and does nothing (the reorg's FINALIZE greys TEXT and INK; `title` says why). It stays in the row, so the row does not change shape. */
-export interface DrawerTabItem<T extends string> { id: T; label: ReactNode; disabled?: boolean; title?: string }
+export interface DrawerTabItem<T extends string> {
+  id: T;
+  label: ReactNode;
+  disabled?: boolean;
+  title?: string;
+  /** Locked: shown, greyed, and no press or arrow key chooses it (SPRINT's Back menu: Plan and Assets). */
+  locked?: boolean;
+  /** The id of the note that says why it is locked. */
+  lockedNote?: string;
+}
 
 /** Which tab a key press chooses. Pure so it is tested without a DOM. Null = the key means nothing here. */
 export function nextTab<T extends string>(ids: readonly T[], current: T, key: string): T | null {
@@ -31,7 +40,7 @@ interface Props<T extends string> {
 
 export function DrawerTabs<T extends string>({ items, notes, value, onChange, label, idPrefix }: Props<T>) {
   const refs = useRef(new Map<T, HTMLButtonElement>());
-  const ids = items.map(i => i.id);
+  const ids = items.filter(i => !i.locked).map(i => i.id);
   const onKeyDown = (e: React.KeyboardEvent) => {
     const next = nextTab(ids, value, e.key);
     if (next === null) return;
@@ -53,11 +62,14 @@ export function DrawerTabs<T extends string>({ items, notes, value, onChange, la
           id={`${idPrefix}-tab-${it.id}`}
           className="wz-drawer-tab"
           aria-selected={value === it.id}
+          aria-disabled={it.locked ? 'true' : undefined}
+          aria-describedby={it.locked ? it.lockedNote : undefined}
+          data-locked={it.locked ? 'true' : undefined}
           aria-controls={`${idPrefix}-panel`}
           tabIndex={value === it.id ? 0 : -1}
           data-on={value === it.id ? 'true' : 'false'}
           {...(it.disabled ? { 'data-disabled': 'true', 'aria-disabled': true, title: it.title } : {})}
-          onClick={() => { if (!it.disabled) onChange(it.id); }}
+          onClick={() => { if (!it.locked && !it.disabled) onChange(it.id); }}
         >
           {it.label}
         </button>

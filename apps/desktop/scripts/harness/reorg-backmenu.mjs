@@ -65,10 +65,12 @@ async function seed(app) {
   })()`);
 }
 
-async function openPage(app, id, { theme = 'machina', reorg = true } = {}) {
+async function openPage(app, id, { theme = 'machina', reorg = true, mode = 'drafting' } = {}) {
   // the theme seam exists once the app has mounted: wait for it, never assume it (the first look after a reload or a seed can come before it)
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
+  // STAGING (Fable, Nov 20: SPRINT's Back menu locks Plan and Assets): these pages open in BUILD (Draft), where the three tabs are the Back menu this file proves; SPRINT has its own file (reorg-sprint-back.mjs)
+  await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
   await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
@@ -120,8 +122,12 @@ await withHarness(async (app) => {
     && tabs.label === 'Plan, assets and feedback', JSON.stringify(tabs));
   await tab(app, 'tutor');
   const onBody = await app.evalJs(BODY);
-  ok('T2: the Feedback tab is today\'s Tutor, moved whole - the same classes and the same controls as the Consultant tab with the switch off',
-    !!onBody && !!offBody && onBody.composer && JSON.stringify(onBody.classes) === JSON.stringify(offBody.classes) && onBody.controls === offBody.controls, JSON.stringify({ onBody, offBody }));
+  // SUPERSEDED (the FEEDBACK lens frame, Fable, Nov 20, 11:15 pm; Nick's F2: in BUILD the Back menu's FEEDBACK is Structure / Tone / Consistency 'replacing the asks', plus Ask Your Own: the tab is no longer today's Tutor moved whole). The original, verbatim:
+  // ok('T2: the Feedback tab is today\'s Tutor, moved whole - the same classes and the same controls as the Consultant tab with the switch off',
+  //   !!onBody && !!offBody && onBody.composer && JSON.stringify(onBody.classes) === JSON.stringify(offBody.classes) && onBody.controls === offBody.controls, JSON.stringify({ onBody, offBody }));
+  const lensOn = await app.evalJs("(() => ({ lenses: [...document.querySelectorAll('.wz-tutor-panel [data-lens]')].map((s) => s.getAttribute('data-lens')), roster: document.querySelectorAll('.wz-tutor-panel .wz-tutor-draft-roster').length, convoHead: (document.querySelector('.wz-tutor-convo > .wz-tutor-h') || {}).textContent || null }))()");
+  ok('T2 [successor: the lens frame]: the Feedback tab is the lens frame and the composer headed "Ask Your Own" (the lenses Structure, Tone and Consistency, no four-ask roster); with the switch off the Consultant tab is untouched (its composer)',
+    !!onBody && !!offBody && onBody.composer && JSON.stringify(lensOn.lenses) === JSON.stringify(['structure', 'tone', 'consistency']) && lensOn.roster === 0 && lensOn.convoHead === 'Ask Your Own' && offBody.composer, JSON.stringify({ lensOn, offBody }));
 
   // ---- ASSETS -------------------------------------------------------------------------------------------------------------------------
   await tab(app, 'links');
@@ -302,7 +308,11 @@ await withHarness(async (app) => {
   const fw = await pressBeside('Xcard one'); await sleep(400);
   const fwOpen = await app.evalJs("!!document.querySelector('.wz-split-asset')");
   const fwTwOn = await app.evalJs("!!document.querySelector('.mode-scroll[data-typewriter=\"true\"], .mode-pagecol[data-zoom=\"true\"]')");   // SP11-M reads the split rule on this state
-  ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  // SUPERSEDED (Fable, Nov 20, 3:15 pm; Nick, Nov 20, 1:20 pm: in SPRINT - Free Write - the Back menu keeps only FEEDBACK, and Plan and Assets are greyed with a note), so the Assets tab
+  // holds no "Open beside" to grey in Free Writing: the split is unreachable there before the button. Parked, not deleted; the original, verbatim:
+  //   ok('SP10: in Free Writing "Open beside" is greyed with its reason and opens nothing (Free Writing is the Typewriter, always)', !!fw && fw.disabled && /Free Writing/.test(fw.title) && !fwOpen, JSON.stringify({ fw, fwOpen }));
+  const fwLocked = await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.getAttribute('aria-disabled') === 'true'");
+  ok('SP10 [successor]: in Free Writing (SPRINT) the Assets tab is locked, so there is no "Open beside" to press and nothing opens beside the page (Free Writing is the Typewriter, always)', fwLocked === true && !fwOpen, JSON.stringify({ fwLocked, fwOpen }));
   // the Typewriter on (a Draft page whose own setting is on): not offered
   await app.evalJs("localStorage.setItem('wrizo-typewriter-page-bm-p', 'on')");
   await openPage(app, 'bm-p'); await toMode('draft'); await openDrawer(app); await tab(app, 'links');
