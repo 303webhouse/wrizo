@@ -52,3 +52,7 @@
 .wz-split-card strong{ color:var(--text-hi); font-weight:600; }
 .wz-back-beside{ flex:none; }
 .wz-back-beside:disabled{ opacity:.45; cursor:default; }
+
+/* a Board's Plan (the Outline view, Machina, ?reorg=1): a preset row's grey prompt, on its own line under the title, and the Presets control below the rows */
+.board-outline-hint{ flex:0 0 100%; display:block; padding:0 6px 4px 22px; font-family:var(--font-ui); font-size:11px; line-height:1.35; color:var(--text-mid); }
+.board-projection .wz-back-plan-presets{ margin-top:10px; padding-left:6px; }

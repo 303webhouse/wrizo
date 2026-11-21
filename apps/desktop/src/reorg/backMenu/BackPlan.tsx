@@ -12,7 +12,8 @@ import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
 import { ensureDoc } from '../parts';
 import { docOfPage, partOfRow, toPartHref } from './planPart';
-import { PLAN_PRESETS, type PlanPreset } from './planPresets';
+import type { PlanPreset } from './planPresets';
+import { PresetsMenu } from './PresetsMenu';
 import { presetBoxes } from './planPresetOps';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow } from './planOps';
 
@@ -56,7 +57,6 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   const pageId = entry.id;
   const snap = useSyncExternalStore(subscribe, () => planSnapshot(pageId), () => planSnapshot(pageId));
   const [adding, setAdding] = useState('');
-  const [presetsOpen, setPresetsOpen] = useState(false);
   const [folded, setFolded] = useState<ReadonlySet<string>>(() => new Set());
   const [undo, setUndo] = useState<{ line: string; run: () => void } | null>(null);
   const addRef = useRef<HTMLInputElement | null>(null);
@@ -95,7 +95,6 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   // PRESETS (planPresets.ts): a starting shape appended to the Plan as ordinary rows. The page's board is born the first time something is put on it, as the add field does. The Acts of a grouped preset start folded
   // closed (the Hero's Journey's twelve steps stay under three Acts, so the Plan stays short); a fold is a look, never stored.
   const fill = (preset: PlanPreset): void => {
-    setPresetsOpen(false);
     const board = snap.boardId ? getJournalEntry(snap.boardId) : getOrCreatePlanBoard(pageId);
     if (!board) return;
     const made = presetBoxes(liveBoxes(board.boxes), preset, (k) => t(k), generateId);
@@ -188,16 +187,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
           <button type="button" onClick={() => { undo.run(); setUndo(null); }}>{t('graftUndo')}</button>
         </div>
       )}
-      <div className="wz-back-plan-presets">
-        <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-presets="" aria-expanded={presetsOpen} aria-haspopup="true" disabled={!canAdd} aria-label={t('reorgPlanPresetsLabel')} onClick={() => setPresetsOpen((o) => !o)}>{t('reorgPlanPresets')}</button>
-        {presetsOpen && (
-          <ul className="wz-back-plan-preset-list" data-plan-preset-list="">
-            {PLAN_PRESETS.map((p) => (
-              <li key={p.id}><button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-preset={p.id} onClick={() => fill(p)}>{t(p.name)}</button></li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <PresetsMenu t={t} disabled={!canAdd} onPick={fill} />
       <div className="wz-back-plan-add">
         <input ref={addRef} type="text" className="wz-back-plan-input" data-plan-add="" value={adding} disabled={!canAdd}
           placeholder={t('reorgPlanAdd')} aria-label={t('reorgPlanAdd')}
