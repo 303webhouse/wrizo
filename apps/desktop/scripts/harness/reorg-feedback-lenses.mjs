@@ -124,8 +124,8 @@ await withHarness(async (app) => {
   // ---- FL6 ----
   await openPage(app, 'fl-p', 'drafting', { reorg: false }); await openDrawer(app);
   const offOld = await app.evalJs(OLD);
-  await openPage(app, 'fl-p', 'drafting', { theme: 'arbor' }); await openDrawer(app);
-  const arborLens = await app.evalJs("document.querySelectorAll('[data-lens]').length");
+  await openPage(app, 'fl-p', 'drafting', { theme: 'plateau' }); await openDrawer(app);   // Arbor's id in the theme store is 'plateau' ('arbor' is no registered theme: the first form of this leg ran in Machina, with the Feedback tab never opened)
+  const arborLens = await app.evalJs("document.querySelectorAll('[data-lens]').length + (document.getElementById('wz-tutor-tab-plan') ? 1 : 0) + (document.documentElement.getAttribute('data-theme') === 'plateau' ? 0 : 1)");
   ok('FL6 with the switch off (Machina) today\'s Consultant stands (the four-ask roster, no lens frame); in Arbor with it on, no lens frame', offOld.roster === 4 && offOld.lens === 0 && arborLens === 0, { offOld, arborLens });
 
   // ---- FL9 ----
