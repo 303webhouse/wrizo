@@ -23,6 +23,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
 
+// the Desk's bootstrap mints the Top Drawer the seed waits on (runtime-verify blocks it unless WS_PLACE=1, as reorg-b-assets does)
+process.env.WS_PLACE = '1';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(HERE, '..', '..', 'src');
 const checks = [];
