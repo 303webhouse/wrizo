@@ -24,6 +24,9 @@
 // CAP     K12 (Fable, Nov 21 3:52 pm) at 2560, an unrelated 400 px overflow (a block added to the page's foot) leaves the chrome budget's extra at or
 //             under its cap - the bar's height at 2560 minus its height at 1366, plus 2 px - and the page's height unchanged
 //         MUT-K12  the uncapped loop (the extra grown by the 400 px) turns K12's test red
+// CENTRE  K13 (the Wrizors' pass 3 NIT, Nov 21 4:00 pm) at 1366, 1920 and 2560 the readout under the page (the Run and its count) is centred on her
+//             page within 2 px, in the plain view and in the split
+//         MUT-K13  a readout 75 px off the page's centre turns K13's test red
 // RUN     R1  in the split the Run stands under her page - its middle inside the page's left and right, and none of it under the Doc beside - at
 //             1366, 1920 and 2560
 // MUTANTS MUT-K2  a 2560 reading with the rail's width unscaled turns K2's test red    MUT-R1  a split reading with the Run left unshifted turns R1's test red
@@ -107,6 +110,7 @@ await withHarness(async (app) => {
     const R = { scale: await app.evalJs(SCALE), rail: await app.evalJs(box('.desk-frame-strip')), door: await app.evalJs(box('.wz-reorg-rail button')), tab: await app.evalJs(box('.reorg-top .desk-mode-tab[data-mode-key="draft"]')) };
     R.page0 = await app.evalJs(PAGE);
     R.pass2 = await app.evalJs(PASS2);
+    R.runC = await app.evalJs("(() => { const r = document.querySelector('.machina-run'); const p = document.querySelector('.mode-page'); if (!r || !p) return null; const a = r.getBoundingClientRect(), b = p.getBoundingClientRect(); return { run: a.left + a.width / 2, page: b.left + b.width / 2 }; })()");
     R.barH = await app.evalJs("(() => { const b = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((x) => x.getBoundingClientRect().height > 0); return b ? b.getBoundingClientRect().height : null; })()");
     if (w === 2560) {
       // K12's reading: the extra and the page before, a 400 px block added at the page's foot (an overflow the budget does not govern), 2 s, then after
@@ -183,6 +187,12 @@ await withHarness(async (app) => {
     k12(big.k12, cap), { cap, ...big.k12 });
   const uncapped = big.k12 ? { ...big.k12, after: big.k12.before + 400 } : null;
   ok('MUT-K12 the uncapped loop (the extra grown by the 400 px) turns K12\'s test red', !!uncapped && uncapped.after !== big.k12.after && !k12(uncapped, cap), uncapped && { cap, after: uncapped.after });
+  const mid = (b) => b ? b.l + b.w / 2 : NaN;
+  const k13 = (R) => !!R.runC && Math.abs(R.runC.run - R.runC.page) <= 2 && !!R.split.run && !!R.split.page && Math.abs(mid(R.split.run) - mid(R.split.page)) <= 2;
+  ok('K13 the readout under the page is centred on her page within 2 px, plain and in the split, at 1366, 1920 and 2560', SIZES.every(([w]) => k13(read[w])),
+    SIZES.map(([w]) => ({ w, plain: read[w].runC && +(read[w].runC.run - read[w].runC.page).toFixed(1), split: +(mid(read[w].split.run) - mid(read[w].split.page)).toFixed(1) })));
+  const offC = { ...big, runC: big.runC ? { ...big.runC, run: big.runC.page - 75 } : null };
+  ok('MUT-K13 a readout 75 px off the page\'s centre turns K13\'s test red', !!offC.runC && offC.runC.run !== (big.runC && big.runC.run) && !k13(offC), offC.runC);
   const taller = big.pass2 ? { ...big.pass2, sh: big.pass2.ih + 16 } : null;
   ok('MUT-K9 a reading 16 px taller than the window turns K9\'s test red', !!taller && taller.sh !== big.pass2.sh && !k9(taller), taller && { sh: taller.sh, ih: taller.ih });
   const dim = big.pass2 ? { ...big.pass2, part: 'rgb(58, 64, 71)' } : null;
@@ -207,7 +217,7 @@ await withHarness(async (app) => {
 
 function J(v) { return JSON.stringify(v); }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 20;   // 13 + K9, K10, K11, MUT-K9, MUT-K10 (the Wrizors' pass 2, Nov 21) + K12, MUT-K12 (the cap, Fable 3:52 pm)   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
+const EXPECTED = 22;   // + K13, MUT-K13 (the readout centred, the Wrizors' pass 3 NIT)   // 13 + K9, K10, K11, MUT-K9, MUT-K10 (the Wrizors' pass 2, Nov 21) + K12, MUT-K12 (the cap, Fable 3:52 pm)   // 10 - K4 (parked before the first green, Nov 21) + K4-B + MUT-K4-B; + K8 + MUT-K8 (the Front track, Fable 3:05 pm)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-CHROME-SCALE VERIFY: PASS (${checks.length} checks)`
