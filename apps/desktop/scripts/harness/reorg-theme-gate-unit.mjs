@@ -1,0 +1,105 @@
+// THE REORG'S THEME GATE, BROWSERLESS (Fable, Nov 21, 3:20 pm: "FLUX piece 1: the four Machina-only literals behind ONE table, reorg/themeGate.ts: six pieces x theme, Machina all on, Arbor and Flux empty; a mutant per gate site; the Machina
+// suites unchanged. A Flux piece is switched on in the table only when its frames pass the Wrizors."). No browser, no box. The real themeGate.ts is transpiled and run; each law is given a mutant (a text rewrite of the source) that
+// must LAND and turn its own check red; the gate SITES are read as source (a census), each with a mutant that puts its old Machina-only literal back.
+// The table's themes are the app's own ThemeId: 'plateau' is the theme Arbor dresses (arbor2), so its column is Arbor's.
+//   TABLE  the six pieces are rail, top, front, back, split, uplink; Machina has every one; Plateau (Arbor) and Flux have none; a theme the table does not know has none
+//   HOOK   useReorgPiece reads the table for the current theme under the switch, and with the switch off returns false and calls NO hook (the hook order never changes)
+//   LIFT   lifting a Flux piece is ONE cell: with only flux.back flipped, exactly that cell changes and every other (piece, theme) reads as before
+//   SITES  each gate site in the app reads the table for its own piece and the Machina-only literal is gone from it: Cascade (rail), useReorg (top), Sliver (front), Tutor (back and split), BoardEditor (the Plan presets, back), PageEditor (uplink)
+// Run: node scripts/harness/reorg-theme-gate-unit.mjs   (from apps/desktop; browserless: needs no box turn)
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const ts = require('typescript');
+const lf = (s) => s.split('\r\n').join('\n');
+const rd = (p) => { try { return lf(fs.readFileSync(new URL('../../src/' + p, import.meta.url), 'utf8')); } catch { return ''; } };
+const TS_OPTS = { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } };
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const J = (v) => JSON.stringify(v);
+const GATE = rd('reorg/themeGate.ts');
+const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
+const THEMES = ['machina', 'plateau', 'flux'];
+
+function load(src, { reorg = true, theme = 'machina', calls = { n: 0 } } = {}) {
+  const out = ts.transpileModule(src, TS_OPTS).outputText;
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg } };
+  const m = { exports: {} };
+  new Function('require', 'exports', 'module', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m);
+  return m.exports;
+}
+
+function suite(src) {
+  const R = {};
+  const t = (name, fn) => { try { R[name] = fn(); } catch (e) { R[name] = { pass: false, detail: 'THREW ' + String(e.message).slice(0, 160) }; } };
+  t('TABLE', () => {
+    const G = load(src);
+    const cells = {};
+    for (const th of [...THEMES, 'arbor', 'nonsense']) for (const p of [...PIECES, 'nope']) cells[th + '.' + p] = G.themeHas(p, th);
+    const want = (th, p) => th === 'machina' && PIECES.includes(p);
+    const wrong = Object.entries(cells).filter(([k, v]) => { const [th, p] = k.split('.'); return v !== want(th, p); }).map(([k]) => k);
+    return { pass: J(G.REORG_PIECES) === J(PIECES) && wrong.length === 0, detail: J({ pieces: G.REORG_PIECES, wrong }) };
+  });
+  t('HOOK', () => {
+    const on = { n: 0 }, off = { n: 0 };
+    const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
+    const F = load(src, { reorg: true, theme: 'flux' });
+    const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
+    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0, detail: J({ r, f, o, onCalls: on.n, offCalls: off.n }) };
+  });
+  t('LIFT', () => {
+    const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
+    if (lifted === src) return { pass: false, detail: 'the flux cell is not where the unit looks' };
+    const G0 = load(src), G1 = load(lifted);
+    const diff = [];
+    for (const th of THEMES) for (const p of PIECES) if (G0.themeHas(p, th) !== G1.themeHas(p, th)) diff.push(th + '.' + p);
+    return { pass: J(diff) === J(['flux.back']), detail: J({ diff }) };
+  });
+  return R;
+}
+
+let base = null, baseErr = null;
+try { base = suite(GATE); } catch (e) { baseErr = e; }
+for (const k of ['TABLE', 'HOOK', 'LIFT']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+
+const MUT = [
+  ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
+  ['Machina loses a piece', 'TABLE', (t) => t.replace('  machina: { ...ALL_ON },', () => '  machina: { ...ALL_ON, uplink: false },')],
+  ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
+  ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
+  ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
+];
+for (const [name, key, fn] of MUT) {
+  const after = GATE ? fn(GATE) : GATE;
+  const landed = !!GATE && after !== GATE;
+  let res = null, err = null;
+  try { res = landed ? suite(after) : null; } catch (e) { err = e; }
+  const red = !!res && res[key] && res[key].pass === false;
+  ok(`MUT ${name}: it LANDED and ${key} goes RED`, landed && !err && red, J({ landed, err: err && String(err.message).slice(0, 120), key, pass: res && res[key] && res[key].pass }));
+}
+
+// SITES: each gate site reads the table for its own piece, and the Machina-only literal it had is gone
+const SITES = [
+  ['Cascade.tsx (the rail)', 'components/Cascade.tsx', "useReorgPiece('rail')", "REORG && useTheme() === 'machina'"],
+  ['useReorg.ts (the top rail)', 'reorg/useReorg.ts', "useReorgPiece('top')", "useTheme() === 'machina'"],
+  ['Sliver.tsx (the Front menu)', 'components/Sliver.tsx', "useReorgPiece('front')", 'useReorgTop() && !!front'],
+  ['Tutor.tsx (the Back menu)', 'components/Tutor.tsx', "themeHas('back', tutorTheme)", "tutorTheme === 'machina'"],
+  ['Tutor.tsx (the split)', 'components/Tutor.tsx', "themeHas('split', tutorTheme)", "{back && pageKind === 'prose' && <SplitHost"],
+  ['BoardEditor.tsx (the Plan presets)', 'components/BoardEditor.tsx', "themeHas('back', theme)", "REORG && theme === 'machina' && !isSystemBoard"],
+  ['PageEditor.tsx (Uplink, the publishing view)', 'pages/PageEditor.tsx', "useReorgPiece('uplink')", '{publishing ? <PublishView'],
+];
+const siteOk = (text, want, old) => text.includes(want) && !text.includes(old);
+for (const [name, file, want, old] of SITES) {
+  const text = rd(file);
+  ok(`SITES ${name} reads the table (${want}) and the old literal is gone`, !!text && siteOk(text, want, old), J({ has: text.includes(want), oldLeft: text.includes(old) }));
+  // the mutant puts the old Machina-only literal back: the census must see it
+  const back = text ? text.replace(want, () => old) : '';
+  ok(`MUT SITES ${name}: the old literal put back LANDS and the census goes RED`, !!text && back !== text && !siteOk(back, want, old), J({ landed: back !== text }));
+}
+
+let bad = 0;
+for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 600)}`); if (!c.pass) bad += 1; }
+console.log(bad ? `\nREORG-THEME-GATE-UNIT VERIFY: FAIL - ${bad}/${checks.length} failed` : `\nREORG-THEME-GATE-UNIT VERIFY: PASS (${checks.length} checks)`);
+process.exit(bad ? 1 : 0);
