@@ -92,7 +92,9 @@ await withHarness(async (app) => {
 
   const after = await app.evalJs(PAGE);
   const same = await app.evalJs("!!document.querySelector('.forward-only-editor').__fnMark");
-  ok('FN6 PAGE IS PRIMARY: the column, paper and editor rects are the same before and after the presses; the editor is the same node', mark === after && same, { mark, after, same });
+  // the editor's own HEIGHT follows its words (a note adds lines, as typing does), so the editor is held to its left, top and width and the column and paper to their whole rects
+  const held = (s) => { const p = s.split('|'); return [p[0], p[1], p[2].split(',').slice(0, 3).join(',')].join('|'); };
+  ok('FN6 PAGE IS PRIMARY: the column and paper rects are the same before and after the presses, the editor keeps its left, top and width (its height follows its words, as typing does); the editor is the same node', held(mark) === held(after) && same, { mark, after, same });
 
   const out = await app.evalJs("(() => { const P = window.wrizoPublish; if (!P) return null; const f = (fmt) => { const r = P.file('fn-2', fmt, null); return r ? r.content : null; }; return { md: f('md'), txt: f('txt'), html: f('html') }; })()");
   ok('FN5 what goes out: Markdown, Plain Text and Web read the footnote at the Part\'s end (numbered 1) and the endnote at the Doc\'s end (numbered i)',
