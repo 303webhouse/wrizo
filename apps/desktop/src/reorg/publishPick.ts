@@ -10,7 +10,7 @@ const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
 /** Start a pick for a page (the view opened). */
-export function openPick(key: string, plan = false): void { pick = { key, off: EMPTY, plan, attach: EMPTY }; emit(); }
+export function openPick(key: string, plan = false, attach: readonly string[] = []): void { pick = { key, off: EMPTY, plan, attach: attach.length > 0 ? new Set(attach) : EMPTY }; emit(); }
 /** End it (the view closed). */
 export function closePick(key: string): void { if (pick.key === key) { pick = { key: null, off: EMPTY, plan: false, attach: EMPTY }; emit(); } }
 /** The Parts ticked out of this page's publication; empty when the pick is not this page's. */
@@ -19,9 +19,7 @@ export function setPickOff(key: string, off: ReadonlySet<string>): void { if (pi
 /** "Include the Plan in what goes out" (item 5a): off each time the view opens, shared by the view and the Back menu's Plan tab, stored nowhere. */
 export function setIncludePlan(key: string, on: boolean): void { if (pick.key === key && pick.plan !== on) { pick = { ...pick, plan: on }; emit(); } }
 export function includePlanNow(key: string): boolean { return pick.key === key && pick.plan; }
-/** The key an asset is ticked under (a page or board; or one card of a board). */
-export const attachKey = (a: { entryId: string; boxId?: string }): string => a.entryId + '|' + (a.boxId ?? '');
-/** "Attach to what goes out" (item 5b; stage menus A4): the Doc's assets she ticked, NEVER by default: empty each time the view opens, session state, stored nowhere. */
+/** "Attach to what goes out" (item 5b; stage menus A4): the Doc's assets she ticked, NEVER by default: the sheet opens with the Doc's remembered ticks (docSettings export.attach; none until she ticks one), shared by the Back menu's Assets tab, Before You Export and the files. Written back by the tab (ExportAttach.tsx). */
 export function attachedNow(key: string): ReadonlySet<string> { return pick.key === key ? pick.attach : EMPTY; }
 export function toggleAttach(key: string, assetKey: string): void {
   if (pick.key !== key) return;

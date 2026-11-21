@@ -6,9 +6,12 @@
 //   AT2  nothing ticked: the Markdown file is as today (no Assets); tick the page: the file carries "## Assets", "### Field notes" and its words, AFTER the Parts; untick it: as today again
 //   AT3  the card goes out as itself (its own words, not the whole board); the board goes out whole; ticked together they go out in the order they joined the Doc, not the order she ticked them
 //   AT4  Before You Export reminds her what is going out: "1 Asset attached", then "3 Assets attached", and nothing while none is ticked; it never counts as something in the way
+// SUPERSEDED, kept verbatim (Fable, Nov 21, 1:15 pm: the ticks are remembered per Doc, like Include the Plan, so they are no longer session-only and do store one thing):
 //   AT5  the ticks are the sheet's own state: ticking and exporting store NOTHING (every entry and the Doc's record byte-identical, no new localStorage key), and closing the sheet and opening it again finds none ticked
+//   AT5  the ticks are REMEMBERED per Doc: ticking stores exactly { export: { attach: [the keys, in the order the list shows them] } } on the Doc's own record (the assets key beside it untouched) and no entry changes (no new
+//        localStorage key); closing the sheet and opening it again finds them ticked; unticking the last leaves no attach key (never [] and never null)
 //   AT6  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after the ticks and the export; the editor is the same node
-//   AT7  an asset that is gone is not offered and not attached (the card tombstoned on its board); and with the switch off, or in a theme where the reorg is not drawn, no list stands
+//   AT7  an asset that is gone is not offered and not attached (the card tombstoned on its board); a page ticked earlier is still ticked on the next opening; and with the switch off, or in a theme where the reorg is not drawn, no list stands
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-attach-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -21,6 +24,7 @@ const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if
 const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const p = document.querySelector(s); if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); }).join('|'))()";
 const STORE = "(['writer-studio-journal-entries', 'writer-studio-projects'].map((k) => localStorage.getItem(k)))";
 const KEYS = "Object.keys(localStorage).sort()";
+const EXP = "(() => { const p = JSON.parse(localStorage.getItem('writer-studio-projects') || '[]').find((x) => x.title === 'Brief'); const d = p && p.docSettings ? p.docSettings : {}; return { export: d.export === undefined ? 'absent' : d.export, assets: Array.isArray(d.assets) ? d.assets.length : 'absent' }; })()";
 const CATCH = "(() => { window.__pbBlobs = []; const B = window.__pbRealBlob || (window.__pbRealBlob = window.Blob); window.Blob = function (parts, o) { window.__pbBlobs.push({ text: parts.join(''), type: o && o.type, name: null }); return new B(parts, o); }; window.Blob.prototype = B.prototype; HTMLAnchorElement.prototype.click = function () { const l = window.__pbBlobs[window.__pbBlobs.length - 1]; if (l && !l.name) l.name = this.download; }; return true; })()";
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
@@ -124,18 +128,41 @@ await withHarness(async (app) => {
   ok('AT4 Before You Export reminds her what is going out: "2 Assets attached", then "3 Assets attached", and nothing while none is ticked; it is never something in the way',
     /^2 Assets attached$/.test(two || '') && /^3 Assets attached$/.test(three || '') && none === null && blocked2 === false, { two, three, none, blocked2 });
 
+  // ORIGINAL AT5, SUPERSEDED (Nov 21, 1:15 pm), kept verbatim:
+  //   await tab(app, 'links');
+  //   await app.evalJs(tickBy(K_NOTE)); await sleep(250);
+  //   await exportMd(app);
+  //   const s1 = await app.evalJs(STORE), k1 = await app.evalJs(KEYS);
+  //   await app.evalJs(tickBy(K_NOTE)); await sleep(150);
+  //   await app.evalJs(tickBy(K_BOARD)); await sleep(250);
+  //   await sheet(app, false); await sheet(app, true);
+  //   await drawer(app); await tab(app, 'links');
+  //   const reopened = await app.evalJs(LIST);
+  //   ok('AT5 the ticks are the sheet\'s own state: ticking and exporting store nothing (entries and projects byte-identical, no new key), and closing the sheet and opening it again finds none ticked',
+  //     JSON.stringify(s0) === JSON.stringify(s1) && JSON.stringify(k0) === JSON.stringify(k1) && Array.isArray(reopened) && reopened.length === 3 && reopened.every((r) => r.on === false),
+  //     { storeSame: JSON.stringify(s0) === JSON.stringify(s1), keysSame: JSON.stringify(k0) === JSON.stringify(k1), reopened });
+
+
+  const flushed = async () => { await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(350); };
   await tab(app, 'links');
   await app.evalJs(tickBy(K_NOTE)); await sleep(250);
-  await exportMd(app);
+  await exportMd(app); await flushed();
+  const ex1 = await app.evalJs(EXP);
   const s1 = await app.evalJs(STORE), k1 = await app.evalJs(KEYS);
-  await app.evalJs(tickBy(K_NOTE)); await sleep(150);
-  await app.evalJs(tickBy(K_BOARD)); await sleep(250);
+  await app.evalJs(tickBy(K_BOARD)); await sleep(250); await flushed();
+  const ex2 = await app.evalJs(EXP);
   await sheet(app, false); await sheet(app, true);
   await drawer(app); await tab(app, 'links');
   const reopened = await app.evalJs(LIST);
-  ok('AT5 the ticks are the sheet\'s own state: ticking and exporting store nothing (entries and projects byte-identical, no new key), and closing the sheet and opening it again finds none ticked',
-    JSON.stringify(s0) === JSON.stringify(s1) && JSON.stringify(k0) === JSON.stringify(k1) && Array.isArray(reopened) && reopened.length === 3 && reopened.every((r) => r.on === false),
-    { storeSame: JSON.stringify(s0) === JSON.stringify(s1), keysSame: JSON.stringify(k0) === JSON.stringify(k1), reopened });
+  await app.evalJs(tickBy(K_NOTE)); await sleep(200); await app.evalJs(tickBy(K_BOARD)); await sleep(250); await flushed();
+  const ex3 = await app.evalJs(EXP);
+  const dump = JSON.stringify(ex3);
+  ok('AT5 the ticks are REMEMBERED per Doc: ticking stores exactly { export: { attach: [...] } } in the list\'s order on the Doc\'s record (assets untouched) and no entry changes (no new key); closing the sheet and opening it again finds them ticked; unticking the last leaves no attach key (never [] and never null)',
+    JSON.stringify(ex1) === JSON.stringify({ export: { attach: [K_NOTE] }, assets: 3 }) && JSON.stringify(ex2) === JSON.stringify({ export: { attach: [K_NOTE, K_BOARD] }, assets: 3 })
+    && JSON.stringify(s0[0]) === JSON.stringify(s1[0]) && JSON.stringify(k0) === JSON.stringify(k1)
+    && Array.isArray(reopened) && reopened.map((r) => r.on).join(',') === 'true,true,false'
+    && ex3.export === 'absent' && ex3.assets === 3 && !dump.includes('null') && !dump.includes('[]'),
+    { ex1, ex2, ex3, entriesSame: JSON.stringify(s0[0]) === JSON.stringify(s1[0]), keysSame: JSON.stringify(k0) === JSON.stringify(k1), reopened });
 
   const after = await app.evalJs(PAGE);
   const same = await app.evalJs("!!document.querySelector('.forward-only-editor').__atMark");
@@ -154,7 +181,7 @@ await withHarness(async (app) => {
   await open(app, 'at-1');
   await sheet(app, true); await drawer(app); await tab(app, 'links');
   const gone = await app.evalJs(LIST);
-  await app.evalJs(tickBy(K_NOTE)); await sleep(250);
+  // the page ticked in AT6 is remembered: it is already ticked on this opening (nothing to press)
   const goneFile = await exportMd(app);
   await open(app, 'at-1', 1366, 'arbor2=0');
   const switchOff = await app.evalJs("document.querySelector('[data-attach-list]') === null && document.querySelector('[data-reorg-pub]') === null");

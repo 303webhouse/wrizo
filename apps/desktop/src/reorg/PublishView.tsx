@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from
 import { useDeskLexicon } from '../store/deskLexicon';
 import { subscribe } from '../store/persistence';
 import { readPublication, downloadPublication, copyPublication, publicationSignature, publicationPlan, publicationAttach, type PubViewPart } from './publishing';
-import { includePlanOf } from './docSettings';
+import { attachedOf, includePlanOf } from './docSettings';
 import { attachedNow, closePick, includePlanNow, openPick, setPickOff, togglePick, usePickOff } from './publishPick';
 import type { PubFormat } from './publishingText';
 
@@ -29,7 +29,7 @@ function PublishViewImpl({ entryId, onClose }: Props) {
   const [said, setSaid] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    openPick(entryId, includePlanOf(entryId));   // the "Include the Plan" tick is remembered per Doc (docSettings export.includePlan), so the sheet opens as she left it
+    openPick(entryId, includePlanOf(entryId), attachedOf(entryId));   // the "Include the Plan" tick and the assets she attached are remembered per Doc (docSettings export.includePlan, export.attach), so the sheet opens as she left it
     const was = document.activeElement as HTMLElement | null;
     ref.current?.focus({ preventScroll: true });
     return () => { closePick(entryId); if (was && was.isConnected) was.focus({ preventScroll: true }); };
