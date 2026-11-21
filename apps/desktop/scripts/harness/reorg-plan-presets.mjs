@@ -165,7 +165,7 @@ await withHarness(async (app) => {
     changed.length === 2 && changed.includes(b2.id) && changed.includes('pr-e') && pageBefore.text === pageAfter.text && pageAfter.planBoardId === b2.id, { changed, planBoardId: pageAfter.planBoardId });
 
   // ---- PR6 ----
-  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="${rows2[1].id}"] [data-plan-name]'); if (!i) return false; i.focus(); i.value = 'The Facts'; i.dispatchEvent(new Event('input', { bubbles: true })); i.blur(); return true; })()`);
+  await app.evalJs(`(() => { const i = document.querySelector('[data-plan-row="${(rows2[1] || {}).id}"] [data-plan-name]'); if (!i) return false; i.focus(); i.value = 'The Facts'; i.dispatchEvent(new Event('input', { bubbles: true })); i.blur(); return true; })()`);
   await sleep(600);
   const renamed = cardsOf((await planBoard(app, 'pr-e')).entry).find((c) => c.id === rows2[1].id);
   const rows6 = await app.evalJs(ROWS);
@@ -231,7 +231,7 @@ await withHarness(async (app) => {
   const code = ['reorg/backMenu/BackPlan.tsx', 'reorg/backMenu/planPresets.ts', 'reorg/backMenu/planPresetOps.ts'].map((f) => read(f).replace(/\/\/.*$/gm, '')).join('\n');
   const lex = read('store/lexicon/canonical/chrome.ts');
   const words = [...new Set([...STASIS, ...HERO, ...THREE].flatMap(([, t, p]) => [t, p]).filter(Boolean))];
-  const inCode = words.filter((w) => code.includes(w));
+  const inCode = words.filter((w) => code.includes(`'${w}'`) || code.includes(`"${w}"`) || code.includes(`>${w}<`));   // a word as a string or text node; a lexicon KEY that merely contains it (reorgPreStasisFact) is not the word written in
   const missing = words.filter((w) => !lex.includes(`"${w}"`) && !lex.includes(`'${w}'`));
   ok('PR9 every heading and prompt is a lexicon word, none written into the components', inCode.length === 0 && missing.length === 0 && /reorgPlanPresets:/.test(lex), { inCode, missing });
   return checks;
