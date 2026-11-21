@@ -1,7 +1,8 @@
 // THE REORG'S BACK MENU IN FLUX, ITS STYLESHEET, BROWSERLESS (Fable, Nov 21, 3:43 pm: "piece 2: the Back menu in Flux, behind themeGate"; claude/wrizors/flux-reorg-spec.md sections 0 and 5: panels in node dress #04141A with a 1 px #7EB4C4 edge;
 // a search field in Flux's field dress, fill #020C10, 1 px #5F8F95, focused a cyan edge with the thin 3 x 24 brass bar; the current item wears the choice mark, a cyan edge and the 3 x 24 brass bar; brass is her act, cyan is "live / here";
 // TK6: no green-grey tier in any Flux block). No browser, no box: styles/24-reorg-flux.css is read as text; each law is given a mutant (a text rewrite) that must LAND and turn its own check red.
-//   SCOPED  every rule is under [data-theme='flux'] (so no other theme, and nothing outside the reorg's own markup, is touched)
+// SUPERSEDED (Nov 21, the redesign rule): //   SCOPED  every rule is under [data-theme='flux'] (so no other theme, and nothing outside the reorg's own markup, is touched)
+//   SCOPED  every rule is under :root[data-flux3][data-theme='flux'] (the Flux REDESIGN's scope: the plain Flux, every other theme, and nothing outside the reorg's own markup, is touched)
 //   COVER   every Machina rule that dresses the Back menu's lists, sorts, "+" menus and the search (23-reorg-back.css, 23-reorg-top.css) has a Flux twin: nothing is left to the browser's raw buttons and fields
 //   FIELD   the search door and field: fill #020C10, 1 px #5F8F95; focused, a cyan edge and the 3 x 24 brass bar
 //   CHOICE  the current Part and the current search hit wear the choice mark: a cyan edge and the 3 x 24 brass bar
@@ -56,12 +57,13 @@ function suite(css) {
   const rs = rules(css);
   const t = (name, fn) => { try { R[name] = fn(); } catch (e) { R[name] = { pass: false, detail: 'THREW ' + String(e.message).slice(0, 160) }; } };
   t('SCOPED', () => {
-    const bad = rs.filter((x) => !topSplit(x.sel).every((p) => /^(:root)?\[data-theme='flux'\]/.test(p))).map((x) => x.sel.slice(0, 80));
+    // SUPERSEDED (Nov 21): const bad = rs.filter((x) => !topSplit(x.sel).every((p) => /^(:root)?\[data-theme='flux'\]/.test(p))).map((x) => x.sel.slice(0, 80));
+    const bad = rs.filter((x) => !topSplit(x.sel).every((p) => /^:root\[data-flux3\]\[data-theme='flux'\]/.test(p))).map((x) => x.sel.slice(0, 80));
     return { pass: rs.length > 20 && bad.length === 0, detail: J({ rules: rs.length, bad: bad.slice(0, 4) }) };
   });
   t('COVER', () => {
     const want = machinaSelectors();
-    const have = new Set(rs.flatMap((x) => topSplit(x.sel).map((p) => p.replace("[data-theme='flux'] ", '').replace(/:(hover|focus-visible|focus-within)\b/g, '').replace(/\[aria-[a-z]+='[a-z]+'\]/g, '').trim())));
+    const have = new Set(rs.flatMap((x) => topSplit(x.sel).map((p) => p.replace(":root[data-flux3][data-theme='flux'] ", '').replace(/:(hover|focus-visible|focus-within)\b/g, '').replace(/\[aria-[a-z]+='[a-z]+'\]/g, '').trim())));
     const missing = want.filter((w) => !have.has(w));
     return { pass: want.length > 30 && missing.length === 0, detail: J({ want: want.length, missing: missing.slice(0, 6) }) };
   });
@@ -108,14 +110,16 @@ const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
-  ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace("[data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
+  // SUPERSEDED (Nov 21): ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace("[data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
+  ['a rule escapes the redesign scope (the plain Flux gets it)', 'SCOPED', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort{", () => ":root[data-theme='flux'] .wz-assets-sort{")],
+  ['a rule escapes to every theme', 'SCOPED', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
   ['the sort buttons lose their twin', 'COVER', (t) => t.split('.wz-assets-sort > button').join('.wz-assets-sorted > button')],
   ['the field fill drifts', 'FIELD', (t) => t.replace('background:#020C10', () => 'background:#041214')],
   ['the field edge turns brass', 'FIELD', (t) => t.replace(':focus-within{ border-color:var(--line-active); }', () => ':focus-within{ border-color:var(--orange); }')],
   ['the current Part loses its brass bar', 'CHOICE', (t) => t.replace("wz-back-part-head::before{ content:''; position:absolute; left:0; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange);", () => "wz-back-part-head::before{ content:''; position:absolute; left:0; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--line-active);")],
   ['the pop-up fill drifts', 'NODE', (t) => t.replace('background:#04141A', () => 'background:#0A1814')],
   ['a green-grey tier returns', 'TK6', (t) => t.replace('#7EB4C4', () => '#8FB4AC')],
-  ['brass becomes a fill', 'BRASS', (t) => t.replace("[data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{", () => "[data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{ background:var(--orange);")],
+  ['brass becomes a fill', 'BRASS', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{", () => ":root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{ background:var(--orange);")],
   ['the fourth tab may wrap', 'TABS', (t) => t.replace('white-space:nowrap; letter-spacing', () => 'white-space:normal; letter-spacing')],
 ];
 for (const [name, key, fn] of MUT) {
