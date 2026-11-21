@@ -40,6 +40,9 @@ export interface UnbornDescriptor {
   // W2 - "WRITE THIS": the card on a board this page is being written FOR. It rides the address (`gb` board, `gc` card) like `pin` and `deck`, so a reload keeps the door's meaning with no storage, and nothing is
   // written until `birth` (the first keystroke): then the page and its graft to that card are one act. Null for every other door.
   graft: { boardId: string; boxId: string } | null;
+  // "-> PART" FROM A PLAN ROW (reorg/backMenu/planPart.ts): the same door aimed at the Doc. The name the Part is born with (the row's title; '' when the row has none, null for every other door). It rides the address (`pn`) like `gb` and `gc`, nothing
+  // is written until birth, and a page born WITH a name is a Part of a Doc, so birth() leaves its stage alone (the "Write this" page opens in Free Write; a Part is a section of the Doc, not a sprint).
+  partName: string | null;
   // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
   // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
   landing: HelpLanding | null;
@@ -86,6 +89,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
+    partName: q.has('pn') ? (q.get('pn') ?? '').replace(/\s+/g, ' ').trim().slice(0, 120) : null,
     landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
   };
 }
@@ -101,6 +105,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
+  if (d.partName !== null && d.partName !== undefined) q.set('pn', d.partName);
   if (d.deck && d.landing) q.set('land', landingToken(d.landing));
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
@@ -130,6 +135,8 @@ export function unbornEntry(id: string, d: UnbornDescriptor, createdAt: string):
   if (d.template) base.pageSettings = { ...(getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK), size: getUserPageDefaults()?.size ?? newPageSize(), template: d.template };
   // a page is born at 11 pt: the unborn slot already carries it, so the page draws at 11 before the first word and birth() writes it with that word; a board has no page size [unbornPage §3]
   else if (d.kind === 'prose') base.pageSettings = bornPageSettings();
+  // a Part born from a Plan row carries the row's name (the `name` key a Part already has; it travels with the page like the rest of its settings)
+  if (d.partName && d.kind === 'prose' && base.pageSettings) base.pageSettings = { ...base.pageSettings, name: d.partName };
   return base;
 }
 
@@ -171,7 +178,7 @@ export function birth(
   if (d.graft) {
     const board = getJournalEntry(d.graft.boardId);
     if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
-    try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ }
+    if (d.partName === null || d.partName === undefined) { try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ } }
   }
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most

@@ -1,13 +1,17 @@
 import { memo, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Box, JournalEntry } from '../../types';
 import { useDeskLexicon } from '../../store/deskLexicon';
-import { generateId, getJournalEntry, getPlanBoardId, isUnborn, saveBoardBoxes, subscribe } from '../../store/persistence';
+import { flushNow, generateId, getJournalEntry, getPlanBoardId, isUnborn, saveBoardBoxes, subscribe } from '../../store/persistence';
+import { routeForEntry } from '../../store/routeForEntry';
 import { liveBoxes } from '../../store/boxTombstones';
 import { getOrCreatePlanBoard } from '../../store/persistence/planPairing';
 import { cache } from '../../store/persistence/core';
 import { hidePlanCard, unhidePlanCard } from '../../store/grafts';
 import { withoutFontMarks } from '../../store/markRuns';
 import { REORG } from '../flag';
+import { ensureDoc } from '../parts';
+import { docOfPage, partOfRow, toPartHref } from './planPart';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow } from './planOps';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina). An ordered outline of this Page's own board: numbered rows, indented
@@ -46,6 +50,7 @@ export const BackPlan = memo(BackPlanImpl, (a, b) => a.entry.id === b.entry.id);
 function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   planRenders += 1;
   const { t } = useDeskLexicon();
+  const navigate = useNavigate();
   const pageId = entry.id;
   const snap = useSyncExternalStore(subscribe, () => planSnapshot(pageId), () => planSnapshot(pageId));
   const [adding, setAdding] = useState('');
@@ -83,6 +88,24 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   };
   const canAdd = !isUnborn(pageId);
 
+  // "-> PART": W2's "Write this" aimed at the Doc (planPart.ts). A row that has its Part opens it; otherwise the door opens a fresh page in this Doc for the card, named for the row.
+  // The press writes nothing for the Part (her first word births it and the link in one act); a page with no Doc of her own is made one first, as the Parts list's "New part" does.
+  const docNow = docOfPage(pageId);
+  const toPart = (r: { boxId: string; title: string }): void => {
+    flushNow();
+    const have = partOfRow(snap.boardId, r.boxId, docNow);
+    if (have) { const e = getJournalEntry(have.id); if (e) navigate(routeForEntry(e)); return; }
+    if (!snap.boardId) return;
+    let into = docNow;
+    if (!into) {
+      const made = ensureDoc(pageId);
+      if (!made.ok) return;
+      into = made.docId;
+      flushNow();
+    }
+    navigate(toPartHref(into, snap.boardId, r.boxId, r.title));
+  };
+
   return (
     <div className="wz-back-plan" data-back-plan="">
       {rows.length === 0 ? (
@@ -104,6 +127,18 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
                   }}
                   onBlur={(e) => { const v = e.target.value; if (snap.boardId) writeBoxes(renamePlanRow(boxesNow(), r.boxId, v)); }} />
               )}
+              {(() => {
+                if (r.isPin || r.isInk) return null;
+                const part = partOfRow(snap.boardId, r.boxId, docNow);
+                return (
+                  <>
+                    {part && part.written && <span className="wz-back-plan-tick" data-plan-tick="" role="img" aria-label={t('reorgPlanTick')} title={t('reorgPlanTick')}>{'✓'}</span>}
+                    <button type="button" className="wz-back-plan-btn wz-back-plan-part" data-plan-part={part ? 'open' : 'new'} aria-label={`${part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}: ${r.number}`} onClick={() => toPart(r)}>
+                      {part ? t('reorgPlanOpenPart') : t('reorgPlanToPart')}
+                    </button>
+                  </>
+                );
+              })()}
               <span className="wz-back-plan-acts">
                 <button type="button" className="wz-back-plan-btn" data-plan-up="" disabled={!r.canUp} aria-label={`${t('reorgPlanUp')}: ${r.number}`} title={t('reorgPlanUp')} onClick={() => act((b) => movePlanRow(b, r.boxId, -1))}>↑</button>
                 <button type="button" className="wz-back-plan-btn" data-plan-down="" disabled={!r.canDown} aria-label={`${t('reorgPlanDown')}: ${r.number}`} title={t('reorgPlanDown')} onClick={() => act((b) => movePlanRow(b, r.boxId, 1))}>↓</button>

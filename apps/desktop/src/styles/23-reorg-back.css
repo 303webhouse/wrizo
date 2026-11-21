@@ -23,6 +23,9 @@
 .wz-back-plan-btn{ position:static; width:22px; height:22px; padding:0; background:none; border:1px solid transparent; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; line-height:1; cursor:pointer; }
 .wz-back-plan-btn:hover:not(:disabled), .wz-back-plan-btn:focus-visible{ color:var(--text-hi); border-color:var(--ink-border-strong); outline:none; }
 .wz-back-plan-btn:disabled{ opacity:.3; cursor:default; }
+/* "-> Part" / "Open Part" (a word, not a glyph) and the tick a Part with words earns: the tick is a shape and a name, never colour alone */
+.wz-back-plan-part{ width:auto; padding:0 6px; height:22px; white-space:nowrap; font-size:11px; border-color:var(--ink-border-strong); }
+.wz-back-plan-tick{ flex:none; font-family:var(--font-ui); font-size:13px; line-height:1; color:var(--text-hi); }
 .wz-back-plan-add{ margin-top:6px; }
 .wz-back-plan-add .wz-back-plan-input{ width:100%; border-color:var(--ink-border-strong); }
 

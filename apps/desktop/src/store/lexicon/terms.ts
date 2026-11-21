@@ -126,7 +126,7 @@ export type DeskTermId =
   | 'reorgPubCopyText' | 'reorgPubCopyFormatted' | 'reorgPubExport' | 'reorgPubHtml' | 'reorgPubFrozen' | 'reorgPubOnePart' | 'reorgPubPartsHint' | 'reorgPubPartsLabel' | 'reorgPubUp' | 'reorgPubDown'
   // THE REORG'S BACK MENU (src/reorg/backMenu/, behind ?reorg=1 in Machina): new words only; the tab row reads PLAN, ASSETS (drawerLinks), FEEDBACK (tutorTabTutor)
   | 'reorgBackPlan' | 'reorgBackTabsLabel'
-  | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd'
+  | 'reorgPlanEmpty' | 'reorgPlanRename' | 'reorgPlanUp' | 'reorgPlanDown' | 'reorgPlanIndent' | 'reorgPlanOutdent' | 'reorgPlanRemove' | 'reorgPlanAdd' | 'reorgPlanToPart' | 'reorgPlanOpenPart' | 'reorgPlanTick'
   | 'reorgAssetsOwnBoard' | 'reorgAssetsOpenBoard' | 'reorgAssetsLinkedDirectly'
   | 'reorgSplitOpen' | 'reorgSplitClose' | 'reorgSplitLabel' | 'reorgSplitGrip' | 'reorgSplitBoardEmpty' | 'reorgSplitNoFreewrite' | 'reorgSplitNoTypewriter'
   // FLUX3 S4 Corridor r2 - Jacked In's exit line, the 4 s nudge and the leave button's accessible name (src/flux3/FluxJackedHints.tsx)
