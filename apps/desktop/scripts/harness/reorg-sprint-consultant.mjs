@@ -1,5 +1,6 @@
-// SPRINT'S PROMPTS FROM THE CONSULTANT, THE CLIENT'S HALF (Fable, Nov 21, 12:35 am: FIX's queue item 6). Behind its own switch: ?sprint=consultant beside ?reorg=1 (Nick approved the local deck for Monday; the
-// Consultant's strict-rules prompts are the follow-up, so the default stays the deck and this is the opt-in). The server's half is sprint-consultant-server.mjs (POST /tutor/sprint-prompt).
+// SPRINT'S PROMPTS FROM THE CONSULTANT, THE CLIENT'S HALF (Fable, Nov 21, 12:35 am: FIX's queue item 6). ON BY DEFAULT since Nov 21, 10:25 am (Nick ruled it ON at 1:10 am; Fable): the URL's ?sprint=deck is the tests' way back to the local deck, and a per-writer
+// switch (writingSettings.consultant, saved to the account through the `writing` fact) lets a writer choose no Consultant; the local deck serves anyone the Consultant does not (no AI configured, the writer chose none, the budget spent, any failure), with no server call.
+// [Before: behind ?sprint=consultant, default OFF, the local deck for Monday.] The server's half is sprint-consultant-server.mjs (POST /tutor/sprint-prompt).
 // With the switch on, her press in SPRINT (Free Write, the Back menu's FEEDBACK) asks the Consultant for ONE prompt instead of drawing from the local deck. What travels is exactly { seen: [the prompts already shown this
 // session] }: nothing of her page, no conversation. What comes back is one line, drawn as the standing prompt (replacing the last). The ceiling is the deck's (three, then the refill note until 100 more words), and any
 // failure (offline, an error, "not configured", a daily limit) falls back to the local deck, so a press always answers. A press in flight cannot be pressed again.
@@ -32,10 +33,11 @@ async function seed(app) {
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
   await app.evalJs(`window.wrizoCreateJournalPage(${q({ id: 'sc-p', text: `The first line of a page that has some words on it, ${MARK}, so the page is not empty.`, createdAt: '2026-04-01T00:00:00.000Z', source: 'page', origin: 'loose' })}); window.wrizoFlushNow(); true`);
 }
-async function openPage(app, { consult = true, reorg = true } = {}) {
+async function openPage(app, { consult = true, reorg = true, writerOff = false } = {}) {
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   await app.evalJs("window.wrizoTheme.set('machina'); localStorage.setItem('wrizo-mode-page-sc-p', 'journal')");
-  const qs = `${reorg ? '?reorg=1&arbor2=0' : '?arbor2=0'}${consult ? '&sprint=consultant' : ''}`;
+  if (writerOff) await app.evalJs("(() => { try { const k = 'wrizo-writing-settings'; const o = JSON.parse(localStorage.getItem(k) || '{}'); o.consultant = false; localStorage.setItem(k, JSON.stringify(o)); } catch {} })()");
+  const qs = `${reorg ? '?reorg=1&arbor2=0' : '?arbor2=0'}${consult ? '' : '&sprint=deck'}`;
   await app.evalJs(`history.replaceState(null, '', '/${qs}#/page/sc-p')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
@@ -58,7 +60,7 @@ const FAKE = `window.__calls = []; window.__mode = 'ok'; window.__n = 0; const f
 const press = (app) => app.evalJs("document.querySelector('.wz-sprint-press')?.click()");
 const STATE = `(() => { const p = document.querySelector('#wz-tutor-panel'); if (!p) return null; const has = (s) => !!p.querySelector(s);
   return { prompt: (p.querySelector('.wz-sprint-prompt[data-drawn]') || {}).textContent || null, prompts: p.querySelectorAll('.wz-sprint-prompt[data-drawn]').length, btn: (p.querySelector('.wz-sprint-press') || {}).textContent || null, busy: (p.querySelector('.wz-sprint-press') || {}).getAttribute ? p.querySelector('.wz-sprint-press').getAttribute('aria-busy') : null,
-    refill: (p.querySelector('.wz-sprint-refill') || {}).textContent || null, travels: (p.querySelector('.wz-sprint-travels') || {}).textContent || null, composer: has('.wz-tutor-convo-input'), sections: p.querySelectorAll('.wz-tutor-section').length, lens: p.querySelectorAll('[data-lens]').length, log: has('.wz-tutor-convo-log') }; })()`;
+    refill: (p.querySelector('.wz-sprint-refill') || {}).textContent || null, travels: (p.querySelector('.wz-sprint-travels') || {}).textContent || null, useSwitch: !!p.querySelector('[data-sprint-use]'), useOn: (p.querySelector('[data-sprint-use]') || {}).getAttribute ? p.querySelector('[data-sprint-use]').getAttribute('aria-checked') : null, composer: has('.wz-tutor-convo-input'), sections: p.querySelectorAll('.wz-tutor-section').length, lens: p.querySelectorAll('[data-lens]').length, log: has('.wz-tutor-convo-log') }; })()`;
 const calls = (app) => app.evalJs('window.__calls');
 
 await withHarness(async (app) => {
@@ -72,7 +74,7 @@ await withHarness(async (app) => {
   const s0 = await app.evalJs(STATE);
   const c0 = await calls(app);
   const trav0 = s0 && s0.travels;
-  ok('SC0 CONTROL, the switch off: a press sends nothing (zero requests) and the prompt is a member of the local deck; no "what travels" note', c0.length === 0 && !!s0 && !!s0.prompt && (DECK.length === 0 || DECK.includes(s0.prompt.trim())) && trav0 === null, JSON.stringify({ calls: c0.length, prompt: s0 && s0.prompt, deck: DECK.length, trav0 }));
+  ok('SC0 CONTROL, ?sprint=deck (the tests way back): a press sends nothing (zero requests) and the prompt is a member of the local deck; no "what travels" note', c0.length === 0 && !!s0 && !!s0.prompt && (DECK.length === 0 || DECK.includes(s0.prompt.trim())) && trav0 === null, JSON.stringify({ calls: c0.length, prompt: s0 && s0.prompt, deck: DECK.length, trav0 }));
 
   // ---- SC1 / SC9 ----
   await openPage(app, { consult: true });
@@ -128,6 +130,45 @@ await withHarness(async (app) => {
 
   // ---- SC8 ----
   ok('SC8 the tab is still SPRINT\'s: no composer, no lenses, no log, no computed sections; one prompt and one button', !!s7 && s7.composer === false && s7.lens === 0 && s7.log === false && s7.sections === 0 && s7.prompts === 1, JSON.stringify(s7));
+
+  // ---- SC10 - SC14: the per-writer choice, default ON ----
+  await openPage(app, { consult: true });
+  await app.evalJs(FAKE);
+  const s10 = await app.evalJs(STATE);
+  ok('SC10 ON BY DEFAULT with no URL flag: the tab draws a "use the Consultant" switch, ON; with ?sprint=deck there is no switch (SC0 read none)', !!s10 && s10.useSwitch === true && s10.useOn === 'true', JSON.stringify(s10 && { useSwitch: s10.useSwitch, useOn: s10.useOn }));
+  const sw0 = await app.evalJs("(() => { const b = document.querySelector('[data-sprint-use]'); return !!b && b.getAttribute('role') === 'switch' && b.tagName === 'BUTTON' && (b.textContent || '').trim().length > 0; })()");
+  ok('SC10b the switch is a labelled button with role=switch (a keyboard and screen-reader control)', sw0 === true);
+  await app.evalJs("document.querySelector('[data-sprint-use]')?.click()"); await sleep(600);
+  const s11 = await app.evalJs(STATE);
+  const saved11 = await app.evalJs("(() => { try { const dev = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); const fact = (JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}')).writing || null; return { dev: dev.consultant, fact: fact && fact.consultant, stamp: !!(fact && fact.fieldAt && fact.fieldAt.consultant) }; } catch { return null; } })()");
+  ok('SC11 the writer turns it OFF: the switch reads off, the "what travels" note is gone, and the choice is SAVED - the device key says consultant:false AND the account\'s `writing` fact carries consultant:false with its own stamp', !!s11 && s11.useOn === 'false' && s11.travels === null && !!saved11 && saved11.dev === false && saved11.fact === false && saved11.stamp === true, JSON.stringify({ useOn: s11 && s11.useOn, travels: s11 && s11.travels, saved11 }));
+  await press(app); await sleep(700);
+  const s12 = await app.evalJs(STATE);
+  const c12 = await calls(app);
+  ok('SC12 with the writer\'s choice OFF a press sends NOTHING (zero requests) and the prompt is a member of the local deck', c12.length === 0 && !!s12 && !!s12.prompt && (DECK.length === 0 || DECK.includes(s12.prompt.trim())), JSON.stringify({ n: c12.length, prompt: s12 && s12.prompt }));
+  // the choice survives a reload; and it follows the account: the device key is erased but the fact stays, and the fact puts it back
+  await app.evalJs("localStorage.removeItem('wrizo-writing-settings'); true");
+  await openPage(app, { consult: true });
+  await app.evalJs(FAKE);
+  await sleep(500);
+  const s13 = await app.evalJs(STATE);
+  await press(app); await sleep(700);
+  const c13 = await calls(app);
+  ok('SC13 the choice follows the ACCOUNT: with the device key erased and a reload, the `writing` fact alone brings it back (switch OFF, a press sends nothing)', !!s13 && s13.useOn === 'false' && c13.length === 0, JSON.stringify({ useOn: s13 && s13.useOn, n: c13.length }));
+  // turning it back on makes the next press ask the Consultant again
+  await app.evalJs("document.querySelector('[data-sprint-use]')?.click()"); await sleep(600);
+  await press(app); await sleep(900);
+  const s14 = await app.evalJs(STATE);
+  const c14 = await calls(app);
+  ok('SC14 turned back ON, a press asks the Consultant again (one request) and the note that says what travels is back', c14.length === 1 && !!s14 && s14.useOn === 'true' && /Consultant/.test(s14.prompt || '') && typeof s14.travels === 'string', JSON.stringify({ n: c14.length, s14: s14 && { useOn: s14.useOn, prompt: s14.prompt, travels: !!s14.travels } }));
+  // the settings fixture path: the same choice made through the saved settings before load (a device that already holds consultant:false) is honoured with no click
+  await app.evalJs("localStorage.removeItem('wrizo-reorg-prefs'); true");
+  await openPage(app, { consult: true, writerOff: true });
+  await app.evalJs(FAKE);
+  await press(app); await sleep(700);
+  const s15 = await app.evalJs(STATE);
+  const c15 = await calls(app);
+  ok('SC15 a device whose settings already hold consultant:false is honoured at load: no click, no request, the deck answers', !!s15 && s15.useOn === 'false' && c15.length === 0 && !!s15.prompt, JSON.stringify({ useOn: s15 && s15.useOn, n: c15.length }));
   return checks;
 });
 
