@@ -51,6 +51,9 @@ const press = (sel) => `(() => { const b = ${B}?.querySelector(${q(sel)}); if (!
 const markEditor = "(() => { const n = document.querySelector('.forward-only-editor'); if (n) n.__sbMark = 1; return !!n; })()";
 const sameEditor = "!!(document.querySelector('.forward-only-editor') || {}).__sbMark";
 const near = (a, b, tol = 1.5) => Math.abs(a - b) <= tol;
+const lexWord = (key) => { for (const f of ['store/lexicon/overrides/machinaReorg.ts', 'store/lexicon/overrides/machina.ts', 'store/lexicon/canonical/chrome.ts']) {
+  const p = path.join(SRC, f); if (!fs.existsSync(p)) continue; const m = new RegExp(`\\b${key}: '([^']+)'`).exec(fs.readFileSync(p, 'utf8')); if (m) return m[1]; } return null; };
+const VIEW_WORDS = ['boardModeOpen', 'boardModeStoryboard', 'boardModeOutline'].map(lexWord);
 async function settle(app) { await sleep(300); await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(400); }
 
 async function seed(app) {
@@ -121,9 +124,19 @@ await withHarness(async (app) => {
   const story = await app.evalJs(`(() => { const b = ${B}; return { view: b?.getAttribute('data-view'), cards: b ? b.querySelectorAll('.board-sb-card').length : 0 }; })()`);
   await app.evalJs(press('[data-split-view="open"]')); await sleep(400);
   const back = await app.evalJs(READ);
-  ok('V2 a view switch offers Open, Storyboard, Outline (the Board\'s own words), Open pressed; Outline draws three rows, every field read-only; Storyboard three cards; Open brings the canvas back',
-    !!views && views.map((v) => v[0]).join(',') === 'open,storyboard,outline' && views.map((v) => v[1]).join(',') === 'Open,Storyboard,Outline' && views[0][2] === 'true' && views.slice(1).every((v) => v[2] === 'false')
-      && outline.view === 'outline' && outline.rows === 3 && outline.editable === 0 && story.view === 'storyboard' && story.cards === 3 && placed(back), { views, outline, story, back: back && back.view });
+  // SUPERSEDED (Nov 21, before this file's first green; Actions 44881330109 read the third label "Plan"): V2 hardcoded "Outline", but the Board's own word
+  // for that view in Machina's reorg is "Plan" (store/lexicon/overrides/machinaReorg.ts boardModeOutline; ShowAs reads the same keys). The split was right;
+  // the check's premise was wrong. V2-B reads the words from the lexicon the Board itself reads. Verbatim:
+  // ok('V2 a view switch offers Open, Storyboard, Outline (the Board\'s own words), Open pressed; Outline draws three rows, every field read-only; Storyboard three cards; Open brings the canvas back',
+  //   !!views && views.map((v) => v[0]).join(',') === 'open,storyboard,outline' && views.map((v) => v[1]).join(',') === 'Open,Storyboard,Outline' && views[0][2] === 'true' && views.slice(1).every((v) => v[2] === 'false')
+  //     && outline.view === 'outline' && outline.rows === 3 && outline.editable === 0 && story.view === 'storyboard' && story.cards === 3 && placed(back), { views, outline, story, back: back && back.view });
+  const v2b = (r) => !!r.views && r.views.map((v) => v[0]).join(',') === 'open,storyboard,outline' && r.views.map((v) => v[1]).join('|') === VIEW_WORDS.join('|') && r.views[0][2] === 'true' && r.views.slice(1).every((v) => v[2] === 'false')
+    && r.outline.view === 'outline' && r.outline.rows === 3 && r.outline.editable === 0 && r.story.view === 'storyboard' && r.story.cards === 3 && placed(r.back);
+  ok(`V2-B a view switch offers the Board's own views in Machina's reorg words (${VIEW_WORDS.join(', ')}), Open pressed; the outline view draws three rows, every field read-only; Storyboard three cards; Open brings the canvas back`,
+    v2b({ views, outline, story, back }), { views, want: VIEW_WORDS, outline, story, back: back && back.view });
+  // MUT-V2-B: a switch that drew the canonical word where Machina's reorg has its own turns V2-B red (the mutant LANDED: the label changed)
+  const mutViews = views ? views.map((v) => (v[0] === 'outline' ? [v[0], 'Outline', v[2]] : v)) : null;
+  ok('MUT-V2-B a view label in the canonical word, not Machina\'s reorg word, turns V2-B red', !!mutViews && VIEW_WORDS[2] !== 'Outline' && !v2b({ views: mutViews, outline, story, back }), { mut: mutViews && mutViews[2], want: VIEW_WORDS[2] });
 
   // ---- PAN -------------------------------------------------------------------------------------------------------------------------------
   const e0 = await app.evalJs(EMPTY);
@@ -140,6 +153,9 @@ await withHarness(async (app) => {
   ok('P1 a drag on the empty canvas moves every card by exactly the drag', !!e0 && moved, { e0, before: p0 && p0.cards, after: p1 && p1.cards, pan: p1 && p1.pan });
 
   // ---- ZOOM ------------------------------------------------------------------------------------------------------------------------------
+  // FIXTURE (Nov 21, before this file's first green; Actions 44881330109 read scale 1 after the wheel): P1's pan left Beta's card above the canvas's view, so
+  // the wheel was sent outside the canvas. Z1 now begins at home (Fit). No assertion changes.
+  await app.evalJs(press('[data-split-zoom="fit"]')); await sleep(300);
   const z0 = await app.evalJs(READ);
   const c2 = z0 && z0.cards.find((c) => c.id === 'c2');
   const pt = c2 ? { x: c2.l + 10, y: c2.t + 6 } : null;   // a point on Beta's card
@@ -206,7 +222,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 10;
+const EXPECTED = 11;   // 10 - V2 (parked) + V2-B + MUT-V2-B (Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-SPLIT-BOARD VERIFY: PASS (${checks.length} checks)`
