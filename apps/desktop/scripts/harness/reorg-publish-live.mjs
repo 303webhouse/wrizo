@@ -278,7 +278,7 @@ await withHarness(async (app) => {
   const after = await app.evalJs("(() => { const tabs = [...document.querySelectorAll('.wz-sliver .wz-drawer-tab')].map((b) => b.getAttribute('data-disabled')); return { anyGrey: tabs.some((x) => x === 'true'), pubparts: !!document.querySelector('.wz-sliver [data-reorg-pubparts]'), textOn: document.querySelector('.wz-sliver #wz-sliver-tab-text')?.getAttribute('data-on') }; })()");
   ok('F5 an order made in the Front menu is the Doc\'s order: the sheet, the file and the stored order agree and no word moved; going back to writing gives TEXT its tab and its body again',
     order === 'pub-3,pub-1,pub-2' && side === order && moved.length === 1 && /^# Budget\n\n## Close\n\nClosing words\.\n\n## Opening\n\nOpening words here\./.test(moved[0].text) && /^pub-3:/.test(stored) && /pub-1=Opening words here\.\nSecond line \*\*bold\*\*\.\|pub-2=Middle words unnamed\.\|pub-3=Closing words\./.test(texts)
-    && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120) });
+    && !after.anyGrey && !after.pubparts && after.textOn === 'true', { order, side, stored, texts, after, md: moved[0] && moved[0].text.slice(0, 120), blobs: moved.map((b) => [b.type, b.name, String(b.text).slice(0, 40)]) });
   } catch (err) { ok('F0 the FINALIZE checks ran to their end (a driver that cannot find what it must press fails here, it does not crash the run)', false, String(err && err.message).slice(0, 300)); }
 });
 
