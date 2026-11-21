@@ -1,4 +1,4 @@
-import type { DocSettings, JournalEntry, Project, StyleGuide } from '../types';
+import type { DocAsset, DocSettings, JournalEntry, Project, StyleGuide } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
 import { getJournalEntry, getProject, isAutoSet, saveJournalEntry, saveProject } from '../store/persistence';
 import { getUserPageDefaults } from '../store/pageDefaults';
@@ -80,7 +80,53 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   return true;
 }
 
+// THE DOC'S OWN ASSETS (Nick ruled A, Nov 20, 11:55 pm: "Doc-level assets YES. Home: the Doc's settings column, key `assets` = [{entryId, boxId?, at}]").
+// A made Doc only: a loose page is its own Doc of one Part, so its assets are that page's own links (the caller grafts instead; refused here).
+// Each asset once (an entry, or a card of a board); `at` is when it joined. The last one removed leaves the key absent (docSettings {} when nothing else).
+const sameAsset = (a: { entryId: string; boxId?: string }, b: { entryId: string; boxId?: string }): boolean => a.entryId === b.entryId && (a.boxId ?? '') === (b.boxId ?? '');
+const isDocAsset = (v: unknown): v is DocAsset => !!v && typeof (v as DocAsset).entryId === 'string' && !!(v as DocAsset).entryId && typeof (v as DocAsset).at === 'string'
+  && ((v as DocAsset).boxId === undefined || typeof (v as DocAsset).boxId === 'string');
+
+/** Whether this Part belongs to a Doc she made (one that can hold Doc-level assets). */
+export function hasMadeDoc(entryId: string): boolean {
+  const e = getJournalEntry(entryId);
+  return !!e && !!madeDocOf(e);
+}
+
+/** The Doc's own assets, in the order they joined (an empty list for a loose page or a Doc with none). */
+export function docAssetsOf(entryId: string): DocAsset[] {
+  const a = docSettingsOf(entryId).assets;
+  return Array.isArray(a) ? a.filter(isDocAsset).map((x) => ({ ...x })) : [];
+}
+
+function writeDocAssets(entryId: string, next: DocAsset[]): boolean {
+  const e = getJournalEntry(entryId);
+  const set = e ? madeDocOf(e) : null;
+  if (!set) return false;
+  const cur = (set.docSettings ?? {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = { ...cur };
+  if (next.length > 0) out.assets = next; else delete out.assets;
+  if (JSON.stringify(out) === JSON.stringify(cur)) return false;
+  saveProject({ ...set, docSettings: out as DocSettings });
+  return true;
+}
+
+/** Connect an asset to the whole Doc this Part belongs to. False: a loose page, a missing asset, or one already there. */
+export function addDocAsset(entryId: string, asset: { entryId: string; boxId?: string }): boolean {
+  if (!asset.entryId || !getJournalEntry(asset.entryId)) return false;
+  const list = docAssetsOf(entryId);
+  if (list.some((a) => sameAsset(a, asset))) return false;
+  return writeDocAssets(entryId, [...list, { entryId: asset.entryId, ...(asset.boxId ? { boxId: asset.boxId } : {}), at: new Date().toISOString() }]);
+}
+
+/** Take an asset off the Doc (its Parts' own links are untouched). */
+export function removeDocAsset(entryId: string, asset: { entryId: string; boxId?: string }): boolean {
+  const list = docAssetsOf(entryId);
+  const next = list.filter((a) => !sameAsset(a, asset));
+  return next.length !== list.length && writeDocAssets(entryId, next);
+}
+
 // the harness's door, present only under the reorg switch
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting };
+  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
 }

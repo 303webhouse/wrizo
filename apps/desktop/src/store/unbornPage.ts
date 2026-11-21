@@ -1,5 +1,6 @@
 import { generateId, getJournalEntry, saveJournalEntry, setUnbornEntry, pinPageToBoard } from './persistence';
 import { graftTo } from './grafts';
+import { addDocAsset } from '../reorg/docSettings';
 import { liveBoxes } from './boxTombstones';
 import type { Box, JournalEntry, PageTemplate } from '../types';
 import { PAGE_SETTINGS_FALLBACK } from '../types';
@@ -43,6 +44,10 @@ export interface UnbornDescriptor {
   // TOOLS #9 - Q3's landing for a librarian pick (`land=open|walk|walk-help`): "everything" opens the dealt board as Open; "a little" the Walk with the first step's "?" open; "the shape" the Walk. A one-shot
   // hint read once while the board is unborn (components/BoardEditor.tsx onDeckDealt); rides the address like `deck`, nothing is stored; unknown -> null (the deck lands as it always did).
   landing: HelpLanding | null;
+  // THE ASSETS "+" (reorg-plan-v2 3b item 1): New Board / New Doc opened from a Part's "+" (`ap`, that Part) or the Doc's (`ad`, a Part of that Doc). Rides the
+  // address like `graft`, so nothing is written until `birth`; then the new page or board and its connection are one act (the Part's PageLink through
+  // graftTo, or the Doc's docSettings.assets). Null for every other door.
+  asset: { part: string } | { doc: string } | null;
 }
 
 // A malformed or unknown descriptor degrades to a plain loose page rather than
@@ -87,6 +92,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
     landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
+    asset: q.get('ap')?.trim() ? { part: q.get('ap')!.trim() } : q.get('ad')?.trim() ? { doc: q.get('ad')!.trim() } : null,
   };
 }
 
@@ -102,6 +108,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
   if (d.deck && d.landing) q.set('land', landingToken(d.landing));
+  if (d.asset) { if ('part' in d.asset) q.set('ap', d.asset.part); else q.set('ad', d.asset.doc); }
   const s = q.toString();
   return `/page/new${s ? `?${s}` : ''}`;
 }
@@ -172,6 +179,11 @@ export function birth(
     const board = getJournalEntry(d.graft.boardId);
     if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
     try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ }
+  }
+  // THE ASSETS "+": the Part's own link, or the Doc's asset; a Part or Doc gone since the door was pressed connects nothing (the page stands on its own)
+  if (d.asset) {
+    if ('part' in d.asset) { if (getJournalEntry(d.asset.part)) graftTo({ entryId: d.asset.part }, { entryId: born.id }); }
+    else addDocAsset(d.asset.doc, { entryId: born.id });
   }
   // The store now has the row, so getJournalEntry resolves it from the cache
   // and the slot no longer matters; clearing it keeps the invariant "at most

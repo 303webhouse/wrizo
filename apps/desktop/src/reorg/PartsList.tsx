@@ -11,7 +11,7 @@ import {
   ensureDoc, isPartColor, joinPart, movePart, partById, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
 } from './parts';
-import { assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
+import { assetDragFromDoc, assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
 import { SLOT_WORD, slotLetter } from './colourSlots';
 import { assetCountOf } from './partAssets';
 import { focusAssetsPart } from './backMenu/assetsFocus';
@@ -112,7 +112,8 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     const asset = readAssetDrag(e.dataTransfer);
     if (!asset) return;
     const vals = { title: assetTitle(asset) || t('reorgUntitled'), part: partWord(p) };
-    const r = connectAssetToPart(p.id, asset, latest.id);
+    // from the Doc's own list, her own Part is a real connection too (her Part's list is not where it came from)
+    const r = connectAssetToPart(p.id, asset, assetDragFromDoc(e.dataTransfer) ? undefined : latest.id);
     if (r.made === 'link') { const id = r.linkId; setLine({ text: fill(t('reorgConnectedLine'), vals), undo: () => { removePageLink(id); } }); }
     else setLine({ text: fill(t(r.made === 'already' ? 'reorgAlreadyConnected' : 'reorgConnectRefused'), vals) });
   };

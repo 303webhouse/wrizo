@@ -306,6 +306,23 @@ export const CANONICAL_CHROME = {
   // THE TEAM B RESTYLE, slice 3 (reorg/backMenu/AssetPartGroups.tsx; Nick, Nov 20: 1F, 1H): the Assets tab's head and each Part's fold. {n} a count, {part} a Part's name
   reorgAssetsHead: 'Assets ({n})',
   reorgAssetsPartToggle: 'Show or hide the assets of {part}',
+  // THE ASSETS "+" (reorg-plan-v2 3b item 1; 1F): the kinds she can connect, the sorts, the Doc's own list
+  reorgAssetsAdd: 'Add an Asset',
+  reorgAssetsAddTo: 'Add an Asset to {part}',
+  reorgAddMenu: 'Add an Asset',
+  reorgAddNewBoard: 'New Board',
+  reorgAddExistingBoard: 'Existing Board',
+  reorgAddNewDoc: 'New Doc',
+  reorgAddExistingDoc: 'Existing Doc',
+  reorgAddSearchBoards: 'Find a Board',
+  reorgAddSearchDocs: 'Find a Doc',
+  reorgAddNone: 'Nothing to add',
+  reorgAssetsSort: 'Sort',
+  reorgAssetsSortAz: 'A–Z',
+  reorgAssetsSortNew: 'Newest',
+  reorgAssetsSortOld: 'Oldest',
+  reorgAssetsSortProject: 'By Project',
+  reorgAssetsDocList: 'This Doc',
   // THE TEAM B RESTYLE, slice 5 (reorg/TextFolds.tsx; Fable, Nov 20, 1:27 pm; the stage menus, draft 3): the TEXT tab's folds. {symbol} the character
   reorgTextParagraph: 'Paragraph',
   reorgTextMore: 'More',
