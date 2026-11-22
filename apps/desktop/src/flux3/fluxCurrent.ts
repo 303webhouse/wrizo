@@ -88,19 +88,24 @@ function menuRect(side: Side): Rect | null {
   return rectOf(document.querySelector(side === 'left' ? '.wz-sliver-grip' : '.wz-tutor-grip'));
 }
 
-function stage(btn: HTMLElement): void {
+/** the geometry may not be there yet (leaving Wire In, the page and its menus come back): a few later tries, 150 ms apart, then it is let go - never a loop */
+function later(fn: () => void, tries: number): void {
+  if (tries > 0) setTimeout(fn, 150);
+}
+
+function stage(btn: HTMLElement, tries = 4): void {
   if (!btn.isConnected || !active()) return;
   const b = rectOf(btn);
   const page = rectOf(document.querySelector('.mode-page'));
   const bar = rectOf(btn.closest('.chrome-top') || btn.parentElement);
-  if (!b || !page || !bar) return;
+  if (!b || !page || !bar) { later(() => stage(btn, tries - 1), tries); return; }
   const left = menuRect('left');
   const right = menuRect('right');
   const sp = stagePaths({ btn: b, barBottom: bar.bottom, page, left, right });
   const paths: RunPath[] = [];
   if (sp.left && left) paths.push({ side: 'left', pts: sp.left, length: pathLength(sp.left), menu: left });
   if (sp.right && right) paths.push({ side: 'right', pts: sp.right, length: pathLength(sp.right), menu: right });
-  if (!paths.length) return;
+  if (!paths.length) { later(() => stage(btn, tries - 1), tries); return; }
   state.runs += 1;
   state.last = { kind: 'stage', at: Date.now(), paths, sparkPx: SPARK_PX, durationMs: SPARK_MS, layers: sparkLayers(1).length, strokePx: 1 };
   drawSpark(paths);

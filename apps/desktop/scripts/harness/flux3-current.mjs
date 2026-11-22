@@ -85,6 +85,7 @@ try { await withHarness(async (app) => {
     await sleep(1500);
   };
   const page = async (opts = {}) => { const id = `f3cur-${Date.now()}-${seq += 1}`; await mk({ id, text: 'The room behind the page.\nA second line.', createdAt: new Date().toISOString(), origin: 'loose', source: 'page' }); await sleep(300); await open({ ...opts, id }); return id; };
+  const act = () => ev("[...document.querySelectorAll('.desk-mode-tab')].filter((b) => b.getAttribute('aria-selected') === 'true').map((b) => b.getAttribute('data-mode-key')).join()");
   const tab = (key) => ev(`(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key="${key}"]'); if (!b) return null; const r = b.getBoundingClientRect(); const out = { left: r.left, top: r.top, right: r.right, bottom: r.bottom, active: b.getAttribute('aria-selected') }; b.click(); return out; })()`);
   const read = () => ev(READ());
 
@@ -120,20 +121,22 @@ try { await withHarness(async (app) => {
   ok('SU7 ...and pressing a different stage draws one more', s3.runs === 2 && s3.sparks === 1, JSON.stringify({ runs: s3.runs, sparks: s3.sparks }));
   await sleep(900);
   // Wire In
-  await tab('freewrite'); await sleep(250);
+  await tab('freewrite'); await sleep(600);
   const s4 = await read();
-  ok('SU8 WIRE IN has no menus: pressing it sends no spark', s4.runs === 2 && s4.sparks === 0, JSON.stringify({ runs: s4.runs, sparks: s4.sparks, openL: s4.openL }));
+  const a4 = await act();
+  ok('SU8 WIRE IN has no menus: pressing it sends no spark (and Wire In is the stage she is in)', s4.runs === 2 && s4.sparks === 0 && a4 === 'freewrite', JSON.stringify({ runs: s4.runs, sparks: s4.sparks, active: a4, openL: s4.openL }));
   await sleep(500);
-  await tab('draft'); await sleep(250);
+  await tab('draft'); await sleep(1200);
   const s5 = await read();
-  ok('SU9 ...and leaving it sends one, to the menus as they return (a run with at least one path)', s5.runs === 3 && !!s5.last && s5.last.paths.length >= 1, JSON.stringify({ runs: s5.runs, paths: s5.last && s5.last.paths.length }));
+  const a5 = await act();
+  ok('SU9 ...and leaving it sends one, to the menus as they return (a run with at least one path)', s5.runs === 3 && !!s5.last && s5.last.paths.length >= 1, JSON.stringify({ runs: s5.runs, paths: s5.last && s5.last.paths.length, active: a5 }));
   await sleep(900);
 
   // ---- HANDS: HA1..HA4 --------------------------------------------------------------------------------------------------------------------------------
   await page();
   const open0 = await read();
   ok('HA0 both menus start shut and no hand current is drawn', open0.openL === 'false' && open0.openR === 'false' && open0.hands.length === 0, JSON.stringify({ openL: open0.openL, openR: open0.openR, hands: open0.hands.length }));
-  await ev("document.querySelector('.wz-sliver-grip').click()");
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
   await sleep(500);
   const h1 = await read();
   const el1 = await ev(ELECTRON);
@@ -144,13 +147,13 @@ try { await withHarness(async (app) => {
     h1.openL === 'true' && !!hl && !!hl.line && hl.electron && near(hl.line.left, h1.sliver.left, 3) && near(hl.line.right, h1.sliver.right, 3) && near(hl.line.top, h1.sliver.top, 3) && hl.line.bottom - hl.line.top <= 1.5 && !h1.hands.find((h) => h.side === 'right'),
     JSON.stringify({ line: hl && hl.line, box: h1.sliver }));
   ok('HA2 the electron runs the line while the menu is open, on transform alone (one animation, running)', !!el1 && el1.n === 1 && el1.state === 'running' && el1.props.length === 1 && el1.props[0] === 'transform', JSON.stringify(el1));
-  await ev("document.querySelector('.wz-tutor-grip').click()");
+  await ev("(() => { const g = document.querySelector('.wz-tutor-grip'); g.focus(); g.click(); })()");
   await sleep(500);
   const h2 = await read();
   const hr = h2.hands.find((h) => h.side === 'right');
   ok('HA3 the Back menu does the same on its side, and the two currents are separate', h2.openR === 'true' && !!hr && !!hr.line && near(hr.line.left, h2.tutor.left, 3) && near(hr.line.right, h2.tutor.right, 3) && near(hr.line.top, h2.tutor.top, 3) && h2.hands.length === 2, JSON.stringify({ line: hr && hr.line, box: h2.tutor, hands: h2.hands.length }));
-  await ev("document.querySelector('.wz-sliver-grip').click()");
-  await ev("document.querySelector('.wz-tutor-grip').click()");
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
+  await ev("(() => { const g = document.querySelector('.wz-tutor-grip'); g.focus(); g.click(); })()");
   await sleep(800);
   const h3 = await read();
   ok('HA4 the current goes when the menus shut: no hand current left, and no animation of it running', h3.openL === 'false' && h3.openR === 'false' && h3.hands.length === 0, JSON.stringify({ hands: h3.hands.length, openL: h3.openL, openR: h3.openR }));
@@ -159,8 +162,8 @@ try { await withHarness(async (app) => {
   await sleep(600);
   const h4 = await read();
   ok('HA5 ONLY ON A CLICK: a menu opened by the keyboard shortcut (Ctrl+/) draws no current', h4.openL === 'true' && h4.hands.length === 0, JSON.stringify({ openL: h4.openL, hands: h4.hands.length }));
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(500);   // shut it with a click (the page's own state: open -> shut)
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(500);   // and open it with one
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);   // shut it with a click (the page's own state: open -> shut)
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);   // and open it with one
 
   // ---- TYPING PATH: TY1..TY3 --------------------------------------------------------------------------------------------------------------------------
   const before = await read();
@@ -175,22 +178,22 @@ try { await withHarness(async (app) => {
   ok('TY3 the layer\'s source holds only a click listener (and a resize listener while a hand is open): no key, input, scroll, selection or pointer-move listener, no timer, at most two frame requests', typingPathClean(layerText), layerText === null ? 'src/flux3/fluxCurrent.ts is missing' : '');
   ok('TY4 the layer\'s styles animate transform and opacity alone (no layout or paint property in a keyframe)', layerCss.length > 0 && [...layerCss.matchAll(/@keyframes[^{]*\{([\s\S]*?\}\s*)\}/g)].every((m) => !/\b(width|height|left|top|right|bottom|margin|padding|background|box-shadow|filter)\s*:/.test(m[1])), layerCss.length ? '' : 'src/flux3/flux-current.css is missing');
   ok('MUT-TY3 the typing-path reader goes RED on a source that listens to keys, runs a timer or loops frames', !typingPathClean((layerText || '') + "\ndocument.addEventListener('keydown', () => {});") && !typingPathClean((layerText || '') + '\nsetInterval(() => {}, 10);') && !typingPathClean((layerText || '') + '\nrequestAnimationFrame(a); requestAnimationFrame(b); requestAnimationFrame(c);'), 'three mutated sources');
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(600);
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(600);
 
   // ---- QUIET: QU1..QU3 --------------------------------------------------------------------------------------------------------------------------------
   await page({ reduced: true });
   await tab('revise'); await sleep(200);
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(500);
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);
   const q1 = await read();
   ok('QU1 REDUCED MOTION: a stage change draws no spark and a menu opens with no hand current', q1.runs === 0 && q1.sparks === 0 && q1.hands.length === 0 && q1.openL === 'true', JSON.stringify({ runs: q1.runs, sparks: q1.sparks, hands: q1.hands.length, openL: q1.openL }));
   await page({ dial: 0 });
   await tab('revise'); await sleep(200);
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(500);
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);
   const q2 = await read();
   ok('QU2 AMBIANCE 0: no spark and no hand current either', q2.runs === 0 && q2.sparks === 0 && q2.hands.length === 0 && q2.openL === 'true', JSON.stringify({ runs: q2.runs, sparks: q2.sparks, hands: q2.hands.length }));
   await page({ flag: false });
   await tab('revise'); await sleep(200);
-  await ev("document.querySelector('.wz-sliver-grip').click()"); await sleep(500);
+  await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);
   const q3 = await read();
   ok('QU3 WITHOUT ?flux3=1 nothing loads: no window.wrizoFluxCurrent, no spark, no hand current (the Flux theme alone)', q3.api === false && q3.sparks === 0 && q3.hands.length === 0 && q3.openL === 'true', JSON.stringify({ api: q3.api, sparks: q3.sparks, hands: q3.hands.length }));
 
@@ -211,7 +214,7 @@ try { await withHarness(async (app) => {
         await mk({ id, text: LAT_TEXT, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' });
         await sleep(300);
         await open({ id });
-        await ev("document.querySelector('.wz-sliver-grip').click()");
+        await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
         await sleep(600);
         const hadHand = !!(await ev("!!document.querySelector('[data-flux-hand]')"));
         if (!(arm === 'J' && on)) await ev("(() => { document.querySelectorAll('[data-flux-hand]').forEach((n) => n.remove()); window.wrizoFluxCurrent && window.wrizoFluxCurrent.detach && window.wrizoFluxCurrent.detach(); })()");
