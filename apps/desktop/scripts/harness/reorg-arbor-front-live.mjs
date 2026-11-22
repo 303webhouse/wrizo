@@ -113,7 +113,7 @@ await withHarness(async (app) => {
     const out = rows.map((r) => { const name = r.querySelector('.reorg-parts-name'); const tag = r.querySelector('.reorg-parts-tag'); const rc = getComputedStyle(r); const bg = parse(rc.backgroundColor); const drawn = ground(r); const wash = Math.max(bg[3], parse(getComputedStyle(r.parentElement).backgroundColor)[3]); const fg = parse(getComputedStyle(name).color);
       const before = getComputedStyle(r, '::before'); const after = tag ? getComputedStyle(tag, '::after') : null; const tc = tag ? getComputedStyle(tag) : null;
       return { name: name.textContent, here: r.classList.contains('is-here'), tint: r.getAttribute('data-tint'), alpha: Math.round(wash * 100) / 100, weight: getComputedStyle(name).fontWeight, style: getComputedStyle(name).fontStyle, ink: fg.slice(0, 3).map(Math.round).join(','), ratio: Math.round(ratio(fg, drawn) * 100) / 100,
-        mark: { w: before.width, bg: before.backgroundColor, left: before.left }, tag: tag ? { colour: tag.getAttribute('data-colour'), bg: tc.backgroundColor, num: after && after.content, fs: tc.fontSize } : null }; });
+        mark: { w: before.width, bg: before.backgroundColor, left: before.left }, tag: tag ? { colour: tag.getAttribute('data-colour'), bg: tc.backgroundColor, num: after && after.content, fs: tc.fontSize, edge: tc.borderTopColor, edgeW: tc.borderTopWidth } : null }; });
     return out; })()`;
   await open(app, 'af-1', { room: 'dark' }); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
   const night = await app.evalJs(measure('night'));
@@ -124,11 +124,19 @@ await withHarness(async (app) => {
   const here = (rows) => rows && rows.find((r) => r.here);
   const tagOk = (rows) => !!rows && rows[0].tag.colour === 'c' && rows[0].tag.bg === 'rgb(127, 160, 188)' && /3/.test(rows[0].tag.num) && rows[0].tag.fs === '0px' && rows[1].tag.colour === 'd' && rows[1].tag.bg === 'rgb(168, 57, 47)' && /4/.test(rows[1].tag.num);
   const markOk = (r) => !!r && r.mark.w === '4px' && r.mark.bg === 'rgb(255, 152, 0)' && r.weight === '500' && r.style === 'normal';
-  ok('AF5 tags and tint: the slot\'s cloth with its number (c = 3, d = 4); the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500; brass words by night, olive by day (the drawer\'s dark olive on a tinted row); every pair reads 4.5:1 or better, measured from the drawn colours',
-    tagOk(night) && tagOk(day) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
-      && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '255,152,0' && here(night).ratio >= 4.5
+  // SUPERSEDED (pass 3, Nov 22: the current name takes the label colour in both rooms, not brass by night or olive by day; and by night every tag wears a 1 px #9C8A6E edge). The original, verbatim:
+  // ok('AF5 tags and tint: the slot\'s cloth with its number (c = 3, d = 4); the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500; brass words by night, olive by day (the drawer\'s dark olive on a tinted row); every pair reads 4.5:1 or better, measured from the drawn colours',
+  // tagOk(night) && tagOk(day) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
+  // && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '255,152,0' && here(night).ratio >= 4.5
+  // && here(day).tint === 'c' && here(day).ink === '51,64,31' && here(day).ratio >= 4.5
+  // && here(dayPlain).tint === null && here(dayPlain).ink === '85,97,45' && here(dayPlain).ratio >= 4.5,
+  // { night: here(night), day: here(day), dayPlain: here(dayPlain), tagsNight: night && night.slice(0, 2).map((r) => r.tag) });
+  const nightEdge = (rows) => !!rows && rows.slice(0, 2).every((r) => r.tag.edge === 'rgb(156, 138, 110)' && r.tag.edgeW === '1px');
+  ok('AF5 tags, tint and the current name: the slot\'s cloth with its number (c = 3, d = 4); by night every tag has a 1 px #9C8A6E edge; the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500, and its name is the label colour in both rooms; every pair reads 4.5:1 or better, measured from the drawn colours',
+    tagOk(night) && tagOk(day) && nightEdge(night) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
+      && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '237,230,218' && here(night).ratio >= 4.5
       && here(day).tint === 'c' && here(day).ink === '51,64,31' && here(day).ratio >= 4.5
-      && here(dayPlain).tint === null && here(dayPlain).ink === '85,97,45' && here(dayPlain).ratio >= 4.5,
+      && here(dayPlain).tint === null && here(dayPlain).ink === '51,64,31' && here(dayPlain).ratio >= 4.5,
     { night: here(night), day: here(day), dayPlain: here(dayPlain), tagsNight: night && night.slice(0, 2).map((r) => r.tag) });
 
   // AF6: the link badge: a cloth-edged count; the chosen row's wash runs the FULL row under it (Fable, Nov 21, 11:20 pm); its edge keeps 3:1 and its count 4.5:1 on that wash, by night and by day, measured from the drawn colours; a press opens GRAFTS at that Section

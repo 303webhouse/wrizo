@@ -141,12 +141,9 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='d']){ background:color-mix(in srgb, var(--reorg-tag-d-fill) 22%, transparent); }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='e']){ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='f']){ background:color-mix(in srgb, var(--reorg-tag-f-fill) 22%, transparent); }
-/* the current Section: Arbor's chosen-row rule: a 4 px brass mark at its left edge and roman 500; by night the words are brass (8.56:1), by day they stay olive (brass on cream is 1.91:1), and on a tinted row by day the drawer's dark olive, which holds 4.5:1 on every tint */
+/* the current Section: Arbor's chosen-row rule: a 4 px brass mark at its left edge and roman 500; its name is the drawer's label colour in both rooms (the Wrizors' pass 3: "the current name in the label colour both rooms"), which holds 4.5:1 on every tint */
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here::before{ content:''; position:absolute; left:0; top:4px; bottom:4px; width:4px; background:var(--brass); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here[data-tint] .reorg-parts-name{ color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--text-hi); }
 /* the link badge (D2): a small cloth-edged count, in GRAFTS' cold blue edge; it opens GRAFTS at that Section */
 :root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets{ border:1px solid var(--reorg-tag-c-edge); color:var(--text-hi); }
 /* the edge keeps 3:1 and the count 4.5:1 on the wash and on the plain drawer, in both rooms (the unit computes every slot over every ground): a deeper cold blue by day, the cold blue cloth itself by night */
@@ -189,3 +186,7 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-colour-hex{ width:96px; height:26px; box-sizing:border-box; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; color:var(--text-hi); }
 :root[data-arbor2][data-theme='plateau'] .reorg-colour-preview{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:26px; box-sizing:border-box; border:1px solid var(--part-hex-edge-dark, var(--ink-border-strong)); font-size:12px; color:var(--text-mid); }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-colour-preview{ border-color:var(--part-hex-edge-light, var(--ink-border-strong)); }
+/* pass 3 (the Wrizors, Nov 22), REAL: by night every tag wears a 1 px edge in Arbor's night line, the slot tags and a custom colour's alike */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour], :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour-hex]{ border-color:var(--arbor-line); }
+/* pass 3 NIT: the bar under the list is the session's goal hairline; the Front menu names it, in the drawer's label dress */
+:root[data-arbor2][data-theme='plateau'] .wz-sliver-goal-name{ font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); }
