@@ -31,6 +31,12 @@ interface Props {
   peers?: readonly unknown[];
 }
 
+/** A doc node's title (Fable, Nov 21, 11:55 pm): the page's own name when it has one (pageSettings.name, as the Parts list and publishing read it), else its first line. */
+function docTitle(entryId: string): string {
+  const e = getJournalEntry(entryId);
+  return (e?.pageSettings?.name ?? '').trim() || firstLine(e?.text ?? '').trim();
+}
+
 export function FluxNodeRecord(props: Props) {
   const theme = useTheme();
   return theme === 'flux' ? <NodeRecord {...props} /> : null;
@@ -64,7 +70,7 @@ function NodeRecord({ box, connections, peers }: Props) {
   // a dealt step's (its card's title, store/guided.ts splitCard: the step's name) and a doc node's (its page's first line). Painted from data-title above the header,
   // one line, so it is never the card's text and no card moves (S1). Plain text and ink nodes carry none.
   const title = kind === 'preset' ? splitCard(box.text).title.trim()
-    : kind === 'doc' && box.entryId ? firstLine(getJournalEntry(box.entryId)?.text ?? '').trim() : '';
+    : kind === 'doc' && box.entryId ? docTitle(box.entryId) : '';
   return (
     <span className="flux3-node" data-node-kind={kind} data-last={last === box.id ? 'true' : undefined} aria-hidden="true">
       {title && <i className="flux3-node-t" data-flux3-node-title="" data-title={title} />}
