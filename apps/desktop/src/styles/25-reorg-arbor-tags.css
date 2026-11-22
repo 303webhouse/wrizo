@@ -1,0 +1,11 @@
+/* THE SECTION TAGS' TOKENS IN ARBOR (Fable, Nov 21, 6:54 pm; claude/wrizors/arbor-reorg-spec.md section 6: "colour slots a-f draw as Arbor's six numbered cloth tabs (Nick, Nov 11, 1:46 am)"). INK owns these tokens (agreed with ARBOR): the top bar draws the current Section's tag before its name and the SECTIONS list draws every
+   row's, both reading --reorg-tag-<slot>-fill / -ink / -edge / -num, so they always match. One block, under the live Arbor: a olive #56632E, b sea #17454E, c cold blue #7FA0BC, d madder #A8392F, e honey #C9A46B, f iron #39414A. The ink is Arbor's cream (#EFE4CB) or walnut (#2B1D12), whichever
+   reads on the cloth at 4.5:1 or better; the edge is the rail tabs' 1 px darker edge; the tag carries a NUMBER (1 to 6), Arbor's form, as Machina's carries a letter (a string, for content:). Never brass: brass is her act. */
+:root[data-arbor2][data-theme='plateau']{
+  --reorg-tag-a-fill:#56632E; --reorg-tag-a-ink:#EFE4CB; --reorg-tag-a-edge:#3A4322; --reorg-tag-a-num:'1';
+  --reorg-tag-b-fill:#17454E; --reorg-tag-b-ink:#EFE4CB; --reorg-tag-b-edge:#0F2F36; --reorg-tag-b-num:'2';
+  --reorg-tag-c-fill:#7FA0BC; --reorg-tag-c-ink:#2B1D12; --reorg-tag-c-edge:#5F788D; --reorg-tag-c-num:'3';
+  --reorg-tag-d-fill:#A8392F; --reorg-tag-d-ink:#EFE4CB; --reorg-tag-d-edge:#7E2B23; --reorg-tag-d-num:'4';
+  --reorg-tag-e-fill:#C9A46B; --reorg-tag-e-ink:#2B1D12; --reorg-tag-e-edge:#977B50; --reorg-tag-e-num:'5';
+  --reorg-tag-f-fill:#39414A; --reorg-tag-f-ink:#EFE4CB; --reorg-tag-f-edge:#2B3138; --reorg-tag-f-num:'6';
+}
