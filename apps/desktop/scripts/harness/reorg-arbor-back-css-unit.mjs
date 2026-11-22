@@ -108,6 +108,11 @@ function suite(css) {
     const gated = find(rs, /\.desk-frame-stage:has\(\.mode-pagecol\[data-zoom='true'\]\):has\(#wz-tutor-tab-plan\) \.wz-tutor-panel$/).filter((x) => /max-height:\s*38%/.test(x.body));
     return { pass: tabs.length === 1 && gated.length === 1, detail: J({ tabs: tabs.length, gated: gated.length }) };
   });
+  t('LOCKED', () => {
+    // pass 1, NIT 2 ("PLAN and GRAFTS greyed, with the note"): a locked cloth tab keeps its cloth but is greyed (faded and desaturated, no pointer); the Machina locked rule (dashed edge, low words) is invisible on a cloth
+    const r = find(rs, /\.arbor2-c2 \.wz-drawer-tab\[data-locked='true'\]$/).filter((x) => /opacity:\s*\.45/.test(x.body) && /filter:\s*saturate\(\.35\)/.test(x.body) && /cursor:\s*default/.test(x.body));
+    return { pass: r.length === 1, detail: J({ n: r.length }) };
+  });
   t('OPENER', () => {
     // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
     const r = find(rs, /\.desk-frame-stage:has\(#wz-tutor-tab-plan\) \.wz-tutor-grip\[data-open='true'\]$/).filter((x) => /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
@@ -124,7 +129,7 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'ROOM', 'PALETTE', 'BRASS', 'OPENER', 'CHIPS', 'FREEWRITE'];
+const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'ROOM', 'PALETTE', 'BRASS', 'OPENER', 'CHIPS', 'FREEWRITE', 'LOCKED'];
 for (const k of KEYS) ok(`${k} on the real 25-reorg-arbor-back.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-back.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -136,6 +141,7 @@ const MUT = [
   ['a canvas group head lets its buttons squeeze the name again', 'ROOM', (t) => t.replace(".wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px);", () => ".wz-back-boardhead > .wz-back-boardname{ flex:1 1 auto;")],
   ['the Free Write tabs lose the zoomed edge', 'FREEWRITE', (t) => t.replace('left:var(--arbor2-drawer-zx, 100%)', () => 'left:var(--arbor2-drawer-r, 0px)')],
   ['the Free Write panel is not capped', 'FREEWRITE', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
+  ['a locked tab is not greyed', 'LOCKED', (t) => t.replace('opacity:.45; filter:saturate(.35);', () => 'opacity:1; filter:saturate(.35);')],
   ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']", () => ".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-docked='true']")],
   ['a chip loses its cloth', 'CHIPS', (t) => t.replace(/(\.wz-back-tag\[data-colour-slot='c'\]\{ background:)var\(--reorg-tag-c-fill\)/, (m, a) => a + 'transparent')],
