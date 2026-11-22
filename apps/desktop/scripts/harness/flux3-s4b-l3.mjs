@@ -1,7 +1,7 @@
 // FLUX3 S4b L3 - CAPS CHROME (flux3-s4b-plan.md L3; flux-full-look-for-monday.md item 3, tier A, the Flux bonus: Fable, Nov 21, 4:58 pm; the source is the Oct 28 mockup,
 // flux-page-mockup-2-schema-doc.html #top .crumb and .tab). Every check is read in the live page behind ?flux3=1 (Flux theme).
-//   CRUMB    on a page and on a board, the crumb reads in the chrome face's capitals, letter-spaced: every step uppercase, letter-spacing >= .1em, the chrome face (not the UI
-//            face); the steps between are drawn as ▸ (the "/" is not drawn); the place words are quiet (--text-low) and where she stands is bright (--text-hi)
+//   CRUMB    on a page and on a board, the crumb reads in the chrome face's capitals, letter-spaced: every step uppercase, letter-spacing >= .1em, the chrome face (in Flux the UI
+//            face is the same Rajdhani, so the capitals and the spacing carry the look); the steps between are drawn as ▸ (the "/" is not drawn); the place words are quiet (--text-low) and where she stands is bright (--text-hi)
 //   VIEWS    the board's Show as names its views as WORDS, all the time (not only on hover): every button shows its word (the lexicon's own: LIVE, SEQUENCE, SPINE, TRACE, and the
 //            Stack's STACK) in capitals, and draws no icon
 //   RECT     the dress adds nothing to any layout: on the page and the board, at 1366 and 1920, the bar's height, the page's (or board's) rect and the host's are the same with the
@@ -47,7 +47,7 @@ const INSTRUMENT = `(() => {
 const norm = (f) => String(f || '').replace(/[\s'"]/g, '').toLowerCase();
 // a crumb in caps: every step uppercase, letter-spaced (>= .1em of its own size), in the chrome face and not the UI face; ▸ between, the "/" not drawn; quiet places, bright here
 const crumbCaps = (c) => !!c && c.steps.length >= 2 && c.seps.length >= 1
-  && c.steps.every((s) => s.tt === 'uppercase' && s.ls >= 0.1 * s.fs - 0.01 && !!c.chrome && norm(s.ff) === norm(c.chrome) && norm(s.ff) !== norm(c.ui))
+  && c.steps.every((s) => s.tt === 'uppercase' && s.ls >= 0.1 * s.fs - 0.01 && !!c.chrome && norm(s.ff) === norm(c.chrome))   // (Flux's UI face IS its chrome face, Rajdhani: "not the UI face" was a false premise, run 44964616701)
   && c.seps.every((p) => p.fs === 0 && /▸/.test(p.before) && p.bfs > 0)
   && c.steps.filter((s) => !/crumb-here|crumb-rename-btn/.test(s.cls)).every((s) => s.color === c.low)
   && c.steps.filter((s) => /crumb-here|crumb-rename-btn/.test(s.cls)).length >= 1 && c.steps.filter((s) => /crumb-here|crumb-rename-btn/.test(s.cls)).every((s) => s.color === c.hi);
