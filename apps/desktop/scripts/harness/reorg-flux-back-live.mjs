@@ -8,6 +8,8 @@
 //   FB3  [successor] the same, with the Spine row's button in Flux's case: "Open track"
 //   FB4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
+//   FB8  the row names keep their room (none cut) and the open tab wears the 3 x 24 brass bar (the Wrizors Flux pass 1, REAL 4 and NIT 1)
+//   FB9  Uplink keeps the bar one row and the page rectangle; the view lies over the page, has no box, and its buttons and ticks are in Flux dress (REAL 1, 2 and 3)
 //   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
 //   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-back-live.mjs
@@ -101,9 +103,30 @@ await withHarness(async (app) => {
   geo.w1920 = m2 === (await app.evalJs(PAGE));
   ok('FB4 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node', geo.w1366 && geo.w1920, { geo, mark, after, m2 });
 
+  // FB8 (the Wrizors' Flux pass 1, REAL 4 and NIT 1): the row names keep their room (no name cut to a few letters; its buttons wrap under it) and the open tab wears Flux's brass bar
+  await open(app, 'fb-1');
+  await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('fb-1', { entryId: 'fb-note' }); D.addAsset('fb-1', { entryId: 'fb-own', boxId: 'c2' }); window.wrizoFlushNow(); return null; })()");
+  await sleep(500);
+  await drawer(app); await tab(app, 'links');
+  const rows = await app.evalJs("(() => { const out = []; for (const e of document.querySelectorAll('.wz-tutor-panel .wz-back-asset .wz-links-label, .wz-tutor-panel .wz-back-boardname')) { const r = e.getBoundingClientRect(); out.push({ t: (e.textContent || '').trim().slice(0, 28), w: Math.round(r.width), cut: e.scrollWidth > e.clientWidth + 1 }); } return out; })()");
+  const tabBar = await app.evalJs(CS('#wz-tutor-tab-links', ['width', 'height', 'background-color'], '::before'));
+  ok('FB8 the row names keep their room (none cut: each label is at least 90 px wide and not clipped) and the open tab wears the 3 x 24 brass bar',
+    Array.isArray(rows) && rows.length >= 3 && rows.every((x) => x.w >= 90 && !x.cut) && !!tabBar && tabBar.width === '3px' && tabBar.height === '24px' && tabBar['background-color'] === 'rgb(255, 152, 0)', { rows, tabBar });
+
+  // FB9 (REAL 2 and 3, and REAL 1's Uplink half): Uplink keeps the bar's one row and the page's rectangle; the view is dressed (node-dress buttons, cyan ticks), has no box of its own, and lies exactly over the page
+  await open(app, 'fb-1', { lift: 'flux.back,flux.top,flux.uplink' });
+  await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*text\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()"); await sleep(900);
+  const BAR = "(() => { const r = (sel) => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return [b.left, b.top, b.width, b.height].map((v) => Math.round(v * 10) / 10).join(','); }; return { bar: r('.chrome-top.sprint-nav'), page: " + PAGE + ", doc: document.documentElement.scrollHeight - document.documentElement.clientHeight }; })()";
+  const beforeU = await app.evalJs(BAR);
+  for (let i = 0; i < 3 && !(await app.evalJs("!!document.querySelector('[data-reorg-pub]')")); i += 1) { await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]')); await sleep(900); }
+  const afterU = await app.evalJs(BAR);
+  const dressU = await app.evalJs("(() => { const px = (s) => { const m = /rgba?\\((\\d+), (\\d+), (\\d+)/.exec(s); return m ? [+m[1], +m[2], +m[3]] : null; }; const sheet = document.querySelector('[data-reorg-pub]'); const paper = document.querySelector('.mode-page'); if (!sheet || !paper) return null; const sr = sheet.getBoundingClientRect(), pr = paper.getBoundingClientRect(); const sc = getComputedStyle(sheet); const btns = [...sheet.querySelectorAll('.reorg-pub-btn')].map((b) => px(getComputedStyle(b).backgroundColor)); const ticks = [...sheet.querySelectorAll('.reorg-pub-tick input')].map((i) => getComputedStyle(i).accentColor); const crumbs = [...document.querySelectorAll('.reorg-top-name-btn')].map((b) => px(getComputedStyle(b).backgroundColor)); const dark = (c) => !c || (c[0] + c[1] + c[2]) < 300; return { cover: Math.abs(sr.left - pr.left) <= 1 && Math.abs(sr.top - pr.top) <= 1 && Math.abs(sr.width - pr.width) <= 1 && Math.abs(sr.height - pr.height) <= 1, outline: sc.outlineStyle, border: sc.borderTopWidth, btns: btns.length, btnsDark: btns.every(dark), ticks: ticks }; })()");
+  ok('FB9 Uplink: the bar keeps its one row and the page its rectangle; the view lies exactly over the page, has no box of its own, and its buttons and ticks are in Flux\'s dress',
+    !!beforeU && !!afterU && beforeU.bar === afterU.bar && beforeU.page === afterU.page && afterU.doc <= beforeU.doc && !!dressU && dressU.cover === true && dressU.outline === 'none' && dressU.border === '0px' && dressU.btns >= 6 && dressU.btnsDark === true && dressU.ticks.length >= 1 && dressU.ticks.every((x) => /0, 194, 255|00c2ff/i.test(x)), { beforeU, afterU, dressU });
+
   await open(app, 'fb-1', { lift: '' });
   await drawer(app);
-  const off = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
+  const off =await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
   ok('FB5 piece OFF without the door: in Flux the drawer is today\'s (no Spine tab, no reorg markup)', !!off && Array.isArray(off.tabs) && !off.tabs.includes('wz-tutor-tab-plan') && off.reorg === false, off);
 
   await open(app, 'fb-1');
@@ -121,7 +144,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 7;
+const EXPECTED = 9;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

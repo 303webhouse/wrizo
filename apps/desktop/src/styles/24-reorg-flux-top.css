@@ -1,0 +1,59 @@
+/* THE REORG'S TOP RAIL IN FLUX (Fable, Nov 21, 4:07 pm; claude/wrizors/flux-reorg-spec.md section 3; the Wrizors' Flux Back menu pass 1, REAL 2). Every rule is under :root[data-flux3][data-theme='flux'] (the Flux redesign) and is reached only by markup the top rail draws, so with the switch off, or in any other theme, nothing here matches.
+   The twins first: the Machina rules for the rail (its crumb, the names, the Part count, Connect, the search door), re-scoped to the redesign with Flux's colours for Machina's greys; then Flux's dress. The piece is switched on for Flux only through reorg/themeGate.ts (flux.top; the preview door shows it before then). The stage strip and its words are the live Flux's own. */
+:root[data-flux3][data-theme='flux'] [data-reorg-top-row]{ flex-wrap:nowrap; }
+:root[data-flux3][data-theme='flux'] .reorg-top{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:14px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-spring{ flex:1 1 auto; min-width:8px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-right{ flex:0 0 auto; display:flex; align-items:center; }
+:root[data-flux3][data-theme='flux'] [data-reorg-top-row] [data-top-strut]{ visibility:hidden; pointer-events:none; width:0; min-width:0; overflow:hidden; padding-left:0 !important; padding-right:0 !important; margin-left:0 !important; margin-right:0 !important; border-left-width:0 !important; border-right-width:0 !important; }
+:root[data-flux3][data-theme='flux'] .reorg-top-names{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name{ min-width:0; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; font-family:var(--font-ui); font-size:13px; line-height:normal; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-top-name='project']{ font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); max-width:180px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name-btn{ display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; text-align:left; cursor:text; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name-btn:hover{ text-decoration:underline; text-underline-offset:3px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-editable='false']{ cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-top-rename{ box-sizing:border-box; height:22px; width:min(240px, 22vw); padding:0 5px; margin:0; font:inherit; letter-spacing:inherit; text-transform:none; color:var(--text-hi); background:transparent; border:1px solid var(--text-mid); border-radius:0; outline:none; }
+:root[data-flux3][data-theme='flux'] .reorg-top-rename:focus{ border-color:var(--accent-rest); }
+:root[data-flux3][data-theme='flux'] .reorg-top-sep{ flex:none; color:var(--text-mid); font-size:12px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:6px; overflow:hidden; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-dot{ flex:none; color:var(--text-mid); font-size:11px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part .reorg-top-name{ font-size:12px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-place{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-board{ display:flex; align-items:center; gap:7px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-board .crumb-here{ color:var(--text-hi); font-weight:400; }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect{ height:24px; padding:0 9px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid var(--text-mid); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi); white-space:nowrap; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect.is-icon{ width:24px; padding:0; justify-content:center; font-size:15px; line-height:1; }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect[aria-expanded='true']{ border-color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop{ position:absolute; top:calc(100% + 10px); left:0; z-index:60; width:320px; box-sizing:border-box; background:#04141A; border:1px solid #7EB4C4; display:flex; flex-direction:column; color:var(--text-hi); font-family:var(--font-ui); }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-head{ padding:10px 14px 6px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-scroll{ max-height:176px; overflow-y:auto; scrollbar-width:thin; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-row{ display:flex; align-items:center; gap:8px; width:100%; height:34px; padding:0 14px; box-sizing:border-box; background:none; border:0; border-bottom:1px solid #1F5560; border-radius:0; font:inherit; font-size:13px; color:var(--text-hi); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-row:hover{ background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-row:focus-visible{ outline:1px solid var(--line-active); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-meta{ flex:0 0 auto; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-row.is-on{ cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-row.is-on:hover{ background:transparent; }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-new{ border-bottom:0; color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .reorg-top-drop-said{ padding:8px 14px 10px; border-top:1px solid #1F5560; font-size:12px; line-height:1.4; color:var(--text-hi); white-space:normal; }
+:root[data-flux3][data-theme='flux'] .reorg-top-search-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+:root[data-flux3][data-theme='flux'] .reorg-top-search{ height:24px; width:28px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; background:none; border:1px solid var(--text-mid); border-radius:0; color:var(--text-mid); cursor:pointer; padding:0; }
+:root[data-flux3][data-theme='flux'] .reorg-top-search:hover{ color:var(--text-hi); border-color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-top-search:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-soon{ position:absolute; top:calc(100% + 10px); right:0; z-index:60; white-space:nowrap; padding:6px 10px; background:#04141A; border:1px solid #7EB4C4; color:var(--text-hi); font-family:var(--font-ui); font-size:12px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part-count{ border:0; background:none; padding:0; margin:0; font:inherit; color:inherit; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part-count:hover, :root[data-flux3][data-theme='flux'] .reorg-top-part-count.is-open{ text-decoration:underline; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part-count:focus-visible{ outline:1px solid var(--line-active); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .reorg-top-part{ position:relative; }
+:root[data-flux3][data-theme='flux'] .reorg-top-parts-drop{ padding:10px 12px; max-height:320px; overflow-y:auto; }
+
+/* ---- FLUX'S DRESS (flux-reorg-spec section 3; the Wrizors' Flux Back menu pass 1, REAL 2) ---- */
+/* the rail keeps ONE row and its height in every stage (Publish included): no part of the crumb may wrap or drop below the strip, and nothing in it is a browser button (law 1: the bar never grows, so the page never moves) */
+:root[data-flux3][data-theme='flux'] .reorg-top-names, :root[data-flux3][data-theme='flux'] .reorg-top-part{ flex-wrap:nowrap; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-top-name-btn, .reorg-top-part-count, .reorg-top-connect, .reorg-top-search){ background:none; border:0; font:inherit; color:inherit; }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect, :root[data-flux3][data-theme='flux'] .reorg-top-search{ border:1px solid #5F8F95; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-top-connect, .reorg-top-search):hover{ border-color:#7EB4C4; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-top-name-btn, .reorg-top-part-count, .reorg-top-connect, .reorg-top-search):focus-visible{ outline:1px solid var(--line-active); outline-offset:2px; }
