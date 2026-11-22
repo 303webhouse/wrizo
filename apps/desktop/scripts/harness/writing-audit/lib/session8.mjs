@@ -141,14 +141,30 @@ export async function main({ title }) {
       await press('.forward-only-editor'); await refocus(0); await sleep(300);
       const ch1 = await chrome();
       out(`OBS P4 the chrome after the arrow: ${JSON.stringify({ arriving: ch0, afterClickIn: ch1 })}`);
-      if (!ch1.sliver) finding('P4-front', 'after the Part arrow (and a click into the page), the Front menu is on the page', 'chrome', `.wz-sliver absent: ${JSON.stringify({ ch0, ch1 })}`);
+      // SUPERSEDED (run 45076050345: the Front menu's absence is the page's MODE, not a lost menu: Split gives the tail pageType 'manuscript'
+      // (parts.ts splitPart, createBinderPage(docId, src.pageType ?? 'manuscript')), a manuscript page with no saved mode opens in Free Write
+      // (PageEditor.tsx useState mode), and under the reorg Free Write has no Front menu (PageEditor.tsx sliver={mode === 'journal' && reorgTop ?
+      // undefined : ...}), by design. The line, verbatim:
+      // if (!ch1.sliver) finding('P4-front', 'after the Part arrow (and a click into the page), the Front menu is on the page', 'chrome', `.wz-sliver absent: ${JSON.stringify({ ch0, ch1 })}`);
+      // [successor] the tail's mode, read three ways; the head was cut in Draft (Split here lives only in Draft's Front menu), so a tail opening in
+      // Free Write is reported as P3-mode (a question for a ruling: should a split's tail open in the mode it was cut in?)
+      const tailId = (await ev('location.hash')).split('/').pop();
+      const modeObs = await ev(`({ stored: localStorage.getItem('wrizo-mode-page-${tailId}'), headStored: localStorage.getItem('wrizo-mode-page-${ids[0]}'), sprintGrip: document.querySelector('.wz-tutor-grip')?.getAttribute('data-sprint') || null, zoom: !!document.querySelector('.mode-pagecol[data-zoom="true"]'), front: !!document.querySelector('.wz-sliver') })`);
+      out(`OBS P3-mode the tail's mode: ${JSON.stringify(modeObs)}`);
+      if (!modeObs.front && modeObs.headStored === 'drafting') finding('P3-mode', 'a split\'s tail opens in the mode it was cut in (Draft): it opened in Free Write, without the Front menu', 'mode', JSON.stringify(modeObs));
+      // Join from the head, as she can: back to Part 1 by the arrow (it is in Draft, with its Front menu), PARTS, the tail's row menu, Join
+      await press('[data-part-step="-1"]'); await sleep(1200);
+      await waitFor(`location.hash.endsWith(${JSON.stringify(ids[0])})`, 'back on the head', 10000).catch(() => {});
+      await press('.forward-only-editor'); await sleep(200);
       await frontOpen(); await press('#wz-sliver-tab-parts'); await sleep(300);
-      const rowId =await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
+      const rowId = await ev(`document.querySelector('[data-part-row="${tailId}"]') ? ${JSON.stringify(tailId)} : null`);
       if (!rowId) out(`OBS P4 the PARTS tab: ${JSON.stringify(await ev("({ open: document.querySelector('.wz-sliver')?.getAttribute('data-open'), tab: document.querySelector('#wz-sliver-tab-parts')?.getAttribute('aria-selected'), rows: [...document.querySelectorAll('[data-part-row]')].map((r) => [r.getAttribute('data-part-row').slice(-6), r.getAttribute('aria-current')]), hash: location.hash.slice(-30) })"))}`);
-      if (!rowId) { uncovered.push({ id: 'P4', why: `the open Part's row ([data-part-row][aria-current]) not in the PARTS tab in ${TAG}` }); out('NOTCOVERED P4 the open Part\'s row'); return; }
+      if (!rowId) { uncovered.push({ id: 'P4', why: `the tail's row ([data-part-row="${tailId}"]) not in the head's PARTS tab in ${TAG}` }); out('NOTCOVERED P4 the tail\'s row'); return; }
+      // the earlier aria-current read, kept for the record (it named the open Part; Join now acts on the tail's row from the head):
+      // const rowId = await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
       await press(`[data-part-more="${rowId}"]`); await sleep(300);
-      if (!(await need('P4', `[data-part-menu="${rowId}"] [data-part-act="join"]`, 'Join (the open Part\'s row menu)'))) return;
-      const tailNow = (await d.read()).text;
+      if (!(await need('P4', `[data-part-menu="${rowId}"] [data-part-act="join"]`, 'Join (the tail\'s row menu)'))) return;
+      const tailNow = r3.text;   // the tail as it stands (P3b's letter went nowhere: R1)
       await press(`[data-part-menu="${rowId}"] [data-part-act="join"]`); await sleep(1500);
       await waitFor("!!document.querySelector('.forward-only-editor')", 'the joined Part', 10000).catch(() => {});
       const r4 = await d.read();
@@ -180,6 +196,15 @@ export async function main({ title }) {
       if (!(await ev("(() => { const t = document.querySelector('[data-replace-toggle]'); if (!t) return false; const r = t.getBoundingClientRect(); const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!h && (h === t || t.contains(h)); })()"))) {
         await press('[data-top-search]'); await sleep(600);
         out(`OBS F2 the search door again: ${JSON.stringify(await fdiag())}`);
+        // run 45076050345: the door did nothing. The drawer closed when she went back to the page but the search stayed open, and openSearch on
+        // an open search only bumps `opened` (searchStore.ts), while the drawer opens on `search.open` alone (Tutor.tsx): R3
+        const drawer = await ev("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') || null");
+        if (drawer !== 'true') {
+          finding('R3', 'after she returns to the page, the search door opens the search again', 'door', `the Back drawer stays shut (data-open ${drawer}) after the door press; the search is still open behind it (q ${JSON.stringify((await fdiag()).q)})`);
+          // to reach Replace anyway, the way she still can: the Back menu's own grip
+          await press('.wz-tutor-grip'); await sleep(600);
+          out(`OBS F2 after the Back grip: ${JSON.stringify({ drawer: await ev("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') || null"), ...(await fdiag()) })}`);
+        }
       }
       const pT = await press('[data-replace-toggle]'); await sleep(300);
       const fd1 = await fdiag();
