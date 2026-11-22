@@ -26,11 +26,27 @@ const bad = Object.fromEntries(files.map((f) => [f, stageHas(texts[f]).map((s) =
 const nRules = files.reduce((n, f) => n + rules(texts[f]).length, 0);
 ok(`TY5 no stage-level, frame-level or root-level :has() in any 25-reorg-arbor-*.css (read ${files.length} sheets, ${nRules} rules)`, files.length >= 5 && nRules >= 300 && Object.keys(bad).length === 0, J({ files, nRules, bad }));
 
+// HL (the cause, found by bisecting cd2b5cde's sheet in halves, then its last two rules, one arbor-keyflip dispatch each: the twins green, the dress rules red, the sheet without the two highlight rules green, those two rules alone RED):
+//   :root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ ... }   and   ... ::highlight(wz-search-cur){ ... }
+// A ::highlight() rule has a universal subject (every element can carry a highlight), so with a root-attribute ancestor in front of it the whole document depends on the root's attributes, and the first key (which flips data-wz-writing on the root) restyled 895 of ~1930 elements.
+// The fix: the colours ride custom properties set on the root itself (a plain subject), and the ::highlight() rule is bare (no ancestor), reading them. The guard: no ::highlight( selector in a 25-reorg-arbor-*.css has anything in front of it.
+const HL_ANCESTOR = /[^\s,{]\s+::highlight\(|[^\s,{(]::highlight\(|\S\s+\*?::highlight\(/;
+const hlBad = (css) => rules(css).flatMap(topSplit).filter((s) => /::highlight\(/.test(s) && s.replace(/^\s+/, '').split('::highlight(')[0].trim() !== '');
+const hlBadFiles = Object.fromEntries(files.map((f) => [f, hlBad(texts[f]).map((s) => s.slice(0, 120))]).filter(([, v]) => v.length));
+ok(`HL no ::highlight() selector in any 25-reorg-arbor-*.css has an ancestor or a subject in front of it (a bare ::highlight(name) only)`, Object.keys(hlBadFiles).length === 0 && /::highlight\(/.test(files.map((f) => texts[f]).join('\n')), J({ hlBadFiles }));
+ok('HL LIVE the scanner flags the rule that cost the keystroke, and passes a bare ::highlight()', hlBad(":root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ a:b; }").length === 1 && hlBad(":root[data-arbor2] .x::highlight(wz-search){ a:b; }").length === 1 && hlBad('::highlight(wz-search){ a:b; }').length === 0 && hlBad('::highlight(wz-search-cur){ a:b; }').length === 0, J({}));
+void HL_ANCESTOR;
+
 // LIVE: the scanner finds the two rules that cost the keystroke, and lets an anchor-level :has() pass
 const T2A = ":root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']){ --arbor2-chosen-r:#A8392F; }";
 const T2B = ":root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:none; }";
 const ANCH = ":root[data-arbor2][data-theme='plateau'] .desk-frame-tutor-anchor:has(.wz-tutor-grip[data-open='true']) .arbor2-c2--right{ left:0; }";
 ok('LIVE the scanner flags both stage rules that cost the keystroke, and passes an anchor-level :has()', stageHas(T2A).length === 1 && stageHas(T2B).length === 1 && stageHas(ANCH).length === 0 && stageHas(":root:has(.x) .y{ a:b; }").length === 1 && stageHas(".desk-frame-stage--prose:has(.x) .y{ a:b; }").length === 1, J({ a: stageHas(T2A).length, b: stageHas(T2B).length, anchor: stageHas(ANCH).length }));
+
+for (const f of files) {
+  const after = texts[f] + "\n:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:red; }\n";
+  ok(`MUT an ancestor-scoped ::highlight() added to ${f}: it LANDED and HL flags it`, after !== texts[f] && hlBad(after).length > hlBad(texts[f]).length, J({}));
+}
 
 // MUTANTS: a stage-level :has() put into each sheet in turn must turn TY5 red (the mutant LANDED: the text changed)
 for (const f of files) {
