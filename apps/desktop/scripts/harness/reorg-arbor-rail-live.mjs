@@ -28,6 +28,10 @@
 // BOXES   A12 (the Wrizors via Fable, Nov 21 11:20 pm: the uncoloured box is NOT olive) before any colour is chosen every box in Arbor's rail and in
 //             DRAWERS draws plain cream #EFE4CB with walnut letters #2B1D12, and Box settings shows no swatch as chosen
 //         MUT-A12  the same reading with the boxes in olive turns A12's test red
+//         A13 (the frames on 2fc46347, Actions 44993376128: by night at rest the rail's cream box drew no letters - the night dim letters a dimmed hook
+//             in --text-hi cream) by night at rest the rail's box letters read 4.5:1 or better on the box AS DRAWN (a clip of the box: its median is the
+//             box, its pixel farthest from that is the letters)
+//         MUT-A13  the same reading with the letters at the box's own colour turns A13's test red
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
 //
@@ -168,11 +172,26 @@ await withHarness(async (app) => {
   await visit(app, '/?reorg=1&arbor2=0');
   const classicOn = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
   ok('A11 the reorg\'s rail stands in Arbor under ?reorg=1 with no preview door (plateau.rail on), and still not in the classic Plateau', noDoor === true && classicOn === false, { noDoor, classicOn });
+  // ---- A13: the box's letters by night at rest, as drawn ----
+  await visit(app, '/?reorg=1&arbor2room=night');
+  await app.mouseMove(700, 400); await sleep(600);
+  const boxClip = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-box:not([data-box-picture])'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width > 8 ? { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 } : null; })()");
+  let drawnBox = null;
+  if (boxClip) {
+    const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: boxClip.x, y: boxClip.y, width: boxClip.w, height: boxClip.h, scale: 1 } })).data;
+    drawnBox = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data;
+      const px = []; for (let i = 0; i < D.length; i += 4) px.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; px.sort((p, q) => L(p) - L(q)); return { med: px[px.length >> 1], dark: px[0], light: px[px.length - 1] }; })()`);
+  }
+  const rgbS = (p) => (Array.isArray(p) ? `rgb(${p.join(', ')})` : null);
+  const a13 = (d) => { if (!d || !d.med) return false; const bg = rgbS(d.med); return Math.max(contrast(rgbS(d.dark), bg), contrast(rgbS(d.light), bg)) >= 4.5; };
+  ok('A13 by night at rest the rail\'s box letters read 4.5:1 or better on the box as drawn', a13(drawnBox), drawnBox && { box: rgbS(drawnBox.med), dark: rgbS(drawnBox.dark), light: rgbS(drawnBox.light), ratio: +Math.max(contrast(rgbS(drawnBox.dark), rgbS(drawnBox.med)), contrast(rgbS(drawnBox.light), rgbS(drawnBox.med))).toFixed(2) });
+  const blank = drawnBox && drawnBox.med ? { med: drawnBox.med, dark: drawnBox.med, light: drawnBox.med } : null;
+  ok('MUT-A13 the same reading with the letters at the box\'s own colour turns A13\'s test red', !!blank && !a13(blank), blank);
   ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
