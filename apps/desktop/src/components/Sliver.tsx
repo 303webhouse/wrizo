@@ -353,7 +353,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
-        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -888,7 +888,8 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // exactly (the numeral still shows, reading 0:00, before the writer's
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
-function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
+function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt, named }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null; /** the Arbor reorg's Front menu names its bar (the Wrizors' pass 3: the stray bar under the list) */ named?: boolean }) {
+  const { t } = useDeskLexicon();
   // The goal NUMBER is set under Progress Tracking. This foot only shows the
   // hairline and, when the timer is on, the clock. Full screen is not here:
   // the app already offers it outside this drawer.
@@ -909,7 +910,8 @@ function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { tar
     <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && settings.instrumentsOn && (
+      {named && target != null && settings.instrumentsOn && <div className="wz-sliver-goal-name">{t('goalLabel')}</div>}
+      {settings.instrumentsOn && target != null && (
         <div className="wz-sliver-goal-hairline" aria-hidden="true">
           <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>

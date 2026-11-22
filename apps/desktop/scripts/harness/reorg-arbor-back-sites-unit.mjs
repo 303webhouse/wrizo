@@ -20,6 +20,9 @@ const SITES = [
   ['FOLD', "const foldExport = tutorTheme !== 'machina';\n  const exportTab = back && publishing && !foldExport;", "const exportTab = back && publishing;"],
   ['BODY', "{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}", "{rightTab === 'tutor' && ("],
   ['LINKS', "only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined}", "only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}"],
+  // KEYFLIP (Fable, Nov 22: no :has() on the stage): the Back menu sets its own state on the elements the sheet styles, so no rule has to ask the stage. The grip says it is the Back menu's (and Free Write's); the panel says which tab is open and that it is Free Write's
+  ['GRIP', "          data-docked={docked ? 'true' : 'false'}\n          data-back={back ? 'true' : undefined}\n          data-sprint={sprint ? 'true' : undefined}\n          aria-expanded={open}", "          data-docked={docked ? 'true' : 'false'}\n          aria-expanded={open}"],
+  ['PANEL', "data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx", "data-docked={docked ? 'true' : 'false'} style={panelWidthPx"],
 ];
 const siteOk = (text, want, old, name) => text.includes(want) && (name === 'BODY' ? true : !text.includes(old));
 for (const [name, want, old] of SITES) {

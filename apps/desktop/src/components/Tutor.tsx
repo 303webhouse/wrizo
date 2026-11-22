@@ -852,6 +852,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           className="wz-tutor-grip"
           data-open={open ? 'true' : 'false'}
           data-docked={docked ? 'true' : 'false'}
+          data-back={back ? 'true' : undefined}
+          data-sprint={sprint ? 'true' : undefined}
           aria-expanded={open}
           aria-label={open ? t('tutorClose') : t('tutorOpen')}
           title={open ? t('tutorClose') : t('tutorOpen')}
@@ -865,7 +867,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           {/* while a linked card or page stands docked, the docked panel is its reader [Tutor §34] */}

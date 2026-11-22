@@ -66,9 +66,14 @@ function suite(css) {
   });
   t('CLOTH', () => {
     const cloth = has(rs, /#wz-tutor-tab-plan\)?$|:is\(#wz-tutor-tab-plan\)$|#wz-tutor-tab-plan$/, /background:\s*#A8392F/i);
-    const chosen = has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\)$/, /--arbor2-chosen-r:\s*#A8392F/i);
+    // SUPERSEDED (Nov 22, arbor-keyflip: no :has() on the stage; the panel carries data-back-tab, so no rule asks the stage and none sets a custom property on it). The original, verbatim:
+    // const chosen = has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\)$/, /--arbor2-chosen-r:\s*#A8392F/i);
+    // const edge = has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\) \.wz-tutor-panel \.wz-drawer-slide--right$/, /inset -3px 0 0 var\(--arbor2-chosen-r\)/) && has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\) \.wz-tutor-panel \.wz-drawer-slide--right$/, /inset 0 3px 0 var\(--arbor2-chosen-r\)/);
+    // SUCCESSOR: this sheet sets no --arbor2-chosen-r (the stage is never given a custom property by the reorg), and the drawer's 3 px border is PLAN's madder, read from the panel's own attribute
+    const chosen = !rs.some((x) => /--arbor2-chosen-r\s*:/.test(x.body));
     const forward = has(rs, /#wz-tutor-tab-plan\[data-on='true'\]$/, /z-index:\s*3/) && has(rs, /#wz-tutor-tab-plan\[data-on='true'\]$/, /box-shadow:\s*none/);
-    const edge = has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\) \.wz-tutor-panel \.wz-drawer-slide--right$/, /inset -3px 0 0 var\(--arbor2-chosen-r\)/) && has(rs, /:has\(#wz-tutor-tab-plan\[data-on='true'\]\) \.wz-tutor-panel \.wz-drawer-slide--right$/, /inset 0 3px 0 var\(--arbor2-chosen-r\)/);
+    const planEdge = /\.wz-tutor-panel\[data-back-tab='plan'\] \.wz-drawer-slide--right$/;
+    const edge = has(rs, planEdge, /inset 0 3px 0 #A8392F/i) && has(rs, planEdge, /inset -3px 0 0 #A8392F/i) && has(rs, planEdge, /inset 0 -3px 0 #A8392F/i);
     return { pass: cloth && chosen && forward && edge, detail: J({ cloth, chosen, forward, edge }) };
   });
   t('FIELD', () => {
@@ -104,8 +109,12 @@ function suite(css) {
   });
   t('FREEWRITE', () => {
     // the Wrizors' pass 1, REAL 1 and NIT 2: in Free Write (the zoomed page) the cloth tabs take the same edge the opener does (--arbor2-drawer-zx; the unzoomed --arbor2-drawer-r put them 300 px off the screen), and the opened panel stays in the band above the writing line: at most 38% of the stage's height (the typewriter line holds at about 54%), the rest scrolls
-    const tabs = find(rs, /\.desk-frame-stage:has\(\.mode-pagecol\[data-zoom='true'\]\):has\(#wz-tutor-tab-plan\) \.desk-frame-tutor-anchor:has\(\.wz-tutor-grip:is\(\[data-open='true'\], \[data-docked='true'\]\)\) \.arbor2-c2--right$/).filter((x) => /left:\s*var\(--arbor2-drawer-zx, 100%\)/.test(x.body));
-    const gated = find(rs, /\.desk-frame-stage:has\(\.mode-pagecol\[data-zoom='true'\]\):has\(#wz-tutor-tab-plan\) \.wz-tutor-panel$/).filter((x) => /max-height:\s*38%/.test(x.body));
+    // SUPERSEDED (Nov 22, arbor-keyflip: no :has() on the stage). The original selectors, verbatim:
+    // const tabs = find(rs, /\.desk-frame-stage:has\(\.mode-pagecol\[data-zoom='true'\]\):has\(#wz-tutor-tab-plan\) \.desk-frame-tutor-anchor:has\(\.wz-tutor-grip:is\(\[data-open='true'\], \[data-docked='true'\]\)\) \.arbor2-c2--right$/)
+    // const gated = find(rs, /\.desk-frame-stage:has\(\.mode-pagecol\[data-zoom='true'\]\):has\(#wz-tutor-tab-plan\) \.wz-tutor-panel$/)
+    // SUCCESSORS: Free Write is the Back menu's own state, set on the grip (data-sprint) and on the panel (data-back-sprint); the tab rule asks the drawer's own anchor, never the stage
+    const tabs = find(rs, /\.desk-frame-tutor-anchor:has\(\.wz-tutor-grip\[data-back='true'\]\[data-sprint='true'\]:is\(\[data-open='true'\], \[data-docked='true'\]\)\) \.arbor2-c2--right$/).filter((x) => /left:\s*var\(--arbor2-drawer-zx, 100%\)/.test(x.body));
+    const gated = find(rs, /\.wz-tutor-panel\[data-back-sprint='true'\]$/).filter((x) => /max-height:\s*38%/.test(x.body));
     return { pass: tabs.length === 1 && gated.length === 1, detail: J({ tabs: tabs.length, gated: gated.length }) };
   });
   t('LOCKED', () => {
@@ -115,14 +124,17 @@ function suite(css) {
   });
   t('OPENER', () => {
     // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
-    const r = find(rs, /\.desk-frame-stage:has\(#wz-tutor-tab-plan\) \.wz-tutor-grip\[data-open='true'\]$/).filter((x) => /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
+    // SUPERSEDED selector (Nov 22, no :has() on the stage): /\.desk-frame-stage:has\(#wz-tutor-tab-plan\) \.wz-tutor-grip\[data-open='true'\]$/ ; the grip says it is the Back menu's: data-back
+    const r = find(rs, /\.wz-tutor-grip\[data-back='true'\]\[data-open='true'\]$/).filter((x) => /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
     return { pass: r.length === 1, detail: J({ n: r.length }) };
   });
   t('CHIPS', () => {
     // pass 1, NIT 3: a graft's colour chip shows its slot's cloth (the tag tokens), edged and numbered as the Section tags are
     const base = has(rs, /\.wz-back-tag$/, /width:\s*16px/) && has(rs, /\.wz-back-tag$/, /font-size:\s*0/);
     const slots = ['a', 'b', 'c', 'd', 'e', 'f'].filter((s) => !(has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`background:\\s*var\\(--reorg-tag-${s}-fill\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`border-color:\\s*var\\(--reorg-tag-${s}-edge\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]::after$`), new RegExp(`content:\\s*var\\(--reorg-tag-${s}-num\\)`))));
-    return { pass: base && slots.length === 0, detail: J({ base, missing: slots }) };
+    // pass 3 (Nov 22): by night every tag wears a 1 px --arbor-line (#9C8A6E) edge, the graft chips as the Section tags
+    const night = has(rs, /data-arbor2-room='night'\] \.wz-back-tag\[data-colour-slot\]$/, /border-color:\s*var\(--arbor-line\)/);
+    return { pass: base && slots.length === 0 && night, detail: J({ base, missing: slots, night }) };
   });
   return R;
 }
@@ -142,9 +154,10 @@ const MUT = [
   ['the Free Write tabs lose the zoomed edge', 'FREEWRITE', (t) => t.replace('left:var(--arbor2-drawer-zx, 100%)', () => 'left:var(--arbor2-drawer-r, 0px)')],
   ['the Free Write panel is not capped', 'FREEWRITE', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
   ['a locked tab is not greyed', 'LOCKED', (t) => t.replace('opacity:.45; filter:saturate(.35);', () => 'opacity:1; filter:saturate(.35);')],
-  ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
-  ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']", () => ".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-docked='true']")],
+  ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-back='true'\]\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
+  ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".wz-tutor-grip[data-back='true'][data-open='true']", () => ".wz-tutor-grip[data-back='true'][data-docked='true']")],
   ['a chip loses its cloth', 'CHIPS', (t) => t.replace(/(\.wz-back-tag\[data-colour-slot='c'\]\{ background:)var\(--reorg-tag-c-fill\)/, (m, a) => a + 'transparent')],
+  ['a chip loses its night edge', 'CHIPS', (t) => t.replace("[data-arbor2-room='night'] .wz-back-tag[data-colour-slot]{ border-color:var(--arbor-line); }", () => '')],
   ['a chip loses its number', 'CHIPS', (t) => t.replace(/content:var\(--reorg-tag-e-num\)/, () => "content:'E'")],
   ['PLAN turns olive', 'CLOTH', (t) => t.replace('background:#A8392F', () => 'background:#56632E')],
   ['PLAN does not come forward', 'CLOTH', (t) => t.replace('z-index:3; box-shadow:none', () => 'z-index:1; box-shadow:none')],
