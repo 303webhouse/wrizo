@@ -27,6 +27,8 @@ const SITES = [
   ['FROZEN', 'Sliver', "(front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })", "(front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true } : { id, label: t(FRONT_WORD[id]) })"],
 ];
 SITES.push(['SETUP', 'Sliver', "{frontTab === 'text' && frontEntry && theme !== 'plateau' && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}", "{frontTab === 'text' && frontEntry && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}"]);
+SITES.push(['GOALNAME', 'Sliver', "{named && target != null && settings.instrumentsOn && <div className=\"wz-sliver-goal-name\">{t('goalLabel')}</div>}", "{target != null && settings.instrumentsOn && ("]);
+SITES.push(['GOALPROP', 'Sliver', "<SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />", "<SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />"]);
 const FILES = { Sliver: SLIVER, Tabs: TABS };
 const siteOk = (text, want, old) => text.includes(want) && !text.includes(old);
 for (const [name, file, want, old] of SITES) {

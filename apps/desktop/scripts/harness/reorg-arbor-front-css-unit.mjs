@@ -85,7 +85,10 @@ function suite(css) {
     const bad = SLOTS.filter((s) => !rs.some((r) => r.sel === `${AR} .reorg-parts-tag[data-colour='${s}']::after` && new RegExp(`content:var\\(--reorg-tag-${s}-num\\)`).test(r.body)));
     const hide = rs.some((r) => r.sel === `${AR} .reorg-parts-tag[data-colour]` && /font-size:0/.test(r.body));
     const cloth = SLOTS.every((s) => rs.some((r) => r.sel.includes(`.reorg-parts-tag, .reorg-part-swatch)[data-colour='${s}']`) && new RegExp(`background:var\\(--reorg-tag-${s}-fill\\)`).test(r.body) && new RegExp(`border-color:var\\(--reorg-tag-${s}-edge\\)`).test(r.body)));
-    return { pass: bad.length === 0 && hide && cloth, detail: J({ bad, hide, cloth }) };
+    // pass 3 (the Wrizors, Nov 22), REAL: by night every tag gets a 1 px #9C8A6E edge: Arbor's line by night, on the slot tags and on a custom colour's
+    const nightEdge = rs.some((r) => /data-arbor2-room='night'\] \.reorg-parts-tag\[data-colour\]/.test(r.sel) && /data-arbor2-room='night'\] \.reorg-parts-tag\[data-colour-hex\]/.test(r.sel) && /border-color:var\(--arbor-line\)/.test(r.body));
+    const nightLine = /data-arbor2-room='night'\]\{[^}]*--arbor-line:#9C8A6E/.test(rd('styles/arbor-v2.css').replace(/\s+/g, ' ')) || /--arbor-line:#9C8A6E/.test(rd('styles/arbor-v2.css'));
+    return { pass: bad.length === 0 && hide && cloth && nightEdge && nightLine, detail: J({ bad, hide, cloth, nightEdge, nightLine }) };
   });
   t('TINT', () => {
     // Fable, Nov 21, 11:20 pm: the chosen row's wash runs the FULL row (under the link badge too): it is on the row's list item, not on the row's button alone
@@ -94,7 +97,8 @@ function suite(css) {
     const low = [];
     for (const room of ['day', 'night']) for (const g of ROOMS[room].grounds) for (const s of SLOTS) {
       const bg = over(CLOTH[s], g, 0.22);
-      const fg = room === 'day' ? ROOMS.day.hi : BRASS;
+      // SUPERSEDED (pass 3, Nov 22: the current name takes the label colour in both rooms): const fg = room === 'day' ? ROOMS.day.hi : BRASS;
+      const fg = ROOMS[room].hi;
       const r = ratio(fg, bg);
       if (r < 4.5) low.push({ room, g, s, r: +r.toFixed(2) });
     }
@@ -103,11 +107,16 @@ function suite(css) {
   t('HERE', () => {
     const mark = rs.some((r) => r.sel === `${AR} .reorg-parts-row.is-here::before` && /width:4px/.test(r.body) && /left:0/.test(r.body) && /background:var\(--brass\)/.test(r.body));
     const roman = rs.some((r) => r.sel === `${AR} .reorg-parts-row.is-here .reorg-parts-name` && /font-weight:500/.test(r.body) && /font-style:normal/.test(r.body));
-    const night = rs.some((r) => r.sel === `${AR}[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name` && /color:var\(--brass\)/.test(r.body));
-    const day = rs.some((r) => r.sel === `${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name` && /color:var\(--accent-rest\)/.test(r.body));
-    const dayTint = rs.some((r) => r.sel === `${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here[data-tint] .reorg-parts-name` && /color:var\(--text-hi\)/.test(r.body));
-    const dayOlive = ratio(ROOMS.day.olive, '#E8DFC8') >= 4.5;
-    return { pass: mark && roman && night && day && dayTint && dayOlive, detail: J({ mark, roman, night, day, dayTint, dayOlive }) };
+    // SUPERSEDED (pass 3, Nov 22: "the current name in the label colour both rooms": the Section she is on keeps its 4 px brass mark and roman 500, and its words are the drawer's label colour, not brass by night or olive by day). The original, verbatim:
+    // const night = rs.some((r) => r.sel === `${AR}[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name` && /color:var\(--brass\)/.test(r.body));
+    // const day = rs.some((r) => r.sel === `${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name` && /color:var\(--accent-rest\)/.test(r.body));
+    // const dayTint = rs.some((r) => r.sel === `${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here[data-tint] .reorg-parts-name` && /color:var\(--text-hi\)/.test(r.body));
+    // const dayOlive = ratio(ROOMS.day.olive, '#E8DFC8') >= 4.5;
+    // SUCCESSOR: the name rule carries the label colour, and no rule makes the current name brass or olive
+    const label = rs.some((r) => r.sel === `${AR} .reorg-parts-row.is-here .reorg-parts-name` && /color:var\(--text-hi\)/.test(r.body));
+    const noTint = !rs.some((r) => /\.reorg-parts-row\.is-here[^,]*\.reorg-parts-name$/.test(r.sel) && /color:var\(--(brass|accent-rest)\)/.test(r.body));
+    const labelRatio = ['day', 'night'].every((room) => ROOMS[room].grounds.every((g) => ratio(ROOMS[room].hi, g) >= 4.5));
+    return { pass: mark && roman && label && noTint && labelRatio, detail: J({ mark, roman, label, noTint, labelRatio }) };
   });
   t('BADGE', () => {
     // the link badge: a small cloth-edged count. Its edge keeps 3:1 and its count 4.5:1 on the wash and on the plain drawer, in both rooms (computed over every slot's wash and every ground): by day the edge is a deeper cold blue (#4A6076), by night the cold blue cloth itself; the count is the drawer's own words
@@ -120,6 +129,11 @@ function suite(css) {
     }
     return { pass: base && day && night && low.length === 0, detail: J({ base, day, night, low: low.slice(0, 4) }) };
   });
+  t('NAMED', () => {
+    // pass 3 NIT: the bar under the list is the session's goal hairline; in the Front menu it is named (the drawer's own word, Goal), in the drawer's label dress
+    const r = rs.filter((x) => x.sel === `${AR} .wz-sliver-goal-name`).filter((b) => /font-family:var\(--font-chromeLabel/.test(b.body) && /text-transform:uppercase/.test(b.body) && /color:var\(--text-mid\)/.test(b.body));
+    return { pass: r.length === 1, detail: J({ n: r.length }) };
+  });
   t('OPENER', () => {
     // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
     const r = rs.filter((x) => /\.desk-frame-sliver-anchor:has\(:is\(#wz-sliver-tab-text, #wz-sliver-tab-parts\)\) \.wz-sliver\[data-open='true'\] \.wz-sliver-grip$/.test(x.sel) && /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
@@ -130,7 +144,7 @@ function suite(css) {
     const all = hexes(css), bad = all.filter((h) => !allowed.has(h));
     const machina = ['#6A727B', '#D2D6DA', '#F4F5F6', '#E6E8EA', '#3F6183', '#3A4047', '#525A62'].filter((h) => all.includes(h));
     const brassUses = rs.filter((r) => /var\(--brass\)|#FF9800|--orange/i.test(r.body)).map((r) => r.sel);
-    const brassOk = brassUses.length >= 2 && brassUses.every((s) => /\.reorg-parts-row\.is-here(::before| \.reorg-parts-name)$|\.reorg-colour-(scheme|swatch)\[aria-checked='true'\]$/.test(s));   // brass is her act: the chosen row's mark and night words, and the chosen colour scheme and swatch (colour B)
+    const brassOk = brassUses.length >= 2 && brassUses.every((s) => /\.reorg-parts-row\.is-here::before$|\.reorg-colour-(scheme|swatch)\[aria-checked='true'\]$/.test(s));   // brass is her act: the chosen row's mark and night words, and the chosen colour scheme and swatch (colour B)
     return { pass: all.length >= 8 && bad.length === 0 && machina.length === 0 && brassOk, detail: J({ n: all.length, bad, machina, brassUses }) };
   });
   return R;
@@ -138,7 +152,7 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'COVER', 'CLOTHS', 'TAGS', 'TINT', 'HERE', 'BADGE', 'OPENER', 'PALETTE']) ok(`${k} on the real 25-reorg-arbor-front.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-front.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'COVER', 'CLOTHS', 'TAGS', 'TINT', 'HERE', 'BADGE', 'NAMED', 'OPENER', 'PALETTE']) ok(`${k} on the real 25-reorg-arbor-front.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-front.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 ok('WIRED the global stylesheet lists 25-reorg-arbor-front.css after the tags', PARTS.some((p) => /25-reorg-arbor-front\.css$/.test(p)) && PARTS.findIndex((p) => /25-reorg-arbor-tags\.css$/.test(p)) < PARTS.findIndex((p) => /25-reorg-arbor-front\.css$/.test(p)), J({ parts: PARTS.slice(-6) }));
 
@@ -157,8 +171,12 @@ const MUT = [
   ['the wash is made too strong to read over', 'TINT', (t) => t.replace('var(--reorg-tag-b-fill) 22%', () => 'var(--reorg-tag-b-fill) 60%')],
   ['the mark is 3 px', 'HERE', (t) => t.replace('left:0; top:4px; bottom:4px; width:4px;', () => 'left:0; top:4px; bottom:4px; width:3px;')],
   ['the words go bold', 'HERE', (t) => t.replace('font-weight:500; font-style:normal;', () => 'font-weight:600; font-style:normal;')],
-  ['the night words lose their brass', 'HERE', (t) => t.replace("[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }", () => "[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--text-hi); }")],
-  ['the day words go brass', 'HERE', (t) => t.replace("[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }", () => "[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }")],
+  // SUPERSEDED (pass 3): ['the night words lose their brass', 'HERE', (t) => t.replace("[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }", () => "[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--text-hi); }")],
+  // SUPERSEDED (pass 3): ['the day words go brass', 'HERE', (t) => t.replace("[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }", () => "[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }")],
+  ['the current name goes brass again', 'HERE', (t) => t.replace('.reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--text-hi); }', () => '.reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--brass); }')],
+  ['the current name goes olive by day', 'HERE', (t) => `${t}\n${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }\n`],
+  ['a tag loses its night edge', 'TAGS', (t) => t.replace('border-color:var(--arbor-line); }', () => 'border-color:transparent; }')],
+  ['the goal bar loses its name', 'NAMED', (t) => t.replace('.wz-sliver-goal-name{', () => '.wz-sliver-goal-nameless{')],
   ['the open Tools opener goes brass again', 'OPENER', (t) => t.replace(/(\.wz-sliver\[data-open='true'\] \.wz-sliver-grip\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tools opener rule is dropped', 'OPENER', (t) => t.replace(".wz-sliver[data-open='true'] .wz-sliver-grip{", () => ".wz-sliver[data-docked='true'] .wz-sliver-grip{")],
   ['the day badge edge goes back to the pale cloth edge', 'BADGE', (t) => t.replace('border-color:#4A6076', () => 'border-color:#5F788D')],

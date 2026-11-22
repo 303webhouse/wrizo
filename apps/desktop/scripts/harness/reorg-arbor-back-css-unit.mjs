@@ -132,7 +132,9 @@ function suite(css) {
     // pass 1, NIT 3: a graft's colour chip shows its slot's cloth (the tag tokens), edged and numbered as the Section tags are
     const base = has(rs, /\.wz-back-tag$/, /width:\s*16px/) && has(rs, /\.wz-back-tag$/, /font-size:\s*0/);
     const slots = ['a', 'b', 'c', 'd', 'e', 'f'].filter((s) => !(has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`background:\\s*var\\(--reorg-tag-${s}-fill\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`border-color:\\s*var\\(--reorg-tag-${s}-edge\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]::after$`), new RegExp(`content:\\s*var\\(--reorg-tag-${s}-num\\)`))));
-    return { pass: base && slots.length === 0, detail: J({ base, missing: slots }) };
+    // pass 3 (Nov 22): by night every tag wears a 1 px --arbor-line (#9C8A6E) edge, the graft chips as the Section tags
+    const night = has(rs, /data-arbor2-room='night'\] \.wz-back-tag\[data-colour-slot\]$/, /border-color:\s*var\(--arbor-line\)/);
+    return { pass: base && slots.length === 0 && night, detail: J({ base, missing: slots, night }) };
   });
   return R;
 }
@@ -152,9 +154,10 @@ const MUT = [
   ['the Free Write tabs lose the zoomed edge', 'FREEWRITE', (t) => t.replace('left:var(--arbor2-drawer-zx, 100%)', () => 'left:var(--arbor2-drawer-r, 0px)')],
   ['the Free Write panel is not capped', 'FREEWRITE', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
   ['a locked tab is not greyed', 'LOCKED', (t) => t.replace('opacity:.45; filter:saturate(.35);', () => 'opacity:1; filter:saturate(.35);')],
-  ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
+  ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-back='true'\]\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".wz-tutor-grip[data-back='true'][data-open='true']", () => ".wz-tutor-grip[data-back='true'][data-docked='true']")],
   ['a chip loses its cloth', 'CHIPS', (t) => t.replace(/(\.wz-back-tag\[data-colour-slot='c'\]\{ background:)var\(--reorg-tag-c-fill\)/, (m, a) => a + 'transparent')],
+  ['a chip loses its night edge', 'CHIPS', (t) => t.replace("[data-arbor2-room='night'] .wz-back-tag[data-colour-slot]{ border-color:var(--arbor-line); }", () => '')],
   ['a chip loses its number', 'CHIPS', (t) => t.replace(/content:var\(--reorg-tag-e-num\)/, () => "content:'E'")],
   ['PLAN turns olive', 'CLOTH', (t) => t.replace('background:#A8392F', () => 'background:#56632E')],
   ['PLAN does not come forward', 'CLOTH', (t) => t.replace('z-index:3; box-shadow:none', () => 'z-index:1; box-shadow:none')],
