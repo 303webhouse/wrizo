@@ -85,7 +85,8 @@ function suite(css) {
     return { pass: bad.length === 0 && hide && cloth, detail: J({ bad, hide, cloth }) };
   });
   t('TINT', () => {
-    const miss = SLOTS.filter((s) => !rs.some((r) => r.sel === `${AR} .reorg-parts-row[data-tint='${s}']` && new RegExp(`background:color-mix\\(in srgb, var\\(--reorg-tag-${s}-fill\\) 22%, transparent\\)`).test(r.body)));
+    // Fable, Nov 21, 11:20 pm: the chosen row's wash runs the FULL row (under the link badge too): it is on the row's list item, not on the row's button alone
+    const miss = SLOTS.filter((s) => !rs.some((r) => r.sel === `${AR} .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='${s}'])` && new RegExp(`background:color-mix\\(in srgb, var\\(--reorg-tag-${s}-fill\\) 22%, transparent\\)`).test(r.body)));
     // the words over the wash, per slot, per room, over each ground: day = --text-hi, night = brass (the chosen row's own words)
     const low = [];
     for (const room of ['day', 'night']) for (const g of ROOMS[room].grounds) for (const s of SLOTS) {
@@ -106,8 +107,15 @@ function suite(css) {
     return { pass: mark && roman && night && day && dayTint && dayOlive, detail: J({ mark, roman, night, day, dayTint, dayOlive }) };
   });
   t('BADGE', () => {
-    const b = rs.some((r) => r.sel === `${AR} button.reorg-parts-assets` && /border:1px solid var\(--reorg-tag-c-edge\)/.test(r.body));
-    return { pass: b, detail: J({ b }) };
+    // the link badge: a small cloth-edged count. Its edge keeps 3:1 and its count 4.5:1 on the wash and on the plain drawer, in both rooms (computed over every slot's wash and every ground): by day the edge is a deeper cold blue (#4A6076), by night the cold blue cloth itself; the count is the drawer's own words
+    const base = rs.some((r) => r.sel === `${AR} button.reorg-parts-assets` && /border:1px solid var\(--reorg-tag-c-edge\)/.test(r.body) && /color:var\(--text-hi\)/.test(r.body));
+    const day = rs.some((r) => r.sel === `${AR}[data-arbor2-room='day'] button.reorg-parts-assets` && /border-color:#4A6076/i.test(r.body));
+    const night = rs.some((r) => r.sel === `${AR}[data-arbor2-room='night'] button.reorg-parts-assets` && /border-color:var\(--reorg-tag-c-fill\)/.test(r.body));
+    const low = [];
+    for (const [room, edge, text] of [['day', '#4A6076', ROOMS.day.hi], ['night', CLOTH.c, '#EDE6DA']]) for (const g of ROOMS[room].grounds) {
+      for (const bg of [g, ...SLOTS.map((s) => over(CLOTH[s], g, 0.22))]) { if (ratio(edge, bg) < 3) low.push({ room, what: 'edge', g, bg }); if (ratio(text, bg) < 4.5) low.push({ room, what: 'text', g, bg }); }
+    }
+    return { pass: base && day && night && low.length === 0, detail: J({ base, day, night, low: low.slice(0, 4) }) };
   });
   t('OPENER', () => {
     // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
@@ -115,7 +123,7 @@ function suite(css) {
     return { pass: r.length === 1, detail: J({ n: r.length }) };
   });
   t('PALETTE', () => {
-    const allowed = new Set(['#56632E', '#7FA0BC', '#2B1D12', '#F6F1E4', '#261A12', '#6B7A3A', '#EFE4CB', ...Object.values(CLOTH)]);
+    const allowed = new Set(['#56632E', '#7FA0BC', '#2B1D12', '#F6F1E4', '#261A12', '#6B7A3A', '#EFE4CB', '#4A6076', ...Object.values(CLOTH)]);
     const all = hexes(css), bad = all.filter((h) => !allowed.has(h));
     const machina = ['#6A727B', '#D2D6DA', '#F4F5F6', '#E6E8EA', '#3F6183', '#3A4047', '#525A62'].filter((h) => all.includes(h));
     const brassUses = rs.filter((r) => /var\(--brass\)|#FF9800|--orange/i.test(r.body)).map((r) => r.sel);
@@ -141,7 +149,8 @@ const MUT = [
   ['INK is redefined here', 'CLOTHS', (t) => `${t}\n${AR} #wz-sliver-tab-ink{ background:#39414A; }\n`],
   ['a tag shows the letter again', 'TAGS', (t) => t.replace('content:var(--reorg-tag-d-num);', () => "content:'D';")],
   ['the letter is not hidden', 'TAGS', (t) => t.replace(`${AR} .reorg-parts-tag[data-colour]{ font-size:0;`, () => `${AR} .reorg-parts-tag[data-colour]{ font-size:9px;`)],
-  ['a slot is not tinted', 'TINT', (t) => t.replace("[data-tint='e']{ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }", () => "[data-tint='e']{ background:transparent; }")],
+  ['a slot is not tinted', 'TINT', (t) => t.replace("[data-tint='e']){ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }", () => "[data-tint='e']){ background:transparent; }")],
+  ['the wash goes back to the button alone', 'TINT', (t) => t.replace(".reorg-parts-list > li:has(> .reorg-parts-row[data-tint='d']){", () => ".reorg-parts-row[data-tint='d']{")],
   ['the wash is made too strong to read over', 'TINT', (t) => t.replace('var(--reorg-tag-b-fill) 22%', () => 'var(--reorg-tag-b-fill) 60%')],
   ['the mark is 3 px', 'HERE', (t) => t.replace('left:0; top:4px; bottom:4px; width:4px;', () => 'left:0; top:4px; bottom:4px; width:3px;')],
   ['the words go bold', 'HERE', (t) => t.replace('font-weight:500; font-style:normal;', () => 'font-weight:600; font-style:normal;')],
@@ -149,6 +158,8 @@ const MUT = [
   ['the day words go brass', 'HERE', (t) => t.replace("[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }", () => "[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }")],
   ['the open Tools opener goes brass again', 'OPENER', (t) => t.replace(/(\.wz-sliver\[data-open='true'\] \.wz-sliver-grip\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tools opener rule is dropped', 'OPENER', (t) => t.replace(".wz-sliver[data-open='true'] .wz-sliver-grip{", () => ".wz-sliver[data-docked='true'] .wz-sliver-grip{")],
+  ['the day badge edge goes back to the pale cloth edge', 'BADGE', (t) => t.replace('border-color:#4A6076', () => 'border-color:#5F788D')],
+  ['the night badge edge loses its cloth', 'BADGE', (t) => t.replace("[data-arbor2-room='night'] button.reorg-parts-assets{ border-color:var(--reorg-tag-c-fill);", () => "[data-arbor2-room='night'] button.reorg-parts-assets{ border-color:var(--text-low);")],
   ['the badge loses its cloth edge', 'BADGE', (t) => t.replace('border:1px solid var(--reorg-tag-c-edge)', () => 'border:1px solid var(--text-low)')],
   ['a Machina grey creeps back', 'PALETTE', (t) => t.replace('#7FA0BC; color:#2B1D12;', () => '#7FA0BC; color:#2B1D12; outline-color:#6A727B;')],
   ['brass marks a tag', 'PALETTE', (t) => t.replace('content:var(--reorg-tag-a-num); font-size:10px;', () => 'content:var(--reorg-tag-a-num); font-size:10px; border-color:var(--brass);')],
