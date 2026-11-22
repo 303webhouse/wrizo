@@ -390,6 +390,32 @@ export async function main({ title }) {
       out(`OBS V the tally (painted of 2): ${JSON.stringify({ asTyped: n('asTyped'), inText: n('inText'), maskLifted: n('maskLifted') })}`);
     });
 
+    // ---- R2, TEST THE INSTRUMENT (run 45078904889: neither the selection inside the text nor the mask lifted cures Arbor 1920 reliably, and the
+    // only detector that works here is DIFF (the forced colour never matched): two shots inside the editor, with and without the selection,
+    // rejected when the change is wider than 8 px. If anything else in the editor moves between the shots (the Typewriter's letter fade?), a
+    // painted caret reads "none". X prints the raw diffs: a STILL pair (both shots with the selection, nothing changed), the caret pair, and the
+    // same two after a 2.5 s wait.
+    await run('X', async () => {
+      const shot = async () => (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+      const pair = async (label) => {
+        const at = await ev('(() => { const r = window.__wa.read(); return { a: r.anchor, f: r.focus }; })()');
+        const S1 = await shot(); await sleep(60); const S2 = await shot();
+        const still = await ev(`window.__wa.diff(${JSON.stringify(S1)}, ${JSON.stringify(S2)})`);
+        const A = await shot(); await ev('window.__wa.clear()'); await sleep(60); const B = await shot();
+        if (at.a !== null) await ev(`window.__wa.place(${at.a}, ${at.f})`);
+        const caret = await ev(`window.__wa.diff(${JSON.stringify(A)}, ${JSON.stringify(B)})`);
+        return { label, still, caret };
+      };
+      for (let k = 1; k <= 3; k++) {
+        const T = 'Start.'; await openDoc([T], 'journal'); await refocus(T.length); await d.still();
+        await d.type(' More words here.'); await sleep(300);
+        const p0 = await pair('300ms');
+        await sleep(2500);
+        const p1 = await pair('2.8s');
+        out(`OBS X${k} ${JSON.stringify([p0, p1])}`.slice(0, 1800));
+      }
+    });
+
     // ---- LONG -----------------------------------------------------------------------------------------------------------------------------------
     await run('L', async () => {
       const para = Array.from({ length: 100 }, (_, i) => 'word' + i).join(' ');
