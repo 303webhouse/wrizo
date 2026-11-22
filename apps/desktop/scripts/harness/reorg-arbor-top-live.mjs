@@ -45,7 +45,8 @@
 //         MUT-T11-PAINT  the readings with today's painted colours (day #3A3531 on #7FA0BC; night the dimmed walnut on #566775) turn T11's test red
 //         T14 (REAL 2: "Storyboard" and "Walk" read 3.46 on the bar) resting on the chosen view, every other view's word reads 4.5:1 or better on the
 //             bar as painted
-//         MUT-T14  the same reading at half its contrast turns T14's test red
+//         MUT-T14  the same reading at half its contrast turns T14's test red  [parked Nov 22: too weak at 8.44; successor MUT-T14-B]
+//         MUT-T14-B  the same reading at today's painted colour (#8F9A58 on the day bar, 3.46) turns T14's test red
 //         T15 (NIT: a hovered view turned brass, like the chosen one) a hovered view is not drawn in the chosen view's colour, and the chosen one keeps it
 // CLOTHS  S1  (spec section 3; Fable, Nov 22 1:40 am: GO, under the reorg's top piece only) for each stage - FREE WRITE madder #A8392F, DRAFT olive #56632E,
 //             REVISE cold blue #7FA0BC, PUBLISH olive - by day and by night at rest, the current tab hangs below the bar in its cloth (the pixels just below
@@ -258,8 +259,13 @@ await withHarness(async (app) => {
   for (const v of restViews || []) restPaint.push({ view: v.view, ...(await paintedInk(app, v)) });
   const t14 = (list) => Array.isArray(list) && list.length >= 2 && list.every((p) => p.r >= 4.5);
   ok('T14 resting on the chosen view, every other view\'s word reads 4.5:1 or better on the bar as painted', t14(restPaint), restPaint);
-  const halved = restPaint.map((p) => ({ ...p, r: 1 + (p.r - 1) / 2 }));
-  ok('MUT-T14 the same reading at half its contrast turns T14\'s test red', restPaint.length >= 2 && t14(restPaint) !== t14(halved) && !t14(halved), halved.map((p) => [p.view, +p.r.toFixed(2)]));
+  // SUPERSEDED (Nov 22, Actions 45004333905 on 84cfdd44: the views read 8.44 there, so half their contrast is 4.72 and this mutant cleared 4.5 - a weak
+  // mutant, not the product). The original, verbatim:
+  // const halved = restPaint.map((p) => ({ ...p, r: 1 + (p.r - 1) / 2 }));
+  // ok('MUT-T14 the same reading at half its contrast turns T14\'s test red', restPaint.length >= 2 && t14(restPaint) !== t14(halved) && !t14(halved), halved.map((p) => [p.view, +p.r.toFixed(2)]));
+  // SUCCESSOR: today's painted colour - the views at rest in #8F9A58 on the day bar #3A4322, 3.46 (the Wrizors' measure on 1046656b)
+  const today14 = restPaint.map((p) => ({ ...p, far: 'rgb(143, 154, 88)', r: +contrast('rgb(143, 154, 88)', 'rgb(58, 67, 34)').toFixed(2) }));
+  ok('MUT-T14-B the same reading at today\'s painted colour (3.46) turns T14\'s test red', restPaint.length >= 2 && t14(restPaint) !== t14(today14) && !t14(today14), today14.map((p) => [p.view, p.r]));
   const other = (restViews || [])[1] || (restViews || [])[0];
   if (other) { await app.mouseMove(other.x + Math.round(other.w / 2), other.y + Math.round(other.h / 2)); await sleep(400); }
   const hov = await app.evalJs("(() => { const all = [...document.querySelectorAll('.reorg-top .show-as .show-as-btn')]; const ch = all.find((b) => b.getAttribute('aria-pressed') === 'true'); const h = all.find((b) => b.matches(':hover') && b !== ch); return ch && h ? { chosen: getComputedStyle(ch).color, hovered: getComputedStyle(h).color, view: h.getAttribute('data-view') } : null; })()");
