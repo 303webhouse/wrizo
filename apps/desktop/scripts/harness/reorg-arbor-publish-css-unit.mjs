@@ -62,18 +62,27 @@ function suite(css) {
   t('TICKS', () => ({ pass: has(rs, /\.reorg-pub-tick input$/, /accent-color:\s*#56632E/i), detail: 'the tick takes olive' }));
   t('PALETTE', () => { const all = hexes(css); const bad = all.filter((h) => !PALETTE.has(h) || MACHINA_GREYS.includes(h)); return { pass: all.length >= 1 && bad.length === 0, detail: J({ n: all.length, bad }) }; });
   t('BRASS', () => ({ pass: css.length > 0 && !/var\(--brass\)|#C9A46B|--orange/i.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), detail: 'no brass' }));
+  t('FOOT', () => {
+    // the Wrizors' pass 1, NIT: "Web (HTML)" wrapped onto its own line under the other two. The foot's second row (Copy text, Copy formatted, EXPORT, Markdown, Plain text, Web (HTML)) must fit one line in the page's width: the foot's side padding is capped (the page's own margin was 75 px here), the gaps tighten, and a button never breaks inside its label
+    const pad = has(rs, /\.reorg-pub-foot$/, /padding-inline:\s*min\(var\(--wz-page-pad-x, 38px\), 28px\)/);
+    const gap = has(rs, /\.reorg-pub-foot$/, /column-gap:\s*6px/);
+    const nowrap = has(rs, /\.reorg-pub-btn$/, /white-space:\s*nowrap/) && has(rs, /\.reorg-pub-btn$/, /padding:\s*0 8px/);
+    return { pass: pad && gap && nowrap, detail: J({ pad, gap, nowrap }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'COVER', 'SHEET', 'BUTTONS', 'TICKS', 'PALETTE', 'BRASS']) ok(`${k} on the real 25-reorg-arbor-publish.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-publish.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'COVER', 'SHEET', 'BUTTONS', 'TICKS', 'PALETTE', 'BRASS', 'FOOT']) ok(`${k} on the real 25-reorg-arbor-publish.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-publish.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 25-reorg-arbor-publish.css after the Machina reorg sheets', at >= 0 && PARTS.some((p, i) => i > at && /25-reorg-arbor-publish\.css$/.test(p)), J({ at }));
 
 const MUT = [
   ['a rule escapes the Arbor scope', 'SCOPED', (t) => t.replace(`${AR} .reorg-pub-label{`, () => '.reorg-pub-label{')],
+  ['the foot keeps the page margin (75 px) on its sides', 'FOOT', (t) => t.replace('padding-inline:min(var(--wz-page-pad-x, 38px), 28px)', () => 'padding-inline:var(--wz-page-pad-x, 38px)')],
+  ['a button may break inside its label again', 'FOOT', (t) => t.replace(' white-space:nowrap;', () => '')],
   ['the buttons lose their twin', 'COVER', (t) => t.split('.reorg-pub-btn.is-quiet').join('.reorg-pub-btn.is-loud')],
   ['the sheet gets a box (the focus ring comes back)', 'SHEET', (t) => t.replace('outline:none;', () => '')],
   ['the sheet no longer covers the paper', 'SHEET', (t) => t.replace('inset:0', () => 'inset:auto')],

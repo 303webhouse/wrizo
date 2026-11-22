@@ -48,7 +48,7 @@ const machinaSelectors = () => {
   return [...out];
 };
 // Arbor's own colours (arbor-reorg-spec sections 0, 6, 8; arbor-v2.css)
-const PALETTE = new Set(['#56632E', '#7FA0BC', '#A8392F', '#17454E', '#C9A46B', '#39414A', '#3A4322', '#241912', '#EFE4CB', '#2B1D12', '#9C8A6E', '#F6F1E4', '#261A12', '#6B5F4E', '#B9AA8C']);
+const PALETTE = new Set(['#56632E', '#7FA0BC', '#A8392F', '#17454E', '#C9A46B', '#39414A', '#3A4322', '#241912', '#EFE4CB', '#2B1D12', '#9C8A6E', '#F6F1E4', '#261A12', '#6B5F4E', '#B9AA8C', '#6B7A3A']);   // #6B7A3A: Arbor's opener olive (arbor-v2.css), kept on an open opener
 
 function suite(css) {
   const R = {};
@@ -100,12 +100,23 @@ function suite(css) {
     const bad = uses.filter((x) => !(/wz-back-part\.is-here > \.wz-back-part-head$/.test(x.sel) || /reorg-search-hit\[aria-current='true'\]$/.test(x.sel))).map((x) => x.sel.slice(0, 80));
     return { pass: uses.length >= 3 && bad.length === 0, detail: J({ uses: uses.length, bad }) };
   });
+  t('OPENER', () => {
+    // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
+    const r = find(rs, /\.desk-frame-stage:has\(#wz-tutor-tab-plan\) \.wz-tutor-grip\[data-open='true'\]$/).filter((x) => /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
+    return { pass: r.length === 1, detail: J({ n: r.length }) };
+  });
+  t('CHIPS', () => {
+    // pass 1, NIT 3: a graft's colour chip shows its slot's cloth (the tag tokens), edged and numbered as the Section tags are
+    const base = has(rs, /\.wz-back-tag$/, /width:\s*16px/) && has(rs, /\.wz-back-tag$/, /font-size:\s*0/);
+    const slots = ['a', 'b', 'c', 'd', 'e', 'f'].filter((s) => !(has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`background:\\s*var\\(--reorg-tag-${s}-fill\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]$`), new RegExp(`border-color:\\s*var\\(--reorg-tag-${s}-edge\\)`)) && has(rs, new RegExp(`\\.wz-back-tag\\[data-colour-slot='${s}'\\]::after$`), new RegExp(`content:\\s*var\\(--reorg-tag-${s}-num\\)`))));
+    return { pass: base && slots.length === 0, detail: J({ base, missing: slots }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'ROOM', 'PALETTE', 'BRASS'];
+const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'ROOM', 'PALETTE', 'BRASS', 'OPENER', 'CHIPS'];
 for (const k of KEYS) ok(`${k} on the real 25-reorg-arbor-back.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-back.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -114,6 +125,10 @@ ok('WIRED the global stylesheet lists 25-reorg-arbor-back.css after the Machina 
 const MUT = [
   ['a rule escapes the Arbor scope', 'SCOPED', (t) => t.replace(`${AR} .wz-assets-sort{`, () => '.wz-assets-sort{')],
   ['the sort buttons lose their twin', 'COVER', (t) => t.split('.wz-assets-sort > button').join('.wz-assets-sorted > button')],
+  ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
+  ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']", () => ".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-docked='true']")],
+  ['a chip loses its cloth', 'CHIPS', (t) => t.replace(/(\.wz-back-tag\[data-colour-slot='c'\]\{ background:)var\(--reorg-tag-c-fill\)/, (m, a) => a + 'transparent')],
+  ['a chip loses its number', 'CHIPS', (t) => t.replace(/content:var\(--reorg-tag-e-num\)/, () => "content:'E'")],
   ['PLAN turns olive', 'CLOTH', (t) => t.replace('background:#A8392F', () => 'background:#56632E')],
   ['PLAN does not come forward', 'CLOTH', (t) => t.replace('z-index:3; box-shadow:none', () => 'z-index:1; box-shadow:none')],
   ['the field edge turns brass', 'FIELD', (t) => t.replace(':focus-within{ border-color:var(--accent-rest); }', () => ':focus-within{ border-color:var(--brass); }')],

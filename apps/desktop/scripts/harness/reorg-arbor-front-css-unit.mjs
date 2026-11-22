@@ -109,8 +109,13 @@ function suite(css) {
     const b = rs.some((r) => r.sel === `${AR} button.reorg-parts-assets` && /border:1px solid var\(--reorg-tag-c-edge\)/.test(r.body));
     return { pass: b, detail: J({ b }) };
   });
+  t('OPENER', () => {
+    // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
+    const r = rs.filter((x) => /\.desk-frame-sliver-anchor:has\(:is\(#wz-sliver-tab-text, #wz-sliver-tab-parts\)\) \.wz-sliver\[data-open='true'\] \.wz-sliver-grip$/.test(x.sel) && /background:\s*#6B7A3A/i.test(x.body) && /border-color:\s*#6B7A3A/i.test(x.body) && !/brass|#FF9800/i.test(x.body));
+    return { pass: r.length === 1, detail: J({ n: r.length }) };
+  });
   t('PALETTE', () => {
-    const allowed = new Set(['#56632E', '#7FA0BC', '#2B1D12', '#F6F1E4', '#261A12', ...Object.values(CLOTH)]);
+    const allowed = new Set(['#56632E', '#7FA0BC', '#2B1D12', '#F6F1E4', '#261A12', '#6B7A3A', '#EFE4CB', ...Object.values(CLOTH)]);
     const all = hexes(css), bad = all.filter((h) => !allowed.has(h));
     const machina = ['#6A727B', '#D2D6DA', '#F4F5F6', '#E6E8EA', '#3F6183', '#3A4047', '#525A62'].filter((h) => all.includes(h));
     const brassUses = rs.filter((r) => /var\(--brass\)|#FF9800|--orange/i.test(r.body)).map((r) => r.sel);
@@ -122,7 +127,7 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'COVER', 'CLOTHS', 'TAGS', 'TINT', 'HERE', 'BADGE', 'PALETTE']) ok(`${k} on the real 25-reorg-arbor-front.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-front.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'COVER', 'CLOTHS', 'TAGS', 'TINT', 'HERE', 'BADGE', 'OPENER', 'PALETTE']) ok(`${k} on the real 25-reorg-arbor-front.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-front.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 ok('WIRED the global stylesheet lists 25-reorg-arbor-front.css after the tags', PARTS.some((p) => /25-reorg-arbor-front\.css$/.test(p)) && PARTS.findIndex((p) => /25-reorg-arbor-tags\.css$/.test(p)) < PARTS.findIndex((p) => /25-reorg-arbor-front\.css$/.test(p)), J({ parts: PARTS.slice(-6) }));
 
@@ -142,6 +147,8 @@ const MUT = [
   ['the words go bold', 'HERE', (t) => t.replace('font-weight:500; font-style:normal;', () => 'font-weight:600; font-style:normal;')],
   ['the night words lose their brass', 'HERE', (t) => t.replace("[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }", () => "[data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--text-hi); }")],
   ['the day words go brass', 'HERE', (t) => t.replace("[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }", () => "[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }")],
+  ['the open Tools opener goes brass again', 'OPENER', (t) => t.replace(/(\.wz-sliver\[data-open='true'\] \.wz-sliver-grip\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
+  ['the open Tools opener rule is dropped', 'OPENER', (t) => t.replace(".wz-sliver[data-open='true'] .wz-sliver-grip{", () => ".wz-sliver[data-docked='true'] .wz-sliver-grip{")],
   ['the badge loses its cloth edge', 'BADGE', (t) => t.replace('border:1px solid var(--reorg-tag-c-edge)', () => 'border:1px solid var(--text-low)')],
   ['a Machina grey creeps back', 'PALETTE', (t) => t.replace('#7FA0BC; color:#2B1D12;', () => '#7FA0BC; color:#2B1D12; outline-color:#6A727B;')],
   ['brass marks a tag', 'PALETTE', (t) => t.replace('content:var(--reorg-tag-a-num); font-size:10px;', () => 'content:var(--reorg-tag-a-num); font-size:10px; border-color:var(--brass);')],
