@@ -9,6 +9,10 @@
 //   RECT      the frame adds nothing to any layout: the page's rects (column, page, editor) are the same with the L4 frame taken away, at 1366 and 1920 (page primacy)
 //   OFF       without the flag the page's frame is plain Flux's as it was: its grid ring and inset brackets drawn, no outside brackets, no header
 //   MUT       the readers can go red: with the L4 frame taken away, BRACKETS, GRID and HEAD read false
+//   CLEAR     (law 1; Fable, Nov 21, 6:00 pm: "It must never cover a line of text, at any size or scroll") on a long page at 1366, 1920 and 2560, unscrolled and scrolled to the middle
+//             of a line, the header is drawn and the first line she can see starts at or below the header's foot (unscrolled: the first row's own top; scrolled: where the scroller's
+//             clip edge lets it show)
+//   CLEAR-MUT the reader can go red: the same header made 40 px taller reads as covering
 // FLUX3_SHOTS=<dir> writes frames. Run: node scripts/harness/flux3-s4b-l4.mjs (from apps/desktop; a box turn or Actions).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,6 +45,13 @@ const INSTRUMENT = `(() => {
       bgs: { page: bg(page), scroll: bg(page.querySelector('.mode-scroll')), editor: bg(ed) },
       head: head ? { vis: vis(head), rect: R(head), text: (head.textContent || '').replace(/\\s+/g, ' ').trim(), shown: (head.innerText || '').replace(/\\s+/g, ' ').trim(), tt: getComputedStyle(head).textTransform,
         ff: getComputedStyle(head).fontFamily, chrome: getComputedStyle(document.documentElement).getPropertyValue('--font-chromeLabel').trim() } : null }; };
+  // law 1: the header's foot against the first line she can see (a row's top, or the scroller's clip edge when the row is scrolled partly out of view)
+  I.clear = () => { const page = document.querySelector('.mode-page'); if (!page) return null; const col = page.parentElement;
+    const head = col.querySelector(':scope > [data-flux3-dochead]'), sc = page.querySelector('.mode-scroll'), ed = page.querySelector('.forward-only-editor'); if (!sc || !ed) return null;
+    const clip = sc.getBoundingClientRect().top;
+    const rows = [...ed.querySelectorAll('.wz-row')].map((r) => r.getBoundingClientRect()).filter((r) => r.height > 0 && r.bottom > clip + 1);
+    const first = rows[0] || null, shown = vis(head);
+    return { shown, foot: shown ? head.getBoundingClientRect().bottom : null, clip, firstTop: first ? first.top : null, seen: first ? Math.max(first.top, clip) : null, scrollTop: sc.scrollTop, rows: rows.length }; };
   I.rects = () => { const q = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((n) => Math.round(n * 10) / 10).join(','); };
     return { col: q('.mode-pagecol'), page: q('.mode-page'), editor: q('.forward-only-editor'), host: q('.desk-frame-host') }; };
   // the control arm: the L4 frame away (its overlays and every flag-scoped rule naming them), the same page without the frame
@@ -76,6 +87,8 @@ try { await withHarness(async (app) => {
     W.wrizoCreateJournalPage({ id: 'l4-p1', text: ${JSON.stringify(TEXT)}, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' });
     W.wrizoCreateJournalPage({ id: 'l4-p2', text: 'The other page.', createdAt: '2026-04-01T00:00:01.000Z', origin: 'loose', source: 'page' });
     W.wrizoAddPageLink('l4-p1', { bEntryId: 'l4-p2' });
+    W.wrizoCreateJournalPage({ id: 'l4-long', text: Array.from({ length: 30 }, (_, i) => 'Paragraph ' + (i + 1) + ' runs on with plain words so the page wraps a line or two and keeps going well past the fold of the glass.').join('\\n\\n'),
+      createdAt: '2026-04-01T00:00:02.000Z', origin: 'loose', source: 'page' });
     W.wrizoFlushNow();
     return { links: (W.wrizoPageLinksOf('l4-p1') || []).filter((l) => !l.deletedAt).length };
   })()`);
@@ -128,6 +141,24 @@ try { await withHarness(async (app) => {
   const fp = await frame();
   ok(`PAUSE the header follows her words on the pause: two words typed, it reads ${WORDS0 + 2} WORDS`, head(fp, 'l4-p1', WORDS0 + 2, BLOCKS, 1), { head: fp && fp.head });
 
+  // ---- CLEAR (law 1): the header never covers a line, at 1366, 1920 and 2560, unscrolled and scrolled mid-line; and its mutant ----------------------------------------------------
+  const clearOf = (c) => !!c && c.shown && c.rows > 0 && c.foot !== null && c.seen !== null && c.foot <= c.seen + 0.5 && c.foot <= c.clip + 0.5;
+  const readings = {};
+  for (const [w, h] of [[1366, 768], [1920, 1080], [2560, 1440]]) {
+    await open('l4-long', { w, h });
+    const flat = await ev('window.__l4.clear()');
+    await ev("(() => { const sc = document.querySelector('.mode-page .mode-scroll'); if (sc) sc.scrollTop = 37; return null; })()");
+    await sleep(700);
+    const scrolled = await ev('window.__l4.clear()');
+    await snap(`l4-long-${w}-scrolled`);
+    readings[w] = { flat, scrolled, ok: clearOf(flat) && flat.firstTop !== null && flat.foot <= flat.firstTop + 0.5 && clearOf(scrolled) && scrolled.scrollTop > 0 };
+  }
+  ok('CLEAR (law 1) the header is drawn and never covers a line: at 1366, 1920 and 2560, unscrolled and scrolled mid-line, the first line she can see starts at or below its foot',
+    Object.values(readings).every((r) => r.ok), readings);
+  const mut = await ev("(() => { const h = document.querySelector('[data-flux3-dochead]'); if (!h) return null; h.style.height = (h.getBoundingClientRect().height + 40) + 'px'; return true; })()");
+  const cm = await ev('window.__l4.clear()');
+  ok('CLEAR-MUT the reader can go red: the same header 40 px taller reads as covering', mut === true && !clearOf(cm), { mut, cm });
+
   // ---- OFF: without the flag, plain Flux's frame as it was ----------------------------------------------------------------------------------------------------------------
   await open('l4-p1', { flag: false });
   const off = { flag: await ev("document.documentElement.hasAttribute('data-flux3')"), f: await frame() };
@@ -135,7 +166,7 @@ try { await withHarness(async (app) => {
     !off.flag && !!off.f && off.f.ringVis && off.f.insetVis && !off.f.tl && !off.f.br && !off.f.head, off);
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
-const EXPECTED = 7;
+const EXPECTED = 9;   // 7 + CLEAR and CLEAR-MUT (Fable, Nov 21, 6:00 pm)
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + String(c.detail).slice(0, 1500)}`); if (!c.pass) bad += 1; }
 if (checks.length !== EXPECTED) bad = Math.max(bad, 1);
