@@ -5,7 +5,23 @@
 const CLASS = String.raw`\.font-[a-z0-9]+(?:-[a-z0-9]+)*|\.size-\d{1,3}(?:\.5)?`;
 const CLOSE_MARK = new RegExp(String.raw`(?<![\x5c])\]\{(?:${CLASS})(?: (?:${CLASS}))?\}`, 'g');
 
+// A footnote is not her words (Nick, Nov 21): the note lines at the END of the text ("[^1]: the note", blank lines between) and the [^1] markers are left out, as the desktop's
+// reorg/footnotes.ts wordsOnly does (polish10-wordcount.mjs holds the two equal; the shape is stated here once more, the apps share no module).
+const NOTE_LINE = /^\[\^[\w-]+\]: ?.*$/;
+const MARKER = /(?<![\x5c])\[\^[\w-]+\]/g;
+function withoutNotes(text: string): string {
+  const lines = text.split('\n');
+  let j = lines.length - 1;
+  while (j >= 0 && (/^\s*$/.test(lines[j]) || NOTE_LINE.test(lines[j]))) j -= 1;
+  let start = j + 1;
+  while (start < lines.length && !NOTE_LINE.test(lines[start])) start += 1;
+  if (start >= lines.length) return text;
+  let end = start;
+  while (end > 0 && /^\s*$/.test(lines[end - 1])) end -= 1;
+  return lines.slice(0, end).join('\n');
+}
+
 export function wordCount(text: unknown): number {
-  const m = (typeof text === 'string' ? text : '').replace(CLOSE_MARK, '').trim().match(/\S+/g);
+  const m = withoutNotes((typeof text === 'string' ? text : '').replace(CLOSE_MARK, '')).replace(MARKER, '').trim().match(/\S+/g);
   return m ? m.length : 0;
 }

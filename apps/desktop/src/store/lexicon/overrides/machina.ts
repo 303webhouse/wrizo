@@ -174,5 +174,26 @@ export const MACHINA_OVERRIDES = {
     graftDockAria: 'Dock beside the doc',   // the theme's own word for the page [deskLexicon §79]
     graftRemovedLine: 'Asset to {title} removed.',
     graftPairedPage: 'Doc',
+    // THE TEAM B RESTYLE (ARBOR, Nov 20; Fable's 12:15 pm cut): Nick's Machina rule, "every button and heading in Machina is written in Title Case"
+    // (the stage strip, the tab names and the rail keep their capitals; sentences stay sentences), and his words: "Split", "Merge", "Nest" /
+    // "Unnest" (Decision 3), "Parts (n)" and "New Part" (1B). The reorg's Front menu, Back menu and split.
+    reorgPartsHead: 'Parts ({n})',
+    reorgPartsNew: 'New Part',
+    reorgPartsSplit: 'Split',
+    reorgPartUp: 'Move Up',
+    reorgPartDown: 'Move Down',
+    reorgPartIn: 'Nest',
+    reorgPartOut: 'Unnest',
+    reorgPartJoin: 'Merge',
+    reorgPartColourNone: 'No Colour',
+    reorgPartsJoinDone: 'Merged into Part {n}.',
+    reorgPartJoinCarries: 'Not merged: this Part holds ink, blocks, linked assets or a Consultant thread, and merging would drop them.',
+    reorgPartJoinScript: 'Not merged: a screenplay Part has no plain text to merge.',
+    reorgPartJoinNo: 'Not merged.',
+    reorgSplitOpen: 'Open Beside',
+    reorgSplitLabel: 'Opened Beside',
+    reorgAssetsOwnBoard: "This Doc's Board",
+    reorgAssetsLinkedDirectly: 'Docs Linked Directly',
+    reorgColourNone: 'No Colour',
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;

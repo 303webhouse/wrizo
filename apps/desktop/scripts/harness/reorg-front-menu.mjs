@@ -18,8 +18,10 @@
 //           so its drawer cannot be main's bytes)
 // FRAME F1  a Draft Part: the tabs read TEXT · PARTS (no INK: Draft has no instrument), TEXT selected
 //       F2  a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, leaving it puts it back in text)
+//           [successor, Nov 20: SPRINT has no menus - with the switch on a Free Write page draws no Front menu, no tab, no pen; sprint-no-menus.mjs]
 //       F3  [Draft Part, Free Write page, screenplay] TEXT holds exactly the sections the switch-off drawer holds on that surface, in order, then
 //           Page setup at the foot (nothing added but Page setup, nothing lost)
+//           [successor, Nov 20: Draft Part and screenplay only; the Free Write page has no Front menu with the switch on]
 //       F5  a Board in Machina, switch ON, keeps today's drawer: no tab row, no Parts list, no Page setup, and the same section headings as
 //           the switch-off drawer but for the reorg's own word for a board
 //       F4  Page setup in the Front menu is today's zone and today's act: choosing Narrow margins writes that page's pageSettings.margins and
@@ -179,18 +181,32 @@ await withHarness(async (app) => {
   await open(app, 'machina', true, 'tr-l-1'); await openDrawer(app);
   tabs = await app.evalJs(TABS);
   onSections.freewrite = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
+  const fwGrip = await app.evalJs("!!document.querySelector('.wz-sliver-grip') || !!document.querySelector('.wz-sliver')");
   const inst0 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
   await app.evalJs(pick('ink')); await sleep(500);
   const inst1 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
   const tabsInk = await app.evalJs(TABS);
   await app.evalJs(pick('text')); await sleep(500);
   const inst2 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
-  ok('F2 a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, TEXT puts it back)',
-    JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && inst0 !== 'ink' && inst1 === 'ink' && tabsInk.find((x) => x.id === 'ink')?.on && inst2 !== 'ink', { tabs, inst0, inst1, inst2 });
+  // SUPERSEDED (SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 and 1:20 pm; Fable 5:05 pm: behind the reorg's switch, Machina): with the switch on, a Free Write page draws no Front menu at all, so no TEXT, INK or PARTS tab and no pen). The original, verbatim:
+  // ok('F2 a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, TEXT puts it back)',
+  //   JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && inst0 !== 'ink' && inst1 === 'ink' && tabsInk.find((x) => x.id === 'ink')?.on && inst2 !== 'ink', { tabs, inst0, inst1, inst2 });
+  ok('F2 [successor]: a Free Write page (SPRINT) with the switch on draws no Front menu: no drawer, no tab, and no pen (the page never goes into ink)',
+    !fwGrip && Array.isArray(tabs) && tabs.length === 0 && inst0 !== 'ink' && inst1 !== 'ink' && inst2 !== 'ink', { fwGrip, tabs, inst0, inst1, inst2 });
   await open(app, 'machina', true, 'tr-top-s'); await openDrawer(app);
   onSections.script = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
-  ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
-    ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 and 1:20 pm; Fable 5:05 pm: behind the reorg's switch, Machina): with the switch on, a Free Write page draws no Front menu at all, so no TEXT, INK or PARTS tab and no pen: the Free Write page has no TEXT tab to compare). The original, verbatim:
+  // ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (Find in the Front menu's TEXT tab, stage menus T3, Nick's word; Fable, Nov 21, 12:35 am: TEXT gains Find in BUILD and EDIT, above Page
+  // setup; Actions 44881500925 read the Find row after the drawer's sections on the Draft Part and the screenplay, both in BUILD). The sprint-no-menus
+  // successor above, verbatim:
+  // ok('F3 [successor]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // [successor] the same, but TEXT in BUILD (the Draft Part, the screenplay) ends with the one Find row, then Page setup
+  const findRow = 'wz-sliver-section wz-front-find-row';
+  ok('F3 [successor 2]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Find (BUILD), then Page setup at its foot',
+    ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify([...offSections[s], findRow]) && onSections[s].setup), { offSections, onSections });
 
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   const s0 = await app.evalJs(COLLECTIONS);

@@ -130,6 +130,10 @@ export async function runMigrations(): Promise<void> {
   // (the grandfather fixed point). Never a new table; the bible rides its project.
   await pool.query(`alter table projects add column if not exists tutor jsonb`);
 
+  // THE DOC'S OWN SETTINGS (Nov 20, Nick ruled it): ONE more additive nullable jsonb column on `projects`, the `tutor` recipe again (`add column if not exists ... jsonb`): no default, no CHECK, no backfill.
+  // Null on every existing project -> JS undefined -> byte-identical to today (the grandfather fixed point). It holds a Doc's own settings (its style guide, how it goes out); never a new table.
+  await pool.query(`alter table projects add column if not exists doc_settings jsonb`);
+
   // ITEM 83 M2 (R6, the Page menu's charter) — THE menus wave's one schema
   // addition, and the only ticket in that brief that touches schema at all.
   // Nick's own words: the Page menu carries "general page options that govern

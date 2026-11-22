@@ -1,7 +1,10 @@
+import { useWritingGoalMirror } from './store/writingGoalPref';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTheme } from './store/theme';
 import { isArbor2 } from './arbor2/flag';
+import { machina2Enabled } from './machina2/flag';
+import { MachinaWordmark } from './machina2/wordmark';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
@@ -216,6 +219,9 @@ function BrandMark() {
   // r18 (Nick, via Fable, Nov 3): on the front door the logo moved into the drawing, at its top (src/arbor2/frontLayer.tsx); the corner mark
   // stays everywhere else, unchanged
   if (arborFront) return null;
+  // MACHINA'S MARK IS WRIZO under its look (Nick, Nov 21, via Fable 1:30 pm): the mockup's five letters and the brass notch on the O, real markup
+  // so the notch can stand on the O (machina2/wordmark.tsx); the same corner box, so it recedes while she types as the mark always has
+  if (theme === 'machina' && machina2Enabled()) return <div className="brand-mark machina2-wordmark" aria-hidden="true"><MachinaWordmark /></div>;
   // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
   // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
   // background color, which only works when the element has no image content
@@ -229,6 +235,8 @@ export function App() {
   const [, forceRender] = useReducer((n: number) => n + 1, 0);
 
   useEffect(() => subscribe(forceRender), []);
+  // the writing goal's mirror on the account (store/writingGoalPref.ts): mounted for the whole session, whatever the route or sign-in state
+  useWritingGoalMirror();
   // installed once for the whole session (App.tsx mounts regardless of route or auth state), not tied to SyncIndicator's own mount, which renders in more than one place; see beforeUnloadGuard.ts for the reasoning and the Electron exclusion [App §3]
   useEffect(() => installBeforeUnloadGuard(), []);
 

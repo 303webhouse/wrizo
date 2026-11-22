@@ -446,6 +446,13 @@ window.__setText = (text, sel) => {
 // unaffected. The opt-in's own declaration, below, stays as it was (url-search-optin-unit.mjs U0/U1b anchor on it; U2b reads this pin).
 if (!process.env.WS_URL_SEARCH && process.env.WS_ARBOR2 !== 'default') process.env.WS_URL_SEARCH = '?arbor2=0';
 
+// MACHINA'S LOOK IS ON BY DEFAULT (Fable, Nov 19: "Machina's look SHIPS this weekend"; src/machina2/flag.ts). Arbor's pin above, extended to Machina (ARBOR's
+// proposal on machina/look, for Fable): a fresh profile pins today's Machina (?machina2=0) for any file that doesn't ask for the look, so the files written for
+// today's Machina keep testing what they were written for. A file ASKS for the look with WS_MACHINA2=default, or names its own query with WS_URL_SEARCH, which
+// wins (the query is unset, or exactly Arbor's pin with the redesign not asked for); a file that navigates with its own URL is unaffected. Arbor's pin above
+// is unchanged; url-search-optin-unit.mjs names this block as the second ruled foothold.
+{ const s = process.env.WS_URL_SEARCH; if (process.env.WS_MACHINA2 !== 'default' && (!s || (s === '?arbor2=0' && process.env.WS_ARBOR2 !== 'default'))) process.env.WS_URL_SEARCH = s ? `${s}&machina2=0` : '?machina2=0'; }
+
 // WS_URL_SEARCH (opt-in, e.g. '?arbor2=1'): a query string before the hash on every page this driver opens, so a guard can run under a URL
 // flag (ARBOR r19: rhizome-latency + 150b on the Arbor vines). Unset = today's URLs exactly ('/' then the hash).
 const URL_SEARCH = process.env.WS_URL_SEARCH ? `/${process.env.WS_URL_SEARCH.replace(/^\/?/, '')}` : '/';

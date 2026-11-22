@@ -94,10 +94,12 @@ export interface PageSettings {
   // board). A type only: the existing whole-blob page_settings jsonb carries it (schema change: none). A fact about THIS page, never dress:
   // store/pageDefaults.ts strips it from the per-user default. Stale ids are pruned on read (store/grafts.ts), never written back.
   hiddenPlanCards?: string[];
-  // THE REORG (Nick's ruling, Nov 19, via Fable): a Part's own name, saved with the account by the whole-blob page_settings column it already rides
-  // (schema change: none). Absent, never null and never '', on every page that was never named: the page reads its first line (the Sep 12 rule).
-  // A fact about THIS page, never dress: store/pageDefaults.ts strips it from the per-user default. Written by reorg/partsSeam.ts renamePart.
-  name?: string;
+  // REORG PHASE 3 (the Parts, src/reorg/parts.ts; Fable's saved-data ruling Nov 19: saved to the ACCOUNT, no migration - the whole-blob page_settings jsonb carries them). All ABSENT, never null, on every page that never chose; none is dress:
+  // store/pageDefaults.ts strips them, so "Set as my default" on one Part never names, colours or limits every future page.
+  name?: string;                                          // a Part's own name; absent, its first few words stand in
+  level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
+  color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
+  lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
 }
 
 export type PageTemplate = 'outline' | 'title' | 'bibliography';

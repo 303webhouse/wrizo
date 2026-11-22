@@ -65,6 +65,10 @@ export interface WritingSettings {
   // anywhere." Flux's Glitch meter only (components/GlitchMeter.tsx); the ambient Signal Loss texture has its own Ambiance dial. On by
   // default (the approved mockup's switch starts ON); a pre-meter stored blob merges to it through load()'s `{ ...DEFAULTS, ...parsed }`.
   flicker: boolean;
+  // THE PLAIN PROGRESS TRACKER's switch (POLISH, Fable Nov 20, 5:25 pm): true = the theme's own tracker (today's behaviour), false = the plain tracker in every theme; saved to the account with the rest
+  themeTracker: boolean;
+  // SPRINT's prompts from the Consultant (Fable, Nov 21, 10:25 am; Nick ruled it ON): the writer's own choice, true = a press in SPRINT asks the Consultant for one prompt, false = the local deck answers and nothing is sent. On by default; saved to the account with the rest through the `writing` fact (store/writingPref.ts).
+  consultant: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -100,6 +104,8 @@ const DEFAULTS: WritingSettings = {
   writingLine: 'center',
   pageScroll: true,
   flicker: true,
+  themeTracker: true,
+  consultant: true,
 };
 
 function load(): WritingSettings {
@@ -123,6 +129,25 @@ export function getWritingSettings(): WritingSettings {
 export function setWritingSettings(patch: Partial<WritingSettings>): void {
   current = { ...current, ...patch };
   try { localStorage.setItem(KEY, JSON.stringify(current)); } catch { /* ignore */ }
+  subs.forEach(fn => fn(current));
+}
+
+// THE ACCOUNT'S COPY (Fable, Nov 20, 12:15 pm; store/writingPref.ts is the bridge): a subscription that is not a React hook, whether this device has saved a setting of its own,
+// and the sign-out reset (the next account never inherits this one's).
+export function subscribeWritingSettings(fn: (s: WritingSettings) => void): () => void {
+  subs.add(fn);
+  return () => { subs.delete(fn); };
+}
+/** The defaults, for a bridge that must tell a device that holds only them from one that holds her own. */
+export function writingDefaults(): WritingSettings { return { ...DEFAULTS }; }
+/** True once this device has saved a setting of its own (its key exists). */
+export function hasStoredWritingSettings(): boolean {
+  try { return typeof localStorage !== 'undefined' && localStorage.getItem(KEY) !== null; } catch { return false; }
+}
+/** Sign-out: back to the defaults and the key gone, so the next account starts clean (its own settings arrive from its account). */
+export function resetWritingSettings(): void {
+  current = { ...DEFAULTS };
+  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
   subs.forEach(fn => fn(current));
 }
 

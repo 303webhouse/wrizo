@@ -183,17 +183,17 @@ const INSTRUMENT = `(() => {
 // ---- the landed mutants: a pattern matched exactly once in the served index-*.js, replaced in flight (names are the minifier's, so the patterns
 // anchor on what the minifier keeps: the numbers, the strings and the property names) ------------------------------------------------------------
 const MUTANTS = {
-  gate: [/=350,(\w+)=550,/g, '=0,$1=550,'],
-  hold: [/\.addEventListener\("pointerdown",(\w+),!0\),(\w+)\.addEventListener\("click",(\w+),!0\),(\w+)\.addEventListener\("dblclick"/g,
+  gate: [/=350,([\w$]+)=550,/g, '=0,$1=550,'],
+  hold: [/\.addEventListener\("pointerdown",([\w$]+),!0\),([\w$]+)\.addEventListener\("click",([\w$]+),!0\),([\w$]+)\.addEventListener\("dblclick"/g,
     '.addEventListener("f3-mut-nodown",$1,!0),$2.addEventListener("click",$3,!0),$4.addEventListener("dblclick"'],
-  clean: [/\.style\.transform="",(\w+)\.style\.transition="",/g, '.style.f3mut="",$1.style.transition="",'],
-  still: [/(\w+)!=="still"&&(\w+)\.motion/g, '$1!=="still"&&!0'],
+  clean: [/\.style\.transform="",([\w$]+)\.style\.transition="",/g, '.style.f3mut="",$1.style.transition="",'],
+  still: [/([\w$]+)!=="still"&&([\w$]+)\.motion/g, '$1!=="still"&&!0'],
   // bug #106: the layer's key handler (onActivity: it stamps the busy window and HOLDS) made to redraw instead: no busy window, and refresh() on every key. Every key then draws, so D2-HOLO must read draws in the keys' window AND name them (the chain
   // reads drawMotion<refresh<onActivity). Two tries before this drew NOTHING in this scenario and proved nothing (Actions cf932242 and 44354086421): the damping gate removed, and the busy window cut to 40 ms. The keys here arm no settle redraw between
   // themselves; the only draw the live run shows is ONE settle redraw 617.9 ms after the LAST key (canvas 1 clearRect via drawMotion<refresh), and, once, a refresh stroke 0.2 ms BEFORE the first key.
   // bug #106 follow-up: the layer kept BUSY: still() forced false, so its frame loop never stops and it draws every frame: it never goes quiet, so the quiet wait must hit its 5 s cap and FAIL
-  keepbusy: [/still\(\)\{var \w+;return!this\.opts\.motion\|\|!!\(\(\w+=this\.mq\)!=null&&\w+\.matches\)\}/g, 'still(){return!1}'],
-  redraw: [/onActivity",\(\)=>\{this\.busyUntil=performance\.now\(\)\+(\w+),this\.stillUntil=this\.busyUntil,this\.stopFollow\(\),this\.hold\(\)\}/g, 'onActivity",()=>{this.busyUntil=0,this.stillUntil=0,this.stopFollow(),this.refresh()}'],
+  keepbusy: [/still\(\)\{var [\w$]+;return!this\.opts\.motion\|\|!!\(\([\w$]+=this\.mq\)!=null&&[\w$]+\.matches\)\}/g, 'still(){return!1}'],
+  redraw: [/onActivity",\(\)=>\{this\.busyUntil=performance\.now\(\)\+([\w$]+),this\.stillUntil=this\.busyUntil,this\.stopFollow\(\),this\.hold\(\)\}/g, 'onActivity",()=>{this.busyUntil=0,this.stillUntil=0,this.stopFollow(),this.refresh()}'],
 };
 
 const median = (a) => { if (!a.length) return NaN; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };

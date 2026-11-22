@@ -16,12 +16,17 @@
 // PIN     P1  without WS_REORG the driver serves window.__wrizoReorgOff: Machina with no switch draws no reorg element; with ?reorg=1 the
 //             top rail is drawn (a file that asks still gets it)
 // SOURCE  N1  the switch is read from the URL and the driver's flag only: no stored flag, no storage key
+//         [S1 and S2 successors, train H: main's switchless prefs (the room, writing and goal facts are saved and synced in every theme) leave a REORG fact
+//         Machina's: in Arbor it is neither written to the copy nor kept, the round may still run for the switchless facts; the gates read the table]
+// RULING  R2  (Fable, Nov 21, 9:40 pm: default-on in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass) every reader of the table outside
+//             a hook asks reorgFor (Tutor's back and split, BoardEditor's Plan presets); no bare `REORG && themeHas(` is left (the hook's own ruling: reorg-theme-gate-unit)
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-switchover.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { withHarness } from '../runtime-verify.mjs';
+import { srcText } from '../global-css.mjs';
 
 process.env.WS_REORG = '1';   // this file tests the default itself: the driver's pin is lifted, and put back for P1
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +34,7 @@ const SRC = path.join(HERE, '..', '..', 'src');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const srcBoard = () => srcText(SRC, 'components/BoardEditor.tsx');   // a split file is read as its module and its parts, joined (the 10g readers rule)
 const src = (f) => { const p = path.join(SRC, f); return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : ''; };
 // every element the reorg draws carries a reorg- class (the top rail, the rail, the Parts list, the Back menu's pieces)
 const REORG_ELS = "(() => { const els = [...document.querySelectorAll('[class*=\"reorg-\"]')]; return { n: els.length, top: !!document.querySelector('.reorg-top'), first: els.slice(0, 4).map((e) => String(e.className).slice(0, 40)) }; })()";
@@ -63,7 +69,7 @@ const PREFS_ACTS = (probe) => `(async () => {
   try { await P.sync(); } catch { /* a server without the route: the count is what is read */ }
   await new Promise((r) => setTimeout(r, 300));
   const after = localStorage.getItem('wrizo-reorg-prefs');
-  return { seam: true, wrote: after !== before && after != null && after.includes(${JSON.stringify(probe)}), calls: W.__swCalls - calls0 };
+  return { seam: true, wrote: after !== before && after != null && after.includes(${JSON.stringify(probe)}), calls: W.__swCalls - calls0, kept: !!P.pref('switchProbe') };
 })()`;
 
 await withHarness(async (app) => {
@@ -83,8 +89,13 @@ await withHarness(async (app) => {
   const inArbor = await app.evalJs(PREFS_ACTS('arbor-probe'));
   await app.evalJs("window.wrizoTheme.set('machina'); null"); await sleep(600);
   const inMachina = await app.evalJs(PREFS_ACTS('machina-probe'));
-  ok('S1 the preferences sync is Machina\'s: in Arbor a set writes no local copy and a round calls no server; in Machina the same acts write the copy and call /api/prefs',
-    inArbor.seam && !inArbor.wrote && inArbor.calls === 0 && inMachina.seam && inMachina.wrote && inMachina.calls > 0, { inArbor, inMachina });
+  // SUPERSEDED (train H's switchless prefs: the room, writing and goal facts are saved and synced in every theme, so a round in Arbor DOES call the server, for
+  // them; merged by POLISH with the switch-over, Nov 21). The original, verbatim:
+  // ok('S1 the preferences sync is Machina\'s: in Arbor a set writes no local copy and a round calls no server; in Machina the same acts write the copy and call /api/prefs',
+  //   inArbor.seam && !inArbor.wrote && inArbor.calls === 0 && inMachina.seam && inMachina.wrote && inMachina.calls > 0, { inArbor, inMachina });
+  // [successor] a REORG fact is Machina's: in Arbor it is neither written to the copy nor kept; in Machina it is written, kept and synced
+  ok('S1 [successor] a reorg fact is Machina\'s: in Arbor a set writes no local copy and keeps nothing (a round may still run, for the switchless facts); in Machina it is written, kept and sent to /api/prefs',
+    inArbor.seam && !inArbor.wrote && !inArbor.kept && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0, { inArbor, inMachina });
 
   // ---- PIN -------------------------------------------------------------------------------------------------------------------------------
   delete process.env.WS_REORG;
@@ -100,17 +111,31 @@ await withHarness(async (app) => {
   const strip = (s) => s.replace(/\/\/.*$/gm, '');
   const rail = strip(src('reorg/railSaved.ts')), prefs = strip(src('reorg/prefsSaved.ts'));
   const gated = (s, head) => new RegExp(`${head}\\{\\s*if \\(!reorgInMachina\\(\\)\\) return;`).test(s);
-  const r = { railPersist: gated(rail, 'function persist\\(\\): void '), railSync: gated(rail, 'export async function syncRail\\(\\): Promise<void> '),
-    prefsPersist: gated(prefs, 'function persist\\(\\): void '), prefsSync: gated(prefs, 'export async function syncPrefs\\(\\): Promise<void> '),
-    prefsSet: /export function setPref\(name: string, value: Record<string, unknown>\): void \{\s*if \(!reorgInMachina\(\) \|\| !FACT_RE\.test\(name\)\) return;/.test(prefs) };
-  ok('S2 the rail\'s sync is Machina\'s too: railSaved persist and syncRail start on the Machina gate, as prefsSaved persist, setPref and syncPrefs do', Object.values(r).every(Boolean), r);
+  // SUPERSEDED (train H's switchless prefs: prefsSaved's persist, setPref and syncPrefs run for the room, writing and goal facts in every theme, so they no longer
+  // START on the gate; a reorg fact passes it inside them). The original, verbatim:
+  // const r = { railPersist: gated(rail, 'function persist\\(\\): void '), railSync: gated(rail, 'export async function syncRail\\(\\): Promise<void> '),
+  //   prefsPersist: gated(prefs, 'function persist\\(\\): void '), prefsSync: gated(prefs, 'export async function syncPrefs\\(\\): Promise<void> '),
+  //   prefsSet: /export function setPref\(name: string, value: Record<string, unknown>\): void \{\s*if \(!reorgInMachina\(\) \|\| !FACT_RE\.test\(name\)\) return;/.test(prefs) };
+  // ok('S2 the rail\'s sync is Machina\'s too: railSaved persist and syncRail start on the Machina gate, as prefsSaved persist, setPref and syncPrefs do', Object.values(r).every(Boolean), r);
+  // [successor] the rail starts on the gate as before; prefsSaved lets a reorg fact through only on it: allowed(), the copy it keeps, and the round after sign-in
+  const r2 = { railPersist: gated(rail, 'function persist\\(\\): void '), railSync: gated(rail, 'export async function syncRail\\(\\): Promise<void> '),
+    prefsAllowed: /const allowed = \(name: string\): boolean => reorgInMachina\(\) \|\| SWITCHLESS\.has\(name\);/.test(prefs),
+    prefsSet: /export function setPref\(name: string, value: Record<string, unknown>\): void \{\s*if \(!allowed\(name\) \|\| !FACT_RE\.test\(name\)\) return;/.test(prefs),
+    prefsCopy: /const mine: PrefsRecord = reorgInMachina\(\) \? prefs :/.test(prefs), prefsRound: /if \(!reorgInMachina\(\) && roundsThisSignIn > 0\) return;/.test(prefs),
+    noBareSwitch: !/[^.\w]REORG \? prefs|!REORG && roundsThisSignIn|=> REORG \|\|/.test(prefs) };
+  ok('S2 [successor] the rail\'s sync starts on the gate; prefsSaved lets a reorg fact through only on it (allowed, the copy, the round after sign-in), never on the bare switch', Object.values(r2).every(Boolean), r2);
   const flag = strip(src('reorg/flag.ts'));
   ok('N1 the switch is read from the URL and the driver\'s flag only: no stored flag, no storage key',
     /__wrizoReorgOff/.test(flag) && /get\('reorg'\)/.test(flag) && !/localStorage|sessionStorage|indexedDB/.test(flag), { flag: flag.trim().slice(-400) });
+  const tutor = strip(src('components/Tutor.tsx')), board = strip(srcBoard()), gate = strip(src('reorg/themeGate.ts'));
+  const r3 = { tutorBack: tutor.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutor.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
+    planPresets: board.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutor) && !/REORG && themeHas\(/.test(board),
+    defaults: /REORG_DEFAULT_ON: Record<ThemeId, boolean> = \{ machina: true, plateau: false, flux: false \}/.test(gate), hook: gate.includes('return reorgFor(t) && themeHas(piece, t);') };
+  ok('R2 (the switch-over ruling) every table reader outside a hook asks reorgFor (Tutor back and split, the Plan presets), none asks the bare switch; Machina alone is on by default', Object.values(r3).every(Boolean), r3);
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 7;
+const EXPECTED = 8;   // 7 + R2 (Fable, Nov 21, 9:40 pm)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-SWITCHOVER VERIFY: PASS (${checks.length} checks)`

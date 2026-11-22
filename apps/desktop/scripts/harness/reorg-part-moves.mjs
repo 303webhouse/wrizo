@@ -11,6 +11,8 @@
 //        A2  they cap the page's own scrollbar: centred on the scroller's bar, the upper at its top and the lower at its bottom
 //        A3  [1366, 1920] the page's rect (column, paper, editor) is the same with the switch off and on; the editor is the same node with the
 //            Parts drop open
+//        A3 [scale successor] (train H, Nov 21: the chrome scale) the same with the switch on and the drop open; against the switch off the same at
+//            1366, and at 1920 lower by the bar's growth alone (scaledSame);   MUT-A3  the 1920 reading pushed 40 px sideways, or 30 px lower, fails it
 //        A4  she types, then presses the lower arrow at once: her words are stored on Budget two, and Budget three opens ("Part 3 of 3"), its
 //            lower arrow "No Part after this one" and disabled
 //        A5  on Part 1 the upper arrow reads "No Part before this one" and is disabled; the lower opens Part 2
@@ -39,6 +41,21 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
 
+// the chrome scale's successor (train H, Nov 21): the bar's bottom, and the page's rects against the switch off - at 1366 and below (k = 1) the same
+// string; above, every top moves by the bar's growth g (within 1 px) and no other edge moves more than g (a drawer or the rail displacing the page moves
+// it by its own width, 100 px and more). Within the reorg every state is still compared as the same string.
+const BAR = "(() => { const b = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((e) => e.getBoundingClientRect().height > 0); return b ? Math.round(b.getBoundingClientRect().bottom * 10) / 10 : null; })()";
+const rectsOf = (s) => String(s || '').split('|').map((r) => r.trim());
+const scaledSame = (w, off, on, g) => {
+  if (!off || !on) return false;
+  if (w <= 1366) return on === off;
+  const a = rectsOf(off), b = rectsOf(on);
+  if (a.length !== b.length || !(g > 0)) return false;
+  return a.every((r, i) => { if (r === '-' || b[i] === '-') return r === b[i]; const p = r.split(',').map(Number), q = b[i].split(',').map(Number);
+    if (p.length !== 4 || q.length !== 4 || [...p, ...q].some((x) => !Number.isFinite(x))) return false;
+    return Math.abs((q[1] - p[1]) - g) <= 1 && Math.abs(q[0] - p[0]) <= g && Math.abs(q[2] - p[2]) <= g && Math.abs(q[3] - p[3]) <= g; });
+};
+const shiftRects = (s, dl, dt) => rectsOf(s).map((r) => (r === '-' ? r : r.split(',').map(Number).map((x, j) => Math.round((x + (j === 0 ? dl : j === 1 ? dt : 0)) * 10) / 10).join(','))).join(' | ');
 const PAGE = "(() => { const els = ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => document.querySelector(s)); if (!els[1] && !els[0]) return null; return els.map((p) => { if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 10) / 10).join(','); }).join(' | '); })()";
 const ENTRIES = "(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).map((e) => [e.id, e.text ?? null, e.boxes ?? null, e.pageSettings ?? null, e.pageLinks ?? null, e.projectId ?? null, e.orderIndex ?? null])";
 const ARROWS = `(() => {
@@ -122,7 +139,9 @@ await withHarness(async (app) => {
   for (const w of [1366, 1920]) {
     await open(app, 'machina', false, 'pm-g-2', w);
     const off = await app.evalJs(PAGE);
+    const barOff = await app.evalJs(BAR);
     await open(app, 'machina', true, 'pm-g-2', w);
+    const barOn = await app.evalJs(BAR);
     await app.evalJs("window.__pmEditor = document.querySelector('.forward-only-editor'); null");
     const on = await app.evalJs(PAGE);
     await app.evalJs(press('.reorg-top [data-top-part-count]')); await sleep(300);
@@ -130,10 +149,18 @@ await withHarness(async (app) => {
     const dropOpen = await app.evalJs("!!document.querySelector('[data-top-parts-drop]')");
     await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); null"); await sleep(250);
     const same = await app.evalJs("document.querySelector('.forward-only-editor') === window.__pmEditor");
-    geo[w] = { off, on, dropped, dropOpen, same };
+    geo[w] = { off, on, dropped, dropOpen, same, g: barOn != null && barOff != null ? Math.round((barOn - barOff) * 10) / 10 : null };
   }
-  ok('A3 [1366, 1920] the page\'s rect is the same with the switch off and on, and with the Parts drop open; the editor is the same node',
-    Object.values(geo).every((g) => g.off && g.off === g.on && g.on === g.dropped && g.dropOpen && g.same), geo);
+  // SUPERSEDED (the chrome scale (arbor/reorg-scale 0c8df64d, train H; Fable, Nov 21 11:45 am: one chrome scale from the window's width / 1366, Machina under the reorg only;
+  // pass 2 REAL 2, cleared 3:52 pm: the chrome budget grows by what the taller bar adds) makes the bar taller above 1366 with the switch ON, so against the
+  // switch OFF the page sits lower by exactly the bar's growth (Chat 1's pair 44973956599 on train-h4 3ab78c73: 108 -> 120.3 at 1920, the bar 12.3 px taller)). The original, verbatim:
+  // ok('A3 [1366, 1920] the page\'s rect is the same with the switch off and on, and with the Parts drop open; the editor is the same node',
+  //   Object.values(geo).every((g) => g.off && g.off === g.on && g.on === g.dropped && g.dropOpen && g.same), geo);
+  ok('A3 [1366, 1920] [scale successor] the page\'s rect is the same with the switch on and with the Parts drop open; against the switch off the same at 1366, lower by the bar\'s growth alone at 1920; the editor is the same node',
+    Object.entries(geo).every(([w, x]) => x.on && x.on === x.dropped && scaledSame(+w, x.off, x.on, x.g) && x.dropOpen && x.same), geo);
+  { const s = geo[1920] || {}; const pushed = s.on ? shiftRects(s.on, 40, 0) : null; const sunk = s.on ? shiftRects(s.on, 0, 30) : null;
+    ok('MUT-A3 the 1920 reading passes the scale successor, and the same reading pushed 40 px sideways, or 30 px lower than the bar grew, fails it',
+      !!s.on && scaledSame(1920, s.off, s.on, s.g) && !scaledSame(1920, s.off, pushed, s.g) && !scaledSame(1920, s.off, sunk, s.g), { ...s, pushed, sunk }); }
 
   // ---- SPEED (and A4: typed, then moved at once) -------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pm-g-2');
@@ -219,7 +246,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 14;
+const EXPECTED = 15;   // 14 + MUT-A3 (A3 parked, the chrome scale successor, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PART-MOVES VERIFY: PASS (${checks.length} checks)`

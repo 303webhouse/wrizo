@@ -1,5 +1,5 @@
 import type { Stroke, Box } from './board';
-import type { PageSettings } from './page';
+import type { PageSettings, StyleGuide } from './page';
 import type { TutorThread, TutorBible } from './tutor';
 import type { ScriptDoc } from './script';
 
@@ -106,6 +106,11 @@ export type BinderKind =
   | 'article' | 'report' | 'proposal'        // professional
   | 'other';
 
+/** A Doc's own settings (Project.docSettings): `styleGuide` is the Doc's style guide (Page Setup and the sources Part's name follow it; 'none' is the key's absence), `export.format` the format the publishing view offers first. Every key is absent until she chooses; an unknown key (a newer client's) is carried through untouched. */
+/** A Doc-level asset (Nick ruled A, Nov 20, 11:55 pm): connected to the whole Doc, not to a Part. `at` is when it was connected. Listed under the Assets tab's
+ *  head; dragged into a Part it also becomes that Part's own PageLink (graftTo) and stays here. Read and written only through reorg/docSettings.ts. */
+export interface DocAsset { entryId: string; boxId?: string; at: string }
+export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean; /** the Doc's assets she ticked to go out, as docSettings.ts attachKey writes them; absent = none */ attach?: string[] }; assets?: DocAsset[]; /** colour B (Nick, Nov 21 4:53 pm): this Doc's colour scheme for its slots; absent = Default (each theme draws its own version) */ colourScheme?: 'default' | 'muted' | 'vivid' };
 export interface Project {
   id: string;
   title: string;
@@ -134,6 +139,10 @@ export interface Project {
   // (absent, never null) and syncs byte-identically to today. Writer-authored
   // only; see TutorBible / Fact below.
   tutor?: TutorBible;
+  // THE DOC'S OWN SETTINGS (Fable, Nov 20, Nick ruled: a Doc-wide setting lives in the Doc's own record, never in whichever Part is first). ONE additive nullable jsonb column on `projects`
+  // (`doc_settings`), the exact `tutor` recipe above: absent on every Doc that never chose (never null, never {}), so a project that never chose syncs byte-identically to today. A made Doc (a set the
+  // writer made) only: a loose page is its own Doc and keeps the one key that already exists on a page (pageSettings.styleGuide). Read and written only through reorg/docSettings.ts.
+  docSettings?: DocSettings;
   // Soft delete — rows that must sync are never hard-deleted (see storage adapter / sync).
   deletedAt?: string;
   purgedAt?: string;   // DELETE FOR GOOD (see Drawer.purgedAt)

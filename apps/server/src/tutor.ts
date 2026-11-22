@@ -313,3 +313,92 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     res.status(502).json({ configured: true, error: 'The Tutor could not be reached right now.' });
   }
 }));
+
+// SPRINT'S PROMPTS FROM THE CONSULTANT (Fable, Nov 21, 12:35 am, FIX's queue item 6; Nick's F1, machina-stage-menus-decide.md: in SPRINT the Consultant gives ONE prompt to get her writing and keep her writing and "never
+// starts a back-and-forth"). A second route beside /tutor/chat, under the same auth, the same per-account rate limit and the SAME two daily budgets. It is not a chat: the body carries NOTHING OF HER PAGE and no
+// conversation, only the prompts already shown this session (`seen`, so the Consultant does not repeat itself), and the answer is ONE cleaned line, or a plain failure the client answers from its local deck.
+// The strict rules are the system prompt below and the cleaning after it: whatever the model says, only a single short sentence leaves this route.
+const SPRINT_SYSTEM_PROMPT = `
+You are the Consultant inside Wrizo's SPRINT stage, where the writer is free-writing against the clock. Your only job is to give the writer exactly one short writing prompt that gets them writing again.
+
+Absolute rules:
+- Reply with exactly one prompt: a single sentence of at most 25 words, plain text, with no quotation marks, no numbering, no markdown, no preface and no sign-off.
+- Keep it short and concrete: a scene, an object, a sound, a moment, a place to begin from. It points; it never starts the writing.
+- Never ask a question back to the writer about their work, and never invite a reply. There is no follow-up and no conversation: whatever arrives next, you give exactly one prompt.
+- Do not judge, evaluate or comment on anything the writer has written. You have not seen it, and you must never claim to have.
+- Never write or compose prose, dialogue or description for the writer's work. The prompt points; it never writes.
+- Do not repeat or paraphrase a prompt you are told was already given.
+`;
+const MAX_SEEN = 3;
+const MAX_SEEN_CHARS = 300;
+const MAX_SPRINT_PROMPT_CHARS = 200;
+const SPRINT_MAX_TOKENS = 80;
+
+// the body is `{ seen? }` and NOTHING ELSE: a key that could carry her words (delta, messages, selection, bible) makes the whole body invalid
+function isSprintBody(body: unknown): body is { seen?: string[] } {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
+  if (Object.keys(body as object).some((k) => k !== 'seen')) return false;
+  const seen = (body as { seen?: unknown }).seen;
+  if (seen === undefined) return true;
+  return Array.isArray(seen) && seen.length <= MAX_SEEN && seen.every((x) => typeof x === 'string' && x.length > 0 && x.length <= MAX_SEEN_CHARS);
+}
+
+// ONE line, or null (nothing a prompt can be made of): the first non-empty line, with markdown, a list marker, a "Here's a prompt:" preface and wrapping quotes removed; refused when empty, over the cap, or more than one sentence
+export function cleanSprintPrompt(raw: string): string | null {
+  const first = raw.split(/\r?\n/).map((l) => l.trim()).find((l) => l.length > 0);
+  if (!first) return null;
+  let line = first
+    .replace(/[*_#`]+/g, '')
+    .replace(/^\s*(?:\d+[.)]|[-\u2022])\s+/, '')
+    .replace(/^(?:here(?:'|\u2019)s|here is)[^:]{0,40}:\s*/i, '')
+    .replace(/^["'\u201C\u2018]+|["'\u201D\u2019]+$/g, '')
+    .trim();
+  if (!line || line.length > MAX_SPRINT_PROMPT_CHARS) return null;
+  if (/[.?!]["\u201D']?\s+[A-Z]/.test(line)) return null;
+  return line;
+}
+
+tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: Response) => {
+  if (env.tutorDisabled || !env.tutorApiKey) {
+    res.json({ configured: false });
+    return;
+  }
+  if (!isSprintBody(req.body)) {
+    res.status(400).json({ error: 'Invalid prompt request' });
+    return;
+  }
+  if (!consumeTutorBudget(req.session.userId!)) {
+    res.status(429).json({ error: 'Daily Tutor limit reached \u2014 try again tomorrow.' });
+    return;
+  }
+  if (!consumeGlobalTutorBudget()) {
+    res.status(429).json({ error: 'The Tutor has reached today\'s overall limit \u2014 try again tomorrow.' });
+    return;
+  }
+  const seen: string[] = req.body.seen ?? [];
+  const ask = seen.length > 0
+    ? `Prompts already given this session (do not repeat or paraphrase them):\n${seen.map((x) => `- ${x}`).join('\n')}\n\nGive one new writing prompt.`
+    : 'Give one writing prompt.';
+  try {
+    const response = await client().messages.create({
+      model: env.tutorModel,
+      max_tokens: SPRINT_MAX_TOKENS,
+      system: SPRINT_SYSTEM_PROMPT,
+      messages: [{ role: 'user' as const, content: ask }],
+    });
+    const text = response.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('\n')
+      .trim();
+    const prompt = cleanSprintPrompt(text);
+    if (!prompt) {
+      res.status(502).json({ configured: true, error: 'The Consultant could not give a prompt right now.' });
+      return;
+    }
+    res.json({ configured: true, prompt });
+  } catch (err) {
+    logError('tutor-sprint', err);
+    res.status(502).json({ configured: true, error: 'The Consultant could not be reached right now.' });
+  }
+}));

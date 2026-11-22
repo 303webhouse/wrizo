@@ -35,9 +35,12 @@ import type { PageActions } from '../store/pageActions';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
-import { useReorgTop } from '../reorg/useReorg';
+import { useReorgPiece } from '../reorg/themeGate';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
-import { PartsList } from '../reorg/PartsList';
+import { openSearch, setSearchReach } from '../reorg/search/searchStore';
+import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
+import { PublishParts } from '../reorg/PublishParts';
+import { SymbolPicker, TextFold } from '../reorg/TextFolds';
 import { PageSetupZone } from './cascade/PagePanel';
 import { getJournalEntry } from '../store/persistence';
 
@@ -133,7 +136,7 @@ export type SliverContent =
       // exactly as before.
       format?: {
         onFormat: (action: FormatAction) => void;
-        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean;
+        boldOn?: boolean; italicOn?: boolean; underlineOn?: boolean; strikeOn?: boolean; supOn?: boolean; subOn?: boolean;
         // the caret line's heading level (1-6), or null: H lights on a heading line [Sliver §3]
         headingLevel?: number | null;
       };
@@ -192,7 +195,7 @@ export interface SliverProps {
   hasMilestones?: boolean;
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
-  front?: { entry: JournalEntry };
+  front?: { entry: JournalEntry; host?: PartsHost; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
 }
 
 export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
@@ -207,7 +210,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const arbor2 = isArbor2() && sliverTheme === 'plateau';
   const [arborPick, setArborPick] = useState<ArborToolTab>('format');
   // THE REORG'S FRONT MENU (plan step 3.1, ?reorg=1 in Machina): TEXT · INK · PARTS. In-session state; off the switch it is unused
-  const reorgFront = useReorgTop() && !!front;
+  const reorgFront = useReorgPiece('front') && !!front;
   const [frontPick, setFrontPick] = useState<FrontTab>('text');
 
   // the open/close announcement is a layout effect keyed on `open`: a setState updater stays pure, every path that changes `open` announces, and the one-drawer hand-over lands before paint [Sliver §7]
@@ -309,14 +312,16 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const frontInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
   const frontList = reorgFront ? frontTabsFor(content.kind as DrawerKind, !!frontInstrument) : [];
   const frontTab: FrontTab | undefined = !frontList.length ? undefined
+    : front?.publishing ? 'parts'
     : frontInstrument?.value === 'ink' ? 'ink'
     : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
   const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
   const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
     ? {
-        items: frontList.map((id) => ({ id, label: t(FRONT_WORD[id]) })),
+        items: frontList.map((id) => (front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })),
         value: frontTab,
         onChange: (v: FrontTab) => {
+          if (front?.publishing && v !== 'parts') return;
           setFrontPick(v);
           if (frontInstrument && (v === 'ink') !== (frontInstrument.value === 'ink')) frontInstrument.onChange(v === 'ink' ? 'ink' : 'text');
         },
@@ -367,7 +372,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           onPopoutHold={setPopoutHold}
         />
         </>)}>
-        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} />
+        <SliverToolsBody content={content} arborTab={arborTab} frontTab={frontTab} frontEntry={reorgFront ? front?.entry : undefined} frontHost={reorgFront ? front?.host : undefined} frontPublishing={reorgFront && !!front?.publishing} />
         </SideDrawer>
       </div>
     </div>
@@ -587,7 +592,7 @@ const TEMPLATE_HELP_KEYS: Record<TemplateKey, DeskTermId> = {
   bibliography: 'helpTemplateBibliography',
 };
 
-function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry }) {
+function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, frontPublishing }: { content: SliverContent; arborTab?: ArborToolTab; frontTab?: FrontTab; frontEntry?: JournalEntry; frontHost?: PartsHost; frontPublishing?: boolean }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   // while Typewriter is on the whole Format group is greyed; the hook is called above the early return (hook order), and its result is only the fallback to this page's own typewriterForPage [Sliver §18]
@@ -602,8 +607,15 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
   const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
-  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list alone (read-only, step 3.2)
-  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body"><PartsList entry={frontEntry} /></div>;
+  // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
+  // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
+  const partsStage: PartsStage | null = content.kind === 'freewrite' ? 'sprint' : content.kind === 'draft' ? 'build' : content.kind === 'revise' ? 'edit' : null;
+  // the Team B restyle (slice 5): the TEXT tab's folds, only in the reorg's Front menu (frontTab is set only behind ?reorg=1 in Machina)
+  const textFolds = !!frontTab;
+  // the Team B restyle: the Doc's kind at the tab's head opens today's style guide and templates, through the host's own acts (Draft passes them)
+  const docMenu = content.kind === 'draft' ? { styleGuide: content.styleGuide, onPickStyleGuide: content.onPickStyleGuide, templates: content.templates } : undefined;
+  // FINALIZE (INK): while the publishing view is open, PARTS only orders and ticks what goes out
+  if (frontTab === 'parts' && frontEntry) return <div className="wz-sliver-body">{frontPublishing ? <PublishParts entry={frontEntry} /> : <PartsList entry={frontEntry} stage={partsStage} host={frontHost} docMenu={docMenu} />}</div>;
 
   return (
     <div className="wz-sliver-body">
@@ -640,7 +652,16 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
           (TypewriterToggle's own aria-label, WritingIncentives.tsx,
           unchanged) even though no visible text remains anywhere. */}
 
-      {content.kind === 'draft' && content.format && allowed('format') && (
+      {content.kind === 'draft' && content.format && allowed('format') && (() => {
+        // H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21]
+        const headingControls = (<>
+          <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
+          {content.format.headingLevel ? (<>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
+            <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
+          </>) : null}
+        </>);
+        return (
         <div className="wz-sliver-section">
           <div className="wz-sliver-h">{t('railFormat')}</div>
           {/* PHASE 1 (S4) - a native disabled fieldset: every button inside (the bullet menu's too) is unusable and announced as unavailable, with
@@ -662,13 +683,23 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
                 has learned. The glyph wears its own mark (<s>) exactly as B/I/U
                 wear theirs — the control demonstrates itself. */}
             <button type="button" className="mode-tbtn" data-on={content.format.strikeOn ? 'true' : 'false'} aria-pressed={!!content.format.strikeOn} title={t('stylingStrike')} onClick={() => content.format!.onFormat('strike')}><s>S</s></button>
-            {/* H lights on a heading line and toggles it; + and - step between the six levels; they show only on a heading line [Sliver §21] */}
-            <button type="button" className="mode-tbtn" data-on={content.format.headingLevel ? 'true' : 'false'} aria-pressed={!!content.format.headingLevel} title={t('draftHeading')} onClick={() => content.format!.onFormat('heading')}>H</button>
-            {content.format.headingLevel ? (<>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingUp')} aria-label={t('draftHeadingUp')} onClick={() => content.format!.onFormat('heading-up')}>+</button>
-              <button type="button" className="mode-tbtn" title={t('draftHeadingDown')} aria-label={t('draftHeadingDown')} onClick={() => content.format!.onFormat('heading-down')}>&minus;</button>
-            </>) : null}
+            {/* SUPERSCRIPT AND SUBSCRIPT (reorg-plan-v2, INK queue item 2): two more in the styling row, only in the reorg's Front menu; stored as ^sup^ and ~sub~ in the words (store/markRuns.ts) */}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sup" data-on={content.format.supOn ? 'true' : 'false'} aria-pressed={!!content.format.supOn} title={t('reorgStyleSup')} aria-label={t('reorgStyleSup')} onClick={() => content.format!.onFormat('sup')}>x<sup>2</sup></button>}
+            {textFolds && <button type="button" className="mode-tbtn" data-style-pick="sub" data-on={content.format.subOn ? 'true' : 'false'} aria-pressed={!!content.format.subOn} title={t('reorgStyleSub')} aria-label={t('reorgStyleSub')} onClick={() => content.format!.onFormat('sub')}>x<sub>2</sub></button>}
+            {!textFolds && headingControls}
           </div>
+          {/* THE TEAM B RESTYLE (slice 5): behind ?reorg=1 the heading and the paragraph rows fold under "Paragraph"; off the switch they stand as today */}
+          <TextFold k="paragraph" on={textFolds} label={t('reorgTextParagraph')}>
+          {/* THE P / H1 / H2 / H3 PICKER (reorg-plan-v2, INK queue item 1; the stage menus: "a small Paragraph picker, quiet by default, for writers exporting to Substack or WordPress"): it SETS the level of every line the selection touches (store/draftFormat.ts) */}
+          {textFolds && (
+            <div className="wz-sliver-format reorg-para-picker" role="group" aria-label={t('reorgParaPicker')} data-para-picker onMouseDown={e => e.preventDefault()}>
+              {([['para', 'P', 'reorgParaP', 0], ['h1', 'H1', 'reorgParaH1', 1], ['h2', 'H2', 'reorgParaH2', 2], ['h3', 'H3', 'reorgParaH3', 3]] as const).map(([act, glyph, word, level]) => {
+                const on = (content.format!.headingLevel ?? 0) === level;
+                return <button key={act} type="button" className="mode-tbtn" data-para-pick={act} data-on={on ? 'true' : 'false'} aria-pressed={on} title={t(word)} aria-label={t(word)} onClick={() => content.format!.onFormat(act)}>{glyph}</button>;
+              })}
+            </div>
+          )}
+          {textFolds && <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>{headingControls}</div>}
           {/* lists and quotes ride the existing `- ` and `> ` conventions; indent and alignment are line-prefix directives (store/draftFormat.ts documents why they are not metadata) [Sliver §22] */}
           <div className="wz-sliver-format" onMouseDown={e => e.preventDefault()}>
             <BulletControl onFormat={content.format!.onFormat} t={t} />
@@ -683,9 +714,21 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
             <button type="button" className="mode-tbtn" data-format-glyph="align-center" title={t('draftAlignCenter')} aria-label={t('draftAlignCenter')} onClick={() => content.format!.onFormat('align-center')}><FormatMark kind="center" /></button>
             <button type="button" className="mode-tbtn" data-format-glyph="align-right" title={t('draftAlignRight')} aria-label={t('draftAlignRight')} onClick={() => content.format!.onFormat('align-right')}><FormatMark kind="right" /></button>
           </div>
+          </TextFold>
+          {textFolds && (
+            <TextFold k="more" on label={t('reorgTextMore')}>
+              {/* FOOTNOTE AND ENDNOTE (reorg-plan-v2, INK queue item 3): a [^1] marker after the caret's words and an empty note line at the Part's end; stored as plain text (reorg/footnotes.ts) */}
+              <div className="wz-sliver-format reorg-text-notes" onMouseDown={e => e.preventDefault()}>
+                <button type="button" className="mode-tbtn" data-note-pick="footnote" title={t('reorgNoteFootnote')} aria-label={t('reorgNoteFootnote')} onClick={() => content.format!.onFormat('footnote')}>{t('reorgNoteFootnote')}</button>
+                <button type="button" className="mode-tbtn" data-note-pick="endnote" title={t('reorgNoteEndnote')} aria-label={t('reorgNoteEndnote')} onClick={() => content.format!.onFormat('endnote')}>{t('reorgNoteEndnote')}</button>
+              </div>
+              <TextFold k="symbols" on label={t('reorgTextSymbols')}><SymbolPicker /></TextFold>
+            </TextFold>
+          )}
           </fieldset>
         </div>
-      )}
+        );
+      })()}
 
       {/* Structure is the tab's last zone before the foot; the `-zone` suffix is load-bearing: `wz-sliver-structure` is the retired tablist's class, whose absence a harness reads [Sliver §24] */}
       {/* ACTIONS sits between Format and Templates [Sliver §25] */}
@@ -800,6 +843,13 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry }: { content:
             </button>
           )}
           {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
+        </div>
+      )}
+      {/* FIND (stage menus T3, Nick's word; Fable, Nov 21: "opens YOUR Find & Replace in this Doc (no second finder)"): in BUILD and EDIT only, above Page setup.
+          It opens the one search the top rail opens (the Back menu as the search menu), on This Doc even when the search is already open on another scope. */}
+      {frontTab === 'text' && frontEntry && (content.kind === 'draft' || content.kind === 'revise') && (
+        <div className="wz-sliver-section wz-front-find-row">
+          <button type="button" className="wz-sliver-item wz-sliver-item-btn wz-front-find" data-front-find="" onClick={() => { openSearch('bar'); setSearchReach('doc'); }}>{t('reorgFrontFind')}</button>
         </div>
       )}
       {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}

@@ -18,8 +18,14 @@ import { onRailReset, PREFS_LOCAL_KEY } from './railSavedKey';
 //     this same key in this same shape, so a copy made then reads unchanged);
 //   - sign-out clears the copy (railSavedKey.ts's hook), so the next account never sees this one's preferences.
 //
-// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on. OUTSIDE MACHINA (the
-// switch-over, Nov 20): it writes none and calls no server either (persist, setPref and syncPrefs start on reorgInMachina).
+// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on.
+// SUPERSEDED for ONE fact (Fable, Nov 19, 11:20 pm: "The room choice (Automatic / Day / Night) is SAVED TO THE ACCOUNT, for Machina AND Arbor ... Store it as a `room`
+// fact in users.prefs"): the room is not a reorg feature, so it is SWITCHLESS - saved, kept on the device and synced whatever the switch (store/roomPref.ts is its
+// bridge to <html data-room>). With the switch OFF: a reorg fact is never set and never kept on the device (only the switchless facts are written to the local copy,
+// beside whatever a switch-on session left there); the module reads its local copy and runs ONE round with the account per sign-in (the room another device chose),
+// plus a round after each of her own acts. With the switch ON, everything is as it was.
+// THE SWITCH-OVER (Nov 20; Fable, Nov 21, 9:40 pm): the switch is on by default, so "the switch" here means the reorg ON FOR THE THEME SHE IS IN (reorgInMachina:
+// Machina by default, Arbor and Flux only when asked by ?reorg=1 and in the table): outside it a reorg fact is neither kept nor synced, as with the switch off.
 
 export interface PrefFact { at: string; [field: string]: unknown }
 export type PrefsRecord = Record<string, PrefFact>;
@@ -28,6 +34,9 @@ export const PREFS_KEY = PREFS_LOCAL_KEY;
 const ROUND_AFTER_ACT_MS = 1000;
 const CAS_TRIES = 3;
 const FACT_RE = /^[a-z][A-Za-z0-9]{0,31}$/;
+/** The facts saved whatever the reorg's switch (Fable, Nov 19, 11:20 pm: the room; Nov 20, 12:15 pm: the session's writing settings; 5:15 pm: the writing goal): account data in every theme. */
+export const SWITCHLESS: ReadonlySet<string> = new Set(['room']).add('writing').add('goal');
+const allowed = (name: string): boolean => reorgInMachina() || SWITCHLESS.has(name);
 
 // ---- the merge (pure) ---------------------------------------------------------------------------------------------------
 
@@ -51,6 +60,31 @@ function normalize(v: unknown): PrefsRecord | null {
   return out;
 }
 
+// A fact that is MANY small preferences at once (the writing settings: a dozen switches in one fact) may carry `fieldAt`, a stamp per field: two devices that each changed a
+// DIFFERENT field then both keep their change, and the later stamp wins only per field. Without `fieldAt` on either side the merge is exactly the whole-fact rule above (every
+// older fact, the room, the split). A field with no stamp of its own counts as stamped by its fact's `at`. Still commutative and idempotent: the tie of a field settles by value.
+function fieldStamps(f: PrefFact): Record<string, string> {
+  const out: Record<string, string> = {};
+  const fa = isMap(f.fieldAt) ? f.fieldAt : {};
+  for (const k of Object.keys(f)) if (k !== 'at' && k !== 'fieldAt') out[k] = isStamp(fa[k]) ? (fa[k] as string) : f.at;
+  return out;
+}
+function mergeFields(x: PrefFact, y: PrefFact): PrefFact {
+  const sx = fieldStamps(x);
+  const sy = fieldStamps(y);
+  const out: PrefFact = { at: y.at > x.at ? y.at : x.at };
+  const stamps: Record<string, string> = {};
+  for (const k of new Set([...Object.keys(sx), ...Object.keys(sy)])) {
+    const inX = k in sx;
+    const inY = k in sy;
+    const useY = !inX || (inY && (sy[k] > sx[k] || (sy[k] === sx[k] && canon(y[k]) > canon(x[k]))));
+    out[k] = useY ? y[k] : x[k];
+    stamps[k] = useY ? sy[k] : sx[k];
+  }
+  out.fieldAt = stamps;
+  return out;
+}
+
 export function mergePrefs(aIn: unknown, bIn: unknown): PrefsRecord {
   const a = normalize(aIn);
   const b = normalize(bIn);
@@ -62,6 +96,7 @@ export function mergePrefs(aIn: unknown, bIn: unknown): PrefsRecord {
     const y = b[k];
     if (!x) out[k] = y;
     else if (!y) out[k] = x;
+    else if (isMap(x.fieldAt) || isMap(y.fieldAt)) out[k] = mergeFields(x, y);
     else if (x.at !== y.at) out[k] = y.at > x.at ? y : x;
     else out[k] = canon(y) > canon(x) ? y : x;   // equal stamps: the larger value, arbitrary but symmetric
   }
@@ -82,6 +117,9 @@ function readLocal(): PrefsRecord {
 let prefs: PrefsRecord = emptyPrefs();
 let signedIn = false;
 let version = 0;
+// true once a round has HEARD the account (a GET that answered): until then a fact missing here may only be one that has not arrived yet, so a bridge must not adopt a device's own values as the account's
+let heard = false;
+export function prefsHeardServer(): boolean { return heard; }
 const listeners = new Set<() => void>();
 
 function notify(): void {
@@ -92,13 +130,14 @@ function notify(): void {
 // read, merge, write: another window of this device may have written since (its acts are kept, never written over). Written ONLY when what it holds changed: a record she
 // never touched leaves storage exactly as it was (no key at all).
 function persist(): void {
-  if (!reorgInMachina()) return;
   const stored = readLocal();
   prefs = mergePrefs(prefs, stored);
+  // the switch off keeps only the switchless facts it holds, beside whatever the copy already had (a reorg fact is never added, and one a switch-on session left is kept)
+  const mine: PrefsRecord = reorgInMachina() ? prefs : { ...stored, ...Object.fromEntries(Object.entries(prefs).filter(([k]) => SWITCHLESS.has(k))) };
   try {
     const had = localStorage.getItem(PREFS_KEY);
-    if (had === null ? Object.keys(prefs).length === 0 : canon(stored) === canon(prefs)) return;
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    if (had === null ? Object.keys(mine).length === 0 : canon(stored) === canon(mine)) return;
+    localStorage.setItem(PREFS_KEY, JSON.stringify(mine));
   } catch { /* storage full or blocked: memory still holds it, the server gets it */ }
 }
 
@@ -121,7 +160,7 @@ function stampAfter(prev: string | undefined): string {
 
 /** Her act: this preference becomes `value` (its fields, without a stamp), stamped now. A fact of the same value is not an act: nothing is written. */
 export function setPref(name: string, value: Record<string, unknown>): void {
-  if (!reorgInMachina() || !FACT_RE.test(name)) return;
+  if (!allowed(name) || !FACT_RE.test(name)) return;
   const was = prefs[name];
   if (was) { const { at: _at, ...fields } = was; void _at; if (canon(fields) === canon(value)) return; }
   prefs = { ...prefs, [name]: { ...value, at: stampAfter(was?.at) } };
@@ -146,7 +185,6 @@ function scheduleRound(ms: number): void {
 
 /** One round with the server. Offline, signed out, or a server without the route: the local copy governs and the next round merges. */
 export async function syncPrefs(): Promise<void> {
-  if (!reorgInMachina()) return;
   if (inRound) { again = true; return; }
   inRound = true;
   const gen = generation;
@@ -160,6 +198,7 @@ export async function syncPrefs(): Promise<void> {
       const remote = ((await g.json()) as { prefs?: unknown })?.prefs ?? null;
       live();
       prefs = mergePrefs(prefs, remote);
+      heard = true;
       persist();
       notify();
       if (remote !== null && canon(prefs) === canon(mergePrefs(remote, null))) return;   // the server already holds every fact
@@ -185,9 +224,10 @@ export async function syncPrefs(): Promise<void> {
   }
 }
 
-// ---- wiring (switch on only) --------------------------------------------------------------------------------------------
+// ---- wiring (the seam switch on only; the rest for the switchless facts too) --------------------------------------------------------------------------------------------
 
-if (REORG) {
+let roundsThisSignIn = 0;
+{
   prefs = readLocal();
   // sign-out takes the preferences with it (railSavedKey.clearRailLocal runs every hook): the next account never sees this one's
   onRailReset(() => {
@@ -196,14 +236,19 @@ if (REORG) {
     again = false;
     prefs = emptyPrefs();
     signedIn = false;
+    heard = false;
+    roundsThisSignIn = 0;
     try { localStorage.removeItem(PREFS_KEY); } catch { /* storage blocked */ }
     if (roundTimer) { clearTimeout(roundTimer); roundTimer = null; }
     notify();
   });
-  // every finished sync is a signed-in, reachable server: run a round after it
+  // every finished sync is a signed-in, reachable server: run a round after it (the switch off: the first one of each sign-in only - the room another device chose
+  // arrives with the next sign-in or reload, and her own acts still go up a second later)
   subscribeSyncStatus((s) => {
     if (s !== 'synced') return;
     signedIn = true;
+    if (!reorgInMachina() && roundsThisSignIn > 0) return;
+    roundsThisSignIn += 1;
     scheduleRound(0);
   });
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -214,5 +259,5 @@ if (REORG) {
       notify();
     });
   }
-  if (typeof window !== 'undefined') (window as unknown as { wrizoPrefs?: unknown }).wrizoPrefs = { get: getSavedPrefs, pref: getPref, set: setPref, sync: syncPrefs };
+  if (REORG && typeof window !== 'undefined') (window as unknown as { wrizoPrefs?: unknown }).wrizoPrefs = { get: getSavedPrefs, pref: getPref, set: setPref, sync: syncPrefs };
 }

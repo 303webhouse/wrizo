@@ -2,6 +2,7 @@ import type { Box } from '../../types';
 import { boardStructure, flattenLane, isCardBox, withParent, withSeqOrder, type OutlineNode } from '../../store/boardStructure';
 import { liveBoxes } from '../../store/boxTombstones';
 import { outlineNumber, outlineTitleEdit, splitOutlineText } from '../../store/outlineRow';
+import { withoutFontMarks } from '../../store/markRuns';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina; reorg-plan.md section 9): "an ordered outline of the assets marked as
 // Plan. Rows can be dragged, indented and renamed." The Plan IS the Page's own board's ordered view (Machina calls the Outline view "Plan"), so it
@@ -18,6 +19,10 @@ export interface PlanRow {
   title: string;
   /** Its text after the first line, read-only beside the title (the Outline row's own rule). */
   body: string;
+  /** A preset's grey prompt for this row (Box.planHint), or ''. */
+  hint: string;
+  /** This row's id and the ids of every row shown below it (its subsections): the Plan hides a prompt once a Part under the heading has words. */
+  underIds: string[];
   isPin: boolean;
   isInk: boolean;
   canUp: boolean;
@@ -25,6 +30,9 @@ export interface PlanRow {
   canIndent: boolean;
   canOutdent: boolean;
 }
+
+/** A page's first line, as a Plan row names a pinned page (the Plan tab and the file that carries the Plan read the same name). */
+export const titleOfText = (text: string | undefined): string => (withoutFontMarks(text ?? '').trim().split('\n')[0] ?? '').trim().slice(0, 60);
 
 const stampNow = (): string => new Date().toISOString();
 
@@ -41,11 +49,14 @@ export function planRows(boxes: readonly Box[] | undefined | null, hidden: Reado
       if (!b) return;
       const here = [...path, i];
       const { title, body } = splitOutlineText(b.kind === 'text' ? b.text : b.kind === 'page-pin' ? pinTitle(b) : '');
-      out.push({
-        boxId: b.id, number: outlineNumber(here), depth, title, body, isPin: b.kind === 'page-pin', isInk: b.kind === 'ink',
+      const row: PlanRow = {
+        boxId: b.id, number: outlineNumber(here), depth, title, body, hint: b.planHint ?? '', underIds: [b.id], isPin: b.kind === 'page-pin', isInk: b.kind === 'ink',
         canUp: i > 0, canDown: i < shown.length - 1, canIndent: i > 0, canOutdent: depth > 0,
-      });
+      };
+      out.push(row);
+      const from = out.length;
       walk(n.children, here, depth + 1);
+      for (let k = from; k < out.length; k++) row.underIds.push(out[k].boxId);
     });
   };
   for (const lane of boardStructure(live).lanes) walk(lane.items, [], 0);

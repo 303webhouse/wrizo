@@ -9,6 +9,8 @@ import { Seg } from './ModeStage';
 import { PageToneRow } from './settings/rows';
 import { isArbor2 } from '../arbor2/flag';
 import { ArborThemeRoomRow } from '../arbor2/themeRoom';
+import { isMachina2 } from '../machina2/flag';
+import { MachinaThemeRoomRow } from '../machina2/themeRoom';
 
 // the theme picker's body: one card per BUILT theme (absent, never greyed); card art is keyed by the card's own theme, so it shows that theme's look from inside another [ThemePicker §1]
 interface ThemeCardDef {
@@ -119,6 +121,8 @@ export function ThemePicker() {
         <PageToneRow page={prefs.page} />
         {/* ARBOR v2 MOCKUP r17 (Fable, Nov 2): the room's control right beside Page - Nick couldn't find "light mode" */}
         {isArbor2() && current === 'plateau' && <ArborThemeRoomRow />}
+        {/* MACHINA'S LOOK (r8, Fable Nov 2; ships Nov 19): the room's control right beside Page - Nick couldn't find "light mode" */}
+        {isMachina2() && current === 'machina' && <MachinaThemeRoomRow />}
       </div>
       <div className="wz-theme-cards">
         {THEME_CARDS.map((card) => {
