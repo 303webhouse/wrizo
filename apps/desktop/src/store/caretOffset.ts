@@ -109,7 +109,7 @@ export function setSelectionOffsets(el: HTMLElement, start: number, end: number)
 // Place the caret at a linear offset within `el`, clamping to the end if the
 // target exceeds the current content (e.g. the page changed elsewhere since
 // the offset was captured — never throw, just land somewhere reasonable).
-export function setCaretOffset(el: HTMLElement, target: number): void {
+export function setCaretOffset(el: HTMLElement, target: number, opts?: { preventScroll?: boolean }): void {
   const resolved = resolveOffset(el, target);
   const sel = window.getSelection();
   if (!sel) return;
@@ -122,5 +122,6 @@ export function setCaretOffset(el: HTMLElement, target: number): void {
   range.collapse(!!resolved);
   sel.removeAllRanges();
   sel.addRange(range);
-  el.focus();
+  // preventScroll: a page that OPENS with its caret at the end must not be scrolled by the browser's own caret reveal (store/caretInView.ts openCaret rests it on a whole line instead)
+  if (opts && opts.preventScroll) el.focus({ preventScroll: true }); else el.focus();
 }
