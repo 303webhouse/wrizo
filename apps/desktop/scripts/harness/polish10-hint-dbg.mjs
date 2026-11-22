@@ -21,6 +21,12 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const waitSoft = async (app, expr, opts) => { try { await app.waitFor(expr, opts); return true; } catch { return false; } };
+const TRACER = `(() => { if (window.__trc) return true; window.__trc = [];
+  const L = (k, e) => { const st = (new Error().stack || '').split(String.fromCharCode(10)).slice(2, 6).map((x) => x.trim().slice(0, 90)).join(' < '); window.__trc.push([Math.round(performance.now()), k, e && e.className ? String(e.className).slice(0, 24) : '', st]); };
+  const f = HTMLElement.prototype.focus; HTMLElement.prototype.focus = function (o) { L('focus' + (o && o.preventScroll ? '-ps' : ''), this); return f.apply(this, arguments); };
+  ['scrollTo', 'scrollBy', 'scrollIntoView'].forEach((m) => { const g = Element.prototype[m]; Element.prototype[m] = function () { L(m, this); return g.apply(this, arguments); }; });
+  document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('mode-page')) window.__trc.push([Math.round(performance.now()), 'PAGE-SCROLL', String(t.scrollTop), '']); }, true);
+  return true; })()`;
 const J = (v) => JSON.stringify(v);
 
 const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }, { id: 'machina', name: 'Machina' }];
@@ -153,10 +159,7 @@ await withHarness(async (app) => {
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       await app.reload();
       await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
-      await app.evalJs("(() => { if (window.__trc) return true; window.__trc = []; const L = (k, e) => { const st = (new Error().stack || '').split('\n').slice(2, 6).map((x) => x.replace(/^\s*at /, '').replace(/https?:[^ )]*\//, '')).join(' < '); window.__trc.push([Math.round(performance.now()), k, e && e.className ? String(e.className).slice(0, 24) : '', st]); };"
-        + " const f = HTMLElement.prototype.focus; HTMLElement.prototype.focus = function (o) { L('focus' + (o && o.preventScroll ? '-ps' : ''), this); return f.apply(this, arguments); };"
-        + " ['scrollTo', 'scrollBy', 'scrollIntoView'].forEach((m) => { const g = Element.prototype[m]; Element.prototype[m] = function () { L(m, this); return g.apply(this, arguments); }; });"
-        + " document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('mode-page')) window.__trc.push([Math.round(performance.now()), 'PAGE-SCROLL', String(t.scrollTop), '']); }, true); return true; })()");
+      await app.evalJs(TRACER);
       if (!(await openPage(app, id))) { ok(`${tag} fixture: the Free Write page opened`, false, ''); continue; }
       const viewNow = await setView(app, zoom);
       const pre = {};

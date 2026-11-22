@@ -97,7 +97,7 @@ function restOnce(el: HTMLElement): void {
 }
 
 /** Rest the page, and keep it resting on a whole line while a long page lays out (its rows are laid out lazily, so its scroll height changes in the moments after it opens, and a rest chosen from the first measure ends mid-line: flux3-s4b-l4 CLEAR at 1920).
- *  The rule is run again on each change of the page's size for a short while, and stops for good at her first act (a key, the wheel, a press, a touch). */
+ *  The rule is run again on each change of the page's or its scroller's size for a few seconds, and stops for good at her first act (a key, the wheel, a press, a touch). */
 export function openCaret(el: HTMLElement): void {
   restOnce(el);
   try {
@@ -106,7 +106,9 @@ export function openCaret(el: HTMLElement): void {
     const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
     const ro = new ResizeObserver(() => { if (!done && el.isConnected) restOnce(el); });
     ro.observe(el);
-    const timer = window.setTimeout(stop, 1500);
+    const sc = scrollerOf(el);
+    if (sc && sc !== el) ro.observe(sc);   // a header that draws after the page opens moves the scroller's own edge
+    const timer = window.setTimeout(stop, 3000);
     ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.addEventListener(t, stop, true));
   } catch { /* no observer: the page rests where the first measure put it */ }
 }
