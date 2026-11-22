@@ -88,15 +88,21 @@ await withHarness(async (app) => {
   const measure = async (theme, search, { mutate = false } = {}) => {
     await go(search, '/');
     await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 20000 });
-    await app.evalJs(`window.wrizoTheme.set(${JSON.stringify(theme)}); null`);
-    await sleep(300);
-    await go(search, '/page/kl-1');
+    await app.evalJs(`window.wrizoTheme.set(${JSON.stringify(theme)}); window.wrizoFlushNow(); null`);
+    await sleep(500);
+    // a REAL reload in the theme asked: a hash-only navigation keeps the page (and the Arbor mount, which the Desk's default theme loaded: its ~800-element shade layer then sat in every theme's measurement - the first read of this file counted it)
+    await app.reload();
+    await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam after the reload', timeout: 20000 });
+    await app.evalJs("location.hash = '#/page/kl-1'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 20000, label: `page reopened (${theme})` });
     await app.waitFor("!document.querySelector('.wz-splash')", { timeout: 25000, label: `splash gone (${theme})` });
     await sleep(1800);
     if (mutate) { await app.evalJs(OLD_WRITE); await sleep(200); }
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
     const before = await app.evalJs(FADE_STATE);
+    const arborLeft = await app.evalJs("document.querySelectorAll('.arbor2-pagesh, .arbor2-pergola, .arbor2-live').length");
+    if (arborLeft) console.log(`KL-WARN ${theme}: ${arborLeft} Arbor shade elements are in the page`);
+    before.arborLeft = arborLeft;
     const tr = await traceKey(app, 'a');
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
@@ -112,6 +118,7 @@ await withHarness(async (app) => {
   for (const [theme] of THEMES) {
     const R = runs[theme];
     const flipOk = R.every((m) => m.tr && m.tr.keyEls != null && m.tr.keyEls <= SHARE * m.before.docEls);
+    ok(`KL-PREMISE-${theme} the page in ${theme} carries no Arbor shade layer (the Arbor mount is not loaded: a real reload in the theme)`, R.every((m) => m.before.arborLeft === 0), JSON.stringify(R.map((m) => m.before.arborLeft)));
     ok(`KL-FLIP-${theme} the largest single restyle from the first key to ${WINDOW_US / 1000} ms after touches at most ${SHARE * 100}% of the document's elements, on all ${REOPENS} reopens (printed: ${R.map((m) => `${m.tr && m.tr.keyEls}/${m.before.docEls}`).join(', ')})`,
       flipOk, JSON.stringify(R.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before.docEls, onHtml: m.after.onHtml }))));
     ok(`KL-TIMING-${theme} the dissolve-class elements read a --fade-dur after the first key, and no --fade-dur is written on <html> (printed: html '${R[0].after.onHtml}', ${R[0].after.carriers} carriers read ${JSON.stringify(R[0].after.reads)})`,
@@ -126,7 +133,7 @@ await withHarness(async (app) => {
 }, { label: 'keyflip-live' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = THEMES.length * 2 + 1;
+const EXPECTED = THEMES.length * 3 + 1;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nKEYFLIP-LIVE VERIFY: PASS (${checks.length} checks)`
