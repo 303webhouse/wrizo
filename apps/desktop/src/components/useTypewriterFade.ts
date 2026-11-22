@@ -94,9 +94,6 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // true within a mount; `prevDocCaretBottom` is the last-measured caret
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
-    // #53 (Fable, Nov 22): has the writer typed since this mount? A page that merely OPENS with its caret far below the hold (a long page, the caret at its end) is put on its line at once; the one-line-at-a-time walk is for a writer
-    // typing past the line. Without it a 60-line page walked down to its caret for ~5 s after opening, ~90 scroll events and ~135 frame requests a second.
-    let typed = false;
     let prevDocCaretBottom: number | null = null;
     // diagnostics in memory only: an array the harness puts on window before mount; absent in every real session, so nothing is written [useTypewriterFade §4]
     const trace = (typeof window !== 'undefined' ? (window as unknown as { __wzTwTrace?: unknown[] }).__wzTwTrace : undefined);
@@ -143,6 +140,15 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     };
     let userScrolled = false;
     const onUserScroll = () => { userScrolled = true; };
+    // #113 (ARBOR; Fable, Nov 19, 8:10 pm, RULED): OPENING lands at the writing line AT ONCE (a cut); the glide stays only for the FOLLOW while typing. Opening a long page put the
+    // caret's line thousands of px below the hold, and that backlog was paid by the staircase meant for typing (two lines per 160 ms glide, ~340 px/s): at 20k words it was still moving 25 s
+    // later, and a writer who scrolled away to look had the page drift back down under her. So until her first act - a key, a press (a pen stroke's), the wheel, a touch - the writing line is
+    // LANDED at the hold whenever it stands below it, in ONE step: the first engage, any late layout that follows it (a font arriving, the page finishing), and a stray focus() that scrolled a tall
+    // editable to its top. Her first act ends the opening for good; from then on every advance is the one-line glide it always was (a pen stroke committed inside an opening that lasted two
+    // seconds had its own page cut by 25 px under it: ink-foot K2 in the zoom, hence the act and not a clock).
+    let typedSinceMount = false;
+    const onTyped = () => { typedSinceMount = true; };   // (named for the first use; any act of hers ends the opening: see the listeners below)
+    const opening = () => !typedSinceMount;
     // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
     // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
     // to line 1) is exactly the drop to 0 that takenOver() excuses as the editor's re-render clamp - the glide would carry on and drag the writer back down.
@@ -302,6 +308,18 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         ? (holdEl.getBoundingClientRect().top + holdEl.getBoundingClientRect().height * zoom!.anchor - box.top) / sc + lineHeight()
         : box.clientHeight * holdBandValue;
 
+      if (opening() && within - thresholdPx > 1) {
+        // #113: the opening landing. The line is below the hold: land it AT the hold now, never past what the box can scroll to, and owe nothing (what the box cannot scroll can never be paid).
+        stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
+        const maxTopCut = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+        const toCut = Math.min(box.scrollTop + (within - thresholdPx), maxTopCut);
+        if (trace) trace.push({ d: 'cut', from: Math.round(box.scrollTop), to: Math.round(toCut), over: Math.round(within - thresholdPx) });
+        if (toCut > box.scrollTop) box.setScrollTop(toCut, false);
+        engaged = true;
+        prevDocCaretBottom = docCaretBottom;
+        setScrolled();
+        return;
+      }
       if (!engaged) {
         if (within - thresholdPx <= 1) { if (trace) trace.push({ d: 'fresh', within: Math.round(within), threshold: Math.round(thresholdPx) }); setScrolled(); return; } // fresh/short content: don't scroll, don't fade (C2)
         // First engage (S1 a: "must not lurch"): owe exactly the same delta
@@ -311,15 +329,6 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         engaged = true;
         if (trace) trace.push({ d: 'engage', within: Math.round(within), threshold: Math.round(thresholdPx), top: Math.round(box.scrollTop) });
         prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
-        if (!typed) {
-          // the page OPENED here (nothing typed yet): pay the whole excess in one placement, as far as the box can scroll (the rest stays owed to nothing: the box cannot go further)
-          const maxTop0 = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
-          box.setScrollTop(Math.min(box.scrollTop + (within - thresholdPx), maxTop0), false);
-          prevDocCaretBottom = docCaretBottom;
-          if (trace) trace.push({ d: 'place', at: Math.round(box.scrollTop), to: Math.round(Math.min(box.scrollTop + (within - thresholdPx), maxTop0)) });
-          setScrolled();
-          return;
-        }
       }
       if (engaged && !reduce && glideTarget != null && glideFrom != null && performance.now() - glideAt >= GLIDE_MS
           && box.scrollTop >= glideFrom - 1 && box.scrollTop < glideTarget - 1) {
@@ -398,24 +407,41 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const notMarks = (r: MutationRecord) => !((r.target instanceof Element ? r.target : r.target.parentElement)?.closest('.wz-pb-marks'));
     const mo = new MutationObserver((recs) => { if (recs.some(notMarks)) schedule(); });
     mo.observe(container, { childList: true, subtree: true, characterData: true });
-    const onInput = () => { typed = true; schedule(); };
-    container.addEventListener('input', onInput);
+    container.addEventListener('input', schedule);
+    container.addEventListener('beforeinput', onTyped, true);
+    container.addEventListener('focusin', schedule);   // a stray focus() scrolls a tall editable to its top: while she has done nothing yet, the next frame lands the writing line again
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
+    for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.addEventListener(ev, onTyped, { passive: true, capture: true });
     scrollListenTarget.addEventListener('keydown', onUserKey as EventListener, { passive: true });
     window.addEventListener('resize', measure);
+    // #113: the measures (--tw-start-offset, --tw-end-pad, the band's line unit) are read from boxes that are still SETTLING when the page opens - the zoom's transform runs for a
+    // moment - and until now they were only refreshed because the opening staircase ran band() (which measures) for seconds afterwards. With the opening landing at once, band() runs once or
+    // twice, so the measures are taken again when the boxes they read settle: a resize of the scroller or of the hold box, and the end of the page's own transform - and ONLY until her first
+    // act: after it the measures are taken where they always were (band), because a measure moves the padding the text sits in, and a hint appearing must not move her line (polish10-hint H1).
+    // while she has done nothing yet, a settled box also LANDS the writing line again (the hold it was landed at may be a hold that has since moved: a drawer shut, the zoom arrived)
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { if (opening()) { measure(); schedule(); } }) : null;
+    if (ro) { ro.observe(container); if (zoom?.holdRef.current) ro.observe(zoom.holdRef.current); }
+    const pageEl = container.closest('.mode-page');
+    const onPageTransition = (e: Event) => { if ((e as TransitionEvent).propertyName === 'transform' && opening()) { measure(); schedule(); } };
+    pageEl?.addEventListener('transitionend', onPageTransition);
     measure();
     setScrolled();
     schedule();
     return () => {
       if (trace) trace.push({ d: 'unmount', at: Math.round(performance.now()) });
       mo.disconnect();
-      container.removeEventListener('input', onInput);
+      container.removeEventListener('input', schedule);
+      container.removeEventListener('beforeinput', onTyped, true);
+      container.removeEventListener('focusin', schedule);
+      for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.removeEventListener(ev, onTyped, true);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
       window.removeEventListener('resize', measure);
+      ro?.disconnect();
+      pageEl?.removeEventListener('transitionend', onPageTransition);
       cancelAnimationFrame(raf);
       stopGlide();
       if (verifyTimer) clearTimeout(verifyTimer);
