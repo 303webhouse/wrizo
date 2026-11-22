@@ -22,7 +22,7 @@ const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
 const link = (id, boxId, toEntry) => ({ id, aEntryId: 'ab-own', aBoxId: boxId, bEntryId: toEntry, createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' });
-const TABS = "(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); if (!row) return null; return [...row.querySelectorAll('.wz-drawer-tab')].map((b) => ({ id: b.id.replace('wz-tutor-tab-', ''), text: (b.textContent || '').trim(), on: b.getAttribute('data-on') === 'true', locked: b.getAttribute('data-locked') === 'true' })); })()";
+const TABS = "(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; if (all.length === 0) return null; return all.map((b) => ({ id: b.id.replace('wz-tutor-tab-', ''), text: (b.textContent || '').trim(), on: b.getAttribute('data-on') === 'true', locked: b.getAttribute('data-locked') === 'true' })); })()";
 const CS = (sel, props, pseudo) => `(() => { const e = document.querySelector(${q(sel)}); if (!e) return null; const c = getComputedStyle(e${pseudo ? ', ' + q(pseudo) : ''}); return ${q(props)}.reduce((o, p) => { o[p] = c.getPropertyValue(p); return o; }, {}); })()`;
 
 async function seed(app) {
@@ -90,7 +90,7 @@ await withHarness(async (app) => {
   await tab(app, 'plan');
   const spine = await app.evalJs("(() => { const root = document.querySelector('.wz-tutor-panel'); return { toSection: [...root.querySelectorAll('button')].some((b) => /^\\u2192 Section$/.test((b.textContent || '').trim())), openSection: [...root.querySelectorAll('button')].some((b) => /^Open Section$/.test((b.textContent || '').trim())) }; })()");
   await tab(app, 'tutor');
-  const ph = await app.evalJs("(() => { const i = document.querySelector('.wz-tutor-panel textarea, .wz-tutor-panel input[placeholder]'); return i ? (i.getAttribute('placeholder') || '') : null; })()");
+  const ph = await app.evalJs("(() => { const i = [...document.querySelectorAll('.wz-tutor-panel textarea, .wz-tutor-panel input[placeholder]')].find((x) => (x.getAttribute('placeholder') || '') !== 'Search'); return i ? (i.getAttribute('placeholder') || '') : null; })()");
   ok('AB4 Arbor\'s words show: "→ Section", "Open Section", "Grafts", "This Page"; the lens box asks "Ask about this Page…"', !!words && words.grafts && words.thisPage && !!spine && spine.toSection && spine.openSection && ph === 'Ask about this Page…', { words, spine, ph });
 
   await tab(app, 'plan'); await tab(app, 'links'); await tab(app, 'tutor');
@@ -116,7 +116,7 @@ await withHarness(async (app) => {
   await open(app, 'ab-1', { lift: 'plateau.back,plateau.top,plateau.uplink' });
   await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]')); await sleep(700);
   await drawer(app); await tab(app, 'tutor');
-  const pub = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); const ids = row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id.replace('wz-tutor-tab-', '')) : null; const bx = document.querySelector('.wz-tutor-panel [data-back-export]'); const body = document.querySelector('.wz-tutor-panel .wz-drawer-body'); return { ids, bx: !!bx, first: !!bx && !!body && body.contains(bx) && body.firstElementChild !== null }; })()");
+  const pub = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; const ids = all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null; const bx = document.querySelector('.wz-tutor-panel [data-back-export]'); const body = document.querySelector('.wz-tutor-panel .wz-drawer-body'); return { ids, bx: !!bx, first: !!bx && !!body && body.contains(bx) && body.firstElementChild !== null }; })()");
   ok('AB7 Publish: three tabs (no tab called Before you publish) and "Before you publish" stands at the head of TUTOR', !!pub && Array.isArray(pub.ids) && pub.ids.join(',') === 'plan,links,tutor' && pub.bx === true, pub);
 
   await open(app, 'ab-1', { lift: '' });
@@ -124,7 +124,7 @@ await withHarness(async (app) => {
   const off = await app.evalJs(TABS);
   await open(app, 'ab-1', { arbor2: false });
   await drawer(app);
-  const classic = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id.replace('wz-tutor-tab-', '')) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), arbor2: document.documentElement.hasAttribute('data-arbor2') }; })()");
+  const classic = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; return { tabs: all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), arbor2: document.documentElement.hasAttribute('data-arbor2') }; })()");
   ok('AB8 OFF: without the door Arbor\'s own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 even the door gives no Back menu',
     Array.isArray(off) && off.map((x) => x.id).join(',') === 'tutor,links,board' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
 });
