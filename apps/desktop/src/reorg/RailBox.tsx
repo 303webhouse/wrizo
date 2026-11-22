@@ -42,11 +42,16 @@ export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: 
   const swatches = useSwatches();
   const plain = !look.colour && swatches === ARBOR_SWATCHES;   // Arbor's uncoloured box: cream, walnut letters
   const colour = look.colour || (plain ? ARBOR_PLAIN_BOX : swatches[0]);
+  const ink = plain ? ARBOR_PLAIN_INK : letterInk(colour);
+  // ARBOR: the letters' ink is also their text FILL. Arbor's night dim (arbor-v2.css section 6.2) letters every dimmed hook in --text-hi with a `color`
+  // !important, which turned the cream box's walnut letters cream on cream (the frames on 2fc46347); the fill paints the letters and that rule does
+  // not reach it, so they keep their ink and only the dim's opacity applies. Machina draws as before.
+  const arborInk = swatches === ARBOR_SWATCHES ? { WebkitTextFillColor: ink } : {};
   if (look.picture) {
     return <span className={`wz-reorg-box wz-reorg-box--${size} wz-reorg-box--picture`} aria-hidden="true" data-box-picture="" style={{ backgroundImage: `url("${look.picture}")` }} />;
   }
   return (
-    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: plain ? ARBOR_PLAIN_INK : letterInk(colour) }}>
+    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: ink, ...arborInk }}>
       {look.letters !== undefined ? look.letters : lettersOf(name)}
     </span>
   );
