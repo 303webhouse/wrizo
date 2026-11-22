@@ -139,7 +139,10 @@ await withHarness(async (app) => {
   const pageOpen = await app.evalJs(PAGE);
   // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
   // ok('D2: SPRINT - the goal, what it counts, the timer, progress, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress']), d2);
-  ok('D2 [successor]: SPRINT - the goal, what it counts, the timer, progress, the tracker switch, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress', 'tracker']), d2);
+  // SUPERSEDED (the Arbor spec section 7, shared across themes; Fable, Nov 22, 1:40 am: "Use theme progress tracker · the goal · the timer · progress"): the
+  // tracker switch comes FIRST. The plain-tracker successor, verbatim:
+  // ok('D2 [successor]: SPRINT - the goal, what it counts, the timer, progress, the tracker switch, in that order', !!d2 && q(d2.rows) === q(['goal', 'counts', 'timer', 'progress', 'tracker']), d2);
+  ok('D2 [successor 2]: SPRINT - the tracker switch, the goal, what it counts, the timer, progress, in that order', !!d2 && q(d2.rows) === q(['tracker', 'goal', 'counts', 'timer', 'progress']), d2);
   ok('R1: the page\'s rect is the same with DOCS closed and with the Session open (1366)', !!pageShut && pageShut === pageOpen, { pageShut, pageOpen });
 
   // WRITES, on the SPRINT page (every row there)
@@ -177,12 +180,18 @@ await withHarness(async (app) => {
   const d3 = await session(app);
   // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
   // ok('D3: BUILD - the goal, the timer, progress', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress']), d3);
-  ok('D3 [successor]: BUILD - the goal, the timer, progress, the tracker switch', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress', 'tracker']), d3);
+  // SUPERSEDED (the Arbor spec section 7, shared across themes; Fable, Nov 22, 1:40 am: "Use theme progress tracker · the goal · the timer · progress"): the
+  // tracker switch comes FIRST. The plain-tracker successor, verbatim:
+  // ok('D3 [successor]: BUILD - the goal, the timer, progress, the tracker switch', !!d3 && q(d3.rows) === q(['goal', 'timer', 'progress', 'tracker']), d3);
+  ok('D3 [successor 2]: BUILD - the tracker switch, the goal, the timer, progress', !!d3 && q(d3.rows) === q(['tracker', 'goal', 'timer', 'progress']), d3);
   await open(app, 'ss-3');
   const d4 = await session(app);
   // SUPERSEDED (the plain Progress Tracker's switch (Nick, Nov 20, 3:57 pm; Fable 5:25 pm) is the session's last row wherever it shows progress). The original, verbatim:
   // ok('D4: EDIT - progress only', !!d4 && q(d4.rows) === q(['progress']), d4);
-  ok('D4 [successor]: EDIT - progress and the tracker switch', !!d4 && q(d4.rows) === q(['progress', 'tracker']), d4);
+  // SUPERSEDED (the Arbor spec section 7, shared across themes; Fable, Nov 22, 1:40 am: "Use theme progress tracker · the goal · the timer · progress"): the
+  // tracker switch comes FIRST. The plain-tracker successor, verbatim:
+  // ok('D4 [successor]: EDIT - progress and the tracker switch', !!d4 && q(d4.rows) === q(['progress', 'tracker']), d4);
+  ok('D4 [successor 2]: EDIT - the tracker switch, progress', !!d4 && q(d4.rows) === q(['tracker', 'progress']), d4);
 
   const chrome = fs.readFileSync(path.join(SRC, 'store', 'lexicon', 'canonical', 'chrome.ts'), 'utf8');
   const panel = fs.readFileSync(path.join(SRC, 'reorg', 'panels', 'DocsPanel.tsx'), 'utf8');
@@ -191,14 +200,28 @@ await withHarness(async (app) => {
   const declared = keys.map(([k, v]) => [k, new RegExp(`\\b${k}: '([^']*)'`).exec(chrome)?.[1] ?? null, v]);
   const used = keys.map(([k]) => panel.includes(`'${k}'`));
   const literal = /['">](Session|Goal|Counts|Timer|Progress|Lines)['"<]/.test(panel);
-  ok('W1: every word the Session draws is a lexicon key, and DocsPanel.tsx writes none of them itself',
-    declared.every(([, got, want]) => got === want) && used.every(Boolean) && !literal, { declared, used, literal });
+  // SUPERSEDED (the Arbor spec section 7: the Session is shared across themes, so it moves out of Machina's DocsPanel into reorg/session/SessionGroup.tsx). The original, verbatim:
+  // ok('W1: every word the Session draws is a lexicon key, and DocsPanel.tsx writes none of them itself',
+  //   declared.every(([, got, want]) => got === want) && used.every(Boolean) && !literal, { declared, used, literal });
+  // [successor] the same words, used in the shared module; neither the module nor DocsPanel writes one itself
+  const groupSrc = fs.existsSync(path.join(SRC, 'reorg', 'session', 'SessionGroup.tsx')) ? fs.readFileSync(path.join(SRC, 'reorg', 'session', 'SessionGroup.tsx'), 'utf8') : '';
+  const usedG = keys.map(([k]) => groupSrc.includes(`'${k}'`));
+  const literalG = /['">](Session|Goal|Counts|Timer|Progress|Lines)['"<]/.test(groupSrc + panel);
+  ok('W1 [successor]: every word the Session draws is a lexicon key used in reorg/session/SessionGroup.tsx; neither it nor DocsPanel.tsx writes one itself',
+    !!groupSrc && declared.every(([, got, want]) => got === want) && usedG.every(Boolean) && !literalG, { declared, usedG, literalG, found: !!groupSrc });
+  // X1 the Session is ONE shared module (Arbor's PAGES mounts the same one; ARBOR dresses it): DocsPanel renders it and keeps no session of its own
+  ok('X1: the Session is the shared reorg/session/SessionGroup.tsx (it exports SessionGroup and the stage table); DocsPanel renders it and has no Session of its own',
+    /export function SessionGroup\(/.test(groupSrc) && /export const SESSION_ROWS/.test(groupSrc) && /import \{[^}]*\bSessionGroup\b[^}]*\} from '\.\.\/session\/SessionGroup';/.test(panel)
+      && /<SessionGroup /.test(panel) && !/function Session\(/.test(panel) && !/const SESSION_ROWS/.test(panel), { found: !!groupSrc });
+  // X2 it writes only her existing settings: the goal (setWritingGoal) and the writing settings (setWritingSettings); no storage of its own, no new key
+  ok('X2: the shared Session writes only her existing settings (setWritingGoal, setWritingSettings) and touches no storage of its own',
+    !!groupSrc && /setWritingGoal\(/.test(groupSrc) && /setWritingSettings\(/.test(groupSrc) && !/localStorage|sessionStorage|indexedDB|setPref\(|saveProject\(/.test(groupSrc), {});
   return checks;
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 13;
+const EXPECTED = 15;   // 13 + X1, X2 (the shared Session, Nov 22)
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nREORG-DOCS-SESSION VERIFY: PASS (${checks.length} checks)` : `\nREORG-DOCS-SESSION VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
