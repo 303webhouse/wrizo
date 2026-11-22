@@ -28,6 +28,8 @@
 
 /* reduced motion: none of it (fluxCurrent.ts also draws nothing then; this is the belt) */
 @media (prefers-reduced-motion: reduce){
+  /* the open tab's own stub of line and its dot (flux-v3.css, the hands as lines, piece 5) are part of the current too: none of it shows under reduced motion (the Wrizors' NIT on the film, Nov 21, 11:55 pm). This file loads after flux-v3.css (boot.ts), so the same selector wins */
+  :root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after, :root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ display:none; }
   :root[data-flux3][data-theme='flux'] .flux-current{ display:none; }
   :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::before, :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::after{ display:none; }
 }
