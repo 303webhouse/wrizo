@@ -22,6 +22,13 @@
 //             and of "Next" against the paper's median just below the foot (the paper paints transparent in Arbor; the colour and opacity chain
 //             ride in the detail to name the cause)
 //         MUT-T9  the day reading with its ink at the paper's own colour (a vanished foot) turns T9's test red
+// STAGES  P1  (the Wrizors' REAL 2, arbor-reorg-pass-1.md §1: in Publish the names drew as white browser buttons over the strip, the search door
+//             dropped below, the bar grew 51 -> 92 px and the page moved 41 px) with the publishing view lifted too (&reorglift=plateau.top,
+//             plateau.uplink), in FREE WRITE, DRAFT, REVISE and PUBLISH the bar keeps ONE row (names, stages and search door on one line inside it), its
+//             names are not bare buttons, and its height is the same in all four (within 0.5 px)
+//         MUT-P1  the Publish reading with the bar 41 px taller turns P1's test red
+//         P2  the page's rect (column, paper, editor) is the same in DRAFT and with PUBLISH's view open over it (Free Write is the ruled Typewriter
+//             exception, so it is not compared)
 //         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
 //             words read 4.5:1 or better on the paper as drawn
 //
@@ -138,13 +145,30 @@ await withHarness(async (app) => {
   const canvas = await app.evalJs(TOP);
   ok('T7 on a Canvas with no Page the bar shows Connect Page and the canvas\'s views where the stages stand', !!canvas && canvas.kind === 'board' && /connect/i.test(canvas.connect || '') && /page/i.test(canvas.connect || '') && canvas.views >= 3, canvas && { kind: canvas.kind, connect: canvas.connect, views: canvas.views });
 
+  // ---- P1, P2: the bar in every stage, the publishing view lifted too ----
+  const LAYERS = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const e = document.querySelector(s); if (!e) return '-'; const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((n) => Math.round(n * 10) / 10).join(','); }).join(' | '))()";
+  const stageTo = async (key) => { await app.evalJs(`document.querySelector('.sprint-nav [data-mode-key="${key}"]')?.click(); null`); await sleep(1100); await app.mouseMove(700, 400); await sleep(300); };
+  await visit(app, `/?reorg=1&reorglift=plateau.top,plateau.uplink&arbor2room=day`);
+  const stg = {};
+  for (const key of ['freewrite', 'draft', 'revise', 'publish']) {
+    await stageTo(key);
+    stg[key] = { top: await app.evalJs(TOP), page: await app.evalJs(LAYERS), pub: await app.evalJs("!!document.querySelector('[data-reorg-pub]')") };
+  }
+  await stageTo('draft');
+  const p1 = (s) => { const r = ['freewrite', 'draft', 'revise', 'publish'].map((k) => s[k] && s[k].top); if (!r.every((x) => !!x && !!x.bar)) return false; const h = r[1].bar.h; return r.every((x) => t2(x) && Math.abs(x.bar.h - h) <= 0.5); };
+  const p1Detail = (s) => Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.top && { h: v.top.bar && v.top.bar.h, oneRow: oneRow(v.top), bare: v.top.names.map((n) => [n.text, n.btnBg, n.btnBorder]), search: v.top.search, namesBox: v.top.namesBox }]));
+  ok('P1 in FREE WRITE, DRAFT, REVISE and PUBLISH the bar keeps one row, its names are not bare buttons, and its height is the same (the publishing view lifted too)', stg.publish && stg.publish.pub && p1(stg), { pubOpen: stg.publish && stg.publish.pub, ...p1Detail(stg) });
+  const tall = stg.publish && stg.publish.top && stg.publish.top.bar ? { ...stg, publish: { ...stg.publish, top: { ...stg.publish.top, bar: { ...stg.publish.top.bar, h: stg.publish.top.bar.h + 41, b: stg.publish.top.bar.b + 41 } } } } : null;
+  ok('MUT-P1 the Publish reading with the bar 41 px taller turns P1\'s test red', !!tall && p1(stg) !== p1(tall) && !p1(tall), tall && tall.publish.top.bar);
+  ok('P2 the page\'s rect (column, paper, editor) is the same in DRAFT and with PUBLISH\'s view open over it', !!stg.draft && !!stg.publish && stg.publish.pub && stg.draft.page !== '- | - | -' && stg.draft.page === stg.publish.page, { draft: stg.draft && stg.draft.page, publish: stg.publish && stg.publish.page });
+
   await visit(app, '/?reorg=1&arbor2=0', 'at-2', 'machina');
   const machina = await app.evalJs("({ top: !!document.querySelector('.reorg-top'), tags: document.querySelectorAll('.reorg-top-tag').length })");
   ok('T8 Machina\'s top bar draws no tag', machina.top && machina.tags === 0, machina);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard)
+const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
