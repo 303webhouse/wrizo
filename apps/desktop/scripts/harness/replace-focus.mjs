@@ -1,7 +1,8 @@
 // AFTER A REPLACE, THE KEYBOARD STAYS IN THE SEARCH (POLISH's writing audit R4, Nov 22, 10:50 pm, 4 of 4 jobs; "yours if you want it"): after Replace all, keyboard focus drops to the body, so her next keys go nowhere until she clicks. The likely cause (POLISH):
 // the button she pressed turns disabled once no finds are left (SearchMenu.tsx: disabled={!found.here.length || !s.repl}); a focused button that becomes disabled, or a row's Replace button that goes with its hit, drops the focus to the body.
-//   RF1  Replace all (the first press, with the replacement typed): focus stays in the search menu (the active element is inside the Back drawer: the search field), and a letter typed next goes into the search field
-//   RF2  Replace on one hit (the row's own button): the same - the focus is not dropped to the body
+//   RF1  Replace all (the first press, with the replacement typed): focus stays in the REPLACE field (Fable's ruling, Nov 22, 3:33 pm), and a letter typed next goes into it
+// (the first form said 'the search menu': the search field; replaced by the ruling, which names the Replace field)
+//   RF2  Replace on one hit (the row's own button): the same - the focus stays in the Replace field, never the body
 //   RF3  CONTROLS: the replacement happened (the page's words changed: no "toll" left after Replace all, "fee" in its place) and Undo is offered (the button is there)
 // In Machina (?reorg=1) and Arbor (?reorg=1&arbor2=1 with the preview door ?reorglift=plateau.*).
 // Run: node scripts/harness/replace-focus.mjs (from apps/desktop; a box turn or Actions)
@@ -14,8 +15,8 @@ const TEXT = 'The toll road ran along the river. She paid the toll at dusk and w
 const LIFT = ['top', 'front', 'back', 'split', 'uplink'].map((p) => `plateau.${p}`).join(',');
 const CFGS = [{ name: 'Machina', theme: 'machina', q: 'reorg=1' }, { name: 'Arbor', theme: 'plateau', q: `reorg=1&arbor2=1&reorglift=${LIFT}` }];
 const STATE = () => `(() => {
-  const tp = document.querySelector('.wz-tutor-panel'); const a = document.activeElement; const q = document.querySelector('[data-search-q]'); const ed = document.querySelector('.forward-only-editor');
-  return { active: a ? a.tagName + '.' + String(a.className).slice(0, 26) + (a.hasAttribute && a.hasAttribute('data-search-q') ? '[search]' : '') : null, inDrawer: !!(a && tp && tp.contains(a)), onBody: !a || a === document.body, q: q ? q.value : null, text: ed ? ed.innerText.replace(/\\u200b/g, '') : null,
+  const tp = document.querySelector('.wz-tutor-panel'); const a = document.activeElement; const q = document.querySelector('[data-search-q]'); const w = document.querySelector('[data-replace-with]'); const ed = document.querySelector('.forward-only-editor');
+  return { active: a ? a.tagName + '.' + String(a.className).slice(0, 26) + (a.hasAttribute && a.hasAttribute('data-search-q') ? '[search]' : '') : null, inDrawer: !!(a && tp && tp.contains(a)), inWith: !!(a && a.hasAttribute && a.hasAttribute('data-replace-with')), wv: w ? w.value : null, onBody: !a || a === document.body, q: q ? q.value : null, text: ed ? ed.innerText.replace(/\\u200b/g, '') : null,
     hasUndo: !!document.querySelector('[data-replace-undo]'), ones: document.querySelectorAll('[data-replace-one]').length };
 })()`;
 
@@ -58,7 +59,7 @@ try { await withHarness(async (app) => {
     const a = await ev(STATE());
     await app.typeKeys('x'); await sleep(400);
     const a2 = await ev(STATE());
-    ok(`RF1 [${cfg.name}] after Replace all the focus is still in the search menu (not the body), and a letter typed next goes into the search field`, a.inDrawer === true && a.onBody === false && typeof a2.q === 'string' && a2.q.includes('x'), JSON.stringify({ active: a.active, inDrawer: a.inDrawer, onBody: a.onBody, qAfterKey: a2.q }));
+    ok(`RF1 [${cfg.name}] after Replace all the focus stays in the REPLACE field (Fable's ruling, not the body), and a letter typed next goes into it`, a.inDrawer === true && a.onBody === false && a.inWith === true && typeof a2.wv === 'string' && a2.wv === 'feex', JSON.stringify({ active: a.active, inDrawer: a.inDrawer, inWith: a.inWith, onBody: a.onBody, wvAfterKey: a2.wv }));
     ok(`RF3 [${cfg.name}] CONTROLS: the words were replaced (no "toll" left, "fee" in its place) and Undo is offered`, typeof a.text === 'string' && !/toll/.test(a.text) && /fee/.test(a.text) && a.hasUndo === true, JSON.stringify({ text: (a.text || '').slice(0, 60), hasUndo: a.hasUndo }));
     // RF2: one hit
     await openSearch();
@@ -66,7 +67,7 @@ try { await withHarness(async (app) => {
     await ev("(() => { const b = document.querySelector('[data-replace-one]'); if (b) { b.focus(); b.click(); } return true; })()");
     await sleep(1000);
     const b = await ev(STATE());
-    ok(`RF2 [${cfg.name}] after Replace on one hit (its own button) the focus is not dropped to the body: it is still in the search menu`, before.ones >= 1 && b.inDrawer === true && b.onBody === false, JSON.stringify({ ones: before.ones, active: b.active, inDrawer: b.inDrawer, onBody: b.onBody }));
+    ok(`RF2 [${cfg.name}] after Replace on one hit (its own button) the focus is not dropped to the body: it stays in the REPLACE field`, before.ones >= 1 && b.inDrawer === true && b.onBody === false && b.inWith === true, JSON.stringify({ ones: before.ones, active: b.active, inDrawer: b.inDrawer, inWith: b.inWith, onBody: b.onBody }));
   }
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
