@@ -389,12 +389,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const onKeyDown = (e: KeyboardEvent) => {
       if (showDisclosure) return; // the disclosure has no Escape-dismiss, by design (hb1.1's own UnlockCeremony precedent)
       const target = e.target as HTMLElement | null;
-      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the tab when it was in the drawer [Tutor §18]
+      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, the tab when the page has no editor [Tutor §18, bug-list #49]
       if (e.key === 'Escape' && !e.defaultPrevented) {
         const inDrawer = !!target?.closest?.('.wz-tutor-zone');
         if (getLinkDock(entry.id)) setLinkDock(entry.id, null);   // Esc leaves a docked reader with the dock [Tutor §19]
         setOpen(false); setDocked(false);
-        if (inDrawer) document.querySelector<HTMLElement>('.wz-tutor-grip')?.focus();
+        if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? document.querySelector<HTMLElement>('.wz-tutor-grip'))?.focus({ preventScroll: true });
         return;
       }
       if (target?.closest?.('.wz-tutor-zone')) return;

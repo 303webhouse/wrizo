@@ -161,9 +161,13 @@ await withHarness(async (app) => {
         const inside = await app.evalJs(`(() => { const p = document.querySelector(${J(PANEL[which])}); const c = p && [...p.querySelectorAll('button, [tabindex="0"], textarea, input')].find((el) => el.getBoundingClientRect().width > 0 && !el.disabled);
           if (!c) return null; c.focus(); return document.activeElement === c ? (c.getAttribute('aria-label') || c.textContent || c.tagName).trim().slice(0, 30) : null; })()`);
         await escape(app); await sleep(450);
-        const after = await app.evalJs(`({ open: ${OPEN[which]}, onTab: document.activeElement === document.querySelector(${J(TAB[which])}), at: document.activeElement ? (document.activeElement.className || document.activeElement.tagName) : null })`);
-        ok(`${tag} 5 (${which === 'tools' ? 'Tools' : 'Tutor'}): Esc pressed inside the open drawer (on "${inside}") closes it, and the focus returns to its tab`,
-          !!inside && after.open === false && after.onTab === true, J({ inside, after }));
+        // SUPERSEDED (bug-list #49, Fable Nov 22: Esc from inside a menu gives the writer her caret back - the focus goes to the PAGE's editor, not the menu's tab, so the next key types; the tab is the fallback only for a page with no editor): the original, verbatim, no longer runs.
+        // const after = await app.evalJs(`({ open: ${OPEN[which]}, onTab: document.activeElement === document.querySelector(${J(TAB[which])}), at: document.activeElement ? (document.activeElement.className || document.activeElement.tagName) : null })`);
+        // ok(`${tag} 5 (${which === 'tools' ? 'Tools' : 'Tutor'}): Esc pressed inside the open drawer (on "${inside}") closes it, and the focus returns to its tab`,
+        // !!inside && after.open === false && after.onTab === true, J({ inside, after }));
+        const afterS = await app.evalJs(`({ open: ${OPEN[which]}, onPage: !!document.activeElement && !!document.activeElement.closest('.forward-only-editor'), onTab: document.activeElement === document.querySelector(${J(TAB[which])}) })`);
+        ok(`${tag} 5 (${which === 'tools' ? 'Tools' : 'Tutor'}) [#49 successor]: Esc pressed inside the open drawer (on "${inside}") closes it, and the focus goes back to the page's editor (her caret), not the tab`,
+          !!inside && afterS.open === false && afterS.onPage === true, J({ inside, afterS }));
       }
       if (w === 1366) {
         // 5b: an Esc on the PAGE closes the Tools drawer but never takes the page's focus
