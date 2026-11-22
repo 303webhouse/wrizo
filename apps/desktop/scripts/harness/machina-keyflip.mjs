@@ -132,7 +132,11 @@ await withHarness(async (app) => {
   // ok(`MKF-FLIP the first key (a letter): the largest restyle touches at most ${SHARE * 100}% of the document's elements, on every one of ${REOPENS} reopens`, fix.every(flipOk),
   //   fix.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
   // ok(`MKF-FLIP-SP the same for a Space as the first key, on every one of ${SP_REOPENS} reopens`, sp.every(flipOk), sp.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
-  console.log(`INFO MKF-GATE-90 (INK's --fade-dur gate, the 25% bar): letter ${fix.every(flipOk) ? 'MET' : 'NOT MET'}, space ${sp.every(flipOk) ? 'MET' : 'NOT MET'} ` + JSON.stringify([...fix, ...sp].map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls }))));
+  // SUPERSEDED (Fable, Nov 22, 2:30 pm, RULED (b), absolute: the 25% bar is parked; INK's #90 gate reads the chrome's receding set, Machina <= 220, in keyflip-live.mjs). The original line, verbatim:
+  // console.log(`INFO MKF-GATE-90 (INK's --fade-dur gate, the 25% bar): letter ${fix.every(flipOk) ? 'MET' : 'NOT MET'}, space ${sp.every(flipOk) ? 'MET' : 'NOT MET'} ` + JSON.stringify([...fix, ...sp].map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls }))));
+  // [successor] the same reading in the absolute terms of the ruling (INFO; the gate itself is keyflip-live's KL-FLIP-machina):
+  const GATE90_ABS = 220;
+  console.log(`INFO MKF-GATE-90 (INK's --fade-dur gate, absolute: the first key restyles at most the chrome's receding set, ${GATE90_ABS} elements): letter ${fix.every((m) => !!m && !!m.tr && m.tr.keyEls != null && m.tr.keyEls <= GATE90_ABS) ? 'MET' : 'NOT MET'}, space ${sp.every((m) => !!m && !!m.tr && m.tr.keyEls != null && m.tr.keyEls <= GATE90_ABS) ? 'MET' : 'NOT MET'} ` + JSON.stringify([...fix, ...sp].map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls }))));
   // [successors] the highlight's share removed: on every reopen the first key's largest restyle is at most half of the same key with the two old rules put back
   // (the red: 976 element styles; the fix: 316; old rules back: 976)
   const base = mut && mut.tr && mut.tr.keyEls;
