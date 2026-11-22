@@ -76,8 +76,7 @@ await withHarness(async (app) => {
               const frames = new Map(); for (const [id, us] of self) { const cf = byId.get(id).callFrame; if (!cf.url || !/index-/.test(cf.url)) continue; const k = cf.scriptId + ':' + cf.lineNumber + ':' + cf.columnNumber; frames.set(k, { cf, us: (frames.get(k) ? frames.get(k).us : 0) + us }); }
               const top = [...frames.values()].sort((a, b) => b.us - a.us).slice(0, 4);
               const out = [];
-              for (const { cf, us } of top) { const src = await app.cdp('Debugger.getScriptSource', { scriptId: cf.scriptId }); const lines = String(src.scriptSource || '').split('
-'); const line = lines[cf.lineNumber] || ''; out.push({ fn: cf.functionName, ms: Math.round(us / 100) / 10, at: cf.lineNumber + ':' + cf.columnNumber, src: line.slice(Math.max(0, cf.columnNumber - 20), cf.columnNumber + 700) }); }
+              for (const { cf, us } of top) { const src = await app.cdp('Debugger.getScriptSource', { scriptId: cf.scriptId }); const lines = String(src.scriptSource || '').split(String.fromCharCode(10)); const line = lines[cf.lineNumber] || ''; out.push({ fn: cf.functionName, ms: Math.round(us / 100) / 10, at: cf.lineNumber + ':' + cf.columnNumber, src: line.slice(Math.max(0, cf.columnNumber - 20), cf.columnNumber + 700) }); }
               console.log(`TG-SOURCE ${mode} ${kind}: ` + JSON.stringify(out));
             } catch (e) { console.log('TG-SOURCE failed: ' + String(e && e.message).slice(0, 160)); }
           }
