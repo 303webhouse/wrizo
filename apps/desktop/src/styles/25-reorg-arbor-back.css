@@ -70,6 +70,11 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-back-part.is-here > .wz-back-part-head{ color:var(--accent-rest); }
 :root[data-arbor2][data-theme='plateau'] .reorg-search-hit[aria-current='true']{ border-left:4px solid var(--brass); background:var(--ink-900); }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+/* the row names keep their room (the Wrizors' pass 1, REAL 4): a Plan row's name and an asset row's label take the row's width, so the row's buttons wrap to a second line instead of squeezing the name to a few letters. Always visible: a touch screen has no hover */
+:root[data-arbor2][data-theme='plateau'] .wz-back-plan-row{ flex-wrap:wrap; row-gap:2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-plan-row > .wz-back-plan-name{ flex:1 1 calc(100% - 40px); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-asset{ flex-wrap:wrap; row-gap:2px; padding-top:3px; padding-bottom:3px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-asset .wz-links-label{ flex:1 1 calc(100% - 80px); }
 /* the "+" menus and short lists sit on Arbor's raised surface: #F6F1E4 by day, #261A12 by night */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-assets-add-pop{ background:#F6F1E4; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-assets-add-pop{ background:#261A12; }
