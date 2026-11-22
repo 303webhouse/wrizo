@@ -14,6 +14,8 @@
 // STAGES G1  BUILD: "New part" and "Split here" over the list; a row's menu offers up, down, in, out, join and the seven colour choices
 //            (SUCCESSOR, Nov 20: the seven are 'none' and the slots a-f; the words "New Part" and "Split")
 //        G2  EDIT: "Split here" and no "New part"; a row's menu offers up, down, join and the colours (no level)
+//        G1/G2 [picker successor] (colour B, Nov 21) the same, the moves followed by the colour opener ("colour", live); MUT-G-PICK  the menu
+//            without the opener (the shape before colour B) fails G1's successor
 //        G3  SPRINT: "New part" only: no "Split here", no row menus
 //            [successor, Nov 21 (SPRINT has no menus, train E): in SPRINT the Front menu is not drawn at all, so no Parts tools; the page is there]
 //        G4  the top rail's Parts drop is a plain list: no tools in it
@@ -177,13 +179,25 @@ await withHarness(async (app) => {
   //  ok('G1 BUILD: "New part" and "Split here" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices',
   //    !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
   //      && g1.menu.colours.join(',') === 'none,clay,amber,moss,teal,slate,plum', g1);
-  ok('G1 BUILD: "New Part" and "Split" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices: none and the slots a to f',
-    !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
-      && g1.menu.colours.join(',') === 'none,a,b,c,d,e,f', g1);
+  // SUPERSEDED (colour B (arbor/colour-b 44cbb0ef, train H; Nick, Nov 21 3:30 pm via Fable 4:56 pm: the picker - SCHEME, six swatches, "+ Custom…") adds the
+  // row menu's colour opener after the moves (data-part-act="colour", "Colour…"); the seven colour choices are unchanged (Chat 1's pair 44973956599 on train-h4 3ab78c73)). The check as it stood, verbatim:
+  //  ok('G1 BUILD: "New Part" and "Split" over the list; a row\'s menu offers up, down, in, out, join and seven colour choices: none and the slots a to f',
+  //    !!g1.tools && g1.tools.neu && g1.tools.split && g1.tools.more === 4 && !!g1.menu && g1.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join'
+  //      && g1.menu.colours.join(',') === 'none,a,b,c,d,e,f', g1);
+  const g1p = (x) => !!x.tools && x.tools.neu && x.tools.split && x.tools.more === 4 && !!x.menu && x.menu.acts.map((a) => a[0]).join(',') === 'up,down,in,out,join,colour'
+    && x.menu.acts.some((a) => a[0] === 'colour' && a[1] === false) && x.menu.colours.join(',') === 'none,a,b,c,d,e,f';
+  ok('G1 BUILD [picker successor]: "New Part" and "Split" over the list; a row\'s menu offers up, down, in, out, join, the colour opener (live) and seven colour choices: none and the slots a to f',
+    g1p(g1), g1);
+  const g1old = g1.menu ? { ...g1, menu: { ...g1.menu, acts: g1.menu.acts.filter((a) => a[0] !== 'colour') } } : null;
+  ok('MUT-G-PICK the same menu without the colour opener (the shape before colour B) fails G1\'s successor', !!g1old && g1p(g1) && !g1p(g1old), g1old && g1old.menu);
   await stage(app, 'revise'); await partsTab(app);
   const g2 = { tools: await app.evalJs(TOOLS), menu: await menu(app, 'pu-3') };
-  ok('G2 EDIT: "Split here" and no "New part"; a row\'s menu offers up, down, join and the colours (no level)',
-    !!g2.tools && !g2.tools.neu && g2.tools.split && g2.tools.more === 4 && !!g2.menu && g2.menu.acts.map((a) => a[0]).join(',') === 'up,down,join' && g2.menu.colours.length === 7, g2);
+  // SUPERSEDED (colour B (arbor/colour-b 44cbb0ef, train H; Nick, Nov 21 3:30 pm via Fable 4:56 pm: the picker - SCHEME, six swatches, "+ Custom…") adds the
+  // row menu's colour opener after the moves (data-part-act="colour", "Colour…"); the seven colour choices are unchanged (Chat 1's pair 44973956599 on train-h4 3ab78c73)). The original, verbatim:
+  // ok('G2 EDIT: "Split here" and no "New part"; a row\'s menu offers up, down, join and the colours (no level)',
+  //   !!g2.tools && !g2.tools.neu && g2.tools.split && g2.tools.more === 4 && !!g2.menu && g2.menu.acts.map((a) => a[0]).join(',') === 'up,down,join' && g2.menu.colours.length === 7, g2);
+  ok('G2 EDIT [picker successor]: "Split here" and no "New part"; a row\'s menu offers up, down, join, the colour opener and the colours (no level)',
+    !!g2.tools && !g2.tools.neu && g2.tools.split && g2.tools.more === 4 && !!g2.menu && g2.menu.acts.map((a) => a[0]).join(',') === 'up,down,join,colour' && g2.menu.colours.length === 7, g2);
   await stage(app, 'freewrite'); await partsTab(app);
   // SUPERSEDED (SPRINT has no menus: Nick, Nov 20, 1:13 pm and 1:20 pm, via Fable 3:15 pm; Fable 5:05 pm: behind the reorg's switch, Machina; Fable, Nov 21,
   // 12:35 am: sprint-no-menus rides train E, G3 parked with a successor): in Free Write the Front menu is not drawn, so there is no PARTS tab and no
@@ -369,7 +383,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 21;   // 20 + O1 (Nov 20, the slot ruling)
+const EXPECTED = 22;   // 20 + O1 (Nov 20, the slot ruling) + MUT-G-PICK (G1/G2 parked, the picker, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PARTS-UI VERIFY: PASS (${checks.length} checks)`

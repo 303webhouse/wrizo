@@ -20,6 +20,7 @@
 // ROWS    R1  a row's word count is set smaller than its name
 //         R2  the Part she is on wears the brass bar (a default colour, or none); on a coloured Part (wb-3, slot c) the row wears its tile's
 //             tint and its name reads 4.5:1 or better on it
+//         R2 [brass successor] (colour B, Nov 21) the bar is drawn in --brass; MUT-R2  the bar in #E6E8EA fails it
 //         R3  wb-1's row carries [data-part-assets="wb-1"] reading 3 (its Assets tab's rows); wb-2 has none (no assets)
 //         R4  (Nov 20, POLISH's reading, Actions 44870378376) every row draws inside its own box (nothing past its edge, so nothing under the
 //             link badge), and a press at the badge's centre reaches the badge
@@ -212,14 +213,23 @@ await withHarness(async (app) => {
   ok('R1 a row\'s word count is set smaller than its name', !!r1s && r1s.words < r1s.name, r1s);
 
   const bar = await app.evalJs(`(() => { const b = ${L}?.querySelector('[data-part-row="wb-1"]'); if (!b) return null; const cs = getComputedStyle(b, '::before');
-    return { here: b.getAttribute('aria-current'), bar: b.getAttribute('data-here-bar'), bg: cs.backgroundColor, brass: getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim() }; })()`);
+    return { here: b.getAttribute('aria-current'), bar: b.getAttribute('data-here-bar'), bg: cs.backgroundColor, brass: getComputedStyle(document.documentElement).getPropertyValue('--accent-rest').trim(), brassB: getComputedStyle(document.documentElement).getPropertyValue('--brass').trim() }; })()`);
   await openAt(app, 'wb-3', 'draft');
   const tint = await app.evalJs(`(() => { const b = ${L}?.querySelector('[data-part-row="wb-3"]'); if (!b) return null; const n = b.querySelector('.reorg-parts-name');
     return { here: b.getAttribute('aria-current'), bar: b.getAttribute('data-here-bar'), tint: b.getAttribute('data-tint'), bg: getComputedStyle(b).backgroundColor, ink: n ? getComputedStyle(n).color : null }; })()`);
   const tintR = tint && hex(tint.bg) && hex(tint.ink) ? ratio(hex(tint.bg), hex(tint.ink)) : 0;
-  ok('R2 the Part she is on wears the brass bar (default colour or none); a coloured Part she is on (wb-3, slot c) wears its tile\'s tint, its name 4.5:1 or better on it',
-    !!bar && bar.here === 'true' && bar.bar === 'brass' && hex(bar.bg) === (bar.brass || '').toUpperCase() && !!tint && tint.here === 'true' && tint.bar === 'brass' && tint.tint === 'c'
+  // SUPERSEDED (colour B, arbor/colour-b 44cbb0ef, train H; Nick, Nov 21: "brass bar Default only"; the Wrizors' §2e, brass chosen: in Default the here bar
+  // is drawn in BRASS, var(--brass) (23-reorg-top.css), where it had drawn --accent-rest's grey #E6E8EA under the name "brass"; Chat 1's pair 44973956599 on
+  // train-h4 3ab78c73 read #FF9800 against #E6E8EA). The original, verbatim:
+  // ok('R2 the Part she is on wears the brass bar (default colour or none); a coloured Part she is on (wb-3, slot c) wears its tile\'s tint, its name 4.5:1 or better on it',
+  //   !!bar && bar.here === 'true' && bar.bar === 'brass' && hex(bar.bg) === (bar.brass || '').toUpperCase() && !!tint && tint.here === 'true' && tint.bar === 'brass' && tint.tint === 'c'
+  //     && !/rgba\([^)]*,\s*0\)/.test(tint.bg) && tintR >= 4.5, { bar, tint, tintR: +tintR.toFixed(2) });
+  const r2b = (b) => !!b && b.here === 'true' && b.bar === 'brass' && !!b.brassB && hex(b.bg) === b.brassB.toUpperCase();
+  ok('R2 [brass successor] the Part she is on wears the brass bar in brass (--brass; default colour or none); a coloured Part she is on (wb-3, slot c) wears its tile\'s tint, its name 4.5:1 or better on it',
+    r2b(bar) && !!tint && tint.here === 'true' && tint.bar === 'brass' && tint.tint === 'c'
       && !/rgba\([^)]*,\s*0\)/.test(tint.bg) && tintR >= 4.5, { bar, tint, tintR: +tintR.toFixed(2) });
+  const greyBar = bar ? { ...bar, bg: 'rgb(230, 232, 234)' } : null;
+  ok('MUT-R2 the same bar drawn in --accent-rest\'s grey #E6E8EA (the shape before colour B) fails R2\'s successor', r2b(bar) && !r2b(greyBar), greyBar);
 
   const badge = await app.evalJs(`(() => { const l = ${L}; if (!l) return null; const b1 = l.querySelector('[data-part-assets="wb-1"]'), b2 = l.querySelector('[data-part-assets="wb-2"]');
     return { b1: b1 ? ${txt('b1')} : null, b1label: b1 ? b1.getAttribute('aria-label') : null, b2: !!b2 }; })()`);
@@ -280,7 +290,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 15;   // 13 + R4 (Nov 20); - T1 (parked, Nov 21) + T1-B + MUT-T1-B
+const EXPECTED = 16;   // 13 + R4 (Nov 20); - T1 (parked, Nov 21) + T1-B + MUT-T1-B; + MUT-R2 (R2 parked, colour B's brass bar, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`
