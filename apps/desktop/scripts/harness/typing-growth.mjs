@@ -33,6 +33,22 @@ const HOOK = `(() => {
   return true; })()`;
 // the CPU profile of a run of keys: self time by function (information; names the work, never a verdict)
 const PROFILE_TOP = 14;
+// for each of the heaviest self-time frames (app code or the native ones that force work: removeAllRanges, getClientRects, offsetWidth), the CALL CHAINS that reach it, up to 5 frames up, with the time each chain owns
+const callersOf = (p, top = 8) => {
+  const byId = new Map(p.nodes.map((n) => [n.id, n])); const parent = new Map();
+  for (const n of p.nodes) for (const c of n.children || []) parent.set(c, n.id);
+  const self = new Map(); for (let i = 0; i < p.samples.length; i += 1) self.set(p.samples[i], (self.get(p.samples[i]) || 0) + (p.timeDeltas[i] || 0));
+  const lab = (cf) => (cf.functionName || '(anon)') + (cf.url ? ':' + (cf.lineNumber + 1) + ':' + cf.columnNumber : '');
+  const byFn = new Map(); const chains = new Map();
+  for (const [id, us] of self) {
+    const cf = byId.get(id).callFrame; if (/^\((idle|program|root|garbage collector)\)$/.test(cf.functionName)) continue;
+    const fn = lab(cf); byFn.set(fn, (byFn.get(fn) || 0) + us);
+    const up = []; let cur = parent.get(id); while (cur != null && up.length < 5) { const c = byId.get(cur).callFrame; if (!/^\((root|program)\)$/.test(c.functionName)) up.push(lab(c)); cur = parent.get(cur); }
+    const k = fn + ' <- ' + up.join(' <- '); chains.set(k, (chains.get(k) || 0) + us);
+  }
+  const heavy = [...byFn.entries()].sort((a, b) => b[1] - a[1]).slice(0, top).map(([fn]) => fn);
+  return heavy.map((fn) => ({ fn, ms: Math.round(byFn.get(fn) / 100) / 10, chains: [...chains.entries()].filter(([k]) => k.startsWith(fn + ' <- ')).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, us]) => Math.round(us / 100) / 10 + ' ms: ' + k.slice(fn.length + 4)) }));
+};
 const selfTop = (p) => { const byId = new Map(p.nodes.map((n) => [n.id, n])); const self = new Map(); for (let i = 0; i < p.samples.length; i += 1) self.set(p.samples[i], (self.get(p.samples[i]) || 0) + (p.timeDeltas[i] || 0)); const agg = new Map(); for (const [id, us] of self) { const cf = byId.get(id).callFrame; const key = (cf.functionName || '(anonymous)') + ' @ ' + String(cf.url || '').split('/').pop() + ':' + cf.lineNumber; agg.set(key, (agg.get(key) || 0) + us); } const total = [...agg.values()].reduce((a, b) => a + b, 0) || 1; return [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, PROFILE_TOP).map(([k, us]) => `${Math.round(us / 100) / 10} ms (${Math.round((100 * us) / total)}%) ${k}`); };
 
 await withHarness(async (app) => {
@@ -69,6 +85,7 @@ await withHarness(async (app) => {
           for (let i = 0; i < 40; i += 1) { await send(); await sleep(110); }
           const prof = await app.cdp('Profiler.stop');
           console.log(`TG-PROFILE ${mode} ${kind} 50000 words: ` + JSON.stringify(selfTop(prof.profile)));
+          console.log(`TG-CALLERS ${mode} ${kind} 50000 words: ` + JSON.stringify(callersOf(prof.profile)));
           // THE LAYOUTS: a Chrome trace of 12 keys of this kind: every Layout span with its duration and the JS stack that forced it (the bundle is minified: the frame is named by its position, and the code at it printed)
           if (mode === 'freewrite' || kind === 'letter') {
             try {
