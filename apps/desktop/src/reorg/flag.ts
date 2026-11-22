@@ -16,7 +16,8 @@ export const REORG_ASKED: boolean = asked === '1';
 // THE SWITCH-OVER (Fable, Nov 21, 9:40 pm): the reorg is ON BY DEFAULT in Machina only. Arbor and Flux keep ?reorg=1 until all six of their cells pass. It lives HERE
 // (this module imports nothing) so the lexicon's reorg words can ask it too (overrides/*Reorg.ts, themeLexicon); reorg/themeGate.ts re-exports it. Flip a theme here once
 // all six of its cells pass. Every reader of the bare REORG outside this file and themeGate.ts is a harness hook or listed harmless (reorg-bare-switch-census.mjs).
-export const REORG_DEFAULT_ON: Record<'machina' | 'plateau' | 'flux', boolean> = { machina: true, plateau: false, flux: false };
+// THE LAST ARBOR FLIP (Fable, Nov 22, 3:20 pm; Nick: Arbor goes default-on): all six plateau cells are on in reorg/themeGate.ts, so Arbor is ON by default too. Flux alone keeps ?reorg=1.
+export const REORG_DEFAULT_ON: Record<'machina' | 'plateau' | 'flux', boolean> = { machina: true, plateau: true, flux: false };
 
 /** The reorg is on for this theme: the switch is on, and the theme is on by default or the page load asked for it (?reorg=1). */
 export function reorgFor(theme: string | null | undefined): boolean {
