@@ -13,6 +13,9 @@
 // OPEN    A4  DRAWERS opened stands 12 px out in olive #56632E with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive
 // PAGE    A5  the page's rect is the same with a rail door open and closed
 // MACHINA A6  Machina's reorg rail is as it was: DOCS · PROJECTS · UNFILED, no cloth on any door
+// DRESS   A7  (the first frames, Actions 44970675573: the DRAWERS pop-out drew as bare buttons) the opened DRAWERS pop-out's rows are dressed: a row's
+//             open button draws no button chrome (no background, no border) in the page's chrome font, and its "+ New Drawer" is a full-width row
+//         MUT-A7  the same reading with the browser's own button face (a border) turns A7's test red
 // MUTANT  MUT-A2  the cloth reading with SHELF in olive turns A2's test red
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-rail-live.mjs
@@ -87,7 +90,13 @@ await withHarness(async (app) => {
   const d4 = await app.evalJs(DOORS);
   const p4 = d4 && d4.doors.find((x) => x.cat === 'reorg-projects');
   const panel = await app.evalJs(PANEL);
+  const dress = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel'); if (!p) return null; const o = p.querySelector('.wz-reorg-row-open'); const n = p.querySelector('.wz-reorg-new'); if (!o || !n) return { open: !!o, add: !!n };\n" +
+    "  const so = getComputedStyle(o), sn = getComputedStyle(n); return { openBg: so.backgroundColor, openBorder: so.borderTopWidth, openFont: so.fontFamily, addBorder: sn.borderTopWidth, addWide: Math.round(n.getBoundingClientRect().width) >= Math.round(p.getBoundingClientRect().width) - 8 }; })()");
   const page1 = await app.evalJs(PAGE);
+  const a7 = (d) => !!d && d.openBg === 'rgba(0, 0, 0, 0)' && d.openBorder === '0px' && !!d.openFont && d.addBorder === '0px' && d.addWide === true;
+  ok('A7 the opened DRAWERS pop-out is dressed: a row\'s open button draws no button chrome, and "+ New Drawer" is a full-width row', a7(dress), dress);
+  const raw = dress ? { ...dress, openBorder: '2px' } : null;
+  ok('MUT-A7 the reading with a browser button face (a border) turns A7\'s test red', !!raw && raw.openBorder !== dress.openBorder && !a7(raw), raw);
   ok('A4 DRAWERS opened stands 12 px out in olive with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive',
     !!p4 && p4.pressed === 'true' && Math.abs(tx(p4.tx) - 12) <= 0.5 && p4.bg === OLIVE && p4.ink === CREAM && contrast(p4.ink, p4.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow), { p4, panel });
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700);
@@ -101,7 +110,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 8;
+const EXPECTED = 10;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
