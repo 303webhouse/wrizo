@@ -4,6 +4,7 @@ import { RhizomeField } from './RhizomeField';
 import { GlitchMeter } from './GlitchMeter';
 import { RunStrip, useRunStripActive } from './RunStrip';
 import { PageCount } from './PageCount';
+import { PlainTracker } from './PlainTracker';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
 // (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
@@ -27,6 +28,11 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   glitch?: boolean;
 }) {
   const jacked = useJacked();
+  // THE PLAIN PROGRESS TRACKER (components/PlainTracker.tsx; Nick, Nov 20): with the session's "Use Theme Progress Tracker" switch off, the lane
+  // carries the one plain row in every theme and none of the theme's own progress art (the vines, the glitch meter, the Run, the count row).
+  // Wire In's edge and checkpoint are Flux's sprint, not its tracker, and stay. With the switch on (the default) every line below is as before.
+  const settings = useWritingSettings();
+  const plain = settings.instrumentsOn && settings.themeTracker === false;
   const runOn = useRunStripActive(text);
   // Both children self-gate on the settings (RhizomeField already did, and
   // still does, verbatim) — rendered as SIBLINGS rather than as a ternary so
@@ -35,14 +41,14 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   // segment's 180ms grow animation.
   return (
     <>
-      <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />
-      {glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : (jacked ? null : <GlitchMeter text={text} />))}   {/* WIRE IN without the flag: no glitch while wired in (the compile owns the lines above the writing line), as FluxIdleGlitch does under it */}
-      {glitch && <RunStrip text={text} />}
+      {!plain && <RhizomeField text={text} seedKey={seedKey} paperRef={paperRef} />}
+      {!plain && glitch && (FLUX3 ? <FluxIdleGlitch paperRef={paperRef} /> : (jacked ? null : <GlitchMeter text={text} />))}   {/* WIRE IN without the flag: no glitch while wired in (the compile owns the lines above the writing line), as FluxIdleGlitch does under it */}
+      {!plain && glitch && <RunStrip text={text} />}
       {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
       {FLUX3 && glitch && !jacked && <FluxRoomGround />}   {/* Jacked In is the whole window (the corridor covers the room): the room's ground and its drifting points are not drawn behind it */}
       {glitch && <FluxBurstEdge unitCount={unitCount} />}   {/* Wire In's own: self-gated on Flux and a running Wire In, no flag */}
       {glitch && <FluxCheckpointPop unitCount={unitCount} />}   {/* likewise: the CHECKPOINT letters and the pop */}
-      <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />
+      {plain ? <PlainTracker text={text} /> : <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />}
     </>
   );
 }

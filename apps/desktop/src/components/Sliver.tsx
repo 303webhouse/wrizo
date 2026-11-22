@@ -353,7 +353,9 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
-        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />
+        {/* THE REORG: the session (the goal, what it counts, the timer, progress) is DOCS' last group (reorg/panels/DocsPanel.tsx; Fable, Nov 20),
+            so the Front menu's foot no longer carries it: no goal foot, no Progress switch, no Progress block; the Typewriter's block stays */}
+        {(!reorgFront || sliverTheme === 'plateau') && <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />}
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -368,6 +370,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
           typewriterAvailable={content.kind === 'freewrite'}
+          session={!reorgFront}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
@@ -934,7 +937,7 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, pageId, pageEmpty, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; pageId?: string; pageEmpty?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, session = true, pageId, pageEmpty, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; session?: boolean; pageId?: string; pageEmpty?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
@@ -987,12 +990,14 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
+        {session && (
         <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
           aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
           aria-pressed={settings.instrumentsOn}
           onClick={() => setWritingSettings({ instrumentsOn: !settings.instrumentsOn })}>
           <ProgressModeIcon />
         </button>
+        )}
       </div>
       </div>
       {open && (
@@ -1012,10 +1017,12 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
                 onPick={v => setWritingSettings({ flicker: v === 'on' })} />
             </section>
           )}
+          {session && (
           <section className="wz-foot-settings-block">
             <h4>{t('footMenuProgress')}</h4>
             <ProgressFields target={target} hasMilestones={hasMilestones} />
           </section>
+          )}
         </div>
       )}
     </div>
@@ -1112,6 +1119,10 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
       )}
       <Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      {/* the session's "Use Theme Progress Tracker" switch: off, every theme shows the plain row under the page (components/PlainTracker.tsx) */}
+      <div data-tracker-switch>
+        <Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off} opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]} onPick={v => setWritingSettings({ themeTracker: v === 'on' })} />
+      </div>
     </>
   );
 }

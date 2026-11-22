@@ -32,6 +32,7 @@ export const FLUX_OVERRIDES = {
     ctxDeleteBoard: 'Delete circuit',
     linksKindPage: 'Doc',
     linksKindBoard: 'Circuit',
+    plainTrackerSwitch: 'Use Skin Progress Tracker',   // the plain Progress Tracker's switch: Flux's word for a theme is Skin (cascadeThemeTitle)
     linksKindCard: 'Node',   // the theme's own card word [deskLexicon §62]
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
     // Arbor, composed at BoardEditor.tsx's call site as "— {prefix}: {label}").
