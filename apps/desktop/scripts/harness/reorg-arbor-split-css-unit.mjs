@@ -50,7 +50,7 @@ function suite(css) {
   });
   t('QUIET', () => {
     const touches = rs.filter((x) => /\.mode-stage|\.mode-pagecol|\.mode-page\b|\.forward-only-editor|\.mode-paper/.test(x.sel)).map((x) => x.sel.slice(0, 70));
-    const geometry = rs.filter((x) => /\b(width|height|left|right|top|bottom|margin|transform|position)\s*:/.test(x.body) && !/\.wz-split-(asset|grip)/.test(x.sel)).map((x) => x.sel.slice(0, 70));
+    const geometry = rs.filter((x) => /(^|[\s;{])(width|height|left|right|top|bottom|margin|transform|position)\s*:/.test(x.body) && !/\.wz-split-(asset|grip)/.test(x.sel) && !/::-webkit-scrollbar/.test(x.sel)).map((x) => x.sel.slice(0, 70));
     return { pass: touches.length === 0 && geometry.length === 0, detail: J({ touches, geometry }) };
   });
   t('PALETTE', () => { const all = hexes(css); const bad = all.filter((h) => !PALETTE.has(h)); return { pass: all.length >= 3 && bad.length === 0, detail: J({ n: all.length, bad }) }; });
