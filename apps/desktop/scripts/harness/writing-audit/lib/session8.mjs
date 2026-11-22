@@ -1,0 +1,265 @@
+// SESSION 8 (writing audit; Fable, Nov 22, 2:30 pm: "the writing audit with the reorg on, in Machina and Arbor (report only)... Parts, split, Find, footnotes, Sup/Sub,
+// the Typewriter, long pages"; Nick tests Monday). FINDS AND REPORTS; FIXES NOTHING. The reorg is ON: ?reorg=1 (Machina is on by default after the switch-over; Arbor keeps
+// ?reorg=1, and with it only the rail is lit until its cells pass: WA_LIFT=all previews the rest through the gate's own preview door, ?reorglift=, reported separately).
+// Each case drives a writer's steps and judges the page after each with the audit's own verify(): the text, the caret's place, the caret DRAWN where the selection is,
+// focus, the page's rect, the console. A step the harness could not reach (a selector missing in this theme) is "not covered", never a finding.
+//   PARTS   P1 split at the caret (Front menu PARTS, Structure, Split here) / P2 type after the split / P3 the next Part by the arrows, type there / P4 join it back
+//   FIND    F1 open the search (top rail door), find a word, Enter, back to the page and type / F2 Replace all, then Undo: the page and the caret follow
+//   NOTES   N1 a footnote typed by hand ([^1] and its note line) / N2 the footnote button (Draft, TEXT, More)
+//   SUPSUB  U1 ^2^ typed by hand, then the arrows across the hidden markers / U2 the sub button on a selection
+//   SPLIT   S1 an asset beside the page (the split): type in the page while it is open; the page's rect with it open and after it closes
+//   TYPEWR  T1 Free Write (the Typewriter): type, Enter, type; the caret drawn in the zoom
+//   LONG    L1 a 10,000-word Doc: type at the end and in the middle; the time per key (information)
+// Knobs (env): WA_THEME WA_FLAG WA_TONE WA_W WA_H WA_OUT WA_LIFT (all | off) WA_ONLY (case ids)
+import fs from 'node:fs';
+import path from 'node:path';
+import { withHarness } from '../../../runtime-verify.mjs';
+import { makeDriver, sleep, THEMES } from './driver.mjs';
+import { verify } from './verify.mjs';
+
+const LIFT_ALL = (th) => ['top', 'front', 'back', 'split', 'uplink'].map((p) => `${th}.${p}`).join(',');
+
+export async function main({ title }) {
+  const env = process.env;
+  const cfg = { theme: env.WA_THEME || 'machina', flag: env.WA_FLAG || 'off', tone: env.WA_TONE || 'light', width: Number(env.WA_W || 1366), height: Number(env.WA_H || 768), out: env.WA_OUT || null };
+  if (!THEMES[cfg.theme]) { console.error('WA_THEME must be plateau, flux or machina'); process.exit(2); }
+  const lift = env.WA_LIFT === 'all' ? LIFT_ALL(cfg.theme) : '';
+  const TAG = `${THEMES[cfg.theme].label}/reorg${lift ? '+lift' : ''}/${cfg.tone}/${cfg.width}`;
+  const only = env.WA_ONLY ? new Set(env.WA_ONLY.split(',').map((s) => s.trim())) : null;
+  if (cfg.out) fs.mkdirSync(cfg.out, { recursive: true });
+  const results = [];   // { id, label, fails: [{check, detail}], notes, obs }
+  const uncovered = [];
+  const out = (s) => console.log(s);
+
+  await withHarness(async (app) => {
+    const d = makeDriver(app, cfg);
+    const ev = (js) => app.evalJs(js);
+    const waitFor = (expr, label, timeout = 12000) => app.waitFor(expr, { label, timeout });
+    out(`WRITING AUDIT ${title} [${TAG}] (${new Date().toISOString()})`);
+    await d.boot();
+    // the reorg ON (and the preview door, when asked), kept in the URL's query so every hash navigation carries it
+    const q = ['reorg=1']; if (cfg.flag === 'on') q.push(`${THEMES[cfg.theme].flag}=1`); if (lift) q.push(`reorglift=${lift}`);
+    await ev(`history.replaceState(null, '', '/?${q.join('&')}#/')`);
+    await app.reload();
+    await waitFor("!!document.querySelector('.wz-arrival')", 'the Desk', 20000);
+    await waitFor("!document.querySelector('.wz-splash')", 'splash gone', 20000).catch(() => {});
+    out(`INFO reorg: ${JSON.stringify(await ev("({ q: location.search, top: !!document.querySelector('.reorg-top'), theme: document.documentElement.getAttribute('data-theme') })"))}`);
+
+    // ---- helpers --------------------------------------------------------------------------------------------------------------------------------
+    let docN = 0;
+    /** a Doc (a set) of Parts holding `texts`, opened on Part `at` in `mode`; returns the Part ids */
+    const openDoc = async (texts, mode = 'drafting', at = 0) => {
+      const tag = `wa8-${Date.now().toString(36)}-${++docN}`;
+      await ev("location.hash = '#/'"); await sleep(200);
+      const ids = await ev(`(() => { const W = window; const set = W.wrizoCreateProject(${JSON.stringify('Audit Doc ' + docN)}); const ids = [];
+        ${JSON.stringify(texts)}.forEach((t, i) => { const id = ${JSON.stringify(tag)} + '-' + i; ids.push(id);
+          W.wrizoCreateJournalPage({ id, text: t, createdAt: new Date(Date.now() + i).toISOString(), origin: 'project', source: 'page', projectId: set.id, orderIndex: i });
+          localStorage.setItem('wrizo-mode-page-' + id, ${JSON.stringify(mode)}); });
+        W.wrizoFlushNow(); return ids; })()`);
+      await ev(`location.hash = '#/page/${ids[at]}'`);
+      await waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.mode-page')", 'the editor', 15000);
+      await waitFor(`window.__wa && window.__wa.read().text === ${JSON.stringify(texts[at])}`, 'the editor holds the Part', 10000);
+      await sleep(400); await d.still(); d.errors.length = 0;
+      return ids;
+    };
+    const settle = async () => { await d.frames(); await sleep(300); return d.read(); };
+    /** the page judged after a step, against the model `exp` (text, anchor, focus); `before` holds the page's rect the step must keep */
+    const judge = async (id, label, exp, before, obs = {}) => {
+      const late = await settle();
+      if (late.collapsed && late.focused && !(late.theme === 'flux' && late.fluxCaret)) { const px = await d.pixelCaret(6); late.px = px; late.pxTries = px ? px.tries : 6; }
+      const box = late.collapsed && late.focus !== null ? await d.box(late.focus) : null;
+      const v = exp ? verify({ exp, box, before: before || late, early: late, late, errors: d.errors.splice(0) }) : { fails: [], notes: [] };
+      const r = { id, label, fails: v.fails, notes: v.notes, obs: { ...obs, text: (late.text || '').slice(-120), caret: [late.anchor, late.focus], focused: late.focused } };
+      results.push(r);
+      out(`${v.fails.length ? 'FAIL' : 'PASS'} ${id} ${label}${v.fails.length ? '  ' + JSON.stringify(v.fails).slice(0, 700) : ''}${Object.keys(obs).length ? '  OBS ' + JSON.stringify(obs).slice(0, 500) : ''}`);
+      return late;
+    };
+    const finding = (id, label, check, detail, obs = {}) => { results.push({ id, label, fails: [{ check, detail }], notes: [], obs }); out(`FAIL ${id} ${label}  ${JSON.stringify({ check, detail, obs }).slice(0, 700)}`); };
+    const has = (sel) => ev(`!!document.querySelector(${JSON.stringify(sel)})`);
+    /** a real mouse press on the first element matching `sel` (its own mousedown rules, focus kept or not, as a writer's press) */
+    const press = async (sel) => {
+      const p = await ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), dis: !!e.disabled }; })()`);
+      if (!p || p.dis) return false; await d.click(p.x, p.y); await sleep(350); return true;
+    };
+    const need = async (id, sel, why) => { if (await has(sel)) return true; uncovered.push({ id, why: `${why} (${sel} not on the page in ${TAG})` }); out(`NOTCOVERED ${id} ${why}`); return false; };
+    const frontOpen = async () => { if (!(await ev("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await press('.wz-sliver-grip'); await sleep(400); } };
+    const refocus = async (a, f = a) => { await ev("document.querySelector('.forward-only-editor')?.focus()"); await d.place(a, f); await sleep(150); };
+    const want = (cid) => !only || only.has(cid);
+    const run = async (cid, fn) => { if (!want(cid)) return; try { await fn(); } catch (e) { uncovered.push({ id: cid, why: 'harness: ' + String(e && e.message || e).slice(0, 200) }); out(`NOTCOVERED ${cid} harness error: ${String(e && e.message || e).slice(0, 200)}`); } };
+
+    // ---- PARTS ----------------------------------------------------------------------------------------------------------------------------------
+    await run('P', async () => {
+      const A = 'Alpha beta gamma.\nDelta epsilon zeta.', B = 'The second part.';
+      const ids = await openDoc([A, B]);
+      const cut = A.indexOf('Delta');
+      await refocus(cut);
+      const before = await d.read();
+      await frontOpen(); await press('#wz-sliver-tab-parts'); await sleep(300);
+      if (!(await need('P1', '[data-parts-structure-toggle]', 'the Parts tab\'s Structure'))) return;
+      if (await ev("document.querySelector('[data-parts-structure-toggle]')?.getAttribute('aria-expanded') !== 'true'")) await press('[data-parts-structure-toggle]');
+      await refocus(cut);
+      if (!(await need('P1', '[data-parts-split]', 'Split here'))) return;
+      await press('[data-parts-split]'); await sleep(900);
+      const r1 = await d.read();
+      const said = await ev("(document.querySelector('[data-parts-said]') || {}).textContent || null");
+      const head = A.slice(0, cut).replace(/\n$/, '');
+      // the writer's expectation: she stays on the head, the caret at its end, focus in the page, the page where it was
+      await judge('P1', 'Split here at the caret: the head stays, the caret at its end, the page in focus and unmoved', { text: r1.text, a: (r1.text || '').length, f: (r1.text || '').length }, before, { said, head, gotHeadMatches: (r1.text || '').replace(/\n$/, '') === head });
+      await d.type('Z'); await sleep(300);
+      const r2 = await d.read();
+      await judge('P2', 'type after the split: the letter lands at the caret (the end of the head)', { text: r1.text + 'Z', a: (r1.text || '').length + 1, f: (r1.text || '').length + 1 }, before, { got: (r2.text || '').slice(-30) });
+      if (!(await need('P3', '[data-part-step="1"]', 'the Part arrows'))) return;
+      await press('[data-part-step="1"]'); await sleep(1200);
+      await waitFor("!!document.querySelector('.forward-only-editor')", 'the next Part', 10000);
+      const r3 = await d.read();
+      const tail = A.slice(cut);
+      await judge('P3a', 'the next Part (the tail) by the arrows: its text is the tail, the caret is in it and drawn', { text: r3.text, a: r3.anchor ?? 0, f: r3.focus ?? 0 }, null, { tailMatches: r3.text === tail, text0: (r3.text || '').slice(0, 40), caret: [r3.anchor, r3.focus] });
+      const at3 = r3.focus ?? 0;
+      await d.type('Q'); await sleep(300);
+      await judge('P3b', 'type on the next Part: the letter lands at the caret', { text: (r3.text || '').slice(0, at3) + 'Q' + (r3.text || '').slice(at3), a: at3 + 1, f: at3 + 1 }, null);
+      if (!(await need('P4', '[data-structure-act="join"]', 'Join (the Structure section)'))) return;
+      const tailNow = (await d.read()).text;
+      await press('[data-structure-act="join"]'); await sleep(1500);
+      await waitFor("!!document.querySelector('.forward-only-editor')", 'the joined Part', 10000).catch(() => {});
+      const r4 = await d.read();
+      await judge('P4', 'Join it back onto the Part above: one Part holds both halves, the caret in it and drawn', { text: r4.text, a: r4.anchor ?? 0, f: r4.focus ?? 0 }, null,
+        { holdsBoth: (r4.text || '').includes(r1.text + 'Z') && (r4.text || '').includes(tailNow), caret: [r4.anchor, r4.focus], ids });
+    });
+
+    // ---- FIND -----------------------------------------------------------------------------------------------------------------------------------
+    await run('F', async () => {
+      const T = 'The toll rose at dawn.\nNobody paid the toll.';
+      await openDoc([T]);
+      await refocus(T.length);
+      const before = await d.read();
+      if (!(await need('F1', '[data-top-search]', 'the top rail\'s search door'))) return;
+      await press('[data-top-search]'); await sleep(600);
+      if (!(await need('F1', '[data-search-q]', 'the search field'))) return;
+      await d.type('toll'); await sleep(500);
+      await d.key('Enter'); await sleep(500);
+      const hits = await ev("(window.CSS && CSS.highlights && CSS.highlights.get('wz-search')) ? CSS.highlights.get('wz-search').size : null");
+      await press('.forward-only-editor'); await refocus(T.length);
+      await d.type('!'); await sleep(300);
+      await judge('F1', 'with the search open on "toll": back in the page, a letter lands at the caret; the page stays put', { text: T + '!', a: T.length + 1, f: T.length + 1 }, before, { hits });
+      if (!(await need('F2', '[data-replace-toggle]', 'Replace'))) return;
+      await press('[data-replace-toggle]'); await sleep(300);
+      await press('input[data-replace-with]'); await d.type('fee'); await sleep(200);
+      await press('[data-replace-all]'); await sleep(800);
+      const r = await d.read();
+      const want2 = (T + '!').replace(/toll/g, 'fee');
+      await judge('F2a', 'Replace all ("toll" -> "fee"): the page reads the replaced text', { text: r.text, a: r.anchor ?? 0, f: r.focus ?? 0 }, before, { replaced: r.text === want2 });
+      if (await has('[data-replace-undo]')) { await press('[data-replace-undo]'); await sleep(800); const u = await d.read(); await judge('F2b', 'Undo the replace: the page reads the text before it', { text: u.text, a: u.anchor ?? 0, f: u.focus ?? 0 }, before, { restored: u.text === T + '!' }); }
+      await d.key('Escape'); await sleep(300);
+    });
+
+    // ---- NOTES ----------------------------------------------------------------------------------------------------------------------------------
+    await run('N', async () => {
+      const T = 'A claim worth a note.';
+      await openDoc([T]);
+      await refocus(T.length);
+      const before = await d.read();
+      await d.type('[^1]'); await sleep(200);
+      await judge('N1a', 'a footnote marker typed by hand', { text: T + '[^1]', a: T.length + 4, f: T.length + 4 }, before);
+      await d.key('Enter'); await d.type('[^1]: The note itself.'); await sleep(400);
+      const t1 = T + '[^1]\n[^1]: The note itself.';
+      await judge('N1b', 'its note line typed by hand (drawn as a note): the text and the caret drawn at its end', { text: t1, a: t1.length, f: t1.length }, before,
+        { noteRow: await ev("!!document.querySelector('.forward-only-editor .md-note')") });
+      const T2 = 'Body text for the button.';
+      await openDoc([T2]);
+      await refocus(4);
+      const b2 = await d.read();
+      await frontOpen(); await press('#wz-sliver-tab-text'); await sleep(300);
+      if (!(await need('N2', '[data-text-fold="more"]', 'the TEXT tab\'s More'))) return;
+      await press('[data-text-fold="more"]'); await sleep(300);
+      await refocus(4);
+      if (!(await need('N2', '[data-note-pick="footnote"]', 'the footnote button'))) return;
+      await press('[data-note-pick="footnote"]'); await sleep(600);
+      const r = await d.read();
+      await judge('N2a', 'the footnote button: a marker at the caret, its note line at the end, the caret at the end and drawn, focus in the page', { text: r.text, a: (r.text || '').length, f: (r.text || '').length }, b2, { text: r.text });
+      await d.type('Its note.'); await sleep(300);
+      await judge('N2b', 'type the note: it lands on the note line', { text: r.text + 'Its note.', a: (r.text || '').length + 9, f: (r.text || '').length + 9 }, b2);
+    });
+
+    // ---- SUP / SUB ------------------------------------------------------------------------------------------------------------------------------
+    await run('U', async () => {
+      await openDoc(['']);
+      await refocus(0);
+      const before = await d.read();
+      await d.type('E = mc^2^ holds'); await sleep(300);
+      const t = 'E = mc^2^ holds';
+      await judge('U1a', 'superscript typed by hand (^2^): the text, and the caret drawn after the hidden markers', { text: t, a: t.length, f: t.length }, before,
+        { sup: await ev("!!document.querySelector('.forward-only-editor .md-sup')") });
+      for (let i = 0; i < 6; i++) await d.key('ArrowLeft');
+      await d.type('!'); await sleep(300);
+      const at = t.length - 6;
+      await judge('U1b', 'six ArrowLefts across the hidden markers, then a letter: it lands where the model says', { text: t.slice(0, at) + '!' + t.slice(at), a: at + 1, f: at + 1 }, before);
+      await openDoc(['H2O is water']);
+      await refocus(1, 2);
+      const b2 = await d.read();
+      await frontOpen(); await press('#wz-sliver-tab-text'); await sleep(300);
+      if (!(await need('U2', '[data-style-pick="sub"]', 'the sub button'))) return;
+      await press('[data-style-pick="sub"]'); await sleep(500);
+      const r = await d.read();
+      await judge('U2', 'the sub button on "2": the text holds ~2~, the selection or caret on it, focus in the page', { text: r.text, a: r.anchor ?? 0, f: r.focus ?? 0 }, b2, { text: r.text, wantText: 'H~2~O is water', sub: await ev("!!document.querySelector('.forward-only-editor .md-sub')") });
+    });
+
+    // ---- SPLIT SCREEN ---------------------------------------------------------------------------------------------------------------------------
+    await run('S', async () => {
+      const T = 'The page beside its asset.';
+      const ids = await openDoc([T, 'The asset page.']);
+      await ev(`window.wrizoAddPageLink(${JSON.stringify(ids[0])}, { bEntryId: ${JSON.stringify(ids[1])} })`);
+      await ev(`location.hash = '#/'`); await sleep(200); await ev(`location.hash = '#/page/${ids[0]}'`);
+      await waitFor(`window.__wa && window.__wa.read().text === ${JSON.stringify(T)}`, 'the page again', 10000); await sleep(400); await d.still();
+      await refocus(T.length);
+      const before = await d.read();
+      const opened = await ev(`(() => { if (!window.wrizoSplit) return false; window.wrizoSplit.open(${JSON.stringify(ids[0])}, { entryId: ${JSON.stringify(ids[1])} }); return true; })()`);
+      if (!opened) { uncovered.push({ id: 'S1', why: `the split's test door (window.wrizoSplit) is not on the page in ${TAG}` }); out('NOTCOVERED S1 the split'); return; }
+      await sleep(900); await d.still();
+      const open = await d.read();
+      await refocus(T.length);
+      await d.type(' Typed beside it.'); await sleep(300);
+      await judge('S1a', 'with an asset open beside the page: typing lands at the caret, drawn, focus kept (the page\'s rect compared with before it opened)', { text: T + ' Typed beside it.', a: T.length + 17, f: T.length + 17 }, open,
+        { pageBefore: before.page, pageOpen: open.page, split: await ev("!!document.querySelector('aside.wz-split-asset')") });
+      if (await has('[data-split-close]')) { await press('[data-split-close]'); await sleep(800); await d.still(); const c = await d.read(); out(`OBS S1b the page after the split closes: ${JSON.stringify({ before: before.page, after: c.page, same: JSON.stringify(before.page) === JSON.stringify(c.page) })}`);
+        if (JSON.stringify(before.page) !== JSON.stringify(c.page)) finding('S1b', 'the page returns to its own rect when the split closes', 'page', `before ${JSON.stringify(before.page)} after ${JSON.stringify(c.page)}`); }
+    });
+
+    // ---- TYPEWRITER -----------------------------------------------------------------------------------------------------------------------------
+    await run('T', async () => {
+      const T = 'Start.';
+      await openDoc([T], 'journal');
+      await refocus(T.length);
+      await d.still(); const before = await d.read();
+      await d.type(' More words here.'); await sleep(300);
+      const t1 = T + ' More words here.';
+      await judge('T1a', 'Free Write (the Typewriter, the reorg on): type, the caret drawn in the zoom, the page holds still', { text: t1, a: t1.length, f: t1.length }, before,
+        { zoom: await ev("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]:not(.wz-letter-measure *)')"), front: await ev("!!document.querySelector('.wz-sliver')") });
+      await d.key('Enter'); await d.type('Next line.'); await sleep(400);
+      const t2 = t1 + '\nNext line.';
+      await judge('T1b', 'Enter, then a new line in the Typewriter', { text: t2, a: t2.length, f: t2.length }, before);
+    });
+
+    // ---- LONG -----------------------------------------------------------------------------------------------------------------------------------
+    await run('L', async () => {
+      const para = Array.from({ length: 100 }, (_, i) => 'word' + i).join(' ');
+      const L = Array.from({ length: 100 }, () => para).join('\n\n');   // 10,000 words
+      await openDoc([L]);
+      await refocus(L.length);
+      const before = await d.read();
+      const t0 = Date.now(); await d.type(' End of it.'); const ms = Date.now() - t0;
+      await judge('L1a', 'a 10,000-word Doc: type at the very end', { text: L + ' End of it.', a: L.length + 11, f: L.length + 11 }, before, { msFor11Keys: ms });
+      const mid = Math.floor(L.length / 2); const midAt = L.indexOf(' ', mid);
+      await refocus(midAt);
+      const b2 = await d.read();
+      const t1 = Date.now(); await d.type(' mid'); const ms2 = Date.now() - t1;
+      const L2 = L + ' End of it.';
+      await judge('L1b', 'the middle of the same Doc: type there, the caret drawn, the view stays', { text: L2.slice(0, midAt) + ' mid' + L2.slice(midAt), a: midAt + 4, f: midAt + 4 }, b2, { msFor4Keys: ms2 });
+    });
+  });
+
+  const failed = results.filter((r) => r.fails.length);
+  console.log(`\nWRITING AUDIT ${title} [${TAG}]: ${results.length} steps judged, ${failed.length} with a finding, ${uncovered.length} not covered`);
+  for (const u of uncovered) console.log(`NOT COVERED ${u.id}: ${u.why}`);
+  if (cfg.out) fs.writeFileSync(path.join(cfg.out, `s8-${TAG.replace(/\//g, '_')}.json`), JSON.stringify({ tag: TAG, results, uncovered }, null, 1));
+  process.exit(failed.length ? 1 : 0);
+}
