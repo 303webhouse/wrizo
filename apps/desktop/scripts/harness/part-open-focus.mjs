@@ -7,7 +7,7 @@
 //   PF2  Draft (BUILD): the caret is at the START of the Part (Fable's word), so the next key types there: a Q typed after the move is the first character of the Part's words
 //   PF3  Free Write (SPRINT, the Typewriter: forward-only, its insertion point is always the end of the Part): the focus is in the editor and a Q typed after the move lands at the end of the Part's words
 //   PF4  the old Part kept what she had typed in it (nothing of the move's typing is in it)
-//   PF5  CONTROLS: a page opened by any other door (the Desk's route) is left exactly as it was: no focus is taken (the active element is not the editor) - the fix is for her own moves between Parts only
+//   PF5  CONTROL: a Free Write page opened by any other door (the Desk's route) is left exactly as it was: no focus is taken (the active element is not the editor) - the fix is for her own moves between Parts only (a Draft page takes its editor at its mount anyway)
 // In Machina (?reorg=1) and Arbor (?reorg=1&arbor2=1 with the preview door ?reorglift=plateau.* for the pieces the table has not switched on).
 // Run: node scripts/harness/part-open-focus.mjs (from apps/desktop; a box turn or Actions)
 import { withHarness } from '../runtime-verify.mjs';
@@ -24,7 +24,7 @@ const CFGS = [
 const DOORS = [
   { id: 'arrow', label: 'the next-Part arrow on the scrollbar', press: (ids) => `(() => { const b = document.querySelector('[data-part-step="1"]'); if (!b || b.disabled) return false; b.click(); return true; })()` },
   { id: 'foot', label: 'the "Next" line at the Part\'s foot', press: (ids) => `(() => { const b = document.querySelector('[data-part-go="${ids[1]}"]'); if (!b) return false; b.click(); return true; })()` },
-  { id: 'rail', label: 'a row of the Parts list the top rail\'s Part name drops', press: (ids) => `(() => { const c = document.querySelector('[data-top-part-count]'); if (!c) return false; c.click(); const r = document.querySelector('[data-top-parts-drop] [data-part-row="${ids[1]}"]'); if (!r) return 'norow'; r.click(); return true; })()` },
+  { id: 'rail', label: 'a row of the Parts list the top rail\'s Part name drops', first: () => "(() => { const c = document.querySelector('[data-top-part-count]'); if (!c) return false; c.click(); return true; })()", press: (ids) => `(() => { const r = document.querySelector('[data-top-parts-drop] [data-part-row="${ids[1]}"]'); if (!r) return 'norow'; r.click(); return true; })()` },
 ];
 const STATE = () => `(() => {
   const ed = document.querySelector('.forward-only-editor'); const a = document.activeElement; const sel = getSelection();
@@ -64,6 +64,7 @@ try { await withHarness(async (app) => {
         // her caret in the first Part: she is writing there (a few characters typed first)
         await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus({ preventScroll: true }); return true; })()");
         await app.typeKeys('!'); await sleep(900);
+        if (door.first) { const f = await ev(door.first()); if (f !== true) { ok(`PF1 [${cfg.name} ${stage}] ${door.label}: the door exists on the page`, false, JSON.stringify({ first: f })); continue; } await sleep(900); }
         const pressed = await ev(door.press(ids));
         await sleep(300);
         const there = await waitText(TEXTS[1]);
@@ -84,7 +85,7 @@ try { await withHarness(async (app) => {
       }
     }
     // PF5: a page opened by the route (not her own move) takes no focus
-    const ids = await openDoc('drafting');
+    const ids = await openDoc('journal');
     await ev("document.activeElement && document.activeElement.blur && document.activeElement.blur()");
     await ev(`location.hash = '#/page/${ids[1]}'`);
     await waitText(TEXTS[1]);
