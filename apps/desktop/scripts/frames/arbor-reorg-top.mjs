@@ -6,7 +6,7 @@
 //      -f screens_file=apps/desktop/scripts/frames/arbor-reorg-top.mjs -f screens=top-page-day,top-page-night,top-canvas-day,top-canvas-night,top-search-day
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function setUp(app, room, id) {
+async function setUp(app, room, id, lift = 'plateau.rail,plateau.top') {
   await app.evalJs(`(() => { if ((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).some((e) => e.id === 'atf-2')) return true;
     const W = window; const drawer = W.wrizoCreateDrawer('Fiction'); const mill = W.wrizoCreateProject('The Mill'); W.wrizoSetProjectDrawer(mill.id, drawer.id);
     const page = (pid, text, extra) => W.wrizoCreateJournalPage({ id: pid, text, createdAt: '2026-04-01T00:00:00.000Z', source: 'page', ...extra });
@@ -16,7 +16,7 @@ async function setUp(app, room, id) {
     page('atf-c', 'Plot canvas', { origin: 'loose', pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
     W.wrizoFlushNow(); return true; })()`);
   await sleep(400);
-  await app.evalJs(`localStorage.setItem('wrizo-theme', 'plateau'); history.replaceState(null, '', '/?reorg=1&reorglift=plateau.rail,plateau.top&arbor2room=${room}#/page/${id}'); null`);
+  await app.evalJs(`localStorage.setItem('wrizo-theme', 'plateau'); history.replaceState(null, '', '/?reorg=1&reorglift=${lift}&arbor2room=${room}#/page/${id}'); null`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.reorg-top')", { label: 'the reorg top bar in Arbor', timeout: 20000 }).catch(() => {});
   await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor && window.wrizoParts.setPartColor('atf-2', 'c'); null");
@@ -24,7 +24,16 @@ async function setUp(app, room, id) {
 }
 const report = async (app, name) => console.log(`ARBOR-TOP-FRAME ${name} ${JSON.stringify(await app.evalJs(`(() => { const t = document.querySelector('.reorg-top'); if (!t) return null; const b = t.closest('.sprint-nav'); return { kind: t.getAttribute('data-reorg-top'), text: (t.textContent || '').trim().slice(0, 160), bar: b ? getComputedStyle(b).backgroundColor : null }; })()`))}`);
 
+// the Wrizors' REAL 2 (arbor-reorg-pass-1.md §1): the bar in PUBLISH keeps its one row and its height; the publishing view lifted too (plateau.uplink)
+async function publish(app, room) {
+  await setUp(app, room, 'atf-2', 'plateau.rail,plateau.top,plateau.uplink');
+  await app.evalJs("document.querySelector('.sprint-nav [data-mode-key=\"publish\"]')?.click(); null"); await sleep(1200);
+  await app.mouseMove(700, 400); await sleep(400);
+}
+
 export default {
+  'top-publish-day': async (app) => { await publish(app, 'day'); await report(app, 'top-publish-day'); },
+  'top-publish-night': async (app) => { await publish(app, 'night'); await report(app, 'top-publish-night'); },
   'top-page-day': async (app) => { await setUp(app, 'day', 'atf-2'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'top-page-day'); },
   'top-page-night': async (app) => { await setUp(app, 'night', 'atf-2'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'top-page-night'); },
   'top-canvas-day': async (app) => { await setUp(app, 'day', 'atf-c'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'top-canvas-day'); },

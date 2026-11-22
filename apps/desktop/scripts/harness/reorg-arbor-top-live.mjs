@@ -29,6 +29,8 @@
 //         MUT-P1  the Publish reading with the bar 41 px taller turns P1's test red
 //         P2  the page's rect (column, paper, editor) is the same in DRAFT and with PUBLISH's view open over it (Free Write is the ruled Typewriter
 //             exception, so it is not compared)
+//         P2-B [successor] the page (column and paper) keeps its rect in DRAFT and in PUBLISH (the editor is under INK's publishing view, REAL 3);
+//             MUT-P2-B  the page 41 px lower in Publish fails it
 //         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
 //             words read 4.5:1 or better on the paper as drawn
 //
@@ -160,7 +162,15 @@ await withHarness(async (app) => {
   ok('P1 in FREE WRITE, DRAFT, REVISE and PUBLISH the bar keeps one row, its names are not bare buttons, and its height is the same (the publishing view lifted too)', stg.publish && stg.publish.pub && p1(stg), { pubOpen: stg.publish && stg.publish.pub, ...p1Detail(stg) });
   const tall = stg.publish && stg.publish.top && stg.publish.top.bar ? { ...stg, publish: { ...stg.publish, top: { ...stg.publish.top, bar: { ...stg.publish.top.bar, h: stg.publish.top.bar.h + 41, b: stg.publish.top.bar.b + 41 } } } } : null;
   ok('MUT-P1 the Publish reading with the bar 41 px taller turns P1\'s test red', !!tall && p1(stg) !== p1(tall) && !p1(tall), tall && tall.publish.top.bar);
-  ok('P2 the page\'s rect (column, paper, editor) is the same in DRAFT and with PUBLISH\'s view open over it', !!stg.draft && !!stg.publish && stg.publish.pub && stg.draft.page !== '- | - | -' && stg.draft.page === stg.publish.page, { draft: stg.draft && stg.draft.page, publish: stg.publish && stg.publish.page });
+  // SUPERSEDED (Actions 44986055097 on 4f2aff23: red on the EDITOR alone - the column and the paper identical - because on this base Arbor's publishing
+  // view is undressed (INK's dress, a95bdba7, the Wrizors' REAL 3, rides the same train) and stands in the page's flow over the editor; the Wrizors'
+  // REAL 2 measured the PAGE moving, the column and the paper). The original, verbatim:
+  // ok('P2 the page\'s rect (column, paper, editor) is the same in DRAFT and with PUBLISH\'s view open over it', !!stg.draft && !!stg.publish && stg.publish.pub && stg.draft.page !== '- | - | -' && stg.draft.page === stg.publish.page, { draft: stg.draft && stg.draft.page, publish: stg.publish && stg.publish.page });
+  const colPaper = (s) => String(s || '').split('|').slice(0, 2).map((x) => x.trim()).join(' | ');
+  const p2b = (d, p) => !!d && !!p && colPaper(d).split(' | ').length === 2 && colPaper(d).split(' | ').every((x) => x !== '-' && x !== '') && colPaper(d) === colPaper(p);
+  ok('P2-B the page (its column and its paper) keeps its rect in DRAFT and with PUBLISH\'s view open over it', !!stg.publish && stg.publish.pub && p2b(stg.draft && stg.draft.page, stg.publish && stg.publish.page), { draft: stg.draft && stg.draft.page, publish: stg.publish && stg.publish.page });
+  const sunk = stg.publish && stg.publish.page ? stg.publish.page.split('|').map((r, i) => (i < 2 ? r.trim().split(',').map((x, j) => (j === 1 ? String(+x + 41) : x)).join(',') : r.trim())).join(' | ') : null;
+  ok('MUT-P2-B the Publish reading with the page 41 px lower (the Wrizors\' REAL 2) turns P2-B\'s test red', !!sunk && p2b(stg.draft && stg.draft.page, stg.publish.page) && !p2b(stg.draft && stg.draft.page, sunk), sunk);
 
   await visit(app, '/?reorg=1&arbor2=0', 'at-2', 'machina');
   const machina = await app.evalJs("({ top: !!document.querySelector('.reorg-top'), tags: document.querySelectorAll('.reorg-top-tag').length })");
@@ -168,7 +178,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
+const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
