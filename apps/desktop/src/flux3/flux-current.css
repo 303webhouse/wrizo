@@ -1,0 +1,29 @@
+/* FLUX 3 - THE CURRENT (src/flux3/fluxCurrent.ts; Fable, Nov 21: the hands open as current, and the stage current v2). Loaded only under ?flux3=1 (boot.ts). Every rule is scoped to the Flux theme under the flag.
+   Both draw only after a click and rest under reduced motion; every keyframe here is transform or opacity alone, so nothing animates layout or paint. */
+
+/* THE STAGE SPARK: one svg over the room, taking no pointer. Its paths keep to the top bar and the gutters (fluxCurrentPath.ts), so it never lies over the page. The pale head carries a soft 2 px glow at most. */
+:root[data-flux3][data-theme='flux'] .flux-current{ position:fixed; left:0; top:0; z-index:60; pointer-events:none; overflow:visible; }
+:root[data-flux3][data-theme='flux'] .flux-current path{ stroke-linecap:butt; stroke-linejoin:miter; }
+:root[data-flux3][data-theme='flux'] .flux-current .flux-current-head{ filter:drop-shadow(0 0 2px #BEEBFF); }
+
+/* THE HANDS' CURRENT: a box on the menu's own box (fluxCurrent.ts sets its left, top and width), nothing taller than the line. The line is the menu box's top edge, 1 px, drawn from the tab's end; the electron
+   (a 4 px square) runs it from the tab's end to the far end and starts again, for as long as the menu is open. */
+:root[data-flux3][data-theme='flux'] .flux-hand{ position:fixed; z-index:20; height:0; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux-hand-line{ position:absolute; left:0; top:0; width:100%; height:1px; background:#00C2FF; transform:scaleX(0); transform-origin:left center; animation:flux-hand-draw .22s ease-out forwards; }
+:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='right'] .flux-hand-line{ transform-origin:right center; }
+:root[data-flux3][data-theme='flux'] .flux-hand-electron{ position:absolute; top:-2px; width:4px; height:4px; background:#BEEBFF; box-shadow:0 0 3px #00C2FF; animation:flux-hand-run 1.5s linear .22s infinite; }
+:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='right'] .flux-hand-electron{ left:calc(100% - 4px); }
+:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='left'] .flux-hand-electron{ left:0; }
+@keyframes flux-hand-draw{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+@keyframes flux-hand-run{ from{ transform:translateX(0); } to{ transform:translateX(var(--run, 0px)); } }
+/* closing: the line draws back to its tab and the electron is gone */
+:root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-line{ animation:flux-hand-undraw .18s ease-in forwards; }
+:root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-electron{ display:none; }
+@keyframes flux-hand-undraw{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
+/* she is writing (her editor has focus): the electron rests - paused and not drawn. No script: the rule changes only when the focus does, never per key */
+:root[data-flux3][data-theme='flux']:has(.forward-only-editor:focus) .flux-hand-electron{ animation-play-state:paused; visibility:hidden; }
+
+/* reduced motion: none of it (fluxCurrent.ts also draws nothing then; this is the belt) */
+@media (prefers-reduced-motion: reduce){
+  :root[data-flux3][data-theme='flux'] .flux-current, :root[data-flux3][data-theme='flux'] .flux-hand{ display:none; }
+}
