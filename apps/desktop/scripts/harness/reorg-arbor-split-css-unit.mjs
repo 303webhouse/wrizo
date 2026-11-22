@@ -50,8 +50,13 @@ function suite(css) {
   });
   t('QUIET', () => {
     const touches = rs.filter((x) => /\.mode-stage|\.mode-pagecol|\.mode-page\b|\.forward-only-editor|\.mode-paper/.test(x.sel)).map((x) => x.sel.slice(0, 70));
-    const geometry = rs.filter((x) => /(^|[\s;{])(width|height|left|right|top|bottom|margin|transform|position)\s*:/.test(x.body) && !/\.wz-split-(asset|grip)/.test(x.sel) && !/::-webkit-scrollbar/.test(x.sel)).map((x) => x.sel.slice(0, 70));
+    const geometry = rs.filter((x) => /(^|[\s;{])(width|height|left|right|top|bottom|margin|transform|position)\s*:/.test(x.body) && !/\.wz-split-(asset|grip)/.test(x.sel) && !/::-webkit-scrollbar/.test(x.sel) && !/\.desk-frame-instrument$/.test(x.sel)).map((x) => x.sel.slice(0, 70));
     return { pass: touches.length === 0 && geometry.length === 0, detail: J({ touches, geometry }) };
+  });
+  t('COUNT', () => {
+    // the Wrizors' pass 1, split NIT: the count row (the instrument under the page) stayed where the page used to be and ran under the docked half; it moves with the page by the same shift, so it stands under HER page. It is a status row, not the page: the page's own geometry stays untouched (QUIET)
+    const r = has(rs, /desk-frame-stage\[data-split='true'\] \.desk-frame-instrument$/, /left:\s*calc\(50% \+ var\(--wz-split-shift, 0px\)\)/);
+    return { pass: r, detail: J({ r }) };
   });
   t('PALETTE', () => { const all = hexes(css); const bad = all.filter((h) => !PALETTE.has(h)); return { pass: all.length >= 3 && bad.length === 0, detail: J({ n: all.length, bad }) }; });
   t('BRASS', () => ({ pass: css.length > 0 && !/var\(--brass\)|#C9A46B|--orange/i.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), detail: 'no brass in the split' }));
@@ -60,7 +65,7 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'SURFACE', 'GRIP', 'SCROLL', 'QUIET', 'PALETTE', 'BRASS']) ok(`${k} on the real 25-reorg-arbor-split.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-split.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'SURFACE', 'GRIP', 'SCROLL', 'QUIET', 'COUNT', 'PALETTE', 'BRASS']) ok(`${k} on the real 25-reorg-arbor-split.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-split.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 25-reorg-arbor-split.css after the Machina reorg sheets', at >= 0 && PARTS.some((p, i) => i > at && /25-reorg-arbor-split\.css$/.test(p)), J({ at }));
@@ -73,6 +78,7 @@ const MUT = [
   ['the handle is not 6 px', 'GRIP', (t) => t.replace('width:6px', () => 'width:12px')],
   ['the handle fills brass on hover', 'BRASS', (t) => t.replace(':hover::after{ background:#56632E', () => ':hover::after{ background:var(--brass)')],
   ['the stage keeps its scrollbars in a split', 'SCROLL', (t) => t.replace("[data-arbor2-room]", () => '[data-arbor2-room]').split('scrollbar-width:none').join('scrollbar-width:auto')],
+  ['the count row stays at the unshifted centre', 'COUNT', (t) => t.replace('left:calc(50% + var(--wz-split-shift, 0px))', () => 'left:50%')],
   ['the page side is moved', 'QUIET', (t) => `${t}\n${AR} .mode-stage{ left:40px; }\n`],
 ];
 for (const [name, key, fn] of MUT) {

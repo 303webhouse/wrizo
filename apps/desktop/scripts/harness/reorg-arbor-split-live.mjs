@@ -6,6 +6,7 @@
 //   AS3  scrollbars are hidden on the stage's scrollers and on the asset's half (scrollbar-width none), the page's own included
 //   AS4  both drawers are off in a split, and the page moves only by the reorg's SHIFT: the same top, width and height, left moved by --wz-split-shift (law 1)
 //   AS5  OFF: with the door on only plateau.back (no plateau.split) the split never draws; and the classic Plateau (?arbor2=0) never draws it even through the door
+//   AS6  the count row stands under her page: it ends before the docked half starts and is centred on the page (the Wrizors' pass 1)
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-split-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -82,6 +83,11 @@ await withHarness(async (app) => {
   ok('AS4 both drawers are off in a split, and the page moves only by the reorg\'s shift: the same top, width and height, left moved by --wz-split-shift',
     !!before && !!after && before.top === after.top && before.width === after.width && before.height === after.height && Math.abs((after.left - before.left) - shift) <= 1 && drawers.tutor !== 'visible' && drawers.tools !== 'visible', { before, after, shift, drawers });
 
+  // AS6 (the Wrizors' pass 1, split NIT): the count row stands under HER page: it ends at the page's right edge (never runs under the docked half) and is centred on the page, as the page is on the stage
+  const cnt = await app.evalJs("(() => { const r = (sel) => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return { left: Math.round(b.left * 10) / 10, right: Math.round(b.right * 10) / 10, width: Math.round(b.width * 10) / 10 }; }; return { row: r('.desk-frame-instrument'), page: r('.mode-pagecol') || r('.mode-page'), asset: r('.wz-split-asset') }; })()");
+  const centred = !!cnt && !!cnt.row && !!cnt.page && Math.abs((cnt.row.left + cnt.row.width / 2) - (cnt.page.left + cnt.page.width / 2)) <= 2;
+  ok('AS6 the count row stands under her page: it ends before the docked half starts and is centred on the page', centred && cnt.row.right <= cnt.asset.left + 1, cnt);
+
   await open(app, 'as-1', { lift: 'plateau.back' });
   await split(app);
   const noCell = await app.evalJs("!!document.querySelector('.wz-split-asset')");
@@ -92,7 +98,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 5;
+const EXPECTED = 6;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-SPLIT-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -8,6 +8,7 @@
 //   AB5  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
 //   AB6  Free Write: PLAN and GRAFTS are locked and the note reads "In Free Write the Tutor only offers prompts."; only TUTOR is in use
 //   AB7  Publish (top and uplink lifted through the door too): three tabs, none called Before you publish; "Before you publish" stands at the head of TUTOR
+//   AB9  Free Write (the Wrizors' pass 1, REAL 1 and NIT 2): PLAN, GRAFTS and TUTOR are all seen, PLAN and GRAFTS greyed, and the opened panel sits clear of her writing line
 //   AB8  OFF: without the door Arbor's own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 (the classic Plateau) even the door gives no Back menu
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-back-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -113,6 +114,12 @@ await withHarness(async (app) => {
   ok('AB6 Free Write: PLAN and GRAFTS are locked and the note reads "In Free Write the Tutor only offers prompts."; TUTOR is the one in use',
     mode === true && Array.isArray(free) && free.find((x) => x.id === 'plan')?.locked === true && free.find((x) => x.id === 'links')?.locked === true && free.find((x) => x.id === 'tutor')?.on === true && note === 'In Free Write the Tutor only offers prompts.', { mode, free, note });
 
+  // AB9 (the Wrizors' pass 1, REAL 1 and NIT 2): in Free Write the three tabs are SEEN, PLAN and GRAFTS greyed (the frames showed no tabs at all), and the opened panel sits clear of her writing line (law 1: the line is the page)
+  const seen = await app.evalJs(`(() => { const out = []; for (const b of document.querySelectorAll('[id^="wz-tutor-tab-"]')) { const r = b.getBoundingClientRect(); const c = getComputedStyle(b); let vis = true; for (let e = b; e; e = e.parentElement) { const s = getComputedStyle(e); if (s.visibility === 'hidden' || s.display === 'none' || Number(s.opacity) < 0.05) vis = false; } out.push({ id: b.id.replace('wz-tutor-tab-', ''), w: Math.round(r.width), h: Math.round(r.height), left: Math.round(r.left), top: Math.round(r.top), opacity: c.opacity, locked: b.getAttribute('data-locked') === 'true', visible: vis && r.width > 4 && r.height > 4 && r.right > 0 && r.left < innerWidth }); } return out; })()`);
+  const geoFree = await app.evalJs(`(() => { const ed = document.querySelector('.forward-only-editor'); const panel = document.querySelector('.wz-tutor-panel .wz-drawer-slide--right') || document.querySelector('.wz-tutor-panel'); if (!ed || !panel) return null; const rg = document.createRange(); rg.selectNodeContents(ed); const rects = [...rg.getClientRects()].filter((r) => r.width > 2 && r.height > 2); if (!rects.length) return { noLine: true }; const line = rects.reduce((a, r) => (r.bottom > a.bottom ? r : a), rects[0]); const p = panel.getBoundingClientRect(); const hit = !(p.right <= line.left || p.left >= line.right || p.bottom <= line.top || p.top >= line.bottom); return { panel: [p.left, p.top, p.right, p.bottom].map(Math.round), line: [line.left, line.top, line.right, line.bottom].map(Math.round), hit }; })()`);
+  ok('AB9 Free Write: PLAN, GRAFTS and TUTOR are all seen (PLAN and GRAFTS greyed) and the opened panel sits clear of her writing line',
+    Array.isArray(seen) && seen.length === 3 && seen.every((x) => x.visible) && seen.filter((x) => x.locked).length === 2 && !!geoFree && geoFree.hit === false, { seen, geoFree });
+
   await open(app, 'ab-1', { lift: 'plateau.back,plateau.top,plateau.uplink' });
   // the page may open in Free Write (AB6 left it there: the mode is remembered): the folded Before you publish is Draft's, so leave Free Write first
   await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*draft\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()"); await sleep(900);
@@ -132,7 +139,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 8;
+const EXPECTED = 9;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-BACK-LIVE VERIFY: PASS (${checks.length} checks)`
