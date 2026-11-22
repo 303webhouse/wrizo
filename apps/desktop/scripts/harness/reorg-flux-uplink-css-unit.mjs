@@ -8,7 +8,7 @@
 //   PALETTE  every hex colour is Flux's (blue above green: TK6) and the Machina greys are gone
 //   BRASS    no brass: brass is her act, and nothing here is one
 //   FOOT     the foot's second row fits one line (the side padding is capped, the gaps tighten, a button never breaks inside its label)
-// Run: node scripts/harness/reorg-arbor-publish-css-unit.mjs   (from apps/desktop; browserless: needs no box turn)
+// Run: node scripts/harness/reorg-flux-uplink-css-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { globalCssParts } from '../global-css.mjs';
@@ -54,7 +54,8 @@ function suite(css) {
     return { pass: over && noBox, detail: J({ over, noBox }) };
   });
   t('BUTTONS', () => {
-    const base = has(rs, /\.reorg-pub-btn$/, /border:\s*1px solid #7EB4C4/i) && has(rs, /\.reorg-pub-btn$/, /background:\s*#04141A/i) && has(rs, /\.reorg-pub-btn$/, /color:\s*var\(--text-hi\)/) && has(rs, /\.reorg-pub-btn$/, /height:\s*24px/);
+    // node dress is ONE rule: the 1 px #7EB4C4 edge, the #04141A fill and the text-hi words together (the twin's own greys do not count), and the 24 px height
+    const base = rs.some((x) => /\.reorg-pub-btn$/.test(x.sel) && /border:\s*1px solid #7EB4C4/i.test(x.body) && /background:\s*#04141A/i.test(x.body) && /color:\s*var\(--text-hi\)/.test(x.body)) && has(rs, /\.reorg-pub-btn$/, /height:\s*24px/);
     const hover = has(rs, /\.reorg-pub-btn:hover/, /background:\s*#0A2A33/i);
     const focus = has(rs, /\.reorg-pub-btn:focus-visible$/, /outline:\s*1px solid var\(--line-active\)/);
     return { pass: base && hover && focus, detail: J({ base, hover, focus }) };
@@ -87,7 +88,7 @@ const MUT = [
   ['the sheet gets a box (the focus ring comes back)', 'SHEET', (t) => t.replace('outline:none;', () => '')],
   ['the sheet no longer covers the paper', 'SHEET', (t) => t.replace('inset:0', () => 'inset:auto')],
   ['the sheet draws a border', 'SHEET', (t) => t.replace(`${AR} .reorg-pub{`, () => `${AR} .reorg-pub{ border:2px solid #7EB4C4;`)],
-  ['a button goes back to the browser grey', 'BUTTONS', (t) => t.replace('background:#04141A', () => 'background:#EFEFEF')],
+  ['a button goes back to the browser grey', 'BUTTONS', (t) => t.replace('border:1px solid #7EB4C4; background:#04141A', () => 'border:1px solid #7EB4C4; background:#EFEFEF')],
   ['the tick turns the browser blue', 'TICKS', (t) => t.split('accent-color:var(--line-active)').join('accent-color:#3F6183')],
   ['a Machina grey creeps back', 'PALETTE', (t) => t.replace('#7EB4C4', () => '#6A727B')],
   ['brass marks a button', 'BRASS', (t) => t.replace(`${AR} .reorg-pub-btn:focus-visible{`, () => `${AR} .reorg-pub-btn:focus-visible{ border-color:var(--orange);`)],
@@ -103,5 +104,5 @@ for (const [name, key, fn] of MUT) {
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 600)}`); if (!c.pass) bad += 1; }
-console.log(bad ? `\nREORG-ARBOR-PUBLISH-CSS-UNIT VERIFY: FAIL - ${bad}/${checks.length} failed` : `\nREORG-ARBOR-PUBLISH-CSS-UNIT VERIFY: PASS (${checks.length} checks)`);
+console.log(bad ? `\nREORG-FLUX-UPLINK-CSS-UNIT VERIFY: FAIL - ${bad}/${checks.length} failed` : `\nREORG-FLUX-UPLINK-CSS-UNIT VERIFY: PASS (${checks.length} checks)`);
 process.exit(bad ? 1 : 0);

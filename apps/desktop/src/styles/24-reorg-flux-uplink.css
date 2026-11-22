@@ -1,0 +1,43 @@
+/* THE REORG'S UPLINK IN FLUX (Fable, Nov 21, 4:07 pm; claude/wrizors/flux-reorg-spec.md section 9; the Wrizors' Flux Back menu pass 1, REAL 1 and 3). Every rule is under :root[data-flux3][data-theme='flux'] (the Flux redesign) and is reached only by markup the publishing sheet draws, so with the switch off, or in any other
+   theme, nothing here matches. The twins first: the Machina rules for the sheet (the whole Doc in one read-only scroll laid over the page glass, its foot of small buttons), re-scoped to the redesign with Flux's colours for Machina's greys; then Flux's dress. The piece is switched on for Flux only through reorg/themeGate.ts (flux.uplink; the preview door shows it before then). */
+:root[data-flux3][data-theme='flux'] .reorg-pub{ position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; box-sizing:border-box; outline:none; background:var(--paper); color:var(--ink-on-paper); border-radius:inherit; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-label{ flex:none; display:flex; align-items:center; height:40px; box-sizing:border-box; padding:0 var(--wz-page-pad-x, 38px); font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); white-space:nowrap; border-bottom:1px solid #1F5560; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; padding:18px var(--wz-page-pad-x, 38px) 28px; font-family:var(--font-prose); font-size:15px; line-height:1.6; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-title{ margin:0 0 18px; font-size:1.5em; font-weight:600; line-height:1.25; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-part{ position:relative; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-part + .reorg-pub-part{ margin-top:30px; padding-top:22px; border-top:1px solid #1F5560; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-part.is-off{ opacity:.4; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-head{ margin:0 0 8px; padding-right:28px; font-weight:600; line-height:1.3; }
+:root[data-flux3][data-theme='flux'] h2.reorg-pub-head{ font-size:1.2em; }
+:root[data-flux3][data-theme='flux'] h3.reorg-pub-head{ font-size:1.08em; }
+:root[data-flux3][data-theme='flux'] h4.reorg-pub-head{ font-size:1em; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-words{ white-space:pre-wrap; overflow-wrap:anywhere; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-empty{ margin:0; color:#5F8F95; font-style:italic; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-tick{ position:absolute; right:0; top:22px; display:flex; align-items:center; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-part:first-of-type .reorg-pub-tick{ top:0; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-tick input{ margin:0; width:15px; height:15px; accent-color:var(--line-active); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-foot{ flex:none; display:flex; align-items:center; gap:10px; box-sizing:border-box; padding:10px var(--wz-page-pad-x, 38px); border-top:1px solid #1F5560; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-pub-count{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-said{ flex:0 1 auto; min-width:0; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn{ flex:none; box-sizing:border-box; height:24px; padding:0 10px; margin:0; border:1px solid #5F8F95; border-radius:0; background:#04141A; color:var(--text-hi); font:inherit; letter-spacing:inherit; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn.is-quiet{ border-color:transparent; background:none; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn:hover:not([disabled]){ background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn[disabled]{ opacity:.35; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-foot{ flex-wrap:wrap; row-gap:8px; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-break{ flex:0 0 100%; height:0; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-exportlabel{ flex:none; margin-left:8px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#5F8F95; }
+
+/* ---- FLUX'S DRESS (the Wrizors' Flux Back menu pass 1, REAL 1 and 3; flux-reorg-spec section 9) ---- */
+/* the sheet is the page's own glass, laid exactly over it (so no page text shows beneath), and has no box of its own: the orange box was the browser's focus ring on the focused sheet */
+:root[data-flux3][data-theme='flux'] .reorg-pub:focus, :root[data-flux3][data-theme='flux'] .reorg-pub:focus-visible{ outline:none; }
+/* node dress: "Back to writing", "All", "None", "Copy text", "Copy formatted", "Export" and its three files: fill #04141A, 1 px #7EB4C4, text-hi; the pointed one fills #0A2A33; the focus ring is Flux's cyan */
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn{ border:1px solid #7EB4C4; background:#04141A; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn.is-quiet{ border-color:transparent; background:none; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn:hover:not([disabled]){ background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
+/* the ticks: Flux's cyan, never the browser's blue */
+:root[data-flux3][data-theme='flux'] .reorg-pub-tick input{ accent-color:var(--line-active); }
+/* the foot's second row fits one line: its side padding is capped at 28 px, the gaps tighten, and a button never breaks inside its label */
+:root[data-flux3][data-theme='flux'] .reorg-pub-foot{ padding-inline:min(var(--wz-page-pad-x, 38px), 28px); column-gap:6px; }
+:root[data-flux3][data-theme='flux'] .reorg-pub-btn{ padding:0 8px; white-space:nowrap; }
