@@ -33,7 +33,9 @@ const LIVE = run(ARBOR, { '../../theme': {}, '../terms': {}, '../../../arbor2/fl
 const canon = new Map();
 for (const f of ['chrome', 'settings', 'decks', 'help']) {
   for (const line of rd(`store/lexicon/canonical/${f}.ts`).split('\n')) {
-    const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // SUPERSEDED (Nov 22, ARBOR's pass 7 NIT 1 sets plainTrackerSwitch, a key the table is allowed besides the reorg* keys): the matcher read reorg* keys only. The original, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    const m = /^  (reorg[A-Za-z0-9]*|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }
@@ -100,7 +102,9 @@ function suite(src) {
   });
   t('ONLY', () => {
     const E = load(src), W = E.ARBOR_REORG_WORDS, live = (LIVE.ARBOR_OVERRIDES.plateau) || {};
-    const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 22, ARBOR's pass 7 NIT 1 sets plainTrackerSwitch, a key the table is allowed besides the reorg* keys): the original, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    const bad = Object.keys(W).filter((k) => !(/^reorg/.test(k) || k === 'plainTrackerSwitch') || !canon.has(k) || k in live);   // [successor] reorg* keys and the one named exception
     const merged = E.ARBOR_REORG_OVERRIDES.plateau;
     const kept = Object.keys(live).every((k) => merged[k] === live[k]);
     const others = Object.keys(E.ARBOR_REORG_OVERRIDES).sort().join(',') === 'plateau';
