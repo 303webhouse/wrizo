@@ -102,7 +102,14 @@ await withHarness(async (app) => {
   ok('S2 in Muted (dark room) each slot\'s tile draws the Muted colour with #151719 letters', mill.length === 6 && mill.every((x, i) => x.slot === 'abcdef'[i] && x.bg === rgb(MUTED_DARK[i]) && x.ink === rgb('#151719')), mill);
   const rowMuted = await app.evalJs(ROWREAD('cb-c'));
   const tint = MUTED_DARK[2].slice(1).match(/../g).map((h, i) => 0.1 * parseInt(h, 16) + 0.9 * [0x23, 0x27, 0x2B][i]);
-  ok('S5 in Muted the current Part\'s row is a 10% tint of its colour over the dark panel (2 per channel)', !!rowMuted && rowMuted.tint === 'c' && near(rowMuted.bg, tint), { rowMuted, want: tint.map((n) => +n.toFixed(1)) });
+  // SUPERSEDED (Nov 21, before this file's first green; Actions 44965381930 on ff7c81e6): S5 read the row's background only as rgb(r, g, b), and a
+  // colour-mix tint computes as color(srgb r g b) - there it read 0.2067 0.2090 0.1957, which is 52.7, 53.3, 49.9: the tint asked for. S5-B reads
+  // either form. Verbatim:
+  //   ok('S5 in Muted the current Part\'s row is a 10% tint of its colour over the dark panel (2 per channel)', !!rowMuted && rowMuted.tint === 'c' && near(rowMuted.bg, tint), { rowMuted, want: tint.map((n) => +n.toFixed(1)) });
+  const channels = (c) => { const a = /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(c || ''); if (a) return [+a[1], +a[2], +a[3]]; const s = /color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)/.exec(c || ''); return s ? [s[1], s[2], s[3]].map((v) => +v * 255) : null; };
+  const nearB = (c, want) => { const v = channels(c); return !!v && v.every((x, i) => Math.abs(x - want[i]) <= 2); };
+  ok('S5-B in Muted the current Part\'s row is a 10% tint of its colour over the dark panel (2 per channel; rgb() or color(srgb) read alike)', !!rowMuted && rowMuted.tint === 'c' && nearB(rowMuted.bg, tint),
+    { rowMuted, read: channels(rowMuted && rowMuted.bg), want: tint.map((n) => +n.toFixed(1)) });
   ok('S4 the current Part\'s bar is brass in Default and not in Muted', !!rowDefault && rowDefault.bar === 'brass' && rowDefault.barColour === BRASS && !!rowMuted && rowMuted.bar !== 'brass' && rowMuted.barColour !== BRASS, { rowDefault, rowMuted });
 
   await openPart(app, 'cb-o');

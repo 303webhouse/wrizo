@@ -62,6 +62,9 @@ export function ColourPicker({ partId, partName, current, at, onClose }: ColourP
     if (e.key === 'Escape') { e.preventDefault(); onClose(); }
   };
   const onSwatchKey = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
+    // Enter (or Space) picks the slot the keyboard is on, at the key itself - not left to the button's own activation, which a key event without
+    // its text does not trigger (Actions 44965381930: three arrows moved to E and Enter stored nothing)
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(PART_COLORS[i]); return; }
     const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
     if (!step) return;
     e.preventDefault();
