@@ -234,6 +234,8 @@ export const CANONICAL_CHROME = {
   flux3ViewHologram: 'Hologram',
   flux3WordOne: 'word',
   flux3WordMany: 'words',
+  flux3BlockOne: 'block',    // S4b L4: the page frame's header counts its blocks (a paragraph; a blank line is no block)
+  flux3BlockMany: 'blocks',
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',

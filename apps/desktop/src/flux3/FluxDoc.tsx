@@ -23,6 +23,7 @@ import { removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { setLinkDock } from '../store/linkDock';
 import { GraftPicker } from '../components/GraftPicker';
+import { nodeHex } from './FluxNodeRecord';
 
 /** A typing pause: the gutter is measured again this long after the last change to the text. */
 export const GUTTER_PAUSE_MS = 700;
@@ -43,13 +44,16 @@ export function FluxDoc(props: Props) {
 }
 
 interface GutterRow { n: number; words: number; y: number }
-interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean }
+interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean; padTop: number }
+/** S4b L4: the whole page's reading for the header (every block, not only the ones in view), taken on the same pause as the gutter. */
+interface Totals { blocks: number; words: number }
 
 function Doc({ paperRef, entryId }: Props) {
   const { t } = useDeskLexicon();
   const [host, setHost] = useState<HTMLElement | null>(null);
   const [rows, setRows] = useState<GutterRow[]>([]);
   const [frame, setFrame] = useState<Frame | null>(null);
+  const [totals, setTotals] = useState<Totals>({ blocks: 0, words: 0 });
   const [, setTick] = useState(0);
   const measures = useRef(0);
 
@@ -71,10 +75,11 @@ function Doc({ paperRef, entryId }: Props) {
     const R = ed ? rowsFor(ed) : undefined;
     if (!R || R.stale) return;
     const out: GutterRow[] = [];
-    let n = 0;
+    let n = 0, total = 0;
     R.lines.forEach((line, i) => {
       if (!line.trim()) return;
       n += 1;
+      total += countGoalWords(line);
       const row = R.rows[i];
       if (!row) return;
       const r = row.getBoundingClientRect();
@@ -83,7 +88,9 @@ function Doc({ paperRef, entryId }: Props) {
       out.push({ n, words: countGoalWords(line), y: Math.round(Math.max(r.top, sr.top) - hr.top) });
     });
     setRows(out);
-    setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true' });
+    setTotals((was) => (was.blocks === n && was.words === total ? was : { blocks: n, words: total }));
+    setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true',
+      padTop: parseFloat(getComputedStyle(page).paddingTop) || 0 });
   }, [paperRef, host]);
 
   useEffect(() => {
@@ -112,14 +119,31 @@ function Doc({ paperRef, entryId }: Props) {
     };
   }, [paperRef, host, measure]);
 
-  if (!host || !frame || frame.zoomed) return null;
+  if (!host || !frame) return null;
+  // S4b L4: the mark says "this page wears the Flux 3 frame", so plain Flux's in-page ring, inset brackets and head stand down (flux-v3.css); it stays while the
+  // page is zoomed (the Typewriter), where the frame itself is off as the gutter and ports are, so the old frame never comes back in its place
+  const mark = <i className="flux3-docframe-mark" data-flux3-docframe="" hidden />;
+  if (frame.zoomed) return createPortal(mark, host);
   const g = graftsOf({ entryId });
   const ports: GraftRow[] = [...g.Cards, ...g.Boards, ...g.Pages, ...g.Sources];
   const room = Math.max(0, Math.floor((frame.height - PORT_TOP - 24) / PORT_STEP));
   const shown = ports.slice(0, room);
   const hidden = ports.length - shown.length;
+  const headH = Math.max(18, Math.round(frame.padTop) - 4);
   return createPortal(
     <>
+      {mark}
+      {/* S4b L4 - THE PAGE'S FRAME (the mockup's #page::before/::after and #page .hd): two corner brackets just outside the glass (top-left and bottom-right,
+          the room's cyan), and a readout header across the page's top edge inside its top padding, so it never covers a word: the page's address and its
+          true counts (every block's words, the blocks, its connections: the same reading the gutter and the ports take, on the same pause; never per key) */}
+      <span className="flux3-bracket flux3-bracket-tl chrome-fade" aria-hidden="true" data-flux3-bracket="tl" style={{ left: frame.left - 5, top: frame.top - 5 }} />
+      <span className="flux3-bracket flux3-bracket-br chrome-fade" aria-hidden="true" data-flux3-bracket="br" style={{ left: frame.right - 11, top: frame.top + frame.height - 11 }} />
+      <div className="flux3-dochead chrome-fade" aria-hidden="true" data-flux3-dochead="" style={{ left: frame.left + 1, top: frame.top + 1, width: Math.max(0, frame.right - frame.left - 2), height: headH }}>
+        <span className="flux3-dochead-id">{t('linksKindPage')} // <span className="flux3-dochead-hex">0x{nodeHex(entryId)}</span></span>
+        <span className="flux3-dochead-n">
+          {totals.words} {totals.words === 1 ? t('flux3WordOne') : t('flux3WordMany')} · {totals.blocks} {totals.blocks === 1 ? t('flux3BlockOne') : t('flux3BlockMany')} · {ports.length} {ports.length === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
+        </span>
+      </div>
       <div className="flux3-gutter chrome-fade" aria-hidden="true" data-flux3-gutter="" data-measures={measures.current}
         style={{ left: frame.left - GUTTER_GAP, top: 0 }}>
         {rows.map((r) => (
