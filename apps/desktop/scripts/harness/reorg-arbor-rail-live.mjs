@@ -35,7 +35,8 @@
 //         A14 (the Wrizors' pass 2, section 2 NIT 1: "NO LETTERS", "YOUR OWN COLOUR", "CHOOSE A PICTURE" in caps; spec section 0: Arbor's buttons are in
 //             its sentence case) Box settings' buttons render as written - No letters, Your own colour, Choose a picture (innerText, which carries any
 //             text-transform)
-//         MUT-A14  the same reading in capitals turns A14's test red
+//         MUT-A14  the same reading in capitals turns A14's test red  [A14 parked Nov 22: Arbor's own-colour word is "Custom…" (INK's d574943d)]
+//         A14-B  the three buttons are drawn exactly as their words are written (innerText = textContent), none in capitals; MUT-A14-B capitals fail
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
 //
@@ -143,10 +144,20 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs(BOXSET);
   const chips = await app.evalJs("[...document.querySelectorAll('.wz-reorg-box-settings .wz-reorg-chip, .wz-reorg-chip')].filter((c, i, a) => a.indexOf(c) === i).map((c) => (c.innerText || '').trim()).filter(Boolean)");
-  const a14 = (list) => Array.isArray(list) && ['No letters', 'Your own colour', 'Choose a picture'].every((w) => list.includes(w)) && list.every((w) => w !== w.toUpperCase() || !/[A-Z]/.test(w));
-  ok('A14 Box settings\' buttons read in sentence case: No letters, Your own colour, Choose a picture', a14(chips), chips);
-  const caps = Array.isArray(chips) ? chips.map((w) => w.toUpperCase()) : null;
-  ok('MUT-A14 the same reading in capitals turns A14\'s test red', !!caps && caps.length > 0 && !a14(caps), caps);
+  // SUPERSEDED (train I5, pair 45004086246 on 32f24f66: A14 read ["No letters","Custom…","Choose a picture"] - INK's d574943d, Arbor's words with the
+  // Wrizors' answers applied (Fable, Nov 21 6:54 pm), made Arbor's reorgOwnColour "Custom…", and A14 had the canonical word hard-coded; its sense, the
+  // buttons drawn as written with no capitals, holds). The original, verbatim:
+  // const a14 = (list) => Array.isArray(list) && ['No letters', 'Your own colour', 'Choose a picture'].every((w) => list.includes(w)) && list.every((w) => w !== w.toUpperCase() || !/[A-Z]/.test(w));
+  // ok('A14 Box settings\' buttons read in sentence case: No letters, Your own colour, Choose a picture', a14(chips), chips);
+  // const caps = Array.isArray(chips) ? chips.map((w) => w.toUpperCase()) : null;
+  // ok('MUT-A14 the same reading in capitals turns A14\'s test red', !!caps && caps.length > 0 && !a14(caps), caps);
+  // SUCCESSOR: the three buttons (No letters, her own colour, Choose a picture, by their markers) render exactly as their words are written - innerText
+  // (which carries any text-transform) equals textContent - and none is in capitals, whatever words the lexicon gives them
+  const chips2 = await app.evalJs("[['letters', '[data-box-no-letters]'], ['own', '.wz-reorg-own-colour'], ['picture', '[data-box-choose-picture]']].map(([k, s]) => { const c = document.querySelector(s); return c ? [k, (c.innerText || '').trim(), (c.textContent || '').trim()] : [k, null, null]; })");
+  const a14b = (list) => Array.isArray(list) && list.length === 3 && list.every(([, shown, written]) => !!shown && shown === written && /[a-z]/.test(shown));
+  ok('A14-B Box settings\' buttons are drawn as their words are written (no capitals): No letters, her own colour, Choose a picture', a14b(chips2), chips2);
+  const caps2 = Array.isArray(chips2) ? chips2.map(([k, s, w]) => [k, s && s.toUpperCase(), w]) : null;
+  ok('MUT-A14-B the same reading drawn in capitals turns A14-B\'s test red', !!caps2 && a14b(chips2) !== a14b(caps2) && !a14b(caps2), caps2);
   await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#17454E\"]')?.click(); null"); await sleep(500);
   const drawn = await app.evalJs(BOXES);
   const seaBox = (drawn || []).find((b) => b[0] === 'rgb(23, 69, 78)');
