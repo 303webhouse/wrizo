@@ -171,7 +171,12 @@ try { await withHarness(async (app) => {
     await app.mouseMove(8, 8); await sleep(2400);
     const c = await ev('window.__l4.clear()');
     const dress = await ev("(() => { const p = document.querySelector('.mode-page'); if (!p) return null; const s = getComputedStyle(p); const r = p.getBoundingClientRect(); return { padTop: s.paddingTop, pageTop: r.top, pageH: r.height, kids: [...p.children].map((k) => [k.className.split(' ')[0], getComputedStyle(k).position, Math.round(k.getBoundingClientRect().top), Math.round(k.getBoundingClientRect().height)]) }; })()");
-    console.log(`INFO L4-1366-FRAME flag=${flag} ${JSON.stringify({ clear: c, dress })}`);
+    // the first row's own ink: its first glyph's rect against the row's box and the scroller's clip, and the face and line-height that set them
+    const ink = await ev(`(() => { const ed = document.querySelector('.mode-page .forward-only-editor'); const row = ed && ed.querySelector('.wz-row'); if (!row) return null;
+      const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT); const n = w.nextNode(); if (!n) return null; const r = document.createRange(); r.setStart(n, 0); r.setEnd(n, 1);
+      const g = r.getBoundingClientRect(), b = row.getBoundingClientRect(), s = getComputedStyle(n.parentElement);
+      return { glyphTop: g.top, glyphBottom: g.bottom, rowTop: b.top, rowH: b.height, font: s.fontFamily, size: s.fontSize, lineHeight: s.lineHeight, rowMarginTop: getComputedStyle(row).marginTop, rowTransform: getComputedStyle(row).transform }; })()`);
+    console.log(`INFO L4-1366-FRAME flag=${flag} ${JSON.stringify({ clear: c, dress, ink })}`);
   }
 
   // ---- OFF: without the flag, plain Flux's frame as it was ----------------------------------------------------------------------------------------------------------------
