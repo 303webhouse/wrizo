@@ -55,6 +55,9 @@ await withHarness(async (app) => {
   await app.waitFor("document.documentElement.getAttribute('data-wz-writing') === 'true'", { label: 'the chrome receded', timeout: 4000 }).catch(() => {});
   await sleep(500);
   const h1 = await app.evalJs(HASH);
+  // FIXTURE (Nov 22, Actions 45046579587 on dcdefa51: the chrome never returned - data-wz-writing still 'true' 16 s after the last key - so the return
+  // was never read): Escape resurfaces the chrome (useChromeDissolve's own key), as a writer's Escape does. No assertion changes.
+  await app.key('Escape');
   await app.waitFor("document.documentElement.getAttribute('data-wz-writing') !== 'true'", { label: 'the chrome returned', timeout: 15000 }).catch(() => {});
   await sleep(1200);
   const h2 = await app.evalJs(HASH);
