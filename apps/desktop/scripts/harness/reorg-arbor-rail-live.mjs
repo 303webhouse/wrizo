@@ -21,6 +21,12 @@
 //             Honey #C9A46B, Iron #39414A, named so - and no brass, beside her own colour; pressing Sea draws her box in sea, its letters 4.5:1
 //         MUT-A8  the reading with Machina's five (Pale, Grey, Blue, Brass, Orange) turns A8's test red
 //         A9  Machina's Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange
+// EDGE    A10 (the Wrizors' NIT, arbor-reorg-pass-1.md §4: the open pop-out overlapped the page's left edge ~10 px and hid its left opener) at 1366 the
+//             opened DRAWERS pop-out ends before the page's left opener (its right edge at or left of the opener's), and the opener takes a press at
+//             its centre; at 1920, where there is room, the pop-out keeps its 300 px
+//         MUT-A10  the 1366 reading with the pop-out 10 px past the opener turns A10's test red
+// ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
+//             door, and still not in the classic Plateau (?arbor2=0)
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-rail-live.mjs
 process.env.WS_ARBOR2 = process.env.WS_ARBOR2 || 'default';
@@ -108,6 +114,11 @@ await withHarness(async (app) => {
   ok('MUT-A7 the reading with a browser button face (a border) turns A7\'s test red', !!raw && raw.openBorder !== dress.openBorder && !a7(raw), raw);
   ok('A4 DRAWERS opened stands 12 px out in olive with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive',
     !!p4 && p4.pressed === 'true' && Math.abs(tx(p4.tx) - 12) <= 0.5 && p4.bg === OLIVE && p4.ink === CREAM && contrast(p4.ink, p4.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow), { p4, panel });
+  // ---- A10: the open pop-out against the page's left opener ----
+  const EDGE = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g };\n" +
+    "  const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2; const hit = document.elementFromPoint(cx, cy);\n" +
+    "  return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
+  const edge1366 = await app.evalJs(EDGE);
   // ---- A8: Box settings, in the opened DRAWERS pop-out ----
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs(BOXSET);
@@ -130,11 +141,26 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700);
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bm = await app.evalJs(BOXSET);
+  // ---- A10 at 1920, A11 the cell on (no door) ----
+  await app.emulateDpr(1, 1920, 1080);
+  await visit(app, '/?reorg=1&reorglift=plateau.rail&arbor2room=day');
+  await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700); await app.mouseMove(1500, 500); await sleep(300);
+  const edge1920 = await app.evalJs(EDGE);
+  await app.emulateDpr(1, 1366, 768);
+  const a10 = (a, b) => !!a && !!b && a.right !== undefined && a.right <= a.gripLeft + 0.5 && a.hit === true && b.right !== undefined && Math.abs(b.width - 300) <= 1 && b.right <= b.gripLeft + 0.5;
+  ok('A10 at 1366 the opened DRAWERS pop-out ends before the page\'s left opener and the opener takes a press; at 1920 it keeps its 300 px', a10(edge1366, edge1920), { edge1366, edge1920 });
+  const over = edge1366 && edge1366.gripLeft !== undefined ? { ...edge1366, right: edge1366.gripLeft + 10, hit: false } : null;
+  ok('MUT-A10 the 1366 reading with the pop-out 10 px past the opener turns A10\'s test red', !!over && a10(edge1366, edge1920) !== a10(over, edge1920) && !a10(over, edge1920), over);
+  await visit(app, '/?reorg=1&arbor2room=day');
+  const noDoor = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  await visit(app, '/?reorg=1&arbor2=0');
+  const classicOn = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  ok('A11 the reorg\'s rail stands in Arbor under ?reorg=1 with no preview door (plateau.rail on), and still not in the classic Plateau', noDoor === true && classicOn === false, { noDoor, classicOn });
   ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21)
+const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
