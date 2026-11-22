@@ -7,6 +7,8 @@
 //   MKF-FLIP      the first key, a letter: the largest restyle touches at most 25% of the document's elements, on every one of 3 reopens
 //   MKF-FLIP-SP   the same for a Space as the first key (it commits the word and rebuilds the committed runs), on every one of 2 reopens
 //   MKF-LOOK      the search's highlights still paint in Machina: ::highlight(wz-search) and ::highlight(wz-search-cur) compute to Machina's colours
+//   [Fable, Nov 22, 9:35 am, RULED A] MKF-FLIP and -SP read as successors: the first key's restyle at most HALF of the same key with the old rules put back
+//                 (the highlight's share removed); the 25% bar is parked and prints as INFO MKF-GATE-90, INK's --fade-dur gate (#90)
 //   MUT-MKF-FLIP  the two old rules ([data-theme='machina'] ::highlight(...)) put back into the running page: MKF-FLIP is RED (the reader can go red)
 // Run: node scripts/harness/machina-keyflip.mjs (from apps/desktop; a box turn or Actions).
 import { withHarness } from '../runtime-verify.mjs';
@@ -123,13 +125,29 @@ await withHarness(async (app) => {
   const f0 = fix[0];
   ok('MKF-PREMISE Machina, the page mounted, the first key flips data-wz-writing on the root inside the trace, and the trace read the key and its restyles',
     !!f0 && f0.before.theme === 'machina' && f0.before.editor && f0.before.writing === null && f0.after.writing === 'true' && !!f0.tr && f0.tr.keyTasks >= 1 && f0.tr.counted >= 1, f0);
-  ok(`MKF-FLIP the first key (a letter): the largest restyle touches at most ${SHARE * 100}% of the document's elements, on every one of ${REOPENS} reopens`, fix.every(flipOk),
-    fix.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
-  ok(`MKF-FLIP-SP the same for a Space as the first key, on every one of ${SP_REOPENS} reopens`, sp.every(flipOk), sp.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
+  // SUPERSEDED (Fable, Nov 22, 9:35 am, RULED A: the highlight fix ships on "the highlight's share removed"; the 25% bar is INK's #90 GATE: the --fade-dur write on
+  // <html> (useChromeDissolve at the first key; bug #80 moved it for Arbor, #90 kept it on the live themes, now GO everywhere) is the rest, and INK's fix must take this
+  // file to the 25% bar: restore these two lines live in that fix's commit). Measured on Actions 45010127592: 316 element styles against a 269-element document. The
+  // originals, verbatim (their reading still prints below as INFO MKF-GATE-90 on every run):
+  // ok(`MKF-FLIP the first key (a letter): the largest restyle touches at most ${SHARE * 100}% of the document's elements, on every one of ${REOPENS} reopens`, fix.every(flipOk),
+  //   fix.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
+  // ok(`MKF-FLIP-SP the same for a Space as the first key, on every one of ${SP_REOPENS} reopens`, sp.every(flipOk), sp.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
+  console.log(`INFO MKF-GATE-90 (INK's --fade-dur gate, the 25% bar): letter ${fix.every(flipOk) ? 'MET' : 'NOT MET'}, space ${sp.every(flipOk) ? 'MET' : 'NOT MET'} ` + JSON.stringify([...fix, ...sp].map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls }))));
+  // [successors] the highlight's share removed: on every reopen the first key's largest restyle is at most half of the same key with the two old rules put back
+  // (the red: 976 element styles; the fix: 316; old rules back: 976)
+  const base = mut && mut.tr && mut.tr.keyEls;
+  const shareOk = (m) => !!m && !!m.tr && m.tr.keyEls != null && base != null && m.tr.keyEls <= 0.5 * base;
+  ok(`MKF-FLIP [successor] the first key (a letter), every one of ${REOPENS} reopens: its largest restyle is at most half of the same key with the old highlight rules put back (the highlight's share removed)`,
+    base != null && fix.every(shareOk), { base, fix: fix.map((m) => m.tr && m.tr.keyEls) });
+  ok(`MKF-FLIP-SP [successor] the same for a Space as the first key, every one of ${SP_REOPENS} reopens`, base != null && sp.every(shareOk), { base, sp: sp.map((m) => m.tr && m.tr.keyEls) });
   ok('MKF-LOOK the search\'s highlights still paint in Machina: wz-search rgba(246, 236, 190, 0.6), wz-search-cur rgba(232, 196, 92, 0.85) with ink rgb(28, 28, 28)',
     !!look && look.hit === 'rgba(246, 236, 190, 0.6)' && look.cur === 'rgba(232, 196, 92, 0.85)' && look.curInk === 'rgb(28, 28, 28)', look);
-  ok('MUT-MKF-FLIP the two old rules put back into the running page: MKF-FLIP is RED (the reader can go red)', !!mut && !!mut.tr && mut.tr.keyEls != null && !flipOk(mut),
-    { keyEls: mut && mut.tr && mut.tr.keyEls, docEls: mut && mut.before && mut.before.docEls });
+  // SUPERSEDED (with MKF-FLIP, Fable, Nov 22, 9:35 am): its reading moves to the successor's terms. The original, verbatim:
+  // ok('MUT-MKF-FLIP the two old rules put back into the running page: MKF-FLIP is RED (the reader can go red)', !!mut && !!mut.tr && mut.tr.keyEls != null && !flipOk(mut),
+  //   { keyEls: mut && mut.tr && mut.tr.keyEls, docEls: mut && mut.before && mut.before.docEls });
+  // [successor] the old rules put back really cost the page: the restyle with them is at least twice the fix's own (so the successor's half is a real margin, not noise)
+  ok('MUT-MKF-FLIP [successor] the two old rules put back into the running page restyle at least twice as many elements as the fix does (the successor reads a real difference)',
+    base != null && fix.every((m) => m.tr && m.tr.keyEls != null && base >= 2 * m.tr.keyEls), { base, fix: fix.map((m) => m.tr && m.tr.keyEls) });
 });
 
 const EXPECTED = 5;
