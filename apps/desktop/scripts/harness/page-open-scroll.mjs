@@ -2,6 +2,7 @@
 // first line is cut by the scroller's edge; flag on AND off"). The cause, read in the source: a Draft page mounts with the caret at the END of its words (ForwardOnlyEditor's mount effect, setCaretOffset), and
 // setCaretOffset focuses the editor, so the browser scrolls the caret into view. On a page that overflows its sheet by less than a line, that scroll is all of the overflow: the page rests scrolled by a few pixels and
 // the FIRST line, the one she reads first, loses its top. Nothing about the Flux header: the geometry is the same in every theme.
+//   (every page below is opened the way POLISH's frames job did it: in Free Write, then the Draft tab pressed - the Draft editor mounts with the caret at the end of the words)
 //   SC1  a page that overflows its sheet by LESS THAN ONE LINE opens at its top: scrollTop 0 and the first line's first letter fully inside the scroller - in Flux with ?flux3=1, in Flux without it, in Arbor and in Machina, at 1366 x 768
 //   SC2  a page that fits (one line fewer) opens at its top too (the control: nothing to scroll)
 //   SC3  a page far longer than its sheet still opens with the caret's line in view (#64: a caret the app places is brought into view), scrolled
@@ -49,7 +50,9 @@ try { await withHarness(async (app) => {
   await splashGone();
   let seq = 0;
   const lines = (n) => Array.from({ length: n }, (_, i) => `Line ${i + 1} of the page.`).join('\n');
-  const openN = async (cfg, n, mode = 'drafting') => {
+  // via 'tab' is POLISH's own flow (flux3-s3's doc scene): the page opens in Free Write and she presses the Draft tab, which mounts the Draft editor with the caret at the end of the words; via 'load' opens it in Draft at once
+  const openN = async (cfg, n, via = 'tab') => {
+    const mode = via === 'tab' ? 'journal' : 'drafting';
     const id = `pos-${Date.now()}-${seq += 1}`;
     await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: lines(n), createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })})`);
     await sleep(250);
@@ -57,6 +60,10 @@ try { await withHarness(async (app) => {
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
     await splashGone();
+    if (via === 'tab') {
+      await sleep(600);
+      await ev("(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]'); if (b && b.getAttribute('aria-selected') !== 'true') b.click(); })()");
+    }
     await app.mouseMove(8, 8);
     await sleep(1800);
     return { id, m: await ev(MEASURE()) };
