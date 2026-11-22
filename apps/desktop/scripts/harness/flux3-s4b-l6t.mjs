@@ -49,7 +49,9 @@ try { await withHarness(async (app) => {
   // ---- the fixture (seams only): a preset step, a long-titled preset step, a plain text node, an ink node, and a doc node pinning a page ------------------------------------
   const at = new Date().toISOString();
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'l6t-doc', text: 'The doc node\nIts second line.', createdAt: at, origin: 'journal', source: 'page' })})`);
-  await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'l6t-named', text: 'Its first line is not its name\nMore.', createdAt: at, origin: 'journal', source: 'page', pageSettings: { name: 'Chapter Seven' } })})`);
+  // createJournalPage sets a page's pageSettings itself (it ignores a passed one): the name goes on through the patch seam, merged into what the page was born with
+  await ev(`(() => { const W = window; const e = W.wrizoCreateJournalPage(${JSON.stringify({ id: 'l6t-named', text: 'Its first line is not its name\nMore.', createdAt: at, origin: 'journal', source: 'page' })});
+    W.wrizoPatchEntry('l6t-named', { pageSettings: { ...((e && e.pageSettings) || {}), name: 'Chapter Seven' } }); W.wrizoFlushNow(); return null; })()`);
   const T = (id, x, y, z, text, extra = {}) => ({ id, kind: 'text', x, y, w: 0.2, h: 0.1, z, text, ...extra });
   const boxes = [
     T('l6t-preset', 0.05, 0.08, 1, 'The hook\nThe step body.', { deckStep: { deck: 'three-act', step: 'hook' } }),
