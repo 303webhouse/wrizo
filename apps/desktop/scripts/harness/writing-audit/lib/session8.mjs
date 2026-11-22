@@ -328,6 +328,41 @@ export async function main({ title }) {
       await judge('T1b', 'Enter, then a new line in the Typewriter', { text: t2, a: t2.length, f: t2.length }, before);
     });
 
+    // ---- R2 PROBE (Arbor's Typewriter caret, Fable 3:20 pm "keep the audit going (R2 ...)") --------------------------------------------------------
+    // T1a found no caret painted on 7 of 16 Arbor jobs, 0 of 6 Machina. W repeats T1a's steps four times a job and reads, each time, what could
+    // hide a caret: where the selection sits, the caret's own rect, what is drawn on top of it, the opacity / mask / filter / visibility down the
+    // caret's ancestry, caret-color, focus (element and window), the zoom; then the painted caret (pixelCaret). Observation first; the only
+    // finding is the one T1a already states (no caret painted), counted per attempt.
+    await run('W', async () => {
+      const probe = () => ev(`(() => {
+        const ed = document.querySelector('.forward-only-editor'); const s = getSelection(); const out = { docFocus: document.hasFocus(), edFocus: document.activeElement === ed };
+        if (!ed || !s || !s.rangeCount) return { ...out, sel: null };
+        const r = s.getRangeAt(0); const n = s.focusNode;
+        out.sel = { node: n ? (n.nodeType === 3 ? '#text' : n.nodeName + '.' + String(n.className || '').slice(0, 30)) : null, off: s.focusOffset, inEd: !!n && ed.contains(n) };
+        out.kids = [...ed.childNodes].slice(0, 8).map((k) => k.nodeType === 3 ? '#t' + k.textContent.length : k.nodeName + (k.className ? '.' + String(k.className).slice(0, 20) : '') + ':' + (k.textContent || '').length + ':' + getComputedStyle(k).display);
+        const rects = [...r.getClientRects()]; const rc = rects[0] || r.getBoundingClientRect();
+        out.rect = rc ? { x: Math.round(rc.left), y: Math.round(rc.top), h: Math.round(rc.height), n: rects.length } : null;
+        if (rc && rc.height) { const h = document.elementFromPoint(rc.left + 1, rc.top + rc.height / 2); out.top = h ? (h.tagName + '.' + String(h.className || '').slice(0, 40)) : null; out.topInEd = !!h && ed.contains(h); }
+        const chain = []; for (let e = ed; e && e !== document.documentElement; e = e.parentElement) { const c = getComputedStyle(e); const bad = []; if (c.opacity !== '1') bad.push('op' + c.opacity); if (c.visibility !== 'visible') bad.push(c.visibility); if (c.maskImage && c.maskImage !== 'none') bad.push('mask'); if (c.webkitMaskImage && c.webkitMaskImage !== 'none') bad.push('wmask'); if (c.filter && c.filter !== 'none') bad.push('filter'); if (bad.length) chain.push((e.className && String(e.className).split(' ')[0]) + ':' + bad.join(',')); }
+        out.chain = chain; const cs = getComputedStyle(ed); out.caretColor = cs.caretColor; out.color = cs.color; out.zoom = !!document.querySelector('.mode-pagecol[data-zoom="true"]');
+        return out; })()`);
+      const tally = { painted: 0, none: 0 };
+      for (let k = 1; k <= 4; k++) {
+        const T = 'Start.';
+        await openDoc([T], 'journal');
+        await refocus(T.length);
+        await d.still();
+        await d.type(' More words here.'); await sleep(300);
+        const p0 = await probe();
+        const px = await d.pixelCaret(6);
+        const p1 = await probe();
+        if (px) tally.painted++; else tally.none++;
+        out(`OBS W${k} ${px ? 'PAINTED' : 'NONE'} ${JSON.stringify({ px: px ? { x: px.x, y: px.y, via: px.via } : null, before: p0, after: p1 })}`.slice(0, 1800));
+      }
+      out(`OBS W the tally: ${JSON.stringify(tally)}`);
+      if (tally.none) finding('W', 'Free Write (the Typewriter): the caret is painted after typing (four tries)', 'drawn', `no caret painted in ${tally.none} of 4 tries`, tally);
+    });
+
     // ---- LONG -----------------------------------------------------------------------------------------------------------------------------------
     await run('L', async () => {
       const para = Array.from({ length: 100 }, (_, i) => 'word' + i).join(' ');
