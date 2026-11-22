@@ -1,0 +1,6 @@
+/* THE REORG'S BACK MENU IN ARBOR (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md sections 0 and 5). Every rule is under :root[data-arbor2][data-theme='plateau'] and is reached only by markup the reorg draws, so with the switch off, or in any other theme, nothing
+   here matches. The twins first: the Machina rules for the Back menu's lists, sort row, "+" menus and the search, re-scoped to the live Arbor (their colours are the theme's own tokens, so they read Arbor's); then Arbor's own dress. The piece is switched on for Arbor
+   only through reorg/themeGate.ts (the preview door shows it before then). Tags (the Sections' numbered cloth tabs) are ARBOR's, with the Front menu. */
+:root[data-arbor2][data-theme='plateau'] .wz-back-assets-head{ margin:0 0 6px; }
+:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:rgba(201, 164, 107, .35); }
+:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search-cur){ background-color:rgba(201, 164, 107, .7); }
