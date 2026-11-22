@@ -75,9 +75,12 @@ await withHarness(async (app) => {
     Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'PLAN,GRAFTS,TUTOR' && tabs.map((x) => x.id).join(',') === 'plan,links,tutor' && tabs.map((x) => x.on).join(',') === 'false,true,false', tabs);
 
   const cloth = {};
-  for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.desk-frame-stage'); return s ? getComputedStyle(s).getPropertyValue('--arbor2-chosen-r').trim() : null; })()") }; }
+  // SUPERSEDED (Nov 22, arbor-keyflip: the Back menu's rules no longer set --arbor2-chosen-r on the stage; the edge is read from what is drawn). The original, verbatim:
+  // for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.desk-frame-stage'); return s ? getComputedStyle(s).getPropertyValue('--arbor2-chosen-r').trim() : null; })()") }; }
+  for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.wz-tutor-panel .wz-drawer-slide--right'); const m = s ? /rgb\\(\\d+, \\d+, \\d+\\)/.exec(getComputedStyle(s).boxShadow) : null; return m ? m[0] : null; })()") }; }
   const want = { plan: ['rgb(168, 57, 47)', '#A8392F'], links: ['rgb(127, 160, 188)', '#7FA0BC'], tutor: ['rgb(86, 99, 46)', '#56632E'] };
-  const clothOk = Object.entries(want).every(([id, [bg, hex]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && String(cloth[id].edge).toUpperCase() === hex && cloth[id].tab['z-index'] === '3');
+  // const clothOk = Object.entries(want).every(([id, [bg, hex]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && String(cloth[id].edge).toUpperCase() === hex && cloth[id].tab['z-index'] === '3');
+  const clothOk = Object.entries(want).every(([id, [bg]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && cloth[id].edge === bg && cloth[id].tab['z-index'] === '3');
   ok('AB2 the cloths: PLAN madder, GRAFTS cold blue, TUTOR olive; the open tab comes forward (z-index 3) and the drawer\'s edge takes its cloth', clothOk, cloth);
 
   await tab(app, 'plan');
