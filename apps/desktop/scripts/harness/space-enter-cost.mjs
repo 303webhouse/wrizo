@@ -50,6 +50,16 @@ try { await withHarness(async (app) => {
         await sleep(60);
       }
     }
+    // THE BROWSER'S OWN PROFILE of 24 keys of each kind: where the time goes (top self times, ms per key)
+    for (const [kind, ch] of [['space', ' '], ['letter', 'a'], ['enter', String.fromCharCode(10)]]) {
+      await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 250 }); await app.cdp('Profiler.start');
+      for (let i = 0; i < 24; i += 1) { await app.typeKeys(ch); await ev(AFTER); }
+      const { profile } = await app.cdp('Profiler.stop'); await app.cdp('Profiler.disable');
+      const self = new Map(); const byId = new Map(profile.nodes.map((nn) => [nn.id, nn]));
+      profile.samples.forEach((id, i) => { const cf = byId.get(id).callFrame; const k = (cf.functionName || '(anonymous)') + ' ' + String(cf.url).split('/').pop() + ':' + (cf.lineNumber + 1); self.set(k, (self.get(k) || 0) + (profile.timeDeltas[i] || 0)); });
+      const top = [...self.entries()].sort((x, y) => y[1] - x[1]).slice(0, 9).map(([k, v]) => k + ' ' + (v / 24000).toFixed(1) + ' ms/key');
+      console.log('PROFILE ' + n + 'w ' + kind + ': ' + top.join(' | '));
+    }
     for (const [kind, rows] of Object.entries(kinds)) {
       const dts = rows.map((r) => r.dt); const sels = rows.map((r) => r.sel); const htmls = rows.map((r) => r.html);
       console.log(`PROBE ${n}w ${kind}: key-to-frame median ${f1(q(dts, 0.5))} p95 ${f1(q(dts, 0.95))} | selection calls median ${f1(q(sels, 0.5))} ms (n ${f1(q(rows.map((r) => r.selN), 0.5))}) p95 ${f1(q(sels, 0.95))} | innerHTML median ${f1(q(htmls, 0.5))} ms (writes ${f1(q(rows.map((r) => r.htmlN), 0.5))}, bytes ${f1(q(rows.map((r) => r.htmlBytes), 0.5))}) | total selection over ${rows.length} keys ${f1(sels.reduce((a, b) => a + b, 0))} ms`);
