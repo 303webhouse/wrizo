@@ -64,7 +64,7 @@ export function restingScroll(need: number, max: number, offsets: readonly numbe
 }
 
 /** The page has just opened with its caret at the end (the browser's scroll was prevented): rest it on a whole line, with the caret's line in view where that can be done without cutting the first line. */
-export function openCaret(el: HTMLElement): void {
+function restOnce(el: HTMLElement): void {
   try {
     const scroller = scrollerOf(el);
     if (!scroller || scroller.getAttribute('data-typewriter') === 'true') return;
@@ -73,12 +73,27 @@ export function openCaret(el: HTMLElement): void {
     const box = scroller.getBoundingClientRect();
     const bottom = Math.min(box.bottom, window.innerHeight) - PAD;
     // how far from the TOP the page must scroll for the caret's line to show: the scroller may carry a place over from the stage she left (Free Write's landing, the opening cut), so the line's distance below the bottom is added
-    // to where the scroller already is. (It was measured as if the scroller sat at 0 and a caret already in view sent the page to the top: page-open-scroll SC3 and flux3-s4b-l4 CLEAR on the J2 tree.) A page that already shows its
-    // caret rests on the smallest whole line that still shows it.
+    // to where the scroller already is. (It was measured as if the scroller sat at 0, and a caret already in view sent the page to the top: page-open-scroll SC3 and flux3-s4b-l4 CLEAR on the J2 tree.) A page that already
+    // shows its caret rests on the smallest whole line that still shows it.
     const need = Math.max(0, scroller.scrollTop + line.bottom - bottom);
     const max = scroller.scrollHeight - scroller.clientHeight;
     const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
     if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
   } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
+}
+
+/** Rest the page, and keep it resting on a whole line while a long page lays out (its rows are laid out lazily, so its scroll height changes in the moments after it opens, and a rest chosen from the first measure ends mid-line: flux3-s4b-l4 CLEAR at 1920).
+ *  The rule is run again on each change of the page's size for a short while, and stops for good at her first act (a key, the wheel, a press, a touch). */
+export function openCaret(el: HTMLElement): void {
+  restOnce(el);
+  try {
+    if (typeof ResizeObserver === 'undefined') return;
+    let done = false;
+    const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
+    const ro = new ResizeObserver(() => { if (!done && el.isConnected) restOnce(el); });
+    ro.observe(el);
+    const timer = window.setTimeout(stop, 1500);
+    ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.addEventListener(t, stop, true));
+  } catch { /* no observer: the page rests where the first measure put it */ }
 }

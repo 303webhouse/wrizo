@@ -333,7 +333,11 @@ await withHarness(async (app) => {
   {
     const o = await open('pbh-5k', 'drafting');
     if (o.up) {
+      // SUPERSEDED (Nov 22, train J2: a long page now opens scrolled to her caret at its END (Fable's #48, the line she was writing stays in view), so the first key typed at the head scrolls the page up to it, once, and the marks redraw 150 ms after that scroll, inside the typing: marksDuring 1). The line as it stood, verbatim:
+      //   await app.evalJs("window.__pbh.caretAt(0)"); await sleep(400);
+      // successor: she goes to the head first (the scroller to its top, the page at rest, the marks redrawn), then types: the check is about the pause, not about where the page opened
       await app.evalJs("window.__pbh.caretAt(0)"); await sleep(400);
+      await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); if (sc) sc.scrollTop = 0; return true; })()"); await sleep(700);
       await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); const layer = ed.parentElement.querySelector(':scope > .wz-pb-marks'); const cnt = document.querySelector('.wz-pagecount');
         const P = window.__pbhC6 = { keys: [], marks: [], count: [] };
         new MutationObserver(() => P.marks.push(performance.now())).observe(layer, { childList: true, subtree: true, attributes: true, characterData: true });
