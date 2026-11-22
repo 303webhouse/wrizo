@@ -8,8 +8,8 @@ import { getJournalEntries, getSystemKind, isPairedPlanBoard } from '../../store
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
-import { DEFAULT_GOAL_LINES, setWritingGoal, useWritingGoal, type GoalUnit } from '../../store/writingGoal';
-import { pageStageOf, type PageStage } from '../pageStage';
+import { pageStageOf } from '../pageStage';
+import { SessionGroup } from '../session/SessionGroup';
 import { newTargetOf, projectOfEntry } from '../railData';
 import { useProjectName, useWhereSheIs } from '../ReorgRail';
 
@@ -22,7 +22,7 @@ import { useProjectName, useWhereSheIs } from '../ReorgRail';
 // the menu's own state while it is open: nothing is stored (a saved sort would be a new users.prefs key, which waits on Nick's word).
 // PAGE DEFAULTS, EVERY DOC: Typewriter mode and Progress bars are today's two saved settings (the Tools strip's own switches), unchanged in
 // meaning; this is one more door to them. Opening a Recent row is a departure with the return chip.
-// THE SESSION (Fable, Nov 20, 12:15 pm): DOCS' last group, closed each time DOCS opens (in-session state; nothing stored), moved here from the
+// THE SESSION (Fable, Nov 20, 12:15 pm; shared since Nov 22: reorg/session/SessionGroup.tsx): DOCS' last group, closed each time DOCS opens (in-session state; nothing stored), moved here from the
 // Front menu's foot. Its rows follow the stage table (accepted as drawn, Nick's walk Nov 20): SPRINT the goal, what it counts, the timer,
 // progress; BUILD the goal, the timer, progress; EDIT progress only. Each row writes today's own saved setting (store/writingGoal.ts, the
 // timer and Progress tracking in store/writingSettings.ts): nothing new is stored. A Board has no session.
@@ -55,66 +55,6 @@ function sortRecent(rows: { e: JournalEntry; title: string; words: number }[], b
   if (by === 'name') return [...rows].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
   if (by === 'words') return [...rows].sort((a, b) => b.words - a.words);
   return rows;
-}
-
-// the plain Progress Tracker's switch ('tracker', components/PlainTracker.tsx) is the last row wherever the session shows progress
-const SESSION_ROWS: Record<PageStage, ('goal' | 'counts' | 'timer' | 'progress' | 'tracker')[]> = {
-  sprint: ['goal', 'counts', 'timer', 'progress', 'tracker'],
-  build: ['goal', 'timer', 'progress', 'tracker'],
-  edit: ['progress', 'tracker'],
-};
-
-function SessionToggle({ row, label, on, onPick, t }: { row: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
-  return (
-    <div className="wz-reorg-default" data-session-row={row}>
-      <span className="wz-reorg-default-label" id={`wz-reorg-session-${row}`}>{label}</span>
-      <span className="wz-reorg-toggle" role="group" aria-labelledby={`wz-reorg-session-${row}`}>
-        <button type="button" data-toggle="off" aria-pressed={!on} onClick={() => onPick(false)}>{t('reorgOff')}</button>
-        <button type="button" data-toggle="on" aria-pressed={on} onClick={() => onPick(true)}>{t('reorgOn')}</button>
-      </span>
-    </div>
-  );
-}
-
-function Session({ stage, t }: { stage: PageStage; t: (k: DeskTermId) => string }) {
-  const settings = useWritingSettings();
-  const goal = useWritingGoal();
-  const [open, setOpen] = useState(false);
-  const [unit, setUnit] = useState<GoalUnit>(() => goal?.unit ?? 'lines');
-  const [draft, setDraft] = useState(() => String(goal?.n ?? DEFAULT_GOAL_LINES));
-  // the goal's number is written as the goal box in the foot wrote it: a whole number above nothing, else the goal is cleared
-  const commit = (u: GoalUnit = unit) => { const n = Number(draft); setWritingGoal(Number.isFinite(n) && n > 0 ? { n: Math.round(n), unit: u } : null); };
-  // what it counts changes the stored goal only when there is one (a unit alone is not a goal)
-  const pickUnit = (u: GoalUnit) => { setUnit(u); if (goal != null) commit(u); };
-  return (
-    <section className="wz-reorg-group" data-reorg-group="session" aria-label={t('reorgSession')}>
-      <button type="button" className="wz-reorg-group-head wz-reorg-session-fold" data-session-fold aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <span>{t('reorgSession')}</span>
-      </button>
-      {open && SESSION_ROWS[stage].map((row) => {
-        if (row === 'goal') return (
-          <label key={row} className="wz-reorg-default" data-session-row="goal">
-            <span className="wz-reorg-default-label">{t('reorgSessionGoal')}</span>
-            <input type="number" min={1} className="wz-reorg-session-goal" value={draft} aria-label={t('reorgSessionGoal')}
-              onChange={(e) => setDraft(e.target.value)} onBlur={() => commit()}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } }} />
-          </label>
-        );
-        if (row === 'counts') return (
-          <div key={row} className="wz-reorg-default" data-session-row="counts">
-            <span className="wz-reorg-default-label" id="wz-reorg-session-counts">{t('reorgSessionCounts')}</span>
-            <span className="wz-reorg-toggle" role="group" aria-labelledby="wz-reorg-session-counts">
-              <button type="button" data-pick="lines" aria-pressed={unit === 'lines'} onClick={() => pickUnit('lines')}>{t('reorgSessionLines')}</button>
-              <button type="button" data-pick="words" aria-pressed={unit === 'words'} onClick={() => pickUnit('words')}>{t('reorgSessionWords')}</button>
-            </span>
-          </div>
-        );
-        if (row === 'timer') return <SessionToggle key={row} row="timer" label={t('reorgSessionTimer')} on={settings.timer} onPick={(on) => setWritingSettings({ timer: on })} t={t} />;
-        if (row === 'tracker') return <SessionToggle key={row} row="tracker" label={t('plainTrackerSwitch')} on={settings.themeTracker !== false} onPick={(on) => setWritingSettings({ themeTracker: on })} t={t} />;
-        return <SessionToggle key={row} row="progress" label={t('reorgSessionProgress')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />;
-      })}
-    </section>
-  );
 }
 
 function Toggle({ id, label, on, onPick, t }: { id: string; label: string; on: boolean; onPick: (on: boolean) => void; t: (k: DeskTermId) => string }) {
@@ -207,7 +147,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
         <div className="wz-reorg-group-head">{t('reorgDefaults')}</div>
         <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
       </section>
-      {subject.entry.pageType !== 'board' && <Session stage={pageStageOf(subject.entry)} t={t} />}
+      {subject.entry.pageType !== 'board' && <SessionGroup stage={pageStageOf(subject.entry)} />}
     </div>
   );
 }
