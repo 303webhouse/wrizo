@@ -507,6 +507,9 @@ function PageEditorView({ id }: { id: string }) {
     flush(); flushNow();
     const r = splitPart(id, sel.start, textRef.current);
     if (!r.ok) return { ok: false, why: 'text' };
+    // P3-mode (Fable, Nov 22, RULED): the Part she cuts opens in the mode it was cut from - this page's own per-page mode (the key the mode switch writes) is put on the tail, nothing new is saved. Without it a
+    // manuscript tail has no saved mode and opens in Free Write, the Typewriter zoom and no Front menu, on every split made in Draft.
+    try { localStorage.setItem(`wrizo-mode-page-${r.tailId}`, mode); } catch { /* storage refused: the tail opens in its default posture */ }
     flushNow();
     return { ok: true, token: r.token };
   };
