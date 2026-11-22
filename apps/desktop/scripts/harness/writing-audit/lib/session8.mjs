@@ -134,8 +134,16 @@ export async function main({ title }) {
       // line looked where it never was and read "not covered" on all twelve jobs). The line, verbatim:
       // if (!(await need('P4', '[data-structure-act="join"]', 'Join (the Structure section)'))) return;
       // [successor] open the Front menu's PARTS tab, the open Part's row (aria-current) menu, then its Join
+      // run 45075160867: the Front menu and its tab were not on the page at all after the arrow (open/tab undefined, rows []). Read the chrome
+      // as she arrives, then again after she clicks into the page (what a writer does when her letters went nowhere), before opening PARTS.
+      const chrome = () => ev("({ sliver: !!document.querySelector('.wz-sliver'), grip: !!document.querySelector('.wz-sliver-grip'), tab: !!document.querySelector('#wz-sliver-tab-parts'), arrows: !!document.querySelector('[data-part-arrows]'), editor: !!document.querySelector('.forward-only-editor'), focused: document.activeElement === document.querySelector('.forward-only-editor') })");
+      const ch0 = await chrome();
+      await press('.forward-only-editor'); await refocus(0); await sleep(300);
+      const ch1 = await chrome();
+      out(`OBS P4 the chrome after the arrow: ${JSON.stringify({ arriving: ch0, afterClickIn: ch1 })}`);
+      if (!ch1.sliver) finding('P4-front', 'after the Part arrow (and a click into the page), the Front menu is on the page', 'chrome', `.wz-sliver absent: ${JSON.stringify({ ch0, ch1 })}`);
       await frontOpen(); await press('#wz-sliver-tab-parts'); await sleep(300);
-      const rowId = await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
+      const rowId =await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
       if (!rowId) out(`OBS P4 the PARTS tab: ${JSON.stringify(await ev("({ open: document.querySelector('.wz-sliver')?.getAttribute('data-open'), tab: document.querySelector('#wz-sliver-tab-parts')?.getAttribute('aria-selected'), rows: [...document.querySelectorAll('[data-part-row]')].map((r) => [r.getAttribute('data-part-row').slice(-6), r.getAttribute('aria-current')]), hash: location.hash.slice(-30) })"))}`);
       if (!rowId) { uncovered.push({ id: 'P4', why: `the open Part's row ([data-part-row][aria-current]) not in the PARTS tab in ${TAG}` }); out('NOTCOVERED P4 the open Part\'s row'); return; }
       await press(`[data-part-more="${rowId}"]`); await sleep(300);
@@ -167,9 +175,17 @@ export async function main({ title }) {
       // the menu's own state before each press (run 1 read replaced:false with no reason: suspect the instrument first)
       const fdiag = () => ev("(() => { const q = document.querySelector('[data-search-q]'), w = document.querySelector('input[data-replace-with]'), all = document.querySelector('[data-replace-all]'), tg = document.querySelector('[data-replace-toggle]'); return { q: q ? q.value : null, qFocused: !!q && document.activeElement === q, toggle: tg ? tg.getAttribute('aria-expanded') : null, repl: w ? w.value : null, replFocused: !!w && document.activeElement === w, all: all ? { dis: all.disabled, label: all.textContent } : null, active: document.activeElement && (document.activeElement.tagName + '.' + document.activeElement.className).slice(0, 60) }; })()");
       const fd0 = await fdiag();
+      // run 45075160867: after she clicked back into the page the search menu was no longer hit-testable (the page's stage on top of its toggle):
+      // the menu closes when she returns to the page, so a writer opens the search door again; Replace is judged from there
+      if (!(await ev("(() => { const t = document.querySelector('[data-replace-toggle]'); if (!t) return false; const r = t.getBoundingClientRect(); const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!h && (h === t || t.contains(h)); })()"))) {
+        await press('[data-top-search]'); await sleep(600);
+        out(`OBS F2 the search door again: ${JSON.stringify(await fdiag())}`);
+      }
       const pT = await press('[data-replace-toggle]'); await sleep(300);
       const fd1 = await fdiag();
-      const pW = await press('input[data-replace-with]'); await d.type('fee'); await sleep(200);
+      // (run 45075160867 typed "fee" into the page when the field was never pressed: type only into a pressed field)
+      const pW = await press('input[data-replace-with]'); if (pW) await d.type('fee'); await sleep(200);
+      if (!pW) { uncovered.push({ id: 'F2', why: `the Replace field could not be pressed in ${TAG} (see OBS F2)` }); out('NOTCOVERED F2 the Replace field'); return; }
       const fd2 = await fdiag();
       const pA = await press('[data-replace-all]'); await sleep(800);
       out(`OBS F2 the menu before each press: ${JSON.stringify({ fd0, pT, fd1, pW, fd2, pA })}`);
