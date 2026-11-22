@@ -223,6 +223,8 @@ export const CANONICAL_CHROME = {
   flux3LinkOne: 'connection',
   flux3LinkMany: 'connections',
   flux3ChecksumOk: 'Checksum OK',
+  flux3TheatreHuman: 'Unresolved // human',   // S4b L6: a node's footer status, the board mockup's theatre (under the Ambiance dial only)
+  flux3TheatreInk: 'Raster // human',
   flux3ReadLevel: 'Level',
   flux3ReadZoom: 'Zoom',
   // the way home: the ZOOM readout is a button that returns the board to true size; this is its hint (the key it answers to is Ctrl + 0)

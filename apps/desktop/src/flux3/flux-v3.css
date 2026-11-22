@@ -251,3 +251,8 @@
 :root[data-flux3][data-theme='flux'] .flux3-plus:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
 :root[data-flux3][data-theme='flux'] .flux3-plus-line{ position:absolute; left:15.5px; top:32px; width:0; border-left:1px solid var(--f3-room-cyan); pointer-events:none; }
 :root[data-flux3][data-theme='flux'] .flux3-plus-box{ left:-6px; }
+/* ---- S4b L6: THE NODE VOICE, the overlay half (flux3-s4b-plan.md L6; Fable, Nov 21, 6:54 pm: the caps titles HELD, S1's cards never move). From the board mockup:
+   a preset step's first line in the preset's lime (colour only: the line's box, wrap and the card's height are untouched), and the footer's status theatre
+   (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */
+:root[data-flux3][data-theme='flux'] .board-box:has(> .flux3-node[data-node-kind='preset']) .board-text::first-line{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .flux3-node-f[data-st]:not([data-ok])::after{ content:attr(data-st); color:var(--f3-quiet); }
