@@ -18,7 +18,7 @@ const TUTOR = rd('components/Tutor.tsx');
 const SITES = [
   ['TABS', "tabs={((back ? rightTabs : arborRightTabs) ?? rightTabs) as DrawerTabsConfig<string>}", "tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}"],
   ['FOLD', "const foldExport = tutorTheme !== 'machina';\n  const exportTab = back && publishing && !foldExport;", "const exportTab = back && publishing;"],
-  ['BODY', "{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}", "{rightTab === 'tutor' && ("],
+  ['BODY', "{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}", "{rightTab === 'tutor' && ("],
   ['LINKS', "only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined}", "only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined}"],
 ];
 const siteOk = (text, want, old, name) => text.includes(want) && (name === 'BODY' ? true : !text.includes(old));
@@ -31,7 +31,7 @@ for (const [name, want, old] of SITES) {
 // the fold sits BEFORE the TUTOR body (the head of the tab), not after it
 const iFold = TUTOR.indexOf("{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport"), iBody = TUTOR.indexOf("{rightTab === 'tutor' && (");
 ok('ORDER the fold stands before the TUTOR body (at the head of the tab)', iFold > 0 && iBody > iFold, J({ iFold, iBody }));
-ok("ORDER (mutant) the fold moved after the body is caught", (() => { const moved = TUTOR.replace("{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}", () => '').replace("{back && rightTab === 'plan' && <BackPlan entry={entry} />}", () => "{back && rightTab === 'plan' && <BackPlan entry={entry} />}\n{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}"); const a = moved.indexOf("{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport"), b = moved.indexOf("{rightTab === 'tutor' && ("); return moved !== TUTOR && !(a > 0 && b > a); })(), '');
+ok("ORDER (mutant) the fold moved after the body is caught", (() => { const moved = TUTOR.replace("{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}", () => '').replace("{back && rightTab === 'plan' && <BackPlan entry={entry} />}", () => "{back && rightTab === 'plan' && <BackPlan entry={entry} />}\n{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}"); const a = moved.indexOf("{back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport"), b = moved.indexOf("{rightTab === 'tutor' && ("); return moved !== TUTOR && !(a > 0 && b > a); })(), '');
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 400)}`); if (!c.pass) bad += 1; }
