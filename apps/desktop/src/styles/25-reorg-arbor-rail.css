@@ -126,3 +126,14 @@
    a pop-out is at most the room between the rail and the page's left opener, measured while it is open (reorg/railRoom.ts, --wz-rail-room on the
    anchor); where there is room it keeps its 300 px. Checked by scripts/harness/reorg-arbor-rail-live.mjs A10. */
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
+/* THE SESSION IN PAGES (claude/wrizors/arbor-reorg-spec.md section 7: the session as PAGES' last item, closed by default - the same rows in every theme,
+   one set for the account; POLISH's shared reorg/session/SessionGroup.tsx). This file was generated before the Session existed, so Machina's five rules
+   (22-reorg-rail.css: the fold, its arrow, its focus, the goal field) are drawn here in Arbor's own look: the fold a full-width row with no button
+   face and Arbor's small arrow; the goal field a 1 px edge on the pop-out's own ground, its figures in the bar's label ink. The rows and their
+   toggles are already Arbor's (.wz-reorg-default, .wz-reorg-toggle above). Checked by scripts/harness/reorg-arbor-rail-live.mjs A15. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold{ width:100%; justify-content:space-between; background:none; border:0; cursor:pointer; text-align:left; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold::after{ content:'\25B8'; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold[aria-expanded='true']::after{ content:'\25BE'; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal{ width:64px; box-sizing:border-box; padding:3px 6px; border:1px solid var(--ink-border-strong); border-radius:0; background:transparent; color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:12px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
