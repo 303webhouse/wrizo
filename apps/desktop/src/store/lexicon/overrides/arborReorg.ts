@@ -79,6 +79,8 @@ export const ARBOR_REORG_WORDS = {
   reorgListEmpty: 'No pages yet.',
   reorgUntitledBoard: 'Untitled canvas',
   reorgOwnColour: 'Custom…',
+  plainTrackerSwitch: "Use the theme's progress tracker",   // the Wrizors' pass 7 NIT 1: Arbor's sentence case (Machina's is Title Case)
+  reorgSessionProgress: 'Progress bar',   // pass 7 NIT 2: the Session's row says what it is, so it never reads as a twin of Page defaults' "Progress bars"
   reorgSwatchPale: 'Olive',
   reorgSwatchGrey: 'Sea',
   reorgSwatchBlue: 'Cold blue',

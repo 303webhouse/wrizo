@@ -126,3 +126,38 @@
    a pop-out is at most the room between the rail and the page's left opener, measured while it is open (reorg/railRoom.ts, --wz-rail-room on the
    anchor); where there is room it keeps its 300 px. Checked by scripts/harness/reorg-arbor-rail-live.mjs A10. */
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
+/* THE SESSION IN PAGES (claude/wrizors/arbor-reorg-spec.md section 7: the session as PAGES' last item, closed by default - the same rows in every theme,
+   one set for the account; POLISH's shared reorg/session/SessionGroup.tsx). This file was generated before the Session existed, so Machina's five rules
+   (22-reorg-rail.css: the fold, its arrow, its focus, the goal field) are drawn here in Arbor's own look: the fold a full-width row with no button
+   face and Arbor's small arrow; the goal field a 1 px edge on the pop-out's own ground, its figures in the bar's label ink. The rows and their
+   toggles are already Arbor's (.wz-reorg-default, .wz-reorg-toggle above). Checked by scripts/harness/reorg-arbor-rail-live.mjs A15. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold{ width:100%; justify-content:space-between; background:none; border:0; cursor:pointer; text-align:left; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold::after{ content:'\25B8'; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold[aria-expanded='true']::after{ content:'\25BE'; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal{ width:64px; box-sizing:border-box; padding:3px 6px; border:1px solid var(--ink-border-strong); border-radius:0; background:transparent; color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:12px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+/* THE RECENT GROUP IN PAGES (POLISH's docs-recent, train J; the frames on 016bc20a drew its sort as white browser buttons). Machina's six rules
+   (22-reorg-rail.css) in Arbor's look: the rows scroll inside the pop-out; the head holds the sort at its right; the sort is words, not buttons - the
+   others in the pop-out's mid label colour, the chosen one in its high colour and underlined - with Arbor's focus ring. Checked by A16. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-head{ justify-content:space-between; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
+/* THE WRIZORS' PASS 7 (claude/wrizors/arbor-reorg-pass-7.md; Fable, Nov 22 3:20 pm).
+   REAL 1: the Session's goal field's edge read 2.61:1 by day and 1.50:1 by night; it takes Arbor's field edge, as the Tutor's search field does -
+   #6B5F4E by day (4.46:1 on the pop-out), #9C8A6E by night (5.86:1).
+   REAL 2 and REAL 3: by night Arbor's dim (arbor-v2.css section 6.2) took the whole rail to .6 - the reorg's rail is the strip's one child - and lettered it
+   in cream, so the opened PAGES door read 2.54:1 on its dimmed cloth and the Drawer box's "FI" 4.39:1 on a greyed cream. Under the bar's own dim
+   condition (arbor-v2.css's rule that sets --arbor2-bar-dim, verbatim, the strip its subject) the rail stays whole and the dim moves onto its pieces
+   by class - the pin-view switch, the doors not open, the foot - so the boxes (her Drawer and its pins) and the opened door keep their full colour.
+   The opened door's word and glyph take their cloth's ink as the text fill and the stroke (the dim's cream lettering reaches neither), as the boxes'
+   letters do (RailBox). No new @container (arbor-keyflip counts two); class subjects only (bug #80). Checked by reorg-arbor-rail-live.mjs A17-A19. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal{ border-color:#6B5F4E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-reorg-session-goal{ border-color:#9C8A6E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .desk-frame-strip:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .wz-reorg-rail{ opacity:1 !important; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .desk-frame-strip:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .wz-reorg-rail :is(.wz-reorg-pin-view, .wz-reorg-doors > .wz-strip-item:not([aria-pressed='true']), .wz-strip-foot){ opacity:var(--arbor2-dim, .6); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true'] :is(.wz-strip-label, .wz-strip-glyph){ -webkit-text-fill-color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true'] .wz-strip-glyph svg{ stroke:var(--arbor-cloth-ink); }

@@ -30,7 +30,8 @@ const rdSite = (p) => (p === 'components/BoardEditor.tsx' ? lf(srcText(SRCDIR, p
 const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 // the cells of Arbor's column the table has switched on, each only after the Wrizors passed its frames (Fable, Nov 21 9:40 pm: the rail)
-const ARBOR_ON = ['rail'];
+// Nov 22 (Fable 3:20 pm, train K): + 'top' (ARBOR's flip). Was: const ARBOR_ON = ['rail'];
+const ARBOR_ON = ['rail', 'top'];
 // the plateau line as the table holds it, whatever cells it carries (the anchor the ARBOR2 law and its mutant rewrite)
 const PLATEAU_LINE = /  plateau: \{ \.\.\.ALL_OFF[^}\n]*\},/;
 const THEMES = ['machina', 'plateau', 'flux'];
@@ -100,12 +101,14 @@ function suite(src) {
     const one = cells({ search: '?reorg=1&reorglift=flux.back' });
     // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty: plateau.rail is the table's now, so the door cannot be seen adding it). The original, verbatim:
     // const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.rail' });
-    const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.top' });   // [ARBOR_ON successor]: a plateau cell still off
+    // SUPERSEDED (the Wrizors' pass 6 passed Arbor's last pieces; Fable, Nov 22 3:20 pm: all six Arbor cells flip for train K, ARBOR flips plateau.top: plateau.top is the table's now). The [ARBOR_ON successor], verbatim:
+    // const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.top' });   // [ARBOR_ON successor]: a plateau cell still off
+    const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.front' });   // [ARBOR_ON successor 2]: front, a plateau cell still off on this branch
     const off = cells({ reorg: false, search: '?reorglift=flux.back' });
     const junk = cells({ search: '?reorg=1&reorglift=flux,back,flux.nope,nonsense.back,.back,flux.,FLUX.BACK, flux.back' });
     const M = load(src, { search: '?reorg=1&reorglift=machina.rail,-rail' });
     const hooked = load(src, { search: '?reorg=1&reorglift=flux.back', theme: 'flux' });
-    return { pass: none.length === 0 && J(one) === J(['flux.back']) && J(two.slice().sort()) === J(['flux.back', 'flux.top', 'plateau.top']) && off.length === 0 && J(junk) === J(['flux.back']) && PIECES.every((p) => M.themeHas(p, 'machina')) && hooked.useReorgPiece('back') === true && hooked.useReorgPiece('rail') === false, detail: J({ none, one, two, off, junk }) };
+    return { pass: none.length === 0 && J(one) === J(['flux.back']) && J(two.slice().sort()) === J(['flux.back', 'flux.top', 'plateau.front']) && off.length === 0 && J(junk) === J(['flux.back']) && PIECES.every((p) => M.themeHas(p, 'machina')) && hooked.useReorgPiece('back') === true && hooked.useReorgPiece('rail') === false, detail: J({ none, one, two, off, junk }) };
   });
   return R;
 }
@@ -119,7 +122,9 @@ const MUT = [
   ['Machina loses a piece', 'TABLE', (t) => t.replace('  machina: { ...ALL_ON },', () => '  machina: { ...ALL_ON, uplink: false },')],
   // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty; its anchor is gone, so it no longer lands). The original, verbatim:
   // ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
-  ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', top: true },'))],
+  // SUPERSEDED (the Wrizors' pass 6 passed Arbor's last pieces; Fable, Nov 22 3:20 pm: all six Arbor cells flip for train K, ARBOR flips plateau.top: top is passed now, so adding it changes nothing). The [ARBOR_ON successor], verbatim:
+  // ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', top: true },'))],
+  ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor 2]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', front: true },'))],
   ['Arbor loses a piece the Wrizors passed (the rail) [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_OFF },')],
   ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
   ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
