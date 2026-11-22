@@ -16,7 +16,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
 const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
-const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline'];
+const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
 const analyse = (raw) => {
   const evs = raw.slice().sort((a, b) => a.ts - b.ts);
@@ -35,7 +35,18 @@ const analyse = (raw) => {
   const win = ult.filter((s) => s.ts >= K && s.ts < K + WINDOW_US);
   const counted = win.filter((s) => Number.isFinite(els(s)));
   const big = counted.reduce((m, s) => (els(s) > (m ? els(m) : -1) ? s : m), null);
-  return { restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null };
+  // attribution (information): what invalidated, and why, in the key's window (the same read arbor-keyflip prints)
+  const r1 = (x) => Math.round(x * 10) / 10;
+  const inv = {};
+  for (const e of evs) {
+    if (e.ts < K - 2000 || e.ts > K + WINDOW_US || !/InvalidationTracking/.test(e.name)) continue;
+    const d = (e.args && e.args.data) || {};
+    const why = d.reason || (d.changedAttribute ? 'attr ' + d.changedAttribute : d.changedClass ? 'class ' + d.changedClass : d.changedId ? 'id ' + d.changedId : d.changedPseudo ? 'pseudo ' + d.changedPseudo : '?');
+    const key = e.name.replace('InvalidationTracking', '') + ' | ' + why + (d.extraData ? ' (' + String(d.extraData).slice(0, 50) + ')' : '') + ' | ' + String(d.nodeName || '').slice(0, 60);
+    inv[key] = (inv[key] || 0) + 1;
+  }
+  const top = win.slice().sort((a, b) => els(b) - els(a)).slice(0, 4).map((s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000) }));
+  return { restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
 };
 const traceKey = async (app, key = 'a') => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
@@ -90,7 +101,9 @@ await withHarness(async (app) => {
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
     const m = { theme, before, after, tr };
-    console.log(`KL ${mutate ? 'mut-' : ''}${theme}: ` + JSON.stringify({ docEls: before.docEls, onHtmlAfter: after.onHtml, carriers: after.carriers, fadeReads: after.reads, tr }));
+    const { invalidations, top, ...trShort } = tr || {};
+    console.log(`KL ${mutate ? 'mut-' : ''}${theme}: ` + JSON.stringify({ docEls: before.docEls, onHtmlAfter: after.onHtml, carriers: after.carriers, fadeReads: after.reads, tr: trShort }));
+    if (!mutate) console.log(`KL-ATTRIB ${theme}: ` + JSON.stringify({ top, invalidations }));
     return m;
   };
 
