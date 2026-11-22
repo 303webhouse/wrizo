@@ -226,9 +226,13 @@
 :root[data-flux3][data-theme='flux'] .flux3-bracket-tl{ border-right:none; border-bottom:none; }
 :root[data-flux3][data-theme='flux'] .flux3-bracket-br{ border-left:none; border-top:none; }
 :root[data-flux3][data-theme='flux'] .flux3-dochead{ position:absolute; z-index:2; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:0 18px; border-bottom:1px solid rgba(0, 194, 255, .2); pointer-events:none; overflow:hidden; white-space:nowrap;
+  padding:0 18px; pointer-events:none; overflow:hidden; white-space:nowrap;
   font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-on-paper-low); }
-:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-dochead{ border-bottom-color:rgba(0, 110, 145, .25); }
+/* the header's foot (law 1, Fable, Nov 21, 6:54 pm, reading A): a SOFT hairline that fades out toward both ends, not a full rule, so a line the page's own scroll cuts at the
+   clip edge just under it can never read as covered by the header */
+:root[data-flux3][data-theme='flux'] .flux3-dochead{ --f3-head-rule:rgba(0, 194, 255, .1);
+  background:linear-gradient(90deg, transparent, var(--f3-head-rule) 22%, var(--f3-head-rule) 78%, transparent) left bottom / 100% 1px no-repeat; }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-dochead{ --f3-head-rule:rgba(0, 110, 145, .14); }
 :root[data-flux3][data-theme='flux'] .flux3-dochead > span{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
 :root[data-flux3][data-theme='flux'] .flux3-dochead-id{ flex:0 0 auto; color:var(--f3-cyan-text); }
 :root[data-flux3][data-theme='flux'] .flux3-dochead-hex{ text-transform:none; }   /* the digits are capitals already; the 0x stays lower case, as the node records' */
