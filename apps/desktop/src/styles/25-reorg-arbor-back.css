@@ -1,0 +1,27 @@
+/* THE REORG'S BACK MENU IN ARBOR (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md sections 0 and 5). Every rule is under :root[data-arbor2][data-theme='plateau'] and is reached only by markup the reorg draws, so with the switch off, or in any other theme, nothing
+   here matches. The twins first: the Machina rules for the Back menu's lists, sort row, "+" menus and the search, re-scoped to the live Arbor (their colours are the theme's own tokens, so they read Arbor's); then Arbor's own dress. The piece is switched on for Arbor
+   only through reorg/themeGate.ts (the preview door shows it before then). Tags (the Sections' numbered cloth tabs) are ARBOR's, with the Front menu. */
+:root[data-arbor2][data-theme='plateau'] .wz-back-assets-head{ margin:0 0 6px; }
+/* ---- ARBOR'S DRESS (arbor-reorg-spec sections 0, 5, 6, 8) ---- */
+/* the drawer-tab rule for PLAN: Arbor's own three tabs name their cloth by id (arbor-v2.css: TUTOR olive, GRAFTS cold blue, BOARD madder); PLAN takes the madder cloth the Canvas tab had ("the Plan replaces that tab's job"), comes forward when open, and its cloth is the drawer's 3 px border */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) :is(#wz-tutor-tab-plan){ background:#A8392F; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']){ --arbor2-chosen-r:#A8392F; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 #wz-tutor-tab-plan[data-on='true']{ z-index:3; box-shadow:none; text-decoration-line:none; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset 0 3px 0 var(--arbor2-chosen-r), inset -3px 0 0 var(--arbor2-chosen-r), inset 0 -3px 0 var(--arbor2-chosen-r); }
+/* a search field heads each tab, in the drawer's own field style: 1 px --arbor-line (#9C8A6E by night); focused, "where you are" olive (never brass) */
+:root[data-arbor2][data-theme='plateau'] :is(.reorg-search-field, .reorg-search-door){ border:1px solid var(--arbor-line); background:transparent; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] :is(.reorg-search-field, .reorg-search-door) input{ color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] :is(.reorg-search-field, .reorg-search-door) input::placeholder{ color:var(--text-mid); opacity:1; }
+/* the chosen row (Arbor's rule): a 4 px brass mark at its left edge and roman 500; by night its words are brass (8.56:1), by day they stay olive (brass on cream is 1.91:1) */
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 4px 0 0 var(--brass); font-weight:500; padding-left:10px; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-back-part.is-here > .wz-back-part-head{ color:var(--brass); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-back-part.is-here > .wz-back-part-head{ color:var(--accent-rest); }
+:root[data-arbor2][data-theme='plateau'] .reorg-search-hit[aria-current='true']{ border-left:4px solid var(--brass); background:var(--ink-900); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+/* the "+" menus and short lists sit on Arbor's raised surface: #F6F1E4 by day, #261A12 by night */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-assets-add-pop{ background:#F6F1E4; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-assets-add-pop{ background:#261A12; }
+/* what the search finds is lit in Arbor's honey, on the page and in the list */
+:root[data-arbor2][data-theme='plateau'] .reorg-search-hit mark{ background:rgba(201, 164, 107, .45); color:inherit; }
+:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:rgba(201, 164, 107, .35); }
+:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search-cur){ background-color:rgba(201, 164, 107, .7); }
