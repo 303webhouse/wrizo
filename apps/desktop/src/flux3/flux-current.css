@@ -7,7 +7,7 @@
 :root[data-flux3][data-theme='flux'] .flux-current .flux-current-head{ filter:drop-shadow(0 0 2px #BEEBFF); }
 
 /* THE HANDS' CURRENT, DRAWN BY THE MENU'S OWN BOX (fluxCurrent.ts marks an open panel with data-flux-hand after a press of its tab; there is no element of ours in the page). The panel's ::before is the line: 1 px,
-   the box's top edge, pinned there while the menu scrolls (sticky, and a margin that takes back its own height so nothing moves), drawn from the tab's end. Its ::after is the electron: a pale head on a 1 px strip as
+   the box's top edge, pinned there while the menu scrolls (sticky, and a margin that takes back its own height so nothing moves), drawn from the tab's end. Its ::after is the electron: a 4 px pale dot (a radial gradient) on a strip as
    wide as the box that is moved across it, from the tab's end to the far end, over and over. Both are the panel's own, so they fade with it when the chrome recedes and go when the menu shuts; both animate
    transform alone. The left menu's tab is on its right end, the right menu's on its left. */
 :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::before{
@@ -15,8 +15,8 @@
   background:#00C2FF; transform:scaleX(0); transform-origin:left center; animation:flux-hand-draw .22s ease-out forwards; }
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::before{ transform-origin:right center; }
 :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::after{
-  content:''; position:absolute; top:0; left:0; z-index:3; width:100%; height:1px; pointer-events:none;
-  background:linear-gradient(90deg, transparent 45%, #00C2FF 48%, #BEEBFF 50%, #00C2FF 52%, transparent 55%);
+  content:''; position:absolute; top:-1.5px; left:0; z-index:3; width:100%; height:4px; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, #BEEBFF 0 1.5px, rgba(0, 194, 255, .55) 1.5px 2.5px, transparent 3px);
   transform:translateX(-50%); animation:flux-hand-run-right 1.5s linear .22s infinite; }
 :root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::after{ animation-name:flux-hand-run-left; }
 @keyframes flux-hand-draw{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
