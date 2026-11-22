@@ -211,8 +211,14 @@ await withHarness(async (app) => {
   const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
   ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source)', missing.length === 0, { missing });
   const rec = src('types/records.ts'), ds = src('reorg/docSettings.ts').replace(/\/\/.*$/gm, '');
-  ok('D1 the Doc\'s assets are typed on DocSettings and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
-    /export type DocSettings = \{[^\n]*assets\?: DocAsset\[\][^\n]*\};/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
+  // SUPERSEDED (train H, Nov 21: Chat 1 composed arbor/colour-b's colourScheme onto DocSettings, so the type now spans two lines; the reader matched it on ONE line
+  // only, a spelling, not the sense; train-h4 3ab78c73, pair 44973956599). The original, verbatim:
+  // ok('D1 the Doc\'s assets are typed on DocSettings and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
+  //   /export type DocSettings = \{[^\n]*assets\?: DocAsset\[\][^\n]*\};/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
+  // [successor] the same sense, read across lines: the whole DocSettings type (from its head to the `};` that ends a line) carries assets?: DocAsset[]
+  const dsType = (rec.match(/export type DocSettings = \{[\s\S]*?\};[ \t]*$/m) || [''])[0];
+  ok('D1 [successor] the Doc\'s assets are typed on DocSettings (read across lines) and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
+    /\bassets\?: DocAsset\[\]/.test(dsType) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), { dsType: dsType.slice(0, 300) });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
