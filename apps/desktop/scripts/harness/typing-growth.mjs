@@ -63,10 +63,37 @@ await withHarness(async (app) => {
         rows.push(row);
         console.log('TG ' + JSON.stringify(row));
         if (words === 50000 && kind !== 'enter') {
-          await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 200 }); await app.cdp('Profiler.start');
+          await app.cdp('Debugger.enable'); await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 200 }); await app.cdp('Profiler.start');
           for (let i = 0; i < 40; i += 1) { await send(); await sleep(110); }
           const prof = await app.cdp('Profiler.stop');
           console.log(`TG-PROFILE ${mode} ${kind} 50000 words: ` + JSON.stringify(selfTop(prof.profile)));
+          // THE LAYOUTS: a Chrome trace of 12 keys of this kind: every Layout span with its duration and the JS stack that forced it (the bundle is minified: the frame is named by its position, and the code at it printed)
+          if (mode === 'freewrite' || kind === 'letter') {
+            try {
+              await app.cdp('Tracing.start', { traceConfig: { includedCategories: ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack'], recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
+              await sleep(300);
+              for (let i = 0; i < 12; i += 1) { await send(); await sleep(150); }
+              await sleep(500);
+              const done = app.waitEvent('Tracing.tracingComplete', 30000);
+              await app.cdp('Tracing.end');
+              const ev = await done;
+              let s = '';
+              for (;;) { const r = await app.cdp('IO.read', { handle: ev.stream, size: 4 << 20 }); s += r.base64Encoded ? Buffer.from(r.data, 'base64').toString('utf8') : r.data; if (r.eof) break; }
+              await app.cdp('IO.close', { handle: ev.stream });
+              const j = JSON.parse(s); const evs = (Array.isArray(j) ? j : (j.traceEvents || [])).sort((a, b) => a.ts - b.ts);
+              const spans = []; const open = {};
+              for (const e of evs) { if (e.ph === 'X') spans.push({ name: e.name, ts: e.ts, dur: e.dur || 0, args: e.args || {} }); else if (e.ph === 'B') (open[e.name] ||= []).push(e); else if (e.ph === 'E') { const b = (open[e.name] || []).pop(); if (b) spans.push({ name: e.name, ts: b.ts, dur: e.ts - b.ts, args: { ...(b.args || {}), ...(e.args || {}) } }); } }
+              const lay = spans.filter((x) => x.name === 'Layout');
+              const keys = spans.filter((x) => x.name === 'EventDispatch' && x.args.data && x.args.data.type === 'keydown').length || 1;
+              const byFrame = new Map();
+              for (const l of lay) { const st = (l.args.beginData && l.args.beginData.stackTrace) || []; const top = st[0]; const k = top ? (top.functionName || '?') + ' ' + String(top.url || '').split('/').pop() + ':' + top.lineNumber + ':' + top.columnNumber : '(no stack: the frame\'s own layout)'; const cur = byFrame.get(k) || { n: 0, ms: 0, top }; cur.n += 1; cur.ms += l.dur / 1000; byFrame.set(k, cur); }
+              const rows = [...byFrame.entries()].sort((a, b) => b[1].ms - a[1].ms).slice(0, 6).map(([k, v]) => ({ k, perKey: Math.round((v.n / keys) * 10) / 10, msPerKey: Math.round((v.ms / keys) * 10) / 10 }));
+              console.log(`TG-LAYOUTS ${mode} ${kind} 50000 words (${keys} keys): ` + JSON.stringify({ layoutsPerKey: Math.round((lay.length / keys) * 10) / 10, msPerKey: Math.round((lay.reduce((a, l) => a + l.dur, 0) / 1000 / keys) * 10) / 10, rows }));
+              const code = [];
+              for (const r of rows.slice(0, 4)) { if (!byFrame.get(r.k).top) continue; const top = byFrame.get(r.k).top; try { const src = await app.cdp('Debugger.getScriptSource', { scriptId: top.scriptId }); const lines = String(src.scriptSource || '').split(String.fromCharCode(10)); code.push({ at: top.lineNumber + ':' + top.columnNumber, src: (lines[top.lineNumber] || '').slice(Math.max(0, top.columnNumber - 160), top.columnNumber + 200) }); } catch { /* the position alone */ } }
+              console.log(`TG-LAYOUT-CODE ${mode} ${kind}: ` + JSON.stringify(code));
+            } catch (e) { console.log('TG-LAYOUTS failed: ' + String(e && e.message).slice(0, 200)); }
+          }
           // the SOURCE at the top self-time JS frames (the bundle is minified: name the code by its text), once per mode
           if (kind === 'letter') {
             try {
