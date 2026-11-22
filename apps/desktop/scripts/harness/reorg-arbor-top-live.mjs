@@ -63,9 +63,12 @@ async function drawnFoot(app) {
   const b = await app.evalJs(FOOTBOX); if (!b || !b.words.length) return { found: false, b };
   const clip = async (c, how) => { const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: c.x, y: c.y, width: c.w, height: c.h, scale: 1 } })).data;
     return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data;
-      const px = []; for (let i = 0; i < D.length; i += 4) px.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; px.sort((p, q) => L(p) - L(q)); return ${how === 'min' ? 'px[0]' : 'px[px.length >> 1]'}; })()`); };
-  const paper = await clip(b.paper, 'median'); const inks = []; for (const w of b.words) inks.push(await clip(w, 'min'));
+      const px = []; for (let i = 0; i < D.length; i += 4) px.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; px.sort((p, q) => L(p) - L(q)); return ${how === 'ends' ? '[px[0], px[px.length - 1]]' : 'px[px.length >> 1]'}; })()`); };
+  // DRIVER FIX (Nov 21, Actions 44976946974 on 3e81cf88: on the dark page the darkest pixel is the paper itself, so T10 read 1:1 while the foot drew
+  // #B9AA8C): each word box gives its darkest and its lightest pixel, and the ink is the one farther from the paper. No assertion changes.
   const rgb = (p) => (Array.isArray(p) ? `rgb(${p.join(', ')})` : null);
+  const paper = await clip(b.paper, 'median'); const inks = [];
+  for (const w of b.words) { const e = await clip(w, 'ends'); inks.push(Array.isArray(e) && rgb(paper) ? (contrast(rgb(e[0]), rgb(paper)) >= contrast(rgb(e[1]), rgb(paper)) ? e[0] : e[1]) : null); }
   return { found: true, paper: rgb(paper), inks: inks.map(rgb), color: b.color, nextColor: b.nextColor, chain: b.chain };
 }
 const footReads = (f) => !!f && f.found && !!f.paper && f.inks.length >= 2 && f.inks.every((i) => !!i && contrast(i, f.paper) >= 4.5);
