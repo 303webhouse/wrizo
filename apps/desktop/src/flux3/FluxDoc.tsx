@@ -153,8 +153,52 @@ function Doc({ paperRef, entryId }: Props) {
         ))}
       </div>
       <Ports ports={shown} hidden={hidden} entryId={entryId} x={frame.right} y={frame.top + PORT_TOP} />
+      <PlusCorner entryId={entryId} connections={ports.length} x={frame.right + PLUS_GAP} y={frame.top - 1} />
     </>,
     host,
+  );
+}
+
+/** S4b N5: the + stands this far beyond the page's right edge (clear of the right hand's grip, which hugs the edge 16 px wide). */
+const PLUS_GAP = 20;
+const PLUS_LINE = 40;   // the line it draws down the page's side into its box
+
+// S4b N5 - THE + AT THE PAGE'S TOP CORNER (the mockup's .plus: "Its menu draws a line down the page's side and opens into a box"). It REUSES the port box: the same box
+// dress, the same Connect another (the Grafts pane's own picker, GraftPicker, with this page as its subject). It adds no action and writes nothing of its own: a
+// connection made in the picker is the picker's. Esc or a press elsewhere closes it. A chrome overlay in the page's column, beyond the page: no rect moves.
+function PlusCorner({ entryId, connections, x, y }: { entryId: string; connections: number; x: number; y: number }) {
+  const { t } = useDeskLexicon();
+  const [open, setOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const linkRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open || picking) return;
+    const away = (e: PointerEvent) => { if (!(e.target instanceof Node) || !wrapRef.current?.contains(e.target)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', away, true);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', esc); };
+  }, [open, picking]);
+  return (
+    <div ref={wrapRef} className="flux3-plus-wrap chrome-fade" style={{ left: x, top: y }}>
+      <button type="button" className="flux3-plus" data-flux3-plus="" aria-expanded={open} aria-label={t('flux3PortConnectAnother')} title={t('flux3PortConnectAnother')}
+        onClick={() => { setPicking(false); setOpen((o) => !o); }} />
+      {open && (
+        <>
+          <i className="flux3-plus-line" data-flux3-plus-line="" aria-hidden="true" style={{ height: PLUS_LINE }} />
+          <div className="flux3-port-box flux3-plus-box" data-flux3-plus-box="" style={{ top: 32 + PLUS_LINE }}>
+            <div className="flux3-port-head" data-flux3-plus-head="">
+              <span className="flux3-port-kind">{t('linksKindPage')}</span> · {connections} {connections === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
+            </div>
+            <button ref={linkRef} type="button" className="flux3-port-act" data-port-act="link" aria-expanded={picking} onClick={() => setPicking((v) => !v)}>
+              {t('flux3PortConnectAnother')}
+            </button>
+          </div>
+        </>
+      )}
+      {open && picking && <GraftPicker subject={{ entryId }} anchor={linkRef.current} cameFrom={null} onClose={() => setPicking(false)} />}
+    </div>
   );
 }
 

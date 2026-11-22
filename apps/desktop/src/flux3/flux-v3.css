@@ -232,3 +232,18 @@
 :root[data-flux3][data-theme='flux'] .flux3-dochead > span{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
 :root[data-flux3][data-theme='flux'] .flux3-dochead-id{ flex:0 0 auto; color:var(--f3-cyan-text); }
 :root[data-flux3][data-theme='flux'] .flux3-dochead-hex{ text-transform:none; }   /* the digits are capitals already; the 0x stays lower case, as the node records' */
+/* ---- S4b N5: THE + AT THE PAGE'S TOP CORNER (flux3-s4b-plan.md N5; flux-full-look-for-monday.md item 7, tier A; the mockup's .plus). A 32 px square beyond the page's top-right corner, clear
+   of the right hand's grip; pressed, a line runs down from it into the port box's own box (Connect another, the same picker). Room colours (the room is dark in both Page tones). An
+   overlay in the page's column with chrome-fade: it recedes while she types and nothing moves (flux3-s4b-n5.mjs RECT). ---- */
+:root[data-flux3][data-theme='flux'] .flux3-plus-wrap{ position:absolute; z-index:3; width:32px; height:32px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus{ position:absolute; inset:0; width:32px; height:32px; padding:0; margin:0; border-radius:0; box-shadow:none; cursor:pointer;
+  background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); color:var(--f3-room-cyan); }
+:root[data-flux3][data-theme='flux'] .flux3-plus::before,
+:root[data-flux3][data-theme='flux'] .flux3-plus::after{ content:''; position:absolute; left:50%; top:50%; background:currentColor; transform:translate(-50%, -50%); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plus::before{ width:14px; height:2px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus::after{ width:2px; height:14px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus:hover,
+:root[data-flux3][data-theme='flux'] .flux3-plus[aria-expanded='true']{ background:var(--f3-room-cyan); color:var(--f3-room-fill); }
+:root[data-flux3][data-theme='flux'] .flux3-plus:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-line{ position:absolute; left:15.5px; top:32px; width:0; border-left:1px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-box{ left:-6px; }
