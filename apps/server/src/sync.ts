@@ -238,7 +238,7 @@ async function writeShell(table: string, userId: string, r: any): Promise<void> 
 
 // --- upserts (last-write-wins on updated_at, scoped to user) --------------
 
-async function upsertProjects(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
+export async function upsertProjects(userId: string, records: any[], acked: string[] = []): Promise<string[]> {
   const rejected: string[] = [];
   const purged = await purgedIdsOf('projects', userId, records.filter((x) => x?.id).map((x) => x.id));
   for (const p of records) {
