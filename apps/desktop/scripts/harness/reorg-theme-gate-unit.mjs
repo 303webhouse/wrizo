@@ -6,6 +6,7 @@
 //   HOOK   useReorgPiece reads the table for the current theme under the switch, and with the switch off returns false and calls NO hook (the hook order never changes)
 //   LIFT   lifting a Flux piece is ONE cell: with only flux.back flipped, exactly that cell changes and every other (piece, theme) reads as before
 //   LIFTQ  (Flux piece 2, Nov 21) the PREVIEW DOOR: ?reorglift=flux.back (comma-separated theme.piece) shows a piece of a theme without flipping the table's cell, so frames and the Wrizors' review can see it; honoured only with the switch on, read once at load, a token that is not a real theme.piece is ignored, it only ADDS (Machina never loses a piece), and with no parameter nothing changes
+//   ARBOR2 (Nov 21) Arbor's column is the live Arbor, the redesign (arbor2/flag.ts arbor2Enabled: on by default, ?arbor2=0 test-only): a plateau cell is on only while the redesign may run; with it off a plateau cell the table has switched on, and the preview door, read OFF; Machina and Flux do not read it
 //   SITES  each gate site in the app reads the table for its own piece and the Machina-only literal is gone from it: Cascade (rail), useReorg (top), Sliver (front), Tutor (back and split), BoardEditor (the Plan presets, back), PageEditor (uplink)
 // Run: node scripts/harness/reorg-theme-gate-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -28,9 +29,9 @@ const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 const THEMES = ['machina', 'plateau', 'flux'];
 
-function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '' } = {}) {
+function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '', arbor2 = true } = {}) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
-  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg } };
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg }, '../arbor2/flag': { arbor2Enabled: () => arbor2 } };
   const m = { exports: {} };
   new Function('require', 'exports', 'module', 'location', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m, { search });
   return m.exports;
@@ -66,6 +67,16 @@ function suite(src) {
     for (const th of THEMES) for (const p of PIECES) if (G0.themeHas(p, th) !== G1.themeHas(p, th)) diff.push(th + '.' + p);
     return { pass: J(diff) === J(['flux.back']), detail: J({ diff }) };
   });
+  t('ARBOR2', () => {
+    const lifted = src.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, back: true, split: true },');
+    if (lifted === src) return { pass: false, detail: 'the plateau cell is not where the unit looks' };
+    const on = load(lifted, { arbor2: true }), off = load(lifted, { arbor2: false });
+    const cellsOf = (G, th) => PIECES.filter((p) => G.themeHas(p, th));
+    const doorOff = load(src, { arbor2: false, search: '?reorg=1&reorglift=plateau.back,flux.rail,machina.rail' }), doorOn = load(src, { arbor2: true, search: '?reorg=1&reorglift=plateau.back' });
+    const hooked = load(lifted, { arbor2: false, theme: 'plateau' }), hookedOn = load(lifted, { arbor2: true, theme: 'plateau' });
+    const m = load(src, { arbor2: false });
+    return { pass: J(cellsOf(on, 'plateau')) === J(['back', 'split']) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(['back', 'split']), detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau') }) };
+  });
   t('LIFTQ', () => {
     const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.')); };
     const none = cells({ search: '?reorg=1' });
@@ -82,7 +93,7 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(GATE); } catch (e) { baseErr = e; }
-for (const k of ['TABLE', 'HOOK', 'LIFT', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['TABLE', 'HOOK', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
@@ -93,6 +104,8 @@ const MUT = [
   ['the preview door is honoured with the switch off', 'LIFTQ', (t) => t.replace('const LIFT: ReadonlySet<string> = REORG && typeof location', () => 'const LIFT: ReadonlySet<string> = typeof location')],
   ['the preview door lifts a whole theme from a bare name', 'LIFTQ', (t) => t.replace("=== true || LIFT.has(", () => "=== true || [...LIFT].some((l) => l === theme || ") ],
   ['the preview door can turn a Machina piece off', 'LIFTQ', (t) => t.replace('=== true || LIFT.has(', () => '=== true && !LIFT.has(')],
+  ['the Arbor column ignores the redesign flag', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => '')],
+  ['the flag also switches Machina off', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => 'if (!arbor2Enabled()) return false;')],
   ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
 ];
 for (const [name, key, fn] of MUT) {
