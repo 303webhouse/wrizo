@@ -24,7 +24,7 @@ const READ = () => `(() => {
   const box = sc.getBoundingClientRect();
   const a = document.activeElement;
   return { scrollTop: Math.round(sc.scrollTop * 10) / 10, scrollH: sc.scrollHeight, clientH: sc.clientHeight, clipTop: Math.round(box.top), clipBottom: Math.round(box.bottom), win: innerHeight,
-    firstRowTop: rows[0] ? Math.round(rows[0].getBoundingClientRect().top) : null, nRows: rows.length, zoom: col ? col.getAttribute('data-zoom') : null, tw: sc.getAttribute('data-typewriter'), caret,
+    firstRowTop: rows[0] ? Math.round(rows[0].getBoundingClientRect().top) : null, lastRow: rows.length ? { top: Math.round(rows[rows.length - 1].getBoundingClientRect().top), bottom: Math.round(rows[rows.length - 1].getBoundingClientRect().bottom) } : null, nRows: rows.length, zoom: col ? col.getAttribute('data-zoom') : null, tw: sc.getAttribute('data-typewriter'), caret,
     active: a ? (a.tagName + '.' + String(a.className).slice(0, 36)) : null, hasCaret: !!(sel && sel.rangeCount && ed.contains(sel.anchorNode)), winScroll: Math.round(scrollY),
     mode: (document.querySelector('.desk-mode-tab[aria-selected="true"]') || { getAttribute: () => null }).getAttribute('data-mode-key') };
 })()`;
@@ -76,6 +76,14 @@ try { await withHarness(async (app) => {
     const dr = await ev(READ());
     say('#48', T, { freeWrite: fw && { scrollTop: fw.scrollTop, firstRowTop: fw.firstRowTop, zoom: fw.zoom, clipTop: fw.clipTop }, draft: dr && { scrollTop: dr.scrollTop, firstRowTop: dr.firstRowTop, zoom: dr.zoom, clipTop: dr.clipTop, mode: dr.mode } });
 
+    // ---- #48 on a SHORT page (the bug list's own 0 -> 79 is a short page's number) ----
+    await open(T, SHORT);
+    const fws = await ev(READ());
+    await ev("(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]'); if (b) b.click(); })()");
+    await sleep(1500);
+    const drs = await ev(READ());
+    say('#48-short', T, { freeWrite: fws && { scrollTop: fws.scrollTop, firstRowTop: fws.firstRowTop, zoom: fws.zoom, clipTop: fws.clipTop }, draft: drs && { scrollTop: drs.scrollTop, firstRowTop: drs.firstRowTop, zoom: drs.zoom, clipTop: drs.clipTop } });
+
     // ---- #49: Esc ----
     await open(T, SHORT);
     await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
@@ -87,16 +95,28 @@ try { await withHarness(async (app) => {
     const m1 = await ev(READ());
     await key('Escape', 'Escape', 27); await sleep(600);
     const m2 = await ev(READ());
+    // the same in DRAFT, where the menus are usable: open the Front menu, press Esc, where is the focus and is there a caret to type into?
+    await open(T, SHORT, { mode: 'drafting' });
+    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+    await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g) { g.focus(); g.click(); } })()");
+    await sleep(700);
+    const d1 = await ev(READ());
+    await key('Escape', 'Escape', 27); await sleep(600);
+    const d2 = await ev(READ());
+    await app.typeKeys('X'); await sleep(200);
+    const d3 = await ev("(() => { const ed = document.querySelector('.forward-only-editor'); return { typed: ed.innerText.includes('X'), active: document.activeElement ? document.activeElement.tagName + '.' + String(document.activeElement.className).slice(0, 30) : null }; })()");
+    say('#49-draft', T, { menuOpen: d1 && { active: d1.active }, afterEsc: d2 && { active: d2.active, hasCaret: d2.hasCaret }, aKeyTypedAfterEsc: d3 });
     say('#49', T, { page: { before: e0 && { active: e0.active, hasCaret: e0.hasCaret }, afterEsc: e1 && { active: e1.active, hasCaret: e1.hasCaret, mode: e1.mode } }, menu: { opened: m1 && { active: m1.active }, afterEsc: m2 && { active: m2.active, hasCaret: m2.hasCaret } } });
 
     // ---- #52: a fast burst, with and without reduced motion ----
     for (const reduced of [false, true]) {
       await open(T, SHORT, { reduced });
       await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
-      for (let i = 0; i < 14; i += 1) await app.typeKeys(`\nburst line ${i + 1} of words`);
-      await sleep(900);
-      const b = await ev(READ());
-      say('#52', T, { reduced, caret: b && b.caret, window: b && b.win, clip: b && [b.clipTop, b.clipBottom], belowWindow: !!(b && b.caret && b.caret.bottom > b.win), belowClip: !!(b && b.caret && b.caret.bottom > b.clipBottom), scrollTop: b && b.scrollTop, zoom: b && b.zoom });
+      for (let i = 0; i < 14; i += 1) await app.typeKeys('\nburst line ' + (i + 1) + ' of words');
+      const reads = [];
+      for (const wait of [150, 400, 900, 1600]) { await sleep(wait); const b = await ev(READ()); reads.push(b && { lastRow: b.lastRow, scrollTop: b.scrollTop }); }
+      const last = reads[reads.length - 1];
+      say('#52', T, { reduced, window: 768, readings: reads, finalLastRowBelowWindow: !!(last && last.lastRow && last.lastRow.bottom > 768) });
     }
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
   }
