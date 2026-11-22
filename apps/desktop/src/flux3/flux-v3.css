@@ -269,3 +269,12 @@
 :root[data-flux3][data-theme='flux'] .flux3-port-node[data-preset='true'] .flux3-port-node-name{ color:#B7FF3C; }
 :root[data-flux3][data-theme='flux'] .flux3-port-node-body{ font-family:var(--font-prose); font-size:12px; line-height:1.5; color:var(--f3-room-text);
   display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; overflow-wrap:anywhere; }
+/* ---- S4b L6, THE TITLE ROW (Fable, Nov 21, 11:20 pm, reading A): a preset step's and a doc node's title above the record's header (the header is 15 px plus 3 above the
+   card; this row stands 3 px above that), outside the card, one line ending in an ellipsis; painted from data-title, so never the card's text; an overlay, so no card moves.
+   A preset in the lime capitals of the chrome face (the mockup's .ttl); a doc node in the page's serif, as written. ---- */
+:root[data-flux3][data-theme='flux'] .flux3-node-t{ position:absolute; left:0; right:0; bottom:100%; margin-bottom:21px; display:block; height:18px; line-height:18px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; font-style:normal;
+  font-family:var(--font-chromeLabel); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--acc-text); }
+:root[data-flux3][data-theme='flux'] .flux3-node-t::after{ content:attr(data-title); }
+:root[data-flux3][data-theme='flux'] .flux3-node[data-node-kind='doc'] > .flux3-node-t{ font-family:var(--font-proseSerif); font-weight:500; font-size:15px; letter-spacing:0;
+  text-transform:none; color:var(--f3-label); }
