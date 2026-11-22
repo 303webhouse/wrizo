@@ -126,8 +126,17 @@ await withHarness(async (app) => {
 
   await open(app, 'ss-1');
   const f1 = await footMenu(app);
-  ok('F1: switch on - the Front menu\'s foot carries no session (no goal foot, no Progress switch, no Progress block); the "..." menu still holds the Typewriter block',
-    !!f1 && !f1.goal && !f1.progressSwitch && f1.more && Array.isArray(f1.blocks) && !f1.blocks.includes('Progress Tracking') && f1.blocks.includes('Typewriter Mode'), f1);
+  // SUPERSEDED (main, merged Nov 22: SPRINT has no menus (sprint-no-menus, train E: with the switch on in Machina, Free Write draws no Front menu, so the foot
+  // read here is null) and Free Write = Typewriter (the "..." menu and its Typewriter block mount only on Free Write); Actions 45004440285). The original, verbatim:
+  // ok('F1: switch on - the Front menu\'s foot carries no session (no goal foot, no Progress switch, no Progress block); the "..." menu still holds the Typewriter block',
+  //   !!f1 && !f1.goal && !f1.progressSwitch && f1.more && Array.isArray(f1.blocks) && !f1.blocks.includes('Progress Tracking') && f1.blocks.includes('Typewriter Mode'), f1);
+  // [successor] the session is in DOCS, not the foot: in BUILD (ss-2) the Front menu is drawn and its foot carries no goal foot, no Progress switch and no Progress
+  // block; in SPRINT (ss-1, read above) there is no Front menu at all
+  await app.key('Escape'); await sleep(300);
+  await open(app, 'ss-2');
+  const f1b = await footMenu(app);
+  ok('F1 [successor]: switch on - the session is not in the Front menu: in BUILD its foot carries no goal foot, no Progress switch and no Progress block; in SPRINT there is no Front menu',
+    f1 === null && !!f1b && !f1b.goal && !f1b.progressSwitch && !(Array.isArray(f1b.blocks) && f1b.blocks.includes('Progress Tracking')), { sprint: f1, build: f1b });
   await app.key('Escape'); await sleep(300);
 
   await open(app, 'ss-1');
