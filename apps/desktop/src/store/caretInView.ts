@@ -80,6 +80,19 @@ function restOnce(el: HTMLElement): void {
     const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
     if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
+    // THE ROWS ARE THE JUDGE: a long page's rows are laid out lazily, so the offsets measured above can be a little off by the time the scroll lands. Read the first row that shows; if the scroller's edge cuts it, go DOWN to the
+    // next row's top (the caret's line only moves further into view), or, at the foot where there is no further, UP to the cut row's own top. Two passes at most.
+    for (let pass = 0; pass < 2; pass += 1) {
+      const clip = scroller.getBoundingClientRect().top;
+      let first: DOMRect | null = null;
+      for (const r of Array.from(el.querySelectorAll<HTMLElement>('.wz-row'))) { const q = r.getBoundingClientRect(); if (q.height > 0 && q.bottom > clip + 1) { first = q; break; } }
+      if (!first || first.top >= clip - 0.5) break;
+      const downBy = first.bottom - clip;
+      const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
+      const by = downBy <= room + 0.5 ? downBy : first.top - clip;
+      if (Math.abs(by) < 0.5) break;
+      scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
+    }
   } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
 }
 
