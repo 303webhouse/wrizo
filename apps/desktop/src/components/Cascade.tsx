@@ -24,6 +24,7 @@ import { nodeHex } from '../flux3/FluxNodeRecord';
 import { REORG } from '../reorg/flag';
 import { ReorgRail } from '../reorg/ReorgRail';
 import { useReorgPiece } from '../reorg/themeGate';
+import { useRailRoom } from '../reorg/railRoom';
 import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
 import { liveQuery, registerLiveSite } from '../store/liveDom';
 
@@ -223,6 +224,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     const h = takeCascadeHandoff();
     return h ? { category: h.category, survey: h.survey, docked: false } : REST;
   });
+  // ARBOR (the Wrizors' rail NIT): while a pop-out is open, the room beside the page for it (reorg/railRoom.ts; under the switch only)
+  useRailRoom(reorg, state.category);
   const currentEntryId = subject.entry.id;
 
   // the two-drawer law: this drawer registers its close path, so an exclusion handoff shuts it exactly as a click would [Cascade §4]

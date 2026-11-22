@@ -122,3 +122,7 @@
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-icon-btn:focus-visible, :root[data-arbor2][data-theme='plateau'] .wz-reorg-trash:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-trash{ margin-top:auto; display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; background:none; border:0; border-top:2px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-trash-go{ margin-left:auto; color:var(--text-mid); }
+/* THE EDGE (the Wrizors' rail pass, NIT, arbor-reorg-pass-1.md section 4: an open pop-out overlapped the page's left edge ~10 px and hid its left opener):
+   a pop-out is at most the room between the rail and the page's left opener, measured while it is open (reorg/railRoom.ts, --wz-rail-room on the
+   anchor); where there is room it keeps its 300 px. Checked by scripts/harness/reorg-arbor-rail-live.mjs A10. */
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
