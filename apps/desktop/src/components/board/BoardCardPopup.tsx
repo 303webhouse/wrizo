@@ -19,9 +19,12 @@ import type { StoredFace } from '../../types';
 
 // the card editor reuses Draft's engine (applyFormat, decorateMarkdown) on box.text, bold and italic only; Tab is trapped as in UnlockCeremony, and the paste wall stands [BoardEditor §9]
 export function BoardCardPopup({
-  initialText, onCommit, onClose, fontFace, fontSize, onType, prompt, inline, autoFocus,
+  initialText, onCommit, onClose, fontFace, fontSize, onType, prompt, inline, autoFocus, scoped,
 }: {
   initialText: string;
+  // SCOPED (a Board in the split, reorg §3b item 2b): the split's side stops every key at its own edge (SplitHost), so a key in this pop-up never reaches
+  // the document there; Esc and the Tab wrap listen on the pop-up's own dialog instead. Absent (the Board screen), the document listens, exactly as before.
+  scoped?: boolean;
   // INLINE: the Walk's card IS this editor, mounted in place (no portal, backdrop, dock or Esc - Esc belongs to the Walk); autoFocus puts the caret in the card on every step [BoardEditor §10]
   inline?: boolean;
   autoFocus?: boolean;
@@ -334,6 +337,12 @@ export function BoardCardPopup({
         first.focus();
       }
     };
+    if (scoped) {
+      const dialogEl = dialogRef.current;
+      if (!dialogEl) return;
+      dialogEl.addEventListener('keydown', onKeyDown);
+      return () => dialogEl.removeEventListener('keydown', onKeyDown);
+    }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps

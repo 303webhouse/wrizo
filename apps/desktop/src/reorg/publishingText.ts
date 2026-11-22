@@ -99,6 +99,10 @@ export function chosenParts(parts: readonly PubPart[], ids: readonly string[] | 
 export interface PubPlanRow { number: string; depth: number; title: string }
 export interface PubPlan { label: string; rows: PubPlanRow[] }
 
+/** THE ASSETS SHE ATTACHES (item 5b; stage menus A4: "Assets can be attached to the exported Doc, but only if she chooses, never by default"): each already read and written for the three formats. Opt-in: the caller passes it only for the assets she ticked. */
+export interface PubAsset { title: string; md: string; txt: string; html: string }
+export interface PubAttach { label: string; items: PubAsset[] }
+
 function planBlock(plan: PubPlan, format: PubFormat): string {
   const rows = plan.rows;
   if (format === 'md') return rows.map((r) => `${'  '.repeat(r.depth)}- ${r.number} ${r.title}`).join('\n');
@@ -107,8 +111,9 @@ function planBlock(plan: PubPlan, format: PubFormat): string {
 }
 
 /** One file's text. `title` null: the Doc is one loose page, whose words are the whole document, so nothing is put above them. For html this is the fragment (wrapHtml makes the page).
- *  `plan`, when given with rows, goes after the title and before the first Part, under a heading of the Parts' own level; with no Part chosen nothing goes out, the Plan included. */
-export function publicationText(title: string | null, parts: readonly PubPart[], format: PubFormat, ids: readonly string[] | null, plan?: PubPlan | null): PubText {
+ *  `plan`, when given with rows, goes after the title and before the first Part, under a heading of the Parts' own level; with no Part chosen nothing goes out, the Plan included.
+ *  `attach`, when given with items, goes LAST (after the Parts and after the endnotes), under one heading of the Parts' own level and each asset under its own title one level down; the assets are attached to the Doc, they are not its body. */
+export function publicationText(title: string | null, parts: readonly PubPart[], format: PubFormat, ids: readonly string[] | null, plan?: PubPlan | null, attach?: PubAttach | null): PubText {
   const chosen = chosenParts(parts, ids);
   if (chosen.length === 0) return { content: '', count: 0 };
   const blocks: string[] = [];
@@ -130,5 +135,13 @@ export function publicationText(title: string | null, parts: readonly PubPart[],
     if (laid.foot.length > 0) blocks.push(laid.foot.join('\n'));
   }
   if (ends.length > 0) blocks.push(ends.join('\n'));
+  if (attach && attach.items.length > 0) {
+    blocks.push(head(attach.label, base));
+    for (const a of attach.items) {
+      blocks.push(head(a.title, base + 1));
+      const w = (format === 'md' ? a.md : format === 'html' ? a.html : a.txt).replace(/\s+$/, '');
+      if (w) blocks.push(w);
+    }
+  }
   return { content: blocks.join(format === 'html' ? '\n' : '\n\n') + '\n', count: chosen.length };
 }

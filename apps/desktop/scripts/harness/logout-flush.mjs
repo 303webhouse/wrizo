@@ -223,10 +223,25 @@ function makeEditor(m, id) {
     const walk12a = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk12a(path.join(d, e.name)) : /\.(ts|tsx)$/.test(e.name) ? [path.join(d, e.name)] : []));
     const callSites = (texts) => texts.reduce((n, t) => n + (t.match(/=\s*registerFlush\(/g) || []).length, 0);
     const texts12a = walk12a(SRC).filter((f) => !f.endsWith(`flushRegistry.ts`)).map((f) => fs.readFileSync(f, 'utf8'));
-    ok(`(D3-ALL) [c13-12a successor] the flush registry's callers are exactly the ${wired.length} listed surfaces that exist (${wired.map(([n]) => n).join(', ')})`,
-      callSites(texts12a) === wired.length, `call sites ${callSites(texts12a)}, surfaces ${wired.length}`);
-    ok('(D3-ALL) [c13-12a successor mutant] a planted extra caller makes the count differ',
-      callSites([...texts12a, 'const unregisterFlush = registerFlush(planted);']) !== wired.length, '');
+    // SUPERSEDED (Nov 21, train G2 pair 44957322645: call sites 3, surfaces 2; §3b ARBOR item 2b, Fable Nov 21 12:10 am, cleared: "typed words at 600 ms,
+    // on close, on unmount and on sign-out"): the split's Board (reorg/split/SplitBoard.tsx) holds a card's typed words for 600 ms and registers its OWN
+    // sign-out flush for them, a third surface the registry must call. D3-ALL-B counts the listed surfaces plus the split's, and D3-SplitBoard reads the
+    // split's registration and its cleanup. Both, verbatim:
+    // ok(`(D3-ALL) [c13-12a successor] the flush registry's callers are exactly the ${wired.length} listed surfaces that exist (${wired.map(([n]) => n).join(', ')})`,
+    //   callSites(texts12a) === wired.length, `call sites ${callSites(texts12a)}, surfaces ${wired.length}`);
+    // ok('(D3-ALL) [c13-12a successor mutant] a planted extra caller makes the count differ',
+    //   callSites([...texts12a, 'const unregisterFlush = registerFlush(planted);']) !== wired.length, '');
+    const SPLIT = 'reorg/split/SplitBoard.tsx';
+    const extra = fs.existsSync(path.join(SRC, SPLIT)) ? 1 : 0;
+    ok(`(D3-ALL-B) the flush registry's callers are exactly the ${wired.length} listed surfaces that exist (${wired.map(([n]) => n).join(', ')}) plus the split's Board (${extra})`,
+      callSites(texts12a) === wired.length + extra, `call sites ${callSites(texts12a)}, surfaces ${wired.length} + split ${extra}`);
+    ok('(D3-ALL-B) mutant: a planted extra caller makes the count differ',
+      callSites([...texts12a, 'const unregisterFlush = registerFlush(planted);']) !== wired.length + extra, '');
+    if (extra) {
+      const sb = read(SPLIT);
+      ok('(D3-SplitBoard) the split\'s Board registers its flush, unregisters it in the same effect\'s cleanup, and imports the registry',
+        /const unregister = registerFlush\(\(\) => flushRef\.current\(\)\);/.test(sb) && /return \(\) => \{[^}]*unregister\(\);/.test(sb) && /import \{ registerFlush \} from '\.\.\/\.\.\/store\/flushRegistry';/.test(sb), '');
+    }
   }
   for (const [name, rel, re] of wired) {
     const src = read(rel);

@@ -6,7 +6,8 @@ import type { PartColor } from './parts';
 // ONE vocabulary: the slots are INK's PART_COLORS (reorg/parts.ts), re-exported here under the assets' names; this file adds only what the Assets
 // tab draws (the letter, each slot's name). What is stored is only the slot; the theme draws it (Machina: the --reorg-tag-<slot>-fill / -ink /
 // -edge tokens, 23-reorg-back.css).
-export { PART_COLORS as COLOUR_SLOTS, isPartColor as isColourSlot } from './parts';
+export { PART_COLORS as COLOUR_SLOTS, isPartColor as isColourSlot, isHexColour, colourToStore, colorHex } from './parts';
+// COLOUR B (Fable, Nov 21): beside the six slots a colour may be her own, exactly #RRGGBB (stored in capitals); the slots stay what a theme draws, a hex is drawn as it is (the picker's "Custom", ARBOR's).
 export type ColourSlot = PartColor;
 
 /** The tag's letter, the signal (Nick, Nov 11: "a label first, the colour second"). */
