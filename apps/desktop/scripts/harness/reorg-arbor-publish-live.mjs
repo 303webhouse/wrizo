@@ -1,7 +1,7 @@
 // THE REORG'S PUBLISH VIEW IN ARBOR, IN THE APP (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md section 9; the Wrizors' pass 1 on the Flux Uplink, REAL 1 and 3). The live Arbor (plateau, the redesign on by default), ?reorg=1 with the PREVIEW DOORS (&reorglift=plateau.top,plateau.uplink,plateau.back:
 // reorg/themeGate.ts keeps them OFF in the table until Fable clears them; the doors only show the pieces; the top bar is ARBOR's, so the Publish stage is pressed on the reorg's own top bar here). The stylesheet's half is reorg-arbor-publish-css-unit.mjs; this proves what only the app can.
 // The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Sections, ap-1 "Arrival", ap-2 "The town".
-//   AP1  the sheet is the page's own paper, laid exactly over it: its rect is the paper's and nothing of the page's own text shows through (the sheet is what stands at its centre)
+//   AP1  the sheet is the page's own paper, laid exactly over it (inside the paper's own 1 px edge: the same inset on every side, 2 px at most): nothing of the page's own text shows through (the sheet is what stands at its centre)
 //   AP2  the sheet has no box of its own: no outline (focused or not) and no border; it is not the browser's focus ring in orange
 //   AP3  nothing is left raw: the foot's buttons are small and in the drawer's style (transparent, a 1 px --arbor-line edge, the paper's ink), the ticks are olive (#56632E)
 //   AP4  Arbor's words: "Copy text", "Copy formatted", "Export", "Markdown", "Plain text", "Web (HTML)"
@@ -59,7 +59,7 @@ await withHarness(async (app) => {
   const closed0 = await app.evalJs(PAGE);
   await sheetOpen(app);
   const fit = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'), p = document.querySelector('.mode-page'); if (!s || !p) return null; const a = s.getBoundingClientRect(), b = p.getBoundingClientRect(); const mid = document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2); return { d: [a.left - b.left, a.top - b.top, a.width - b.width, a.height - b.height].map((v) => Math.round(v * 10) / 10), onTop: !!mid && !!mid.closest('[data-reorg-pub]') }; })()");
-  ok('AP1 the sheet is the page\'s own paper, laid exactly over it: its rect is the paper\'s, and the sheet is what stands at its centre', !!fit && fit.d.every((v) => Math.abs(v) <= 1) && fit.onTop === true, fit);
+  ok('AP1 the sheet is the page\'s own paper, laid exactly over it: its rect is the paper\'s, and the sheet is what stands at its centre', !!fit && fit.d.every((v) => Math.abs(v) <= 2) && fit.d[0] === fit.d[1] && fit.d[2] === fit.d[3] && fit.d[2] === -2 * fit.d[0] && fit.onTop === true, fit);
 
   await app.evalJs("document.querySelector('[data-reorg-pub]').focus(); null"); await sleep(300);
   const box = await app.evalJs(CS('[data-reorg-pub]', ['outline-style', 'outline-width', 'border-top-width', 'border-left-width']));
