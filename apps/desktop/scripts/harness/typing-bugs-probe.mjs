@@ -96,7 +96,7 @@ try { await withHarness(async (app) => {
 
     // ---- #49: Esc ----
     await open(T, SHORT);
-    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); if (document.activeElement !== ed) ed.focus({ preventScroll: true }); return true; })()");
     const e0 = await ev(READ());
     await key('Escape', 'Escape', 27); await sleep(500);
     const e1 = await ev(READ());
@@ -107,7 +107,7 @@ try { await withHarness(async (app) => {
     const m2 = await ev(READ());
     // the same in DRAFT, where the menus are usable: open the Front menu, press Esc, where is the focus and is there a caret to type into?
     await open(T, SHORT, { mode: 'drafting' });
-    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); if (document.activeElement !== ed) ed.focus({ preventScroll: true }); return true; })()");
     await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); if (g) { g.focus(); g.click(); } })()");
     await sleep(700);
     const d1 = await ev(READ());
@@ -121,7 +121,7 @@ try { await withHarness(async (app) => {
     // ---- #52: a fast burst, with and without reduced motion ----
     for (const reduced of [false, true]) {
       await open(T, SHORT, { reduced });
-      await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+      await ev("(() => { const ed = document.querySelector('.forward-only-editor'); if (document.activeElement !== ed) ed.focus({ preventScroll: true }); return true; })()");
       for (let i = 0; i < 14; i += 1) await app.typeKeys('\nburst line ' + (i + 1) + ' of words');
       const reads = [];
       for (const wait of [150, 400, 900, 1600]) { await sleep(wait); const b = await ev(READ()); reads.push(b && { endRect: b.endRect, scrollTop: b.scrollTop }); }
