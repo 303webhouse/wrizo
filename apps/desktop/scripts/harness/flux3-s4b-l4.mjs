@@ -89,6 +89,10 @@ try { await withHarness(async (app) => {
     W.wrizoAddPageLink('l4-p1', { bEntryId: 'l4-p2' });
     W.wrizoCreateJournalPage({ id: 'l4-long', text: Array.from({ length: 30 }, (_, i) => 'Paragraph ' + (i + 1) + ' runs on with plain words so the page wraps a line or two and keeps going well past the fold of the glass.').join('\\n\\n'),
       createdAt: '2026-04-01T00:00:02.000Z', origin: 'loose', source: 'page' });
+    // the frames job's own doc (scripts/frames/flux3-s3.mjs PARAS), for the INFO reading of Fable's 1366 frame
+    W.wrizoCreateJournalPage({ id: 'l4-frames', text: ['The first paragraph runs long enough to wrap across a few lines of the page, so that the line holding the caret is only one of the several lines it fills with these plain words.', '',
+      'A second block, shorter.', 'Third block keeps going with plain words for the gutter count.', '', 'Fourth and last block closes the page with a handful more words to read.'].join('\\n'),
+      createdAt: '2026-04-01T00:00:03.000Z', origin: 'loose', source: 'page' });
     W.wrizoFlushNow();
     return { links: (W.wrizoPageLinksOf('l4-p1') || []).filter((l) => !l.deletedAt).length };
   })()`);
@@ -158,6 +162,22 @@ try { await withHarness(async (app) => {
   const mut = await ev("(() => { const h = document.querySelector('[data-flux3-dochead]'); if (!h) return null; h.style.height = (h.getBoundingClientRect().height + 40) + 'px'; return true; })()");
   const cm = await ev('window.__l4.clear()');
   ok('CLEAR-MUT the reader can go red: the same header 40 px taller reads as covering', mut === true && !clearOf(cm), { mut, cm });
+
+  // INFO (no check): Fable's 1366 frame, the frames job's own scene (its doc, in Draft, at 1366 x 768), with the flag and without: where the header ends, where the
+  // scroller clips, where the first row stands and how far the page rests scrolled (a line cut at the clip edge is the scroll's, not the header's)
+  for (const flag of [true, false]) {
+    await open('l4-frames', { flag, w: 1366, h: 768 });
+    await ev("(() => { const b = document.querySelector('[data-mode-key=\"draft\"]'); if (b && b.getAttribute('aria-selected') !== 'true') b.click(); return null; })()");
+    await app.mouseMove(8, 8); await sleep(2400);
+    const c = await ev('window.__l4.clear()');
+    const dress = await ev("(() => { const p = document.querySelector('.mode-page'); if (!p) return null; const s = getComputedStyle(p); const r = p.getBoundingClientRect(); return { padTop: s.paddingTop, pageTop: r.top, pageH: r.height, kids: [...p.children].map((k) => [k.className.split(' ')[0], getComputedStyle(k).position, Math.round(k.getBoundingClientRect().top), Math.round(k.getBoundingClientRect().height)]) }; })()");
+    // the first row's own ink: its first glyph's rect against the row's box and the scroller's clip, and the face and line-height that set them
+    const ink = await ev(`(() => { const ed = document.querySelector('.mode-page .forward-only-editor'); const row = ed && ed.querySelector('.wz-row'); if (!row) return null;
+      const w = document.createTreeWalker(row, NodeFilter.SHOW_TEXT); const n = w.nextNode(); if (!n) return null; const r = document.createRange(); r.setStart(n, 0); r.setEnd(n, 1);
+      const g = r.getBoundingClientRect(), b = row.getBoundingClientRect(), s = getComputedStyle(n.parentElement);
+      return { glyphTop: g.top, glyphBottom: g.bottom, rowTop: b.top, rowH: b.height, font: s.fontFamily, size: s.fontSize, lineHeight: s.lineHeight, rowMarginTop: getComputedStyle(row).marginTop, rowTransform: getComputedStyle(row).transform }; })()`);
+    console.log(`INFO L4-1366-FRAME flag=${flag} ${JSON.stringify({ clear: c, dress, ink })}`);
+  }
 
   // ---- OFF: without the flag, plain Flux's frame as it was ----------------------------------------------------------------------------------------------------------------
   await open('l4-p1', { flag: false });
