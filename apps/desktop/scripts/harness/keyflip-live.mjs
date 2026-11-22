@@ -5,7 +5,7 @@
 //   KL-MUT            the old write put back (--fade-dur written on <html> at the first key, by a wrapper on setProperty): KL-FLIP is RED for every theme (the mutant LANDED: the property is seen on <html>), so the check bites
 // [Fable, Nov 22, 2:30 pm, RULED (b), absolute] the 25% bar (a share of the document) cannot be met on a 269-element page and is PARKED below with its successors:
 //   KL-FLIP-<theme>   [successor] the first key's largest restyle is at most the chrome's receding set: Machina <= 220, Flux <= 400 elements (printed with the measure), on all 3 reopens
-//   KL-COLUMN-<theme> NOTHING inside the page's column or editor restyles at the first key (read on a page long enough that a column restyle cannot hide in the chrome's number)
+//   KL-COLUMN-<theme> NOTHING inside the page's column or editor restyles at the first key (read by CAUSE: a MutationObserver on the column, inside it and on its ancestors; the chrome's restyle swallows a count)
 //   KL-BUSY-<theme>   the first key's busy time (keydown to the end of its task, no tracing) is within Nick's 65 ms first-key bar (median of 3 reopens)
 //   KL-MUT / KL-MUT-COL  the <html> write put back, and a page-column restyle put in: each is RED on the successors above (the mutants LANDED)
 // A measurement of what is restyled; no clock for the restyle checks, so it holds on a loaded runner. Run: node scripts/harness/keyflip-live.mjs   (Actions harness or a box turn)
@@ -20,7 +20,7 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
 const ABS = { machina: 220, flux: 400 }, BUSY_MS = 65;   // Fable's absolute bars (the chrome's receding set); the first-key bar is Nick's
-const PAGE_TEXT = Array.from({ length: 60 }, (_, i) => 'word' + i + ' word' + (i + 1) + ' word' + (i + 2) + ' word' + (i + 3)).join('\n');   // 60 lines: a column with real depth, so a column restyle cannot hide inside the chrome's number
+const PAGE_TEXT = 'word0 word1 word2 word3 word4 word5 word6';   // the page the bars were measured on (Machina 210, Flux 387: Fable's 220 and 400); a longer page adds rows to the restyle and moves the printed numbers   // 60 lines: a column with real depth, so a column restyle cannot hide inside the chrome's number
 const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
 const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
@@ -92,8 +92,17 @@ const COL_WRITE = `(() => { const orig = CSSStyleDeclaration.prototype.setProper
   const wrapped = function (name, value, prio) { if (name === '--fade-dur') { const col = document.querySelector('.mode-pagecol') || document.querySelector('.mode-page'); if (col) { try { orig.call(col.style, '--kl-col-mut', String((n += 1))); } catch {} } } return orig.call(this, name, value, prio); };
   wrapped.__klCol = true; CSSStyleDeclaration.prototype.setProperty = wrapped; return true; })()`;
 
+// what the first key changes on the page's column, inside it, and on every ancestor of it below <html> (an attribute whose value really changed: a style, a class, a data-*). An inherited custom property or a class on any of
+// these restyles the column; this reads the CAUSE, which a count of restyled elements cannot (the column is a few dozen elements, and the chrome's restyle swallows the number)
+const COL_OBS = `(() => { window.__klMut = []; const col = document.querySelector('.mode-pagecol') || document.querySelector('.mode-page'); if (!col) return false;
+  const chain = []; for (let n = col.parentElement; n && n !== document.documentElement; n = n.parentElement) chain.push(n);
+  const MO = new MutationObserver((rs) => { for (const r of rs) { const t = r.target; const where = t === col ? 'column' : col.contains(t) ? 'inside' : chain.includes(t) ? 'ancestor' : null; if (!where) continue;
+    const now = String(t.getAttribute(r.attributeName) || ''); const old = String(r.oldValue || ''); if (now === old) continue;
+    window.__klMut.push({ where, el: t.tagName.toLowerCase() + '.' + String(t.className && t.className.baseVal !== undefined ? t.className.baseVal : t.className).slice(0, 40), attr: r.attributeName, old: old.slice(0, 200), now: now.slice(0, 200) }); } });
+  MO.observe(document.body, { attributes: true, attributeOldValue: true, subtree: true }); window.__klMO = MO; return true; })()`;
+
 await withHarness(async (app) => {
-  const go = async (search, hash) => { await app.cdp('Page.navigate', { url: `${app.base}/${search}#${hash}` }); await sleep(250); };
+  const go =async (search, hash) => { await app.cdp('Page.navigate', { url: `${app.base}/${search}#${hash}` }); await sleep(250); };
   await go('', '/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); null");
   await app.reload();
@@ -123,10 +132,13 @@ await withHarness(async (app) => {
     const arborLeft = await app.evalJs("document.querySelectorAll('.arbor2-pagesh, .arbor2-pergola, .arbor2-live').length");
     if (arborLeft) console.log(`KL-WARN ${theme}: ${arborLeft} Arbor shade elements are in the page`);
     before.arborLeft = arborLeft;
+    await app.evalJs(COL_OBS);
     const tr = await traceKey(app, 'a');
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
-    const m = { theme, before, after, tr };
+    const colMut = (await app.evalJs('window.__klMut || null')) || [];
+    const m = { theme, before, after, tr, colMut };
+    console.log(`KL-COLMUT ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify(colMut));
     const { invalidations, top, ...trShort } = tr || {};
     const { all, ...trLess } = trShort;
     console.log(`KL ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify({ docEls: before.docEls, chromeEls: before.chromeEls, columnEls: before.columnEls, columnInChrome: before.columnInChrome, onHtmlAfter: after.onHtml, carriers: after.carriers, fadeReads: after.reads, tr: trLess, restyles: all }));
@@ -143,7 +155,7 @@ await withHarness(async (app) => {
     const flipOk = R.every((m) => m.tr && m.tr.keyEls != null && m.tr.keyEls <= ABS[theme]);
     const medBusy = (() => { const xs = busyRuns[theme].map((m) => m.busy).filter((x) => typeof x === 'number').sort((a, b) => a - b); return xs.length === busyRuns[theme].length ? xs[Math.floor(xs.length / 2)] : null; })();
     // the page's column: its elements restyled at the first key = the largest restyle minus the chrome's set (what the chrome does not account for), and no restyle of the column's size alongside it
-    const colOk = R.every((m) => m.before.columnEls > 0 && m.before.columnInChrome === 0 && (m.tr.all || []).every((r) => r.els < m.before.columnEls * 0.5 || r.els >= m.before.chromeEls * 0.5));
+    const colOk = R.every((m) => m.before.columnEls > 0 && m.colMut.length === 0);
     ok(`KL-PREMISE-${theme} the page in ${theme} carries no Arbor shade layer (the Arbor mount is not loaded: a real reload in the theme)`, R.every((m) => m.before.arborLeft === 0), JSON.stringify(R.map((m) => m.before.arborLeft)));
     // SUPERSEDED (Fable, Nov 22, 2:30 pm, RULED (b), absolute: a quarter of a 269-element document cannot be met by moving one write; the gate reads the chrome's receding set). The original, verbatim:
     // const flipOk = R.every((m) => m.tr && m.tr.keyEls != null && m.tr.keyEls <= SHARE * m.before.docEls);
@@ -151,8 +163,8 @@ await withHarness(async (app) => {
     //   flipOk, JSON.stringify(R.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before.docEls, onHtml: m.after.onHtml }))));
     ok(`KL-FLIP-${theme} [successor] the first key's largest single restyle (to ${WINDOW_US / 1000} ms after) is at most the chrome's receding set: ${ABS[theme]} elements, on all ${REOPENS} reopens (printed: ${R.map((m) => m.tr && m.tr.keyEls).join(', ')}; the chrome set is ${R[0].before.chromeEls} elements of ${R[0].before.docEls})`,
       flipOk, JSON.stringify(R.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before.docEls, chromeEls: m.before.chromeEls, onHtml: m.after.onHtml }))));
-    ok(`KL-COLUMN-${theme} nothing inside the page's column or editor restyles at the first key (the column holds ${R[0].before.columnEls} elements, none of them in the chrome's set; no restyle of the column's size in the window; printed restyles: ${JSON.stringify((R[0].tr.all || []).map((r) => r.els))})`,
-      colOk, JSON.stringify(R.map((m) => ({ all: m.tr.all, columnEls: m.before.columnEls, columnInChrome: m.before.columnInChrome, chromeEls: m.before.chromeEls }))));
+    ok(`KL-COLUMN-${theme} nothing inside the page's column or editor restyles at the first key: no style, class or data attribute changes on the column (${R[0].before.columnEls} elements), inside it, or on any ancestor of it below <html> (printed changes: ${JSON.stringify(R.map((m) => m.colMut.length))})`,
+      colOk, JSON.stringify(R.map((m) => m.colMut)));
     ok(`KL-BUSY-${theme} the first key's busy time (keydown to the end of its task, untraced) is within Nick's ${BUSY_MS} ms bar, median of ${REOPENS} reopens (printed: ${busyRuns[theme].map((m) => m.busy == null ? 'null' : Math.round(m.busy * 10) / 10).join(', ')})`,
       medBusy != null && medBusy <= BUSY_MS, JSON.stringify(busyRuns[theme]));
     ok(`KL-TIMING-${theme} the dissolve-class elements read a --fade-dur after the first key, and no --fade-dur is written on <html> (printed: html '${R[0].after.onHtml}', ${R[0].after.carriers} carriers read ${JSON.stringify(R[0].after.reads)})`,
@@ -171,7 +183,7 @@ await withHarness(async (app) => {
     THEMES.every(([theme]) => mut[theme].after.onHtml !== '' && mut[theme].tr && mut[theme].tr.keyEls != null && mut[theme].tr.keyEls > ABS[theme]),
     JSON.stringify(THEMES.map(([theme]) => ({ theme, onHtml: mut[theme].after.onHtml, keyEls: mut[theme].tr && mut[theme].tr.keyEls, docEls: mut[theme].before.docEls }))));
   ok('KL-MUT-COL with an inherited custom property written on the page\'s column at the first key (the wrapper LANDED: it is seen on the column), KL-FLIP or KL-COLUMN goes red in both themes (the column checks can go red)',
-    THEMES.every(([theme]) => { const m = mutCol[theme]; const ab = m.tr && m.tr.keyEls != null && m.tr.keyEls > ABS[theme]; const colHit = (m.tr.all || []).some((r) => r.els >= m.before.columnEls * 0.5 && r.els < m.before.chromeEls * 0.5); return ab || colHit; }),
+    THEMES.every(([theme]) => mutCol[theme].colMut.some((x) => x.attr === 'style' && /--kl-col-mut/.test(x.now))),
     JSON.stringify(THEMES.map(([theme]) => ({ theme, keyEls: mutCol[theme].tr && mutCol[theme].tr.keyEls, all: mutCol[theme].tr && mutCol[theme].tr.all, columnEls: mutCol[theme].before.columnEls, chromeEls: mutCol[theme].before.chromeEls }))));
 }, { label: 'keyflip-live' });
 
