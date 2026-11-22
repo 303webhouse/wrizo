@@ -10,6 +10,8 @@ import { NOTEBOOK, projectOfEntry } from './railData';
 import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
 import { REORG } from './flag';
+import { useTheme } from '../store/theme';
+import { JournalIcon as ArborJournalIcon, PageIcon as ArborPageIcon, PlanIcon as ArborPlanIcon, SettingsIcon as ArborSettingsIcon, SkinIcon as ArborSkinIcon } from '../components/Cascade';
 import './parts';   // a side-effect import on purpose: the Parts layer installs its harness door (window.wrizoParts) when the bundle loads; nothing here draws it yet (the Parts list is POLISH's)
 
 // THE REORG'S RAIL (phase 2, behind ?reorg=1 in Machina; frames rail-1d R1 to R3). It replaces the strip's CONTENT only: it renders in the same
@@ -17,7 +19,10 @@ import './parts';   // a side-effect import on purpose: the Parts layer installs
 // pop-out through the Cascade's own state machine (Cascade.tsx: one pop-out at a time, Escape, the two-drawer law, the exit slide). Four groups,
 // clearly set apart (Nick, Nov 11): where she is · her pins · DOCS, PROJECTS, UNFILED · THEME, SETTINGS. Nothing here writes.
 
-interface Door { id: CategoryId; label: string; icon: ReactNode; lit: boolean }
+// ARBOR (spec §2, the rail-tab rule, Nick Nov 8): each door stands in its own CLOTH - olive, cold blue or madder - drawn by 25-reorg-arbor-rail.css; Machina
+// draws no cloth (data-cloth is only set in Arbor).
+type Cloth = 'olive' | 'blue' | 'madder';
+interface Door { id: CategoryId; label: string; icon: ReactNode; lit: boolean; cloth?: Cloth }
 
 /** A Project's name as the rail shows it: the Drawer's own name (Top Drawer, while it keeps its born-with name, by the theme's word), the Notebook, or Unfiled. */
 export function useProjectName(): (id: string | null) => string {
@@ -68,6 +73,7 @@ export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: 
 const RailBody = memo(RailBodyImpl, (a, b) => a.open === b.open && a.sig === b.sig);
 
 function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; sig: string }) {
+  const theme = useTheme();
   railRenders += 1;
   const { t } = useDeskLexicon();
   const lex = useLexicon();
@@ -85,14 +91,25 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
     setOpenList(id);
     if (open !== 'reorg-list') toggle('reorg-list');
   };
-  const doors: Door[] = [
-    { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: true },
-    { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
-    { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true },
-  ];
+  const arbor = theme === 'plateau';
+  const doors: Door[] = arbor
+    // ARBOR'S PLACES (spec §2): PAGES cold blue (the session is its last item, §7), DRAWERS olive, SHELF cold blue (Nick, Nov 20 4:13 pm), CANVASES
+    // madder and JOURNAL olive (both live, where they stand today: their own pop-outs), in Arbor's live icons
+    ? [
+      { id: 'reorg-docs', label: lex.tMany('page'), icon: <ArborPageIcon />, lit: true, cloth: 'blue' },
+      { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true, cloth: 'olive' },
+      { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true, cloth: 'blue' },
+      { id: 'plan', label: t('stripPlan'), icon: <ArborPlanIcon />, lit: true, cloth: 'madder' },
+      { id: 'journal', label: t('drawerPlaceJournal'), icon: <ArborJournalIcon />, lit: true, cloth: 'olive' },
+    ]
+    : [
+      { id: 'reorg-docs', label: lex.tMany('page'), icon: <DocsIcon />, lit: true },
+      { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
+      { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true },
+    ];
   const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode }[] = [
-    { id: 'theme', term: 'stripChangeTheme', icon: <ThemeIcon /> },
-    { id: 'settings', term: 'stripSettings', icon: <SettingsIcon /> },
+    { id: 'theme', term: 'stripChangeTheme', icon: arbor ? <ArborSkinIcon /> : <ThemeIcon /> },
+    { id: 'settings', term: 'stripSettings', icon: arbor ? <ArborSettingsIcon /> : <SettingsIcon /> },
   ];
   return (
     <div className="wz-strip wz-reorg-rail" data-reorg-rail="">
@@ -128,7 +145,7 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
       {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (the Trash sits at the foot of UNFILED) */}
       <div className="wz-strip-section wz-reorg-doors">
         {doors.map((d) => (
-          <button key={d.id} type="button" data-category={d.id} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}
+          <button key={d.id} type="button" data-category={d.id} data-cloth={d.cloth} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}
             aria-disabled={d.lit ? undefined : 'true'} onClick={d.lit ? () => toggle(d.id) : undefined}>
             <span className="wz-strip-glyph" aria-hidden="true">{d.icon}</span>
             <span className="wz-strip-label">{d.label}</span>

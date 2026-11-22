@@ -1,0 +1,31 @@
+/* ==========================================================================================================================================
+   ARBOR'S RAIL ON THE REORG (claude/wrizors/arbor-reorg-spec.md §2; Fable, Nov 21 6:00 pm; INK's theme gate, reorg/themeGate.ts plateau.rail).
+   The rail board is Arbor's live one (84 px, olive by day, brown by night, receding while she types: arbor-v2.css's strip rules, untouched).
+   On it, the reorg's places in Arbor's words, each door in its own CLOTH (reorg/ReorgRail.tsx sets data-cloth in Arbor only):
+     PAGES cold blue · DRAWERS olive · SHELF cold blue (Nick, Nov 20 4:13 pm) · CANVASES madder · JOURNAL olive · THEMES, SETTINGS plain.
+   THE RAIL-TAB RULE (Nick, Nov 8; spec §0): on hover a door slides out 6 px in its cloth; opened, it stays out 12 px, and its pop-out is edged
+   3 px in that cloth; inside the pop-out the pointer row fills in the cloth, and the chosen row gets a 4 px brass mark. The cloths and their
+   words are Arbor's own measured pairs: olive #56632E / cream #EFE4CB 5.16:1 · cold blue #7FA0BC / walnut #2B1D12 5.95:1 · madder #A8392F /
+   cream 5.05:1. A door slides by a transform (nothing is laid out again; the page never moves). Machina draws none of this.
+   Checked by scripts/harness/reorg-arbor-rail-live.mjs.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail [data-cloth='olive']{ --arbor-cloth:#56632E; --arbor-cloth-ink:#EFE4CB; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail [data-cloth='blue']{ --arbor-cloth:#7FA0BC; --arbor-cloth-ink:#2B1D12; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail [data-cloth='madder']{ --arbor-cloth:#A8392F; --arbor-cloth-ink:#EFE4CB; }
+/* the doors may stand out of the rail's edge (a tab out of its board): the rail lets them show past its right edge */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-strip:has(> .wz-reorg-rail){ overflow:visible; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ position:relative; z-index:1; transition:transform .15s ease, background-color .15s ease; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible){ transform:translateX(6px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true']{ transform:translateX(12px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible, [aria-pressed='true']) :is(.wz-strip-label, .wz-strip-glyph){ color:var(--arbor-cloth-ink); }
+@media (prefers-reduced-motion: reduce){
+  :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ transition:none; }
+}
+/* the opened place's pop-out, edged 3 px in its door's cloth (Cascade.tsx marks the pop-out with its category); a ring inside its edge: nothing moves */
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel:is([data-category='reorg-docs'], [data-category='reorg-unfiled']){ --arbor-cloth:#7FA0BC; --arbor-cloth-ink:#2B1D12; box-shadow:inset 0 0 0 3px #7FA0BC; }
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel:is([data-category='reorg-projects'], [data-category='reorg-list'], [data-category='journal']){ --arbor-cloth:#56632E; --arbor-cloth-ink:#EFE4CB; box-shadow:inset 0 0 0 3px #56632E; }
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category='plan']{ --arbor-cloth:#A8392F; --arbor-cloth-ink:#EFE4CB; box-shadow:inset 0 0 0 3px #A8392F; }
+/* inside it: the pointer row fills in the cloth; the chosen row (the place she is) gets a 4 px brass mark at its left edge */
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category] :is(.wz-reorg-row-open, .wz-reorg-list-open):hover{ background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category] :is(.wz-reorg-row-open, .wz-reorg-list-open):hover *{ color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category] :is(.wz-reorg-row, .wz-reorg-list-row)[aria-current]{ box-shadow:inset 4px 0 0 var(--brass); font-weight:500; }
