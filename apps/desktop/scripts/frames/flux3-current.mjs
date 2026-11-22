@@ -12,6 +12,7 @@ let seq = 0;
 const TEXT = 'The harbour was quiet when she arrived. Nobody met her at the quay.\nA second line of her words, long enough to sit under the cursor.';
 const mkPage = (app, id) => app.evalJs(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: TEXT, createdAt: new Date(Date.now() + (seq += 1)).toISOString(), origin: 'loose', source: 'page' })})`);
 const openRoom = async (app, id) => {
+  await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });   // every screen but reduced-motion starts with motion; that one turns it off AFTER this and leaves it off, so the job's own photograph is taken under it
   await app.evalJs("localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', '50');");
   await sleep(300);
   await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); history.replaceState(null, '', '/?flux3=1#/page/${id}')`);
@@ -74,7 +75,7 @@ export default {
   // reduced-motion: one frame with reduced motion emulated: a stage change and a menu opening draw no spark and no line (the counts are printed with the frame)
   'reduced-motion': async (app) => {
     await mkPage(app, 'cf-rm'); await sleep(400); await openRoom(app, 'cf-rm');
-    try {
+    {
       await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
       await sleep(300);
       await app.evalJs(`(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key="revise"]'); b.focus(); b.click(); })()`);
@@ -84,9 +85,7 @@ export default {
       await sleep(900);
       const state = await app.evalJs("({ reduced: matchMedia('(prefers-reduced-motion: reduce)').matches, sparks: document.querySelectorAll('[data-flux-current]').length, hands: document.querySelectorAll('[data-flux-hand]').length, runs: window.wrizoFluxCurrent ? window.wrizoFluxCurrent.runs : null, menuOpen: document.querySelector('.wz-sliver-panel') && document.querySelector('.wz-sliver-panel').getAttribute('data-open') })");
       console.log(`FLUX3-CURRENT-FRAME reduced-motion ${JSON.stringify({ sparksDuringStage: mid, ...state })}`);
-    } finally {
-      await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
-    }
+    }   // reduced motion stays emulated: the frame the job takes after this screen must be taken under it (a reset here put the motion back before the photograph)
   },
   // hand-typing: a hand open, then she writes until the chrome recedes: the electron's animation is paused and it is not drawn (the frame shows the page with the line and no electron)
   'hand-typing': async (app) => {
