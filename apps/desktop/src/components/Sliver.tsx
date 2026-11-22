@@ -314,7 +314,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
     : front?.publishing ? 'parts'
     : frontInstrument?.value === 'ink' ? 'ink'
     : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
-  const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
+  const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: sliverTheme === 'plateau' ? 'railFormat' : 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
   const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
     ? {
         items: frontList.map((id) => (front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })),
@@ -604,7 +604,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
-  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
+  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section, theme === 'plateau')
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
   // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
   // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
