@@ -94,6 +94,9 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     // true within a mount; `prevDocCaretBottom` is the last-measured caret
     // position in scroll-INDEPENDENT "document space" (see band() below).
     let engaged = false;
+    // #53 (Fable, Nov 22): has the writer typed since this mount? A page that merely OPENS with its caret far below the hold (a long page, the caret at its end) is put on its line at once; the one-line-at-a-time walk is for a writer
+    // typing past the line. Without it a 60-line page walked down to its caret for ~5 s after opening, ~90 scroll events and ~135 frame requests a second.
+    let typed = false;
     let prevDocCaretBottom: number | null = null;
     // diagnostics in memory only: an array the harness puts on window before mount; absent in every real session, so nothing is written [useTypewriterFade §4]
     const trace = (typeof window !== 'undefined' ? (window as unknown as { __wzTwTrace?: unknown[] }).__wzTwTrace : undefined);
@@ -308,6 +311,15 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         engaged = true;
         if (trace) trace.push({ d: 'engage', within: Math.round(within), threshold: Math.round(thresholdPx), top: Math.round(box.scrollTop) });
         prevDocCaretBottom = docCaretBottom - (within - thresholdPx);
+        if (!typed) {
+          // the page OPENED here (nothing typed yet): pay the whole excess in one placement, as far as the box can scroll (the rest stays owed to nothing: the box cannot go further)
+          const maxTop0 = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+          box.setScrollTop(Math.min(box.scrollTop + (within - thresholdPx), maxTop0), false);
+          prevDocCaretBottom = docCaretBottom;
+          if (trace) trace.push({ d: 'place', at: Math.round(box.scrollTop), to: Math.round(Math.min(box.scrollTop + (within - thresholdPx), maxTop0)) });
+          setScrolled();
+          return;
+        }
       }
       if (engaged && !reduce && glideTarget != null && glideFrom != null && performance.now() - glideAt >= GLIDE_MS
           && box.scrollTop >= glideFrom - 1 && box.scrollTop < glideTarget - 1) {
@@ -386,7 +398,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     const notMarks = (r: MutationRecord) => !((r.target instanceof Element ? r.target : r.target.parentElement)?.closest('.wz-pb-marks'));
     const mo = new MutationObserver((recs) => { if (recs.some(notMarks)) schedule(); });
     mo.observe(container, { childList: true, subtree: true, characterData: true });
-    container.addEventListener('input', schedule);
+    const onInput = () => { typed = true; schedule(); };
+    container.addEventListener('input', onInput);
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
     for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.addEventListener(ev, onUserScroll, { passive: true });
@@ -398,7 +411,7 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     return () => {
       if (trace) trace.push({ d: 'unmount', at: Math.round(performance.now()) });
       mo.disconnect();
-      container.removeEventListener('input', schedule);
+      container.removeEventListener('input', onInput);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
       for (const ev of ['wheel', 'touchstart', 'pointerdown']) scrollListenTarget.removeEventListener(ev, onUserScroll);
       scrollListenTarget.removeEventListener('keydown', onUserKey as EventListener);
