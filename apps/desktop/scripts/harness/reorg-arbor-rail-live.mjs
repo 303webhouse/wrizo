@@ -25,6 +25,17 @@
 //             opened DRAWERS pop-out ends before the page's left opener (its right edge at or left of the opener's), and the opener takes a press at
 //             its centre; at 1920, where there is room, the pop-out keeps its 300 px
 //         MUT-A10  the 1366 reading with the pop-out 10 px past the opener turns A10's test red
+// BOXES   A12 (the Wrizors via Fable, Nov 21 11:20 pm: the uncoloured box is NOT olive) before any colour is chosen every box in Arbor's rail and in
+//             DRAWERS draws plain cream #EFE4CB with walnut letters #2B1D12, and Box settings shows no swatch as chosen
+//         MUT-A12  the same reading with the boxes in olive turns A12's test red
+//         A13 (the frames on 2fc46347, Actions 44993376128: by night at rest the rail's cream box drew no letters - the night dim letters a dimmed hook
+//             in --text-hi cream) by night at rest the rail's box letters read 4.5:1 or better on the box AS DRAWN (a clip of the box: its median is the
+//             box, its pixel farthest from that is the letters)
+//         MUT-A13  the same reading with the letters at the box's own colour turns A13's test red
+//         A14 (the Wrizors' pass 2, section 2 NIT 1: "NO LETTERS", "YOUR OWN COLOUR", "CHOOSE A PICTURE" in caps; spec section 0: Arbor's buttons are in
+//             its sentence case) Box settings' buttons render as written - No letters, Your own colour, Choose a picture (innerText, which carries any
+//             text-transform)
+//         MUT-A14  the same reading in capitals turns A14's test red
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
 //
@@ -119,9 +130,23 @@ await withHarness(async (app) => {
     "  const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2; const hit = document.elementFromPoint(cx, cy);\n" +
     "  return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
   const edge1366 = await app.evalJs(EDGE);
+  // ---- A12: the uncoloured box (nothing chosen yet in this run) ----
+  const plain = await app.evalJs("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box:not([data-box-picture]), .wz-cascade-panel .wz-reorg-box:not([data-box-picture])')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])");
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const chosen0 = await app.evalJs("document.querySelectorAll('.wz-reorg-swatches [data-swatch][aria-checked=\"true\"]').length");
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(300);
+  const a12 = (boxes, chosen) => Array.isArray(boxes) && boxes.length >= 2 && boxes.every((b) => b[0] === 'rgb(239, 228, 203)' && b[1] === 'rgb(43, 29, 18)') && chosen === 0;
+  ok('A12 before any colour is chosen every box draws plain cream #EFE4CB with walnut letters, and Box settings shows no swatch chosen', a12(plain, chosen0), { plain, chosen0 });
+  const olive = Array.isArray(plain) ? plain.map(() => ['rgb(86, 99, 46)', 'rgb(255, 255, 255)']) : null;
+  ok('MUT-A12 the same reading with the boxes in olive turns A12\'s test red', !!olive && olive.length >= 2 && a12(plain, chosen0) !== a12(olive, chosen0) && !a12(olive, chosen0), olive);
   // ---- A8: Box settings, in the opened DRAWERS pop-out ----
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs(BOXSET);
+  const chips = await app.evalJs("[...document.querySelectorAll('.wz-reorg-box-settings .wz-reorg-chip, .wz-reorg-chip')].filter((c, i, a) => a.indexOf(c) === i).map((c) => (c.innerText || '').trim()).filter(Boolean)");
+  const a14 = (list) => Array.isArray(list) && ['No letters', 'Your own colour', 'Choose a picture'].every((w) => list.includes(w)) && list.every((w) => w !== w.toUpperCase() || !/[A-Z]/.test(w));
+  ok('A14 Box settings\' buttons read in sentence case: No letters, Your own colour, Choose a picture', a14(chips), chips);
+  const caps = Array.isArray(chips) ? chips.map((w) => w.toUpperCase()) : null;
+  ok('MUT-A14 the same reading in capitals turns A14\'s test red', !!caps && caps.length > 0 && !a14(caps), caps);
   await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#17454E\"]')?.click(); null"); await sleep(500);
   const drawn = await app.evalJs(BOXES);
   const seaBox = (drawn || []).find((b) => b[0] === 'rgb(23, 69, 78)');
@@ -156,11 +181,36 @@ await withHarness(async (app) => {
   await visit(app, '/?reorg=1&arbor2=0');
   const classicOn = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
   ok('A11 the reorg\'s rail stands in Arbor under ?reorg=1 with no preview door (plateau.rail on), and still not in the classic Plateau', noDoor === true && classicOn === false, { noDoor, classicOn });
+  // ---- A13: the box's letters by night at rest, as drawn ----
+  // FIXTURE (Nov 21, Actions 44994221975 on 4cffd432: A13 read Fiction's box, which A8 set to Sea earlier in this run): a fresh Drawer "Notes" holding
+  // "Notebook two" with one page, ar-n, made through the seams; its box was never coloured. No assertion changes.
+  await app.evalJs(`(() => { const W = window; if ((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).some((e) => e.id === 'ar-n')) return true;
+    const d = W.wrizoCreateDrawer('Notes'); const p = W.wrizoCreateProject('Notebook two'); W.wrizoSetProjectDrawer(p.id, d.id);
+    W.wrizoCreateJournalPage({ id: 'ar-n', text: 'Notes\\nA plain page.', createdAt: '2026-04-02T00:00:00.000Z', source: 'page', origin: 'project', projectId: p.id, orderIndex: 0 });
+    W.wrizoFlushNow(); return true; })()`);
+  await sleep(400);
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau'); history.replaceState(null, '', '/?reorg=1&arbor2room=night#/page/ar-n'); null");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('[data-reorg-rail] .wz-reorg-box')", { label: 'the Notes page by night', timeout: 20000 }).catch(() => {});
+  await sleep(1200);
+  await app.mouseMove(700, 400); await sleep(600);
+  const boxClip = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-box:not([data-box-picture])'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width > 8 ? { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 } : null; })()");
+  let drawnBox = null;
+  if (boxClip) {
+    const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: boxClip.x, y: boxClip.y, width: boxClip.w, height: boxClip.h, scale: 1 } })).data;
+    drawnBox = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data;
+      const px = []; for (let i = 0; i < D.length; i += 4) px.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; px.sort((p, q) => L(p) - L(q)); return { med: px[px.length >> 1], dark: px[0], light: px[px.length - 1] }; })()`);
+  }
+  const rgbS = (p) => (Array.isArray(p) ? `rgb(${p.join(', ')})` : null);
+  const a13 = (d) => { if (!d || !d.med) return false; const bg = rgbS(d.med); return Math.max(contrast(rgbS(d.dark), bg), contrast(rgbS(d.light), bg)) >= 4.5; };
+  ok('A13 by night at rest the rail\'s box letters read 4.5:1 or better on the box as drawn', a13(drawnBox), drawnBox && { box: rgbS(drawnBox.med), dark: rgbS(drawnBox.dark), light: rgbS(drawnBox.light), ratio: +Math.max(contrast(rgbS(drawnBox.dark), rgbS(drawnBox.med)), contrast(rgbS(drawnBox.light), rgbS(drawnBox.med))).toFixed(2) });
+  const blank = drawnBox && drawnBox.med ? { med: drawnBox.med, dark: drawnBox.med, light: drawnBox.med } : null;
+  ok('MUT-A13 the same reading with the letters at the box\'s own colour turns A13\'s test red', !!blank && !a13(blank), blank);
   ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`

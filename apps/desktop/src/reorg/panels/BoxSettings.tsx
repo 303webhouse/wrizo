@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { lettersOf } from '../railData';
 import { setBoxLook, useBoxes } from '../railMemory';
 import { encodeBoxPicture, setBoxPictureSaved } from '../railSaved';
-import { ARBOR_SWATCHES, useSwatches } from '../RailBox';
+import { ARBOR_PLAIN_BOX, ARBOR_SWATCHES, useSwatches } from '../RailBox';
 
 // BOX SETTINGS (step 4, frame R5; Nick, Nov 11: "one closed drop-down at the foot of Projects, for the Project she is in"). Letters (or none),
 // a colour (the five swatches, brass among them, or her own colour), a picture. SAVED WITH THE ACCOUNT (Nick's ruling, Nov 18; railSaved.ts):
@@ -21,7 +21,8 @@ export function BoxSettings({ id, name }: { id: string | null; name: string }) {
   const swatches = useSwatches();
   const names = swatches === ARBOR_SWATCHES ? ARBOR_SWATCH_NAMES : SWATCH_NAMES;
   if (id == null) return null;   // Unfiled writing has no Project, so no box
-  const colour = look.colour || swatches[0];
+  // ARBOR: a box with no colour of its own is plain cream and no swatch is chosen (the Wrizors, Nov 21); elsewhere the first swatch, as ruled
+  const colour = look.colour || (swatches === ARBOR_SWATCHES ? ARBOR_PLAIN_BOX : swatches[0]);
   const letters = look.letters !== undefined ? look.letters : lettersOf(name);
   const choosePicture = (f: File | undefined) => {
     if (!f || !/^image\//.test(f.type)) return;

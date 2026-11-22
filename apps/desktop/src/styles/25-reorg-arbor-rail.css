@@ -100,7 +100,7 @@
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-box-settings-row--indent{ padding-left:68px; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-box-settings-label{ width:58px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-letters{ width:54px; height:28px; padding:0 8px; box-sizing:border-box; font-family:var(--font-chromeLabel); font-size:13px; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--ink-border-strong); background:none; color:var(--text-hi); }
-:root[data-arbor2][data-theme='plateau'] .wz-reorg-chip{ display:inline-flex; align-items:center; gap:6px; padding:3px 6px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-chip{ display:inline-flex; align-items:center; gap:6px; padding:3px 6px; background:none; border:1px solid var(--ink-border-strong); color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:normal; text-transform:none; cursor:pointer; }   /* sentence case, as Arbor writes its buttons (the Wrizors pass 2, section 2 NIT 1; spec section 0) */
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-chip[aria-pressed='true']{ border-color:var(--accent-rest); }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-own-colour input{ width:18px; height:14px; padding:0; border:0; background:none; cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-swatches{ display:flex; gap:8px; }
