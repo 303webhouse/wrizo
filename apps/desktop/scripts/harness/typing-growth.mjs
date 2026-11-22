@@ -67,6 +67,20 @@ await withHarness(async (app) => {
           for (let i = 0; i < 40; i += 1) { await send(); await sleep(110); }
           const prof = await app.cdp('Profiler.stop');
           console.log(`TG-PROFILE ${mode} ${kind} 50000 words: ` + JSON.stringify(selfTop(prof.profile)));
+          // the SOURCE at the top self-time JS frames (the bundle is minified: name the code by its text), once per mode
+          if (kind === 'letter') {
+            try {
+              await app.cdp('Debugger.enable');
+              const byId = new Map(prof.profile.nodes.map((n) => [n.id, n])); const self = new Map();
+              for (let i = 0; i < prof.profile.samples.length; i += 1) self.set(prof.profile.samples[i], (self.get(prof.profile.samples[i]) || 0) + (prof.profile.timeDeltas[i] || 0));
+              const frames = new Map(); for (const [id, us] of self) { const cf = byId.get(id).callFrame; if (!cf.url || !/index-/.test(cf.url)) continue; const k = cf.scriptId + ':' + cf.lineNumber + ':' + cf.columnNumber; frames.set(k, { cf, us: (frames.get(k) ? frames.get(k).us : 0) + us }); }
+              const top = [...frames.values()].sort((a, b) => b.us - a.us).slice(0, 4);
+              const out = [];
+              for (const { cf, us } of top) { const src = await app.cdp('Debugger.getScriptSource', { scriptId: cf.scriptId }); const lines = String(src.scriptSource || '').split('
+'); const line = lines[cf.lineNumber] || ''; out.push({ fn: cf.functionName, ms: Math.round(us / 100) / 10, at: cf.lineNumber + ':' + cf.columnNumber, src: line.slice(Math.max(0, cf.columnNumber - 20), cf.columnNumber + 700) }); }
+              console.log(`TG-SOURCE ${mode} ${kind}: ` + JSON.stringify(out));
+            } catch (e) { console.log('TG-SOURCE failed: ' + String(e && e.message).slice(0, 160)); }
+          }
         }
       }
     }
