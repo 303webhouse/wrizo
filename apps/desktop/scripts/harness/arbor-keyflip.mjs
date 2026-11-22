@@ -291,7 +291,11 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed' });
     await app.evalJs(`(() => { window.wrizoSetWritingGoal({ n: 1000, unit: 'words' }); window.wrizoPatchEntry(${JSON.stringify(pageId)}, { text: Array.from({ length: 7 }, (_, i) => 'word' + i).join(' ') }); return true; })()`);
     await app.reload();
-    await app.cdp('Page.navigate', { url: `${app.base}/?arbor2=1&arbor2room=${room}#/page/${pageId}` });
+    // DRIVER FIX (Nov 22, Fable 3:05 am: keyflip WITH the reorg on): the reopen keeps a launcher's pin (its other parameters) and sets arbor2=1 and the
+    // room; with no pin set the address is ?arbor2=1&arbor2room=<room>, as before. No assertion changes. Was:
+    // await app.cdp('Page.navigate', { url: `${app.base}/?arbor2=1&arbor2room=${room}#/page/${pageId}` });
+    const roomSearch = new URLSearchParams(PIN.slice(1)); roomSearch.set('arbor2', '1'); roomSearch.set('arbor2room', room);
+    await app.cdp('Page.navigate', { url: `${app.base}/?${roomSearch.toString()}#/page/${pageId}` });
     await app.waitFor("!!document.querySelector('.wz-rhizome-field') && !!document.querySelector('.forward-only-editor')", { timeout: 15000, label: `page reopened (${room})` });
     // the splash gone before any read (the merge onto main, Actions run 43644710885: main's splash still showed its loading line ~1.5 s after the
     // reopen, mid-fade, so the snapshots that KF-LOOK-HAS-DYN-C compares read its opacity at different moments - 1 in one cycle, 0.998 in the
