@@ -1,0 +1,17 @@
+/* THE REORG'S SPLIT SCREEN IN ARBOR (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md section 8). Every rule is under :root[data-arbor2][data-theme='plateau'] and is reached only by markup the split draws (SplitHost), so with the switch off,
+   or in any other theme, nothing here matches. The split's geometry (the page's shift, both drawers off, the asset's fixed half) is the reorg's own and stays in 23-reorg-back.css: this file only DRESSES it. The page side is unchanged (law 1).
+   The asset's half sits on Arbor's raised surface (#F6F1E4 by day, #261A12 by night); the grip is a 1 px line in Arbor's line colour with a 6 px handle that fills olive on hover; scrollbars are hidden (Nick, all themes). Brass is her act: none here. */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .wz-split-asset{ background:#F6F1E4; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-split-asset{ background:#261A12; }
+:root[data-arbor2][data-theme='plateau'] .wz-split-asset{ border-color:var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .wz-split-grip::before{ content:''; position:absolute; left:9px; top:0; bottom:0; width:1px; background:var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .wz-split-grip::after{ left:6px; width:6px; height:44px; background:transparent; border:1px solid var(--arbor-line); box-sizing:border-box; border-radius:3px; }
+:root[data-arbor2][data-theme='plateau'] .wz-split-grip:hover::after{ background:#56632E; border-color:#56632E; }
+:root[data-arbor2][data-theme='plateau'] .wz-split-grip:focus-visible::after{ background:#56632E; border-color:#56632E; }
+/* scrollbars hidden: the stage's scrollers in a split and the asset's own half (the Machina rules' Arbor twins); both still scroll */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
+:root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
+:root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* the count row stands under HER page (the Wrizors' pass 1, split NIT): the instrument under the page is centred on the stage, so it stayed where the page used to be and ran under the docked half; it takes the page's own shift (--wz-split-shift), so it stays centred on the page. It is a status row, not the page: the page's geometry is untouched. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] .desk-frame-instrument{ left:calc(50% + var(--wz-split-shift, 0px)); }

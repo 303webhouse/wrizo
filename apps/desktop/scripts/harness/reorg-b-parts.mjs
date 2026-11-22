@@ -264,6 +264,15 @@ await withHarness(async (app) => {
   // MUT-T1-B: a SPRINT reading that draws the kind toggle turns T1-B red (the mutant LANDED: the reading changed)
   const fk = { ...f1, kind: { ...(f1.kind || {}), kind: 'Standard' } };
   ok('MUT-T1-B a SPRINT that draws the kind toggle turns T1-B red', fk.kind.kind !== (f1.kind && f1.kind.kind) && !t1b(e1, fk), fk);
+  // ORIGINAL, SUPERSEDED Nov 21 (Fable, 9:40 pm: Free Write has no Front menu, by design: POLISH hid the drawer in SPRINT, so there is no Parts list there to hold a kind toggle or Structure; the old reading expected the list present and its menus absent). The original, verbatim:
+  // ok('T1 EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: neither',
+  // !!e1.kind && !!e1.kind.kind && !!e1.st && e1.st.acts.map((a) => a[0]).join(',') === 'split,up,down,join' && !!f1.kind && !f1.kind.kind && !f1.st, { e1, f1 });
+  // SUCCESSOR: EDIT keeps the kind toggle and Structure, without Nest / Unnest; SPRINT has no Front menu at all: no Parts list, no kind toggle, no Structure (both probes find nothing), and no drawer
+  const sprintNoFront = (f) => !!f && f.kind === null && f.st === null && f.drawer === false;
+  f1.drawer = await app.evalJs("!!document.querySelector('.wz-sliver')");
+  const t1Mutant = sprintNoFront({ kind: { kind: null, head: 'Parts (3)' }, st: null, drawer: true });   // the old shape (a list with its menus off) must read RED under the successor
+  ok('T1 EDIT: the kind toggle and Structure, without Nest / Unnest; SPRINT: no Front menu at all',
+    !!e1.kind && !!e1.kind.kind && !!e1.st && e1.st.acts.map((a) => a[0]).join(',') === 'split,up,down,join' && sprintNoFront(f1) && t1Mutant === false, { e1, f1, t1Mutant });
 });
 
 // ---- WORDS (source) --------------------------------------------------------------------------------------------------------------------
