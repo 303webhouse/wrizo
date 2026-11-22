@@ -1,0 +1,30 @@
+/* THE REORG'S BACK MENU IN ARBOR (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md sections 0 and 5). Every rule is under :root[data-arbor2][data-theme='plateau'] and is reached only by markup the reorg draws, so with the switch off, or in any other theme, nothing
+   here matches. The twins first: the Machina rules for the Back menu's lists, sort row, "+" menus and the search, re-scoped to the live Arbor (their colours are the theme's own tokens, so they read Arbor's); then Arbor's own dress. The piece is switched on for Arbor
+   only through reorg/themeGate.ts (the preview door shows it before then). Tags (the Sections' numbered cloth tabs) are ARBOR's, with the Front menu. */
+:root[data-arbor2][data-theme='plateau'] .wz-back-assets-head{ margin:0 0 6px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-icon{ display:block; flex:none; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-assets-headrow{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin:0 0 6px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-assets-headrow > .wz-back-assets-head{ margin:0; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add-wrap{ position:relative; flex:none; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add{ position:relative; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add > .wz-back-part-head{ padding-right:30px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add > .wz-assets-add-wrap{ position:absolute; top:3px; right:2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add{ width:22px; height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; line-height:1; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add:hover, :root[data-arbor2][data-theme='plateau'] .wz-assets-add:focus-visible, :root[data-arbor2][data-theme='plateau'] .wz-assets-add[aria-expanded='true']{ border-color:var(--text-low); color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add-pop{ position:absolute; top:calc(100% + 4px); right:0; z-index:5; display:flex; flex-direction:column; min-width:180px; padding:4px; background:var(--surface-raised); border:1px solid var(--ink-border-strong); box-shadow:0 6px 18px rgba(0,0,0,.28); }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add-pop > button{ display:block; width:100%; padding:6px 8px; background:none; border:0; text-align:left; font:inherit; font-size:12px; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-add-pop > button:hover, :root[data-arbor2][data-theme='plateau'] .wz-assets-add-pop > button:focus-visible{ background:var(--hover-bg, rgba(127,127,127,.12)); }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-picker{ min-width:240px; max-width:300px; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-picker-body{ display:flex; flex-direction:column; max-height:260px; overflow-y:auto; margin-top:4px; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-picker-none{ padding:6px 8px; font-size:12px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-sort{ display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+:root[data-arbor2][data-theme='plateau'] .wz-assets-sort > button{ height:20px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-chromeLabel, monospace); font-size:10px; color:var(--text-mid); cursor:pointer; }
