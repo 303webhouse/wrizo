@@ -137,3 +137,12 @@
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-session-fold:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:-2px; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal{ width:64px; box-sizing:border-box; padding:3px 6px; border:1px solid var(--ink-border-strong); border-radius:0; background:transparent; color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:12px; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+/* THE RECENT GROUP IN PAGES (POLISH's docs-recent, train J; the frames on 016bc20a drew its sort as white browser buttons). Machina's six rules
+   (22-reorg-rail.css) in Arbor's look: the rows scroll inside the pop-out; the head holds the sort at its right; the sort is words, not buttons - the
+   others in the pop-out's mid label colour, the chosen one in its high colour and underlined - with Arbor's focus ring. Checked by A16. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-head{ justify-content:space-between; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
