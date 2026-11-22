@@ -272,6 +272,7 @@ await withHarness(async (app) => {
       nightDoor = await paintedBox(app, doorBox);
       const whereBox = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where .wz-reorg-box'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 }; })()");
       nightBox = await paintedBox(app, whereBox);
+      if (nightBox) nightBox.own = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where .wz-reorg-box'); return b ? getComputedStyle(b).backgroundColor : null; })()");
     }
     sess[room] = { closed, opened };
     await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null"); await sleep(500);
@@ -294,12 +295,18 @@ await withHarness(async (app) => {
   ok('A18 by night, PAGES open and the focus off the rail, the opened door\'s word reads 4.5:1 or better on its cloth, as painted', a18(nightDoor), nightDoor);
   const dimmed = { med: 'rgb(77, 96, 113)', far: 'rgb(150, 140, 125)', r: 2.54 };
   ok('MUT-A18 the same reading at today\'s dimmed colours (2.54) turns A18\'s test red', !a18(dimmed), dimmed);
-  ok('A19 by night, the same moment, the rail\'s Drawer box paints its full cream and its letters read 4.5:1 or better on it, as painted', !!nightBox && contrast(nightBox.med, 'rgb(239, 228, 203)') <= 1.08 && nightBox.r >= 4.5, nightBox && { ...nightBox, toCream: +contrast(nightBox.med, 'rgb(239, 228, 203)').toFixed(2) });
+  // SUPERSEDED (Nov 22, Actions 45076858229 on 114b94dd: the Drawer box was SEA - A8 sets it earlier in this run - so its full cream could never hold;
+  // the Wrizors' claim is that the box is not dimmed). The original, verbatim:
+  // ok('A19 by night, the same moment, the rail\'s Drawer box paints its full cream and its letters read 4.5:1 or better on it, as painted', !!nightBox && contrast(nightBox.med, 'rgb(239, 228, 203)') <= 1.08 && nightBox.r >= 4.5, nightBox && { ...nightBox, toCream: +contrast(nightBox.med, 'rgb(239, 228, 203)').toFixed(2) });
+  const a19b = (x) => !!x && !!x.own && contrast(x.med, x.own) <= 1.08 && x.r >= 4.5;
+  ok('A19-B by night, the same moment, the rail\'s Drawer box paints its own colour at full (not dimmed) and its letters read 4.5:1 or better on it, as painted', a19b(nightBox), nightBox && { ...nightBox, toOwn: nightBox.own ? +contrast(nightBox.med, nightBox.own).toFixed(2) : null });
+  const greyed = nightBox && nightBox.own ? { ...nightBox, med: 'rgb(23, 43, 45)', r: 4.44 } : null;
+  ok('MUT-A19-B the same reading dimmed (today\'s 4.44 on the greyed colour) turns A19-B\'s test red', !!greyed && !a19b(greyed), greyed);
   ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 30;   // + A17, A18, MUT-A18, A19 (the Wrizors' pass 7, Nov 22). Was: const EXPECTED = 26;   // + A16, MUT-A16 (the Recent group's sort in Arbor's PAGES, Nov 22). Was: const EXPECTED = 24;   // + A15, MUT-A15 (the Session in Arbor's PAGES, Nov 22). Was: const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 31;   // A19 parked: + A19-B, MUT-A19-B (Nov 22). Was: const EXPECTED = 30;   // + A17, A18, MUT-A18, A19 (the Wrizors' pass 7, Nov 22). Was: const EXPECTED = 26;   // + A16, MUT-A16 (the Recent group's sort in Arbor's PAGES, Nov 22). Was: const EXPECTED = 24;   // + A15, MUT-A15 (the Session in Arbor's PAGES, Nov 22). Was: const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
