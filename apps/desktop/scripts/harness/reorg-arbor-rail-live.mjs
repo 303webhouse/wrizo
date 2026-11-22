@@ -32,6 +32,10 @@
 //             in --text-hi cream) by night at rest the rail's box letters read 4.5:1 or better on the box AS DRAWN (a clip of the box: its median is the
 //             box, its pixel farthest from that is the letters)
 //         MUT-A13  the same reading with the letters at the box's own colour turns A13's test red
+//         A14 (the Wrizors' pass 2, section 2 NIT 1: "NO LETTERS", "YOUR OWN COLOUR", "CHOOSE A PICTURE" in caps; spec section 0: Arbor's buttons are in
+//             its sentence case) Box settings' buttons render as written - No letters, Your own colour, Choose a picture (innerText, which carries any
+//             text-transform)
+//         MUT-A14  the same reading in capitals turns A14's test red
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
 //
@@ -138,6 +142,11 @@ await withHarness(async (app) => {
   // ---- A8: Box settings, in the opened DRAWERS pop-out ----
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs(BOXSET);
+  const chips = await app.evalJs("[...document.querySelectorAll('.wz-reorg-box-settings .wz-reorg-chip, .wz-reorg-chip')].filter((c, i, a) => a.indexOf(c) === i).map((c) => (c.innerText || '').trim()).filter(Boolean)");
+  const a14 = (list) => Array.isArray(list) && ['No letters', 'Your own colour', 'Choose a picture'].every((w) => list.includes(w)) && list.every((w) => w !== w.toUpperCase() || !/[A-Z]/.test(w));
+  ok('A14 Box settings\' buttons read in sentence case: No letters, Your own colour, Choose a picture', a14(chips), chips);
+  const caps = Array.isArray(chips) ? chips.map((w) => w.toUpperCase()) : null;
+  ok('MUT-A14 the same reading in capitals turns A14\'s test red', !!caps && caps.length > 0 && !a14(caps), caps);
   await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#17454E\"]')?.click(); null"); await sleep(500);
   const drawn = await app.evalJs(BOXES);
   const seaBox = (drawn || []).find((b) => b[0] === 'rgb(23, 69, 78)');
@@ -201,7 +210,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
