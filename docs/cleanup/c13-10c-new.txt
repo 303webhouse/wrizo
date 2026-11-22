@@ -19,6 +19,12 @@ flux3WordMany=words
 flux3PortConnectAnother=Connect another
 flux3PortDisconnect=Disconnect
 flux3Checkpoint=Checkpoint
+# FLUX3 S4b L4 (POLISH) - the page frame's readout header counts its blocks
+flux3BlockOne=block
+flux3BlockMany=blocks
+# FLUX3 S4b L6 (POLISH) - the node voice: a node footer's status theatre, under the Ambiance dial
+flux3TheatreHuman=Unresolved // human
+flux3TheatreInk=Raster // human
 # 10e (POLISH) - the Progress row's label for the stored 'project' metric; its Flux word comes with the full pass
 progressDrawer=Drawer
 # FLUX3 S4 Corridor r2 (INK) - Jacked In's exit line, the 4 s nudge and the leave button's name

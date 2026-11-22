@@ -376,6 +376,8 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
     // successor (POLISH, Nov 19): the reorg's Front menu tabs (reorg/frontTabs.ts, ?reorg=1 in Machina only) lead the same chain
     sliverShellC: /<SideDrawer side="left" idPrefix="wz-sliver" tabs=\{(?:sideTabs|\((?:frontTabs \?\? )?arborTabs \?\? sideTabs\) as DrawerTabsConfig<string> \| undefined)\}/.test(sliver) && /<\/SideDrawer>/.test(sliver),
     tutorShellB: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{(?:rightTabs|\(arborRightTabs \?\? rightTabs\) as DrawerTabsConfig<string>)\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
+    // successor (INK, Nov 22, train I2): the reorg's Back menu (Arbor and Flux, the theme gate's back cell) leads the Tutor's chain: `back ? rightTabs : arborRightTabs`, then the plain tabs
+    tutorShellC: /<SideDrawer side="right" idPrefix="wz-tutor" tabs=\{(?:rightTabs|\(arborRightTabs \?\? rightTabs\) as DrawerTabsConfig<string>|\(\(back \? rightTabs : arborRightTabs\) \?\? rightTabs\) as DrawerTabsConfig<string>)\}>/.test(tutor) && /<\/SideDrawer>/.test(tutor),
     noHandWrapper: !/<div className="wz-drawer-slide wz-drawer-slide--(left|right)">/.test(sliver + tutor),
     ungated: gated.filter((s) => !sliver.includes("allowed('" + s + "')")),
     tabLabels: /t\('inkModeText'\)/.test(sliver) && /t\('inkModeInk'\)/.test(sliver) && /label: t\('inkInstrument'\)/.test(sliver),
@@ -388,7 +390,9 @@ function partH(sliver = sliverSrc, tutor = tutorSrc) {
   // PARKED 2026-11-19 (SUPERSEDED - the reorg's Front menu, POLISH, Fable's GO Nov 19 4:20 pm: the left drawer passes `(frontTabs ?? arborTabs ?? sideTabs)`, the
   // Front menu's TEXT · INK · PARTS under ?reorg=1 in Machina only; switch off it is undefined and the chain is today's). Original, verbatim:
   // ok('(H1b [Arbor-tabs successor]) both hands render through <SideDrawer> (plain or Arbor tab config) - the S1 hand-written wrappers are gone', h.sliverShellB && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
-  ok('(H1c [Front-menu successor]) both hands render through <SideDrawer> (plain, Arbor or the reorg\'s Front menu tab config) - the S1 hand-written wrappers are gone', h.sliverShellC && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
+  // PARKED (SUPERSEDED, INK Nov 22: the Tutor's tab chain gained the reorg's Back menu config). Original, verbatim:
+  // ok('(H1c [Front-menu successor]) both hands render through <SideDrawer> (plain, Arbor or the reorg\'s Front menu tab config) - the S1 hand-written wrappers are gone', h.sliverShellC && h.tutorShellB && h.noHandWrapper, JSON.stringify(h));
+  ok('(H1d [Back-menu successor]) both hands render through <SideDrawer> (plain, Arbor, the reorg\'s Front menu tab config, or the reorg\'s Back menu tab config) - the S1 hand-written wrappers are gone', h.sliverShellC && h.tutorShellC && h.noHandWrapper, JSON.stringify(h));
   ok('(H2) EVERY Sliver section asks the table first (ink, typeface, forwardLock, format, templates, pageKind, capture, boardTools) - the table is not decorative', h.ungated.length === 0, JSON.stringify(h.ungated));
   ok('(H3) the tab words are the theme\'s own lexicon terms (Text / Ink and the row\'s name), not literals', h.tabLabels, JSON.stringify(h));
 }
@@ -491,6 +495,8 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
     bodyOnTutorTab: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel \/>\}/.test(tutor),
     // successor (ARBOR, Nov 10): the links pane may carry Arbor's only= (flux passes undefined) - the claim is still "only on the links tab"
     bodyOnTutorTabB: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel(?: \/>\}| only=\{arbor2 \? \(arborBoard \? 'board' : 'grafts'\) : undefined\})/.test(tutor) && (tutor.match(/<ConnectionsDrawerPanel\b/g) || []).length === 1,
+    // successor (INK, Nov 22, train I2): with the Back menu on, Arbor's only= filter is not given (the pane is the reorg's own): `only={arbor2 && !back ? ... : undefined}`
+    bodyOnTutorTabC: /\{rightTab === 'tutor' && \(\n\s*<div className="wz-tutor-body">/.test(tutor) && /\{rightTab === 'links' && <ConnectionsDrawerPanel(?: \/>\}| only=\{arbor2 \? \(arborBoard \? 'board' : 'grafts'\) : undefined\}| only=\{arbor2 && !back \? \(arborBoard \? 'board' : 'grafts'\) : undefined\})/.test(tutor) && (tutor.match(/<ConnectionsDrawerPanel\b/g) || []).length === 1,
     noteOnlyWhenWords: /notes: linksNote \? \{ links: <DrawerNote label=\{t\('drawerLinksNoteLabel'\)\}>\{linksNote\}<\/DrawerNote> \} : undefined/.test(tutor),
     tabWords: /label: t\('tutorTabTutor'\)/.test(tutor) && /label: t\('drawerLinks'\)/.test(tutor) && /label: t\('drawerRightTabsLabel'\)/.test(tutor),
     escCloses: /e\.key === 'Escape' && open\) \{ e\.stopPropagation\(\); setOpen\(false\); \}/.test(note),
@@ -538,7 +544,9 @@ function partM(tutor = tutorSrc, tabs = tabsSrc, note = noteSrc, c = css) {
   const m = partM();
   // PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
   // ok('(K5) the Tutor opens on the TUTOR tab; its body renders ONLY there and the empty links pane only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTab && m.tabWords, JSON.stringify(m));
-  ok('(K5b [Arbor-tabs successor]) the Tutor opens on the TUTOR tab; its body renders ONLY there and the links pane (one, with or without Arbor\'s only=) only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTabB && m.tabWords, JSON.stringify(m));
+  // PARKED (SUPERSEDED, INK Nov 22: the links pane's only= is not given with the Back menu on). Original, verbatim:
+  // ok('(K5b [Arbor-tabs successor]) the Tutor opens on the TUTOR tab; its body renders ONLY there and the links pane (one, with or without Arbor\'s only=) only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTabB && m.tabWords, JSON.stringify(m));
+  ok('(K5c [Back-menu successor]) the Tutor opens on the TUTOR tab; its body renders ONLY there and the links pane (one, with or without Arbor\'s only=) only on the other; the tab words are lexicon terms', m.defaultTutor && m.bodyOnTutorTabC && m.tabWords, JSON.stringify(m));
 
   // ARCHIVED PARK (#13 step 14): archive/drawers-p1.mjs.parked.md record 11
   const notesAlwaysRender = /notes: \{ links: <HelpButton helpKey="helpGrafts" subjectLabel=\{t\('drawerLinks'\)\} \/> \}/.test(tutorSrc);
@@ -646,8 +654,10 @@ await mutant('the arrow tab turns brass when open', async () => partG(tabsSrc, m
 await mutant('the Sliver stops asking the table for the Typeface', async () => partH(mutate(sliverSrc, "content.type && allowed('typeface') && (", "content.type && ("), tutorSrc), (h) => h.ungated.includes('typeface'));
 // PARKED 2026-11-10 (SUPERSEDED - ARBOR's flag-only drawer tabs, r5 Oct 31: the drawers pass `(arborTabs ?? sideTabs)` / `(arborRightTabs ?? rightTabs)` and the links pane carries `only=` and `help=`; full pair 42928277885). Original, verbatim:
 // await mutant('the Tutor goes back to a hand-written wrapper', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={rightTabs}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShell === false);
-await mutant('the Tutor goes back to a hand-written wrapper [Arbor-tabs successor]', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShellB === false);
-await mutant('the links pane renders on every tab [K5b can go red]', async () => partM(mutate(tutorSrc, "{rightTab === 'links' && <ConnectionsDrawerPanel only=", "{<ConnectionsDrawerPanel only=")), (m) => m.bodyOnTutorTabB === false);
+// PARKED (SUPERSEDED, INK Nov 22: the Tutor's tabs expression now leads with the Back menu's). Original, verbatim:
+// await mutant('the Tutor goes back to a hand-written wrapper [Arbor-tabs successor]', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShellB === false);
+await mutant('the Tutor goes back to a hand-written wrapper [Back-menu successor]', async () => partH(sliverSrc, mutate(tutorSrc, '<SideDrawer side="right" idPrefix="wz-tutor" tabs={((back ? rightTabs : arborRightTabs) ?? rightTabs) as DrawerTabsConfig<string>}>', '<div className="wz-drawer-slide wz-drawer-slide--right">')), (h) => h.noHandWrapper === false || h.tutorShellC === false);
+await mutant('the links pane renders on every tab [K5b can go red]', async () => partM(mutate(tutorSrc, "{rightTab === 'links' && <ConnectionsDrawerPanel only=", "{<ConnectionsDrawerPanel only=")), (m) => m.bodyOnTutorTabC === false);
 await mutant('PageEditor.tsx is changed outside the declared hunk', async () => ({ ok: diffConfined('@@ -10,0 +11 @@\n+  instrument: { value: instrument, onChange: setInstrument },\n@@ -500,0 +502 @@\n+  onChange(e);\n') }), (r) => r.ok === false);
 await mutant('PageEditor.tsx loses a line outside the declared hunk', async () => ({ ok: diffConfined('@@ -10 +10 @@\n-  const x = 1;\n+  instrument: { value: instrument, onChange: setInstrument },\n') }), (r) => r.ok === false);
 

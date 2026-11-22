@@ -176,7 +176,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4): a fourth Back menu tab that exists only while the publishing sheet is open on this page; with the sheet closed the drawer is back on a tab that is there
   const publishing = usePublishing(entry.id);
   const [exportOn, setExportOn] = useState(false);
-  const exportTab = back && publishing;
+  // Arbor and Flux fold it into their own main tab (arbor-reorg-spec section 5: "Before you publish in TUTOR", three tabs); Machina keeps it as a fourth tab
+  const foldExport = tutorTheme !== 'machina';
+  const exportTab = back && publishing && !foldExport;
   const rightTab: RightTab | 'plan' | 'export' = sprint ? 'tutor' : exportOn && exportTab ? 'export' : planOn ? 'plan' : tabState;
   const setRightTab = (v: RightTab | 'plan' | 'export'): void => { if (sprint) return; if (v === 'export') { setExportOn(true); return; } setExportOn(false); if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
@@ -850,6 +852,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           className="wz-tutor-grip"
           data-open={open ? 'true' : 'false'}
           data-docked={docked ? 'true' : 'false'}
+          data-back={back ? 'true' : undefined}
+          data-sprint={sprint ? 'true' : undefined}
           aria-expanded={open}
           aria-label={open ? t('tutorClose') : t('tutorOpen')}
           title={open ? t('tutorClose') : t('tutorOpen')}
@@ -863,14 +867,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           {/* while a linked card or page stands docked, the docked panel is its reader [Tutor §34] */}
           {linkDock && docked ? <LinkDockReader dock={linkDock} onClose={closeLinkDock} /> : searching ? (
             <SearchMenu entry={entry} open={open} backWord={search.wasOpen ? ((l) => (typeof l === 'string' ? l : null))(rightTabs.items.find((i) => i.id === rightTab)?.label) : null} />
           ) : (
-          <SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={((back ? rightTabs : arborRightTabs) ?? rightTabs) as DrawerTabsConfig<string>}>
           {/* THE REORG'S SEARCH DOOR: a field atop every Back menu tab; a press turns the menu into the search menu (reorg/search/SearchField.tsx) */}
           {back && <SearchField from={rightTab === 'plan' ? 'plan' : rightTab === 'links' ? 'links' : 'tutor'} />}
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
@@ -879,6 +883,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               never re-announces the last reply as if it were new. */}
           <div className="wz-sr-only" role="status" aria-live="polite">{replyAnnouncement}</div>
           {/* the body renders unconditionally inside the faded panel (the Sliver's shape), so the close fades the content instead of unmounting it and fading an empty box [Tutor §35] */}
+          {back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             {sprint ? (
@@ -1126,7 +1131,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
           {back && rightTab === 'export' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}
-          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}

@@ -15,8 +15,9 @@ export function frontTabsFor(kind: DrawerKind, hasInstrument: boolean): FrontTab
   return hasInstrument ? ['text', 'ink', 'parts'] : ['text', 'parts'];
 }
 
-/** The sections a tab shows: drawerSet's own, unchanged. PARTS shows none of them (the Parts list is the tab). */
-export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection): boolean {
+/** The sections a tab shows: drawerSet's own, unchanged, but in Arbor (retirePresets) the ready-made starts (templates) are not on FORMAT: they live in SECTIONS' head menu, the kind menu, as Arbor's Presets tab retires into it. PARTS shows none of them (the Parts list is the tab). */
+export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection, retirePresets = false): boolean {
   if (tab === 'parts') return false;
+  if (retirePresets && section === 'templates') return false;
   return sectionsFor(kind, tab).includes(section);
 }
