@@ -7,6 +7,8 @@
 //   LIFT   lifting a Flux piece is ONE cell: with only flux.back flipped, exactly that cell changes and every other (piece, theme) reads as before
 //   LIFTQ  (Flux piece 2, Nov 21) the PREVIEW DOOR: ?reorglift=flux.back (comma-separated theme.piece) shows a piece of a theme without flipping the table's cell, so frames and the Wrizors' review can see it; honoured only with the switch on, read once at load, a token that is not a real theme.piece is ignored, it only ADDS (Machina never loses a piece), and with no parameter nothing changes
 //   ARBOR2 (Nov 21) Arbor's column is the live Arbor, the redesign (arbor2/flag.ts arbor2Enabled: on by default, ?arbor2=0 test-only): a plateau cell is on only while the redesign may run; with it off a plateau cell the table has switched on, and the preview door, read OFF; Machina and Flux do not read it
+//   [Nov 21, ARBOR's rail ON] TABLE, LIFTQ, ARBOR2 and the "Arbor has a piece on" mutant parked with successors: Arbor's column is the cells the Wrizors
+//          passed (ARBOR_ON: the rail), each other plateau cell still off
 //   SITES  each gate site in the app reads the table for its own piece and the Machina-only literal is gone from it: Cascade (rail), useReorg (top), Sliver (front), Tutor (back and split), BoardEditor (the Plan presets, back), PageEditor (uplink)
 // Run: node scripts/harness/reorg-theme-gate-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -27,6 +29,10 @@ const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
 const rdSite = (p) => (p === 'components/BoardEditor.tsx' ? lf(srcText(SRCDIR, p)) : rd(p));
 const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
+// the cells of Arbor's column the table has switched on, each only after the Wrizors passed its frames (Fable, Nov 21 9:40 pm: the rail)
+const ARBOR_ON = ['rail'];
+// the plateau line as the table holds it, whatever cells it carries (the anchor the ARBOR2 law and its mutant rewrite)
+const PLATEAU_LINE = /  plateau: \{ \.\.\.ALL_OFF[^}\n]*\},/;
 const THEMES = ['machina', 'plateau', 'flux'];
 
 function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '', arbor2 = true } = {}) {
@@ -44,7 +50,9 @@ function suite(src) {
     const G = load(src);
     const cells = {};
     for (const th of [...THEMES, 'arbor', 'nonsense']) for (const p of [...PIECES, 'nope']) cells[th + '.' + p] = G.themeHas(p, th);
-    const want = (th, p) => th === 'machina' && PIECES.includes(p);
+    // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty). The original, verbatim:
+    // const want = (th, p) => th === 'machina' && PIECES.includes(p);
+    const want = (th, p) => (th === 'machina' && PIECES.includes(p)) || (th === 'plateau' && ARBOR_ON.includes(p));   // [ARBOR_ON successor]
     const wrong = Object.entries(cells).filter(([k, v]) => { const [th, p] = k.split('.'); return v !== want(th, p); }).map(([k]) => k);
     return { pass: J(G.REORG_PIECES) === J(PIECES) && wrong.length === 0, detail: J({ pieces: G.REORG_PIECES, wrong }) };
   });
@@ -68,25 +76,36 @@ function suite(src) {
     return { pass: J(diff) === J(['flux.back']), detail: J({ diff }) };
   });
   t('ARBOR2', () => {
-    const lifted = src.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, back: true, split: true },');
+    // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty; the anchor '  plateau: { ...ALL_OFF },' is gone). The original, verbatim:
+    // const lifted = src.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, back: true, split: true },');
+    // if (lifted === src) return { pass: false, detail: 'the plateau cell is not where the unit looks' };
+    const lifted = src.replace(PLATEAU_LINE, () => `  plateau: { ...ALL_OFF, ${ARBOR_ON.map((p) => `${p}: true, `).join('')}back: true, split: true },`);   // [ARBOR_ON successor]
     if (lifted === src) return { pass: false, detail: 'the plateau cell is not where the unit looks' };
     const on = load(lifted, { arbor2: true }), off = load(lifted, { arbor2: false });
     const cellsOf = (G, th) => PIECES.filter((p) => G.themeHas(p, th));
     const doorOff = load(src, { arbor2: false, search: '?reorg=1&reorglift=plateau.back,flux.rail,machina.rail' }), doorOn = load(src, { arbor2: true, search: '?reorg=1&reorglift=plateau.back' });
     const hooked = load(lifted, { arbor2: false, theme: 'plateau' }), hookedOn = load(lifted, { arbor2: true, theme: 'plateau' });
     const m = load(src, { arbor2: false });
-    return { pass: J(cellsOf(on, 'plateau')) === J(['back', 'split']) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(['back', 'split']), detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau') }) };
+    // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty). The original, verbatim:
+    // return { pass: J(cellsOf(on, 'plateau')) === J(['back', 'split']) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(['back', 'split']), detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau') }) };
+    const arborOn = PIECES.filter((p) => ARBOR_ON.includes(p) || p === 'back' || p === 'split');   // [ARBOR_ON successor]: the lifted line holds the passed cells and back, split
+    return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };
   });
   t('LIFTQ', () => {
-    const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.')); };
+    // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty: with no door it saw plateau.rail, a cell the TABLE holds, not the door). The original, verbatim:
+    // const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.')); };
+    // [ARBOR_ON successor] what the DOOR adds: the cells on, less Machina's and less the plateau cells the table itself holds
+    const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.') && !ARBOR_ON.some((p) => x === 'plateau.' + p)); };
     const none = cells({ search: '?reorg=1' });
     const one = cells({ search: '?reorg=1&reorglift=flux.back' });
-    const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.rail' });
+    // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty: plateau.rail is the table's now, so the door cannot be seen adding it). The original, verbatim:
+    // const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.rail' });
+    const two = cells({ search: '?reorg=1&reorglift=flux.back,flux.top,plateau.top' });   // [ARBOR_ON successor]: a plateau cell still off
     const off = cells({ reorg: false, search: '?reorglift=flux.back' });
     const junk = cells({ search: '?reorg=1&reorglift=flux,back,flux.nope,nonsense.back,.back,flux.,FLUX.BACK, flux.back' });
     const M = load(src, { search: '?reorg=1&reorglift=machina.rail,-rail' });
     const hooked = load(src, { search: '?reorg=1&reorglift=flux.back', theme: 'flux' });
-    return { pass: none.length === 0 && J(one) === J(['flux.back']) && J(two.slice().sort()) === J(['flux.back', 'flux.top', 'plateau.rail']) && off.length === 0 && J(junk) === J(['flux.back']) && PIECES.every((p) => M.themeHas(p, 'machina')) && hooked.useReorgPiece('back') === true && hooked.useReorgPiece('rail') === false, detail: J({ none, one, two, off, junk }) };
+    return { pass: none.length === 0 && J(one) === J(['flux.back']) && J(two.slice().sort()) === J(['flux.back', 'flux.top', 'plateau.top']) && off.length === 0 && J(junk) === J(['flux.back']) && PIECES.every((p) => M.themeHas(p, 'machina')) && hooked.useReorgPiece('back') === true && hooked.useReorgPiece('rail') === false, detail: J({ none, one, two, off, junk }) };
   });
   return R;
 }
@@ -98,7 +117,10 @@ for (const k of ['TABLE', 'HOOK', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k} on the re
 const MUT = [
   ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
   ['Machina loses a piece', 'TABLE', (t) => t.replace('  machina: { ...ALL_ON },', () => '  machina: { ...ALL_ON, uplink: false },')],
-  ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
+  // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty; its anchor is gone, so it no longer lands). The original, verbatim:
+  // ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
+  ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', top: true },'))],
+  ['Arbor loses a piece the Wrizors passed (the rail) [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_OFF },')],
   ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
   ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
   ['the preview door is honoured with the switch off', 'LIFTQ', (t) => t.replace('const LIFT: ReadonlySet<string> = REORG && typeof location', () => 'const LIFT: ReadonlySet<string> = typeof location')],
