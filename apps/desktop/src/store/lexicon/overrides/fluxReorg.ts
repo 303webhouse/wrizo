@@ -1,6 +1,6 @@
 import type { ThemeId } from '../../theme';
 import type { DeskTermId } from '../terms';
-import { REORG } from '../../../reorg/flag';
+import { REORG_ASKED } from '../../../reorg/flag';
 import { FLUX_OVERRIDES as LIVE } from './flux';
 
 // THE REORG'S FLUX WORDS, behind ?reorg=1 only (Fable, Nov 21: "the Flux reorg build from claude/wrizors/flux-reorg-spec.md"; Nick, Nov 20, 4:43 pm: SPINE for PLAN, the teal swap only if TK6 flags it, DOCK for the split).
@@ -128,4 +128,6 @@ export const FLUX_REORG_UNSET: readonly string[] = [
 ];
 
 export const FLUX_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
-  REORG ? { flux: { ...LIVE.flux, ...FLUX_REORG_WORDS } } : LIVE;
+  // the switch-over (Fable, Nov 21, 9:40 pm): the reorg is on by default in Machina ONLY, so Flux's reorg words come with the ASK (?reorg=1), never the default;
+  // when Flux's six cells pass and reorg/themeGate.ts REORG_DEFAULT_ON.flux turns true, this reads REORG again (reorg-switchover.mjs R2 holds the two together)
+  REORG_ASKED ? { flux: { ...LIVE.flux, ...FLUX_REORG_WORDS } } : LIVE;

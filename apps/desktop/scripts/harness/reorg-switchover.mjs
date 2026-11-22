@@ -127,11 +127,13 @@ await withHarness(async (app) => {
   const flag = strip(src('reorg/flag.ts'));
   ok('N1 the switch is read from the URL and the driver\'s flag only: no stored flag, no storage key',
     /__wrizoReorgOff/.test(flag) && /get\('reorg'\)/.test(flag) && !/localStorage|sessionStorage|indexedDB/.test(flag), { flag: flag.trim().slice(-400) });
-  const tutor = strip(src('components/Tutor.tsx')), board = strip(srcBoard()), gate = strip(src('reorg/themeGate.ts'));
+  const tutor = strip(src('components/Tutor.tsx')), board = strip(srcBoard()), gate = strip(src('reorg/themeGate.ts')), fluxWords = strip(src('store/lexicon/overrides/fluxReorg.ts')), flagSrc = strip(src('reorg/flag.ts'));
   const r3 = { tutorBack: tutor.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutor.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
     planPresets: board.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutor) && !/REORG && themeHas\(/.test(board),
-    defaults: /REORG_DEFAULT_ON: Record<ThemeId, boolean> = \{ machina: true, plateau: false, flux: false \}/.test(gate), hook: gate.includes('return reorgFor(t) && themeHas(piece, t);') };
-  ok('R2 (the switch-over ruling) every table reader outside a hook asks reorgFor (Tutor back and split, the Plan presets), none asks the bare switch; Machina alone is on by default', Object.values(r3).every(Boolean), r3);
+    defaults: /REORG_DEFAULT_ON: Record<ThemeId, boolean> = \{ machina: true, plateau: false, flux: false \}/.test(gate), hook: gate.includes('return reorgFor(t) && themeHas(piece, t);'),
+    fluxWordsAsked: /REORG_ASKED \? \{ flux: \{ \.\.\.LIVE\.flux, \.\.\.FLUX_REORG_WORDS \} \} : LIVE;/.test(fluxWords) && !/\bREORG \? \{ flux:/.test(fluxWords),
+    pageLoadDefault: /: \(typeof location !== 'undefined' && !pinnedOff\);/.test(flagSrc) };
+  ok('R2 (the switch-over ruling) every table reader outside a hook asks reorgFor (Tutor back and split, the Plan presets), none asks the bare switch; Machina alone is on by default (Flux\'s reorg words too: they come with the ask); the default is a page load\'s (a read with no location sees it off)', Object.values(r3).every(Boolean), r3);
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

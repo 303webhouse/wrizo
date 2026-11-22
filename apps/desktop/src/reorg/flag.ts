@@ -6,7 +6,9 @@
 // does not ask for the reorg opens exactly as before the switch-over). Everything it draws, and both account syncs, still need Machina.
 const asked: string | null = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('reorg') : null;
 const pinnedOff: boolean = typeof window !== 'undefined' && (window as unknown as { __wrizoReorgOff?: boolean }).__wrizoReorgOff === true;
-export const REORG: boolean = asked === '1' ? true : asked === '0' ? false : !pinnedOff;
+// The default is a PAGE LOAD's: with no location (a Node read of the source: the c13 tables, a unit) there is no page load to default, so it reads off,
+// exactly as before the switch-over (the lexicon's reorg words, read in Node by c13-10c, stay the canonical ones).
+export const REORG: boolean = asked === '1' ? true : asked === '0' ? false : (typeof location !== 'undefined' && !pinnedOff);
 // Fable, Nov 21, 9:40 pm: the switch-over turns the reorg on by default in MACHINA ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass
 // (reorg/themeGate.ts REORG_DEFAULT_ON and reorgFor read this): whether this page load ASKED for the reorg by name.
 export const REORG_ASKED: boolean = asked === '1';
