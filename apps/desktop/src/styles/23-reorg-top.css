@@ -371,6 +371,7 @@
 :root[data-wz-chrome-scale='on']{ --fx3-chrome-budget:calc(167px + var(--wz-chrome-extra, 0px)); }
 :root[data-wz-chrome-scale='on'] .gh-corner-glyph{ zoom:var(--wz-chrome-k, 1); }
 :root[data-wz-chrome-scale='on'] .machina-run{ transform:translateX(-50%) scale(var(--wz-chrome-k, 1)); transform-origin:50% 100%; }   /* the scale AFTER its own centring translate: the 'scale' property composes outside 'transform', which scaled the -50% too and set the readout off its page's centre (the Wrizors' pass 3 NIT) */
+/* =========================================================================================================================================
    COLOUR B (§3b ARBOR item 5; Nick, Nov 21 3:30 pm, via Fable 4:56 pm; the Wrizors' concept, part-colours-concept.md): THE SCHEMES, THE PICKER, CUSTOM.
    Default / Muted / Vivid draw the six slots (reorg/colourScheme.ts puts the choice on <html> as data-colour-scheme; Default is unset and draws what
    it drew before). Muted and Vivid are the concept's table, each colour 4.8:1 or better on its panel (so its edge is itself), white letters in the
