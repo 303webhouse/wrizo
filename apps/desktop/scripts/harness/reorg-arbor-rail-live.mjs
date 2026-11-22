@@ -17,6 +17,10 @@
 //             open button draws no button chrome (no background, no border) in the page's chrome font, and its "+ New Drawer" is a full-width row
 //         MUT-A7  the same reading with the browser's own button face (a border) turns A7's test red
 // MUTANT  MUT-A2  the cloth reading with SHELF in olive turns A2's test red
+// BOXES   A8  (spec §1, §2) Box settings offers Arbor's six cloths in order - Olive #56632E, Sea #17454E, Cold blue #7FA0BC, Madder #A8392F,
+//             Honey #C9A46B, Iron #39414A, named so - and no brass, beside her own colour; pressing Sea draws her box in sea, its letters 4.5:1
+//         MUT-A8  the reading with Machina's five (Pale, Grey, Blue, Brass, Orange) turns A8's test red
+//         A9  Machina's Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-rail-live.mjs
 process.env.WS_ARBOR2 = process.env.WS_ARBOR2 || 'default';
@@ -99,6 +103,17 @@ await withHarness(async (app) => {
   ok('MUT-A7 the reading with a browser button face (a border) turns A7\'s test red', !!raw && raw.openBorder !== dress.openBorder && !a7(raw), raw);
   ok('A4 DRAWERS opened stands 12 px out in olive with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive',
     !!p4 && p4.pressed === 'true' && Math.abs(tx(p4.tx) - 12) <= 0.5 && p4.bg === OLIVE && p4.ink === CREAM && contrast(p4.ink, p4.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow), { p4, panel });
+  // ---- A8: Box settings, in the opened DRAWERS pop-out ----
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const bs = await app.evalJs(BOXSET);
+  await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#17454E\"]')?.click(); null"); await sleep(500);
+  const drawn = await app.evalJs(BOXES);
+  const seaBox = (drawn || []).find((b) => b[0] === 'rgb(23, 69, 78)');
+  const a8 = (r) => !!r && JSON.stringify(r.swatches) === JSON.stringify(ARBOR_SIX) && !r.swatches.some((s) => /brass|orange/i.test(String(s[1]))) && r.own === true;
+  ok('A8 Box settings offers Arbor\'s six cloths in order, Olive, Sea, Cold blue, Madder, Honey, Iron (no brass), beside her own colour; pressing Sea draws her box in sea, its letters 4.5:1',
+    a8(bs) && !!seaBox && contrast(seaBox[1], seaBox[0]) >= 4.5, { bs, drawn });
+  const five = bs ? { ...bs, swatches: MACHINA_FIVE.map((n, i) => [['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800'][i], n]) } : null;
+  ok('MUT-A8 the reading with Machina\'s five (Pale, Grey, Blue, Brass, Orange) turns A8\'s test red', !!five && a8(bs) !== a8(five) && !a8(five), five && five.swatches);
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700);
   const page2 = await app.evalJs(PAGE);
   ok('A5 the page\'s rect is the same with a rail door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
@@ -107,10 +122,19 @@ await withHarness(async (app) => {
   await visit(app, '/?reorg=1&arbor2=0', 'machina');
   const dm = await app.evalJs(DOORS);
   ok('A6 Machina\'s reorg rail is as it was: DOCS · PROJECTS · UNFILED, no cloth on any door', !!dm && JSON.stringify(dm.doors.map((x) => x.word.toUpperCase())) === JSON.stringify(['DOCS', 'PROJECTS', 'UNFILED']) && dm.doors.every((x) => !x.cloth), dm && dm.doors.map((x) => [x.word, x.cloth]));
+  await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700);
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const bm = await app.evalJs(BOXSET);
+  ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 10;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21)
+// A8/A9: the Box settings' swatches, read from the opened DRAWERS (PROJECTS) pop-out; and the rail's boxes as drawn
+const BOXSET = "(() => { const s = [...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')]; return { swatches: s.map((b) => [String(b.getAttribute('data-swatch')).toUpperCase(), b.getAttribute('title')]), own: !!document.querySelector('[data-box-own-colour]') }; })()";
+const BOXES = "[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])";
+const ARBOR_SIX = [['#56632E', 'Olive'], ['#17454E', 'Sea'], ['#7FA0BC', 'Cold blue'], ['#A8392F', 'Madder'], ['#C9A46B', 'Honey'], ['#39414A', 'Iron']];
+const MACHINA_FIVE = ['Pale', 'Grey', 'Blue', 'Brass', 'Orange'];
+const EXPECTED = 13;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
