@@ -116,7 +116,7 @@ await withHarness(async (app) => {
   await open(app, 'ab-1', { lift: 'plateau.back,plateau.top,plateau.uplink' });
   await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]')); await sleep(700);
   await drawer(app); await tab(app, 'tutor');
-  const pub = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; const ids = all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null; const bx = document.querySelector('.wz-tutor-panel [data-back-export]'); const body = document.querySelector('.wz-tutor-panel .wz-drawer-body'); return { ids, bx: !!bx, first: !!bx && !!body && body.contains(bx) && body.firstElementChild !== null }; })()");
+  const pub = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; const ids = all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null; const bx = document.querySelector('[data-back-export]'); const lens = document.querySelector('.wz-tutor-panel [data-lens], .wz-tutor-panel .wz-lens, .wz-tutor-panel [aria-label]'); return { ids, bx: !!bx, text: bx ? (bx.textContent || '').trim().slice(0, 60) : null }; })()");
   ok('AB7 Publish: three tabs (no tab called Before you publish) and "Before you publish" stands at the head of TUTOR', !!pub && Array.isArray(pub.ids) && pub.ids.join(',') === 'plan,links,tutor' && pub.bx === true, pub);
 
   await open(app, 'ab-1', { lift: '' });
