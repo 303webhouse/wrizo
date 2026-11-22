@@ -33,11 +33,12 @@ const LIFT: ReadonlySet<string> = REORG && typeof location !== 'undefined'
   }))
   : new Set<string>();
 
+// THE HOOK STANDS FIRST (hooks-order census, Nov 22): useReorgPiece calls its hook at the top of its own arrow; themeHas below is a plain function, with its early return, and is only CALLED from here (a function declaration is hoisted).
+/** The piece is on for this page load: the switch AND the current theme has it. The function is chosen once at load, so with the switch off it calls no hook at all and the hook order never changes. */
+export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ? (piece) => themeHas(piece, useTheme()) : () => false;
+
 /** Whether this theme has this piece (the table, or the preview door; the caller holds the switch). A theme or a piece the table does not know has none. */
 export function themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {
   if (theme === 'plateau' && !arbor2Enabled()) return false;   // the classic Plateau (?arbor2=0) never has the reorg
   return (REORG_THEME_GATE as Record<string, Record<string, boolean> | undefined>)[theme ?? '']?.[piece] === true || LIFT.has(`${theme ?? ''}.${piece}`);
 }
-
-/** The piece is on for this page load: the switch AND the current theme has it. The function is chosen once at load, so with the switch off it calls no hook at all and the hook order never changes. */
-export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ? (piece) => themeHas(piece, useTheme()) : () => false;
