@@ -24,6 +24,7 @@ import { requestDelete } from '../store/deleteGate';
 import { setLinkDock } from '../store/linkDock';
 import { GraftPicker } from '../components/GraftPicker';
 import { nodeHex } from './FluxNodeRecord';
+import { liveBoxes } from '../store/boxTombstones';
 
 /** A typing pause: the gutter is measured again this long after the last change to the text. */
 export const GUTTER_PAUSE_MS = 700;
@@ -223,7 +224,7 @@ function PlusCorner({ entryId, connections, x, y }: { entryId: string; connectio
 // step is drawn in lime. A board shows its name only. No act lives here: Dock, Connect another and Disconnect stay the box's own; no hologram, no Go to the Schema (ruled).
 function PortPreview({ row, kind, kindWord }: { row: GraftRow; kind: 'card' | 'board' | 'page'; kindWord: string }) {
   const entry = getJournalEntry(row.entryId);
-  const card = kind === 'card' && row.boxId ? entry?.boxes?.find((b) => b.id === row.boxId) : undefined;
+  const card = kind === 'card' && row.boxId ? liveBoxes(entry?.boxes).find((b) => b.id === row.boxId) : undefined;   // a deleted card (a tombstone) is not previewed (box-tombstones T11)
   const raw = kind === 'card' ? (card?.text ?? '') : kind === 'page' ? (entry?.text ?? '') : '';
   const lines = raw.split('\n');
   const name = kind === 'board' ? row.title : (lines[0] || '').trim() || row.title;
