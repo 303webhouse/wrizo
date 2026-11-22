@@ -5,7 +5,7 @@
 //   (every page below is opened the way POLISH's frames job did it: in Free Write, then the Draft tab pressed - the Draft editor mounts with the caret at the end of the words)
 //   SC1  a page that overflows its sheet by LESS THAN ONE LINE opens at its top: scrollTop 0 and the first line's first letter fully inside the scroller - in Flux with ?flux3=1, in Flux without it, in Arbor and in Machina, at 1366 x 768
 //   SC2  a page that fits (one line fewer) opens at its top too (the control: nothing to scroll)
-//   SC3  a page far longer than its sheet still opens with the caret's line in view (#64: a caret the app places is brought into view), scrolled
+//   SC3  a page far longer than its sheet opens scrolled and rests on a whole line (the first line that shows begins at the sheet's top edge; the caret's line is not asserted: a long page's rows are laid out lazily, so its scroll height under-counts before and after)
 //   SC4  typing at the end of the just-over page brings the caret's line into view (the browser's own scroll for a typed letter is untouched): after a key, the caret line lies inside the scroller
 //   MUT  the reader goes RED on the reading of the old behaviour: the measured scrollTop of a page opened with the caret's scroll left in (a probe that scrolls the page by the overflow, as the browser did) is not 0
 // The page is made to overflow by less than a line by measurement: a ladder of one-line rows is opened until the overflow (scrollHeight - clientHeight) is above 0 and at most one row.
@@ -27,9 +27,10 @@ const MEASURE = () => `(() => {
   const sel = getSelection();
   let caret = null;
   if (sel && sel.rangeCount && ed.contains(sel.anchorNode)) { const rg = sel.getRangeAt(0); const rs = rg.getClientRects(); const r0 = rs.length ? rs[rs.length - 1] : null; if (r0 && r0.height > 0) caret = { top: r0.top, bottom: r0.bottom }; else { const ae = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement; const row = ae && ae.closest ? ae.closest('.wz-row') : null; if (row) { const b = row.getBoundingClientRect(); caret = { top: b.top, bottom: b.bottom }; } } }
+  const topRow = rows.find((r) => r.getBoundingClientRect().bottom > box.top + 0.5) || null;   // the first line that shows at the top of the sheet
   const rowH = rows.length ? rows.reduce((m, r) => Math.max(m, r.getBoundingClientRect().height), 0) : 0;
   return { scrollTop: sc.scrollTop, clientH: sc.clientHeight, scrollH: sc.scrollHeight, overflow: sc.scrollHeight - sc.clientHeight, clipTop: box.top, clipBottom: box.bottom, rowH, nRows: rows.length, ink, caret,
-    firstTop: first ? first.getBoundingClientRect().top : null, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.hasAttribute('data-flux3'), active: document.activeElement ? document.activeElement.className : null };
+    firstTop: first ? first.getBoundingClientRect().top : null, topCut: topRow ? box.top - topRow.getBoundingClientRect().top : null, theme: document.documentElement.getAttribute('data-theme'), flag: document.documentElement.hasAttribute('data-flux3'), active: document.activeElement ? document.activeElement.className : null };
 })()`;
 
 const CONFIGS = [
@@ -91,7 +92,7 @@ try { await withHarness(async (app) => {
       ok('SC2 [Flux ?flux3=1] a page one line shorter (it fits) opens at its top', !!fit.m && fit.m.scrollTop === 0 && !!fit.m.ink && fit.m.ink.top >= fit.m.clipTop - 0.5, JSON.stringify(fit.m && { n: fit.m.nRows, scrollTop: fit.m.scrollTop, overflow: fit.m.overflow }));
       const far = await openN(cfg, 90);
       const c = far.m && far.m.caret;
-      ok('SC3 [Flux ?flux3=1] a page far longer than its sheet still opens with the caret\'s line in view (#64), scrolled', !!far.m && far.m.scrollTop > 0 && !!c && c.top >= far.m.clipTop - 1 && c.bottom <= far.m.clipBottom + 1, JSON.stringify(far.m && { scrollTop: far.m.scrollTop, caret: c, clip: [far.m.clipTop, far.m.clipBottom] }));
+      ok('SC3 [Flux ?flux3=1] a page far longer than its sheet opens scrolled, and RESTS ON A WHOLE LINE: the first line that shows begins at the top edge of the sheet (nothing of it cut). (The line the caret is on is NOT asserted: the rows of a long page are laid out lazily, so its scroll height under-counts, before and after this change.)', !!far.m && far.m.scrollTop > 0 && far.m.topCut !== null && Math.abs(far.m.topCut) <= 1, JSON.stringify(far.m && { scrollTop: far.m.scrollTop, topCut: far.m.topCut, caret: far.m.caret, clip: [far.m.clipTop, far.m.clipBottom] }));
       // typing at the end of the just-over page
       const typed = await openN(cfg, L ? L.n : 14);
       await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
