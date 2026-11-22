@@ -6,6 +6,7 @@
 //   CLOTH   PLAN's tab is madder, comes forward when open (z-index, no box-shadow), names the drawer's 3 px border cloth (--arbor2-chosen-r, and the edge's inset shadows): the tab rule Arbor's own three tabs follow
 //   FIELD   the search door and field are 1 px var(--arbor-line); focused, the edge is Arbor's "where you are" olive (--accent-rest), never brass
 //   CHOSEN  the current Section's row wears the chosen-row rule: a 4 px brass mark at its left edge, roman 500; by night its words are brass, by day olive
+//   ROOM    the row names keep their room (the Wrizors' pass 1, REAL 4): a Plan row's name and an asset row's label take the row's width and the row's buttons wrap to a second line, never squeezing the name to a few letters; always visible (no hover-only controls: a touch screen has no hover)
 //   PALETTE every hex colour in the file is one of Arbor's (the cloths, the bars, the cream and walnut inks, the raised surfaces)
 //   BRASS   brass (var(--brass)) is only ever a current mark (the chosen row's, the current search hit's), never a fill, text or edge colour elsewhere
 // Run: node scripts/harness/reorg-arbor-back-css-unit.mjs   (from apps/desktop; browserless: needs no box turn)
@@ -83,6 +84,12 @@ function suite(css) {
     const day = has(rs, /data-arbor2-room='day'\] .*wz-back-part\.is-here > \.wz-back-part-head$/, /color:\s*var\(--accent-rest\)/);
     return { pass: mark && night && day, detail: J({ mark, night, day }) };
   });
+  t('ROOM', () => {
+    const plan = has(rs, /wz-back-plan-row > \.wz-back-plan-name$/, /flex:\s*1 1 calc\(100% - 40px\)/) && has(rs, /wz-back-plan-row$/, /flex-wrap:\s*wrap/);
+    const asset = has(rs, /wz-back-asset$/, /flex-wrap:\s*wrap/) && has(rs, /wz-back-asset \.wz-links-label$/, /flex:\s*1 1 calc\(100% - 80px\)/);
+    const always = !rs.some((x) => /wz-back-plan-(part|acts|btn)|wz-back-beside|wz-back-topart/.test(x.sel) && /opacity:\s*0|visibility:\s*hidden|display:\s*none|pointer-events:\s*none/.test(x.body));
+    return { pass: plan && asset && always, detail: J({ plan, asset, always }) };
+  });
   t('PALETTE', () => {
     const all = hexes(css);
     const bad = all.filter((h) => !PALETTE.has(h));
@@ -98,7 +105,7 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'PALETTE', 'BRASS'];
+const KEYS = ['SCOPED', 'COVER', 'CLOTH', 'FIELD', 'CHOSEN', 'ROOM', 'PALETTE', 'BRASS'];
 for (const k of KEYS) ok(`${k} on the real 25-reorg-arbor-back.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '25-reorg-arbor-back.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -111,6 +118,9 @@ const MUT = [
   ['PLAN does not come forward', 'CLOTH', (t) => t.replace('z-index:3; box-shadow:none', () => 'z-index:1; box-shadow:none')],
   ['the field edge turns brass', 'FIELD', (t) => t.replace(':focus-within{ border-color:var(--accent-rest); }', () => ':focus-within{ border-color:var(--brass); }')],
   ['the chosen row loses its 4 px mark', 'CHOSEN', (t) => t.replace('box-shadow:inset 4px 0 0 var(--brass)', () => 'box-shadow:inset 3px 0 0 var(--brass)')],
+  ['the Plan name is squeezed again', 'ROOM', (t) => t.replace('flex:1 1 calc(100% - 40px)', () => 'flex:1 1 0')],
+  ['the asset label is squeezed again', 'ROOM', (t) => t.replace('flex:1 1 calc(100% - 80px)', () => 'flex:1 1 auto')],
+  ['a row control hides until hover', 'ROOM', (t) => `${t}\n${AR} .wz-back-plan-acts{ opacity:0; }\n`],
   ['a colour outside Arbor creeps in', 'PALETTE', (t) => t.replace('background:#A8392F', () => 'background:#B03A2E')],
   ['brass becomes a fill', 'BRASS', (t) => t.replace(`${AR} .wz-assets-sort > button[aria-pressed='true']{`, () => `${AR} .wz-assets-sort > button[aria-pressed='true']{ background:var(--brass);`)],
 ];

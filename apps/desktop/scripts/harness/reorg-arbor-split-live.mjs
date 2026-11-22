@@ -49,10 +49,12 @@ const split = async (app) => { await app.evalJs("(() => { const S = window.wrizo
 
 await withHarness(async (app) => {
   const room = {};
+  // the room follows the clock unless data-room says otherwise (arbor2/room.ts: dark = Always night, light = Always day): set it, then read the room in force
   for (const [tone, want] of [['dark', 'rgb(38, 26, 18)'], ['light', 'rgb(246, 241, 228)']]) {
     await seed(app, tone);
     await open(app, 'as-1');
     await split(app);
+    await app.evalJs(`document.documentElement.setAttribute('data-room', ${q(tone)}); null`); await sleep(900);
     const r = await app.evalJs("document.documentElement.getAttribute('data-arbor2-room')");
     const bg = await app.evalJs(CS('.wz-split-asset', ['background-color']));
     room[tone] = { room: r, bg: bg && bg['background-color'], want };

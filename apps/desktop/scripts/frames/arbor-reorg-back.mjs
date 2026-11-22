@@ -40,7 +40,9 @@ async function backTab(app, id) {
   await app.evalJs(`document.getElementById('wz-tutor-tab-${id}')?.click(); null`); await sleep(600);
 }
 
-export default {
+// THE ROOM (arbor2/room.ts): Arbor's room follows the clock unless data-room says otherwise (light = Always day, dark = Always night), so the job's tone is set as the room, and a frame is never two shots of the one room
+const setRoom = async (app, tone) => { await app.evalJs(`document.documentElement.setAttribute('data-room', ${q(tone === 'dark' ? 'dark' : 'light')}); null`); await sleep(900); };
+const SCREENS = {
   'arbor-back-plan': async (app) => { await seed(app); await open(app, 'plateau.back'); await backTab(app, 'plan'); },
   'arbor-back-grafts': async (app) => {
     await seed(app); await open(app, 'plateau.back');
@@ -56,3 +58,4 @@ export default {
     await backTab(app, 'tutor');
   },
 };
+export default Object.fromEntries(Object.entries(SCREENS).map(([name, fn]) => [name, async (app, ctx) => { await fn(app, ctx); await setRoom(app, ctx && ctx.tone); }]));
