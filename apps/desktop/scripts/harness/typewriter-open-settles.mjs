@@ -18,7 +18,7 @@ const SHORT = Array.from({ length: 6 }, (_, i) => `Line ${i + 1} of a short page
 const THEMES = [{ name: 'Arbor', theme: 'plateau' }, { name: 'Machina', theme: 'machina' }, { name: 'Flux', theme: 'flux' }];
 
 // installed before every document: when the page's editor first exists, note the time and listen to its scroller
-const WATCH = `(() => { window.__tw = { tEd: null, ev: [] };
+const WATCH = `(() => { window.__wzTwTrace = []; window.__tw = { tEd: null, ev: [] };
   const arm = () => { if (window.__tw.tEd !== null) return; if (!document.querySelector('.forward-only-editor')) return; const sc = document.querySelector('.mode-scroll'); if (!sc) return;
     window.__tw.tEd = performance.now(); sc.addEventListener('scroll', () => { window.__tw.ev.push([Math.round(performance.now()), Math.round(sc.scrollTop * 10) / 10]); }, true); };
   new MutationObserver(arm).observe(document, { childList: true, subtree: true }); })();`;
@@ -59,10 +59,13 @@ try { await withHarness(async (app) => {
     if (T.theme === 'plateau') {
       const rest = s && s.final;
       await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const sel = getSelection(); sel.selectAllChildren(ed); sel.collapseToEnd(); return true; })()");
-      for (let i = 0; i < 8; i += 1) await app.typeKeys(`\nnew line ${i + 1} of her words`);
+      const END = "(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) { if (n.nodeValue.length) last = n; } let b = null; if (last) { const r = document.createRange(); r.setStart(last, Math.max(0, last.nodeValue.length - 1)); r.setEnd(last, last.nodeValue.length); b = Math.round(r.getBoundingClientRect().bottom); } return [Math.round(sc.scrollTop), b]; })()";
+      const per = [];
+      for (let i = 0; i < 8; i += 1) { await app.typeKeys('\nnew line ' + (i + 1) + ' of her words'); per.push(await ev(END)); }
       await sleep(1500);
+      const tr = await ev('JSON.stringify((window.__wzTwTrace || []).slice(-16))');
       const t = await ev("(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) { if (n.nodeValue.length) last = n; } let b = null; if (last) { const r = document.createRange(); r.setStart(last, Math.max(0, last.nodeValue.length - 1)); r.setEnd(last, last.nodeValue.length); b = Math.round(r.getBoundingClientRect().bottom); } return { top: Math.round(sc.scrollTop), lastBottom: b, win: innerHeight }; })()");
-      ok('TW4 [Arbor] the Typewriter still FOLLOWS her once she types: a burst of 8 new lines at the end moves the page on, and the last line stays inside the window', !!t && rest !== null && t.top > rest && t.lastBottom !== null && t.lastBottom <= t.win, JSON.stringify({ openedAt: rest, after: t }));
+      ok('TW4 [Arbor] the Typewriter still FOLLOWS her once she types: a burst of 8 new lines at the end moves the page on, and the last line stays inside the window', !!t && rest !== null && t.top > rest && t.lastBottom !== null && t.lastBottom <= t.win, JSON.stringify({ openedAt: rest, after: t, perLine: per, trace: tr }));
     }
   }
   await open(THEMES[0], SHORT);
