@@ -51,6 +51,11 @@ async function visit(app, search, theme = 'plateau') {
 }
 const a2 = (d) => !!d && JSON.stringify(d.doors.map((x) => x.cloth)) === JSON.stringify(['blue', 'olive', 'blue', 'madder', 'olive']) && d.foot.every((x) => !x.cloth);
 
+// A8/A9: the Box settings' swatches, read from the opened DRAWERS (PROJECTS) pop-out; and the rail's boxes as drawn
+const BOXSET = "(() => { const s = [...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')]; return { swatches: s.map((b) => [String(b.getAttribute('data-swatch')).toUpperCase(), b.getAttribute('title')]), own: !!document.querySelector('[data-box-own-colour]') }; })()";
+const BOXES = "[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])";
+const ARBOR_SIX = [['#56632E', 'Olive'], ['#17454E', 'Sea'], ['#7FA0BC', 'Cold blue'], ['#A8392F', 'Madder'], ['#C9A46B', 'Honey'], ['#39414A', 'Iron']];
+const MACHINA_FIVE = ['Pale', 'Grey', 'Blue', 'Brass', 'Orange'];
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
   await app.goto('/');
@@ -129,11 +134,6 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-// A8/A9: the Box settings' swatches, read from the opened DRAWERS (PROJECTS) pop-out; and the rail's boxes as drawn
-const BOXSET = "(() => { const s = [...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')]; return { swatches: s.map((b) => [String(b.getAttribute('data-swatch')).toUpperCase(), b.getAttribute('title')]), own: !!document.querySelector('[data-box-own-colour]') }; })()";
-const BOXES = "[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])";
-const ARBOR_SIX = [['#56632E', 'Olive'], ['#17454E', 'Sea'], ['#7FA0BC', 'Cold blue'], ['#A8392F', 'Madder'], ['#C9A46B', 'Honey'], ['#39414A', 'Iron']];
-const MACHINA_FIVE = ['Pale', 'Grey', 'Blue', 'Brass', 'Orange'];
 const EXPECTED = 13;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
