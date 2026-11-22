@@ -845,7 +845,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
         </div>
       )}
       {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}
-      {frontTab === 'text' && frontEntry && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
+      {frontTab === 'text' && frontEntry && theme !== 'plateau' && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
     </div>
   );
 }
