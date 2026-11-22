@@ -38,7 +38,7 @@ for (const f of ['chrome', 'settings', 'decks', 'help']) {
   }
 }
 const holes = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
-const load = (src, reorg = true) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': { REORG: reorg }, './flux': { FLUX_OVERRIDES: LIVE.FLUX_OVERRIDES } });
+const load = (src, reorg = true) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': { REORG: reorg, REORG_ASKED: reorg }, './flux': { FLUX_OVERRIDES: LIVE.FLUX_OVERRIDES } });
 
 // what the spec writes out exactly (section 1, "Strings that need more than a swap", and the two notes)
 const EXACT = {
@@ -116,7 +116,11 @@ const MUT = [
   ['the Plan word is not swapped', 'SWAP', (t) => t.replace("reorgBackPlan: 'Spine'", () => "reorgBackPlan: 'Plan'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgPlanToPart: '\u2192 Track'", () => "reorgPlanToPart: '\u2192 Track {part}'")],
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
-  ['the switch is ignored', 'OFF', (t) => t.replace('  REORG ? { flux:', () => '  true ? { flux:')],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is on by default in Machina ONLY, so Flux's reorg words come with the ASK, REORG_ASKED, not the
+  // default; POLISH, reorg-switchover). The original, verbatim (its target line is gone, so it no longer lands):
+  // ['the switch is ignored', 'OFF', (t) => t.replace('  REORG ? { flux:', () => '  true ? { flux:')],
+  // [successor] the same mutant aimed at the ask: ignoring it must turn OFF red
+  ['the ask is ignored', 'OFF', (t) => t.replace('  REORG_ASKED ? { flux:', () => '  true ? { flux:')],
   ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
 ];
 for (const [name, key, fn] of MUT) {
