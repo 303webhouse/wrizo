@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTheme } from '../store/theme';
-import { REORG } from './flag';
+import { reorgFor } from './flag';
 import { liveQuery } from '../store/liveDom';
 
 // THE CHROME GROWS WITH THE WINDOW (reorg plan v2.1 §3b, ARBOR item 4; Team B row 5, Nick: "the page takes a much larger share of the width";
@@ -58,7 +58,7 @@ export function chromeK(): number {
 export function useChromeScale(): void {
   const theme = useTheme();
   useEffect(() => {
-    if (!REORG || theme !== 'machina') return;
+    if (!reorgFor(theme) || theme !== 'machina') return;
     const r = document.documentElement;
     let last = '';
     let lastFront = '';

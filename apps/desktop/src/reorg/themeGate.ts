@@ -1,5 +1,6 @@
 import { useTheme, type ThemeId } from '../store/theme';
-import { REORG } from './flag';
+import { REORG, reorgFor } from './flag';
+export { REORG_DEFAULT_ON, reorgFor } from './flag';   // the switch-over's rule lives in flag.ts (the lexicon asks it too)
 import { arbor2Enabled } from '../arbor2/flag';
 
 // THE REORG'S THEME GATE (Fable, Nov 21, 3:20 pm: "Flux piece 1: the four Machina-only literals behind ONE table: six pieces x theme, Machina all on, Arbor and Flux empty. A Flux piece is switched on in the table only when its
@@ -38,7 +39,9 @@ const LIFT: ReadonlySet<string> = REORG && typeof location !== 'undefined'
 
 // THE HOOK STANDS FIRST (hooks-order census, Nov 22): useReorgPiece calls its hook at the top of its own arrow; themeHas below is a plain function, with its early return, and is only CALLED from here (a function declaration is hoisted).
 /** The piece is on for this page load: the switch AND the current theme has it. The function is chosen once at load, so with the switch off it calls no hook at all and the hook order never changes. */
-export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ? (piece) => themeHas(piece, useTheme()) : () => false;
+export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ? (piece) => { const t = useTheme(); return reorgFor(t) && themeHas(piece, t); } : () => false;
+
+// THE SWITCH-OVER's rule (REORG_DEFAULT_ON, reorgFor) lives in reorg/flag.ts and is re-exported above; the hook asks it before the table.
 
 /** Whether this theme has this piece (the table, or the preview door; the caller holds the switch). A theme or a piece the table does not know has none. */
 export function themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {

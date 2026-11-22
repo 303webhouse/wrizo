@@ -1,4 +1,5 @@
 import { REORG } from './flag';
+import { reorgInMachina } from './useReorg';
 import { subscribeSyncStatus } from '../store/sync';
 import { onRailReset, PREFS_LOCAL_KEY } from './railSavedKey';
 
@@ -23,6 +24,8 @@ import { onRailReset, PREFS_LOCAL_KEY } from './railSavedKey';
 // bridge to <html data-room>). With the switch OFF: a reorg fact is never set and never kept on the device (only the switchless facts are written to the local copy,
 // beside whatever a switch-on session left there); the module reads its local copy and runs ONE round with the account per sign-in (the room another device chose),
 // plus a round after each of her own acts. With the switch ON, everything is as it was.
+// THE SWITCH-OVER (Nov 20; Fable, Nov 21, 9:40 pm): the switch is on by default, so "the switch" here means the reorg ON FOR THE THEME SHE IS IN (reorgInMachina:
+// Machina by default, Arbor and Flux only when asked by ?reorg=1 and in the table): outside it a reorg fact is neither kept nor synced, as with the switch off.
 
 export interface PrefFact { at: string; [field: string]: unknown }
 export type PrefsRecord = Record<string, PrefFact>;
@@ -33,7 +36,7 @@ const CAS_TRIES = 3;
 const FACT_RE = /^[a-z][A-Za-z0-9]{0,31}$/;
 /** The facts saved whatever the reorg's switch (Fable, Nov 19, 11:20 pm: the room; Nov 20, 12:15 pm: the session's writing settings; 5:15 pm: the writing goal): account data in every theme. */
 export const SWITCHLESS: ReadonlySet<string> = new Set(['room']).add('writing').add('goal');
-const allowed = (name: string): boolean => REORG || SWITCHLESS.has(name);
+const allowed = (name: string): boolean => reorgInMachina() || SWITCHLESS.has(name);
 
 // ---- the merge (pure) ---------------------------------------------------------------------------------------------------
 
@@ -130,7 +133,7 @@ function persist(): void {
   const stored = readLocal();
   prefs = mergePrefs(prefs, stored);
   // the switch off keeps only the switchless facts it holds, beside whatever the copy already had (a reorg fact is never added, and one a switch-on session left is kept)
-  const mine: PrefsRecord = REORG ? prefs : { ...stored, ...Object.fromEntries(Object.entries(prefs).filter(([k]) => SWITCHLESS.has(k))) };
+  const mine: PrefsRecord = reorgInMachina() ? prefs : { ...stored, ...Object.fromEntries(Object.entries(prefs).filter(([k]) => SWITCHLESS.has(k))) };
   try {
     const had = localStorage.getItem(PREFS_KEY);
     if (had === null ? Object.keys(mine).length === 0 : canon(stored) === canon(mine)) return;
@@ -244,7 +247,7 @@ let roundsThisSignIn = 0;
   subscribeSyncStatus((s) => {
     if (s !== 'synced') return;
     signedIn = true;
-    if (!REORG && roundsThisSignIn > 0) return;
+    if (!reorgInMachina() && roundsThisSignIn > 0) return;
     roundsThisSignIn += 1;
     scheduleRound(0);
   });

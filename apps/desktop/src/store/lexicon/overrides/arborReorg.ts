@@ -1,6 +1,6 @@
 import type { ThemeId } from '../../theme';
 import type { DeskTermId } from '../terms';
-import { REORG } from '../../../reorg/flag';
+import { reorgFor } from '../../../reorg/flag';
 import { arbor2Enabled } from '../../../arbor2/flag';
 import { ARBOR_OVERRIDES as LIVE } from './arbor';
 
@@ -151,4 +151,5 @@ export const ARBOR_REORG_UNSET: readonly string[] = [
 ];
 
 export const ARBOR_REORG_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
-  REORG && arbor2Enabled() ? { plateau: { ...(LIVE.plateau ?? {}), ...ARBOR_REORG_WORDS } } : LIVE;
+  // the switch-over (Fable, Nov 21, 11:20 pm; INK found it): Arbor's reorg words follow reorgFor('plateau') (the ask today; the default once all six plateau cells are on)
+  reorgFor('plateau') && arbor2Enabled() ? { plateau: { ...(LIVE.plateau ?? {}), ...ARBOR_REORG_WORDS } } : LIVE;

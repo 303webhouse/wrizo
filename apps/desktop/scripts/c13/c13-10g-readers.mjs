@@ -47,7 +47,9 @@ const JOIN = ['harness/board-click-create.mjs', 'harness/card-resize-axis.mjs', 
   'harness/board-context-menu.mjs', 'harness/box-tombstones.mjs', 'harness/big-projects-2.mjs', 'harness/guided-w2.mjs',
   'harness/help-choose-census.mjs', 'harness/page-scroll-return.mjs',
   // Flux reorg piece 1 (Nov 21): the theme gate's census reads the BoardEditor site as the join (srcText)
-  'harness/reorg-theme-gate-unit.mjs'];
+  'harness/reorg-theme-gate-unit.mjs',
+  // the switch-over (POLISH, Nov 21, 9:40 pm ruling): R2's census reads the BoardEditor site (the Plan presets' reorgFor) as the join (srcText)
+  'harness/reorg-switchover.mjs'];
 const BARE = [];   // none: a bare read of the module is half the board now
 // names the file in code but reads no text of it: a browser check's own words, a comment-free label, or a tool that reads by revision
 const NOT_A_READER = ['harness/b2.mjs', 'harness/fx7.mjs', 'c13/c13-9-ts-comments.mjs', 'global-css.mjs', 'c13/c13-10g-readers.mjs',
@@ -212,6 +214,8 @@ const COMPOSED = [
   ['harness/big-projects-2.mjs', '`binder=${manId}`', 1, notBoard('a New Board href, in the browser')],
   ['harness/help-choose-census.mjs', '`^  ${k}:', 1, notBoard('a lexicon key, on store/deskLexicon.ts')],
   ['harness/help-choose-census.mjs', 'panel + "', 1, notBoard('a script handed to the browser')],
+  // the switch-over (POLISH, Nov 21): S2's gate head, built from a function head, runs on reorg/railSaved.ts and reorg/prefsSaved.ts, never on the board
+  ['harness/reorg-switchover.mjs', '`${head}', 1, notBoard('a sync function head, on reorg/railSaved.ts and reorg/prefsSaved.ts')],
 ];
 function composedRun(tx, table) {
   const sites = [...JOIN, ...BARE].flatMap((f) => composedSites(f).map((src) => ({ f, src })));
