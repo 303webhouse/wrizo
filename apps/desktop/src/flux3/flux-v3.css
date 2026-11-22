@@ -256,3 +256,16 @@
    (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */
 :root[data-flux3][data-theme='flux'] .board-box:has(> .flux3-node[data-node-kind='preset']) .board-text::first-line{ color:var(--f3-lime); }
 :root[data-flux3][data-theme='flux'] .flux3-node-f[data-st]:not([data-ok])::after{ content:attr(data-st); color:var(--f3-quiet); }
+/* ---- S4b L5: THE PORT BOX'S PREVIEW (flux3-s4b-plan.md L5; the doc mockup's .pbox .node): the linked node in the box a port opens, read-only. Its address in the box's
+   quiet caps (the 0x stays lower case), its name in the chrome face's capitals, a short body clamped to three lines; a preset step in lime. Room colours (the box stands on the
+   room, dark in both Page tones). Inside the box only: the page never moves. ---- */
+:root[data-flux3][data-theme='flux'] .flux3-port-node{ border:1px solid rgba(0, 194, 255, .5); padding:7px 9px; display:flex; flex-direction:column; gap:3px; min-width:0; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node[data-preset='true']{ border-color:rgba(183, 255, 60, .6); }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-h{ font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--f3-room-quiet);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-hex{ text-transform:none; color:var(--f3-room-addr); }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-name{ font-family:var(--font-chromeLabel); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--f3-room-addr);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node[data-preset='true'] .flux3-port-node-name{ color:#B7FF3C; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-body{ font-family:var(--font-prose); font-size:12px; line-height:1.5; color:var(--f3-room-text);
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; overflow-wrap:anywhere; }

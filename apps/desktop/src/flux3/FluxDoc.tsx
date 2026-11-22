@@ -19,7 +19,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { countGoalWords } from '../store/writingGoal';
 import { rowsFor } from '../store/lineRows';
 import { graftsOf, type GraftRow } from '../store/grafts';
-import { removePageLink, subscribe } from '../store/persistence';
+import { getJournalEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { setLinkDock } from '../store/linkDock';
 import { GraftPicker } from '../components/GraftPicker';
@@ -218,6 +218,26 @@ function PlusCorner({ entryId, connections, x, y }: { entryId: string; connectio
   );
 }
 
+// S4b L5 - THE PORT BOX'S PREVIEW (the doc mockup's .pbox .node): the linked node itself, read-only, from what is already loaded (the stored page through getJournalEntry;
+// a card is its board's own box): its address and kind, its name (the first line) in capitals, and a short body (the lines after it, clamped to three lines by CSS). A preset
+// step is drawn in lime. A board shows its name only. No act lives here: Dock, Connect another and Disconnect stay the box's own; no hologram, no Go to the Schema (ruled).
+function PortPreview({ row, kind, kindWord }: { row: GraftRow; kind: 'card' | 'board' | 'page'; kindWord: string }) {
+  const entry = getJournalEntry(row.entryId);
+  const card = kind === 'card' && row.boxId ? entry?.boxes?.find((b) => b.id === row.boxId) : undefined;
+  const raw = kind === 'card' ? (card?.text ?? '') : kind === 'page' ? (entry?.text ?? '') : '';
+  const lines = raw.split('\n');
+  const name = kind === 'board' ? row.title : (lines[0] || '').trim() || row.title;
+  const body = kind === 'board' ? '' : lines.slice(1).join(' ').replace(/\s+/g, ' ').trim();
+  const preset = !!card?.deckStep;
+  return (
+    <div className="flux3-port-node" data-flux3-port-node="" data-preset={preset ? 'true' : undefined}>
+      <div className="flux3-port-node-h" data-port-node-h="">{kindWord} <span className="flux3-port-node-hex">0x{nodeHex(row.boxId ?? row.entryId)}</span></div>
+      <div className="flux3-port-node-name" data-port-node-name="">{name}</div>
+      {body && <div className="flux3-port-node-body" data-port-node-body="">{body}</div>}
+    </div>
+  );
+}
+
 function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: number; entryId: string; x: number; y: number }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState<string | null>(null);
@@ -253,6 +273,7 @@ function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: nu
           <i className="flux3-port-line" aria-hidden="true" style={{ top: at * PORT_STEP }} />
           <div ref={boxRef} className="flux3-port-box" data-flux3-port-box="" style={{ top: at * PORT_STEP - 8 }}>
             <div className="flux3-port-head"><span className="flux3-port-kind">{kindWord(kindOf(row))}</span> {row.title}</div>
+            <PortPreview row={row} kind={kindOf(row)} kindWord={kindWord(kindOf(row))} />
             {kindOf(row) !== 'board' && (
               <button type="button" className="flux3-port-act" data-port-act="dock"
                 onClick={() => { setLinkDock(entryId, { entryId: row.entryId, ...(row.boxId ? { boxId: row.boxId } : {}) }); document.dispatchEvent(new Event('wz-link-dock-open')); setOpen(null); }}>
