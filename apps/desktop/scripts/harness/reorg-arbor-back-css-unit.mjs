@@ -88,7 +88,9 @@ function suite(css) {
     const plan = has(rs, /wz-back-plan-row > \.wz-back-plan-name$/, /flex:\s*1 1 calc\(100% - 40px\)/) && has(rs, /wz-back-plan-row$/, /flex-wrap:\s*wrap/);
     const asset = has(rs, /wz-back-asset$/, /flex-wrap:\s*wrap/) && has(rs, /wz-back-asset \.wz-links-label$/, /flex:\s*1 1 calc\(100% - 80px\)/);
     const always = !rs.some((x) => /wz-back-plan-(part|acts|btn)|wz-back-beside|wz-back-topart/.test(x.sel) && /opacity:\s*0|visibility:\s*hidden|display:\s*none|pointer-events:\s*none/.test(x.body));
-    return { pass: plan && asset && always, detail: J({ plan, asset, always }) };
+    // pass 1, REAL 4 (graft names cut: "PLAN ..." and "THIS ..." in GRAFTS): a canvas group's head row (tag, icon, name, then Beside / To Section / Colour / Open) lets the name take the row and the buttons wrap under it
+    const head = has(rs, /wz-back-boardhead$/, /flex-wrap:\s*wrap/) && has(rs, /wz-back-boardhead > \.wz-back-boardname$/, /flex:\s*1 1 calc\(100% - 64px\)/);
+    return { pass: plan && asset && head && always, detail: J({ plan, asset, head, always }) };
   });
   t('PALETTE', () => {
     const all = hexes(css);
@@ -125,6 +127,7 @@ ok('WIRED the global stylesheet lists 25-reorg-arbor-back.css after the Machina 
 const MUT = [
   ['a rule escapes the Arbor scope', 'SCOPED', (t) => t.replace(`${AR} .wz-assets-sort{`, () => '.wz-assets-sort{')],
   ['the sort buttons lose their twin', 'COVER', (t) => t.split('.wz-assets-sort > button').join('.wz-assets-sorted > button')],
+  ['a canvas group head lets its buttons squeeze the name again', 'ROOM', (t) => t.replace(".wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px);", () => ".wz-back-boardhead > .wz-back-boardname{ flex:1 1 auto;")],
   ['the open Tutor opener goes brass again', 'OPENER', (t) => t.replace(/(wz-tutor-grip\[data-open='true'\]\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tutor opener rule is dropped', 'OPENER', (t) => t.replace(".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']", () => ".desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-docked='true']")],
   ['a chip loses its cloth', 'CHIPS', (t) => t.replace(/(\.wz-back-tag\[data-colour-slot='c'\]\{ background:)var\(--reorg-tag-c-fill\)/, (m, a) => a + 'transparent')],
