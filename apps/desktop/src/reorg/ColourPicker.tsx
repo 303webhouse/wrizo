@@ -98,7 +98,7 @@ export function ColourPicker({ partId, partName, current, at, onClose }: ColourP
         ? <button type="button" className="reorg-colour-customize" data-colour-custom="" onClick={() => setCustom(true)}>{t('reorgColourCustom')}</button>
         : (
           <div className="reorg-colour-custom" data-colour-custom-row="">
-            <input className="reorg-colour-hex" data-colour-hex="" aria-label={t('reorgColourHex')} value={hex} maxLength={7} spellCheck={false} autoFocus
+            <input className="reorg-colour-hex" data-colour-hex="" aria-label={t('reorgColourHex')} value={hex} maxLength={7} autoFocus
               onChange={(e) => setHex(e.target.value.trim())} onKeyDown={(e) => { if (e.key === 'Enter' && valid) { e.preventDefault(); pick(hex); } }} />
             <span className="reorg-colour-preview" data-colour-preview="" aria-hidden="true"
               style={valid ? ({ ...customVars(hex.toUpperCase()), background: hex, color: inkOn(hex.toUpperCase()) } as React.CSSProperties) : undefined}>Aa</span>
