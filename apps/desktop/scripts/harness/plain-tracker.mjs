@@ -79,6 +79,7 @@ async function seed(app) {
 // the session's goal and timer and the switch, as stored settings (not collections), then the page opened in Draft
 async function open(app, theme, { goal = null, timer = false, plain = false, reorg = false } = {}) {
   await app.emulateDpr(1, 1366, 768);
+  await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });   // item141: the seam is read only after a wait that names it
   await app.evalJs(`window.wrizoTheme.set('${theme}'); null`);
   await app.evalJs(`(() => { localStorage.setItem('wrizo-writing-goal-lines', ${q(goal == null ? '' : JSON.stringify({ n: goal, unit: 'words' }))});
     const s = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); s.timer = ${timer}; s.instrumentsOn = true; s.progress = 'words'; s.progressStyle = 'bar';

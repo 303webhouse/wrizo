@@ -121,6 +121,12 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     hookBeforeReturn: hook > 0 && early > hook,
     formatLockedPP,
     wrapsFourRows: countOf(fBody, /className="wz-sliver-format/g) === 3 && /onFormat\('bold'\)/.test(fBody) && /onFormat\('align-right'\)/.test(fBody) && /<BulletControl/.test(fBody),
+    // T7-B (Nov 21, train F): the reorg's TEXT tab adds format rows (ARBOR's Paragraph fold, INK's P / H picker and note rows) - every one INSIDE the
+    // same fieldset. The claim is that the whole format group sits in it: at least the original three rows inside, and no format row outside it
+    // (the Ink tool's own tip and nib rows are not the format group and sit in the Ink panel, as before)
+    rowsIn: countOf(fBody, /className="wz-sliver-format/g),
+    rowsOutside: countOf(tools, /className="wz-sliver-format(?! wz-ink-)/g) - countOf(fBody, /className="wz-sliver-format(?! wz-ink-)/g),
+    wrapsRows: countOf(fBody, /className="wz-sliver-format/g) >= 3 && countOf(tools, /className="wz-sliver-format(?! wz-ink-)/g) === countOf(fBody, /className="wz-sliver-format(?! wz-ink-)/g) && /onFormat\('bold'\)/.test(fBody) && /onFormat\('align-right'\)/.test(fBody) && /<BulletControl/.test(fBody),
     sectionOnly: countOf(tools, /<fieldset /g) === 1,
     // the greyed group says why: a tooltip from the lexicon on the fieldset, a legend for assistive tech, and buttons that let the pointer through to it
     tooltip: /<fieldset [^>]*title=\{formatLocked \? t\('formatLockedByTypewriter'\) : undefined\}>/.test(tools)
@@ -187,13 +193,40 @@ function claims(s = { sliver: sliverSrc, stage: stageSrc, lex: lexSrc, pe: peSrc
     grey: /^\.mode-bar \.mode-tbtn:disabled\{[^}]*opacity:\.4[^}]*pointer-events:none/m.test(s.css),
   };
   out.icons = /export const TypewriterModeIcon/.test(s.icons) && /export const ProgressModeIcon/.test(s.icons) && /aria-hidden/.test(s.icons);
+  out.fw = fwClaims(s, row, tw, pr);
   return out;
+}
+// FREE WRITE = TYPEWRITER successors: the sources with their comments stripped (a SUPERSEDED note quoting an old line must not satisfy a live read, nor be the line a mutant lands on)
+const noC = (t) => t.replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+function fwClaims(s, row, tw, pr) {
+  const sl = noC(s.sliver), st = noC(s.stage), rowN = fnText(sl, 'function SliverInstrumentRow(') || '', twN = fnText(sl, 'function TypewriterFields(') || '', prN = fnText(sl, 'function ProgressFields(') || '';
+  const head = row.slice(row.indexOf('wz-sliver-instruments-head'));
+  const rowDiv = row.slice(row.indexOf('wz-sliver-instruments-row"'), row.indexOf('wz-sliver-instruments-modes'));
+  const prBtn = /<button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"\s+aria-label=\{t\('modeToggleProgress'\)\} title=\{t\('modeToggleProgress'\)\}\s+aria-pressed=\{settings\.instrumentsOn\}\s+onClick=\{\(\) => setWritingSettings\(\{ instrumentsOn: !settings\.instrumentsOn \}\)\}>\s*<ProgressModeIcon \/>\s*<\/button>/.test(rowN);
+  return {
+    noTypewriterButton: !/data-mode-toggle="typewriter"/.test(sl) && !/setTypewriterExplicit/.test(sl),
+    prBtn, inHead: head.includes('wz-sliver-instruments-row') && head.includes('wz-sliver-instruments-modes'),
+    moreStillAlone: countOf(rowDiv, /<button/g) === 1 && /aria-label=\{t\('footSettings'\)\}/.test(rowDiv),
+    realButtons: !/role="button"|tabIndex=\{-1\}|<div[^>]*onClick/.test(row.slice(row.indexOf('wz-sliver-instruments-modes'))),
+    menuOnFreeWriteOnly: /typewriterAvailable=\{content\.kind === 'freewrite'\}/.test(sl),
+    twRowsNeverGreyed: /const off = false;/.test(twN) && countOf(twN, /<Seg /g) === 3 && countOf(twN, /<Seg [^>]*disabled=\{off\}/g) === 3,
+    prRowsGreyedByTheirMode: countOf(prN, /<Seg /g) === 4 && countOf(prN, /<Seg [^>]*disabled=\{off\}/g) === 4 && /const off = !settings\.instrumentsOn;/.test(prN),
+    // [plain tracker] the Progress block's fifth row, Use Theme Progress Tracker, greyed with the rest
+    prRowsGreyedByTheirMode5: countOf(prN, /<Seg /g) === 5 && countOf(prN, /<Seg [^>]*disabled=\{off\}/g) === 5 && /const off = !settings\.instrumentsOn;/.test(prN),
+    narrowBar: countOf(st, /disabled=\{typewriterOn\}/g) === 9 && /const typewriterOn = typewriterRun && !fluxJack;/.test(st) && /const typewriterRun = stageTheme === 'flux' \? fluxJack && mode === 'journal' : mode === 'journal';/.test(st),
+  };
 }
 function verdict(c) {
   const b = c.buttons || {}, g = c.greyed || {}, f = c.format || {}, sc = c.shortcuts || {}, l = c.look || {};
   return {
     // ORIGINAL (pre-typewriter-scope) keys - kept for the parked block below, predicate text
     // byte-for-byte unchanged. Each reads a shape the approved refactor retired on purpose.
+    // FREE WRITE = TYPEWRITER successors (the keys the retargeted mutants below read)
+    buttonsFW: !!c.fw && c.fw.noTypewriterButton && c.fw.prBtn && c.fw.inHead && c.fw.moreStillAlone && c.fw.realButtons && c.fw.menuOnFreeWriteOnly,
+    greyedFW: !!c.fw && c.fw.twRowsNeverGreyed && c.fw.prRowsGreyedByTheirMode && g.prInput,
+    // [Free Write + plain tracker] the successor key: the Typewriter rows never greyed, the five Progress rows greyed by their mode
+    greyedFW5: !!c.fw && c.fw.twRowsNeverGreyed && c.fw.prRowsGreyedByTheirMode5 && g.prInput,
+    barFW: !!c.fw && c.fw.narrowBar && c.bar?.tooltip && c.bar?.grey,
     buttons: b.twBtn && b.prBtn && b.inHead && b.moreStillAlone && b.twGatedOnAvailability && b.realButtons,
     greyed: g.twSegs === 3 && g.twDisabled === 3 && g.twOff && g.prSegs === 4 && g.prDisabled === 4 && g.prOff && g.prInput,
     bar: c.bar?.nine && c.bar?.running && c.bar?.tooltip && c.bar?.grey,
@@ -217,6 +250,8 @@ function verdict(c) {
     // not a replacement - hookBeforeReturn's own claim is unchanged and still true, only its
     // anchor moved; see the comment above `hook` in claims()).
     format: f.disabledBound && f.hookBeforeReturn && f.formatLockedPP && f.wrapsFourRows && f.sectionOnly && f.tooltip,
+    // T7-B (Nov 21): the same claims, the rows counted as "every format row inside the one fieldset" (wrapsRows) instead of exactly three
+    formatB: f.disabledBound && f.hookBeforeReturn && f.formatLockedPP && f.wrapsRows && f.sectionOnly && f.tooltip,
   };
 }
 const base = claims();
@@ -229,8 +264,11 @@ ok('(T0) the sources this harness reads all exist (a missing function would make
 // typewriterForPage when a pageId is given, the shared field otherwise.
 if (false) ok('(T1, superseded) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter',
   v.buttons === true, JSON.stringify(base.buttons));
-ok('(T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter; aria-pressed/onClick both ask typewriterOn, which is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T1) TYPEWRITER MODE and PROGRESS TRACKING are two icon-only native buttons in the head beside the "..." (which stays alone in its own row); the typewriter one only where the surface offers a typewriter; aria-pressed/onClick both ask typewriterOn, which is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
   v.buttonsPP === true, JSON.stringify(base.buttons));
+ok('(T1) [Free Write = Typewriter successor] PROGRESS TRACKING is the one icon-only native button in the head beside the "..." (which stays alone in its own row); there is NO Typewriter button (no data-mode-toggle="typewriter", no setTypewriterExplicit in the Sliver), and the foot\'s Typewriter menu mounts on Free Write only',
+  v.buttonsFW === true, JSON.stringify(base.fw));
 ok('(T2) each button reports on/off with aria-pressed from the stored value, and carries a lexicon name that does not change with the state; the two names differ',
   v.words === true, JSON.stringify({ words: base.words, names: base.names }));
 // SUPERSEDED (Phase 1 S5: writingSettings.ts gains the per-page typewriter memory, so 'byte-identical to main' no longer holds) - by (T3b) below.
@@ -263,27 +301,13 @@ if (false) ok('(T3b) the toggles flip the SAME values the old rows flipped (type
 // (T3c) successor: T3b's claim with one allowance - forwardLock.ts and writingGoal.ts may lose ONLY the two unused getters #13 step 11 deletes:
 // no line added, and no removed line touches storage, a key or a stored field. It holds before the delete (no diff) and after it.
 const STEP11_GETTERS = ['getForwardLock', 'getWritingGoal'];
-// SUPERSEDED (Fable, Nov 20, 5:25 pm: POLISH's "Use Theme Progress Tracker" is a saved writing setting, `themeTracker`, so writingSettings.ts gains ONE interface field and ONE DEFAULTS entry and
-// T3c's "changes no line of its interface or its DEFAULTS" no longer holds for exactly that key). Parked, not deleted; the original, verbatim:
-// ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
-//   v.buttonsPP === true && (() => {
-//     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
-//     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
-//     const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
-//     const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
-//     const body = (other || '').split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
-//     const added = body.filter((l) => l.startsWith('+'));
-//     const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
-//     const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
-//     base.storeDiff = { added: added.length, storageTouched, exportsGone, removedOrKeyTouched };
-//     return other !== null && added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && removedOrKeyTouched === false;
-//   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
-ok('(T3c) [successor: themeTracker] the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T3c) the toggles flip the SAME values the old rows flipped (typewriter through setTypewriterExplicit, instrumentsOn through setWritingSettings) and the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key',
   v.buttonsPP === true && (() => {
     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
     const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
-    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));   // the one allowance: the themeTracker lines (its interface field, its DEFAULTS entry, its comment)
+    const removedOrKeyTouched = ws === null ? true : ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
     const body = (other || '').split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
     const added = body.filter((l) => l.startsWith('+'));
     const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
@@ -292,19 +316,104 @@ ok('(T3c) [successor: themeTracker] the toggles flip the SAME values the old row
     return other !== null && added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && removedOrKeyTouched === false;
   })(), JSON.stringify({ buttons: base.buttons, storeDiff: base.storeDiff }));
 ok('(T4) the Typewriter on/off row and the Progress "Show" row are gone from the "..." menu', v.rowsGone === true, JSON.stringify(base.rowsGone));
+ok('(T3c) [Free Write = Typewriter successor] the Progress toggle flips the SAME value the old row flipped (instrumentsOn, through setWritingSettings) and the Sliver calls no setTypewriterExplicit; the stores are not touched by this ticket (no line of forwardLock.ts or writingGoal.ts changes)',
+  v.buttonsFW === true && base.fw.prBtn === true, JSON.stringify(base.fw));
+// SUPERSEDED (Fable, Nov 21, 10:25 am: SPRINT's Consultant is a per-writer switch, `consultant`, a saved writing setting like `themeTracker`, so writingSettings.ts gains ONE more interface field and ONE more DEFAULTS entry): the rule below allowed the themeTracker lines only; it is parked verbatim and its successor, which allows themeTracker AND consultant, is the live check beneath. Kept VERBATIM.
+// // (T3c) [successor: Free Write = Typewriter + themeTracker] the persisted shape is still main's, by the diff alone (no Typewriter button is asked about: it is gone, see the line above). Two writing settings changes are
+// // lawful on top of main: (1) POLISH's "Use Theme Progress Tracker" is a saved setting, `themeTracker` (Fable, Nov 20, 5:25 pm), so writingSettings.ts gains ONE interface field and ONE DEFAULTS entry; (2) the writing settings and the
+// // goal are saved to the account (fix-writing-prefs / fix-writing-goal), which ADDS exports to writingSettings.ts and a new store/writingGoalPref.ts and CHANGES no stored key and no existing field. So: forwardLock.ts and writingGoal.ts
+// // add nothing and lose only the two unused getters #13 step 11 deletes; writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key, except the themeTracker lines. The rule is one pure function, so the
+// // check below can be shown to FAIL on a diff that breaks it (the mutant).
+// const persistedShapeKept = (other, ws) => {
+//   if (other === null || other === undefined || ws === null || ws === undefined) return false;
+//   const body = other.split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
+//   const added = body.filter((l) => l.startsWith('+'));
+//   const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+//   const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
+//   const wsTouched = ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+//   return added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && !wsTouched;
+// };
+// ok('(T3c) [successor: Free Write = Typewriter + themeTracker] the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key except the themeTracker lines',
+//   (() => {
+//     const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+//     const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+//     const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+//     return persistedShapeKept(other, ws);
+//   })(), 'by the diff against main');
+// ok('(T3c) [successor: Free Write = Typewriter + themeTracker] MUTANT: a diff that changes a DEFAULTS line other than themeTracker, adds a line to writingGoal.ts, or removes a non-getter export is CAUGHT, and the themeTracker lines are allowed',
+//   persistedShapeKept('', '+  themeTracker: true,\n+  themeTracker: boolean;\n') === true
+//   && persistedShapeKept('', '-  progress: true,\n+  progress: false,\n') === false
+//   && persistedShapeKept('+const extra = 1;\n', '') === false
+//   && persistedShapeKept('-export function setWritingGoal(g) {\n', '') === false
+//   && persistedShapeKept('-export function getWritingGoal() {\n', '') === true,
+//   'persistedShapeKept over synthetic diffs');
+// (T3c) [successor 2: Free Write = Typewriter + themeTracker + consultant] the persisted shape is still main's, by the diff alone (no Typewriter button is asked about: it is gone, see the line above). Two writing settings changes are
+// lawful on top of main: (1) POLISH's "Use Theme Progress Tracker" is a saved setting, `themeTracker` (Fable, Nov 20, 5:25 pm), so writingSettings.ts gains ONE interface field and ONE DEFAULTS entry; (2) the writing settings and the
+// goal are saved to the account (fix-writing-prefs / fix-writing-goal), which ADDS exports to writingSettings.ts and a new store/writingGoalPref.ts and CHANGES no stored key and no existing field. So: forwardLock.ts and writingGoal.ts
+// add nothing and lose only the two unused getters #13 step 11 deletes; writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key, except the themeTracker and consultant lines. The rule is one pure function, so the
+// check below can be shown to FAIL on a diff that breaks it (the mutant).
+const persistedShapeKept = (other, ws) => {
+  if (other === null || other === undefined || ws === null || ws === undefined) return false;
+  const body = other.split('\n').filter((l) => /^[-+]/.test(l) && !/^(---|\+\+\+)/.test(l));
+  // SUPERSEDED (Nov 21, footnotes: writingGoal.ts imports wordsOnly and counts through it, three added lines that name it or say a footnote is not a word), kept verbatim:
+  // const added = body.filter((l) => l.startsWith('+'));
+  const added = body.filter((l) => l.startsWith('+') && !/wordsOnly|footnote/i.test(l));
+  const storageTouched = body.filter((l) => /localStorage|KEY|setItem|getItem|JSON\.|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+  const exportsGone = body.filter((l) => /^-\s*export /.test(l)).map((l) => (/export\s+(?:async\s+)?function\s+(\w+)/.exec(l) || [, l])[1]);
+  const wsTouched = ws.split('\n').some((l) => (l.startsWith('-') || l.startsWith('+')) && !l.startsWith('---') && !l.startsWith('+++') && !/themeTracker|consultant/.test(l) && /wrizo-writing-settings|const KEY|^[-+]\s*[a-zA-Z]+\??: /.test(l));
+  return added.length === 0 && storageTouched.length === 0 && exportsGone.every((n) => STEP11_GETTERS.includes(n)) && !wsTouched;
+};
+ok('(T3c) [successor 2: Free Write = Typewriter + themeTracker + consultant] the persisted shape is main\'s: forwardLock.ts and writingGoal.ts add nothing and lose only their unused getters (#13 step 11), and writingSettings.ts changes no line of its interface, its DEFAULTS or its storage key except the themeTracker and consultant lines',
+  (() => {
+    const baseRef = sh('git merge-base origin/main HEAD')?.trim();
+    const other = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/forwardLock.ts src/store/writingGoal.ts`) : null;
+    const ws = baseRef ? sh(`git diff -U0 ${baseRef} -- src/store/writingSettings.ts`) : null;
+    return persistedShapeKept(other, ws);
+  })(), 'by the diff against main');
+ok('(T3c) [successor 2: Free Write = Typewriter + themeTracker + consultant] MUTANT: a diff that changes a DEFAULTS line other than themeTracker, adds a line to writingGoal.ts, or removes a non-getter export is CAUGHT, and the themeTracker lines are allowed',
+  persistedShapeKept('', '+  themeTracker: true,\n+  themeTracker: boolean;\n+  consultant: boolean;\n+  consultant: true,\n') === true
+  && persistedShapeKept('', '-  progress: true,\n+  progress: false,\n') === false
+  && persistedShapeKept('', '+  consultantNote: string;\n+  somethingElse: boolean;\n') === false
+  && persistedShapeKept('+const extra = 1;\n', '') === false
+  // the footnotes allowance (Nov 21): the import and the counting line of writingGoal.ts are allowed ...
+  && persistedShapeKept("+import { wordsOnly } from '../reorg/footnotes';\n-  for (const line of text.split('\\n')) {\n+  for (const line of wordsOnly(text).split('\\n')) {\n", '') === true
+  // ... and nothing else rides in beside them: another added line is caught, and so is a footnote-named line that touches storage
+  && persistedShapeKept("+import { wordsOnly } from '../reorg/footnotes';\n+const extra = 1;\n", '') === false
+  && persistedShapeKept("+  localStorage.setItem('footnote-goal', '1');\n", '') === false
+  && persistedShapeKept('-export function setWritingGoal(g) {\n', '') === false
+  && persistedShapeKept('-export function getWritingGoal() {\n', '') === true,
+  'persistedShapeKept over synthetic diffs');
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if
 // (false)`: `off` pinned the shared field directly. Successor (T5) below reads v.greyedPP -
 // `off` now negates THIS page's own typewriterForPage read when a pageId is given.
 if (false) ok('(T5, superseded) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number',
   v.greyed === true, JSON.stringify(base.greyed));
-// SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off). The original, verbatim:
-// ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
-//   v.greyedPP === true, JSON.stringify(base.greyed));
-ok('(T5) [successor] when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer, Use Theme Progress Tracker (5 of 5) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
-  v.greyedPP5 === true, JSON.stringify(base.greyed));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T5) when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer (4 of 4) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+  v.greyedPP === true, JSON.stringify(base.greyed));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm, on main: the Typewriter switch is gone, its rows are never greyed): POLISH's plain-tracker successor, verbatim:
+// ok('(T5) [successor] when a mode is off every row that stays is disabled: Typewriter -> Forward Lock, Line Fade, Page Scroll (3 of 3); Progress -> Unit, Progress, Progress style, Timer, Use Theme Progress Tracker (5 of 5) and the Goal number; "off" is THIS page\'s own typewriterForPage read when a pageId is given, the shared field otherwise',
+//   v.greyedPP5 === true, JSON.stringify(base.greyed));
+// SUPERSEDED (the plain Progress Tracker, Nick, Nov 20, 3:57 pm; Fable 5:25 pm: the Progress block gains a FIFTH row, Use Theme Progress Tracker, greyed with the rest): main's Free Write successor, verbatim:
+// ok('(T5) [Free Write = Typewriter successor] the Typewriter menu\'s rows (Forward Lock, Line Fade, Page Scroll: 3 of 3) are NEVER greyed - there is no switch to turn the Typewriter off in Free Write - and Progress\' rows are still greyed by their own mode (4 of 4 and the Goal number)',
+//   v.greyedFW === true, JSON.stringify({ fw: base.fw, prInput: base.greyed.prInput }));
+// [successor] the Typewriter menu's rows never greyed (Free Write = Typewriter), and the Progress block's FIVE rows and the Goal number greyed while Progress Tracking is off
+ok('(T5) [Free Write + plain tracker successor] the Typewriter menu\'s rows (Forward Lock, Line Fade, Page Scroll: 3 of 3) are NEVER greyed, and the Progress block\'s five rows (Unit, Progress, Progress style, Timer, Use Theme Progress Tracker: 5 of 5) and the Goal number are greyed while Progress Tracking is off',
+  v.greyedFW5 === true, JSON.stringify({ fw: base.fw, prInput: base.greyed.prInput }));
 ok('(T6) "disabled" is real: Seg marks the row (data-disabled) and disables its option buttons, so a greyed row cannot be focused or pressed', v.seg === true, JSON.stringify(base.seg));
-ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
+// SUPERSEDED (Nov 21, train F pair 44944613263: wrapsFourRows false): T7 counted EXACTLY three format rows in the fieldset; the reorg's TEXT tab (behind
+// ?reorg=1 in Machina: ARBOR's Paragraph fold, INK's P / H picker and note rows) adds rows, every one inside the same fieldset. T7-B reads the claim itself -
+// the whole format group in the one fieldset - with its MUTANT below. Parked in this file's idiom, the original verbatim:
+if (false) ok('(T7) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on (so B/I/U/S/H, bullets, quote, indent, spacing and alignment all grey and lock together); the setting is read above the early return so the hook order holds',
   v.format === true, JSON.stringify(base.format));
+ok('(T7-B) the whole FORMAT group sits inside ONE native disabled fieldset bound to Typewriter-on: every format row (at least the original three, with B/I/U/S/H, bullets and alignment) is inside it and none outside; the setting is read above the early return so the hook order holds',
+  v.formatB === true, JSON.stringify(base.format));
+{ // MUTANT: a format row moved OUTSIDE the fieldset turns T7-B red (the mutation LANDED: one more row outside, in the source the claims read)
+  const row = '<div className="wz-sliver-format" data-mutant="t7b" />';
+  const mutSliver = sliverSrc.replace('<fieldset className="wz-sliver-fieldset"', row + '<fieldset className="wz-sliver-fieldset"');
+  let mc = null; try { mc = claims({ sliver: mutSliver, stage: stageSrc, lex: lexSrc, pe: peSrc, icons: iconsSrc, css }); } catch { mc = null; }
+  ok('(T7-B) MUTANT: a format row moved outside the fieldset turns T7-B red', mutSliver !== sliverSrc && !!mc && mc.format.rowsOutside === base.format.rowsOutside + 1 && verdict(mc).formatB !== true, JSON.stringify(mc && mc.format));
+}
 // SUPERSEDED (typewriter-scope, Fable Oct 21) - ORIGINAL, quoted verbatim, parked with `if
 // (false)`: pinned applyRailFormat's guard as the shared getWritingSettings().typewriter.
 // Successor (T8) below reads v.shortcutsPP - the guard now reads THIS page's own
@@ -327,8 +436,11 @@ if (false) ok('(T10, superseded) the NARROW-SCREEN format bar (ModeStage, unfram
 // `if (false)`. Successor: (T10 Wire In) below reads v.barWI (runningWI). Its mutant: the 'Flux guard' one at the end of the narrow-bar mutants.
 if (false) ok('(T10) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, the shared field otherwise',
   v.barPP === true, JSON.stringify(base.bar));
-ok('(T10 Wire In) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, and otherwise the shared field - EXCEPT in Flux, where the paper Typewriter is retired (stageTheme !== \'flux\' guards the fallback)',
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+if (false) ok('(T10 Wire In) the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) follows the same rule on the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn, the bar carries the same lexicon tooltip, locked buttons grey and let the pointer fall through to it; Revise (no typewriter running) stays usable; typewriterOn is THIS page\'s own typewriterForPage read on Draft with a pageId, and otherwise the shared field - EXCEPT in Flux, where the paper Typewriter is retired (stageTheme !== \'flux\' guards the fallback)',
   v.barWI === true, JSON.stringify(base.bar));
+ok('(T10) [Free Write = Typewriter successor] the NARROW-SCREEN format bar (ModeStage, unframed: below 1100px and QuickSprint) is locked by the RUNNING typewriter: all nine of its buttons are disabled while typewriterOn (Free Write outside Flux), with the tooltip, and locked buttons grey and let the pointer fall through to it',
+  v.barFW === true, JSON.stringify({ narrowBar: base.fw.narrowBar, tooltip: base.bar?.tooltip, grey: base.bar?.grey }));
 
 // =============================================================================
 // MUTATIONS - each asserts it LANDED before the red is believed.
@@ -348,25 +460,46 @@ function mutant(name, key, patchFn, which) {
 // false (they pin a shape the approved refactor retired), so a mutant checking them would
 // "pass" without the mutation doing anything - guard-can-pass-while-blind. Two anchors also
 // moved with the refactor (fixed below, same mechanical-drift class as T0's own fix above).
-mutant('the typewriter button stops reporting its state', 'sliver', (t) => mutate(t, 'aria-pressed={typewriterOn}', 'aria-pressed={false}'), 'buttonsPP');
-mutant('the progress button flips a different value', 'sliver', (t) => mutate(t, 'setWritingSettings({ instrumentsOn: !settings.instrumentsOn })', 'setWritingSettings({ timer: !settings.timer })'), 'buttonsPP');
-mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => mutate(t, 'onClick={() => setTypewriterExplicit(!typewriterOn)}>', 'onClick={() => setWritingSettings({ typewriter: !typewriterOn })}>'), 'buttonsPP');
-mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsPP');
-mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the typewriter button stops reporting its state', 'sliver', (t) => mutate(t, 'aria-pressed={typewriterOn}', 'aria-pressed={false}'), 'buttonsPP');
+mutant('the progress button flips a different value', 'sliver', (t) => mutate(t, 'setWritingSettings({ instrumentsOn: !settings.instrumentsOn })', 'setWritingSettings({ timer: !settings.timer })'), 'buttonsFW');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the typewriter button bypasses setTypewriterExplicit', 'sliver', (t) => mutate(t, 'onClick={() => setTypewriterExplicit(!typewriterOn)}>', 'onClick={() => setWritingSettings({ typewriter: !typewriterOn })}>'), 'buttonsPP');
+// FREE WRITE = TYPEWRITER: the old things put back, each landing on the live (comment-stripped) line and going RED on the successor key
+mutant('the Typewriter button comes back in the foot', 'sliver', (t) => mutate(t, 'data-mode-toggle="progress"', 'data-mode-toggle="typewriter"'), 'buttonsFW');
+mutant('the Sliver calls setTypewriterExplicit again', 'sliver', (t) => mutate(t, 'import { useWritingSettings, setWritingSettings } from', 'import { useWritingSettings, setWritingSettings, setTypewriterExplicit } from'), 'buttonsFW');
+// SUPERSEDED (the plain Progress Tracker, Nick, Nov 20, 3:57 pm; Fable 5:25 pm: the Progress block gains a FIFTH row, Use Theme Progress Tracker, greyed with the rest): main's Free Write successor, verbatim:
+// mutant('the Typewriter menu rows grey on the stored switch again', 'sliver', (t) => mutate(t, 'const off = false;', 'const off = !settings.typewriter;'), 'greyedFW');
+mutant('the Typewriter menu rows grey on the stored switch again [plain-tracker successor]', 'sliver', (t) => mutate(t, 'const off = false;', 'const off = !settings.typewriter;'), 'greyedFW5');
+mutant('a button grows a visible text label (not icon-only)', 'sliver', (t) => mutate(t, '<ProgressModeIcon />', '<ProgressModeIcon /> Progress'), 'buttonsFW');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter button and the per-page read it asked are gone from the Sliver foot (Draft never runs the Typewriter); parked in this file's idiom, the original verbatim:
+// mutant('the old Typewriter row comes back in the menu', 'sliver', (t) => mutate(t, "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n", "  const off = !(pageId != null ? typewriterForPage(pageId, pageEmpty ?? false) : settings.typewriter);\n  return (\n    <>\n      <Seg label={t('footTypewriter')} value=\"on\" opts={[]} onPick={() => {}} />\n"), 'rowsGone');
+// SUPERSEDED (the plain Progress Tracker, Nick, Nov 20, 3:57 pm; Fable 5:25 pm: the Progress block gains a FIFTH row, Use Theme Progress Tracker, greyed with the rest): main's Free Write successor, verbatim:
+// mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedFW');
+mutant('Forward Lock stays usable while Typewriter is off [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedFW5');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm, on main: the Typewriter switch is gone, its rows are never greyed): POLISH's plain-tracker park and successor of the Forward Lock mutant, verbatim:
 // SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
 // mutant('Forward Lock stays usable while Typewriter is off', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
-mutant('Forward Lock stays usable while Typewriter is off [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
+// mutant('Forward Lock stays usable while Typewriter is off [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'} disabled={off}", "<Seg label={t('twForwardLock')} value={forwardLock ? 'on' : 'off'}"), 'greyedPP');
 // ---- PARKED - SUPERSEDED by FLUX WORDS (Nick's Oct 12 pass, folded into flux-v2): the Timer row's label now comes from the lexicon (t('timerLabel')), so the mutation anchor moved.
 // Kept VERBATIM below and no longer run; the live successor follows.
 //
 // mutant('the Timer row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'} disabled={off}', '<Seg label="Timer" value={settings.timer ? \'on\' : \'off\'}'), 'greyedPP');
+// SUPERSEDED (the plain Progress Tracker, Nick, Nov 20, 3:57 pm; Fable 5:25 pm: the Progress block gains a FIFTH row, Use Theme Progress Tracker, greyed with the rest): main's Free Write successor, verbatim:
+// mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedFW');
+mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor] [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedFW5');
+// SUPERSEDED (the plain Progress Tracker, Nick, Nov 20, 3:57 pm; Fable 5:25 pm: the Progress block gains a FIFTH row, Use Theme Progress Tracker, greyed with the rest): main's Free Write successor, verbatim:
+// mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedFW');
+mutant('the Goal number stays editable while Progress Tracking is off [plain-tracker successor]', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedFW5');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm, on main: the Typewriter switch is gone, its rows are never greyed): POLISH's plain-tracker parks and successors of the Timer and Goal mutants (keyed to the retired greyedPP), verbatim:
 // SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
 // mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
-mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor] [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
+// mutant('the Timer row stays usable while Progress Tracking is off [flux-words successor] [plain-tracker successor]', 'sliver', (t) => mutate(t, "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off}", "<Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'}"), 'greyedPP');
 // SUPERSEDED (the plain Progress Tracker (Nick, Nov 20, 3:57 pm; Fable 5:25 pm): the Progress block gains the "Use Theme Progress Tracker" row, greyed with the rest while Progress Tracking is off): its check moves to greyedPP5. The original, verbatim:
 // mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
-mutant('the Goal number stays editable while Progress Tracking is off [plain-tracker successor]', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
-mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'}"), 'greyedPP5');
+// mutant('the Goal number stays editable while Progress Tracking is off [plain-tracker successor]', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
+// [plain-tracker] the fifth row's own mutant, read on the Free Write successor
+mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'}"), 'greyedFW5');
 mutant('Seg ignores disabled', 'stage', (t) => mutate(t, "className={value === v ? 'on' : ''} disabled={disabled} onClick", "className={value === v ? 'on' : ''} onClick"), 'seg');
 mutant('the Format fieldset is not disabled', 'sliver', (t) => mutate(t, '<fieldset className="wz-sliver-fieldset" disabled={formatLocked}', '<fieldset className="wz-sliver-fieldset"'), 'format');
 // `const settings = useWritingSettings();` appears several times in this file (every
@@ -403,13 +536,15 @@ mutant('the greyed Format buttons swallow the pointer (the group tooltip can nev
 mutant('the ON state is a hard-coded colour (would not follow the theme) [flux-v2 successor]', 'css', (t) => mutate(t, ".wz-sliver-mode-btn[aria-pressed='true']{ color:var(--choice); background:none; }", ".wz-sliver-mode-btn[aria-pressed='true']{ color:#c8a24a; background:none; }"), 'look');
 mutant('the fieldset keeps the browser border and padding', 'css', (t) => mutate(t, '.wz-sliver-fieldset{ border:0; margin:0; padding:0; min-width:0;', '.wz-sliver-fieldset{ margin:0;'), 'look');
 
-mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barWI');
-mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barWI');
-mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barWI');
-mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barWI');
+mutant('the narrow bar\'s Bold ignores the lock', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Bold"', '<button type="button" className="mode-tbtn" title="Bold"'), 'barFW');
+mutant('the narrow bar locks on the stored setting, not the running typewriter', 'stage', (t) => mutate(t, '<button type="button" disabled={typewriterOn} className="mode-tbtn" title="Italic"', '<button type="button" disabled={settings.typewriter} className="mode-tbtn" title="Italic"'), 'barFW');
+mutant('the narrow bar loses its tooltip', 'stage', (t) => mutate(t, "title={rail.tools === 'format' && typewriterOn ? deskT('formatLockedByTypewriter') : undefined}>", '>'), 'barFW');
+mutant('the narrow bar\'s locked buttons swallow the pointer', 'css', (t) => mutate(t, '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; pointer-events:none; }', '.mode-bar .mode-tbtn:disabled{ opacity:.4; cursor:default; }'), 'barFW');
 // FLUX WIRE IN (Nov 12) - the four narrow-bar mutants above were retargeted from barPP to barWI: barPP is permanently false on the new source (it pins the pre-guard text), so a
 // mutant reading it would "pass" without the mutation doing anything. This one is the successor's own: the Flux guard is dropped, the shared field runs the Typewriter in Flux again.
-mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barWI');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the guard text this mutant removed (`stageTheme !== 'flux' && ... && settings.typewriter;`) is gone from the source (the run is Free Write's, one line); the mutant could not land. The original, verbatim:
+// mutant('the narrow bar loses the Flux guard (the paper Typewriter runs in Flux again) [wire-in successor]', 'stage', (t) => mutate(t, ": stageTheme !== 'flux' && (mode === 'journal' || mode === 'drafting') && settings.typewriter;", ": (mode === 'journal' || mode === 'drafting') && settings.typewriter;"), 'barFW');
+mutant('the narrow bar loses the Flux guard (Free Write runs the paper Typewriter in Flux again) [Free Write = Typewriter successor]', 'stage', (t) => mutate(t, "const typewriterRun = stageTheme === 'flux' ? fluxJack && mode === 'journal' : mode === 'journal';", "const typewriterRun = mode === 'journal';"), 'barFW');
 
 let failed = 0;
 for (const c of checks) {

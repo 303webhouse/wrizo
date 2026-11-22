@@ -18,8 +18,10 @@
 //           so its drawer cannot be main's bytes)
 // FRAME F1  a Draft Part: the tabs read TEXT · PARTS (no INK: Draft has no instrument), TEXT selected
 //       F2  a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, leaving it puts it back in text)
+//           [successor, Nov 20: SPRINT has no menus - with the switch on a Free Write page draws no Front menu, no tab, no pen; sprint-no-menus.mjs]
 //       F3  [Draft Part, Free Write page, screenplay] TEXT holds exactly the sections the switch-off drawer holds on that surface, in order, then
 //           Page setup at the foot (nothing added but Page setup, nothing lost)
+//           [successor, Nov 20: Draft Part and screenplay only; the Free Write page has no Front menu with the switch on]
 //       F5  a Board in Machina, switch ON, keeps today's drawer: no tab row, no Parts list, no Page setup, and the same section headings as
 //           the switch-off drawer but for the reorg's own word for a board
 //       F4  Page setup in the Front menu is today's zone and today's act: choosing Narrow margins writes that page's pageSettings.margins and
@@ -42,6 +44,7 @@ process.env.WS_PLACE = '1';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(HERE, '..', '..', 'src');
 const GOLDEN_FILE = path.join(HERE, 'reorg-front-menu-off-golden.json');
+const GOLDEN_TW_FILE = path.join(HERE, 'reorg-front-menu-off-golden-tw.json');   // the successor golden (Nov 20): the switch-off drawer with Free Write = the Typewriter
 const CAPTURE = process.env.REORG_FRONT_MODE === 'capture';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
@@ -147,16 +150,23 @@ await withHarness(async (app) => {
     return;
   }
   const golden = fs.existsSync(GOLDEN_FILE) ? JSON.parse(fs.readFileSync(GOLDEN_FILE, 'utf8')) : null;
+  const goldenTw = fs.existsSync(GOLDEN_TW_FILE) ? JSON.parse(fs.readFileSync(GOLDEN_TW_FILE, 'utf8')) : null;
   ok('O0: the golden of main\'s switch-off drawer is committed beside this file, with the tree it was captured from', !!golden && /^[0-9a-f]{40}$/.test(golden.capturedFrom || '') && !!golden.surfaces, GOLDEN_FILE);
+  ok('O0 [successor]: the golden of the drawer as it is now (Free Write is the Typewriter) is committed beside this file, with the tree it was captured from (Actions run 44832637395)', !!goldenTw && /^[0-9a-f]{40}$/.test(goldenTw.capturedFrom || '') && !!goldenTw.surfaces && goldenTw.capturedFrom !== golden.capturedFrom, GOLDEN_TW_FILE);
   for (const theme of THEMES) for (const [s, id] of Object.entries(SURFACES)) {
     const want = golden && golden.surfaces[theme] && golden.surfaces[theme][s];
+    const wantTw = goldenTw && goldenTw.surfaces[theme] && goldenTw.surfaces[theme][s];
     await open(app, theme, false, id); await openDrawer(app);
     const h = await app.evalJs(DRAWER());
-    ok(`O1 [${theme}.${s}]: switch OFF - the drawer is main's DOM exactly`, !!want && h === want, h === want ? '' : `got ${String(h).slice(0, 300)}`);
+    // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft never, so the Typewriter toggle is gone from every drawer: the golden of MAIN's drawer, with the toggle, no longer matches it; reorg-front-menu-off-golden-tw.json is the drawer as it is, and reorg-front-menu-golden-diff.mjs proves the two differ by that toggle alone). The original, verbatim:
+    // ok(`O1 [${theme}.${s}]: switch OFF - the drawer is main's DOM exactly`, !!want && h === want, h === want ? '' : `got ${String(h).slice(0, 300)}`);
+    ok(`O1 [successor] [${theme}.${s}]: switch OFF - the drawer is the successor golden's DOM exactly (main's, but for the Typewriter toggle)`, !!wantTw && h === wantTw, h === wantTw ? '' : `got ${String(h).slice(0, 300)}`);
     if (theme !== 'machina') {
       await open(app, theme, true, id); await openDrawer(app);
       const hOn = await app.evalJs(DRAWER());
-      ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (the Front menu is Machina's alone)`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
+      // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft never, so the Typewriter toggle is gone from every drawer: the golden of MAIN's drawer, with the toggle, no longer matches it; reorg-front-menu-off-golden-tw.json is the drawer as it is, and reorg-front-menu-golden-diff.mjs proves the two differ by that toggle alone). The original, verbatim:
+      // ok(`O2 [${theme}.${s}]: switch ON - still main's DOM exactly (the Front menu is Machina's alone)`, !!want && hOn === want, hOn === want ? '' : `got ${String(hOn).slice(0, 300)}`);
+      ok(`O2 [successor] [${theme}.${s}]: switch ON - still the successor golden's DOM exactly (the Front menu is Machina's alone)`, !!wantTw && hOn === wantTw, hOn === wantTw ? '' : `got ${String(hOn).slice(0, 300)}`);
     }
   }
 
@@ -171,18 +181,32 @@ await withHarness(async (app) => {
   await open(app, 'machina', true, 'tr-l-1'); await openDrawer(app);
   tabs = await app.evalJs(TABS);
   onSections.freewrite = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
+  const fwGrip = await app.evalJs("!!document.querySelector('.wz-sliver-grip') || !!document.querySelector('.wz-sliver')");
   const inst0 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
   await app.evalJs(pick('ink')); await sleep(500);
   const inst1 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
   const tabsInk = await app.evalJs(TABS);
   await app.evalJs(pick('text')); await sleep(500);
   const inst2 = await app.evalJs("document.querySelector('.mode-page')?.getAttribute('data-instrument') ?? null");
-  ok('F2 a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, TEXT puts it back)',
-    JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && inst0 !== 'ink' && inst1 === 'ink' && tabsInk.find((x) => x.id === 'ink')?.on && inst2 !== 'ink', { tabs, inst0, inst1, inst2 });
+  // SUPERSEDED (SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 and 1:20 pm; Fable 5:05 pm: behind the reorg's switch, Machina): with the switch on, a Free Write page draws no Front menu at all, so no TEXT, INK or PARTS tab and no pen). The original, verbatim:
+  // ok('F2 a Free Write page: TEXT · INK · PARTS; INK IS the instrument (picking it puts the page in ink, TEXT puts it back)',
+  //   JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && inst0 !== 'ink' && inst1 === 'ink' && tabsInk.find((x) => x.id === 'ink')?.on && inst2 !== 'ink', { tabs, inst0, inst1, inst2 });
+  ok('F2 [successor]: a Free Write page (SPRINT) with the switch on draws no Front menu: no drawer, no tab, and no pen (the page never goes into ink)',
+    !fwGrip && Array.isArray(tabs) && tabs.length === 0 && inst0 !== 'ink' && inst1 !== 'ink' && inst2 !== 'ink', { fwGrip, tabs, inst0, inst1, inst2 });
   await open(app, 'machina', true, 'tr-top-s'); await openDrawer(app);
   onSections.script = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
-  ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
-    ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 and 1:20 pm; Fable 5:05 pm: behind the reorg's switch, Machina): with the switch on, a Free Write page draws no Front menu at all, so no TEXT, INK or PARTS tab and no pen: the Free Write page has no TEXT tab to compare). The original, verbatim:
+  // ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (Find in the Front menu's TEXT tab, stage menus T3, Nick's word; Fable, Nov 21, 12:35 am: TEXT gains Find in BUILD and EDIT, above Page
+  // setup; Actions 44881500925 read the Find row after the drawer's sections on the Draft Part and the screenplay, both in BUILD). The sprint-no-menus
+  // successor above, verbatim:
+  // ok('F3 [successor]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // [successor] the same, but TEXT in BUILD (the Draft Part, the screenplay) ends with the one Find row, then Page setup
+  const findRow = 'wz-sliver-section wz-front-find-row';
+  ok('F3 [successor 2]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Find (BUILD), then Page setup at its foot',
+    ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify([...offSections[s], findRow]) && onSections[s].setup), { offSections, onSections });
 
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   const s0 = await app.evalJs(COLLECTIONS);
@@ -269,7 +293,7 @@ if (CAPTURE) {
   process.exit(0);
 }
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 1 + THEMES.length * 4 + 2 * 4 + 5 + 4 + 1 + 1;
+const EXPECTED = 1 + 1 + THEMES.length * 4 + 2 * 4 + 5 + 4 + 1 + 1;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FRONT-MENU VERIFY: PASS (${checks.length} checks)`

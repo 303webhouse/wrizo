@@ -134,8 +134,11 @@ await withHarness(async (app) => {
   // ==========================================================================
   const freshTypewriter = await typewriterDom(app);
   // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 3
-  ok('S5 successor to S3 (a) — a FRESH (empty) Draft page opens with the typewriter ON in the default theme (Arbor); Flux would open it OFF (typewriter-page.mjs runs both)',
-    freshTypewriter === 'true', `data-typewriter=${String(freshTypewriter)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and nothing saves a per-page Typewriter value; the original check, verbatim:
+  // ok('S5 successor to S3 (a) — a FRESH (empty) Draft page opens with the typewriter ON in the default theme (Arbor); Flux would open it OFF (typewriter-page.mjs runs both)',
+  // freshTypewriter === 'true', `data-typewriter=${String(freshTypewriter)}`);
+  ok('S3 (a) [Free Write = Typewriter successor] - a FRESH (empty) Draft page opens with the typewriter OFF in every theme (Draft never runs it)',
+    freshTypewriter === 'false', `data-typewriter=${String(freshTypewriter)}`);
 
   // A page that already holds a little work: FX2 S2's threshold rule, untouched.
   //
@@ -168,8 +171,11 @@ await withHarness(async (app) => {
   const shortTypewriter = await typewriterDom(app);
   // ARCHIVED PARK (#13 step 14): archive/item87.mjs.parked.md record 4
   const shortSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${shortId}')`);
-  ok('S5 successor to S3 (b) — a Draft page that was EMPTY when first opened (it took Arbor\'s default and SAVED it) keeps that ON when it is reopened holding work: the saved value wins over "has text"',
-    shortTypewriter === 'true' && shortSaved === 'on', `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and nothing saves a per-page Typewriter value; the original check, verbatim:
+  // ok('S5 successor to S3 (b) — a Draft page that was EMPTY when first opened (it took Arbor\'s default and SAVED it) keeps that ON when it is reopened holding work: the saved value wins over "has text"',
+  // shortTypewriter === 'true' && shortSaved === 'on', `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);
+  ok('S3 (b) [Free Write = Typewriter successor] - a Draft page that was EMPTY when first opened, reopened holding work, is still OFF and nothing was saved for it (no per-page value is ever written)',
+    shortTypewriter === 'false' && shortSaved === null, `data-typewriter=${String(shortTypewriter)} saved=${String(shortSaved)}`);
 
   // S3 (c) - the real "has text, nothing saved" case: a page that already holds work the FIRST time it is ever opened opens OFF (in Arbor too), and remembers OFF.
   await freshDesk(app);
@@ -180,8 +186,11 @@ await withHarness(async (app) => {
   const seededMode = await activeModeTab(app);
   const seededTypewriter = await typewriterDom(app);
   const seededSaved = await app.evalJs(`localStorage.getItem('wrizo-typewriter-page-${seededId}')`);
-  ok('S3 (c) [Phase 1 S5] — a Draft page that already holds work the FIRST time it is ever opened (nothing saved) opens with the typewriter OFF, and saves OFF',
-    seededMode === 'Draft' && seededTypewriter === 'false' && seededSaved === 'off', `mode=${String(seededMode)} data-typewriter=${String(seededTypewriter)} saved=${String(seededSaved)}`);
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter and nothing saves a per-page Typewriter value; the original check, verbatim:
+  // ok('S3 (c) [Phase 1 S5] — a Draft page that already holds work the FIRST time it is ever opened (nothing saved) opens with the typewriter OFF, and saves OFF',
+  // seededMode === 'Draft' && seededTypewriter === 'false' && seededSaved === 'off', `mode=${String(seededMode)} data-typewriter=${String(seededTypewriter)} saved=${String(seededSaved)}`);
+  ok('S3 (c) [Free Write = Typewriter successor] - a Draft page that already holds work the FIRST time it is ever opened opens with the typewriter OFF, and saves NOTHING',
+    seededMode === 'Draft' && seededTypewriter === 'false' && seededSaved === null, `mode=${String(seededMode)} data-typewriter=${String(seededTypewriter)} saved=${String(seededSaved)}`);
 });
 
 // eslint-disable-next-line no-console

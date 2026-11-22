@@ -520,12 +520,20 @@ await withHarness(async (app) => {
   })()`);
   await app.evalJs(`document.querySelector('.wz-sliver-instruments-row [aria-label="Settings"]')?.click()`);
   await sleep(150);
-  ok('S3 [PR #7 successor]: the typewriter option IS present on a screenplay page - R12 stands; it is the "Typewriter Mode" section of the foot\'s one Settings menu',
-    scriptSettings.panelOpen === true && scriptSettings.heads.includes('Typewriter Mode'),
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S3 [PR #7 successor]: the typewriter option IS present on a screenplay page - R12 stands; it is the "Typewriter Mode" section of the foot\'s one Settings menu',
+  // scriptSettings.panelOpen === true && scriptSettings.heads.includes('Typewriter Mode'),
+  // JSON.stringify(scriptSettings));
+  ok('S3 [Free Write = Typewriter successor]: a screenplay page offers NO typewriter option - the foot\'s one Settings menu is there (power) and has no "Typewriter Mode" section',
+    scriptSettings.panelOpen === true && scriptSettings.heads.length >= 1 && !scriptSettings.heads.includes('Typewriter Mode'),
     JSON.stringify(scriptSettings));
   // ARCHIVED PARK (#13 step 14): archive/sc1.mjs.parked.md record 4
-  ok('S3 [PR #7 successor]: the screenplay Settings menu carries the Typewriter switch itself - no live switch that does nothing, because the switch now governs',
-    scriptSettings.panelOpen === true && scriptSettings.hasTypewriterRow === true,
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch left every stage and Draft/Screenplay never run it; the original check, verbatim:
+  // ok('S3 [PR #7 successor]: the screenplay Settings menu carries the Typewriter switch itself - no live switch that does nothing, because the switch now governs',
+  // scriptSettings.panelOpen === true && scriptSettings.hasTypewriterRow === true,
+  // JSON.stringify(scriptSettings));
+  ok('S3 [Free Write = Typewriter successor]: the screenplay Settings menu carries no Typewriter switch at all (no row with the word)',
+    scriptSettings.panelOpen === true && scriptSettings.hasTypewriterRow === false,
     JSON.stringify(scriptSettings));
 
   // ...and the withdrawal is SCRIPT-ONLY. This is the guard that the

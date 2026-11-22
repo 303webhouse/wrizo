@@ -67,6 +67,8 @@ export interface WritingSettings {
   flicker: boolean;
   // THE PLAIN PROGRESS TRACKER's switch (POLISH, Fable Nov 20, 5:25 pm): true = the theme's own tracker (today's behaviour), false = the plain tracker in every theme; saved to the account with the rest
   themeTracker: boolean;
+  // SPRINT's prompts from the Consultant (Fable, Nov 21, 10:25 am; Nick ruled it ON): the writer's own choice, true = a press in SPRINT asks the Consultant for one prompt, false = the local deck answers and nothing is sent. On by default; saved to the account with the rest through the `writing` fact (store/writingPref.ts).
+  consultant: boolean;
 }
 
 const KEY = 'wrizo-writing-settings';
@@ -103,6 +105,7 @@ const DEFAULTS: WritingSettings = {
   pageScroll: true,
   flicker: true,
   themeTracker: true,
+  consultant: true,
 };
 
 function load(): WritingSettings {
@@ -176,29 +179,34 @@ function writePageTypewriter(id: string, on: boolean): void {
 }
 
 // the pure read every Draft/Screenplay consumer asks: this page's saved value, else the theme's default for an empty page, else off; no side effect [writingSettings §3]
-export function typewriterForPage(id: string, empty: boolean): boolean {
-  // WIRE IN (Fable, Nov 12): the paper Typewriter is retired in Flux, so no page asks for it there; the stored value (read below, written by the toggles' own path) is kept as data and read again in any other theme
-  if (getTheme() === 'flux') return false;
-  const saved = readPageTypewriter(id);
-  return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
+export function typewriterForPage(_id: string, _empty: boolean): boolean {
+  // FREE WRITE IS THE TYPEWRITER (Nick, Nov 19, 2:10 pm; Fable's ruling): Free Write always runs it, in every theme (ModeStage.tsx typewriterRun), and DRAFT NEVER DOES, so a page asks for it here and the answer is no.
+  // Every stored value (wrizo-typewriter-page-*, settings.typewriter) is kept as data and read by NOTHING; nothing deletes it and nothing new is saved (enterPageTypewriter and setTypewriterExplicit below write nothing now).
+  // SUPERSEDED: the per-page memory read (readPageTypewriter(id), else the theme's default for an empty page) and Flux's early false; the old body, verbatim:
+  //   if (getTheme() === 'flux') return false;
+  //   const saved = readPageTypewriter(id);
+  //   return saved ?? (empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
+  return false;
 }
 
 // The page whose Draft surface is mounted right now (set by holdTypewriterPage). The shared toggles (Sliver, ModeStage, JournalEntry) call
 // setTypewriterExplicit without knowing a page; this is how a Draft page's toggle reaches its own key. Null on Free Write and everywhere else.
 let heldPageId: string | null = null;
 export function holdTypewriterPage(id: string): () => void {
-  heldPageId = id;
+  heldPageId = id;   // kept only so the callers' effects stay as they are; nothing writes through it now (setTypewriterExplicit is a no-op)
   return () => { if (heldPageId === id) heldPageId = null; };
 }
 
 /** The writer's toggle. Writes the live value and, on a held Draft/Screenplay page, that page's own memory. */
-export function setTypewriterExplicit(on: boolean): void {
-  setWritingSettings({ typewriter: on });
-  if (heldPageId != null) writePageTypewriter(heldPageId, on);
+export function setTypewriterExplicit(_on: boolean): void {
+  // FREE WRITE IS THE TYPEWRITER: the switch is gone from both stages, so nothing calls this; it writes nothing (no new saved data). SUPERSEDED body, verbatim:
+  //   setWritingSettings({ typewriter: on });
+  //   if (heldPageId != null) writePageTypewriter(heldPageId, on);
 }
 
 // once per page mount, opening into Draft: resolves and saves this page's own value, never mirrored into the shared field [writingSettings §4]
-export function enterPageTypewriter(id: string, empty: boolean): void {
-  const saved = readPageTypewriter(id);
-  if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
+export function enterPageTypewriter(_id: string, _empty: boolean): void {
+  // FREE WRITE IS THE TYPEWRITER: no page records a Typewriter value any more (no new saved data); the stored ones stay as they are. SUPERSEDED body, verbatim:
+  //   const saved = readPageTypewriter(id);
+  //   if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);
 }

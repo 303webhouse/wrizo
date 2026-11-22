@@ -210,8 +210,20 @@ const pinsOf = (m, s) => ({
     && /const id = r\.linkId;\n\s*removePageLink\(id\);/.test(l) && /getBoardActions\(\)\?\.removeConnection\(r\.connId\)/.test(l);
   const u3 = { ...u, tabAsksFirst: tabPin(links) };
   ok('S6-S9 [big-projects-3 successor]: the rail\'s thumbnails declare their entry (CascadeSurvey, the Plan board row, and the Pages pop-out\'s rows); the release consults livePinFor BEFORE toggling a record (one truth at the door); the arm travels in a body portal; the footers read page links; a dropped thumbnail saves the card BEFORE the record that names it; the Grafts tab\'s X (on a grouped row) asks first without the "Don\'t ask me again" tick and removes the row\'s own record or box', Object.values(u3).every(Boolean), JSON.stringify(u3));
-  const tabMut = links.replace('always: true, noDontAsk: true', 'always: false');
-  ok('S (UI mutant, big-projects-3): letting the Grafts tab\'s X skip its confirm turns the new tab pin RED (the mutation landed)', tabMut !== links && tabPin(links) && tabPin(tabMut) === false, '');
+  // SUPERSEDED (Doc-level assets, Nick's ruling A via Fable, Nov 20, 11:55 pm; reorg-assets-plus, CONTENT CLEARED Nov 21, 12:35 am): the Assets tab's
+  // Doc-level row has its own X that asks first, a SECOND `requestDelete(() => {...}, { title: t('linksRemoveTitle'), always: true, noDontAsk: true })`
+  // in ConnectionsDrawerPanel.tsx. The mutant still lands on the Grafts X (the first), but tabPin's lazy [\s\S]*? then runs on to the Doc X's
+  // confirm, so the pin stays green on the mutant (train F's pair, run 44944613263; ctl-f-p3 44949174802). The product is right (both X's ask
+  // first); the pin could not tell WHICH X asks. The original, verbatim:
+  // const tabMut = links.replace('always: true, noDontAsk: true', 'always: false');
+  // ok('S (UI mutant, big-projects-3): letting the Grafts tab\'s X skip its confirm turns the new tab pin RED (the mutation landed)', tabMut !== links && tabPin(links) && tabPin(tabMut) === false, '');
+  // [successor] the pin is scoped to the Grafts X's own block (`const remove = (r: GraftRow) => requestDelete(...)`): its confirm options close
+  // THAT block (no other requestDelete inside the span), and the block removes the row's own record or box; the mutant is aimed at that block.
+  const tabPinOwn = (l) => { const m = l.match(/const remove = \(r: GraftRow\) => requestDelete\(\(\) => \{([\s\S]*?)\}, \{ title: t\('linksRemoveTitle'\), always: true, noDontAsk: true \}\);/);
+    return !!m && !/requestDelete/.test(m[1]) && /const id = r\.linkId;\n\s*removePageLink\(id\);/.test(m[1]) && /getBoardActions\(\)\?\.removeConnection\(r\.connId\)/.test(m[1]); };
+  const tabMutOwn = links.replace(/(const remove = \(r: GraftRow\) => requestDelete\(\(\) => \{[\s\S]*?\}, \{ title: t\('linksRemoveTitle'\), )always: true, noDontAsk: true/, '$1always: false');
+  ok('S (UI mutant, big-projects-3) [successor]: letting the Grafts tab\'s X skip its confirm turns the tab pin, scoped to that X\'s own block, RED (the mutation landed on that block)',
+    tabMutOwn !== links && tabPinOwn(links) && tabPinOwn(tabMutOwn) === false, JSON.stringify({ landed: tabMutOwn !== links, pin: tabPinOwn(links), onMutant: tabPinOwn(tabMutOwn) }));
   const um = [
     ['railTagged', () => ui(be, panels, survey.replace('data-link-entry={item.id}', ''), links, dlg)],
     ['oneTruthAtTheDoor', () => ui(be.replace('if (pin) { commit(pin.id); return; }', ''), panels, survey, links, dlg)],

@@ -176,7 +176,9 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
   await app.key('Escape'); await sleep(300);
   const lsAfter = (await read(app)).ls;
   ok('B2b GRAFTS\' "+ Graft..." opens the picker, and choosing nothing changes nothing', pk === 'true' && lsAfter === lsBefore, JSON.stringify({ expanded: pk }));
-  ok('B1 the page never moved through the Tutor tabs', sameRect(bd.page, off.page) && sameRect(gr.page, off.page), JSON.stringify(bd.page));
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): `off.page` is the page before the Tutor opened, and Free Write's page is the Typewriter's zoom now; the claim is about the TABS. The original check, verbatim:
+  //   ok('B1 the page never moved through the Tutor tabs', sameRect(bd.page, off.page) && sameRect(gr.page, off.page), JSON.stringify(bd.page));
+  ok('B1 [Free Write = Typewriter successor] the page never moved through the Tutor tabs: its rect is the same on TUTOR, BOARD and GRAFTS (all read with the Tutor open)', !!tu.page && !!bd.page && !!gr.page && sameRect(tu.page, bd.page) && sameRect(bd.page, gr.page), JSON.stringify({ tutor: tu.page, board: bd.page, grafts: gr.page, before: off.page }));
   await setFlag(app, false);
   return checks;
 } finally { await unpinClock(app); } }, { label: 'arbor2-23' });

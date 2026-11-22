@@ -65,6 +65,9 @@
 //       U3  the Trash is the row at the very foot, and opens today's Trash
 //       U4  REACHABLE, whole: every Project's list, the Notebook's and Unfiled together reach every page and board the fixture made
 // PAGE  G2  the page's rect is the same with DOCS open and with UNFILED open, at 1366, 1920 and 2000
+//       G1/G2 [scale successor] (train H, Nov 21: the chrome scale) every state within the reorg is the same; against the switch off the page is the
+//           same at 1366, and above it sits lower by the bar's growth alone (scaledSame)
+//   MUT-G-SCALE  the 1920 reading pushed 40 px sideways, or 30 px lower than the bar grew, fails the successor; the reading itself passes
 //
 // CAPTURE (REORG_RAILS_MODE=capture): prints main's switch-off DOM, one GOLDEN line per surface, instead of checking. Run it on a tree that is
 //   origin/main plus this file (the wrapper reorg-rails-capture.mjs on the branch reorg-rails-golden); the golden file records that tree's SHA.
@@ -86,6 +89,21 @@ const THEMES = ['plateau', 'flux', 'machina'];
 const CATEGORIES = ['page', 'plan', 'journal', 'drawers', 'settings', 'theme', 'trash'];
 // the page as the writer sees it, every layer of it: the column, the paper inside it and the editor on the paper (the first form read only the
 // first of '.mode-page, .mode-pagecol' in document order, the column, so a shove of the paper inside it went unseen: mutant page-shoved, run 43641519969)
+// the chrome scale's successor (train H, Nov 21): the bar's bottom, and the page's rects against the switch off - at 1366 and below (k = 1) the same
+// string; above, every top moves by the bar's growth g (within 1 px) and no other edge moves more than g (a drawer or the rail displacing the page moves
+// it by its own width, 100 px and more). Within the reorg every state is still compared as the same string.
+const BAR = "(() => { const b = [...document.querySelectorAll('.chrome-top.sprint-nav')].find((e) => e.getBoundingClientRect().height > 0); return b ? Math.round(b.getBoundingClientRect().bottom * 10) / 10 : null; })()";
+const rectsOf = (s) => String(s || '').split('|').map((r) => r.trim());
+const scaledSame = (w, off, on, g) => {
+  if (!off || !on) return false;
+  if (w <= 1366) return on === off;
+  const a = rectsOf(off), b = rectsOf(on);
+  if (a.length !== b.length || !(g > 0)) return false;
+  return a.every((r, i) => { if (r === '-' || b[i] === '-') return r === b[i]; const p = r.split(',').map(Number), q = b[i].split(',').map(Number);
+    if (p.length !== 4 || q.length !== 4 || [...p, ...q].some((x) => !Number.isFinite(x))) return false;
+    return Math.abs((q[1] - p[1]) - g) <= 1 && Math.abs(q[0] - p[0]) <= g && Math.abs(q[2] - p[2]) <= g && Math.abs(q[3] - p[3]) <= g; });
+};
+const shiftRects = (s, dl, dt) => rectsOf(s).map((r) => (r === '-' ? r : r.split(',').map(Number).map((x, j) => Math.round((x + (j === 0 ? dl : j === 1 ? dt : 0)) * 10) / 10).join(','))).join(' | ');
 const PAGE = "(() => { const els = ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => document.querySelector(s)); if (!els[1] && !els[0]) return null; return els.map((p) => { if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 10) / 10).join(','); }).join(' | '); })()";
 const STORE = "JSON.stringify([localStorage, sessionStorage].map((s) => Object.keys(s).sort().map((k) => [k, s.getItem(k)])))";
 const q = (s) => JSON.stringify(s);
@@ -132,7 +150,9 @@ async function openPage(app, theme, reorg) {
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
   // (the Arbor redesign is on by default since Nov 15; this file was written for today's Arbor, so its own address carries the harness's pin, ?arbor2=0 -
   // FABLE RULED, Nov 15, 10:40 pm. It wrote its own address and so skipped the driver's pin: O1/O2 read the redesign's strip against today's golden.)
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/rr-top-1')`);
+  // (Machina's look, on by default since machina/look: the same pin for Machina, ?machina2=0 - FABLE ACCEPTED the Machina pin, Nov 20, 12:05 am, "as Arbor's Nov 15
+  // pin". Actions 44691517313 read the look's Themes pop-out - its Room row - against today's golden: O1 [machina] [theme]. This file is on the pinned list.)
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -601,17 +621,37 @@ await withHarness(async (app) => {
   await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'on' : 'off'}"]`); await sleep(200);
   const wsC = await app.evalJs("JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')");
   const others = (a, b, k) => Object.keys({ ...a, ...b }).filter((x) => x !== k && JSON.stringify(a[x]) !== JSON.stringify(b[x]));
-  // SUPERSEDED (Fable, Nov 20, 12:15 pm: the session's writing settings are saved to the ACCOUNT, switch on or off - store/writingPref.ts mirrors the settings key into the `writing`
-  // fact of the existing prefs key, so a press now stores the settings key AND that key). Parked, not deleted; the original, verbatim:
+  // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): PAGE DEFAULTS no longer carries a Typewriter mode switch (the Typewriter switch left every stage); the original D3 [successor], verbatim:
   // ok('D3 [successor]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key',
+  // Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
+  // && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  // JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // successor: PAGE DEFAULTS is the Progress bars switch alone; pressing it flips only `instrumentsOn` (every other stored key, `typewriter` included, keeps its value), and the Typewriter row is not there to press
+  const d3tw = await app.evalJs("document.querySelectorAll('[data-reorg-default=\"typewriter\"]').length");
+  ok('D3 [Free Write = Typewriter successor]: PAGE DEFAULTS offers Progress bars alone - there is no Typewriter mode switch (' + d3tw + ' found) - and pressing it changes only `instrumentsOn`: every other stored key (the old `typewriter` value included) keeps its value',
+    d3tw === 0 && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['progress', pr ? 'off' : 'on']]) && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0 && wsA.typewriter === wsC.typewriter,
+    JSON.stringify({ d3tw, defaults: d3 && d3.defaults, pr: [wsB.instrumentsOn, wsC.instrumentsOn], prOthers: others(wsB, wsC, 'instrumentsOn'), twKept: [wsA.typewriter, wsC.typewriter] }));
+  // SUPERSEDED (Fable, Nov 20, 12:15 pm: the session's writing settings are saved to the ACCOUNT, switch on or off - store/writingPref.ts mirrors the settings key into the `writing` fact of the existing prefs key,
+  // so a press now stores the settings key AND that key); it was written against the Typewriter row that Free Write = Typewriter has since removed, so it is parked beside main's own successor and COMBINED with it below.
+  // The original [successor 2], verbatim:
+  // ok('D3 [successor 2]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key and its account mirror, the existing prefs key (a `writing` fact stamped per setting)',
   //   Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
-  //   && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-writing-settings']) && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
+  //   && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings']) && !!mirror && Object.keys(mirror.fieldAt || {}).every((k) => k === 'typewriter' || k === 'instrumentsOn' || k in wsA) && mirror.typewriter === wsC.typewriter && mirror.instrumentsOn === wsC.instrumentsOn && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
   //   JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  // [successor 3: Free Write = Typewriter + the account mirror] BOTH rulings at once: main's successor above (the Typewriter row is gone, PAGE DEFAULTS is Progress bars alone, only `instrumentsOn` changes) AND the account's: the press stored the settings key
+  // and its mirror, the existing prefs key (a `writing` fact stamped per setting), and no other key. The mirror rule is one pure function, so it can be shown to FAIL (the mutant).
   const mirror = await app.evalJs("(() => { try { return (JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}')).writing || null; } catch { return null; } })()");
-  ok('D3 [successor 2]: PAGE DEFAULTS - each switch flips today\'s own setting and nothing else: with the settings stored whole, Typewriter mode changes only `typewriter`, Progress bars only `instrumentsOn` (every other stored key keeps its value); the first presses stored nothing but today\'s settings key and its account mirror, the existing prefs key (a `writing` fact stamped per setting)',
-    Object.keys(wsA).length > 4 && wsB.typewriter === !wsA.typewriter && others(wsA, wsB, 'typewriter').length === 0 && wsC.instrumentsOn === !(wsB.instrumentsOn !== false) && others(wsB, wsC, 'instrumentsOn').length === 0
-    && JSON.stringify(diffKeys(st0, st1)) === JSON.stringify(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings']) && !!mirror && Object.keys(mirror.fieldAt || {}).every((k) => k === 'typewriter' || k === 'instrumentsOn' || k in wsA) && mirror.typewriter === wsC.typewriter && mirror.instrumentsOn === wsC.instrumentsOn && !!d3 && JSON.stringify(d3.defaults) === JSON.stringify([['typewriter', tw ? 'off' : 'on'], ['progress', pr ? 'off' : 'on']]),
-    JSON.stringify({ keys: Object.keys(wsA).length, tw: [wsA.typewriter, wsB.typewriter], pr: [wsB.instrumentsOn, wsC.instrumentsOn], twOthers: others(wsA, wsB, 'typewriter'), prOthers: others(wsB, wsC, 'instrumentsOn'), changed: diffKeys(st0, st1) }));
+  const mirrorKept = (changed, m, ws) => JSON.stringify(changed) === JSON.stringify(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings']) && !!m && m.instrumentsOn === ws.instrumentsOn && Object.keys(m.fieldAt || {}).every((k) => k in ws) && !('typewriter' in (m.fieldAt || {}));
+  ok('D3 [successor 3: Free Write = Typewriter + account mirror]: PAGE DEFAULTS is Progress bars alone (no Typewriter row), and the press stored the settings key and its account mirror (the existing prefs key, a `writing` fact whose `instrumentsOn` follows the switch and whose stamps name only settings that exist; `typewriter` is not among them) and no other key',
+    d3tw === 0 && mirrorKept(diffKeys(st0, st1), mirror, wsC),
+    JSON.stringify({ d3tw, changed: diffKeys(st0, st1), mirror: mirror && { instrumentsOn: mirror.instrumentsOn, fieldAt: Object.keys(mirror.fieldAt || {}) } }));
+  ok('D3 [successor 3] MUTANT: the mirror rule catches a press that stores a third key, a mirror that does not follow the switch, and a stamp for a setting that does not exist; and passes the right shape',
+    mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false, typewriter: true }) === true
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings', 'local:other'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: true, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-reorg-prefs', 'local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { nonsense: 'x' } }, { instrumentsOn: false }) === false
+    && mirrorKept(['local:wrizo-writing-settings'], { instrumentsOn: false, fieldAt: { instrumentsOn: 'x' } }, { instrumentsOn: false }) === false,
+    'mirrorKept over synthetic inputs');
   await click(`[data-reorg-default="typewriter"] [data-toggle="${wsA.typewriter ? 'on' : 'off'}"]`); await click(`[data-reorg-default="progress"] [data-toggle="${wsB.instrumentsOn === false ? 'off' : 'on'}"]`); await sleep(200);
 
   // ---- STEP 6: UNFILED and the Trash ---------------------------------------------------------------------------------------------------
@@ -667,13 +707,18 @@ await withHarness(async (app) => {
   await app.key('Escape'); await sleep(600);
 
   // ---- PAGE ----------------------------------------------------------------------------------------------------------------------------
+  const scaleKeep = {};
   for (const [w, h] of [[1366, 768], [1920, 1080], [2000, 1200]]) {
     await app.emulateDpr(1, w, h);
     await openPage(app, 'machina', false);
     const off = await app.evalJs(PAGE);
+    const barOff = await app.evalJs(BAR);
     await openPage(app, 'machina', true);
     await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (e) e.__reorgRails = 1; })()");
     const rest = await app.evalJs(PAGE);
+    const barOn = await app.evalJs(BAR);
+    const g = barOn != null && barOff != null ? Math.round((barOn - barOff) * 10) / 10 : null;
+    scaleKeep[w] = { off, rest, g };
     await click('[data-reorg-rail] [data-category="reorg-projects"]'); await sleep(600);
     const open = await app.evalJs(PAGE);
     await click(`[data-reorg-pin-toggle="${ids.grants}"]`); await click('[data-reorg-pin-toggle="notebook"]'); await click(`[data-reorg-pin-toggle="${ids.essays}"]`); await sleep(200);
@@ -690,9 +735,15 @@ await withHarness(async (app) => {
     // SUPERSEDED (step 3 and 4 add two states; the original, verbatim):
     // ok(`G1 [${w}]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, and closed (${off}); the editor is the same node throughout`,
     //   !!off && [rest, open, pinsBoxes, pinsList, closed].every((r) => r === off) && same, JSON.stringify({ off, rest, open, pinsBoxes, pinsList, closed, same }));
-    ok(`G1 [${w}] [successor]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${off}); the editor is the same node throughout`,
-      !!off && [rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === off) && same && boxOpen !== null,
-      JSON.stringify({ off, rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
+    // SUPERSEDED (the chrome scale (arbor/reorg-scale 0c8df64d, train H; Fable, Nov 21 11:45 am: one chrome scale from the window's width / 1366, Machina under the reorg only;
+  // pass 2 REAL 2, cleared 3:52 pm: the chrome budget grows by what the taller bar adds) makes the bar taller above 1366 with the switch ON, so against the
+  // switch OFF the page sits lower by exactly the bar's growth (Chat 1's pair 44973956599 on train-h4 3ab78c73: 108 -> 120.3 at 1920, the bar 12.3 px taller)). The [successor], verbatim:
+    // ok(`G1 [${w}] [successor]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${off}); the editor is the same node throughout`,
+    //   !!off && [rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === off) && same && boxOpen !== null,
+    //   JSON.stringify({ off, rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
+    ok(`G1 [${w}] [scale successor]: the page's rect is the same on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${rest}); against the switch off (${off}) the same at 1366, lower by the bar's growth alone above (${g} px); the editor is the same node throughout`,
+      !!rest && [open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === rest) && scaledSame(w, off, rest, g) && same && boxOpen !== null,
+      JSON.stringify({ off, rest, g, barOff, barOn, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
     // G2 (steps 5 and 6): DOCS open, UNFILED open
     await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
     const docsOpen = await app.evalJs(PAGE);
@@ -701,10 +752,20 @@ await withHarness(async (app) => {
     const unfOpen = await app.evalJs(PAGE);
     const unfDrawn = await app.evalJs("!!document.querySelector('.desk-frame-cascade-anchor .wz-reorg-unfiled')");
     await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(600);
-    ok(`G2 [${w}]: the page's rect is the same with DOCS open and with UNFILED open (${off}); the editor is still the same node`,
-      !!off && docsDrawn && unfDrawn && docsOpen === off && unfOpen === off && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
-      JSON.stringify({ off, docsOpen, unfOpen, docsDrawn, unfDrawn }));
+    // SUPERSEDED (the chrome scale (arbor/reorg-scale 0c8df64d, train H; Fable, Nov 21 11:45 am: one chrome scale from the window's width / 1366, Machina under the reorg only;
+  // pass 2 REAL 2, cleared 3:52 pm: the chrome budget grows by what the taller bar adds) makes the bar taller above 1366 with the switch ON, so against the
+  // switch OFF the page sits lower by exactly the bar's growth (Chat 1's pair 44973956599 on train-h4 3ab78c73: 108 -> 120.3 at 1920, the bar 12.3 px taller)). The original, verbatim:
+    // ok(`G2 [${w}]: the page's rect is the same with DOCS open and with UNFILED open (${off}); the editor is still the same node`,
+    //   !!off && docsDrawn && unfDrawn && docsOpen === off && unfOpen === off && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+    //   JSON.stringify({ off, docsOpen, unfOpen, docsDrawn, unfDrawn }));
+    ok(`G2 [${w}] [scale successor]: the page's rect is the same with DOCS open and with UNFILED open as at rest (${rest}), and at rest it is the switch off's (${off}) at 1366, lower by the bar's growth alone above (${g} px); the editor is still the same node`,
+      !!rest && docsDrawn && unfDrawn && docsOpen === rest && unfOpen === rest && scaledSame(w, off, rest, g) && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+      JSON.stringify({ off, rest, g, docsOpen, unfOpen, docsDrawn, unfDrawn }));
   }
+  // MUT-G-SCALE: the 1920 reading passes; pushed 40 px sideways (a drawer displacing the page), or 30 px lower than the bar grew, it fails
+  { const s = scaleKeep[1920] || {}; const pushed = s.rest ? shiftRects(s.rest, 40, 0) : null; const sunk = s.rest ? shiftRects(s.rest, 0, 30) : null;
+    ok('MUT-G-SCALE the 1920 reading passes the scale successor, and the same reading pushed 40 px sideways, or 30 px lower than the bar grew, fails it',
+      !!s.rest && scaledSame(1920, s.off, s.rest, s.g) && !scaledSame(1920, s.off, pushed, s.g) && !scaledSame(1920, s.off, sunk, s.g), JSON.stringify({ ...s, pushed, sunk })); }
   return checks;
 });
 

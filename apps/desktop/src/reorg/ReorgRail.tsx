@@ -10,6 +10,8 @@ import { NOTEBOOK, projectOfEntry } from './railData';
 import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
 import { REORG } from './flag';
+import { useChromeScale } from './chromeScale';
+import './parts';   // a side-effect import on purpose: the Parts layer installs its harness door (window.wrizoParts) when the bundle loads; nothing here draws it yet (the Parts list is POLISH's)
 
 // THE REORG'S RAIL (phase 2, behind ?reorg=1 in Machina; frames rail-1d R1 to R3). It replaces the strip's CONTENT only: it renders in the same
 // DeskFrame track (84 px), under the same `.wz-strip` root (so the Cascade's keystroke dissolve still knows its own DOM), and every door opens a
@@ -60,6 +62,8 @@ function railSignature(entry: JournalEntry): string {
 }
 
 export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void }) {
+  // §3b item 4: while the reorg's rail stands in Machina, the chrome grows with the window (./chromeScale.ts)
+  useChromeScale();
   latestToggle = toggle;
   return <RailBody entry={entry} open={open} toggle={stableToggle} sig={railSignature(entry)} />;
 }

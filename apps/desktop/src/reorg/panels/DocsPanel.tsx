@@ -205,7 +205,6 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
       </section>
       <section className="wz-reorg-group" data-reorg-group="defaults" aria-label={t('reorgDefaults')}>
         <div className="wz-reorg-group-head">{t('reorgDefaults')}</div>
-        <Toggle id="typewriter" label={t('reorgTypewriter')} on={settings.typewriter} onPick={(on) => setWritingSettings({ typewriter: on })} t={t} />
         <Toggle id="progress" label={t('reorgProgressBars')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />
       </section>
       {subject.entry.pageType !== 'board' && <Session stage={pageStageOf(subject.entry)} t={t} />}

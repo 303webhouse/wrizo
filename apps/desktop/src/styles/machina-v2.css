@@ -1,0 +1,302 @@
+/* ==========================================================================================================================================
+   MACHINA'S LOOK (r10's mockup - the Wrizors' machina-redesign-spec draft 4, md5 6aed2bef; Fable's brief, Oct 31 - SHIPPED LOOK ONLY, Fable Nov 19:
+   "rooms, colours, bars, splash; wow parts out"). Loaded by src/machina2/mount.tsx, on by default in Machina (?machina2=0 test-only); every rule
+   is scoped under :root[data-machina2][data-theme='machina'], so Arbor and Flux never read a line of it. Machina-scoped values only: no shared
+   token's base value is touched. OUT, with no rule here: the command line and its door, the readout bar, the Run's r10 behaviours (its sparks
+   stay), Outline -> Parts, Open beside, the keyboard legend, the Consultant's asks and the 11 pt size box.
+
+   §2 TOKENS v3 (Nick 3:03 pm: grayscale first, one palette for both tones; 3:11 pm: the menu bars dark in BOTH tones, their temperature by
+   CAST). One grey ramp shared by light and dark, used in opposite emphasis:
+     G0 #F4F5F6 · G1 #E6E8EA · G2 #D2D6DA · G3 #9AA1A8 · G4 #5E666E · G5 #3A4047 · G6 #23272B · G7 #151719
+   THE ROOM AND THE PAGE ARE TWO SETTINGS (r2; Nick's pick via Fable, Oct 31: a separate Room setting). The room reads data-room when it is set,
+   else it follows the Page tone (data-page) - resolved by src/machina2/room.ts into data-machina2-room (light | dark), which every ROOM rule
+   below reads; the PAGE rules (the paper, its ink, its hairline, the board's cards) read data-page alone. So all four mixes hold: light room
+   with a light or a dark page, dark room with either. In session only; nothing stored.
+     LIGHT  room G1, panels G0, hairlines G2, labels G5, quiet G4         (NEUTRAL: the warm ramp - #E9E6E1 / #F5F3EF / #D6D1C9 / #3B3833 / #5F5A53)
+     DARK   room G7, panels G6, hairlines G5, labels G1, quiet G3         (NEUTRAL: #171614 / #242220 / #3B3834 / #E6E2DB / #A09A91)
+     PAGE   light #FBFBFA ink #1C1C1C · dark #1A1B1D ink #E8E8E5 (both casts; r10: was #E6E6E3, 13.78:1 - under the 13.9 floor, measured by
+            m2r10-fade-paper, run 41911861965; #E8E8E5 is 14.04:1)
+     BARS   (top bar, rail, the "..."): COOL #1E262E hairline #2E3A46 labels G1 · NEUTRAL #201E1B hairline #332F2A labels #E6E2DB - both tones
+   THE COLOUR MEANINGS: GUIDANCE is the grayish cool blue, sparingly (text #3F6183 light / #8FA3B8 dark; marks #7FA0BC) - only the "?" marks,
+   PLAN -> and the Plans rail item, "-> Part", the Consultant's ask outlines, the matched commands, the Forms/preset doors. BRASS #FF9800 only
+   where the writer acted: the caret, the current tab's underline, a chosen state, the Run notch. CAST is the greys' temperature only
+   (theme-rules §A.1's "steel in COOL, orange in NEUTRAL" retires, Fable ruling 6). No pure white chrome. No motion but the caret and the Run.
+   CONTRAST (WCAG; scripts/harness/machina2-unit.mjs computes every pair, scripts/frames/machina2.mjs measures them on screen).
+   ========================================================================================================================================== */
+
+/* ---------- THE DARK ROOM (COOL; the base) ---------- */
+:root[data-machina2][data-theme='machina']{
+  --ink-950:#151719; --lamp-glow:linear-gradient(#151719, #151719);
+  --chrome-surface:#23272B; --rail-surface:#1E262E; --ink-900:#23272B; --ink-800:#2C3136;
+  --ink-border:#3A4047; --ink-border-strong:#5E666E;
+  --text-hi:#E6E8EA; --text-mid:#9AA1A8; --text-low:#9AA1A8;
+  --paper:#1A1B1D; --paper-dim:#151719; --paper-border:#3A4047; --ink-on-paper:#E8E8E5; --ink-on-paper-low:#9AA1A8;
+  /* guidance: the cool blue */
+  --machina2-guide:#8FA3B8; --machina2-guide-mark:#7FA0BC;
+  --help:#8FA3B8; --help-hi:#B4C3D2; --text-accent:#8FA3B8; --accent-door:#8FA3B8;
+  /* brass: what the writer did - the current tab, a chosen state (one colour in both casts) */
+  --line-active:#FF9800; --choice:#FF9800; --accent-rest:var(--text-hi);
+  --signal-live:#9AA1A8;
+}
+/* ---------- THE LIGHT ROOM (COOL) ---------- */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light']{
+  --ink-950:#E6E8EA; --lamp-glow:linear-gradient(#E6E8EA, #E6E8EA);
+  --chrome-surface:#F4F5F6; --ink-900:#F4F5F6; --ink-800:#E6E8EA;
+  --ink-border:#D2D6DA; --ink-border-strong:#9AA1A8;
+  --text-hi:#3A4047; --text-mid:#3A4047; --text-low:#5E666E;
+  --machina2-guide:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --text-accent:#3F6183; --accent-door:#3F6183;
+  --signal-live:#5E666E;
+}
+/* the light PAGE (COOL), in either room */
+:root[data-machina2][data-theme='machina'][data-page='light']{
+  --paper:#FBFBFA; --paper-dim:#F4F5F6; --paper-border:#D2D6DA; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5E666E;
+}
+/* ---------- NEUTRAL: the warm ramp ---------- */
+:root[data-machina2][data-theme='machina'][data-cast='neutral']{
+  --ink-950:#171614; --lamp-glow:linear-gradient(#171614, #171614);
+  --chrome-surface:#242220; --rail-surface:#201E1B; --ink-900:#242220; --ink-800:#2D2A27;
+  --ink-border:#3B3834; --ink-border-strong:#5F5A53;
+  --text-hi:#E6E2DB; --text-mid:#A09A91; --text-low:#A09A91;
+  --line-active:#FF9800; --choice:#FF9800; --accent-rest:var(--text-hi); --text-accent:#8FA3B8; --help:#8FA3B8; --help-hi:#B4C3D2; --accent-door:#8FA3B8;
+  --signal-live:#A09A91;
+}
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-machina2-room='light']{
+  --ink-950:#E9E6E1; --lamp-glow:linear-gradient(#E9E6E1, #E9E6E1);
+  --chrome-surface:#F5F3EF; --ink-900:#F5F3EF; --ink-800:#E9E6E1;
+  --ink-border:#D6D1C9; --ink-border-strong:#A09A91;
+  --text-hi:#3B3833; --text-mid:#3B3833; --text-low:#5F5A53;
+  --text-accent:#3F6183; --help:#3F6183; --help-hi:#2E4A66; --accent-door:#3F6183;
+  --signal-live:#5F5A53;
+}
+/* THE PAGE by cast, in either room (the page's white and its ink are the same in both casts; its dim, hairline and low ink take the cast) */
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light']{
+  --paper:#FBFBFA; --paper-dim:#F5F3EF; --paper-border:#D6D1C9; --ink-on-paper:#1C1C1C; --ink-on-paper-low:#5F5A53;
+}
+/* the dark page, both casts (the cast does not touch the page's own colour) */
+:root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']){
+  --paper:#1A1B1D; --paper-dim:#171614; --paper-border:#3B3834; --ink-on-paper:#E8E8E5; --ink-on-paper-low:#A09A91;
+}
+/* THE BOARD'S CARDS follow the page, not the room (the base theme drew a dark page's cards in the room's tokens, which a light room would turn
+   light): pinned to the dark ramp - the same values the dark room gave them before r2, so the matched cases do not change. */
+:root[data-machina2][data-theme='machina']:not([data-page='light']) .board-canvas{ --card-stock:#23272B; --card-hairline:#3A4047; --ink-on-card:#E6E8EA; --ink-on-card-low:#9AA1A8; --ink-on-card-meta:#9AA1A8; --badge-on-card:#9AA1A8; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral']:not([data-page='light']) .board-canvas{ --card-stock:#242220; --card-hairline:#3B3834; --ink-on-card:#E6E2DB; --ink-on-card-low:#A09A91; --ink-on-card-meta:#A09A91; --badge-on-card:#A09A91; }
+:root[data-machina2][data-theme='machina'][data-page='light'] .board-canvas{ --card-hairline:#D2D6DA; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral'][data-page='light'] .board-canvas{ --card-hairline:#D6D1C9; }
+
+/* ---------- THE MENU BARS: dark in BOTH tones, their temperature by CAST ----------
+   The top bar, the rail and the "..." carry the bar's own tokens, so they letter in the bar's labels on the bar in either room. */
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){
+  --ink-950:#1E262E; --ink-900:#1E262E; --chrome-surface:#1E262E; --rail-surface:#1E262E; --desk-ground:#1E262E; --ink-800:#27313B;
+  --ink-border:#2E3A46; --ink-border-strong:#46525E;
+  --text-hi:#E6E8EA; --text-mid:#E6E8EA; --text-low:#9AA1A8;
+  --help:#8FA3B8; --help-hi:#B4C3D2; --text-accent:#8FA3B8; --accent-door:#8FA3B8; --machina2-guide:#8FA3B8;
+}
+:root[data-machina2][data-theme='machina'][data-cast='neutral'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){
+  --ink-950:#201E1B; --ink-900:#201E1B; --chrome-surface:#201E1B; --rail-surface:#201E1B; --desk-ground:#201E1B; --ink-800:#2A2724;
+  --ink-border:#332F2A; --ink-border-strong:#4A453F;
+  --text-hi:#E6E2DB; --text-mid:#E6E2DB; --text-low:#A09A91;
+}
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail){ background-color:var(--ink-900); }
+:root[data-machina2][data-theme='machina'] .gh-corner-glyph{ background-color:var(--ink-900); }
+
+/* ---------- THE PAGE: the near-white page is the bright thing in the light room; a hairline, not a cast shadow ---------- */
+/* (r2: keyed on the ROOM - a cast shadow is what the light room refuses, whatever the page; in the dark room the base theme's shadow stays) */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .mode-page{ box-shadow:0 0 0 1px var(--paper-border); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .mode-page.focused{ box-shadow:0 0 0 1px var(--paper-border); }
+
+/* ---------- GUIDANCE in the cool blue, and nowhere else ---------- */
+:root[data-machina2][data-theme='machina'] .sprint-nav .page-plan-door{ color:var(--machina2-guide); }
+:root[data-machina2][data-theme='machina'] .sprint-nav .page-plan-door:hover{ color:var(--text-hi); }
+
+/* ---------- THE MARK: WRIZ in Plex Mono, the square a hairline in the label grey (it fills brass only at the splash's close) ---------- */
+:root[data-machina2][data-theme='machina'] .brand-mark{ font-family:'IBM Plex Mono', monospace; color:var(--text-hi); }
+:root[data-machina2][data-theme='machina'] .brand-mark::after{ border-color:currentColor; }
+
+/* the bars' own "where you are" text (the token is the label colour, resolved per surface) */
+:root[data-machina2][data-theme='machina'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --accent-rest:#E6E8EA; }
+:root[data-machina2][data-theme='machina'][data-cast='neutral'] :is(.chrome-top.sprint-nav, .desk-frame-strip, .desk-rail, .gh-corner-glyph, .gh-corner-menu){ --accent-rest:#E6E2DB; }
+
+/* ---------- BRASS: where the writer acted, as a MARK (an underline, an edge, a notch) - never a resting text colour ----------
+   "where you are" letters in the label colour (--accent-rest = the surface's labels: brass text on the light room is 1.9:1); the current mode
+   tab, the current drawer tab and the rail's current item carry the brass line (§9: "current = brass underline"). */
+:root[data-machina2][data-theme='machina'] .desk-mode-tab.active{ border-bottom-color:var(--brass); }
+:root[data-machina2][data-theme='machina'] .wz-drawer-tab{ background:none; border:0; border-bottom:1px solid var(--ink-border); }
+:root[data-machina2][data-theme='machina'] .wz-drawer-tab[data-on='true']{ color:var(--text-hi); border-bottom:2px solid var(--brass); }
+:root[data-machina2][data-theme='machina'] .wz-strip-item.active{ border-left-color:var(--brass); }
+
+/* ---------- §3 TYPE: chrome Plex Sans 12-13 px; headings Plex Sans caps .12 em ---------- */
+:root[data-machina2][data-theme='machina'] :is(.wz-sliver-h, .wz-cascade-panel-title, .wz-drawers-cluster-title){ font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:11px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+
+/* ---------- THE BLUE WASH - DROPPED in r4 (the Wrizors and Fable, Nov 1: "Drop Blue wash"); its rule and its switch are gone ---------- */
+
+/* ==========================================================================================================================================
+   r4 - THE FLUSH BAR (Fable, Nov 1; the Wrizors' specs, wrizors-to-ARBOR-nov1b.md md5 9272a1ff). None of this sets a size, margin, padding,
+   border or position on the page or anything that lays it out: the bar is DRAWN higher by a transform (chrome.ts measures) and the nameplate
+   is a fixed overlay. (The doors at rest stay out of the ship with the features they open.)
+   ========================================================================================================================================== */
+/* THE TOP BAR FLUSH, the "..." inside its right end (as Arbor's r5 §2c.1) */
+:root[data-machina2][data-theme='machina'] .chrome-top.sprint-nav{ transform:translateY(calc(-1 * var(--machina2-bar-lift, 0px))); border-radius:0; border-top-color:transparent; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-top.sprint-nav{ padding-right:56px; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-fade:has(> div > .gh-corner-glyph){ top:var(--machina2-dots-top, 0px) !important; right:var(--machina2-dots-right, 0px) !important; padding:0 !important; }
+
+/* THE CRUMB AND THE FILES BUTTON at Machina's chrome size (§3: chrome Plex Sans 12-13 px) */
+:root[data-machina2][data-theme='machina'] .sprint-nav .sprint-crumb,
+:root[data-machina2][data-theme='machina'] .sprint-nav .sprint-crumb :is(.crumb-item, .crumb-here, .wz-crumb-home, .crumb-sep){ font-family:'IBM Plex Sans', sans-serif; font-size:13px; letter-spacing:0; }
+:root[data-machina2][data-theme='machina'] .sprint-nav .sprint-crumb .crumb-here{ font-weight:600; }
+:root[data-machina2][data-theme='machina'] .sprint-nav .sprint-toggle-btn{ font-family:'IBM Plex Sans', sans-serif; font-size:12px; letter-spacing:.04em; }
+
+/* ---------- THE MOCKUP'S OWN PANEL (not product: TEST-ONLY, drawn only under the explicit ?machina2=1). Square, hairline, no shadow, bottom-right above the corner;
+   overlays, never displaces; recedes while she types. ---------- */
+.machina2-bar{ position:fixed; right:12px; bottom:64px; z-index:2147483000; display:flex; flex-direction:column; gap:6px; padding:8px 10px; max-width:280px;
+  background:var(--ink-900); border:1px solid var(--ink-border-strong); color:var(--text-hi); font:12px/1.3 'IBM Plex Sans', sans-serif; transition:opacity .4s ease; }
+:root[data-wz-writing='true'] .machina2-bar{ opacity:0; }
+.machina2-bar-head{ all:unset; cursor:pointer; font:600 11px/1.3 'IBM Plex Sans', sans-serif; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); }
+.machina2-bar-row{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.machina2-bar-label{ min-width:72px; color:var(--text-low); }
+.machina2-bar-opt{ all:unset; cursor:pointer; padding:2px 8px; border:1px solid var(--ink-border-strong); color:var(--text-hi); }
+.machina2-bar-opt[aria-pressed='true'], .machina2-switch[aria-checked='true']{ border-color:var(--brass); }
+.machina2-bar-opt:focus-visible, .machina2-bar-head:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+.machina2-switches{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:3px; }
+.machina2-switch-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.machina2-bar-note{ margin:0; font-size:11px; color:var(--text-low); }
+
+/* the crumb's "/" was the strong hairline colour (1.61:1 on the bar - the red leg, run 41247848375, on main); it is text, so it letters quiet */
+:root[data-machina2][data-theme='machina'] .crumb-sep{ color:var(--text-low); }
+
+/* ---------- §6 THE ROOM: "No vignette, no texture, no motion." The shared atmosphere overlays (index.css body::before grain, body::after's black
+   inset vignette) stand down under the flag, in both rooms: in the light room the vignette greyed the edges into a dark band at the window's foot
+   (seen in the r1 frames, run 41249201761; it is on main too). ---------- */
+:root[data-machina2][data-theme='machina'] body::before{ display:none; }
+:root[data-machina2][data-theme='machina'] body::after{ box-shadow:none; }
+
+/* ==========================================================================================================================================
+   THE DRAWER ALIGNMENT (Nick, via Fable, Nov 1; all themes, built here under the flag).
+   CLOSED: the opener tab at the page's edge (today's rect), its arrow pointing out.
+   OPEN: the drawer stands FLUSH against the page (no gap) and the tab rides the drawer's OUTER edge, its arrow pointing back toward the page
+   ("close"). The arrows were already these (store/drawerShell.ts drawerArrow), so only places move.
+   The tab travels with the drawer's own slide, on the drawer's own tokens (--drawer-dur, --drawer-ease); under reduced motion the slide has no
+   travel and the tab cuts (the app's global reduced-motion floor flattens its transition).
+   THE PAGE NEVER MOVES: only each panel's own offset and its tab move, and both are absolute (or relative) boxes outside the page's layout.
+   Left: the panel (calc(100% - 16px) of its anchor) goes from right:16px to right:0, so it meets the page where the tab stood; the tab's right
+   edge rides the sliding layer's left edge (both travel the panel's width, on the same tokens).
+   Right: Tutor.tsx stands the panel's left edge on the tab's right edge; it is drawn 16px back over the tab's old place (position:relative
+   lays nothing out again), and the tab travels the panel's width, which drawerEdge.ts reads into a variable.
+   Typewriter's zoomed page keeps today's drawers (it has its own panel rule) and is left out.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
+:root[data-machina2][data-theme='machina'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
+:root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--machina2-drawer-r, 0px); }
+/* REDUCED MOTION: the openers cut, they never travel (fix after runs 41588188108 / 41588256216 - the reduced-motion repeat's second miss, a real
+   bug: main's floor makes every transition 0.01 ms, which still STARTS one, and its first frame shows the shut position; the read caught that
+   frame). The position leaves the transition list, so the tab stands where it settles in the frame the drawer opens. */
+@media (prefers-reduced-motion: reduce){
+  :root[data-machina2][data-theme='machina'] .wz-sliver-grip, :root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition-property:color, background-color, border-color; }
+}
+/* (fix after the first green look, runs 41336024311 / 41336050132: when a drawer's content scrolls, its sliding box is inset by the panel's
+   scrollbar strip, on the panel's OUTER side; the tab rides the panel's outer edge, so the closed box is parked a strip further in and both
+   travel the same distance - at half the slide the tab was 2 px off. drawerEdge.ts measures each strip. Reduced motion keeps no travel.) */
+@media (prefers-reduced-motion: no-preference){
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel:not([data-open='true']) > .wz-drawer-slide--left{ transform:translateX(calc(100% + var(--machina2-drawer-gl, 0px))); }
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel:not([data-open='true']) > .wz-drawer-slide--right{ transform:translateX(calc(-100% - var(--machina2-drawer-gr, 0px))); }
+}
+
+/* ==========================================================================================================================================
+   r5 - THE NAMEPLATE (the Wrizors, Nov 1, wrizors-to-ARBOR-nov1c.md; spec draft 9 §13b): "WRIZ▢ │ Unfiled / Title…" at the flush bar's left
+   end, 16 px in from its edge. Plex Mono at the mark's size and spacing (13 px, .08em, 600), the bar's label colour (G1 #E6E8EA on COOL #1E262E,
+   #E6E2DB on NEUTRAL #201E1B), the ▢ a hairline square in that colour (never brass in the bar), a hairline tick in the bar's hairline colour
+   (#2E3A46 / #332F2A). The same in both rooms (the bars are dark in both). While a bar is on screen the corner mark is not drawn, so nothing is
+   left in the top-left corner; the bar's left padding makes room before the crumb (padding inside the bar: the bar's height and the page stay).
+   ========================================================================================================================================== */
+.machina2-nameplate{ display:none; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .machina2-nameplate{ position:fixed; z-index:1000; top:0; left:calc(var(--machina2-bar-left, 0px) + 16px);
+  height:var(--machina2-bar-h, 46px); display:flex; align-items:center; gap:12px; pointer-events:none; transition:opacity var(--fade-dur, .4s) ease; }
+.machina2-nameplate-mark{ display:inline-flex; align-items:center; font:600 13px/1 'IBM Plex Mono', monospace; letter-spacing:.08em; color:#E6E8EA; }
+.machina2-nameplate-sq{ display:inline-block; box-sizing:border-box; width:.7em; height:.7em; margin-left:1px; border:1px solid currentColor; }
+.machina2-nameplate-tick{ display:inline-block; width:1px; height:14px; background:#2E3A46; }
+:root[data-machina2][data-cast='neutral'] .machina2-nameplate-mark{ color:#E6E2DB; }
+:root[data-machina2][data-cast='neutral'] .machina2-nameplate-tick{ background:#332F2A; }
+:root[data-machina2][data-wz-writing='true'] .machina2-nameplate{ opacity:0; }   /* it recedes with the bar while she types, as the door does */
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .brand-mark{ display:none; }
+/* ==========================================================================================================================================
+   THE MARK IS WRIZO (Nick, Nov 21, via Fable 1:30 pm: "the logo in the top left corner was made for the mockup"; the mockup's mark, cursor/reorg-
+   prototype docs/mockups/reorg/reorg.css 45-52). The corner mark and the bar's nameplate both draw machina2/wordmark.tsx: WRIZO in Plex Sans 500
+   at 13 px, .26em apart, the left padding making up the spacing after the last letter, and one brass notch 6 x 2 px under the O, centred on the
+   O's inked middle (the O is its own box without the spacing after it). No line above, below or beside it: the corner mark's WRIZ and square
+   (05-machina.css) are not drawn. Where the mark sits on the light room's ground (the corner) the notch wears the 1 px ink edge the Run's notch
+   wears there; the bars are dark in both rooms. Checked by scripts/harness/machina-logo-wrizo.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::before, :root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::after{ content:none; display:none; }
+.machina2-wm{ display:inline-block; font:500 13px/1 'IBM Plex Sans', sans-serif; letter-spacing:.26em; padding-left:.26em; white-space:nowrap; }
+.machina2-wm-o{ position:relative; display:inline-block; letter-spacing:0; margin-right:.26em; }
+.machina2-wm-notch{ position:absolute; left:50%; top:calc(100% + 1px); width:6px; height:2px; margin-left:-3px; background:var(--brass); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .brand-mark .machina2-wm-notch{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
+:root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-top.sprint-nav{ padding-left:calc(16px + var(--machina2-plate-w, 62px) + 12px); }
+
+/* r5 - the Lighting row's "?" (spec draft 9 §2f: "a '?' explains it in one line") */
+.machina2-bar-help{ all:unset; cursor:pointer; width:16px; height:16px; line-height:14px; text-align:center; box-sizing:border-box; border:1px solid var(--machina2-guide-mark, #7FA0BC);
+  color:var(--machina2-guide); font:11px/14px 'IBM Plex Mono', monospace; }
+.machina2-bar-help:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+.machina2-bar-help-line{ margin:0; font-size:11px; color:var(--text-low); }
+
+/* THE TAB ALWAYS TOUCHES ITS DRAWER (Fable's ruling, Nov 1: "the drawer's scrollbar goes on its inner side, never between the drawer and the
+   tab"). A native scrollbar takes the side of its box's direction, so the left drawer turns ltr (its bar on the right, the page's side) and the
+   right drawer rtl (its bar on the left, the page's side); their contents stay left to right. The sliding box now meets the tab and the strip
+   lies between it and the page; the closed box is still parked a strip further in (above), so box and tab travel the same distance. */
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ direction:ltr; }
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ direction:rtl; --machina2-tutor-rtl:on; }
+/* Train E (arbor-keyflip KF-SCAN-HAS): this was ":not(:has(...)) .wz-tutor-panel > *" - a universal subject under a :has(), which Chrome answers by
+   invalidating the whole document on every key (Arbor's bug #80, Actions run 43295952339). The panel carries the condition (above); what it holds
+   reads it through a style query, as arbor-v2.css does. Same direction, same specificity (the repeated [data-machina2] stands in for the stage and
+   its :has). scripts/harness/arbor-keyflip.mjs */
+@container style(--machina2-tutor-rtl: on){
+  :root[data-machina2][data-machina2][data-machina2][data-machina2][data-theme='machina'] .wz-tutor-panel > *{ direction:ltr; }
+}
+/* ...and the strip reads as the drawer's own: the scrollbar's track is painted in the drawer's ground (--desk-ground, the sliding box's own
+   background in every theme), so no sliver of room shows between the drawer and the page (green leg g3: a transparent track did). */
+:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) :is(.wz-sliver-panel, .wz-tutor-panel){ scrollbar-color:color-mix(in srgb, var(--text-low) 28%, transparent) var(--desk-ground); }
+
+/* r17 / r8 - THE THEMES FIELD STACKS: Page, then the room's row on its own line under it, both inside the panel (the Wrizors' note: "Room
+   in the Themes menu, directly under Page"). Main's field is a right-aligned flex row built for the one Page row: with two rows they sat side
+   by side, or ran off the panel's left edge. Under the flag the rows stack, each full width (label left, choices right), words on one line. */
+:root[data-machina2][data-theme='machina'] .wz-theme-picker-field{ flex-direction:column; align-items:stretch; }
+:root[data-machina2][data-theme='machina'] .wz-theme-picker-field .mode-seg button{ white-space:nowrap; }
+
+/* r9 - the Theme pop-out's Room row (Light · Dark · Automatic) with its "?" (the readout's guidance mark) after the choices, its line under the row */
+:root[data-machina2][data-theme='machina'] .machina2-theme-room-right{ display:flex; align-items:center; gap:6px; }
+:root[data-machina2][data-theme='machina'] .machina2-room-help-line{ margin:-2px 0 6px; text-align:right; font:10px/1.3 'IBM Plex Mono', monospace; color:var(--text-low); }
+/* the room row's "?" (r9: the guidance mark - a hairline square in the cool blue) */
+.machina2-room-help{ all:unset; pointer-events:auto; cursor:pointer; width:14px; height:14px; line-height:12px; text-align:center; box-sizing:border-box; border:1px solid var(--machina2-guide-mark, #7FA0BC); color:var(--machina2-guide); font:10px/12px 'IBM Plex Mono', monospace; }
+.machina2-room-help:focus-visible{ outline:1px solid var(--brass); outline-offset:2px; }
+
+/* r10 - THE ZOOMED PAGE STAYS PAPER TO ITS EDGES (the Wrizors' r9 review; Fable, Nov 4): the sheet behind the zoomed column (machina2/sheet.ts),
+   in the page's own colour, so the band mask fades the words into paper, never the paper into the room. Fixed, under the column (z 1), no pointer, never printed. */
+:root[data-machina2][data-theme='machina'] .machina2-sheet{ position:fixed; z-index:0; pointer-events:none; }
+.machina2-sheet{ display:none; }
+@media print{ .machina2-sheet{ display:none !important; } }
+
+/* ==========================================================================================================================================
+   THE WRIZORS' PASS 1 MUSTS (Fable, Nov 20, 3:15 pm). (a) In the light room the Run's brass notch gets a 1 px ink edge (#23272B) on both sides
+   (brass alone on the light room is about 1.9:1; the edge carries it, as every brass mark on a light surface does here). (b) The caret is brass on
+   the dark page (the browser's own caret; !important because Free Write's pen ink reaches the caret INLINE, as Arbor's rule found). The light
+   page's caret is held for a ruling: an edge needs a drawn caret, and Arbor's was scrapped by Nick (Nov 14) for its cost at every key.
+   Static rules on the room and page state: nothing restyles at a key. Checked by scripts/harness/machina-look-musts.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .machina-run-strip > i.here::after{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
+:root[data-machina2][data-theme='machina'][data-page='dark'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--brass) !important; }
+
+/* ==========================================================================================================================================
+   §2e (Law 3; Fable, Nov 9, 6:35 pm, the Wrizors' default ruled as Machina's rule): ON A LIGHT SURFACE BRASS NEVER STANDS ALONE. In the light room a
+   chosen option in a drawer, a pop-out or the theme picker keeps its words in the label colour (--text-mid, #3A4047: 9.6:1 on the light panel)
+   and draws its brass outline as a ring inside its edge (nothing moves) with a 1 px ink keyline (#23272B) outside it - Arbor's day rule's five
+   kinds (arbor-v2.css r19 §18.4). The dark room is unchanged. (The Wrizors' carry, chrome scale pass 2, Nov 21: "Whole document" and the
+   chosen Form were brass words on the light drawer, about 1.9:1.) Checked by scripts/harness/machina-brass-chosen.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true'], .wz-template-row[aria-pressed='true']){
+  color:var(--text-mid); border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass), 0 0 0 1px #23272B; }
+/* (the Wrizors' chrome scale pass 3, REAL, Nov 21 4:00 pm) the readout's "page n of m" under the page read #878E9C on the light room, 3.0:1: in the light room it is
+   the quiet G4, --text-low #5E666E (4.75:1), as the spec's readouts are. Checked by machina-brass-chosen.mjs B3. */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .wz-pagecount{ color:var(--text-low); }

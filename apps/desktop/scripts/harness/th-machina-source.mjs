@@ -213,7 +213,10 @@ const mEntries = [...mBlock.matchAll(/^    ([A-Za-z0-9]+): '((?:[^'\\]|\\.)*)',/
 // const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|docs?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
 const LEAK = /\b(drawers?|boards?|pages?|journals?|grafts?|grafted|racks?|cartridges?|circuits?|nodes?|operator|tutor|links?|tracks?|sections?|sets?|presets?)\b/i;
 // reviewed keep-list: strings where the word is the CORRECT Machina word or a plain-English use, not an Arbor/Flux noun
-const KEEP = new Set(['journalRouteEmptyDrawers', 'journalRoutePromoteDrawer', 'journalRouteSendToDrawer', 'switcherJournals']);
+const KEEP = new Set(['journalRouteEmptyDrawers', 'journalRoutePromoteDrawer', 'journalRouteSendToDrawer', 'switcherJournals',
+  // PAGE BREAKS (the Wrizors' spec draft 3 section 3, APPROVED by Nick Nov 19): Machina's count reads "page {n} of {m}" - a printed sheet, the plain-English
+  // unit the marks divide, not the Arbor noun for a document (that is Doc in Machina)
+  'pageOfPages']);
 const leaks = mEntries.filter(([k, v]) => !KEEP.has(k) && LEAK.test(v)).map(([k, v]) => `${k}: ${v}`);
 // ---- PARKED - SUPERSEDED by Machina's File to Doc word (Nick, Nov 11; the Wrizors' list, Fable): the original, verbatim, no longer runs; its successor follows.
 // ok('M8: NO LEAK - no Machina desk string still names an Arbor or Flux noun (drawer / board / page / journal / graft / rack / cartridge / circuit / node / doc / operator / tutor / link / track / section / set / preset) outside a reviewed keep-list',

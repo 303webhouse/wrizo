@@ -193,6 +193,7 @@ export const FLUX_OVERRIDES = {
     walkOpen: '[OPEN]',
     flipEmpty: 'NO SIGNAL',
     deckFact: 'LOAD {n}/{m}',
+    pageOfPages: 'PG {n}/{m}',
     walkReadoutPlan: 'Circuit',   // Flux's boards are Circuits [deskLexicon §69]
     gapsLead: 'NO SIGNAL:',
     deckStack: 'STACK',

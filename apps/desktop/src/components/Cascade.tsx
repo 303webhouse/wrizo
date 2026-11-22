@@ -23,7 +23,16 @@ import { nodeHex } from '../flux3/FluxNodeRecord';
 // THE REORG'S RAIL (phase 2): ?reorg=1 in Machina only; with the switch off, or in any other theme, the strip renders exactly as before
 import { REORG } from '../reorg/flag';
 import { ReorgRail } from '../reorg/ReorgRail';
+import { useReorgPiece } from '../reorg/themeGate';
 import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
+import { liveQuery, registerLiveSite } from '../store/liveDom';
+
+// THE LIVE PAGE, NEVER ITS MEASURING COPY (Fable, Nov 20; store/liveDom.ts): page breaks keep a hidden copy of the page column in <body>, so
+// the margin is read against the live page
+const cascadeStage = (): Element | null => liveQuery('.desk-frame-stage');
+const cascadePaper = (): Element | null => liveQuery('.desk-frame-stage--prose .mode-page') ?? liveQuery('.mode-pagecol, .entry-full');
+registerLiveSite('cascade.stage', cascadeStage);
+registerLiveSite('cascade.paper', cascadePaper);
 
 // PW1 S4(ii) — the surface actually LEFT, named. A board carries its title; a
 // page carries its first line; neither is ever allowed to be blank, because the
@@ -147,9 +156,9 @@ function panelTitleTerm(category: CategoryId): DeskTermId {
 // (never silently blocking a legitimate dock) is the safer default.
 function availableCascadeMargin(): number {
   if (typeof document === 'undefined') return Infinity;
-  const stage = document.querySelector('.desk-frame-stage');
+  const stage = cascadeStage();
   // zoomed, the prose page is painted by a transform in a stage-wide column, so the margin is the painted page's - the twin of Tutor.tsx's availableTutorMargin [Cascade §3]
-  const paper = document.querySelector('.desk-frame-stage--prose .mode-page') ?? document.querySelector('.mode-pagecol, .entry-full');
+  const paper = cascadePaper();
   if (!stage || !paper) return Infinity;
   const stageRect = stage.getBoundingClientRect();
   const paperRect = paper.getBoundingClientRect();
@@ -177,8 +186,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   // L2: the command-box readouts. TRUE counts of what is already stored (the pages and boards of where she is, the Journal's pages), read when the rail renders for a new place, page or
   // open category - never per key. Nothing new is stored. "Last" is the in-session last-touched node (lastTouched.ts) in orange, the same one the Schema's footer reads.
   const boxes = FLUX3 && useTheme() === 'flux';
-  // the reorg's one gate: the switch AND Machina (read once here; the same short-circuit as Flux's above, so with the switch off no new hook runs)
-  const reorg = REORG && useTheme() === 'machina';
+  // the reorg's one gate: the switch AND a theme that has the rail piece (reorg/themeGate.ts; with the switch off no new hook runs)
+  const reorg = useReorgPiece('rail');
   const lastNode = useLastTouched();
   const prefs = useThemePrefs();
   // the nouns every hint quotes, read from the same lexicon entries the boxes' labels use (law 5)

@@ -1,13 +1,18 @@
 import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { addPageLink, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
+import { routeForEntry } from '../store/routeForEntry';
+import { pressTripBack, useBoardTrip } from './split/fullTrip';
+import { addPageLink, flushNow, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
+import { useSchemeOnPage } from './colourScheme';
 import { REORG } from './flag';
+import { openSearch } from './search/searchStore';
 
 // THE REORG'S TOP RAIL (plan step 2.1, behind ?reorg=1 in Machina; Fable's GO Nov 19, 4:20 pm; built to Cursor's prototype's top bar,
 // docs/mockups/reorg/app.js renderBar and boardBar). It replaces the header row's CONTENT only, in the same row (.sprint-nav), so the page below
@@ -153,13 +158,15 @@ function ConnectList({ board, served, onClose }: { board: JournalEntry; served: 
   );
 }
 
-function SearchDoor() {
+// the search door: on a page it opens the reorg's search in the Back menu (reorg/search/, starting on This Doc); a Board has no search yet, so
+// there it still says so
+function SearchDoor({ live = false }: { live?: boolean }) {
   const { t } = useDeskLexicon();
   const [soon, setSoon] = useState(false);
   useEffect(() => { if (!soon) return; const h = setTimeout(() => setSoon(false), 2200); return () => clearTimeout(h); }, [soon]);
   return (
     <span className="reorg-top-search-wrap">
-      <button type="button" className="reorg-top-search" data-top-search aria-label={t('reorgTopSearch')} title={t('reorgTopSearch')} onClick={() => setSoon(true)}>
+      <button type="button" className="reorg-top-search" data-top-search aria-label={t('reorgTopSearch')} title={t('reorgTopSearch')} onClick={() => (live ? openSearch('bar') : setSoon(true))}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
       </button>
       {soon && <span className="reorg-top-soon" role="status">{t('reorgTopSearchSoon')}</span>}
@@ -228,6 +235,8 @@ function PartsDrop({ entry, beforeLeave, onClose }: { entry: JournalEntry; befor
 
 function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   useSyncExternalStore(subscribe, () => namesSig(entry.id));
+  // colour B: the Doc on screen draws its slots in its own scheme (reorg/colourScheme.ts; it re-renders only when the scheme changes)
+  useSchemeOnPage(entry.id);
   namesRenders += 1;
   const { t } = useDeskLexicon();
   const latest = getJournalEntry(entry.id) ?? entry;
@@ -276,7 +285,7 @@ export function TopRail({ kind, entry, stages, views, boardName, boardAfter, bef
       <PageNames entry={entry} canRename={canRename} beforeWrite={stableWrite} />
       <span className="reorg-top-spring" />
       <div className="reorg-top-right">{stages}</div>
-      <SearchDoor />
+      <SearchDoor live />
     </div>
   );
 }
@@ -290,8 +299,20 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
   const latest = getJournalEntry(entry.id) ?? entry;
   const docs = boardDocs(latest);
   const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0].name || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
+  // BACK (§3b item 3, split/fullTrip.ts): this Board opened from Full Screen beside a page; Back returns to that page, which puts its split, scroll and
+  // caret back. Reached any other way, the Board shows no Back.
+  const trip = useBoardTrip(entry.id);
+  const navigate = useNavigate();
+  const tripPage = trip ? getJournalEntry(trip.pageId) : undefined;
+  const goBack = () => {
+    if (!tripPage) return;
+    pressTripBack();
+    flushNow();
+    navigate(routeForEntry(tripPage));
+  };
   return (
     <div className="reorg-top" data-reorg-top="board">
+      {tripPage && <button type="button" className="reorg-top-back" data-top-back="" onClick={goBack}>{t('reorgFullBack')}</button>}
       <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
         <ProjectName entry={latest} />
         <Sep />

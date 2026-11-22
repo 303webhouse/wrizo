@@ -7,7 +7,11 @@ import { PAGE_SIZE_DEFAULT, PAGE_PT_FALLBACK } from '../store/fontSize';
 import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { useReorgPiece } from '../reorg/themeGate';
 import { PartArrows, PartFoot } from '../reorg/PartMoves';
+import { PublishView } from '../reorg/PublishView';
+import { REORG_JOIN_STATE, type PartsHost } from '../reorg/PartsList';
+import { joinPart, splitPart } from '../reorg/parts';
 import { FluxReadouts } from '../components/FluxReadouts';
 import { firstLine } from '../store/entryText';
 import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEditor';
@@ -117,6 +121,7 @@ function PageEditorView({ id }: { id: string }) {
   const framed = useDeskFrameViewport();
   // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
   const reorgTop = useReorgTop();
+  const reorgUplink = useReorgPiece('uplink');
   // non-null only while this surface has no row yet; every use below reads "if this page is still unborn", so the born path is the ordinary one, and `entry` resolves from the unborn slot meanwhile [PageEditor §1]
   const unborn = useUnborn(id);
   // ITEM 104 (THIRD) — `entry` MUST NOT be able to change this component's HOOK
@@ -193,6 +198,9 @@ function PageEditorView({ id }: { id: string }) {
   const [receded, setReceded] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showPublish, setShowPublish] = useState(false); // Publish stub dialog (matches QuickSprint)
+  // THE REORG: the whole-Doc publishing view laid over the paper (reorg/PublishView.tsx). Session state only: saved nowhere, and gone when she leaves the page.
+  const [publishing, setPublishing] = useState(false);
+  useEffect(() => { setPublishing(false); }, [entry.id]);
   // E1 S2 — Publish's own quiet confirmation line (the existing ActionToast
   // pattern, reused per the brief's own "don't invent a new one" instruction).
   const publishToast = useActionToast();
@@ -276,7 +284,7 @@ function PageEditorView({ id }: { id: string }) {
   // host div here (the same one `applyCaret` writes through), and
   // `getCaretOffset` is the shared reader every other caret path uses, so this
   // adds no plumbing and cannot disagree with the caret the formatter acts on.
-  const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false });
+  const [draftMarks, setDraftMarks] = useState({ bold: false, italic: false, underline: false, strike: false, sup: false, sub: false });
   // the caret line's heading level, and where the small floating +/- sits while a heading is selected [PageEditor §5]
   const [headingLevel, setHeadingLevel] = useState<number | null>(null);
   const [headingPop, setHeadingPop] = useState<{ x: number; y: number } | null>(null);
@@ -347,10 +355,12 @@ function PageEditorView({ id }: { id: string }) {
       if (!el) return;
       const offset = getCaretOffset(el);
       const plain = editorPlainText(el);   // TYPING-LATENCY: the rows' shadow text (today's innerText read when it cannot be trusted)
-      const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false } : marksAt(plain, offset);
+      const lit = offset == null ? { bold: false, italic: false, underline: false, strike: false, sup: false, sub: false } : marksAt(plain, offset);
       // A held italic (an empty italic is not stored - store/draftFormat.ts) lights I while the caret is where it will be typed.
       const held = hiddenMarkEditingFor(el)?.pendingMark();
       if (held && !held.exit && held.mark === '*' && offset === held.at) lit.italic = true;
+      // a held superscript or subscript (an empty subscript is never stored - `~~` is strike) lights its button the same way
+      if (held && !held.exit && (held.mark === '^' || held.mark === '~') && offset === held.at) lit[held.mark === '^' ? 'sup' : 'sub'] = true;
       // card-held-italic: a style pressed OFF at its run's end is unlit while the caret waits there (the next letter will be plain)
       if (held && held.exit && offset === held.at) { const k = MARK_KIND[held.mark]; if (k) lit[k] = false; }
       setDraftMarks(lit);
@@ -464,6 +474,22 @@ function PageEditorView({ id }: { id: string }) {
   const leaveRef = useRef<() => void>(() => {});
   leaveRef.current = () => { flush(); flushNow(); };
   const [leaveStable] = useState(() => () => leaveRef.current());
+  // THE REORG - the Parts tab's "Split here" (Fable, Nov 19 9:20 pm; INK's splitPart): her words are saved first, then the Part is cut at her
+  // caret (the editor's own plain offsets, the coordinates its text is stored in). The tail is a new Part directly below; this page keeps the head,
+  // which the editor adopts through #76's own path (nothing unsaved here, so the stored head is shown). No caret in the page: nothing is cut.
+  const splitRef = useRef<NonNullable<PartsHost['splitHere']>>(() => ({ ok: false, why: 'text' }));
+  splitRef.current = () => {
+    if (unbornRef.current) return { ok: false, why: 'text' };
+    const ed = editorRef.current;
+    const sel = ed && ed.isConnected ? getSelectionOffsets(ed) : null;
+    if (!sel) return { ok: false, why: 'caret' };
+    flush(); flushNow();
+    const r = splitPart(id, sel.start, textRef.current);
+    if (!r.ok) return { ok: false, why: 'text' };
+    flushNow();
+    return { ok: true, token: r.token };
+  };
+  const [partsHost] = useState<PartsHost>(() => ({ flush: () => leaveRef.current(), splitHere: () => splitRef.current() }));
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
   const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
@@ -504,6 +530,17 @@ function PageEditorView({ id }: { id: string }) {
   };
   reconcileRef.current = reconcile;
   useExternalPageText({ id, unbornRef, lastTypedAtRef, reconcileRef });
+  // THE REORG - a join of the Part she was on arrives here, on the Part above, as route state (reorg/PartsList.tsx): it runs once this page has
+  // mounted, when the page it deletes is gone (so that page's not-found guard never fires), and after the subscription above, so this page
+  // adopts the joined words through #76. The state is spent first (replaced away), so a reload or Back never joins again.
+  const joinFrom = reorgTop ? (location.state as Record<string, unknown> | null)?.[REORG_JOIN_STATE] : undefined;
+  useEffect(() => {
+    if (typeof joinFrom !== 'string') return;
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+    joinPart(joinFrom);
+    flushNow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinFrom]);
   // a passive effect on purpose: the editor's own mount (a child's passive effect) lands the caret at the end and focuses, and this runs after it
   useEffect(() => {
     if (remount === 0) return;
@@ -1097,7 +1134,7 @@ function PageEditorView({ id }: { id: string }) {
             format: {
               onFormat: applyRailFormat,
               boldOn: draftMarks.bold, italicOn: draftMarks.italic,
-              underlineOn: draftMarks.underline, strikeOn: draftMarks.strike,
+              underlineOn: draftMarks.underline, strikeOn: draftMarks.strike, supOn: draftMarks.sup, subOn: draftMarks.sub,
               headingLevel,
             },
             // read through the default, never written at birth: a page that never chose has no `kind` key, reads 'normal', and stays byte-identical on disk [PageEditor §30]
@@ -1233,7 +1270,8 @@ function PageEditorView({ id }: { id: string }) {
             {reorgTop ? (
               <TopRail kind="page" entry={entry} canRename={!unborn} beforeWrite={() => { flush(); flushNow(); }}
                 // the PLAN door leaves the bar; a hidden strut keeps its height in its own place, so the row (and the page under it) never moves
-                stages={<ModeStrip mode={mode} onSwitch={switchMode} onPublish={() => setShowPublish(true)}
+                stages={<ModeStrip mode={mode} onSwitch={(m) => { setPublishing(false); switchMode(m); }} publishActive={publishing}
+                  onPublish={() => { if (publishing) setPublishing(false); else if (!unborn) { flush(); flushNow(); setPublishing(true); } }}
                   end={<button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
             ) : <>
             {/* the address: crumb (marginRight:auto) · strip · actions, the shape the Board uses [PageEditor §33] */}
@@ -1291,7 +1329,12 @@ function PageEditorView({ id }: { id: string }) {
           pageKind="prose"
           strip={<FirstRunVeil active={gateActive}>{cascade.strip}</FirstRunVeil>}
           cascadeLayers={<FirstRunVeil active={gateActive}>{cascade.layers}</FirstRunVeil>}
-          sliver={<FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry } : undefined} /></FirstRunVeil>}
+          // SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 pm and 1:20 pm, via Fable 3:15 pm; Fable 5:05 pm: behind the reorg's switch, Machina, for Monday;
+          // each other theme takes it with its own reorg build): in Free Write the Front menu is not drawn at all - no drawer, no tab, so no Text, Ink or
+          // Parts tools and no pen (the instrument stays 'text': only the drawer's INK tab ever changed it). The drawer is an overlay in its own anchor
+          // (DeskFrame), so leaving it out moves nothing on the page. Draft and Revise keep it; with the switch off, or in any other theme, Free Write
+          // keeps today's drawer.
+          sliver={mode === 'journal' && reorgTop ? undefined : <FirstRunVeil active={gateActive}><Sliver content={sliverContent} goalText={text} hasMilestones={!!milestones && milestones.beats.length > 0} front={reorgTop ? { entry, host: partsHost, publishing } : undefined} /></FirstRunVeil>}
           // The Tutor is absent while the first-run gate holds (first run stays pure), not veiled-but-mounted: the veil's filter:blur would make a new containing block and break the Tutor's two absolute anchors (they need .desk-frame-stage). Otherwise the right hand mounts from first paint, unborn pages included, as BoardEditor, ScriptEditor and JournalEntry do; `entry` already carries the minted per-surface id (UnbornProvider registers it before children render), and Tutor.send() refuses on an unborn surface. [PageEditor §34]
           tutor={gateActive ? undefined : <Tutor entry={entry} project={project} pageText={text} pageKind="prose" mode={mode} selectionText={draftSelection} />}
           // HB1 S3 — the SAME progress-fraction seam GoalGlow already
@@ -1340,7 +1383,7 @@ function PageEditorView({ id }: { id: string }) {
             inkPermission={inkPermission}
             /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
             readouts={unborn ? undefined : reorgTop
-              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} /><PartArrows entry={entry} beforeLeave={leaveStable} /></>
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing && reorgUplink ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : <PartArrows entry={entry} beforeLeave={leaveStable} />}</>
               : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}

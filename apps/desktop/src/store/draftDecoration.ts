@@ -12,6 +12,8 @@
 
 import { closeMark, readEscapes, readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
 import { ensureFaceLoaded, faceForSlug, faceStack } from './fontRoster';
+import { REORG } from '../reorg/flag';
+import { isNoteLine } from '../reorg/footnotes';
 
 function escHtml(s: string): string {
   return s.replace(/[&<>]/g, c => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
@@ -47,7 +49,7 @@ function decorateInlineForCard(text: string, caret: number | null): string {
     }
     return out + escHtml(text.slice(from, b));
   };
-  const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike' };
+  const cls: Record<MarkKind, string> = { bold: 'md-bold', italic: 'md-italic', underline: 'md-underline', strike: 'md-strike', sup: 'md-sup', sub: 'md-sub' };
   const emit = (lo: number, hi: number, within: MarkRun[]): string => {
     let out = '';
     let cur = lo;
@@ -149,7 +151,9 @@ export function decorateLineForCard(rawLine: string, caret: number | null): stri
   const body = heading
     ? `<span class="md-h${heading.text.length - 1}"><span class="${headCls}">${escHtml(heading.text)}</span>${inline}</span>`
     : inline;
-  return open + head + body + close;
+  const html = open + head + body + close;
+  // REORG FOOTNOTES (Nick, Nov 21): a note line ("[^1]: the note") is set apart (.md-note: smaller, quieter). The page draws rows, one line at a time, so this is a property of the LINE; a wrapper only, so the 1:1 character count the caret restore depends on holds
+  return REORG && isNoteLine(rawLine) ? `<span class="md-note">${html}</span>` : html;
 }
 
 export function decorateMarkdownForCard(text: string, caret: number | null): string {

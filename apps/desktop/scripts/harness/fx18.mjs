@@ -148,12 +148,19 @@ await withHarness(async (app) => {
         const ctrlSlash = async () => { for (const type of ['keyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: '/', code: 'Slash', windowsVirtualKeyCode: 191, modifiers: 2 }); await sleep(450); };
         const gz = await gripDiag(app); const gzVis = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); return g ? getComputedStyle(g).visibility : null; })()");
         ok(`S2 TYPEWRITER (Page @ ${w}x${h}): in Typewriter the Tutor's grip is HIDDEN and unreachable (Nick, Nov 8)`, gzVis === 'hidden' && gz.reachable === false, JSON.stringify({ vis: gzVis, gz }));
-        await ctrlSlash();
-        const offHit = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver [data-mode-toggle=\"typewriter\"]'); if (b) b.click(); return !!b; })()"); await sleep(900);
-        await ctrlSlash();
+        // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter's switch is gone from both stages; the way out of the Typewriter is the MODE (Draft never runs it). The original lines, verbatim:
+        //   await ctrlSlash();
+        //   const offHit = await app.evalJs("(() => { const b = document.querySelector('.wz-sliver [data-mode-toggle=\"typewriter\"]'); if (b) b.click(); return !!b; })()"); await sleep(900);
+        //   await ctrlSlash();
+        //   const zoomAfter = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
+        //   const toolsAfter = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null");
+        //   ok(`S2 premise (Page @ ${w}x${h}): Typewriter left by the Tools drawer's own switch (reached by Ctrl+/) - the normal view, the drawer shut`, offHit && !zoomAfter && toolsAfter === 'false', JSON.stringify({ offHit, zoomAfter, toolsAfter }));
+        // successor: the writer leaves the Typewriter by going to Draft (the Tools drawer was tucked by the zoom and stays shut)
+        await app.click('Draft'); await sleep(900);
+        const draftNow = await app.evalJs("document.querySelector('.mode-scroll')?.getAttribute('data-typewriter') ?? null");
         const zoomAfter = await app.evalJs("!!document.querySelector('.mode-pagecol[data-zoom=\"true\"]')");
         const toolsAfter = await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') ?? null");
-        ok(`S2 premise (Page @ ${w}x${h}): Typewriter left by the Tools drawer's own switch (reached by Ctrl+/) - the normal view, the drawer shut`, offHit && !zoomAfter && toolsAfter === 'false', JSON.stringify({ offHit, zoomAfter, toolsAfter }));
+        ok(`S2 premise [Free Write = Typewriter successor] (Page @ ${w}x${h}): the Typewriter is left by going to Draft - the normal view (not zoomed, Draft's fade off), the drawer shut`, draftNow === 'false' && !zoomAfter && toolsAfter === 'false', JSON.stringify({ draftNow, zoomAfter, toolsAfter }));
       }
       await app.evalJs("document.querySelector('.wz-sliver-grip')?.click()"); await sleep(200);
       await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(300);

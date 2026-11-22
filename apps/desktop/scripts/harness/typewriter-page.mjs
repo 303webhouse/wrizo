@@ -123,6 +123,11 @@ async function scenario(code) {
     const keysAfterRelease = [...s._m.keys()].filter((k) => k.startsWith('wrizo-typewriter-page-'));
     out.free = { keysFree, keysAfterRelease };
   }
+  // (g) FREE WRITE = TYPEWRITER: a value already stored is KEPT AS DATA and READ BY NOTHING: a seeded 'on' is still answered false, survives enter/toggle calls untouched, and no other key appears
+  { const s = fakeStorage({ 'wrizo-typewriter-page-kept': 'on', 'wrizo-writing-settings': JSON.stringify({ typewriter: true }) }); const m = await boot(code, s);
+    m.setTheme('plateau'); const r0 = m.typewriterForPage('kept', true); m.enterPageTypewriter('kept', true); const rel = m.holdTypewriterPage('kept'); m.setTypewriterExplicit(false); rel();
+    out.kept = { r0, r1: m.typewriterForPage('kept', false), value: s.getItem('wrizo-typewriter-page-kept'), keys: [...s._m.keys()].filter((k) => k.startsWith('wrizo-typewriter-page-')).length, setting: (JSON.parse(s.getItem('wrizo-writing-settings')) || {}).typewriter };
+  }
   // (f) the retired machinery is gone from the module's surface
   { const s = fakeStorage(); const m = await boot(code, s);
     out.retired = { seed: 'seedTypewriterDefault' in m, threshold: 'DRAFT_TYPEWRITER_LINE_THRESHOLD' in m };
@@ -157,6 +162,14 @@ function verdict(o) {
     // WIRE IN successors (Nov 12) - the paper Typewriter is retired in Flux: typewriterForPage reads false there, the page's stored value is kept as data, and any other theme reads it again
     persistsWI: o.liveAfterToggle === false && o.aKeepsOffAfterReloadPP === false && o.fluxDefaultPP === false && o.fluxOnData === 'on' && o.fluxOnKeptPP === false && o.fluxOnReadFlux === false && o.fluxOnReadArbor === true,
     fluxTable: o.fluxSaved === 'off',
+    // FREE WRITE = TYPEWRITER successors: the keys the live mutants below read (each is TRUE on the clean build)
+    newFW: o.arborNewPP === false && o.fluxNewPP === false && o.arborSaved === null && o.fluxSaved === null,
+    persistsFW: o.aKeepsOffAfterReloadPP === false && o.fluxOnData === null && o.fluxOnKeptPP === false && o.fluxOnReadFlux === false && o.fluxOnReadArbor === false,
+    ownFW: o.bOwnPP === false && o.pairPP?.aAgain === false && o.pairPP?.bAgain === false,
+    existingFW: o.oldWithTextPP === false && o.oldSaved === null && o.oldStillOffPP === false && o.shortWithTextPP === false,
+    pureFW: o.pureArborNew === false && o.pureFluxNew === false && o.pureTextDefault === false,
+    fluxTableFW: o.fluxSaved === null,
+    keptFW: o.kept?.r0 === false && o.kept?.r1 === false && o.kept?.value === 'on' && o.kept?.keys === 1 && o.kept?.setting === true,
   };
 }
 
@@ -171,18 +184,35 @@ const v = verdict(base);
 // added for exactly this. The originals are parked verbatim, not deleted: run
 // HARNESS_PARKED=1 node scripts/harness/typewriter-page.mjs to see them re-assert the mirror's
 // retirement (its own new, opposite truth) rather than silently vanishing from the audit trail.
-ok('(P1) a NEW page opens ON in Arbor (plateau) and OFF in Flux, and remembers that choice from its first open', v.newPagesPP === true, JSON.stringify({ arbor: base.arborNewPP, flux: base.fluxNewPP, arborSaved: base.arborSaved, fluxSaved: base.fluxSaved }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P1) a NEW page opens ON in Arbor (plateau) and OFF in Flux, and remembers that choice from its first open', v.newPagesPP === true, JSON.stringify({ arbor: base.arborNewPP, flux: base.fluxNewPP, arborSaved: base.arborSaved, fluxSaved: base.fluxSaved }));
+ok('(P1) [Free Write = Typewriter successor] a NEW page asks for no Typewriter in ANY theme (Arbor and Flux both read false) and nothing is saved for it: its own key is never created', base.arborNewPP === false && base.fluxNewPP === false && base.arborSaved === null && base.fluxSaved === null, JSON.stringify({ arbor: base.arborNewPP, flux: base.fluxNewPP, arborSaved: base.arborSaved, fluxSaved: base.fluxSaved }));
 // ---- PARKED - SUPERSEDED (Nov 12, Wire In: Fable's go "BUILD the Corridor on its own in today's Flux"): the paper Typewriter is RETIRED in Flux - typewriterForPage reads false there whatever a page stored - so "ON in Flux"
 // (fluxOnKeptPP === true) no longer holds; the Arbor half (OFF kept) is unchanged. Kept VERBATIM below and no longer run; the successor follows (the stored ON is kept as DATA, Flux reads false, any other theme reads it
 // again) and the original is run as a PARKED RECORD (HARNESS_PARKED=1). ----
 // ok('(P2) toggle, reload, and the SAME page keeps it - OFF in Arbor and ON in Flux (the saved value beats both the theme and "has text")', v.persistsPP === true, JSON.stringify({ afterToggle: base.liveAfterToggle, aOff: base.aKeepsOffAfterReloadPP, fluxDefault: base.fluxDefaultPP, fluxOnKept: base.fluxOnKeptPP }));
 // ------------------------------------------------------------------
-ok('(P2) [Wire In successor] toggle, reload, and the SAME page keeps it - OFF in Arbor; a Flux page\'s stored ON is kept as DATA (still saved after the reload), read again as ON the moment the theme is not Flux, and read as OFF in Flux itself (the paper Typewriter is retired there)', v.persistsWI === true, JSON.stringify({ afterToggle: base.liveAfterToggle, aOff: base.aKeepsOffAfterReloadPP, fluxDefault: base.fluxDefaultPP, fluxOnData: base.fluxOnData, fluxOnKept: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
-ok('(P3) a SECOND page keeps its OWN setting: A (turned off) and B (its own) each come back as they were', v.ownPerPagePP === true, JSON.stringify({ bOwn: base.bOwnPP, pair: base.pairPP }));
-ok('(P4) a pre-existing page with text and no saved value opens OFF (in Arbor too), is saved as OFF, and a later change cannot flip it; a SHORT page is no longer ON (the 1-9-line rule is gone)', v.existingTextPP === true, JSON.stringify({ old: base.oldWithTextPP, saved: base.oldSaved, stillOff: base.oldStillOffPP, short: base.shortWithTextPP }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P2) [Wire In successor] toggle, reload, and the SAME page keeps it - OFF in Arbor; a Flux page\'s stored ON is kept as DATA (still saved after the reload), read again as ON the moment the theme is not Flux, and read as OFF in Flux itself (the paper Typewriter is retired there)', v.persistsWI === true, JSON.stringify({ afterToggle: base.liveAfterToggle, aOff: base.aKeepsOffAfterReloadPP, fluxDefault: base.fluxDefaultPP, fluxOnData: base.fluxOnData, fluxOnKept: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
+ok('(P2) [Free Write = Typewriter successor] toggle, reload, and the page still reads OFF: setTypewriterExplicit writes nothing (no page key, ever), a stored ON is kept as DATA and read by nothing (OFF in Arbor and OFF in Flux)', base.aKeepsOffAfterReloadPP === false && base.fluxOnData === null && base.fluxOnKeptPP === false && base.fluxOnReadFlux === false && base.fluxOnReadArbor === false, JSON.stringify({ aOff: base.aKeepsOffAfterReloadPP, fluxOnData: base.fluxOnData, fluxOnKept: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P3) a SECOND page keeps its OWN setting: A (turned off) and B (its own) each come back as they were', v.ownPerPagePP === true, JSON.stringify({ bOwn: base.bOwnPP, pair: base.pairPP }));
+ok('(P3) [Free Write = Typewriter successor] two pages read the same: A and B are both OFF (Draft never runs it), whatever either was last given', base.bOwnPP === false && base.pairPP?.aAgain === false && base.pairPP?.bAgain === false, JSON.stringify({ bOwn: base.bOwnPP, pair: base.pairPP }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P4) a pre-existing page with text and no saved value opens OFF (in Arbor too), is saved as OFF, and a later change cannot flip it; a SHORT page is no longer ON (the 1-9-line rule is gone)', v.existingTextPP === true, JSON.stringify({ old: base.oldWithTextPP, saved: base.oldSaved, stillOff: base.oldStillOffPP, short: base.shortWithTextPP }));
+ok('(P4) [Free Write = Typewriter successor] a pre-existing page with text, and a SHORT page, read OFF and nothing is saved for either (no old-page value is ever written)', base.oldWithTextPP === false && base.oldSaved === null && base.oldStillOffPP === false && base.shortWithTextPP === false, JSON.stringify({ old: base.oldWithTextPP, saved: base.oldSaved, stillOff: base.oldStillOffPP, short: base.shortWithTextPP }));
 ok('(P5) FREE WRITE is unchanged: a toggle with no held Draft page writes no page value, and a page that has been released stops receiving toggles', v.freeWrite === true, JSON.stringify(base.free));
-ok('(P12, new) typewriterForPage resolves the theme default correctly for a page that has NEVER been opened (no prior enterPageTypewriter save to fall back on) - Arbor ON, Flux OFF, a pre-existing-text page OFF', v.pureRead === true, JSON.stringify({ arbor: base.pureArborNew, flux: base.pureFluxNew, text: base.pureTextDefault }));
-ok('(P13, new) [Wire In] Flux\'s own row of the theme table is KEPT as data: a brand-new Flux page\'s first open still SAVES the table\'s default (OFF) - the retired paper Typewriter\'s default is stored, never read in Flux', v.fluxTable === true, JSON.stringify({ fluxSaved: base.fluxSaved }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P12, new) typewriterForPage resolves the theme default correctly for a page that has NEVER been opened (no prior enterPageTypewriter save to fall back on) - Arbor ON, Flux OFF, a pre-existing-text page OFF', v.pureRead === true, JSON.stringify({ arbor: base.pureArborNew, flux: base.pureFluxNew, text: base.pureTextDefault }));
+ok('(P12, new) [Free Write = Typewriter successor] typewriterForPage reads OFF for a page that has NEVER been opened, in every theme and for an empty or a non-empty page (Arbor, Flux, text)', base.pureArborNew === false && base.pureFluxNew === false && base.pureTextDefault === false, JSON.stringify({ arbor: base.pureArborNew, flux: base.pureFluxNew, text: base.pureTextDefault }));
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): Draft NEVER runs the Typewriter, typewriterForPage answers false for every page, and nothing records a per-page value any more; the original check, verbatim:
+// ok('(P13, new) [Wire In] Flux\'s own row of the theme table is KEPT as data: a brand-new Flux page\'s first open still SAVES the table\'s default (OFF) - the retired paper Typewriter\'s default is stored, never read in Flux', v.fluxTable === true, JSON.stringify({ fluxSaved: base.fluxSaved }));
+ok('(P13, new) [Free Write = Typewriter successor] a brand-new Flux page\'s first open saves NOTHING for the Typewriter (the table\'s default is read by no page, and no key is written)', base.fluxSaved === null, JSON.stringify({ fluxSaved: base.fluxSaved }));
+// P14 (Free Write = Typewriter): values already stored are KEPT AS DATA, read by nothing, deleted by nothing: a seeded 'on' and a seeded shared setting survive every call, and typewriterForPage still answers false
+{ const s = fakeStorage({ 'wrizo-typewriter-page-kept': 'on', 'wrizo-writing-settings': JSON.stringify({ typewriter: true }) }); const m = await boot(await bundle(), s);
+  m.setTheme('plateau'); const r0 = m.typewriterForPage('kept', true); m.enterPageTypewriter('kept', true); const rel = m.holdTypewriterPage('kept'); m.setTypewriterExplicit(false); rel();
+  const r1 = m.typewriterForPage('kept', false); const keys = [...s._m.keys()].filter((k) => k.startsWith('wrizo-typewriter-page-'));
+  ok('(P14, new) [Free Write = Typewriter] a stored page value is kept as data and read by nothing: seeded \'on\' survives enter and toggle calls untouched, typewriterForPage answers false, the shared setting is not rewritten, and no other key appears', r0 === false && r1 === false && s.getItem('wrizo-typewriter-page-kept') === 'on' && keys.length === 1 && JSON.parse(s.getItem('wrizo-writing-settings')).typewriter === true, JSON.stringify({ r0, r1, keys, setting: s.getItem('wrizo-writing-settings') })); }
 ok('(P6) the retired machinery is gone from the store: no seedTypewriterDefault, no DRAFT_TYPEWRITER_LINE_THRESHOLD (and no session flag, below)', v.retired === true, JSON.stringify(base.retired));
 
 // ---- source claims ------------------------------------------------------------------------------------------------------------------------
@@ -233,14 +263,22 @@ if (process.env.HARNESS_PARKED === '1') {
     p7Reads.tc === true && p7Reads.slots === true, JSON.stringify(p7Reads));
   // WIRE IN (Nov 12) - four parks: (P2)'s "ON in Flux" and the three mutants whose target no longer sees what its name says. Each record re-verifies the new truth from the default leg's reads.
   pok('PARKED (was "(P2) toggle, reload, and the SAME page keeps it - OFF in Arbor and ON in Flux (the saved value beats both the theme and "has text")") - Wire In (Nov 12): the paper Typewriter is retired in Flux (typewriterForPage reads false there whatever a page stored); the stored ON is kept as data and read again in any other theme; live successor: (P2) [Wire In successor]',
-    base.fluxOnKeptPP === false && base.fluxOnData === 'on' && base.fluxOnReadFlux === false && base.fluxOnReadArbor === true, JSON.stringify({ fluxOnData: base.fluxOnData, fluxOnKeptPP: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
+    // SUPERSEDED (Free Write = Typewriter, Nov 19): the record re-verified the old claim from these reads; they now read the retired memory as nothing, so it asserts the new truth. The original assertion, verbatim:
+    // base.fluxOnKeptPP === false && base.fluxOnData === 'on' && base.fluxOnReadFlux === false && base.fluxOnReadArbor === true, JSON.stringify({ fluxOnData: base.fluxOnData, fluxOnKeptPP: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
+    base.fluxOnKeptPP === false && base.fluxOnData === null && base.fluxOnReadFlux === false && base.fluxOnReadArbor === false, JSON.stringify({ fluxOnData: base.fluxOnData, fluxOnKeptPP: base.fluxOnKeptPP, readFlux: base.fluxOnReadFlux, readArbor: base.fluxOnReadArbor }));
   pok('PARKED (was "a toggle is not written to the page") - the (M) mutant of that name; Wire In (Nov 12): its target key (persistsPP) is false on the CLEAN build now (Flux no longer keeps ON), so it goes red with or without the mutation and proves nothing; live successor: (M) a toggle is not written to the page [Wire In successor]',
-    v.persistsPP === false && v.persistsWI === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
+    // SUPERSEDED (Free Write = Typewriter, Nov 19): the record re-verified the old claim from these reads; they now read the retired memory as nothing, so it asserts the new truth. The original assertion, verbatim:
+    // v.persistsPP === false && v.persistsWI === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
+    v.persistsPP === false && v.persistsFW === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
   pok('PARKED (was "the saved value is ignored at mount (text pages always OFF)") - the (M) mutant of that name; Wire In (Nov 12): its target key (persistsPP) is false on the CLEAN build now, so it proves nothing; live successor: (M) the saved value is ignored at mount [Wire In successor]',
-    v.persistsPP === false && v.persistsWI === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
+    // SUPERSEDED (Free Write = Typewriter, Nov 19): the record re-verified the old claim from these reads; they now read the retired memory as nothing, so it asserts the new truth. The original assertion, verbatim:
+    // v.persistsPP === false && v.persistsWI === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
+    v.persistsPP === false && v.persistsFW === true, JSON.stringify({ persistsPP: v.persistsPP, persistsWI: v.persistsWI }));
   { const oFx = await scenario(await bundle({ 'store/writingSettings.ts': swap('THEME_CONFIG[getTheme()].typewriterDefault', 'THEME_CONFIG.plateau.typewriterDefault') }));
     pok('PARKED (was "Flux inherits Arbor\'s default (the table is read wrongly)") - the (M) mutant of that name; Wire In (Nov 12): typewriterForPage answers false for Flux before it reads the table, so this mutation (first occurrence, inside typewriterForPage) no longer turns pureRead red; the table is now seen through the first-open SAVE; live successor: (M) Flux\'s saved default is read from Arbor\'s row [Wire In successor]',
-      verdict(oFx).pureRead === true && v.fluxTable === true, JSON.stringify({ pureReadUnderMutant: verdict(oFx).pureRead, fluxTable: v.fluxTable })); }
+      // SUPERSEDED (Free Write = Typewriter, Nov 19): the record re-verified the old claim from these reads; they now read the retired memory as nothing, so it asserts the new truth. The original assertion, verbatim:
+      // verdict(oFx).pureRead === true && v.fluxTable === true, JSON.stringify({ pureReadUnderMutant: verdict(oFx).pureRead, fluxTable: v.fluxTable })); }
+      verdict(oFx).pureFW === true && v.fluxTableFW === true, JSON.stringify({ pureReadUnderMutant: verdict(oFx).pureRead, fluxTable: v.fluxTable })); }
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
@@ -270,7 +308,8 @@ async function mutant(name, overrides, which) {
 // 'freeWrite' mutants are untouched - that key was never shared-field-based and still measures
 // what it always did.
 const WS = 'store/writingSettings.ts';
-await mutant('the theme default is ignored (every new page OFF)', { [WS]: swap('empty ? THEME_CONFIG[getTheme()].typewriterDefault : false', 'false') }, 'pureRead');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('the theme default is ignored (every new page OFF)', { [WS]: swap('empty ? THEME_CONFIG[getTheme()].typewriterDefault : false', 'false') }, 'pureRead');
 // ---- PARKED - SUPERSEDED (Nov 12, Wire In: Fable's go "BUILD the Corridor on its own in today's Flux"): the paper Typewriter is RETIRED in Flux, so typewriterForPage answers false for Flux before it reads the table. (1) The mutant that reads Flux's
 // default from Arbor's row (first occurrence = inside typewriterForPage) no longer turns `pureRead` red - the table is seen through the first-open SAVE now. (2)+(3) The two mutants targeting `persistsPP` aim at a key that is
 // false on the CLEAN build now (it demands "ON kept in Flux"), so they go red with or without their mutation and prove nothing. Kept VERBATIM below and no longer run; the successors follow (each targets a key that is true on the clean
@@ -279,15 +318,33 @@ await mutant('the theme default is ignored (every new page OFF)', { [WS]: swap('
 // await mutant('a toggle is not written to the page', { [WS]: swap('if (heldPageId != null) writePageTypewriter(heldPageId, on);', '') }, 'persistsPP');
 // await mutant('the saved value is ignored at mount (text pages always OFF)', { [WS]: swap('return saved ?? (empty', 'return (empty') }, 'persistsPP');
 // ------------------------------------------------------------------
-await mutant('Flux\'s saved default is read from Arbor\'s row (the table is read wrongly where a page\'s first open is saved) [Wire In successor]', { [WS]: swap('if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);', 'if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG.plateau.typewriterDefault : false);') }, 'fluxTable');
-await mutant('a toggle is not written to the page [Wire In successor]', { [WS]: swap('if (heldPageId != null) writePageTypewriter(heldPageId, on);', '') }, 'persistsWI');
-await mutant('the saved value is ignored at mount (text pages always OFF) [Wire In successor]', { [WS]: swap('return saved ?? (empty', 'return (empty') }, 'persistsWI');
-await mutant('Flux reads the stored value again (the retired paper Typewriter comes back) [Wire In successor]', { [WS]: swap("  if (getTheme() === 'flux') return false;\n", '') }, 'persistsWI');
-await mutant('every page shares ONE key', { [WS]: swap("const pageKey = (id: string) => `wrizo-typewriter-page-${id}`;", "const pageKey = (_id: string) => `wrizo-typewriter-page`;") }, 'ownPerPagePP');
-await mutant('a page with text takes the theme default', { [WS]: swap('(empty ? THEME_CONFIG[getTheme()].typewriterDefault : false)', 'THEME_CONFIG[getTheme()].typewriterDefault') }, 'pureRead');
-await mutant('the first open is not saved (the page does not remember until it is toggled)', { [WS]: swap('if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);', '') }, 'newPagesPP');
-await mutant('Free Write toggles write a page value (no held-page test)', { [WS]: swap('if (heldPageId != null) writePageTypewriter(heldPageId, on);', "writePageTypewriter(heldPageId ?? 'free', on);") }, 'freeWrite');
-await mutant('a released page keeps receiving toggles', { [WS]: swap('return () => { if (heldPageId === id) heldPageId = null; };', 'return () => {};') }, 'freeWrite');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('Flux\'s saved default is read from Arbor\'s row (the table is read wrongly where a page\'s first open is saved) [Wire In successor]', { [WS]: swap('if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);', 'if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG.plateau.typewriterDefault : false);') }, 'fluxTable');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('a toggle is not written to the page [Wire In successor]', { [WS]: swap('if (heldPageId != null) writePageTypewriter(heldPageId, on);', '') }, 'persistsWI');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('the saved value is ignored at mount (text pages always OFF) [Wire In successor]', { [WS]: swap('return saved ?? (empty', 'return (empty') }, 'persistsWI');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('Flux reads the stored value again (the retired paper Typewriter comes back) [Wire In successor]', { [WS]: swap("  if (getTheme() === 'flux') return false;\n", '') }, 'persistsWI');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('every page shares ONE key', { [WS]: swap("const pageKey = (id: string) => `wrizo-typewriter-page-${id}`;", "const pageKey = (_id: string) => `wrizo-typewriter-page`;") }, 'ownPerPagePP');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('a page with text takes the theme default', { [WS]: swap('(empty ? THEME_CONFIG[getTheme()].typewriterDefault : false)', 'THEME_CONFIG[getTheme()].typewriterDefault') }, 'pureRead');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('the first open is not saved (the page does not remember until it is toggled)', { [WS]: swap('if (saved == null) writePageTypewriter(id, empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);', '') }, 'newPagesPP');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('Free Write toggles write a page value (no held-page test)', { [WS]: swap('if (heldPageId != null) writePageTypewriter(heldPageId, on);', "writePageTypewriter(heldPageId ?? 'free', on);") }, 'freeWrite');
+// SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the per-page memory is retired, so this mutant's anchor lands in a parked comment and its target key is permanently false (a blind guard); the original, verbatim:
+// await mutant('a released page keeps receiving toggles', { [WS]: swap('return () => { if (heldPageId === id) heldPageId = null; };', 'return () => {};') }, 'freeWrite');
+
+// FREE WRITE = TYPEWRITER: the OLD behaviour put back, each edit on a LIVE line, each going RED on a key that is true on the clean build
+await mutant('typewriterForPage reads a page\'s stored value again', { [WS]: swap('export function typewriterForPage(_id: string, _empty: boolean): boolean {', 'export function typewriterForPage(_id: string, _empty: boolean): boolean {\n  if (readPageTypewriter(_id) === true) return true;') }, 'keptFW');
+await mutant('typewriterForPage gives a new page its theme default again', { [WS]: swap('export function typewriterForPage(_id: string, _empty: boolean): boolean {', 'export function typewriterForPage(_id: string, _empty: boolean): boolean {\n  if (_empty) return THEME_CONFIG[getTheme()].typewriterDefault;') }, 'pureFW');
+await mutant('the first open saves a page value again', { [WS]: swap('export function enterPageTypewriter(_id: string, _empty: boolean): void {', 'export function enterPageTypewriter(_id: string, _empty: boolean): void {\n  writePageTypewriter(_id, _empty ? THEME_CONFIG[getTheme()].typewriterDefault : false);') }, 'newFW');
+await mutant('a toggle writes the held page\'s value again', { [WS]: swap('export function setTypewriterExplicit(_on: boolean): void {', 'export function setTypewriterExplicit(_on: boolean): void {\n  if (heldPageId != null) writePageTypewriter(heldPageId, _on);') }, 'persistsFW');
+await mutant('a page that holds text saves OFF again', { [WS]: swap('export function enterPageTypewriter(_id: string, _empty: boolean): void {', 'export function enterPageTypewriter(_id: string, _empty: boolean): void {\n  if (!_empty) writePageTypewriter(_id, false);') }, 'existingFW');
+await mutant('Free Write toggles write a page value (no held-page test)', { [WS]: swap('export function setTypewriterExplicit(_on: boolean): void {', "export function setTypewriterExplicit(_on: boolean): void {\n  writePageTypewriter(heldPageId ?? 'free', _on);") }, 'freeWrite');
+await mutant('a released page keeps receiving toggles', { [WS]: (t) => swap('return () => { if (heldPageId === id) heldPageId = null; };', 'return () => {};')(swap('export function setTypewriterExplicit(_on: boolean): void {', 'export function setTypewriterExplicit(_on: boolean): void {\n  if (heldPageId != null) writePageTypewriter(heldPageId, _on);')(t)) }, 'freeWrite');
 
 let failed = 0;
 for (const c of checks) {
