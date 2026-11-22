@@ -32,6 +32,13 @@ async function publish(app, room) {
 }
 
 export default {
+  // the Wrizors' pass 2 NIT 1: resting on the canvas views opens their words (ShowAs, hover intent)
+  'top-canvas-views-day': async (app) => {
+    await setUp(app, 'day', 'atf-c');
+    const p = await app.evalJs("(() => { const g = document.querySelector('.reorg-top .show-as'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left + 6), y: Math.round(r.top + r.height / 2) }; })()");
+    if (p) { await app.mouseMove(p.x, p.y); await sleep(1000); }
+    await report(app, 'top-canvas-views-day');
+  },
   'top-publish-day': async (app) => { await publish(app, 'day'); await report(app, 'top-publish-day'); },
   'top-publish-night': async (app) => { await publish(app, 'night'); await report(app, 'top-publish-night'); },
   'top-page-day': async (app) => { await setUp(app, 'day', 'atf-2'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'top-page-day'); },
