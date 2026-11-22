@@ -74,7 +74,8 @@ export function escapeTyped(ins: string, text: string, at: number): string {
   for (const c of ins) {
     if (c === '\n') { out += c; atStart = true; continue; }
     // FONT-SPAN: `[` opens a font span and a bare `]` closes one (store/markRuns.ts fontRuns), so a typed bracket is escaped too
-    if (c === '\\' || c === '*' || c === '_' || c === '~' || c === '[' || c === ']') out += '\\' + c;
+    // `^` is the Sup mark's own character (store/draftFormat.ts FORMAT_MARK): left bare, a pasted `x^2 + y^2` read as a superscript (Fable, Nov 21: a paste escapes the marker characters unless it comes from Wrizo, which pasteEdit's fragment path already handles)
+    if (c === '\\' || c === '*' || c === '_' || c === '~' || c === '^' || c === '[' || c === ']') out += '\\' + c;
     else if (atStart && (c === '#' || c === '-' || c === '>')) out += '\\' + c;
     else out += c;
     atStart = false;
