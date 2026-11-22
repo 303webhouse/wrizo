@@ -197,8 +197,11 @@ await withHarness(async (app) => {
   await open(app, 'af-1', { arbor2: false }); await leaveFreeWrite(app);
   await drawer(app);
   const classic = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-sliver-tab-\"]')]; return { tabs: all.length ? all.map((b) => b.id.replace('wz-sliver-tab-', '')) : null, reorg: !!document.querySelector('.reorg-parts, [data-reorg-parts]') }; })()");
-  ok("AF9 OFF: without the door Arbor's own drawer stands (Format | Presets, no SECTIONS tab); with ?arbor2=0 even the door gives no Front menu",
-    Array.isArray(off) && off.map((x) => x.id).join(',') === 'format,presets' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AF9, verbatim:
+  // ok("AF9 OFF: without the door Arbor's own drawer stands (Format | Presets, no SECTIONS tab); with ?arbor2=0 even the door gives no Front menu",
+  // Array.isArray(off) && off.map((x) => x.id).join(',') === 'format,presets' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  ok("AF9 ON [successor]: without the door Arbor's Front menu stands (Format | Sections, the SECTIONS tab included: the cell is the table's); with ?arbor2=0 even the door gives no Front menu",
+    Array.isArray(off) && off.map((x) => x.id).join(',') === 'text,parts' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);

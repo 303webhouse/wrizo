@@ -87,10 +87,15 @@ await withHarness(async (app) => {
   geo.w1920 = c0 === (await app.evalJs(PAGE));
   ok('AP5 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same closed, open and closed again; the editor is the same node', geo.w1366 && geo.w1920, { geo, closed0, closed1, c0 });
 
-  await open(app, 'ap-1', { lift: 'plateau.top' });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AP6, verbatim:
+  // await open(app, 'ap-1', { lift: 'plateau.top' });
+  // await app.evalJs(press(PUB)); await sleep(900);
+  // const none = await app.evalJs("!!document.querySelector('[data-reorg-pub]')");
+  // ok('AP6 OFF: with the doors on plateau.top only (no plateau.uplink) the Publish stage draws no sheet', none === false, { none });
+  await open(app, 'ap-1', { arbor2: false });   // [successor] the classic Plateau (?arbor2=0) has no Publish sheet even though the cell is on
   await app.evalJs(press(PUB)); await sleep(900);
   const none = await app.evalJs("!!document.querySelector('[data-reorg-pub]')");
-  ok('AP6 OFF: with the doors on plateau.top only (no plateau.uplink) the Publish stage draws no sheet', none === false, { none });
+  ok('AP6 OFF [successor]: the classic Plateau (?arbor2=0) draws no Publish sheet even with the cell on (the redesign off: the reorg never draws there)', none === false, { none });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
