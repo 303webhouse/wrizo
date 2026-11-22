@@ -202,3 +202,70 @@
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:#FF9800; }
 
+/* ---- S4b L3: CAPS CHROME (flux3-s4b-plan.md L3; flux-full-look-for-monday.md item 3, tier A; the mockup's #top .crumb and .tab). Dress only, scoped to the flag and Flux:
+   the crumb reads in the chrome face's letter-spaced capitals with ▸ between its steps (the place words quiet, where she stands bright), and the board's Show as names its views
+   as WORDS (LIVE · SEQUENCE · SPINE · TRACE · STACK; the lexicon's own words, no new key) instead of icons that spell out on hover. Nothing here sets a font size the bar's height
+   reads, so the bar, the page and the board keep their rects (flux3-s4b-l3.mjs RECT: the same with these rules taken away). Renaming keeps her own case while she types. ---- */
+:root[data-flux3][data-theme='flux'] .sprint-crumb{ font-family:var(--font-chromeLabel); font-weight:600; text-transform:uppercase; letter-spacing:.14em; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-item, .wz-crumb-home){ color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-here, .crumb-rename-btn){ color:var(--text-hi); font-family:inherit; font-weight:600; letter-spacing:inherit; text-transform:inherit; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb input.crumb-rename{ text-transform:none; letter-spacing:normal; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep{ font-size:0; color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep::before{ content:'\25B8' / ''; font-size:11px; letter-spacing:0; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-word{ display:inline; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-btn > svg{ display:none; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-btn{ font-weight:600; font-size:11px; letter-spacing:.16em; padding:6px 9px; }
+/* ---- S4b L4: THE PAGE'S FRAME (flux3-s4b-plan.md L4; flux-full-look-for-monday.md item 4, tier A; the mockup's #page::before/::after and #page .hd). FluxDoc.tsx draws it in the
+   page's column, outside the page (the page clips its own overflow): two corner brackets just beyond the glass, top-left and bottom-right, in the room's cyan (the room is dark in
+   both Page tones), and a readout header across the page's top edge, inside its top padding, in the paper's own quiet ink. While the frame is on (the column carries its mark),
+   plain Flux's in-page frame stands down: the grid ring (no grid under the words), the inset brackets and the head's DOC / TRK readings (the same-page notice in the head stays).
+   Overlays only: the column, the page and the editor keep their rects (flux3-s4b-l4.mjs RECT). ---- */
+:root[data-flux3][data-theme='flux'] .mode-pagecol:has(> [data-flux3-docframe]) .flux-readouts > :is(.flux-frame, .flux-brackets){ display:none; }
+:root[data-flux3][data-theme='flux'] .mode-pagecol:has(> [data-flux3-docframe]) .flux-readout-head > :is(.flux-readout-doc, .flux-readout-trk){ display:none; }
+:root[data-flux3][data-theme='flux'] .flux3-bracket{ position:absolute; z-index:2; width:16px; height:16px; box-sizing:border-box; border:2px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-bracket-tl{ border-right:none; border-bottom:none; }
+:root[data-flux3][data-theme='flux'] .flux3-bracket-br{ border-left:none; border-top:none; }
+:root[data-flux3][data-theme='flux'] .flux3-dochead{ position:absolute; z-index:2; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:0 18px; pointer-events:none; overflow:hidden; white-space:nowrap;
+  font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-on-paper-low); }
+/* the header's foot (law 1, Fable, Nov 21, 6:54 pm, reading A): a SOFT hairline that fades out toward both ends, not a full rule, so a line the page's own scroll cuts at the
+   clip edge just under it can never read as covered by the header */
+:root[data-flux3][data-theme='flux'] .flux3-dochead{ --f3-head-rule:rgba(0, 194, 255, .1);
+  background:linear-gradient(90deg, transparent, var(--f3-head-rule) 22%, var(--f3-head-rule) 78%, transparent) left bottom / 100% 1px no-repeat; }
+:root[data-flux3][data-theme='flux'][data-page='light'] .flux3-dochead{ --f3-head-rule:rgba(0, 110, 145, .14); }
+:root[data-flux3][data-theme='flux'] .flux3-dochead > span{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
+:root[data-flux3][data-theme='flux'] .flux3-dochead-id{ flex:0 0 auto; color:var(--f3-cyan-text); }
+:root[data-flux3][data-theme='flux'] .flux3-dochead-hex{ text-transform:none; }   /* the digits are capitals already; the 0x stays lower case, as the node records' */
+/* ---- S4b N5: THE + AT THE PAGE'S TOP CORNER (flux3-s4b-plan.md N5; flux-full-look-for-monday.md item 7, tier A; the mockup's .plus). A 32 px square beyond the page's top-right corner, clear
+   of the right hand's grip; pressed, a line runs down from it into the port box's own box (Connect another, the same picker). Room colours (the room is dark in both Page tones). An
+   overlay in the page's column with chrome-fade: it recedes while she types and nothing moves (flux3-s4b-n5.mjs RECT). ---- */
+:root[data-flux3][data-theme='flux'] .flux3-plus-wrap{ position:absolute; z-index:3; width:32px; height:32px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus{ position:absolute; inset:0; width:32px; height:32px; padding:0; margin:0; border-radius:0; box-shadow:none; cursor:pointer;
+  background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); color:var(--f3-room-cyan); }
+:root[data-flux3][data-theme='flux'] .flux3-plus::before,
+:root[data-flux3][data-theme='flux'] .flux3-plus::after{ content:''; position:absolute; left:50%; top:50%; background:currentColor; transform:translate(-50%, -50%); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plus::before{ width:14px; height:2px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus::after{ width:2px; height:14px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus:hover,
+:root[data-flux3][data-theme='flux'] .flux3-plus[aria-expanded='true']{ background:var(--f3-room-cyan); color:var(--f3-room-fill); }
+:root[data-flux3][data-theme='flux'] .flux3-plus:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-line{ position:absolute; left:15.5px; top:32px; width:0; border-left:1px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-box{ left:-6px; }
+/* ---- S4b L6: THE NODE VOICE, the overlay half (flux3-s4b-plan.md L6; Fable, Nov 21, 6:54 pm: the caps titles HELD, S1's cards never move). From the board mockup:
+   a preset step's first line in the preset's lime (colour only: the line's box, wrap and the card's height are untouched), and the footer's status theatre
+   (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */
+:root[data-flux3][data-theme='flux'] .board-box:has(> .flux3-node[data-node-kind='preset']) .board-text::first-line{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .flux3-node-f[data-st]:not([data-ok])::after{ content:attr(data-st); color:var(--f3-quiet); }
+/* ---- S4b L5: THE PORT BOX'S PREVIEW (flux3-s4b-plan.md L5; the doc mockup's .pbox .node): the linked node in the box a port opens, read-only. Its address in the box's
+   quiet caps (the 0x stays lower case), its name in the chrome face's capitals, a short body clamped to three lines; a preset step in lime. Room colours (the box stands on the
+   room, dark in both Page tones). Inside the box only: the page never moves. ---- */
+:root[data-flux3][data-theme='flux'] .flux3-port-node{ border:1px solid rgba(0, 194, 255, .5); padding:7px 9px; display:flex; flex-direction:column; gap:3px; min-width:0; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node[data-preset='true']{ border-color:rgba(183, 255, 60, .6); }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-h{ font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--f3-room-quiet);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-hex{ text-transform:none; color:var(--f3-room-addr); }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-name{ font-family:var(--font-chromeLabel); font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--f3-room-addr);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node[data-preset='true'] .flux3-port-node-name{ color:#B7FF3C; }
+:root[data-flux3][data-theme='flux'] .flux3-port-node-body{ font-family:var(--font-prose); font-size:12px; line-height:1.5; color:var(--f3-room-text);
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; line-clamp:3; overflow:hidden; overflow-wrap:anywhere; }

@@ -10,6 +10,7 @@ import type { Box } from '../types/board';
 import { useTheme } from '../store/theme';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { DECKS } from '../decks/library';
+import { useAmbianceDial } from '../store/ambianceDial';
 import { touchNode, useLastTouched } from './lastTouched';
 
 /** A node's address: four stable hex digits from its id (the same card reads the same address on every open). */
@@ -35,6 +36,7 @@ export function FluxNodeRecord(props: Props) {
 function NodeRecord({ box, connections, peers }: Props) {
   const { t } = useDeskLexicon();
   const last = useLastTouched();
+  const dial = useAmbianceDial();
 
   // the writer's hand on this card: its words, its place, an ink stroke, a hand-sized edge (never the reflow's fit, which changes only an
   // auto card's height); the first sight of a card is not a touch
@@ -52,10 +54,13 @@ function NodeRecord({ box, connections, peers }: Props) {
       : kind === 'preset' ? (deck ? `${t('flux3KindPreset')} · ${t(deck.nameTerm)}` : t('flux3KindPreset'))
         : t('inkModeText');
   const n = connections.filter((c) => c.connA === box.id || c.connB === box.id).length + (peers?.length ?? 0);
+  // S4b L6 - THE NODE VOICE (the board mockup's .ft .st): the footer's status theatre, under the Ambiance dial only (0 takes it away), and never on a node she lit, whose
+  // CHECKSUM OK is her act and stands in its place. Painted from a data attribute like the rest of the record, so it is never the card's text.
+  const theatre = dial > 0 && !box.lit ? (kind === 'ink' ? t('flux3TheatreInk') : t('flux3TheatreHuman')) : undefined;
   return (
     <span className="flux3-node" data-node-kind={kind} data-last={last === box.id ? 'true' : undefined} aria-hidden="true">
       <i className="flux3-node-h" data-addr={`${t('linksKindCard').toUpperCase()} 0x${nodeHex(box.id)}`} data-kind-word={kindWord} />
-      <i className="flux3-node-f" data-links={`${n} ${n === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}`} data-ok={box.lit ? t('flux3ChecksumOk') : undefined} />
+      <i className="flux3-node-f" data-links={`${n} ${n === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}`} data-ok={box.lit ? t('flux3ChecksumOk') : undefined} data-st={theatre} />
     </span>
   );
 }
