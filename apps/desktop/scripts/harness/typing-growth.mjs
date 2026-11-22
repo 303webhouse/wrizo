@@ -22,12 +22,16 @@ const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ?
 const p95 = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? Math.round(s[Math.min(s.length - 1, Math.floor(0.95 * s.length))] * 10) / 10 : null; };
 
 const HOOK = `(() => {
-  window.__kg = { busy: [], paint: [], kind: '' };
+  if (window.__kgOn) { window.__kg = { busy: [], paint: [] }; return true; }
+  window.__kgOn = true; window.__kg = { busy: [], paint: [] };
   const mc = new MessageChannel();
   let t0 = null;
   mc.port1.onmessage = () => { if (t0 === null) return; window.__kg.busy.push(performance.now() - t0); };
   window.addEventListener('keydown', (e) => { if (e.key.length > 1 && e.key !== 'Enter') return; t0 = performance.now(); const start = t0; mc.port2.postMessage(0); requestAnimationFrame(() => requestAnimationFrame(() => { window.__kg.paint.push(performance.now() - start); })); }, true);
   return true; })()`;
+// the CPU profile of a run of keys: self time by function (information; names the work, never a verdict)
+const PROFILE_TOP = 14;
+const selfTop = (p) => { const byId = new Map(p.nodes.map((n) => [n.id, n])); const self = new Map(); for (let i = 0; i < p.samples.length; i += 1) self.set(p.samples[i], (self.get(p.samples[i]) || 0) + (p.timeDeltas[i] || 0)); const agg = new Map(); for (const [id, us] of self) { const cf = byId.get(id).callFrame; const key = (cf.functionName || '(anonymous)') + ' @ ' + String(cf.url || '').split('/').pop() + ':' + cf.lineNumber; agg.set(key, (agg.get(key) || 0) + us); } const total = [...agg.values()].reduce((a, b) => a + b, 0) || 1; return [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, PROFILE_TOP).map(([k, us]) => `${Math.round(us / 100) / 10} ms (${Math.round((100 * us) / total)}%) ${k}`); };
 
 await withHarness(async (app) => {
   const rows = [];
@@ -58,6 +62,12 @@ await withHarness(async (app) => {
         const row = { words, mode, kind, n: m.busy.length, busy_med: med(m.busy), busy_p95: p95(m.busy), paint_med: med(m.paint), paint_p95: p95(m.paint) };
         rows.push(row);
         console.log('TG ' + JSON.stringify(row));
+        if (words === 50000 && kind !== 'enter') {
+          await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 200 }); await app.cdp('Profiler.start');
+          for (let i = 0; i < 40; i += 1) { await send(); await sleep(110); }
+          const prof = await app.cdp('Profiler.stop');
+          console.log(`TG-PROFILE ${mode} ${kind} 50000 words: ` + JSON.stringify(selfTop(prof.profile)));
+        }
       }
     }
   }
