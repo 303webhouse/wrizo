@@ -118,8 +118,9 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
                   onChange={(e) => setReplaceWith(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeSearch(); } }} />
               </label>
+              {/* R4 (POLISH's audit, Nov 22): the button she presses turns disabled once no finds are left, and a row's Replace goes with its hit; a focused element that disappears or is disabled drops the focus to the body, so her next keys went nowhere. The focus goes back to the search field (it stays mounted) */}
               <div className="reorg-replace-acts">
-                <button type="button" data-replace-all disabled={!found.here.length || !s.repl} onClick={() => doReplace(found.here)}>{fill(t('reorgReplaceAll'), { n: found.here.length })}</button>
+                <button type="button" data-replace-all disabled={!found.here.length || !s.repl} onClick={() => { doReplace(found.here); field.current?.focus(); }}>{fill(t('reorgReplaceAll'), { n: found.here.length })}</button>
                 {s.canUndo && <button type="button" data-replace-undo onClick={() => doUndoReplace()}>{t('reorgReplaceUndo')}</button>}
               </div>
             </div>
@@ -145,7 +146,7 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
                       onClick={() => go(h)}>
                       {before}<mark>{word}</mark>{after}
                     </button>
-                    {mine && <button type="button" className="reorg-replace-one" data-replace-one={`${h.entryId}|${h.at}`} disabled={!s.repl} onClick={() => doReplace([h])}>{t('reorgReplaceOne')}</button>}
+                    {mine && <button type="button" className="reorg-replace-one" data-replace-one={`${h.entryId}|${h.at}`} disabled={!s.repl} onClick={() => { doReplace([h]); field.current?.focus(); }}>{t('reorgReplaceOne')}</button>}
                   </div>
                 );
               })}
