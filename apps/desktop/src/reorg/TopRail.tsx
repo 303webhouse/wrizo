@@ -7,6 +7,7 @@ import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
+import { useTheme } from '../store/theme';
 import { REORG } from './flag';
 import { openSearch } from './search/searchStore';
 
@@ -241,6 +242,8 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   const write = (fn: () => void) => { beforeWrite(); fn(); };
   // the Part line drops every Part of the Doc (the prototype's parts drop, frame P2-12C, ruled B): the Front menu's own Parts list
   const [dropped, setDropped] = useState(false);
+  // ARBOR (spec §3): the Section's tag (§6, Arbor's numbered cloth: INK's tokens in 25-reorg-arbor-tags.css) stands before its name; Machina draws none
+  const arbor = useTheme() === 'plateau';
   return (
     <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
       <ProjectName entry={latest} />
@@ -259,6 +262,7 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
         {made && part && (
           <>
             <span className="reorg-top-dot" aria-hidden="true">·</span>
+            {arbor && part.color && <span className="reorg-top-tag" data-top-tag={part.color} aria-hidden="true" />}
             <Name id="part" text={part.name || t('reorgUntitled')} editable={canRename} onCommit={(v) => write(() => renamePart(latest.id, v))} />
           </>
         )}
