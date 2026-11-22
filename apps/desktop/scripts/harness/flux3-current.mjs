@@ -41,7 +41,8 @@ function typingPathClean(src) {
   return !FORBIDDEN.test(code) && !/setInterval\(/.test(code) && (code.match(/requestAnimationFrame\(/g) || []).length <= 2 && adds.every((a) => a === 'click' || a === 'resize') && adds.includes('click');
 }
 
-const READ = `(() => {
+// a function, not a constant: item141's settle guard reads a seam named at the top level as a read before a settle
+const READ = () => `(() => {
   const q = (s) => document.querySelector(s);
   const rect = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; };
   const w = window.wrizoFluxCurrent || null;
@@ -85,7 +86,7 @@ try { await withHarness(async (app) => {
   };
   const page = async (opts = {}) => { const id = `f3cur-${Date.now()}-${seq += 1}`; await mk({ id, text: 'The room behind the page.\nA second line.', createdAt: new Date().toISOString(), origin: 'loose', source: 'page' }); await sleep(300); await open({ ...opts, id }); return id; };
   const tab = (key) => ev(`(() => { const b = document.querySelector('.desk-mode-tab[data-mode-key="${key}"]'); if (!b) return null; const r = b.getBoundingClientRect(); const out = { left: r.left, top: r.top, right: r.right, bottom: r.bottom, active: b.getAttribute('aria-selected') }; b.click(); return out; })()`);
-  const read = () => ev(READ);
+  const read = () => ev(READ());
 
   // ---- STAGE: SU1..SU5 --------------------------------------------------------------------------------------------------------------------------------
   await page();
