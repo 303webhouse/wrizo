@@ -58,7 +58,7 @@ try { await withHarness(async (app) => {
     ok(`TW2 [${T.name}] ...and the Typewriter is quiet after that: at most 3 scroll events in the 0.8 s to 6 s after the editor exists`, !!q && q.after <= 3, JSON.stringify({ after: q && q.after, last: q && q.last }));
     if (T.theme === 'plateau') {
       const rest = s && s.final;
-      await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const sel = getSelection(); sel.selectAllChildren(ed); sel.collapseToEnd(); return true; })()");
+      await ev("(() => { const ed = document.querySelector('.forward-only-editor'); if (document.activeElement !== ed) ed.focus({ preventScroll: true }); return true; })()");
       const END = "(() => { const sc = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) { if (n.nodeValue.length) last = n; } let b = null; if (last) { const r = document.createRange(); r.setStart(last, Math.max(0, last.nodeValue.length - 1)); r.setEnd(last, last.nodeValue.length); b = Math.round(r.getBoundingClientRect().bottom); } return [Math.round(sc.scrollTop), b]; })()";
       const per = [];
       for (let i = 0; i < 8; i += 1) { await app.typeKeys('\nnew line ' + (i + 1) + ' of her words'); per.push(await ev(END)); }
