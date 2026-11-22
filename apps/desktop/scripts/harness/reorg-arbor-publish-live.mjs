@@ -44,6 +44,7 @@ async function seed(app) {
 }
 async function open(app, id, { w = 1366, lift = 'plateau.top,plateau.uplink,plateau.back' } = {}) {
   await app.emulateDpr(1, w, 768);
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();

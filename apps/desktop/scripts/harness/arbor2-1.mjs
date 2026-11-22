@@ -96,13 +96,18 @@ const STATE = `(() => {
   const root = document.documentElement, cs = getComputedStyle(root), tok = (n) => cs.getPropertyValue(n).trim();
   const p = document.querySelector('.mode-page'), r = p ? p.getBoundingClientRect() : null;
   let arborRule = false;
-  for (const ss of document.styleSheets) { try { for (const rule of ss.cssRules) { if (String(rule.cssText).includes('arbor2-')) { arborRule = true; break; } } } catch {} if (arborRule) break; }
+  // SUPERSEDED (Nov 22, train I2: the reorg's Arbor sheets are part of the global stylesheet by design and key their rules on the room and tab attributes, [data-arbor2-room] and [data-arbor2-off], so the old proxy 'any rule mentions arbor2-' reads them as the mockup). The original, verbatim:
+  // for (const ss of document.styleSheets) { try { for (const rule of ss.cssRules) { if (String(rule.cssText).includes('arbor2-')) { arborRule = true; break; } } } catch {} if (arborRule) break; }
+  // SUCCESSOR: a rule of the MOCKUP's own (arbor-v2.css): one that names a class only the mockup draws (its bar, pergola, doors, sun, vines, logo, moss, page shadow, front); the reorg sheets name none of these (the self-check below holds that)
+  const MOCK = /arbor2-(bar|pergola|door|pagesh|vine|sun|front|logo|moss|brown)/;
+  for (const ss of document.styleSheets) { try { for (const rule of ss.cssRules) { if (MOCK.test(String(rule.cssText))) { arborRule = true; break; } } } catch {} if (arborRule) break; }
+  const mockSelf = MOCK.test('.arbor2-bar{x:y}') && MOCK.test('.arbor2-pergola{x:y}') && !MOCK.test(":root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-row{x:y}") && !MOCK.test(":root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 #wz-tutor-tab-plan{x:y}");
   const f = document.querySelector('.wz-rhizome-field'), seg = f && f.querySelector('.wz-rhizome-seg');
   const lamp = getComputedStyle(document.body, '::before');
   const bar = document.querySelector('.arbor2-bar');
   return {
     flag: root.getAttribute('data-arbor2'), room: root.getAttribute('data-arbor2-room'), prog: root.getAttribute('data-arbor2-night-prog'),
-    page: root.getAttribute('data-page'), bar: !!bar, barOpacity: bar ? getComputedStyle(bar).opacity : null, arborRule,
+    page: root.getAttribute('data-page'), bar: !!bar, barOpacity: bar ? getComputedStyle(bar).opacity : null, arborRule, mockSelf,
     rect: r ? { x: +r.x.toFixed(1), y: +r.y.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) } : null,
     paperBg: p ? getComputedStyle(p).backgroundColor : null,
     tokens: { i950: tok('--ink-950'), i900: tok('--ink-900'), i800: tok('--ink-800'), letter: tok('--arbor-letter'), hi: tok('--text-hi'), mid: tok('--text-mid'), low: tok('--text-low'), guide: tok('--arbor-guide') },
@@ -165,7 +170,7 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
   // ---- F1 / P1 baseline: flag off
   const rects = {};
   const off = await state(app);
-  ok('F1 flag OFF: no data-arbor2, no mockup bar, no arbor2 rule in any stylesheet', off.flag == null && !off.bar && !off.arborRule, JSON.stringify({ flag: off.flag, bar: off.bar, rule: off.arborRule }));
+  ok('F1 flag OFF: no data-arbor2, no mockup bar, no arbor2 rule in any stylesheet', off.flag == null && !off.bar && !off.arborRule && off.mockSelf === true, JSON.stringify({ flag: off.flag, bar: off.bar, rule: off.arborRule, mockSelf: off.mockSelf }));
   for (const [w, h] of [[1366, 768], [1920, 1080]]) { await app.emulateDpr(1, w, h); await sleep(400); rects[`off-${w}`] = (await state(app)).rect; }
   await app.emulateDpr(1, 1366, 768); await sleep(300);
   await snap(app, 'item1-flag-off-1366');
