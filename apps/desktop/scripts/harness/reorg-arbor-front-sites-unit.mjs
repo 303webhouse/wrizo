@@ -6,6 +6,7 @@
 //   GUARD    frontSectionAllowed retires only the templates section, only when asked (Arbor), before the drawerSet lookup; Machina's TEXT keeps it; nothing else changes
 //   NOLOSS   arbor2/drawerTabs.ts is untouched: its union still covers every section drawerSet shows (arbor2-23.mjs reads it), because the Front menu regroups, it does not remove
 //   FROZEN   in Publish the FORMAT and INK tabs are greyed with the note (reorgPubFrozen), SECTIONS stays: the Machina rule, unchanged
+//   SETUP    (Fable, Nov 21, 9:40 pm: "Page Setup lives in the kind menu ONLY, as in Machina: drop it from FORMAT's foot") in Arbor the FORMAT tab no longer ends in Page setup: the SECTIONS kind menu holds it (it renders on every surface that has a Front menu: Draft and Revise); every other theme keeps today's reading
 // Run: node scripts/harness/reorg-arbor-front-sites-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 
@@ -25,6 +26,7 @@ const SITES = [
   ['RETIRE-fn', 'Tabs', "export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection, retirePresets = false): boolean {\n  if (tab === 'parts') return false;\n  if (retirePresets && section === 'templates') return false;", "export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection): boolean {\n  if (tab === 'parts') return false;"],
   ['FROZEN', 'Sliver', "(front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })", "(front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true } : { id, label: t(FRONT_WORD[id]) })"],
 ];
+SITES.push(['SETUP', 'Sliver', "{frontTab === 'text' && frontEntry && theme !== 'plateau' && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}", "{frontTab === 'text' && frontEntry && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}"]);
 const FILES = { Sliver: SLIVER, Tabs: TABS };
 const siteOk = (text, want, old) => text.includes(want) && !text.includes(old);
 for (const [name, file, want, old] of SITES) {
