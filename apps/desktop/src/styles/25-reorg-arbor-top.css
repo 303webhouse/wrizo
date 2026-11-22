@@ -1,0 +1,90 @@
+/* ==========================================================================================================================================
+   ARBOR'S TOP BAR ON THE REORG (claude/wrizors/arbor-reorg-spec.md §3; Fable, Nov 21 6:54 pm; INK's theme gate, reorg/themeGate.ts plateau.top,
+   off until the Wrizors pass the frames: seen through ?reorglift=plateau.top). The live top bar, flush, holding the reorg's names - Drawer › Page ›
+   Section n of m, the Section's tag before its name - its stages (FREE WRITE · DRAFT · REVISE · PUBLISH, the host's own strip: live) and the
+   search door. The first frames (Actions 44973769532) drew the reorg's pieces unstyled in Arbor (their rules are Machina's): the same structure,
+   from 23-reorg-top.css, scoped to Arbor's live look, Machina's literal colours as Arbor's own tokens. The Part arrows and the Part's end line on
+   the page come with it. Checked by scripts/harness/reorg-arbor-top-live.mjs.
+   ========================================================================================================================================== */
+:root[data-arbor2][data-theme='plateau'] [data-reorg-top-row]{ flex-wrap:nowrap; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top{ flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:14px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-spring{ flex:1 1 auto; min-width:8px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-right{ flex:0 0 auto; display:flex; align-items:center; }
+:root[data-arbor2][data-theme='plateau'] [data-reorg-top-row] [data-top-strut]{ visibility:hidden; pointer-events:none; width:0; min-width:0; overflow:hidden; padding-left:0 !important; padding-right:0 !important; margin-left:0 !important; margin-right:0 !important; border-left-width:0 !important; border-right-width:0 !important; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-names{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name{ min-width:0; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto; font-family:var(--font-ui); font-size:13px; line-height:normal; color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name[data-top-name='project']{ font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); max-width:180px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name-btn{ display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:none; border:0; padding:0; margin:0; border-radius:0; box-shadow:none; appearance:none; -webkit-appearance:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:inherit; text-align:left; cursor:text; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name-btn:hover{ text-decoration:underline; text-underline-offset:3px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-name[data-editable='false']{ cursor:default; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-rename{ box-sizing:border-box; height:22px; width:min(240px, 22vw); padding:0 5px; margin:0; font:inherit; letter-spacing:inherit; text-transform:none; color:var(--text-hi); background:transparent; border:1px solid var(--text-mid); border-radius:0; outline:none; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-rename:focus{ border-color:var(--accent-rest); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-sep{ flex:none; color:var(--text-mid); font-size:12px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part{ flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:6px; overflow:hidden; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-dot{ flex:none; color:var(--text-mid); font-size:11px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part .reorg-top-name{ font-size:12px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-place{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-board{ display:flex; align-items:center; gap:7px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-board .crumb-here{ color:var(--text-hi); font-weight:400; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-connect-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-connect{ height:24px; padding:0 9px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid var(--text-mid); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi); white-space:nowrap; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-connect.is-icon{ width:24px; padding:0; justify-content:center; font-size:15px; line-height:1; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-connect[aria-expanded='true']{ border-color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-connect:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop{ position:absolute; top:calc(100% + 10px); left:0; z-index:60; width:320px; box-sizing:border-box; background:var(--chrome-surface); border:1px solid #23272B; display:flex; flex-direction:column; color:var(--text-mid); font-family:var(--font-ui); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-head{ padding:10px 14px 6px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#525A62; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-scroll{ max-height:176px; overflow-y:auto; scrollbar-width:thin; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-row{ display:flex; align-items:center; gap:8px; width:100%; height:34px; padding:0 14px; box-sizing:border-box; background:none; border:0; border-bottom:1px solid var(--ink-border); border-radius:0; font:inherit; font-size:13px; color:var(--text-mid); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-row:hover{ background:var(--ink-800); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-row:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-meta{ flex:0 0 auto; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5A626B; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-row.is-on{ cursor:default; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-row.is-on:hover{ background:transparent; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-new{ border-bottom:0; color:var(--accent-rest); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-drop-said{ padding:8px 14px 10px; border-top:1px solid var(--ink-border); font-size:12px; line-height:1.4; color:var(--text-mid); white-space:normal; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-search-wrap{ position:relative; flex:none; display:flex; align-items:center; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-search{ height:24px; width:28px; box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center; background:none; border:1px solid var(--text-mid); border-radius:0; color:var(--text-mid); cursor:pointer; padding:0; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-search:hover{ color:var(--text-hi); border-color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-search:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-soon{ position:absolute; top:calc(100% + 10px); right:0; z-index:60; white-space:nowrap; padding:6px 10px; background:var(--chrome-surface); border:1px solid #23272B; color:var(--text-mid); font-family:var(--font-ui); font-size:12px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrows{ position:absolute; z-index:3; width:0; pointer-events:none; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow{ position:absolute; left:-11px; width:22px; height:22px; box-sizing:border-box; padding:0; margin:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--ink-border-strong); border-radius:0; background:var(--chrome-surface); color:var(--text-mid); cursor:pointer; pointer-events:auto; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow.is-up{ top:4px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow.is-down{ bottom:4px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow:hover:not([disabled]){ background:var(--ink-800); }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-arrow[disabled]{ opacity:.35; cursor:default; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:26px; padding-top:12px; border-top:1px solid color-mix(in srgb, currentColor 45%, transparent); font-family:var(--font-chromeLabel, monospace); font-size:11px; color:#6B5F4E; user-select:none; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-foot-go{ border:0; background:none; padding:0; font:inherit; color:inherit; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-foot-go.is-next{ color:#56632E; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-foot-go:hover{ text-decoration:underline; }
+:root[data-arbor2][data-theme='plateau'] .reorg-part-foot-go:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part-count{ border:0; background:none; padding:0; margin:0; font:inherit; color:inherit; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part-count:hover, :root[data-arbor2][data-theme='plateau'] .reorg-top-part-count.is-open{ text-decoration:underline; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part-count:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-part{ position:relative; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-parts-drop{ padding:10px 12px; max-height:320px; overflow-y:auto; }
+
+/* the names in the bar's label colour (spec §3: cream by night, deep olive by day - Arbor's bar lettering, --text-hi / --text-mid re-scoped on the bar) */
+:root[data-arbor2][data-theme='plateau'] .reorg-top :is(.reorg-top-name, .reorg-top-name-btn){ color:var(--text-hi); font-family:var(--arbor2-chrome-face, inherit); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top :is(.reorg-top-sep, .reorg-top-dot, .reorg-top-part-count, .reorg-top-place){ color:var(--text-mid); }
+/* the Section's tag: Arbor's numbered cloth (§6), INK's tokens (--reorg-tag-<slot>-fill / -ink / -edge / -num, 25-reorg-arbor-tags.css); a quiet box until they arrive */
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; box-sizing:border-box; border:1px solid var(--ink-border-strong); font-family:var(--arbor2-chrome-face, inherit); font-size:10px; line-height:1; }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='a']{ background:var(--reorg-tag-a-fill, transparent); color:var(--reorg-tag-a-ink, var(--text-hi)); border-color:var(--reorg-tag-a-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='b']{ background:var(--reorg-tag-b-fill, transparent); color:var(--reorg-tag-b-ink, var(--text-hi)); border-color:var(--reorg-tag-b-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='c']{ background:var(--reorg-tag-c-fill, transparent); color:var(--reorg-tag-c-ink, var(--text-hi)); border-color:var(--reorg-tag-c-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='d']{ background:var(--reorg-tag-d-fill, transparent); color:var(--reorg-tag-d-ink, var(--text-hi)); border-color:var(--reorg-tag-d-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='e']{ background:var(--reorg-tag-e-fill, transparent); color:var(--reorg-tag-e-ink, var(--text-hi)); border-color:var(--reorg-tag-e-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='f']{ background:var(--reorg-tag-f-fill, transparent); color:var(--reorg-tag-f-ink, var(--text-hi)); border-color:var(--reorg-tag-f-edge, var(--ink-border-strong)); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='a']::after{ content:var(--reorg-tag-a-num, '1'); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='b']::after{ content:var(--reorg-tag-b-num, '2'); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='c']::after{ content:var(--reorg-tag-c-num, '3'); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='d']::after{ content:var(--reorg-tag-d-num, '4'); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='e']::after{ content:var(--reorg-tag-e-num, '5'); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='f']::after{ content:var(--reorg-tag-f-num, '6'); }
+/* the Part foot sits ON the paper, so it letters in the paper's quiet colour, not the chrome's (Nov 21, T9: by night the chrome tokens turn cream):
+   Plateau's on-paper marks (23-page-breaks.css: #6B5F4E, #B9AA8C on a dark page), Next in Arbor's olive cloth on the light paper */
+:root[data-arbor2][data-theme='plateau'][data-page='dark'] .reorg-part-foot, :root[data-arbor2][data-theme='plateau'][data-page='dark'] .reorg-part-foot-go.is-next{ color:#B9AA8C; }
