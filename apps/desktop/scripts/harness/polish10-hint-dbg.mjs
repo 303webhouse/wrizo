@@ -153,6 +153,10 @@ await withHarness(async (app) => {
       await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
       await app.reload();
       await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+      await app.evalJs("(() => { if (window.__trc) return true; window.__trc = []; const L = (k, e) => { const st = (new Error().stack || '').split('\n').slice(2, 6).map((x) => x.replace(/^\s*at /, '').replace(/https?:[^ )]*\//, '')).join(' < '); window.__trc.push([Math.round(performance.now()), k, e && e.className ? String(e.className).slice(0, 24) : '', st]); };"
+        + " const f = HTMLElement.prototype.focus; HTMLElement.prototype.focus = function (o) { L('focus' + (o && o.preventScroll ? '-ps' : ''), this); return f.apply(this, arguments); };"
+        + " ['scrollTo', 'scrollBy', 'scrollIntoView'].forEach((m) => { const g = Element.prototype[m]; Element.prototype[m] = function () { L(m, this); return g.apply(this, arguments); }; });"
+        + " document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('mode-page')) window.__trc.push([Math.round(performance.now()), 'PAGE-SCROLL', String(t.scrollTop), '']); }, true); return true; })()");
       if (!(await openPage(app, id))) { ok(`${tag} fixture: the Free Write page opened`, false, ''); continue; }
       const viewNow = await setView(app, zoom);
       const pre = {};
@@ -169,6 +173,7 @@ await withHarness(async (app) => {
         h0(g), J({ presses, zoom: g && g.zoom, viewNow, lines: g && g.lines, text: g && g.text, pre }));
       if (!g) continue;
       ok(`${tag} H1: the hint meets NO line of text on screen - the writing line included`, g.hit === 0, J({ nudge: g.nudge, writing: g.writing, hit: g.hit, dbg: g.dbg }));
+      if (g.hit) console.log('INFO TRACE ' + tag + ' ' + J(await app.evalJs('window.__trc')));
       ok(`${tag} H2: the hint is on screen - inside the viewport and the stage${zoom ? '' : ', and inside the page'}`, onScreen(g), J({ nudge: g.nudge, page: g.page, stage: g.stage }));
       ok(`${tag} H3: the hint wears ${th.name}'s own type - ${th.id === 'plateau' ? 'its italic prose serif' : 'its own content face, upright'}`, typeOk(th.id, g),
         J({ family: g.family, style: g.style, prose: g.proseUsed, label: g.label }));
