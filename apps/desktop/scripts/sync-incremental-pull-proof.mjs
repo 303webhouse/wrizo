@@ -98,6 +98,9 @@ const OLD_CLIENT_GUARD = /^case when excluded\.page_links is null or excluded\.p
 // THE DOC COLUMN'S GUARD on projects.doc_settings (Fable, Nov 20, 4:50 pm: a device on an older build re-sends a project without docSettings and must not wipe hers): coalesce(excluded.doc_settings, projects.doc_settings). Modelled like the page_links guard above:
 // a push that carries none (SQL NULL) keeps what is stored; one that carries a value (an empty {} included) replaces it.
 const DOC_SETTINGS_GUARD = /^coalesce\(excluded\.doc_settings, projects\.doc_settings\)$/i;
+// THE TUTOR COLUMN'S GUARD on projects.tutor (Fable, Nov 21: a device on a build before TU5 re-sends a project without `tutor` and must not blank her Consultant thread): coalesce(excluded.tutor, projects.tutor), modelled the same way:
+// a push that carries none (SQL NULL) keeps what is stored; one that carries a value (an emptied thread included) replaces it.
+const TUTOR_GUARD = /^coalesce\(excluded\.tutor, projects\.tutor\)$/i;
 
 function makePool(migrateText) {
   const syncedAt = syncedAtTablesFrom(migrateText);
@@ -125,7 +128,9 @@ function makePool(migrateText) {
           if (l === 'synced_at') need(t);
           // ORIGINAL, SUPERSEDED Nov 21 (the projects upsert has carried the Doc column's coalesce guard since 1e03008c, which this line could not interpret, so every project push threw and K1 [projects] never saw A's edit), kept verbatim:
           // if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
-          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)) || (l === 'doc_settings' && DOC_SETTINGS_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
+          // ORIGINAL, SUPERSEDED Nov 21 (the projects upsert carries the Tutor column's coalesce guard too, which this line could not interpret, so every project push threw and K1 [projects] never saw A's edit), kept verbatim:
+          // if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)) || (l === 'doc_settings' && DOC_SETTINGS_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
+          if (!(r === `excluded.${l}` || (l === 'synced_at' && (r === 'now()' || /^excluded\.\w+$/.test(r))) || (l === 'page_links' && OLD_CLIENT_GUARD.test(r)) || (l === 'doc_settings' && DOC_SETTINGS_GUARD.test(r)) || (l === 'tutor' && TUTOR_GUARD.test(r)))) throw new Error(`fake pool: cannot interpret SET ${l} = ${r}`);
         }
         if (syncedAt.has(t)) row.synced_at = stamp;      // the column DEFAULT now()
         // THE COMMIT: a gated write has taken its stamp but is not yet visible to any other statement.
@@ -139,6 +144,7 @@ function makePool(migrateText) {
             if (r === 'now()') ex[l] = stamp;
             else if (OLD_CLIENT_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // CONNECTOR-B: a sender that does not speak page_links (null / jsonb null) keeps what is stored
             else if (DOC_SETTINGS_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // the Doc column's guard: a sender that does not speak docSettings (SQL NULL) keeps what is stored
+            else if (TUTOR_GUARD.test(r)) ex[l] = row[l] == null ? ex[l] : row[l];   // the Tutor column's guard: a sender that does not speak tutor (SQL NULL) keeps what is stored
             else ex[l] = row[r.replace('excluded.', '')];
           }
         }

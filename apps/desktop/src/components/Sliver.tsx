@@ -315,7 +315,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
     : front?.publishing ? 'parts'
     : frontInstrument?.value === 'ink' ? 'ink'
     : frontList.includes(frontPick) && frontPick !== 'ink' ? frontPick : 'text';
-  const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
+  const FRONT_WORD: Record<FrontTab, DeskTermId> = { text: sliverTheme === 'plateau' ? 'railFormat' : 'inkModeText', ink: 'inkModeInk', parts: 'reorgFrontParts' };
   const frontTabs: DrawerTabsConfig<FrontTab> | undefined = frontTab
     ? {
         items: frontList.map((id) => (front?.publishing && id !== 'parts' ? { id, label: t(FRONT_WORD[id]), disabled: true, title: t('reorgPubFrozen') } : { id, label: t(FRONT_WORD[id]) })),
@@ -353,7 +353,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
-        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -605,7 +605,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
   const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
-  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section)
+  const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section, theme === 'plateau')
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
   // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
   // Revise EDIT); the host lends its flush and, on a prose page, its split at the caret
@@ -853,7 +853,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
         </div>
       )}
       {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}
-      {frontTab === 'text' && frontEntry && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
+      {frontTab === 'text' && frontEntry && theme !== 'plateau' && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
     </div>
   );
 }
@@ -888,7 +888,8 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // exactly (the numeral still shows, reading 0:00, before the writer's
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
-function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
+function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt, named }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null; /** the Arbor reorg's Front menu names its bar (the Wrizors' pass 3: the stray bar under the list) */ named?: boolean }) {
+  const { t } = useDeskLexicon();
   // The goal NUMBER is set under Progress Tracking. This foot only shows the
   // hairline and, when the timer is on, the clock. Full screen is not here:
   // the app already offers it outside this drawer.
@@ -909,7 +910,8 @@ function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { tar
     <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && settings.instrumentsOn && (
+      {named && target != null && settings.instrumentsOn && <div className="wz-sliver-goal-name">{t('goalLabel')}</div>}
+      {settings.instrumentsOn && target != null && (
         <div className="wz-sliver-goal-hairline" aria-hidden="true">
           <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>

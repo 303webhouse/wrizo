@@ -51,6 +51,10 @@ await withHarness(async (app) => {
     await app.evalJs(`history.replaceState(null, '', '/' + ${J(query)} + '#/')`); await app.reload();
     await waitSoft(app, "!document.querySelector('.wz-splash')", { label: 'the splash gone', timeout: 25000 });
     await waitSoft(app, "typeof window.wrizoCreateJournalPage === 'function' && !!window.wrizoDeskLexicon && !!window.wrizoLexicon", { label: 'seams', timeout: 15000 });
+    // DRIVER FIX (Nov 22, train I6's pair 45010125615, parked leg: K1 read the words right and data-arbor2 still null - the read ran before the redesign
+    // set its attribute): the redesign session settles on <html data-arbor2="true"> first (soft: if it never comes, K1 reads null and goes red); the
+    // ?arbor2=0 session never sets it and does not wait. No assertion changes.
+    if (!/arbor2=0/.test(query)) await waitSoft(app, "document.documentElement.getAttribute('data-arbor2') === 'true'", { label: 'the redesign on <html>', timeout: 10000 });
     const read = await app.evalJs(READ);
     // on screen: a page, the rail's Plan item, and its pop-out's door
     const id = `arbor-cv-${Math.random().toString(36).slice(2, 7)}`;

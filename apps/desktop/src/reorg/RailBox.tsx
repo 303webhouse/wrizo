@@ -1,5 +1,6 @@
 import { lettersOf } from './railData';
 import { useBoxes } from './railMemory';
+import { useTheme } from '../store/theme';
 
 // A PROJECT'S BOX (frames R1 to R5): its two letters on its colour, or her picture. Its look is Box settings' (step 4), held in memory only
 // (railMemory.ts); absent, the defaults are derived and never stored: the letters from the name (railData.lettersOf) on the first swatch, no
@@ -9,6 +10,15 @@ import { useBoxes } from './railMemory';
 
 /** The ruled swatches (frame R5, sampled as drawn): pale, grey, blue, brass, orange. The first is every box's default. */
 export const SWATCHES = ['#C9CED3', '#6A727B', '#41658A', '#B9A03A', '#FF9800'] as const;
+/** ARBOR's six (arbor-reorg-spec.md §1: "Pale · Grey · Blue · Brass · Orange become Arbor's six: Olive · Sea · Cold blue · Madder · Honey · Iron. Never
+ *  brass for a box: brass is her act"; §6's cloths, slots a to f). A choice is stored as its hex in the box's own colour, as her own colour already is. */
+export const ARBOR_SWATCHES = ['#56632E', '#17454E', '#7FA0BC', '#A8392F', '#C9A46B', '#39414A'] as const;
+/** ARBOR's uncoloured box (the Wrizors via Fable, Nov 21 11:20 pm: NOT olive): plain cream with walnut letters - cream 8.29:1 on the rail by day, 13.6 by
+ *  night; walnut on cream 12.9. Derived, never stored; no swatch is chosen while a box has no colour of its own. */
+export const ARBOR_PLAIN_BOX = '#EFE4CB';
+export const ARBOR_PLAIN_INK = '#2B1D12';
+/** The swatches in force: Arbor's six in Arbor, the ruled five elsewhere. */
+export function useSwatches(): readonly string[] { return useTheme() === 'plateau' ? ARBOR_SWATCHES : SWATCHES; }
 const INKS = ['#1E262E', '#FFFFFF', '#000000'] as const;
 
 function luminance(hex: string): number {
@@ -29,12 +39,19 @@ export function letterInk(colour: string): string {
 
 export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: string; size?: 'rail' | 'pin' | 'row' }) {
   const look = useBoxes()[id ?? ''] || {};
-  const colour = look.colour || SWATCHES[0];
+  const swatches = useSwatches();
+  const plain = !look.colour && swatches === ARBOR_SWATCHES;   // Arbor's uncoloured box: cream, walnut letters
+  const colour = look.colour || (plain ? ARBOR_PLAIN_BOX : swatches[0]);
+  const ink = plain ? ARBOR_PLAIN_INK : letterInk(colour);
+  // ARBOR: the letters' ink is also their text FILL. Arbor's night dim (arbor-v2.css section 6.2) letters every dimmed hook in --text-hi with a `color`
+  // !important, which turned the cream box's walnut letters cream on cream (the frames on 2fc46347); the fill paints the letters and that rule does
+  // not reach it, so they keep their ink and only the dim's opacity applies. Machina draws as before.
+  const arborInk = swatches === ARBOR_SWATCHES ? { WebkitTextFillColor: ink } : {};
   if (look.picture) {
     return <span className={`wz-reorg-box wz-reorg-box--${size} wz-reorg-box--picture`} aria-hidden="true" data-box-picture="" style={{ backgroundImage: `url("${look.picture}")` }} />;
   }
   return (
-    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: letterInk(colour) }}>
+    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: ink, ...arborInk }}>
       {look.letters !== undefined ? look.letters : lettersOf(name)}
     </span>
   );
