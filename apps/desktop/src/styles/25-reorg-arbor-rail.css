@@ -146,3 +146,18 @@
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-recent-sort > button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
+/* THE WRIZORS' PASS 7 (claude/wrizors/arbor-reorg-pass-7.md; Fable, Nov 22 3:20 pm).
+   REAL 1: the Session's goal field's edge read 2.61:1 by day and 1.50:1 by night; it takes Arbor's field edge, as the Tutor's search field does -
+   #6B5F4E by day (4.46:1 on the pop-out), #9C8A6E by night (5.86:1).
+   REAL 2 and REAL 3: by night Arbor's dim (arbor-v2.css section 6.2) took the whole rail to .6 - the reorg's rail is the strip's one child - and lettered it
+   in cream, so the opened PAGES door read 2.54:1 on its dimmed cloth and the Drawer box's "FI" 4.39:1 on a greyed cream. Under the bar's own dim
+   condition (arbor-v2.css's rule that sets --arbor2-bar-dim, verbatim, the strip its subject) the rail stays whole and the dim moves onto its pieces
+   by class - the pin-view switch, the doors not open, the foot - so the boxes (her Drawer and its pins) and the opened door keep their full colour.
+   The opened door's word and glyph take their cloth's ink as the text fill and the stroke (the dim's cream lettering reaches neither), as the boxes'
+   letters do (RailBox). No new @container (arbor-keyflip counts two); class subjects only (bug #80). Checked by reorg-arbor-rail-live.mjs A17-A19. */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-session-goal{ border-color:#6B5F4E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-reorg-session-goal{ border-color:#9C8A6E; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .desk-frame-strip:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .wz-reorg-rail{ opacity:1 !important; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .desk-frame-strip:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .wz-reorg-rail :is(.wz-reorg-pin-view, .wz-reorg-doors > .wz-strip-item:not([aria-pressed='true']), .wz-strip-foot){ opacity:var(--arbor2-dim, .6); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true'] :is(.wz-strip-label, .wz-strip-glyph){ -webkit-text-fill-color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true'] .wz-strip-glyph svg{ stroke:var(--arbor-cloth-ink); }
