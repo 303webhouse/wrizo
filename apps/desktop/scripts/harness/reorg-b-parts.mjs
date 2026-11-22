@@ -299,7 +299,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;   // 13 + R4 (Nov 20); - T1 (parked, Nov 21) + T1-B + MUT-T1-B; + MUT-R2 (R2 parked, colour B's brass bar, Nov 21)
+const EXPECTED = 17;   // 13 + R4 (Nov 20); - T1 (parked, Nov 21) + T1-B + MUT-T1-B; + MUT-R2 (R2 parked, colour B's brass bar, Nov 21); + T1 (the stricter successor, INK's, Nov 22: SPRINT draws no Front menu at all); both successors pass and both stay (T1-B is the weaker reading)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-PARTS VERIFY: PASS (${checks.length} checks)`

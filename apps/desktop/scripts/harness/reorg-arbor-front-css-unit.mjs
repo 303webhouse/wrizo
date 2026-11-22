@@ -46,8 +46,11 @@ const read = (css) => {
 };
 const splitSel = (s) => { const parts = []; let d = 0, cur = ''; for (const ch of s) { if (ch === '(' || ch === '[') d++; if (ch === ')' || ch === ']') d--; if (ch === ',' && d === 0) { parts.push(cur.trim()); cur = ''; } else cur += ch; } parts.push(cur.trim()); return parts; };
 const hexes = (s) => (s.match(/#[0-9a-fA-F]{6}\b/g) || []).map((h) => h.toUpperCase());
-const FRONT = /\.reorg-parts|\.reorg-part-(?!arrow|foot)|\.reorg-part\b|\.reorg-dockind|\.reorg-text-|\.reorg-pubparts|\.wz-drawer-tab\[data-disabled='true'\]/;
-const REPLACED = /data-tint=|\.reorg-parts-row\.is-here:not\(\[data-here-bar='brass'\]\)::before/;
+const FRONT = /\.reorg-colour-|\.reorg-parts|\.reorg-part-(?!arrow|foot)|\.reorg-part\b|\.reorg-dockind|\.reorg-text-|\.reorg-pubparts|\.wz-drawer-tab\[data-disabled='true'\]/;
+// Arbor replaces three Machina reorg rules with its own: the wash (data-tint), and the here-bar's grey and brass variants (Machina's colour-B brass bar is Default's only; Arbor's chosen row is the 4 px brass mark on every row)
+const REPLACED = /data-tint=|\.reorg-parts-row\.is-here:not\(\[data-here-bar='brass'\]\)::before|\.reorg-parts-row\.is-here\[data-here-bar='brass'\]::before/;
+// Machina's light room is Arbor's day room
+const ROOMMAP = (s) => s.split("[data-theme='machina']").join(AR).split("[data-machina2-room='light']").join("[data-arbor2-room='day']");
 // the rooms' own tokens (arbor-v2.css: day --text-hi #33401F on grounds #E8DFC8 / #F6F1E4 / #F1EAD8, olive --accent-rest #55612D; night --text-hi #EDE6DA on #2E2118 / #1B120C; brass #FF9800)
 const ROOMS = { day: { grounds: ['#E8DFC8', '#F6F1E4', '#F1EAD8'], hi: '#33401F', olive: '#55612D' }, night: { grounds: ['#2E2118', '#1B120C', '#261A12'], hi: '#EDE6DA' } };
 const BRASS = '#FF9800';
@@ -66,7 +69,7 @@ function suite(css) {
   t('COVER', () => {
     const want = read(TOP).filter((r) => r.sel.includes("[data-theme='machina']") && FRONT.test(r.sel) && !REPLACED.test(r.sel));
     const have = new Set(rs.map((r) => r.at + '|' + r.sel));
-    const miss = want.filter((r) => !have.has(r.at + '|' + r.sel.split("[data-theme='machina']").join(AR))).map((r) => r.sel.slice(0, 90));
+    const miss = want.filter((r) => !have.has(r.at + '|' + ROOMMAP(r.sel))).map((r) => r.sel.slice(0, 90));
     return { pass: want.length >= 80 && miss.length === 0, detail: J({ want: want.length, miss: miss.slice(0, 5), n: miss.length }) };
   });
   t('CLOTHS', () => {
@@ -127,7 +130,7 @@ function suite(css) {
     const all = hexes(css), bad = all.filter((h) => !allowed.has(h));
     const machina = ['#6A727B', '#D2D6DA', '#F4F5F6', '#E6E8EA', '#3F6183', '#3A4047', '#525A62'].filter((h) => all.includes(h));
     const brassUses = rs.filter((r) => /var\(--brass\)|#FF9800|--orange/i.test(r.body)).map((r) => r.sel);
-    const brassOk = brassUses.length >= 2 && brassUses.every((s) => /\.reorg-parts-row\.is-here(::before| \.reorg-parts-name)$/.test(s));
+    const brassOk = brassUses.length >= 2 && brassUses.every((s) => /\.reorg-parts-row\.is-here(::before| \.reorg-parts-name)$|\.reorg-colour-(scheme|swatch)\[aria-checked='true'\]$/.test(s));   // brass is her act: the chosen row's mark and night words, and the chosen colour scheme and swatch (colour B)
     return { pass: all.length >= 8 && bad.length === 0 && machina.length === 0 && brassOk, detail: J({ n: all.length, bad, machina, brassUses }) };
   });
   return R;

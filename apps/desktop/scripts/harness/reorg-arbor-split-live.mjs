@@ -40,6 +40,7 @@ async function seed(app, tone) {
   })()`);
 }
 async function open(app, id, { lift = 'plateau.back,plateau.split', arbor2 = true } = {}) {
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1${arbor2 ? '' : '&arbor2=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
