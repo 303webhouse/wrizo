@@ -22,7 +22,8 @@ export const REORG_THEME_GATE: Record<ThemeId, Record<ReorgPiece, boolean>> = {
   machina: { ...ALL_ON },
   // ARBOR: the rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4); the other five stay off until theirs pass
   // ARBOR: the top bar ON (Fable, Nov 22 3:20 pm: the Wrizors passed all six Arbor pieces; train K flips them - ARBOR the top, INK the other four)
-  plateau: { ...ALL_OFF, rail: true, top: true },
+  // INK: front, back, split and uplink ON (Fable, Nov 22 3:20 pm: pass 6 passed Arbor's Front menu; pass 2, the split and Publish had passed): all six Arbor cells are on, so Arbor's column is Machina's
+  plateau: { ...ALL_ON },
   flux: { ...ALL_OFF },
 };
 
