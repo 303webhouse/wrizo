@@ -14,6 +14,8 @@ import {
 import { assetDragFromDoc, assetTitle, connectAssetToPart, isAssetDrag, readAssetDrag } from './assetConnect';
 import { bandAt, isPartDrag, makeDrop, planDrop, DWELL_MS, PART_DRAG, type Band, type DropKind, type Refusal } from './partDrag';
 import { SLOT_WORD, slotLetter } from './colourSlots';
+import { ColourPicker } from './ColourPicker';
+import { customVars, useDocScheme } from './colourScheme';
 import { assetCountOf } from './partAssets';
 import { focusAssetsPart } from './backMenu/assetsFocus';
 import { DocKindMenu, type DocMenuHost } from './DocKindMenu';
@@ -67,6 +69,10 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
   const latest = getJournalEntry(entry.id) ?? entry;
   const { doc, parts, here } = partsOfDoc(latest);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  // COLOUR B (Nick, Nov 21 3:30 pm): the picker, open on one Part (./ColourPicker.tsx); the scheme, in memory (./colourScheme.ts)
+  const [picker, setPicker] = useState<{ id: string; at: { left: number; top: number } } | null>(null);
+  const scheme = useDocScheme(entry.id);
+  const openPicker = (id: string, el: Element) => { const r = el.getBoundingClientRect(); setOpenMenu(null); setPicker({ id, at: { left: Math.round(r.left), top: Math.round(r.bottom + 4) } }); };
   const [said, setSaid] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ kind: 'split'; token: SplitToken } | { kind: 'join'; token: JoinToken } | null>(null);
   const listRef = useRef<HTMLElement>(null);
@@ -343,12 +349,14 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
           return (
             <li key={p.id} data-part-li={p.id} data-part-level={p.level} data-drop={drop && drop.id === p.id ? drop.kind : undefined} style={{ ['--part-level' as string]: p.level } as CSSProperties}>
               <button type="button" className={`reorg-parts-row${on ? ' is-here' : ''}${over === p.id ? ' is-drop' : ''}`} data-part-row={p.id} aria-current={on ? 'true' : undefined}
-                data-here-bar={on && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.color ? p.color : undefined}
+                data-here-bar={on && scheme === 'default' && !p.hex && (!p.color || isPartColor(p.color)) ? 'brass' : undefined} data-tint={on && p.hex ? 'hex' : on && p.color ? p.color : undefined}
+                style={p.hex ? (customVars(p.hex) as CSSProperties) : undefined}
+                onDoubleClick={(e) => { const tile = (e.target as Element).closest?.('.reorg-parts-tag'); if (tile) { e.preventDefault(); openPicker(p.id, tile); } }}
                 onClick={() => open(p.id)} onDragOver={onOver(p.id)} onDrop={onDrop(p)}
                 onDragLeave={(e) => { if (e.currentTarget.contains(e.relatedTarget as Node)) return; if (over === p.id) setOver(null); if (drop && drop.id === p.id) setDrop(null); }}
                 draggable={canDrag ? true : undefined} onPointerDown={onRowPress(p, on)} onDragStart={onDragStart(p)} onDragEnd={clearDrag}>
                 <span className="reorg-parts-num">{p.n}</span>
-                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
+                <span className="reorg-parts-tag" data-part-tag data-colour={p.color ?? undefined} data-colour-hex={p.hex ?? undefined} aria-hidden="true">{p.color ? slotLetter(p.color) : ''}</span>
                 <span className="reorg-parts-name">{shown}</span>
                 <span className="reorg-parts-words">{fill(t(p.words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), { n: p.words })}</span>
               </button>
@@ -377,7 +385,8 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
                     <button type="button" data-part-act="join" disabled={i === 0} onClick={() => join(p)}>{t('reorgPartJoin')}</button>
                   </div>
                   <div className="reorg-part-colours" role="group" aria-label={t('reorgPartColour')}>
-                    <button type="button" className="reorg-part-swatch" data-part-colour="none" aria-pressed={!p.color} aria-label={t('reorgPartColourNone')} title={t('reorgPartColourNone')}
+                    <button type="button" className="reorg-part-colour-open" data-part-act="colour" onClick={(e) => openPicker(p.id, e.currentTarget)}>{t('reorgColourOpen')}</button>
+                    <button type="button" className="reorg-part-swatch" data-part-colour="none" aria-pressed={!p.color && !p.hex} aria-label={t('reorgPartColourNone')} title={t('reorgPartColourNone')}
                       onClick={() => colour(p, null)} />
                     {PART_COLORS.map((c) => (
                       <button key={c} type="button" className="reorg-part-swatch" data-part-colour={c} data-colour={c} aria-pressed={p.color === c} aria-label={t(SLOT_WORD[c])} title={t(SLOT_WORD[c])}
@@ -390,6 +399,8 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
           );
         })}
       </ol>
+      {picker && (() => { const pp = parts.find((x) => x.id === picker.id); if (!pp) return null;
+        return <ColourPicker key={pp.id} partId={pp.id} partName={pp.name || fill(t('reorgPartN'), { n: pp.n })} current={pp.hex ?? pp.color} at={picker.at} onClose={() => setPicker(null)} />; })()}
       <div className="reorg-parts-live" role="status">
         {line && (
           <div className="reorg-parts-line" data-reorg-connect-line="">

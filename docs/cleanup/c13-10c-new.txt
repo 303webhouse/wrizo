@@ -472,3 +472,15 @@ reorgSplitZoomFit=Fit
 # FULL SCREEN FROM THE SPLIT (ARBOR, reorg plan v2.1 §3b item 3, Nov 21) - the Wrizors' lexicon words (Title Case); no theme overrides them yet
 reorgSplitFull=Full Screen
 reorgFullBack=Back
+# COLOUR B, THE PICKER (ARBOR, reorg plan v2.1 §3b item 5, Nov 21) - the Wrizors' concept words (Title Case); no theme overrides them yet
+reorgColourHead=Colour · {part}
+reorgColourScheme=Scheme
+reorgSchemeDefault=Default
+reorgSchemeMuted=Muted
+reorgSchemeVivid=Vivid
+reorgSchemeLine=Changes every Part's colours.
+reorgColourThisPart=This Part
+reorgColourCustom=+ Custom…
+reorgColourHex=Hex Colour
+reorgColourUse=Use
+reorgColourOpen=Colour…
