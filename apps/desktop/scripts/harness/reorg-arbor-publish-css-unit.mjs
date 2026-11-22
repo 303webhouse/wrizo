@@ -82,7 +82,7 @@ ok('WIRED the global stylesheet lists 25-reorg-arbor-publish.css after the Machi
 const MUT = [
   ['a rule escapes the Arbor scope', 'SCOPED', (t) => t.replace(`${AR} .reorg-pub-label{`, () => '.reorg-pub-label{')],
   ['the foot keeps the page margin (75 px) on its sides', 'FOOT', (t) => t.replace('padding-inline:min(var(--wz-page-pad-x, 38px), 28px)', () => 'padding-inline:var(--wz-page-pad-x, 38px)')],
-  ['a button may break inside its label again', 'FOOT', (t) => t.replace(' white-space:nowrap;', () => '')],
+  ['a button may break inside its label again', 'FOOT', (t) => t.replace('padding:0 8px; white-space:nowrap;', () => 'padding:0 8px;')],
   ['the buttons lose their twin', 'COVER', (t) => t.split('.reorg-pub-btn.is-quiet').join('.reorg-pub-btn.is-loud')],
   ['the sheet gets a box (the focus ring comes back)', 'SHEET', (t) => t.replace('outline:none;', () => '')],
   ['the sheet no longer covers the paper', 'SHEET', (t) => t.replace('inset:0', () => 'inset:auto')],

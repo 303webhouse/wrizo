@@ -154,3 +154,6 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-dockind-menu{ background:#261A12; }
 /* focus rings are "where you are": olive, never brass */
 :root[data-arbor2][data-theme='plateau'] :is(.reorg-parts-row, .reorg-dockind-btn, .reorg-parts-structure-btn, .reorg-text-fold-btn):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+
+/* pass 1, NIT 1 (Nick, Oct 9), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(:is(#wz-sliver-tab-text, #wz-sliver-tab-parts)) .wz-sliver[data-open='true'] .wz-sliver-grip{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }

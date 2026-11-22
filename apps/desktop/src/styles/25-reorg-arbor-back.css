@@ -82,3 +82,21 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-search-hit mark{ background:rgba(201, 164, 107, .45); color:inherit; }
 :root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:rgba(201, 164, 107, .35); }
 :root[data-arbor2][data-theme='plateau'] ::highlight(wz-search-cur){ background-color:rgba(201, 164, 107, .7); }
+
+/* ---- PASS 1 (the Wrizors, Nov 21, 7:00 pm; Fable, Nov 21, 9:40 pm) ---- */
+/* NIT 3: a graft's colour chip shows its slot's cloth, edged and numbered as the Section tags are (the tokens are 25-reorg-arbor-tags.css's); the DOM holds the slot's letter, hidden */
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag{ display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; flex:none; width:16px; height:16px; margin-right:6px; border:1px solid transparent; border-radius:3px 3px 0 0; font-family:var(--font-mono, 'IBM Plex Mono', monospace); font-size:0; font-weight:600; line-height:1; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='a']::after{ content:var(--reorg-tag-a-num); font-size:10px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='b']::after{ content:var(--reorg-tag-b-num); font-size:10px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='c']::after{ content:var(--reorg-tag-c-num); font-size:10px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='d']::after{ content:var(--reorg-tag-d-num); font-size:10px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='e']::after{ content:var(--reorg-tag-e-num); font-size:10px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='f']::after{ content:var(--reorg-tag-f-num); font-size:10px; }
+/* NIT 1 (Nick, Oct 9: opening a menu is not a choice, so an opener never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }

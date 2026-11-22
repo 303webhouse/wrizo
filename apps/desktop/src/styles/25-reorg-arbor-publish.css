@@ -37,3 +37,7 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-pub-btn.is-quiet{ border-color:transparent; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pub-btn:focus-visible{ outline:1px solid #56632E; outline-offset:1px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pub-tick input{ accent-color:#56632E; }
+
+/* NIT (pass 1): "Web (HTML)" stays on the line with the other two: the foot's second row fits the page's width (its side padding is capped at 28 px, the page's own margin being 75 px here), the gaps tighten, and a button never breaks inside its label */
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-foot{ padding-inline:min(var(--wz-page-pad-x, 38px), 28px); column-gap:6px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn{ padding:0 8px; white-space:nowrap; }
