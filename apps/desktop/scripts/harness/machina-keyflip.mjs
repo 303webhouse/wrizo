@@ -1,0 +1,125 @@
+// MACHINA KEY-FLIP (Fable, Nov 22, 2:58 am, URGENT: "live in Machina on train H: 23-reorg-top.css lines 197-198, [data-theme='machina'] ::highlight(wz-search) and
+// -cur, have the shape INK just proved costs a keystroke restyle of ~46% of the page in Arbor (a ::highlight() has a universal subject; a root-attribute ancestor makes
+// the whole page depend on the root, and the first key flips data-wz-writing). Not gated by the reorg: every Machina writer."). arbor-keyflip.mjs's method, in Machina:
+// a Chrome trace (devtools.timeline) of the FIRST key on a page reopened at rest; the largest single restyle from the keydown to 150 ms after it must touch at most a
+// quarter of the document's elements. No reorg switch in the URL (the driver pins it off): the rules are global, so every Machina writer pays them.
+//   MKF-PREMISE   Machina, the page mounted, the first key flips data-wz-writing on the root inside the trace, and the trace read the key and its restyles
+//   MKF-FLIP      the first key, a letter: the largest restyle touches at most 25% of the document's elements, on every one of 3 reopens
+//   MKF-FLIP-SP   the same for a Space as the first key (it commits the word and rebuilds the committed runs), on every one of 2 reopens
+//   MKF-LOOK      the search's highlights still paint in Machina: ::highlight(wz-search) and ::highlight(wz-search-cur) compute to Machina's colours
+//   MUT-MKF-FLIP  the two old rules ([data-theme='machina'] ::highlight(...)) put back into the running page: MKF-FLIP is RED (the reader can go red)
+// Run: node scripts/harness/machina-keyflip.mjs (from apps/desktop; a box turn or Actions).
+import { withHarness } from '../runtime-verify.mjs';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
+const REOPENS = 3, SP_REOPENS = 2, WINDOW_US = 150000, SHARE = 0.25;
+const OLD_RULES = "[data-theme='machina'] ::highlight(wz-search){ background-color:rgba(246, 236, 190, .6); }\n[data-theme='machina'] ::highlight(wz-search-cur){ background-color:rgba(232, 196, 92, .85); color:#1C1C1C; }";
+
+// arbor-keyflip.mjs's trace categories and analysis (the same reader, so the two checks measure the same thing)
+const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack', 'disabled-by-default-devtools.timeline.invalidationTracking'];
+const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
+const analyse = (raw) => {
+  const evs = raw.slice().sort((a, b) => a.ts - b.ts);
+  const kd = evs.find((e) => e.name === 'EventDispatch' && e.args && e.args.data && e.args.data.type === 'keydown');
+  if (!kd) return { err: 'no keydown in the trace', n: evs.length };
+  const K = kd.ts;
+  const spans = []; const open = {};
+  for (const e of evs) {
+    if (e.pid !== kd.pid || e.tid !== kd.tid) continue;
+    if (e.ph === 'X') spans.push({ name: e.name, ts: e.ts, end: e.ts + (e.dur || 0), args: e.args || {} });
+    else if (e.ph === 'B') (open[e.name] ||= []).push(e);
+    else if (e.ph === 'E') { const b = (open[e.name] || []).pop(); if (b) spans.push({ name: e.name, ts: b.ts, end: e.ts, args: { ...(b.args || {}), ...(e.args || {}) } }); }
+  }
+  const tasks = spans.filter((s) => /^(ThreadControllerImpl::RunTask|RunTask)$/.test(s.name));
+  const disp = spans.filter((s) => s.name === 'EventDispatch' && s.args.data && KEYTYPES.has(s.args.data.type) && s.ts >= K);
+  const keyTasks = tasks.filter((t) => disp.some((d) => d.ts >= t.ts && d.end <= t.end));
+  const ult = spans.filter((s) => s.name === 'UpdateLayoutTree' || s.name === 'RecalculateStyles');
+  const els = (s) => Number(s.args.elementCount ?? (s.args.endData && s.args.endData.elementCount) ?? (s.args.data && s.args.data.elementCount) ?? NaN);
+  const win = ult.filter((s) => s.ts >= K && s.ts < K + WINDOW_US);
+  const counted = win.filter((s) => Number.isFinite(els(s)));
+  const big = counted.reduce((m, s) => (els(s) > (m ? els(m) : -1) ? s : m), null);
+  return { keyTasks: keyTasks.length, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, keyElsMs: big ? Math.round((big.end - big.ts) / 100) / 10 : null };
+};
+const STATE = "(() => ({ theme: document.documentElement.getAttribute('data-theme'), writing: document.documentElement.getAttribute('data-wz-writing'), docEls: document.getElementsByTagName('*').length, editor: !!document.querySelector('.forward-only-editor') }))()";
+const LOOK = `(() => { const row = document.querySelector('.forward-only-editor .wz-row') || document.querySelector('.forward-only-editor'); if (!row) return null;
+  const a = getComputedStyle(row, '::highlight(wz-search)'), b = getComputedStyle(row, '::highlight(wz-search-cur)');
+  return { hit: a.backgroundColor, cur: b.backgroundColor, curInk: b.color }; })()`;
+const inject = (css) => `(() => { const s = document.createElement('style'); s.setAttribute('data-mkf-mut', ''); s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); return true; })()`;
+const flipOk = (m) => !!m && !!m.tr && m.tr.keyEls != null && !!m.before && m.tr.keyEls <= SHARE * m.before.docEls;
+
+await withHarness(async (app) => {
+  const ev = (js) => app.evalJs(js);
+  const splashGone = () => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
+  await app.emulateDpr(1, 1400, 900);
+  await app.goto('/');
+  await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 15000 });
+  await splashGone();
+  await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
+  await ev("window.wrizoTheme.set('machina'); null");
+  await ev(`(() => { window.wrizoCreateJournalPage({ id: 'mkf-1', text: ${JSON.stringify(Array.from({ length: 40 }, (_, i) => 'word' + i).join(' '))}, createdAt: '2026-04-01T00:00:00.000Z', origin: 'loose', source: 'page' }); window.wrizoFlushNow(); return null; })()`);
+
+  // reopen the page at rest (the first key starts writing), Machina, no reorg switch in the URL
+  const open = async () => {
+    await app.goto('/');
+    await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before reopen', timeout: 15000 }).catch(() => {});
+    await ev("history.replaceState(null, '', '/#/page/mkf-1'); null");
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' });
+    await splashGone();
+    await sleep(1500);
+  };
+  const traceKey = async (key) => {
+    await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
+    await sleep(400);
+    await app.typeKeys(key);
+    await sleep(700);
+    const done = app.waitEvent('Tracing.tracingComplete', 30000);
+    await app.cdp('Tracing.end');
+    const e = await done;
+    if (!e || !e.stream) return { err: 'no trace stream' };
+    let s = '';
+    for (;;) { const r = await app.cdp('IO.read', { handle: e.stream, size: 4 << 20 }); s += r.base64Encoded ? Buffer.from(r.data, 'base64').toString('utf8') : r.data; if (r.eof) break; }
+    await app.cdp('IO.close', { handle: e.stream });
+    let j; try { j = JSON.parse(s); } catch (x) { return { err: 'trace not JSON: ' + String(x).slice(0, 80) }; }
+    return analyse(Array.isArray(j) ? j : (j.traceEvents || []));
+  };
+  const measure = async (label, { key = 'a', mut = false } = {}) => {
+    await open();
+    if (mut) { await ev(inject(OLD_RULES)); await sleep(400); }
+    await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
+    const before = await ev(STATE);
+    const tr = await traceKey(key);
+    const after = await ev(STATE);
+    const m = { label, before, after, tr };
+    console.log(`MKF ${label}: ` + JSON.stringify({ docEls: before.docEls, share: tr && tr.keyEls != null ? Math.round((tr.keyEls / before.docEls) * 1000) / 10 + '%' : null, before: before.writing, after: after.writing, tr }));
+    return m;
+  };
+
+  const fix = []; for (let i = 1; i <= REOPENS; i += 1) fix.push(await measure(`letter-${i}`));
+  const sp = []; for (let i = 1; i <= SP_REOPENS; i += 1) sp.push(await measure(`space-${i}`, { key: ' ' }));
+  const mut = await measure('mut-old-rules', { mut: true });
+  await open();
+  const look = await ev(LOOK);
+
+  const f0 = fix[0];
+  ok('MKF-PREMISE Machina, the page mounted, the first key flips data-wz-writing on the root inside the trace, and the trace read the key and its restyles',
+    !!f0 && f0.before.theme === 'machina' && f0.before.editor && f0.before.writing === null && f0.after.writing === 'true' && !!f0.tr && f0.tr.keyTasks >= 1 && f0.tr.counted >= 1, f0);
+  ok(`MKF-FLIP the first key (a letter): the largest restyle touches at most ${SHARE * 100}% of the document's elements, on every one of ${REOPENS} reopens`, fix.every(flipOk),
+    fix.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
+  ok(`MKF-FLIP-SP the same for a Space as the first key, on every one of ${SP_REOPENS} reopens`, sp.every(flipOk), sp.map((m) => ({ keyEls: m.tr && m.tr.keyEls, docEls: m.before && m.before.docEls })));
+  ok('MKF-LOOK the search\'s highlights still paint in Machina: wz-search rgba(246, 236, 190, 0.6), wz-search-cur rgba(232, 196, 92, 0.85) with ink rgb(28, 28, 28)',
+    !!look && look.hit === 'rgba(246, 236, 190, 0.6)' && look.cur === 'rgba(232, 196, 92, 0.85)' && look.curInk === 'rgb(28, 28, 28)', look);
+  ok('MUT-MKF-FLIP the two old rules put back into the running page: MKF-FLIP is RED (the reader can go red)', !!mut && !!mut.tr && mut.tr.keyEls != null && !flipOk(mut),
+    { keyEls: mut && mut.tr && mut.tr.keyEls, docEls: mut && mut.before && mut.before.docEls });
+});
+
+const EXPECTED = 5;
+let bad = 0;
+for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + String(c.detail).slice(0, 1500)}`); if (!c.pass) bad += 1; }
+if (checks.length !== EXPECTED) bad = Math.max(bad, 1);
+console.log(bad ? `\nMACHINA-KEYFLIP VERIFY: FAIL - ${bad}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}` : `\nMACHINA-KEYFLIP VERIFY: PASS (${checks.length} checks)`);
+process.exit(bad ? 1 : 0);
