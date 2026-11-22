@@ -149,6 +149,8 @@ try { await withHarness(async (app) => {
     h1.openL === 'true' && !!hl && hl.before.content !== 'none' && hl.before.height === '1px' && hl.before.position === 'sticky' && hl.before.bg === 'rgb(0, 194, 255)' && hl.after.content !== 'none' && h1.handNodes === 0 && !h1.hands.find((h) => h.side === 'right'),
     JSON.stringify({ hand: hl, nodes: h1.handNodes }));
   ok('HA2 the electron runs the line while the menu is open, on transform alone (one animation, running)', !!el1 && el1.n === 1 && el1.state === 'running' && el1.props.length === 1 && el1.props[0] === 'transform', JSON.stringify(el1));
+  const stub = await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); const a = getComputedStyle(g, '::after'); return { expanded: g.getAttribute('aria-expanded'), display: a.display, content: a.content }; })()");
+  ok('HA6 CONTROL: with motion the open tab draws its own stub of line and its dot (the hands as lines, piece 5): the ::after of the tab is drawn', !!stub && stub.expanded === 'true' && stub.display !== 'none' && stub.content !== 'none', JSON.stringify(stub));
   await ev("(() => { const g = document.querySelector('.wz-tutor-grip'); g.focus(); g.click(); })()");
   await sleep(500);
   const h2 = await read();
@@ -195,6 +197,8 @@ try { await withHarness(async (app) => {
   await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);
   const q1 = await read();
   ok('QU1 REDUCED MOTION: a stage change draws no spark and a menu opens with no hand current', q1.runs === 0 && q1.sparks === 0 && q1.hands.length === 0 && q1.openL === 'true', JSON.stringify({ runs: q1.runs, sparks: q1.sparks, hands: q1.hands.length, openL: q1.openL }));
+  const stubRm = await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); const a = getComputedStyle(g, '::after'); return { expanded: g.getAttribute('aria-expanded'), display: a.display, content: a.content }; })()");
+  ok('QU4 REDUCED MOTION: the open tab shows NO stub of line and NO dot at its end (the ::after of the tab is not drawn), though the menu is open (the Wrizors NIT, Nov 21, 11:55 pm)', !!stubRm && stubRm.expanded === 'true' && stubRm.display === 'none', JSON.stringify(stubRm));
   await page({ dial: 0 });
   await tab('revise'); await sleep(200);
   await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()"); await sleep(500);
