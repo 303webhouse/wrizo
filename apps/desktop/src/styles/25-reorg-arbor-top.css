@@ -101,3 +101,18 @@
    numbers on cold blue and honey went cream, 2.21 and 1.88); the fill paints the glyphs and that rule does not reach it - as the rail's boxes do (RailBox) */
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag{ box-shadow:0 0 0 1px #EFE4CB; }
 :root[data-arbor2][data-theme='plateau'] .reorg-top[data-reorg-top='board']{ min-height:33px; }
+/* THE WRIZORS' PASS 4 (claude/wrizors/arbor-reorg-pass-4.md section 1; Fable, Nov 22 1:40 am).
+   REAL 1, the tag's number. By day it painted #3A3531 on cold blue, 4.42:1: a 10 px digit's thin strokes never reach the walnut ink, so the number is set
+   heavier and a size up (700, 11 px), its strokes painting the ink itself. By night Arbor's dim (arbor-v2.css section 6.2) takes the bar's children to
+   .6 - the reorg top whole, the tag with it (#566775 under a walnut at 2.55; a cream number inside the same dim composes to under 2:1, so no ink can
+   hold). The Wrizors' other answer, then: the tag is not dimmed. Under the bar's own dim condition (arbor-v2.css's rule that sets --arbor2-bar-dim,
+   verbatim, on the bar alone) a Page's reorg top stays whole and the dim moves onto its pieces - every piece but the tag, by class - so the bar dims
+   as before and only the tag keeps its cloth and its number at full. No new @container (arbor-keyflip counts the two dim containers) and no
+   universal subject under a condition that flips at the keystroke (bug #80): the subjects are classes.
+   REAL 2, the canvas views at rest read 3.46 on the bar: they take the bar's label colour, as the crumb and PAGES → do. NIT: a hovered view keeps that
+   colour too (brass is her choice: only the chosen view wears it). Checked by scripts/harness/reorg-arbor-top-live.mjs T11, T14, T15. */
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag::after{ font-weight:700; font-size:11px; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .chrome-top.sprint-nav:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .reorg-top:not([data-reorg-top='board']){ opacity:1 !important; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) .chrome-top.sprint-nav:not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within) > .reorg-top:not([data-reorg-top='board']) :is(.reorg-top-name, .reorg-top-sep, .reorg-top-part-count, .reorg-top-drop, .reorg-top-dot, .reorg-top-spring, .reorg-top-right, .reorg-top-search-wrap){ opacity:var(--arbor2-dim, .6); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top .show-as .show-as-btn:not([aria-pressed='true']), :root[data-arbor2][data-theme='plateau'] .reorg-top .show-as .show-as-btn:not([aria-pressed='true']):is(:hover, :focus-visible){ color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top .show-as .show-as-btn:not([aria-pressed='true']):is(:hover, :focus-visible) .show-as-word{ text-decoration:underline; text-underline-offset:3px; }
