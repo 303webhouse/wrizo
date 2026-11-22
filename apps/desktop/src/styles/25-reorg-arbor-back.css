@@ -100,3 +100,6 @@
 :root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='f']::after{ content:var(--reorg-tag-f-num); font-size:10px; }
 /* NIT 1 (Nick, Oct 9: opening a menu is not a choice, so an opener never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }
+/* REAL 4 (pass 1): a canvas group head's name ("Plan canvas", "This canvas") takes the row, and its buttons (Beside, To Section, Colour, Open) wrap under it instead of squeezing the name to "PLAN ..."; always visible, as a touch screen has no hover */
+:root[data-arbor2][data-theme='plateau'] .wz-back-boardhead{ flex-wrap:wrap; row-gap:2px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px); }
