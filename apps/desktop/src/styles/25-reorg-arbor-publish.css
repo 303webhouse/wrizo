@@ -1,0 +1,39 @@
+/* THE REORG'S PUBLISH VIEW IN ARBOR (Fable, Nov 21, 4:58 pm; claude/wrizors/arbor-reorg-spec.md section 9). Every rule is under :root[data-arbor2][data-theme='plateau'] and is reached only by markup the publishing sheet draws, so with the switch off, or in any other theme, nothing here
+   matches. The twins first: the Machina rules for the sheet (the whole Page in one read-only scroll over the paper, its foot of small buttons), re-scoped to the live Arbor with Arbor's colours for Machina's greys; then Arbor's dress. The piece is switched on for Arbor only through
+   reorg/themeGate.ts (plateau.uplink; the preview door shows it before then). The Front menu's SECTIONS list (.reorg-pubparts*) is ARBOR's, with the Front menu. */
+:root[data-arbor2][data-theme='plateau'] .reorg-pub{ position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; box-sizing:border-box; outline:none; background:var(--paper); color:var(--ink-on-paper); border-radius:inherit; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-label{ flex:none; display:flex; align-items:center; height:40px; box-sizing:border-box; padding:0 var(--wz-page-pad-x, 38px); font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--ink-on-paper-low); white-space:nowrap; border-bottom:1px solid var(--paper-border); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; padding:18px var(--wz-page-pad-x, 38px) 28px; font-family:var(--font-prose); font-size:15px; line-height:1.6; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-title{ margin:0 0 18px; font-size:1.5em; font-weight:600; line-height:1.25; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-part{ position:relative; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-part + .reorg-pub-part{ margin-top:30px; padding-top:22px; border-top:1px solid var(--paper-border); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-part.is-off{ opacity:.4; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-head{ margin:0 0 8px; padding-right:28px; font-weight:600; line-height:1.3; }
+:root[data-arbor2][data-theme='plateau'] h2.reorg-pub-head{ font-size:1.2em; }
+:root[data-arbor2][data-theme='plateau'] h3.reorg-pub-head{ font-size:1.08em; }
+:root[data-arbor2][data-theme='plateau'] h4.reorg-pub-head{ font-size:1em; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-words{ white-space:pre-wrap; overflow-wrap:anywhere; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-empty{ margin:0; color:var(--ink-on-paper-low); font-style:italic; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-tick{ position:absolute; right:0; top:22px; display:flex; align-items:center; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-part:first-of-type .reorg-pub-tick{ top:0; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-tick input{ margin:0; width:15px; height:15px; accent-color:#56632E; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-foot{ flex:none; display:flex; align-items:center; gap:10px; box-sizing:border-box; padding:10px var(--wz-page-pad-x, 38px); border-top:1px solid var(--paper-border); font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--ink-on-paper-low); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-count{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-said{ flex:0 1 auto; min-width:0; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn{ flex:none; box-sizing:border-box; height:24px; padding:0 10px; margin:0; border:1px solid var(--ink-on-paper-low); border-radius:0; background:transparent; color:var(--ink-on-paper); font:inherit; letter-spacing:inherit; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn.is-quiet{ border-color:transparent; background:none; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn:hover:not([disabled]){ background:var(--paper-dim); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn:focus-visible{ outline:1px solid #56632E; outline-offset:1px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn[disabled]{ opacity:.35; cursor:default; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-foot{ flex-wrap:wrap; row-gap:8px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-break{ flex:0 0 100%; height:0; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-exportlabel{ flex:none; margin-left:8px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-on-paper-low); }
+
+/* ---- ARBOR'S DRESS (arbor-reorg-spec section 9; the Wrizors' pass 1, REAL 1 and 3) ---- */
+/* the sheet is the page's own paper, laid exactly over it, and has no box of its own (the box the Flux frames showed was the browser's focus ring on the focused sheet) */
+:root[data-arbor2][data-theme='plateau'] .reorg-pub:focus, :root[data-arbor2][data-theme='plateau'] .reorg-pub:focus-visible{ outline:none; }
+/* "Copy text", "Copy formatted", "Export" and its three files: small buttons in the drawer's own style: a 1 px --arbor-line edge, transparent, the paper's ink; the pointed one fills the page's dim tone */
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn{ border:1px solid var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn.is-quiet{ border-color:transparent; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-btn:focus-visible{ outline:1px solid #56632E; outline-offset:1px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pub-tick input{ accent-color:#56632E; }

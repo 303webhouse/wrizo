@@ -79,7 +79,7 @@ const MUT = [
   ['the sheet no longer covers the paper', 'SHEET', (t) => t.replace('inset:0', () => 'inset:auto')],
   ['the sheet draws a border', 'SHEET', (t) => t.replace(`${AR} .reorg-pub{`, () => `${AR} .reorg-pub{ border:2px solid #9C8A6E;`)],
   ['a button goes back to the browser grey', 'BUTTONS', (t) => t.replace('background:transparent', () => 'background:#EFE4CB')],
-  ['the tick turns the browser blue', 'TICKS', (t) => t.replace('accent-color:#56632E', () => 'accent-color:#3F6183')],
+  ['the tick turns the browser blue', 'TICKS', (t) => t.split('accent-color:#56632E').join('accent-color:#3F6183')],
   ['a Machina grey creeps back', 'PALETTE', (t) => t.replace('#56632E', () => '#6A727B')],
   ['brass marks a button', 'BRASS', (t) => t.replace(`${AR} .reorg-pub-btn:focus-visible{`, () => `${AR} .reorg-pub-btn:focus-visible{ border-color:var(--brass);`)],
 ];
