@@ -56,6 +56,27 @@ for (const f of files) {
   ok(`MUT a stage-level :has() added to ${f}: it LANDED and the scanner flags it`, landed && flagged, J({ landed, flagged }));
 }
 
+// EVERY REORG SHEET (POLISH; Fable, Nov 22, 2:58 am, URGENT: "23-reorg-top.css lines 197-198, [data-theme='machina'] ::highlight(wz-search) and -cur, have the shape INK just
+// proved ... Not gated by the reorg: every Machina writer ... (3) Extend INK's guard (the two laws) to EVERY reorg sheet, 23-*, 24-* and 25-*, with a mutant per sheet").
+// The same two laws, TY5 (no stage-, frame- or root-level :has()) and HL (a bare ::highlight() only), read over every 23-*, 24-* and 25-* sheet; the census prints what it
+// read; each sheet takes both mutants (the 25-reorg-arbor-* sheets keep theirs above, so the loop below adds the rest).
+const ALL = fs.readdirSync(STYLES).filter((f) => /^2[345]-.*\.css$/.test(f)).sort();
+const allTexts = Object.fromEntries(ALL.map((f) => [f, lf(fs.readFileSync(STYLES + f, 'utf8'))]));
+const nAll = ALL.reduce((n, f) => n + rules(allTexts[f]).length, 0);
+const badAll = Object.fromEntries(ALL.map((f) => [f, stageHas(allTexts[f]).map((s) => s.slice(0, 120))]).filter(([, v]) => v.length));
+const hlAll = Object.fromEntries(ALL.map((f) => [f, hlBad(allTexts[f]).map((s) => s.slice(0, 120))]).filter(([, v]) => v.length));
+ok(`TY5-ALL no stage-level, frame-level or root-level :has() in any 23-*, 24-* or 25-* sheet (read ${ALL.length} sheets, ${nAll} rules)`,
+  ALL.length >= 10 && nAll >= 900 && ALL.some((f) => /^23-reorg-/.test(f)) && Object.keys(badAll).length === 0, J({ ALL, nAll, badAll }));
+ok('HL-ALL no ::highlight() selector in any 23-*, 24-* or 25-* sheet has an ancestor or a subject in front of it (a bare ::highlight(name) only)',
+  Object.keys(hlAll).length === 0 && /::highlight\(/.test(ALL.map((f) => allTexts[f]).join('\n')), J({ hlAll }));
+for (const f of ALL.filter((x) => !files.includes(x))) {
+  const t = allTexts[f];
+  const hlMut = t + "\n[data-theme='machina'] ::highlight(wz-search){ background-color:red; }\n";
+  ok(`MUT an ancestor-scoped ::highlight() added to ${f}: it LANDED and HL-ALL flags it`, hlMut !== t && hlBad(hlMut).length > hlBad(t).length, J({}));
+  const hasMut = t + "\n[data-theme='machina'] .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']){ --x:red; }\n";
+  ok(`MUT a stage-level :has() added to ${f}: it LANDED and TY5-ALL flags it`, hasMut !== t && stageHas(hasMut).length > stageHas(t).length, J({}));
+}
+
 let failed = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 700)}`); if (!c.pass) failed += 1; }
 console.log(failed ? `\nREORG-ARBOR-NO-STAGE-HAS-UNIT VERIFY: FAIL - ${failed}/${checks.length} failed` : `\nREORG-ARBOR-NO-STAGE-HAS-UNIT VERIFY: PASS (${checks.length} checks)`);
