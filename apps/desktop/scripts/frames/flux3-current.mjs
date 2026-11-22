@@ -37,6 +37,7 @@ const openHand = async (app, sel) => {
   await app.evalJs(`(() => { const g = document.querySelector('${sel}'); g.focus(); g.click(); })()`);
   await waitSoft(app, "!!document.querySelector('[data-flux-hand]')", { label: 'the hand', timeout: 3000 });
   await sleep(500);
+  await app.evalJs('document.activeElement && document.activeElement.blur && document.activeElement.blur()');   // the press's focus ring is not part of the picture; nothing has editor focus, so the electron is the one that runs
 };
 
 export default {
