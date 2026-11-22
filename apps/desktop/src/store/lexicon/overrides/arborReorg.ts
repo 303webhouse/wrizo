@@ -45,7 +45,17 @@ export const ARBOR_REORG_WORDS = {
   reorgTagF: 'Iron',
   reorgDocKindStandard: 'Normal',
   reorgDocKindAria: 'The kind of this page: {kind}',
-  reorgDocSpecialParts: 'Special Sections',
+  // the kind menu in Arbor's sentence case (spec section 0; the Wrizors' pass 6, NIT 3): Style guide · Presets · Page setup · Special sections
+  reorgDocStyleGuide: 'Style guide',
+  reorgDocPageSetup: 'Page setup',
+  reorgDocSpecialParts: 'Special sections',
+  reorgSpecialTitle: 'Title page',
+  reorgPresetGroupWeb: 'Web and journalism',
+  // Structure's words are Nick's (the Wrizors' pass 6, NIT 1): Merge replaces Join (Nov 21), Nest / Unnest replace Level in / Level out (Nov 20)
+  reorgPartIn: 'Nest',
+  reorgPartOut: 'Unnest',
+  reorgPartJoin: 'Merge',
+  reorgPartJoinNo: 'Not merged.',
   reorgPartAssetsOne: '{n} graft',
   reorgPartAssetsMany: '{n} grafts',
   reorgAssetsHead: 'Grafts ({n})',
@@ -128,9 +138,9 @@ export const ARBOR_REORG_WORDS = {
   reorgPartsSplitCaret: 'Put the caret where the new Section starts, then split.',
   reorgPartsSplitNo: 'This Section can’t be split.',
   reorgPartsSplitDone: 'Split: the words after the caret are Section {n} now.',
-  reorgPartJoinCarries: 'Not joined: this Section holds ink, cards, links or a Tutor thread, and joining would drop them.',
-  reorgPartJoinScript: 'Not joined: a screenplay Section has no plain text to join.',
-  reorgPartsJoinDone: 'Joined onto Section {n}.',
+  reorgPartJoinCarries: 'Not merged: this Section holds ink, cards, links or a Tutor thread, and merging would drop them.',
+  reorgPartJoinScript: 'Not merged: a screenplay Section has no plain text to merge.',
+  reorgPartsJoinDone: 'Merged into Section {n}.',
 } satisfies Partial<Record<DeskTermId, string>>;
 
 /** The reorg strings this table leaves unset, and why (the Wrizors list). */
