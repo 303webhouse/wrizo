@@ -182,7 +182,9 @@ await withHarness(async (app) => {
 
   // ---- T11: the tag for every slot, by day and by night ----
   const CLOTH = { a: ['rgb(86, 99, 46)', 'rgb(58, 67, 34)'], b: ['rgb(23, 69, 78)', 'rgb(15, 47, 54)'], c: ['rgb(127, 160, 188)', 'rgb(95, 120, 141)'], d: ['rgb(168, 57, 47)', 'rgb(126, 43, 35)'], e: ['rgb(201, 164, 107)', 'rgb(151, 123, 80)'], f: ['rgb(57, 65, 74)', 'rgb(43, 49, 56)'] };
-  const TAG = "(() => { const g = document.querySelector('.reorg-top .reorg-top-tag'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!g || !bar) return null; const s = getComputedStyle(g); return { slot: g.getAttribute('data-top-tag'), fill: s.backgroundColor, edge: s.borderTopColor, edgeW: s.borderTopWidth, ink: s.color, ring: s.boxShadow, bar: getComputedStyle(bar).backgroundColor }; })()";
+  // DRIVER FIX (Nov 22, Actions 44996268396 on e441c207): the painted ink is the computed -webkit-text-fill-color (equal to `color` unless set; the tag
+  // sets it so the night dim's `color` rule cannot turn its number cream). No assertion changes.
+  const TAG = "(() => { const g = document.querySelector('.reorg-top .reorg-top-tag'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!g || !bar) return null; const s = getComputedStyle(g); return { slot: g.getAttribute('data-top-tag'), fill: s.backgroundColor, edge: s.borderTopColor, edgeW: s.borderTopWidth, ink: s.webkitTextFillColor || s.color, ring: s.boxShadow, bar: getComputedStyle(bar).backgroundColor }; })()";
   const ringOf = (r) => { const m = /(rgba?\([^)]*\))\s+0px\s+0px\s+0px\s+([\d.]+)px/.exec(r || ''); return m && +m[2] >= 1 ? m[1] : null; };
   const tagStands = (g) => !!g && Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0) >= 3;
   const tagOk = (g, s) => !!g && g.slot === s && g.fill === CLOTH[s][0] && g.edge === CLOTH[s][1] && g.edgeW === '1px' && contrast(g.ink, g.fill) >= 4.5 && tagStands(g);

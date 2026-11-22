@@ -73,12 +73,12 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-top :is(.reorg-top-sep, .reorg-top-dot, .reorg-top-part-count, .reorg-top-place){ color:var(--text-mid); }
 /* the Section's tag: Arbor's numbered cloth (§6), INK's tokens (--reorg-tag-<slot>-fill / -ink / -edge / -num, 25-reorg-arbor-tags.css); a quiet box until they arrive */
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; box-sizing:border-box; border:1px solid var(--ink-border-strong); font-family:var(--arbor2-chrome-face, inherit); font-size:10px; line-height:1; }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='a']{ background:var(--reorg-tag-a-fill, #56632E); color:var(--reorg-tag-a-ink, #EFE4CB); border-color:var(--reorg-tag-a-edge, #3A4322); }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='b']{ background:var(--reorg-tag-b-fill, #17454E); color:var(--reorg-tag-b-ink, #EFE4CB); border-color:var(--reorg-tag-b-edge, #0F2F36); }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='c']{ background:var(--reorg-tag-c-fill, #7FA0BC); color:var(--reorg-tag-c-ink, #2B1D12); border-color:var(--reorg-tag-c-edge, #5F788D); }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='d']{ background:var(--reorg-tag-d-fill, #A8392F); color:var(--reorg-tag-d-ink, #EFE4CB); border-color:var(--reorg-tag-d-edge, #7E2B23); }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='e']{ background:var(--reorg-tag-e-fill, #C9A46B); color:var(--reorg-tag-e-ink, #2B1D12); border-color:var(--reorg-tag-e-edge, #977B50); }
-:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='f']{ background:var(--reorg-tag-f-fill, #39414A); color:var(--reorg-tag-f-ink, #EFE4CB); border-color:var(--reorg-tag-f-edge, #2B3138); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='a']{ background:var(--reorg-tag-a-fill, #56632E); color:var(--reorg-tag-a-ink, #EFE4CB); -webkit-text-fill-color:var(--reorg-tag-a-ink, #EFE4CB); border-color:var(--reorg-tag-a-edge, #3A4322); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='b']{ background:var(--reorg-tag-b-fill, #17454E); color:var(--reorg-tag-b-ink, #EFE4CB); -webkit-text-fill-color:var(--reorg-tag-b-ink, #EFE4CB); border-color:var(--reorg-tag-b-edge, #0F2F36); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='c']{ background:var(--reorg-tag-c-fill, #7FA0BC); color:var(--reorg-tag-c-ink, #2B1D12); -webkit-text-fill-color:var(--reorg-tag-c-ink, #2B1D12); border-color:var(--reorg-tag-c-edge, #5F788D); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='d']{ background:var(--reorg-tag-d-fill, #A8392F); color:var(--reorg-tag-d-ink, #EFE4CB); -webkit-text-fill-color:var(--reorg-tag-d-ink, #EFE4CB); border-color:var(--reorg-tag-d-edge, #7E2B23); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='e']{ background:var(--reorg-tag-e-fill, #C9A46B); color:var(--reorg-tag-e-ink, #2B1D12); -webkit-text-fill-color:var(--reorg-tag-e-ink, #2B1D12); border-color:var(--reorg-tag-e-edge, #977B50); }
+:root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='f']{ background:var(--reorg-tag-f-fill, #39414A); color:var(--reorg-tag-f-ink, #EFE4CB); -webkit-text-fill-color:var(--reorg-tag-f-ink, #EFE4CB); border-color:var(--reorg-tag-f-edge, #2B3138); }
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='a']::after{ content:var(--reorg-tag-a-num, '1'); }
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='b']::after{ content:var(--reorg-tag-b-num, '2'); }
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag[data-top-tag='c']::after{ content:var(--reorg-tag-c-num, '3'); }
@@ -97,5 +97,7 @@
    NIT 3: on a Canvas the bar stood 47 px against a Page's 51 - a Page's row is its stage tabs (33 px: 12.48 px type, 7.5 px padding, the 2 px rule),
    a Canvas's its view icons (29 px); the Canvas's row takes the tabs' height, so the bar is 51 px on both (its 8 px padding and 1 px edges unchanged).
    Checked by scripts/harness/reorg-arbor-top-live.mjs T11, T12. */
+/* the number's ink is also its text FILL (Actions 44996268396: by night Arbor's dim letters the bar's contents in --text-hi cream !important, so the walnut
+   numbers on cold blue and honey went cream, 2.21 and 1.88); the fill paints the glyphs and that rule does not reach it - as the rail's boxes do (RailBox) */
 :root[data-arbor2][data-theme='plateau'] .reorg-top-tag{ box-shadow:0 0 0 1px #EFE4CB; }
 :root[data-arbor2][data-theme='plateau'] .reorg-top[data-reorg-top='board']{ min-height:33px; }
