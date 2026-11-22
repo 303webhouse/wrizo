@@ -20,7 +20,8 @@ const ALL_OFF: Record<ReorgPiece, boolean> = { rail: false, top: false, front: f
 
 export const REORG_THEME_GATE: Record<ThemeId, Record<ReorgPiece, boolean>> = {
   machina: { ...ALL_ON },
-  plateau: { ...ALL_OFF },
+  // ARBOR: the rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4); the other five stay off until theirs pass
+  plateau: { ...ALL_OFF, rail: true },
   flux: { ...ALL_OFF },
 };
 
