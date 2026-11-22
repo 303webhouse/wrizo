@@ -1,5 +1,5 @@
 // KEY-FLIP IN THE LIVE THEMES (bug #90; Fable, Nov 22, 3:05 am: "the --fade-dur restyle at the first key, live themes"; Nick, 2:59 am: typing bugs come before Flux). ARBOR's bug #80 fix (arbor-keyflip.mjs, Nov 12) took the first key's whole-document restyle out of the Arbor redesign: ModeStage no longer writes --fade-dur on <html>
-// there (an inherited custom property changed on the root makes EVERY element recompute its style), it writes to #root and the mockup bar's host; "the live themes keep <html> (bug #90)". This is the same read for the live themes: Machina, Flux, and the classic Plateau (?arbor2=0).
+// there (an inherited custom property changed on the root makes EVERY element recompute its style), it writes to #root and the mockup bar's host; "the live themes keep <html> (bug #90)". This is the same read for the live themes: Machina and Flux.
 //   KL-FLIP-<theme>   a Chrome trace (devtools.timeline) of the keystroke that starts writing, on a page reopened at rest: the largest single restyle from the keydown to 150 ms after it touches at most a quarter of the document's elements, on all 3 reopens (arbor-keyflip's KF-FLIP, for this theme)
 //   KL-TIMING-<theme> the fades keep their timing: after the first key every element that carries the dissolve classes (chrome-fade, desk-dissolve, mode-dissolve, brand-mark, chrome-handle) reads the same --fade-dur it read before the fix (the slow recede value), so moving the write off <html> loses no fade
 //   KL-MUT            the old write put back (--fade-dur written on <html> at the first key, by a wrapper on setProperty): KL-FLIP is RED for every theme (the mutant LANDED: the property is seen on <html>), so the check bites
@@ -14,7 +14,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
-const THEMES = [['machina', ''], ['flux', ''], ['plateau', '?arbor2=0']];
+const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
 const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
@@ -107,8 +107,8 @@ await withHarness(async (app) => {
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: true });
-  ok('KL-MUT with the old <html> write put back (the wrapper LANDED: --fade-dur is seen on <html>), the first key restyles more than the fix does, for every theme',
-    THEMES.every(([theme]) => mut[theme].after.onHtml !== '' && mut[theme].tr && mut[theme].tr.keyEls != null && mut[theme].tr.keyEls > SHARE * mut[theme].before.docEls),
+  ok('KL-MUT with the old <html> write put back (the wrapper LANDED: --fade-dur is seen on <html>), the first key restyles more than the bar in Machina (the theme that pays most), and the write is seen for every theme',
+    THEMES.every(([theme]) => mut[theme].after.onHtml !== '') && mut.machina.tr && mut.machina.tr.keyEls != null && mut.machina.tr.keyEls > SHARE * mut.machina.before.docEls,
     JSON.stringify(THEMES.map(([theme]) => ({ theme, onHtml: mut[theme].after.onHtml, keyEls: mut[theme].tr && mut[theme].tr.keyEls, docEls: mut[theme].before.docEls }))));
 }, { label: 'keyflip-live' });
 
