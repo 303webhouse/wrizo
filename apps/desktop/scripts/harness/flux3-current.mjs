@@ -1,10 +1,11 @@
 // FLUX 3 - THE CURRENT, ONE LAYER FOR TWO THINGS (Fable, Nov 21, 4:56 pm and 6:00 pm; flux-full-look-for-monday.md item 8 and section 2; Nick, 4:40 and 4:47 pm). Behind ?flux3=1, in the Flux theme.
 //   HANDS    the drawers open as current (POLISH's Oct 28 mockup): a 1 px cyan line shoots from the tab along the menu box's top edge, and an electron runs it for as long as the menu is open; it goes when
-//            the menu shuts. The line and the electron belong to the menu: they fade with it when the chrome recedes (the same classes), and the electron rests while she writes (the chrome has receded: a plain rule on the app's own flag, no :has).
+//            the menu shuts. DRAWN BY THE MENU'S OWN BOX (box 02:21Z / 04:41Z, the L clock reading was 1.4-2.7 ms over twice): no element is added to the page, the line and the electron are the panel's own ::before
+//            and ::after, so they fade with it, scroll with nothing and cost nothing extra. The electron rests the moment she puts her cursor in the page (one focusin listener, not a key).
 //   STAGE    the stage current, v2 (flux-stage-current-concept-v2.png): she presses a stage button (WIRE IN / TEXT / PATCH / UPLINK); a 1 px cyan spark about 60 px long leaves that button along the
 //            top bar's lower edge to each side, then runs one lap around each menu (a closed menu: its opener tab) in about 0.55 s, and is gone. Nothing stays lit. Wire In has no menus: pressing it sends
 //            none; leaving it sends one.
-//   ONLY ON A CLICK   the layer has one listener, a click, and nothing on the typing path: no key, input, scroll or selection listener, no timer, no frame loop. A menu that opens by the keyboard or at page
+//   ONLY ON A CLICK   the layer has a click listener and a focus listener (focus in and out: it fires when the focus moves, never per key) and nothing on the typing path: no key, input, scroll or selection listener, no timer, no frame loop. A menu that opens by the keyboard or at page
 //            load draws no current.
 //   QUIET   no spark and no hand current under reduced motion, or at Ambiance 0; without ?flux3=1 none of it loads.
 //   SU1..SU5 the stage spark: draws on a change, leaves the pressed button at the bar's lower edge, never inside the page's rectangle, is gone after 0.55 s, runs once per change, none from Wire In
@@ -33,12 +34,12 @@ const layerCss = fs.existsSync(LAYER_CSS) ? fs.readFileSync(LAYER_CSS, 'utf8') :
 
 // the typing-path reader, over the layer's own source: ONE click listener, a resize listener only while a hand is open, no key / input / scroll / selection / pointer-move listener, no timer loop, at most two frame requests (the
 // two that let a click's re-render settle before the geometry is read)
-const FORBIDDEN = /addEventListener\(\s*['"](keydown|keyup|keypress|input|beforeinput|scroll|selectionchange|pointermove|mousemove|wheel|focusin|focusout)['"]/;
+const FORBIDDEN = /addEventListener\(\s*['"](keydown|keyup|keypress|input|beforeinput|scroll|selectionchange|pointermove|mousemove|wheel|resize)['"]/;
 function typingPathClean(src) {
   if (src === null) return false;
   const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"`\\])\/\/[^\n]*/g, '$1');
   const adds = [...code.matchAll(/addEventListener\(\s*['"](\w+)['"]/g)].map((m) => m[1]);
-  return !FORBIDDEN.test(code) && !/setInterval\(/.test(code) && (code.match(/requestAnimationFrame\(/g) || []).length <= 2 && adds.every((a) => a === 'click' || a === 'resize') && adds.includes('click');
+  return !FORBIDDEN.test(code) && !/setInterval\(/.test(code) && (code.match(/requestAnimationFrame\(/g) || []).length <= 2 && adds.every((a) => a === 'click' || a === 'focusin' || a === 'focusout') && adds.includes('click');
 }
 
 // a function, not a constant: item141's settle guard reads a seam named at the top level as a read before a settle
@@ -48,11 +49,12 @@ const READ = () => `(() => {
   const w = window.wrizoFluxCurrent || null;
   return { api: !!w, runs: w ? w.runs : null, last: w ? w.last : null,
     sparks: document.querySelectorAll('[data-flux-current]').length,
-    hands: [...document.querySelectorAll('[data-flux-hand]')].map((h) => ({ side: h.getAttribute('data-flux-hand'), rect: rect(h), line: rect(h.querySelector('.flux-hand-line')), electron: !!h.querySelector('.flux-hand-electron') })),
+    hands: [...document.querySelectorAll('[data-flux-hand]')].map((h) => { const b = getComputedStyle(h, '::before'), a = getComputedStyle(h, '::after'); return { side: h.classList.contains('wz-sliver-panel') ? 'left' : 'right', rect: rect(h), before: { content: b.content, height: b.height, position: b.position, bg: b.backgroundColor }, after: { content: a.content, height: a.height } }; }),
+    handNodes: document.querySelectorAll('.flux-hand, .flux-hand-line, .flux-hand-electron').length,
     page: rect(q('.mode-page')), sliver: rect(q('.wz-sliver-panel')), tutor: rect(q('.wz-tutor-panel')),
     bar: rect(q('.chrome-top')), openL: q('.wz-sliver-panel') && q('.wz-sliver-panel').getAttribute('data-open'), openR: q('.wz-tutor-panel') && q('.wz-tutor-panel').getAttribute('data-open') };
 })()`;
-const ELECTRON = `(() => { const e = document.querySelector('[data-flux-hand] .flux-hand-electron'); if (!e) return null; const a = e.getAnimations(); const props = new Set(); a.forEach((x) => (x.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
+const ELECTRON = `(() => { const e = document.querySelector('[data-flux-hand]'); if (!e) return null; const a = e.getAnimations({ subtree: true }).filter((x) => x.effect && x.effect.pseudoElement === '::after'); const props = new Set(); a.forEach((x) => (x.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
   return { n: a.length, state: a[0] ? a[0].playState : null, props: [...props] }; })()`;
 const SPARKANIMS = `(() => { const svg = document.querySelector('[data-flux-current]'); if (!svg) return null; const a = svg.getAnimations({ subtree: true }); const props = new Set(); a.forEach((x) => (x.effect.getKeyframes() || []).forEach((k) => Object.keys(k).forEach((p) => { if (!['offset', 'easing', 'composite', 'computedOffset'].includes(p)) props.add(p); })));
   return { n: a.length, props: [...props], dur: a[0] ? a[0].effect.getTiming().duration : null }; })()`;
@@ -143,15 +145,15 @@ try { await withHarness(async (app) => {
   await snap('current-hand-left');
   const hl = h1.hands.find((h) => h.side === 'left');
   const near = (a, b, tol) => Math.abs(a - b) <= tol;
-  ok('HA1 the Front menu opens as current: a line sits on the menu box\'s top edge (same left, width and top, 1 px thick) with an electron beside it',
-    h1.openL === 'true' && !!hl && !!hl.line && hl.electron && near(hl.line.left, h1.sliver.left, 3) && near(hl.line.right, h1.sliver.right, 3) && near(hl.line.top, h1.sliver.top, 3) && hl.line.bottom - hl.line.top <= 1.5 && !h1.hands.find((h) => h.side === 'right'),
-    JSON.stringify({ line: hl && hl.line, box: h1.sliver }));
+  ok('HA1 the Front menu opens as current, drawn BY THE MENU: its own ::before is a 1 px cyan line pinned to the box\'s top edge and its ::after is the electron; and NO element was added to the page for it',
+    h1.openL === 'true' && !!hl && hl.before.content !== 'none' && hl.before.height === '1px' && hl.before.position === 'sticky' && hl.before.bg === 'rgb(0, 194, 255)' && hl.after.content !== 'none' && h1.handNodes === 0 && !h1.hands.find((h) => h.side === 'right'),
+    JSON.stringify({ hand: hl, nodes: h1.handNodes }));
   ok('HA2 the electron runs the line while the menu is open, on transform alone (one animation, running)', !!el1 && el1.n === 1 && el1.state === 'running' && el1.props.length === 1 && el1.props[0] === 'transform', JSON.stringify(el1));
   await ev("(() => { const g = document.querySelector('.wz-tutor-grip'); g.focus(); g.click(); })()");
   await sleep(500);
   const h2 = await read();
   const hr = h2.hands.find((h) => h.side === 'right');
-  ok('HA3 the Back menu does the same on its side, and the two currents are separate', h2.openR === 'true' && !!hr && !!hr.line && near(hr.line.left, h2.tutor.left, 3) && near(hr.line.right, h2.tutor.right, 3) && near(hr.line.top, h2.tutor.top, 3) && h2.hands.length === 2, JSON.stringify({ line: hr && hr.line, box: h2.tutor, hands: h2.hands.length }));
+  ok('HA3 the Back menu does the same on its side, and the two currents are separate (two menus, two marks, no added element)', h2.openR === 'true' && !!hr && hr.before.content !== 'none' && hr.before.height === '1px' && hr.after.content !== 'none' && h2.hands.length === 2 && h2.handNodes === 0, JSON.stringify({ hand: hr, hands: h2.hands.length, nodes: h2.handNodes }));
   await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
   await ev("(() => { const g = document.querySelector('.wz-tutor-grip'); g.focus(); g.click(); })()");
   await sleep(800);
@@ -167,7 +169,9 @@ try { await withHarness(async (app) => {
 
   // ---- TYPING PATH: TY1..TY3 --------------------------------------------------------------------------------------------------------------------------
   const before = await read();
-  await ev("window.__mutN = 0; window.__mutObs && window.__mutObs.disconnect(); window.__mutObs = new MutationObserver((r) => { window.__mutN += r.length; }); document.querySelectorAll('[data-flux-hand], [data-flux-current]').forEach((n) => window.__mutObs.observe(n, { subtree: true, attributes: true, childList: true })); const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); true");
+  await ev("window.__mutN = 0; window.__mutObs && window.__mutObs.disconnect(); window.__mutObs = new MutationObserver((r) => { window.__mutN += r.length; }); document.querySelectorAll('[data-flux-hand]').forEach((n) => window.__mutObs.observe(n, { attributes: true, attributeFilter: ['data-flux-hand'] })); document.querySelectorAll('[data-flux-current]').forEach((n) => window.__mutObs.observe(n, { subtree: true, attributes: true, childList: true })); const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); true");
+  await sleep(200);
+  const elFocus = await ev(ELECTRON);
   for (const ch of 'typing with a menu open draws nothing ') { await app.typeKeys(ch); await sleep(30); }
   let receded = false;
   for (let i = 0; i < 24 && !receded; i += 1) { await app.typeKeys('x'); await sleep(250); receded = await ev("!!document.querySelector('[data-chrome-receded=\"true\"]')"); }
@@ -175,8 +179,8 @@ try { await withHarness(async (app) => {
   const after = await read();
   const elT = await ev(ELECTRON);
   const mutN = await ev('window.__mutN');
-  ok('TY1 typing with a hand open adds no run and no spark, and nothing in the layer changes (no mutation of its nodes, none added or removed)', after.runs === before.runs && after.sparks === 0 && mutN === 0 && after.hands.length === before.hands.length, JSON.stringify({ runs: [before.runs, after.runs], sparks: after.sparks, mutN, hands: [before.hands.length, after.hands.length] }));
-  ok('TY2 the electron rests while she writes (the chrome has receded): its animation is paused, not running', receded && !!elT && elT.state === 'paused', JSON.stringify({ receded, elT }));
+  ok('TY1 typing with a hand open adds no run and no spark, and nothing in the layer changes (its mark on the menu is not touched; no node of it exists to change)', after.runs === before.runs && after.sparks === 0 && mutN === 0 && after.hands.length === before.hands.length, JSON.stringify({ runs: [before.runs, after.runs], sparks: after.sparks, mutN, hands: [before.hands.length, after.hands.length] }));
+  ok('TY2 the electron rests the moment her cursor is in the page (before any key), and is still at rest after she has written: its animation is paused, not running', !!elFocus && elFocus.state === 'paused' && !!elT && elT.state === 'paused', JSON.stringify({ elFocus, elT, receded }));
   const stripCss = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '');
   ok('TY5 the layer styles hold no :has() selector (a :has on the root re-checks on every change to the page under it while she types)', layerCss.length > 0 && !/:has\(/.test(stripCss(layerCss)), layerCss.length ? '' : 'src/flux3/flux-current.css is missing');
   ok('MUT-TY5 the TY5 reader goes RED on a stylesheet with a root :has rule', /:has\(/.test(stripCss(layerCss + '\n:root:has(.forward-only-editor:focus) .flux-hand-electron{ animation-play-state:paused; }')), 'one mutated stylesheet');
@@ -221,9 +225,9 @@ try { await withHarness(async (app) => {
         await open({ id });
         await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
         await sleep(600);
-        const hadHand = !!(await ev("!!document.querySelector('[data-flux-hand]')"));
+        const hadHand = !!(await ev("!!document.querySelector('[data-flux-hand]')"));   // the mark on the open menu
         // the control has no hand, no listener AND none of the layer's rules: what the subject adds is all of it
-        if (!(arm === 'J' && on)) await ev("(() => { document.querySelectorAll('[data-flux-hand]').forEach((n) => n.remove()); window.wrizoFluxCurrent && window.wrizoFluxCurrent.detach && window.wrizoFluxCurrent.detach(); for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; } for (let i = rules.length - 1; i >= 0; i -= 1) { if (/flux-hand|flux-current/.test(rules[i].cssText)) sh.deleteRule(i); } } })()");
+        if (!(arm === 'J' && on)) await ev("(() => { document.querySelectorAll('[data-flux-hand]').forEach((n) => n.removeAttribute('data-flux-hand')); window.wrizoFluxCurrent && window.wrizoFluxCurrent.detach && window.wrizoFluxCurrent.detach(); for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; } for (let i = rules.length - 1; i >= 0; i -= 1) { if (/flux-hand|flux-current/.test(rules[i].cssText)) sh.deleteRule(i); } } })()");
         await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
         await sleep(400);
         return { hadHand, hasHand: !!(await ev("!!document.querySelector('[data-flux-hand]')")) };
