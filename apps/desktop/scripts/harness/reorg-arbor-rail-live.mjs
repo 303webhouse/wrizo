@@ -36,6 +36,13 @@
 //             its sentence case) Box settings' buttons render as written - No letters, Your own colour, Choose a picture (innerText, which carries any
 //             text-transform)
 //         MUT-A14  the same reading in capitals turns A14's test red  [A14 parked Nov 22: Arbor's own-colour word is "Custom…" (INK's d574943d)]
+// SESSION A15 (spec section 7: the session as PAGES' last item; POLISH's shared SessionGroup on train J) by day and by night, in the opened PAGES pop-out the
+//             Session's fold is a full-width row with no button face (no background, no border) and its arrow (closed, open); opened, it shows its rows,
+//             each label 4.5:1 or better on the pop-out's ground, and its goal field is dressed (a 1 px edge, the pop-out's ground, its words 4.5:1)
+//         MUT-A15  the same reading with the browser's own button face on the fold turns A15's test red
+// RECENT  A16 (the frames on 016bc20a: "Changed · Name · Words" drew as white browser buttons) by day and by night, in the opened PAGES pop-out the Recent
+//             group's sort is words, not buttons - no button face - the chosen one marked (underlined), each 4.5:1 or better on the pop-out's ground
+//         MUT-A16  the same reading with the browser's own button face turns A16's test red
 //         A14-B  the three buttons are drawn exactly as their words are written (innerText = textContent), none in capitals; MUT-A14-B capitals fail
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
@@ -217,11 +224,46 @@ await withHarness(async (app) => {
   ok('A13 by night at rest the rail\'s box letters read 4.5:1 or better on the box as drawn', a13(drawnBox), drawnBox && { box: rgbS(drawnBox.med), dark: rgbS(drawnBox.dark), light: rgbS(drawnBox.light), ratio: +Math.max(contrast(rgbS(drawnBox.dark), rgbS(drawnBox.med)), contrast(rgbS(drawnBox.light), rgbS(drawnBox.med))).toFixed(2) });
   const blank = drawnBox && drawnBox.med ? { med: drawnBox.med, dark: drawnBox.med, light: drawnBox.med } : null;
   ok('MUT-A13 the same reading with the letters at the box\'s own colour turns A13\'s test red', !!blank && !a13(blank), blank);
+  // ---- A15: the Session in Arbor's PAGES, by day and by night ----
+  const SESS = `(() => { const s = document.querySelector('.wz-cascade-panel [data-reorg-group="session"]'); if (!s) return null; const p = s.closest('.wz-cascade-panel'); const f = s.querySelector('[data-session-fold]');
+    const ground = (e) => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; if (c && !/rgba\\([^)]*,\\s*0\\)$/.test(c) && c !== 'transparent') return c; } return null; };
+    const fs = f ? getComputedStyle(f) : null; const after = f ? getComputedStyle(f, '::after').content : null;
+    const rows = [...s.querySelectorAll('[data-session-row]')].filter((r) => r.getBoundingClientRect().height > 0).map((r) => { const l = r.querySelector('.wz-reorg-default-label'); return { row: r.getAttribute('data-session-row'), ink: l ? getComputedStyle(l).color : null, ground: ground(r) }; });
+    const g = s.querySelector('.wz-reorg-session-goal'); const gs = g ? getComputedStyle(g) : null;
+    return { open: f ? f.getAttribute('aria-expanded') : null, foldBg: fs && fs.backgroundColor, foldBorder: fs && fs.borderTopWidth, foldWide: !!f && !!p && Math.round(f.getBoundingClientRect().width) >= Math.round(p.getBoundingClientRect().width) - 30, after,
+      rows, goal: gs ? { edgeW: gs.borderTopWidth, edgeStyle: gs.borderTopStyle, bg: gs.backgroundColor, ink: gs.color, ground: ground(g.parentElement) } : null }; })()`;
+  const sess = {};
+  const sortR = {};
+  for (const room of ['day', 'night']) {
+    await visit(app, `/?reorg=1&arbor2room=${room}`);
+    await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null"); await sleep(700);
+    await app.waitFor("!!document.querySelector('.wz-cascade-panel [data-reorg-group=\"session\"]')", { label: `the Session in PAGES (${room})`, timeout: 6000 }).catch(() => {});
+    const closed = await app.evalJs(SESS);
+    sortR[room] = await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-cascade-panel .wz-reorg-recent-sort > button')]; if (!b.length) return null;
+      const ground = (e) => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; if (c && !/rgba\\([^)]*,\\s*0\\)$/.test(c) && c !== 'transparent') return c; } return null; };
+      return b.map((x) => { const s = getComputedStyle(x); return { word: (x.textContent || '').trim(), pressed: x.getAttribute('aria-pressed'), bg: s.backgroundColor, border: s.borderTopWidth, ink: s.color, line: s.textDecorationLine, ground: ground(x.parentElement) }; }); })()`);
+    await app.evalJs("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(400);
+    const opened = await app.evalJs(SESS);
+    sess[room] = { closed, opened };
+    await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null"); await sleep(500);
+  }
+  const bareFold = (r) => !!r && r.foldBg === 'rgba(0, 0, 0, 0)' && r.foldBorder === '0px' && r.foldWide === true;
+  const goalOk = (gl) => !!gl && gl.edgeW === '1px' && gl.edgeStyle === 'solid' && (gl.bg === 'rgba(0, 0, 0, 0)' || gl.bg === gl.ground) && !!gl.ground && contrast(gl.ink, gl.ground) >= 4.5;
+  const a15room = (x) => !!x && !!x.closed && !!x.opened && x.closed.open === 'false' && x.opened.open === 'true' && bareFold(x.closed) && bareFold(x.opened) && /\u25B8/.test(x.closed.after || '') && /\u25BE/.test(x.opened.after || '')
+    && x.opened.rows.length >= 2 && x.opened.rows.every((r) => !!r.ink && !!r.ground && contrast(r.ink, r.ground) >= 4.5) && goalOk(x.opened.goal);
+  ok('A15 by day and by night the Session in PAGES: a full-width fold with no button face and its arrow; opened, its rows read 4.5:1 and its goal field is dressed', a15room(sess.day) && a15room(sess.night), sess);
+  const faced = sess.day && sess.day.closed ? { ...sess.day, closed: { ...sess.day.closed, foldBg: 'rgb(239, 239, 239)', foldBorder: '2px' } } : null;
+  ok('MUT-A15 the same reading with the browser\'s own button face on the fold turns A15\'s test red', !!faced && !a15room(faced), faced && faced.closed);
+  const a16room = (list) => Array.isArray(list) && list.length >= 2 && list.every((x) => x.bg === 'rgba(0, 0, 0, 0)' && x.border === '0px' && !!x.ground && contrast(x.ink, x.ground) >= 4.5)
+    && list.filter((x) => x.pressed === 'true').length === 1 && list.filter((x) => x.pressed === 'true').every((x) => /underline/.test(x.line || ''));
+  ok('A16 by day and by night the Recent group\'s sort is words, not buttons (no button face), the chosen one underlined, each 4.5:1 on the pop-out', a16room(sortR.day) && a16room(sortR.night), sortR);
+  const facedSort = Array.isArray(sortR.day) ? sortR.day.map((x) => ({ ...x, bg: 'rgb(255, 255, 255)', border: '2px' })) : null;
+  ok('MUT-A16 the same reading with the browser\'s own button face turns A16\'s test red', !!facedSort && !a16room(facedSort), facedSort);
   ok('A9 Machina\'s Box settings is as it was: its five swatches, Pale, Grey, Blue, Brass, Orange', !!bm && JSON.stringify(bm.swatches.map((s) => s[1])) === JSON.stringify(MACHINA_FIVE), bm);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 26;   // + A16, MUT-A16 (the Recent group's sort in Arbor's PAGES, Nov 22). Was: const EXPECTED = 24;   // + A15, MUT-A15 (the Session in Arbor's PAGES, Nov 22). Was: const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
