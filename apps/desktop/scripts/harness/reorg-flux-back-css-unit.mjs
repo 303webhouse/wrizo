@@ -98,12 +98,26 @@ function suite(css) {
     const tabs = has(rs, /wz-drawer-tabs:has\(#wz-tutor-tab-export\) \.wz-drawer-tab$/, /white-space:\s*nowrap/);
     return { pass: tabs, detail: J({ tabs }) };
   });
+  t('ROOM', () => {
+    // the Wrizors' Flux pass 1, REAL 4 ("The c", "The …", "PLAN BOA…": row names cut to a few letters): a Plan row's name, an asset row's label and a canvas group's name take the row, and the row's buttons wrap under them (always visible: a touch screen has no hover)
+    const plan = has(rs, /wz-back-plan-row > \.wz-back-plan-name$/, /flex:\s*1 1 calc\(100% - 40px\)/) && has(rs, /wz-back-plan-row$/, /flex-wrap:\s*wrap/);
+    const asset = has(rs, /wz-back-asset$/, /flex-wrap:\s*wrap/) && has(rs, /wz-back-asset \.wz-links-label$/, /flex:\s*1 1 calc\(100% - 80px\)/);
+    const head = has(rs, /wz-back-boardhead$/, /flex-wrap:\s*wrap/) && has(rs, /wz-back-boardhead > \.wz-back-boardname$/, /flex:\s*1 1 calc\(100% - 64px\)/);
+    const always = !rs.some((x) => /wz-back-plan-(part|acts|btn)|wz-back-beside|wz-back-topart/.test(x.sel) && /opacity:\s*0|visibility:\s*hidden|display:\s*none|pointer-events:\s*none/.test(x.body));
+    return { pass: plan && asset && head && always, detail: J({ plan, asset, head, always }) };
+  });
+  t('TABMARK', () => {
+    // NIT 1: the open tab has Flux's choice mark: the cyan edge and the thin 3 x 24 brass bar
+    const base = has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]$/, /position:\s*relative/);
+    const bar = has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /width:\s*3px/) && has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /height:\s*24px/) && has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /background:\s*var\(--orange\)/);
+    return { pass: base && bar, detail: J({ base, bar }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -120,6 +134,10 @@ const MUT = [
   ['the pop-up fill drifts', 'NODE', (t) => t.replace('background:#04141A', () => 'background:#0A1814')],
   ['a green-grey tier returns', 'TK6', (t) => t.replace('#7EB4C4', () => '#8FB4AC')],
   ['brass becomes a fill', 'BRASS', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{", () => ":root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{ background:var(--orange);")],
+  ['a canvas group head lets its buttons squeeze the name again', 'ROOM', (t) => t.replace('.wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px);', () => '.wz-back-boardhead > .wz-back-boardname{ flex:1 1 auto;')],
+  ['an asset row stops wrapping', 'ROOM', (t) => t.replace('.wz-back-asset{ flex-wrap:wrap;', () => '.wz-back-asset{ flex-wrap:nowrap;')],
+  ['the open tab loses its brass bar', 'TABMARK', (t) => t.replace(/(wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before\{[^}]*background:)var\(--orange\)/, (m, a) => a + 'var(--line-active)')],
+  ['the open tab bar is brass but 2 px', 'TABMARK', (t) => t.replace(/(wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before\{[^}]*)width:3px/, (m, a) => a + 'width:2px')],
   ['the fourth tab may wrap', 'TABS', (t) => t.replace('white-space:nowrap; letter-spacing', () => 'white-space:normal; letter-spacing')],
 ];
 for (const [name, key, fn] of MUT) {
