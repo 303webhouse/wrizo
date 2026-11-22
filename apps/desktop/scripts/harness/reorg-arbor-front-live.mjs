@@ -50,8 +50,6 @@ async function seed(app) {
     W.wrizoFlushNow();
     return null;
   })()`);
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('af-1', { entryId: 'af-note' }); D.addAsset('af-1', { entryId: 'af-2' }); window.wrizoFlushNow(); return null; })()");
-  await sleep(500);
 }
 async function open(app, id, { w = 1366, lift = LIFT, arbor2 = true, room = null } = {}) {
   await app.emulateDpr(1, w, 768);
@@ -70,6 +68,9 @@ const ratioJs = "const lum = (c) => { const f = (v) => { v /= 255; return v <= 0
 await withHarness(async (app) => {
   await seed(app);
   await open(app, 'af-1');
+  // the Doc's grafts (the link badge's count): window.wrizoDocSettings is mounted with the page, not on the Desk the fixture is made from
+  await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('af-1', { entryId: 'af-note' }); D.addAsset('af-1', { entryId: 'af-2' }); window.wrizoFlushNow(); return null; })()");
+  await sleep(500);
   await leaveFreeWrite(app);
   await drawer(app);
 

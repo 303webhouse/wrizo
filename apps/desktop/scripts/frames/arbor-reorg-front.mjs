@@ -28,14 +28,15 @@ async function seed(app) {
     W.wrizoFlushNow();
     return null;
   })()`);
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; if (D) { D.addAsset('ff-3', { entryId: 'ff-note' }); D.addAsset('ff-3', { entryId: 'ff-2' }); window.wrizoFlushNow(); } return null; })()");
-  await sleep(500);
 }
 async function open(app, id, lift = LIFT) {
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1&reorglift=${lift}#/page/${id}')`);
   await app.reload();
   try { await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-sliver-grip')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
   await sleep(900);
+  // the Doc's grafts (the link badge's count) are added once the page is up: window.wrizoDocSettings is mounted with the page, not on the Desk the fixture is made from
+  await app.evalJs("(() => { const D = window.wrizoDocSettings; if (D && D.addAsset) { D.addAsset('ff-3', { entryId: 'ff-note' }); D.addAsset('ff-3', { entryId: 'ff-2' }); window.wrizoFlushNow(); } return null; })()");
+  await sleep(600);
   // Free Write is remembered between pages and has no Front menu: a frame of the Front menu is Draft's
   await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*draft\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()");
   await sleep(700);
