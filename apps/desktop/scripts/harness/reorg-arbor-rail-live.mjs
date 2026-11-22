@@ -173,7 +173,17 @@ await withHarness(async (app) => {
   const classicOn = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
   ok('A11 the reorg\'s rail stands in Arbor under ?reorg=1 with no preview door (plateau.rail on), and still not in the classic Plateau', noDoor === true && classicOn === false, { noDoor, classicOn });
   // ---- A13: the box's letters by night at rest, as drawn ----
-  await visit(app, '/?reorg=1&arbor2room=night');
+  // FIXTURE (Nov 21, Actions 44994221975 on 4cffd432: A13 read Fiction's box, which A8 set to Sea earlier in this run): a fresh Drawer "Notes" holding
+  // "Notebook two" with one page, ar-n, made through the seams; its box was never coloured. No assertion changes.
+  await app.evalJs(`(() => { const W = window; if ((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]')).some((e) => e.id === 'ar-n')) return true;
+    const d = W.wrizoCreateDrawer('Notes'); const p = W.wrizoCreateProject('Notebook two'); W.wrizoSetProjectDrawer(p.id, d.id);
+    W.wrizoCreateJournalPage({ id: 'ar-n', text: 'Notes\\nA plain page.', createdAt: '2026-04-02T00:00:00.000Z', source: 'page', origin: 'project', projectId: p.id, orderIndex: 0 });
+    W.wrizoFlushNow(); return true; })()`);
+  await sleep(400);
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau'); history.replaceState(null, '', '/?reorg=1&arbor2room=night#/page/ar-n'); null");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('[data-reorg-rail] .wz-reorg-box')", { label: 'the Notes page by night', timeout: 20000 }).catch(() => {});
+  await sleep(1200);
   await app.mouseMove(700, 400); await sleep(600);
   const boxClip = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-box:not([data-box-picture])'); if (!b) return null; const r = b.getBoundingClientRect(); return r.width > 8 ? { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 } : null; })()");
   let drawnBox = null;
