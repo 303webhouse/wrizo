@@ -124,7 +124,9 @@ function suite(src) {
     const hooked = load(lifted, { arbor2: false, theme: 'plateau' }), hookedOn = load(lifted, { arbor2: true, theme: 'plateau', asked: true }), hookedOnNo = load(lifted, { arbor2: true, theme: 'plateau' });
     const m = load(src, { arbor2: false });
     const arborOn = PIECES.filter((p) => ARBOR_ON.includes(p) || p === 'back' || p === 'split');   // [ARBOR_ON successor]: the lifted line holds the passed cells and back, split
-    return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && PIECES.every((p) => hookedOnNo.useReorgPiece(p) === false) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };
+    // SUPERSEDED (Nov 22, Fable 3:20 pm: Arbor is ON by default now (REORG_DEFAULT_ON.plateau = true, all six cells on)): Arbor not asked lighted none; with the default on it lights its six, as when asked. The original return, verbatim:
+    // return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && PIECES.every((p) => hookedOnNo.useReorgPiece(p) === false) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };
+    return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && J(PIECES.filter((p) => hookedOnNo.useReorgPiece(p))) === J(arborOn) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };   // [successor] not asked: the default lights the passed cells
   });
   t('LIFTQ', () => {
     // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty: with no door it saw plateau.rail, a cell the TABLE holds, not the door). The original, verbatim:
@@ -235,10 +237,16 @@ const defaultLaw = (flagSrc, gateSrc) => {
 };
 const dl = defaultLaw(FLAG_SRC, GATE);
 ok('DEFAULT Arbor (plateau) is on by default exactly when all six of its cells are on (flag.ts REORG_DEFAULT_ON.plateau <=> every plateau cell in the table)', dl.pass, J(dl));
-const flagEarly = FLAG_SRC.replace("plateau: false", () => 'plateau: true');
-ok('MUT DEFAULT Arbor turned on by default while a cell is still off: it LANDED and DEFAULT goes RED', flagEarly !== FLAG_SRC && !dl.allOn && !defaultLaw(flagEarly, GATE).pass, J({ landed: flagEarly !== FLAG_SRC, allOn: dl.allOn }));
-const gateAll = GATE.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON },');
-ok('MUT DEFAULT all six plateau cells on while the default stays off: it LANDED and DEFAULT goes RED', gateAll !== GATE && !defaultLaw(FLAG_SRC, gateAll).pass, J({ landed: gateAll !== GATE }));
+// SUPERSEDED (Nov 22, Fable 3:20 pm: Arbor is ON by default now (REORG_DEFAULT_ON.plateau = true, all six cells on)): the mutant started from a default that was off with a cell off. The original, verbatim:
+// const flagEarly = FLAG_SRC.replace("plateau: false", () => 'plateau: true');
+// ok('MUT DEFAULT Arbor turned on by default while a cell is still off: it LANDED and DEFAULT goes RED', flagEarly !== FLAG_SRC && !dl.allOn && !defaultLaw(flagEarly, GATE).pass, J({ landed: flagEarly !== FLAG_SRC, allOn: dl.allOn }));
+const gateEarly = GATE.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON, uplink: false },');   // [successor] a cell off while the default is on
+ok('MUT DEFAULT Arbor on by default while a cell is off [successor]: it LANDED and DEFAULT goes RED', gateEarly !== GATE && dl.allOn && !defaultLaw(FLAG_SRC, gateEarly).pass, J({ landed: gateEarly !== GATE, allOn: dl.allOn }));
+// SUPERSEDED (Nov 22, Fable 3:20 pm: Arbor is ON by default now (REORG_DEFAULT_ON.plateau = true, all six cells on)): the original, verbatim:
+// const gateAll = GATE.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON },');
+// ok('MUT DEFAULT all six plateau cells on while the default stays off: it LANDED and DEFAULT goes RED', gateAll !== GATE && !defaultLaw(FLAG_SRC, gateAll).pass, J({ landed: gateAll !== GATE }));
+const flagOff = FLAG_SRC.replace('plateau: true', () => 'plateau: false');   // [successor] all six cells on while the default is off
+ok('MUT DEFAULT all six plateau cells on while the default is off [successor]: it LANDED and DEFAULT goes RED', flagOff !== FLAG_SRC && !defaultLaw(flagOff, GATE).pass, J({ landed: flagOff !== FLAG_SRC }));
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 600)}`); if (!c.pass) bad += 1; }
