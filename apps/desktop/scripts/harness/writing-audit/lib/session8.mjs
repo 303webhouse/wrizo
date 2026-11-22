@@ -363,6 +363,33 @@ export async function main({ title }) {
       if (tally.none) finding('W', 'Free Write (the Typewriter): the caret is painted after typing (four tries)', 'drawn', `no caret painted in ${tally.none} of 4 tries`, tally);
     });
 
+    // ---- R2, WHAT HIDES IT (run 45077968172: Arbor 1920 painted 0 of 8, Arbor 1366 7 of 8, Machina 8 of 8; selection, focus, caret-color and the
+    // .mode-pagecol mask read the same in all). V discriminates, each on a fresh Free Write page after T1a's typing:
+    //   a. as typed (the selection at the editor element, after its two spans)       b. the selection put inside the last text node, at its end
+    //   c. as typed, with .mode-pagecol's mask lifted (style override, put back)     d. the geometry: where the text's end is, the paper, the mask
+    await run('V', async () => {
+      const geo = () => ev(`(() => { const ed = document.querySelector('.forward-only-editor'); const col = document.querySelector('.mode-pagecol[data-zoom="true"]') || document.querySelector('.mode-pagecol');
+        const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null; while (w.nextNode()) if (w.currentNode.textContent.length) last = w.currentNode;
+        let end = null; if (last) { const r = document.createRange(); r.setStart(last, last.textContent.length); r.collapse(true); const b = r.getClientRects()[0] || r.getBoundingClientRect(); end = { x: Math.round(b.left), y: Math.round(b.top), h: Math.round(b.height) }; }
+        const cr = col ? col.getBoundingClientRect() : null; const cs = col ? getComputedStyle(col) : null;
+        return { vw: innerWidth, vh: innerHeight, end, col: cr ? { x: Math.round(cr.left), y: Math.round(cr.top), w: Math.round(cr.width), h: Math.round(cr.height) } : null, mask: cs ? String(cs.webkitMaskImage || cs.maskImage).slice(0, 300) : null, maskSize: cs ? cs.webkitMaskSize || cs.maskSize : null, maskPos: cs ? cs.webkitMaskPosition || cs.maskPosition : null, transform: cs ? cs.transform : null }; })()`);
+      const inText = () => ev(`(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null; while (w.nextNode()) if (w.currentNode.textContent.length) last = w.currentNode; if (!last) return false; const s = getSelection(); s.removeAllRanges(); const r = document.createRange(); r.setStart(last, last.textContent.length); r.collapse(true); s.addRange(r); return true; })()`);
+      const fresh = async () => { const T = 'Start.'; await openDoc([T], 'journal'); await refocus(T.length); await d.still(); await d.type(' More words here.'); await sleep(300); };
+      const rows = [];
+      for (let k = 1; k <= 2; k++) {
+        await fresh(); const g = await geo(); const a = await d.pixelCaret(6);
+        await fresh(); await inText(); await sleep(150); const b = await d.pixelCaret(6);
+        await fresh(); await ev("(() => { const c = document.querySelector('.mode-pagecol[data-zoom=\"true\"]') || document.querySelector('.mode-pagecol'); if (c) { c.style.setProperty('mask-image', 'none', 'important'); c.style.setProperty('-webkit-mask-image', 'none', 'important'); } })()"); await sleep(150);
+        const c = await d.pixelCaret(6);
+        await ev("(() => { const c = document.querySelector('.mode-pagecol'); if (c) { c.style.removeProperty('mask-image'); c.style.removeProperty('-webkit-mask-image'); } })()");
+        const pick = (p) => (p ? { x: p.x, y: p.y, via: p.via } : null);
+        rows.push({ k, asTyped: pick(a), inText: pick(b), maskLifted: pick(c), geo: g });
+        out(`OBS V${k} ${JSON.stringify(rows[rows.length - 1])}`.slice(0, 1800));
+      }
+      const n = (key) => rows.filter((r) => r[key]).length;
+      out(`OBS V the tally (painted of 2): ${JSON.stringify({ asTyped: n('asTyped'), inText: n('inText'), maskLifted: n('maskLifted') })}`);
+    });
+
     // ---- LONG -----------------------------------------------------------------------------------------------------------------------------------
     await run('L', async () => {
       const para = Array.from({ length: 100 }, (_, i) => 'word' + i).join(' ');
