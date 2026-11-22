@@ -44,7 +44,10 @@ export function FluxDoc(props: Props) {
 }
 
 interface GutterRow { n: number; words: number; y: number }
-interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean; padTop: number }
+interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean; textTop: number }
+/** S4b L4: the header keeps this far clear of the first place text can show, and is not drawn at all when the page's top padding leaves less room than HEAD_MIN. */
+const HEAD_GAP = 3;
+const HEAD_MIN = 14;
 /** S4b L4: the whole page's reading for the header (every block, not only the ones in view), taken on the same pause as the gutter. */
 interface Totals { blocks: number; words: number }
 
@@ -89,8 +92,18 @@ function Doc({ paperRef, entryId }: Props) {
     });
     setRows(out);
     setTotals((was) => (was.blocks === n && was.words === total ? was : { blocks: n, words: total }));
+    // law 1 (Fable, Nov 21, 6:00 pm: the header "must never cover a line of text, at any size or scroll"): the header ends where the page's text can first
+    // appear ON SCREEN, measured, never the CSS padding (the page is drawn scaled, so its padding in screen pixels is not its CSS number): the top of the
+    // page's first in-flow child (the scroller, or a title above it), whose top edge is also where scrolled text is clipped
+    let textTop = sr.top;
+    for (const el of Array.from(page.children)) {
+      const s = getComputedStyle(el);
+      if (s.position === 'absolute' || s.position === 'fixed' || s.display === 'none') continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > 0) textTop = Math.min(textTop, r.top);
+    }
     setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true',
-      padTop: parseFloat(getComputedStyle(page).paddingTop) || 0 });
+      textTop: textTop - hr.top });
   }, [paperRef, host]);
 
   useEffect(() => {
@@ -129,7 +142,8 @@ function Doc({ paperRef, entryId }: Props) {
   const room = Math.max(0, Math.floor((frame.height - PORT_TOP - 24) / PORT_STEP));
   const shown = ports.slice(0, room);
   const hidden = ports.length - shown.length;
-  const headH = Math.max(18, Math.round(frame.padTop) - 4);
+  // the header's height: from the glass's top edge down to HEAD_GAP above where text first shows; with less room than HEAD_MIN it is not drawn (it never covers a line)
+  const headH = Math.floor(frame.textTop - (frame.top + 1)) - HEAD_GAP;
   return createPortal(
     <>
       {mark}
@@ -138,12 +152,14 @@ function Doc({ paperRef, entryId }: Props) {
           true counts (every block's words, the blocks, its connections: the same reading the gutter and the ports take, on the same pause; never per key) */}
       <span className="flux3-bracket flux3-bracket-tl chrome-fade" aria-hidden="true" data-flux3-bracket="tl" style={{ left: frame.left - 5, top: frame.top - 5 }} />
       <span className="flux3-bracket flux3-bracket-br chrome-fade" aria-hidden="true" data-flux3-bracket="br" style={{ left: frame.right - 11, top: frame.top + frame.height - 11 }} />
-      <div className="flux3-dochead chrome-fade" aria-hidden="true" data-flux3-dochead="" style={{ left: frame.left + 1, top: frame.top + 1, width: Math.max(0, frame.right - frame.left - 2), height: headH }}>
-        <span className="flux3-dochead-id">{t('linksKindPage')} // <span className="flux3-dochead-hex">0x{nodeHex(entryId)}</span></span>
-        <span className="flux3-dochead-n">
-          {totals.words} {totals.words === 1 ? t('flux3WordOne') : t('flux3WordMany')} · {totals.blocks} {totals.blocks === 1 ? t('flux3BlockOne') : t('flux3BlockMany')} · {ports.length} {ports.length === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
-        </span>
-      </div>
+      {headH >= HEAD_MIN && (
+        <div className="flux3-dochead chrome-fade" aria-hidden="true" data-flux3-dochead="" style={{ left: frame.left + 1, top: frame.top + 1, width: Math.max(0, frame.right - frame.left - 2), height: headH }}>
+          <span className="flux3-dochead-id">{t('linksKindPage')} // <span className="flux3-dochead-hex">0x{nodeHex(entryId)}</span></span>
+          <span className="flux3-dochead-n">
+            {totals.words} {totals.words === 1 ? t('flux3WordOne') : t('flux3WordMany')} · {totals.blocks} {totals.blocks === 1 ? t('flux3BlockOne') : t('flux3BlockMany')} · {ports.length} {ports.length === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
+          </span>
+        </div>
+      )}
       <div className="flux3-gutter chrome-fade" aria-hidden="true" data-flux3-gutter="" data-measures={measures.current}
         style={{ left: frame.left - GUTTER_GAP, top: 0 }}>
         {rows.map((r) => (
