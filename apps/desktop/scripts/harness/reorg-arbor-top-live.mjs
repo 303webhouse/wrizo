@@ -62,7 +62,7 @@ await withHarness(async (app) => {
     page('at-1', 'Chapter One\\nThe rain had not stopped.', { origin: 'project', projectId: mill.id, orderIndex: 0 });
     page('at-2', 'Chapter Two\\nThe second morning.', { origin: 'project', projectId: mill.id, orderIndex: 1 });
     page('at-3', 'Chapter Three\\nThe flood.', { origin: 'project', projectId: mill.id, orderIndex: 2 });
-    page('at-c', 'Plot canvas', { origin: 'project', projectId: mill.id, pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
+    page('at-c', 'Plot canvas', { origin: 'loose', pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
     W.wrizoFlushNow(); return true; })()`);
   await sleep(500);
 
@@ -94,6 +94,8 @@ await withHarness(async (app) => {
   ok('T3 by day and by night every name reads 4.5:1 or better on the bar', readable(day) && readable(night),
     { day: day && day.names.map((n) => [n.text, +contrast(n.color, day.bg).toFixed(2)]), night: night && night.names.map((n) => [n.text, +contrast(n.color, night.bg).toFixed(2)]) });
 
+  // FIXTURE (Nov 21, Actions 44974589071 on d9d24f94: the Canvas sat in The Mill, so it served that Page and the bar rightly offered "+"; a Canvas with
+  // no Page is a LOOSE one): at-c is loose. No assertion changes.
   await visit(app, `/?reorg=1${DOOR}&arbor2room=day`, 'at-c');
   const canvas = await app.evalJs(TOP);
   ok('T7 on a Canvas with no Page the bar shows Connect Page and the canvas\'s views where the stages stand', !!canvas && canvas.kind === 'board' && /connect/i.test(canvas.connect || '') && /page/i.test(canvas.connect || '') && canvas.views >= 3, canvas && { kind: canvas.kind, connect: canvas.connect, views: canvas.views });

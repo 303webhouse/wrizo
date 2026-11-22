@@ -13,7 +13,7 @@ async function setUp(app, room, id) {
     page('atf-1', 'Chapter One\\nThe rain had not stopped.', { origin: 'project', projectId: mill.id, orderIndex: 0 });
     page('atf-2', 'Chapter Two\\nThe second morning, the river was up past the second step of the mill.', { origin: 'project', projectId: mill.id, orderIndex: 1, pageSettings: undefined });
     page('atf-3', 'Chapter Three\\nThe flood.', { origin: 'project', projectId: mill.id, orderIndex: 2 });
-    page('atf-c', 'Plot canvas', { origin: 'project', projectId: mill.id, pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
+    page('atf-c', 'Plot canvas', { origin: 'loose', pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
     W.wrizoFlushNow(); return true; })()`);
   await sleep(400);
   await app.evalJs(`localStorage.setItem('wrizo-theme', 'plateau'); history.replaceState(null, '', '/?reorg=1&reorglift=plateau.rail,plateau.top&arbor2room=${room}#/page/${id}'); null`);

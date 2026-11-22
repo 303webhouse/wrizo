@@ -207,7 +207,9 @@ function sigOf(e: JournalEntry): string {
   const siblings = set
     ? getJournalEntries().filter((x) => x.projectId === set.id).map((x) => `${x.id}:${x.orderIndex ?? ''}:${x.pageType ?? ''}:${x.deletedAt ? 1 : 0}`).join(',')
     : '';
-  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings].join('\u0001');
+  // the Section's own colour too (Arbor's tag before its name, spec §3: a colour chosen in the Front menu redraws the tag; Actions 44974589071)
+  const colour = String((e.pageSettings as { color?: unknown } | undefined)?.color ?? '');
+  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings, colour].join('\u0001');
 }
 
 interface NamesProps { entry: JournalEntry; canRename: boolean; beforeWrite: () => void }
