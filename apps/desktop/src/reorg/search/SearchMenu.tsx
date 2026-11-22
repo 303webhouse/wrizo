@@ -114,7 +114,7 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
           {s.replaceOpen && (
             <div className="reorg-replace-box">
               <label className="reorg-search-field">
-                <input type="text" data-replace-with spellCheck={false} autoComplete="off" aria-label={t('reorgReplaceWith')} placeholder={t('reorgReplaceWith')} value={s.repl}
+                <input type="text" data-replace-with autoComplete="off" aria-label={t('reorgReplaceWith')} placeholder={t('reorgReplaceWith')} value={s.repl}
                   onChange={(e) => setReplaceWith(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeSearch(); } }} />
               </label>
