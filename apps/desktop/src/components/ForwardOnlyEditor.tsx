@@ -9,7 +9,7 @@ import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } fr
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
-import { revealCaret } from '../store/caretInView';
+import { openCaret, revealCaret } from '../store/caretInView';
 import { rowsVerticalKey, clearVerticalGoal } from '../store/rowsVertical';
 import { escapeTyped } from '../store/hiddenMarks';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
@@ -671,7 +671,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       if (el) {
         mountRows(el, initialText, initialText.length);
         if (initialText.endsWith('\n')) placeCaret(el, initialText.length);
-        else setPlainOffset(el, initialText.length);
+        else { setPlainOffset(el, initialText.length, { preventScroll: true }); openCaret(el); }   // the page opens on a whole line: the browser's own caret scroll cut the first line of a page that only just overflows (store/caretInView.ts)
       }
     }
     emit();
