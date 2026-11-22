@@ -6,6 +6,7 @@
 //   KG-LETTER  letters cost no more on a 50,000-word page than on a 500-word one + 8 ms (median BUSY), in Draft and in Free Write
 //   KG-SPACE   the same for Space
 //   KG-ENTER   the same for Enter
+//   KG-LAYOUTS a letter and a Space force no more than LAYOUT_MAX layouts at 50,000 words (a Chrome trace of 12 keys of each), in Draft and in Free Write: the COUNT, which a few ms of timing noise cannot hide (Free Write forced 28 a key before the fade's wait stopped measuring)
 // The slack is absolute (8 ms) because the short page's own cost is a few ms and a ratio of a few ms is noise; a page-length cost shows as tens of ms (Fable's numbers: 20 at 20k, 52 at 50k). It prints every number so a read is never a guess.
 // Run: node scripts/harness/typing-growth.mjs   (Actions harness, advisory; a box turn for the speed numbers)
 const { withHarness } = await import('../runtime-verify.mjs');
@@ -15,7 +16,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ED = '.forward-only-editor';
 const SIZES = [500, 5000, 20000, 50000];
 const MODES = [['draft', 'Draft'], ['freewrite', 'Free Write']];
-const KEYS = 30, SLACK_MS = 8;
+const KEYS = 30, SLACK_MS = 8, LAYOUT_MAX = 6;
+const layoutRows = [];
 const PARA = 'The writer keeps a steady pace through the long draft, and nothing slows the page down at all. ';
 const page = (words) => { const per = PARA.trim().split(/\s+/).length; const n = Math.ceil(words / per); return Array.from({ length: n }, () => PARA.trim()).join('\n'); };
 const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length ? Math.round(s[Math.floor(s.length / 2)] * 10) / 10 : null; };
@@ -88,6 +90,7 @@ await withHarness(async (app) => {
               const byFrame = new Map();
               for (const l of lay) { const st = (l.args.beginData && l.args.beginData.stackTrace) || []; const top = st[0]; const k = top ? (top.functionName || '?') + ' ' + String(top.url || '').split('/').pop() + ':' + top.lineNumber + ':' + top.columnNumber : '(no stack: the frame\'s own layout)'; const cur = byFrame.get(k) || { n: 0, ms: 0, top }; cur.n += 1; cur.ms += l.dur / 1000; byFrame.set(k, cur); }
               const rows = [...byFrame.entries()].sort((a, b) => b[1].ms - a[1].ms).slice(0, 6).map(([k, v]) => ({ k, perKey: Math.round((v.n / keys) * 10) / 10, msPerKey: Math.round((v.ms / keys) * 10) / 10 }));
+              layoutRows.push({ mode, kind, keys, perKey: Math.round((lay.length / keys) * 10) / 10 });
               console.log(`TG-LAYOUTS ${mode} ${kind} 50000 words (${keys} keys): ` + JSON.stringify({ layoutsPerKey: Math.round((lay.length / keys) * 10) / 10, msPerKey: Math.round((lay.reduce((a, l) => a + l.dur, 0) / 1000 / keys) * 10) / 10, rows }));
               const code = [];
               for (const r of rows.slice(0, 4)) { if (!byFrame.get(r.k).top) continue; const top = byFrame.get(r.k).top; try { const src = await app.cdp('Debugger.getScriptSource', { scriptId: top.scriptId }); const lines = String(src.scriptSource || '').split(String.fromCharCode(10)); code.push({ at: top.lineNumber + ':' + top.columnNumber, src: (lines[top.lineNumber] || '').slice(Math.max(0, top.columnNumber - 160), top.columnNumber + 200) }); } catch { /* the position alone */ } }
@@ -123,10 +126,17 @@ await withHarness(async (app) => {
     }
     ok(`KG-${kind.toUpperCase()} a ${kind} costs no more (median BUSY) on a 50,000-word page than on a 500-word one + ${SLACK_MS} ms, in Draft and in Free Write`, bad.length === 0, JSON.stringify(bad));
   }
+  {
+    // the traced kinds: Free Write letter and space, Draft letter (the trace runs for these); a kind that was not traced is a failure, not a pass
+    const want = [['freewrite', 'letter'], ['freewrite', 'space'], ['draft', 'letter']];
+    const bad = [];
+    for (const [mode, kind] of want) { const r = layoutRows.find((x) => x.mode === mode && x.kind === kind); if (!r) bad.push({ mode, kind, why: 'not traced' }); else if (r.perKey > LAYOUT_MAX) bad.push({ mode, kind, perKey: r.perKey }); }
+    ok(`KG-LAYOUTS a key forces no more than ${LAYOUT_MAX} layouts on a 50,000-word page (Free Write letter and space, Draft letter)`, bad.length === 0, JSON.stringify({ bad, measured: layoutRows }));
+  }
 }, { label: 'typing-growth' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 800)}`);
-const EXPECTED = 3;
+const EXPECTED = 4;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nTYPING-GROWTH VERIFY: PASS (${checks.length} checks)`
