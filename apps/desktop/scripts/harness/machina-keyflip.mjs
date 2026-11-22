@@ -40,7 +40,20 @@ const analyse = (raw) => {
   const win = ult.filter((s) => s.ts >= K && s.ts < K + WINDOW_US);
   const counted = win.filter((s) => Number.isFinite(els(s)));
   const big = counted.reduce((m, s) => (els(s) > (m ? els(m) : -1) ? s : m), null);
-  return { keyTasks: keyTasks.length, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, keyElsMs: big ? Math.round((big.end - big.ts) / 100) / 10 : null };
+  // INFO (no check; arbor-keyflip's attribution): what the first key invalidated and why, and the largest restyles, to name a cause the highlight fix did not take out
+  const inv = {};
+  for (const e of evs) {
+    if (e.ts < K - 2000 || e.ts > K + WINDOW_US || !/InvalidationTracking/.test(e.name)) continue;
+    const d = (e.args && e.args.data) || {};
+    const why = d.reason || (d.changedAttribute ? 'attr ' + d.changedAttribute : d.changedClass ? 'class ' + d.changedClass : d.changedId ? 'id ' + d.changedId : d.changedPseudo ? 'pseudo ' + d.changedPseudo : '?');
+    const k = `${e.name.replace('InvalidationTracking', '')} | ${why}${d.extraData ? ' (' + String(d.extraData).slice(0, 60) + ')' : ''} | ${String(d.nodeName || '').slice(0, 70)}`;
+    inv[k] = (inv[k] || 0) + 1;
+  }
+  const deep = evs.filter((e) => e.ts >= K - 2000 && e.ts <= K + WINDOW_US && /InvalidationTracking/.test(e.name) && !/^Layout/.test(e.name) && /^(HTML|BODY)/.test(String((e.args && e.args.data && e.args.data.nodeName) || '')))
+    .slice(0, 12).map((e) => ({ n: e.name.replace('InvalidationTracking', ''), at: Math.round((e.ts - K) / 100) / 10, d: JSON.stringify(e.args.data).slice(0, 500) }));
+  const top = win.filter((s) => Number.isFinite(els(s))).sort((a, b) => els(b) - els(a)).slice(0, 5).map((s) => ({ els: els(s), at: Math.round((s.ts - K) / 100) / 10 }));
+  return { keyTasks: keyTasks.length, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, keyElsMs: big ? Math.round((big.end - big.ts) / 100) / 10 : null,
+    attrib: { top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 20), deep } };
 };
 const STATE = "(() => ({ theme: document.documentElement.getAttribute('data-theme'), writing: document.documentElement.getAttribute('data-wz-writing'), docEls: document.getElementsByTagName('*').length, editor: !!document.querySelector('.forward-only-editor') }))()";
 const LOOK = `(() => { const row = document.querySelector('.forward-only-editor .wz-row') || document.querySelector('.forward-only-editor'); if (!row) return null;
@@ -95,7 +108,9 @@ await withHarness(async (app) => {
     const tr = await traceKey(key);
     const after = await ev(STATE);
     const m = { label, before, after, tr };
-    console.log(`MKF ${label}: ` + JSON.stringify({ docEls: before.docEls, share: tr && tr.keyEls != null ? Math.round((tr.keyEls / before.docEls) * 1000) / 10 + '%' : null, before: before.writing, after: after.writing, tr }));
+    const { attrib, ...trShort } = tr || {};
+    console.log(`MKF ${label}: ` + JSON.stringify({ docEls: before.docEls, share: tr && tr.keyEls != null ? Math.round((tr.keyEls / before.docEls) * 1000) / 10 + '%' : null, before: before.writing, after: after.writing, tr: trShort }));
+    if (attrib && (label === 'letter-1' || label === 'mut-old-rules')) console.log(`MKF-ATTRIB ${label}: ` + JSON.stringify(attrib));
     return m;
   };
 
