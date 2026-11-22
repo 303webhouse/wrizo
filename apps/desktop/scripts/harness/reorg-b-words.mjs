@@ -16,6 +16,7 @@
 //            Directly", and the Colour menu ends "No Colour"
 // GONE   B6  (source) no clay..plum anywhere: no reorgPartColourClay..Plum key (terms, canonical table, c13-10c-new), no [data-colour='clay'..]
 //            rule, and PartsList names its colours by the slots' lexicon words (reorgTagA..F)
+//        B2 [picker successor] (colour B, Nov 21) the same, Merge followed by "Colour…" (the picker's opener); MUT-B2  the menu without it fails
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-b-words.mjs
 import fs from 'node:fs';
@@ -101,8 +102,16 @@ await withHarness(async (app) => {
       colours: [...m.querySelectorAll('[data-part-colour]')].map((b) => [b.getAttribute('data-part-colour'), b.getAttribute('title')]) }; })()`);
   const wantActs = [['up', 'Move Up'], ['down', 'Move Down'], ['in', 'Nest'], ['out', 'Unnest'], ['join', 'Merge']];
   const wantCols = [['none', 'No Colour'], ['a', 'Outline'], ['b', 'Pale'], ['c', 'Blue'], ['d', 'Yellow'], ['e', 'Mid'], ['f', 'Solid']];
-  ok('B2 a row\'s menu reads Move Up, Move Down, Nest, Unnest, Merge; its colours are No Colour then the slots a-f named Outline, Pale, Blue, Yellow, Mid, Solid',
-    !!b2 && JSON.stringify(b2.acts) === JSON.stringify(wantActs) && JSON.stringify(b2.colours) === JSON.stringify(wantCols), b2);
+  // SUPERSEDED (colour B (arbor/colour-b 44cbb0ef, train H; Nick, Nov 21 3:30 pm via Fable 4:56 pm: the picker - SCHEME, six swatches, "+ Custom…") adds the
+  // row menu's colour opener after the moves (data-part-act="colour", "Colour…"); the seven colour choices are unchanged (Chat 1's pair 44973956599 on train-h4 3ab78c73)). The original, verbatim:
+  // ok('B2 a row\'s menu reads Move Up, Move Down, Nest, Unnest, Merge; its colours are No Colour then the slots a-f named Outline, Pale, Blue, Yellow, Mid, Solid',
+  //   !!b2 && JSON.stringify(b2.acts) === JSON.stringify(wantActs) && JSON.stringify(b2.colours) === JSON.stringify(wantCols), b2);
+  const wantActsB = [...wantActs, ['colour', 'Colour\u2026']];
+  const b2p = (x) => !!x && JSON.stringify(x.acts) === JSON.stringify(wantActsB) && JSON.stringify(x.colours) === JSON.stringify(wantCols);
+  ok('B2 [picker successor] a row\'s menu reads Move Up, Move Down, Nest, Unnest, Merge, Colour…; its colours are No Colour then the slots a-f named Outline, Pale, Blue, Yellow, Mid, Solid',
+    b2p(b2), b2);
+  const b2old = b2 ? { ...b2, acts: b2.acts.filter((a) => a[0] !== 'colour') } : null;
+  ok('MUT-B2 the same menu without "Colour…" (the shape before colour B) fails B2\'s successor', !!b2old && b2p(b2) && !b2p(b2old), b2old);
 
   const b3 = await app.evalJs(`(() => { const m = document.querySelector('[data-part-menu="wb-3"]'); if (!m) return null; const root = getComputedStyle(document.documentElement);
     return [...'abcdef'].map((s) => { const b = m.querySelector('[data-part-colour="' + s + '"]'); if (!b) return [s, null]; const cs = getComputedStyle(b);
@@ -147,7 +156,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 6;
+const EXPECTED = 7;   // 6 + MUT-B2 (B2 parked, the picker, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-B-WORDS VERIFY: PASS (${checks.length} checks)`

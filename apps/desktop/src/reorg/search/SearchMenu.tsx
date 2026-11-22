@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../../types';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
-import { getJournalEntry } from '../../store/persistence';
+import { getJournalEntry, subscribe } from '../../store/persistence';
 import { firstLine } from '../../store/entryText';
 import { routeForEntry } from '../../store/routeForEntry';
 import { useProjectName } from '../ReorgRail';
 import { partsOfDoc } from '../partsSeam';
 import { REACHES, runSearch, snippet, type Hit, type HitGroup, type Reach } from './searchFind';
-import { closeSearch, openMore, setSearchCur, setSearchQ, setSearchReach, useSearch } from './searchStore';
+import { closeSearch, doReplace, doUndoReplace, openMore, setReplaceWith, setSearchCur, setSearchQ, setSearchReach, toggleReplace, useSearch } from './searchStore';
 import { useSearchMarks } from './searchMarks';
 
 // THE SEARCH MENU (the reorg's search, reorg/search/searchFind.ts for what it finds): it takes the whole Back menu's place, the tab row gone (the
@@ -17,6 +17,9 @@ import { useSearchMarks } from './searchMarks';
 // rest (the find she is on is never hidden). The widen line sits under the finds. Enter: the next find in this Doc (Shift+Enter the one before),
 // into another Part when this one has no more. A find in another Part opens it as moving between Parts does; a find in another Doc, or on a
 // Board, opens it with the return chip. Esc closes the search.
+// FIND AND REPLACE (reorg/search/replace.ts): its line is offered once the search finds something in the Doc she is in (and kept while there is
+// a replace to undo); opened, a WITH field, replace all of this Doc's finds, Undo, and a Replace beside each find of this Doc (one by one).
+// The finds are read again whenever the store changes, so a replace (or her own typing, saved) is never stale in the list.
 
 const REACH_WORD: Record<Reach, DeskTermId> = { doc: 'reorgSearchReachDoc', project: 'reorgSearchReachProject', all: 'reorgSearchReachAll' };
 const LINE_WORD: Record<Reach, DeskTermId> = { doc: 'reorgSearchLineDoc', project: 'reorgSearchLineProject', all: 'reorgSearchLineAll' };
@@ -30,7 +33,10 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
   const navigate = useNavigate();
   const s = useSearch();
   const field = useRef<HTMLInputElement>(null);
-  const found = useMemo(() => runSearch(entry, s.q, s.reach), [entry, s.q, s.reach]);
+  const [stored, setStored] = useState(0);
+  useEffect(() => subscribe(() => setStored((v) => v + 1)), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const found = useMemo(() => runSearch(entry, s.q, s.reach), [entry, s.q, s.reach, stored]);
   const all = useMemo(() => found.groups.flatMap((g) => g.rows), [found]);
   const cur: Hit | null = (s.cur ? all.find((h) => h.key === s.cur) ?? found.here.find((h) => h.key === s.cur) : null)
     ?? found.here.find((h) => h.entryId === entry.id) ?? null;
@@ -100,6 +106,27 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
             title={r === 'project' && found.project == null ? t('reorgSearchNoProject') : undefined} onClick={() => setSearchReach(r)}>{t(REACH_WORD[r])}</button>
         ))}
       </div>
+      {(found.here.length > 0 || s.canUndo) && (
+        <div className="reorg-replace">
+          <button type="button" className="reorg-replace-line" data-replace-toggle aria-expanded={s.replaceOpen} onClick={() => toggleReplace()}>
+            {`${t('reorgReplaceLine')} \u00b7 ${t('reorgReplaceInDoc')}`}
+          </button>
+          {s.replaceOpen && (
+            <div className="reorg-replace-box">
+              <label className="reorg-search-field">
+                <input type="text" data-replace-with autoComplete="off" aria-label={t('reorgReplaceWith')} placeholder={t('reorgReplaceWith')} value={s.repl}
+                  onChange={(e) => setReplaceWith(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeSearch(); } }} />
+              </label>
+              <div className="reorg-replace-acts">
+                <button type="button" data-replace-all disabled={!found.here.length || !s.repl} onClick={() => doReplace(found.here)}>{fill(t('reorgReplaceAll'), { n: found.here.length })}</button>
+                {s.canUndo && <button type="button" data-replace-undo onClick={() => doUndoReplace()}>{t('reorgReplaceUndo')}</button>}
+              </div>
+            </div>
+          )}
+          {s.said && <div className="reorg-replace-said" data-replace-said role="status">{fill(t(s.said.key), s.said.vals)}</div>}
+        </div>
+      )}
       <div className="reorg-search-body">
         {quiet != null && <div className="reorg-search-quiet" data-search-line>{quiet}</div>}
         {found.groups.map((g) => {
@@ -110,11 +137,16 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
               {rows.map((h) => {
                 const [before, word, after] = snippet(h.text, h.at, h.len);
                 const here = !!cur && cur.key === h.key;
+                // one by one: a Replace beside each find of the Doc she is in, while the replace box is open
+                const mine = s.replaceOpen && h.boxId == null && partIds.has(h.entryId);
                 return (
-                  <button key={h.key} type="button" className="reorg-search-hit" data-search-hit data-hit-entry={h.entryId} data-hit-at={h.at} aria-current={here ? 'true' : undefined}
-                    onClick={() => go(h)}>
-                    {before}<mark>{word}</mark>{after}
-                  </button>
+                  <div key={h.key} className="reorg-search-row">
+                    <button type="button" className="reorg-search-hit" data-search-hit data-hit-entry={h.entryId} data-hit-at={h.at} aria-current={here ? 'true' : undefined}
+                      onClick={() => go(h)}>
+                      {before}<mark>{word}</mark>{after}
+                    </button>
+                    {mine && <button type="button" className="reorg-replace-one" data-replace-one={`${h.entryId}|${h.at}`} disabled={!s.repl} onClick={() => doReplace([h])}>{t('reorgReplaceOne')}</button>}
+                  </div>
                 );
               })}
               {more > 0 && <button type="button" className="reorg-search-more" data-search-more onClick={() => openMore(g.id)}>{fill(t('reorgSearchMore'), { n: more })}</button>}

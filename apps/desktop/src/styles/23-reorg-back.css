@@ -216,3 +216,7 @@
 .reorg-attach-row input{ flex:none; }
 .reorg-attach-row span{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .reorg-bx-attached{ margin:0; font-family:var(--font-ui); font-size:12px; color:var(--text-low); }
+/* THE RUN UNDER HER PAGE IN THE SPLIT (the Wrizors' carry, Nov 21, machina-chrome-scale-pass.md 1: "In the split, the Run runs behind the Doc beside the
+   page"). The Run (RunStrip, in the stage's instrument layer) is laid out under the stage's middle; the split shifts the page by --wz-split-shift
+   (SplitHost, on the stage), so the Run is drawn by the same shift. A translate: nothing is laid out again, and closing the split takes it away. */
+[data-theme='machina'] .desk-frame-stage[data-split='true'] > .desk-frame-rhizome-anchor{ translate:var(--wz-split-shift, 0px) 0; }

@@ -2,7 +2,7 @@ import type { JournalEntry, Project } from '../types';
 import { getJournalEntry, getProject, isAutoSet } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { wordCount } from '../store/wordCount';
-import { isPartColor, partsOfDoc as inkPartsOfDoc, renamePart as inkRenamePart, type PartColor, type PartLevel } from './parts';
+import { colorHex, isPartColor, partsOfDoc as inkPartsOfDoc, renamePart as inkRenamePart, type PartColor, type PartHex, type PartLevel } from './parts';
 
 // THE PARTS SEAM (agreed with INK, Nov 19): everything that reads Parts (the top rail, the Front menu's Parts list, the moves between Parts)
 // imports from here and from nowhere else. Since train D this file is the ADAPTER over INK's layer (reorg/parts.ts), which owns the model and
@@ -21,6 +21,8 @@ export interface PartRow {
   level: PartLevel;
   /** A token name from PART_COLORS, or null. */
   color: PartColor | null;
+  /** colour B: her own colour, exactly #RRGGBB in capitals (INK's layer), or null - then color (a slot) or none */
+  hex: PartHex | null;
   /** A screenplay Part lists, moves and colours, but has no plain text to split or join. */
   kind: 'text' | 'script';
 }
@@ -36,7 +38,7 @@ export function partsOfDoc(entry: JournalEntry): DocParts {
     if (at >= 0) {
       return {
         doc: { id: set.id, name: set.title, set },
-        parts: parts.map((p) => ({ id: p.id, n: p.index + 1, name: p.named || p.words > 0 ? p.name : '', named: p.named, words: p.words, level: p.level, color: p.color, kind: p.kind })),
+        parts: parts.map((p) => ({ id: p.id, n: p.index + 1, name: p.named || p.words > 0 ? p.name : '', named: p.named, words: p.words, level: p.level, color: p.color, hex: p.hex, kind: p.kind })),
         here: at + 1,
       };
     }
@@ -46,7 +48,7 @@ export function partsOfDoc(entry: JournalEntry): DocParts {
   const own = typeof stored === 'string' ? stored.trim() : '';
   const text = entry.pageType === 'script' ? '' : (entry.text ?? '');
   const c = (entry.pageSettings as { color?: unknown } | undefined)?.color;
-  const only: PartRow = { id: entry.id, n: 1, name: own || firstLine(text).trim(), named: !!own, words: wordCount(text), level: 0, color: isPartColor(c) ? c : null, kind: entry.pageType === 'script' ? 'script' : 'text' };
+  const only: PartRow = { id: entry.id, n: 1, name: own || firstLine(text).trim(), named: !!own, words: wordCount(text), level: 0, color: isPartColor(c) ? c : null, hex: colorHex(c), kind: entry.pageType === 'script' ? 'script' : 'text' };
   return { doc: { id: entry.id, name: only.name, set: null }, parts: [only], here: 1 };
 }
 
