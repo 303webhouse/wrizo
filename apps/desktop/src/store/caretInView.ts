@@ -72,10 +72,10 @@ export function openCaret(el: HTMLElement): void {
     if (!line) return;
     const box = scroller.getBoundingClientRect();
     const bottom = Math.min(box.bottom, window.innerHeight) - PAD;
-    const need = line.bottom > bottom ? line.bottom - bottom : 0;
-    // the caret's line already shows: nothing to bring into view, so the page is left where it is. (It used to be sent to the top here, which assumed a scroller that had never scrolled; a scroller that carries a place over from the stage she left - Free Write's landing
-    // on her writing line, with the opening cut - has the caret in view at its place and was yanked to 0: page-open-scroll SC3 and flux3-s4b-l4 CLEAR on the J2 tree.)
-    if (need <= 0) return;
+    // how far from the TOP the page must scroll for the caret's line to show: the scroller may carry a place over from the stage she left (Free Write's landing, the opening cut), so the line's distance below the bottom is added
+    // to where the scroller already is. (It was measured as if the scroller sat at 0 and a caret already in view sent the page to the top: page-open-scroll SC3 and flux3-s4b-l4 CLEAR on the J2 tree.) A page that already shows its
+    // caret rests on the smallest whole line that still shows it.
+    const need = Math.max(0, scroller.scrollTop + line.bottom - bottom);
     const max = scroller.scrollHeight - scroller.clientHeight;
     const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
