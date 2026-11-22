@@ -27,9 +27,9 @@ const GATE = rd('reorg/themeGate.ts');
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 const THEMES = ['machina', 'plateau', 'flux'];
 
-function load(src, { reorg = true, theme = 'machina', calls = { n: 0 } } = {}) {
+function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, asked = false } = {}) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
-  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg } };
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg, REORG_ASKED: asked } };
   const m = { exports: {} };
   new Function('require', 'exports', 'module', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m);
   return m.exports;
@@ -46,16 +46,30 @@ function suite(src) {
     const wrong = Object.entries(cells).filter(([k, v]) => { const [th, p] = k.split('.'); return v !== want(th, p); }).map(([k]) => k);
     return { pass: J(G.REORG_PIECES) === J(PIECES) && wrong.length === 0, detail: J({ pieces: G.REORG_PIECES, wrong }) };
   });
-  t('HOOK', () => {
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The original, verbatim:
+  // t('HOOK', () => {
+  //   const on = { n: 0 }, off = { n: 0 };
+  //   const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
+  //   const F = load(src, { reorg: true, theme: 'flux' });
+  //   const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
+  //   // one piece lifted for Flux: the hook says yes to that piece and no to the others
+  //   const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
+  //   const L = load(lifted, { reorg: true, theme: 'flux' });
+  //   const one = PIECES.filter((p) => L.useReorgPiece(p));
+  //   return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']), detail: J({ r, f, o, one, onCalls: on.n, offCalls: off.n }) };
+  // });
+  // [successor] the same readings, and the ruling: one Flux cell lifted lights ONLY when the page load asked (?reorg=1); unasked it stays dark
+  t('HOOK2', () => {
     const on = { n: 0 }, off = { n: 0 };
     const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
     const F = load(src, { reorg: true, theme: 'flux' });
     const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
-    // one piece lifted for Flux: the hook says yes to that piece and no to the others
     const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
-    const L = load(lifted, { reorg: true, theme: 'flux' });
-    const one = PIECES.filter((p) => L.useReorgPiece(p));
-    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']), detail: J({ r, f, o, one, onCalls: on.n, offCalls: off.n }) };
+    const Lask = load(lifted, { reorg: true, theme: 'flux', asked: true }), Lno = load(lifted, { reorg: true, theme: 'flux', asked: false });
+    const one = PIECES.filter((p) => Lask.useReorgPiece(p)), dark = PIECES.filter((p) => Lno.useReorgPiece(p));
+    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']) && J(dark) === J([]),
+      detail: J({ r, f, o, one, dark, onCalls: on.n, offCalls: off.n }) };
   });
   t('LIFT', () => {
     const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
@@ -70,15 +84,25 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(GATE); } catch (e) { baseErr = e; }
-for (const k of ['TABLE', 'HOOK', 'LIFT']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The original, verbatim:
+// for (const k of ['TABLE', 'HOOK', 'LIFT']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// [successor] HOOK reads through its successor (HOOK2: the ruling's asked / unasked lifted cell), named so in the run
+for (const k of ['TABLE', 'HOOK2', 'LIFT']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
   ['Machina loses a piece', 'TABLE', (t) => t.replace('  machina: { ...ALL_ON },', () => '  machina: { ...ALL_ON, uplink: false },')],
   ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
   ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
-  ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
-  ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The originals, verbatim (the first still lands; the second's target string is gone from the hook):
+  // ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  // ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
+  // [successors] the same two mutants against HOOK2; the second aimed at the hook as it now reads, plus the ruling's own: a theme on by default that is not Machina
+  ['the hook ignores the switch', 'HOOK2', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  ['the hook reads one piece for every piece', 'HOOK2', (t) => t.replace('return reorgFor(t) && themeHas(piece, t);', () => "return reorgFor(t) && themeHas('top', t);")],
+  ['a lifted cell lights without the ask (the switch-over ruling broken)', 'HOOK2', (t) => t.replace('return reorgFor(t) && themeHas(piece, t);', () => 'return themeHas(piece, t);')],
 ];
 for (const [name, key, fn] of MUT) {
   const after = GATE ? fn(GATE) : GATE;
