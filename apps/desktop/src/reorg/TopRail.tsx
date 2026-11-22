@@ -11,6 +11,7 @@ import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
 import { useSchemeOnPage } from './colourScheme';
+import { useTheme } from '../store/theme';
 import { REORG } from './flag';
 import { openSearch } from './search/searchStore';
 
@@ -210,7 +211,9 @@ function sigOf(e: JournalEntry): string {
   const siblings = set
     ? getJournalEntries().filter((x) => x.projectId === set.id).map((x) => `${x.id}:${x.orderIndex ?? ''}:${x.pageType ?? ''}:${x.deletedAt ? 1 : 0}`).join(',')
     : '';
-  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings].join('\u0001');
+  // the Section's own colour too (Arbor's tag before its name, spec §3: a colour chosen in the Front menu redraws the tag; Actions 44974589071)
+  const colour = String((e.pageSettings as { color?: unknown } | undefined)?.color ?? '');
+  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings, colour].join('\u0001');
 }
 
 interface NamesProps { entry: JournalEntry; canRename: boolean; beforeWrite: () => void }
@@ -247,6 +250,8 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   const write = (fn: () => void) => { beforeWrite(); fn(); };
   // the Part line drops every Part of the Doc (the prototype's parts drop, frame P2-12C, ruled B): the Front menu's own Parts list
   const [dropped, setDropped] = useState(false);
+  // ARBOR (spec §3): the Section's tag (§6, Arbor's numbered cloth: INK's tokens in 25-reorg-arbor-tags.css) stands before its name; Machina draws none
+  const arbor = useTheme() === 'plateau';
   return (
     <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
       <ProjectName entry={latest} />
@@ -265,6 +270,7 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
         {made && part && (
           <>
             <span className="reorg-top-dot" aria-hidden="true">·</span>
+            {arbor && part.color && <span className="reorg-top-tag" data-top-tag={part.color} aria-hidden="true" />}
             <Name id="part" text={part.name || t('reorgUntitled')} editable={canRename} onCommit={(v) => write(() => renamePart(latest.id, v))} />
           </>
         )}

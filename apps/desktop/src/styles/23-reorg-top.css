@@ -194,8 +194,14 @@
 [data-theme='machina'] .reorg-search-hit mark{ background:#F6ECBE; color:#1C1C1C; }
 [data-theme='machina'] :is(.reorg-search-more, .reorg-search-widen){ display:block; margin:4px 12px; padding:0; border:0; background:none; font:inherit; font-size:12px; color:var(--accent-rest); cursor:pointer; }
 [data-theme='machina'] :is(.reorg-search-back, .reorg-search-scopes > button, .reorg-search-hit, .reorg-search-more, .reorg-search-widen):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
-[data-theme='machina'] ::highlight(wz-search){ background-color:rgba(246, 236, 190, .6); }
-[data-theme='machina'] ::highlight(wz-search-cur){ background-color:rgba(232, 196, 92, .85); color:#1C1C1C; }
+/* MACHINA-KEYFLIP (Fable, Nov 22, 2:58 am; INK's cause in Arbor): a ::highlight() rule has a universal subject, so one with a root-attribute ancestor in front of it
+   ([data-theme='machina'] ::highlight(...)) made the whole document depend on the root's attributes, and the first key (it flips data-wz-writing on the root)
+   restyled most of the page for every Machina writer. The colours ride custom properties set on the root itself (a plain subject) and the two ::highlight()
+   rules are bare, reading them: the names INK's Arbor fix reads (25-reorg-arbor-back.css), so the two themes share one pair of rules; Machina adds the
+   current hit's ink. A theme that sets none paints nothing (transparent). */
+:root[data-theme='machina']{ --wz-search-hl:rgba(246, 236, 190, .6); --wz-search-hl-cur:rgba(232, 196, 92, .85); --wz-search-hl-cur-ink:#1C1C1C; }
+::highlight(wz-search){ background-color:var(--wz-search-hl, transparent); }
+::highlight(wz-search-cur){ background-color:var(--wz-search-hl-cur, transparent); color:var(--wz-search-hl-cur-ink); }
 /* AN ASSET ONTO A PART (reorg/assetConnect.ts): a Part row under an asset drag wears a dashed edge (a shape, never colour alone; not brass, which
    marks the Part she is on); the line below the list says what happened, inside the drawer, so the page never moves. */
 [data-theme='machina'] .reorg-parts-row.is-drop{ outline:1px dashed var(--text-hi); outline-offset:-3px; }

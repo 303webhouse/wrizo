@@ -389,9 +389,12 @@
    clears 4.5:1, and the moment it is reached it is full again in its own colours. The brass "you are here" mark keeps its rule (a graphic,
    3.7:1 at .6, over 3:1). Opacity and colour only: nothing moves or resizes, and the page is never touched.
    ========================================================================================================================================== */
+/* the reorg's Part foot (reorg/PartMoves.tsx, .reorg-part-foot.mode-dissolve) is a recede hook ON the page, so the three dim subjects below leave it
+   out (Nov 21: the frames on dc282511, Actions 44975564667, drew it in --text-hi on the cream paper by night - nearly gone; scripts/harness/
+   reorg-arbor-top-live.mjs T9). It still recedes while she writes (the writing recede is untouched). */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']{ --arbor2-dim:.6; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-arbor2-off~='dim']):has(.wz-sliver[data-open='true'], .wz-tutor-panel[data-open='true'], .wz-cascade-panel){ --arbor2-dim:.52; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.chrome-top.sprint-nav, .desk-frame-strip):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .reorg-part-foot):not(.chrome-top.sprint-nav, .desk-frame-strip):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
   opacity:var(--arbor2-dim);
 }
 /* r20 (the Wrizors' r19 review, wrizors-to-ARBOR-nov4d.md md5 2f312b28: the night bars measured #1F150C / #19100A, nearly gone in the night room;
@@ -409,12 +412,12 @@
 }
 /* r5 (§9c): the two openers are no longer dimmed at all (the olive opener at .6 drew its arrow at 2.7:1; olive is already the quiet colour).
    Superseded here: the r4 rule that held them at .6 through the further step (the Tutor tab's sea cloth measured 4.44:1 at .52, run 41010542648). */
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']):not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-wz-writing='true']):not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .reorg-part-foot):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not([data-chrome-receded='true'], [data-chrome-receded='true'] *, [data-writing='true'] *):not(:hover, :focus-within){
   color:var(--text-hi) !important;
   --arbor2-hook-lt:on;   /* bug #80: what the dimmed hook holds letters in --text-hi through the style query below (the reason is at the bars' rule above) */
 }
 @container style(--arbor2-hook-lt: on){
-  :root[data-arbor2][data-arbor2][data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not(:hover, :focus-within) *{
+  :root[data-arbor2][data-arbor2][data-arbor2][data-theme='plateau'][data-arbor2-room='night']:not([data-arbor2-lit]) :is(.chrome-fade, .desk-dissolve, .mode-dissolve):not(:is(.chrome-fade, .desk-dissolve, .mode-dissolve) *):not(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .reorg-part-foot):not(.wz-sliver[data-open='true'] .wz-sliver-grip, .wz-tutor-grip[data-open='true']):not(:hover, :focus-within) *{
     color:var(--text-hi) !important;
   }
 }

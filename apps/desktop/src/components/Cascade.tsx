@@ -24,6 +24,7 @@ import { nodeHex } from '../flux3/FluxNodeRecord';
 import { REORG } from '../reorg/flag';
 import { ReorgRail } from '../reorg/ReorgRail';
 import { useReorgPiece } from '../reorg/themeGate';
+import { useRailRoom } from '../reorg/railRoom';
 import { renderReorgPanel, reorgHeadExtra } from '../reorg/panels/render';
 import { liveQuery, registerLiveSite } from '../store/liveDom';
 
@@ -223,6 +224,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
     const h = takeCascadeHandoff();
     return h ? { category: h.category, survey: h.survey, docked: false } : REST;
   });
+  // ARBOR (the Wrizors' rail NIT): while a pop-out is open, the room beside the page for it (reorg/railRoom.ts; under the switch only)
+  useRailRoom(reorg, state.category);
   const currentEntryId = subject.entry.id;
 
   // the two-drawer law: this drawer registers its close path, so an exclusion handoff shuts it exactly as a click would [Cascade §4]
@@ -354,7 +357,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   const layers = view === null || view.category === null ? null : (
     <>
-      <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined}>
+      <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined} data-category={reorg ? view.category : undefined}>
         <div className="wz-cascade-panel-head">
           <span className="wz-cascade-panel-title">{t(panelTitleTerm(view.category))}</span>
           {reorg ? reorgHeadExtra(view.category) : null}
@@ -424,7 +427,7 @@ function renderSection(
 // DELIBERATELY different glyph from the sliver-foot's own GearIcon (S1:
 // "distinct by law from the sliver-foot gear") — a plain account circle,
 // not a gear, so the two settings surfaces never look like the same door.
-function JournalIcon() {
+export function JournalIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v16.5A1.5 1.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5v-13Z" />
@@ -432,7 +435,7 @@ function JournalIcon() {
     </svg>
   );
 }
-function PageIcon() {
+export function PageIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
@@ -441,7 +444,7 @@ function PageIcon() {
     </svg>
   );
 }
-function PlanIcon() {
+export function PlanIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="6" cy="6" r="2.3" />
@@ -473,7 +476,7 @@ function TrashIcon() {
     </svg>
   );
 }
-function SettingsIcon() {
+export function SettingsIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="8" r="3.2" />
@@ -481,7 +484,7 @@ function SettingsIcon() {
     </svg>
   );
 }
-function SkinIcon() {
+export function SkinIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4.4-4-7.4-9-7.4Z" />
