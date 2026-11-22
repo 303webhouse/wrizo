@@ -22,6 +22,8 @@
 //             and of "Next" against the paper's median just below the foot (the paper paints transparent in Arbor; the colour and opacity chain
 //             ride in the detail to name the cause)
 //         MUT-T9  the day reading with its ink at the paper's own colour (a vanished foot) turns T9's test red
+//         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
+//             words read 4.5:1 or better on the paper as drawn
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-top-live.mjs
 process.env.WS_ARBOR2 = process.env.WS_ARBOR2 || 'default';
@@ -116,6 +118,11 @@ await withHarness(async (app) => {
   await app.mouseMove(700, 400); await sleep(400);
   const footNight = await drawnFoot(app);
   ok('T9 by day and by night the Part foot\'s words read 4.5:1 or better on the paper as drawn', footReads(footDay) && footReads(footNight), { day: footDetail(footDay), night: footDetail(footNight) });
+  await app.evalJs("window.wrizoThemePrefs.set({ page: 'dark' }); null"); await sleep(700); await app.mouseMove(700, 400); await sleep(400);
+  const footDark = await drawnFoot(app);
+  const darkPage = await app.evalJs("document.documentElement.getAttribute('data-page')");
+  await app.evalJs("window.wrizoThemePrefs.set({ page: 'light' }); null"); await sleep(500);
+  ok('T10 by night on a dark page the Part foot\'s words read 4.5:1 or better on the paper as drawn', darkPage === 'dark' && footReads(footDark), { darkPage, foot: footDetail(footDark) });
   const vanished = footDay && footDay.found ? { ...footDay, inks: footDay.inks.map(() => footDay.paper) } : null;
   ok('MUT-T9 the day reading with its ink at the paper\'s own colour turns T9\'s test red', !!vanished && footReads(footDay) !== footReads(vanished) && !footReads(vanished), vanished && footDetail(vanished));
   const readable = (r) => !!r && r.names.length >= 3 && r.names.every((n) => contrast(n.color, r.bg) >= 4.5);
@@ -134,7 +141,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 12;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21)
+const EXPECTED = 13;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
