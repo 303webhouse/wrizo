@@ -35,6 +35,7 @@ try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
   const splashGone = () => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 15000, label: 'splash gone' }).catch(() => {});
   await app.emulateDpr(1, 1366, 768);
+  await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__wzTwTrace = [];' });   // the Typewriter engine's own diagnostic array (useTypewriterFade): each decision it makes, in memory
   await app.goto('/');
   await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
   await app.reload();
@@ -125,6 +126,8 @@ try { await withHarness(async (app) => {
       const reads = [];
       for (const wait of [150, 400, 900, 1600]) { await sleep(wait); const b = await ev(READ()); reads.push(b && { endRect: b.endRect, scrollTop: b.scrollTop }); }
       const last = reads[reads.length - 1];
+      const trace = await ev("JSON.stringify((window.__wzTwTrace || []).slice(-18))");
+      say('#52-trace', T, { reduced, trace });
       say('#52', T, { reduced, window: 768, readings: reads, finalEndBelowWindow: !!(last && last.endRect && last.endRect.bottom > 768) });
     }
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
