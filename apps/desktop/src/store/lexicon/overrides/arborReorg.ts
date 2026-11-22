@@ -7,7 +7,7 @@ import { ARBOR_OVERRIDES as LIVE } from './arbor';
 // THE REORG'S ARBOR WORDS, behind ?reorg=1 only (Fable, Nov 21, 4:58 pm: Arbor's reorg; claude/wrizors/arbor-reorg-spec.md section 1; Nick, Nov 20, 4:13 pm: FORMAT, GRAFTS and the cold-blue SHELF). Arbor's own words for the reorg's pieces: Page (a Doc), Drawer (a Project),
 // Shelf (Unfiled), Canvas (a Board), card (a Block), Section (a Part), Grafts (Assets), Journal (the Notebook), the Tutor (the Consultant), Before you publish. Plateau is the default theme, so Arbor's nouns are the canonical ones and a string that holds none of the swapped
 // words keeps its canonical words; the swaps are applied to the reorg's canonical strings with their {placeholders} kept; the strings the spec writes out ("More than a swap") are exactly as written there.
-// What the spec leaves open stays unset, Arbor's canonical words, until the Wrizors answer: the five box swatches (five names, Arbor's six) and the lens label. Which ones: ARBOR_REORG_UNSET.
+// What the spec left open the Wrizors answered (Nov 21, 6:54 pm): the box swatches are Arbor's cloths and Custom..., the lens panel is the Tutor's; nothing is left unset (ARBOR_REORG_UNSET is empty, kept so a string left open later is listed).
 //
 // machinaAndArbor.ts takes Arbor's table from HERE. With the switch off, or with the redesign off (?arbor2=0), this module hands back the live table itself (the same object), so what the lexicon gives is byte-identical; with both on, Arbor's (the plateau key) is the live
 // Canvas words with these cells laid over them. These words are read only by the reorg's surfaces, which stay Machina's until each Arbor piece is lifted in reorg/themeGate.ts.
@@ -28,6 +28,7 @@ export const ARBOR_REORG_WORDS = {
   reorgPlanToPart: '→ Section',
   reorgPlanOpenPart: 'Open Section',
   reorgPlanTick: 'This section has words',
+  reorgLensLabel: 'Tutor lenses',
   reorgLenStructure3: 'Does each Section do one job?',
   reorgLensAskPlaceholder: 'Ask about this Page…',
   reorgAssetsOwnBoard: 'This page\'s canvas',
@@ -67,6 +68,12 @@ export const ARBOR_REORG_WORDS = {
   reorgBoardsNoDoc: 'Canvases with no page',
   reorgListEmpty: 'No pages yet.',
   reorgUntitledBoard: 'Untitled canvas',
+  reorgOwnColour: 'Custom…',
+  reorgSwatchPale: 'Olive',
+  reorgSwatchGrey: 'Sea',
+  reorgSwatchBlue: 'Cold blue',
+  reorgSwatchBrass: 'Madder',
+  reorgSwatchOrange: 'Honey',
   reorgNewDocHeading: 'New page',
   reorgSearchReachDoc: 'This Page',
   reorgSearchReachProject: 'This Drawer',
@@ -128,12 +135,7 @@ export const ARBOR_REORG_WORDS = {
 
 /** The reorg strings this table leaves unset, and why (the Wrizors list). */
 export const ARBOR_REORG_UNSET: readonly string[] = [
-  'reorgLensLabel',   // Feedback lenses
-  'reorgSwatchPale',   // Pale
-  'reorgSwatchGrey',   // Grey
-  'reorgSwatchBlue',   // Blue
-  'reorgSwatchBrass',   // Brass
-  'reorgSwatchOrange',   // Orange
+
 ];
 
 export const ARBOR_REORG_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =

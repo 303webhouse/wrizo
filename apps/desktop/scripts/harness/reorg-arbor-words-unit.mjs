@@ -5,7 +5,8 @@
 //   HOLES   a {placeholder} is never swapped or dropped: every string set here has exactly the placeholders its canonical string has (but the spec's own, written out)
 //   ONLY    only reorg* keys are set, each one a key the canonical table has, none overwrites a word Arbor already has live (arbor.ts's Canvas words), and the other themes' cells are untouched
 //   OFF     with the switch off, or with the redesign off (?arbor2=0), the table IS the live one (the same object): the lexicon reads byte-identically
-//   UNSET   what the swaps and the spec do not settle stays unset (it keeps its canonical words, Arbor's own) and is listed in ARBOR_REORG_UNSET for the Wrizors: the five box swatches (five names, Arbor's six) and the lens label
+// SUPERSEDED (Nov 21, 6:54 pm, the Wrizors answered): //   UNSET   what the swaps and the spec do not settle stays unset (it keeps its canonical words, Arbor's own) and is listed in ARBOR_REORG_UNSET for the Wrizors: the five box swatches (five names, Arbor's six) and the lens label
+//   ANSWERS the Wrizors' words are set exactly: the box swatches are Arbor's cloths (the five old keys read Olive, Sea, Cold blue, Madder, Honey: never brass for a box), "Your own colour" reads "Custom…", the lens panel is the Tutor's ("Tutor lenses"), the lens box asks "Ask about this Page…"; ARBOR_REORG_UNSET is empty
 // Run: node scripts/harness/reorg-arbor-words-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -66,7 +67,8 @@ const SAMPLES = {
   reorgTagA: 'Olive', reorgTagB: 'Sea', reorgTagC: 'Cold blue', reorgTagD: 'Madder', reorgTagE: 'Honey', reorgTagF: 'Iron',
   reorgAddNewBoard: 'New Canvas', reorgAddNewDoc: 'New Page', reorgBxEmptyMany: '{n} Sections with no words',
 };
-const UNSET = ['reorgSwatchPale', 'reorgSwatchGrey', 'reorgSwatchBlue', 'reorgSwatchBrass', 'reorgSwatchOrange', 'reorgLensLabel'];
+// SUPERSEDED (Nov 21): const UNSET = ['reorgSwatchPale', 'reorgSwatchGrey', 'reorgSwatchBlue', 'reorgSwatchBrass', 'reorgSwatchOrange', 'reorgLensLabel'];
+const ANSWERS = { reorgSwatchPale: 'Olive', reorgSwatchGrey: 'Sea', reorgSwatchBlue: 'Cold blue', reorgSwatchBrass: 'Madder', reorgSwatchOrange: 'Honey', reorgOwnColour: 'Custom…', reorgLensLabel: 'Tutor lenses', reorgLensAskPlaceholder: 'Ask about this Page…' };
 
 function suite(src) {
   const R = {};
@@ -98,18 +100,25 @@ function suite(src) {
     const off = load(src, { reorg: false }), noRedesign = load(src, { arbor2: false });
     return { pass: off.ARBOR_REORG_OVERRIDES === LIVE.ARBOR_OVERRIDES && noRedesign.ARBOR_REORG_OVERRIDES === LIVE.ARBOR_OVERRIDES, detail: 'the live table itself' };
   });
-  t('UNSET', () => {
+  // SUPERSEDED (Nov 21, the Wrizors answered): the original UNSET check, kept verbatim:
+  // t('UNSET', () => {
+  // const E = load(src), W = E.ARBOR_REORG_WORDS;
+  // const left = UNSET.filter((k) => k in W);
+  // const listed = UNSET.every((k) => (E.ARBOR_REORG_UNSET || []).some((l) => l.startsWith(k)));
+  // return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+  // });
+  t('ANSWERS', () => {
     const E = load(src), W = E.ARBOR_REORG_WORDS;
-    const left = UNSET.filter((k) => k in W);
-    const listed = UNSET.every((k) => (E.ARBOR_REORG_UNSET || []).some((l) => l.startsWith(k)));
-    return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+    const bad = Object.entries(ANSWERS).filter(([k, v]) => W[k] !== v).map(([k, v]) => ({ k, want: v, got: W[k] }));
+    const brass = ['reorgSwatchBrass'].filter((k) => /brass/i.test(W[k] || ''));
+    return { pass: bad.length === 0 && brass.length === 0 && Array.isArray(E.ARBOR_REORG_UNSET) && E.ARBOR_REORG_UNSET.length === 0, detail: J({ bad, brass, unset: E.ARBOR_REORG_UNSET }) };
   });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'UNSET']) ok(`${k} on the real arborReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'arborReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS']) ok(`${k} on the real arborReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'arborReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['the spec string for the Back tabs is reworded', 'EXACT', (t) => t.replace("reorgBackTabsLabel: 'Plan, grafts and the Tutor'", () => "reorgBackTabsLabel: 'Plan, grafts and feedback'")],
@@ -118,7 +127,10 @@ const MUT = [
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
   ['the switch is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'arbor2Enabled()')],
   ['the redesign flag is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'REORG')],
-  ['a box swatch is guessed at', 'UNSET', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  reorgSwatchBrass: 'Madder',\n")],
+  // SUPERSEDED (Nov 21): ['a box swatch is guessed at', 'UNSET', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  reorgSwatchBrass: 'Madder',\n")],
+  ['a box swatch is still named for brass', 'ANSWERS', (t) => t.replace("reorgSwatchBrass: 'Madder'", () => "reorgSwatchBrass: 'Brass'")],
+  ['the own-colour word is left as it was', 'ANSWERS', (t) => t.replace("reorgOwnColour: 'Custom\u2026'", () => "reorgOwnColour: 'Your own colour'")],
+  ['the lens panel is still called Feedback', 'ANSWERS', (t) => t.replace("reorgLensLabel: 'Tutor lenses'", () => "reorgLensLabel: 'Feedback lenses'")],
 ];
 for (const [name, key, fn] of MUT) {
   const after = SRC ? fn(SRC) : SRC;
