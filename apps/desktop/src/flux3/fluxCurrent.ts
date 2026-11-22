@@ -8,8 +8,8 @@
 //
 // THE TYPING PATH IS NEVER TOUCHED. This module has ONE listener, a click on the document (capture), and a resize listener only while a hand is open. It has no key, input, scroll, selection or pointer-move
 // listener, no timer loop and no frame loop (two frame requests after a click, so the click's re-render has settled before the geometry is read). A menu that opens by the keyboard or at page load draws no
-// current: only a press of the tab or the stage button does. Under reduced motion, or at Ambiance 0, nothing is drawn at all (effectiveAmbianceDial is 0 in both). The electron rests while the page's editor
-// has focus (a CSS rule, no script). scripts/harness/flux3-current.mjs proves each of these, and the typing cost on the box.
+// current: only a press of the tab or the stage button does. Under reduced motion, or at Ambiance 0, nothing is drawn at all (effectiveAmbianceDial is 0 in both). The electron rests while the chrome has receded
+// (she is writing): a CSS rule on the app's own data-chrome-receded, no script and no :has(). scripts/harness/flux3-current.mjs proves each of these, and the typing cost on the box.
 import { effectiveAmbianceDial } from '../store/ambianceDial';
 import { SPARK_MS, SPARK_PX, pathLength, sparkLayers, stagePaths, type Pt, type Rect } from './fluxCurrentPath';
 

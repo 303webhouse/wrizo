@@ -20,8 +20,9 @@
 :root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-line{ animation:flux-hand-undraw .18s ease-in forwards; }
 :root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-electron{ display:none; }
 @keyframes flux-hand-undraw{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
-/* she is writing (her editor has focus): the electron rests - paused and not drawn. No script: the rule changes only when the focus does, never per key */
-:root[data-flux3][data-theme='flux']:has(.forward-only-editor:focus) .flux-hand-electron{ animation-play-state:paused; visibility:hidden; }
+/* she is writing (the chrome has receded, the app's own data-chrome-receded on the page's host): the electron rests - paused and not drawn. A plain descendant selector on a flag the app already sets; no script and
+   NO :has() (a :has on the root would re-check on every change to the page under it while she types: Fable, Nov 21, 6:54 pm, and the box's clock reading, 02:21Z) */
+:root[data-flux3][data-theme='flux'] [data-chrome-receded='true'] .flux-hand-electron{ animation-play-state:paused; visibility:hidden; }
 
 /* reduced motion: none of it (fluxCurrent.ts also draws nothing then; this is the belt) */
 @media (prefers-reduced-motion: reduce){

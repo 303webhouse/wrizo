@@ -1,6 +1,6 @@
 // FLUX 3 - THE CURRENT, ONE LAYER FOR TWO THINGS (Fable, Nov 21, 4:56 pm and 6:00 pm; flux-full-look-for-monday.md item 8 and section 2; Nick, 4:40 and 4:47 pm). Behind ?flux3=1, in the Flux theme.
 //   HANDS    the drawers open as current (POLISH's Oct 28 mockup): a 1 px cyan line shoots from the tab along the menu box's top edge, and an electron runs it for as long as the menu is open; it goes when
-//            the menu shuts. The line and the electron belong to the menu: they fade with it when the chrome recedes (the same classes), and the electron rests while she writes.
+//            the menu shuts. The line and the electron belong to the menu: they fade with it when the chrome recedes (the same classes), and the electron rests while she writes (the chrome has receded: a plain rule on the app's own flag, no :has).
 //   STAGE    the stage current, v2 (flux-stage-current-concept-v2.png): she presses a stage button (WIRE IN / TEXT / PATCH / UPLINK); a 1 px cyan spark about 60 px long leaves that button along the
 //            top bar's lower edge to each side, then runs one lap around each menu (a closed menu: its opener tab) in about 0.55 s, and is gone. Nothing stays lit. Wire In has no menus: pressing it sends
 //            none; leaving it sends one.
@@ -169,12 +169,17 @@ try { await withHarness(async (app) => {
   const before = await read();
   await ev("window.__mutN = 0; window.__mutObs && window.__mutObs.disconnect(); window.__mutObs = new MutationObserver((r) => { window.__mutN += r.length; }); document.querySelectorAll('[data-flux-hand], [data-flux-current]').forEach((n) => window.__mutObs.observe(n, { subtree: true, attributes: true, childList: true })); const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); true");
   for (const ch of 'typing with a menu open draws nothing ') { await app.typeKeys(ch); await sleep(30); }
+  let receded = false;
+  for (let i = 0; i < 24 && !receded; i += 1) { await app.typeKeys('x'); await sleep(250); receded = await ev("!!document.querySelector('[data-chrome-receded=\"true\"]')"); }
   await sleep(300);
   const after = await read();
   const elT = await ev(ELECTRON);
   const mutN = await ev('window.__mutN');
   ok('TY1 typing with a hand open adds no run and no spark, and nothing in the layer changes (no mutation of its nodes, none added or removed)', after.runs === before.runs && after.sparks === 0 && mutN === 0 && after.hands.length === before.hands.length, JSON.stringify({ runs: [before.runs, after.runs], sparks: after.sparks, mutN, hands: [before.hands.length, after.hands.length] }));
-  ok('TY2 the electron rests while she writes (her editor has focus): its animation is paused, not running', !!elT && elT.state === 'paused', JSON.stringify(elT));
+  ok('TY2 the electron rests while she writes (the chrome has receded): its animation is paused, not running', receded && !!elT && elT.state === 'paused', JSON.stringify({ receded, elT }));
+  const stripCss = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '');
+  ok('TY5 the layer styles hold no :has() selector (a :has on the root re-checks on every change to the page under it while she types)', layerCss.length > 0 && !/:has\(/.test(stripCss(layerCss)), layerCss.length ? '' : 'src/flux3/flux-current.css is missing');
+  ok('MUT-TY5 the TY5 reader goes RED on a stylesheet with a root :has rule', /:has\(/.test(stripCss(layerCss + '\n:root:has(.forward-only-editor:focus) .flux-hand-electron{ animation-play-state:paused; }')), 'one mutated stylesheet');
   ok('TY3 the layer\'s source holds only a click listener (and a resize listener while a hand is open): no key, input, scroll, selection or pointer-move listener, no timer, at most two frame requests', typingPathClean(layerText), layerText === null ? 'src/flux3/fluxCurrent.ts is missing' : '');
   ok('TY4 the layer\'s styles animate transform and opacity alone (no layout or paint property in a keyframe)', layerCss.length > 0 && [...layerCss.matchAll(/@keyframes[^{]*\{([\s\S]*?\}\s*)\}/g)].every((m) => !/\b(width|height|left|top|right|bottom|margin|padding|background|box-shadow|filter)\s*:/.test(m[1])), layerCss.length ? '' : 'src/flux3/flux-current.css is missing');
   ok('MUT-TY3 the typing-path reader goes RED on a source that listens to keys, runs a timer or loops frames', !typingPathClean((layerText || '') + "\ndocument.addEventListener('keydown', () => {});") && !typingPathClean((layerText || '') + '\nsetInterval(() => {}, 10);') && !typingPathClean((layerText || '') + '\nrequestAnimationFrame(a); requestAnimationFrame(b); requestAnimationFrame(c);'), 'three mutated sources');
@@ -217,7 +222,8 @@ try { await withHarness(async (app) => {
         await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");
         await sleep(600);
         const hadHand = !!(await ev("!!document.querySelector('[data-flux-hand]')"));
-        if (!(arm === 'J' && on)) await ev("(() => { document.querySelectorAll('[data-flux-hand]').forEach((n) => n.remove()); window.wrizoFluxCurrent && window.wrizoFluxCurrent.detach && window.wrizoFluxCurrent.detach(); })()");
+        // the control has no hand, no listener AND none of the layer's rules: what the subject adds is all of it
+        if (!(arm === 'J' && on)) await ev("(() => { document.querySelectorAll('[data-flux-hand]').forEach((n) => n.remove()); window.wrizoFluxCurrent && window.wrizoFluxCurrent.detach && window.wrizoFluxCurrent.detach(); for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; } for (let i = rules.length - 1; i >= 0; i -= 1) { if (/flux-hand|flux-current/.test(rules[i].cssText)) sh.deleteRule(i); } } })()");
         await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
         await sleep(400);
         return { hadHand, hasHand: !!(await ev("!!document.querySelector('[data-flux-hand]')")) };
