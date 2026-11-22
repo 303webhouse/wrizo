@@ -19,6 +19,7 @@
 //         [S1 and S2 successors, train H: main's switchless prefs (the room, writing and goal facts are saved and synced in every theme) leave a REORG fact
 //         Machina's: in Arbor it is neither written to the copy nor kept, the round may still run for the switchless facts; the gates read the table]
 // RULING  R2  (Fable, Nov 21, 9:40 pm: default-on in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass) every reader of the table outside
+//   [Nov 22, train K, INK's last flip] Arbor is ON by default too (all six of its cells pass: REORG_DEFAULT_ON.plateau = true); Flux alone keeps ?reorg=1. O3 and R2 restated (originals parked), O4 added: Arbor with ?reorg=0 draws none
 //             a hook asks reorgFor (Tutor's back and split, BoardEditor's Plan presets); no bare `REORG && themeHas(` is left (the hook's own ruling: reorg-theme-gate-unit)
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-switchover.mjs
@@ -82,7 +83,11 @@ await withHarness(async (app) => {
   ok('O2 the same build with ?reorg=0: no reorg element anywhere (O1 having been on)', on.top && off.n === 0, { on: on.n, off });
   const arbor = await openIn(app, 'plateau', '');
   const flux = await openIn(app, 'flux', '');
-  ok('O3 Arbor and Flux with no switch in the URL: no reorg element anywhere (O1 having been on)', on.top && arbor.n === 0 && flux.n === 0, { arbor, flux });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and the last flip sets REORG_DEFAULT_ON.plateau = true, so Arbor opens with the reorg on and Flux alone stays off): the original O3, verbatim:
+  // ok('O3 Arbor and Flux with no switch in the URL: no reorg element anywhere (O1 having been on)', on.top && arbor.n === 0 && flux.n === 0, { arbor, flux });
+  ok('O3 [successor] Flux with no switch in the URL: no reorg element anywhere; Arbor, with all six cells on, draws the reorg by default (its top rail is on the page) (O1 having been on)', on.top && flux.n === 0 && arbor.n > 0 && arbor.top, { arbor, flux });
+  const arborOff = await openIn(app, 'plateau', '?reorg=0');
+  ok('O4 Arbor with ?reorg=0: no reorg element anywhere (the default is the page load\'s; Arbor\'s O3 having drawn it)', arbor.top && arborOff.n === 0, { arbor: arbor.n, arborOff });
 
   // ---- SYNC ------------------------------------------------------------------------------------------------------------------------------
   await openIn(app, 'plateau', '');
@@ -141,15 +146,17 @@ await withHarness(async (app) => {
   const tutorB = strip(src('components/Tutor.tsx')), boardB = strip(srcBoard()), gateB = strip(src('reorg/themeGate.ts')), fluxB = strip(src('store/lexicon/overrides/fluxReorg.ts')), flagB = strip(src('reorg/flag.ts'));
   const r4 = { tutorBack: tutorB.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutorB.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
     planPresets: boardB.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutorB) && !/REORG && themeHas\(/.test(boardB),
-    defaults: /REORG_DEFAULT_ON: Record<'machina' \| 'plateau' \| 'flux', boolean> = \{ machina: true, plateau: false, flux: false \}/.test(flagB),
+    // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and the last flip sets REORG_DEFAULT_ON.plateau = true, so Arbor opens with the reorg on and Flux alone stays off): the original defaults census, verbatim:
+    // defaults: /REORG_DEFAULT_ON: Record<'machina' \| 'plateau' \| 'flux', boolean> = \{ machina: true, plateau: false, flux: false \}/.test(flagB),
+    defaults: /REORG_DEFAULT_ON: Record<'machina' \| 'plateau' \| 'flux', boolean> = \{ machina: true, plateau: true, flux: false \}/.test(flagB),
     reexport: gateB.includes("export { REORG_DEFAULT_ON, reorgFor } from './flag';"), hook: gateB.includes('return reorgFor(t) && themeHas(piece, t);'),
     fluxWords: /reorgFor\('flux'\) \? \{ flux: \{ \.\.\.LIVE\.flux, \.\.\.FLUX_REORG_WORDS \} \} : LIVE;/.test(fluxB),
     pageLoadDefault: /: \(typeof location !== 'undefined' && !pinnedOff\);/.test(flagB) };
-  ok('R2 [successor] every table reader outside a hook asks reorgFor; the rule (Machina alone on by default) lives in flag.ts and themeGate re-exports it; Flux\'s reorg words ask reorgFor(\'flux\'); the default is a page load\'s', Object.values(r4).every(Boolean), r4);
+  ok('R2 [successor] every table reader outside a hook asks reorgFor; the rule (Machina and Arbor on by default, Flux alone off) lives in flag.ts and themeGate re-exports it; Flux\'s reorg words ask reorgFor(\'flux\'); the default is a page load\'s', Object.values(r4).every(Boolean), r4);
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 8;   // 7 + R2 (Fable, Nov 21, 9:40 pm)
+const EXPECTED = 9;   // 7 + R2 (Fable, Nov 21, 9:40 pm) + O4 (Nov 22, INK's last flip)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-SWITCHOVER VERIFY: PASS (${checks.length} checks)`
