@@ -1,5 +1,6 @@
 import { useTheme, type ThemeId } from '../store/theme';
-import { REORG, REORG_ASKED } from './flag';
+import { REORG, reorgFor } from './flag';
+export { REORG_DEFAULT_ON, reorgFor } from './flag';   // the switch-over's rule lives in flag.ts (the lexicon asks it too)
 
 // THE REORG'S THEME GATE (Fable, Nov 21, 3:20 pm: "Flux piece 1: the four Machina-only literals behind ONE table: six pieces x theme, Machina all on, Arbor and Flux empty. A Flux piece is switched on in the table only when its
 // frames pass the Wrizors"; claude/wrizors/flux-reorg-spec.md). Until now every reorg surface asked "the switch AND Machina" in its own place (the rail, the top rail, the Front menu, the Back menu, the split, the Plan presets, Uplink).
@@ -26,15 +27,7 @@ export const REORG_THEME_GATE: Record<ThemeId, Record<ReorgPiece, boolean>> = {
 /** The piece is on for this page load: the switch AND the current theme has it. The function is chosen once at load, so with the switch off it calls no hook at all and the hook order never changes. */
 export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ? (piece) => { const t = useTheme(); return reorgFor(t) && themeHas(piece, t); } : () => false;
 
-// THE SWITCH-OVER (Fable, Nov 21, 9:40 pm): the reorg is ON BY DEFAULT in Machina only. Arbor and Flux keep ?reorg=1 until all six of their cells pass: a cell
-// flipped on for them lights only when the page load asked for the reorg by name. Flip a theme here once all six of its cells pass.
-export const REORG_DEFAULT_ON: Record<ThemeId, boolean> = { machina: true, plateau: false, flux: false };
-
-/** The reorg is on for this theme: the switch is on, and the theme is on by default or the page load asked for it (?reorg=1). The callers that read the table
- *  outside a hook (Tutor's back and split, BoardEditor's Plan presets, the account syncs) ask this, not the bare switch. */
-export function reorgFor(theme: ThemeId | string | null | undefined): boolean {
-  return REORG && (REORG_ASKED || ((REORG_DEFAULT_ON as Record<string, boolean | undefined>)[theme ?? ''] ?? false));
-}
+// THE SWITCH-OVER's rule (REORG_DEFAULT_ON, reorgFor) lives in reorg/flag.ts and is re-exported above; the hook asks it before the table.
 
 /** Whether this theme has this piece (the table alone: the caller holds the switch). A theme or a piece the table does not know has none. */
 export function themeHas(piece: ReorgPiece, theme: ThemeId | string | null | undefined): boolean {

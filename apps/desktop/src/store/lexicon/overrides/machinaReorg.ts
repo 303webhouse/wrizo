@@ -1,6 +1,6 @@
 import type { ThemeId } from '../../theme';
 import type { DeskTermId } from '../terms';
-import { REORG } from '../../../reorg/flag';
+import { reorgFor } from '../../../reorg/flag';
 import { MACHINA_OVERRIDES as LIVE } from './machina';
 
 // THE REORG'S MACHINA WORDS, behind ?reorg=1 only (Fable, Nov 14: live-feedback-nov14i.md change 5). The strings are the Wrizors' list,
@@ -48,4 +48,4 @@ export const MACHINA_REORG_WORDS = {
 } satisfies Partial<Record<DeskTermId, string>>;
 
 export const MACHINA_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
-  REORG ? { machina: { ...LIVE.machina, ...MACHINA_REORG_WORDS } } : LIVE;
+  reorgFor('machina') ? { machina: { ...LIVE.machina, ...MACHINA_REORG_WORDS } } : LIVE;

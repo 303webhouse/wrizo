@@ -24,12 +24,18 @@ const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
 // a split file (BoardEditor.tsx) is read as its module and its parts, joined (the 10g readers rule)
 const rdSite = (p) => (p === 'components/BoardEditor.tsx' ? lf(srcText(SRCDIR, p)) : rd(p));
 const GATE = rd('reorg/themeGate.ts');
+// the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is
+// ?reorg=0, asked is ?reorg=1, the default is no query (POLISH, the bare-switch census, Nov 21: a hand stub would test the stub, not the rule)
+const FLAG_SRC = rd('reorg/flag.ts');
+const realFlag = (reorg, asked) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : asked ? '?reorg=1' : '' }, undefined);
+  return m.exports; };
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 const THEMES = ['machina', 'plateau', 'flux'];
 
 function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, asked = false } = {}) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
-  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg, REORG_ASKED: asked } };
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': realFlag(reorg, asked) };
   const m = { exports: {} };
   new Function('require', 'exports', 'module', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m);
   return m.exports;

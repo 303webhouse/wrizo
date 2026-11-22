@@ -127,13 +127,25 @@ await withHarness(async (app) => {
   const flag = strip(src('reorg/flag.ts'));
   ok('N1 the switch is read from the URL and the driver\'s flag only: no stored flag, no storage key',
     /__wrizoReorgOff/.test(flag) && /get\('reorg'\)/.test(flag) && !/localStorage|sessionStorage|indexedDB/.test(flag), { flag: flag.trim().slice(-400) });
-  const tutor = strip(src('components/Tutor.tsx')), board = strip(srcBoard()), gate = strip(src('reorg/themeGate.ts')), fluxWords = strip(src('store/lexicon/overrides/fluxReorg.ts')), flagSrc = strip(src('reorg/flag.ts'));
-  const r3 = { tutorBack: tutor.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutor.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
-    planPresets: board.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutor) && !/REORG && themeHas\(/.test(board),
-    defaults: /REORG_DEFAULT_ON: Record<ThemeId, boolean> = \{ machina: true, plateau: false, flux: false \}/.test(gate), hook: gate.includes('return reorgFor(t) && themeHas(piece, t);'),
-    fluxWordsAsked: /REORG_ASKED \? \{ flux: \{ \.\.\.LIVE\.flux, \.\.\.FLUX_REORG_WORDS \} \} : LIVE;/.test(fluxWords) && !/\bREORG \? \{ flux:/.test(fluxWords),
-    pageLoadDefault: /: \(typeof location !== 'undefined' && !pinnedOff\);/.test(flagSrc) };
-  ok('R2 (the switch-over ruling) every table reader outside a hook asks reorgFor (Tutor back and split, the Plan presets), none asks the bare switch; Machina alone is on by default (Flux\'s reorg words too: they come with the ask); the default is a page load\'s (a read with no location sees it off)', Object.values(r3).every(Boolean), r3);
+  // SUPERSEDED (the bare-switch census, Fable, Nov 21, 11:20 pm: the rule moved into reorg/flag.ts so the lexicon can ask it; Flux's words ask reorgFor('flux') now,
+  // not REORG_ASKED; POLISH). The original R2, verbatim:
+  // const tutor = strip(src('components/Tutor.tsx')), board = strip(srcBoard()), gate = strip(src('reorg/themeGate.ts')), fluxWords = strip(src('store/lexicon/overrides/fluxReorg.ts')), flagSrc = strip(src('reorg/flag.ts'));
+  // const r3 = { tutorBack: tutor.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutor.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
+  //   planPresets: board.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutor) && !/REORG && themeHas\(/.test(board),
+  //   defaults: /REORG_DEFAULT_ON: Record<ThemeId, boolean> = \{ machina: true, plateau: false, flux: false \}/.test(gate), hook: gate.includes('return reorgFor(t) && themeHas(piece, t);'),
+  //   fluxWordsAsked: /REORG_ASKED \? \{ flux: \{ \.\.\.LIVE\.flux, \.\.\.FLUX_REORG_WORDS \} \} : LIVE;/.test(fluxWords) && !/\bREORG \? \{ flux:/.test(fluxWords),
+  //   pageLoadDefault: /: \(typeof location !== 'undefined' && !pinnedOff\);/.test(flagSrc) };
+  // ok('R2 (the switch-over ruling) every table reader outside a hook asks reorgFor (Tutor back and split, the Plan presets), none asks the bare switch; Machina alone is on by default (Flux\'s reorg words too: they come with the ask); the default is a page load\'s (a read with no location sees it off)', Object.values(r3).every(Boolean), r3);
+  // [successor] the same census, read where the rule now lives (reorg/flag.ts: REORG_DEFAULT_ON, reorgFor; themeGate.ts re-exports it), and Flux's words ask
+  // reorgFor('flux'); the bare readers across the client are reorg-bare-switch-census.mjs's
+  const tutorB = strip(src('components/Tutor.tsx')), boardB = strip(srcBoard()), gateB = strip(src('reorg/themeGate.ts')), fluxB = strip(src('store/lexicon/overrides/fluxReorg.ts')), flagB = strip(src('reorg/flag.ts'));
+  const r4 = { tutorBack: tutorB.includes("reorgFor(tutorTheme) && themeHas('back', tutorTheme)"), tutorSplit: tutorB.includes("reorgFor(tutorTheme) && themeHas('split', tutorTheme)"),
+    planPresets: boardB.includes("reorgFor(theme) && themeHas('back', theme)"), noBare: !/REORG && themeHas\(/.test(tutorB) && !/REORG && themeHas\(/.test(boardB),
+    defaults: /REORG_DEFAULT_ON: Record<'machina' \| 'plateau' \| 'flux', boolean> = \{ machina: true, plateau: false, flux: false \}/.test(flagB),
+    reexport: gateB.includes("export { REORG_DEFAULT_ON, reorgFor } from './flag';"), hook: gateB.includes('return reorgFor(t) && themeHas(piece, t);'),
+    fluxWords: /reorgFor\('flux'\) \? \{ flux: \{ \.\.\.LIVE\.flux, \.\.\.FLUX_REORG_WORDS \} \} : LIVE;/.test(fluxB),
+    pageLoadDefault: /: \(typeof location !== 'undefined' && !pinnedOff\);/.test(flagB) };
+  ok('R2 [successor] every table reader outside a hook asks reorgFor; the rule (Machina alone on by default) lives in flag.ts and themeGate re-exports it; Flux\'s reorg words ask reorgFor(\'flux\'); the default is a page load\'s', Object.values(r4).every(Boolean), r4);
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
