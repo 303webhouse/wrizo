@@ -202,3 +202,16 @@
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-strip-item[aria-current='location'] .wz-strip-readout,
 :root[data-flux3][data-theme='flux'] .wz-strip > .wz-strip-section > .wz-place-block:not([data-place-kind='journal']) .wz-place-name{ color:#FF9800; }
 
+/* ---- S4b L3: CAPS CHROME (flux3-s4b-plan.md L3; flux-full-look-for-monday.md item 3, tier A; the mockup's #top .crumb and .tab). Dress only, scoped to the flag and Flux:
+   the crumb reads in the chrome face's letter-spaced capitals with ▸ between its steps (the place words quiet, where she stands bright), and the board's Show as names its views
+   as WORDS (LIVE · SEQUENCE · SPINE · TRACE · STACK; the lexicon's own words, no new key) instead of icons that spell out on hover. Nothing here sets a font size the bar's height
+   reads, so the bar, the page and the board keep their rects (flux3-s4b-l3.mjs RECT: the same with these rules taken away). Renaming keeps her own case while she types. ---- */
+:root[data-flux3][data-theme='flux'] .sprint-crumb{ font-family:var(--font-chromeLabel); font-weight:600; text-transform:uppercase; letter-spacing:.14em; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-item, .wz-crumb-home){ color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-here, .crumb-rename-btn){ color:var(--text-hi); font-family:inherit; font-weight:600; letter-spacing:inherit; text-transform:inherit; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb input.crumb-rename{ text-transform:none; letter-spacing:normal; }
+:root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep{ font-size:0; color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep::before{ content:'\25B8' / ''; font-size:11px; letter-spacing:0; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-word{ display:inline; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-btn > svg{ display:none; }
+:root[data-flux3][data-theme='flux'] .show-as .show-as-btn{ font-weight:600; font-size:11px; letter-spacing:.16em; padding:6px 9px; }
