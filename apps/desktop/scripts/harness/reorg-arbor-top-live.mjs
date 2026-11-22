@@ -17,6 +17,11 @@
 // CANVAS  T7  on a Canvas with no Page the bar shows Connect Page and the canvas's views where the stages stand
 // MACHINA T8  Machina's top bar draws no tag (the tag is Arbor's)
 // MUTANT  MUT-T2  a reading with the search door wrapped under the names turns T2's test red
+// FOOT    T9  (the frames on dc282511, Actions 44975564667: by night the page's Part foot nearly vanished on the cream paper while its rule stayed
+//             dark) by day and by night the Part foot's words read 4.5:1 or better on the paper AS DRAWN: the darkest pixel of "end of Section 2"
+//             and of "Next" against the paper's median just below the foot (the paper paints transparent in Arbor; the colour and opacity chain
+//             ride in the detail to name the cause)
+//         MUT-T9  the day reading with its ink at the paper's own colour (a vanished foot) turns T9's test red
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-arbor-top-live.mjs
 process.env.WS_ARBOR2 = process.env.WS_ARBOR2 || 'default';
@@ -47,6 +52,22 @@ async function visit(app, search, id = 'at-2', theme = 'plateau') {
   await app.waitFor("!!document.querySelector('.sprint-nav')", { label: `the bar (${theme} ${search})`, timeout: 20000 }).catch(() => {});
   await sleep(1300);
 }
+// T9: the Part foot as drawn - a clip of each word box, its darkest pixel, against the paper's median in a strip just below the foot
+const FOOTBOX = "(() => { const f = document.querySelector('.reorg-part-foot'); if (!f) return null; const fr = f.getBoundingClientRect(); const box = (e) => { if (!e) return null; const r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4 ? { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) } : null; };\n" +
+  "  const chain = []; for (let e = f.querySelector('.reorg-part-foot-end') || f; e && e !== document.body; e = e.parentElement) { const s = getComputedStyle(e); if (s.opacity !== '1' || s.filter !== 'none') chain.push([e.className && String(e.className).slice(0, 40), s.opacity, s.filter]); }\n" +
+  "  const end = f.querySelector('.reorg-part-foot-end'); const next = f.querySelector('.reorg-part-foot-go.is-next');\n" +
+  "  return { words: [box(end), box(next)].filter(Boolean), paper: { x: Math.round(fr.left + 4), y: Math.round(fr.bottom + 6), w: Math.max(8, Math.round(fr.width - 8)), h: 10 }, color: end ? getComputedStyle(end).color : null, nextColor: next ? getComputedStyle(next).color : null, chain }; })()";
+async function drawnFoot(app) {
+  const b = await app.evalJs(FOOTBOX); if (!b || !b.words.length) return { found: false, b };
+  const clip = async (c, how) => { const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: c.x, y: c.y, width: c.w, height: c.h, scale: 1 } })).data;
+    return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data;
+      const px = []; for (let i = 0; i < D.length; i += 4) px.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; px.sort((p, q) => L(p) - L(q)); return ${how === 'min' ? 'px[0]' : 'px[px.length >> 1]'}; })()`); };
+  const paper = await clip(b.paper, 'median'); const inks = []; for (const w of b.words) inks.push(await clip(w, 'min'));
+  const rgb = (p) => (Array.isArray(p) ? `rgb(${p.join(', ')})` : null);
+  return { found: true, paper: rgb(paper), inks: inks.map(rgb), color: b.color, nextColor: b.nextColor, chain: b.chain };
+}
+const footReads = (f) => !!f && f.found && !!f.paper && f.inks.length >= 2 && f.inks.every((i) => !!i && contrast(i, f.paper) >= 4.5);
+const footDetail = (f) => f && f.found ? { paper: f.paper, inks: f.inks, ratios: f.inks.map((i) => +contrast(i, f.paper).toFixed(2)), color: f.color, nextColor: f.nextColor, chain: f.chain } : f;
 const oneRow = (r) => !!r && !!r.bar && !!r.search && !!r.namesBox && Math.abs((r.search.t + r.search.h / 2) - (r.namesBox.t + r.namesBox.h / 2)) <= 6 && r.search.b <= r.bar.b + 1 && r.namesBox.t >= r.bar.t - 1;
 const t2 = (r) => !!r && r.names.length >= 3 && r.names.every((n) => n.btnBg === 'rgba(0, 0, 0, 0)' && n.btnBorder === '0px') && oneRow(r);
 
@@ -78,6 +99,8 @@ await withHarness(async (app) => {
   await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor('at-2', 'c'); null"); await sleep(800);
   const day = await app.evalJs(TOP);
   const pageReorg = await app.evalJs(PAGE);
+  await app.mouseMove(700, 400); await sleep(400);
+  const footDay = await drawnFoot(app);
   ok('T0 the reorg\'s top bar stands in Arbor with the preview door, and not without it, nor in the classic Plateau, nor without the switch', !!day && !live && !noDoor && !classic, { door: !!day, live, noDoor, classic });
   ok('T1 on Section 2 the bar reads the Drawer, the Page and "2 of 3", with the Section\'s tag (C) just before its name',
     !!day && /Fiction/i.test(day.text) && /The Mill/.test(day.text) && /2 of 3/.test(day.text) && !!day.tag && day.tag.slot === 'c' && day.tag.beforeName, day && { text: day.text, tag: day.tag });
@@ -90,6 +113,11 @@ await withHarness(async (app) => {
 
   await visit(app, `/?reorg=1${DOOR}&arbor2room=night`);
   const night = await app.evalJs(TOP);
+  await app.mouseMove(700, 400); await sleep(400);
+  const footNight = await drawnFoot(app);
+  ok('T9 by day and by night the Part foot\'s words read 4.5:1 or better on the paper as drawn', footReads(footDay) && footReads(footNight), { day: footDetail(footDay), night: footDetail(footNight) });
+  const vanished = footDay && footDay.found ? { ...footDay, inks: footDay.inks.map(() => footDay.paper) } : null;
+  ok('MUT-T9 the day reading with its ink at the paper\'s own colour turns T9\'s test red', !!vanished && footReads(footDay) !== footReads(vanished) && !footReads(vanished), vanished && footDetail(vanished));
   const readable = (r) => !!r && r.names.length >= 3 && r.names.every((n) => contrast(n.color, r.bg) >= 4.5);
   ok('T3 by day and by night every name reads 4.5:1 or better on the bar', readable(day) && readable(night),
     { day: day && day.names.map((n) => [n.text, +contrast(n.color, day.bg).toFixed(2)]), night: night && night.names.map((n) => [n.text, +contrast(n.color, night.bg).toFixed(2)]) });
@@ -106,7 +134,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 10;
+const EXPECTED = 12;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
