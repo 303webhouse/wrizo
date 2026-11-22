@@ -134,13 +134,13 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-tag[data-colour='d']::after{ content:var(--reorg-tag-d-num); font-size:10px; line-height:1; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-tag[data-colour='e']::after{ content:var(--reorg-tag-e-num); font-size:10px; line-height:1; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-tag[data-colour='f']::after{ content:var(--reorg-tag-f-num); font-size:10px; line-height:1; }
-/* the row's tint: a light wash of the slot's cloth behind the row (the Section she is on), as Machina's Team B does; the words stay readable by measure (the unit computes 4.5:1 for every cloth, by day and by night) */
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='a']{ background:color-mix(in srgb, var(--reorg-tag-a-fill) 22%, transparent); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='b']{ background:color-mix(in srgb, var(--reorg-tag-b-fill) 22%, transparent); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='c']{ background:color-mix(in srgb, var(--reorg-tag-c-fill) 22%, transparent); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='d']{ background:color-mix(in srgb, var(--reorg-tag-d-fill) 22%, transparent); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='e']{ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row[data-tint='f']{ background:color-mix(in srgb, var(--reorg-tag-f-fill) 22%, transparent); }
+/* the row's tint: a light wash of the slot's cloth behind the WHOLE row, under its link badge and menu too (on the row's list item), as Machina's Team B does; the words stay readable by measure (the unit computes 4.5:1 for every cloth, by day and by night) */
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='a']){ background:color-mix(in srgb, var(--reorg-tag-a-fill) 22%, transparent); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='b']){ background:color-mix(in srgb, var(--reorg-tag-b-fill) 22%, transparent); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='c']){ background:color-mix(in srgb, var(--reorg-tag-c-fill) 22%, transparent); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='d']){ background:color-mix(in srgb, var(--reorg-tag-d-fill) 22%, transparent); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='e']){ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='f']){ background:color-mix(in srgb, var(--reorg-tag-f-fill) 22%, transparent); }
 /* the current Section: Arbor's chosen-row rule: a 4 px brass mark at its left edge and roman 500; by night the words are brass (8.56:1), by day they stay olive (brass on cream is 1.91:1), and on a tinted row by day the drawer's dark olive, which holds 4.5:1 on every tint */
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here::before{ content:''; position:absolute; left:0; top:4px; bottom:4px; width:4px; background:var(--brass); }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; }
@@ -148,7 +148,10 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here[data-tint] .reorg-parts-name{ color:var(--text-hi); }
 /* the link badge (D2): a small cloth-edged count, in GRAFTS' cold blue edge; it opens GRAFTS at that Section */
-:root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets{ border:1px solid var(--reorg-tag-c-edge); }
+:root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets{ border:1px solid var(--reorg-tag-c-edge); color:var(--text-hi); }
+/* the edge keeps 3:1 and the count 4.5:1 on the wash and on the plain drawer, in both rooms (the unit computes every slot over every ground): a deeper cold blue by day, the cold blue cloth itself by night */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] button.reorg-parts-assets{ border-color:#4A6076; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] button.reorg-parts-assets{ border-color:var(--reorg-tag-c-fill); }
 /* the kind menu and its lists sit on Arbor's raised surface: #F6F1E4 by day, #261A12 by night */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-dockind-menu{ background:#F6F1E4; }
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-dockind-menu{ background:#261A12; }

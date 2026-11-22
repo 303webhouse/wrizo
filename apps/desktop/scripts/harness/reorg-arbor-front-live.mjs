@@ -109,9 +109,9 @@ await withHarness(async (app) => {
     const root = document.querySelector('.wz-sliver-panel');
     const ground = (el) => { let g = [0, 0, 0, 0]; const chain = []; for (let e = el; e; e = e.parentElement) chain.push(e); let base = [255, 255, 255]; for (const e of chain.reverse()) { const c = parse(getComputedStyle(e).backgroundColor); if (c[3] > 0) base = base.map((v, i) => v * (1 - c[3]) + c[i] * c[3]); } return base; };
     const rows = [...root.querySelectorAll('.reorg-parts-row')];
-    const out = rows.map((r) => { const name = r.querySelector('.reorg-parts-name'); const tag = r.querySelector('.reorg-parts-tag'); const rc = getComputedStyle(r); const bg = parse(rc.backgroundColor); const under = ground(r.parentElement); const drawn = bg[3] > 0 ? under.map((v, i) => v * (1 - bg[3]) + bg[i] * bg[3]) : under; const fg = parse(getComputedStyle(name).color);
+    const out = rows.map((r) => { const name = r.querySelector('.reorg-parts-name'); const tag = r.querySelector('.reorg-parts-tag'); const rc = getComputedStyle(r); const bg = parse(rc.backgroundColor); const drawn = ground(r); const wash = Math.max(bg[3], parse(getComputedStyle(r.parentElement).backgroundColor)[3]); const fg = parse(getComputedStyle(name).color);
       const before = getComputedStyle(r, '::before'); const after = tag ? getComputedStyle(tag, '::after') : null; const tc = tag ? getComputedStyle(tag) : null;
-      return { name: name.textContent, here: r.classList.contains('is-here'), tint: r.getAttribute('data-tint'), alpha: Math.round(bg[3] * 100) / 100, weight: getComputedStyle(name).fontWeight, style: getComputedStyle(name).fontStyle, ink: fg.slice(0, 3).map(Math.round).join(','), ratio: Math.round(ratio(fg, drawn) * 100) / 100,
+      return { name: name.textContent, here: r.classList.contains('is-here'), tint: r.getAttribute('data-tint'), alpha: Math.round(wash * 100) / 100, weight: getComputedStyle(name).fontWeight, style: getComputedStyle(name).fontStyle, ink: fg.slice(0, 3).map(Math.round).join(','), ratio: Math.round(ratio(fg, drawn) * 100) / 100,
         mark: { w: before.width, bg: before.backgroundColor, left: before.left }, tag: tag ? { colour: tag.getAttribute('data-colour'), bg: tc.backgroundColor, num: after && after.content, fs: tc.fontSize } : null }; });
     return out; })()`;
   await open(app, 'af-1', { room: 'dark' }); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
@@ -130,13 +130,23 @@ await withHarness(async (app) => {
       && here(dayPlain).tint === null && here(dayPlain).ink === '85,97,45' && here(dayPlain).ratio >= 4.5,
     { night: here(night), day: here(day), dayPlain: here(dayPlain), tagsNight: night && night.slice(0, 2).map((r) => r.tag) });
 
-  // AF6: the link badge
-  await open(app, 'af-1'); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
-  const badge = await app.evalJs(`(() => { const b = document.querySelector('[data-part-assets="af-1"]'); if (!b) return null; const c = getComputedStyle(b); return { text: (b.textContent || '').replace(/\\s+/g, ' ').trim(), border: c.borderTopColor, width: c.borderTopWidth }; })()`);
+  // AF6: the link badge: a cloth-edged count; the chosen row's wash runs the FULL row under it (Fable, Nov 21, 11:20 pm); its edge keeps 3:1 and its count 4.5:1 on that wash, by night and by day, measured from the drawn colours; a press opens GRAFTS at that Section
+  const badgeProbe = (room) => `(() => { ${PARSE} ${ratioJs}
+    const b = document.querySelector('[data-part-assets="af-1"]'); if (!b) return null; const li = b.closest('li'); const row = li && li.querySelector('.reorg-parts-row');
+    const ground = (el) => { const chain = []; for (let e = el; e; e = e.parentElement) chain.push(e); let base = [255, 255, 255]; for (const e of chain.reverse()) { const c = parse(getComputedStyle(e).backgroundColor); if (c[3] > 0) base = base.map((v, i) => v * (1 - c[3]) + c[i] * c[3]); } return base; };
+    const c = getComputedStyle(b); const edge = parse(c.borderTopColor); const ink = parse(c.color); const drawn = ground(b);
+    const lb = li.getBoundingClientRect(), bb = b.getBoundingClientRect(); const liBg = parse(getComputedStyle(li).backgroundColor), rowBg = parse(getComputedStyle(row).backgroundColor);
+    return { room: ${q(room)}, text: (b.textContent || '').replace(/\\s+/g, ' ').trim(), border: c.borderTopColor, width: c.borderTopWidth, edgeRatio: Math.round(ratio(edge, drawn) * 100) / 100, textRatio: Math.round(ratio(ink, drawn) * 100) / 100,
+      wash: { li: Math.round(liBg[3] * 100) / 100, row: Math.round(rowBg[3] * 100) / 100, underBadge: bb.left >= lb.left - 0.5 && bb.right <= lb.right + 0.5 && bb.top >= lb.top - 0.5 && bb.bottom <= lb.bottom + 0.5 } }; })()`;
+  await open(app, 'af-1', { room: 'dark' }); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
+  const badgeNight = await app.evalJs(badgeProbe('night'));
+  await open(app, 'af-1', { room: 'light' }); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
+  const badgeDay = await app.evalJs(badgeProbe('day'));
   await app.evalJs("document.querySelector('[data-part-assets=\"af-1\"]')?.click(); null"); await sleep(700);
   const opened = await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.getAttribute('data-on') === 'true' && document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'");
-  ok('AF6 the link badge is a cloth-edged count (GRAFTS\' cold blue edge, 1 px) and opens GRAFTS at that Section',
-    !!badge && /[1-9]/.test(badge.text) && badge.border === 'rgb(95, 120, 141)' && badge.width === '1px' && opened === true, { badge, opened });
+  const badgeOk = (x, edge) => !!x && /[1-9]/.test(x.text) && x.border === edge && x.width === '1px' && x.edgeRatio >= 3 && x.textRatio >= 4.5 && Math.abs(x.wash.li - 0.22) < 0.02 && x.wash.row === 0 && x.wash.underBadge === true;
+  ok('AF6 the link badge is a cloth-edged count: its edge keeps 3:1 and its count 4.5:1 on the chosen row wash (which runs the full row, under the badge too), by night and by day; a press opens GRAFTS at that Section',
+    badgeOk(badgeNight, 'rgb(127, 160, 188)') && badgeOk(badgeDay, 'rgb(74, 96, 118)') && opened === true, { badgeNight, badgeDay, opened });
 
   // AF7: PAGE IS PRIMARY
   await open(app, 'af-1'); await leaveFreeWrite(app);
