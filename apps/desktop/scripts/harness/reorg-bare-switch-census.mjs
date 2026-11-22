@@ -23,6 +23,7 @@ const GATE_FILES = new Set(['reorg/flag.ts', 'reorg/themeGate.ts']);
 const HOOK = /^\s*if \(REORG && typeof window !== 'undefined'\)/;
 // sites that read the bare switch on purpose, each with its reason; an entry is [file, a fragment of the line, the reason]
 const HARMLESS = [
+  ['reorg/railRoom.ts', 'export const useRailRoom: (on: boolean, open: string | null) => void = REORG', 'it picks its hook at load (the hook order never changes); it acts only when its caller passes on, and Cascade.tsx passes useReorgPiece(\'rail\'), which asks reorgFor (train I)'],
   ['reorg/railSaved.ts', 'if (REORG) {', 'its own local mirror read into memory at start; every write (persist) and every sync (syncRail) passes reorgInMachina, so nothing reaches a writer outside the reorg\'s themes'],
 ];
 
