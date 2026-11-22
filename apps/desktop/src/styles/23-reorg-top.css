@@ -328,3 +328,78 @@
   font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-dockind-group > button:hover, [data-theme='machina'] .reorg-dockind-group > button:focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 [data-theme='machina'] .reorg-dockind-group > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+
+/* ==========================================================================================================================================
+   COLOUR B (§3b ARBOR item 5; Nick, Nov 21 3:30 pm, via Fable 4:56 pm; the Wrizors' concept, part-colours-concept.md): THE SCHEMES, THE PICKER, CUSTOM.
+   Default / Muted / Vivid draw the six slots (reorg/colourScheme.ts puts the choice on <html> as data-colour-scheme; Default is unset and draws what
+   it drew before). Muted and Vivid are the concept's table, each colour 4.8:1 or better on its panel (so its edge is itself), white letters in the
+   light room and #151719 in the dark room, no orange (brass is her act). A Part's row takes its colour as a 10% tint over the room's panel (G6 dark,
+   G0 light); Default keeps its ruled tints. A custom colour (#RRGGBB, INK's pageSettings.color) is drawn from the row's own variables
+   (colourScheme.ts customVars: the colour, the letter colour that reads higher, the quiet-grey edge where it stands under 3:1 on the panel).
+   The current Part's brass bar is Default's only (PartsList: data-here-bar); otherwise it is the room's quiet grey. Checked by reorg-colour-b.mjs.
+   ========================================================================================================================================== */
+:root[data-theme='machina'][data-colour-scheme='muted']{
+  --reorg-tag-a-fill:#9FB4CC; --reorg-tag-a-ink:#151719; --reorg-tag-a-edge:#9FB4CC; --reorg-tint-a:color-mix(in srgb, #9FB4CC 10%, #23272B);
+  --reorg-tag-b-fill:#A3BC9B; --reorg-tag-b-ink:#151719; --reorg-tag-b-edge:#A3BC9B; --reorg-tint-b:color-mix(in srgb, #A3BC9B 10%, #23272B);
+  --reorg-tag-c-fill:#D4B670; --reorg-tag-c-ink:#151719; --reorg-tag-c-edge:#D4B670; --reorg-tint-c:color-mix(in srgb, #D4B670 10%, #23272B);
+  --reorg-tag-d-fill:#D9A091; --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#D9A091; --reorg-tint-d:color-mix(in srgb, #D9A091 10%, #23272B);
+  --reorg-tag-e-fill:#C1A6CB; --reorg-tag-e-ink:#151719; --reorg-tag-e-edge:#C1A6CB; --reorg-tint-e:color-mix(in srgb, #C1A6CB 10%, #23272B);
+  --reorg-tag-f-fill:#8CC2C2; --reorg-tag-f-ink:#151719; --reorg-tag-f-edge:#8CC2C2; --reorg-tint-f:color-mix(in srgb, #8CC2C2 10%, #23272B);
+}
+:root[data-theme='machina'][data-machina2-room='light'][data-colour-scheme='muted']{
+  --reorg-tag-a-fill:#4A6582; --reorg-tag-a-ink:#FFFFFF; --reorg-tag-a-edge:#4A6582; --reorg-tint-a:color-mix(in srgb, #4A6582 10%, #F4F5F6);
+  --reorg-tag-b-fill:#4F6B4A; --reorg-tag-b-ink:#FFFFFF; --reorg-tag-b-edge:#4F6B4A; --reorg-tint-b:color-mix(in srgb, #4F6B4A 10%, #F4F5F6);
+  --reorg-tag-c-fill:#866418; --reorg-tag-c-ink:#FFFFFF; --reorg-tag-c-edge:#866418; --reorg-tint-c:color-mix(in srgb, #866418 10%, #F4F5F6);
+  --reorg-tag-d-fill:#9A4A3A; --reorg-tag-d-ink:#FFFFFF; --reorg-tag-d-edge:#9A4A3A; --reorg-tint-d:color-mix(in srgb, #9A4A3A 10%, #F4F5F6);
+  --reorg-tag-e-fill:#6E4C78; --reorg-tag-e-ink:#FFFFFF; --reorg-tag-e-edge:#6E4C78; --reorg-tint-e:color-mix(in srgb, #6E4C78 10%, #F4F5F6);
+  --reorg-tag-f-fill:#2F6B6E; --reorg-tag-f-ink:#FFFFFF; --reorg-tag-f-edge:#2F6B6E; --reorg-tint-f:color-mix(in srgb, #2F6B6E 10%, #F4F5F6);
+}
+:root[data-theme='machina'][data-colour-scheme='vivid']{
+  --reorg-tag-a-fill:#7FB0FF; --reorg-tag-a-ink:#151719; --reorg-tag-a-edge:#7FB0FF; --reorg-tint-a:color-mix(in srgb, #7FB0FF 10%, #23272B);
+  --reorg-tag-b-fill:#6FD08C; --reorg-tag-b-ink:#151719; --reorg-tag-b-edge:#6FD08C; --reorg-tint-b:color-mix(in srgb, #6FD08C 10%, #23272B);
+  --reorg-tag-c-fill:#FF8A8A; --reorg-tag-c-ink:#151719; --reorg-tag-c-edge:#FF8A8A; --reorg-tint-c:color-mix(in srgb, #FF8A8A 10%, #23272B);
+  --reorg-tag-d-fill:#F28AC9; --reorg-tag-d-ink:#151719; --reorg-tag-d-edge:#F28AC9; --reorg-tint-d:color-mix(in srgb, #F28AC9 10%, #23272B);
+  --reorg-tag-e-fill:#B7A3FF; --reorg-tag-e-ink:#151719; --reorg-tag-e-edge:#B7A3FF; --reorg-tint-e:color-mix(in srgb, #B7A3FF 10%, #23272B);
+  --reorg-tag-f-fill:#5ED3E6; --reorg-tag-f-ink:#151719; --reorg-tag-f-edge:#5ED3E6; --reorg-tint-f:color-mix(in srgb, #5ED3E6 10%, #23272B);
+}
+:root[data-theme='machina'][data-machina2-room='light'][data-colour-scheme='vivid']{
+  --reorg-tag-a-fill:#1F5FBF; --reorg-tag-a-ink:#FFFFFF; --reorg-tag-a-edge:#1F5FBF; --reorg-tint-a:color-mix(in srgb, #1F5FBF 10%, #F4F5F6);
+  --reorg-tag-b-fill:#1E7A3C; --reorg-tag-b-ink:#FFFFFF; --reorg-tag-b-edge:#1E7A3C; --reorg-tint-b:color-mix(in srgb, #1E7A3C 10%, #F4F5F6);
+  --reorg-tag-c-fill:#B3262E; --reorg-tag-c-ink:#FFFFFF; --reorg-tag-c-edge:#B3262E; --reorg-tint-c:color-mix(in srgb, #B3262E 10%, #F4F5F6);
+  --reorg-tag-d-fill:#A3206E; --reorg-tag-d-ink:#FFFFFF; --reorg-tag-d-edge:#A3206E; --reorg-tint-d:color-mix(in srgb, #A3206E 10%, #F4F5F6);
+  --reorg-tag-e-fill:#5B3CC4; --reorg-tag-e-ink:#FFFFFF; --reorg-tag-e-edge:#5B3CC4; --reorg-tint-e:color-mix(in srgb, #5B3CC4 10%, #F4F5F6);
+  --reorg-tag-f-fill:#00768A; --reorg-tag-f-ink:#FFFFFF; --reorg-tag-f-edge:#00768A; --reorg-tint-f:color-mix(in srgb, #00768A 10%, #F4F5F6);
+}
+[data-theme='machina'][data-colour-scheme] .reorg-parts-row[data-tint='a']{ background:var(--reorg-tint-a); }
+[data-theme='machina'] .reorg-parts-tag[data-colour-hex]{ background:var(--part-hex); color:var(--part-hex-ink); border:1px solid var(--part-hex-edge-dark); }
+[data-theme='machina'][data-machina2-room='light'] .reorg-parts-tag[data-colour-hex]{ border-color:var(--part-hex-edge-light); }
+[data-theme='machina'] .reorg-parts-row[data-tint='hex']{ background:color-mix(in srgb, var(--part-hex) 10%, #23272B); }
+[data-theme='machina'][data-machina2-room='light'] .reorg-parts-row[data-tint='hex']{ background:color-mix(in srgb, var(--part-hex) 10%, #F4F5F6); }
+/* the picker: a 272 px panel in the drawer's dress, over the drawer and the page (fixed; nothing moves); under the dialogs (200 and up) */
+[data-theme='machina'] .reorg-colour-picker{ position:fixed; z-index:195; box-sizing:border-box; display:flex; flex-direction:column; gap:8px; padding:12px 14px 14px;
+  background:var(--chrome-surface); border:1px solid var(--ink-border-strong); border-radius:0; color:var(--text-hi); font-family:var(--font-ui); font-size:12px; }
+[data-theme='machina'] .reorg-colour-head{ font-size:13px; font-weight:600; color:var(--text-hi); }
+[data-theme='machina'] .reorg-colour-label{ margin-top:4px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+[data-theme='machina'] .reorg-colour-schemes{ display:flex; gap:4px; }
+[data-theme='machina'] .reorg-colour-scheme{ flex:1 1 0; height:26px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font:inherit; color:var(--text-mid); cursor:pointer; }
+[data-theme='machina'] .reorg-colour-scheme[aria-checked='true']{ color:var(--text-hi); border-color:transparent; box-shadow:inset 0 0 0 1.5px var(--brass, #FF9800); }
+[data-theme='machina'][data-machina2-room='light'] .reorg-colour-scheme[aria-checked='true']{ box-shadow:inset 0 0 0 1.5px var(--brass, #FF9800), 0 0 0 1px #23272B; }
+[data-theme='machina'] .reorg-colour-line{ font-size:11px; color:var(--text-mid); }
+[data-theme='machina'] .reorg-colour-swatches{ display:flex; gap:8px; }
+[data-theme='machina'] .reorg-colour-swatch{ width:32px; height:32px; padding:0; box-sizing:border-box; border:1px solid #6A727B; border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; font-weight:500; cursor:pointer; }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+[data-theme='machina'] .reorg-colour-swatch[data-colour='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
+[data-theme='machina'] .reorg-colour-swatch[aria-checked='true']{ box-shadow:0 0 0 2px var(--chrome-surface), 0 0 0 4px var(--brass, #FF9800); }
+[data-theme='machina'][data-machina2-room='light'] .reorg-colour-swatch[aria-checked='true']{ box-shadow:0 0 0 2px var(--chrome-surface), 0 0 0 4px var(--brass, #FF9800), 0 0 0 5px #23272B; }
+[data-theme='machina'] .reorg-colour-swatch:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:6px; }
+[data-theme='machina'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open){ align-self:flex-start; padding:0; background:none; border:0; font:inherit; color:var(--text-hi); cursor:pointer; }
+[data-theme='machina'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open):hover:not([disabled]){ text-decoration:underline; text-underline-offset:3px; }
+[data-theme='machina'] .reorg-colour-use[disabled]{ opacity:.4; cursor:default; }
+[data-theme='machina'] .reorg-colour-custom{ display:flex; align-items:center; gap:8px; }
+[data-theme='machina'] .reorg-colour-hex{ width:96px; height:26px; box-sizing:border-box; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; color:var(--text-hi); }
+[data-theme='machina'] .reorg-colour-preview{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:26px; box-sizing:border-box; border:1px solid var(--part-hex-edge-dark, var(--ink-border-strong)); font-size:12px; color:var(--text-mid); }
+[data-theme='machina'][data-machina2-room='light'] .reorg-colour-preview{ border-color:var(--part-hex-edge-light, var(--ink-border-strong)); }

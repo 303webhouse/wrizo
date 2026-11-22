@@ -606,6 +606,18 @@ export const CANONICAL_CHROME = {
   reorgPartJoin: 'Join to the one above',
   reorgPartColour: 'Colour',
   reorgPartColourNone: 'No colour',
+  // COLOUR B, the picker (ARBOR, Nov 21; Nick's ruling 3:30 pm; the Wrizors' concept §2): Title Case (Machina's buttons)
+  reorgColourHead: 'Colour · {part}',
+  reorgColourScheme: 'Scheme',
+  reorgSchemeDefault: 'Default',
+  reorgSchemeMuted: 'Muted',
+  reorgSchemeVivid: 'Vivid',
+  reorgSchemeLine: "Changes every Part's colours.",
+  reorgColourThisPart: 'This Part',
+  reorgColourCustom: '+ Custom…',
+  reorgColourHex: 'Hex Colour',
+  reorgColourUse: 'Use',
+  reorgColourOpen: 'Colour…',
   // FLUX3 S4 Corridor r2 (Wrizors' concepts file, §1): the exit line shows for the first 3 s ({key} is the key that actually leaves, read from jackIn.ts), the nudge after 4 s of stillness,
   // and the circled X's accessible name. Shown in capitals by CSS; TOOLS' pass sets their Flux words
   flux3JackedExit: 'Wired in · {key} to unplug',

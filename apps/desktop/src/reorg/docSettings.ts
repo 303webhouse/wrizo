@@ -19,7 +19,18 @@ const EXPORT_FORMATS = ['md', 'txt', 'html'] as const;
 const isExportFormat = (v: unknown): v is 'md' | 'txt' | 'html' => typeof v === 'string' && (EXPORT_FORMATS as readonly string[]).includes(v);
 
 /** What a write may carry. `null` (or 'none' for the style guide) clears the key; absent leaves it alone. */
-export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null } | null }
+export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null } | null; colourScheme?: ColourScheme }
+// COLOUR B (Nick, Nov 21 4:53 pm: "each Doc keeps its own scheme, saved with the account"; Fable 4:58 pm: doc_settings.colourScheme = 'default' | 'muted' |
+// 'vivid', written through this guard and MERGED with the Doc's other keys). A made Doc only: a loose page has no Doc record of its own, so it
+// keeps Default (refused here, not stored).
+export const COLOUR_SCHEMES = ['default', 'muted', 'vivid'] as const;
+export type ColourScheme = (typeof COLOUR_SCHEMES)[number];
+export const isColourScheme = (v: unknown): v is ColourScheme => typeof v === 'string' && (COLOUR_SCHEMES as readonly string[]).includes(v);
+/** The scheme this Part's Doc draws in: the Doc's own, else Default (a loose page, a missing page, a stray value). */
+export function colourSchemeOf(entryId: string): ColourScheme {
+  const s = docSettingsOf(entryId).colourScheme;
+  return isColourScheme(s) ? s : 'default';
+}
 
 /** The set she made that this page is a Part of; null for a loose page (the app's own set, or none). */
 function madeDocOf(entry: JournalEntry): Project | null {
@@ -54,10 +65,12 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   if ('export' in patch && patch.export !== null && patch.export !== undefined && patch.export.format !== undefined && !isExportFormat(patch.export.format)) return false;
   // the "Include the Plan" tick (Fable, Nov 21: remembered per Doc, beside the format): only true is stored; null takes the key off
   if ('export' in patch && patch.export && patch.export.includePlan !== undefined && patch.export.includePlan !== null && patch.export.includePlan !== true) return false;
+  if ('colourScheme' in patch && !isColourScheme(patch.colourScheme)) return false;
   const set = madeDocOf(e);
   if (!set) {
-    // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting
+    // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting and no scheme of its own
     if (patch.export !== undefined && patch.export !== null) return false;
+    if ('colourScheme' in patch) return false;
     if (!('styleGuide' in patch)) return false;
     const cur = e.pageSettings?.styleGuide;
     const next = isClear(patch.styleGuide) ? undefined : (patch.styleGuide as StyleGuide);
@@ -78,6 +91,7 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
       if (Object.keys(merged).length === 0) delete next.export; else next.export = merged;
     }
   }
+  if ('colourScheme' in patch && isColourScheme(patch.colourScheme)) next.colourScheme = patch.colourScheme;
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
   // the last key removed leaves {} on the record, never absence and never null: the server keeps what it has for a push that carries none (an older device), so a clear must say so
@@ -139,5 +153,5 @@ export function removeDocAsset(entryId: string, asset: { entryId: string; boxId?
 
 // the harness's door, present only under the reorg switch
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting, includePlan: includePlanOf, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
+  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, colourScheme: colourSchemeOf, set: setDocSetting, includePlan: includePlanOf, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
 }

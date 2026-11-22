@@ -7,6 +7,7 @@ import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
+import { useSchemeOnPage } from './colourScheme';
 import { REORG } from './flag';
 import { openSearch } from './search/searchStore';
 
@@ -231,6 +232,8 @@ function PartsDrop({ entry, beforeLeave, onClose }: { entry: JournalEntry; befor
 
 function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   useSyncExternalStore(subscribe, () => namesSig(entry.id));
+  // colour B: the Doc on screen draws its slots in its own scheme (reorg/colourScheme.ts; it re-renders only when the scheme changes)
+  useSchemeOnPage(entry.id);
   namesRenders += 1;
   const { t } = useDeskLexicon();
   const latest = getJournalEntry(entry.id) ?? entry;
