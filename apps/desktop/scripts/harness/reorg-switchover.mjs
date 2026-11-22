@@ -90,6 +90,9 @@ await withHarness(async (app) => {
   ok('O4 Arbor with ?reorg=0: no reorg element anywhere (the default is the page load\'s; Arbor\'s O3 having drawn it)', arbor.top && arborOff.n === 0, { arbor: arbor.n, arborOff });
 
   // ---- SYNC ------------------------------------------------------------------------------------------------------------------------------
+  // [successor 2] Flux first: no theme has stored the probe's name yet (a Machina or Arbor write would be read back as kept)
+  await openIn(app, 'flux', '');
+  const inFlux = await app.evalJs(PREFS_ACTS('flux-probe'));
   await openIn(app, 'plateau', '');
   const inArbor = await app.evalJs(PREFS_ACTS('arbor-probe'));
   await app.evalJs("window.wrizoTheme.set('machina'); null"); await sleep(600);
@@ -102,8 +105,6 @@ await withHarness(async (app) => {
   // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door: the reorg's facts are the reorg's, not Machina's: reorgInMachina is the reorg ON FOR THE THEME): the original S1 successor, verbatim:
   // ok('S1 [successor] a reorg fact is Machina\'s: in Arbor a set writes no local copy and keeps nothing (a round may still run, for the switchless facts); in Machina it is written, kept and sent to /api/prefs',
   // inArbor.seam && !inArbor.wrote && !inArbor.kept && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0, { inArbor, inMachina });
-  await openIn(app, 'flux', '');
-  const inFlux = await app.evalJs(PREFS_ACTS('flux-probe'));
   ok('S1 [successor 2] a reorg fact is the reorg\'s: in Arbor and in Machina (the reorg on) a set is written, kept and sent to /api/prefs; in Flux (the reorg off) it writes no local copy and keeps nothing (a round may still run, for the switchless facts)',
     inArbor.seam && inArbor.wrote && inArbor.kept && inArbor.calls > 0 && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0 && inFlux.seam && !inFlux.wrote && !inFlux.kept, { inArbor, inMachina, inFlux });
 

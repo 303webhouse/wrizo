@@ -42,11 +42,15 @@ async function seed(app) {
     return null;
   })()`);
 }
-async function open(app, id, { w = 1366, lift = 'plateau.top,plateau.uplink,plateau.back' } = {}) {
+// SUPERSEDED (Nov 22, AP6's successor reads the classic Plateau: open() takes arbor2, as split-live's does): the original open(), verbatim:
+// async function open(app, id, { w = 1366, lift = 'plateau.top,plateau.uplink,plateau.back' } = {}) {
+// await app.evalJs(`history.replaceState(null, '', '/?reorg=1${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+// [successor] the same two lines with the arbor2 option:
+async function open(app, id, { w = 1366, lift = 'plateau.top,plateau.uplink,plateau.back', arbor2 = true } = {}) {
   await app.emulateDpr(1, w, 768);
   await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=1${arbor2 ? '' : '&arbor2=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
