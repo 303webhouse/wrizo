@@ -47,6 +47,11 @@
 //             bar as painted
 //         MUT-T14  the same reading at half its contrast turns T14's test red
 //         T15 (NIT: a hovered view turned brass, like the chosen one) a hovered view is not drawn in the chosen view's colour, and the chosen one keeps it
+// CLOTHS  S1  (spec section 3; Fable, Nov 22 1:40 am: GO, under the reorg's top piece only) for each stage - FREE WRITE madder #A8392F, DRAFT olive #56632E,
+//             REVISE cold blue #7FA0BC, PUBLISH olive - by day and by night at rest, the current tab hangs below the bar in its cloth (the pixels just below
+//             the bar's edge, under the tab, are the cloth) and its word reads 4.5:1 or better on it, as painted
+//         MUT-S1  the same reading with no hang (the pixels below the bar are the ground) turns S1's test red
+//         S2  live Arbor (no reorg) is unchanged: below the bar under its current tab there is no cloth
 //         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
 //             words read 4.5:1 or better on the paper as drawn
 //
@@ -261,13 +266,39 @@ await withHarness(async (app) => {
   await app.mouseMove(700, 500); await sleep(300);
   ok('T15 a hovered view is not drawn in the chosen view\'s colour (brass is her choice), and the chosen one keeps it', !!hov && hov.hovered !== hov.chosen, hov);
 
+  // ---- S1, S2: the stage strip's cloths ----
+  const STAGE_CLOTH = { freewrite: 'rgb(168, 57, 47)', draft: 'rgb(86, 99, 46)', revise: 'rgb(127, 160, 188)', publish: 'rgb(86, 99, 46)' };
+  const hangBox = (key) => `(() => { const tab = document.querySelector('.sprint-nav [data-mode-key="${key}"]'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!tab || !bar) return null; const r = tab.getBoundingClientRect(), b = bar.getBoundingClientRect();
+    return { hang: { x: Math.round(r.left) + 3, y: Math.round(b.bottom) + 1, w: Math.round(r.width) - 6, h: 4 }, word: { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 } }; })()`;
+  const near = (a, b) => !!a && !!b && contrast(a, b) <= 1.12;
+  const s1Cell = (c, key) => !!c && !!c.hang && near(c.hang.med, STAGE_CLOTH[key]) && !!c.word && near(c.word.med, STAGE_CLOTH[key]) && c.word.r >= 4.5;
+  const stages = {};
+  for (const room of ['day', 'night']) {
+    await visit(app, `/?reorg=1&reorglift=plateau.top,plateau.uplink&arbor2room=${room}`);
+    for (const key of ['freewrite', 'draft', 'revise', 'publish']) {
+      await app.evalJs(`document.querySelector('.sprint-nav [data-mode-key="${key}"]')?.click(); null`); await sleep(1100); await app.mouseMove(700, 400); await sleep(500);
+      const bx = await app.evalJs(hangBox(key));
+      stages[`${room}.${key}`] = bx ? { hang: await paintedInk(app, bx.hang), word: await paintedInk(app, bx.word) } : null;
+    }
+    await app.evalJs("document.querySelector('.sprint-nav [data-mode-key=\"draft\"]')?.click(); null"); await sleep(800);
+  }
+  const s1 = (all) => Object.keys(all).length === 8 && Object.entries(all).every(([k, c]) => s1Cell(c, k.split('.')[1]));
+  ok('S1 for each stage, by day and by night, the current tab hangs below the bar in its cloth and its word reads 4.5:1 or better on it, as painted', s1(stages), stages);
+  const noHang = Object.fromEntries(Object.entries(stages).map(([k, c]) => [k, c && { ...c, hang: c.hang && { ...c.hang, med: 'rgb(36, 25, 18)' } }]));
+  ok('MUT-S1 the same reading with no hang (the ground below the bar) turns S1\'s test red', Object.values(stages).every((c) => !!c) && !s1(noHang), Object.keys(noHang));
+  await visit(app, '/?arbor2room=day');
+  await app.mouseMove(700, 400); await sleep(400);
+  const liveBx = await app.evalJs(hangBox('draft'));
+  const liveHang = liveBx ? await paintedInk(app, liveBx.hang) : null;
+  ok('S2 live Arbor (no reorg) is unchanged: below the bar under its current tab there is no cloth', !!liveHang && !near(liveHang.med, STAGE_CLOTH.draft), liveHang);
+
   await visit(app, '/?reorg=1&arbor2=0', 'at-2', 'machina');
   const machina = await app.evalJs("({ top: !!document.querySelector('.reorg-top'), tags: document.querySelectorAll('.reorg-top-tag').length })");
   ok('T8 Machina\'s top bar draws no tag', machina.top && machina.tags === 0, machina);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 25;   // + MUT-T11-PAINT, T14, MUT-T14, T15 (the Wrizors' pass 4, Nov 22). Was: const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
+const EXPECTED = 28;   // + S1, MUT-S1, S2 (the stage strip's cloths, Nov 22). Was: const EXPECTED = 25;   // + MUT-T11-PAINT, T14, MUT-T14, T15 (the Wrizors' pass 4, Nov 22). Was: const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
