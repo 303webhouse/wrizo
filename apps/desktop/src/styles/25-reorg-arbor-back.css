@@ -79,8 +79,10 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-assets-add-pop{ background:#261A12; }
 /* what the search finds is lit in Arbor's honey, on the page and in the list */
 :root[data-arbor2][data-theme='plateau'] .reorg-search-hit mark{ background:rgba(201, 164, 107, .45); color:inherit; }
-:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:rgba(201, 164, 107, .35); }
-:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search-cur){ background-color:rgba(201, 164, 107, .7); }
+/* ARBOR-KEYFLIP: a ::highlight() rule has a universal subject, so one with a root-attribute ancestor in front of it made the whole document depend on the root's attributes and the first key restyled 895 of ~1930 elements. The honey rides custom properties on the root itself and the two ::highlight() rules are BARE (no ancestor): a theme with its own scoped rule (Machina, Flux) wins by specificity, and where nothing sets the properties the highlight is transparent, as before. reorg-arbor-no-stage-has-unit.mjs (HL) holds it. */
+:root[data-arbor2][data-theme='plateau']{ --wz-search-hl:rgba(201, 164, 107, .35); --wz-search-hl-cur:rgba(201, 164, 107, .7); }
+::highlight(wz-search){ background-color:var(--wz-search-hl, transparent); }
+::highlight(wz-search-cur){ background-color:var(--wz-search-hl-cur, transparent); }
 
 /* ---- PASS 1 (the Wrizors, Nov 21, 7:00 pm; Fable, Nov 21, 9:40 pm) ---- */
 /* NIT 3: a graft's colour chip shows its slot's cloth, edged and numbered as the Section tags are (the tokens are 25-reorg-arbor-tags.css's); the DOM holds the slot's letter, hidden */
