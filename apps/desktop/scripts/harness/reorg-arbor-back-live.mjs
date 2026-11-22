@@ -114,6 +114,8 @@ await withHarness(async (app) => {
     mode === true && Array.isArray(free) && free.find((x) => x.id === 'plan')?.locked === true && free.find((x) => x.id === 'links')?.locked === true && free.find((x) => x.id === 'tutor')?.on === true && note === 'In Free Write the Tutor only offers prompts.', { mode, free, note });
 
   await open(app, 'ab-1', { lift: 'plateau.back,plateau.top,plateau.uplink' });
+  // the page may open in Free Write (AB6 left it there: the mode is remembered): the folded Before you publish is Draft's, so leave Free Write first
+  await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*draft\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()"); await sleep(900);
   for (let i = 0; i < 3 && !(await app.evalJs("!!document.querySelector('[data-reorg-pub]')")); i += 1) { await app.evalJs(press('.reorg-top .desk-mode-tab[data-mode-key="publish"]')); await sleep(900); }
   await drawer(app); await tab(app, 'tutor'); await sleep(500);
   const pub = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; const ids = all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null; const bx = document.querySelector('[data-back-export]'); const lens = document.querySelector('.wz-tutor-panel [data-lens], .wz-tutor-panel .wz-lens, .wz-tutor-panel [aria-label]'); return { ids, bx: !!bx, text: bx ? (bx.textContent || '').trim().slice(0, 60) : null, pub: !!document.querySelector('[data-reorg-pub]'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open'), top: !!document.querySelector('.reorg-top'), publishTab: !!document.querySelector('.reorg-top .desk-mode-tab[data-mode-key=\"publish\"]') }; })()");
