@@ -31,6 +31,14 @@
 //             exception, so it is not compared)
 //         P2-B [successor] the page (column and paper) keeps its rect in DRAFT and in PUBLISH (the editor is under INK's publishing view, REAL 3);
 //             MUT-P2-B  the page 41 px lower in Publish fails it
+// PASS 2  (the Wrizors, arbor-reorg-pass-2.md section 1; Fable, Nov 21 11:55 pm)
+//         T11 (REAL 1: the tag's edge read 1.08:1 on the day bar, 1.20:1 by night) for every slot a-f, by day and by night, the Section's tag is filled
+//             in its cloth (a olive #56632E, b sea #17454E, c cold blue #7FA0BC, d madder #A8392F, e honey #C9A46B, f iron #39414A) with the rail tabs'
+//             1 px darker edge, its number reads 4.5:1 or better on the cloth, and the tag stands 3:1 or better against the bar (its fill, its edge or
+//             its keyline)
+//         MUT-T11  the same readings with no keyline (cloth and darker edge alone) turn T11's test red (olive, sea, madder, iron sit under 3:1 on the bars)
+//         T12 (NIT 3: 47 px on a Canvas, 51 on a Page) the bar on a Canvas with no Page is the Page's bar height (within 0.5 px), on one row
+//         T13 (NIT 1: the canvas views are icons only) resting the pointer on the views shows each view's word, and the bar keeps its height and one row
 //         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
 //             words read 4.5:1 or better on the paper as drawn
 //
@@ -172,13 +180,42 @@ await withHarness(async (app) => {
   const sunk = stg.publish && stg.publish.page ? stg.publish.page.split('|').map((r, i) => (i < 2 ? r.trim().split(',').map((x, j) => (j === 1 ? String(+x + 41) : x)).join(',') : r.trim())).join(' | ') : null;
   ok('MUT-P2-B the Publish reading with the page 41 px lower (the Wrizors\' REAL 2) turns P2-B\'s test red', !!sunk && p2b(stg.draft && stg.draft.page, stg.publish.page) && !p2b(stg.draft && stg.draft.page, sunk), sunk);
 
+  // ---- T11: the tag for every slot, by day and by night ----
+  const CLOTH = { a: ['rgb(86, 99, 46)', 'rgb(58, 67, 34)'], b: ['rgb(23, 69, 78)', 'rgb(15, 47, 54)'], c: ['rgb(127, 160, 188)', 'rgb(95, 120, 141)'], d: ['rgb(168, 57, 47)', 'rgb(126, 43, 35)'], e: ['rgb(201, 164, 107)', 'rgb(151, 123, 80)'], f: ['rgb(57, 65, 74)', 'rgb(43, 49, 56)'] };
+  const TAG = "(() => { const g = document.querySelector('.reorg-top .reorg-top-tag'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!g || !bar) return null; const s = getComputedStyle(g); return { slot: g.getAttribute('data-top-tag'), fill: s.backgroundColor, edge: s.borderTopColor, edgeW: s.borderTopWidth, ink: s.color, ring: s.boxShadow, bar: getComputedStyle(bar).backgroundColor }; })()";
+  const ringOf = (r) => { const m = /(rgba?\([^)]*\))\s+0px\s+0px\s+0px\s+([\d.]+)px/.exec(r || ''); return m && +m[2] >= 1 ? m[1] : null; };
+  const tagStands = (g) => !!g && Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0) >= 3;
+  const tagOk = (g, s) => !!g && g.slot === s && g.fill === CLOTH[s][0] && g.edge === CLOTH[s][1] && g.edgeW === '1px' && contrast(g.ink, g.fill) >= 4.5 && tagStands(g);
+  const tags = {};
+  for (const room of ['day', 'night']) {
+    await visit(app, `/?reorg=1${DOOR}&arbor2room=${room}`);
+    for (const s of 'abcdef') { await app.evalJs(`window.wrizoParts && window.wrizoParts.setPartColor('at-2', '${s}'); null`); await sleep(450); tags[`${room}.${s}`] = await app.evalJs(TAG); }
+  }
+  await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor('at-2', 'c'); null"); await sleep(300);
+  const t11 = (all) => Object.entries(all).length === 12 && Object.entries(all).every(([k, g]) => tagOk(g, k.split('.')[1]));
+  ok('T11 for every slot, by day and by night, the tag is filled in its cloth with its 1 px darker edge, its number 4.5:1, and it stands 3:1 or better against the bar', t11(tags),
+    Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { fill: g.fill, edge: g.edge, ring: g.ring, numR: +contrast(g.ink, g.fill).toFixed(2), standR: +Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0).toFixed(2) }])));
+  const bare = Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { ...g, ring: 'none' }]));
+  ok('MUT-T11 the same readings with no keyline (cloth and darker edge alone) turn T11\'s test red', Object.values(tags).every((g) => !!g) && !t11(bare), Object.entries(bare).filter(([k, g]) => g && !tagStands(g)).map(([k]) => k));
+
+  // ---- T12, T13: the bar on a Canvas, and its views on hover ----
+  await visit(app, `/?reorg=1${DOOR}&arbor2room=day`, 'at-c');
+  const cv0 = await app.evalJs(TOP);
+  ok('T12 the bar on a Canvas with no Page is the Page\'s bar height (within 0.5 px), on one row', !!cv0 && !!cv0.bar && !!day && !!day.bar && Math.abs(cv0.bar.h - day.bar.h) <= 0.5 && oneRow(cv0), { canvas: cv0 && cv0.bar, page: day && day.bar, oneRow: oneRow(cv0) });
+  const sa = await app.evalJs("(() => { const g = document.querySelector('.reorg-top .show-as'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left + 6), y: Math.round(r.top + r.height / 2) }; })()");
+  if (sa) { await app.mouseMove(sa.x, sa.y); await sleep(900); }
+  const words = await app.evalJs("[...document.querySelectorAll('.reorg-top .show-as .show-as-btn')].map((b) => { const w = b.querySelector('.show-as-word'); return [b.getAttribute('title'), !!w && getComputedStyle(w).display !== 'none' && w.getBoundingClientRect().width > 0 ? (w.textContent || '').trim() : null]; })");
+  const cv1 = await app.evalJs(TOP);
+  await app.mouseMove(700, 500); await sleep(400);
+  ok('T13 resting the pointer on the canvas views shows each view\'s word, and the bar keeps its height and one row', !!sa && Array.isArray(words) && words.length >= 3 && words.every(([title, w]) => !!title && w === title) && !!cv1 && !!cv0 && Math.abs(cv1.bar.h - cv0.bar.h) <= 0.5 && oneRow(cv1), { words, bar0: cv0 && cv0.bar, bar1: cv1 && cv1.bar, oneRow: oneRow(cv1) });
+
   await visit(app, '/?reorg=1&arbor2=0', 'at-2', 'machina');
   const machina = await app.evalJs("({ top: !!document.querySelector('.reorg-top'), tags: document.querySelectorAll('.reorg-top-tag').length })");
   ok('T8 Machina\'s top bar draws no tag', machina.top && machina.tags === 0, machina);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
+const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
