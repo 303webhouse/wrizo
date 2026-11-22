@@ -25,6 +25,9 @@
 //             opened DRAWERS pop-out ends before the page's left opener (its right edge at or left of the opener's), and the opener takes a press at
 //             its centre; at 1920, where there is room, the pop-out keeps its 300 px
 //         MUT-A10  the 1366 reading with the pop-out 10 px past the opener turns A10's test red
+// BOXES   A12 (the Wrizors via Fable, Nov 21 11:20 pm: the uncoloured box is NOT olive) before any colour is chosen every box in Arbor's rail and in
+//             DRAWERS draws plain cream #EFE4CB with walnut letters #2B1D12, and Box settings shows no swatch as chosen
+//         MUT-A12  the same reading with the boxes in olive turns A12's test red
 // ON      A11 (Fable, Nov 21 9:40 pm: the Wrizors passed the rail; plateau.rail ON) the reorg's rail stands in Arbor under ?reorg=1 with NO preview
 //             door, and still not in the classic Plateau (?arbor2=0)
 //
@@ -119,6 +122,15 @@ await withHarness(async (app) => {
     "  const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2; const hit = document.elementFromPoint(cx, cy);\n" +
     "  return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
   const edge1366 = await app.evalJs(EDGE);
+  // ---- A12: the uncoloured box (nothing chosen yet in this run) ----
+  const plain = await app.evalJs("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box:not([data-box-picture]), .wz-cascade-panel .wz-reorg-box:not([data-box-picture])')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])");
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const chosen0 = await app.evalJs("document.querySelectorAll('.wz-reorg-swatches [data-swatch][aria-checked=\"true\"]').length");
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(300);
+  const a12 = (boxes, chosen) => Array.isArray(boxes) && boxes.length >= 2 && boxes.every((b) => b[0] === 'rgb(239, 228, 203)' && b[1] === 'rgb(43, 29, 18)') && chosen === 0;
+  ok('A12 before any colour is chosen every box draws plain cream #EFE4CB with walnut letters, and Box settings shows no swatch chosen', a12(plain, chosen0), { plain, chosen0 });
+  const olive = Array.isArray(plain) ? plain.map(() => ['rgb(86, 99, 46)', 'rgb(255, 255, 255)']) : null;
+  ok('MUT-A12 the same reading with the boxes in olive turns A12\'s test red', !!olive && olive.length >= 2 && a12(plain, chosen0) !== a12(olive, chosen0) && !a12(olive, chosen0), olive);
   // ---- A8: Box settings, in the opened DRAWERS pop-out ----
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs(BOXSET);
@@ -160,7 +172,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
