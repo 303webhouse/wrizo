@@ -8,6 +8,8 @@ const q = (s) => JSON.stringify(s);
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
 const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if (!b || b.disabled) return false; b.click(); return true; })()`;
 const LIFT = 'plateau.front,plateau.top,plateau.back';
+const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
+const link = (id, boxId, toEntry) => ({ id, aEntryId: 'ff-own', aBoxId: boxId, bEntryId: toEntry, createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' });
 
 async function seed(app) {
   try { await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 }); } catch { /* the frame shows what is there */ }
@@ -25,18 +27,19 @@ async function seed(app) {
     page('ff-6', 'The lamp in the lighthouse was never lit again.', { origin: 'project', projectId: brief.id, orderIndex: 5 });
     const slots = { 'ff-1': ['Arrival', 'a'], 'ff-2': ['The town', 'b'], 'ff-3': ['Low tide', 'c'], 'ff-4': ['The letter', 'd'], 'ff-5': ['The ferry', 'e'], 'ff-6': ['The lamp', 'f'] };
     for (const id of Object.keys(slots)) W.wrizoPatchEntry(id, { pageSettings: ${PS}, name: slots[id][0], level: 0, color: slots[id][1] } });
+    // the link badge's count: two cards of a plan canvas are linked to Section 3 (a Section's assets are its page links, not the Doc's own list)
+    page('ff-own', 'Plan canvas', { origin: 'loose', pageType: 'board', boxes: ${q([card('c1', 'The opening image', 0, 0.05), card('c2', 'The turn', 1, 0.2)])} });
+    W.wrizoPatchEntry('ff-own', { pageLinks: ${q([link('l1', 'c1', 'ff-3'), link('l2', 'c2', 'ff-3')])} });
     W.wrizoFlushNow();
     return null;
   })()`);
+  await sleep(500);
 }
 async function open(app, id, lift = LIFT) {
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1&reorglift=${lift}#/page/${id}')`);
   await app.reload();
   try { await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-sliver-grip')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
   await sleep(900);
-  // the Doc's grafts (the link badge's count) are added once the page is up: window.wrizoDocSettings is mounted with the page, not on the Desk the fixture is made from
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; if (D && D.addAsset) { D.addAsset('ff-3', { entryId: 'ff-note' }); D.addAsset('ff-3', { entryId: 'ff-2' }); window.wrizoFlushNow(); } return null; })()");
-  await sleep(600);
   // Free Write is remembered between pages and has no Front menu: a frame of the Front menu is Draft's
   await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*draft\\s*$/i.test(b.textContent || '')); if (el) el.click(); return null; })()");
   await sleep(700);

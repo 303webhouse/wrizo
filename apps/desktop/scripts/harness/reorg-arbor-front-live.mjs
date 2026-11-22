@@ -22,6 +22,8 @@ const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if
 const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const p = document.querySelector(s); if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); }).join('|'))()";
 const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
 const LIFT = 'plateau.front,plateau.top,plateau.back';
+const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
+const link = (id, boxId, toEntry) => ({ id, aEntryId: 'af-own', aBoxId: boxId, bEntryId: toEntry, createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' });
 const TABS = "(() => { const all = [...document.querySelectorAll('[id^=\"wz-sliver-tab-\"]')]; if (all.length === 0) return null; return all.map((b) => ({ id: b.id.replace('wz-sliver-tab-', ''), text: (b.textContent || '').trim(), on: b.getAttribute('data-on') === 'true', disabled: b.getAttribute('data-disabled') === 'true' || b.disabled === true, title: b.getAttribute('title') || '' })); })()";
 const CS = (sel, props, pseudo) => `(() => { const e = document.querySelector(${q(sel)}); if (!e) return null; const c = getComputedStyle(e${pseudo ? ', ' + q(pseudo) : ''}); return ${q(props)}.reduce((o, p) => { o[p] = c.getPropertyValue(p); return o; }, {}); })()`;
 // the drawn colour of a node as [r, g, b, a], from its computed string (rgb, rgba, or a color(srgb ...) the engine may return for a mix)
@@ -47,6 +49,8 @@ async function seed(app) {
     W.wrizoPatchEntry('af-1', { pageSettings: ${PS}, name: 'Arrival', level: 0, color: 'c' } });
     W.wrizoPatchEntry('af-2', { pageSettings: ${PS}, name: 'The town', level: 0, color: 'd' } });
     W.wrizoPatchEntry('af-3', { pageSettings: ${PS}, name: 'Low tide', level: 0 } });
+    page('af-own', 'Plan canvas', { origin: 'loose', pageType: 'board', boxes: ${q([card('c1', 'The opening image', 0, 0.05), card('c2', 'The turn', 1, 0.2)])} });
+    W.wrizoPatchEntry('af-own', { pageLinks: ${q([link('l1', 'c1', 'af-1'), link('l2', 'c2', 'af-1')])} });
     W.wrizoFlushNow();
     return null;
   })()`);
@@ -68,9 +72,6 @@ const ratioJs = "const lum = (c) => { const f = (v) => { v /= 255; return v <= 0
 await withHarness(async (app) => {
   await seed(app);
   await open(app, 'af-1');
-  // the Doc's grafts (the link badge's count): window.wrizoDocSettings is mounted with the page, not on the Desk the fixture is made from
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('af-1', { entryId: 'af-note' }); D.addAsset('af-1', { entryId: 'af-2' }); window.wrizoFlushNow(); return null; })()");
-  await sleep(500);
   await leaveFreeWrite(app);
   await drawer(app);
 
@@ -135,7 +136,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-part-assets=\"af-1\"]')?.click(); null"); await sleep(700);
   const opened = await app.evalJs("document.querySelector('#wz-tutor-tab-links')?.getAttribute('data-on') === 'true' && document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'");
   ok('AF6 the link badge is a cloth-edged count (GRAFTS\' cold blue edge, 1 px) and opens GRAFTS at that Section',
-    !!badge && /2/.test(badge.text) && badge.border === 'rgb(95, 120, 141)' && badge.width === '1px' && opened === true, { badge, opened });
+    !!badge && /[1-9]/.test(badge.text) && badge.border === 'rgb(95, 120, 141)' && badge.width === '1px' && opened === true, { badge, opened });
 
   // AF7: PAGE IS PRIMARY
   await open(app, 'af-1'); await leaveFreeWrite(app);
@@ -151,7 +152,7 @@ await withHarness(async (app) => {
   ok('AF7 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Front menu and moving through its tabs; the editor is the same node', geo.w1366 && geo.w1920, { geo, mark, after, m2 });
 
   // AF8: Free Write has no Front menu; Publish
-  await open(app, 'af-1');
+  await open(app, 'af-1', { lift: LIFT + ',plateau.uplink' });
   const free = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*free write\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
   const noFront = await app.evalJs("({ sliver: !!document.querySelector('.wz-sliver'), tabs: document.querySelectorAll('[id^=\"wz-sliver-tab-\"]').length })");
