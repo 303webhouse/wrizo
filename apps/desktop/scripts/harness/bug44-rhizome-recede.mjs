@@ -75,10 +75,17 @@ await withHarness(async (app) => {
     ok('MUT-R1 the same readings with the receded one re-planned (another hash) turn R1\'s test red', !!replanned && !r1(h0, replanned, h2), { receded: replanned && replanned.hash });
   }
   }
+  // LIVENESS (a guard can pass while blind): on the classic Plateau, whose plan follows the measured geometry, a 60 px narrower window is a real re-plan,
+  // and the hash must see it - the same reading, the same page, only the window changed
+  const before = await app.evalJs(HASH);
+  await app.emulateDpr(1, 1340, 900); await sleep(1500);
+  const resized = await app.evalJs(HASH);
+  await app.emulateDpr(1, 1400, 900); await sleep(800);
+  ok('R2C (liveness) on the classic Plateau a 60 px narrower window re-plans the drawing, and its hash changes', !!before && !!resized && before.n > 0 && resized.n > 0 && before.hash !== resized.hash, { before, resized });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^R1/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 2000)}`);
-const EXPECTED = 7;   // R0, R1, MUT-R1 (Arbor by day) + R0N, R1N (by night) + R0C, R1C (the classic Plateau). Was: const EXPECTED = 3;
+const EXPECTED = 8;   // R0, R1, MUT-R1 (Arbor by day) + R0N, R1N (by night) + R0C, R1C (the classic Plateau) + R2C (liveness). Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG44-RHIZOME-RECEDE VERIFY: PASS (${checks.length} checks)` : `\nBUG44-RHIZOME-RECEDE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
