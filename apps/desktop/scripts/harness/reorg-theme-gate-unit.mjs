@@ -28,6 +28,12 @@ const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
 // a split file (BoardEditor.tsx) is read as its module and its parts, joined (the 10g readers rule)
 const rdSite = (p) => (p === 'components/BoardEditor.tsx' ? lf(srcText(SRCDIR, p)) : rd(p));
 const GATE = rd('reorg/themeGate.ts');
+// the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is
+// ?reorg=0, asked is ?reorg=1, the default is no query (POLISH, the bare-switch census, Nov 21: a hand stub would test the stub, not the rule)
+const FLAG_SRC = rd('reorg/flag.ts');
+const realFlag = (reorg, asked) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : asked ? '?reorg=1' : '' }, undefined);
+  return m.exports; };
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 // the cells of Arbor's column the table has switched on, each only after the Wrizors passed its frames (Fable, Nov 21 9:40 pm: the rail)
 const ARBOR_ON = ['rail'];
@@ -35,9 +41,9 @@ const ARBOR_ON = ['rail'];
 const PLATEAU_LINE = /  plateau: \{ \.\.\.ALL_OFF[^}\n]*\},/;
 const THEMES = ['machina', 'plateau', 'flux'];
 
-function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, search = '', arbor2 = true } = {}) {
+function load(src, { reorg = true, theme = 'machina', calls = { n: 0 }, asked = false, search = '', arbor2 = true } = {}) {
   const out = ts.transpileModule(src, TS_OPTS).outputText;
-  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': { REORG: reorg }, '../arbor2/flag': { arbor2Enabled: () => arbor2 } };
+  const mods = { '../store/theme': { useTheme: () => { calls.n += 1; return theme; } }, './flag': realFlag(reorg, asked || /[?&]reorg=1(&|$)/.test(search)), '../arbor2/flag': { arbor2Enabled: () => arbor2 } };
   const m = { exports: {} };
   new Function('require', 'exports', 'module', 'location', out)((p) => { if (!(p in mods)) throw new Error('unstubbed import ' + p); return mods[p]; }, m.exports, m, { search });
   return m.exports;
@@ -56,16 +62,30 @@ function suite(src) {
     const wrong = Object.entries(cells).filter(([k, v]) => { const [th, p] = k.split('.'); return v !== want(th, p); }).map(([k]) => k);
     return { pass: J(G.REORG_PIECES) === J(PIECES) && wrong.length === 0, detail: J({ pieces: G.REORG_PIECES, wrong }) };
   });
-  t('HOOK', () => {
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The original, verbatim:
+  // t('HOOK', () => {
+  //   const on = { n: 0 }, off = { n: 0 };
+  //   const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
+  //   const F = load(src, { reorg: true, theme: 'flux' });
+  //   const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
+  //   // one piece lifted for Flux: the hook says yes to that piece and no to the others
+  //   const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
+  //   const L = load(lifted, { reorg: true, theme: 'flux' });
+  //   const one = PIECES.filter((p) => L.useReorgPiece(p));
+  //   return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']), detail: J({ r, f, o, one, onCalls: on.n, offCalls: off.n }) };
+  // });
+  // [successor] the same readings, and the ruling: one Flux cell lifted lights ONLY when the page load asked (?reorg=1); unasked it stays dark
+  t('HOOK2', () => {
     const on = { n: 0 }, off = { n: 0 };
     const A = load(src, { reorg: true, theme: 'machina', calls: on }), B = load(src, { reorg: false, theme: 'machina', calls: off });
     const F = load(src, { reorg: true, theme: 'flux' });
     const r = [A.useReorgPiece('top'), A.useReorgPiece('uplink')], f = PIECES.map((p) => F.useReorgPiece(p)), o = [B.useReorgPiece('top'), B.useReorgPiece('rail')];
-    // one piece lifted for Flux: the hook says yes to that piece and no to the others
     const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
-    const L = load(lifted, { reorg: true, theme: 'flux' });
-    const one = PIECES.filter((p) => L.useReorgPiece(p));
-    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']), detail: J({ r, f, o, one, onCalls: on.n, offCalls: off.n }) };
+    const Lask = load(lifted, { reorg: true, theme: 'flux', asked: true }), Lno = load(lifted, { reorg: true, theme: 'flux', asked: false });
+    const one = PIECES.filter((p) => Lask.useReorgPiece(p)), dark = PIECES.filter((p) => Lno.useReorgPiece(p));
+    return { pass: r.every((x) => x === true) && on.n === 2 && f.every((x) => x === false) && o.every((x) => x === false) && off.n === 0 && J(one) === J(['back']) && J(dark) === J([]),
+      detail: J({ r, f, o, one, dark, onCalls: on.n, offCalls: off.n }) };
   });
   t('LIFT', () => {
     const lifted = src.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, back: true },');
@@ -91,6 +111,18 @@ function suite(src) {
     const arborOn = PIECES.filter((p) => ARBOR_ON.includes(p) || p === 'back' || p === 'split');   // [ARBOR_ON successor]: the lifted line holds the passed cells and back, split
     return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };
   });
+  // [successor] ARBOR2B (the switch-over, Fable, Nov 21, 9:40 pm and Nov 22, 3:05 am: the reorg is on by default in Machina ONLY; Arbor keeps ?reorg=1 until all six of its cells pass, so its hook lights a passed cell only when the page load asked; Actions 45047165459): the same law, Arbor's hook asked (it lights the passed cells) and not asked (it lights none)
+  t('ARBOR2B', () => {
+    const lifted = src.replace(PLATEAU_LINE, () => `  plateau: { ...ALL_OFF, ${ARBOR_ON.map((p) => `${p}: true, `).join('')}back: true, split: true },`);   // [ARBOR_ON successor]
+    if (lifted === src) return { pass: false, detail: 'the plateau cell is not where the unit looks' };
+    const on = load(lifted, { arbor2: true }), off = load(lifted, { arbor2: false });
+    const cellsOf = (G, th) => PIECES.filter((p) => G.themeHas(p, th));
+    const doorOff = load(src, { arbor2: false, search: '?reorg=1&reorglift=plateau.back,flux.rail,machina.rail' }), doorOn = load(src, { arbor2: true, search: '?reorg=1&reorglift=plateau.back' });
+    const hooked = load(lifted, { arbor2: false, theme: 'plateau' }), hookedOn = load(lifted, { arbor2: true, theme: 'plateau', asked: true }), hookedOnNo = load(lifted, { arbor2: true, theme: 'plateau' });
+    const m = load(src, { arbor2: false });
+    const arborOn = PIECES.filter((p) => ARBOR_ON.includes(p) || p === 'back' || p === 'split');   // [ARBOR_ON successor]: the lifted line holds the passed cells and back, split
+    return { pass: J(cellsOf(on, 'plateau')) === J(arborOn) && cellsOf(off, 'plateau').length === 0 && doorOff.themeHas('back', 'plateau') === false && doorOff.themeHas('rail', 'flux') === true && doorOn.themeHas('back', 'plateau') === true && PIECES.every((p) => m.themeHas(p, 'machina')) && PIECES.every((p) => hooked.useReorgPiece(p) === false) && J(PIECES.filter((p) => hookedOn.useReorgPiece(p))) === J(arborOn) && PIECES.every((p) => hookedOnNo.useReorgPiece(p) === false) && cellsOf(load(src, { arbor2: false }), 'plateau').length === 0, detail: J({ on: cellsOf(on, 'plateau'), off: cellsOf(off, 'plateau'), doorOff: doorOff.themeHas('back', 'plateau'), doorOn: doorOn.themeHas('back', 'plateau'), arborOn }) };
+  });
   t('LIFTQ', () => {
     // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty: with no door it saw plateau.rail, a cell the TABLE holds, not the door). The original, verbatim:
     // const cells = (o) => { const G = load(src, o); const on = []; for (const th of [...THEMES, 'nonsense']) for (const p of PIECES) if (G.themeHas(p, th)) on.push(th + '.' + p); return on.filter((x) => !x.startsWith('machina.')); };
@@ -112,7 +144,15 @@ function suite(src) {
 
 let base = null, baseErr = null;
 try { base = suite(GATE); } catch (e) { baseErr = e; }
-for (const k of ['TABLE', 'HOOK', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The original, verbatim:
+// for (const k of ['TABLE', 'HOOK', 'LIFT']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// [successor] HOOK reads through its successor (HOOK2: the ruling's asked / unasked lifted cell), named so in the run
+// SUPERSEDED (train I, on main: the gate gained the ARBOR2 and LIFTQ laws; read with the switch-over's HOOK2). Main's line, verbatim:
+// for (const k of ['TABLE', 'HOOK', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm and Nov 22, 3:05 am: the reorg is on by default in Machina ONLY; Arbor keeps ?reorg=1 until all six of its cells pass, so its hook lights a passed cell only when the page load asked; Actions 45047165459): ARBOR2 reads through ARBOR2B. The line, verbatim:
+// for (const k of ['TABLE', 'HOOK2', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['TABLE', 'HOOK2', 'LIFT', 'ARBOR2B', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
@@ -122,13 +162,24 @@ const MUT = [
   ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', top: true },'))],
   ['Arbor loses a piece the Wrizors passed (the rail) [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_OFF },')],
   ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
-  ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
+  // so a lifted Flux cell lights only when the page load ASKED: reorg/themeGate.ts reorgFor, REORG_DEFAULT_ON; POLISH, in the switch-over's merge of train H). The originals, verbatim (the first still lands; the second's target string is gone from the hook):
+  // ['the hook ignores the switch', 'HOOK', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  // ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
+  // [successors] the same two mutants against HOOK2; the second aimed at the hook as it now reads, plus the ruling's own: a theme on by default that is not Machina
+  ['the hook ignores the switch', 'HOOK2', (t) => t.replace('export const useReorgPiece: (piece: ReorgPiece) => boolean = REORG ?', () => 'export const useReorgPiece: (piece: ReorgPiece) => boolean = true ?')],
+  ['the hook reads one piece for every piece', 'HOOK2', (t) => t.replace('return reorgFor(t) && themeHas(piece, t);', () => "return reorgFor(t) && themeHas('top', t);")],
+  ['a lifted cell lights without the ask (the switch-over ruling broken)', 'HOOK2', (t) => t.replace('return reorgFor(t) && themeHas(piece, t);', () => 'return themeHas(piece, t);')],
+  // train I (on main): the preview door (LIFTQ) and the Arbor column on the redesign flag (ARBOR2)
   ['the preview door is honoured with the switch off', 'LIFTQ', (t) => t.replace('const LIFT: ReadonlySet<string> = REORG && typeof location', () => 'const LIFT: ReadonlySet<string> = typeof location')],
   ['the preview door lifts a whole theme from a bare name', 'LIFTQ', (t) => t.replace("=== true || LIFT.has(", () => "=== true || [...LIFT].some((l) => l === theme || ") ],
   ['the preview door can turn a Machina piece off', 'LIFTQ', (t) => t.replace('=== true || LIFT.has(', () => '=== true && !LIFT.has(')],
-  ['the Arbor column ignores the redesign flag', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => '')],
-  ['the flag also switches Machina off', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => 'if (!arbor2Enabled()) return false;')],
-  ['the hook reads one piece for every piece', 'HOOK', (t) => t.replace('(piece) => themeHas(piece, useTheme())', () => "() => themeHas('top', useTheme())")],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm and Nov 22, 3:05 am: the reorg is on by default in Machina ONLY; Arbor keeps ?reorg=1 until all six of its cells pass, so its hook lights a passed cell only when the page load asked; Actions 45047165459): keyed to ARBOR2. Verbatim:
+  // ['the Arbor column ignores the redesign flag', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => '')],
+  ['the Arbor column ignores the redesign flag', 'ARBOR2B', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => '')],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm and Nov 22, 3:05 am: the reorg is on by default in Machina ONLY; Arbor keeps ?reorg=1 until all six of its cells pass, so its hook lights a passed cell only when the page load asked; Actions 45047165459): keyed to ARBOR2. Verbatim:
+  // ['the flag also switches Machina off', 'ARBOR2', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => 'if (!arbor2Enabled()) return false;')],
+  ['the flag also switches Machina off', 'ARBOR2B', (t) => t.replace("if (theme === 'plateau' && !arbor2Enabled()) return false;", () => 'if (!arbor2Enabled()) return false;')],
 ];
 for (const [name, key, fn] of MUT) {
   const after = GATE ? fn(GATE) : GATE;
@@ -157,6 +208,24 @@ for (const [name, file, want, old] of SITES) {
   const back = text ? text.replace(want, () => old) : '';
   ok(`MUT SITES ${name}: the old literal put back LANDS and the census goes RED`, !!text && back !== text && !siteOk(back, want, old), J({ landed: back !== text }));
 }
+
+// DEFAULT (Nick, Nov 22, 2:59 am, via Fable 3:05 am: "once all six Arbor pieces pass, the reorg turns on in Arbor too ... REORG_DEFAULT_ON.plateau becomes true only if all
+// six plateau cells are on (a check: plateau default-on <=> every plateau cell on, with a mutant)"; POLISH, the switch-over on train I). The real flag.ts's default against
+// the real table: Arbor is on by default exactly when every one of its six cells is on. Two mutants, one each way.
+const flagFrom = (src) => { const out = ts.transpileModule(src, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)(() => { throw new Error('flag.ts imports nothing'); }, m.exports, m, { search: '' }, undefined); return m.exports; };
+const defaultLaw = (flagSrc, gateSrc) => {
+  const F = flagFrom(flagSrc), G = load(gateSrc);
+  const cells = G.REORG_THEME_GATE && G.REORG_THEME_GATE.plateau;
+  const allOn = !!cells && PIECES.every((p) => cells[p] === true);
+  return { pass: !!F.REORG_DEFAULT_ON && F.REORG_DEFAULT_ON.plateau === allOn, plateauDefault: F.REORG_DEFAULT_ON && F.REORG_DEFAULT_ON.plateau, allOn, on: cells ? PIECES.filter((p) => cells[p]) : null };
+};
+const dl = defaultLaw(FLAG_SRC, GATE);
+ok('DEFAULT Arbor (plateau) is on by default exactly when all six of its cells are on (flag.ts REORG_DEFAULT_ON.plateau <=> every plateau cell in the table)', dl.pass, J(dl));
+const flagEarly = FLAG_SRC.replace("plateau: false", () => 'plateau: true');
+ok('MUT DEFAULT Arbor turned on by default while a cell is still off: it LANDED and DEFAULT goes RED', flagEarly !== FLAG_SRC && !dl.allOn && !defaultLaw(flagEarly, GATE).pass, J({ landed: flagEarly !== FLAG_SRC, allOn: dl.allOn }));
+const gateAll = GATE.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON },');
+ok('MUT DEFAULT all six plateau cells on while the default stays off: it LANDED and DEFAULT goes RED', gateAll !== GATE && !defaultLaw(FLAG_SRC, gateAll).pass, J({ landed: gateAll !== GATE }));
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 600)}`); if (!c.pass) bad += 1; }

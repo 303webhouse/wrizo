@@ -37,7 +37,13 @@ for (const f of ['chrome', 'settings', 'decks', 'help']) {
   }
 }
 const holes = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
-const load = (src, { reorg = true, arbor2 = true } = {}) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': { REORG: reorg }, '../../../arbor2/flag': { arbor2Enabled: () => arbor2 }, './arbor': LIVE });
+// the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is ?reorg=0, on is
+// ?reorg=1 (Arbor's words come with the ask until its six cells pass; POLISH, the switch-over on train I: a hand stub would test the stub, not the rule)
+const FLAG_SRC = rd('reorg/flag.ts');
+const realFlag = (reorg) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : '?reorg=1' }, undefined);
+  return m.exports; };
+const load = (src, { reorg = true, arbor2 = true } = {}) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': realFlag(reorg), '../../../arbor2/flag': { arbor2Enabled: () => arbor2 }, './arbor': LIVE });
 
 // what the spec writes out exactly (section 1, "Strings that need more than a swap", and the two notes)
 const EXACT = {
@@ -125,8 +131,13 @@ const MUT = [
   ['the Part word is not swapped', 'SWAP', (t) => t.replace("reorgPlanToPart: '→ Section'", () => "reorgPlanToPart: '→ Part'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgAssetsHead: 'Grafts ({n})'", () => "reorgAssetsHead: 'Grafts ({graft})'")],
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
-  ['the switch is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'arbor2Enabled()')],
-  ['the redesign flag is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'REORG')],
+  // SUPERSEDED (the switch-over on train I, Fable, Nov 21, 11:20 pm: arborReorg.ts reads reorgFor('plateau'), not the bare REORG; POLISH). The originals, verbatim
+  // (their target is gone, so they no longer land):
+  // ['the switch is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'arbor2Enabled()')],
+  // ['the redesign flag is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'REORG')],
+  // [successors] the same two mutants aimed at the gate as it now reads
+  ['the reorgFor gate is ignored', 'OFF', (t) => t.replace("reorgFor('plateau') && arbor2Enabled()", () => 'arbor2Enabled()')],
+  ['the redesign flag is ignored [switch-over successor]', 'OFF', (t) => t.replace("reorgFor('plateau') && arbor2Enabled()", () => "reorgFor('plateau')")],
   // SUPERSEDED (Nov 21): ['a box swatch is guessed at', 'UNSET', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  reorgSwatchBrass: 'Madder',\n")],
   ['a box swatch is still named for brass', 'ANSWERS', (t) => t.replace("reorgSwatchBrass: 'Madder'", () => "reorgSwatchBrass: 'Brass'")],
   ['the own-colour word is left as it was', 'ANSWERS', (t) => t.replace("reorgOwnColour: 'Custom\u2026'", () => "reorgOwnColour: 'Your own colour'")],
