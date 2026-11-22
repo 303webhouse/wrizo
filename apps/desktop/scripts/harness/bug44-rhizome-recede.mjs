@@ -43,7 +43,12 @@ await withHarness(async (app) => {
     if (W.wrizoFlushNow) W.wrizoFlushNow();
     localStorage.setItem('wrizo-writing-settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'), progress: 'words', progressStyle: 'rhizome' }));
     localStorage.setItem('wrizo-theme', 'plateau'); return true; })()`);
-  await app.evalJs("history.replaceState(null, '', '/?arbor2room=day#/'); null");
+  // the cells (Nov 22, f2a04ea4 green by day): Arbor by day (R0, R1), Arbor by night (R0N, R1N), and the classic Plateau (?arbor2=0: R0C, R1C) - the one
+  // path that still plans from the MEASURED geometry (lapPlan(m.geo): the sheet band and the stable chrome)
+  const cells = [{ q: '?arbor2room=day', tag: '', what: 'Arbor by day' }, { q: '?arbor2room=night', tag: 'N', what: 'Arbor by night' }, { q: '?arbor2=0', tag: 'C', what: 'the classic Plateau' }];
+  for (const cell of cells) {
+  await app.goto('/');
+  await app.evalJs(`history.replaceState(null, '', '/${cell.q}#/'); null`);
   await app.reload();
   await app.evalJs(`location.hash = '#/page/' + ${J(id)}`);
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-rhizome-field')", { label: 'the page and its rhizome', timeout: 20000 }).catch(() => {});
@@ -62,14 +67,18 @@ await withHarness(async (app) => {
   await sleep(1200);
   const h2 = await app.evalJs(HASH);
   const w2 = await app.evalJs(WORDS);
-  ok('R0 the chrome receded while she typed and returned after, and the page\'s word count stayed 5', !!h1 && h1.writing === 'true' && !!h2 && h2.writing !== 'true' && w0 === 5 && w2 === 5, { w0, w2, writing: [h0 && h0.writing, h1 && h1.writing, h2 && h2.writing] });
-  ok('R1 the drawing\'s hash is the same at rest, while the chrome is receded, and after it returns', r1(h0, h1, h2), { h0, h1, h2 });
-  const replanned = h1 ? { ...h1, hash: (h1.hash + '0').slice(1) === h1.hash ? 'x' + h1.hash : h1.hash + 'x' } : null;
-  ok('MUT-R1 the same readings with the receded one re-planned (another hash) turn R1\'s test red', !!replanned && !r1(h0, replanned, h2), { receded: replanned && replanned.hash });
+  // the page keeps the letters each cell typed, so a cell's word count is read as it was before its own keys (5: the letters join the last word)
+  ok(`R0${cell.tag} (${cell.what}) the chrome receded while she typed and returned after, and the page's word count stayed 5`, !!h1 && h1.writing === 'true' && !!h2 && h2.writing !== 'true' && w0 === 5 && w2 === 5, { w0, w2, writing: [h0 && h0.writing, h1 && h1.writing, h2 && h2.writing] });
+  ok(`R1${cell.tag} (${cell.what}) the drawing's hash is the same at rest, while the chrome is receded, and after it returns`, r1(h0, h1, h2), { h0, h1, h2 });
+  if (cell.tag === '') {
+    const replanned = h1 ? { ...h1, hash: (h1.hash + '0').slice(1) === h1.hash ? 'x' + h1.hash : h1.hash + 'x' } : null;
+    ok('MUT-R1 the same readings with the receded one re-planned (another hash) turn R1\'s test red', !!replanned && !r1(h0, replanned, h2), { receded: replanned && replanned.hash });
+  }
+  }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^R1/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 2000)}`);
-const EXPECTED = 3;
+const EXPECTED = 7;   // R0, R1, MUT-R1 (Arbor by day) + R0N, R1N (by night) + R0C, R1C (the classic Plateau). Was: const EXPECTED = 3;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG44-RHIZOME-RECEDE VERIFY: PASS (${checks.length} checks)` : `\nBUG44-RHIZOME-RECEDE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
