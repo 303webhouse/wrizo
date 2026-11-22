@@ -77,9 +77,22 @@ export async function main({ title }) {
     const finding = (id, label, check, detail, obs = {}) => { results.push({ id, label, fails: [{ check, detail }], notes: [], obs }); out(`FAIL ${id} ${label}  ${JSON.stringify({ check, detail, obs }).slice(0, 700)}`); };
     const has = (sel) => ev(`!!document.querySelector(${JSON.stringify(sel)})`);
     /** a real mouse press on the first element matching `sel` (its own mousedown rules, focus kept or not, as a writer's press) */
+    // SUPERSEDED (run 45074226527: the Replace toggle "pressed" true yet aria-expanded stayed false on all ten jobs: chrome that dissolved while she
+    // typed takes a press only once pointer intent has brought it back, and the press went in at once. The press, verbatim:
+    //   if (!p || p.dis) return false; await d.click(p.x, p.y); await sleep(350); return true;
+    // [successor] as a writer does: move the pointer there, wait until elementFromPoint hits the target (or inside it), then press; a target never
+    // hit in 2.5 s is reported (press returns false and says so), never pressed blind.
     const press = async (sel) => {
       const p = await ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const r = e.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), dis: !!e.disabled }; })()`);
-      if (!p || p.dis) return false; await d.click(p.x, p.y); await sleep(350); return true;
+      if (!p || p.dis) return false;
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y, buttons: 0, pointerType: 'mouse' });
+      let hit = false;
+      for (let i = 0; i < 25 && !hit; i++) {
+        hit = await ev(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); const h = document.elementFromPoint(${p.x}, ${p.y}); return !!e && !!h && (h === e || e.contains(h)); })()`);
+        if (!hit) { await sleep(100); await app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x + (i % 2), y: p.y, buttons: 0, pointerType: 'mouse' }); }
+      }
+      if (!hit) { out(`OBS press ${sel}: never hit-testable at ${p.x},${p.y} (${await ev(`(() => { const h = document.elementFromPoint(${p.x}, ${p.y}); return h ? (h.tagName + '.' + String(h.className)).slice(0, 80) : 'nothing'; })()`)} on top)`); return false; }
+      await d.click(p.x, p.y); await sleep(350); return true;
     };
     const need = async (id, sel, why) => { if (await has(sel)) return true; uncovered.push({ id, why: `${why} (${sel} not on the page in ${TAG})` }); out(`NOTCOVERED ${id} ${why}`); return false; };
     const frontOpen = async () => { if (!(await ev("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await press('.wz-sliver-grip'); await sleep(400); } };
@@ -123,6 +136,7 @@ export async function main({ title }) {
       // [successor] open the Front menu's PARTS tab, the open Part's row (aria-current) menu, then its Join
       await frontOpen(); await press('#wz-sliver-tab-parts'); await sleep(300);
       const rowId = await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
+      if (!rowId) out(`OBS P4 the PARTS tab: ${JSON.stringify(await ev("({ open: document.querySelector('.wz-sliver')?.getAttribute('data-open'), tab: document.querySelector('#wz-sliver-tab-parts')?.getAttribute('aria-selected'), rows: [...document.querySelectorAll('[data-part-row]')].map((r) => [r.getAttribute('data-part-row').slice(-6), r.getAttribute('aria-current')]), hash: location.hash.slice(-30) })"))}`);
       if (!rowId) { uncovered.push({ id: 'P4', why: `the open Part's row ([data-part-row][aria-current]) not in the PARTS tab in ${TAG}` }); out('NOTCOVERED P4 the open Part\'s row'); return; }
       await press(`[data-part-more="${rowId}"]`); await sleep(300);
       if (!(await need('P4', `[data-part-menu="${rowId}"] [data-part-act="join"]`, 'Join (the open Part\'s row menu)'))) return;
