@@ -29,6 +29,7 @@ import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
 import { isTitlePageText } from '../store/titlePage';
 import { TitlePageSheet } from '../components/TitlePageSheet';
 import { useWayBack } from '../components/useWayBack';
+import { takePartFocus } from '../reorg/partFocus';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
@@ -465,6 +466,26 @@ function PageEditorView({ id }: { id: string }) {
     raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
     return () => cancelAnimationFrame(raf);
   }, [mode]);
+
+  // R1 (Fable, Nov 22, MONDAY BLOCKER): a Part opened by her own move between Parts (the arrow, the Part foot's line, the Parts list: reorg/partFocus.ts) takes her caret - the focus in this editor, at the START of a Draft Part, at the end of a
+  // Free Write one - so the next key types. PageEditor focused only an empty page and the move just opened this one, so the focus stayed on the body and her letters went nowhere. Any other way of opening a page leaves it as it was.
+  useEffect(() => {
+    if (!takePartFocus(entry.id)) return undefined;
+    let raf = 0;
+    let tries = 0;
+    const place = () => {
+      const ed = editorRef.current;
+      if (ed && ed.isConnected) {
+        const rows = !!ed.querySelector('.wz-row');   // Draft and Revise draw one row a line: a caret at the start; Free Write's insertion point is the end
+        ed.focus({ preventScroll: true });
+        setCaretOffset(ed, rows ? 0 : editorPlainText(ed).length);
+        return;
+      }
+      if ((tries += 1) < 40) raf = requestAnimationFrame(place);
+    };
+    raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
+    return () => cancelAnimationFrame(raf);
+  }, [entry.id]);
 
   const reconcileRef = useRef<() => boolean>(() => false);
   const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
