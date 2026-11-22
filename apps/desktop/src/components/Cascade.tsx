@@ -354,7 +354,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   const layers = view === null || view.category === null ? null : (
     <>
-      <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined} data-category={view.category}>
+      <div className="wz-cascade-panel" data-visible={view.docked ? 'false' : 'true'} data-leaving={isLeaving ? 'true' : undefined} data-category={reorg ? view.category : undefined}>
         <div className="wz-cascade-panel-head">
           <span className="wz-cascade-panel-title">{t(panelTitleTerm(view.category))}</span>
           {reorg ? reorgHeadExtra(view.category) : null}
