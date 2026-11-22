@@ -41,7 +41,7 @@ async function seed(app) {
     const brief = W.wrizoCreateProject('Brief'); W.wrizoSetProjectDrawer(brief.id, grants.id);
     page('ab-own', 'Plan canvas', { origin: 'loose', pageType: 'board', boxes: ${q([card('c1', 'The opening image', 0, 0.05), card('c2', 'The turn', 1, 0.2), card('c3', 'The close', 2, 0.35)])} });
     page('ab-note', 'Field notes\\nThe rain came late.', { origin: 'loose' });
-    page('ab-1', 'The harbour was quiet when she arrived.', { origin: 'project', projectId: brief.id, orderIndex: 0 });
+    page('ab-1', 'The harbour was quiet when she arrived. Nobody met her at the quay, and the ferry had already gone.', { origin: 'project', projectId: brief.id, orderIndex: 0 });
     page('ab-2', 'By the second week the town had decided what she was.', { origin: 'project', projectId: brief.id, orderIndex: 1 });
     W.wrizoPatchEntry('ab-1', { pageSettings: ${PS}, name: 'Arrival', level: 0 }, planBoardId: 'ab-own' });
     W.wrizoPatchEntry('ab-2', { pageSettings: ${PS}, name: 'The town', level: 0 } });

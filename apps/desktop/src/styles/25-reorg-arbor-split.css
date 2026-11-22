@@ -13,3 +13,5 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
 :root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
 :root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
+/* the count row stands under HER page (the Wrizors' pass 1, split NIT): the instrument under the page is centred on the stage, so it stayed where the page used to be and ran under the docked half; it takes the page's own shift (--wz-split-shift), so it stays centred on the page. It is a status row, not the page: the page's geometry is untouched. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] .desk-frame-instrument{ left:calc(50% + var(--wz-split-shift, 0px)); }

@@ -103,3 +103,6 @@
 /* REAL 4 (pass 1): a canvas group head's name ("Plan canvas", "This canvas") takes the row, and its buttons (Beside, To Section, Colour, Open) wrap under it instead of squeezing the name to "PLAN ..."; always visible, as a touch screen has no hover */
 :root[data-arbor2][data-theme='plateau'] .wz-back-boardhead{ flex-wrap:wrap; row-gap:2px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px); }
+/* REAL 1 and NIT 2 (pass 1): in Free Write (the zoomed page) the three cloth tabs take the same edge the opener does (--arbor2-drawer-zx), not the unzoomed --arbor2-drawer-r that left them 300 px off the screen; and the opened panel stays in the band above her writing line: at most 38% of the stage's height (the typewriter line holds at about 54%), the rest of its list scrolls, so it never covers the line (law 1) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(.mode-pagecol[data-zoom='true']):has(#wz-tutor-tab-plan) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-zx, 100%); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']):has(#wz-tutor-tab-plan) .wz-tutor-panel{ max-height:38%; }
