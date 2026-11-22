@@ -194,7 +194,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (search.open) { noteWasOpen(open); searchSeen.current = true; setOpen(true); return; }
     if (searchSeen.current) { searchSeen.current = false; setOpen(restoreAfterSearch()); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.open]);
+  }, [search.open, search.opened]);   // R3 (POLISH's audit, Fable Nov 22): the door pressed on a search that is already open only bumps `opened`; the drawer she shut by clicking back into the page must open again on it
   // A PART ROW'S LINK BADGE (reorg/backMenu/assetsFocus.ts): its press opens this drawer on ASSETS; the Assets tab opens that Part (mounting
   // fresh or already drawn). Off the Back menu there is no Assets tab to take it, so the ask is spent here.
   useEffect(() => subscribeAssetsFocus(() => {
