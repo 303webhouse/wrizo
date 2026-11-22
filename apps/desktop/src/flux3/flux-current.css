@@ -6,25 +6,28 @@
 :root[data-flux3][data-theme='flux'] .flux-current path{ stroke-linecap:butt; stroke-linejoin:miter; }
 :root[data-flux3][data-theme='flux'] .flux-current .flux-current-head{ filter:drop-shadow(0 0 2px #BEEBFF); }
 
-/* THE HANDS' CURRENT: a box on the menu's own box (fluxCurrent.ts sets its left, top and width), nothing taller than the line. The line is the menu box's top edge, 1 px, drawn from the tab's end; the electron
-   (a 4 px square) runs it from the tab's end to the far end and starts again, for as long as the menu is open. */
-:root[data-flux3][data-theme='flux'] .flux-hand{ position:fixed; z-index:20; height:0; pointer-events:none; }
-:root[data-flux3][data-theme='flux'] .flux-hand-line{ position:absolute; left:0; top:0; width:100%; height:1px; background:#00C2FF; transform:scaleX(0); transform-origin:left center; animation:flux-hand-draw .22s ease-out forwards; }
-:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='right'] .flux-hand-line{ transform-origin:right center; }
-:root[data-flux3][data-theme='flux'] .flux-hand-electron{ position:absolute; top:-2px; width:4px; height:4px; background:#BEEBFF; box-shadow:0 0 3px #00C2FF; animation:flux-hand-run 1.5s linear .22s infinite; }
-:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='right'] .flux-hand-electron{ left:calc(100% - 4px); }
-:root[data-flux3][data-theme='flux'] .flux-hand[data-tab='left'] .flux-hand-electron{ left:0; }
+/* THE HANDS' CURRENT, DRAWN BY THE MENU'S OWN BOX (fluxCurrent.ts marks an open panel with data-flux-hand after a press of its tab; there is no element of ours in the page). The panel's ::before is the line: 1 px,
+   the box's top edge, pinned there while the menu scrolls (sticky, and a margin that takes back its own height so nothing moves), drawn from the tab's end. Its ::after is the electron: a pale head on a 1 px strip as
+   wide as the box that is moved across it, from the tab's end to the far end, over and over. Both are the panel's own, so they fade with it when the chrome recedes and go when the menu shuts; both animate
+   transform alone. The left menu's tab is on its right end, the right menu's on its left. */
+:root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::before{
+  content:''; display:block; position:sticky; top:0; z-index:3; height:1px; margin:0 0 -1px; pointer-events:none;
+  background:#00C2FF; transform:scaleX(0); transform-origin:left center; animation:flux-hand-draw .22s ease-out forwards; }
+:root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::before{ transform-origin:right center; }
+:root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::after{
+  content:''; position:absolute; top:0; left:0; z-index:3; width:100%; height:1px; pointer-events:none;
+  background:linear-gradient(90deg, transparent 45%, #00C2FF 48%, #BEEBFF 50%, #00C2FF 52%, transparent 55%);
+  transform:translateX(-50%); animation:flux-hand-run-right 1.5s linear .22s infinite; }
+:root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::after{ animation-name:flux-hand-run-left; }
 @keyframes flux-hand-draw{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
-@keyframes flux-hand-run{ from{ transform:translateX(0); } to{ transform:translateX(var(--run, 0px)); } }
-/* closing: the line draws back to its tab and the electron is gone */
-:root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-line{ animation:flux-hand-undraw .18s ease-in forwards; }
-:root[data-flux3][data-theme='flux'] .flux-hand-closing .flux-hand-electron{ display:none; }
-@keyframes flux-hand-undraw{ from{ transform:scaleX(1); } to{ transform:scaleX(0); } }
-/* she is writing (the chrome has receded, the app's own data-chrome-receded on the page's host): the electron rests - paused and not drawn. A plain descendant selector on a flag the app already sets; no script and
-   NO :has() (a :has on the root would re-check on every change to the page under it while she types: Fable, Nov 21, 6:54 pm, and the box's clock reading, 02:21Z) */
-:root[data-flux3][data-theme='flux'] [data-chrome-receded='true'] .flux-hand-electron{ animation-play-state:paused; visibility:hidden; }
+@keyframes flux-hand-run-right{ from{ transform:translateX(-50%); } to{ transform:translateX(50%); } }
+@keyframes flux-hand-run-left{ from{ transform:translateX(50%); } to{ transform:translateX(-50%); } }
+/* she is writing (her cursor is in her page: fluxCurrent.ts sets data-flux-writing on the root on the focus moving in, and takes it off on the focus moving out): the electron rests - paused and not drawn. A plain
+   attribute on the root and descendant selectors: no script per key and no :has() */
+:root[data-flux3][data-theme='flux'][data-flux-writing] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::after{ animation-play-state:paused; visibility:hidden; }
 
 /* reduced motion: none of it (fluxCurrent.ts also draws nothing then; this is the belt) */
 @media (prefers-reduced-motion: reduce){
-  :root[data-flux3][data-theme='flux'] .flux-current, :root[data-flux3][data-theme='flux'] .flux-hand{ display:none; }
+  :root[data-flux3][data-theme='flux'] .flux-current{ display:none; }
+  :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::before, :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::after{ display:none; }
 }

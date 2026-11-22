@@ -34,7 +34,7 @@ const pressAndHold = async (app, key, ms) => {
     document.body.appendChild(clone); svg.remove();
     return { paths: dst.length, last: window.wrizoFluxCurrent && window.wrizoFluxCurrent.last ? window.wrizoFluxCurrent.last.paths.map((p) => ({ side: p.side, n: p.pts.length, len: Math.round(p.length) })) : null }; })()`);
 };
-const holdElectron = (app) => app.evalJs(`(() => { const els = [...document.querySelectorAll('[data-flux-hand] .flux-hand-electron')]; els.forEach((e) => e.getAnimations().forEach((a) => { a.pause(); a.currentTime = 760; })); return els.length; })()`);
+const holdElectron = (app) => app.evalJs(`(() => { const ps = [...document.querySelectorAll('[data-flux-hand]')]; let n = 0; ps.forEach((p) => p.getAnimations({ subtree: true }).filter((a) => a.effect && a.effect.pseudoElement === '::after').forEach((a) => { a.pause(); a.currentTime = 760; n += 1; })); return n; })()`);
 const openHand = async (app, sel) => {
   await app.evalJs(`(() => { const g = document.querySelector('${sel}'); g.focus(); g.click(); })()`);
   await waitSoft(app, "!!document.querySelector('[data-flux-hand]')", { label: 'the hand', timeout: 3000 });
@@ -92,13 +92,15 @@ export default {
   'hand-typing': async (app) => {
     await mkPage(app, 'cf-ht'); await sleep(400); await openRoom(app, 'cf-ht');
     await openHand(app, '.wz-sliver-grip');
-    const before = await app.evalJs("(() => { const e = document.querySelector('[data-flux-hand] .flux-hand-electron'); const a = e && e.getAnimations()[0]; return { playState: a ? a.playState : null, visibility: e ? getComputedStyle(e).visibility : null }; })()");
+    const state = "(() => { const p = document.querySelector('[data-flux-hand]'); const a = p && p.getAnimations({ subtree: true }).filter((x) => x.effect && x.effect.pseudoElement === '::after')[0]; return { playState: a ? a.playState : null, visibility: p ? getComputedStyle(p, '::after').visibility : null, receded: !!document.querySelector('[data-chrome-receded=\"true\"]'), writing: document.documentElement.hasAttribute('data-flux-writing') }; })()";
+    const before = await app.evalJs(state);
     await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
-    let receded = false;
-    for (let i = 0; i < 40 && !receded; i += 1) { await app.typeKeys('and she kept writing '); await sleep(250); receded = await app.evalJs("!!document.querySelector('[data-chrome-receded=\"true\"]')"); }
+    await sleep(300);
+    const inPage = await app.evalJs(state);   // her cursor is in the page: the electron is already at rest, before any key
+    for (let i = 0; i < 8; i += 1) { await app.typeKeys('and she kept writing '); await sleep(250); }
     await sleep(600);
-    const after = await app.evalJs("(() => { const e = document.querySelector('[data-flux-hand] .flux-hand-electron'); const a = e && e.getAnimations()[0]; const l = document.querySelector('[data-flux-hand] .flux-hand-line'); return { receded: !!document.querySelector('[data-chrome-receded=\"true\"]'), playState: a ? a.playState : null, visibility: e ? getComputedStyle(e).visibility : null, line: !!l, runs: window.wrizoFluxCurrent ? window.wrizoFluxCurrent.runs : null }; })()");
-    console.log(`FLUX3-CURRENT-FRAME hand-typing ${JSON.stringify({ before, after })}`);
+    const after = await app.evalJs(state);
+    console.log(`FLUX3-CURRENT-FRAME hand-typing ${JSON.stringify({ before, inPage, after })}`);
   },
   // recording: the 5-second film for Nick (stage change, then a hand opening). The runner cannot film in real time, so every animation in the page is PAUSED and stepped by its own clock, one captured frame per step,
   // written as numbered JPEGs into <out>/recording/ (fps in recording.json); the film is made from them (ffmpeg, on Nick's machine). Real clicks, the real layer: only the clock is stepped.

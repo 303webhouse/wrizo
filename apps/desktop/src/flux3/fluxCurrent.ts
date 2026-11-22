@@ -1,15 +1,18 @@
 // FLUX 3 - THE CURRENT: ONE LAYER FOR TWO THINGS (Fable, Nov 21, 4:56 pm and 6:00 pm; flux-full-look-for-monday.md item 8 and section 2). Loaded only under ?flux3=1 (boot.ts imports it), and it draws only in the Flux theme.
 //
 //   THE HANDS OPEN AS CURRENT (POLISH's Oct 28 mockup; Nick, 4:40 pm): when she presses a drawer's tab and the menu opens, a 1 px cyan line shoots from the tab along the menu box's top edge, and an electron runs
-//   the line for as long as the menu is open. The line and the electron are one small element beside the menu (flux-current.css); it goes when the menu shuts, however it shuts.
+//   the line for as long as the menu is open. THE MENU'S OWN BOX DRAWS IT (flux-current.css): this module only puts a mark, data-flux-hand, on the panel after a press of its tab opens it, and takes it off when the
+//   menu shuts however it shuts. The line is the panel's ::before and the electron its ::after: no element is added to the page, no geometry is read, nothing is laid out for it. (The first form, a separate
+//   element placed over the menu, cost the box's frame clock 1.4 to 2.7 ms in two L runs, 02:21Z and 04:41Z.)
 //   THE STAGE CURRENT, v2 (flux-stage-current-concept-v2.png; Nick, 4:47 pm: "just a subtle shot of current"): when she changes stage, a 1 px cyan spark about 60 px long leaves the pressed stage button along the
 //   top bar's lower edge to each side, then runs one lap around each menu (a closed menu: its opener tab) in about 0.55 s and is gone. Nothing stays lit behind it. Wire In has no menus, so pressing it sends none;
 //   leaving it sends one to the menus as they return. The paths are fluxCurrentPath.ts (pure, proved by flux3-current-unit.mjs): the top bar and the gutters only, never the page's rectangle.
 //
-// THE TYPING PATH IS NEVER TOUCHED. This module has ONE listener, a click on the document (capture), and a resize listener only while a hand is open. It has no key, input, scroll, selection or pointer-move
-// listener, no timer loop and no frame loop (two frame requests after a click, so the click's re-render has settled before the geometry is read). A menu that opens by the keyboard or at page load draws no
-// current: only a press of the tab or the stage button does. Under reduced motion, or at Ambiance 0, nothing is drawn at all (effectiveAmbianceDial is 0 in both). The electron rests while the chrome has receded
-// (she is writing): a CSS rule on the app's own data-chrome-receded, no script and no :has(). scripts/harness/flux3-current.mjs proves each of these, and the typing cost on the box.
+// THE TYPING PATH IS NEVER TOUCHED. This module has a click listener on the document (capture) and a focus-in and a focus-out listener (capture): the focus moves when she clicks into her page or leaves it, never
+// per key. It has no key, input, scroll, selection or pointer-move listener, no timer loop and no frame loop (two frame requests after a click, so the click's re-render has settled before the geometry is read).
+// A menu that opens by the keyboard or at page load draws no current: only a press of the tab or the stage button does. Under reduced motion, or at Ambiance 0, nothing is drawn at all (effectiveAmbianceDial is 0 in
+// both). The electron rests the moment her cursor is in the page: the focus-in sets data-flux-writing on the root and a CSS rule pauses and hides it (no script per key, and no :has()). scripts/harness/flux3-current.mjs
+// proves each of these, and the typing cost on the box.
 import { effectiveAmbianceDial } from '../store/ambianceDial';
 import { SPARK_MS, SPARK_PX, pathLength, sparkLayers, stagePaths, type Pt, type Rect } from './fluxCurrentPath';
 
@@ -112,47 +115,18 @@ function stage(btn: HTMLElement, tries = 4): void {
 }
 
 // ---- the hands' current -----------------------------------------------------------------------------------------------------------------------
+// The mark on the menu's panel is all there is (see the header): flux-current.css draws the line and the electron from it, and only while the panel is open.
 
-interface Hand { el: HTMLElement; panel: Element; mo: MutationObserver }
+interface Hand { panel: Element; mo: MutationObserver }
 const hands = new Map<Side, Hand>();
 
-/** put the hand's box on the menu's: its left, top and width, in the coordinates of whatever it is placed in (a transformed ancestor would shift a fixed box, so the offset is read and taken out) */
-function place(h: Hand): void {
-  const r = h.panel.getBoundingClientRect();
-  h.el.style.left = '0px';
-  h.el.style.top = '0px';
-  const o = h.el.getBoundingClientRect();
-  h.el.style.left = `${r.left - o.left}px`;
-  h.el.style.top = `${r.top - o.top}px`;
-  h.el.style.width = `${r.width}px`;
-  h.el.style.setProperty('--run', `${(side(h) === 'left' ? -1 : 1) * Math.max(0, r.width - 4)}px`);
-}
-const side = (h: Hand): Side => (h.el.getAttribute('data-flux-hand') === 'left' ? 'left' : 'right');
-
-function onResize(): void {
-  hands.forEach(place);
-}
-
 function showHand(s: Side, panel: Element): void {
-  if (hands.has(s)) { place(hands.get(s) as Hand); return; }
-  const el = document.createElement('div');
-  // the same classes as the menu's own panel: it fades with the chrome when she writes (.desk-dissolve) and takes no pointer
-  el.className = 'flux-hand chrome-fade desk-dissolve';
-  el.setAttribute('data-flux-hand', s);
-  el.setAttribute('data-tab', s === 'left' ? 'right' : 'left');   // the tab is on the menu's page-facing end
-  el.setAttribute('aria-hidden', 'true');
-  const line = document.createElement('i');
-  line.className = 'flux-hand-line';
-  const electron = document.createElement('i');
-  electron.className = 'flux-hand-electron';
-  el.append(line, electron);
-  (panel.closest('.desk-frame-host') || document.body).appendChild(el);
+  if (hands.has(s)) return;
+  panel.setAttribute('data-flux-hand', '');
+  // however the menu shuts (its tab, Esc, the shortcut), the mark goes with it
   const mo = new MutationObserver(() => { if (panel.getAttribute('data-open') !== 'true') hideHand(s); });
   mo.observe(panel, { attributes: true, attributeFilter: ['data-open'] });
-  const h: Hand = { el, panel, mo };
-  hands.set(s, h);
-  if (hands.size === 1) window.addEventListener('resize', onResize);
-  place(h);
+  hands.set(s, { panel, mo });
   state.runs += 1;
   state.last = { kind: 'hand', side: s, at: Date.now(), paths: [], sparkPx: SPARK_PX, durationMs: SPARK_MS, layers: 0, strokePx: 1 };
 }
@@ -162,10 +136,14 @@ function hideHand(s: Side): void {
   if (!h) return;
   hands.delete(s);
   h.mo.disconnect();
-  if (!hands.size) window.removeEventListener('resize', onResize);
-  h.el.classList.add('flux-hand-closing');   // the line retracts to its tab (flux-current.css), then the element goes
-  setTimeout(() => h.el.remove(), 200);
+  h.panel.removeAttribute('data-flux-hand');
 }
+
+// ---- the electron rests while she is in her page ---------------------------------------------------------------------------------------------------
+
+const inPage = (e: Event): boolean => { const t = e.target as Element | null; return !!t && typeof t.closest === 'function' && !!t.closest('.forward-only-editor'); };
+function onFocusIn(e: FocusEvent): void { if (inPage(e)) document.documentElement.setAttribute('data-flux-writing', ''); }
+function onFocusOut(e: FocusEvent): void { if (inPage(e)) document.documentElement.removeAttribute('data-flux-writing'); }
 
 // ---- the one listener ---------------------------------------------------------------------------------------------------------------------------
 
@@ -189,10 +167,19 @@ function onClick(e: MouseEvent): void {
   }
 }
 
-function attach(): void { document.addEventListener('click', onClick, true); }
+function attach(): void {
+  document.addEventListener('click', onClick, true);
+  document.addEventListener('focusin', onFocusIn, true);
+  document.addEventListener('focusout', onFocusOut, true);
+  const ae = document.activeElement;
+  if (ae && typeof ae.closest === 'function' && ae.closest('.forward-only-editor')) document.documentElement.setAttribute('data-flux-writing', '');
+}
 function detach(): void {
   document.removeEventListener('click', onClick, true);
+  document.removeEventListener('focusin', onFocusIn, true);
+  document.removeEventListener('focusout', onFocusOut, true);
   (['left', 'right'] as Side[]).forEach(hideHand);
+  document.documentElement.removeAttribute('data-flux-writing');
   clearSparks();
 }
 attach();
