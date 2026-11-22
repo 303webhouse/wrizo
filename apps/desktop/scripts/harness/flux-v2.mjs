@@ -277,10 +277,14 @@ for (const [k, v] of Object.entries(pinBase)) ok(k, v.pass, v.detail);
 const CSS_MUT = [
   { name: 'the ground token drifts back to the old teal', edit: (c) => c.replace('--ink-950: #010811;', '--ink-950: #04141A;'), red: ['TK1'] },
   { name: 'the structure line loses its steel blue', edit: (c) => c.replace("--ink-border: #193556;", "--ink-border: #2A6A76;"), red: ['TK1'] },
-  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR2'] },
+  // SUPERSEDED (Nov 21, OR2 is parked: its successor is OR3), kept verbatim:
+  // { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR2'] },
+  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR3'] },
   { name: 'a segmented control goes back to pointing at brass', edit: (c) => c.replace(".mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }", ".mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }"), red: ['SEL1'] },
   { name: 'Flux overrides the locked brass', edit: (c) => c.replace("  --choice: #00C2FF;" + String.fromCharCode(10), "  --choice: #00C2FF;" + String.fromCharCode(10) + "  --brass: #00C2FF;" + String.fromCharCode(10)), red: ['TK2'] },
-  { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR2'] },
+  // SUPERSEDED (Nov 21, OR2 is parked: its successor is OR3), kept verbatim:
+  // { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR2'] },
+  { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR3'] },
   { name: 'the dark page text loses contrast', edit: (c) => c.replace('--ink-on-paper: #E8F6FA;', '--ink-on-paper: #6E8A93;'), red: ['CT1'] },
   { name: 'a label tier drops under 4.5:1', edit: (c) => c.replace('--ink-on-paper-low: #57D0F5;', '--ink-on-paper-low: #1D4A52;'), red: ['CT2'] },
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
@@ -456,7 +460,12 @@ function cssChecks(css) {
   //
   // keep('OR1', bad.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), bad.slice(0, 4).join(' | '));
   const badLit = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && ![...ORANGE_OK, /\[data-lit='true'\]/].some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
-  keep('OR2', badLit.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badLit.slice(0, 4).join(' | '));
+  // SUPERSEDED (Nov 21, Flux reorg piece 2: the Back menu's current Part and a focused search field wear the choice mark's 3 x 24 brass bar, flux-reorg-spec section 0), kept verbatim:
+  // keep('OR2', badLit.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badLit.slice(0, 4).join(' | '));
+  // OR3 - the same check with the two Back-menu bars added to the allowed homes (nothing else loosened): the bar on the current Part's head and the bar in a focused search field
+  const REORG_BARS = [/\.wz-back-part\.is-here > \.wz-back-part-head::before$/, /:is\(\.reorg-search-field, \.reorg-search-door\):focus-within::before$/];
+  const badBars = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && ![...ORANGE_OK, /\[data-lit='true'\]/, ...REORG_BARS].some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
+  keep('OR3', badBars.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badBars.slice(0, 4).join(' | '));
   // CT - contrast, computed from the tokens
   const ground = hex(T('ink-950') || '#000000');
   const chrome = rgbaOver(T('chrome-surface') || '#000', ground);

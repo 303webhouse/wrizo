@@ -6,7 +6,11 @@
 //   HOLES   a {placeholder} is never swapped or dropped: every string set here has exactly the placeholders its canonical string has
 //   ONLY    only reorg* keys are set, each one a key the canonical table has, and none overwrites a word Flux already has live
 //   OFF     with the switch off the table IS the live one (the same object): the lexicon reads byte-identically
+// SUPERSEDED (Nov 21, the Wrizors answered the six open strings), kept verbatim:
 //   UNSET   the strings the swaps do not settle stay unset (they keep their canonical words) and are listed in FLUX_REORG_UNSET for the Wrizors
+//   ANSWERS the Wrizors' words are set exactly: Page Setup = Frame, the Typewriter = Wire In and its message in a split, Progress = Meter, the lens box asks "Query this doc…"
+//   KEPT    the two they keep (the lens names' panel label, and the "Research paper" preset) stay at their canonical words and are listed in FLUX_REORG_KEPT
+//   CASE    Flux's own case: buttons and lines in sentence case ("New circuit", "Add an input", "Plain text"), Flux's live Doc and Docs keep their capital
 // Run: node scripts/harness/reorg-flux-words-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -62,11 +66,15 @@ const EXACT = {
 };
 const SAMPLES = {
   reorgBackPlan: 'Spine', reorgBackExport: 'Before uplink', reorgUnfiled: 'Orphans', reorgNewProject: 'New drive', reorgAllProjects: 'All drives',
-  reorgPlanToPart: '→ Track', reorgAssetsHead: 'Inputs ({n})', reorgPartAssetsMany: '{n} inputs', reorgSearchLineAll: 'Every Drive, the Log and Orphans',
+  reorgPlanToPart: '→ Track', reorgAssetsHead: 'Inputs ({n})', reorgPartAssetsMany: '{n} inputs', // SUPERSEDED (Nov 21, Flux's own case: sentence case for lines): reorgSearchLineAll: 'Every Drive, the Log and Orphans',
+  reorgSearchLineAll: 'Every drive, the log and orphans',
   reorgPubCopyText: 'Clone text', reorgPubCopyFormatted: 'Clone formatted', reorgTopConnect: 'Connect Docs', reorgDocKindStandard: 'Plain', reorgDocKindScreenplay: 'Script',
   reorgSpecialTitle: 'Cover', reorgSpecialBibliography: 'Sources', reorgTagA: 'Cyan', reorgTagB: 'Lime', reorgTagC: 'Pink', reorgTagD: 'Ice', reorgTagE: 'Teal', reorgTagF: 'Deep cyan',
 };
-const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
+// SUPERSEDED (Nov 21): const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
+const KEPT = ['reorgLensLabel', 'reorgKindResearch'];
+const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Meter', reorgLensAskPlaceholder: 'Query this doc…' };
+const CASE = { reorgAddNewBoard: 'New circuit', reorgAddExistingBoard: 'Existing circuit', reorgAddSearchBoards: 'Find a circuit', reorgAddNewDoc: 'New Doc', reorgAddSearchDocs: 'Find a Doc', reorgAssetsAdd: 'Add an input', reorgAssetsAddTo: 'Add an input to {part}', reorgPubTxt: 'Plain text', reorgPlanOpenPart: 'Open track', reorgSprintAnother: 'Another prompt', reorgDocStyleGuide: 'Style guide', reorgSearchReachProject: 'This drive', reorgPartPrevTo: 'Previous track: {part}', reorgSearchLineProject: 'Its Docs and circuits' };
 
 function suite(src) {
   const R = {};
@@ -98,18 +106,35 @@ function suite(src) {
     const E = load(src, false);
     return { pass: E.FLUX_OVERRIDES === LIVE.FLUX_OVERRIDES, detail: 'the live table itself' };
   });
-  t('UNSET', () => {
+  // SUPERSEDED (Nov 21, the Wrizors answered): the original UNSET check, kept verbatim:
+  // t('UNSET', () => {
+  // const E = load(src), W = E.FLUX_REORG_WORDS;
+  // const left = UNSET.filter((k) => k in W);
+  // const listed = UNSET.every((k) => (E.FLUX_REORG_UNSET || []).some((l) => l.startsWith(k)));
+  // return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+  // });
+  t('ANSWERS', () => {
+    const W = load(src).FLUX_REORG_WORDS;
+    const bad = Object.entries(ANSWERS).filter(([k, v]) => W[k] !== v).map(([k, v]) => ({ k, want: v, got: W[k] }));
+    return { pass: bad.length === 0, detail: J(bad) };
+  });
+  t('KEPT', () => {
     const E = load(src), W = E.FLUX_REORG_WORDS;
-    const left = UNSET.filter((k) => k in W);
-    const listed = UNSET.every((k) => (E.FLUX_REORG_UNSET || []).some((l) => l.startsWith(k)));
-    return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+    const left = KEPT.filter((k) => k in W);
+    const listed = KEPT.every((k) => (E.FLUX_REORG_KEPT || []).some((l) => l.startsWith(k)));
+    return { pass: left.length === 0 && listed && KEPT.every((k) => canon.has(k)), detail: J({ left, listed }) };
+  });
+  t('CASE', () => {
+    const W = load(src).FLUX_REORG_WORDS;
+    const bad = Object.entries(CASE).filter(([k, v]) => (W[k] ?? canon.get(k)) !== v).map(([k, v]) => ({ k, want: v, got: W[k] ?? canon.get(k) }));
+    return { pass: bad.length === 0, detail: J(bad) };
   });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'UNSET']) ok(`${k} on the real fluxReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'fluxReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS', 'KEPT', 'CASE']) ok(`${k} on the real fluxReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'fluxReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['the spec string for the Back tabs is reworded', 'EXACT', (t) => t.replace("reorgBackTabsLabel: 'Spine, inputs and the Operator'", () => "reorgBackTabsLabel: 'Spine, inputs and feedback'")],
@@ -117,7 +142,10 @@ const MUT = [
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgPlanToPart: '\u2192 Track'", () => "reorgPlanToPart: '\u2192 Track {part}'")],
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
   ['the switch is ignored', 'OFF', (t) => t.replace('  REORG ? { flux:', () => '  true ? { flux:')],
-  ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
+  // SUPERSEDED (Nov 21): ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
+  ['the Typewriter is named for what it was', 'ANSWERS', (t) => t.replace("reorgTypewriter: 'Wire In'", () => "reorgTypewriter: 'Typewriter'")],
+  ['a kept string is changed', 'KEPT', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgKindResearch: 'Intel paper',\n")],
+  ['a button keeps the Title Case it had', 'CASE', (t) => t.replace("reorgAddNewBoard: 'New circuit'", () => "reorgAddNewBoard: 'New Circuit'")],
 ];
 for (const [name, key, fn] of MUT) {
   const after = SRC ? fn(SRC) : SRC;

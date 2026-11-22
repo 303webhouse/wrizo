@@ -1,0 +1,129 @@
+// THE REORG'S BACK MENU IN FLUX, IN THE APP (Fable, Nov 21: Flux piece 2; claude/wrizors/flux-reorg-spec.md section 5). Flux theme ON THE REDESIGN (?flux3=1: every Flux reorg piece is built on it, Nick, Nov 21, 4:40 pm), the dark room, ?reorg=1 with the PREVIEW DOOR (&reorglift=flux.back: reorg/themeGate.ts keeps flux.back OFF in the table until
+// Fable clears it; the door only shows the piece). The stylesheet's half is reorg-flux-back-css-unit.mjs; this proves what only the app can.
+// The fixture (seams only; WS_PLACE=1): a set she made, "Brief": two pages -> two Parts, fb-1 "Arrival" (its Plan is the board fb-own: three cards, one attached to it), fb-2 "The town"; the Doc's own assets: a page and a card.
+//   FB1  the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS (the Back menu opens on its assets tab, as Machina's does)
+//   FB2  the search door is in Flux's field dress: fill #020C10, a 1 px #5F8F95 edge; opened, the search field's focus is a cyan edge with the 3 x 24 brass bar
+// SUPERSEDED (Nov 21, the Wrizors' case ruling: Flux's own case, sentence case for buttons, so the Spine row's button reads "Open track"), kept verbatim:
+//   FB3  nothing is left raw: the sort row, the group heads and the "+" are drawn in Flux's dress (no browser-grey button fill, no white field), and Flux's words are the ones shown ("→ Track", "Open Track", "Inputs", "This Doc")
+//   FB3  [successor] the same, with the Spine row's button in Flux's case: "Open track"
+//   FB4  PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node
+//   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
+//   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
+//   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
+// Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-back-live.mjs
+import { withHarness } from '../runtime-verify.mjs';
+
+process.env.WS_PLACE = '1';
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const q = (s) => JSON.stringify(s);
+const press = (sel) => `(() => { const b = document.querySelector(${q(sel)}); if (!b || b.disabled) return false; b.click(); return true; })()`;
+const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const p = document.querySelector(s); if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); }).join('|'))()";
+const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, placement: 'bottom-center' }, headers: { on: false, text: '' }, footers: { on: false, text: '' }";
+const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
+const link = (id, boxId, toEntry) => ({ id, aEntryId: 'fb-own', aBoxId: boxId, bEntryId: toEntry, createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' });
+const TABS = "(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); if (!row) return null; return [...row.querySelectorAll('.wz-drawer-tab')].map((b) => ({ id: b.id.replace('wz-tutor-tab-', ''), text: (b.textContent || '').trim(), on: b.getAttribute('data-on') === 'true', locked: b.getAttribute('data-locked') === 'true' })); })()";
+const CS = (sel, props, pseudo) => `(() => { const e = document.querySelector(${q(sel)}); if (!e) return null; const c = getComputedStyle(e${pseudo ? ', ' + q(pseudo) : ''}); return ${q(props)}.reduce((o, p) => { o[p] = c.getPropertyValue(p); return o; }, {}); })()`;
+
+async function seed(app) {
+  await app.emulateDpr(1, 1366, 768);
+  await app.goto('/');
+  await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); null");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* the checks record what follows */ }
+  await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 });
+  await app.evalJs(`(() => {
+    const W = window;
+    const page = (id, text, extra) => W.wrizoCreateJournalPage({ id, text, createdAt: '2026-04-01T00:00:0' + id.length % 10 + '.000Z', source: 'page', ...extra });
+    const grants = W.wrizoCreateDrawer('Grants');
+    const brief = W.wrizoCreateProject('Brief'); W.wrizoSetProjectDrawer(brief.id, grants.id);
+    page('fb-own', 'Plan board', { origin: 'loose', pageType: 'board', boxes: ${q([card('c1', 'The opening image', 0, 0.05), card('c2', 'The turn', 1, 0.2), card('c3', 'The close', 2, 0.35)])} });
+    page('fb-note', 'Field notes\\nThe rain came late.', { origin: 'loose' });
+    page('fb-1', 'The harbour was quiet when she arrived.', { origin: 'project', projectId: brief.id, orderIndex: 0 });
+    page('fb-2', 'By the second week the town had decided what she was.', { origin: 'project', projectId: brief.id, orderIndex: 1 });
+    W.wrizoPatchEntry('fb-1', { pageSettings: ${PS}, name: 'Arrival', level: 0 }, planBoardId: 'fb-own' });
+    W.wrizoPatchEntry('fb-2', { pageSettings: ${PS}, name: 'The town', level: 0 } });
+    W.wrizoPatchEntry('fb-own', { pageLinks: ${q([link('l1', 'c1', 'fb-1')])} });
+    W.wrizoFlushNow();
+    return null;
+  })()`);
+}
+async function open(app, id, { w = 1366, lift = 'flux.back', flux3 = true } = {}) {
+  await app.emulateDpr(1, w, 768);
+  await app.evalJs("window.wrizoTheme.set('flux'); null");
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${flux3 ? '&flux3=1' : ''}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
+  await sleep(900);
+}
+const drawer = async (app) => { if (!(await app.evalJs("document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-tutor-grip')?.click(); null"); await sleep(700); } };
+const tab = async (app, id) => { await app.evalJs(`document.getElementById('wz-tutor-tab-${id}')?.click(); null`); await sleep(500); };
+
+await withHarness(async (app) => {
+  await seed(app);
+  await open(app, 'fb-1');
+  await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('fb-1', { entryId: 'fb-note' }); D.addAsset('fb-1', { entryId: 'fb-own', boxId: 'c2' }); window.wrizoFlushNow(); return null; })()");
+  await sleep(500);
+  await drawer(app);
+  const mark = await app.evalJs("document.querySelector('.forward-only-editor').__fbMark = 1; " + PAGE);
+  const tabs = await app.evalJs(TABS);
+  ok('FB1 the tab row reads SPINE, INPUTS, OPERATOR, in that order, and the drawer opens on INPUTS',
+    Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'SPINE,INPUTS,OPERATOR' && tabs.map((x) => x.on).join(',') === 'false,true,false', tabs);
+
+  await tab(app, 'plan');
+  const door = await app.evalJs(CS('.reorg-search-door', ['background-color', 'border-top-color', 'border-top-width', 'border-top-style']));
+  await app.evalJs(press('.reorg-search-door input')); await sleep(600);
+  const field = await app.evalJs(CS('.reorg-search-field', ['border-top-color']));
+  const bar = await app.evalJs(CS('.reorg-search-field', ['width', 'height', 'background-color'], '::before'));
+  const fieldFocused = await app.evalJs("(() => { const f = document.querySelector('.reorg-search-field'); return !!f && f.matches(':focus-within'); })()");
+  ok('FB2 the search door is in Flux\'s field dress (fill #020C10, 1 px #5F8F95); opened, the field\'s focus is a cyan edge with the 3 x 24 brass bar',
+    !!door && door['background-color'] === 'rgb(2, 12, 16)' && door['border-top-color'] === 'rgb(95, 143, 149)' && door['border-top-width'] === '1px' && door['border-top-style'] === 'solid'
+    && !!field && fieldFocused === true && field['border-top-color'] === 'rgb(0, 194, 255)' && !!bar && bar.width === '3px' && bar.height === '24px' && bar['background-color'] !== 'rgba(0, 0, 0, 0)' && bar['background-color'] !== 'rgb(0, 194, 255)', { door, field, bar, fieldFocused });
+  await app.evalJs(press('[data-search-back]')); await sleep(400);
+
+  await tab(app, 'links');
+  const raw = await app.evalJs("(() => { const bad = []; const root = document.querySelector('.wz-tutor-panel'); for (const b of root.querySelectorAll('.wz-assets-sort > button, .wz-assets-add, .wz-back-part-head')) { const c = getComputedStyle(b); if (/^rgb\\((239|233|240), \\1, \\1\\)$/.test(c.backgroundColor) || c.borderTopColor === 'rgb(118, 118, 118)') bad.push(b.className || b.textContent.slice(0, 12)); } const f = document.querySelector('.reorg-search-door'); const text = (root.textContent || ''); return { bad, sortBtns: root.querySelectorAll('.wz-assets-sort > button').length, heads: root.querySelectorAll('.wz-back-part-head').length, hasThisDoc: /this doc/i.test(text), inputs: /inputs/i.test(text) }; })()");
+  await tab(app, 'plan');
+  const spine = await app.evalJs("(() => { const root = document.querySelector('.wz-tutor-panel'); return { toTrack: [...root.querySelectorAll('button')].some((b) => /^\\u2192 Track$/.test((b.textContent || '').trim())), openTrack: [...root.querySelectorAll('button')].some((b) => /^Open track$/.test((b.textContent || '').trim())) }; })()");
+  ok('FB3 nothing is left raw: the sort row, group heads and "+" are drawn in Flux\'s dress (no browser-grey fill or border), and Flux\'s words show ("→ Track", "Open track", "Inputs", "This Doc")',
+    !!raw && raw.bad.length === 0 && raw.sortBtns === 4 && raw.heads >= 1 && raw.hasThisDoc && raw.inputs && !!spine && spine.toTrack && spine.openTrack, { raw, spine });
+
+  await tab(app, 'tutor'); await tab(app, 'links'); await tab(app, 'plan');
+  const after = await app.evalJs(PAGE);
+  const same = await app.evalJs("!!document.querySelector('.forward-only-editor').__fbMark");
+  const geo = { w1366: mark === after && same };
+  await open(app, 'fb-1', { w: 1920 });
+  await drawer(app);
+  const m2 = await app.evalJs(PAGE);
+  await tab(app, 'links'); await tab(app, 'tutor'); await tab(app, 'plan');
+  geo.w1920 = m2 === (await app.evalJs(PAGE));
+  ok('FB4 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Back menu and moving through its three tabs; the editor is the same node', geo.w1366 && geo.w1920, { geo, mark, after, m2 });
+
+  await open(app, 'fb-1', { lift: '' });
+  await drawer(app);
+  const off = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
+  ok('FB5 piece OFF without the door: in Flux the drawer is today\'s (no Spine tab, no reorg markup)', !!off && Array.isArray(off.tabs) && !off.tabs.includes('wz-tutor-tab-plan') && off.reorg === false, off);
+
+  await open(app, 'fb-1');
+  const mode = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
+  await sleep(900);
+  await drawer(app);
+  const wire = await app.evalJs(TABS);
+  const note = await app.evalJs("(() => { const n = document.querySelector('.wz-sprint-note, [data-sprint-note]'); return n ? (n.textContent || '').trim() : [...document.querySelectorAll('.wz-tutor-panel *')].map((e) => (e.children.length === 0 ? (e.textContent || '').trim() : '')).find((x) => /wired in/i.test(x)) || null; })()");
+  ok('FB6 Wire In: Spine and Inputs are locked and the note reads "Wired in: the Operator sends prompts only." in Flux\'s words; the Operator is the one in use',
+    mode === true && Array.isArray(wire) && wire.find((x) => x.id === 'plan')?.locked === true && wire.find((x) => x.id === 'links')?.locked === true && wire.find((x) => x.id === 'tutor')?.on === true && note === 'Wired in: the Operator sends prompts only.', { mode, wire, note });
+  await open(app, 'fb-1', { flux3: false });
+  await drawer(app);
+  const plain = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), flux3: document.documentElement.hasAttribute('data-flux3') }; })()");
+  ok('FB7 the plain Flux never has the reorg: without ?flux3=1 even the preview door gives Flux no Back menu', !!plain && plain.flux3 === false && Array.isArray(plain.tabs) && !plain.tabs.includes('wz-tutor-tab-plan') && plain.reorg === false, plain);
+});
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
+const EXPECTED = 7;
+const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
+console.log(pass
+  ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`
+  : `\nREORG-FLUX-BACK-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
+process.exit(pass ? 0 : 1);
