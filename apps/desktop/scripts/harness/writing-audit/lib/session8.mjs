@@ -117,9 +117,17 @@ export async function main({ title }) {
       const at3 = r3.focus ?? 0;
       await d.type('Q'); await sleep(300);
       await judge('P3b', 'type on the next Part: the letter lands at the caret', { text: (r3.text || '').slice(0, at3) + 'Q' + (r3.text || '').slice(at3), a: at3 + 1, f: at3 + 1 }, null);
-      if (!(await need('P4', '[data-structure-act="join"]', 'Join (the Structure section)'))) return;
+      // SUPERSEDED (run 45072994222: Join is not a Structure button; it lives in each Part row's own menu, PartsList.tsx data-part-act="join"; the
+      // line looked where it never was and read "not covered" on all twelve jobs). The line, verbatim:
+      // if (!(await need('P4', '[data-structure-act="join"]', 'Join (the Structure section)'))) return;
+      // [successor] open the Front menu's PARTS tab, the open Part's row (aria-current) menu, then its Join
+      await frontOpen(); await press('#wz-sliver-tab-parts'); await sleep(300);
+      const rowId = await ev("(document.querySelector('[data-part-row][aria-current=\"true\"]') || {}).getAttribute?.('data-part-row') || null");
+      if (!rowId) { uncovered.push({ id: 'P4', why: `the open Part's row ([data-part-row][aria-current]) not in the PARTS tab in ${TAG}` }); out('NOTCOVERED P4 the open Part\'s row'); return; }
+      await press(`[data-part-more="${rowId}"]`); await sleep(300);
+      if (!(await need('P4', `[data-part-menu="${rowId}"] [data-part-act="join"]`, 'Join (the open Part\'s row menu)'))) return;
       const tailNow = (await d.read()).text;
-      await press('[data-structure-act="join"]'); await sleep(1500);
+      await press(`[data-part-menu="${rowId}"] [data-part-act="join"]`); await sleep(1500);
       await waitFor("!!document.querySelector('.forward-only-editor')", 'the joined Part', 10000).catch(() => {});
       const r4 = await d.read();
       await judge('P4', 'Join it back onto the Part above: one Part holds both halves, the caret in it and drawn', { text: r4.text, a: r4.anchor ?? 0, f: r4.focus ?? 0 }, null,
@@ -142,12 +150,19 @@ export async function main({ title }) {
       await d.type('!'); await sleep(300);
       await judge('F1', 'with the search open on "toll": back in the page, a letter lands at the caret; the page stays put', { text: T + '!', a: T.length + 1, f: T.length + 1 }, before, { hits });
       if (!(await need('F2', '[data-replace-toggle]', 'Replace'))) return;
-      await press('[data-replace-toggle]'); await sleep(300);
-      await press('input[data-replace-with]'); await d.type('fee'); await sleep(200);
-      await press('[data-replace-all]'); await sleep(800);
+      // the menu's own state before each press (run 1 read replaced:false with no reason: suspect the instrument first)
+      const fdiag = () => ev("(() => { const q = document.querySelector('[data-search-q]'), w = document.querySelector('input[data-replace-with]'), all = document.querySelector('[data-replace-all]'), tg = document.querySelector('[data-replace-toggle]'); return { q: q ? q.value : null, qFocused: !!q && document.activeElement === q, toggle: tg ? tg.getAttribute('aria-expanded') : null, repl: w ? w.value : null, replFocused: !!w && document.activeElement === w, all: all ? { dis: all.disabled, label: all.textContent } : null, active: document.activeElement && (document.activeElement.tagName + '.' + document.activeElement.className).slice(0, 60) }; })()");
+      const fd0 = await fdiag();
+      const pT = await press('[data-replace-toggle]'); await sleep(300);
+      const fd1 = await fdiag();
+      const pW = await press('input[data-replace-with]'); await d.type('fee'); await sleep(200);
+      const fd2 = await fdiag();
+      const pA = await press('[data-replace-all]'); await sleep(800);
+      out(`OBS F2 the menu before each press: ${JSON.stringify({ fd0, pT, fd1, pW, fd2, pA })}`);
       const r = await d.read();
       const want2 = (T + '!').replace(/toll/g, 'fee');
       await judge('F2a', 'Replace all ("toll" -> "fee"): the page reads the replaced text', { text: r.text, a: r.anchor ?? 0, f: r.focus ?? 0 }, before, { replaced: r.text === want2 });
+      if (r.text !== want2) finding('F2a-text', 'Replace all ("toll" -> "fee"): the page reads the replaced text', 'text', `got ${JSON.stringify(r.text)} want ${JSON.stringify(want2)}`, { fd2, pA });
       if (await has('[data-replace-undo]')) { await press('[data-replace-undo]'); await sleep(800); const u = await d.read(); await judge('F2b', 'Undo the replace: the page reads the text before it', { text: u.text, a: u.anchor ?? 0, f: u.focus ?? 0 }, before, { restored: u.text === T + '!' }); }
       await d.key('Escape'); await sleep(300);
     });
@@ -159,11 +174,21 @@ export async function main({ title }) {
       await refocus(T.length);
       const before = await d.read();
       await d.type('[^1]'); await sleep(200);
-      await judge('N1a', 'a footnote marker typed by hand', { text: T + '[^1]', a: T.length + 4, f: T.length + 4 }, before);
+      // SUPERSEDED (run 45072994222: the premise was wrong, not the page. What a writer types is literal: ForwardOnlyEditor escapes its formatting
+      // characters (escapeTyped, [ForwardOnlyEditor §1]) and footnotes.ts reads "a typed \[^1] (escaped) is not a marker"; markers come from the
+      // button, N2). The two lines, verbatim:
+      // await judge('N1a', 'a footnote marker typed by hand', { text: T + '[^1]', a: T.length + 4, f: T.length + 4 }, before);
+      // const t1 = T + '[^1]\n[^1]: The note itself.';
+      // await judge('N1b', 'its note line typed by hand (drawn as a note): the text and the caret drawn at its end', { text: t1, a: t1.length, f: t1.length }, before,
+      //   { noteRow: await ev("!!document.querySelector('.forward-only-editor .md-note')") });
+      // [successor] typed by hand, the marker and its note line stay literal words: escaped in the text, the caret after them and drawn, no note row drawn
+      const E = (s) => s.replace(/[[\]^]/g, (c) => '\\' + c);
+      await judge('N1a', 'a footnote marker typed by hand stays literal (escaped): the text and the caret drawn after it', { text: T + E('[^1]'), a: T.length + 7, f: T.length + 7 }, before);
       await d.key('Enter'); await d.type('[^1]: The note itself.'); await sleep(400);
-      const t1 = T + '[^1]\n[^1]: The note itself.';
-      await judge('N1b', 'its note line typed by hand (drawn as a note): the text and the caret drawn at its end', { text: t1, a: t1.length, f: t1.length }, before,
-        { noteRow: await ev("!!document.querySelector('.forward-only-editor .md-note')") });
+      const t1 = T + E('[^1]') + '\n' + E('[^1]') + ': The note itself.';
+      const noteRow = await ev("!!document.querySelector('.forward-only-editor .md-note')");
+      await judge('N1b', 'its note line typed by hand stays literal words: the text and the caret drawn at its end', { text: t1, a: t1.length, f: t1.length }, before, { noteRow });
+      if (noteRow) finding('N1c', 'a note line typed by hand is drawn as a note (it should stay literal words)', 'literal', '.md-note drawn for a typed (escaped) note line');
       const T2 = 'Body text for the button.';
       await openDoc([T2]);
       await refocus(4);
@@ -186,13 +211,22 @@ export async function main({ title }) {
       await refocus(0);
       const before = await d.read();
       await d.type('E = mc^2^ holds'); await sleep(300);
-      const t = 'E = mc^2^ holds';
-      await judge('U1a', 'superscript typed by hand (^2^): the text, and the caret drawn after the hidden markers', { text: t, a: t.length, f: t.length }, before,
-        { sup: await ev("!!document.querySelector('.forward-only-editor .md-sup')") });
+      // SUPERSEDED (run 45072994222: the premise was wrong, not the page: typed formatting characters are literal, escapeTyped; ^2^ comes from the
+      // sup button. The lines, verbatim:
+      // const t = 'E = mc^2^ holds';
+      // await judge('U1a', 'superscript typed by hand (^2^): the text, and the caret drawn after the hidden markers', { text: t, a: t.length, f: t.length }, before,
+      //   { sup: await ev("!!document.querySelector('.forward-only-editor .md-sup')") });
+      // const at = t.length - 6;
+      // await judge('U1b', 'six ArrowLefts across the hidden markers, then a letter: it lands where the model says', { text: t.slice(0, at) + '!' + t.slice(at), a: at + 1, f: at + 1 }, before);
+      // [successor] typed by hand, ^2^ stays literal (escaped, no superscript drawn); six ArrowLefts cross " holds" and the letter lands there
+      const t = 'E = mc\\^2\\^ holds';
+      const sup = await ev("!!document.querySelector('.forward-only-editor .md-sup')");
+      await judge('U1a', 'superscript typed by hand (^2^) stays literal: the escaped text, the caret drawn at its end', { text: t, a: t.length, f: t.length }, before, { sup });
+      if (sup) finding('U1c', 'a typed ^2^ is drawn as a superscript (it should stay literal)', 'literal', '.md-sup drawn for typed (escaped) carets');
       for (let i = 0; i < 6; i++) await d.key('ArrowLeft');
       await d.type('!'); await sleep(300);
       const at = t.length - 6;
-      await judge('U1b', 'six ArrowLefts across the hidden markers, then a letter: it lands where the model says', { text: t.slice(0, at) + '!' + t.slice(at), a: at + 1, f: at + 1 }, before);
+      await judge('U1b', 'six ArrowLefts across " holds", then a letter: it lands where the model says', { text: t.slice(0, at) + '!' + t.slice(at), a: at + 1, f: at + 1 }, before);
       await openDoc(['H2O is water']);
       await refocus(1, 2);
       const b2 = await d.read();
