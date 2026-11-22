@@ -21,10 +21,12 @@ const READ = () => `(() => {
   const sel = getSelection();
   let caret = null;
   if (sel && sel.rangeCount && ed.contains(sel.anchorNode)) { const rg = sel.getRangeAt(0); const rs = rg.getClientRects(); const r0 = rs.length ? rs[rs.length - 1] : null; if (r0 && r0.height > 0) caret = { top: Math.round(r0.top), bottom: Math.round(r0.bottom) }; else { const ae = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement; const row = ae && ae.closest ? ae.closest('.wz-row') : null; if (row) { const b = row.getBoundingClientRect(); caret = { top: Math.round(b.top), bottom: Math.round(b.bottom) }; } } }
+  let endRect = null;
+  { const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) { if (n.nodeValue.length) last = n; } if (last) { const r = document.createRange(); r.setStart(last, Math.max(0, last.nodeValue.length - 1)); r.setEnd(last, last.nodeValue.length); const g = r.getBoundingClientRect(); if (g.height) endRect = { top: Math.round(g.top), bottom: Math.round(g.bottom) }; } }
   const box = sc.getBoundingClientRect();
   const a = document.activeElement;
   return { scrollTop: Math.round(sc.scrollTop * 10) / 10, scrollH: sc.scrollHeight, clientH: sc.clientHeight, clipTop: Math.round(box.top), clipBottom: Math.round(box.bottom), win: innerHeight,
-    firstRowTop: rows[0] ? Math.round(rows[0].getBoundingClientRect().top) : null, lastRow: rows.length ? { top: Math.round(rows[rows.length - 1].getBoundingClientRect().top), bottom: Math.round(rows[rows.length - 1].getBoundingClientRect().bottom) } : null, nRows: rows.length, zoom: col ? col.getAttribute('data-zoom') : null, tw: sc.getAttribute('data-typewriter'), caret,
+    firstRowTop: rows[0] ? Math.round(rows[0].getBoundingClientRect().top) : null, endRect, lastRow: rows.length ? { top: Math.round(rows[rows.length - 1].getBoundingClientRect().top), bottom: Math.round(rows[rows.length - 1].getBoundingClientRect().bottom) } : null, nRows: rows.length, zoom: col ? col.getAttribute('data-zoom') : null, tw: sc.getAttribute('data-typewriter'), caret,
     active: a ? (a.tagName + '.' + String(a.className).slice(0, 36)) : null, hasCaret: !!(sel && sel.rangeCount && ed.contains(sel.anchorNode)), winScroll: Math.round(scrollY),
     mode: (document.querySelector('.desk-mode-tab[aria-selected="true"]') || { getAttribute: () => null }).getAttribute('data-mode-key') };
 })()`;
@@ -66,6 +68,13 @@ try { await withHarness(async (app) => {
     await sleep(3000);
     const c53 = await ev('window.__sc');
     const after53 = await ev(READ());
+    await sleep(12000);
+    await ev('window.__sc.events = 0; window.__sc.calls = 0; window.__sc.sets = 0; window.__sc.raf = 0; true');
+    const late0 = await ev(READ());
+    await sleep(3000);
+    const lc = await ev('window.__sc');
+    const late1 = await ev(READ());
+    say('#53-late', T, { perSecond: { events: lc.events / 3, scrollCalls: lc.calls / 3, scrollTopSets: lc.sets / 3, frameRequests: lc.raf / 3 }, scrollTop: [late0 && late0.scrollTop, late1 && late1.scrollTop] });
     say('#53', T, { perSecond: { events: c53.events / 3, scrollCalls: c53.calls / 3, scrollTopSets: c53.sets / 3, frameRequests: c53.raf / 3 }, scrollTop: [before53 && before53.scrollTop, after53 && after53.scrollTop], zoom: after53 && after53.zoom });
 
     // ---- #48: leaving the Typewriter (Free Write -> Draft) ----
@@ -114,9 +123,9 @@ try { await withHarness(async (app) => {
       await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
       for (let i = 0; i < 14; i += 1) await app.typeKeys('\nburst line ' + (i + 1) + ' of words');
       const reads = [];
-      for (const wait of [150, 400, 900, 1600]) { await sleep(wait); const b = await ev(READ()); reads.push(b && { lastRow: b.lastRow, scrollTop: b.scrollTop }); }
+      for (const wait of [150, 400, 900, 1600]) { await sleep(wait); const b = await ev(READ()); reads.push(b && { endRect: b.endRect, scrollTop: b.scrollTop }); }
       const last = reads[reads.length - 1];
-      say('#52', T, { reduced, window: 768, readings: reads, finalLastRowBelowWindow: !!(last && last.lastRow && last.lastRow.bottom > 768) });
+      say('#52', T, { reduced, window: 768, readings: reads, finalEndBelowWindow: !!(last && last.endRect && last.endRect.bottom > 768) });
     }
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
   }
