@@ -25,12 +25,15 @@
 //   FF13  Machina is unchanged: its first tab reads TEXT and Page setup stays at its foot (the probe the FF2 absence relies on, seen present)
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-front-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
-import { decodePng, contrast } from '../arbor2-png.mjs';
+import zlib from 'node:zlib';
+import { contrast } from '../arbor2-png.mjs';
 
 process.env.WS_PLACE = '1';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Chrome's screenshot is 8-bit RGB (colour type 2), which arbor2-png's decodePng refuses (runs 45202747676, 45202901240: FF20 read no pixel at all, so its first red was the instrument's)
+const decodeShot = (buf) => { let o = 8, w = 0, h = 0, ct = 0; const idat = []; while (o < buf.length) { const n = buf.readUInt32BE(o), ty = buf.toString('latin1', o + 4, o + 8), d = buf.subarray(o + 8, o + 8 + n); if (ty === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ct = d[9]; if (d[8] !== 8 || d[12] !== 0 || (ct !== 2 && ct !== 6)) throw new Error('unsupported PNG: depth ' + d[8] + ', colour type ' + ct + ', interlace ' + d[12]); } else if (ty === 'IDAT') idat.push(d); o += n + 12; } const bpp = ct === 6 ? 4 : 3, stride = w * bpp, raw = zlib.inflateSync(Buffer.concat(idat)), px = Buffer.alloc(stride * h); for (let y = 0, p = 0; y < h; y += 1) { const f = raw[p]; p += 1; for (let x = 0; x < stride; x += 1, p += 1) { const a = x >= bpp ? px[y * stride + x - bpp] : 0, b = y ? px[(y - 1) * stride + x] : 0, c = x >= bpp && y ? px[(y - 1) * stride + x - bpp] : 0; let v = raw[p]; if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1; else if (f === 4) { const q = a + b - c, pa = Math.abs(q - a), pb = Math.abs(q - b), pc = Math.abs(q - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; } px[y * stride + x] = v & 255; } } const data = Buffer.alloc(w * h * 4, 255); for (let i = 0, j = 0; i < px.length; i += bpp, j += 4) { data[j] = px[i]; data[j + 1] = px[i + 1]; data[j + 2] = px[i + 2]; } return { width: w, height: h, data }; };
 const q = (s) => JSON.stringify(s);
 const LIFT = 'flux.top,flux.front';
 const BRASS = 'rgb(255, 152, 0)', CYAN = 'rgb(0, 194, 255)', NONE = 'rgba(0, 0, 0, 0)';
@@ -199,7 +202,9 @@ await withHarness(async (app) => {
     if (r.missing || !(r.w > 0 && r.h > 0)) { drawn.push({ s: r.s, ratio: 0, color: r.color || null }); continue; }
     try {
       const shot = await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: r.x, y: r.y, width: r.w, height: r.h, scale: 1 } });
-      const img = decodePng(Buffer.from(shot.data, 'base64'));
+      // SUPERSEDED (runs 45202747676, 45202901240: 'unsupported PNG: depth 8, colour type 2'). The line, verbatim:
+      // const img = decodePng(Buffer.from(shot.data, 'base64'));
+      const img = decodeShot(Buffer.from(shot.data, 'base64'));
       let peak = '#000000', best = -1;
       for (let i = 0; i < img.data.length; i += 4) { const v = img.data[i] * 0.2126 + img.data[i + 1] * 0.7152 + img.data[i + 2] * 0.0722; if (v > best) { best = v; peak = '#' + [img.data[i], img.data[i + 1], img.data[i + 2]].map((c) => c.toString(16).padStart(2, '0')).join(''); } }
       drawn.push({ s: r.s, peak, ratio: Math.round(contrast(peak, GROUND) * 100) / 100, color: r.color });
