@@ -5,6 +5,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { getJournalEntry, subscribe } from '../store/persistence';
 import { routeForEntry } from '../store/routeForEntry';
 import { partsOfDoc, type PartRow } from './partsSeam';
+import { wantPartFocus } from './partFocus';
 import { REORG } from './flag';
 
 // MOVING BETWEEN PARTS (Fable's add-on, Nov 19 3:55 pm; plan: "forward and back arrows that show with the scrollbar", Nick's idea; built to the
@@ -48,6 +49,7 @@ function useGo(beforeLeave: () => void): (id: string) => void {
     const target = getJournalEntry(id);
     if (!target) return;
     beforeLeave();
+    wantPartFocus(id);   // her own move: the Part that opens takes her caret (reorg/partFocus.ts, bug R1)
     navigate(routeForEntry(target));
   };
 }

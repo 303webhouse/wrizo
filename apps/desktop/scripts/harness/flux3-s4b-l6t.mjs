@@ -49,6 +49,9 @@ try { await withHarness(async (app) => {
   // ---- the fixture (seams only): a preset step, a long-titled preset step, a plain text node, an ink node, and a doc node pinning a page ------------------------------------
   const at = new Date().toISOString();
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: 'l6t-doc', text: 'The doc node\nIts second line.', createdAt: at, origin: 'journal', source: 'page' })})`);
+  // createJournalPage sets a page's pageSettings itself (it ignores a passed one): the name goes on through the patch seam, merged into what the page was born with
+  await ev(`(() => { const W = window; const e = W.wrizoCreateJournalPage(${JSON.stringify({ id: 'l6t-named', text: 'Its first line is not its name\nMore.', createdAt: at, origin: 'journal', source: 'page' })});
+    W.wrizoPatchEntry('l6t-named', { pageSettings: { ...((e && e.pageSettings) || {}), name: 'Chapter Seven' } }); W.wrizoFlushNow(); return null; })()`);
   const T = (id, x, y, z, text, extra = {}) => ({ id, kind: 'text', x, y, w: 0.2, h: 0.1, z, text, ...extra });
   const boxes = [
     T('l6t-preset', 0.05, 0.08, 1, 'The hook\nThe step body.', { deckStep: { deck: 'three-act', step: 'hook' } }),
@@ -56,6 +59,8 @@ try { await withHarness(async (app) => {
     T('l6t-text', 0.05, 0.4, 3, 'A plain node\nIts body line.'),
     { id: 'l6t-ink', kind: 'ink', x: 0.5, y: 0.4, w: 0.2, h: 0.12, z: 4, strokes: [] },
     { id: 'l6t-pin', kind: 'page-pin', entryId: 'l6t-doc', x: 0.05, y: 0.7, w: 0.2, h: 0.15, z: 5 },
+    // NAME (Fable, Nov 21, 11:55 pm, the NIT): a pinned page that carries its own name (pageSettings.name)
+    { id: 'l6t-pin2', kind: 'page-pin', entryId: 'l6t-named', x: 0.5, y: 0.7, w: 0.2, h: 0.15, z: 6 },
     { id: 'l6t-meta', kind: 'board-meta', x: 0, y: 0, w: 0, h: 0, z: 0, canvasH: 2600 },
   ];
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Schema L6 title', pageType: 'board', boxes, createdAt: at, origin: null, source: null })})`);
@@ -87,13 +92,17 @@ try { await withHarness(async (app) => {
   const m = await all();
   ok('RECT no card moves: every card\'s rect is the same with the title rows taken away', removed > 0 && ids.every((id) => !!n[id] && !!m[id] && n[id].rect === m[id].rect), { removed, before: ids.map((id) => n[id] && n[id].rect), after: ids.map((id) => m[id] && m[id].rect) });
   ok('MUT with the title rows taken away, PRESET reads false (the reader can go red)', removed > 0 && !presetOk(m['l6t-preset']), m['l6t-preset']);
+  // NAME (the NIT): read after a fresh open, beside the unnamed DOC above (which keeps its first line)
+  await open();
+  const named = await ev("window.__l6t.node('l6t-pin2')");
+  ok('NAME a doc node whose page has its own name shows that name (not its first line); a page without one shows its first line (DOC)', !!named && named.title === 'Chapter Seven' && named.above, named);
 
   await open({ flag: false });
   const off = await all();
   ok('OFF without the flag there is no title row', ids.every((id) => !!off[id] && off[id].title === null), off);
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
-const EXPECTED = 7;
+const EXPECTED = 8;   // 7 + NAME (Fable, Nov 21, 11:55 pm)
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + String(c.detail).slice(0, 1500)}`); if (!c.pass) bad += 1; }
 if (checks.length !== EXPECTED) bad = Math.max(bad, 1);

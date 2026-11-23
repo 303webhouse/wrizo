@@ -148,7 +148,11 @@ await withHarness(async (app) => {
   const pageReorg = await app.evalJs(PAGE);
   await app.mouseMove(700, 400); await sleep(400);
   const footDay = await drawnFoot(app);
-  ok('T0 the reorg\'s top bar stands in Arbor with the preview door, and not without it, nor in the classic Plateau, nor without the switch', !!day && !live && !noDoor && !classic, { door: !!day, live, noDoor, classic });
+  // SUPERSEDED (the Wrizors' pass 6 passed Arbor's last pieces; Fable, Nov 22 3:20 pm: all six Arbor cells flip for train K, ARBOR flips plateau.top: the top bar now stands under ?reorg=1 WITHOUT the preview door). The original, verbatim:
+  // ok('T0 the reorg\'s top bar stands in Arbor with the preview door, and not without it, nor in the classic Plateau, nor without the switch', !!day && !live && !noDoor && !classic, { door: !!day, live, noDoor, classic });
+  const t0b = (x) => !!x.day && !x.live && x.noDoor === true && !x.classic;
+  ok('T0-B the reorg\'s top bar stands in Arbor under ?reorg=1 with no preview door (plateau.top on), and not in the classic Plateau, nor without the switch', t0b({ day, live, noDoor, classic }), { door: !!day, live, noDoor, classic });
+  ok('MUT-T0-B the same reading with the cell off (no top bar without the door) turns T0-B\'s test red', !t0b({ day, live, noDoor: false, classic }), { noDoor: false });
   ok('T1 on Section 2 the bar reads the Drawer, the Page and "2 of 3", with the Section\'s tag (C) just before its name',
     !!day && /Fiction/i.test(day.text) && /The Mill/.test(day.text) && /2 of 3/.test(day.text) && !!day.tag && day.tag.slot === 'c' && day.tag.beforeName, day && { text: day.text, tag: day.tag });
   ok('T2 the names are not bare buttons and the bar holds one row (names, stages, search door on one line inside the bar)', t2(day), day && { names: day.names.map((n) => [n.text, n.btnBg, n.btnBorder]), bar: day.bar, search: day.search, namesBox: day.namesBox });
@@ -304,7 +308,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 28;   // + S1, MUT-S1, S2 (the stage strip's cloths, Nov 22). Was: const EXPECTED = 25;   // + MUT-T11-PAINT, T14, MUT-T14, T15 (the Wrizors' pass 4, Nov 22). Was: const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
+const EXPECTED = 29;   // T0 parked: + T0-B, MUT-T0-B (plateau.top on, Nov 22). Was: const EXPECTED = 28;   // + S1, MUT-S1, S2 (the stage strip's cloths, Nov 22). Was: const EXPECTED = 25;   // + MUT-T11-PAINT, T14, MUT-T14, T15 (the Wrizors' pass 4, Nov 22). Was: const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`

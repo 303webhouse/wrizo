@@ -138,8 +138,11 @@ await withHarness(async (app) => {
   await open(app, 'ab-1', { arbor2: false });
   await drawer(app);
   const classic = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; return { tabs: all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), arbor2: document.documentElement.hasAttribute('data-arbor2') }; })()");
-  ok('AB8 OFF: without the door Arbor\'s own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 even the door gives no Back menu',
-    Array.isArray(off) && off.map((x) => x.id).join(',') === 'tutor,links,board' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AB8, verbatim:
+  // ok('AB8 OFF: without the door Arbor\'s own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 even the door gives no Back menu',
+  // Array.isArray(off) && off.map((x) => x.id).join(',') === 'tutor,links,board' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
+  ok('AB8 ON [successor]: without the door Arbor\'s Back menu stands (PLAN | GRAFTS | TUTOR, the Plan tab included: the cell is the table\'s); with ?arbor2=0 even the door gives no Back menu',
+    Array.isArray(off) && off.map((x) => x.id).join(',') === 'plan,links,tutor' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

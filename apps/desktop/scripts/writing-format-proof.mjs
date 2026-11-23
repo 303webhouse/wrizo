@@ -29,25 +29,45 @@ const requireDesktop = createRequire(join(here, '..', 'package.json'));
 const esbuild = createRequire(requireDesktop.resolve('vite'))('esbuild');
 const tmp = join(tmpdir(), 'wrizo-format-proof');
 mkdirSync(tmp, { recursive: true });
-for (const [d, f] of SIBLINGS) { mkdirSync(join(tmp, d), { recursive: true }); writeFileSync(join(tmp, d, f), readFileSync(join(SRC, d, f), 'utf8')); }
+// SUPERSEDED (Nov 22, train K1: the bundle is the real tree now, nothing is copied): the sibling copy, verbatim:
+// for (const [d, f] of SIBLINGS) { mkdirSync(join(tmp, d), { recursive: true }); writeFileSync(join(tmp, d, f), readFileSync(join(SRC, d, f), 'utf8')); }
 
 // A mutant is [name, file, transform]; the file it edits is copied (mutated) into a scratch dir beside unmutated copies of the
 // others, so the bundle is the real modules with exactly one edit.
+// SUPERSEDED (Nov 22, train K1: draftDecoration.ts now imports ./theme, which the hand-kept FILES / SIBLINGS lists did not carry - esbuild "Could not resolve './theme'"; the lists had already fallen behind three times: fontRoster, flux3/flag, reorg/*). The original load(), verbatim, which copied the listed files into a scratch dir:
+// async function load(tag, mutant) {
+//   const dir = join(tmp, tag); mkdirSync(dir, { recursive: true });
+//   for (const f of FILES) {
+//     let source = readFileSync(join(SRC, 'store', f), 'utf8');
+//     if (mutant && mutant.file === f) {
+//       const t = mutant.fn(source);
+//       if (t === source) throw new Error(`mutation ${tag} did not land`);
+//       source = t;
+//     }
+//     writeFileSync(join(dir, f), source);
+//   }
+//   writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';");
+//   const outfile = join(dir, 'out.mjs');
+//   // the font roster loads its CSS by dynamic import when a face is chosen; the proof never chooses one, so those imports stay external (unresolved from the scratch dir, and never run)
+//   await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent', external: ['@fontsource/*', '@fontsource-variable/*'] });
+//   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
+// }
+// [successor] the bundle is the REAL tree: esbuild follows every import itself (relative and bare, so nothing can fall behind the file's imports), and a mutant is ONE override of the one file it edits (an onLoad hook), so the bundle is the real modules with exactly one edit. FILES above is now only the list of files a mutant may name.
+const ENTRY = "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';";
 async function load(tag, mutant) {
   const dir = join(tmp, tag); mkdirSync(dir, { recursive: true });
-  for (const f of FILES) {
-    let source = readFileSync(join(SRC, 'store', f), 'utf8');
-    if (mutant && mutant.file === f) {
-      const t = mutant.fn(source);
-      if (t === source) throw new Error(`mutation ${tag} did not land`);
-      source = t;
-    }
-    writeFileSync(join(dir, f), source);
+  let mutated = null;
+  if (mutant) {
+    const p = join(SRC, 'store', mutant.file);
+    const source = readFileSync(p, 'utf8');
+    const t = mutant.fn(source);
+    if (t === source) throw new Error(`mutation ${tag} did not land`);
+    mutated = { path: p, contents: t };
   }
-  writeFileSync(join(dir, 'entry.ts'), "export * from './draftFormat'; export { readMarks } from './markRuns'; export { decorateMarkdownForCard } from './draftDecoration'; export { readLead, stripLine } from './markRuns'; export { createTabChord, CHORD_HOLD_MS } from './tabChord'; export { firstLine, firstPlainLine, plainLines, boardName, substantialLines } from './entryText'; export { snapCaret, snapCaretAfterClick, wordBackspaceAt, wordDeleteAt } from './hiddenMarks';");
+  const override = { name: 'one-mutant', setup(b) { if (mutated) b.onLoad({ filter: /\.tsx?$/ }, (args) => (args.path === mutated.path ? { contents: mutated.contents, loader: 'ts' } : undefined)); } };
   const outfile = join(dir, 'out.mjs');
-  // the font roster loads its CSS by dynamic import when a face is chosen; the proof never chooses one, so those imports stay external (unresolved from the scratch dir, and never run)
-  await esbuild.build({ entryPoints: [join(dir, 'entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent', external: ['@fontsource/*', '@fontsource-variable/*'] });
+  // the font roster loads its CSS by dynamic import when a face is chosen; the proof never chooses one, so those imports stay external (never run)
+  await esbuild.build({ stdin: { contents: ENTRY, resolveDir: join(SRC, 'store'), sourcefile: 'entry.ts', loader: 'ts' }, bundle: true, platform: 'node', format: 'esm', outfile, logLevel: 'silent', plugins: [override], nodePaths: [join(here, '..', 'node_modules')], external: ['@fontsource/*', '@fontsource-variable/*'] });
   return import(pathToFileURL(outfile).href + `?t=${Date.now()}`);
 }
 
