@@ -15,6 +15,8 @@
 //        L2   typing after a replace, Undo refuses and writes nothing
 // AFTER  F3a  reopened, the page shows the new name
 //        F3b  one more edit and save: the new name stands in the script and the derived text
+// CAPS   C1   prose: an all-caps find is replaced in all caps, a capitalised one keeps its capital, a lower-case one stays lower case
+//        C2   a find with only one letter (R2) is not all caps: it keeps the first-capital rule
 // BREAK  B1   a replace that pushes the active line onto the next sheet keeps the keyboard in the menu and the page's scroll where it was
 //
 // Run (repo root; the Actions harness, or a box turn):  node apps/desktop/scripts/harness/script-replace.mjs
@@ -49,10 +51,14 @@ const ser = (doc) => {
 const flat = (doc) => doc.scenes.flatMap((s) => [s.heading, ...s.body]).map((e) => ({ id: e.id, t: e.t, text: e.text }));
 
 const S1 = [['scene', 'INT. LAUNDROMAT - NIGHT'], ['character', 'MARA'], ['dialogue', 'Mara knows.'], ['action', 'MARA turns. mara waits.'], ['character', "MARA (CONT'D)"], ['dialogue', 'Hello, Mara.'], ['character', 'THEO'], ['dialogue', 'Nothing here.']];
-const S1_NEW = [['scene', 'INT. LAUNDROMAT - NIGHT'], ['character', 'DELIA'], ['dialogue', 'Delia knows.'], ['action', 'Delia turns. delia waits.'], ['character', "DELIA (CONT'D)"], ['dialogue', 'Hello, Delia.'], ['character', 'THEO'], ['dialogue', 'Nothing here.']];
+// SUPERSEDED (Fable, Nov 22, 11:30 pm: an all-caps find (two letters or more) is replaced in all caps, MARA to DELIA, in prose too). The line, verbatim:
+// const S1_NEW = [['scene', 'INT. LAUNDROMAT - NIGHT'], ['character', 'DELIA'], ['dialogue', 'Delia knows.'], ['action', 'Delia turns. delia waits.'], ['character', "DELIA (CONT'D)"], ['dialogue', 'Hello, Delia.'], ['character', 'THEO'], ['dialogue', 'Nothing here.']];
+// [successor]
+const S1_NEW = [['scene', 'INT. LAUNDROMAT - NIGHT'], ['character', 'DELIA'], ['dialogue', 'Delia knows.'], ['action', 'DELIA turns. delia waits.'], ['character', "DELIA (CONT'D)"], ['dialogue', 'Hello, Delia.'], ['character', 'THEO'], ['dialogue', 'Nothing here.']];
 const S2 = [['scene', 'EXT. STREET - DAY'], ['character', 'MARA'], ['dialogue', 'Still Mara.']];
 const S2_NEW = [['scene', 'EXT. STREET - DAY'], ['character', 'DELIA'], ['dialogue', 'Still Delia.']];
 const P3 = 'Notes on Mara.', P3_NEW = 'Notes on Delia.', F1 = 'Mara lives here too.';
+const C1 = 'MARA and Mara and mara. R2 and r2.', C1_A = 'DELIA and Delia and delia. R2 and r2.', C1_B = 'DELIA and Delia and delia. Bot and bot.';
 const LONG = 'a much longer name that wraps this action line across several lines of the page so that the last line has to move over to the next sheet';
 const S9 = [['scene', 'INT. A - DAY'], ['action', 'Zed stands.'], ...Array.from({ length: 24 }, (_, i) => ['action', `Filler line ${i + 1}.`]), ['action', 'Last line.']];
 const doc1 = mk('s-1', S1), doc1New = mk('s-1', S1_NEW), doc2 = mk('s-2', S2), doc2New = mk('s-2', S2_NEW), doc9 = mk('s-9', S9);
@@ -127,6 +133,7 @@ await withHarness(async (app) => {
     W.wrizoCreateJournalPage({ id: 'p-3', text: ${q(P3)}, origin: 'project', source: 'page', projectId: spin.id, orderIndex: 2, createdAt: at(3) });
     W.wrizoCreateJournalPage({ id: 'f-1', text: ${q(F1)}, origin: 'project', source: 'page', projectId: other.id, orderIndex: 0, createdAt: at(4) });
     script('s-9', ${q(doc9)}, ${q(ser(doc9))}, long.id, 0, 5);
+    W.wrizoCreateJournalPage({ id: 'c-1', text: ${q(C1)}, origin: 'project', source: 'page', projectId: W.wrizoCreateProject('Caps').id, orderIndex: 0, createdAt: at(6) });
     W.wrizoFlushNow();
     return null;
   })()`);
@@ -183,7 +190,10 @@ await withHarness(async (app) => {
   const l1a = await stored('s-1');
   await sleep(2700);   // past the page's own autosave
   const l1b = await stored('s-1'), l1Page = await page();
-  const wantLine = 'Delia turns. delia waits. Delia again.';
+  // SUPERSEDED (Fable, Nov 22, 11:30 pm: an all-caps find (two letters or more) is replaced in all caps, MARA to DELIA, in prose too). The line, verbatim:
+  // const wantLine = 'Delia turns. delia waits. Delia again.';
+  // [successor]
+  const wantLine = 'DELIA turns. delia waits. Delia again.';
   ok('L1: words typed a moment ago survive the replace and are replaced too; nothing reverts after the page\'s own save', typedWasUnsaved && l1a?.script?.[3]?.text === wantLine && l1b?.script?.[3]?.text === wantLine && l1Page[3] === wantLine && !(l1b?.script || []).some((e) => /mara/i.test(e.text)), { typedWasUnsaved, a: l1a?.script?.[3]?.text, b: l1b?.script?.[3]?.text, page: l1Page[3] });
   await typeKeys(' X');
   await sleep(2700);
@@ -221,12 +231,32 @@ await withHarness(async (app) => {
   // ok('B1-B: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page or move its scroll', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
   // [successor] what she sees: a line on screen before the press is at the same place on screen after it
   ok('B1-C: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page, and the lines on screen stay where they are', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && !!b0.seen?.onScreen && !!b1.seen?.onScreen && Math.abs(b1.seen.top - b0.seen.top) <= 1 && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
+
+  // ---- CAPS: the ruling on keepCapital, on a prose page (a screenplay's action line is F2a)
+  await app.emulateDpr(1, 1366, 768);
+  await app.evalJs("history.replaceState(null, '', '/?reorg=1&arbor2=0#/page/c-1'); null");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('[data-top-search]')", { label: 'the prose page', timeout: 15000 });
+  await sleep(2500);   // the open page re-saves itself ~1.1 s after it mounts: the replace comes after it settles
+  await openSearch('Mara', 'delia');
+  await app.evalJs(click('[data-search-menu] [data-replace-all]'));
+  await waitStored('c-1', `(r) => !/mara/i.test(r.text)`, 'the prose replace');
+  await sleep(300);
+  const c1 = await stored('c-1');
+  ok('C1: prose: an all-caps find is replaced in all caps, a capitalised one keeps its capital, a lower-case one stays lower case', c1?.text === C1_A, c1?.text);
+  await app.evalJs(setInput('[data-search-menu] [data-search-q]', 'R2')); await sleep(450);
+  await app.evalJs(setInput('[data-search-menu] [data-replace-with]', 'bot')); await sleep(300);
+  await app.evalJs(click('[data-search-menu] [data-replace-all]'));
+  await waitStored('c-1', `(r) => !/r2/i.test(r.text)`, 'the one-letter replace');
+  await sleep(300);
+  const c2 = await stored('c-1');
+  ok('C2: a find with only one letter (R2) is not all caps: it keeps the first-capital rule', c2?.text === C1_B, c2?.text);
   return checks;
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 700)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 13;
+const EXPECTED = 15;
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nSCRIPT-REPLACE VERIFY: PASS (${checks.length} checks)` : `\nSCRIPT-REPLACE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
