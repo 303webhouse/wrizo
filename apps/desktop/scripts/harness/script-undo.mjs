@@ -19,6 +19,10 @@
 //               U16  the Edit menu's Undo (the browser's own history event) takes the same path
 //               U17  a pause in typing separates two undo steps
 //               U18  (control) Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does
+// FROM OUTSIDE  U19  lines another window saved are not taken back by Ctrl+Z (Fable, Nov 23, 3:25 pm: they reset the history, as Replace does)
+//               U20  (control) this page's own autosave does not reset the history
+//               U21  the same with unsaved typing here when the other window's lines arrive
+//               The other window is a real one: a same-origin iframe of the app, its own realm and cache on the one localStorage, writing through the app's own seam.
 //
 // Run (repo root; the Actions harness, or a box turn):  node apps/desktop/scripts/harness/script-undo.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -100,6 +104,18 @@ await withHarness(async (app) => {
     await caret('end');
     await sleep(80);
     return id;
+  };
+  // A closing window writes its whole, older store, so the old one goes BEFORE the next page is made (writing-audit/lib/tabs-common.mjs)
+  const dropOther = async () => { if (await app.evalJs("(() => { const f = document.getElementById('su-other'); if (f) f.remove(); return !!f; })()")) await sleep(600); };
+  const otherWindow = async () => {
+    await app.evalJs("(() => { const f = document.createElement('iframe'); f.id = 'su-other'; f.src = location.origin + location.pathname + '?reorg=1&arbor2=0#/'; f.style.cssText = 'position:fixed;left:-2000px;top:0;width:900px;height:600px;border:0'; document.body.appendChild(f); return true; })()");
+    await app.waitFor("(() => { try { const w = document.getElementById('su-other').contentWindow; return !!w.wrizoPatchEntry && !!w.document.querySelector('.wz-arrival'); } catch { return false; } })()", { label: 'the other window', timeout: 20000 });
+    await sleep(300);
+  };
+  const outside = async (id, rows) => {
+    const doc = docOf(id, rows);
+    await app.evalJs(`(() => { const w = document.getElementById('su-other').contentWindow; return !!w.wrizoPatchEntry(${q(id)}, { script: ${q(doc)}, text: ${q(rows.map((r) => r[1]).join('\n\n'))} }); })()`);
+    await sleep(300);
   };
   const storedAs = async (id, want) => {
     await app.waitFor(`JSON.stringify(${STORED(id)}) === ${q(JSON.stringify(want))}`, { label: 'the stored lines', timeout: 5000 }).catch(() => {});
@@ -260,12 +276,46 @@ await withHarness(async (app) => {
   await sleep(250);
   const r18cp = await lines();
   ok("U18 (control): Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does", same(r18a, r1) && same(r18page, r1) && same(r18b, r1) && same(r18c, r0) && same(r18cp, r0), { r18a, r18page, r18b, r18c, r18cp });
+
+  // ---- LINES FROM OUTSIDE
+  const M1 = [HEAD, act('Mine more')], T1 = [HEAD, act('Mine more'), act('From the other window.')];
+  const u19id = await open([HEAD, act('Mine')], 1); await type(' more');
+  const u19saved = await storedAs(u19id, M1);
+  await otherWindow();
+  await outside(u19id, T1);
+  const u19arrived = await app.evalJs(STORED(u19id));
+  await caret('end'); await undo();
+  await sleep(2600);   // long enough for the page's own autosave to write anything the undo changed
+  const u19 = await app.evalJs(STORED(u19id));
+  ok('U19: lines another window saved are not taken back by Ctrl+Z', same(u19saved, M1) && same(u19arrived, T1) && same(u19, T1), { u19saved, u19arrived, u19 });
+  // MEASURED, not a check: what the open page does with those lines today, for Fable's ruling
+  const shownThen = await lines();
+  await caret('end'); await type('x');
+  await sleep(2600);
+  const afterKey = await app.evalJs(STORED(u19id));
+  console.log(`MEASURED (not a check): the open page shows ${JSON.stringify(shownThen.map((l) => l[1]))}; after one more key and its autosave the store holds ${JSON.stringify(afterKey?.map((l) => l[1]))}`);
+  await dropOther();
+
+  const u20id = await open([HEAD, act('Mine')], 1); await type(' more');
+  const u20saved = await storedAs(u20id, M1);
+  await undo();
+  const u20 = await lines();
+  ok('U20 (control): this page\'s own autosave does not reset the history', same(u20saved, M1) && same(u20, [HEAD, act('Mine')]), { u20saved, u20 });
+
+  const u21id = await open([HEAD, act('Mine')], 1);
+  await otherWindow();
+  await caret('end'); await type('x');
+  await outside(u21id, [HEAD, act('Mine'), act('Theirs.')]);
+  await caret('end'); await undo();
+  const u21 = await lines();
+  ok('U21: with unsaved typing here when the other window\'s lines arrive, Ctrl+Z does not step back across them', u21[1]?.[1] === 'Minex', { u21 });
+  await dropOther();
   return checks;
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 18;
+const EXPECTED = 21;
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nSCRIPT-UNDO VERIFY: PASS (${checks.length} checks)` : `\nSCRIPT-UNDO VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
