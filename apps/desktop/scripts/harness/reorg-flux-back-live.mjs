@@ -10,6 +10,7 @@
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
 //   FB8  the row names keep their room (none cut) and the open tab wears the 3 x 24 brass bar (the Wrizors Flux pass 1, REAL 4 and NIT 1)
 //   FB9  Uplink keeps the bar one row and the page rectangle; the view lies over the page, has no box, and its buttons and ticks are in Flux dress (REAL 1, 2 and 3)
+//   FB11 Wire In (the Corridor): the Back menu's opener and its opened panel are drawn and can be pressed; the left hand and the rail stay off (spec section 5)
 //   FB10 the Uplink sheet's label row starts below the page's L4 readout header (the Wrizors' Flux Uplink frames, Nov 23)
 //   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
 //   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
@@ -143,6 +144,10 @@ await withHarness(async (app) => {
   const note = await app.evalJs("(() => { const n = document.querySelector('.wz-sprint-note, [data-sprint-note]'); return n ? (n.textContent || '').trim() : [...document.querySelectorAll('.wz-tutor-panel *')].map((e) => (e.children.length === 0 ? (e.textContent || '').trim() : '')).find((x) => /wired in/i.test(x)) || null; })()");
   ok('FB6 Wire In: Spine and Inputs are locked and the note reads "Wired in: the Operator sends prompts only." in Flux\'s words; the Operator is the one in use',
     mode === true && Array.isArray(wire) && wire.find((x) => x.id === 'plan')?.locked === true && wire.find((x) => x.id === 'links')?.locked === true && wire.find((x) => x.id === 'tutor')?.on === true && note === 'Wired in: the Operator sends prompts only.', { mode, wire, note });
+  // FB11 (spec section 5, Nick Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Wrizors' Wire In frame: the Corridor hid every hand): jacked in, the Back menu's opener and its opened panel are SEEN and can be pressed (the grip is what a pointer hits at its centre); the left hand, the rail and the Glitch bar stay off
+  const corridor = await app.evalJs("(() => { const op = (s) => { const e = document.querySelector(s); return e ? getComputedStyle(e).opacity : null; }; const g = document.querySelector('.wz-tutor-grip'); let hit = null; if (g) { const r = g.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); hit = !!e && (e === g || g.contains(e)); } return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), anchor: op('.desk-frame-tutor-anchor'), panel: op('.desk-frame-tutor-panel-anchor'), hit, left: op('.desk-frame-sliver-anchor'), rail: op('.desk-rail') }; })()");
+  ok('FB11 Wire In (the Corridor): the opener of the Back menu and its opened panel are drawn and can be pressed; the left hand and the rail stay off', !!corridor && corridor.jacked === true && corridor.anchor === '1' && corridor.panel === '1' && corridor.hit === true && (corridor.left === null || corridor.left === '0') && (corridor.rail === null || corridor.rail === '0'), corridor);
+
   await open(app, 'fb-1', { flux3: false });
   await drawer(app);
   const plain = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), flux3: document.documentElement.hasAttribute('data-flux3') }; })()");
@@ -150,7 +155,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 10;
+const EXPECTED = 11;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -91,3 +91,5 @@
 /* the search row (a hit and its trailing control share one row; the hit keeps the room): the Arbor twin, in the same words */
 :root[data-flux3][data-theme='flux'] .reorg-search-row{ display:flex; align-items:flex-start; }
 :root[data-flux3][data-theme='flux'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }
+/* THE CORRIDOR KEEPS THE BACK MENU'S OPENER (flux-reorg-spec section 5; Nick, Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Corridor's own rule of Nov 8, no hands while jacked in, is the older word): flux-wirein.css makes every hand's anchor invisible and click-through while jacked in; the RIGHT hand's two anchors come back when the reorg's Back menu is the one drawn (the reorg's Tutor marks them data-back). The left hand, the rail, the strip and the Glitch bar stay off. Opened, the menu is the Wire In one (the Operator only, prompts only). More specific than the Corridor's :is() list, and both are !important. */
+:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] :is(.desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor)[data-back='true']{ opacity:1 !important; pointer-events:auto !important; }
