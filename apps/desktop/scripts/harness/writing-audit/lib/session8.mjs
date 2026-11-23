@@ -260,7 +260,7 @@ export async function main({ title }) {
         else finding('F2b', 'Undo the replace: the text is restored and her next key lands', u.text === T + '!' ? 'key' : 'text', u.text === T + '!' ? 'after Undo the next key went nowhere (active element ' + uk.active + ')' : 'got ' + JSON.stringify(u.text), uk);
         if (await has('[data-replace-one]')) {
           const b4 = (await d.read()).text;
-          await press('[data-replace-one]'); await sleep(800);
+          const oneB4 = await ev("(() => { const all = [...document.querySelectorAll('[data-replace-one]')]; const b = all[0]; const r = b ? b.getBoundingClientRect() : null; const w = document.querySelector('input[data-replace-with]'); return { n: all.length, disabled: b ? b.disabled : null, id: b ? b.getAttribute('data-replace-one') : null, box: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null, hit: r ? (document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)?.closest?.('[data-replace-one]') === b) : null, withValue: w ? w.value : null }; })()"); const onePressed = await press('[data-replace-one]'); await sleep(800); out('OBS F2c the press: ' + JSON.stringify({ oneB4, onePressed }));
           const o = await d.read();
           const ok = await keyLands('Z');
           const oOk = o.text !== b4 && (ok.field || ok.page);
