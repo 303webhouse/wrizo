@@ -812,8 +812,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       : `${committedHtml}<span class="fo-word"></span>`;
   // #70: a page whose last character is a newline (Enter just pressed) draws no line for it, so the caret stayed at the end of the line above until the next letter; the guard (Draft's own) gives that line a character to hold the caret
   // Free Write's html as it was at the mount: React sets the host from it once (a change to it would make React write the whole host); every later change is the effect above
+  // (reset while the page is free-edit, so a switch back to Free Write hands React the html of THAT render, not one from the mount)
   const firstHtml = useRef<string | null>(null);
-  if (firstHtml.current === null) firstHtml.current = html;
+  if (freeEdit) firstHtml.current = null;
+  else if (firstHtml.current === null) firstHtml.current = html;
+  // whether the host holds the active word's span: a page that mounts EMPTY has html '' (no span), and React is never handed another, so the first letter has nowhere to land until the host is written (the rework of #110: the first word read back empty)
+  const spanOnHost = useRef(false);
   const wordHtml = word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : typedHtml(word);
   const wordWritten = useRef<{ el: Element | null; html: string }>({ el: null, html: '' });
   // FREE WRITE'S HOST IS WRITTEN HERE, not by React after the first paint (bug #110 / #101): React is handed the mount's html once and never sets the host again; this effect puts a change on the page. A word added at the end of the
@@ -824,7 +828,9 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     if (freeEdit) { writtenRuns.current = null; return; }
     const host = hostRef.current;
     if (!host) return;
-    if (writtenRuns.current === null) { writtenRuns.current = runsHtml; return; }   // the first paint was React's, from the same html
+    if (writtenRuns.current === null) { writtenRuns.current = runsHtml; spanOnHost.current = html !== ''; return; }   // the first paint was React's, from the same html
+    // the page was born empty and has its first letter (or run): the host is written once, whole, so the word span exists for the letter to land in
+    if (!spanOnHost.current && !isEmpty) { host.innerHTML = html; writtenRuns.current = runsHtml; spanOnHost.current = true; return; }
     if (writtenRuns.current === runsHtml) return;   // a LETTER: the committed runs are the very array already on the page (the word span is the other effect's); nothing here costs it a read (Chat 1's box turn: letters +2.6 ms at 20k, +4.8 ms at 50k with the first form)
     const plan = isEmpty ? { kind: 'full' as const } : planHost(writtenRuns.current, runsHtml);
     const wordEl = host.lastElementChild && host.lastElementChild.classList.contains('fo-word') ? host.lastElementChild : null;
@@ -834,6 +840,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     if (plan.kind === 'newrun' && wordEl) { wordEl.insertAdjacentHTML('beforebegin', runElementHtml(plan.run)); writtenRuns.current = runsHtml; return; }
     host.innerHTML = html;
     writtenRuns.current = runsHtml;
+    spanOnHost.current = html !== '';
   });
   // the active word's span is written here, only when its html (or the span itself, after the host's html was set again) changed: the same "React skips an unchanged string" rule the whole-host string had, for an unrelated parent re-render mid-composition
   useLayoutEffect(() => {
