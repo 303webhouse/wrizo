@@ -88,6 +88,7 @@ export const FLUX_REORG_WORDS = {
   reorgProgressBars: 'Show the meter',   // the Wrizors' rail pass 1, NIT 4: it no longer reads as a twin of "Use the skin's meter"
   reorgNoProjectHeading: 'Docs in Orphans',
   reorgFile: 'File {name} to a drive…',
+  reorgFileShort: 'File',
   reorgUnfiledEmpty: 'No orphans.',
   reorgTopPartOf: 'TRK {n}/{m}',
   reorgTopPlaceNoDoc: 'Circuit · no doc yet',
