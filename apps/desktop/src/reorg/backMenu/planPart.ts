@@ -29,12 +29,12 @@ export function partOfRow(boardId: string | null, boxId: string, docId: string |
     if (l.deletedAt || l.aBoxId !== boxId || l.bBoxId) continue;
     const p = cache.journalEntries.find((e) => e.id === l.bEntryId && !e.deletedAt);
     if (!p || p.pageType === 'board' || p.projectId !== docId) continue;
-    return { id: p.id, written: wordCount(p.pageType === 'script' ? '' : (p.text ?? '')) > 0 };
+    return { id: p.id, written: wordCount(p.text ?? '') > 0 };   // SCRIPT #5: a screenplay's text is its lines, so a written screenplay Part earns the tick too
   }
   return null;
 }
 
-/** The address the "-> Part" door opens: a fresh page in the Doc, for this card, named for the row. Nothing is written by following it until her first word. */
-export function toPartHref(docId: string, boardId: string, boxId: string, name: string): string {
-  return unbornHref({ binderId: docId, graft: { boardId, boxId }, partName: name });
+/** The address the "-> Part" door opens: a fresh page in the Doc, for this card, named for the row. Nothing is written by following it until her first word, except from a screenplay (SCRIPT #5): the Part is a screenplay too, and a screenplay is born on arrival. */
+export function toPartHref(docId: string, boardId: string, boxId: string, name: string, structure: 'screenplay' | null = null): string {
+  return unbornHref({ binderId: docId, graft: { boardId, boxId }, partName: name, structure });
 }
