@@ -146,8 +146,11 @@ await withHarness(async (app) => {
   ok('F2b: the open script page shows the new words and no old name', same(onPage, S1_NEW.map((r) => r[1])), onPage);
   ok('F2c: the derived text is exactly the saved script\'s rendering', s1?.text === ser(doc1New), s1?.text);
   ok('F2d: the other screenplay Part and the prose Part are replaced; another Doc is not', same(s2?.script, flat(doc2New)) && s2?.text === ser(doc2New) && p3?.text === P3_NEW && f1?.text === F1, { s2: s2?.script?.map((e) => e.text), s2t: s2?.text, p3: p3?.text, f1: f1?.text });
-  const after = await app.evalJs("(() => { const r = document.querySelector('.script-sheet').getBoundingClientRect(); return { rect: [r.left, r.top, r.width, r.height].map(Math.round), inMenu: !!document.activeElement?.closest?.('[data-search-menu]') }; })()");
-  ok('F2e: the press leaves the keyboard in the search menu and the page where it was', after.inMenu && same(after.rect, rectBefore), { after, rectBefore });
+  const after = await app.evalJs("(() => { const r = document.querySelector('.script-sheet').getBoundingClientRect(); return { rect: [r.left, r.top, r.width, r.height].map(Math.round), inMenu: !!document.activeElement?.closest?.('[data-search-menu]'), inPage: !!document.activeElement?.closest?.('.script-el') }; })()");
+  // SUPERSEDED (run 45117326946, untouched main: inMenu false with the page unmoved. The press spends the finds, so the Replace all button turns disabled and the browser drops focus to the body: "stays in the menu" was never true of this control, on prose either). The line, verbatim:
+  // ok('F2e: the press leaves the keyboard in the search menu and the page where it was', after.inMenu && same(after.rect, rectBefore), { after, rectBefore });
+  // [successor] what the law protects: the page does not TAKE the keyboard from the press, and does not move
+  ok('F2e-B: the press does not pull the keyboard into the page, and the page stays where it was', !after.inPage && same(after.rect, rectBefore), { after, rectBefore });
 
   // ---- UNDO
   await app.evalJs(click('[data-search-menu] [data-replace-undo]'));
@@ -210,8 +213,11 @@ await withHarness(async (app) => {
   const b0 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf) };
   const bPressed = await press('[data-search-menu] [data-replace-all]');
   await sleep(500);
-  const b1 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf), inMenu: await app.evalJs("!!document.activeElement?.closest?.('[data-search-menu]')"), line1: (await page())[1] };
-  ok('B1: a replace that pushes the active line onto the next sheet keeps the keyboard in the menu and the page\'s scroll where it was', bPressed && b0.sheet === 0 && b1.sheet === 1 && b1.inMenu && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
+  const b1 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf), inMenu: await app.evalJs("!!document.activeElement?.closest?.('[data-search-menu]')"), inPage: await app.evalJs("!!document.activeElement?.closest?.('.script-el')"), line1: (await page())[1] };
+  // SUPERSEDED (run 45117326946: the same premise as F2e, the pressed button turns disabled and focus falls to the body). The line, verbatim:
+  // ok('B1: a replace that pushes the active line onto the next sheet keeps the keyboard in the menu and the page\'s scroll where it was', bPressed && b0.sheet === 0 && b1.sheet === 1 && b1.inMenu && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
+  // [successor] the remount across sheets must not pull the keyboard into the page or move its scroll
+  ok('B1-B: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page or move its scroll', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
   return checks;
 });
 
