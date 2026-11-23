@@ -147,6 +147,9 @@ await withHarness(async (app) => {
   // FB11 (spec section 5, Nick Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Wrizors' Wire In frame: the Corridor hid every hand): jacked in, the Back menu's opener and its opened panel are SEEN and can be pressed (the grip is what a pointer hits at its centre); the left hand, the rail and the Glitch bar stay off
   const corridor = await app.evalJs("(() => { const op = (s) => { const e = document.querySelector(s); return e ? getComputedStyle(e).opacity : null; }; const g = document.querySelector('.wz-tutor-grip'); let hit = null; if (g) { const r = g.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); hit = !!e && (e === g || g.contains(e)); } const gc = g ? getComputedStyle(g) : null; return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), anchor: op('.desk-frame-tutor-anchor'), panel: op('.desk-frame-tutor-panel-anchor'), hit, vis: gc && gc.visibility, pe: gc && gc.pointerEvents, left: op('.desk-frame-sliver-anchor'), rail: op('.desk-rail') }; })()");
   ok('FB11 Wire In (the Corridor): the opener of the Back menu and its opened panel are drawn and can be pressed; the left hand and the rail stay off', !!corridor && corridor.jacked === true && corridor.anchor === '1' && corridor.panel === '1' && corridor.hit === true && (corridor.left === null || corridor.left === '0') && (corridor.rail === null || corridor.rail === '0'), corridor);
+  // FB12 (the frames of Nov 23): opened in the Corridor, the grip stands at the panel's own left edge (16 px of gutter), never inside its tab row; and it is on the screen
+  const gripAt = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'), p = document.querySelector('.wz-tutor-panel'); if (!g || !p) return null; const gr = g.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { gripLeft: Math.round(gr.left), gripRight: Math.round(gr.right), panelLeft: Math.round(pr.left), vw: window.innerWidth }; })()");
+  ok('FB12 Wire In (the Corridor): the opened Back menu\'s grip stands at the panel\'s left edge, clear of its tab row', !!gripAt && gripAt.gripRight <= gripAt.panelLeft + 1 && gripAt.gripLeft >= 0 && gripAt.gripRight <= gripAt.vw, gripAt);
 
   await open(app, 'fb-1', { flux3: false });
   await drawer(app);
@@ -155,7 +158,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 11;
+const EXPECTED = 12;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -846,7 +846,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     <>
       {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
       {back && splitOn && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
-      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
+      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined} data-open={back ? (open ? 'true' : 'false') : undefined} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
           className="wz-tutor-grip"
