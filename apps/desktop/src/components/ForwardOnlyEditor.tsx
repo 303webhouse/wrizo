@@ -813,6 +813,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     const host = hostRef.current;
     if (!host) return;
     if (writtenRuns.current === null) { writtenRuns.current = runsHtml; return; }   // the first paint was React's, from the same html
+    if (writtenRuns.current === runsHtml) return;   // a LETTER: the committed runs are the very array already on the page (the word span is the other effect's); nothing here costs it a read (Chat 1's box turn: letters +2.6 ms at 20k, +4.8 ms at 50k with the first form)
     const plan = isEmpty ? { kind: 'full' as const } : planHost(writtenRuns.current, runsHtml);
     const wordEl = host.lastElementChild && host.lastElementChild.classList.contains('fo-word') ? host.lastElementChild : null;
     const lastRunEl = wordEl && wordEl.previousElementSibling && wordEl.previousElementSibling.classList.contains('fo-run') ? wordEl.previousElementSibling : null;
