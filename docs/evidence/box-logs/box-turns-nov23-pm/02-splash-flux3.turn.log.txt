@@ -1,0 +1,15 @@
+2026-11-23T21:43:36Z tree F:/wrizo-work/chat1-box-splash: HEAD a9e7d327 (want a9e7d327), dirty 0, bundle index-DsmYkKhw.js, stop 22:30Z
+2026-11-23T21:43:36Z chrome processes before: 12
+2026-11-23T21:43:37Z take: granted to lane "chat1" and bound to the process tree of pid 45216 - name this turn's start and end in your report
+TURN START 2026-11-23T21:43:37Z
+2026-11-23T21:43:37Z [01-splash] start splash.mjs on a9e7d327 (index-DsmYkKhw.js)
+2026-11-23T21:44:31Z [01-splash] exit 1; window 2026-11-23T21:43:37Z - 2026-11-23T21:44:31Z
+2026-11-23T21:44:31Z   SUITE START HARNESS_PARKED=unset files=1 tree=a9e7d3276 bundle=index-DsmYkKhw.js/1349912b NO-REBUILD out=F:\wrizo-work\chat1-turn-splash-flux-2143Z\01-splash
+2026-11-23T21:44:31Z   [01/1] NOVERDICT exit=1   53s splash.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-splash-flux-2143Z\01-splash\splash.mjs.default.txt)
+2026-11-23T21:44:31Z   SUITE RESULT: NOT CLEAN — tree=a9e7d3276 bundle=index-DsmYkKhw.js/1349912b NO-REBUILD
+2026-11-23T21:44:31Z   [01-splash] file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:705
+2026-11-23T21:44:31Z   [01-splash]     at Object.waitFor (file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:705:13)
+2026-11-23T21:44:31Z   [01-splash]     at async withHarness (file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:968:20)
+2026-11-23T21:44:31Z chrome processes after: 12
+2026-11-23T21:44:31Z release: released
+TURN END 2026-11-23T21:44:31Z

@@ -1,0 +1,16 @@
+2026-11-23T21:39:15Z tree F:/wrizo-work/chat1-box-arbor: HEAD afe0467e (want afe0467e), dirty 0, bundle index-D1rEqAUz.js, stop 22:30Z
+2026-11-23T21:39:16Z chrome processes before: 13
+2026-11-23T21:39:16Z take: granted to lane "chat1" and bound to the process tree of pid 41860 - name this turn's start and end in your report
+TURN START 2026-11-23T21:39:16Z
+2026-11-23T21:39:16Z [01-arbor2-swap] start arbor2-swap.mjs on afe0467e (index-D1rEqAUz.js) search ?arbor2=1&arbor2room=day
+2026-11-23T21:41:37Z [01-arbor2-swap] exit 0; window 2026-11-23T21:39:16Z - 2026-11-23T21:41:37Z
+2026-11-23T21:41:37Z   SUITE START HARNESS_PARKED=unset files=1 tree=afe0467e3 bundle=index-D1rEqAUz.js/1325897b NO-REBUILD out=F:\wrizo-work\chat1-turn-arbor-swap-2139Z\01-arbor2-swap
+2026-11-23T21:41:37Z   [01/1] OK        exit=0  139s arbor2-swap.mjs :: ROWS-SHADOW VERIFY: PASS (44 renders checked, shadow == DOM on every one) ;; ARBOR2-SWAP VERIFY: PASS (13 checks)
+2026-11-23T21:41:37Z   SUITE RESULT: CLEAN — tree=afe0467e3 bundle=index-D1rEqAUz.js/1325897b NO-REBUILD
+2026-11-23T21:41:37Z   [01-arbor2-swap] ROWS-SHADOW VERIFY: PASS (44 renders checked, shadow == DOM on every one)
+2026-11-23T21:41:37Z   [01-arbor2-swap]     "detail": "{\"on\":[56.3,62.9,61,56.4,43.8,50.2],\"off\":[8.3,18,8.1,16,16.1,8.1],\"median\":[56.3,12.2],\"p95\":[62.9,18]}"
+2026-11-23T21:41:37Z   [01-arbor2-swap]     "name": "W9d her first keys mid-shiver: from 250 ms after the first key to the end of the burst nothing in the shade moves - the room beside the page shot at 250 / 700 / 1150 / 1600 / 1900 ms, each over 9 levels on no more than 0.01% of its pixels against the 250 ms shot (the fade pinned, the rhizome hidden)",
+2026-11-23T21:41:37Z   [01-arbor2-swap] ARBOR2-SWAP VERIFY: PASS (13 checks)
+2026-11-23T21:41:37Z chrome processes after: 13
+2026-11-23T21:41:38Z release: released
+TURN END 2026-11-23T21:41:38Z
