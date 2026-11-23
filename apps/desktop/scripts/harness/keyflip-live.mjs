@@ -54,9 +54,12 @@ const analyse = (raw) => {
     const key = e.name.replace('InvalidationTracking', '') + ' | ' + why + (d.extraData ? ' (' + String(d.extraData).slice(0, 50) + ')' : '') + ' | ' + String(d.nodeName || '').slice(0, 60);
     inv[key] = (inv[key] || 0) + 1;
   }
+  let trigger = null; if (big) { const prev = ult.filter((s) => s.end <= big.ts).reduce((m, s) => (!m || s.end > m.end ? s : m), null); const from = prev ? prev.end : K; const gap = {};
+    for (const e of evs) { if (e.pid !== kd.pid || e.tid !== kd.tid || e.ts < from || e.ts > big.ts || e.ph === 'M' || e.ph === 'E') continue; const d = (e.args && e.args.data) || {}; const k = e.name + ' | ' + String(d.reason || d.functionName || d.url || d.type || d.id || d.changedAttribute || d.changedClass || d.changedPseudo || '').slice(0, 70) + ' | ' + String(d.nodeName || '').slice(0, 60) + (d.invalidationSet ? ' set ' + String(d.invalidationSet).slice(0, 40) : ''); gap[k] = (gap[k] || 0) + 1; }
+    trigger = { at: r1((big.ts - K) / 1000), gapMs: r1((big.ts - from) / 1000), args: JSON.stringify(big.args).slice(0, 900), gap: Object.entries(gap).sort((a, b) => b[1] - a[1]).slice(0, 45) }; }
   const top = win.slice().sort((a, b) => els(b) - els(a)).slice(0, 4).map((s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000) }));
   const all = win.map((s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000) })).filter((s) => Number.isFinite(s.els));
-  return { restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 40) };
+  return { trigger, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 40) };
 };
 const traceKey = async (app, key = 'a') => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
@@ -131,6 +134,8 @@ await withHarness(async (app) => {
     await sleep(1800);
     if (mutate === true || mutate === 'html') { await app.evalJs(OLD_WRITE); await sleep(200); }
     if (mutate === 'col') { await app.evalJs(COL_WRITE); await sleep(200); }
+    if (mutate === 'noroot') { await app.evalJs("document.documentElement.removeAttribute('data-flux3'); null"); await sleep(500); }
+    if (mutate === 'noanim') { await app.evalJs('document.getAnimations().forEach((a) => a.cancel()); null'); await sleep(100); }
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
     const before = await app.evalJs(FADE_STATE);
     if (busy) { await app.evalJs(BUSY_HOOK); await app.typeKeys('a'); await sleep(500); return { theme, busy: await app.evalJs('window.__klBusy') }; }
@@ -144,6 +149,7 @@ await withHarness(async (app) => {
     const after = await app.evalJs(FADE_STATE);
     const colMut = (await app.evalJs('window.__klMut || null')) || [];
     if (!mutate) console.log(`KL-DIFF ${theme}: keyEls ${tr && tr.keyEls}, all ${JSON.stringify(tr && tr.all)}, shape ${JSON.stringify(await app.evalJs(DOC_SHAPE))}, changed ${JSON.stringify(await app.evalJs(DOC_DIFF_READ))}`);
+    if (theme === 'flux' && tr && tr.trigger) console.log(`KL-TRIGGER ${mutate || 'plain'}: keyEls ${tr.keyEls} ` + JSON.stringify(tr.trigger));
     const m = { theme, before, after, tr, colMut };
     console.log(`KL-COLMUT ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify(colMut));
     const { invalidations, top, ...trShort } = tr || {};
@@ -153,6 +159,7 @@ await withHarness(async (app) => {
     return m;
   };
 
+  for (const arm of ['noroot', 'noanim']) for (let i = 0; i < 2; i += 1) { const p = await measure('flux', '', { mutate: arm }); console.log(`KL-ARM ${arm} ${i + 1}: keyEls ${p.tr && p.tr.keyEls}, all ${JSON.stringify(p.tr && p.tr.all)}`); }
   const runs = {};
   for (const [theme, search] of THEMES) { runs[theme] = []; for (let i = 0; i < REOPENS; i += 1) runs[theme].push(await measure(theme, search)); }
   const busyRuns = {};
