@@ -134,7 +134,7 @@ const SPEC_SELF = [
 const STATE = `(() => { const root = document.documentElement, pg = document.querySelector('.arbor2-pergola'), g = window.__kfOrig || window.getComputedStyle;
   return { arbor: root.hasAttribute('data-arbor2'), room: root.getAttribute('data-arbor2-room'), writing: root.getAttribute('data-wz-writing'),
     pergola: pg ? g.call(window, pg).display : null, live: document.querySelectorAll('.arbor2-live').length, field: !!document.querySelector('.wz-rhizome-field'),
-    docEls: document.querySelectorAll('*').length, liveEls: document.querySelectorAll('.arbor2-live *').length,
+    docEls: document.querySelectorAll('*').length, liveEls: document.querySelectorAll('.arbor2-live *').length, reorg: !!document.querySelector('.reorg-top'),
     bundle: [...document.scripts].map((s) => s.getAttribute('src') || '').filter((s) => s.indexOf('assets/index-') >= 0).join(',') }; })()`;
 // the read recorder: every getComputedStyle on a shade layer, inside the key's task or after it; the flip's own moment and whether it came inside
 // SUCCESSOR (Nov 12): every read and the flip also carry the FRAME they fell in (a rAF counter armed before the key). Actions run 43277044562 showed the
@@ -502,7 +502,11 @@ await withHarness(async (app) => {
   // ---- the checks ----
   const judged = [...fix, ...old, mutRead, no938, floor];   // the premise holds on these; the :has() reads are information only
   const all = [...judged, ...noHas];
-  const premise = (m) => m.before.arbor && m.before.room === 'day' && m.before.pergola && m.before.pergola !== 'none' && m.before.live >= 2 && m.before.field
+  // SUPERSEDED (Nov 22, train K: arbor-keyflip-reorg.mjs runs this file with WS_REORG=1, the reorg on, and its premise must read that the page it measures carries the reorg): the original premise, verbatim:
+  // const premise = (m) => m.before.arbor && m.before.room === 'day' && m.before.pergola && m.before.pergola !== 'none' && m.before.live >= 2 && m.before.field
+  // && m.before.writing !== 'true' && m.after.writing === 'true' && m.tr && !m.tr.err && m.tr.keyTasks >= 1 && m.tr.counted >= 1
+  // && m.rec && m.rec.flips.length >= 1 && m.rec.flips[0].inKey === true && m.rec.flips[0].on === 'true';
+  const premise = (m) => m.before.arbor && m.before.room === 'day' && m.before.pergola && m.before.pergola !== 'none' && m.before.live >= 2 && m.before.field && (process.env.WS_REORG !== '1' || m.before.reorg === true)
     && m.before.writing !== 'true' && m.after.writing === 'true' && m.tr && !m.tr.err && m.tr.keyTasks >= 1 && m.tr.counted >= 1
     && m.rec && m.rec.flips.length >= 1 && m.rec.flips[0].inKey === true && m.rec.flips[0].on === 'true';
   ok('KF-PREMISE every reopen: Arbor, day room, the pergola shown, 2+ live drawings, the rhizome field; at rest before the key and writing after it; the flip came INSIDE the key\'s own task; the trace read the key\'s tasks and counted restyles',

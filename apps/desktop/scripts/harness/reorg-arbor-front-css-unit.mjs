@@ -129,10 +129,16 @@ function suite(css) {
     }
     return { pass: base && day && night && low.length === 0, detail: J({ base, day, night, low: low.slice(0, 4) }) };
   });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: the Front menu's foot goes back to !reorgFront, the goal is not doubled with the Session row, so the named bar and its rule retire): the original check, verbatim:
+  // t('NAMED', () => {
+  // // pass 3 NIT: the bar under the list is the session's goal hairline; in the Front menu it is named (the drawer's own word, Goal), in the drawer's label dress
+  // const r = rs.filter((x) => x.sel === `${AR} .wz-sliver-goal-name`).filter((b) => /font-family:var\(--font-chromeLabel/.test(b.body) && /text-transform:uppercase/.test(b.body) && /color:var\(--text-mid\)/.test(b.body));
+  // return { pass: r.length === 1, detail: J({ n: r.length }) };
+  // });
   t('NAMED', () => {
-    // pass 3 NIT: the bar under the list is the session's goal hairline; in the Front menu it is named (the drawer's own word, Goal), in the drawer's label dress
-    const r = rs.filter((x) => x.sel === `${AR} .wz-sliver-goal-name`).filter((b) => /font-family:var\(--font-chromeLabel/.test(b.body) && /text-transform:uppercase/.test(b.body) && /color:var\(--text-mid\)/.test(b.body));
-    return { pass: r.length === 1, detail: J({ n: r.length }) };
+    // the successor: no .wz-sliver-goal-name rule is left in Arbor's Front sheet
+    const r = rs.filter((x) => /wz-sliver-goal-name/.test(x.sel));
+    return { pass: r.length === 0, detail: J({ n: r.length }) };
   });
   t('OPENER', () => {
     // the Wrizors' pass 1, NIT 1 (Nick, Oct 9: an opener is not a choice, so it never takes brass), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open (arbor-v2.css turns an open opener brass)
@@ -176,7 +182,9 @@ const MUT = [
   ['the current name goes brass again', 'HERE', (t) => t.replace('.reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--text-hi); }', () => '.reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--brass); }')],
   ['the current name goes olive by day', 'HERE', (t) => `${t}\n${AR}[data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }\n`],
   ['a tag loses its night edge', 'TAGS', (t) => t.replace('border-color:var(--arbor-line); }', () => 'border-color:transparent; }')],
-  ['the goal bar loses its name', 'NAMED', (t) => t.replace('.wz-sliver-goal-name{', () => '.wz-sliver-goal-nameless{')],
+  // SUPERSEDED (Nov 22, with NAMED): the original, verbatim:
+  // ['the goal bar loses its name', 'NAMED', (t) => t.replace('.wz-sliver-goal-name{', () => '.wz-sliver-goal-nameless{')],
+  ['the named goal bar rule comes back', 'NAMED', (t) => `${t}\n${AR} .wz-sliver-goal-name{ color:var(--text-mid); }\n`],
   ['the open Tools opener goes brass again', 'OPENER', (t) => t.replace(/(\.wz-sliver\[data-open='true'\] \.wz-sliver-grip\{ background:)#6B7A3A; border-color:#6B7A3A/, (m, a) => a + 'var(--brass); border-color:var(--brass)')],
   ['the open Tools opener rule is dropped', 'OPENER', (t) => t.replace(".wz-sliver[data-open='true'] .wz-sliver-grip{", () => ".wz-sliver[data-docked='true'] .wz-sliver-grip{")],
   ['the day badge edge goes back to the pale cloth edge', 'BADGE', (t) => t.replace('border-color:#4A6076', () => 'border-color:#5F788D')],

@@ -17,7 +17,8 @@ import { markdownToHtml, plainToHtml, inlineHtml } from './publishingHtml';
 import type { BxPart } from './beforeExportRules';
 import { readNotes, writeMarkers } from './footnotes';
 import { stripLine } from '../store/markRuns';
-import { REORG } from './flag';
+import { REORG, reorgFor } from './flag';
+import { getTheme } from '../store/theme';
 
 // PUBLISHING AS A VIEW, AND EXPORT (reorg-plan-v2 #5 and #6; Fable Nov 20, 11:45 am: "the whole Doc as one read-only scroll, each Part under its heading, as the prototype draws it
 // (stage-table.js, FINALIZE); export the whole Doc or chosen Parts, in order, today's .md and .txt. Red-first; switch-gated; no new saved data"; and 1:27 pm: "FINALIZE = your publish view:
@@ -76,7 +77,7 @@ export function readPublication(entryId: string): PubDoc | null {
     if (!e) return;
     const prose = e.pageType !== 'script' && e.pageType !== 'board' && !e.pageSettings?.template;
     // footnotes and endnotes (Nick ruled A, Nov 21): the note lines leave the words, each [^label] in them becomes a private marker the file's own numbering replaces (publishingText.ts layNotes), and the notes go beside the Part already written for the three formats
-    const nb = REORG && prose ? readNotes(e.text ?? '') : null;
+    const nb = reorgFor(getTheme()) && prose ? readNotes(e.text ?? '') : null;
     const notes: PubNote[] = nb ? nb.notes.map((n) => ({ label: n.label, endnote: n.endnote, md: n.text, txt: stripLine(n.text), html: inlineHtml(n.text) })) : [];
     const files = exportPageFiles(nb && nb.notes.length > 0 ? { ...e, text: writeMarkers(nb.body, nb.notes.map((n) => n.label), noteMarker) } : e);
     const words = wordCount(files.txt);

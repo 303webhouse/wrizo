@@ -12,7 +12,8 @@
 
 import { closeMark, readEscapes, readLead, readMarks, type MarkKind, type MarkRun } from './markRuns';
 import { ensureFaceLoaded, faceForSlug, faceStack } from './fontRoster';
-import { REORG } from '../reorg/flag';
+import { reorgFor } from '../reorg/flag';
+import { getTheme } from './theme';
 import { isNoteLine } from '../reorg/footnotes';
 
 function escHtml(s: string): string {
@@ -153,7 +154,7 @@ export function decorateLineForCard(rawLine: string, caret: number | null): stri
     : inline;
   const html = open + head + body + close;
   // REORG FOOTNOTES (Nick, Nov 21): a note line ("[^1]: the note") is set apart (.md-note: smaller, quieter). The page draws rows, one line at a time, so this is a property of the LINE; a wrapper only, so the 1:1 character count the caret restore depends on holds
-  return REORG && isNoteLine(rawLine) ? `<span class="md-note">${html}</span>` : html;
+  return reorgFor(getTheme()) && isNoteLine(rawLine) ? `<span class="md-note">${html}</span>` : html;   // the switch-over: note lines are drawn only where the reorg is on for her theme
 }
 
 export function decorateMarkdownForCard(text: string, caret: number | null): string {

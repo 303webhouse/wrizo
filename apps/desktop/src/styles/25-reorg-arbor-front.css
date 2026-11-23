@@ -188,5 +188,3 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-colour-preview{ border-color:var(--part-hex-edge-light, var(--ink-border-strong)); }
 /* pass 3 (the Wrizors, Nov 22), REAL: by night every tag wears a 1 px edge in Arbor's night line, the slot tags and a custom colour's alike */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour], :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour-hex]{ border-color:var(--arbor-line); }
-/* pass 3 NIT: the bar under the list is the session's goal hairline; the Front menu names it, in the drawer's label dress */
-:root[data-arbor2][data-theme='plateau'] .wz-sliver-goal-name{ font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); }
