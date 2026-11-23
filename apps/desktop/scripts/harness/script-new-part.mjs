@@ -23,8 +23,8 @@ const q = (s) => JSON.stringify(s);
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
 
 const ALL = "(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'))";
-const STORE = `(() => { window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
-const ENTRY = (id) => `(() => { window.wrizoFlushNow(); return ${ALL}.find((x) => x.id === ${q(id)}) || null; })()`;
+const STORE = `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
+const ENTRY = (id) => `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return ${ALL}.find((x) => x.id === ${q(id)}) || null; })()`;
 const SURF = "({ hash: location.hash, script: !!document.querySelector('.script-sheet'), prose: !!document.querySelector('.forward-only-editor') })";
 const ROW = (id) => `(() => { const r = document.querySelector('[data-back-plan] [data-plan-row=${q(id)}]'); if (!r) return null; const d = r.querySelector('[data-plan-part]'); return { door: d ? d.getAttribute('data-plan-part') : null, tick: !!r.querySelector('[data-plan-tick]') }; })()`;
 const idOf = (hash) => { const m = /\/page\/([^?]+)/.exec(hash || ''); return m && m[1] !== 'new' ? m[1] : null; };
