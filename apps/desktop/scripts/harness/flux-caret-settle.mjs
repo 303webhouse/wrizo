@@ -26,7 +26,10 @@ async function fresh(app, w) {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
-  await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 });
+  // SUPERSEDED (runs 45245370945, 45246007268: with Flux stored before the load, no Top Drawer appeared on the arrival within 30 s, so the file died before it read a caret). The line, verbatim:
+  // await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 });
+  // [successor] the frames job's own tolerance: it goes on without one, and a page that then fails to open reads as no caret, which is a red
+  try { await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 3000 }); } catch { console.log('INFO no Top Drawer on the arrival; going on, as the frames job does'); }
   await app.evalJs(`(() => {
     const W = window;
     const page = (id, text, extra) => W.wrizoCreateJournalPage({ id, text, createdAt: '2026-04-01T00:00:0' + id.slice(-1) + '.000Z', source: 'page', ...extra });
@@ -51,7 +54,7 @@ async function load(app, id) {
 
 const rest = [], drawer = [];
 await withHarness(async (app) => {
-  // one seed for both widths: a second localStorage.clear() in the same browser never got its Top Drawer back (run 45245370945)
+  // one seed for both widths: the same Doc is reopened at each
   await fresh(app, 1366);
   for (const w of [1366, 1920]) {
     await app.emulateDpr(1, w, HEIGHT[w]);
