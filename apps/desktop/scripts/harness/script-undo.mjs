@@ -18,7 +18,7 @@
 //               U15  (control) with nothing to undo, the page does not change
 //               U16  the Edit menu's Undo (the browser's own history event) takes the same path
 //               U17  a pause in typing separates two undo steps
-//               U18  Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does
+//               U18  (control) Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does
 //
 // Run (repo root; the Actions harness, or a box turn):  node apps/desktop/scripts/harness/script-undo.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -113,6 +113,7 @@ await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 20000 });
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
+  const docId = await app.evalJs("window.wrizoCreateProject('Spin').id");
 
   // ---- ACROSS LINES
   const R1 = [HEAD, act('First second')];
@@ -149,15 +150,19 @@ await withHarness(async (app) => {
   // ---- REDO
   await open(R1, 1); await caret(5); await key('Enter');
   const u5want = await lines();
-  await undo(); await redo();
+  await undo();
+  const u5back = await lines();   // the undo must have happened, or a redo that does nothing would pass
+  await redo();
   const u5 = await lines();
-  ok('U5: Ctrl+Y puts the step back', u5want.length === 3 && same(u5, u5want), { u5, u5want });
+  ok('U5: Ctrl+Y puts the step back', u5want.length === 3 && same(u5back, R1) && same(u5, u5want), { u5back, u5, u5want });
 
   await open(R1, 1); await caret(5); await key('Enter');
   const u6want = await lines();
-  await undo(); await ctrl('z', true);
+  await undo();
+  const u6back = await lines();
+  await ctrl('z', true);
   const u6 = await lines();
-  ok('U6: Ctrl+Shift+Z puts the step back', u6want.length === 3 && same(u6, u6want), { u6, u6want });
+  ok('U6: Ctrl+Shift+Z puts the step back', u6want.length === 3 && same(u6back, R1) && same(u6, u6want), { u6back, u6, u6want });
 
   // ---- DEEP
   await open(R2, 1);
@@ -232,7 +237,6 @@ await withHarness(async (app) => {
   ok('U17: a pause in typing separates two undo steps', u17a[1]?.[1] === 'one' && u17b[1]?.[1] === '', { u17a: u17a[1], u17b: u17b[1] });
 
   // ---- FIND AND REPLACE KEEPS ITS OWN UNDO
-  const docId = await app.evalJs("(() => { location.hash = '#/'; return window.wrizoCreateProject('Spin').id; })()");
   const r0 = [HEAD, ['character', 'MARA'], ['dialogue', 'Mara knows.']];
   const r1 = [HEAD, ['character', 'DELIA'], ['dialogue', 'Delia knows.']];
   const rId = await open(r0, 2, docId);
@@ -255,7 +259,7 @@ await withHarness(async (app) => {
   const r18c = await storedAs(rId, r0);
   await sleep(250);
   const r18cp = await lines();
-  ok("U18: Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does", same(r18a, r1) && same(r18page, r1) && same(r18b, r1) && same(r18c, r0) && same(r18cp, r0), { r18a, r18page, r18b, r18c, r18cp });
+  ok("U18 (control): Ctrl+Z does not take back a Replace All, and the search panel's own Undo still does", same(r18a, r1) && same(r18page, r1) && same(r18b, r1) && same(r18c, r0) && same(r18cp, r0), { r18a, r18page, r18b, r18c, r18cp });
   return checks;
 });
 
