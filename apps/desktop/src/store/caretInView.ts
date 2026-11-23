@@ -63,6 +63,22 @@ export function restingScroll(need: number, max: number, offsets: readonly numbe
   return enough !== undefined ? enough : reach[reach.length - 1];
 }
 
+/** THE ROWS ARE THE JUDGE: a long page's rows are laid out lazily, so the offsets measured by restOnce can be a little off by the time the scroll lands, or after it. Read the first row that shows; if the scroller's
+ *  edge cuts it, go DOWN to the next row's top (the caret's line only moves further into view), or, at the foot where there is no further, UP to the cut row's own top. Two passes at most. */
+function snapFirstRow(el: HTMLElement, scroller: HTMLElement): void {
+  for (let pass = 0; pass < 2; pass += 1) {
+    const clip = scroller.getBoundingClientRect().top;
+    let first: DOMRect | null = null;
+    for (const r of Array.from(el.querySelectorAll<HTMLElement>('.wz-row'))) { const q = r.getBoundingClientRect(); if (q.height > 0 && q.bottom > clip + 1) { first = q; break; } }
+    if (!first || first.top >= clip - 0.5) return;
+    const downBy = first.bottom - clip;
+    const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
+    const by = downBy <= room + 0.5 ? downBy : first.top - clip;
+    if (Math.abs(by) < 0.5) return;
+    scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
+  }
+}
+
 /** The page has just opened with its caret at the end (the browser's scroll was prevented): rest it on a whole line, with the caret's line in view where that can be done without cutting the first line. */
 function restOnce(el: HTMLElement): void {
   try {
@@ -80,19 +96,7 @@ function restOnce(el: HTMLElement): void {
     const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
     if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
-    // THE ROWS ARE THE JUDGE: a long page's rows are laid out lazily, so the offsets measured above can be a little off by the time the scroll lands. Read the first row that shows; if the scroller's edge cuts it, go DOWN to the
-    // next row's top (the caret's line only moves further into view), or, at the foot where there is no further, UP to the cut row's own top. Two passes at most.
-    for (let pass = 0; pass < 2; pass += 1) {
-      const clip = scroller.getBoundingClientRect().top;
-      let first: DOMRect | null = null;
-      for (const r of Array.from(el.querySelectorAll<HTMLElement>('.wz-row'))) { const q = r.getBoundingClientRect(); if (q.height > 0 && q.bottom > clip + 1) { first = q; break; } }
-      if (!first || first.top >= clip - 0.5) break;
-      const downBy = first.bottom - clip;
-      const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
-      const by = downBy <= room + 0.5 ? downBy : first.top - clip;
-      if (Math.abs(by) < 0.5) break;
-      scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
-    }
+    snapFirstRow(el, scroller);
   } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
 }
 
@@ -103,11 +107,13 @@ export function openCaret(el: HTMLElement): void {
   try {
     if (typeof ResizeObserver === 'undefined') return;
     let done = false;
-    const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
+    const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
     const ro = new ResizeObserver(() => { if (!done && el.isConnected) restOnce(el); });
     ro.observe(el);
     const sc = scrollerOf(el);
     if (sc && sc !== el) ro.observe(sc);   // a header that draws after the page opens moves the scroller's own edge
+    // the rows go on settling after the page's size has stopped changing (a row's lines re-wrap as its font arrives): a slow look at the first row for the same few seconds
+    const look = window.setInterval(() => { if (!done && el.isConnected) { const sc2 = scrollerOf(el); if (sc2 && sc2.getAttribute('data-typewriter') !== 'true') snapFirstRow(el, sc2); } }, 250);
     const timer = window.setTimeout(stop, 3000);
     ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.addEventListener(t, stop, true));
   } catch { /* no observer: the page rests where the first measure put it */ }
