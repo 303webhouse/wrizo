@@ -1,0 +1,35 @@
+/* FLUX 3 - THE CURRENT (src/flux3/fluxCurrent.ts; Fable, Nov 21: the hands open as current, and the stage current v2). Loaded only under ?flux3=1 (boot.ts). Every rule is scoped to the Flux theme under the flag.
+   Both draw only after a click and rest under reduced motion; every keyframe here is transform or opacity alone, so nothing animates layout or paint. */
+
+/* THE STAGE SPARK: one svg over the room, taking no pointer. Its paths keep to the top bar and the gutters (fluxCurrentPath.ts), so it never lies over the page. The pale head carries a soft 2 px glow at most. */
+:root[data-flux3][data-theme='flux'] .flux-current{ position:fixed; left:0; top:0; z-index:60; pointer-events:none; overflow:visible; }
+:root[data-flux3][data-theme='flux'] .flux-current path{ stroke-linecap:butt; stroke-linejoin:miter; }
+:root[data-flux3][data-theme='flux'] .flux-current .flux-current-head{ filter:drop-shadow(0 0 2px #BEEBFF); }
+
+/* THE HANDS' CURRENT, DRAWN BY THE MENU'S OWN BOX (fluxCurrent.ts marks an open panel with data-flux-hand after a press of its tab; there is no element of ours in the page). The panel's ::before is the line: 1 px,
+   the box's top edge, pinned there while the menu scrolls (sticky, and a margin that takes back its own height so nothing moves), drawn from the tab's end. Its ::after is the electron: a 4 px pale dot (a radial gradient) on a strip as
+   wide as the box that is moved across it, from the tab's end to the far end, over and over. Both are the panel's own, so they fade with it when the chrome recedes and go when the menu shuts; both animate
+   transform alone. The left menu's tab is on its right end, the right menu's on its left. */
+:root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::before{
+  content:''; display:block; position:sticky; top:0; z-index:3; height:1px; margin:0 0 -1px; pointer-events:none;
+  background:#00C2FF; transform:scaleX(0); transform-origin:left center; animation:flux-hand-draw .22s ease-out forwards; }
+:root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::before{ transform-origin:right center; }
+:root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-open='true'][data-flux-hand]::after{
+  content:''; position:absolute; top:-1.5px; left:0; z-index:3; width:100%; height:4px; pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, #BEEBFF 0 1.5px, rgba(0, 194, 255, .55) 1.5px 2.5px, transparent 3px);
+  transform:translateX(-50%); animation:flux-hand-run-right 1.5s linear .22s infinite; }
+:root[data-flux3][data-theme='flux'] .wz-sliver-panel[data-open='true'][data-flux-hand]::after{ animation-name:flux-hand-run-left; }
+@keyframes flux-hand-draw{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+@keyframes flux-hand-run-right{ from{ transform:translateX(-50%); } to{ transform:translateX(50%); } }
+@keyframes flux-hand-run-left{ from{ transform:translateX(50%); } to{ transform:translateX(-50%); } }
+/* she is writing (her cursor is in her page: fluxCurrent.ts sets data-flux-writing on the root on the focus moving in, and takes it off on the focus moving out): the electron rests - paused and not drawn. A plain
+   attribute on the root and descendant selectors: no script per key and no :has() */
+:root[data-flux3][data-theme='flux'][data-flux-writing] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::after{ animation-play-state:paused; visibility:hidden; }
+
+/* reduced motion: none of it (fluxCurrent.ts also draws nothing then; this is the belt) */
+@media (prefers-reduced-motion: reduce){
+  /* the open tab's own stub of line and its dot (flux-v3.css, the hands as lines, piece 5) are part of the current too: none of it shows under reduced motion (the Wrizors' NIT on the film, Nov 21, 11:55 pm). This file loads after flux-v3.css (boot.ts), so the same selector wins */
+  :root[data-flux3][data-theme='flux'] .wz-sliver-grip[aria-expanded='true']::after, :root[data-flux3][data-theme='flux'] .wz-tutor-grip[aria-expanded='true']::after{ display:none; }
+  :root[data-flux3][data-theme='flux'] .flux-current{ display:none; }
+  :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::before, :root[data-flux3][data-theme='flux'] :is(.wz-sliver-panel, .wz-tutor-panel)[data-flux-hand]::after{ display:none; }
+}

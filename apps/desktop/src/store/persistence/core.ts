@@ -1,4 +1,5 @@
 import { noteSyncBase } from './syncBase';
+import { cloneJson } from './cloneJson';
 import type { Project, StoryPlan, SessionLog, Draft, JournalEntry, Drawer } from '../../types';
 import { reportFlushFailed, reportFlushOk, reportStorageUsage } from '../storageHealth';
 import { isSignedOutHere } from '../signedOutHere';
@@ -89,7 +90,7 @@ export function isUnflushed(name: keyof typeof onDisk, rec: { id: string; update
 // after a write and feed the result to setState rely on a new reference to
 // re-render — this matches the previous JSON.parse-per-read behavior).
 export function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return cloneJson(value);
 }
 
 export function generateId(): string {

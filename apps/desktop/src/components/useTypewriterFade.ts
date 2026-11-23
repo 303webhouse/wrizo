@@ -215,6 +215,18 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       }
     };
     const band = () => {
+      // TYPING COST: while the last glide is still travelling the call can only wait for it (see `gliding`, below) - and a call that waits has paid, first, for
+      // measure() and the caret's rects, each a forced layout of the whole page: ~13 calls per key at 50,000 words (typing-growth TG-LAYOUTS: 28 layouts a key,
+      // 13 from zoomScale and 13 from the caret's rect). The wait is decided from the glide's own state alone, before anything is measured; the call that follows
+      // the landing measures once. Nothing is owed or lost by it: prevDocCaretBottom and the owed advance are not touched by a wait.
+      if (!reduce && engaged && glideTarget != null && performance.now() - glideAt < GLIDE_MS) {
+        const top = readBox(!!useWindowScroll, container).scrollTop;
+        if (Math.abs(top - glideTarget) > 1) {
+          if (trace) trace.push({ d: 'wait', top: Math.round(top), target: glideTarget });
+          raf = requestAnimationFrame(band);
+          return;
+        }
+      }
       measure();
       const ed = container.querySelector(editorSelector) as HTMLElement | null;
       let caretBottom: number | null = null;
