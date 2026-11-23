@@ -180,6 +180,11 @@ await withHarness(async (app) => {
   const wire = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
   const wireOff = await app.evalJs("({ sliver: !!document.querySelector('.wz-sliver'), page: !!document.querySelector('.forward-only-editor') })");
+  // INFO, no verdict: the end-of-Track line in Wire In (the Wrizors' top-bar pass 1 read it at 2.47 to 3.49 in a frame shot 350 ms after a pointer move): its opacity, up the whole chain, at rest and through that moment
+  const FOOT = "(() => { const f = document.querySelector('[data-part-foot]'); if (!f) return null; let o = 1; for (let e = f; e; e = e.parentElement) o *= +getComputedStyle(e).opacity; const g = f.querySelector('.is-next'); const st = document.querySelector('.mode-stage'); return { chain: Math.round(o * 100) / 100, own: getComputedStyle(f).opacity, next: g ? getComputedStyle(g).color : null, writing: st && st.getAttribute('data-writing'), running: f.getAnimations().length }; })()";
+  console.log('INFO foot rest ' + JSON.stringify(await app.evalJs(FOOT)));
+  await app.mouseMove(900, 460);
+  for (const ms of [120, 230, 650, 1500, 2000]) { await sleep(ms); console.log('INFO foot +' + ms + ' ' + JSON.stringify(await app.evalJs(FOOT))); }
   ok('FF10 Wire In draws no Front menu', wire === true && !!wireOff && wireOff.sliver === false && wireOff.page === true, { wire, wireOff });
 
   await open(app, 'ff-1', { lift: 'flux.top' });
