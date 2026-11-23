@@ -23,7 +23,7 @@ const q = (s) => JSON.stringify(s);
 const card = (id, text, seq, y) => ({ id, kind: 'text', x: 0.05, y, w: 0.3, h: 0.1, z: seq + 1, text, seq });
 
 const ALL = "(JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'))";
-const STORE = `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
+const STORE = () => `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return JSON.stringify([${ALL}, JSON.parse(localStorage.getItem('writer-studio-projects') || '[]')]); })()`;
 const ENTRY = (id) => `(() => { if (window.wrizoFlushNow) window.wrizoFlushNow(); return ${ALL}.find((x) => x.id === ${q(id)}) || null; })()`;
 const SURF = "({ hash: location.hash, script: !!document.querySelector('.script-sheet'), prose: !!document.querySelector('.forward-only-editor') })";
 const ROW = (id) => `(() => { const r = document.querySelector('[data-back-plan] [data-plan-row=${q(id)}]'); if (!r) return null; const d = r.querySelector('[data-plan-part]'); return { door: d ? d.getAttribute('data-plan-part') : null, tick: !!r.querySelector('[data-plan-tick]') }; })()`;
@@ -107,8 +107,8 @@ await withHarness(async (app) => {
   ok('N2: her words land in that page\'s script lines', n2lines.some((x) => x.includes('INT. ROOF')), { n2lines });
 
   await openPage('pr-1', false);
-  const n3before = await app.evalJs(STORE);
-  const n3p = await newPart(); const n3 = await app.evalJs(SURF); const n3after = await app.evalJs(STORE);
+  const n3before = await app.evalJs(STORE());
+  const n3p = await newPart(); const n3 = await app.evalJs(SURF); const n3after = await app.evalJs(STORE());
   ok('N3 (control): New Part on a prose Part: a prose page opens and nothing is written until her first word', n3p && n3.prose && !n3.script && n3.hash.includes('/page/new') && n3after === n3before, { n3p, n3, same: n3after === n3before });
 
   await openPage('sl-2', true);
@@ -136,8 +136,8 @@ await withHarness(async (app) => {
   ok('P4: Open Part opens that Part and creates nothing', p4p && !!p1id && idOf(p4.hash) === p1id && p4.script && p4after === p4before, { p4p, p4, p4before, p4after });
 
   await openPage('pr-1', false); await planTab();
-  const p5before = await app.evalJs(STORE);
-  const p5p = await door('p1'); const p5 = await app.evalJs(SURF); const p5after = await app.evalJs(STORE);
+  const p5before = await app.evalJs(STORE());
+  const p5p = await door('p1'); const p5 = await app.evalJs(SURF); const p5after = await app.evalJs(STORE());
   ok('P5 (control): the Plan door on a prose Part still writes nothing and opens a prose page', p5p && p5.prose && !p5.script && p5.hash.includes('/page/new') && p5after === p5before, { p5p, p5, same: p5after === p5before });
 
   await openPage('sl-1', true); await planTab();
