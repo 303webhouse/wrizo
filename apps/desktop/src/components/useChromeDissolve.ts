@@ -58,6 +58,30 @@ function overDissolvedChrome(x: number, y: number): boolean {
 /** Where the live themes' --fade-dur is written instead of <html> (bug #90, the live themes' twin of ARBOR's #80 option (a)): an inherited custom property changed on the root makes every element in the document recompute its style, in the keystroke that starts writing (Machina: 888-984 of 1,945 elements, about half; arbor-keyflip's KF-FLIP and keyflip-live's KL-FLIP read it). The app's own root holds every element that reads it; the Machina nameplate's host (a <body> child) is the one outside it. Read at each write (a host may mount after the stage). A module constant, so a hook's targets keep their identity. */
 export const LIVE_FADE_REFS: React.RefObject<HTMLElement>[] = ['root', 'machina2-mockup'].map((id) => ({ get current() { return typeof document === 'undefined' ? null : document.getElementById(id); } }) as React.RefObject<HTMLElement>);
 
+/** Flux's --fade-dur sits on the elements that READ it, through one rule, never on an ancestor: an inherited property written on #root restyled the whole page at the first key (465 elements; keyflip-live KL-FLIP-flux, Fable's bar 400). A rule, so a reader that mounts later has it too. These are every selector that reads var(--fade-dur) outside Arbor's and Machina's own sheets (KL-REACH-flux reads that none is missed). */
+const FLUX_FADE_READERS = '.chrome-fade, .mode-dissolve, .desk-dissolve, .brand-mark, .chrome-handle, .wz-sliver-panel, .wz-tutor-panel';
+let fluxFadeRule: CSSStyleRule | null = null;
+let fluxFadeValue = '';
+function ensureFluxFadeRule(): CSSStyleRule | null {
+  if (fluxFadeRule?.parentStyleSheet) return fluxFadeRule;
+  const el = document.createElement('style');
+  el.setAttribute('data-flux-fade', '');
+  document.head.appendChild(el);
+  if (!el.sheet) return null;
+  el.sheet.insertRule(`:root[data-theme='flux'] :is(${FLUX_FADE_READERS}){}`, 0);
+  fluxFadeRule = el.sheet.cssRules[0] as CSSStyleRule;
+  fluxFadeValue = '';
+  return fluxFadeRule;
+}
+function writeFluxFade(value: string): boolean {
+  if (value === fluxFadeValue) return true;   // noteWrite runs on every key: only a real change touches the sheet
+  const rule = ensureFluxFadeRule();
+  if (!rule) return false;
+  rule.style.setProperty('--fade-dur', value);
+  fluxFadeValue = value;
+  return true;
+}
+
 interface Options {
   surface?: string;                       // names the active surface in the session
   // Where --fade-dur is written (defaults to <html>). Pass an array when the
@@ -90,7 +114,11 @@ export function useChromeDissolve({
   dissolvedRef.current = dissolved;
   const returnTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // the rule exists before the first key, so that key does not also add a stylesheet
+  useEffect(() => { if (theme === 'flux') ensureFluxFadeRule(); }, [theme]);
+
   const setFadeDur = useCallback((seconds: number) => {
+    if (document.documentElement.getAttribute('data-theme') === 'flux' && writeFluxFade(`${seconds}s`)) return;
     const refs = Array.isArray(rootRef) ? rootRef : [rootRef];
     const targets = refs.map(r => r?.current).filter((el): el is HTMLElement => !!el);
     for (const el of targets.length ? targets : [document.documentElement]) {
