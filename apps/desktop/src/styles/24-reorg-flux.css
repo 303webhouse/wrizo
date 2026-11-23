@@ -1,0 +1,109 @@
+/* THE REORG'S BACK MENU IN FLUX (Fable, Nov 21: Flux piece 2; claude/wrizors/flux-reorg-spec.md sections 0 and 5). Every rule is under [data-theme='flux'] and is reached only by markup the reorg draws, so with the switch off, or in any other
+   theme, nothing here matches. The twins first: the Machina rules for the Back menu's lists, sort row, "+" menus and the search, re-scoped to Flux (their colours are the theme's own tokens, so they read Flux's); then Flux's own dress.
+   The piece is switched on for Flux only through reorg/themeGate.ts (the preview door shows it before then). Tags (the Parts' codes and bars) are piece 6. */
+:root[data-flux3][data-theme='flux'] .wz-back-assets-head{ margin:0 0 6px; }
+:root[data-flux3][data-theme='flux'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
+:root[data-flux3][data-theme='flux'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+:root[data-flux3][data-theme='flux'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-back-icon{ display:block; flex:none; }
+:root[data-flux3][data-theme='flux'] .wz-back-asset-kind{ display:inline-flex; align-items:center; flex:none; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-back-beside{ display:inline-flex; align-items:center; justify-content:center; padding:0 4px; }
+:root[data-flux3][data-theme='flux'] .wz-back-assets-headrow{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin:0 0 6px; }
+:root[data-flux3][data-theme='flux'] .wz-back-assets-headrow > .wz-back-assets-head{ margin:0; }
+:root[data-flux3][data-theme='flux'] .wz-assets-add-wrap{ position:relative; flex:none; }
+:root[data-flux3][data-theme='flux'] .wz-back-part.has-add{ position:relative; }
+:root[data-flux3][data-theme='flux'] .wz-back-part.has-add > .wz-back-part-head{ padding-right:30px; }
+:root[data-flux3][data-theme='flux'] .wz-back-part.has-add > .wz-assets-add-wrap{ position:absolute; top:3px; right:2px; }
+:root[data-flux3][data-theme='flux'] .wz-assets-add{ width:22px; height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; line-height:1; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-assets-add:hover, :root[data-flux3][data-theme='flux'] .wz-assets-add:focus-visible, :root[data-flux3][data-theme='flux'] .wz-assets-add[aria-expanded='true']{ border-color:var(--text-low); color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-assets-add-pop{ position:absolute; top:calc(100% + 4px); right:0; z-index:5; display:flex; flex-direction:column; min-width:180px; padding:4px; background:var(--surface-raised, var(--paper, #1b1e22)); border:1px solid var(--ink-border-strong); box-shadow:0 6px 18px rgba(0,0,0,.28); }
+:root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button{ display:block; width:100%; padding:6px 8px; background:none; border:0; text-align:left; font:inherit; font-size:12px; color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:hover, :root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:focus-visible{ background:var(--hover-bg, rgba(127,127,127,.12)); }
+:root[data-flux3][data-theme='flux'] .wz-assets-picker{ min-width:240px; max-width:300px; }
+:root[data-flux3][data-theme='flux'] .wz-assets-picker-body{ display:flex; flex-direction:column; max-height:260px; overflow-y:auto; margin-top:4px; }
+:root[data-flux3][data-theme='flux'] .wz-assets-picker-none{ padding:6px 8px; font-size:12px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-assets-sort{ display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+:root[data-flux3][data-theme='flux'] .wz-assets-sort > button{ height:20px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-chromeLabel, monospace); font-size:10px; color:var(--text-mid); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{ color:var(--text-hi); border-color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] .wz-back-docassets{ margin:0 0 8px; }
+:root[data-flux3][data-theme='flux'] .reorg-search{ display:flex; flex-direction:column; min-height:0; height:100%; font-family:var(--font-ui); color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-search-top{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px 4px; }
+:root[data-flux3][data-theme='flux'] .reorg-search-back{ padding:0; border:0; background:none; font:inherit; font-size:12px; color:var(--text-mid); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-search-back:hover{ color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .reorg-search-title{ font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door){ display:flex; align-items:center; gap:8px; margin:6px 12px; padding:6px 8px; border:1px solid var(--ink-border); color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door) input{ flex:1; min-width:0; border:0; background:none; font:inherit; font-size:13px; color:var(--text-hi); outline:none; }
+:root[data-flux3][data-theme='flux'] .reorg-search-door input{ cursor:text; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door):focus-within{ border-color:var(--accent-rest); }
+:root[data-flux3][data-theme='flux'] .reorg-search-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-search-scopes{ display:flex; gap:14px; padding:2px 12px 8px; border-bottom:1px solid var(--ink-border); }
+:root[data-flux3][data-theme='flux'] .reorg-search-scopes > button{ padding:0; border:0; background:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-search-scopes > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
+:root[data-flux3][data-theme='flux'] .reorg-search-scopes > button[disabled]{ opacity:.45; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-search-body{ flex:1; min-height:0; overflow-y:auto; padding:4px 0 12px; scrollbar-width:thin; }
+:root[data-flux3][data-theme='flux'] .reorg-search-quiet{ padding:10px 12px; font-size:12px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-search-head{ padding:10px 12px 4px; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-search-group.is-top > .reorg-search-head{ color:var(--text-hi); border-top:1px solid var(--ink-border); }
+:root[data-flux3][data-theme='flux'] .reorg-search-hit{ display:block; width:100%; padding:5px 12px 5px 9px; border:0; border-left:3px solid transparent; background:none; font:inherit; font-size:12.5px; line-height:1.45; color:var(--text-hi); text-align:left; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-search-hit:hover{ background:var(--ink-900); }
+:root[data-flux3][data-theme='flux'] .reorg-search-hit[aria-current='true']{ border-left-color:var(--accent-rest); background:var(--ink-900); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-more, .reorg-search-widen){ display:block; margin:4px 12px; padding:0; border:0; background:none; font:inherit; font-size:12px; color:var(--accent-rest); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-back, .reorg-search-scopes > button, .reorg-search-hit, .reorg-search-more, .reorg-search-widen):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-1px; }
+
+/* ---- FLUX'S DRESS (flux-reorg-spec sections 0 and 5) ---- */
+/* the search door and field: Flux's field dress, fill #020C10 and a 1 px #5F8F95 edge; focused, a cyan edge with the thin 3 x 24 brass bar (the doors' and the pop-out's focus rule: brass is her act, cyan is "here") */
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door){ position:relative; background:#020C10; border:1px solid #5F8F95; color:var(--text-low); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door) input{ color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door) input::placeholder{ color:var(--text-low); opacity:1; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door):focus-within{ border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-search-field, .reorg-search-door):focus-within::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* the choice mark: the current Part and the current search hit wear a cyan edge and the 3 x 24 brass bar (brass marks the one she is on) */
+:root[data-flux3][data-theme='flux'] .wz-back-part.is-here > .wz-back-part-head{ position:relative; box-shadow:inset 0 0 0 1px var(--line-active); padding-left:10px; }
+:root[data-flux3][data-theme='flux'] .wz-back-part.is-here > .wz-back-part-head::before{ content:''; position:absolute; left:0; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+:root[data-flux3][data-theme='flux'] .reorg-search-hit[aria-current='true']{ border-left-color:var(--orange); box-shadow:inset 0 0 0 1px var(--line-active); background:var(--ink-900); }
+/* the pressed sort and the focus rings are cyan ("live / here"), never brass */
+:root[data-flux3][data-theme='flux'] .wz-assets-sort > button[aria-pressed='true']{ color:var(--text-hi); border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .wz-back-part-head:focus-visible{ outline:1px solid var(--line-active); outline-offset:-2px; }
+/* panels and pop-ups in node dress: fill #04141A, a 1 px #7EB4C4 edge */
+:root[data-flux3][data-theme='flux'] .wz-assets-add-pop{ background:#04141A; border:1px solid #7EB4C4; box-shadow:0 6px 18px rgba(0,0,0,.5); }
+:root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:hover, :root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:focus-visible{ background:var(--ink-800); color:var(--text-hi); }
+/* what the search finds is lit in cyan on the page, not the cream the other rooms use */
+:root[data-flux3][data-theme='flux'] .reorg-search-hit mark{ background:rgba(0, 194, 255, .28); color:var(--text-hi); }
+/* FLUX-KEYFLIP (Fable, Nov 22, 9:20 pm; INK's cause in Arbor, 40e0f469): a ::highlight() rule has a universal subject, so one with a root-attribute ancestor in front of it makes the whole document depend on the root's attributes and the first key restyles most of the page. What the search finds is lit in cyan through custom properties on the root itself; the two ::highlight() rules are the bare ones in 23-reorg-top.css (Machina's), which read them. */
+:root[data-flux3][data-theme='flux']{ --wz-search-hl:rgba(0, 194, 255, .25); --wz-search-hl-cur:rgba(0, 194, 255, .5); --wz-search-hl-cur-ink:var(--text-hi); }
+/* the Back menu's fourth tab, Before uplink, exists only while the publishing view is open under the reorg: it stays on one line beside the other three */
+:root[data-flux3][data-theme='flux'] .wz-drawer-tabs:has(#wz-tutor-tab-export) .wz-drawer-tab{ white-space:nowrap; letter-spacing:.04em; font-size:9.5px; padding:0 4px; min-width:0; }
+/* ---- PASS 1 FIXES (the Wrizors' Flux Back menu pass, Nov 21, 4:20 pm; Fable, Nov 21, 4:07 pm) ---- */
+/* REAL 4: the name keeps the room: a Plan row's name, an asset row's label and a canvas group's name take the row, and the row's buttons (Beside, To Track, Colour, Open, the arrows) wrap under them instead of squeezing the name to "The c" or "PLAN BOA..."; always visible, as a touch screen has no hover */
+:root[data-flux3][data-theme='flux'] .wz-back-plan-row{ flex-wrap:wrap; row-gap:2px; }
+:root[data-flux3][data-theme='flux'] .wz-back-plan-row > .wz-back-plan-name{ flex:1 1 calc(100% - 40px); }
+:root[data-flux3][data-theme='flux'] .wz-back-asset{ flex-wrap:wrap; row-gap:2px; padding-top:3px; padding-bottom:3px; }
+:root[data-flux3][data-theme='flux'] .wz-back-asset .wz-links-label{ flex:1 1 calc(100% - 80px); }
+:root[data-flux3][data-theme='flux'] .wz-back-boardhead{ flex-wrap:wrap; row-gap:2px; }
+:root[data-flux3][data-theme='flux'] .wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px); }
+/* NIT 1: the open tab wears Flux's choice mark: its cyan edge (the tab dress's) and the thin 3 x 24 brass bar */
+:root[data-flux3][data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab[data-on='true']{ position:relative; }
+:root[data-flux3][data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab[data-on='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* the search row (a hit and its trailing control share one row; the hit keeps the room): the Arbor twin, in the same words */
+:root[data-flux3][data-theme='flux'] .reorg-search-row{ display:flex; align-items:flex-start; }
+:root[data-flux3][data-theme='flux'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }
+/* THE CORRIDOR KEEPS THE BACK MENU'S OPENER (flux-reorg-spec section 5; Nick, Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Corridor's own rule of Nov 8, no hands while jacked in, is the older word): flux-wirein.css makes every hand's anchor invisible and click-through while jacked in; the RIGHT hand's two anchors come back when the reorg's Back menu is the one drawn (the reorg's Tutor marks them data-back). The left hand, the rail, the strip and the Glitch bar stay off. Opened, the menu is the Wire In one (the Operator only, prompts only). More specific than the Corridor's :is() list, and both are !important. */
+:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] :is(.desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor)[data-back='true']{ opacity:1 !important; pointer-events:auto !important; }
+/* ... and its grip: Wire In is the Typewriter zoom, and 13-desk-frame.css hides both grips while the page is zoomed (visibility:hidden), so the anchor alone is not enough. The Back menu's own grip (the reorg's, data-back) is shown again in the Corridor; the left hand's grip stays hidden. */
+:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-tutor-grip[data-back='true']{ visibility:visible; }
+/* ... and its place when OPENED is measured from the panel in Tutor.tsx (gripLeftPx, as a board's is): Wire In is the Typewriter zoom, which widens the page's half, so the grip's formula lands it inside the panel's tab row (the frames of Nov 23); no CSS guess of the panel's width holds at every size (it is 460 at 1366 and about 300 at 1920). Closed, it stays at the page's right edge (spec section 5). */
+/* ---- THE WRIZORS' PASS 2 (flux-back-menu-pass-2.md, Nov 22, 10:55 pm) ---- */
+/* REAL 3: the Operator's two fields and the Spine's add field were the chrome's fill with a green-grey browser hint (3.50 to 3.96:1, TK6 and under 4.5): they are in field dress (fill #020C10, a 1 px #5F8F95 edge), and every hint is text-low #7EB4C4 (8.67:1) */
+:root[data-flux3][data-theme='flux'] :is(.wz-tutor-convo-input, .wz-tutor-bible-input, .wz-back-plan-input){ background:#020C10; border:1px solid #5F8F95; border-radius:0; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] :is(.wz-tutor-convo-input, .wz-tutor-bible-input, .wz-back-plan-input)::placeholder{ color:#7EB4C4; opacity:1; }
+/* REAL 4: INPUTS' scrollbar thumb was 2.06:1 (#254E7E on #101A27): everything in the Back menu scrolls with #5F8F95 (declared on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css) */
+:root[data-flux3][data-theme='flux'] :is(.wz-tutor-panel, .wz-tutor-panel *){ scrollbar-color:#5F8F95 transparent; }
+/* NIT 1: the panel is node dress (#04141A), as the rail's panels are */
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel{ background:#04141A; }
+/* REAL 1 (Arbor's pass 1 had the same fix): in Wire In the opened panel is capped, so it ends above her line (which sits at the stage's middle) and never covers it. The first cap (38%) left it about 213 px tall and the Writing prompt button scrolled out of sight, so the cap is 54% (about 300 px at 1366) and the search field is not drawn in Wire In (the Operator sends prompts only: there is nothing to search), which frees the room the action needs */
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-back-sprint='true']{ max-height:54%; }
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-back-sprint='true'] :is(.reorg-search-door, .reorg-search-field){ display:none; }

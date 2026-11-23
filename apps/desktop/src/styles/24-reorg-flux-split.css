@@ -1,0 +1,16 @@
+/* THE REORG'S SPLIT SCREEN IN FLUX: THE DOCK (Fable, Nov 22, 9:20 pm; claude/wrizors/flux-reorg-spec.md section 8, on the redesign). Every rule is under :root[data-flux3][data-theme='flux'] and is reached only by markup the split draws (SplitHost), so with the switch off,
+   with the plain Flux, or in any other theme, nothing here matches. The split's geometry (the page's shift, both hands off, the asset's fixed half) is the reorg's own and stays in 23-reorg-back.css: this file only DRESSES it. The page side is unchanged (law 1).
+   The docked half is a panel in node dress (fill #04141A, a 1 px #7EB4C4 edge); the grip is a 1 px cyan line ("live / here") with a port-shaped handle (the node fill, a 1 px #7EB4C4 edge, chamfered corners) that lights cyan on hover and on focus; scrollbars are hidden (Nick, all themes).
+   Brass is her act: none here. */
+:root[data-flux3][data-theme='flux'] .wz-split-asset{ background:#04141A; border-color:#7EB4C4; }
+:root[data-flux3][data-theme='flux'] .wz-split-grip::before{ content:''; position:absolute; left:9px; top:0; bottom:0; width:1px; background:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .wz-split-grip::after{ left:5px; width:8px; height:44px; background:#04141A; border:1px solid #7EB4C4; box-sizing:border-box; border-radius:0; clip-path:polygon(3px 0, calc(100% - 3px) 0, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 0 calc(100% - 3px), 0 3px); }
+:root[data-flux3][data-theme='flux'] .wz-split-grip:hover::after{ border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .wz-split-grip:focus-visible::after{ border-color:var(--line-active); }
+/* scrollbars hidden: the stage's scrollers in a split and the docked half (the Machina and Arbor rules' Flux twin); both still scroll. scrollbar-width:none alone hides them (index.css keeps the one webkit exception, scrollbar-flush-source T5) */
+:root[data-flux3][data-theme='flux'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
+:root[data-flux3][data-theme='flux'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
+/* the count row stands under HER page: the instrument under the page is centred on the stage, so it stayed where the page used to be and ran under the docked half; it takes the page's own shift (--wz-split-shift), so it stays centred on the page. A status row, not the page: the page's geometry is untouched. */
+:root[data-flux3][data-theme='flux'] .desk-frame-stage[data-split='true'] .desk-frame-instrument{ left:calc(50% + var(--wz-split-shift, 0px)); }
+/* the docked Doc's words are page text: text-hi (16.6:1), not text-mid (11.9:1) (the Wrizors' Dock pass, Nov 22) */
+:root[data-flux3][data-theme='flux'] .wz-split-asset .wz-link-dock-text{ color:var(--text-hi); }

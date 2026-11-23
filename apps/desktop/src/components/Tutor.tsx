@@ -443,13 +443,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
-    if (!open || pageKind !== 'board' || BOARD_TAB_RIDES_EDGE) { setGripLeftPx(null); return; }
+    // THE FLUX CORRIDOR (Wire In is the Typewriter zoom; the reorg's Back menu keeps its opener there, spec section 5): the page's half is widened, so the CSS formula's grip lands inside the opened panel; it is measured from the panel here, as a board's is
+    if (!open || (pageKind !== 'board' && !back) || (pageKind === 'board' && BOARD_TAB_RIDES_EDGE)) { setGripLeftPx(null); return; }
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {
       const stage = tutorStage();
       const panel = document.querySelector('.wz-tutor-panel');
-      if (!stage || !panel) { setGripLeftPx(null); return; }
+      if (!stage || !panel || (pageKind !== 'board' && !document.documentElement.hasAttribute('data-flux3-jacked'))) { setGripLeftPx(null); return; }
       const stageRect = stage.getBoundingClientRect();
       const panelRect = panel.getBoundingClientRect();
       setGripLeftPx(Math.round(panelRect.left - GRIP_GUTTER_PX - GRIP_WIDTH_PX - stageRect.left));
@@ -458,7 +459,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
-  }, [open, docked, pageKind, panelWidthPx]);
+  }, [open, docked, pageKind, panelWidthPx, back, sprint]);
 
   // the disclosure modal no longer opens (its text sits behind a "?" by the Ask box); showDisclosure stays declared and is never set, so the guards that read it are dormant [Tutor §25]
   const handleGripClick = () => {
@@ -846,7 +847,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     <>
       {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
       {back && splitOn && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
-      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
+      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
           className="wz-tutor-grip"
@@ -866,7 +867,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
         </button>
       </div>
 
-      <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
+      <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined}>
         <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}

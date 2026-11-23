@@ -6,7 +6,8 @@ import { FLUX_OVERRIDES as LIVE } from './flux';
 // THE REORG'S FLUX WORDS, behind ?reorg=1 only (Fable, Nov 21: "the Flux reorg build from claude/wrizors/flux-reorg-spec.md"; Nick, Nov 20, 4:43 pm: SPINE for PLAN, the teal swap only if TK6 flags it, DOCK for the split).
 // Flux's own words for the reorg's pieces, section 1 of the spec: Doc, Drive (a Project), Orphans (Unfiled), Circuit (a Board), Node (a Block), Track (a Part), Spine (the Plan), Inputs (Assets), the Operator (the Consultant), Log (the
 // Notebook), Clone (Copy), Before uplink. The swaps are applied to the reorg's canonical strings with their {placeholders} kept; the strings the spec writes out ("More than a swap") are exactly as written there.
-// A string that still holds a word the swaps do not settle (Typewriter, Progress, Page Setup, Research, Special, ...) is NOT set here: it keeps its canonical words until the Wrizors answer. Which ones: FLUX_REORG_UNSET.
+// The Wrizors answered the six open strings (claude/wrizors/flux-reorg-words.md, Nov 21; Fable accepted all): Page Setup = Frame, the Typewriter = Wire In and its way out Unplug, Progress = Meter, the lens box asks "Query this doc…", and two are KEPT as the canonical
+// words by their ruling (FLUX_REORG_KEPT: the lens names, and the "Research paper" preset). Flux's own case: sentence case for buttons and lines.
 //
 // deskLexicon.ts imports FLUX_OVERRIDES from HERE. With the switch off this module hands back the live table itself (the same object), so what the lexicon gives is byte-identical; with it on, Flux's table is the live one with
 // these cells laid over it. These words are read only by the reorg's surfaces, which stay Machina's until each Flux piece is lifted in reorg/themeGate.ts, so lifting a cell is the only thing that shows them.
@@ -24,15 +25,18 @@ export const FLUX_REORG_WORDS = {
   reorgPlanInclude: 'Include the spine in what goes out',
   reorgPlanIncludeNone: 'The Spine is empty: nothing to include.',
   reorgSprintLocked: 'Wired in: the Operator sends prompts only.',
+  reorgSprintAnother: 'Another prompt',
   reorgPlanEmpty: 'Nothing is in this doc\'s spine.',
   reorgPlanRename: 'Name of the spine row',
   reorgPlanRemove: 'Remove from the spine',
   reorgPlanAdd: 'Add to the spine',
   reorgPlanToPart: '→ Track',
-  reorgPlanOpenPart: 'Open Track',
+  reorgPlanOpenPart: 'Open track',
   reorgPlanTick: 'This track has words',
   reorgPlanPresetsLabel: 'Fill the spine from a preset',
+  reorgLensAskOwn: 'Ask your own',
   reorgLenStructure3: 'Does each Track do one job?',
+  reorgLensAskPlaceholder: 'Query this doc…',
   reorgAssetsOwnBoard: 'This doc\'s circuit',
   reorgToPart: '→ Track',
   reorgToPartAria: 'Connect {title} to a Track',
@@ -46,6 +50,8 @@ export const FLUX_REORG_WORDS = {
   reorgTagF: 'Deep cyan',
   reorgDocKindStandard: 'Plain',
   reorgDocKindScreenplay: 'Script',
+  reorgDocStyleGuide: 'Style guide',
+  reorgDocPageSetup: 'Frame',
   reorgDocSpecialParts: 'Special tracks',
   reorgSpecialTitle: 'Cover',
   reorgSpecialBibliography: 'Sources',
@@ -54,27 +60,32 @@ export const FLUX_REORG_WORDS = {
   reorgPartAssetsMany: '{n} inputs',
   reorgAssetsHead: 'Inputs ({n})',
   reorgAssetsPartToggle: 'Show or hide the inputs of {part}',
-  reorgAssetsAdd: 'Add an Input',
-  reorgAssetsAddTo: 'Add an Input to {part}',
-  reorgAddMenu: 'Add an Input',
-  reorgAddNewBoard: 'New Circuit',
-  reorgAddExistingBoard: 'Existing Circuit',
-  reorgAddSearchBoards: 'Find a Circuit',
-  reorgAssetsSortProject: 'By Drive',
+  reorgAssetsAdd: 'Add an input',
+  reorgAssetsAddTo: 'Add an input to {part}',
+  reorgAddMenu: 'Add an input',
+  reorgAddNewBoard: 'New circuit',
+  reorgAddExistingBoard: 'Existing circuit',
+  reorgAddSearchBoards: 'Find a circuit',
+  reorgAssetsSortProject: 'By drive',
+  reorgParaPicker: 'Paragraph style',
+  reorgTextSymbols: 'Insert symbol',
+  reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.',
   reorgListTitle: 'Drive',
   reorgNewBoard: 'New circuit',
   reorgBoardsNoDoc: 'Circuits with no doc',
   reorgUntitled: 'Unnamed',
   reorgUntitledBoard: 'Untitled circuit',
   reorgKindScreenplay: 'Script',
-  reorgSearchReachProject: 'This Drive',
+  reorgSearchReachProject: 'This drive',
   reorgSearchNoProject: 'You are in no Drive.',
   reorgSearchLineDoc: 'The words of this Doc, by Track',
-  reorgSearchLineProject: 'Its Docs and Circuits',
-  reorgSearchLineAll: 'Every Drive, the Log and Orphans',
+  reorgSearchLineProject: 'Its Docs and circuits',
+  reorgSearchLineAll: 'Every drive, the log and orphans',
   reorgSearchPart: 'Track {n}',
   reorgSearchBoardHead: 'Circuit · {name}',
   reorgDefaults: 'Doc defaults · every doc',
+  reorgTypewriter: 'Wire In',
+  reorgProgressBars: 'Meter',
   reorgNoProjectHeading: 'Docs in Orphans',
   reorgFile: 'File {name} to a drive…',
   reorgUnfiledEmpty: 'No orphans.',
@@ -86,22 +97,41 @@ export const FLUX_REORG_WORDS = {
   reorgTopConnectAnother: 'Connect Docs: connect this circuit to another doc',
   reorgTopConnectUnborn: 'Add a node first: a circuit is kept once it has one, and then it can join a doc.',
   reorgTopConnectNewHeld: 'A new doc would be made for this circuit. That is not switched on yet, so nothing changed.',
+  reorgFrontLabel: 'Tools',
+  reorgPartIn: 'Nest',
+  reorgPartOut: 'Unnest',
+  reorgPartJoin: 'Merge',
+  reorgPartJoinNo: 'Not merged.',
   reorgFrontParts: 'Tracks',
+  reorgColourThisPart: 'This track',
+  reorgSchemeLine: 'Changes every Track\'s colours in this Doc.',
+  reorgColourHex: 'Hex colour',
+  reorgPresetGroupWeb: 'Web and journalism',
   reorgPartsHead: 'Tracks ({n})',
   reorgPartsOf: 'The tracks of {name}',
   reorgPartN: 'Track {n}',
   reorgTopPartsDrop: 'All the Tracks of this doc',
-  reorgPartPrevTo: 'Previous Track: {part}',
-  reorgPartNextTo: 'Next Track: {part}',
+  reorgPartPrevTo: 'Previous track: {part}',
+  reorgPartNextTo: 'Next track: {part}',
   reorgPartNoPrev: 'No Track before this one',
   reorgPartNoNext: 'No Track after this one',
   reorgPartEnd: 'end of Track {n}',
   reorgPubEmptyPart: 'Nothing written in this Track yet.',
   reorgPubTick: 'Send Track {n} out',
   reorgPubCount: '{n} of {total} Tracks go out',
+  reorgPubTxt: 'Plain text',
   reorgPubCopyText: 'Clone text',
   reorgPubCopyFormatted: 'Clone formatted',
   reorgPubFrozen: 'Markup and Ink lock at Uplink. Patch to change the words.',
+  // the Wrizors' Flux pass 2 (flux-back-menu-pass-2.md, Nov 22, 10:55 pm): other themes' words were showing (law 5), and the OPERATOR tab's words are Flux's own. "Canon" is the continuity word a series writer keeps facts under; it is the same list as the Bible, with a new word.
+  reorgSprintUse: 'Prompts from the Operator',
+  reorgSprintTravels: 'A press asks the Operator for one prompt. Nothing of your page goes with it.',
+  reorgPubLabel: 'Uplink · the whole doc, read-only, as it will go out',
+  reorgSplitFull: 'Full screen',
+  tutorBibleTitle: 'The canon',
+  tutorBibleEmpty: 'No canon yet.',
+  tutorBibleAddPlaceholder: 'Add a fact…',
+  tutorFreeWritePrompt: 'Writing prompt',
   reorgPubOnePart: 'One Track: there is nothing to order.',
   reorgPubPartsHint: 'Tick what goes out. Move a Track up or down to put it in order.',
   reorgPubPartsLabel: 'Tracks, in order, for publishing',
@@ -112,19 +142,15 @@ export const FLUX_REORG_WORDS = {
   reorgPartsSplitCaret: 'Put the caret where the new Track starts, then split.',
   reorgPartsSplitNo: 'This Track can’t be split.',
   reorgPartsSplitDone: 'Split: the words after the caret are Track {n} now.',
-  reorgPartJoinCarries: 'Not joined: this Track holds ink, cards, links or a Operator thread, and joining would drop them.',
-  reorgPartJoinScript: 'Not joined: a screenplay Track has no plain text to join.',
-  reorgPartsJoinDone: 'Joined onto Track {n}.',
+  reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.',
+  reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.',
+  reorgPartsJoinDone: 'Merged into Track {n}.',
 } satisfies Partial<Record<DeskTermId, string>>;
 
-/** The reorg strings this table leaves unset, and why (the Wrizors list). */
-export const FLUX_REORG_UNSET: readonly string[] = [
+/** The reorg strings this table deliberately leaves at their canonical words, by the Wrizors' ruling. */
+export const FLUX_REORG_KEPT: readonly string[] = [
   'reorgLensLabel',   // Feedback lenses
-  'reorgDocPageSetup',   // Page Setup
-  'reorgSplitNoTypewriter',   // Typewriter mode is off in a split: turn it off first.
   'reorgKindResearch',   // Research paper
-  'reorgTypewriter',   // Typewriter mode
-  'reorgProgressBars',   // Progress bars
 ];
 
 export const FLUX_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
