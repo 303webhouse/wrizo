@@ -55,6 +55,9 @@ function overDissolvedChrome(x: number, y: number): boolean {
   return false;
 }
 
+/** Where the live themes' --fade-dur is written instead of <html> (bug #90, the live themes' twin of ARBOR's #80 option (a)): an inherited custom property changed on the root makes every element in the document recompute its style, in the keystroke that starts writing (Machina: 888-984 of 1,945 elements, about half; arbor-keyflip's KF-FLIP and keyflip-live's KL-FLIP read it). The app's own root holds every element that reads it; the Machina nameplate's host (a <body> child) is the one outside it. Read at each write (a host may mount after the stage). A module constant, so a hook's targets keep their identity. */
+export const LIVE_FADE_REFS: React.RefObject<HTMLElement>[] = ['root', 'machina2-mockup'].map((id) => ({ get current() { return typeof document === 'undefined' ? null : document.getElementById(id); } }) as React.RefObject<HTMLElement>);
+
 interface Options {
   surface?: string;                       // names the active surface in the session
   // Where --fade-dur is written (defaults to <html>). Pass an array when the

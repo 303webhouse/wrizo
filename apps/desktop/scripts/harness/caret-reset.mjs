@@ -43,6 +43,12 @@ await withHarness(async (app) => {
     await sleep(800);
     await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
       const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+    // STAGING CHANGED 2026-11-19 (#113, Fable's ruling "opening lands at the writing line at once"; no assertion is touched): the click scenarios click a word that is ON SCREEN (wordXY: the page's
+    // LAST line). The page used to open with the opening staircase still carrying it down, and this file's own focus() above (a focus scrolls a tall editable to its top) was undone by it; the page now
+    // opens AT the writing line and nothing carries the view back after that focus. The writer is put back at the end of her page, where the writing line is - the state the scenario always meant.
+    // Original staging: nothing here.
+    await app.evalJs("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()");
+    await sleep(300);
     // log every Selection write the page makes (time, method, the top of the stack)
     await app.evalJs(`(() => { window.__selw = []; window.__selT0 = performance.now(); const P = Selection.prototype;
       for (const m of ['addRange', 'removeAllRanges', 'collapse', 'setBaseAndExtent', 'setPosition', 'extend', 'selectAllChildren', 'removeRange', 'collapseToStart', 'collapseToEnd']) {

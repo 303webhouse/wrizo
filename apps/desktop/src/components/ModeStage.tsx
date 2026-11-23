@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncE
 import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
-import { useChromeDissolve } from './useChromeDissolve';
+import { useChromeDissolve, LIVE_FADE_REFS } from './useChromeDissolve';
 import { useWritingSettings, setWritingSettings } from '../store/writingSettings';
 import type { ProgressMetric, FadeDepth, ProgressStyle } from '../store/writingSettings';
 // FLUX WIRE IN (Fable, Nov 12 6:50 pm) - a mount point only: in Flux a page's free-writing mode is Wire In, the Corridor (src/flux3/FluxJackedIn.tsx); no flag, and in no other theme anything mounts
@@ -230,15 +230,14 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     return () => cancelAnimationFrame(raf);
   }, [zoomed]);
   // memoized so useChromeDissolve's rootRef keeps its identity (a fresh array each render tore down the edge-dwell listener); on the framed desk the root element joins, so --fade-dur reaches chrome outside the host [ModeStage §9]
-  const htmlRef = useRef<HTMLElement>(typeof document !== 'undefined' ? document.documentElement : null);
   // bug #80 (Fable, Nov 12, option (a)): on the Arbor redesign --fade-dur is NOT written on <html>. That write re-styled the room's live shade drawing
   // (a <body> child, ~800 elements) inside the keystroke that starts writing (Actions: 1,095 elements -> ~250 without it). It goes instead to the app's
   // own root and the mockup bar's host, which hold every other element that reads it, so every Arbor fade keeps its timing. Read at each write (the bar's
-  // host may mount after the stage). The live themes keep <html> (bug #90); useChromeDissolve is untouched. scripts/harness/arbor-keyflip.mjs
+  // host may mount after the stage). The live themes do the same (bug #90, Nov 22): the stage, the chrome root, #root and the Machina nameplate's host, never <html> (LIVE_FADE_REFS in useChromeDissolve.ts). scripts/harness/arbor-keyflip.mjs
   const arborTopRefs = useMemo(() => ['root', 'arbor2-mockup-bar'].map((id) => ({ get current() { return document.getElementById(id); } }) as RefObject<HTMLElement>), []);
   const dissolveRootRef = useMemo(
     () => {
-      const top = isArbor2() ? arborTopRefs : [htmlRef];
+      const top = isArbor2() ? arborTopRefs : LIVE_FADE_REFS;
       return chromeRootRef ? [stageRef, chromeRootRef, ...top] : [stageRef, ...top];   // the root everywhere: the narrow layout follows the full recede [ModeStage §10]
     },
     [chromeRootRef, framed, arborTopRefs, stageTheme],   // stageTheme: the redesign is on by default in Arbor only, so a theme switch moves the targets
@@ -409,7 +408,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const es = Math.floor(elapsedMs / 1000);
   const elapsedClock = `${Math.floor(es / 60)}:${String(es % 60).padStart(2, '0')}`;
 
-  const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus();
+  // preventScroll (#112): these are presses that only want the caret in the editor; focusing a tall editable otherwise scrolls the page to the editor's top (a pen stroke's click on a long page set the scroll to 0)
+  const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus({ preventScroll: true });
   // a press on the paper off the text: below the last line, the caret goes to the end; beside a line, to the nearest spot on that line (caret-from-point, read at press time, applied next frame); on the text, the browser's own [ModeStage §14]
   const onPaperPress = (e: React.MouseEvent<HTMLDivElement>) => {
     const scroll = scrollRef.current;
@@ -417,7 +417,7 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
     // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
-    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus(); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); return; }
+    if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus({ preventScroll: true }); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at, { preventScroll: true }); }); return; }
     if (target && ed.contains(target)) return;
     const inScroll = !!target && scroll.contains(target);
     if (target?.closest?.('button, a, input, textarea, select, [role="button"], [role="option"]')) { if (inScroll) focusEditor(); return; }
@@ -437,8 +437,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
       const R = rowsFor(ed);
       offset = range && R && ed.contains(range.startContainer) ? rowsOffsetOf(R, range.startContainer, range.startOffset) : null;
     }
-    ed.focus();
-    if (offset != null) { const at = offset; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at); }); }
+    ed.focus({ preventScroll: true });
+    if (offset != null) { const at = offset; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at, { preventScroll: true }); }); }
   };
   const exec = (cmd: string) => { focusEditor(); try { document.execCommand(cmd, false); } catch { /* execCommand unsupported */ } };
   const choosePen = (ink: string) => { setPen(ink); focusEditor(); };

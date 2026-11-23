@@ -39,6 +39,20 @@
 //         MUT-T11  the same readings with no keyline (cloth and darker edge alone) turn T11's test red (olive, sea, madder, iron sit under 3:1 on the bars)
 //         T12 (NIT 3: 47 px on a Canvas, 51 on a Page) the bar on a Canvas with no Page is the Page's bar height (within 0.5 px), on one row
 //         T13 (NIT 1: the canvas views are icons only) resting the pointer on the views shows each view's word, and the bar keeps its height and one row
+// PASS 4  (the Wrizors, arbor-reorg-pass-4.md section 1; Fable, Nov 22 1:40 am)
+//         T11 DRIVER FIX: the number is read as PAINTED - a clip of the tag inside its edge, its median (the cloth as drawn) against its pixel farthest
+//             from that (the number as drawn) - where it read the computed ink (the Wrizors measured 4.42 by day, 2.55 by night; T11 read 4.5 or better)
+//         MUT-T11-PAINT  the readings with today's painted colours (day #3A3531 on #7FA0BC; night the dimmed walnut on #566775) turn T11's test red
+//         T14 (REAL 2: "Storyboard" and "Walk" read 3.46 on the bar) resting on the chosen view, every other view's word reads 4.5:1 or better on the
+//             bar as painted
+//         MUT-T14  the same reading at half its contrast turns T14's test red  [parked Nov 22: too weak at 8.44; successor MUT-T14-B]
+//         MUT-T14-B  the same reading at today's painted colour (#8F9A58 on the day bar, 3.46) turns T14's test red
+//         T15 (NIT: a hovered view turned brass, like the chosen one) a hovered view is not drawn in the chosen view's colour, and the chosen one keeps it
+// CLOTHS  S1  (spec section 3; Fable, Nov 22 1:40 am: GO, under the reorg's top piece only) for each stage - FREE WRITE madder #A8392F, DRAFT olive #56632E,
+//             REVISE cold blue #7FA0BC, PUBLISH olive - by day and by night at rest, the current tab hangs below the bar in its cloth (the pixels just below
+//             the bar's edge, under the tab, are the cloth) and its word reads 4.5:1 or better on it, as painted
+//         MUT-S1  the same reading with no hang (the pixels below the bar are the ground) turns S1's test red
+//         S2  live Arbor (no reorg) is unchanged: below the bar under its current tab there is no cloth
 //         T10 (a guard for T9's fix, which letters the foot for the paper: green on the red build too) by night on a DARK page the Part foot's
 //             words read 4.5:1 or better on the paper as drawn
 //
@@ -76,6 +90,17 @@ const FOOTBOX = "(() => { const f = document.querySelector('.reorg-part-foot'); 
   "  const chain = []; for (let e = f.querySelector('.reorg-part-foot-end') || f; e && e !== document.body; e = e.parentElement) { const s = getComputedStyle(e); if (s.opacity !== '1' || s.filter !== 'none') chain.push([e.className && String(e.className).slice(0, 40), s.opacity, s.filter]); }\n" +
   "  const end = f.querySelector('.reorg-part-foot-end'); const next = f.querySelector('.reorg-part-foot-go.is-next');\n" +
   "  return { words: [box(end), box(next)].filter(Boolean), paper: { x: Math.round(fr.left + 4), y: Math.round(fr.bottom + 6), w: Math.max(8, Math.round(fr.width - 8)), h: 10 }, color: end ? getComputedStyle(end).color : null, nextColor: next ? getComputedStyle(next).color : null, chain }; })()";
+// T11 / T14: a box AS PAINTED - its median pixel and the pixel farthest (in contrast) from it
+async function paintedInk(app, b) {
+  if (!b || !(b.w > 2) || !(b.h > 2)) return null;
+  const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.w, height: b.h, scale: 1 } })).data;
+  const px = await app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const g = c.getContext('2d'); g.drawImage(img, 0, 0); const D = g.getImageData(0, 0, c.width, c.height).data;
+    const out = []; for (let i = 0; i < D.length; i += 4) out.push([D[i], D[i + 1], D[i + 2]]); const L = (p) => 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]; out.sort((p, q) => L(p) - L(q)); return [out[out.length >> 1], out[0], out[out.length - 1]]; })()`);
+  if (!Array.isArray(px)) return null;
+  const s = (p) => `rgb(${p.join(', ')})`;
+  const med = s(px[0]), far = contrast(s(px[1]), med) >= contrast(s(px[2]), med) ? s(px[1]) : s(px[2]);
+  return { med, far, r: +contrast(far, med).toFixed(2) };
+}
 async function drawnFoot(app) {
   const b = await app.evalJs(FOOTBOX); if (!b || !b.words.length) return { found: false, b };
   const clip = async (c, how) => { const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: c.x, y: c.y, width: c.w, height: c.h, scale: 1 } })).data;
@@ -187,17 +212,30 @@ await withHarness(async (app) => {
   const TAG = "(() => { const g = document.querySelector('.reorg-top .reorg-top-tag'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!g || !bar) return null; const s = getComputedStyle(g); return { slot: g.getAttribute('data-top-tag'), fill: s.backgroundColor, edge: s.borderTopColor, edgeW: s.borderTopWidth, ink: s.webkitTextFillColor || s.color, ring: s.boxShadow, bar: getComputedStyle(bar).backgroundColor }; })()";
   const ringOf = (r) => { const m = /(rgba?\([^)]*\))\s+0px\s+0px\s+0px\s+([\d.]+)px/.exec(r || ''); return m && +m[2] >= 1 ? m[1] : null; };
   const tagStands = (g) => !!g && Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0) >= 3;
-  const tagOk = (g, s) => !!g && g.slot === s && g.fill === CLOTH[s][0] && g.edge === CLOTH[s][1] && g.edgeW === '1px' && contrast(g.ink, g.fill) >= 4.5 && tagStands(g);
+  // DRIVER FIX (Nov 22, the Wrizors' pass 4: T11 read the computed ink, 4.5 or better, where the number is painted at 4.42 by day and 2.55 by night): the
+  // number's 4.5:1 is read from the painted pixels. No assertion changes. The reading as it stood, verbatim:
+  // const tagOk = (g, s) => !!g && g.slot === s && g.fill === CLOTH[s][0] && g.edge === CLOTH[s][1] && g.edgeW === '1px' && contrast(g.ink, g.fill) >= 4.5 && tagStands(g);
+  const tagOk = (g, s) => !!g && g.slot === s && g.fill === CLOTH[s][0] && g.edge === CLOTH[s][1] && g.edgeW === '1px' && !!g.paint && g.paint.r >= 4.5 && tagStands(g);
   const tags = {};
   for (const room of ['day', 'night']) {
     await visit(app, `/?reorg=1${DOOR}&arbor2room=${room}`);
-    for (const s of 'abcdef') { await app.evalJs(`window.wrizoParts && window.wrizoParts.setPartColor('at-2', '${s}'); null`); await sleep(450); tags[`${room}.${s}`] = await app.evalJs(TAG); }
+    await app.mouseMove(700, 400); await sleep(400);
+    for (const s of 'abcdef') {
+      await app.evalJs(`window.wrizoParts && window.wrizoParts.setPartColor('at-2', '${s}'); null`); await sleep(450);
+      tags[`${room}.${s}`] = await app.evalJs(TAG);
+      // DRIVER FIX (pass 4): the number as painted - the tag's inside, 2 px in from its edge
+      const tb = await app.evalJs("(() => { const g = document.querySelector('.reorg-top .reorg-top-tag'); if (!g) return null; const r = g.getBoundingClientRect(); return { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 }; })()");
+      if (tags[`${room}.${s}`]) tags[`${room}.${s}`].paint = await paintedInk(app, tb);
+    }
   }
   await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor('at-2', 'c'); null"); await sleep(300);
   const t11 = (all) => Object.entries(all).length === 12 && Object.entries(all).every(([k, g]) => tagOk(g, k.split('.')[1]));
   ok('T11 for every slot, by day and by night, the tag is filled in its cloth with its 1 px darker edge, its number 4.5:1, and it stands 3:1 or better against the bar', t11(tags),
-    Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { fill: g.fill, edge: g.edge, ring: g.ring, numR: +contrast(g.ink, g.fill).toFixed(2), standR: +Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0).toFixed(2) }])));
+    Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { fill: g.fill, edge: g.edge, ring: g.ring, numR: g.paint && g.paint.r, painted: g.paint, standR: +Math.max(contrast(g.fill, g.bar), contrast(g.edge, g.bar), ringOf(g.ring) ? contrast(ringOf(g.ring), g.bar) : 0).toFixed(2) }])));
   const bare = Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { ...g, ring: 'none' }]));
+  // MUT-T11-PAINT: today's painted colours, as the Wrizors measured them on 1046656b (day: #3A3531 on cold blue, 4.42; night: the dimmed walnut on #566775 - they read 2.55; this composite of walnut at .6 over the night bar reads 2.84)
+  const today = Object.fromEntries(Object.entries(tags).map(([k, g]) => [k, g && { ...g, paint: k === 'day.c' ? { med: 'rgb(127, 160, 188)', far: 'rgb(58, 53, 49)', r: +contrast('rgb(58, 53, 49)', 'rgb(127, 160, 188)').toFixed(2) } : k === 'night.c' ? { med: 'rgb(86, 103, 117)', far: 'rgb(37, 29, 22)', r: +contrast('rgb(37, 29, 22)', 'rgb(86, 103, 117)').toFixed(2) } : g.paint }]));
+  ok('MUT-T11-PAINT the readings with today\'s painted colours (day #3A3531 on cold blue; night the dimmed walnut on #566775) turn T11\'s test red', !!today['day.c'] && today['day.c'].paint.r < 4.5 && today['night.c'].paint.r < 4.5 && !t11(today), { day: today['day.c'] && today['day.c'].paint, night: today['night.c'] && today['night.c'].paint });
   ok('MUT-T11 the same readings with no keyline (cloth and darker edge alone) turn T11\'s test red', Object.values(tags).every((g) => !!g) && !t11(bare), Object.entries(bare).filter(([k, g]) => g && !tagStands(g)).map(([k]) => k));
 
   // ---- T12, T13: the bar on a Canvas, and its views on hover ----
@@ -211,13 +249,62 @@ await withHarness(async (app) => {
   await app.mouseMove(700, 500); await sleep(400);
   ok('T13 resting the pointer on the canvas views shows each view\'s word, and the bar keeps its height and one row', !!sa && Array.isArray(words) && words.length >= 3 && words.every(([title, w]) => !!title && w === title) && !!cv1 && !!cv0 && Math.abs(cv1.bar.h - cv0.bar.h) <= 0.5 && oneRow(cv1), { words, bar0: cv0 && cv0.bar, bar1: cv1 && cv1.bar, oneRow: oneRow(cv1) });
 
+  // ---- T14, T15: the canvas views at rest, and a hovered one ----
+  await visit(app, `/?reorg=1${DOOR}&arbor2room=day`, 'at-c');
+  const vbox = (sel) => `(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height), cx: Math.round(r.left + r.width / 2), cy: Math.round(r.top + r.height / 2) }; })()`;
+  const chosenB = await app.evalJs(vbox(".reorg-top .show-as .show-as-btn[aria-pressed='true']"));
+  if (chosenB) { await app.mouseMove(chosenB.cx, chosenB.cy); await sleep(900); }
+  const restViews = await app.evalJs("[...document.querySelectorAll('.reorg-top .show-as .show-as-btn')].filter((b) => b.getAttribute('aria-pressed') !== 'true').map((b) => { const w = b.querySelector('.show-as-word'); const r = (w || b).getBoundingClientRect(); return { view: b.getAttribute('data-view'), x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) }; })");
+  const restPaint = [];
+  for (const v of restViews || []) restPaint.push({ view: v.view, ...(await paintedInk(app, v)) });
+  const t14 = (list) => Array.isArray(list) && list.length >= 2 && list.every((p) => p.r >= 4.5);
+  ok('T14 resting on the chosen view, every other view\'s word reads 4.5:1 or better on the bar as painted', t14(restPaint), restPaint);
+  // SUPERSEDED (Nov 22, Actions 45004333905 on 84cfdd44: the views read 8.44 there, so half their contrast is 4.72 and this mutant cleared 4.5 - a weak
+  // mutant, not the product). The original, verbatim:
+  // const halved = restPaint.map((p) => ({ ...p, r: 1 + (p.r - 1) / 2 }));
+  // ok('MUT-T14 the same reading at half its contrast turns T14\'s test red', restPaint.length >= 2 && t14(restPaint) !== t14(halved) && !t14(halved), halved.map((p) => [p.view, +p.r.toFixed(2)]));
+  // SUCCESSOR: today's painted colour - the views at rest in #8F9A58 on the day bar #3A4322, 3.46 (the Wrizors' measure on 1046656b)
+  const today14 = restPaint.map((p) => ({ ...p, far: 'rgb(143, 154, 88)', r: +contrast('rgb(143, 154, 88)', 'rgb(58, 67, 34)').toFixed(2) }));
+  ok('MUT-T14-B the same reading at today\'s painted colour (3.46) turns T14\'s test red', restPaint.length >= 2 && t14(restPaint) !== t14(today14) && !t14(today14), today14.map((p) => [p.view, p.r]));
+  const other = (restViews || [])[1] || (restViews || [])[0];
+  if (other) { await app.mouseMove(other.x + Math.round(other.w / 2), other.y + Math.round(other.h / 2)); await sleep(400); }
+  const hov = await app.evalJs("(() => { const all = [...document.querySelectorAll('.reorg-top .show-as .show-as-btn')]; const ch = all.find((b) => b.getAttribute('aria-pressed') === 'true'); const h = all.find((b) => b.matches(':hover') && b !== ch); return ch && h ? { chosen: getComputedStyle(ch).color, hovered: getComputedStyle(h).color, view: h.getAttribute('data-view') } : null; })()");
+  await app.mouseMove(700, 500); await sleep(300);
+  ok('T15 a hovered view is not drawn in the chosen view\'s colour (brass is her choice), and the chosen one keeps it', !!hov && hov.hovered !== hov.chosen, hov);
+
+  // ---- S1, S2: the stage strip's cloths ----
+  const STAGE_CLOTH = { freewrite: 'rgb(168, 57, 47)', draft: 'rgb(86, 99, 46)', revise: 'rgb(127, 160, 188)', publish: 'rgb(86, 99, 46)' };
+  const hangBox = (key) => `(() => { const tab = document.querySelector('.sprint-nav [data-mode-key="${key}"]'); const bar = document.querySelector('.chrome-top.sprint-nav'); if (!tab || !bar) return null; const r = tab.getBoundingClientRect(), b = bar.getBoundingClientRect();
+    return { hang: { x: Math.round(r.left) + 3, y: Math.round(b.bottom) + 1, w: Math.round(r.width) - 6, h: 4 }, word: { x: Math.round(r.left) + 2, y: Math.round(r.top) + 2, w: Math.round(r.width) - 4, h: Math.round(r.height) - 4 } }; })()`;
+  const near = (a, b) => !!a && !!b && contrast(a, b) <= 1.12;
+  const s1Cell = (c, key) => !!c && !!c.hang && near(c.hang.med, STAGE_CLOTH[key]) && !!c.word && near(c.word.med, STAGE_CLOTH[key]) && c.word.r >= 4.5;
+  const stages = {};
+  for (const room of ['day', 'night']) {
+    await visit(app, `/?reorg=1&reorglift=plateau.top,plateau.uplink&arbor2room=${room}`);
+    for (const key of ['freewrite', 'draft', 'revise', 'publish']) {
+      await app.evalJs(`document.querySelector('.sprint-nav [data-mode-key="${key}"]')?.click(); null`); await sleep(1100); await app.mouseMove(700, 400); await sleep(500);
+      const bx = await app.evalJs(hangBox(key));
+      stages[`${room}.${key}`] = bx ? { hang: await paintedInk(app, bx.hang), word: await paintedInk(app, bx.word) } : null;
+    }
+    await app.evalJs("document.querySelector('.sprint-nav [data-mode-key=\"draft\"]')?.click(); null"); await sleep(800);
+  }
+  const s1 = (all) => Object.keys(all).length === 8 && Object.entries(all).every(([k, c]) => s1Cell(c, k.split('.')[1]));
+  ok('S1 for each stage, by day and by night, the current tab hangs below the bar in its cloth and its word reads 4.5:1 or better on it, as painted', s1(stages), stages);
+  const noHang = Object.fromEntries(Object.entries(stages).map(([k, c]) => [k, c && { ...c, hang: c.hang && { ...c.hang, med: 'rgb(36, 25, 18)' } }]));
+  ok('MUT-S1 the same reading with no hang (the ground below the bar) turns S1\'s test red', Object.values(stages).every((c) => !!c) && !s1(noHang), Object.keys(noHang));
+  await visit(app, '/?arbor2room=day');
+  await app.mouseMove(700, 400); await sleep(400);
+  const liveBx = await app.evalJs(hangBox('draft'));
+  const liveHang = liveBx ? await paintedInk(app, liveBx.hang) : null;
+  ok('S2 live Arbor (no reorg) is unchanged: below the bar under its current tab there is no cloth', !!liveHang && !near(liveHang.med, STAGE_CLOTH.draft), liveHang);
+
   await visit(app, '/?reorg=1&arbor2=0', 'at-2', 'machina');
   const machina = await app.evalJs("({ top: !!document.querySelector('.reorg-top'), tags: document.querySelectorAll('.reorg-top-tag').length })");
   ok('T8 Machina\'s top bar draws no tag', machina.top && machina.tags === 0, machina);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
+const EXPECTED = 28;   // + S1, MUT-S1, S2 (the stage strip's cloths, Nov 22). Was: const EXPECTED = 25;   // + MUT-T11-PAINT, T14, MUT-T14, T15 (the Wrizors' pass 4, Nov 22). Was: const EXPECTED = 21;   // + T11, MUT-T11, T12, T13 (the Wrizors' pass 2, Nov 21). Was: const EXPECTED = 17;   // P2 parked: + P2-B, MUT-P2-B. Was: const EXPECTED = 16;   // 10 + T9, MUT-T9 (the Part foot by night, Nov 21) + T10 (the dark page, its guard) + P1, MUT-P1, P2 (the Wrizors' REAL 2, every stage)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-TOP-LIVE VERIFY: PASS (${checks.length} checks)`
