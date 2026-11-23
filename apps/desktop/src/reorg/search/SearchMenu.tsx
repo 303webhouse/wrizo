@@ -106,7 +106,7 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
             title={r === 'project' && found.project == null ? t('reorgSearchNoProject') : undefined} onClick={() => setSearchReach(r)}>{t(REACH_WORD[r])}</button>
         ))}
       </div>
-      {(found.here.length > 0 || s.canUndo) && (
+      {(found.here.length > 0 || s.canUndo || !!s.said) && (
         <div className="reorg-replace">
           <button type="button" className="reorg-replace-line" data-replace-toggle aria-expanded={s.replaceOpen} onClick={() => toggleReplace()}>
             {`${t('reorgReplaceLine')} \u00b7 ${t('reorgReplaceInDoc')}`}
