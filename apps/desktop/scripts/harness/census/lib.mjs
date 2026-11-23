@@ -70,7 +70,9 @@ export function kit(app, id) {
     await sleep(1600);
     return up ? pid : null;
   };
-  return { app, q, waitSoft, splash, shot, patches, press, openPage, frames };
+  // the pointer moves, as a writer's hand does: the chrome comes back (Flux's Free Write hides it altogether)
+  const wake = async () => { for (let i = 0; i < 12; i += 1) { await app.mouseMove(40 + i * 30, 200 + (i % 4) * 25); await sleep(60); } await sleep(700); };
+  return { app, q, waitSoft, splash, shot, patches, press, openPage, wake, frames };
 }
 
 export async function census(id, scenario) {
