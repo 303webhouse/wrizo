@@ -81,7 +81,9 @@ const glitches = async (app, name, ctx, markSel) => {
     let ms = 0;
     for (;;) {
       await sleep(30);   // (animation frames are the harness's here: nothing to wait on but the screenshot)
-      frames.push(await shoot(app, dir, n, ms)); n += 1;
+      // the cursor as the page holds it in this frame: the mark's own visibility (the glitch code sets it) and the computed opacity (the CSS blink, flux5-blink, 1.05 s: on the browser's own clock, which the harness's does not move)
+      const cur = await app.evalJs(`(() => { const m = document.querySelector(${JSON.stringify(markSel)}); const c = m && m.querySelector('[data-flux-cursor]'); if (!c) return null; return { visibility: c.getAttribute('visibility'), opacity: getComputedStyle(c).opacity, glitch: m.getAttribute('data-glitch') }; })()`);
+      const fr = await shoot(app, dir, n, ms); fr.cursor = cur; frames.push(fr); n += 1;
       await app.evalJs(`window.__vstep(${STEP})`);
       ms += STEP;
       const now = await app.evalJs(`(() => { const m = document.querySelector(${JSON.stringify(markSel)}); return m ? m.getAttribute('data-glitch') : null; })()`);
@@ -91,7 +93,11 @@ const glitches = async (app, name, ctx, markSel) => {
     takes.push({ glitch: g, mode, stepMs: STEP, frames });
   }
   const flashLog = await app.evalJs('window.__wzFlashLog || []');
-  writeFileSync(path.join(dir, 'dense.json'), JSON.stringify({ screen: name, stepMs: STEP, seen, takes, flashLog }, null, 2) + '\n');
+  // THE DECODE CURSOR (the Wrizors' REAL 2): a frame where the cursor reads absent - the glitch code, or the blink's off phase? Counted per mode: hidden by the code (visibility), visible by the code but at opacity 0 (the blink), shown.
+  const cursorReading = {};
+  for (const t of takes) for (const f of t.frames || []) { const c = (cursorReading[t.mode || '?'] ||= { frames: 0, hiddenByCode: 0, offByBlink: 0, shown: 0 }); c.frames += 1; if (f.cursor && f.cursor.visibility === 'hidden') c.hiddenByCode += 1; else if (f.cursor && f.cursor.opacity === '0') c.offByBlink += 1; else c.shown += 1; }
+  writeFileSync(path.join(dir, 'dense.json'), JSON.stringify({ screen: name, stepMs: STEP, seen, cursorReading, takes, flashLog }, null, 2) + '\n');
+  console.log('DENSE cursor ' + name + ' ' + JSON.stringify(cursorReading));
   if (!(seen.tear && seen.decode && seen.signal)) throw new Error(`glitches seen: ${JSON.stringify(seen)}`);
 };
 
