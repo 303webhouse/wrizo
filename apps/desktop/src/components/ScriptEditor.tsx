@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsConnecting } from '../store/persistence';
+import { getJournalEntry, saveScriptDoc, saveJournalEntry, patchJournalEntry, flushNow, getDrawer, getProject, getBoardsConnecting, subscribe } from '../store/persistence';
 import { describePageHome } from '../store/pageHome';
 import { flattenScenes, groupIntoScenes, createEmptyScriptDoc, newElement } from '../store/scriptDoc';
 import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
@@ -43,7 +43,7 @@ import { mapCaretThrough } from '../store/textMerge';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, getSelectionEndOffset, setCaretOffset } from './script/caret';
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
-import { createHistory, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
+import { createHistory, linesKey, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
 // element, ONLY the active element a live contenteditable (the BoardTextBox
@@ -140,6 +140,21 @@ export function ScriptEditor({ id }: { id: string }) {
     noteChange(historyRef.current, elements, activeIndex, caret, typed, performance.now());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [elements, activeIndex]);
+  // SCRIPT #4 (Fable, Nov 23): lines another window or device saved reset the history, as a Replace does, so Undo never takes them back. This page's own saves are not "outside":
+  // the stored lines then match what it shows or what it last saved.
+  const seenLinesRef = useRef(linesKey(flattenScenes(initialDoc.scenes)));
+  useEffect(() => subscribe(() => {
+    const stored = getJournalEntry(id)?.script;
+    if (!stored) return;
+    const theirs = linesKey(flattenScenes(stored.scenes));
+    if (theirs === seenLinesRef.current) return;
+    seenLinesRef.current = theirs;
+    const asStored = (els: ScriptEl[]) => linesKey(flattenScenes(groupIntoScenes(els, scenesRef.current)));
+    if (theirs === asStored(elementsRef.current) || theirs === asStored(lastSavedRef.current)) return;
+    const { activeId, caret } = historyRef.current.present;
+    historyRef.current = createHistory(elementsRef.current, activeId, caret);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [id]);
 
   // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
   // recomputed exactly when the document changes and not when the caret hint,

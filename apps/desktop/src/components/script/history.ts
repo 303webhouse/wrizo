@@ -22,6 +22,9 @@ export function createHistory(elements: ScriptEl[], activeId: string | null, car
   return { past: [], present: { elements, activeId, caret }, future: [], typing: null };
 }
 
+/** What a set of lines says, without their ids: two copies of a script compare equal when every line has the same type and words. */
+export const linesKey = (elements: ScriptEl[]): string => elements.map((el) => `${el.t}\u0001${el.text}`).join('\u0002');
+
 function advance(h: ScriptHistory, next: ScriptSnap): void {
   h.past.push(h.present);
   if (h.past.length > MAX_STEPS) h.past.shift();
