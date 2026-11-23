@@ -264,7 +264,7 @@ export function ScriptEditor({ id }: { id: string }) {
     const next = flattenScenes(stored.scenes);
     const at = Math.min(activeIndex, Math.max(0, next.length - 1));
     const node = activeElRef.current;
-    const shown = node?.textContent ?? '';
+    const shown = elementsRef.current[activeIndex]?.text ?? '';   // the model, current because the page saved its typing first (typing-latency-readers-guard)
     const inLine = !!node && document.activeElement === node;
     const caret = inLine ? getCaretOffset(node) : null;
     scenesRef.current = stored.scenes;
