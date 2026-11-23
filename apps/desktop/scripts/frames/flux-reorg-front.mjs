@@ -16,9 +16,11 @@ async function seed(app) {
     const grants = W.wrizoCreateDrawer('Grants');
     const brief = W.wrizoCreateProject('Brief'); W.wrizoSetProjectDrawer(brief.id, grants.id);
     page('ff-note', 'Field notes\\nThe rain came late, and the river ran brown for a week.', { origin: 'loose' });
+    page('ff-board', 'Plan board', { origin: 'loose', pageType: 'board', boxes: [{ id: 'c1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The opening image', seq: 0 }] });
     const parts = [['ff-1', 'Arrival', 'The harbour was quiet when she arrived. Nobody met her at the quay.', 'a'], ['ff-2', 'The town', 'By the second week the town had decided what she was.', 'b'], ['ff-3', 'The toll', 'The toll was paid in the spring.', 'c'], ['ff-4', 'The ice', 'The ice went out on a Tuesday.', 'd'], ['ff-5', 'The ferry', 'The ferry came back with no one on it.', 'e'], ['ff-6', 'The ledger', 'She read the ledger twice.', 'f'], ['ff-7', 'Her own', 'A Track in a colour of her own.', '#C04A2B'], ['ff-8', 'No colour', 'A Track with no colour at all.', null]];
     parts.forEach(([id, , text], i) => page(id, text, { origin: 'project', projectId: brief.id, orderIndex: i }));
     parts.forEach(([id, name, , color]) => W.wrizoPatchEntry(id, { pageSettings: ${PS}, name, level: 0, ...(color ? { color } : {}) } }));
+    W.wrizoPatchEntry('ff-board', { pageLinks: [{ id: 'l1', aEntryId: 'ff-board', aBoxId: 'c1', bEntryId: 'ff-1', createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' }] });   // a Part's badge counts what links to it (reorg/partAssets.ts), not the Doc's own assets
     W.wrizoFlushNow();
     return null;
   })()`);
@@ -29,7 +31,6 @@ async function open(app, lift = LIFT) {
   await app.reload();
   try { await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-sliver-grip')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
   await sleep(900);
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; if (D) { D.addAsset('ff-1', { entryId: 'ff-note' }); window.wrizoFlushNow(); } return null; })()"); await sleep(300);   // the seam is there only once a page is open
   if (!(await app.evalJs("document.querySelector('.wz-sliver-panel')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null"); await sleep(700); }
 }
 const tab = async (app, id) => { await app.evalJs(`document.getElementById('wz-sliver-tab-${id}')?.click(); null`); await sleep(500); };

@@ -45,12 +45,14 @@ async function seed(app) {
     const grants = W.wrizoCreateDrawer('Grants');
     const brief = W.wrizoCreateProject('Brief'); W.wrizoSetProjectDrawer(brief.id, grants.id);
     page('ff-note', 'Field notes\\nThe rain came late.', { origin: 'loose' });
+    page('ff-board', 'Plan board', { origin: 'loose', pageType: 'board', boxes: [{ id: 'c1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The opening image', seq: 0 }] });
     page('ff-1', 'The harbour was quiet when she arrived.', { origin: 'project', projectId: brief.id, orderIndex: 0 });
     page('ff-2', 'By the second week the town had decided what she was.', { origin: 'project', projectId: brief.id, orderIndex: 1 });
     page('ff-3', 'The toll was paid in the spring.', { origin: 'project', projectId: brief.id, orderIndex: 2 });
     W.wrizoPatchEntry('ff-1', { pageSettings: ${PS}, name: 'Arrival', level: 0, color: 'a' } });
     W.wrizoPatchEntry('ff-2', { pageSettings: ${PS}, name: 'The town', level: 0, color: 'c' } });
     W.wrizoPatchEntry('ff-3', { pageSettings: ${PS}, name: 'The toll', level: 0, color: '#C04A2B' } });
+    W.wrizoPatchEntry('ff-board', { pageLinks: [{ id: 'l1', aEntryId: 'ff-board', aBoxId: 'c1', bEntryId: 'ff-1', createdAt: '2026-04-01T00:00:00.000Z', updatedAt: '2026-04-01T00:00:00.000Z' }] });   // a Part's badge counts what links to it (reorg/partAssets.ts), not the Doc's own assets
     W.wrizoFlushNow();
     return null;
   })()`);
@@ -72,8 +74,6 @@ const RAW = "(() => { const bad = []; const root = document.querySelector('.wz-s
 await withHarness(async (app) => {
   await seed(app);
   await open(app, 'ff-1');
-  await app.evalJs("(() => { const D = window.wrizoDocSettings; if (D) { D.addAsset('ff-1', { entryId: 'ff-note' }); window.wrizoFlushNow(); } return null; })()");
-  await sleep(400);
   const mark = await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (e) e.__ffMark = 1; return null; })()");
   void mark;
   const before = await app.evalJs(PAGE);
@@ -181,6 +181,11 @@ await withHarness(async (app) => {
     if (open2) await drawer(app);
     console.log('INFO caret ' + label + ' ' + JSON.stringify(await app.evalJs(CARET)));
   }
+  // INFO, no verdict: every brass mark on screen with the menu open, an element's own or its ::before / ::after, so a stray bar can be named
+  const SCAN = "(() => { const isB = (v) => { const m = /rgba?\\((\\d+), (\\d+), (\\d+)/.exec(v || ''); return !!m && +m[1] > 150 && +m[2] > 60 && +m[2] < 190 && +m[3] < 70; }; const out = []; for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(); const name = (e.tagName + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className).split(/\\s+/).slice(0, 2).join('.')).slice(0, 44); if (isB(getComputedStyle(e).backgroundColor) && r.width > 0) out.push([name, 'self', Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]); for (const p of ['::before', '::after']) { const c = getComputedStyle(e, p); if (c.content !== 'none' && isB(c.backgroundColor)) out.push([name, p, Math.round(r.left + (parseFloat(c.left) || 0)), Math.round(r.top + (parseFloat(c.top) || 0)), c.width, c.height]); } } return { hit: document.elementsFromPoint(479, 459).slice(0, 4).map((x) => x.tagName + '.' + String(x.className).split(/\\s+/)[0]), marks: out.slice(0, 14) }; })()";
+  await open(app, 'ff-1');
+  await drawer(app);
+  console.log('INFO brass ' + JSON.stringify(await app.evalJs(SCAN)));
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
