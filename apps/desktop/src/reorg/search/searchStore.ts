@@ -69,7 +69,14 @@ export function doReplace(hits: Hit[]): void {
   keepWord();
   set({ said, cur: null, canUndo: canUndoReplace() });
 }
-export function doUndoReplace(): void { const said = undoReplace(); set({ said, cur: null, canUndo: canUndoReplace() }); }
+// AFTER UNDO HER NEXT KEY LANDS (POLISH's audit on train K, 6 of 6 jobs; Fable, Nov 22, 11:30 pm; R4's rule, Fable, 3:33 pm: the focus stays in the Replace field, keys never go nowhere). The Undo button goes when there is nothing left to undo, and the page that took the words back mounts its editor again, so the focus goes to the Replace field now, and again at each of these moments if it has dropped to the body meanwhile.
+function keepFocusInReplaceField(): void {
+  const field = () => document.querySelector<HTMLInputElement>('input[data-replace-with]');
+  const back = () => { const a = document.activeElement; const w = field(); if (w && (!a || a === document.body)) w.focus({ preventScroll: true }); };
+  field()?.focus({ preventScroll: true });
+  [0, 60, 200, 500].forEach((ms) => window.setTimeout(back, ms));
+}
+export function doUndoReplace(): void { const said = undoReplace(); set({ said, cur: null, canUndo: canUndoReplace() }); keepFocusInReplaceField(); }
 export const setSearchReach = (reach: Reach): void => set({ reach, cur: null, more: {} });
 export function setSearchCur(cur: string | null): void { keepWord(); set({ cur }); }
 export const openMore = (id: string): void => set({ more: { ...state.more, [id]: true } });
