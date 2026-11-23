@@ -265,6 +265,8 @@ await withHarness(async (app) => {
   // script pause of an animation), BEFORE the freeze sheet: W9b's sheet cancelled the fade's transition, which jumps it to its END (opacity 0) - its
   // shots held no shade at all (hiding the shade changed 0 pixels). Unpinned at the end.
   const PIN = "(() => { document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { const o = getComputedStyle(l).opacity; l.style.transition = 'none'; l.style.opacity = o; }); return [...document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh')].map((l) => l.style.opacity); })()";
+  // W11's reading: how many shade layers there are and how many are asleep (data-asleep: content-visibility hidden on the drift, so nothing of the shade paints)
+  const AWAKE = "(() => { const l = [...document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh')]; return { layers: l.length, asleep: l.filter((x) => x.hasAttribute('data-asleep')).length }; })()";
   const UNPIN = "(() => { document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => { l.style.transition = ''; l.style.opacity = ''; }); return true; })()";
   // W9c, information: the room's breeze clock as the page shows it just before the key (the cut works its pose out from the first leaf's start time,
   // read at rest - W9b's turn saw the cut keep the shared still while the counter had 8 leaves moving)
@@ -286,18 +288,20 @@ await withHarness(async (app) => {
     const off = await app.evalJs("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') ?? null");
     await styleOn('w9-freeze', FREEZE); await frames2(); await sleep(150);
     const a = await app.screenshot();
+    const awakeA = await app.evalJs(AWAKE);
     await sleep(400);
     const a2 = await app.screenshot();   // control 1: the same frame again
     await styleOn('w9-reveal', REVEAL); await frames2(); await sleep(150);
     const b = await app.screenshot();   // the live drawing (paused by r19's rule at the pose the key found) in place of the still
     await styleOff('w9-reveal'); await styleOn('w9-hide', HIDE); await frames2(); await sleep(150);
     const c = await app.screenshot();   // control 2: the shade hidden
+    const awakeC = await app.evalJs(AWAKE);
     await styleOff('w9-hide'); await styleOff('w9-freeze'); await app.evalJs(UNPIN);
     if (process.env.ARBOR_SHOTS) { fs.mkdirSync(process.env.ARBOR_SHOTS, { recursive: true }); [['still', a], ['still-again', a2], ['live', b], ['no-shade', c]].forEach(([k, s]) => fs.writeFileSync(path.join(process.env.ARBOR_SHOTS, `lastframe-b-${want}-${k}.png`), Buffer.from(s, 'base64'))); }
     const pct = (x) => (x ? Math.round((x.over / x.n) * 1e6) / 1e4 : null);
     const vs = await shotCmp(a, b), same = await shotCmp(a, a2), shade = await shotCmp(a, c);
     const choice = !restBg.room || !cutBg.room ? null : cutBg.room === restBg.room ? 'shared still' : 'pose';
-    return { want, moving: n, choice, zoom, off, pinned, clockAtKey, vs, overPct: pct(vs), same, samePct: pct(same), shade, shadePct: pct(shade), pageChoice: !restBg.page || !cutBg.page ? null : cutBg.page === restBg.page ? 'shared still' : 'pose' };
+    return { want, moving: n, choice, zoom, off, pinned, awake: [awakeA, awakeC], clockAtKey, vs, overPct: pct(vs), same, samePct: pct(same), shade, shadePct: pct(shade), pageChoice: !restBg.page || !cutBg.page ? null : cutBg.page === restBg.page ? 'shared still' : 'pose' };
   };
   const premiseB = (x, choice) => !!x.vs && !x.zoom && x.off === 'true' && x.choice === choice && (choice === 'pose' ? x.moving >= 8 : x.moving === 0) && x.same.over === 0 && x.shade.over >= x.shade.n * 0.01;
   // PARKED 2026-11-07, an INSTRUMENT fault again (turn 03:04Z on 99df6ef9; its own controls caught it): the page stayed zoomed (the setting was
@@ -351,7 +355,7 @@ await withHarness(async (app) => {
       const el = Date.now() - k0;
       if (el >= marks[shots.length]) {
         const s = await app.screenshot();
-        shots.push({ at: Date.now() - k0, s, moving: await app.evalJs(MOVINGNOW), leafT: await app.evalJs(LEAFT), writing: await app.evalJs("document.documentElement.getAttribute('data-wz-writing')"), off: await app.evalJs("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') ?? null") });
+        shots.push({ at: Date.now() - k0, s, awake: await app.evalJs(AWAKE), moving: await app.evalJs(MOVINGNOW), leafT: await app.evalJs(LEAFT), writing: await app.evalJs("document.documentElement.getAttribute('data-wz-writing')"), off: await app.evalJs("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') ?? null") });
       } else if (el >= nextKey) { await app.typeKeys('s'); nextKey += 120; }
       else await sleep(8);
     }
@@ -359,7 +363,7 @@ await withHarness(async (app) => {
     const diffs = [];
     for (const x of shots.slice(1)) diffs.push(await regionCmp(shots[0].s, x.s, R));
     const pct = (d) => (d.n ? Math.round((d.over / d.n) * 1e6) / 1e4 : null);
-    return { mutant, movingAtKey: n, R, pinned, shots: shots.map((x) => ({ at: x.at, moving: x.moving, leafT: x.leafT, writing: x.writing, off: x.off })), diffs: diffs.map((d) => ({ ...d, pct: pct(d) })) };
+    return { mutant, movingAtKey: n, R, pinned, shots: shots.map((x) => ({ at: x.at, awake: x.awake, moving: x.moving, leafT: x.leafT, writing: x.writing, off: x.off })), diffs: diffs.map((d) => ({ ...d, pct: pct(d) })) };
   };
   // the room's first leaf's own animation clock: it ADVANCES only while the leaves really move (paused, it stands; the moving counter alone reads a paused pose as moving)
   const LEAFT = "(() => { const g = document.querySelector('.arbor2-pergola .wz-leaf'); const a = g ? g.getAnimations()[0] : null; return a && a.currentTime != null ? Math.round(Number(a.currentTime)) : null; })()";
@@ -374,6 +378,11 @@ await withHarness(async (app) => {
   const lfR = await lastFrameB('rest');
   ok('W10c the last frame, at rest: on an unzoomed page, the cut kept the SHARED still (the counter agreeing: no leaf moving), and it against the live drawing at rest - over 9 levels on no more than 0.01% of the pixels (the same two controls)',
     premiseB(lfR, 'shared still') && lfR.vs.over <= lfR.vs.n * 0.0001, JSON.stringify(lfR));
+  // W11 (Nov 23, the instrument under W9d-M and W10c): since bug #80 (d159f5a48) the room reads its fade's length two frames AFTER the key. PIN writes transition:none, so a PIN that lands first
+  // reads as a 0 s fade: the shade goes to sleep 250 ms after the key, nothing of it paints, W9d-M's moving leaves change 0 pixels and W10c's 'hide the shade' control changes 0 pixels. W9d is then green blind.
+  const awakeAll = [...wd.shots.map((s) => s.awake), ...wm.shots.map((s) => s.awake), ...(lfR.awake || [])];
+  ok('W11 the instrument: the shade is awake at every shot W9d, W9d-M and W10c read (shade layers present, none with data-asleep)',
+    awakeAll.length === 12 && awakeAll.every((x) => !!x && x.layers > 0 && x.asleep === 0), JSON.stringify(awakeAll));
   await app.evalJs(`localStorage.removeItem('wrizo-typewriter-page-' + ${JSON.stringify(twPage)})`);
   // W8: the flash held, two masks, one moment
   const pageId = (await app.evalJs('location.hash')).replace(/^#\/page\//, '');
@@ -499,7 +508,10 @@ console.log(JSON.stringify(checks, null, 2));
 // PARKED 2026-11-11 (SUPERSEDED - Fable, Nov 11, 12:30 pm, item 5: W8b parked, W8c and W8c-M added - one more check). Original, verbatim:
 // const WANT_CHECKS = 11;
 // SUCCESSOR: twelve.
-const WANT_CHECKS = 12;
+// PARKED 2026-11-23 (SUPERSEDED - W11 added, the instrument under W9d-M and W10c: one more check). Original, verbatim:
+// const WANT_CHECKS = 12;
+// SUCCESSOR: thirteen.
+const WANT_CHECKS = 13;
 const pass = checks.length === WANT_CHECKS && checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass ? `\nARBOR2-SWAP VERIFY: PASS (${checks.length} checks)` : `\nARBOR2-SWAP VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length !== WANT_CHECKS ? ` (and ${checks.length} checks ran where ${WANT_CHECKS} were expected)` : ''}`);
