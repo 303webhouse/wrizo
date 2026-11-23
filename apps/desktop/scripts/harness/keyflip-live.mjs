@@ -21,7 +21,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
 const ABS = { machina: 220, flux: 400 }, BUSY_MS = 65;   // Fable's absolute bars (the chrome's receding set); the first-key bar is Nick's
 const PAGE_TEXT = 'word0 word1 word2 word3 word4 word5 word6';   // the page the bars were measured on (Machina 210, Flux 387: Fable's 220 and 400); a longer page adds rows to the restyle and moves the printed numbers   // 60 lines: a column with real depth, so a column restyle cannot hide inside the chrome's number
-const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
+// flux-keyflip-reorg.mjs (the Flux live join, Fable, Nov 23) runs this file on Flux alone, with the driver's reorg pin lifted
+const FLUX_REORG = process.env.WS_KL_FLUX_REORG === '1';
+const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
 const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
@@ -54,7 +56,7 @@ const analyse = (raw) => {
   }
   const top = win.slice().sort((a, b) => els(b) - els(a)).slice(0, 4).map((s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000) }));
   const all = win.map((s) => ({ els: els(s), ms: r1((s.end - s.ts) / 1000), at: r1((s.ts - K) / 1000) })).filter((s) => Number.isFinite(s.els));
-  return { restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
+  return { restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 40) };
 };
 const traceKey = async (app, key = 'a') => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
@@ -76,6 +78,9 @@ const traceKey = async (app, key = 'a') => {
 const OLD_WRITE = `(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; if (orig.__klOld) return true;
   const wrapped = function (name, value, prio) { if (name === '--fade-dur' && this !== de.style) { try { orig.call(de.style, name, value, prio); } catch {} } return orig.call(this, name, value, prio); };
   wrapped.__klOld = true; CSSStyleDeclaration.prototype.setProperty = wrapped; return true; })()`;
+const DOC_DIFF = `(() => { const seen = new Map(); window.__klDiff = seen; const name = (e) => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || '').trim().split(/\\s+/).slice(0, 2).join('.'); new MutationObserver((rs) => { for (const r of rs) { if (r.type !== 'attributes') continue; const t = r.target; const now = String(t.getAttribute(r.attributeName) || ''); const old = String(r.oldValue || ''); if (now === old) continue; const k = name(t) + ' @' + r.attributeName; const row = seen.get(k) || { el: name(t), attr: r.attributeName, n: 0, subtree: t.querySelectorAll('*').length, old: old.slice(0, 160) }; row.n += 1; row.now = now.slice(0, 160); seen.set(k, row); } }).observe(document, { attributes: true, attributeOldValue: true, subtree: true }); return true; })()`;
+const DOC_DIFF_READ = `[...window.__klDiff.values()].sort((a, b) => b.subtree - a.subtree).slice(0, 30)`;
+const DOC_SHAPE = `(() => { const out = {}; for (const s of ['#root', '.mode-stage', '.desk-frame-host', '.mode-scroll', '.mode-pagecol', '.forward-only-editor', '.reorg-top', '.reorg-rail', '.theme-fx-layer', '.flux3-corridor', '.flux3-room-ground', '.flux-room-ground']) { const e = document.querySelector(s); out[s] = e ? e.querySelectorAll('*').length : null; } out.svg = document.querySelectorAll('svg, svg *').length; return out; })()`;
 // where --fade-dur is written, and what the dissolve-class elements read after the key
 const FADE_STATE = `(() => { const de = document.documentElement; const own = (el) => el.style && el.style.getPropertyValue('--fade-dur');
   const carriers = [...document.querySelectorAll('.chrome-fade, .desk-dissolve, .mode-dissolve, .brand-mark, .chrome-handle')];
@@ -133,10 +138,12 @@ await withHarness(async (app) => {
     if (arborLeft) console.log(`KL-WARN ${theme}: ${arborLeft} Arbor shade elements are in the page`);
     before.arborLeft = arborLeft;
     await app.evalJs(COL_OBS);
+    if (!mutate) await app.evalJs(DOC_DIFF);
     const tr = await traceKey(app, 'a');
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
     const colMut = (await app.evalJs('window.__klMut || null')) || [];
+    if (!mutate) console.log(`KL-DIFF ${theme}: keyEls ${tr && tr.keyEls}, all ${JSON.stringify(tr && tr.all)}, shape ${JSON.stringify(await app.evalJs(DOC_SHAPE))}, changed ${JSON.stringify(await app.evalJs(DOC_DIFF_READ))}`);
     const m = { theme, before, after, tr, colMut };
     console.log(`KL-COLMUT ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify(colMut));
     const { invalidations, top, ...trShort } = tr || {};
@@ -174,6 +181,10 @@ await withHarness(async (app) => {
     ok(`KL-TIMING-${theme} the dissolve-class elements read a --fade-dur after the first key, and no --fade-dur is written on <html> (printed: html '${R[0].after.onHtml}', ${R[0].after.carriers} carriers read ${JSON.stringify(R[0].after.reads)})`,
       R.every((m) => m.after.onHtml === '' && m.after.carriers >= 1 && m.after.reads.length >= 1 && m.after.reads.every((v) => /^[0-9.]+s$/.test(v))), JSON.stringify(R.map((m) => m.after)));
   }
+  if (FLUX_REORG) {
+    const on = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), flux3: document.documentElement.hasAttribute('data-flux3'), top: !!document.querySelector('.reorg-top') })");
+    ok('KFR-ON the page this run measured is the live Flux: the redesign and the reorg\'s top rail are both on it (the wrapper is not silently the old file)', on && on.theme === 'flux' && on.flux3 && on.top, JSON.stringify(on));
+  }
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: 'html' });
@@ -192,7 +203,7 @@ await withHarness(async (app) => {
 }, { label: 'keyflip-live' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = THEMES.length * 4 + 2;
+const EXPECTED = THEMES.length * 4 + 2 + (FLUX_REORG ? 1 : 0);
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nKEYFLIP-LIVE VERIFY: PASS (${checks.length} checks)`
