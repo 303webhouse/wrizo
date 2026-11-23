@@ -3,6 +3,7 @@
 // This file opens a Doc the way the frames job does (the same stored prefs, the same fixture, no preview door) and reads the drawn caret against the selection, with no event sent.
 //   CS1  at rest after the page opens, the caret stands at the selection, on every load at 1366 and 1920
 //   CS2  the same with the Tools drawer opened after the load
+//   CS3  the same on a first visit over a slower line: no cache, 300 ms on every request
 // Run (repo root; Actions, or a box turn):  node apps/desktop/scripts/harness/flux-caret-settle.mjs
 process.env.WS_REORG = '1';   // the table as it ships, not the driver's pin (runtime-verify serves __wrizoReorgOff otherwise)
 import { withHarness } from '../runtime-verify.mjs';
@@ -81,7 +82,7 @@ async function load(app, id) {
   await sleep(900);
 }
 
-const rest = [], drawer = [];
+const rest = [], drawer = [], cold = [];
 await withHarness(async (app) => {
   // one seed for both widths: the same Doc is reopened at each
   await fresh(app, 1366);
@@ -102,6 +103,25 @@ await withHarness(async (app) => {
       drawer.push(dRow);
     }
   }
+  // CS3: a writer's first visit on a slower line. No cache and 300 ms on every request, so the redesign's chunk and its fonts arrive after the caret has drawn, on every load
+  await app.emulateDpr(1, 1366, HEIGHT[1366]);
+  await app.cdp('Network.enable', {});
+  await app.cdp('Network.setCacheDisabled', { cacheDisabled: true });
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 300, downloadThroughput: -1, uploadThroughput: -1 });
+  try {
+    for (let i = 0; i < LOADS; i += 1) {
+      await load(app, 'ff-1');
+      await app.waitFor("document.fonts.status === 'loaded'", { label: 'the fonts', timeout: 15000 }).catch(() => {});
+      await sleep(2500);
+      const v = await app.evalJs(READ);
+      const row = { i, ...v };
+      if (stale(v)) { row.log = await app.evalJs('(window.__cl || []).slice(-8)'); console.log('INFO cold timeline ' + JSON.stringify({ i, ev: await app.evalJs('window.__ev || []') })); }
+      cold.push(row);
+    }
+  } finally {
+    await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    await app.cdp('Network.setCacheDisabled', { cacheDisabled: false });
+  }
 });
 
 for (const r of [...rest, ...drawer].filter((x) => x.log)) console.log('INFO stale ' + JSON.stringify(r));
@@ -110,9 +130,11 @@ const bad = (L) => L.filter((v) => stale(v));
 console.log(`INFO loads ${rest.length}; stale at rest ${bad(rest).length}; stale with the drawer ${bad(drawer).length}`);
 ok(`CS1 at rest after the page opens the block caret stands at the selection, on all ${N} loads at 1366 and 1920`, rest.length === N && bad(rest).length === 0, bad(rest).slice(0, 3));
 ok(`CS2 with the Tools drawer opened after the load it still does, on all ${N} loads`, drawer.length === N && bad(drawer).length === 0, bad(drawer).slice(0, 3));
+console.log(`INFO cold loads ${cold.length}; stale ${bad(cold).length}`);
+ok(`CS3 on a first visit over a slower line (no cache, 300 ms a request) it stands at the selection, on all ${LOADS} loads`, cold.length === LOADS && bad(cold).length === 0, bad(cold).slice(0, 3));
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 2;
+const EXPECTED = 3;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nFLUX-CARET-SETTLE VERIFY: PASS (${checks.length} checks)`
