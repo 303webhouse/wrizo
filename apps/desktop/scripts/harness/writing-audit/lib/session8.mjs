@@ -38,12 +38,13 @@ export async function main({ title }) {
     out(`WRITING AUDIT ${title} [${TAG}] (${new Date().toISOString()})`);
     await d.boot();
     // the reorg ON (and the preview door, when asked), kept in the URL's query so every hash navigation carries it
-    const q = ['reorg=1']; if (cfg.flag === 'on') q.push(`${THEMES[cfg.theme].flag}=1`); if (lift) q.push(`reorglift=${lift}`);
-    await ev(`history.replaceState(null, '', '/?${q.join('&')}#/')`);
+    // WA_NOASK=1 (train K, Fable 6:20 pm: the reorg on by default in Machina and Arbor): no ?reorg=1, so the run proves the DEFAULT
+    const q = env.WA_NOASK === '1' ? [] : ['reorg=1']; if (cfg.flag === 'on') q.push(`${THEMES[cfg.theme].flag}=1`); if (lift) q.push(`reorglift=${lift}`);
+    await ev(`history.replaceState(null, '', '/${q.length ? '?' + q.join('&') : ''}#/')`);
     await app.reload();
     await waitFor("!!document.querySelector('.wz-arrival')", 'the Desk', 20000);
     await waitFor("!document.querySelector('.wz-splash')", 'splash gone', 20000).catch(() => {});
-    out(`INFO reorg: ${JSON.stringify(await ev("({ q: location.search, top: !!document.querySelector('.reorg-top'), theme: document.documentElement.getAttribute('data-theme') })"))}`);
+    out(`INFO reorg: ${JSON.stringify(await ev("({ q: location.search, top: !!document.querySelector('.reorg-top'), topSearch: !!document.querySelector('[data-top-search]'), theme: document.documentElement.getAttribute('data-theme'), arbor2: document.documentElement.getAttribute('data-arbor2') })"))}`);
 
     // ---- helpers --------------------------------------------------------------------------------------------------------------------------------
     let docN = 0;
