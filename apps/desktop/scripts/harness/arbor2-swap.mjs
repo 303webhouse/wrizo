@@ -281,6 +281,8 @@ await withHarness(async (app) => {
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.typeKeys('s');
     await app.waitFor("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') === 'true'", { label: 'cut', timeout: 2000 }).catch(() => {});
+    // DRIVER FIX (Nov 23, W11; no assertion changes): the room reads its fade's length two frames after the key (bug #80). These two frames run after its own, so it has read the real 6 s before PIN writes transition:none.
+    await frames2();
     const pinned = await app.evalJs(PIN);
     await sleep(1200);   // the key's save and its re-render land before the hold (the cut and r19's pause are already in place)
     const cutBg = await app.evalJs(STILLBG);
@@ -349,6 +351,8 @@ await withHarness(async (app) => {
     await app.typeKeys('s');
     const k0 = Date.now();
     await app.waitFor("document.querySelector('.arbor2-pergola')?.getAttribute('data-live-off') === 'true'", { label: 'cut', timeout: 1000 }).catch(() => {});
+    // DRIVER FIX (Nov 23, W11; no assertion changes): the room reads its fade's length two frames after the key (bug #80). These two frames run after its own, so it has read the real 6 s before PIN writes transition:none.
+    await frames2();
     const pinned = await app.evalJs(PIN);
     const marks = [250, 700, 1150, 1600, 1900], shots = []; let nextKey = 120;
     while (shots.length < marks.length) {
