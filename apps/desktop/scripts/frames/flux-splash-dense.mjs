@@ -71,9 +71,9 @@ const glitches = async (app, name, ctx, markSel) => {
     // and its first animation frame is run by a step of 0 (a step of a second would end the glitch before it was read)
     let mode = null;
     await app.evalJs('window.__vstep(6000)');
-    for (let i = 0; i < 100 && !mode; i += 1) {
+    for (let i = 0; i < 200 && !mode; i += 1) {
       await sleep(60);
-      await app.evalJs('window.__vstep(0)');
+      await app.evalJs('window.__vstep(33)');   // a 33 ms step a look: the in-app mark waits out the page's own screen-wide glitch (useJacked), which runs on these steps too
       mode = await app.evalJs(`(() => { const m = document.querySelector(${JSON.stringify(markSel)}); return m ? m.getAttribute('data-glitch') : null; })()`);
     }
     if (!mode) { takes.push({ glitch: g, error: 'no glitch began' }); break; }
