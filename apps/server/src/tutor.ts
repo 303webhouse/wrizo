@@ -5,6 +5,7 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
+import { guardReply, FALLBACK_LINE } from './tutorGuard';
 import { buildSystemPrompt, buildSprintSystemPrompt, CHAT_PROMPT_DEFAULT, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
@@ -259,17 +260,35 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   }
 
   try {
-    const response = await client().messages.create({
+    const ask = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
       system: buildSystemPrompt(CHAT_PROMPT_DEFAULT),
       messages,
     });
-    const text = response.content
+    const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
       .trim();
+    let response = await ask();
+    let text = textOf(response);
+    let inputTokens = response.usage.input_tokens;
+    let outputTokens = response.usage.output_tokens;
+    // TUTOR-B ITEM 3 — THE REPLY GUARD. A reply that says "I" or flatters (tutorGuard.ts: the kit's M1 and M2 lists) is asked for again ONCE, and if the second one fails too she sees the plain
+    // fallback line instead. The retry is a second model call, so it is paid for from the SAME two daily budgets as any other (consumeTutorBudget, then consumeGlobalTutorBudget): those refuse
+    // at the cap and never count past it, so a retry cannot carry a count over a cap. With no unit left the retry is not made at all and the fallback line shows. Both calls' tokens are added into
+    // `usage` so the session meter stays honest. The first reply is never shown when it fails, so the writer sees one answer or the fallback, never two.
+    if (!guardReply(text).ok) {
+      const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
+      if (retryAllowed) {
+        response = await ask();
+        text = textOf(response);
+        inputTokens += response.usage.input_tokens;
+        outputTokens += response.usage.output_tokens;
+      }
+      if (!retryAllowed || !guardReply(text).ok) text = FALLBACK_LINE;
+    }
     // TU2 S2 — usage threaded through now (not consumed until S5's session
     // meter) so that later, client-only slice never has to re-open this
     // closed-census file. Absent on the {configured:false}/error shapes
@@ -287,7 +306,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     res.json({
       configured: true,
       reply: text,
-      usage: { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens },
+      usage: { inputTokens, outputTokens },
       model: env.tutorModel,
     });
   } catch (err) {

@@ -59,7 +59,7 @@ function loadAll(mutate) {
     const out = svTs.transpileModule(text, { compilerOptions: { module: svTs.ModuleKind.CommonJS, target: svTs.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
     fs.writeFileSync(path.join(tmp, rel.replace(/\.ts$/, '.js')), out);
   };
-  for (const rel of ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorPrompts.ts']) put(rel, fs.readFileSync(path.join(SERVER_SRC, rel), 'utf8'));
+  for (const rel of ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorPrompts.ts', 'tutorGuard.ts']) put(rel, fs.readFileSync(path.join(SERVER_SRC, rel), 'utf8'));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
   let src = fs.readFileSync(path.join(SERVER_SRC, 'tutor.ts'), 'utf8');
