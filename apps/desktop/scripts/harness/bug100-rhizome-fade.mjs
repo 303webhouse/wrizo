@@ -13,6 +13,9 @@
 // PREMISE F0-<room>  the goal flashed and faded in every round, and at least 20 keys were typed during the fade
 // FADE    F1-<room>  keys typed during the fade cost no more than the control's worst + 16 ms, and no larger share is over 40 ms than in the control (+5%)
 //         MUT-F1  a fade with one key 30 ms dearer turns F1's test red
+// FAST    F0F / F1F / FAF-<room> (Nov 23: Chat 1's box run at 90 ms showed no fade tail; rhizome-latency's comes from fade keys typed 25 ms apart) the same, at
+//             rhizome-latency's own pace: 22 control keys 25 ms apart at rest, the crossing, 14 keys 85 ms apart through the hold, then 22 keys 25 ms apart
+//             into the fade, then 10 at 90 ms
 // (information) FA-<room>  the five dearest fade keys with the long animation frame that holds each (script, style and layout, render, top scripts)
 //
 // Run (repo root; Actions, or a box turn by Chat 1): node apps/desktop/scripts/harness/bug100-rhizome-fade.mjs
@@ -61,10 +64,11 @@ await withHarness(async (app) => {
   const words = (n) => Array.from({ length: n }, (_, i) => 'word' + i).join(' ');
   const fades = {};
 
-  for (const room of ['day', 'night']) {
+  for (const pace of ['steady', 'fast']) for (const room of ['day', 'night']) {
+  const tag = pace === 'fast' ? 'F' : '';
     const rounds = [];
     for (let r = 0; r < ROUNDS; r += 1) {
-      const id = `b100f-${room}-${r}`;
+      const id = `b100f-${pace}-${room}-${r}`;
       await app.goto('/');
       await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed', timeout: 20000 }).catch(() => {});
       await app.evalJs(`(() => { const W = window; W.wrizoSetWritingGoal({ n: 8, unit: 'words' });
@@ -80,9 +84,19 @@ await withHarness(async (app) => {
       await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const s = getSelection(); const rg = document.createRange(); rg.selectNodeContents(e); rg.collapse(false); s.removeAllRanges(); s.addRange(rg); return true; })()");
       await sleep(300);
       await app.evalJs(ARM);
+      const CTL = pace === 'fast' ? 22 : CONTROL;
+      if (pace === 'fast') {
+        for (let i = 0; i < CTL; i += 1) { await app.typeKeys('a'); await sleep(25); }
+        await sleep(400); await app.typeKeys(' '); await sleep(GAP); await app.typeKeys('x'); await sleep(85);
+        for (let i = 0; i < 14; i += 1) { await app.typeKeys('y'); await sleep(85); }
+        await app.waitFor("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'fading'", { label: 'the fade', timeout: 4000 }).catch(() => {});
+        for (let i = 0; i < 22; i += 1) { await app.typeKeys('y'); await sleep(25); }
+        for (let i = 0; i < 10; i += 1) { await app.typeKeys('y'); await sleep(GAP); }
+      } else {
       for (let i = 0; i < CONTROL; i += 1) { await app.typeKeys('a'); await sleep(GAP); }
       await app.typeKeys(' '); await sleep(GAP); await app.typeKeys('x'); await sleep(GAP);
       for (let i = 0; i < THROUGH + AFTER; i += 1) { await app.typeKeys('y'); await sleep(GAP); }
+      }
       await sleep(800);
       const k = await app.evalJs('window.__k.map((x) => ({ key: x.key, t0: x.t0, flash: x.flash, cost: x.busy != null && x.frame != null ? x.busy + x.frame : null, busy: x.busy, frame: x.frame, ms: x.ms }))');
       const loaf = await app.evalJs('window.__loaf');
@@ -90,31 +104,31 @@ await withHarness(async (app) => {
       await app.evalJs('window.__off && window.__off(); null');
       rounds.push({ k, loaf, fl });
     }
-    const ctlKeys = rounds.flatMap((x) => x.k.slice(0, CONTROL));
+    const ctlKeys = rounds.flatMap((x) => x.k.slice(0, pace === 'fast' ? 22 : CONTROL));
     const holdKeys = rounds.flatMap((x) => x.k.filter((y) => y.flash === 'true'));
     const fadeKeys = rounds.flatMap((x) => x.k.filter((y) => y.flash === 'fading').map((y) => ({ ...y, loaf: x.loaf })));
     const pack = (ks) => ({ cost: stat(ks.map((y) => y.cost)), ms: stat(ks.map((y) => y.ms)), over: overShare(ks.map((y) => y.ms)) });
     const ctl = pack(ctlKeys), hold = pack(holdKeys), fade = pack(fadeKeys);
-    fades[room] = { ctl, fade };
+    fades[`${pace}.${room}`] = { ctl, fade };
     const phases = rounds.map((x) => x.fl.map((p) => p[1]).join('>'));
-    ok(`F0-${room} the goal flashed and faded in every round, and at least 20 keys were typed during the fade`, rounds.every((x) => x.fl.some((p) => p[1] === 'true') && x.fl.some((p) => p[1] === 'fading')) && fadeKeys.length >= 20, { phases, fadeKeys: fadeKeys.length, holdKeys: holdKeys.length });
-    ok(`F1-${room} keys typed during the fade cost no more than the control's worst + ${SLACK} ms, and no larger share is over ${MAX_MS} ms than in the control (+5%)`, f1(ctl, fade),
+    ok(`F0${tag}-${room} the goal flashed and faded in every round, and at least 20 keys were typed during the fade`, rounds.every((x) => x.fl.some((p) => p[1] === 'true') && x.fl.some((p) => p[1] === 'fading')) && fadeKeys.length >= 20, { phases, fadeKeys: fadeKeys.length, holdKeys: holdKeys.length });
+    ok(`F1${tag}-${room} keys typed during the fade cost no more than the control's worst + ${SLACK} ms, and no larger share is over ${MAX_MS} ms than in the control (+5%)`, f1(ctl, fade),
       { control: { cost: show(ctl.cost), ms: show(ctl.ms), over: r1(ctl.over * 100) }, hold: { cost: show(hold.cost), ms: show(hold.ms), over: r1(hold.over * 100) }, fade: { cost: show(fade.cost), ms: show(fade.ms), over: r1(fade.over * 100) } });
     // the cause: the five dearest fade keys, each with the long animation frame that holds its keydown (or begins within 20 ms after it)
     const dear = fadeKeys.filter((y) => y.cost != null).sort((a, b) => b.cost - a.cost).slice(0, 5).map((y) => {
       const f = (y.loaf || []).find((e) => e.start <= y.t0 + 20 && e.end >= y.t0);
       return { cost: r1(y.cost), busy: r1(y.busy), frame: r1(y.frame), ms: r1(y.ms), loaf: f ? { dur: r1(f.dur), block: r1(f.block), script: r1(f.script), styleLayout: r1(f.styleLayout), render: r1(f.render), scripts: f.scripts } : null };
     });
-    ok(`FA-${room} (information) the five dearest fade keys and the long animation frame that holds each`, true, dear);
+    ok(`FA${tag}-${room} (information) the five dearest fade keys and the long animation frame that holds each`, true, dear);
   }
-  const any = fades.day || fades.night;
+  const any = fades['steady.day'] || fades['steady.night'];
   const dearer = any ? { ctl: any.ctl, fade: { ...any.fade, cost: { ...any.fade.cost, max: (any.ctl.cost.max || 0) + SLACK + 30 } } } : null;
   ok('MUT-F1 a fade with one key 30 ms dearer than the control\'s worst turns F1\'s test red', !!dearer && !f1(dearer.ctl, dearer.fade), dearer && { ctlMax: r1(dearer.ctl.cost.max), fadeMax: r1(dearer.fade.cost.max) });
 });
 
 // the F1 and FA lines carry the numbers and the cause, so they print whether they pass or not
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^F[1A]-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
-const EXPECTED = 7;   // F0, F1, FA by day and by night, + MUT-F1
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^F[1A]F?-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
+const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG100-RHIZOME-FADE VERIFY: PASS (${checks.length} checks)` : `\nBUG100-RHIZOME-FADE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
