@@ -64,10 +64,23 @@ export async function main({ title }) {
       return ids;
     };
     const settle = async () => { await d.frames(); await sleep(300); return d.read(); };
+    // THE STILL PAIR (R2's retraction, run 45079711262): pixelCaret's diff (selection on vs off) misses a caret whose first shot lands in the blink's
+    // off phase, and the forced colour never matches on these runners. Two shots with NOTHING changed differ only where something blinks: a narrow
+    // bar inside the editor is the caret, painted. Tried up to 4 times, 60 ms apart; same shape as pixelCaret's result ({x, top, width, height, n}).
+    const stillPair = async () => {
+      for (let i = 0; i < 4; i++) {
+        const A = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data; await sleep(60 + 90 * i);
+        const B = (await app.cdp('Page.captureScreenshot', { format: 'png' })).data;
+        const r = await ev(`window.__wa.diff(${JSON.stringify(A)}, ${JSON.stringify(B)})`);
+        if (r && r.width <= 8) return { ...r, via: 'still', tries: i + 1 };
+      }
+      return null;
+    };
+    const caretPainted = async () => (await d.pixelCaret(6)) || (await stillPair());
     /** the page judged after a step, against the model `exp` (text, anchor, focus); `before` holds the page's rect the step must keep */
     const judge = async (id, label, exp, before, obs = {}) => {
       const late = await settle();
-      if (late.collapsed && late.focused && !(late.theme === 'flux' && late.fluxCaret)) { const px = await d.pixelCaret(6); late.px = px; late.pxTries = px ? px.tries : 6; }
+      if (late.collapsed && late.focused && !(late.theme === 'flux' && late.fluxCaret)) { const px = await caretPainted(); late.px = px; late.pxTries = px ? px.tries : 6; }
       const box = late.collapsed && late.focus !== null ? await d.box(late.focus) : null;
       const v = exp ? verify({ exp, box, before: before || late, early: late, late, errors: d.errors.splice(0) }) : { fails: [], notes: [] };
       const r = { id, label, fails: v.fails, notes: v.notes, obs: { ...obs, text: (late.text || '').slice(-120), caret: [late.anchor, late.focus], focused: late.focused } };
@@ -355,7 +368,7 @@ export async function main({ title }) {
         await d.still();
         await d.type(' More words here.'); await sleep(300);
         const p0 = await probe();
-        const px = await d.pixelCaret(6);
+        const px = await caretPainted();
         const p1 = await probe();
         if (px) tally.painted++; else tally.none++;
         out(`OBS W${k} ${px ? 'PAINTED' : 'NONE'} ${JSON.stringify({ px: px ? { x: px.x, y: px.y, via: px.via } : null, before: p0, after: p1 })}`.slice(0, 1800));
