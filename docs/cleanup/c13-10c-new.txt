@@ -512,3 +512,7 @@ reorgColourHex=Hex Colour
 reorgColourUse=Use
 reorgColourOpen=Colour…
 reorgFileShort=File
+splashWiringIn=Wiring in
+splashTagline=// For humans who write
+splashDoorCompose=Compose
+splashDoorResume=Resume
