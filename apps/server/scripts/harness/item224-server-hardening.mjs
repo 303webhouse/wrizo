@@ -138,6 +138,8 @@ function loadTutor({ tutorSourceOverride, realRateLimit = false } = {}) {
   writeExt('env.ts', stripTypes(fs.readFileSync(path.join(SRC, 'env.ts'), 'utf8')));
   writeExt('asyncHandler.ts', stripTypes(fs.readFileSync(path.join(SRC, 'asyncHandler.ts'), 'utf8')));
   writeExt('logSafe.ts', stripTypes(fs.readFileSync(path.join(SRC, 'logSafe.ts'), 'utf8')));
+  // TUTOR-B: tutor.ts now imports its prompt builder from this file.
+  writeExt('tutorPrompts.ts', stripTypes(fs.readFileSync(path.join(SRC, 'tutorPrompts.ts'), 'utf8')));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   // ITEM 224, ROUND 2 — `realRateLimit` loads the ACTUAL rateLimit.ts (its
   // own keying/pruning is proved against tutor.ts's real `tutorRouter.use`

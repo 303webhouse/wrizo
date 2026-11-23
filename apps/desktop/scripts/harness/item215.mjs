@@ -158,6 +158,8 @@ loadServer('env.ts');
 loadServer('asyncHandler.ts');
 // logSafe (server-hardening, merged in) — tutor.ts imports logError from it.
 loadServer('logSafe.ts');
+// TUTOR-B: tutor.ts now imports its prompt builder from this file.
+loadServer('tutorPrompts.ts');
 fs.writeFileSync(path.join(svTmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
 fs.writeFileSync(path.join(svTmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
 const { tutorRouter } = svRequire(loadServer('tutor.ts'));

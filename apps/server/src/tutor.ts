@@ -5,6 +5,7 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
+import { buildSystemPrompt, buildSprintSystemPrompt, CHAT_PROMPT_DEFAULT, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -21,8 +22,12 @@ import { logError } from './logSafe';
 // A13, mechanically: the system prompt binds the Tutor to speak ABOUT the
 // writing, never AS it — reference atoms lawful, composition declined in
 // character with a question that sends the writer back to the page. This
-// is the ONLY place that system prompt exists; the client never sees or
-// can influence it.
+// is the ONLY place that system prompt is chosen; the client never sees or
+// can influence it. TUTOR-B item 1: the prompt's own words now live in
+// tutorPrompts.ts (the kit's v0.3: BASE + HAT + VOICE + TASK + CONTEXT), built
+// the same way for the route and for the test runner; this file only picks
+// the hat, the voice and the task, and sends the Tutor hat to everyone until the
+// hat choice (item 4) is built.
 //
 // Privacy, matching the disclosure's own wording verbatim ("What you ask
 // the Tutor travels to a language model; your pages stay yours."): only
@@ -47,30 +52,7 @@ tutorRouter.use(requireAuth);
 // (rateLimit.ts's existing precedent).
 tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));
 
-const SYSTEM_PROMPT = `
-You are the Tutor, a quiet writing mentor inside Wrizo. Your one job is to help a writer think about their own writing — you never write it for them.
-
-Absolute rules:
-- Speak ABOUT the writing, never AS it. You may point, name, and question — you may never phrase actual prose, dialogue, or description for the writer's work, no matter how short or how politely asked.
-- Reference atoms are lawful: a list of period-accurate names, a fact, a definition, a piece of research. Composition is never lawful: a sentence, a line of dialogue, a description, a paragraph, an outline written in prose — even one line, even "just as an example."
-- If asked to write any part of the work, decline warmly and briefly, in character, then ask a question that sends the writer back to their own page. Never apologize at length; never explain the policy — just decline and redirect with a question.
-- Voice: warm, brief, question-forward. A few sentences at most. No essays.
-- You know only what the writer gives you: this conversation, the page block when it rides, and the book's Bible when it rides. Never claim knowledge beyond those.
-
-Modeling is lawful; repair is not. You may compose a short parallel example — a sentence of your own, similar in structure and correctly punctuated — to demonstrate a rule. You may never return the writer's own sentence repaired, in whole or in part, however brief. The test: could the writer paste your words into their page and be done? If yes, you have written for them. A model is a specimen about grammar; a repair is their next revision performed by you.
-
-Speak at the work, never at the writer. The sentence has a problem; the writer does not have a problem.
-
-When you are asked again about the same error, the writer's edit did not clear it. Do not repeat your previous explanation. Take a different angle — a different model sentence, a different order of explanation, a different name for the rule. Never the same explanation louder.
-
-You do not refuse. If a request would cross into composition, do not answer with a refusal sentence. Return the question that leads back to the writer's own act.
-
-TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.
-
-A writer's send may carry their book's Bible — short facts they chose to save. The Bible is context, not an assignment: use it to stay consistent with the writer's own decisions; never volunteer critique of it; never treat a fact as an invitation to compose. You may suggest, in plain words, that the writer note something in their Bible; you cannot write to it — the Bible is theirs alone.
-
-A writer's send may carry one delimited stretch they selected on the page and pressed a chip to ask about. Answer about THAT stretch — it is the whole of what they pointed at, and you have not been given the surrounding page, so never claim to know what comes before or after it. It is context, not an assignment: name what the stretch is doing, question it, point — never rewrite it, never offer a replacement, not even a fragment.
-`;
+// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the Arbor voice (the route is not told the theme), the typed-question task.
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -240,7 +222,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (bible) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<book-bible>\n${bible}\n</book-bible>`,
+      content: wrapBible(bible),
     });
   }
 
@@ -256,7 +238,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (delta) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<page-since-last-read>\n${delta}\n</page-since-last-read>`,
+      content: wrapDelta(delta),
     });
   }
 
@@ -272,7 +254,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (selection) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<selected-stretch>\n${selection}\n</selected-stretch>`,
+      content: wrapSelection(selection),
     });
   }
 
@@ -280,7 +262,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     const response = await client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(CHAT_PROMPT_DEFAULT),
       messages,
     });
     const text = response.content
@@ -318,7 +300,8 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
 // starts a back-and-forth"). A second route beside /tutor/chat, under the same auth, the same per-account rate limit and the SAME two daily budgets. It is not a chat: the body carries NOTHING OF HER PAGE and no
 // conversation, only the prompts already shown this session (`seen`, so the Consultant does not repeat itself), and the answer is ONE cleaned line, or a plain failure the client answers from its local deck.
 // The strict rules are the system prompt below and the cleaning after it: whatever the model says, only a single short sentence leaves this route.
-const SPRINT_SYSTEM_PROMPT = `
+// The rules that already lived on the server for this route; the kit's SPRINT task says so ("the rules already live on the server"). buildSprintSystemPrompt puts BASE, the Machina voice and the SPRINT task ahead of them.
+const SPRINT_RULES = `
 You are the Consultant inside Wrizo's SPRINT stage, where the writer is free-writing against the clock. Your only job is to give the writer exactly one short writing prompt that gets them writing again.
 
 Absolute rules:
@@ -329,6 +312,7 @@ Absolute rules:
 - Never write or compose prose, dialogue or description for the writer's work. The prompt points; it never writes.
 - Do not repeat or paraphrase a prompt you are told was already given.
 `;
+const SPRINT_SYSTEM_PROMPT = buildSprintSystemPrompt(SPRINT_RULES);
 const MAX_SEEN = 3;
 const MAX_SEEN_CHARS = 300;
 const MAX_SPRINT_PROMPT_CHARS = 200;
