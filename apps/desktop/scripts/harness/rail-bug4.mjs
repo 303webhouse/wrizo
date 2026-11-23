@@ -31,7 +31,9 @@ const COUNT = (word) => `(() => {
 
 const freshDesk = async (app, theme, cast) => {
   await app.emulateDpr(1, 1280, 900);
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); localStorage.setItem('wrizo-splash-hold', '50');");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });

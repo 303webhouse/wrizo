@@ -646,13 +646,15 @@ await withHarness(async (app) => {
         splashTheme: splash ? splash.getAttribute('data-splash-theme') : null,
         arbor: !!document.querySelector('.wz-splash-arbor'),
         flux: !!document.querySelector('.wz-splash-flux'),
+        flux5: !!document.querySelector('.wz-splash .wz-flux5'),
       };
     })()`);
     ok(`S13 (${theme}): the splash's own data-splash-theme attribute matches the last-picked theme (wrizo-theme)`,
       s13.splashTheme === theme, JSON.stringify(s13));
     const expectArbor = theme === 'plateau';
-    ok(`S13 (${theme}): ${expectArbor ? 'the Arbor sketch (.wz-splash-arbor)' : 'the Flux schematic (.wz-splash-flux)'} renders, and the OTHER theme's mark does not mount at all`,
-      expectArbor ? (s13.arbor === true && s13.flux === false) : (s13.flux === true && s13.arbor === false),
+    // v5 (Flux live, S5): FLUX3 is on by default, so Flux's mark is the v5 run (svg.wz-flux5), not the schematic (.wz-splash-flux, kept only under ?flux3=0).
+    ok(`S13 (${theme}): ${expectArbor ? 'the Arbor sketch (.wz-splash-arbor)' : 'the Flux v5 mark (.wz-flux5)'} renders, and the OTHER marks do not mount at all`,
+      expectArbor ? (s13.arbor === true && s13.flux === false && s13.flux5 === false) : (s13.flux5 === true && s13.flux === false && s13.arbor === false),
       JSON.stringify(s13));
   }
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");

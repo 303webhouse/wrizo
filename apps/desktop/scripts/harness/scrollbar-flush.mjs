@@ -58,7 +58,9 @@ const LONG_TEXT = Array.from({ length: 400 }, (_, i) => `Line ${i + 1} of a long
 
 const seedAndOpen = async (app, theme, pageTone, [vw, vh] = [1400, 900]) => {
   await app.emulateDpr(1, vw, vh);
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: pageTone, fade: 'on' }))});`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk, theme=${theme}/${pageTone}` });
@@ -205,7 +207,9 @@ await withHarness(async (app) => {
   // is the wrap's offsetHeight - clientHeight (the bottom bar Nick saw), the vertical one's offsetWidth - clientWidth.
   for (const [theme, pageTone, label] of CELLS) {
     await app.emulateDpr(1, 1280, 700);
-    await app.goto('/');
+    // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+    // await app.goto('/');
+    await app.goto('/?flux3=0');
     await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: pageTone, fade: 'on' }))});`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: `Desk (board), ${label}` });

@@ -152,7 +152,9 @@ async function openPage(app, theme, reorg) {
   // FABLE RULED, Nov 15, 10:40 pm. It wrote its own address and so skipped the driver's pin: O1/O2 read the redesign's strip against today's golden.)
   // (Machina's look, on by default since machina/look: the same pin for Machina, ?machina2=0 - FABLE ACCEPTED the Machina pin, Nov 20, 12:05 am, "as Arbor's Nov 15
   // pin". Actions 44691517313 read the look's Themes pop-out - its Room row - against today's golden: O1 [machina] [theme]. This file is on the pinned list.)
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0&flux3=0' : '/?arbor2=0&machina2=0&flux3=0'}#/page/rr-top-1')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
