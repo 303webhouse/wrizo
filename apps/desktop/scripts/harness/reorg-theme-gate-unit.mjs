@@ -32,7 +32,8 @@ const GATE = rd('reorg/themeGate.ts');
 // the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is
 // ?reorg=0, asked is ?reorg=1, the default is no query (POLISH, the bare-switch census, Nov 21: a hand stub would test the stub, not the rule)
 const FLAG_SRC = rd('reorg/flag.ts');
-const realFlag = (reorg, asked) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+let flagText = FLAG_SRC;   // onFluxOff below reads the door's and the ask's laws on a flag whose Flux default is off
+const realFlag = (reorg, asked) => { const out = ts.transpileModule(flagText, TS_OPTS).outputText; const m = { exports: {} };
   new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : asked ? '?reorg=1' : '' }, undefined);
   return m.exports; };
 const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
@@ -40,6 +41,15 @@ const PIECES = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
 // Nov 22 (Fable 3:20 pm, train K): + 'top' (ARBOR's flip). Was: const ARBOR_ON = ['rail'];
 // Nov 22 (Fable 3:20 pm, train K, INK's flip): + front, back, split, uplink: all six Arbor cells are on (the Wrizors' passes 1, 2, 6 and the split and Publish). Was: const ARBOR_ON = ['rail', 'top'];
 const ARBOR_ON = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
+// Nov 23 (Fable, 8:20 am, the Flux live join): all six Flux cells are on, and REORG_DEFAULT_ON.flux is true.
+const FLUX_ON = ['rail', 'top', 'front', 'back', 'split', 'uplink'];
+let fluxCells = FLUX_ON;
+// THE DOOR AND THE ASK AFTER THE FLIP: with Flux's column full, no Flux cell is left for the preview door or the ask to light. Their laws (HOOK2, LIFT, ARBOR2B, FLUX3, LIFTQ) and the mutants
+// keep reading the real themeGate.ts and flag.ts with only Flux's row and Flux's default put back to off; the real table is held by TABLE, FLUX-LIVE and DEFAULT-FLUX.
+const FLUX_LINE = /  flux: \{[^}\n]*\},/;
+const withFluxOff = (t) => t.replace(FLUX_LINE, () => '  flux: { ...ALL_OFF },');
+const FLAG_FLUX_OFF = FLAG_SRC.replace('plateau: true, flux: true }', () => 'plateau: true, flux: false }');
+const onFluxOff = (fn) => { flagText = FLAG_FLUX_OFF; fluxCells = []; try { return fn(); } finally { flagText = FLAG_SRC; fluxCells = FLUX_ON; } };
 // the plateau line as the table holds it, whatever cells it carries (the anchor the ARBOR2 law and its mutant rewrite)
 // SUPERSEDED (Nov 22, all six on: the line is { ...ALL_ON }, no ALL_OFF in it): const PLATEAU_LINE = /  plateau: \{ \.\.\.ALL_OFF[^}\n]*\},/;
 const PLATEAU_LINE = /  plateau: \{[^}\n]*\},/;   // [successor] whatever cells the line carries
@@ -62,7 +72,9 @@ function suite(src) {
     for (const th of [...THEMES, 'arbor', 'nonsense']) for (const p of [...PIECES, 'nope']) cells[th + '.' + p] = G.themeHas(p, th);
     // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty). The original, verbatim:
     // const want = (th, p) => th === 'machina' && PIECES.includes(p);
-    const want = (th, p) => (th === 'machina' && PIECES.includes(p)) || (th === 'plateau' && ARBOR_ON.includes(p));   // [ARBOR_ON successor]
+    // SUPERSEDED (Nov 23, Fable 8:20 am: all six Flux cells are on). The [ARBOR_ON successor], verbatim:
+    // const want = (th, p) => (th === 'machina' && PIECES.includes(p)) || (th === 'plateau' && ARBOR_ON.includes(p));   // [ARBOR_ON successor]
+    const want = (th, p) => (th === 'machina' && PIECES.includes(p)) || (th === 'plateau' && ARBOR_ON.includes(p)) || (th === 'flux' && fluxCells.includes(p));   // [FLUX_ON successor]
     const wrong = Object.entries(cells).filter(([k, v]) => { const [th, p] = k.split('.'); return v !== want(th, p); }).map(([k]) => k);
     return { pass: J(G.REORG_PIECES) === J(PIECES) && wrong.length === 0, detail: J({ pieces: G.REORG_PIECES, wrong }) };
   });
@@ -174,10 +186,28 @@ try { base = suite(GATE); } catch (e) { baseErr = e; }
 // for (const k of ['TABLE', 'HOOK2', 'LIFT', 'ARBOR2', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 // SUPERSEDED (Flux piece 2 on train K, Nov 22: the Flux column's FLUX3 law reads beside the successors; the line piece 2 carried, verbatim):
 // for (const k of ['TABLE', 'HOOK', 'LIFT', 'ARBOR2', 'FLUX3', 'LIFTQ']) ok(`${k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
-for (const k of ['TABLE', 'HOOK2', 'LIFT', 'ARBOR2B', 'FLUX3', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+// SUPERSEDED (Nov 23, Fable 8:20 am: Flux's column is full, so the door and the ask have no Flux cell left to light on the real table: TABLE reads the real table; the other laws read it with Flux's row and default off). The line, verbatim:
+// for (const k of ['TABLE', 'HOOK2', 'LIFT', 'ARBOR2B', 'FLUX3', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on the real themeGate.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+ok('TABLE on the real themeGate.ts [FLUX_ON successor]', !!base && base.TABLE && base.TABLE.pass, base && base.TABLE ? base.TABLE.detail : 'themeGate.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+const MECH = withFluxOff(GATE);
+let mech = null, mechErr = null;
+try { mech = onFluxOff(() => suite(MECH)); } catch (e) { mechErr = e; }
+ok('FLUX-OFF the mechanism copy is the real table with only Flux\'s row and default put back to off', MECH !== GATE && FLAG_FLUX_OFF !== FLAG_SRC && MECH.includes('  flux: { ...ALL_OFF },') && MECH.replace('  flux: { ...ALL_OFF },', '') === GATE.replace(FLUX_LINE, ''), J({ gate: MECH !== GATE, flag: FLAG_FLUX_OFF !== FLAG_SRC }));
+for (const k of ['HOOK2', 'LIFT', 'ARBOR2B', 'FLUX3', 'LIFTQ']) ok(`${k === 'HOOK2' ? 'HOOK [successor: a lifted Flux cell lights only when asked]' : k} on themeGate.ts with Flux's row and default off [successor]`, !!mech && mech[k] && mech[k].pass, mech && mech[k] ? mech[k].detail : 'themeGate.ts: ' + (mechErr ? String(mechErr.message).slice(0, 160) : 'missing'));
+// the real table and flag: Flux lights its six with no ask, on the redesign only, and the switch still turns it off
+const fluxLit = (o) => PIECES.filter((p) => load(GATE, { theme: 'flux', ...o }).useReorgPiece(p));
+const fl = { on: fluxLit({}), plain: fluxLit({ flux3: false }), off: fluxLit({ reorg: false }) };
+ok('FLUX-LIVE with no ask, Flux lights all six pieces on the redesign; ?flux3=0 lights none; ?reorg=0 lights none', J(fl.on) === J(FLUX_ON) && fl.plain.length === 0 && fl.off.length === 0, J(fl));
+for (const [name, cell] of [['the rail', 'rail'], ['Uplink', 'uplink']]) {
+  const after = GATE.replace(FLUX_LINE, () => `  flux: { ...ALL_ON, ${cell}: false },`);
+  let r = null; try { r = suite(after); } catch { /* read below */ }
+  ok(`MUT Flux loses ${name}: it LANDED and TABLE goes RED`, after !== GATE && !!r && r.TABLE.pass === false, J({ landed: after !== GATE }));
+}
 
 const MUT = [
-  ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
+  // SUPERSEDED (Nov 23, Fable 8:20 am: every Flux frame has passed and the cells are on; this mutant now reads the mechanism copy, so its name changes). The original, verbatim:
+  // ['a Flux cell is on before its frames pass', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
+  ['with Flux\'s column off, a cell turns on [successor]', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, rail: true },')],
   ['Machina loses a piece', 'TABLE', (t) => t.replace('  machina: { ...ALL_ON },', () => '  machina: { ...ALL_ON, uplink: false },')],
   // SUPERSEDED (ARBOR's rail ON (Fable, Nov 21 9:40 pm: the Wrizors PASSED Arbor's rail, arbor-reorg-pass-1.md section 4; themeGate.ts plateau: { ...ALL_OFF, rail: true }): this read Arbor's column as empty; its anchor is gone, so it no longer lands). The original, verbatim:
   // ['Arbor (the plateau theme) has a piece on', 'TABLE', (t) => t.replace('  plateau: { ...ALL_OFF },', () => '  plateau: { ...ALL_OFF, top: true },')],
@@ -187,7 +217,9 @@ const MUT = [
   // ['Arbor (the plateau theme) has a piece on that the Wrizors have not passed [ARBOR_ON successor 2]', 'TABLE', (t) => t.replace(PLATEAU_LINE, (l) => l.replace(/\s*\},$/, ', front: true },'))],
   ['Arbor loses the Front menu the Wrizors passed [successor 3]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON, front: false },')],
   ['Arbor loses Uplink the Wrizors passed [successor 3]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_ON, uplink: false },')],
-  ['Flux gains a piece beside Arbor\'s six [successor 3]', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, uplink: true },')],
+  // SUPERSEDED (Nov 23, Fable 8:20 am: Flux has all six; this mutant now reads the mechanism copy). The [successor 3], verbatim:
+  // ['Flux gains a piece beside Arbor\'s six [successor 3]', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, uplink: true },')],
+  ['with Flux\'s column off, Uplink turns on [successor 4]', 'TABLE', (t) => t.replace('  flux: { ...ALL_OFF },', () => '  flux: { ...ALL_OFF, uplink: true },')],
   ['Arbor loses a piece the Wrizors passed (the rail) [ARBOR_ON successor]', 'TABLE', (t) => t.replace(PLATEAU_LINE, () => '  plateau: { ...ALL_OFF },')],
   ['a theme the table does not know is on', 'TABLE', (t) => t.replace('=== true', () => '!== false')],
   // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is ON by default in Machina ONLY; Arbor and Flux keep ?reorg=1 until all six of their cells pass,
@@ -212,10 +244,11 @@ const MUT = [
   ['the Flux flag also switches Machina off', 'FLUX3', (t) => t.replace("if (theme === 'flux' && !FLUX3) return false;", () => 'if (!FLUX3) return false;')],
 ];
 for (const [name, key, fn] of MUT) {
-  const after = GATE ? fn(GATE) : GATE;
-  const landed = !!GATE && after !== GATE;
+  // [Nov 23] each mutant is applied to the mechanism copy (the real table with Flux's row off) and read with Flux's default off. Was: fn(GATE), after !== GATE, suite(after)
+  const after = GATE ? fn(MECH) : GATE;
+  const landed = !!GATE && after !== MECH;
   let res = null, err = null;
-  try { res = landed ? suite(after) : null; } catch (e) { err = e; }
+  try { res = landed ? onFluxOff(() => suite(after)) : null; } catch (e) { err = e; }
   const red = !!res && res[key] && res[key].pass === false;
   ok(`MUT ${name}: it LANDED and ${key} goes RED`, landed && !err && red, J({ landed, err: err && String(err.message).slice(0, 120), key, pass: res && res[key] && res[key].pass }));
 }
@@ -262,6 +295,17 @@ ok('MUT DEFAULT Arbor on by default while a cell is off [successor]: it LANDED a
 // ok('MUT DEFAULT all six plateau cells on while the default stays off: it LANDED and DEFAULT goes RED', gateAll !== GATE && !defaultLaw(FLAG_SRC, gateAll).pass, J({ landed: gateAll !== GATE }));
 const flagOff = FLAG_SRC.replace('plateau: true', () => 'plateau: false');   // [successor] all six cells on while the default is off
 ok('MUT DEFAULT all six plateau cells on while the default is off [successor]: it LANDED and DEFAULT goes RED', flagOff !== FLAG_SRC && !defaultLaw(flagOff, GATE).pass, J({ landed: flagOff !== FLAG_SRC }));
+// DEFAULT-FLUX (the Wrizors' ship checklist D: "REORG_DEFAULT_ON.flux is set only after all six pass"): the same law for Flux, one mutant each way
+const fluxDefaultLaw = (flagSrc, gateSrc) => {
+  const F = flagFrom(flagSrc), G = load(gateSrc), cells = G.REORG_THEME_GATE && G.REORG_THEME_GATE.flux;
+  const allOn = !!cells && PIECES.every((p) => cells[p] === true);
+  return { pass: !!F.REORG_DEFAULT_ON && F.REORG_DEFAULT_ON.flux === allOn, fluxDefault: F.REORG_DEFAULT_ON && F.REORG_DEFAULT_ON.flux, allOn };
+};
+const fd = fluxDefaultLaw(FLAG_SRC, GATE);
+ok('DEFAULT-FLUX Flux is on by default exactly when all six of its cells are on', fd.pass && fd.allOn && fd.fluxDefault === true, J(fd));
+const fluxCellOff = GATE.replace(FLUX_LINE, () => '  flux: { ...ALL_ON, uplink: false },');
+ok('MUT DEFAULT-FLUX Flux on by default while a cell is off: it LANDED and DEFAULT-FLUX goes RED', fluxCellOff !== GATE && !fluxDefaultLaw(FLAG_SRC, fluxCellOff).pass, J({ landed: fluxCellOff !== GATE }));
+ok('MUT DEFAULT-FLUX all six Flux cells on while the default is off: it LANDED and DEFAULT-FLUX goes RED', FLAG_FLUX_OFF !== FLAG_SRC && !fluxDefaultLaw(FLAG_FLUX_OFF, GATE).pass, J({ landed: FLAG_FLUX_OFF !== FLAG_SRC }));
 
 let bad = 0;
 for (const c of checks) { console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 600)}`); if (!c.pass) bad += 1; }

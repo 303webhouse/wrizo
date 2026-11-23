@@ -27,7 +27,8 @@ export const REORG_THEME_GATE: Record<ThemeId, Record<ReorgPiece, boolean>> = {
   // ARBOR: the top bar ON (Fable, Nov 22 3:20 pm: the Wrizors passed all six Arbor pieces; train K flips them - ARBOR the top, INK the other four)
   // INK: front, back, split and uplink ON (Fable, Nov 22 3:20 pm: pass 6 passed Arbor's Front menu; pass 2, the split and Publish had passed): all six Arbor cells are on, so Arbor's column is Machina's
   plateau: { ...ALL_ON },
-  flux: { ...ALL_OFF },
+  // INK: all six Flux cells ON (Fable, Nov 23, 8:20 am: Flux live goes as one train; every piece has passed the Wrizors but the top bar's last line, which rides this join). The redesign's guard in themeHas still holds: ?flux3=0 has none of them
+  flux: { ...ALL_ON },
 };
 
 // THE PREVIEW DOOR (Flux piece 2, Nov 21): a piece the table has not switched on for a theme can still be SEEN, by frames and by the Wrizors' review, with ?reorg=1&reorglift=flux.back (comma-separated theme.piece). Read once at load,
