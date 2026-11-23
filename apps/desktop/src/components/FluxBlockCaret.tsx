@@ -213,6 +213,8 @@ export function FluxBlockCaret() {
     document.addEventListener('focusout', onBlurCheck, true);
     document.addEventListener('scroll', moved, { capture: true, passive: true });
     document.addEventListener('wz-caret-moved', moved);
+    // a web font that arrives after the caret has drawn moves the words with no selection change (a first visit on a slower line: flux-caret-settle.mjs CS3)
+    document.fonts?.addEventListener('loadingdone', moved);
     // #78: a resize re-lays the page out in steps that settle AFTER the resize event and its first frame (the page's width, the zoom, the scroller), and nothing else moves the selection, so the one redraw above stood at a stale place. The caret is drawn again as the layout settles:
     // right away and at three later moments after the LAST resize [FluxBlockCaret §3]
     let settle: number[] = [];
@@ -226,6 +228,7 @@ export function FluxBlockCaret() {
       document.removeEventListener('focusout', onBlurCheck, true);
       document.removeEventListener('scroll', moved, { capture: true });
       document.removeEventListener('wz-caret-moved', moved);
+      document.fonts?.removeEventListener('loadingdone', moved);
       window.removeEventListener('resize', onResize);
       clearActive();
     };
