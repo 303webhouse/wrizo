@@ -43,6 +43,7 @@ import { mapCaretThrough } from '../store/textMerge';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, getSelectionEndOffset, setCaretOffset } from './script/caret';
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
+import { createHistory, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
 // element, ONLY the active element a live contenteditable (the BoardTextBox
@@ -127,6 +128,18 @@ export function ScriptEditor({ id }: { id: string }) {
   const adoptRef = useRef<() => void>(() => {});
   const quietMount = useRef(false);
   useEffect(() => { quietMount.current = false; }, [elements]);
+  // SCRIPT #4 — undo and redo across the whole script (script/history.ts). In memory only, for as long as this page is open.
+  const historyRef = useRef<ScriptHistory>(null as unknown as ScriptHistory);
+  if (!historyRef.current) historyRef.current = createHistory(elements, elements[0]?.id ?? null, elements[0]?.text.length ?? 0);
+  const typedRef = useRef(false);
+  const stepHistoryRef = useRef<(back: boolean) => void>(() => {});
+  useEffect(() => {
+    const typed = typedRef.current;
+    typedRef.current = false;
+    const caret = typed ? (liveCaret.current?.offset ?? 0) : caretHint === 'start' ? 0 : caretHint === 'end' ? (elements[activeIndex]?.text.length ?? 0) : caretHint;
+    noteChange(historyRef.current, elements, activeIndex, caret, typed, performance.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements, activeIndex]);
 
   // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
   // recomputed exactly when the document changes and not when the caret hint,
@@ -273,6 +286,7 @@ export function ScriptEditor({ id }: { id: string }) {
     quietMount.current = !inLine;
     setElements(next);
     setActiveIndex(at);
+    historyRef.current = createHistory(next, next[at]?.id ?? null, caret ?? 0);   // SCRIPT #4: a Replace keeps its own Undo in the search panel, so the page's undo never reaches behind it
     const text = next[at]?.text ?? '';
     if (!node || text === shown) return;
     node.textContent = text;
@@ -299,6 +313,21 @@ export function ScriptEditor({ id }: { id: string }) {
     liveCaret.current = { key: `${el.id}:${seedNonce}`, offset: getCaretOffset(node) };
   };
 
+  // SCRIPT #4 — one step back or forward: the lines, the line the caret was in, and where in it
+  stepHistoryRef.current = (back) => {
+    const h = historyRef.current;
+    const node = activeElRef.current;
+    const current = elementsRef.current[activeIndex];
+    if (node && current) noteKeyCaret(h, current.id, getCaretOffset(node));
+    const snap = back ? stepBack(h) : stepForward(h);
+    if (!snap) return;
+    const at = Math.max(0, snap.elements.findIndex(el => el.id === snap.activeId));
+    liveCaret.current = null;
+    elementsRef.current = snap.elements;
+    setElements(snap.elements);
+    moveActive(at, Math.min(snap.caret, snap.elements[at]?.text.length ?? 0));
+  };
+
   const retype = (nextType: ScriptElType) => {
     setElements(prev => prev.map((e, i) => (i === activeIndex ? { ...e, t: nextType } : e)));
   };
@@ -306,6 +335,7 @@ export function ScriptEditor({ id }: { id: string }) {
   const handleInput = (text: string) => {
     noteFirstKeystroke();
     noteCaret();
+    typedRef.current = true;
     if (framed) scriptDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setElements(prev => {
       const el = prev[activeIndex];
@@ -328,6 +358,13 @@ export function ScriptEditor({ id }: { id: string }) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // SCRIPT #4 — Ctrl+Z, and Ctrl+Y or Ctrl+Shift+Z. AltGr reads as Ctrl+Alt on Windows and is a letter, not a command.
+    const letter = e.key.toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.nativeEvent.isComposing && (letter === 'z' || letter === 'y')) {
+      e.preventDefault();
+      stepHistoryRef.current(letter === 'z' && !e.shiftKey);
+      return;
+    }
     if (acVisible && ac) {
       if (e.key === 'ArrowDown') { e.preventDefault(); setAcIndex(i => (i + 1) % ac.options.length); return; }
       if (e.key === 'ArrowUp') { e.preventDefault(); setAcIndex(i => (i - 1 + ac.options.length) % ac.options.length); return; }
@@ -349,6 +386,7 @@ export function ScriptEditor({ id }: { id: string }) {
     // SCRIPT #3: `offset` is where a selection STARTS; a key that acts at the caret must know whether there is a selection at all
     const selEnd = node ? getSelectionEndOffset(node) : offset;
     const collapsed = selEnd === offset;
+    if (activeEl) noteKeyCaret(historyRef.current, activeEl.id, offset);
 
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -703,6 +741,7 @@ export function ScriptEditor({ id }: { id: string }) {
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     elRef={activeElRef}
+                    stepHistory={stepHistoryRef}
                   />
                   {/* rendered as the active element's flow-sibling, so its absolute position resolves beneath this block wherever it sits [ScriptEditor §14] */}
                   {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}

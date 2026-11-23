@@ -26,7 +26,7 @@ export type CaretHint = 'start' | 'end' | number;
 
 // -- the ONE live contenteditable block --------------------------------------
 export function ActiveScriptElement({
-  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret, quietMount,
+  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret, quietMount, stepHistory,
 }: {
   el: ScriptEl;
   caretHint: CaretHint;
@@ -39,6 +39,8 @@ export function ActiveScriptElement({
   noteCaret: () => void;
   /** true while the page takes lines from Find and Replace with the keyboard elsewhere: a mount then takes neither the focus nor the scroll (SCRIPT #1) */
   quietMount?: React.MutableRefObject<boolean>;
+  /** SCRIPT #4: the page's own undo and redo, which the browser's Edit menu must reach too (true is back) */
+  stepHistory?: React.MutableRefObject<(back: boolean) => void>;
 }) {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [seed] = useState(() => el.text);
@@ -78,6 +80,11 @@ export function ActiveScriptElement({
     // own-shadow paste proceeds natively (BoardTextBox's pattern, verbatim).
     const onBeforeInput = (e: InputEvent) => {
       const it = e.inputType || '';
+      if (it === 'historyUndo' || it === 'historyRedo') {
+        e.preventDefault();
+        stepHistory?.current(it === 'historyUndo');
+        return;
+      }
       if (it === 'insertFromPaste' || it === 'insertFromDrop') {
         if (shadowAllows(extractIncomingText(e))) return;
         e.preventDefault();
