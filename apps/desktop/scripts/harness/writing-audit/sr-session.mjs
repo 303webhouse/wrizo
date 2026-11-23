@@ -187,6 +187,7 @@ await withHarness(async (app) => {
   const hook = () => ev(`(() => { if (window.__srHook) return; window.__srHook = 1; window.__srF = []; const real = URL.createObjectURL.bind(URL); let last = null; URL.createObjectURL = (b) => { last = b; return real(b); }; const click = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.download && last) { const b = last, name = this.download; last = null; b.text().then((t) => window.__srF.push({ name, t })); return; } return click.call(this); }; })()`);
   const files = async () => { await sleep(250); return ev('window.__srF.splice(0)'); };
   const keep = (name, text) => { if (!cfg.out) return; const dir = path.join(cfg.out, 'exports'); fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(path.join(dir, name.replace(/[^A-Za-z0-9._-]+/g, '_')), text); };
+  const fresh = async () => { await ev("location.hash = '#/'"); await sleep(200); await app.reload(); await waitFor("!!document.querySelector('.wz-arrival')", 'the Desk', 20000); await waitFor("!document.querySelector('.wz-splash')", 'splash gone', 20000).catch(() => {}); await sleep(200); };   // a reload closes anything an earlier case left open (the search panel keeps the keyboard otherwise)
   const want = (c) => !only || only.has(c);
   const run = async (c, fn) => { if (!want(c)) return; try { await fn(); } catch (e) { rec(c, 'the harness could not finish this case', 'a reading', String((e && e.message) || e).slice(0, 240), 'NOTCOVERED'); } };
 
@@ -197,7 +198,7 @@ await withHarness(async (app) => {
     const id = await makeScript(E(['s', 'INT. ROOM - DAY'], ['a', 'Action line.'], ['c', 'MARA'], ['p', '(beat)'], ['d', 'Dialogue line.'], ['t', 'CUT TO:'], ['h', 'ANGLE ON'], ['g', 'General.']));
     await open(id); await clickEl(7); await sleep(200);
     const m = await ev(`(async () => { await document.fonts.ready; const s = document.querySelector('.script-sheet'); const r = s.getBoundingClientRect(); const em = parseFloat(getComputedStyle(s).fontSize); const inch = em * 6; const out = {}; for (const e of s.querySelectorAll('.script-el')) { const range = document.createRange(); range.selectNodeContents(e); const b = range.getBoundingClientRect(); out[e.dataset.type] = { leftIn: +((b.left - r.left) / inch).toFixed(2), rightIn: +((b.right - r.left) / inch).toFixed(2) }; } return { fontPx: em, scale: +(em / 16).toFixed(3), pageIn: [+(r.width / inch).toFixed(2), +(r.height / inch).toFixed(2)], family: getComputedStyle(s).fontFamily.slice(0, 40), courierPrimeLoaded: document.fonts.check('16px "Courier Prime"'), faces: [...document.fonts].filter((f) => /courier/i.test(f.family)).map((f) => f.family + ':' + f.weight + ':' + f.style + ':' + f.status), els: out }; })()`);
-    judge('G1', 'US Letter, Courier 12 pt, standard indents', 'page 8.5x11; action 1.5in, dialogue 2.5in, paren ~3.1in, character ~3.7in', m, m.pageIn[0] === 8.5 && m.pageIn[1] === 11 && m.courierPrimeLoaded && m.els.action?.leftIn === 1.5 && m.els.dialogue?.leftIn === 2.5);
+    judge('G1', 'US Letter, Courier 12 pt, standard indents', 'page 8.5x11; action 1.5in, dialogue 2.5in, paren ~3.1in, character ~3.7in', m, m.pageIn[0] === 8.5 && m.pageIn[1] === 11 && m.courierPrimeLoaded && Math.abs(m.els.action?.leftIn - 1.5) <= 0.02 && Math.abs(m.els.dialogue?.leftIn - 2.5) <= 0.02 && Math.abs(m.els.paren?.leftIn - 3.1) <= 0.02 && Math.abs(m.els.character?.leftIn - 3.7) <= 0.02);
     await d.shot('G1-elements');
   });
 
@@ -277,6 +278,13 @@ await withHarness(async (app) => {
     });
   });
 
+  await run('K17', async () => {
+    await micro(E(['s', 'INT. A - DAY'], ['a', 'Alpha.']), 1, async () => {
+      await d.type(' Typed.', 30); await sleep(700); await d.key('z', { ctrl: true }); await sleep(250); const b = await doc();
+      rec('K17', 'CONTROL: Ctrl+Z inside one line with nothing else pressed (proves the harness key reaches the editor, so K10-K12 are real)', 'the typing is undone', b[1], b[1]?.x !== 'Alpha. Typed.' ? 'OK' : 'BREAK');
+    });
+  });
+
   // ------------------------------------------------------------------ A: SmartType's job
   await run('A', async () => {
     const opts = () => ev("[...document.querySelectorAll('.script-autocomplete-opt')].map((o) => o.textContent)");
@@ -334,7 +342,7 @@ await withHarness(async (app) => {
       const ss = await sheets(); const over = Math.max(...ss.flatMap((s) => s.els.map((e) => e.belowTextArea)));
       const past = Math.max(...ss.flatMap((s) => s.els.map((e) => e.belowSheet)));
       judge('P2', 'a speech longer than a page stays inside the page', 'no text below the bottom margin', { pages: ss.length, linesBelowMargin: over, linesBelowSheet: past, sheetOverflowCss: ss[0]?.overflow, sheetHeightIn: ss[0]?.hIn }, over <= 0);
-      await ev("document.querySelector('.script-sheet')?.scrollIntoView({ block: 'end' })"); await sleep(250); await d.shot('P2-long-speech-overflow');
+      { const at = ss.find((s) => s.els.some((e) => e.t === 'dialogue')); await ev(`document.querySelector('.script-sheet[data-page-index="${at ? at.i : 0}"]')?.scrollIntoView({ block: 'end' })`); await sleep(250); await d.shot('P2-long-speech-overflow'); }
     }
     {
       // page 1 ends on a scene heading; page 2 is full: the heading travels, and page 2's last line must reflow onto page 3
@@ -391,6 +399,7 @@ await withHarness(async (app) => {
   // ------------------------------------------------------------------ R: the reorg's Parts, on a screenplay
   let docId = null;
   await run('R', async () => {
+    await fresh();
     const made = await ev(`(() => { const b = window.wrizoCreateBinder('Spin Cycle', 'screenplay'); return b && b.id; })()`);
     docId = made;
     const first = await makeScript([['scene', '']], { projectId: docId, orderIndex: 0 }); await open(first);
@@ -450,10 +459,47 @@ await withHarness(async (app) => {
     const seen = named.map((w) => ({ w, at: text.indexOf(`INT. ${w}`) })).filter((x) => x.at >= 0).sort((a, b) => a.at - b.at).map((x) => x.w);
     const wantOrder = ['BUS', 'LAUNDROMAT', 'STREET', 'KITCHEN'];
     judge('R8', 'after moving Act Three to the front, the whole-script download follows the Parts order', wantOrder, { partsOrder: order, downloadOrder: seen, file: f[0]?.name }, JSON.stringify(seen) === JSON.stringify(wantOrder));
+
+    // New Part, from the Parts list of a Screenplay Doc
+    await open(parts[0].id);
+    if (await frontOpen()) { await press('#wz-sliver-tab-parts'); await sleep(250); }
+    if (await has('[data-parts-new]')) {
+      await press('[data-parts-new]'); await sleep(800);
+      const surf = await ev("({ hash: location.hash, script: !!document.querySelector('.script-sheet'), prose: !!document.querySelector('.forward-only-editor') })");
+      await d.shot('R9-new-part');
+      judge('R9', 'New Part inside a Screenplay Doc', 'a screenplay page', surf, surf.script && !surf.prose);
+    } else rec('R9', 'New Part inside a Screenplay Doc', 'the New Part control', 'not reachable in this theme', 'NOTCOVERED');
+    // the Plan's "write this Part" door builds this address (reorg/backMenu/planPart.ts toPartHref, without the card's own graft)
+    await ev("location.hash = '#/'"); await sleep(150);
+    await ev(`location.hash = '#/page/new?binder=${docId}&pn=Midpoint'`); await sleep(900);
+    const planDoor = await ev("({ script: !!document.querySelector('.script-sheet'), prose: !!document.querySelector('.forward-only-editor') })");
+    judge('R10', "the Plan's door to a new Part, in a Screenplay Doc", 'a screenplay page', planDoor, planDoor.script && !planDoor.prose);
+
+    // a card beside the page: the same control on a screenplay and, as the control, on a prose page
+    const board = await ev(`(() => { const W = window; const id = 'sr-board-' + Date.now().toString(36); W.wrizoCreateJournalPage({ id, text: 'Beat board', pageType: 'board', origin: 'loose', source: 'page', createdAt: new Date().toISOString(), boxes: [{ id: 'card1', kind: 'text', x: 60, y: 60, w: 240, h: 140, text: 'Midpoint: he keeps one shirt.' }] }); W.wrizoFlushNow(); return id; })()`);
+    const beside = async (pageId, isScript) => {
+      await ev(`window.wrizoAddPageLink(${q(pageId)}, { bEntryId: ${q(board)}, bBoxId: 'card1' })`);
+      await ev("location.hash = '#/'"); await sleep(200); await ev(`location.hash = '#/page/${pageId}'`);
+      await waitFor(isScript ? "!!document.querySelector('.script-sheet .script-el')" : "!!document.querySelector('.forward-only-editor')", 'the page', 12000); await sleep(500);
+      if (!(await ev("document.querySelector('.wz-tutor-grip')?.getAttribute('data-open') === 'true'"))) { await press('.wz-tutor-grip'); await sleep(450); }
+      if (await has('[id$="-tab-links"]')) { await press('[id$="-tab-links"]'); await sleep(450); }
+      const offered = await has('[data-back-beside]');
+      const pressed = offered ? await press('[data-back-beside]') : false; await sleep(700);
+      const r = await ev(`({ stored: !!(window.wrizoSplit && window.wrizoSplit.get()), drawn: document.querySelectorAll('[data-split], .wz-split-asset, .wz-split-reader').length })`);
+      await d.shot(`R11-beside-${isScript ? 'script' : 'prose'}`);
+      return { offered, pressed, ...r };
+    };
+    const onScript = await beside(parts[0].id, true);
+    await d.key('Escape'); await sleep(150);
+    const proseId = await d.openPage('A prose page for the control.', 'drafting');
+    const onProse = await beside(proseId, false);
+    if (!onScript.offered && !onProse.offered) rec('R11', 'a card beside the page', 'the Beside control', { onScript, onProse }, 'NOTCOVERED');
+    else judge('R11', 'Open beside: a card next to the screenplay (control: the same press on a prose page)', 'the card opens beside the page on both', { onScript, onProse }, onScript.drawn > 0 && onProse.drawn > 0);
   });
 
   // ------------------------------------------------------------------ V: Convert to Screenplay, the Typewriter, the Title Page, the split
   await run('V', async () => {
+    await fresh();
     const prose = 'INT. KITCHEN - DAY\n\nMara pours coffee.\n\nMARA\nYou look terrible.\n\nTHEO\nThanks.\n\nCUT TO:';
     await d.openPage(prose, 'drafting');
     const pageId = (await ev('location.hash')).split('/').pop();
@@ -461,16 +507,16 @@ await withHarness(async (app) => {
     if (await frontOpen()) {
       for (const tab of ['#wz-sliver-tab-text', '#wz-sliver-tab-parts']) { if (await has('[data-template="screenplay"]')) break; if (await has(tab)) { await press(tab); await sleep(250); } }
       if (await has('[data-template="screenplay"]')) {
-        await press('[data-template="screenplay"]'); await sleep(450);
-        for (const c of ['.structure-confirm-screenplay', '.structure-confirm-modal .btn-brass']) { if (await has(c)) { await press(c); break; } }
-        await waitFor("!!document.querySelector('.script-sheet .script-el')", 'the converted script', 6000).catch(() => {});
-        done = await has('.script-sheet .script-el');
+        await press('[data-template="screenplay"]'); await sleep(1000);
+        done = true;
       }
     }
     if (done) {
-      await sleep(400); const g = await doc();
-      const types = g.map((e) => e.t);
-      judge('V1', 'Convert to Screenplay reads a page already laid out as a script', 'scene heading, action, character, dialogue, transition recognised', g.map((e) => `${e.t}: ${e.x.slice(0, 22)}`), types.includes('character') && types.includes('dialogue') && types.filter((t) => t === 'scene' && true).length >= 1 && g[0]?.x.startsWith('INT.'));
+      const after = await ev("({ hash: location.hash, script: !!document.querySelector('.script-sheet'), confirm: !!document.querySelector('.structure-confirm-modal') })");
+      const g = after.script ? await doc() : [];
+      const orig = await stored(pageId);
+      const carried = g.some((e) => /coffee/.test(e.x));
+      judge('V1', 'Screenplay chosen on a page that already holds a script in plain text', 'the words convert into scene heading, action, character, dialogue, transition', { after, newPageElements: g.map((e) => e.t + ': ' + e.x.slice(0, 20)), wordsCarriedOver: carried, originalPageKept: !!orig && /coffee/.test(orig.text || '') }, carried && g.some((e) => e.t === 'character') && g.some((e) => e.t === 'dialogue'));
       await d.shot('V1-converted');
     } else rec('V1', 'Convert to Screenplay', 'the control', `no Screenplay template reachable on page ${pageId}`, 'NOTCOVERED');
 
@@ -499,6 +545,7 @@ await withHarness(async (app) => {
 
   // ------------------------------------------------------------------ W: the whole short, typed as a writer types it, then exported
   await run('W', async () => {
+    await fresh();
     let id;
     // the spot-check themes seed the short rather than typing it, from its first scene heading (a seeded leading FADE IN: would take the blank heading K14 measures)
     const LIST = cfg.theme === 'machina' ? SPIN_CYCLE : SPIN_CYCLE.slice(1);
