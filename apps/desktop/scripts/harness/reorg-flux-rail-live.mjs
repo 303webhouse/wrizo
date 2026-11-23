@@ -1,0 +1,161 @@
+// FLUX'S RAIL ON THE REORG (claude/wrizors/flux-reorg-spec.md sections 1, 2, 6, 7, flux-reorg-words.md A; Fable, Nov 22 9:20 pm; plan: claude/flux-live-plan.md).
+// The reorg's rail in the redesign's command-box dress (flux3/flux-v3.css L2), behind INK's gate: flux.rail is off until the Wrizors pass the frames, so it is
+// seen through the preview door (?reorg=1&flux3=1&reorglift=flux.rail).
+//
+// The fixture (seams only): a Drive "Fiction" holding a set "The Mill" with two Tracks fl-1, fl-2 and a Circuit fl-c, and a loose page fl-l; 1366x768.
+//
+// GATE    R0  the reorg's rail stands in Flux with the redesign, the switch and the door, and not without the door, nor without the redesign, nor the switch
+// DOORS   R1  the doors read, in order, DOCS · DRIVES · ORPHANS · CIRCUITS · LOG, and the foot SKIN · CONFIG
+// DRESS   R2  every door is a command box: a hairline 1 px #1D4A52 edge, a 2 px left edge, its name in 9 px capitals
+//         MUT-R2  the same reading with the browser's own button face turns R2's test red
+// READ    R3  DOCS, CIRCUITS and LOG each carry the TRUE reading and hover hint the live Flux rail shows for this same page (the live rail is the oracle)
+// PLACE   R4  her place is orange: the where box's left edge and its name #FF9800 (the one brass mark on the rail)
+// OPEN    R5  an opened door has the electric-blue left edge #00C2FF
+// PANEL   R6  the opened DRIVES pop-out is in node dress (fill #04141A, a 1 px #7EB4C4 edge), its rows draw no button face, its words 4.5:1 or better
+//         MUT-R6  the same reading on Machina's grey panel turns R6's test red
+// PAGE    R7  the page's rect (column, paper, editor) is the same with a door open and closed
+// EDGE    R8  at 1366 the open pop-out ends before the page's left opener and the opener takes a press; at 1920 it keeps its 300 px
+// BOXES   R9  (spec 1; words A) Box settings offers the six signals by number, 01 to 06 (Cyan, Lime, Pink, Ice, Teal, Deep cyan on hover), beside Custom…; pressing
+//             02 draws her box in lime, its letters 4.5:1 or better
+// SESSION R10 (spec 7) in DOCS the Session's fold has no button face, opened its rows read 4.5:1 and its Quota field has a 3:1 edge; Recent's sort is words, the chosen
+//             one underlined
+// MACHINA R11 Machina's reorg rail is as it was: DOCS · PROJECTS · UNFILED, its five swatches
+//
+// Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-rail-live.mjs
+process.env.WS_PLACE = '1';
+const { withHarness } = await import('../runtime-verify.mjs');
+
+const checks = [];
+const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const q = (s) => JSON.stringify(s);
+const rgbOf = (c) => { const m = /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(c || ''); return m ? [+m[1], +m[2], +m[3]] : null; };
+const lum = (c) => { const v = rgbOf(c); if (!v) return NaN; const [r, g, b] = v.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const DOOR = '&reorglift=flux.rail';
+const EDGE = 'rgb(29, 74, 82)', ORANGE = 'rgb(255, 152, 0)', CYAN = 'rgb(0, 194, 255)', NODE = 'rgb(4, 20, 26)', NODE_EDGE = 'rgb(126, 180, 196)', LIME = 'rgb(183, 255, 60)';
+const SIGNALS = [['#00C2FF', '01', 'Cyan'], ['#B7FF3C', '02', 'Lime'], ['#FF2E97', '03', 'Pink'], ['#E7F4F1', '04', 'Ice'], ['#7FA8A0', '05', 'Teal'], ['#3A8FA5', '06', 'Deep cyan']];
+const GROUND = "const ground = (e) => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; if (c && !/rgba\\([^)]*,\\s*0\\)$/.test(c) && c !== 'transparent') return c; } return null; };";
+const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const p = document.querySelector(s); if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); }).join('|'))()";
+const DOORS = `(() => { const r = document.querySelector('[data-reorg-rail]'); if (!r) return null; const read = (b) => { const s = getComputedStyle(b), l = b.querySelector('.wz-strip-label'), ls = l ? getComputedStyle(l) : null, o = b.querySelector('.wz-strip-readout');
+    return { cat: b.getAttribute('data-category'), word: (l ? l.textContent : b.textContent || '').trim().toUpperCase(), bg: s.backgroundColor, top: s.borderTopWidth + ' ' + s.borderTopColor, left: s.borderLeftWidth, leftColor: s.borderLeftColor, size: ls && ls.fontSize, tt: ls && ls.textTransform, reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title') }; };
+  return { doors: [...r.querySelectorAll('.wz-reorg-doors .wz-strip-item')].map(read), foot: [...r.querySelectorAll('.wz-strip-foot .wz-strip-item')].map(read) }; })()`;
+const LIVE = "(() => { const read = (c) => { const b = document.querySelector(`.wz-strip [data-category='${c}']`); if (!b) return null; const o = b.querySelector('.wz-strip-readout'); return { reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title') }; }; return { docs: read('page'), plan: read('plan'), journal: read('journal') }; })()";
+const r2 = (x) => !!x && x.doors.length === 5 && [...x.doors, ...x.foot].every((d) => d.top === `1px ${EDGE}` && d.left === '2px' && d.size === '9px' && d.tt === 'uppercase');
+
+async function seed(app) {
+  await app.emulateDpr(1, 1366, 768);
+  await app.goto('/');
+  await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); null");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
+  await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 });
+  await app.evalJs(`(() => { const W = window; const page = (id, text, extra) => W.wrizoCreateJournalPage({ id, text, createdAt: '2026-04-01T00:00:00.000Z', source: 'page', ...extra });
+    const d = W.wrizoCreateDrawer('Fiction'); const mill = W.wrizoCreateProject('The Mill'); W.wrizoSetProjectDrawer(mill.id, d.id);
+    page('fl-1', 'Chapter One\\nThe rain had not stopped.', { origin: 'project', projectId: mill.id, orderIndex: 0 });
+    page('fl-2', 'Chapter Two\\nThe river rose.', { origin: 'project', projectId: mill.id, orderIndex: 1 });
+    page('fl-c', 'Plot circuit', { origin: 'project', projectId: mill.id, pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
+    page('fl-l', 'A loose page.', { origin: 'loose' });
+    W.wrizoFlushNow(); return true; })()`);
+  await sleep(400);
+}
+async function open(app, search, { theme = 'flux', id = 'fl-1', w = 1366, h = 768 } = {}) {
+  await app.emulateDpr(1, w, h);
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 }).catch(() => {});
+  await app.evalJs(`window.wrizoTheme.set(${q(theme)}); null`);
+  await app.evalJs(`history.replaceState(null, '', ${q(`/${search}#/page/${id}`)}); null`);
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: `the page (${theme} ${search})`, timeout: 20000 }).catch(() => {});
+  await sleep(1100);
+}
+const door = (cat) => `document.querySelector('[data-reorg-rail] [data-category="${cat}"]')?.click(); null`;
+
+await withHarness(async (app) => {
+  await seed(app);
+
+  // ---- the gate, and the live rail (R3's oracle) ----
+  await open(app, '?arbor2=0&flux3=1');
+  const noSwitch = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  const live = await app.evalJs(LIVE);
+  await open(app, '?arbor2=0&reorg=1&flux3=1');
+  const noDoor = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  await open(app, `?arbor2=0&reorg=1${DOOR}`);
+  const noRedesign = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  await open(app, `?arbor2=0&reorg=1&flux3=1${DOOR}`);
+  const on = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
+  ok('R0 the reorg\'s rail stands in Flux with the redesign, the switch and the door, and not without the door, the redesign or the switch', on && !noDoor && !noRedesign && !noSwitch, { on, noDoor, noRedesign, noSwitch });
+
+  // ---- the doors at rest ----
+  await app.mouseMove(700, 400); await sleep(300);
+  const d0 = await app.evalJs(DOORS);
+  const words = (x) => [x.doors.map((d) => d.word), x.foot.map((d) => d.word)];
+  ok('R1 the doors read DOCS · DRIVES · ORPHANS · CIRCUITS · LOG, and the foot SKIN · CONFIG', !!d0 && JSON.stringify(words(d0)) === JSON.stringify([['DOCS', 'DRIVES', 'ORPHANS', 'CIRCUITS', 'LOG'], ['SKIN', 'CONFIG']]), d0 && words(d0));
+  ok('R2 every door is a command box: a 1 px #1D4A52 edge, a 2 px left edge, its name in 9 px capitals', r2(d0), d0 && [...d0.doors, ...d0.foot].map((x) => [x.word, x.top, x.left, x.size, x.tt]));
+  const faced = d0 && d0.doors.length ? { ...d0, doors: d0.doors.map((x, i) => (i === 0 ? { ...x, top: '2px rgb(118, 118, 118)' } : x)) } : null;
+  ok('MUT-R2 the same reading with the browser\'s own button face turns R2\'s test red', !!faced && !r2(faced), faced && faced.doors[0].top);
+  const at = (c) => d0 && d0.doors.find((x) => x.cat === c);
+  const r3pair = (a, b) => !!a && !!b && !!b.reading && a.reading === b.reading && !!b.hint && a.hint === b.hint;
+  ok('R3 DOCS, CIRCUITS and LOG carry the true reading and hover hint the live Flux rail shows for this same page', !!live && r3pair(at('reorg-docs'), live.docs) && r3pair(at('plan'), live.plan) && r3pair(at('journal'), live.journal), { live, reorg: d0 && ['reorg-docs', 'plan', 'journal'].map((c) => at(c) && { reading: at(c).reading, hint: at(c).hint }) });
+  const where = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where-item'); if (!b) return null; const n = b.querySelector('.wz-reorg-where-name'); return { left: getComputedStyle(b).borderLeftColor, name: n ? getComputedStyle(n).color : null }; })()");
+  ok('R4 her place is orange: the where box\'s left edge and its name #FF9800', !!where && where.left === ORANGE && where.name === ORANGE, where);
+
+  // ---- DRIVES open ----
+  const page0 = await app.evalJs(PAGE);
+  await app.evalJs(door('reorg-projects')); await sleep(700); await app.mouseMove(900, 400); await sleep(300);
+  const d1 = await app.evalJs(DOORS);
+  const o = d1 && d1.doors.find((x) => x.cat === 'reorg-projects');
+  ok('R5 an opened door has the electric-blue left edge #00C2FF', !!o && o.leftColor === CYAN, o && o.leftColor);
+  const panelRead = await app.evalJs(`(() => { ${GROUND} const p = document.querySelector('.wz-cascade-panel[data-category]'); if (!p) return null; const s = getComputedStyle(p), row = p.querySelector('.wz-reorg-row-open'); const rs = row ? getComputedStyle(row) : null;
+    return { bg: s.backgroundColor, edge: s.borderTopWidth + ' ' + s.borderTopColor, rowBg: rs && rs.backgroundColor, rowBorder: rs && rs.borderTopWidth, ink: rs && rs.color, ground: row ? ground(row) : null }; })()`);
+  const r6 = (x) => !!x && x.bg === NODE && x.edge === `1px ${NODE_EDGE}` && x.rowBg === 'rgba(0, 0, 0, 0)' && x.rowBorder === '0px' && !!x.ink && !!x.ground && contrast(x.ink, x.ground) >= 4.5;
+  ok('R6 the opened DRIVES pop-out is in node dress (#04141A, a 1 px #7EB4C4 edge), its rows draw no button face, its words 4.5:1 or better', r6(panelRead), panelRead);
+  const grey = panelRead ? { ...panelRead, bg: 'rgb(30, 38, 46)', edge: '1px rgb(58, 64, 71)' } : null;
+  ok('MUT-R6 the same reading on Machina\'s grey panel turns R6\'s test red', !!grey && !r6(grey), grey);
+  const EDGEREAD = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g }; const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const hit = document.elementFromPoint(gr.left + gr.width / 2, gr.top + gr.height / 2); return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
+  const edge1366 = await app.evalJs(EDGEREAD);
+  const page1 = await app.evalJs(PAGE);
+
+  // ---- Box settings ----
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const bs = await app.evalJs("(() => ({ swatches: [...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')].map((b) => [String(b.getAttribute('data-swatch')).toUpperCase(), (b.textContent || '').trim(), b.getAttribute('title')]), own: (document.querySelector('.wz-reorg-own-colour')?.innerText || '').trim() }))()");
+  await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#B7FF3C\"]')?.click(); null"); await sleep(500);
+  const boxes = await app.evalJs("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box')].map((b) => { const s = getComputedStyle(b); return [s.backgroundColor, s.webkitTextFillColor || s.color]; })");
+  const limeBox = (boxes || []).find((b) => b[0] === LIME);
+  ok('R9 Box settings offers the six signals 01 to 06 (named on hover) beside Custom…; pressing 02 draws her box in lime, its letters 4.5:1 or better', !!bs && JSON.stringify(bs.swatches) === JSON.stringify(SIGNALS) && /^Custom/.test(bs.own) && !!limeBox && contrast(limeBox[1], limeBox[0]) >= 4.5, { bs, boxes });
+  await app.evalJs(door('reorg-projects')); await sleep(600);
+  const page2 = await app.evalJs(PAGE);
+  ok('R7 the page\'s rect (column, paper, editor) is the same with a door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
+
+  // ---- the Session and Recent in DOCS ----
+  await app.evalJs(door('reorg-docs')); await sleep(700);
+  const SESS = `(() => { ${GROUND} const s = document.querySelector('.wz-cascade-panel [data-reorg-group="session"]'); if (!s) return null; const f = s.querySelector('[data-session-fold]'), fs = f ? getComputedStyle(f) : null;
+    const rows = [...s.querySelectorAll('[data-session-row]')].filter((r) => r.getBoundingClientRect().height > 0).map((r) => { const l = r.querySelector('.wz-reorg-default-label'); return l ? { ink: getComputedStyle(l).color, ground: ground(r) } : null; }).filter(Boolean);
+    const g = s.querySelector('.wz-reorg-session-goal'), gs = g ? getComputedStyle(g) : null;
+    const sort = [...document.querySelectorAll('.wz-cascade-panel .wz-reorg-recent-sort > button')].map((b) => { const c = getComputedStyle(b); return { pressed: b.getAttribute('aria-pressed'), bg: c.backgroundColor, border: c.borderTopWidth, line: c.textDecorationLine }; });
+    return { foldBg: fs && fs.backgroundColor, foldBorder: fs && fs.borderTopWidth, open: f && f.getAttribute('aria-expanded'), rows, goal: gs && { edge: gs.borderTopColor, width: gs.borderTopWidth, ground: ground(g.parentElement) }, sort }; })()`;
+  await app.evalJs("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(400);
+  const sess = await app.evalJs(SESS);
+  const r10 = (x) => !!x && x.open === 'true' && x.foldBg === 'rgba(0, 0, 0, 0)' && x.foldBorder === '0px' && x.rows.length >= 2 && x.rows.every((r) => !!r.ink && !!r.ground && contrast(r.ink, r.ground) >= 4.5)
+    && !!x.goal && x.goal.width === '1px' && !!x.goal.ground && contrast(x.goal.edge, x.goal.ground) >= 3
+    && x.sort.length >= 2 && x.sort.every((b) => b.bg === 'rgba(0, 0, 0, 0)' && b.border === '0px') && x.sort.filter((b) => b.pressed === 'true').length === 1 && x.sort.filter((b) => b.pressed === 'true').every((b) => /underline/.test(b.line));
+  ok('R10 in DOCS the Session\'s fold has no button face, its rows read 4.5:1, its Quota field has a 3:1 edge; Recent\'s sort is words, the chosen one underlined', r10(sess), sess);
+
+  // ---- 1920, Machina ----
+  await open(app, `?arbor2=0&reorg=1&flux3=1${DOOR}`, { w: 1920, h: 1080 });
+  await app.evalJs(door('reorg-projects')); await sleep(700); await app.mouseMove(1500, 500); await sleep(300);
+  const edge1920 = await app.evalJs(EDGEREAD);
+  ok('R8 at 1366 the open pop-out ends before the page\'s left opener and the opener takes a press; at 1920 it keeps its 300 px', !!edge1366 && edge1366.right <= edge1366.gripLeft + 0.5 && edge1366.hit === true && !!edge1920 && Math.abs(edge1920.width - 300) <= 1 && edge1920.right <= edge1920.gripLeft + 0.5, { edge1366, edge1920 });
+  await open(app, '?reorg=1&arbor2=0', { theme: 'machina' });
+  const dm = await app.evalJs(DOORS);
+  await app.evalJs(door('reorg-projects')); await sleep(700);
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
+  const sm = await app.evalJs("[...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')].map((b) => b.getAttribute('title'))");
+  ok('R11 Machina\'s reorg rail is as it was: DOCS · PROJECTS · UNFILED, its five swatches', !!dm && JSON.stringify(dm.doors.map((x) => x.word)) === JSON.stringify(['DOCS', 'PROJECTS', 'UNFILED']) && JSON.stringify(sm) === JSON.stringify(['Pale', 'Grey', 'Blue', 'Brass', 'Orange']), { doors: dm && dm.doors.map((x) => x.word), sm });
+});
+
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
+const EXPECTED = 14;   // R0 to R11, MUT-R2, MUT-R6
+const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
+console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
+process.exit(pass ? 0 : 1);
