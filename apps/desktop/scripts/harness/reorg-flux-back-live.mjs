@@ -10,6 +10,8 @@
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
 //   FB8  the row names keep their room (none cut) and the open tab wears the 3 x 24 brass bar (the Wrizors Flux pass 1, REAL 4 and NIT 1)
 //   FB9  Uplink keeps the bar one row and the page rectangle; the view lies over the page, has no box, and its buttons and ticks are in Flux dress (REAL 1, 2 and 3)
+//   FB13 Wire In (the Corridor): the opened Back menu ends above her line (the Wrizors' pass 2)
+//   FB14 the Operator's fields are in field dress with #7EB4C4 hints (pass 2)
 //   FB11 Wire In (the Corridor): the Back menu's opener and its opened panel are drawn and can be pressed; the left hand and the rail stay off (spec section 5)
 //   FB10 the Uplink sheet's label row starts below the page's L4 readout header (the Wrizors' Flux Uplink frames, Nov 23)
 //   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
@@ -136,6 +138,12 @@ await withHarness(async (app) => {
   const off =await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
   ok('FB5 piece OFF without the door: in Flux the drawer is today\'s (no Spine tab, no reorg markup)', !!off && Array.isArray(off.tabs) && !off.tabs.includes('wz-tutor-tab-plan') && off.reorg === false, off);
 
+  // FB14 (the Wrizors' pass 2, REAL 3): the Operator's two fields are in field dress (fill #020C10, a 1 px #5F8F95 edge) and every hint is text-low #7EB4C4 (8.67:1), not the browser's green-grey
+  await open(app, 'fb-1'); await drawer(app); await tab(app, 'tutor');
+  const fields = await app.evalJs("(() => { const one = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e), p = getComputedStyle(e, '::placeholder'); return { bg: c.backgroundColor, edge: c.borderTopColor, w: c.borderTopWidth, hint: p.color }; }; return { ask: one('.wz-tutor-convo-input'), bible: one('.wz-tutor-bible-input') }; })()");
+  const fieldOk = (x) => !!x && x.bg === 'rgb(2, 12, 16)' && x.edge === 'rgb(95, 143, 149)' && x.w === '1px' && x.hint === 'rgb(126, 180, 196)';
+  ok('FB14 the Operator\u2019s fields are in field dress (#020C10, a 1 px #5F8F95 edge) with #7EB4C4 hints', !!fields && fieldOk(fields.ask) && fieldOk(fields.bible), fields);
+
   await open(app, 'fb-1');
   const mode = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
@@ -150,6 +158,9 @@ await withHarness(async (app) => {
   // FB12 (the frames of Nov 23): opened in the Corridor, the grip stands at the panel's own left edge (16 px of gutter), never inside its tab row; and it is on the screen
   const gripAt = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'), p = document.querySelector('.wz-tutor-panel'); if (!g || !p) return null; const gr = g.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { gripLeft: Math.round(gr.left), gripRight: Math.round(gr.right), panelLeft: Math.round(pr.left), vw: window.innerWidth }; })()");
   ok('FB12 Wire In (the Corridor): the opened Back menu\'s grip stands at the panel\'s left edge, clear of its tab row', !!gripAt && gripAt.gripRight <= gripAt.panelLeft + 1 && gripAt.gripLeft >= 0 && gripAt.gripRight <= gripAt.vw, gripAt);
+  // FB13 (the Wrizors' pass 2, REAL 1): in Wire In the opened panel ends above her line (its foot is capped), so it never covers what she is writing
+  const cover = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (!last) return null; const r = document.createRange(); r.selectNodeContents(last); const rects = [...r.getClientRects()]; if (!rects.length) return null; return { panelBottom: Math.round(p.getBoundingClientRect().bottom), lineTop: Math.round(Math.min(...rects.map((x) => x.top))) }; })()");
+  ok('FB13 Wire In (the Corridor): the opened Back menu ends above her line', !!cover && cover.panelBottom <= cover.lineTop, cover);
 
   await open(app, 'fb-1', { flux3: false });
   await drawer(app);
@@ -158,7 +169,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 12;
+const EXPECTED = 14;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -12,3 +12,5 @@
 :root[data-flux3][data-theme='flux'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
 /* the count row stands under HER page: the instrument under the page is centred on the stage, so it stayed where the page used to be and ran under the docked half; it takes the page's own shift (--wz-split-shift), so it stays centred on the page. A status row, not the page: the page's geometry is untouched. */
 :root[data-flux3][data-theme='flux'] .desk-frame-stage[data-split='true'] .desk-frame-instrument{ left:calc(50% + var(--wz-split-shift, 0px)); }
+/* the docked Doc's words are page text: text-hi (16.6:1), not text-mid (11.9:1) (the Wrizors' Dock pass, Nov 22) */
+:root[data-flux3][data-theme='flux'] .wz-split-asset .wz-link-dock-text{ color:var(--text-hi); }

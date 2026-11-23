@@ -37,7 +37,9 @@ const LIVE = run(FLUX, {});
 const canon = new Map();
 for (const f of ['chrome', 'settings', 'decks', 'help']) {
   for (const line of rd(`store/lexicon/canonical/${f}.ts`).split('\n')) {
-    const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // SUPERSEDED (Nov 22, the Wrizors' pass 2: the OPERATOR tab's words are Tutor keys): the reading regexp read only reorg* keys; the successor also reads the four named Tutor keys. The original line's head, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):
+    const m = /^  (reorg[A-Za-z0-9]*|tutorBibleTitle|tutorBibleEmpty|tutorBibleAddPlaceholder|tutorFreeWritePrompt):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }

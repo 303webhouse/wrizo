@@ -149,7 +149,7 @@ function suite(css, tutor = TUTOR) {
   });
   t('THUMB', () => {
     // pass 2 REAL 4: INPUTS' scrollbar thumb was 2.06:1; the Back menu's panel and everything in it scroll with #5F8F95 (the declaration is on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css)
-    const r = rs.some((x) => /\.wz-tutor-panel$/.test(topSplit(x.sel)[0]) && topSplit(x.sel).some((p) => /\.wz-tutor-panel \*$/.test(p)) && /scrollbar-color:\s*#5F8F95 transparent/i.test(x.body));
+    const r = rs.some((x) => /:is\(\.wz-tutor-panel, \.wz-tutor-panel \*\)$/.test(x.sel) && /scrollbar-color:\s*#5F8F95 transparent/i.test(x.body));
     return { pass: r, detail: J({ r }) };
   });
   t('PANEL', () => {
@@ -174,7 +174,7 @@ const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
-  ['the fields lose their fill', 'FIELDS', (t) => t.replace('background:#020C10; border:1px solid #5F8F95', () => 'background:#132437; border:1px solid #5F8F95')],
+  ['the fields lose their fill', 'FIELDS', (t) => t.replace('.wz-back-plan-input){ background:#020C10;', () => '.wz-back-plan-input){ background:#132437;')],
   ['the hints go back to the browser grey', 'FIELDS', (t) => t.replace('color:#7EB4C4; opacity:1', () => 'color:#787876; opacity:1')],
   ['the thumb is the old colour', 'THUMB', (t) => t.replace('scrollbar-color:#5F8F95 transparent', () => 'scrollbar-color:#254E7E transparent')],
   ['the panel is the chrome grey again', 'PANEL', (t) => t.replace(/\.wz-tutor-panel\{ background:#04141A;/, () => '.wz-tutor-panel{ background:#101A27;')],
