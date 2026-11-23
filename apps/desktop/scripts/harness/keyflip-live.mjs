@@ -61,7 +61,8 @@ const analyse = (raw) => {
 const traceKey = async (app, key = 'a') => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
   await sleep(400);
-  await app.typeKeys(key);
+  if (key === 'NOWRITE') { const p = { key: 'Shift', code: 'ShiftLeft', windowsVirtualKeyCode: 16 }; await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...p }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...p }); }
+  else await app.typeKeys(key);
   await sleep(700);
   const done = app.waitEvent('Tracing.tracingComplete', 30000);
   await app.cdp('Tracing.end');
@@ -81,6 +82,8 @@ const OLD_WRITE = `(() => { const de = document.documentElement; const orig = CS
 const NO_FADE = `(() => { const orig = CSSStyleDeclaration.prototype.setProperty; const w = function (n, v, p) { if (n === '--fade-dur') { window.__klDropped = (window.__klDropped || 0) + 1; return; } return orig.call(this, n, v, p); }; CSSStyleDeclaration.prototype.setProperty = w; return true; })()`;
 const HTML_LOG = `(() => { window.__klHtml = []; new MutationObserver((rs) => { for (const r of rs) window.__klHtml.push(r.attributeName + '=' + document.documentElement.getAttribute(r.attributeName)); }).observe(document.documentElement, { attributes: true }); return true; })()`;
 const NO_WZ = `(() => { const de = document.documentElement, orig = Element.prototype.setAttribute; Element.prototype.setAttribute = function (n, v) { if (this === de && n === 'data-wz-writing') { window.__klWz = (window.__klWz || 0) + 1; return; } return orig.call(this, n, v); }; return true; })()`;
+const BLOCK = (names) => `(() => { const block = new Set(${JSON.stringify(names)}), orig = Element.prototype.setAttribute; Element.prototype.setAttribute = function (n, v) { if (block.has(n)) { window.__klBlocked = (window.__klBlocked || 0) + 1; return; } return orig.call(this, n, v); }; return true; })()`;
+const DOC_LOG = `(() => { const tally = {}; window.__klDoc = tally; const name = (e) => e.tagName ? e.tagName.toLowerCase() + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || '').split(' ')[0] : '#text'; new MutationObserver((rs) => { for (const r of rs) { const k = r.type === 'attributes' ? name(r.target) + ' @' + r.attributeName : name(r.target) + ' +' + r.addedNodes.length + '/-' + r.removedNodes.length; tally[k] = (tally[k] || 0) + 1; } }).observe(document, { attributes: true, childList: true, subtree: true }); return true; })()`;
 // where --fade-dur is written, and what the dissolve-class elements read after the key
 const FADE_STATE = `(() => { const de = document.documentElement; const own = (el) => el.style && el.style.getPropertyValue('--fade-dur');
   const carriers = [...document.querySelectorAll('.chrome-fade, .desk-dissolve, .mode-dissolve, .brand-mark, .chrome-handle')];
@@ -131,7 +134,11 @@ await withHarness(async (app) => {
     await sleep(1800);
     if (mutate === true || mutate === 'html') { await app.evalJs(OLD_WRITE); await sleep(200); }
     if (mutate === 'col') { await app.evalJs(COL_WRITE); await sleep(200); }
-    if (mutate === 'nofade' || mutate === 'both') { await app.evalJs(NO_FADE); await sleep(200); }
+    if (mutate === 'nofade' || mutate === 'both' || mutate === 'noflips') { await app.evalJs(NO_FADE); await sleep(200); }
+    if (mutate === 'nowriting') await app.evalJs(BLOCK(['data-writing']));
+    if (mutate === 'norecede') await app.evalJs(BLOCK(['data-chrome-receded']));
+    if (mutate === 'noflips') await app.evalJs(BLOCK(['data-writing', 'data-chrome-receded', 'data-wz-writing']));
+    if (['shift', 'nowriting', 'norecede', 'noflips'].includes(mutate)) await app.evalJs(DOC_LOG);
     if (mutate === 'nowz' || mutate === 'both') { await app.evalJs(NO_WZ); await sleep(200); }
     if (String(mutate).startsWith('log') || mutate === 'nowz' || mutate === 'both' || mutate === 'nofade') await app.evalJs(HTML_LOG);
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
@@ -141,7 +148,7 @@ await withHarness(async (app) => {
     if (arborLeft) console.log(`KL-WARN ${theme}: ${arborLeft} Arbor shade elements are in the page`);
     before.arborLeft = arborLeft;
     await app.evalJs(COL_OBS);
-    const tr = await traceKey(app, 'a');
+    const tr = await traceKey(app, mutate === 'shift' ? 'NOWRITE' : 'a');
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
     const colMut = (await app.evalJs('window.__klMut || null')) || [];
@@ -189,7 +196,7 @@ await withHarness(async (app) => {
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: 'html' });
-  for (const arm of ['log', 'nofade', 'nowz', 'both']) for (let i = 0; i < REOPENS; i += 1) { const p = await measure('flux', '', { mutate: arm }); console.log(`PROBE ${arm} ${i + 1}: keyEls ${p.tr && p.tr.keyEls}, docEls ${p.before.docEls}, wzBlocked ${await app.evalJs('window.__klWz || 0')}, htmlAttrs ${JSON.stringify(await app.evalJs('window.__klHtml || []'))}, top ${JSON.stringify(p.tr && p.tr.top)}`); }
+  for (const arm of ['shift', 'nowriting', 'norecede', 'noflips']) for (let i = 0; i < 2; i += 1) { const p = await measure('flux', '', { mutate: arm }); const doc = (await app.evalJs('window.__klDoc || {}')) || {}; console.log(`PROBE ${arm} ${i + 1}: keyEls ${p.tr && p.tr.keyEls}, docEls ${p.before.docEls}, blocked ${await app.evalJs('window.__klBlocked || 0')}, top ${JSON.stringify(p.tr && p.tr.top && p.tr.top.slice(0, 3))}, changed ${JSON.stringify(Object.entries(doc).sort((a, b) => b[1] - a[1]).slice(0, 16))}`); }
   const mutCol = {};
   for (const [theme, search] of THEMES) mutCol[theme] = await measure(theme, search, { mutate: 'col' });
   // SUPERSEDED (Fable, Nov 22, 2:30 pm, with KL-FLIP: the bar is the chrome's set, not a quarter of the document). The original, verbatim:
