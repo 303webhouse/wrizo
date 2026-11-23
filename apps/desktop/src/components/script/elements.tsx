@@ -26,7 +26,7 @@ export type CaretHint = 'start' | 'end' | number;
 
 // -- the ONE live contenteditable block --------------------------------------
 export function ActiveScriptElement({
-  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret,
+  el, caretHint, onInput, onKeyDown, elRef, docIndex, sessionKey, liveCaret, noteCaret, quietMount,
 }: {
   el: ScriptEl;
   caretHint: CaretHint;
@@ -37,6 +37,8 @@ export function ActiveScriptElement({
   sessionKey: string;
   liveCaret: React.MutableRefObject<{ key: string; offset: number } | null>;
   noteCaret: () => void;
+  /** true while the page takes lines from Find and Replace with the keyboard elsewhere: a mount then takes neither the focus nor the scroll (SCRIPT #1) */
+  quietMount?: React.MutableRefObject<boolean>;
 }) {
   const nodeRef = useRef<HTMLDivElement | null>(null);
   const [seed] = useState(() => el.text);
@@ -45,15 +47,17 @@ export function ActiveScriptElement({
     const node = nodeRef.current;
     if (!node) return;
     node.textContent = seed;
-    // clause 1 of the vertical policy: focus never scrolls the page [ScriptEditor §3]
-    node.focus({ preventScroll: true });
-    // a page break remounts the active element (React deletes and re-inserts across sheets), so the same edit session restores the live caret offset over the stale hint [ScriptEditor §4]
-    const remembered = liveCaret.current && liveCaret.current.key === sessionKey ? liveCaret.current.offset : null;
-    const offset = remembered !== null
-      ? Math.max(0, Math.min(remembered, seed.length))
-      : caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
-    setCaretOffset(node, offset);
-    keepCaretVisible(node);
+    if (!quietMount?.current) {
+      // clause 1 of the vertical policy: focus never scrolls the page [ScriptEditor §3]
+      node.focus({ preventScroll: true });
+      // a page break remounts the active element (React deletes and re-inserts across sheets), so the same edit session restores the live caret offset over the stale hint [ScriptEditor §4]
+      const remembered = liveCaret.current && liveCaret.current.key === sessionKey ? liveCaret.current.offset : null;
+      const offset = remembered !== null
+        ? Math.max(0, Math.min(remembered, seed.length))
+        : caretHint === 'start' ? 0 : caretHint === 'end' ? seed.length : caretHint;
+      setCaretOffset(node, offset);
+      keepCaretVisible(node);
+    }
 
     // I0 pen discipline: the pen points, never types, never inks — the
     // recognizer hazard returns exactly at a live contenteditable and is
