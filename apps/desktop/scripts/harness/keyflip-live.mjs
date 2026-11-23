@@ -78,6 +78,7 @@ const traceKey = async (app, key = 'a') => {
 const OLD_WRITE = `(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; if (orig.__klOld) return true;
   const wrapped = function (name, value, prio) { if (name === '--fade-dur' && this !== de.style) { try { orig.call(de.style, name, value, prio); } catch {} } return orig.call(this, name, value, prio); };
   wrapped.__klOld = true; CSSStyleDeclaration.prototype.setProperty = wrapped; return true; })()`;
+const NO_FADE = `(() => { const orig = CSSStyleDeclaration.prototype.setProperty; const w = function (n, v, p) { if (n === '--fade-dur') { window.__klDropped = (window.__klDropped || 0) + 1; return; } return orig.call(this, n, v, p); }; CSSStyleDeclaration.prototype.setProperty = w; return true; })()`;
 // where --fade-dur is written, and what the dissolve-class elements read after the key
 const FADE_STATE = `(() => { const de = document.documentElement; const own = (el) => el.style && el.style.getPropertyValue('--fade-dur');
   const carriers = [...document.querySelectorAll('.chrome-fade, .desk-dissolve, .mode-dissolve, .brand-mark, .chrome-handle')];
@@ -128,6 +129,7 @@ await withHarness(async (app) => {
     await sleep(1800);
     if (mutate === true || mutate === 'html') { await app.evalJs(OLD_WRITE); await sleep(200); }
     if (mutate === 'col') { await app.evalJs(COL_WRITE); await sleep(200); }
+    if (mutate === 'nofade') { await app.evalJs(NO_FADE); await sleep(200); }
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
     const before = await app.evalJs(FADE_STATE);
     if (busy) { await app.evalJs(BUSY_HOOK); await app.typeKeys('a'); await sleep(500); return { theme, busy: await app.evalJs('window.__klBusy') }; }
@@ -183,6 +185,7 @@ await withHarness(async (app) => {
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: 'html' });
+  for (let i = 0; i < REOPENS; i += 1) { const p = await measure('flux', '', { mutate: 'nofade' }); console.log(`PROBE nofade ${i + 1}: keyEls ${p.tr && p.tr.keyEls}, docEls ${p.before.docEls}, chromeEls ${p.before.chromeEls}, dropped ${await app.evalJs('window.__klDropped || 0')}, restyles ${JSON.stringify(p.tr && p.tr.top)}`); }
   const mutCol = {};
   for (const [theme, search] of THEMES) mutCol[theme] = await measure(theme, search, { mutate: 'col' });
   // SUPERSEDED (Fable, Nov 22, 2:30 pm, with KL-FLIP: the bar is the chrome's set, not a quarter of the document). The original, verbatim:
