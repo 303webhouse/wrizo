@@ -10,7 +10,8 @@ import { wordCount } from '../../store/wordCount';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
 import { pageStageOf } from '../pageStage';
 import { SessionGroup } from '../session/SessionGroup';
-import { newTargetOf, projectOfEntry } from '../railData';
+import { allDocRows, newTargetOf, projectOfEntry, RECENT_DOCS } from '../railData';
+import { useTheme } from '../../store/theme';
 import { useProjectName, useWhereSheIs } from '../ReorgRail';
 
 // DOCS (step 5, frame R7). NEW DOC: Blank, Screenplay, Research paper, More kinds, and Board (Nick's first door for a Board, Nov 14, 11:14 am),
@@ -27,7 +28,7 @@ import { useProjectName, useWhereSheIs } from '../ReorgRail';
 // progress; BUILD the goal, the timer, progress; EDIT progress only. Each row writes today's own saved setting (store/writingGoal.ts, the
 // timer and Progress tracking in store/writingSettings.ts): nothing new is stored. A Board has no session.
 
-const RECENT = 25;
+const RECENT = RECENT_DOCS;
 /** the rows the box shows before it scrolls */
 const RECENT_SHOWN = 5;
 type RecentSort = 'changed' | 'name' | 'words';
@@ -50,8 +51,13 @@ function recentDocs(): JournalEntry[] {
     .slice(0, RECENT);
 }
 
+/** FLUX: Recent is one row a Doc (the Wrizors' rail pass 1, REAL 2: a set of Tracks is one Doc, as her Drive counts it): its name, its words, and the Track she changed last as the way in. */
+function recentByDoc(t: (k: DeskTermId) => string) {
+  return allDocRows().slice(0, RECENT).map((d) => ({ e: d.lead, title: d.set ? d.set.title : titleOf(d.lead, t), words: d.parts.reduce((n, p) => n + wordCount(p.text), 0), ids: d.parts.map((p) => p.id) }));
+}
+
 /** Recent in the chosen order. `recentDocs` is newest first, so a stable sort leaves a tie newest first. */
-function sortRecent(rows: { e: JournalEntry; title: string; words: number }[], by: RecentSort) {
+function sortRecent<R extends { title: string; words: number }>(rows: R[], by: RecentSort): R[] {
   if (by === 'name') return [...rows].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }));
   if (by === 'words') return [...rows].sort((a, b) => b.words - a.words);
   return rows;
@@ -76,7 +82,8 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   const here = useWhereSheIs(subject.entry);
   const settings = useWritingSettings();
   const [sort, setSort] = useState<RecentSort>('changed');
-  const recent = sortRecent(recentDocs().map((e) => ({ e, title: titleOf(e, t), words: wordCount(e.text) })), sort);
+  const flux = useTheme() === 'flux';
+  const recent = sortRecent<{ e: JournalEntry; title: string; words: number; ids?: string[] }>(flux ? recentByDoc(t) : recentDocs().map((e) => ({ e, title: titleOf(e, t), words: wordCount(e.text) })), sort);
   // the box is five rows tall: measured from the rows themselves (a row is two lines, set by the theme's type), again whenever the box
   // changes size (the pop-out opens from no width at all) and when a sort brings other rows to the top; a short list is never held to it
   const rowsRef = useRef<HTMLUListElement>(null);
@@ -131,9 +138,9 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
           </span>
         </div>
         <ul className="wz-reorg-rows wz-reorg-recent-rows" ref={rowsRef}>
-          {recent.map(({ e, title, words }) => {
+          {recent.map(({ e, title, words, ids }) => {
             return (
-              <li key={e.id} className="wz-reorg-list-row" data-entry-id={e.id} aria-current={e.id === subject.entry.id ? 'page' : undefined}>
+              <li key={e.id} className="wz-reorg-list-row" data-entry-id={e.id} aria-current={(ids ?? [e.id]).includes(subject.entry.id) ? 'page' : undefined}>
                 <button type="button" className="wz-reorg-list-open wz-reorg-two-line" onClick={() => travelFromCascade(e)}>
                   <span className="wz-reorg-list-title">{title}</span>
                   <span className="wz-reorg-row-meta">{nameOf(projectOfEntry(e))} · {fill(t(words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), 'n', words.toLocaleString('en-US'))}</span>

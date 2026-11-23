@@ -3,7 +3,7 @@ import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { lettersOf } from '../railData';
 import { setBoxLook, useBoxes } from '../railMemory';
 import { encodeBoxPicture, setBoxPictureSaved } from '../railSaved';
-import { ARBOR_PLAIN_BOX, ARBOR_SWATCHES, useSwatches } from '../RailBox';
+import { ARBOR_PLAIN_BOX, ARBOR_SWATCHES, FLUX_CODE_INK, FLUX_PLAIN_BOX, FLUX_SWATCHES, useSwatches } from '../RailBox';
 
 // BOX SETTINGS (step 4, frame R5; Nick, Nov 11: "one closed drop-down at the foot of Projects, for the Project she is in"). Letters (or none),
 // a colour (the five swatches, brass among them, or her own colour), a picture. SAVED WITH THE ACCOUNT (Nick's ruling, Nov 18; railSaved.ts):
@@ -19,10 +19,11 @@ export function BoxSettings({ id, name }: { id: string | null; name: string }) {
   const look = useBoxes()[id ?? ''] || {};
   const file = useRef<HTMLInputElement>(null);
   const swatches = useSwatches();
-  const names = swatches === ARBOR_SWATCHES ? ARBOR_SWATCH_NAMES : SWATCH_NAMES;
+  const flux = swatches === FLUX_SWATCHES;
+  const names = swatches === ARBOR_SWATCHES || flux ? ARBOR_SWATCH_NAMES : SWATCH_NAMES;   // Flux's table words the same six slots (Cyan .. Deep cyan)
   if (id == null) return null;   // Unfiled writing has no Project, so no box
   // ARBOR: a box with no colour of its own is plain cream and no swatch is chosen (the Wrizors, Nov 21); elsewhere the first swatch, as ruled
-  const colour = look.colour || (swatches === ARBOR_SWATCHES ? ARBOR_PLAIN_BOX : swatches[0]);
+  const colour = look.colour || (swatches === ARBOR_SWATCHES ? ARBOR_PLAIN_BOX : flux ? FLUX_PLAIN_BOX : swatches[0]);
   const letters = look.letters !== undefined ? look.letters : lettersOf(name);
   const choosePicture = (f: File | undefined) => {
     if (!f || !/^image\//.test(f.type)) return;
@@ -49,7 +50,7 @@ export function BoxSettings({ id, name }: { id: string | null; name: string }) {
             <div className="wz-reorg-swatches" role="radiogroup" aria-labelledby={`wz-reorg-colour-${id}`}>
               {swatches.map((s, i) => (
                 <button key={s} type="button" role="radio" className="wz-reorg-swatch" data-swatch={s} aria-checked={!look.picture && colour === s}
-                  aria-label={t(names[i])} title={t(names[i])} style={{ background: s }} onClick={() => setBoxLook(id, { colour: s, picture: undefined })} />
+                  aria-label={t(names[i])} title={t(names[i])} style={flux ? { background: s, color: FLUX_CODE_INK } : { background: s }} onClick={() => setBoxLook(id, { colour: s, picture: undefined })}>{flux ? <span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span> : null}</button>
               ))}
             </div>
           </div>

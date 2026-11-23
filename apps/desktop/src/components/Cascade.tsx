@@ -384,7 +384,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   // the reorg's rail takes the strip's track only under the gate; today's strip above stays exactly as it was written (big-projects-1a P1
   // reads it from `const strip = (`: a gate written into that line hid it, train 14's pair, run 43643612187)
-  return { strip: reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : strip, layers };
+  return { strip: reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} reads={footReads} /> : strip, layers };
 }
 
 function renderSection(

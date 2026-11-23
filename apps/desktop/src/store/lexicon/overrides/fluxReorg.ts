@@ -85,7 +85,7 @@ export const FLUX_REORG_WORDS = {
   reorgSearchBoardHead: 'Circuit · {name}',
   reorgDefaults: 'Doc defaults · every doc',
   reorgTypewriter: 'Wire In',
-  reorgProgressBars: 'Meter',
+  reorgProgressBars: 'Show the meter',   // the Wrizors' rail pass 1, NIT 4: it no longer reads as a twin of "Use the skin's meter"
   reorgNoProjectHeading: 'Docs in Orphans',
   reorgFile: 'File {name} to a drive…',
   reorgUnfiledEmpty: 'No orphans.',
@@ -145,6 +145,12 @@ export const FLUX_REORG_WORDS = {
   reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.',
   reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.',
   reorgPartsJoinDone: 'Merged into Track {n}.',
+  // ARBOR lane's block, Flux's rail (spec sections 1 and 7): Box settings' own colour, and the Session in DOCS
+  reorgOwnColour: 'Custom…',
+  plainTrackerSwitch: "Use the skin's meter",
+  reorgSessionGoal: 'Quota',
+  reorgSessionTimer: 'Clock',
+  reorgSessionProgress: 'Load',
 } satisfies Partial<Record<DeskTermId, string>>;
 
 /** The reorg strings this table deliberately leaves at their canonical words, by the Wrizors' ruling. */

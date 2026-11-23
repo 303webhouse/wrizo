@@ -21,10 +21,11 @@ export const railRoom = (pageLeft: number, anchorLeft: number): number | null =>
 
 export const useRailRoom: (on: boolean, open: string | null) => void = REORG
   ? (on, open) => {
-    const arbor = useTheme() === 'plateau';
+    const theme = useTheme();
+    const measured = theme === 'plateau' || theme === 'flux';   // Arbor's rule, and Flux's on the redesign (the gate only lets Flux's rail stand with FLUX3)
     useLayoutEffect(() => {
       const anchor = document.querySelector<HTMLElement>('.desk-frame-cascade-anchor');
-      if (!on || !arbor || !open || !anchor) return undefined;
+      if (!on || !measured || !open || !anchor) return undefined;
       const set = () => {
         const page = liveQuery<HTMLElement>('.mode-page');
         const room = page ? railRoom(page.getBoundingClientRect().left, anchor.getBoundingClientRect().left) : null;
@@ -33,6 +34,6 @@ export const useRailRoom: (on: boolean, open: string | null) => void = REORG
       set();
       window.addEventListener('resize', set);
       return () => { window.removeEventListener('resize', set); anchor.style.removeProperty(VAR); };
-    }, [on, arbor, open]);
+    }, [on, measured, open]);
   }
   : () => undefined;
