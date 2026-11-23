@@ -157,17 +157,24 @@ function suite(css, tutor = TUTOR) {
     const r = has(rs, /\.wz-tutor-panel$/, /background:\s*#04141A/i);
     return { pass: r, detail: J({ r }) };
   });
-  t('WIRECAP', () => {
-    // pass 2 REAL 1 (Arbor pass 1 had the same, and the same fix: max-height 38%): in Wire In the opened panel never reaches her line, which sits at the stage's middle
-    const r = has(rs, /\.wz-tutor-panel\[data-back-sprint='true'\]$/, /max-height:\s*38%/);
-    return { pass: r, detail: J({ r }) };
+  // SUPERSEDED (Nov 23, the Wrizors' frames after pass 2: the 38% cap left the panel about 213 px tall at 1366 and the 'Writing prompt' button and the toggle scrolled out of view). The original WIRECAP, verbatim:
+  // t('WIRECAP', () => {
+  // // pass 2 REAL 1 (Arbor pass 1 had the same, and the same fix: max-height 38%): in Wire In the opened panel never reaches her line, which sits at the stage's middle
+  // const r = has(rs, /\.wz-tutor-panel\[data-back-sprint='true'\]$/, /max-height:\s*38%/);
+  // return { pass: r, detail: J({ r }) };
+  // });
+  t('WIRECAP2', () => {
+    // [successor] the opened Wire In panel ends above her line (cap 54%: about 300 px at 1366, her line is at 421) AND keeps its action in view: the Back menu's search field is not drawn in Wire In (the Operator sends prompts only: there is nothing to search, Arbor's pass 1 NIT 2), which frees about 50 px
+    const cap = has(rs, /\.wz-tutor-panel\[data-back-sprint='true'\]$/, /max-height:\s*54%/);
+    const search = rs.some((x) => /\.wz-tutor-panel\[data-back-sprint='true'\]/.test(x.sel) && /\.reorg-search-door/.test(x.sel) && /\.reorg-search-field/.test(x.sel) && /display:\s*none/.test(x.body));
+    return { pass: cap && search, detail: J({ cap, search }) };
   });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB', 'PANEL', 'WIRECAP'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB', 'PANEL', 'WIRECAP2'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -178,7 +185,10 @@ const MUT = [
   ['the hints go back to the browser grey', 'FIELDS', (t) => t.replace('color:#7EB4C4; opacity:1', () => 'color:#787876; opacity:1')],
   ['the thumb is the old colour', 'THUMB', (t) => t.replace('scrollbar-color:#5F8F95 transparent', () => 'scrollbar-color:#254E7E transparent')],
   ['the panel is the chrome grey again', 'PANEL', (t) => t.replace(/\.wz-tutor-panel\{ background:#04141A;/, () => '.wz-tutor-panel{ background:#101A27;')],
-  ['the Wire In panel runs to the foot again', 'WIRECAP', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
+  // SUPERSEDED (Nov 23, see WIRECAP above): its mutant, verbatim:
+  // ['the Wire In panel runs to the foot again', 'WIRECAP', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
+  ['the Wire In panel runs to the foot again', 'WIRECAP2', (t) => t.replace('max-height:54%', () => 'max-height:100%')],
+  ['the Wire In panel draws the search field again', 'WIRECAP2', (t) => t.replace('.reorg-search-field){ display:none; }', () => '.reorg-search-field){ display:block; }')],
   // [successors, against CORRIDOR4]
   ['a CSS guess of the opened grip returns to the sheet', 'CORRIDOR4', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-tutor-anchor[data-back='true']{ left:calc(100% - 476px); }\n`],
   // SUPERSEDED (Nov 23, see CORRIDOR3 above): its two mutants, verbatim:
