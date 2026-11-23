@@ -119,18 +119,28 @@ function suite(css) {
     const leftOff = !rs.some((x) => /desk-frame-sliver-anchor|desk-rail|desk-frame-strip|flux3-glitchbar/.test(x.sel) && /\[data-flux3-jacked\]/.test(x.sel));
     return { pass: shown && leftOff, detail: J({ rules: back.length, shown, leftOff }) };
   });
+  t('CORRIDOR2', () => {
+    // Actions run 45114045303 (FB11): the anchors were drawn but the grip was still not hit-testable: Wire In is the Typewriter zoom, and 13-desk-frame.css hides both grips while the page is zoomed (.desk-frame-stage:has(.mode-pagecol[data-zoom='true']) :is(.wz-sliver-grip, .wz-tutor-grip){ visibility:hidden }). The Back menu's own grip (the reorg's, data-back) is shown again in the Corridor; the left grip stays hidden
+    const g = rs.some((x) => /[data-flux3-jacked]/.test(x.sel) && /.wz-tutor-grip[data-back='true']/.test(x.sel) && /visibility:s*visible/.test(x.body));
+    const leftHidden = !rs.some((x) => /wz-sliver-grip/.test(x.sel) && /visibility:s*visible/.test(x.body));
+    return { pass: g && leftHidden, detail: J({ g, leftHidden }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
+  ['the grip stays hidden in the Corridor', 'CORRIDOR2', (t) => t.replace('visibility:visible', () => 'visibility:hidden')],
+  ['the grip of the left hand is shown in the Corridor too', 'CORRIDOR2', (t) => `${t}
+:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-sliver-grip{ visibility:visible; }
+`],
   ['the Corridor stops showing the opener', 'CORRIDOR', (t) => t.replace(/opacity:1 !important;/, () => 'opacity:0 !important;')],
   ['the opener cannot be pressed in the Corridor', 'CORRIDOR', (t) => t.replace('pointer-events:auto !important', () => 'pointer-events:none !important')],
   ['the left hand comes back in the Corridor too', 'CORRIDOR', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-sliver-anchor{ opacity:1 !important; }\n`],
