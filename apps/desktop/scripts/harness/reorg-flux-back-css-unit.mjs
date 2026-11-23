@@ -140,18 +140,45 @@ function suite(css, tutor = TUTOR) {
     const noGuess = !rs.some((x) => /desk-frame-tutor-anchor/.test(x.sel) && /\[data-flux3-jacked\]/.test(x.sel) && /(^|[\s;])left\s*:/.test(x.body));
     return { pass: effect && noGuess, detail: J({ effect, noGuess }) };
   });
+  t('FIELDS', () => {
+    // pass 2 REAL 3: the Operator's two fields and the Spine's add field are in field dress (fill #020C10, a 1 px #5F8F95 edge), and every field's hint is text-low #7EB4C4 (8.67:1), never the browser's green-grey
+    const dress = rs.filter((x) => /\.wz-tutor-convo-input/.test(x.sel) && /\.wz-tutor-bible-input/.test(x.sel) && /\.wz-back-plan-input/.test(x.sel) && !/::placeholder/.test(x.sel));
+    const fill = dress.some((x) => /background:\s*#020C10/i.test(x.body) && /border:\s*1px solid #5F8F95/i.test(x.body));
+    const hint = rs.some((x) => /\.wz-tutor-convo-input/.test(x.sel) && /\.wz-tutor-bible-input/.test(x.sel) && /\.wz-back-plan-input/.test(x.sel) && /::placeholder/.test(x.sel) && /color:\s*#7EB4C4/i.test(x.body) && /opacity:\s*1/.test(x.body));
+    return { pass: fill && hint, detail: J({ dress: dress.length, fill, hint }) };
+  });
+  t('THUMB', () => {
+    // pass 2 REAL 4: INPUTS' scrollbar thumb was 2.06:1; the Back menu's panel and everything in it scroll with #5F8F95 (the declaration is on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css)
+    const r = rs.some((x) => /\.wz-tutor-panel$/.test(topSplit(x.sel)[0]) && topSplit(x.sel).some((p) => /\.wz-tutor-panel \*$/.test(p)) && /scrollbar-color:\s*#5F8F95 transparent/i.test(x.body));
+    return { pass: r, detail: J({ r }) };
+  });
+  t('PANEL', () => {
+    // pass 2 NIT 1: the panel is node dress (#04141A), as the rail's panels are
+    const r = has(rs, /\.wz-tutor-panel$/, /background:\s*#04141A/i);
+    return { pass: r, detail: J({ r }) };
+  });
+  t('WIRECAP', () => {
+    // pass 2 REAL 1 (Arbor pass 1 had the same, and the same fix: max-height 38%): in Wire In the opened panel never reaches her line, which sits at the stage's middle
+    const r = has(rs, /\.wz-tutor-panel\[data-back-sprint='true'\]$/, /max-height:\s*38%/);
+    return { pass: r, detail: J({ r }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB', 'PANEL', 'WIRECAP'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
+  ['the fields lose their fill', 'FIELDS', (t) => t.replace('background:#020C10; border:1px solid #5F8F95', () => 'background:#132437; border:1px solid #5F8F95')],
+  ['the hints go back to the browser grey', 'FIELDS', (t) => t.replace('color:#7EB4C4; opacity:1', () => 'color:#787876; opacity:1')],
+  ['the thumb is the old colour', 'THUMB', (t) => t.replace('scrollbar-color:#5F8F95 transparent', () => 'scrollbar-color:#254E7E transparent')],
+  ['the panel is the chrome grey again', 'PANEL', (t) => t.replace(/\.wz-tutor-panel\{ background:#04141A;/, () => '.wz-tutor-panel{ background:#101A27;')],
+  ['the Wire In panel runs to the foot again', 'WIRECAP', (t) => t.replace('max-height:38%', () => 'max-height:100%')],
   // [successors, against CORRIDOR4]
   ['a CSS guess of the opened grip returns to the sheet', 'CORRIDOR4', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-tutor-anchor[data-back='true']{ left:calc(100% - 476px); }\n`],
   // SUPERSEDED (Nov 23, see CORRIDOR3 above): its two mutants, verbatim:

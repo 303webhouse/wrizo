@@ -60,6 +60,11 @@ function suite(css) {
     const r = has(rs, /desk-frame-stage\[data-split='true'\] \.desk-frame-instrument$/, /left:\s*calc\(50% \+ var\(--wz-split-shift, 0px\)\)/);
     return { pass: r, detail: J({ r }) };
   });
+  t('TEXT', () => {
+    // the Wrizors' Dock pass (Nov 22): the docked Doc's words are 11.9:1 in text-mid; text-hi (16.6:1) if it counts as page text
+    const r = has(rs, /\.wz-split-asset \.wz-link-dock-text$/, /color:\s*var\(--text-hi\)/);
+    return { pass: r, detail: J({ r }) };
+  });
   t('PALETTE', () => { const all = hexes(css); const bad = all.filter((h) => !PALETTE.has(h)); return { pass: all.length >= 3 && bad.length === 0, detail: J({ n: all.length, bad }) }; });
   t('BRASS', () => ({ pass: css.length > 0 && !/var\(--brass\)|#C9A46B|--orange/i.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), detail: 'no brass in the split' }));
   return R;
@@ -67,12 +72,13 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'SURFACE', 'GRIP', 'SCROLL', 'QUIET', 'COUNT', 'PALETTE', 'BRASS']) ok(`${k} on the real 24-reorg-flux-split.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux-split.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'SURFACE', 'GRIP', 'SCROLL', 'QUIET', 'COUNT', 'TEXT', 'PALETTE', 'BRASS']) ok(`${k} on the real 24-reorg-flux-split.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux-split.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux-split.css after the Machina reorg sheets', at >= 0 && PARTS.some((p, i) => i > at && /24-reorg-flux-split\.css$/.test(p)), J({ at }));
 
 const MUT = [
+  ['the docked words go back to text-mid', 'TEXT', (t) => t.replace('color:var(--text-hi)', () => 'color:var(--text-mid)')],
   ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace(`${FX} .wz-split-asset{`, () => '.wz-split-asset{')],
   ['the docked half loses its node fill', 'SURFACE', (t) => t.replace('background:#04141A', () => 'background:#0B1F27')],
   ['the docked half loses its edge', 'SURFACE', (t) => t.replace('border-color:#7EB4C4', () => 'border-color:#5F8F95')],

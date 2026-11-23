@@ -69,6 +69,15 @@ const EXACT = {
   reorgUntitled: 'Unnamed',
   reorgSprintLocked: 'Wired in: the Operator sends prompts only.',
   reorgPubFrozen: 'Markup and Ink lock at Uplink. Patch to change the words.',
+  // the Wrizors' pass 2 (Nov 22, 10:55 pm): other themes' words (law 5) and the OPERATOR tab's words
+  reorgSprintUse: 'Prompts from the Operator',
+  reorgSprintTravels: 'A press asks the Operator for one prompt. Nothing of your page goes with it.',
+  reorgPubLabel: 'Uplink \u00b7 the whole doc, read-only, as it will go out',
+  reorgSplitFull: 'Full screen',
+  tutorBibleTitle: 'The canon',
+  tutorBibleEmpty: 'No canon yet.',
+  tutorBibleAddPlaceholder: 'Add a fact\u2026',
+  tutorFreeWritePrompt: 'Writing prompt',
 };
 const SAMPLES = {
   reorgBackPlan: 'Spine', reorgBackExport: 'Before uplink', reorgUnfiled: 'Orphans', reorgNewProject: 'New drive', reorgAllProjects: 'All drives',
@@ -79,6 +88,8 @@ const SAMPLES = {
 };
 // SUPERSEDED (Nov 21): const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
 const KEPT = ['reorgLensLabel', 'reorgKindResearch'];
+// the OPERATOR tab's own words (the Wrizors' pass 2): the only keys outside reorg* that the table sets, each named here
+const OPERATOR_WORDS = ['tutorBibleTitle', 'tutorBibleEmpty', 'tutorBibleAddPlaceholder', 'tutorFreeWritePrompt'];
 const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Meter', reorgLensAskPlaceholder: 'Query this doc…' };
 const CASE = { reorgAddNewBoard: 'New circuit', reorgAddExistingBoard: 'Existing circuit', reorgAddSearchBoards: 'Find a circuit', reorgAddNewDoc: 'New Doc', reorgAddSearchDocs: 'Find a Doc', reorgAssetsAdd: 'Add an input', reorgAssetsAddTo: 'Add an input to {part}', reorgPubTxt: 'Plain text', reorgPlanOpenPart: 'Open track', reorgSprintAnother: 'Another prompt', reorgDocStyleGuide: 'Style guide', reorgSearchReachProject: 'This drive', reorgPartPrevTo: 'Previous track: {part}', reorgSearchLineProject: 'Its Docs and circuits' };
 
@@ -102,7 +113,9 @@ function suite(src) {
   });
   t('ONLY', () => {
     const E = load(src), W = E.FLUX_REORG_WORDS, live = (LIVE.FLUX_OVERRIDES.flux) || {};
-    const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 22, the Wrizors' pass 2: the Operator tab's words are theme words of the Tutor, not reorg* keys): the original, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    const bad = Object.keys(W).filter((k) => !(/^reorg/.test(k) || OPERATOR_WORDS.includes(k)) || !canon.has(k) || k in live);
     const merged = E.FLUX_OVERRIDES.flux;
     const kept = Object.keys(live).every((k) => merged[k] === live[k]);
     const others = Object.keys(E.FLUX_OVERRIDES).sort().join(',') === Object.keys(LIVE.FLUX_OVERRIDES).sort().join(',');
@@ -143,6 +156,10 @@ try { base = suite(SRC); } catch (e) { baseErr = e; }
 for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS', 'KEPT', 'CASE']) ok(`${k} on the real fluxReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'fluxReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
+  ['the canon keeps the bible word', 'EXACT', (t) => t.replace("tutorBibleTitle: 'The canon'", () => "tutorBibleTitle: 'The book\u2019s Bible'")],
+  ['the Operator is the Consultant again', 'EXACT', (t) => t.replace("reorgSprintUse: 'Prompts from the Operator'", () => "reorgSprintUse: 'Prompts from the Consultant'")],
+  ['the Uplink header says Publishing again', 'EXACT', (t) => t.replace("reorgPubLabel: 'Uplink \u00b7", () => "reorgPubLabel: 'Publishing \u00b7")],
+  ['a Tutor key that is not the Operator tab\u2019s is set', 'ONLY', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  tutorConversationSend: 'Go',\n")],
   ['the spec string for the Back tabs is reworded', 'EXACT', (t) => t.replace("reorgBackTabsLabel: 'Spine, inputs and the Operator'", () => "reorgBackTabsLabel: 'Spine, inputs and feedback'")],
   ['the Plan word is not swapped', 'SWAP', (t) => t.replace("reorgBackPlan: 'Spine'", () => "reorgBackPlan: 'Plan'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgPlanToPart: '\u2192 Track'", () => "reorgPlanToPart: '\u2192 Track {part}'")],
