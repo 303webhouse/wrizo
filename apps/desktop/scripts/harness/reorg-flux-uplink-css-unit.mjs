@@ -60,6 +60,11 @@ function suite(css) {
     const focus = has(rs, /\.reorg-pub-btn:focus-visible$/, /outline:\s*1px solid var\(--line-active\)/);
     return { pass: base && hover && focus, detail: J({ base, hover, focus }) };
   });
+  t('HEAD', () => {
+    // the Wrizors' Flux Uplink frames (Nov 23): the page's readout header (L4, FluxDoc.tsx) sits in the page's top padding, above the sheet; the sheet's FIRST row starts where the page's own text would (top padding .85 page-inch, less the header's 3 px gap), so the label never runs into the header. The sheet itself still covers the whole paper (no page text shows)
+    const r = has(rs, /\.reorg-pub$/, /padding-top:\s*calc\(var\(--wz-letter-in, 72\.941px\) \* \.85 - 3px\)/);
+    return { pass: r, detail: J({ r }) };
+  });
   t('TICKS', () => ({ pass: has(rs, /\.reorg-pub-tick input$/, /accent-color:\s*var\(--line-active\)/), detail: 'the tick takes Flux cyan' }));
   t('PALETTE', () => { const all = hexes(css); const bad = all.filter((h) => !PALETTE.has(h) || MACHINA_GREYS.includes(h)); return { pass: all.length >= 1 && bad.length === 0, detail: J({ n: all.length, bad }) }; });
   t('BRASS', () => ({ pass: css.length > 0 && !/var\(--brass\)|#C9A46B|--orange/i.test(css.replace(/\/\*[\s\S]*?\*\//g, '')), detail: 'no brass' }));
@@ -75,12 +80,13 @@ function suite(css) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-for (const k of ['SCOPED', 'COVER', 'SHEET', 'BUTTONS', 'TICKS', 'PALETTE', 'BRASS', 'FOOT']) ok(`${k} on the real 24-reorg-flux-uplink.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux-uplink.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['SCOPED', 'COVER', 'SHEET', 'HEAD', 'BUTTONS', 'TICKS', 'PALETTE', 'BRASS', 'FOOT']) ok(`${k} on the real 24-reorg-flux-uplink.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux-uplink.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /24-reorg-flux\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux-uplink.css right after 24-reorg-flux.css', at >= 0 && /24-reorg-flux-uplink\.css$/.test(PARTS[at + 1] || ''), J({ at }));
 
 const MUT = [
+  ['the label row runs up into the readout header again', 'HEAD', (t) => t.replace('padding-top:calc(var(--wz-letter-in, 72.941px) * .85 - 3px)', () => 'padding-top:0')],
   ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace(`${AR} .reorg-pub-label{`, () => '.reorg-pub-label{')],
   ['the foot keeps the page margin (75 px) on its sides', 'FOOT', (t) => t.replace('padding-inline:min(var(--wz-page-pad-x, 38px), 28px)', () => 'padding-inline:var(--wz-page-pad-x, 38px)')],
   ['a button may break inside its label again', 'FOOT', (t) => t.replace('padding:0 8px; white-space:nowrap;', () => 'padding:0 8px;')],
