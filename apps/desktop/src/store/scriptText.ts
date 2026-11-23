@@ -57,3 +57,23 @@ export function serializeScriptDoc(doc: ScriptDoc): string {
   }
   return parts.join('');
 }
+
+// SCRIPT #1 — where each element's rendering sits in serializeScriptDoc's string, by the same rules, so a find in the derived text can be carried back to
+// its line. `elIndex` 0 is the scene's heading, n is body[n - 1].
+export interface ScriptTextSpan { sceneIndex: number; elIndex: number; start: number; shown: string }
+export function scriptTextSpans(doc: ScriptDoc): ScriptTextSpan[] {
+  const spans: ScriptTextSpan[] = [];
+  let pos = 0;
+  let prevType: ScriptElType | null = null;
+  doc.scenes.forEach((scene, sceneIndex) => {
+    [scene.heading, ...scene.body].forEach((el, elIndex) => {
+      const shown = UPPERCASE_TYPES.has(el.t) ? el.text.toUpperCase() : el.text;
+      const tight = prevType != null && isDialogueBlockMember(prevType) && (el.t === 'paren' || el.t === 'dialogue');
+      if (spans.length > 0) pos += tight ? 1 : 2;
+      spans.push({ sceneIndex, elIndex, start: pos, shown });
+      pos += shown.length;
+      prevType = el.t;
+    });
+  });
+  return spans;
+}
