@@ -30,6 +30,8 @@
 //         T16 the TRK readout, Connect Docs and Start Docs are 11 px in the chrome's face; the two buttons stay in sentence case (spec 0)
 //         T17 (spec 11 rule 1) an own colour too dark for the panel keeps ITS colour as the bar, and carries a 1 px edge that holds 3:1 on the bar's ground
 //         MUT-T17  the same reading with the bar replaced by the quiet edge (today's) turns T17's test red
+//         T18 (Wrizors' NIT, Nov 22) at rest the Circuit's DOCS -> door and the Doc's CIRCUITS -> door compute to text-mid #9AD7EA
+//         MUT-T18  the same reading with the door in #89C0B2 turns T18's test red
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-top-live.mjs
 process.env.WS_PLACE = '1';
@@ -121,7 +123,7 @@ await withHarness(async (app) => {
   ok('T2 the three names are letter-spaced capitals and no bare buttons, and the bar holds one row', t2(doc), doc && { names: doc.names.map((n) => [n.id, n.tt, n.ls, n.bg, n.border]), bar: doc.bar, search: doc.search, namesBox: doc.namesBox });
   const faced = doc && doc.names.length ? { ...doc, names: doc.names.map((n, i) => (i === 0 ? { ...n, bg: 'rgb(239, 239, 239)', border: '2px' } : n)) } : null;
   ok('MUT-T2 the same reading with a browser button face on a name turns T2\'s test red', !!faced && !t2(faced), faced && faced.names[0].bg);
-  const docType = await app.evalJs(`(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e); return { size: c.fontSize, family: c.fontFamily, ls: c.letterSpacing, tt: c.textTransform, word: (e.innerText || '').trim() }; }; return { door: r('.reorg-top .page-plan-door'), trk: r('.reorg-top .reorg-top-part-count') }; })()`);
+  const docType = await app.evalJs(`(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e); return { size: c.fontSize, family: c.fontFamily, ls: c.letterSpacing, tt: c.textTransform, color: c.color, word: (e.innerText || '').trim() }; }; return { door: r('.reorg-top .page-plan-door'), trk: r('.reorg-top .reorg-top-part-count') }; })()`);
   const inks = [];
   for (const n of (doc ? doc.names : [])) { const g = await paintedGround(app, n.clip); inks.push({ id: n.id, r: g ? +contrast(n.color, g).toFixed(2) : null, g }); }
   const countGround = doc && doc.count ? await paintedGround(app, doc.count.clip) : null;
@@ -196,10 +198,14 @@ await withHarness(async (app) => {
   const hv = v1 && other && v1.views.find((x) => x.word === other.word);
   ok('T11 the chosen view has the 3 x 24 brass bar; a hovered view is not brass', !!chosen && JSON.stringify(chosen.bar) === JSON.stringify(['3px', '24px', ORANGE]) && !!hv && !hv.bar && hv.color !== ORANGE, { chosen, hv });
   await app.mouseMove(700, 420); await sleep(250);
-  const cType = await app.evalJs(`(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e); return { size: c.fontSize, family: c.fontFamily, ls: c.letterSpacing, tt: c.textTransform, word: (e.innerText || '').trim() }; }; return { name: r(".reorg-top [data-top-name='board'] button"), door: r('.reorg-top .board-door'), connect: r('.reorg-top [data-top-connect]'), pair: r('.sprint-nav .board-pair') }; })()`);
+  const cType = await app.evalJs(`(() => { const r = (s) => { const e = document.querySelector(s); if (!e) return null; const c = getComputedStyle(e); return { size: c.fontSize, family: c.fontFamily, ls: c.letterSpacing, tt: c.textTransform, color: c.color, word: (e.innerText || '').trim() }; }; return { name: r(".reorg-top [data-top-name='board'] button"), door: r('.reorg-top .board-door'), connect: r('.reorg-top [data-top-connect]'), pair: r('.sprint-nav .board-pair') }; })()`);
   ok('T14 on a Circuit its name is in the crumb\'s letter-spaced caps', !!cType && !!cType.name && cType.name.word === 'PLOT CIRCUIT' && cType.name.tt === 'uppercase' && parseFloat(cType.name.ls) >= 1, cType && cType.name);
   const same = (a, b) => !!a && !!b && a.size === b.size && a.family === b.family && a.ls === b.ls && a.tt === b.tt;
   ok('T15 the Circuit\'s DOCS -> door has the type of the Doc\'s CIRCUITS -> door', same(cType && cType.door, docType && docType.door), { board: cType && cType.door, page: docType && docType.door });
+  const TEXT_MID = 'rgb(154, 215, 234)';
+  const t18 = (b, p) => !!b && !!p && b.color === TEXT_MID && p.color === TEXT_MID;
+  ok('T18 at rest the Circuit\'s DOCS -> door and the Doc\'s CIRCUITS -> door are both text-mid #9AD7EA', t18(cType && cType.door, docType && docType.door), { board: cType && cType.door && cType.door.color, page: docType && docType.door && docType.door.color });
+  ok('MUT-T18 the same reading with the door in the green the pass read (#89C0B2) turns T18\'s test red', !!cType && !!cType.door && !t18({ ...cType.door, color: 'rgb(137, 192, 178)' }, docType && docType.door), cType && cType.door && cType.door.color);
   const chrome = (x) => !!x && x.size === '11px' && /Rajdhani/i.test(x.family);
   ok('T16 the TRK readout, Connect Docs and Start Docs are 11 px in the chrome\'s face; the two buttons in sentence case', chrome(docType && docType.trk) && chrome(cType && cType.connect) && chrome(cType && cType.pair) && cType.connect.tt === 'none' && cType.pair.tt === 'none', { trk: docType && docType.trk, connect: cType && cType.connect, pair: cType && cType.pair });
   const sd = await app.evalJs("(() => { const b = document.querySelector('.reorg-top .reorg-top-search'); if (!b) return null; const s = getComputedStyle(b); return { edge: s.borderTopWidth + ' ' + s.borderTopColor, word: (b.innerText || '').trim(), title: b.getAttribute('title'), icon: !!b.querySelector('svg') }; })()");
@@ -212,7 +218,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1600)}`);
-const EXPECTED = 23;   // + T14, T15, T16, T17, MUT-T17 (my read of the frames on 4aed8c4d, Nov 23). Was: const EXPECTED = 18;   // T4 and MUT-T4 parked: + T4-B, MUT-T4-B, MUT-T4-C (Nov 23). Was: const EXPECTED = 17;   // T0 to T13, MUT-T2, MUT-T4, MUT-T8
+const EXPECTED = 25;   // + T18, MUT-T18 (the Wrizors' NIT on the DOCS door, Nov 23). Was: const EXPECTED = 23;   // + T14, T15, T16, T17, MUT-T17 (my read of the frames on 4aed8c4d, Nov 23). Was: const EXPECTED = 18;   // T4 and MUT-T4 parked: + T4-B, MUT-T4-B, MUT-T4-C (Nov 23). Was: const EXPECTED = 17;   // T0 to T13, MUT-T2, MUT-T4, MUT-T8
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-TOP-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-TOP-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
