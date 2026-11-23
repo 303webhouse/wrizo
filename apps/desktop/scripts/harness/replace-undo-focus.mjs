@@ -68,7 +68,12 @@ async function scenario(app, theme) {
   const restored = await app.evalJs(WORDS);
   const after = await app.evalJs(PAGE);
   const focus = await app.evalJs("(() => { const a = document.activeElement; return { inField: !!a && a.matches('input[data-replace-with]'), active: a ? a.tagName : null }; })()");
-  await app.type('Q'); await sleep(300);
+  // SUPERSEDED (runs 45125142860 and 45125145885: Input.insertText is not a key: with the focus on the body it still wrote into the page at the old selection, so it hid the lost key the audit's real key events found). The line, verbatim:
+  // await app.type('Q'); await sleep(300);
+  // [successor] a real, trusted key press, as a writer's
+  const K = { key: 'Q', code: 'KeyQ', windowsVirtualKeyCode: 81, nativeVirtualKeyCode: 81, modifiers: 8 };
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', ...K, text: 'Q', unmodifiedText: 'q' });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', ...K }); await sleep(300);
   const field = await app.evalJs("document.querySelector('input[data-replace-with]')?.value ?? null");
   const words = await app.evalJs(WORDS);
   const T = theme === 'plateau' ? 'Arbor' : 'Machina';
