@@ -38,6 +38,8 @@ import { enterPageTypewriter, holdTypewriterPage } from '../store/writingSetting
 import type { Scene, ScriptEl, ScriptElType, Project } from '../types';
 import { LocationCrumb } from './LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
+import { registerOpenScript } from '../reorg/search/openScript';
+import { mapCaretThrough } from '../store/textMerge';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, setCaretOffset } from './script/caret';
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
@@ -121,6 +123,10 @@ export function ScriptEditor({ id }: { id: string }) {
   // can only ever be spent on a remount of the very same edit session; a genuine
   // activation carries a different key and falls through to the hint.
   const liveCaret = useRef<{ key: string; offset: number } | null>(null);
+  // SCRIPT #1 — Find and Replace hands this page new lines (reorg/search/openScript.ts). `quietMount` holds for that one commit when the keyboard is elsewhere.
+  const adoptRef = useRef<() => void>(() => {});
+  const quietMount = useRef(false);
+  useEffect(() => { quietMount.current = false; }, [elements]);
 
   // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
   // recomputed exactly when the document changes and not when the caret hint,
@@ -178,7 +184,9 @@ export function ScriptEditor({ id }: { id: string }) {
     };
     const onHide = () => { if (document.visibilityState === 'hidden') { doFlush(); flushNow(); } };
     document.addEventListener('visibilitychange', onHide);
+    const closeOpenScript = registerOpenScript(id, { flush: doFlush, adopt: () => adoptRef.current() });
     return () => {
+      closeOpenScript();
       document.removeEventListener('visibilitychange', onHide);
       doFlush();
       flushNow();
@@ -247,6 +255,35 @@ export function ScriptEditor({ id }: { id: string }) {
   // found one other, `JournalEntryView`, on a surface that has been unrouted
   // since FX14; it is left alone and recorded rather than touched.)
   if (!initialEntry) return null;
+
+  // SCRIPT #1 — take the stored lines after a replace or its Undo (the page has already saved its typing). The live line is rewritten in place, the way an
+  // autocomplete is, so the keyboard stays where the writer has it; a caret in the line stays beside the same character.
+  adoptRef.current = () => {
+    const stored = getJournalEntry(id)?.script;
+    if (!stored) return;
+    const next = flattenScenes(stored.scenes);
+    const at = Math.min(activeIndex, Math.max(0, next.length - 1));
+    const node = activeElRef.current;
+    const shown = elementsRef.current[activeIndex]?.text ?? '';   // the model, current because the page saved its typing first (typing-latency-readers-guard)
+    const inLine = !!node && document.activeElement === node;
+    const caret = inLine ? getCaretOffset(node) : null;
+    scenesRef.current = stored.scenes;
+    lastSavedRef.current = next;
+    elementsRef.current = next;
+    quietMount.current = !inLine;
+    setElements(next);
+    setActiveIndex(at);
+    const text = next[at]?.text ?? '';
+    if (!node || text === shown) return;
+    node.textContent = text;
+    if (caret !== null) {
+      const to = mapCaretThrough(shown, text, caret);
+      setCaretOffset(node, to);
+      liveCaret.current = { key: `${next[at].id}:${seedNonce}`, offset: to };
+    } else if (liveCaret.current) {
+      liveCaret.current = { ...liveCaret.current, offset: mapCaretThrough(shown, text, liveCaret.current.offset) };
+    }
+  };
 
   const moveActive = (nextIndex: number, hint: CaretHint) => {
     setActiveIndex(nextIndex);
@@ -634,6 +671,7 @@ export function ScriptEditor({ id }: { id: string }) {
                     sessionKey={`${el.id}:${seedNonce}`}
                     liveCaret={liveCaret}
                     noteCaret={noteCaret}
+                    quietMount={quietMount}
                     caretHint={caretHint}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
