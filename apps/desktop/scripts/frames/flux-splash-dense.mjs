@@ -59,7 +59,7 @@ const page = async (app, id) => {
   await sleep(700);
 };
 
-// glitches, read at 33 ms: the mark is `markSel`; the clock is the harness's. Idle time is advanced a second at a time until a glitch begins.
+// glitches, read at 33 ms: the mark is `markSel`; the clock is the harness's.
 const glitches = async (app, name, ctx, markSel) => {
   const dir = folder(name, ctx);
   await app.evalJs(VCLOCK);
@@ -67,11 +67,12 @@ const glitches = async (app, name, ctx, markSel) => {
   const seen = {}, takes = [];
   let n = 0;
   for (let g = 0; g < 12 && !(seen.tear && seen.decode && seen.signal); g += 1) {
-    // idle: a second a step, the page's own 200 ms interval (real time) decides when to start one
+    // idle: the page's clock goes on six seconds once (the door's own idle period is five), then it is only LOOKED at: the page's own 200 ms interval (real time) decides when a glitch begins,
+    // and its first animation frame is run by a step of 0 (a step of a second would end the glitch before it was read)
     let mode = null;
-    for (let i = 0; i < 80 && !mode; i += 1) {
-      await app.evalJs('window.__vstep(1000)');
-      await sleep(120);
+    await app.evalJs('window.__vstep(6000)');
+    for (let i = 0; i < 100 && !mode; i += 1) {
+      await sleep(60);
       await app.evalJs('window.__vstep(0)');
       mode = await app.evalJs(`(() => { const m = document.querySelector(${JSON.stringify(markSel)}); return m ? m.getAttribute('data-glitch') : null; })()`);
     }
