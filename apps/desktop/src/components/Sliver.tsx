@@ -225,7 +225,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   // exactly the way the writer's own click would.
   useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
 
-  // Esc closes the open drawer unless a control inside handled it; focus returns to the tab when it was in the drawer, and stays on the page otherwise [Sliver §8]
+  // Esc closes the open drawer unless a control inside handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, and stays on the page otherwise; a page with no editor (a Board) gets the tab [Sliver §8, bug-list #49: the focus used to stay on the tab and the next key went nowhere]
   useEffect(() => {
     if (!open) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -233,7 +233,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
       const root = rootRef.current;
       const inDrawer = !!root && !!document.activeElement && root.contains(document.activeElement);
       setOpen(false);
-      if (inDrawer) root?.querySelector<HTMLElement>('.wz-sliver-grip')?.focus();
+      if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? root?.querySelector<HTMLElement>('.wz-sliver-grip'))?.focus({ preventScroll: true });
     };
     document.addEventListener('keydown', onEsc);
     return () => document.removeEventListener('keydown', onEsc);

@@ -33,6 +33,14 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
   const navigate = useNavigate();
   const s = useSearch();
   const field = useRef<HTMLInputElement>(null);
+  const withField = useRef<HTMLInputElement>(null);
+  // R4 (POLISH's audit, Nov 22; Fable: after a replace the focus STAYS IN THE REPLACE FIELD): the button she pressed turns disabled once no finds are left, a row's Replace goes with its hit, and the page that took the new words
+  // mounts its editor again, which hands the focus back to what held it before (that button). So the focus goes to the Replace field now, and again at each of these moments if it has dropped to the body meanwhile.
+  const keepReplaceFocus = () => {
+    const back = () => { const a = document.activeElement; const w = withField.current; if (w && w.isConnected && (!a || a === document.body)) w.focus({ preventScroll: true }); };
+    withField.current?.focus({ preventScroll: true });
+    [0, 60, 200, 500].forEach((ms) => window.setTimeout(back, ms));
+  };
   const [stored, setStored] = useState(0);
   useEffect(() => subscribe(() => setStored((v) => v + 1)), []);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,12 +122,13 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
           {s.replaceOpen && (
             <div className="reorg-replace-box">
               <label className="reorg-search-field">
-                <input type="text" data-replace-with autoComplete="off" aria-label={t('reorgReplaceWith')} placeholder={t('reorgReplaceWith')} value={s.repl}
+                <input ref={withField} type="text" data-replace-with autoComplete="off" aria-label={t('reorgReplaceWith')} placeholder={t('reorgReplaceWith')} value={s.repl}
                   onChange={(e) => setReplaceWith(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); closeSearch(); } }} />
               </label>
+              {/* R4 (POLISH's audit, Nov 22): the button she presses turns disabled once no finds are left, and a row's Replace goes with its hit; a focused element that disappears or is disabled drops the focus to the body, so her next keys went nowhere. The focus goes back to the Replace field (it stays mounted) */}
               <div className="reorg-replace-acts">
-                <button type="button" data-replace-all disabled={!found.here.length || !s.repl} onClick={() => doReplace(found.here)}>{fill(t('reorgReplaceAll'), { n: found.here.length })}</button>
+                <button type="button" data-replace-all disabled={!found.here.length || !s.repl} onClick={() => { doReplace(found.here); keepReplaceFocus(); }}>{fill(t('reorgReplaceAll'), { n: found.here.length })}</button>
                 {s.canUndo && <button type="button" data-replace-undo onClick={() => doUndoReplace()}>{t('reorgReplaceUndo')}</button>}
               </div>
             </div>
@@ -145,7 +154,7 @@ export function SearchMenu({ entry, open, backWord }: { entry: JournalEntry; ope
                       onClick={() => go(h)}>
                       {before}<mark>{word}</mark>{after}
                     </button>
-                    {mine && <button type="button" className="reorg-replace-one" data-replace-one={`${h.entryId}|${h.at}`} disabled={!s.repl} onClick={() => doReplace([h])}>{t('reorgReplaceOne')}</button>}
+                    {mine && <button type="button" className="reorg-replace-one" data-replace-one={`${h.entryId}|${h.at}`} disabled={!s.repl} onClick={() => { doReplace([h]); keepReplaceFocus(); }}>{t('reorgReplaceOne')}</button>}
                   </div>
                 );
               })}
