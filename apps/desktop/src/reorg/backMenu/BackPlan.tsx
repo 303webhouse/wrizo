@@ -140,7 +140,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
       into = made.docId;
       flushNow();
     }
-    navigate(toPartHref(into, boardId, r.boxId, r.title));
+    navigate(toPartHref(into, boardId, r.boxId, r.title, getJournalEntry(pageId)?.pageType === 'script' ? 'screenplay' : null));
   };
 
   return (

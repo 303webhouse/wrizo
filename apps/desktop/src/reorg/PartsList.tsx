@@ -235,7 +235,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
       into = r.docId;
       flushNow();
     }
-    navigate(unbornHref({ binderId: into }));
+    navigate(unbornHref({ binderId: into, structure: latest.pageType === 'script' ? 'screenplay' : null }));   // SCRIPT #5: a new Part follows the page she is on
   };
   const split = () => {
     if (!host?.splitHere) return;
