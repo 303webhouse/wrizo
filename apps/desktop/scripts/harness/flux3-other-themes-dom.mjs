@@ -5,7 +5,7 @@
 //   FT-PREMISE-<theme>       by default the page carries data-flux3 and the theme; with ?flux3=0 it carries the theme and no data-flux3 (the two arms really are the two flags)
 //   FT-CONTROL-<theme>-<s>   two default opens read the same (a red here means the read is noisy, and FT-SAME says nothing)
 //   FT-SAME-<theme>-<s>      the default open and the ?flux3=0 open read the same
-//   FT-CLICK-<theme>-<s>     the same after a real click on the page or board (the Flux current draws on a click)
+//   FT-CLICK-<theme>-<s>     the same after a real click on the page or a board card (the Flux current listens for clicks and focus); FT-CLICKCTRL is its control, two default opens after the same click
 //   FT-LIVE                  the same read DOES differ in Flux, where the redesign is drawn (the read can see what it guards)
 //   FT-MUT                   one element put into the default page turns the comparison red (the mutant LANDED)
 // Run: node scripts/harness/flux3-other-themes-dom.mjs   (from apps/desktop; Actions harness or a box turn)
@@ -20,7 +20,7 @@ const DOC = 'ft-doc', BOARD = 'ft-board';
 const SURFACES = [
   { key: 'desk', hash: '#/', ready: "!!document.querySelector('.wz-arrival')", click: null },
   { key: 'page', hash: `#/page/${DOC}`, ready: "!!document.querySelector('.forward-only-editor')", click: '.forward-only-editor' },
-  { key: 'board', hash: `#/page/${BOARD}`, ready: `!!document.querySelector('.board-canvas .board-box[data-box-id="ft-a"]')`, click: '.board-canvas-wrap' },
+  { key: 'board', hash: `#/page/${BOARD}`, ready: `!!document.querySelector('.board-canvas .board-box[data-box-id="ft-a"]')`, click: '.board-canvas .board-box[data-box-id="ft-a"]' },
 ];
 
 const SIGNATURE = `(() => {
@@ -31,7 +31,8 @@ const SIGNATURE = `(() => {
   const classes = (e) => [...e.classList].sort().join('.');
   const own = (e) => [...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.nodeValue.trim()).filter(Boolean).join(' ');
   const lines = ['html {' + attrs(document.documentElement, new Set(['data-flux3'])) + '}'];
-  const walk = (e, depth) => { for (const c of e.children) { if (SKIP.has(c.tagName)) continue; lines.push(depth + ' ' + c.tagName.toLowerCase() + ' .' + classes(c) + ' {' + attrs(c, new Set()) + '} ' + JSON.stringify(mask(own(c)).slice(0, 48))); walk(c, depth + 1); } };
+  const GENERATED = /^arbor2-sun-(leaf|beam|cross|drift)/;   // Arbor's sun draws a different set of these on every load (two default opens differ: FT-CONTROL)
+  const walk = (e, depth) => { for (const c of e.children) { if (SKIP.has(c.tagName) || [...c.classList].some((n) => GENERATED.test(n))) continue; lines.push(depth + ' ' + c.tagName.toLowerCase() + ' .' + classes(c) + ' {' + attrs(c, new Set()) + '} ' + JSON.stringify(mask(own(c)).slice(0, 48))); walk(c, depth + 1); } };
   walk(document.body, 0);
   return { lines, flux3: document.documentElement.hasAttribute('data-flux3'), theme: document.documentElement.getAttribute('data-theme') };
 })()`;
@@ -98,8 +99,9 @@ await withHarness(async (app) => {
       ok(`FT-CONTROL-${label}-${s.key} two default opens read the same`, control.same, JSON.stringify(control));
       ok(`FT-SAME-${label}-${s.key} the default open and ?flux3=0 draw the same DOM (${a ? a.lines.length : 0} elements)`, same.same, JSON.stringify(same));
       if (s.click) {
-        const ca = await read(theme, '', s, { click: true }), cz = await read(theme, OFF, s, { click: true });
-        const clicked = compare(ca, cz);
+        const ca = await read(theme, '', s, { click: true }), ca2 = await read(theme, '', s, { click: true }), cz = await read(theme, OFF, s, { click: true });
+        const clickControl = compare(ca, ca2), clicked = compare(ca, cz);
+        ok(`FT-CLICKCTRL-${label}-${s.key} two default opens read the same after the click`, clickControl.same, JSON.stringify(clickControl));
         ok(`FT-CLICK-${label}-${s.key} the same after a real click`, clicked.same, JSON.stringify(clicked));
       }
     }
@@ -119,7 +121,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 20;
+const EXPECTED = 24;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nFLUX3-OTHER-THEMES VERIFY: PASS (${checks.length} checks)`
