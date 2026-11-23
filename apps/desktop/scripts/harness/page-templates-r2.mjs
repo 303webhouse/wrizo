@@ -33,6 +33,7 @@ const STUBS = {
   deskLexicon: `export const deskTerm = (id) => id;`,
   react: `export const useSyncExternalStore = () => null;`,
   fontRoster: `export const ensureFaceLoaded = () => {}; export const faceForSlug = () => null; export const faceStack = () => '';`,
+  place: `export const compareSections = () => 0;`,   // SCRIPT #6: the folder download sorts by the writer's order (store/place.ts)
 };
 
 // bundle `entry` (TypeScript source text); mutate = { 'store/x.ts': (text) => text } applies BEFORE bundling
@@ -47,6 +48,7 @@ async function load(entry, mutate = {}) {
         b.onResolve({ filter: /\/deskLexicon$/ }, () => ({ path: 'deskLexicon', namespace: 'stub' }));
         b.onResolve({ filter: /^react$/ }, () => ({ path: 'react', namespace: 'stub' }));
         b.onResolve({ filter: /\/fontRoster$/ }, () => ({ path: 'fontRoster', namespace: 'stub' }));
+        b.onResolve({ filter: /\/place$/ }, () => ({ path: 'place', namespace: 'stub' }));
         b.onLoad({ filter: /.*/, namespace: 'stub' }, (a) => ({ contents: STUBS[a.path], loader: 'js' }));
         b.onLoad({ filter: /\.ts$/ }, (a) => {
           const rel = path.relative(SRC, a.path).split(path.sep).join('/');
