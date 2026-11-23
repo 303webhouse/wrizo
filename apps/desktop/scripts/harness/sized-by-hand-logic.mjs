@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import { srcText } from '../global-css.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -122,7 +123,45 @@ const types = srcText(SRC, 'types', 'index.ts').replace(/\r\n/g, '\n');   // #13
 ok('S5: the Box type declares it optional (`sizedByHand?: true`) and nothing else about boxes changed shape', /sizedByHand\?: true;/.test(types));
 const persist = srcText(SRC, 'store', 'persistence.ts').replace(/\r\n/g, '\n'),   // #13 step 10h: the barrel's parts, joined
    sync = norm(path.join(SRC, 'store', 'sync.ts'));
-ok('S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box', /function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && /JSON\.stringify\(rec\)/.test(sync));
+// PARKED (INK, Nov 23, train L2, bug #85): S5b as written - SUPERSEDED: clone() no longer spells the JSON round trip; #85's cloneJson (333c7285) answers the same but shares the strings. Its second half read JSON.stringify(rec), which only measures a record's bytes. Successors S5b2 and MUT-S5b2. Kept verbatim:
+// ok('S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box', /function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && /JSON\.stringify\(rec\)/.test(sync));
+const S5B_CLONE = path.join('store', 'persistence', 'cloneJson.ts');
+const s5bTexts = { clone: norm(path.join(SRC, S5B_CLONE)), core: norm(path.join(SRC, 'store', 'persistence', 'core.ts')), sync };
+const S5B_RECORD = { id: 'e1', updatedAt: '2026-11-23T00:00:00.000Z', text: 'page', boxes: [
+  { id: 'b1', kind: 'text', x: 0.1, y: 0.2, w: 0.3, h: 0.4, text: 'card', sizedByHand: true, notYetInvented: { nested: [1, { two: 2 }] } },
+  { id: 'b2', kind: 'image', x: 0.5, y: 0.6, w: 0.2, h: 0.2 },
+] };
+// what each part of "whole" reads: the clone keeps every key of a box, shares no object, names no box key; the dirty read goes through clone(); sync pushes that same record
+const s5bRead = (cloneJson, t) => {
+  const c = cloneJson(S5B_RECORD);
+  return {
+    same: isDeepStrictEqual(c, JSON.parse(JSON.stringify(S5B_RECORD))) && c.boxes[0].sizedByHand === true,
+    fresh: c !== S5B_RECORD && c.boxes !== S5B_RECORD.boxes && c.boxes[0] !== S5B_RECORD.boxes[0],
+    generic: !/\b(boxes|sizedByHand)\b/.test(t.clone),
+    wired: /import \{ cloneJson \} from '\.\/cloneJson';/.test(t.core) && /export function clone<T>\(value: T\): T \{\s*return cloneJson\(value\);\s*\}/.test(t.core) && /journalEntries: cache\.journalEntries\.filter\(r => dirty\.journalEntries\.has\(r\.id\)\)\.map\(clone\)/.test(t.core),
+    pushed: /items\.push\(\{ coll, rec, bytes:/.test(t.sync) && /\(out\[i\.coll\] \?\?= \[\]\)\.push\(i\.rec\)/.test(t.sync),
+  };
+};
+const s5bWhole = (r) => r.same && r.fresh && r.generic && r.wired && r.pushed;
+const s5bLive = s5bRead((await load(S5B_CLONE)).cloneJson, s5bTexts);
+ok('S5b2: the client clones (cloneJson) and pushes a journal record WHOLE: every key of a box survives, unknown ones too, with no per-key mapping of a box', s5bWhole(s5bLive), JSON.stringify(s5bLive));
+if (process.env.HARNESS_PARKED === '1') ok('PARKED (was "S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box") - SUPERSEDED: #85 replaced the round trip with cloneJson; live successor: S5b2 + MUT-S5b2', !/function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && s5bWhole(s5bLive));
+const S5B_MUTANTS = [
+  { id: 'drops-the-mark', part: 'clone', from: 'const x = walk((v as Record<string, unknown>)[k], false);', to: "if (k === 'sizedByHand') continue;\n    const x = walk((v as Record<string, unknown>)[k], false);", guard: 'same' },
+  { id: 'loses-an-unknown-key', part: 'clone', from: 'Object.keys(v as object)', to: "Object.keys(v as object).filter((k) => k !== 'notYetInvented')", guard: 'same' },
+  { id: 'names-a-box-key', part: 'clone', from: 'if (x === undefined) continue;', to: "if (x === undefined) continue;\n    if (k === 'boxes') { out[k] = x; continue; }", guard: 'generic' },
+  { id: 'clone-not-wired', part: 'core', from: 'return cloneJson(value);', to: 'return value;', guard: 'wired' },
+  { id: 'push-maps-the-record', part: 'sync', from: '(out[i.coll] ??= []).push(i.rec)', to: '(out[i.coll] ??= []).push({ id: i.rec.id })', guard: 'pushed' },
+];
+const s5bMutants = [];
+for (const m of S5B_MUTANTS) {
+  const text = s5bTexts[m.part].replace(m.from, m.to);
+  const landed = text !== s5bTexts[m.part];
+  const cloneFn = m.part === 'clone' && landed ? (await load(S5B_CLONE, (src) => src.replace(m.from, m.to))).cloneJson : (await load(S5B_CLONE)).cloneJson;
+  const r = s5bRead(cloneFn, { ...s5bTexts, [m.part]: text });
+  s5bMutants.push({ id: m.id, landed, red: !s5bWhole(r) && r[m.guard] === false });
+}
+ok(`MUT-S5b2: each of ${S5B_MUTANTS.length} mutants lands and goes red on its own guard`, s5bMutants.length === S5B_MUTANTS.length && s5bMutants.every((m) => m.landed && m.red), JSON.stringify(s5bMutants.filter((m) => !m.landed || !m.red)));
 const serverSync = norm(path.join(DESKTOP, '..', 'server', 'src', 'sync.ts')), migrate = norm(path.join(DESKTOP, '..', 'server', 'src', 'migrate.ts'));
 ok('S5c: the server keeps a board\'s boxes as ONE jsonb column, passed through as-is (migrate: `boxes jsonb`; sync: `boxes: r.boxes`)', /add column if not exists boxes jsonb/.test(migrate) && /boxes: r\.boxes \?\? undefined/.test(serverSync));
 
