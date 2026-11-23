@@ -153,6 +153,7 @@
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
 /* Box settings: fields on the field fill; Custom… in sentence case; each swatch carries its code, 01 to 06, in the chrome's face */
 :root[data-flux3][data-theme='flux'] .wz-reorg-letters, :root[data-flux3][data-theme='flux'] .wz-reorg-new-input{ background:#020C10; border:1px solid #5F8F95; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-caret{ text-transform:none; }   /* the head is caps; its open caret is a small v, never a letter V */
 :root[data-flux3][data-theme='flux'] .wz-reorg-chip{ text-transform:none; letter-spacing:.04em; font-size:11px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-swatches{ flex-wrap:wrap; gap:6px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-swatch{ display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-chromeLabel); font-size:10px; font-weight:600; line-height:1; }

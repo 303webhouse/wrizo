@@ -80,6 +80,13 @@ export function notebookDocs(): RailDoc[] {
   return listOf(NOTEBOOK).docs;
 }
 
+/** What a place holds by the reorg's own count, the one its lists show: Docs (a set of Parts is ONE Doc) and Circuits/Boards. id null is Unfiled, one row an entry. */
+export function countsOf(id: string | null): { docs: number; boards: number } {
+  if (id == null) { const m = unfiledMembers(); const boards = m.filter(isBoard).length; return { docs: m.length - boards, boards }; }
+  const l = listOf(id);
+  return { docs: l.docs.length, boards: l.boards.length + l.docs.reduce((n, d) => n + d.boards.length, 0) };
+}
+
 /** Where a new Doc or Board from the rail is filed. ALWAYS a Doc of its own, or a Board with no Doc (Fable, Nov 14, 3:52 pm): into the Project's
  *  app-made set when it has one (each page there is a one-Part Doc, each board a Board with no Doc); a Project with no set at all gets today's
  *  lazy app-made set (ensureSet); a Project holding only sets she made gets a NEW set through today's "+ New set" act (createSet), titled with
