@@ -21,7 +21,7 @@
 //   MUT-KF-FLIP  T2's two rules put back verbatim into the running page (the fix's two style queries taken out): KF-FLIP is RED on every reopen.
 //   KF-READ      no getComputedStyle on a shade layer inside the key's task; the pergola's read is seen, one frame or more after the flip (liveness).
 //   KF-FLIP-SP   (Fable Nov 19) the same read for a SPACE as the first key (a Space commits the word and rebuilds the committed runs: the page's nodes are written again, as every letter once did): green on the fix
-//   MUT-KF-FLIP-HAS-SP  T2's rule 642 put back, the first key a Space: KF-FLIP-SP is RED (successor of MUT-KF-FLIP-HAS, parked: since the Free Write fix a letter no longer replaces the page, so the restyle that rule feeds is not provoked by a letter)
+//   (PARKED 2026-11-23, bug #110: a Space appends now) MUT-KF-FLIP-HAS-SP  T2's rule 642 put back, the first key a Space: KF-FLIP-SP is RED (successor of MUT-KF-FLIP-HAS, parked: since the Free Write fix a letter no longer replaces the page, so the restyle that rule feeds is not provoked by a letter)
 //   MUT-KF-READ  T2's pattern rebuilt in the page (an observer of the flip that reads the shade layer's style at once): KF-READ is RED.
 //   KF-LOOK-*    by NIGHT (where both rules apply), at rest and while writing: the computed opacity and colour of every element are the same with
 //                the fix as with T2's rules put back (transitions off for the read); coverage: T2's rules change some element at rest.
@@ -558,8 +558,11 @@ await withHarness(async (app) => {
   //   mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
   ok(`KF-FLIP-SP the same read with a Space as the first key: the largest single restyle touches at most ${SHARE * 100}% of the document's elements (printed: ${fixSp.tr.keyEls}/${fixSp.before.docEls})`,
     flipOk(fixSp), JSON.stringify({ tr: fixSp.tr, docEls: fixSp.before.docEls }));
-  ok(`MUT-KF-FLIP-HAS-SP with T2's rule 642 put back in the running page (the edit landed) and a Space as the first key, KF-FLIP-SP is RED (printed: ${mutHasSp.tr.keyEls}/${mutHasSp.before.docEls})`,
-    !!mutHasSp.swap && mutHasSp.swap.containers === 1 && mutHasSp.swap.inserted === 1 && mutHasSp.swap.tutorProp === 1 && mutHasSp.tr && mutHasSp.tr.keyEls != null && !flipOk(mutHasSp), JSON.stringify({ swap: mutHasSp.swap, tr: mutHasSp.tr, docEls: mutHasSp.before.docEls }));
+  // PARKED 2026-11-23 (SUPERSEDED - Fable's ruling, bug #110: a Space no longer writes the page's nodes again, it APPENDS to the last run (freeWriteHost.ts), so T2's rule 642 put back is not provoked into the whole-document
+  // restyle by a Space either (Actions run 45257271496: printed 348/1931 on #110's tip; the same file is 24/24 on main). Its successor is a first key that still rewrites the host whole (a Backspace strike), and must be
+  // proven red on a mutant first: not written yet. Original, verbatim:
+  // ok(`MUT-KF-FLIP-HAS-SP with T2's rule 642 put back in the running page (the edit landed) and a Space as the first key, KF-FLIP-SP is RED (printed: ${mutHasSp.tr.keyEls}/${mutHasSp.before.docEls})`,
+  // !!mutHasSp.swap && mutHasSp.swap.containers === 1 && mutHasSp.swap.inserted === 1 && mutHasSp.swap.tutorProp === 1 && mutHasSp.tr && mutHasSp.tr.keyEls != null && !flipOk(mutHasSp), JSON.stringify({ swap: mutHasSp.swap, tr: mutHasSp.tr, docEls: mutHasSp.before.docEls }));
   // PARKED 2026-11-12 (SUPERSEDED, no successor - its premise is falsified, Actions run 43299418991: the shade layers' own --fade-dur did not stop the
   // restyle (fix 1099, mutant 1095), so the rule it guarded is taken out of the fix). Original, verbatim:
   // ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
