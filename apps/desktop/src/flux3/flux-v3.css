@@ -212,6 +212,8 @@
 :root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-item, .wz-crumb-home){ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-here, .crumb-rename-btn){ color:var(--text-hi); font-family:inherit; font-weight:600; letter-spacing:inherit; text-transform:inherit; }
 :root[data-flux3][data-theme='flux'] .sprint-crumb input.crumb-rename{ text-transform:none; letter-spacing:normal; }
+/* the board's rename box is an <input> carrying .crumb-here: it took the pale text above on the browser's white field, so her words and caret were near-white on white (wa-red-69; flux-rename-field.mjs). Flux's own field, in the crumb and the reorg's top bar */
+:root[data-flux3][data-theme='flux'] input.crumb-rename{ background:var(--chrome-surface); color:var(--text-hi); caret-color:var(--text-hi); border:1px solid var(--ink-border-strong); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep{ font-size:0; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep::before{ content:'\25B8' / ''; font-size:11px; letter-spacing:0; }
 :root[data-flux3][data-theme='flux'] .show-as .show-as-word{ display:inline; }
