@@ -755,7 +755,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       if (zoomed) {
         const rg = document.createRange(); rg.selectNodeContents(host);
         const bottom = [...rg.getClientRects()].filter((q) => q.height >= 4).reduce((m, q) => Math.max(m, q.bottom), pr.top);
-        top = (bottom - pr.top) / scale + 6;
+        // + the page's own scroll: the page frame clips and can be scrolled by the browser bringing the writing line into view (33 px in polish10-hint's Flux and Machina reads); the hint is its child and rides that scroll, so without it the hint stood a scroll's width above the line
+        top = (bottom - pr.top) / scale + page.scrollTop + 6;
       } else {
         top = page.offsetHeight - padB / 2 - 10;   // the foot: centred in the page's bottom margin (the hint is one ~20px line)
       }
