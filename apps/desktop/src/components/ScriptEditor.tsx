@@ -7,7 +7,7 @@ import { serializeScriptDoc, plainScriptWords } from '../store/scriptText';
 import { INDENT_CH } from '../store/scriptMetrics';
 import { lineLedger } from '../store/scriptLedger';
 import { paginate, type Page } from '../store/scriptPaginate';
-import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward } from '../store/scriptKeys';
+import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward, tabAfterWritten } from '../store/scriptKeys';
 import { computeAutocomplete, applyAutocomplete } from '../store/scriptAutocomplete';
 import { shouldPromoteToScene } from '../store/scriptSmartText';
 import { copyText } from '../store/clipboard';
@@ -371,7 +371,18 @@ export function ScriptEditor({ id }: { id: string }) {
 
     if (e.key === 'Tab' && !e.shiftKey) {
       e.preventDefault();
-      retype(TAB_MAP[activeEl.t]);
+      if (text.trim().length === 0) {
+        retype(TAB_MAP[activeEl.t]);
+        return;
+      }
+      // SCRIPT #2: a written line stays as it is, wherever the caret is in it; the next element opens below it
+      const added = newElement(tabAfterWritten(activeEl.t));
+      setElements(prev => {
+        const next = [...commitElement(prev.map((el, i) => (i === activeIndex ? { ...el, text } : el)), activeIndex)];
+        next.splice(activeIndex + 1, 0, added);
+        return next;
+      });
+      moveActive(activeIndex + 1, 'start');
       return;
     }
     if (e.key === 'Tab' && e.shiftKey) {
