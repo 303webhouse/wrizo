@@ -9,7 +9,7 @@ import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { useWritingSettings } from '../store/writingSettings';
 import { useJacked } from './jackIn';
 
-export const FX = { ground: '#020C10', box: '#04141A', hair: '#1D4A52', hair2: '#2A6A76', ink: '#E3F1EC', mid: '#8FB4AC', cyan: '#00C2FF', lime: '#B7FF3C', brass: '#FF9800' } as const;
+export const FX = { ground: '#020C10', box: '#04141A', hair: '#1D4A52', hair2: '#2A6A76', ink: '#E3F1EC', mid: '#7EB4C4', cyan: '#00C2FF', lime: '#B7FF3C', brass: '#FF9800' } as const;
 export const FX_LABEL = "'Chakra Petch', 'Figtree', system-ui, sans-serif";
 export const FX_HEAD = "'Rajdhani', 'Figtree', system-ui, sans-serif";
 export const WORD = 'WRIZ';

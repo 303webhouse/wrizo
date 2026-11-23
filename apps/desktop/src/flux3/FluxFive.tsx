@@ -1,7 +1,7 @@
 // FLUX'S SPLASH, v5 (S5; the Wrizors' build sheet, Nov 22; Nick approved v5 Nov 9, 8:49 and 8:58 pm). Built from the approved page "Flux splash", on the schematic's own 1350 x 1080 drawing.
 // ONE RUN, THREE PLACES: `splash` plays it on the app's opening splash; `door` is its finished frame on the front door, with the doors live; `still` is the same frame behind the sign-in pop-out.
 // The splash hands over to the front door on the same frame, in the same box, so `.wz-splash` is gone once the doors are live (the app's "splash gone" contract) and nothing holds a writer who opened a page.
-// Brass is on the wires and their dots only. A box comes online by its outline stepping from #2A6A76 to #8FB4AC. No arrowheads, no FINAL DRAFT pop. Every word comes through the lexicon; the schematic's own words are a drawing.
+// Brass is on the wires and their dots only. A box comes online by its outline stepping from #2A6A76 to #7EB4C4. No arrowheads, no FINAL DRAFT pop. Every word comes through the lexicon; the schematic's own words are a drawing.
 import { Fragment, useEffect, useLayoutEffect, useRef, useSyncExternalStore, type KeyboardEvent } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { DeskTermId } from '../store/deskLexicon';
