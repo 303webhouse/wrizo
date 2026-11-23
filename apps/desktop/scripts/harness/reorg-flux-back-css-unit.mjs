@@ -112,18 +112,28 @@ function suite(css) {
     const bar = has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /width:\s*3px/) && has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /height:\s*24px/) && has(rs, /wz-drawer-slide--right \.wz-drawer-tab\[data-on='true'\]::before$/, /background:\s*var\(--orange\)/);
     return { pass: base && bar, detail: J({ base, bar }) };
   });
+  t('CORRIDOR', () => {
+    // Wire In in Flux is the Corridor (data-flux3-jacked): flux-wirein.css hides every hand, anchor and handle there (Nick, Nov 8); Nick's Nov 20 word is the newer one: the Back menu's opener stays, and the opened Back menu with it. Only the RIGHT hand's anchors come back (marked data-back by the reorg's Tutor): the left hand stays off
+    const back = rs.filter((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.desk-frame-tutor-anchor/.test(x.sel) && /\.desk-frame-tutor-panel-anchor/.test(x.sel) && /\[data-back='true'\]/.test(x.sel));
+    const shown = back.some((x) => /opacity:\s*1\s*!important/.test(x.body) && /pointer-events:\s*auto\s*!important/.test(x.body));
+    const leftOff = !rs.some((x) => /desk-frame-sliver-anchor|desk-rail|desk-frame-strip|flux3-glitchbar/.test(x.sel) && /\[data-flux3-jacked\]/.test(x.sel));
+    return { pass: shown && leftOff, detail: J({ rules: back.length, shown, leftOff }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
+  ['the Corridor stops showing the opener', 'CORRIDOR', (t) => t.replace(/opacity:1 !important;/, () => 'opacity:0 !important;')],
+  ['the opener cannot be pressed in the Corridor', 'CORRIDOR', (t) => t.replace('pointer-events:auto !important', () => 'pointer-events:none !important')],
+  ['the left hand comes back in the Corridor too', 'CORRIDOR', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-sliver-anchor{ opacity:1 !important; }\n`],
   // SUPERSEDED (Nov 21): ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace("[data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
   ['a rule escapes the redesign scope (the plain Flux gets it)', 'SCOPED', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort{", () => ":root[data-theme='flux'] .wz-assets-sort{")],
   ['a rule escapes to every theme', 'SCOPED', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
