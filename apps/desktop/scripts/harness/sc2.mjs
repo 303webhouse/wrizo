@@ -1123,7 +1123,11 @@ await withHarness(async (app) => {
   })()`;
   const pre = JSON.parse(await app.evalJs(`JSON.stringify(${READ})`));
   await app.evalJs("(() => { const a = document.querySelector('.script-el-active'); if (a) a.__sc2probe = 987654321; return true; })()");
-  await app.key('Tab');
+  // SUPERSEDED (SCRIPT #2, Fable, Nov 22: Tab on a WRITTEN line now adds the next element and no longer retypes it, so it cannot be this check's one-keystroke retype). The line, verbatim:
+  // await app.key('Tab');
+  // [successor] the same retype in place through the key that still does it: Ctrl+3 sets the active line to Character (ScriptEditor's retype(), the path S5 guards)
+  await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: '3', code: 'Digit3', windowsVirtualKeyCode: 51, nativeVirtualKeyCode: 51, modifiers: 2 });
+  await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: '3', code: 'Digit3', windowsVirtualKeyCode: 51, nativeVirtualKeyCode: 51, modifiers: 2 });
   await sleep(600);
   const post = JSON.parse(await app.evalJs(`JSON.stringify(${READ})`));
   await app.typeKeys('!!');

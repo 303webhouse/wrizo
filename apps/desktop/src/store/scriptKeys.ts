@@ -24,6 +24,11 @@ export const TAB_MAP: Record<ScriptElType, ScriptElType> = {
   general: 'action',
 };
 
+// SCRIPT #2: TAB_MAP is what a BLANK line becomes in place. Tab on a WRITTEN line never rewrites it: it adds this element below (Final Draft 13 User Guide 1.26.2; after a written cue, a parenthetical, 1.25.8).
+export function tabAfterWritten(t: ScriptElType): ScriptElType {
+  return t === 'character' ? 'paren' : TAB_MAP[t];
+}
+
 // Ctrl/Cmd+1..8 direct-set order; Shift+Tab cycles this list BACKWARD from
 // the active element's current type (a plain positional walk — distinct from
 // TAB_MAP, which is context-sensitive "what comes next").
