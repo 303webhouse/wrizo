@@ -24,7 +24,9 @@ export async function part2({ ok, sleepMs }) {
       };
       const fresh = async ({ theme = 'flux', page = 'dark', dial = null } = {}) => {
         await app.emulateDpr(1, 1400, 900);
-        await app.goto('/');
+        // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+        // await app.goto('/');
+        await app.goto('/?flux3=0');
         await q(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); ${dial === null ? '' : `localStorage.setItem('wrizo-ambiance-dial', '${dial}');`}`);
         await app.reload();
         await waitSoft("!!document.querySelector('.wz-arrival')", { label: 'front door' });

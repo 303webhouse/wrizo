@@ -58,7 +58,9 @@ try { await withHarness(async (app) => {
   const splashGone = () => app.waitFor("!document.querySelector('.wz-splash')", { timeout: 20000, label: 'splash gone' }).catch(() => {});
   const hashTo = async (h) => { await ev(`location.hash = ${JSON.stringify(h)}`); await sleep(300); };
 
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 15000 });
@@ -72,7 +74,9 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before the board', timeout: 15000 });
     await ev(`window.wrizoPatchEntry(${JSON.stringify(BOARD)}, { boxes: ${JSON.stringify(makeBoxes())} })`);
     await ev(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: ${JSON.stringify(tone)}, fade: 'on' }));`);
-    await ev(`history.replaceState(null, '', '/?arbor2room=${ROOM}#/page/${BOARD}')`);
+    // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+    // await ev(`history.replaceState(null, '', '/?arbor2room=${ROOM}#/page/${BOARD}')`);
+    await ev(`history.replaceState(null, '', '/?flux3=0&arbor2room=${ROOM}#/page/${BOARD}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"bb-d\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
     await splashGone();

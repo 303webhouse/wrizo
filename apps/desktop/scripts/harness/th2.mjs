@@ -44,6 +44,7 @@ ok('check 1 (source) [theme-leftovers]: it points the bar\'s fill at --chrome-su
   /--chrome-surface/.test(fluxModeBarRule) && !/--ink-900/.test(fluxModeBarRule), fluxModeBarRule);
 
 await withHarness(async (app) => {
+  await app.goto('/?flux3=0');   // the pin: the Flux of before (the redesign is on by default); the lines below are unchanged
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'authed Desk' });
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
@@ -93,7 +94,9 @@ await withHarness(async (app) => {
   // deleted); this only ever needed DeskRail mounted to read its labels
   // ('.desk-rail', DeskRail's own root marker — a global nav element,
   // present on the Board exactly as it was on the old list).
-  await app.goto('/journal');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/journal');
+  await app.goto('/journal?flux3=0');
   await app.waitFor("!!document.querySelector('.desk-rail')", { label: 'DeskRail mounted under Flux' });
   const railLabels = await app.evalJs("[...document.querySelectorAll('.desk-rail-item .desk-rail-label')].map(el => el.textContent)");
   // Journal/Shelf render via t() (singular — "Log"/"Cache"); only the
@@ -117,7 +120,9 @@ await withHarness(async (app) => {
   // JournalBoardGate) — live successor is b1.mjs's own retirement check
   // (the redirect itself is the new canonical behavior, not a hole).
 
-  await app.goto('/drawers');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/drawers');
+  await app.goto('/drawers?flux3=0');
   await app.waitFor("!!document.querySelector('.dz-pagetitle')", { label: 'Drawers route under Flux' });
   const drawersHeading = await app.evalJs("document.querySelector('.dz-pagetitle')?.textContent");
   // ---- PARKED - SUPERSEDED by the Rack to Drive word (Nick, Nov 11; the Wrizors' strings, Fable): the original, verbatim, no longer runs; its successor follows.
@@ -126,12 +131,16 @@ await withHarness(async (app) => {
   ok('check 2: canonical route /drawers still resolves under Flux', (await app.evalJs('location.hash')).includes('/drawers'), await app.evalJs('location.hash'));
 
   // Tabs (ModeSwitcher) + Connect (Publish) + Board — via a real project's PageEditor.
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before PageEditor fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
-  await app.goto('/project/new');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/project/new');
+  await app.goto('/project/new?flux3=0');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker (book)' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
@@ -187,12 +196,16 @@ await withHarness(async (app) => {
   // same page, so the running total would skip past a literal "251" the
   // instant the goal-crossing block lands — a fresh project starts at 0.
   const words251 = Array.from({ length: 251 }, (_, i) => 'w' + i).join(' ');
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before surge fixture' });
   await app.evalJs("window.wrizoTheme.set('flux')");
-  await app.goto('/project/new');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/project/new');
+  await app.goto('/project/new?flux3=0');
   await app.waitFor("!!document.querySelector('[data-kind=\"book\"]')", { label: 'CreateProject picker for surge fixture' });
   await app.evalJs("document.querySelector('[data-kind=\"book\"]').click()");
   await app.click('Start writing');
@@ -304,7 +317,9 @@ await withHarness(async (app) => {
   ok('check 4: deleting back below the goal does not re-trigger the celebration', celebratingAfterDelete === false, String(celebratingAfterDelete));
 
   // -- check 3 continued: celebrate-summon overrides the bottom bar's fade ---
-  await app.goto('/');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/');
+  await app.goto('/?flux3=0');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before QuickSprint fixture' });
@@ -449,7 +464,9 @@ await withHarness(async (app) => {
 
   // -- check 2 (R3): the closing sweep — ImportDraft's own heading ----------
   await app.evalJs("window.wrizoTheme.set('flux')");
-  await app.goto('/import');
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.goto('/import');
+  await app.goto('/import?flux3=0');
   await app.waitFor("!!document.querySelector('.import-title')", { label: 'ImportDraft picker under Flux' });
   const importHeading = await app.evalJs("document.querySelector('.import-title')?.textContent");
   ok('check 2 (R3): ImportDraft\'s own heading now reads "Which cartridge?" under Flux', importHeading === 'Which cartridge?', String(importHeading));
@@ -503,12 +520,15 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   await withHarness(async (app) => {
+    await app.goto('/?flux3=0');   // the pin: the Flux of before (the redesign is on by default); the lines below are unchanged
     await app.reload();
     await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk after clear (PARKED)' });
     await app.evalJs("window.wrizoTheme.set('flux')");
-    await app.goto('/journal');
+    // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own addresses carry the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+    // await app.goto('/journal');
+    await app.goto('/journal?flux3=0');
     await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'Journal Board under Flux (PARKED)' });
     const hashNowBridges = (await app.evalJs('location.hash')).includes('/page/');
     pok('PARKED (was "check 2: canonical route /journal still resolves under Flux (URL stays canonical)") — B1 S5: pages/Journal.tsx is deleted; \'/journal\' now redirects to the Journal Board under Flux too — live successor: b1.mjs\'s own retirement check',
