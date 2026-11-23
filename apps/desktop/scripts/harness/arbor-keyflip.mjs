@@ -637,7 +637,7 @@ await withHarness(async (app) => {
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 24;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15, + 1 for the Space successor pair net of the parked MUT-KF-FLIP-HAS, Nov 19)
+const WANT_CHECKS = 23;   // 24 before MUT-KF-FLIP-HAS-SP was parked (Nov 23, bug #110; its successor, a Backspace strike, adds one back when it is proven red). A check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15, + 1 for the Space successor pair net of the parked MUT-KF-FLIP-HAS, Nov 19)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
