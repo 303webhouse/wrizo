@@ -141,7 +141,7 @@ export async function main({ title }) {
                   if (!late.focused) fails.push({ check: 'focus', detail: 'focus left the input' });
                   if (early && (early.s !== late.s || early.e !== late.e || early.value !== late.value)) fails.push({ check: 'settled', detail: `after 2 frames ${early.s}..${early.e} ${JSON.stringify(early.value)}; settled ${late.s}..${late.e}` });
                   if (m.collapsed && late.focused) {
-                    const px = await inputCaret(S.sel);
+                    await ev("document.querySelectorAll('[data-flux3-room-ground] i').forEach((x) => { x.style.display = 'none'; }); null"); const px = await inputCaret(S.sel);
                     if (!px) fails.push({ check: 'drawn', detail: 'no caret is painted anywhere on screen' });
                     else {
                       const dx = px.x - late.expectX, cy = px.top + px.height / 2, inY = cy >= late.rect.y - 2 && cy <= late.rect.y + late.rect.h + 2;
