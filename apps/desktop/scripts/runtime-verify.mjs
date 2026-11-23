@@ -62,7 +62,7 @@ function noLandingIndex(body) {
   // THE SWITCH-OVER (Fable, Nov 20, 6:00 pm): the reorg is on by default in Machina. A harness file that does not ask for it keeps the Machina it
   // was written against: window.__wrizoReorgOff (read by src/reorg/flag.ts) unless WS_REORG=1. A file that asks with ?reorg=1 in its URL still
   // gets it (the URL wins), and ?reorg=0 is off either way. Read per request, so a file may flip WS_REORG between loads (reorg-switchover.mjs).
-  if (process.env.WS_REORG !== '1') flags += 'window.__wrizoReorgOff=true;';
+  flags += "try{if(localStorage.getItem('wrizo-theme')!=='flux')window.__wrizoReorgOff=true;}catch(e){window.__wrizoReorgOff=true;}";
   if (!flags) return body;
   return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }
