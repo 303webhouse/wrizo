@@ -26,6 +26,17 @@
 //             not filed in a drive"
 // PLAIN   R13 (spec 11, rule 7) a Drive box with no colour of its own is node dress: fill #04141A, a 1 px #7EB4C4 edge, letters text-hi #E7F4F1
 // CODES   R14 (spec 11, rule 2) each swatch's code holds 4.5:1 against that swatch's own colour
+// PASS 1  (the Wrizors, flux-rail-pass-1.md; Fable, Nov 22 10:50 pm)
+//         R3-B and MUT-R3-B [parked Nov 23: DOCS now counts its own list, every Doc anywhere, not "in this drive"; successor R15]
+//         R15 (REAL 2) each door's count is exactly the rows its own pop-out lists (DOCS Recent, DRIVES, ORPHANS, CIRCUITS, LOG), its head agrees, its hint names it, the Trash is left out
+//         MUT-R15  the same reading with DRIVES one short of its list (today's "02 with three listed") turns R15's test red
+//         R16 (REAL 2) a set of Tracks is ONE row in Recent, under its Doc's name, so her Drive's "1 doc" and Recent agree; her place reads her Drive's list (Docs + Circuits)
+//         R17 (REAL 1) the pop-out's and Recent's scrollbar thumb is #5F8F95
+//         R18 (NIT 1) the current row is a cyan edge with the 3 x 24 brass bar; the chosen swatch's ring is cyan
+//         R19 (NIT 2) the list/boxes switch under the pins is text-low #7EB4C4
+//         R20 (NIT 3) DOCS opens at its top
+//         R21 (NIT 4) the two meter switches read apart: "Show the meter" and "Use the skin's meter"
+//         R22 (NIT 5) an orphan row's two buttons show their names: File, Trash
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-rail-live.mjs
 process.env.WS_PLACE = '1';
@@ -63,6 +74,8 @@ async function seed(app) {
     page('fl-2', 'Chapter Two\\nThe river rose.', { origin: 'project', projectId: mill.id, orderIndex: 1 });
     page('fl-c', 'Plot circuit', { origin: 'project', projectId: mill.id, pageType: 'board', boxes: [{ id: 'k1', kind: 'text', x: 0.05, y: 0.05, w: 0.3, h: 0.1, z: 1, text: 'The mill floods' }] });
     page('fl-l', 'A loose page.', { origin: 'loose' });
+    page('fl-j', 'A log page.', { origin: 'journal' });
+    page('fl-t', 'A page in the Trash.', { origin: 'project', projectId: mill.id, orderIndex: 2 }); W.wrizoPatchEntry('fl-t', { deletedAt: '2026-04-02T00:00:00.000Z' });
     W.wrizoFlushNow(); return true; })()`);
   await sleep(400);
 }
@@ -172,12 +185,63 @@ await withHarness(async (app) => {
     && x.place.reading === pad2(c.docs + c.circuits) && x.place.hint === (c.docs + c.circuits === 1 ? '1 doc or circuit in this drive' : `${c.docs + c.circuits} docs and circuits in this drive`);
   const truth = listCounts && { docs: listCounts.docs, log: listCounts.log, circuits: nCircuits };
   const shown = { docs: at('reorg-docs'), plan: at('plan'), log: at('journal'), place: whereRead };
-  ok('R3-B DOCS, CIRCUITS, LOG and her place carry the count the reorg\'s own lists state, with L2\'s hover hint', r3b(shown, truth), { truth, shown: Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, v && [v.reading, v.hint]])) });
+  // SUPERSEDED (Nov 23, the Wrizors' pass 1 REAL 2, ruled by Fable: every count counts exactly what its list shows; DOCS lists every Doc anywhere, not "in this drive"). Successor R15, below. The original, verbatim:
+  // ok('R3-B DOCS, CIRCUITS, LOG and her place carry the count the reorg\'s own lists state, with L2\'s hover hint', r3b(shown, truth), { truth, shown: Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, v && [v.reading, v.hint]])) });
+  void r3b; void shown; void truth;
   const pagesCounted = live ? { ...shown, docs: live.docs, log: live.journal } : null;
-  ok('MUT-R3-B the same reading at the live rail\'s page counts turns R3-B\'s test red', !!pagesCounted && !r3b(pagesCounted, truth), pagesCounted && [pagesCounted.docs, pagesCounted.log]);
+  // SUPERSEDED with R3-B, the original, verbatim:
+  // ok('MUT-R3-B the same reading at the live rail\'s page counts turns R3-B\'s test red', !!pagesCounted && !r3b(pagesCounted, truth), pagesCounted && [pagesCounted.docs, pagesCounted.log]);
+  void pagesCounted;
   const nD = Number(drivesCount), nO = Number(orphansCount), dr = at('reorg-projects'), or = at('reorg-unfiled');
   const driveHint = `${nD} ${nD === 1 ? 'drive' : 'drives'}`, orphanHint = nO === 1 ? '1 doc or circuit not filed in a drive' : `${nO} docs and circuits not filed in a drive`;
   ok('R12 DRIVES and ORPHANS carry their true count and hover hint', drivesCount !== null && orphansCount !== null && nD >= 2 && nO >= 1 && !!dr && !!or && dr.reading === pad2(nD) && dr.hint === driveHint && or.reading === pad2(nO) && or.hint === orphanHint, { drivesCount, orphansCount, dr: dr && [dr.reading, dr.hint], or: or && [or.reading, or.hint], driveHint, orphanHint });
+
+  // ---- the Wrizors' pass 1: every count against its own list ----
+  const LISTS = { 'reorg-docs': '.wz-reorg-recent-rows > li', 'reorg-projects': '.wz-reorg-row', 'reorg-unfiled': '.wz-reorg-unfiled-row', plan: '.wz-section-row', journal: '.wz-cascade-list-item' };
+  const openDoor = async (cat) => {
+    if (!(await app.evalJs(`!!document.querySelector('.wz-cascade-panel[data-visible="true"][data-category="${cat}"]:not([data-leaving="true"])')`))) await app.evalJs(door(cat));
+    await sleep(700);
+  };
+  const reads = {};
+  for (const cat of Object.keys(LISTS)) {
+    await openDoor(cat);
+    reads[cat] = await app.evalJs(`(() => { const b = document.querySelector('[data-reorg-rail] [data-category="${cat}"]'), p = document.querySelector('.wz-cascade-panel[data-category="${cat}"]:not([data-leaving="true"])'); if (!b || !p) return null; const o = b.querySelector('.wz-strip-readout'), h = p.querySelector('[data-reorg-count]');
+      return { n: p.querySelectorAll(${q(LISTS[cat])}).length, head: h ? Number(h.textContent) : null, reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title'), trash: /in the Trash/.test(p.innerText || '') }; })()`);
+  }
+  const hintFor = { 'reorg-docs': (n) => `${n} ${n === 1 ? 'doc' : 'docs'}`, 'reorg-projects': (n) => `${n} ${n === 1 ? 'drive' : 'drives'}`, 'reorg-unfiled': (n) => (n === 1 ? '1 doc or circuit not filed in a drive' : `${n} docs and circuits not filed in a drive`), plan: (n) => `${n} ${n === 1 ? 'circuit' : 'circuits'} in this drive`, journal: (n) => `${n} ${n === 1 ? 'doc' : 'docs'} in the Log` };
+  const r15 = (x) => Object.keys(LISTS).every((c) => !!x[c] && x[c].n >= 1 && x[c].reading === pad2(x[c].n) && (x[c].head === null || x[c].head === x[c].n) && x[c].hint === hintFor[c](x[c].n) && !x[c].trash);
+  ok('R15 each door\'s count is exactly the rows its own pop-out lists, its head agrees, its hint names it, the Trash is left out', r15(reads), reads);
+  const short = reads['reorg-projects'] ? { ...reads, 'reorg-projects': { ...reads['reorg-projects'], reading: pad2(reads['reorg-projects'].n - 1) } } : null;
+  ok('MUT-R15 the same reading with DRIVES one short of its list turns R15\'s test red', !!short && !r15(short), short && short['reorg-projects']);
+
+  await openDoor('reorg-docs');
+  const top = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-docs\"]'); return p ? p.scrollTop : null; })()");
+  ok('R20 DOCS opens at its top', top === 0, top);
+  const bars = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-docs\"]'), r = document.querySelector('.wz-reorg-recent-rows'); return p && r ? [getComputedStyle(p).scrollbarColor, getComputedStyle(r).scrollbarColor] : null; })()");
+  ok('R17 the pop-out\'s and Recent\'s scrollbar thumb is #5F8F95', Array.isArray(bars) && bars.every((c) => /^rgb\(95, 143, 149\)/.test(c)), bars);
+  const recent = await app.evalJs("[...document.querySelectorAll('.wz-reorg-recent-rows > li')].map((li) => ({ title: (li.querySelector('.wz-reorg-list-title')?.textContent || '').trim(), meta: (li.querySelector('.wz-reorg-row-meta')?.textContent || '').trim(), here: li.getAttribute('aria-current') }))");
+  await app.evalJs("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(350);
+  const meters = await app.evalJs("(() => { const a = document.querySelector('[data-reorg-default=\"progress\"] .wz-reorg-default-label'), b = [...document.querySelectorAll('[data-session-row] .wz-reorg-default-label')].map((e) => e.textContent.trim()); return { doc: a ? a.textContent.trim() : null, session: b }; })()");
+  ok('R21 the two meter switches read apart: "Show the meter" and "Use the skin\'s meter"', !!meters && meters.doc === 'Show the meter' && meters.session.includes("Use the skin's meter"), meters);
+  await openDoor('reorg-unfiled');
+  const named = await app.evalJs("(() => { const f = document.querySelector('[data-unfiled-file]'), t = document.querySelector('[data-unfiled-trash]'); return f && t ? [(f.innerText || '').trim(), (t.innerText || '').trim()] : null; })()");
+  ok('R22 an orphan row\'s two buttons show their names: File, Trash', !!named && named[0] === 'File' && named[1] === 'Trash', named);
+  await openDoor('reorg-projects');
+  const mine = await app.evalJs("(() => { const r = document.querySelector('.wz-reorg-row[aria-current=\"location\"]'); if (!r) return null; const n = r.querySelector('.wz-reorg-row-name'), d = r.querySelector('[data-reorg-docs]'), s = getComputedStyle(r), b = getComputedStyle(r, '::before'); return { name: n ? n.textContent.trim() : null, docs: d ? Number(d.getAttribute('data-reorg-docs')) : null, edge: s.borderLeftColor, bar: b.content && b.content !== 'none' ? [b.width, b.height, b.backgroundColor] : null }; })()");
+  const inRecent = (recent || []).filter((x) => mine && x.meta.startsWith(`${mine.name} `));
+  await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(350);
+  const ring = await app.evalJs("(() => { const s = document.querySelector('.wz-reorg-swatch[aria-checked=\"true\"]'); return s ? getComputedStyle(s).outlineColor : null; })()");
+  ok('R18 the current row is a cyan edge with the 3 x 24 brass bar; the chosen swatch\'s ring is cyan', !!mine && mine.edge === CYAN && JSON.stringify(mine.bar) === JSON.stringify(['3px', '24px', ORANGE]) && ring === CYAN, { mine, ring });
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('[data-reorg-pin-toggle]')].find((x) => !x.closest('[aria-current=\"location\"]') && !x.closest('[data-notebook=\"true\"]')); b?.click(); return null; })()"); await sleep(400);
+  const toggle = await app.evalJs("(() => { const b = document.querySelector('.wz-reorg-pin-view-btn[aria-pressed=\"false\"]'); return b ? getComputedStyle(b).color : null; })()");
+  ok('R19 the list/boxes switch under the pins is text-low #7EB4C4', toggle === NODE_EDGE, toggle);
+  await app.evalJs(door('reorg-list')); await sleep(100);
+  await app.evalJs(door('reorg-projects')); await sleep(100);
+  if (!(await app.evalJs("!!document.querySelector('.wz-cascade-panel[data-category=\"reorg-list\"]:not([data-leaving=\"true\"])')"))) { await app.evalJs("document.querySelector('[data-reorg-rail] .wz-reorg-where-item')?.click(); null"); }
+  await sleep(700);
+  const held = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-list\"]'), w = document.querySelector('[data-reorg-rail] .wz-reorg-where-item .wz-strip-readout'); return p && w ? { docs: p.querySelectorAll('.wz-reorg-doc').length, boards: p.querySelectorAll(\".wz-reorg-list-row[data-kind='board']\").length, reading: w.textContent.trim() } : null; })()");
+  ok('R16 a set of Tracks is one row in Recent under its Doc\'s name, her Drive\'s doc count and Recent agree, her place reads her Drive\'s Docs + Circuits',
+    (recent || []).filter((x) => x.title === 'The Mill').length === 1 && !(recent || []).some((x) => /^Chapter (One|Two)$/.test(x.title)) && (recent || []).find((x) => x.title === 'The Mill')?.here === 'page' && !!mine && mine.docs === inRecent.length && !!held && held.reading === pad2(held.docs + held.boards), { recent, mine, inRecent: inRecent.length, held });
 
   // ---- 1920, Machina ----
   await open(app, `?arbor2=0&reorg=1&flux3=1${DOOR}`, { w: 1920, h: 1080 });
@@ -193,7 +257,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
+const EXPECTED = 25;   // R3-B and MUT-R3-B parked: + R15, MUT-R15, R16 to R22 (the Wrizors' pass 1, Nov 23). Was: const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
