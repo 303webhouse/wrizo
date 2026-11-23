@@ -22,6 +22,8 @@
 // MACHINA R11 Machina's reorg rail is as it was: DOCS · PROJECTS · UNFILED, its five swatches
 // COUNTS  R12 (spec 2) DRIVES and ORPHANS each carry their true count (the count their own pop-out's head shows) and L2's hover hint: "2 drives", "1 doc or circuit
 //             not filed in a drive"
+// PLAIN   R13 (spec 11, rule 7) a Drive box with no colour of its own is node dress: fill #04141A, a 1 px #7EB4C4 edge, letters text-hi #E7F4F1
+// CODES   R14 (spec 11, rule 2) each swatch's code holds 4.5:1 against that swatch's own colour
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-rail-live.mjs
 process.env.WS_PLACE = '1';
@@ -102,6 +104,9 @@ await withHarness(async (app) => {
   const where = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where-item'); if (!b) return null; const n = b.querySelector('.wz-reorg-where-name'); return { left: getComputedStyle(b).borderLeftColor, name: n ? getComputedStyle(n).color : null }; })()");
   ok('R4 her place is orange: the where box\'s left edge and its name #FF9800', !!where && where.left === ORANGE && where.name === ORANGE, where);
 
+  const plainBox = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where-item .wz-reorg-box'); if (!b) return null; const s = getComputedStyle(b); return { bg: s.backgroundColor, edge: s.borderTopWidth + ' ' + s.borderTopColor, ink: s.webkitTextFillColor || s.color }; })()");
+  ok('R13 a Drive box with no colour of its own is node dress: #04141A, a 1 px #7EB4C4 edge, letters #E7F4F1', !!plainBox && plainBox.bg === NODE && plainBox.edge === `1px ${NODE_EDGE}` && plainBox.ink === 'rgb(231, 244, 241)', plainBox);
+
   // ---- DRIVES open ----
   const page0 = await app.evalJs(PAGE);
   await app.evalJs(door('reorg-projects')); await sleep(700); await app.mouseMove(900, 400); await sleep(300);
@@ -122,6 +127,8 @@ await withHarness(async (app) => {
   // ---- Box settings ----
   await app.evalJs("document.querySelector('.wz-reorg-box-settings-head')?.click(); null"); await sleep(400);
   const bs = await app.evalJs("(() => ({ swatches: [...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')].map((b) => [String(b.getAttribute('data-swatch')).toUpperCase(), (b.textContent || '').trim(), b.getAttribute('title')]), own: (document.querySelector('.wz-reorg-own-colour')?.innerText || '').trim() }))()");
+  const codes = await app.evalJs("[...document.querySelectorAll('.wz-reorg-swatches [data-swatch]')].map((b) => { const s = getComputedStyle(b); return [(b.textContent || '').trim(), s.backgroundColor, s.webkitTextFillColor || s.color]; })");
+  ok('R14 each swatch\'s code holds 4.5:1 against that swatch\'s own colour', Array.isArray(codes) && codes.length === 6 && codes.every((c) => !!c[0] && contrast(c[2], c[1]) >= 4.5), (codes || []).map((c) => [...c, Math.round(contrast(c[2], c[1]) * 100) / 100]));
   await app.evalJs("document.querySelector('.wz-reorg-swatches [data-swatch=\"#B7FF3C\"]')?.click(); null"); await sleep(500);
   const boxes = await app.evalJs("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box')].map((b) => { const s = getComputedStyle(b); return [s.backgroundColor, s.webkitTextFillColor || s.color]; })");
   const limeBox = (boxes || []).find((b) => b[0] === LIME);
@@ -166,7 +173,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 15;   // R0 to R12, MUT-R2, MUT-R6
+const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
