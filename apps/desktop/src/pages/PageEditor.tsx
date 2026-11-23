@@ -30,7 +30,7 @@ import { isTitlePageText } from '../store/titlePage';
 import { TitlePageSheet } from '../components/TitlePageSheet';
 import { useWayBack } from '../components/useWayBack';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
-import { openCaret } from '../store/caretInView';
+import { endOpenSettles, openCaret } from '../store/caretInView';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -433,7 +433,7 @@ function PageEditorView({ id }: { id: string }) {
     mode,
     scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
     editorEl: () => editorRef.current,
-    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) el.scrollTop = y; },
+    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) { endOpenSettles(); el.scrollTop = y; } },
     applyCaret: offset => { if (editorRef.current) setCaretOffset(editorRef.current, offset); },
   });
 
