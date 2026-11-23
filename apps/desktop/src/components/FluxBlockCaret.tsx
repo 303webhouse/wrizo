@@ -80,7 +80,7 @@ export function FluxBlockCaret() {
   // [FluxBlockCaret §7] remember the key (and a click) that last moved the caret
   useEffect(() => {
     if (theme !== 'flux') return undefined;
-    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; };
+    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; if (NAV_DOWNSTREAM.has(lastNav.key)) requestAnimationFrame(() => document.dispatchEvent(new Event('wz-caret-moved'))); };   // #67: Home on a caret already at a wrapped line's start moves no selection, so no selectionchange would redraw the block off the line above
     const onPointer = () => { lastNav = { key: 'pointer', at: performance.now() }; };
     document.addEventListener('keydown', onNav, { capture: true, passive: true });
     document.addEventListener('pointerdown', onPointer, { capture: true, passive: true });
