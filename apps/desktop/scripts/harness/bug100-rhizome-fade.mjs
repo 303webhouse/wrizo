@@ -19,6 +19,8 @@
 // A/B     F0M / F1M / FAM-<room> (Nov 23: the fade adds no JS and no per-key main-thread cost, only latency - frame production) the fast pace again with the
 //             brass copy's clip-path and mask-image taken away by an injected rule (.arbor2-vines-flash), the same run, so the box can compare the fade's
 //             latency with and without them (an experiment: the shipped look is untouched)
+// A/B     F0C / F1C / FAC-<room> the fast pace with ONLY the copy's clip-path taken away - its bitmap mask kept, which already cuts the same holes (the
+//             canvas clears every hole and draws the edge fade) - so a fix can keep the look
 // (information) PROF-<room>  (Nov 23: long-animation-frame entries never arrive on this Chrome) in the fast pace's first round, the CPU profile of the control
 //             burst at rest and of the fade burst: the dearest functions by self time in each, each with a snippet of the bundle at its position (the
 //             bundle is minified, so the snippet's strings name the code)
@@ -93,8 +95,8 @@ await withHarness(async (app) => {
   const words = (n) => Array.from({ length: n }, (_, i) => 'word' + i).join(' ');
   const fades = {};
 
-  for (const pace of ['steady', 'fast', 'fastnomask']) for (const room of ['day', 'night']) {
-  const tag = pace === 'fast' ? 'F' : pace === 'fastnomask' ? 'M' : '';
+  for (const pace of ['steady', 'fast', 'fastnomask', 'fastnoclip']) for (const room of ['day', 'night']) {
+  const tag = pace === 'fast' ? 'F' : pace === 'fastnomask' ? 'M' : pace === 'fastnoclip' ? 'C' : '';
     const rounds = [];
     let profCtl = null, profFade = null;
     for (let r = 0; r < ROUNDS; r += 1) {
@@ -116,6 +118,7 @@ await withHarness(async (app) => {
       await app.evalJs(ARM);
       const CTL = pace === 'steady' ? CONTROL : 22;
       if (pace === 'fastnomask') await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-vines-flash{ clip-path:none !important; mask-image:none !important; -webkit-mask-image:none !important; }'; document.head.appendChild(s); return true; })()");
+      if (pace === 'fastnoclip') await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-vines-flash{ clip-path:none !important; }'; document.head.appendChild(s); return true; })()");
       if (pace !== 'steady') {
         if (r === 0 && pace === 'fast') await profStart(app);
         for (let i = 0; i < CTL; i += 1) { await app.typeKeys('a'); await sleep(25); }
@@ -163,8 +166,8 @@ await withHarness(async (app) => {
 });
 
 // the F1 and FA lines carry the numbers and the cause, so they print whether they pass or not
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A][FM]?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
-const EXPECTED = 21;   // + F0M, F1M, FAM by day and by night (the A/B, Nov 23). Was: const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A][FMC]?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
+const EXPECTED = 27;   // + F0C, F1C, FAC by day and by night (the clip alone off, the bitmap mask kept: it already cuts the same holes; Nov 23). Was: const EXPECTED = 21;   // + F0M, F1M, FAM by day and by night (the A/B, Nov 23). Was: const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG100-RHIZOME-FADE VERIFY: PASS (${checks.length} checks)` : `\nBUG100-RHIZOME-FADE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
