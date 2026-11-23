@@ -20,8 +20,10 @@ export interface ReplaceSaid { key: DeskTermId; vals: Record<string, string | nu
 
 const steps: ReplaceStep[] = [];
 
-/** the replacement for one find: a capital first letter is kept when what she typed starts in lower case */
+/** the replacement for one find: an all-caps find of two letters or more is replaced in all caps (MARA to DELIA; Fable, Nov 22); otherwise a capital first letter is kept when what she typed starts in lower case */
 function keepCapital(found: string, put: string): string {
+  const letters = found.replace(/\P{L}/gu, '');
+  if ([...letters].length >= 2 && letters === letters.toUpperCase() && letters !== letters.toLowerCase()) return put.toUpperCase();
   const first = found.charAt(0);
   if (first !== first.toLowerCase() && put.charAt(0) === put.charAt(0).toLowerCase()) return put.charAt(0).toUpperCase() + put.slice(1);
   return put;
