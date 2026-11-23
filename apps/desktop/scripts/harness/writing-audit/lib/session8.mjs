@@ -76,7 +76,11 @@ export async function main({ title }) {
       }
       return null;
     };
-    const caretPainted = async () => (await d.pixelCaret(6)) || (await stillPair());
+    // SUPERSEDED (run 45101701111: the still pair ran AFTER pixelCaret, whose diff clears the selection and does not always put it back (W read
+    // `after: sel null`), so the still pair looked at a page with no caret to blink). The line, verbatim:
+    // const caretPainted = async () => (await d.pixelCaret(6)) || (await stillPair());
+    // [successor] the still pair first (it changes nothing), pixelCaret only when the still pair saw no blink
+    const caretPainted = async () => (await stillPair()) || (await d.pixelCaret(6));
     /** the page judged after a step, against the model `exp` (text, anchor, focus); `before` holds the page's rect the step must keep */
     const judge = async (id, label, exp, before, obs = {}) => {
       const late = await settle();
