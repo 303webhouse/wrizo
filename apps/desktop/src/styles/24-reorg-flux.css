@@ -73,8 +73,8 @@
 :root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:hover, :root[data-flux3][data-theme='flux'] .wz-assets-add-pop > button:focus-visible{ background:var(--ink-800); color:var(--text-hi); }
 /* what the search finds is lit in cyan on the page, not the cream the other rooms use */
 :root[data-flux3][data-theme='flux'] .reorg-search-hit mark{ background:rgba(0, 194, 255, .28); color:var(--text-hi); }
-:root[data-flux3][data-theme='flux'] ::highlight(wz-search){ background-color:rgba(0, 194, 255, .25); }
-:root[data-flux3][data-theme='flux'] ::highlight(wz-search-cur){ background-color:rgba(0, 194, 255, .5); color:var(--text-hi); }
+/* FLUX-KEYFLIP (Fable, Nov 22, 9:20 pm; INK's cause in Arbor, 40e0f469): a ::highlight() rule has a universal subject, so one with a root-attribute ancestor in front of it makes the whole document depend on the root's attributes and the first key restyles most of the page. What the search finds is lit in cyan through custom properties on the root itself; the two ::highlight() rules are the bare ones in 23-reorg-top.css (Machina's), which read them. */
+:root[data-flux3][data-theme='flux']{ --wz-search-hl:rgba(0, 194, 255, .25); --wz-search-hl-cur:rgba(0, 194, 255, .5); --wz-search-hl-cur-ink:var(--text-hi); }
 /* the Back menu's fourth tab, Before uplink, exists only while the publishing view is open under the reorg: it stays on one line beside the other three */
 :root[data-flux3][data-theme='flux'] .wz-drawer-tabs:has(#wz-tutor-tab-export) .wz-drawer-tab{ white-space:nowrap; letter-spacing:.04em; font-size:9.5px; padding:0 4px; min-width:0; }
 /* ---- PASS 1 FIXES (the Wrizors' Flux Back menu pass, Nov 21, 4:20 pm; Fable, Nov 21, 4:07 pm) ---- */
@@ -88,3 +88,6 @@
 /* NIT 1: the open tab wears Flux's choice mark: its cyan edge (the tab dress's) and the thin 3 x 24 brass bar */
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab[data-on='true']{ position:relative; }
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab[data-on='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* the search row (a hit and its trailing control share one row; the hit keeps the room): the Arbor twin, in the same words */
+:root[data-flux3][data-theme='flux'] .reorg-search-row{ display:flex; align-items:flex-start; }
+:root[data-flux3][data-theme='flux'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }

@@ -57,3 +57,7 @@
 :root[data-flux3][data-theme='flux'] .reorg-top-connect, :root[data-flux3][data-theme='flux'] .reorg-top-search{ border:1px solid #5F8F95; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] :is(.reorg-top-connect, .reorg-top-search):hover{ border-color:#7EB4C4; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-top-name-btn, .reorg-top-part-count, .reorg-top-connect, .reorg-top-search):focus-visible{ outline:1px solid var(--line-active); outline-offset:2px; }
+/* the top bar's Back button (shown on a trip to another page): node dress, one line, never wider than its word */
+:root[data-flux3][data-theme='flux'] .reorg-top-back{ flex:none; height:24px; padding:0 9px; margin-right:12px; box-sizing:border-box; display:inline-flex; align-items:center; background:#04141A; border:1px solid #7EB4C4; border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-hi); white-space:nowrap; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-top-back:hover{ border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .reorg-top-back:focus-visible{ outline:1px solid var(--line-active); outline-offset:2px; }
