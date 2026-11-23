@@ -121,8 +121,8 @@ function suite(css) {
   });
   t('CORRIDOR2', () => {
     // Actions run 45114045303 (FB11): the anchors were drawn but the grip was still not hit-testable: Wire In is the Typewriter zoom, and 13-desk-frame.css hides both grips while the page is zoomed (.desk-frame-stage:has(.mode-pagecol[data-zoom='true']) :is(.wz-sliver-grip, .wz-tutor-grip){ visibility:hidden }). The Back menu's own grip (the reorg's, data-back) is shown again in the Corridor; the left grip stays hidden
-    const g = rs.some((x) => /[data-flux3-jacked]/.test(x.sel) && /.wz-tutor-grip[data-back='true']/.test(x.sel) && /visibility:s*visible/.test(x.body));
-    const leftHidden = !rs.some((x) => /wz-sliver-grip/.test(x.sel) && /visibility:s*visible/.test(x.body));
+    const g = rs.some((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.wz-tutor-grip\[data-back='true'\]/.test(x.sel) && /visibility:\s*visible/.test(x.body));
+    const leftHidden = !rs.some((x) => /wz-sliver-grip/.test(x.sel) && /visibility:\s*visible/.test(x.body));
     return { pass: g && leftHidden, detail: J({ g, leftHidden }) };
   });
   return R;
