@@ -118,6 +118,7 @@ await withHarness(async (app) => {
       row.status = 'ok';
       row.md5 = md5(path.join(OUT, file));
       row.hash = await app.evalJs('location.hash');
+      row.address = await app.evalJs('location.pathname + location.search + location.hash');   // the full address with its query, so a frame shows which flags it was shot under (Fable's standing rule, Nov 22, 10:10 pm)
       row.attrs = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), voice: document.documentElement.getAttribute('data-voice') })");
     } catch (e) { row.status = 'failed'; row.error = String(e && e.message || e).slice(0, 300); }
     rows.push(row);
