@@ -56,7 +56,9 @@ export async function main({ title }) {
         const st = steps[i];
         const before = await d.read(); const e0 = d.errors.length;
         if (st.k === 'type') { m.type(st.s); want[active] = m.text; await d.type(st.s); }
-        else if (st.k === 'enter') { want.splice(active + 1, 0, ''); active += 1; m = new Model('', 0, 0, 'linux'); await d.key('Enter'); }
+        else if (st.k === 'enter') { if (st.committed) want[active] = st.committed; want.splice(active + 1, 0, ''); active += 1; m = new Model('', 0, 0, 'linux'); await d.key('Enter'); }
+        else if (st.k === 'retype') { await d.key('Enter'); }   // Enter on a blank line changes its type in place and adds no line
+        else if (st.k === 'join') { want.splice(active, 1); active -= 1; const n = want[active].length; m = new Model(want[active], n, n, 'linux'); await d.key('Backspace'); }   // Backspace at a line's start: the line joins the one above
         else if (st.k === 'key') { m.key(st); want[active] = m.text; await d.key(st.key, st); }
         else if (st.k === 'tab') { await d.key('Tab'); }
         await d.frames(); await sleep(450);
@@ -75,9 +77,12 @@ export async function main({ title }) {
       }
       if (tail) await tail({ pid, want, fails, notes });
     });
-    const T = (s) => ({ k: 'type', s }), E = () => ({ k: 'enter' }), K = (key, o = {}) => ({ k: 'key', key, ...o });
+    const T = (s) => ({ k: 'type', s }), E = (committed) => ({ k: 'enter', committed }), K = (key, o = {}) => ({ k: 'key', key, ...o }), J = () => ({ k: 'join' }), R = () => ({ k: 'retype' });
     await scriptCase('SC1', 'type a scene heading, Enter, action, Enter, a name, Enter, a line', [T('INT. KITCHEN'), E(), T('She enters.'), E(), T('ANNA'), E(), T('Hello.')]);
-    await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E(), E(), K('Backspace')]);
+    // SUPERSEDED (SCRIPT #3, Fable, Nov 23: a scene heading commits in capitals on Enter, so 'One' reads ONE; Enter on a blank line changes its type in place and adds no line; Backspace on the empty line joins it to the line above; the model expected none of the three). The case, verbatim:
+    // await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E(), E(), K('Backspace')]);
+    // [successor] the same keys, expecting ONE after the first Enter, one blank line after the second, and only ONE after Backspace
+    await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E('ONE'), R(), J()]);
     await scriptCase('SC3', 'type, Backspace twice, type on', [T('Hello'), K('Backspace'), K('Backspace'), T('p')]);
     await scriptCase('SC4', 'type, Home, End, Left, Right inside one element', [T('Hello world'), K('Home'), K('End'), K('ArrowLeft'), K('ArrowRight')]);
     // SUPERSEDED (SCRIPT #2, Fable, Nov 22: Tab on a WRITTEN line keeps the line and adds the next element; a blank line still changes type in place). The case, verbatim:

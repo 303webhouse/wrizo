@@ -1,0 +1,11 @@
+file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:705
+      throw new Error('waitFor timed out: ' + label + '; diag=' + JSON.stringify(await evalJs('__diag()')));
+            ^
+
+Error: waitFor timed out: S17 settle (flux); diag={"href":"http://127.0.0.1:54130/?arbor2=0&machina2=0&flux3=1#/","buttons":["Full screen","Sign out","[ RESUME ]","[ COMPOSE ]"],"body":"Full screen\nSign out\nW\nR\nI\nZ\n// FOR HUMANS WHO WRITE\nSTRUCTURE\nRESEARCH\nFLEXIBILITY\nQUOTES\nUNIQUE\nINK\nLINEAR\nCOHERENT\nPOLISH\nERROR-FREE\nFILE TYPE\nSHAREABLE\nAUTOMATED\nAI TUTOR\nWORKSHOPS\nN.01 · INPUT\nI\nD\nE\nA\nS\nN.02\nTEXT\nN.03\nPAGE\nN.05 · OUTPUT\nFINAL DRAFT\nN.04 · LOOP\nFEEDBACK\n[ RESUME ]\n[ COMPOSE ]"}
+    at Object.waitFor (file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:705:13)
+    at async file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/harness/splash.mjs:862:5
+    at async withHarness (file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/runtime-verify.mjs:968:20)
+    at async file:///F:/wrizo-work/chat1-box-splash/apps/desktop/scripts/harness/splash.mjs:108:1
+
+Node.js v24.13.0

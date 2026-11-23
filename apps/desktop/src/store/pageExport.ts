@@ -6,6 +6,7 @@ import { serializeScriptDoc, plainScriptWords } from './scriptText';
 import { outlineBody } from './outlineText';
 import { bibliographyBody } from './bibliographyText';
 import { describePageHome } from './pageHome';
+import { compareSections } from './place';
 import { getProject, getJournalEntry, getJournalEntries, getBinderPages, getSystemKind, getDeletedEntries } from './persistence';
 
 // E1 S3 — real file export, the ticket's own reason for existing. Pure,
@@ -207,20 +208,28 @@ const PAGE_SEPARATOR = '\n\n---\n\n';
 // then its body. The H1 is also the harness's own parse anchor for "count
 // the pages actually in this file" (`/^# /m`).
 function pageBlock(entry: JournalEntry): string {
-  const title = firstLine(entry.text ?? '');
+  return `# ${firstLine(entry.text ?? '')}\n\n${blockBody(entry)}`;
+}
+
+function blockBody(entry: JournalEntry): string {
   const project = entry.projectId ? getProject(entry.projectId) : null;
   const { homeLabel } = describePageHome(entry, project);
   const body = withInkNote(pageBodyFormatted(entry), entry);
-  return `# ${title}\n\n_${homeLabel}_\n\n${body}`;
+  return `_${homeLabel}_\n\n${body}`;
 }
 
-// "This Binder" scope — every page filed to this binder, in the binder's
-// OWN order. `getBinderPages` itself sorts by most-recently-touched
-// (persistence.ts's own general-purpose order); the binder's own READING
-// order — the one ProjectHome.tsx actually displays chapters in
-// (`pages.slice().sort((a,b) => a.createdAt.localeCompare(b.createdAt))`) —
-// is creation order, reproduced here verbatim so the exported document
-// reads in the same order the writer sees on the page. Every page type
+// SCRIPT #6: a Part in the folder download is headed by its own name. An unnamed screenplay Part has no heading, because its first line is a slugline its body already carries.
+function partBlock(entry: JournalEntry): string {
+  const name = (entry.pageSettings?.name ?? '').trim();
+  if (name) return `# ${name}\n\n${blockBody(entry)}`;
+  return entry.pageType === 'script' ? blockBody(entry) : pageBlock(entry);
+}
+
+// "This Binder" scope — every page filed to this binder, in the writer's own
+// order (`compareSections`: the order she set, then creation order, so a
+// binder nobody reordered reads exactly as it always did). `getBinderPages`
+// itself sorts by most-recently-touched (persistence.ts's own general-purpose
+// order). Every page type
 // filed to the binder is included (manuscript, script, support, boards),
 // not chapters alone — completeness beats elegance, per the brief.
 //
@@ -231,8 +240,8 @@ function pageBlock(entry: JournalEntry): string {
 // as a barrage, not a delivery. A single file is the simpler, more reliable
 // choice the brief's own words invite ("builder's call, disclosed").
 export function exportBinderDocument(project: Project): MultiDocResult {
-  const pages = getBinderPages(project.id).slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const content = pages.length ? pages.map(pageBlock).join(PAGE_SEPARATOR) : '(No pages in this binder yet.)';
+  const pages = getBinderPages(project.id).slice().sort(compareSections);
+  const content = pages.length ? pages.map(partBlock).join(PAGE_SEPARATOR) : '(No pages in this binder yet.)';
   const filename = `${safeFilenameBase(project.title, dateStampFallback())}.md`;
   return { filename, content, count: pages.length };
 }
