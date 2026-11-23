@@ -234,9 +234,40 @@ export async function main({ title }) {
       out(`OBS F2 the menu before each press: ${JSON.stringify({ fd0, pT, fd1, pW, fd2, pA })}`);
       const r = await d.read();
       const want2 = (T + '!').replace(/toll/g, 'fee');
-      await judge('F2a', 'Replace all ("toll" -> "fee"): the page reads the replaced text', { text: r.text, a: r.anchor ?? 0, f: r.focus ?? 0 }, before, { replaced: r.text === want2 });
+      // SUPERSEDED (Nov 23, R4 RULED by Fable, 3:33 pm: after Replace all, focus stays in the Replace field; this check wanted it in the page), the original, verbatim:
+      // await judge('F2a', 'Replace all ("toll" -> "fee"): the page reads the replaced text', { text: r.text, a: r.anchor ?? 0, f: r.focus ?? 0 }, before, { replaced: r.text === want2 });
+      const inField = await ev("document.activeElement?.matches?.('input[data-replace-with]') === true");
+      if (r.text === want2 && inField) { results.push({ id: 'F2a', label: 'Replace all ("toll" -> "fee"): the page reads the replaced text and focus stays in the Replace field (R4)', fails: [], notes: [], obs: { inField } }); out('PASS F2a focus in the Replace field'); }
+      else if (r.text === want2) finding('F2a', 'Replace all: focus stays in the Replace field (R4)', 'focus', 'focus is not in the Replace field', { inField });
       if (r.text !== want2) finding('F2a-text', 'Replace all ("toll" -> "fee"): the page reads the replaced text', 'text', `got ${JSON.stringify(r.text)} want ${JSON.stringify(want2)}`, { fd2, pA });
-      if (await has('[data-replace-undo]')) { await press('[data-replace-undo]'); await sleep(800); const u = await d.read(); await judge('F2b', 'Undo the replace: the page reads the text before it', { text: u.text, a: u.anchor ?? 0, f: u.focus ?? 0 }, before, { restored: u.text === T + '!' }); }
+      // SUPERSEDED (Nov 23, R4 RULED by Fable, 3:33 pm: after Replace all, focus stays in the Replace field, so the page's caret is not the check any more), the original, verbatim:
+      // if (await has('[data-replace-undo]')) { await press('[data-replace-undo]'); await sleep(800); const u = await d.read(); await judge('F2b', 'Undo the replace: the page reads the text before it', { text: u.text, a: u.anchor ?? 0, f: u.focus ?? 0 }, before, { restored: u.text === T + '!' }); }
+      // [successor] what the ruling protects is "keys never go nowhere": after Undo and after a one-by-one Replace, the next key must land in a field or the page
+      const keyLands = async (ch) => {
+        const vals = () => ev("[...document.querySelectorAll('input')].map((i) => i.value).join('|')");
+        const active = await ev("(() => { const e = document.activeElement; return e ? (e.tagName + '.' + String(e.className || '').split(' ')[0] + (e.hasAttribute('data-replace-with') ? '[replace-with]' : '')) : null; })()");
+        const v0 = await vals(); const t0 = (await d.read()).text;
+        await d.type(ch); await sleep(250);
+        const v1 = await vals(); const t1 = (await d.read()).text;
+        return { active, field: v1 !== v0, page: t1 !== t0 };
+      };
+      if (await has('[data-replace-undo]')) {
+        await press('[data-replace-undo]'); await sleep(800);
+        const u = await d.read();
+        const uk = await keyLands('Q');
+        const uOk = u.text === T + '!' && (uk.field || uk.page);
+        if (uOk) { results.push({ id: 'F2b', label: 'Undo the replace: the text is restored and her next key lands', fails: [], notes: [], obs: uk }); out('PASS F2b ' + JSON.stringify(uk)); }
+        else finding('F2b', 'Undo the replace: the text is restored and her next key lands', u.text === T + '!' ? 'key' : 'text', u.text === T + '!' ? 'after Undo the next key went nowhere (active element ' + uk.active + ')' : 'got ' + JSON.stringify(u.text), uk);
+        if (await has('[data-replace-one]')) {
+          const b4 = (await d.read()).text;
+          await press('[data-replace-one]'); await sleep(800);
+          const o = await d.read();
+          const ok = await keyLands('Z');
+          const oOk = o.text !== b4 && (ok.field || ok.page);
+          if (oOk) { results.push({ id: 'F2c', label: 'Replace one find: the text changes and her next key lands', fails: [], notes: [], obs: ok }); out('PASS F2c ' + JSON.stringify(ok)); }
+          else finding('F2c', 'Replace one find: the text changes and her next key lands', o.text !== b4 ? 'key' : 'text', o.text !== b4 ? 'after a one-by-one Replace the next key went nowhere (active element ' + ok.active + ')' : 'the text did not change', ok);
+        } else uncovered.push({ id: 'F2c', why: 'no one-by-one Replace button after Undo' });
+      }
       await d.key('Escape'); await sleep(300);
     });
 
