@@ -8,6 +8,7 @@ import { bibliographyBody } from './bibliographyText';
 import { describePageHome } from './pageHome';
 import { compareSections } from './place';
 import { getProject, getJournalEntry, getJournalEntries, getBinderPages, getSystemKind, getDeletedEntries } from './persistence';
+import { isAutoSet } from './persistence';
 
 // E1 S3 — real file export, the ticket's own reason for existing. Pure,
 // theme-independent content/naming logic (no hook, no React) — the download
@@ -156,6 +157,17 @@ export interface PageExportFiles {
   txt: string;
 }
 
+// SCRIPT #7 (finding 30): a screenplay's first line is a slugline or FADE IN, so its file is named for its Doc and its Part. With neither, its first line.
+function fileTitle(entry: JournalEntry): string {
+  if (entry.pageType === 'script') {
+    const project = entry.projectId ? getProject(entry.projectId) : null;
+    const doc = project && !isAutoSet(project) ? project.title.trim() : '';
+    const named = [doc, (entry.pageSettings?.name ?? '').trim()].filter(Boolean).join(' - ');
+    if (named) return named;
+  }
+  return firstLine(entry.text ?? '');
+}
+
 // "This Page" scope — one .md (formatted) + one .txt (plain words) pair,
 // named from the page's own first line (falling back to a date stamp for a
 // blank page). Callers pass the LIVE entry shape (PageEditor's `entry` with
@@ -185,7 +197,7 @@ export function exportPageFiles(entry: JournalEntry): PageExportFiles {
   // exists to prevent. `slice(-6)` draws from the random tail (36^6 ≈ 2.2B),
   // so same-first-line pages stay distinct even when created in the same
   // instant. All id chars are base36 ([0-9a-z]), filename-legal by construction.
-  const title = safeFilenameBase(firstLine(entry.text ?? ''), dateStampFallback());
+  const title = safeFilenameBase(fileTitle(entry), dateStampFallback());
   const base = `${title} (${entry.id.slice(-6)})`;
   return {
     base,
