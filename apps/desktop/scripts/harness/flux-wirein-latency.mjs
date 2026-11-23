@@ -183,7 +183,8 @@ try { await withHarness(async (app) => {
     // (arm C's own address carries the harness's pin, ?arbor2=0 - FABLE RULED, Nov 15, 10:40 pm: a file that doesn't ask for the redesign tests today's
     // Arbor. This address skipped the pin, so arm C ran the redesign, whose day room has had no dark page since Nick's page-tone ruling (Nov 18):
     // P1's Page: Dark read light on train-22b, Actions 44365317556. The Flux arms' address is unchanged.)
-    await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.theme === 'plateau' ? '/?arbor2=0' : '/')} + '#/page/' + ${JSON.stringify(pageId)})`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.theme === 'plateau' ? '/?arbor2=0' : '/')} + '#/page/' + ${JSON.stringify(pageId)})`);
+    await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(arm.theme === 'plateau' ? '/?arbor2=0&flux3=0' : '/?flux3=0')} + '#/page/' + ${JSON.stringify(pageId)})`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'page after reload' }).catch(() => {});
     await splashGone();
@@ -244,7 +245,8 @@ try { await withHarness(async (app) => {
   // ---- premises
   const placed = all.filter((r) => {
     const a = ARMS[r.name], w = r.where, wired = r.name === 'W' || r.name === 'M';
-    return w.theme === a.theme && w.page === 'dark' && w.queryFlag === null && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: return w.theme === a.theme && w.page === 'dark' && w.queryFlag === null && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
+    return w.theme === a.theme && w.page === 'dark' && w.queryFlag === '0' && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
   });
   ok(`P1 every arm stood where it claims (C: Arbor; X: Flux in TEXT; W and M: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M only; Page: Dark; the instrument in place): ${placed.length}/${all.length}`,
     placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));

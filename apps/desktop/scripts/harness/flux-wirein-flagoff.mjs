@@ -52,7 +52,8 @@ const INSTRUMENT = `(() => {
 
 // the landed mutants: [regex, replacement, which asset it lives in]; found exactly once, replaced in flight
 const MUTANTS = {
-  flagLeak: [/get\("flux3"\)==="1"/g, 'get("flux3")!=="zz"', 'js'],
+  // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: flagLeak: [/get\("flux3"\)==="1"/g, 'get("flux3")!=="zz"', 'js'],
+  flagLeak: [/get\("flux3"\)==="0"/g, 'get("flux3")==="zz"', 'js'],
   markerGone: [/setAttribute\("data-wirein",""\)/g, 'setAttribute("data-wireinx","")', 'js'],
   jackNeedsFlag: [/([\w$]+)!=null&&((?:[\w$]+\.)?jsx\([\w$]+,\{on:[\w$]+,scrollRef:[\w$]+,unitCount:[\w$]+\}\))/g, '$1!=null&&!1&&$2', 'js'],
   togglesBack: [/(:root\[data-wirein\]\[data-theme=flux\] \.typewriter-toggle)\{display:none!important\}/g, '$1{display:inline-flex}', 'css'],
@@ -111,7 +112,8 @@ try { await withHarness(async (app) => {
       ${mode ? `localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)});` : `localStorage.removeItem('wrizo-mode-page-${id}');`}
       ${pageTw === null ? '' : `localStorage.setItem('wrizo-typewriter-page-${id}', ${JSON.stringify(pageTw ? 'on' : 'off')});`} })()`);
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'no-preference' }] });
-    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${id}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${id}')`);
+    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/?flux3=0')} + '#/page/${id}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
     await splashGone();

@@ -453,6 +453,11 @@ if (!process.env.WS_URL_SEARCH && process.env.WS_ARBOR2 !== 'default') process.e
 // is unchanged; url-search-optin-unit.mjs names this block as the second ruled foothold.
 { const s = process.env.WS_URL_SEARCH; if (process.env.WS_MACHINA2 !== 'default' && (!s || (s === '?arbor2=0' && process.env.WS_ARBOR2 !== 'default'))) process.env.WS_URL_SEARCH = s ? `${s}&machina2=0` : '?machina2=0'; }
 
+// THE FLUX REDESIGN IS ON BY DEFAULT (Nick, Nov 22; Fable, Nov 23, 2:30 pm: "Pin ?flux3=0 in the driver for files that don't ask: YES"). Arbor's and Machina's pins above, extended to Flux: a fresh profile
+// pins the plain Flux (?flux3=0) for any file that doesn't ask for the redesign, so the files written for it keep testing what they were written for. A file ASKS with WS_FLUX3=default, or names its own query
+// with WS_URL_SEARCH, which wins (the query is unset, or exactly the other pins); a file that navigates with its own URL is unaffected. url-search-optin-unit.mjs names this block as the third ruled foothold.
+{ const s = process.env.WS_URL_SEARCH; if (process.env.WS_FLUX3 !== 'default' && (!s || /^\?(arbor2=0|machina2=0|arbor2=0&machina2=0)$/.test(s))) process.env.WS_URL_SEARCH = s ? `${s}&flux3=0` : '?flux3=0'; }
+
 // WS_URL_SEARCH (opt-in, e.g. '?arbor2=1'): a query string before the hash on every page this driver opens, so a guard can run under a URL
 // flag (ARBOR r19: rhizome-latency + 150b on the Arbor vines). Unset = today's URLs exactly ('/' then the hash).
 const URL_SEARCH = process.env.WS_URL_SEARCH ? `/${process.env.WS_URL_SEARCH.replace(/^\/?/, '')}` : '/';

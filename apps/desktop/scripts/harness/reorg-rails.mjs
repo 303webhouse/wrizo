@@ -207,7 +207,10 @@ await withHarness(async (app) => {
   ok('O0: the golden of main\'s switch-off DOM is committed beside this file, with the tree it was captured from', !!golden && /^[0-9a-f]{40}$/.test(golden.capturedFrom || '') && !!golden.surfaces, GOLDEN_FILE);
   const diffOf = (got, theme) => {
     if (!golden) return ['no golden'];
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== golden.surfaces[theme][k]);
+    // SUPERSEDED (INK, Nov 23: FIX's splash work made Flux's Settings action read "Log out", declared in c13-10c as cascadeSettingsSignOut@flux; that one word is the only difference from the golden, read byte for byte). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== golden.surfaces[theme][k]);
+    const ruled = (k, html) => (theme === 'flux' && k === 'settings' ? html.replace('>Sign out<', '>Log out<') : html);
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== ruled(k, golden.surfaces[theme][k]));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);

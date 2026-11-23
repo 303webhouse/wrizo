@@ -113,7 +113,8 @@ try { await withHarness(async (app) => {
   const caretOf = async ({ tone, theme = 'flux', mode = 'drafting' }) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p));
       localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-mode-page-${PAGE}', ${JSON.stringify(mode)}); })()`);
-    await ev(`history.replaceState(null, '', '/#/page/${PAGE}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', '/#/page/${PAGE}')`);
+    await ev(`history.replaceState(null, '', '/?flux3=0#/page/${PAGE}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
     await splashGone();

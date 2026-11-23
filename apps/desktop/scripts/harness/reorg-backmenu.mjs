@@ -71,7 +71,8 @@ async function openPage(app, id, { theme = 'machina', reorg = true, mode = 'draf
   await app.evalJs(`window.wrizoTheme.set('${theme}')`);
   // STAGING (Fable, Nov 20: SPRINT's Back menu locks Plan and Assets): these pages open in BUILD (Draft), where the three tabs are the Back menu this file proves; SPRINT has its own file (reorg-sprint-back.mjs)
   await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', '${mode}')`);
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
+  // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&flux3=0' : '/?arbor2=0&flux3=0'}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);

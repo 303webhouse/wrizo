@@ -272,7 +272,8 @@ try { await withHarness(async (app) => {
   // (the app's own default) except where a check asks for its still state (0)
   const open = async (flagOn, tone, view = [1920, 1080], dial = 50) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', ${JSON.stringify(String(dial))}); })()`);
-    await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
+    await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/?flux3=0')} + '#/page/${BOARD}')`);
     await app.emulateDpr(1, view[0], view[1]);
     await app.reload();
     await app.waitFor("!!document.querySelector('.show-as')", { timeout: 15000, label: 'the board' }).catch(() => {});

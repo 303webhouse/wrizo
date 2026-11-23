@@ -57,7 +57,8 @@ try { await withHarness(async (app) => {
     const id = `pos-${Date.now()}-${seq += 1}`;
     await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id, text: lines(n), createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })})`);
     await sleep(250);
-    await ev(`(() => { localStorage.setItem('wrizo-theme', ${JSON.stringify(cfg.theme)}); localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)}); history.replaceState(null, '', '/${cfg.flag ? '?flux3=1' : ''}#/page/${id}'); })()`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`(() => { localStorage.setItem('wrizo-theme', ${JSON.stringify(cfg.theme)}); localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)}); history.replaceState(null, '', '/${cfg.flag ? '?flux3=1' : ''}#/page/${id}'); })()`);
+    await ev(`(() => { localStorage.setItem('wrizo-theme', ${JSON.stringify(cfg.theme)}); localStorage.setItem('wrizo-mode-page-${id}', ${JSON.stringify(mode)}); history.replaceState(null, '', '/${cfg.flag ? '?flux3=1' : '?flux3=0'}#/page/${id}'); })()`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
     await splashGone();
