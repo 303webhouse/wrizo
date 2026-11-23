@@ -21,7 +21,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
 const ABS = { machina: 220, flux: 400 }, BUSY_MS = 65;   // Fable's absolute bars (the chrome's receding set); the first-key bar is Nick's
 const PAGE_TEXT = 'word0 word1 word2 word3 word4 word5 word6';   // the page the bars were measured on (Machina 210, Flux 387: Fable's 220 and 400); a longer page adds rows to the restyle and moves the printed numbers   // 60 lines: a column with real depth, so a column restyle cannot hide inside the chrome's number
-const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
+// flux-keyflip-reorg.mjs (the Flux live join, Fable, Nov 23) runs this file on Flux alone, with the driver's reorg pin lifted
+const FLUX_REORG = process.env.WS_KL_FLUX_REORG === '1';
+const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
 const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
@@ -174,6 +176,10 @@ await withHarness(async (app) => {
     ok(`KL-TIMING-${theme} the dissolve-class elements read a --fade-dur after the first key, and no --fade-dur is written on <html> (printed: html '${R[0].after.onHtml}', ${R[0].after.carriers} carriers read ${JSON.stringify(R[0].after.reads)})`,
       R.every((m) => m.after.onHtml === '' && m.after.carriers >= 1 && m.after.reads.length >= 1 && m.after.reads.every((v) => /^[0-9.]+s$/.test(v))), JSON.stringify(R.map((m) => m.after)));
   }
+  if (FLUX_REORG) {
+    const on = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), flux3: document.documentElement.hasAttribute('data-flux3'), top: !!document.querySelector('.reorg-top') })");
+    ok('KFR-ON the page this run measured is the live Flux: the redesign and the reorg\'s top rail are both on it (the wrapper is not silently the old file)', on && on.theme === 'flux' && on.flux3 && on.top, JSON.stringify(on));
+  }
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: 'html' });
@@ -192,7 +198,7 @@ await withHarness(async (app) => {
 }, { label: 'keyflip-live' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = THEMES.length * 4 + 2;
+const EXPECTED = THEMES.length * 4 + 2 + (FLUX_REORG ? 1 : 0);
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nKEYFLIP-LIVE VERIFY: PASS (${checks.length} checks)`
