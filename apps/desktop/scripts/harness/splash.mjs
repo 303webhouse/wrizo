@@ -19,7 +19,8 @@ const { withHarness } = await import('../runtime-verify.mjs');
 import { readFile } from 'node:fs/promises';
 
 const checks = [];
-const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
+// Each check is printed AS IT IS READ (Fable, Nov 23: splash.mjs crashed at S17 with no verdict, NOVERDICT, and nothing it had read was shown): a crash now leaves every verdict before it on the page.
+const ok = (name, pass, detail = '') => { checks.push({ name, pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${detail}]` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // S8 (harness-only): the browser's own computed `transitionDuration` under reduced
@@ -75,10 +76,14 @@ const openApp = async (app, { width = W, height = H } = {}) => {
 // ITEM splash-hold round 3: the theme must be set BEFORE the reload (clearing storage
 // first resets it to Arbor's own default) — the clear + theme + first-run-complete
 // write is one evalJs call for exactly that reason.
-const openAppThemed = async (app, theme, { width = W, height = H } = {}) => {
+// FLUX LIVE: this file opens under ?flux3=1 (Flux's v5 run, the flash guard). `schematic: true` is the one explicit way back, ?flux3=0, for the legs that read the OLD schematic's own contract (its loading line, its
+// veil, its tile/node timeline, its reduced-motion .lit classes), which still ships behind that flag; the v5 run's own legs are S19 below.
+const SCHEMATIC_URL = '/?arbor2=0&machina2=0&flux3=0#/';
+const openAppThemed = async (app, theme, { width = W, height = H, schematic = false } = {}) => {
   await app.emulateDpr(1, width, height);
   await app.goto('/');
   await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
+  if (schematic) await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(SCHEMATIC_URL)}); null`);
   await app.reload();
 };
 
@@ -105,7 +110,7 @@ const splashState = (app) => app.evalJs(`(() => {
   };
 })()`);
 
-await withHarness(async (app) => {
+try { await withHarness(async (app) => {
   // ==========================================================================
   // S1 — IT APPEARS, OVER THE REAL APP, DIMMED.
   // ==========================================================================
@@ -403,7 +408,7 @@ await withHarness(async (app) => {
   // per theme) — both themes.
   // ==========================================================================
   for (const theme of ['plateau', 'flux']) {
-    await openAppThemed(app, theme);
+    await openAppThemed(app, theme, { schematic: theme === 'flux' });
     await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S9 settle (${theme})` });
 
     const duringHold = await app.evalJs(`(() => {
@@ -594,7 +599,7 @@ await withHarness(async (app) => {
     s12Default === 'plateau', String(s12Default));
 
   for (const theme of ['flux', 'plateau']) {
-    await openAppThemed(app, theme);
+    await openAppThemed(app, theme, { schematic: theme === 'flux' });
     await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S12 settle (${theme})` });
     const s12 = await app.evalJs(`(() => {
       const veil = document.querySelector('.wz-splash-veil');
@@ -689,7 +694,7 @@ await withHarness(async (app) => {
   const LATE_FRACTION = 0.92;                        // just before the floor — FINAL DRAFT's own pop should have landed
 
   for (const theme of ['plateau', 'flux']) {
-    await openAppThemed(app, theme);
+    await openAppThemed(app, theme, { schematic: theme === 'flux' });
     await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S14 settle (${theme})` });
     const mountedAt = Date.now();
 
@@ -858,6 +863,7 @@ await withHarness(async (app) => {
     await app.emulateDpr(1, W, H);
     await app.goto('/');
     await app.evalJs(`localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)}); localStorage.setItem('wrizo-splash-force-not-ready', '1');`);
+    if (theme === 'flux') await app.evalJs(`history.replaceState(null, '', ${JSON.stringify(SCHEMATIC_URL)}); null`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.wz-splash')", { label: `S17 settle (${theme})` });
     await sleep(80); // one frame's worth of headroom — reduced motion sets the end state synchronously in SplashMark's own mount effect
@@ -885,12 +891,36 @@ await withHarness(async (app) => {
         Array.isArray(s17.dashoffsets) && s17.dashoffsets.length === 5 && s17.dashoffsets.every((d) => parseFloat(d) === 0), JSON.stringify(s17));
     }
   }
-});
 
-for (const c of checks) {
-  // eslint-disable-next-line no-console
-  console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${c.detail}]` : ''}`);
-}
+  // ==========================================================================
+  // S19 - FLUX'S v5 RUN (?flux3=1, the way this file opens; Fable, Nov 23). S17 above crashed on Flux with no verdict because the v5 run has NO splash under reduced motion (Splash.tsx: the finished frame at
+  // once, `.wz-splash` is never mounted), so `waitFor('.wz-splash')` ran out with the front door showing. The v5 legs read what the v5 run promises, and the schematic legs above read ?flux3=0.
+  // ==========================================================================
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+  await openAppThemed(app, 'flux');
+  await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'S19 settle (v5)' });
+  const mountedV5 = Date.now();
+  const s19 = await app.evalJs(`(() => ({ v5: !!document.querySelector('.wz-splash .wz-flux5'), schematic: !!document.querySelector('.wz-splash-flux'), loadingLine: !!document.querySelector('.wz-splash-loading'), theme: document.documentElement.getAttribute('data-theme') }))()`);
+  ok('S19 (flux): the splash is the v5 run (.wz-flux5), not the schematic, and carries no loading line (the run has its own status line)',
+    s19.theme === 'flux' && s19.v5 === true && s19.schematic === false && s19.loadingLine === false, JSON.stringify(s19));
+  await app.waitFor("!document.querySelector('.wz-splash')", { label: 'S19 self-dismiss (v5)', timeout: 15000 });
+  const elapsedV5 = Date.now() - mountedV5;
+  const FIVE_DONE = 3750;   // flux3/FluxFive.tsx: T.doors + COMPOSE_CHARS * T.dch + 15; the run's own length, mirrored here deliberately
+  ok(`S19 (flux): the v5 run's floor is its own length (${FIVE_DONE}ms +/-800ms), well under the old fixed 5000ms (measured ${elapsedV5}ms)`,
+    Math.abs(elapsedV5 - FIVE_DONE) <= 800 && elapsedV5 < 5000, JSON.stringify({ elapsedV5, FIVE_DONE }));
+  const doorsV5 = await app.evalJs("!!document.querySelector('.wz-flux5 [data-flux-door]')");
+  ok('S19 (flux): and the front door the splash leaves is the same drawing, its doors there', doorsV5 === true, String(doorsV5));
+  // reduced motion: no run at all, the finished frame at once (the S17 crash, read as a claim)
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await openAppThemed(app, 'flux');
+  await app.waitFor("!!document.querySelector('.wz-flux5 [data-flux-door]')", { label: 'S19 finished frame (reduced)', timeout: 15000 });
+  await sleep(300);
+  const s19r = await app.evalJs(`(() => ({ splash: !!document.querySelector('.wz-splash'), frame: !!document.querySelector('.wz-flux5 [data-flux-door]'), hold: document.documentElement.getAttribute('data-splash-hold') }))()`);
+  ok('S19 (flux, reduced motion): no splash is ever mounted and nothing holds the page: the finished frame (the doors) is on screen at once',
+    s19r.splash === false && s19r.frame === true && s19r.hold === null, JSON.stringify(s19r));
+  await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+}); } catch (e) { ok(`HARNESS crashed after ${checks.length} checks: ${String(e && e.message || e).slice(0, 300)}`, false); }
+
 const pass = checks.every((c) => c.pass);
 // eslint-disable-next-line no-console
 console.log(pass
