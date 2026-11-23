@@ -133,21 +133,15 @@ export const FLUX_REORG_WORDS = {
   reorgPartsSplitCaret: 'Put the caret where the new Track starts, then split.',
   reorgPartsSplitNo: 'This Track can’t be split.',
   reorgPartsSplitDone: 'Split: the words after the caret are Track {n} now.',
-<<<<<<< HEAD
-  reorgPartJoinCarries: 'Not joined: this Track holds ink, cards, links or a Operator thread, and joining would drop them.',
-  reorgPartJoinScript: 'Not joined: a screenplay Track has no plain text to join.',
-  reorgPartsJoinDone: 'Joined onto Track {n}.',
+  reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.',
+  reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.',
+  reorgPartsJoinDone: 'Merged into Track {n}.',
   // ARBOR lane's block, Flux's rail (spec sections 1 and 7): Box settings' own colour, and the Session in DOCS
   reorgOwnColour: 'Custom…',
   plainTrackerSwitch: "Use the skin's meter",
   reorgSessionGoal: 'Quota',
   reorgSessionTimer: 'Clock',
   reorgSessionProgress: 'Load',
-=======
-  reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.',
-  reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.',
-  reorgPartsJoinDone: 'Merged into Track {n}.',
->>>>>>> b07d53541dcc8a968e1a9c0fc9bb4273ec611bd0
 } satisfies Partial<Record<DeskTermId, string>>;
 
 /** The reorg strings this table deliberately leaves at their canonical words, by the Wrizors' ruling. */
