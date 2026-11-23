@@ -12,7 +12,10 @@
 // interrogate.
 //
 // Run: node scripts/harness/splash.mjs   (from apps/desktop, dist-web built)
-import { withHarness } from '../runtime-verify.mjs';
+// FLUX LIVE (Fable, Nov 23): this file opens under ?flux3=1, so the box measures the v5 run (the flash guard), not the schematic that is now only ?flux3=0.
+// The driver's own pins (arbor2=0, machina2=0) are dropped once WS_URL_SEARCH is named, so they are carried here; a runner's own WS_URL_SEARCH still wins.
+process.env.WS_URL_SEARCH ||= '?arbor2=0&machina2=0&flux3=1';
+const { withHarness } = await import('../runtime-verify.mjs');
 import { readFile } from 'node:fs/promises';
 
 const checks = [];
