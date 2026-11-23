@@ -3,7 +3,7 @@ import { UPPERCASE_TYPES, widthChFor } from '../../store/scriptMetrics';
 import { wrapToLines } from '../../store/scriptLedger';
 import { type Placed } from '../../store/scriptPaginate';
 import { type AutocompleteState } from '../../store/scriptAutocomplete';
-import { applyAutoContd } from '../../store/scriptSmartText';
+import { applyAutoContd, withParentheses } from '../../store/scriptSmartText';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../../store/voiceWall';
 import { ESC_HINT_ID } from '../../store/escapeExit';
 import type { ScriptEl } from '../../types';
@@ -17,6 +17,7 @@ export function commitElement(elements: ScriptEl[], index: number): ScriptEl[] {
   const el = elements[index];
   if (!el) return elements;
   let text = applyAutoContd(elements, index, el.text);
+  if (el.t === 'paren') text = withParentheses(text);
   if (UPPERCASE_TYPES.has(el.t)) text = text.toUpperCase();
   if (text === el.text) return elements;
   return elements.map((e, i) => (i === index ? { ...e, text } : e));

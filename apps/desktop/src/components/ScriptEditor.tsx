@@ -310,7 +310,8 @@ export function ScriptEditor({ id }: { id: string }) {
     setElements(prev => {
       const el = prev[activeIndex];
       if (!el) return prev;
-      const promote = el.t === 'action' && shouldPromoteToScene(text);
+      // SCRIPT #7: only the key that FINISHES the mark promotes, so a line she changed back to Action stays Action
+      const promote = el.t === 'action' && shouldPromoteToScene(text) && !shouldPromoteToScene(el.text);
       return prev.map((e, i) => (i === activeIndex ? { ...e, text, t: promote ? 'scene' : e.t } : e));
     });
     setAcDismissed(null);
@@ -357,7 +358,7 @@ export function ScriptEditor({ id }: { id: string }) {
       const head = atEnd ? text : text.slice(0, offset);
       const tail = atEnd ? '' : text.slice(offset).trim();
       const nextType = ENTER_MAP[activeEl.t];
-      const newEl = newElement(nextType, tail);
+      const newEl = newElement(tail && activeEl.t === 'dialogue' ? 'dialogue' : nextType, tail);   // SCRIPT #7: the second half of a speech is still the speech
       setElements(prev => {
         const withHead = prev.map((el, i) => (i === activeIndex ? { ...el, text: head } : el));
         const committed = commitElement(withHead, activeIndex);
