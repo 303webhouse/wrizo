@@ -20,6 +20,8 @@
 // SESSION R10 (spec 7) in DOCS the Session's fold has no button face, opened its rows read 4.5:1 and its Quota field has a 3:1 edge; Recent's sort is words, the chosen
 //             one underlined
 // MACHINA R11 Machina's reorg rail is as it was: DOCS · PROJECTS · UNFILED, its five swatches
+// COUNTS  R12 (spec 2) DRIVES and ORPHANS each carry their true count (the count their own pop-out's head shows) and L2's hover hint: "2 drives", "1 doc or circuit
+//             not filed in a drive"
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-rail-live.mjs
 process.env.WS_PLACE = '1';
@@ -110,6 +112,7 @@ await withHarness(async (app) => {
     return { bg: s.backgroundColor, edge: s.borderTopWidth + ' ' + s.borderTopColor, rowBg: rs && rs.backgroundColor, rowBorder: rs && rs.borderTopWidth, ink: rs && rs.color, ground: row ? ground(row) : null }; })()`);
   const r6 = (x) => !!x && x.bg === NODE && x.edge === `1px ${NODE_EDGE}` && x.rowBg === 'rgba(0, 0, 0, 0)' && x.rowBorder === '0px' && !!x.ink && !!x.ground && contrast(x.ink, x.ground) >= 4.5;
   ok('R6 the opened DRIVES pop-out is in node dress (#04141A, a 1 px #7EB4C4 edge), its rows draw no button face, its words 4.5:1 or better', r6(panelRead), panelRead);
+  const drivesCount = await app.evalJs("document.querySelector('.wz-cascade-panel [data-reorg-count]')?.textContent ?? null");
   const grey = panelRead ? { ...panelRead, bg: 'rgb(30, 38, 46)', edge: '1px rgb(58, 64, 71)' } : null;
   ok('MUT-R6 the same reading on Machina\'s grey panel turns R6\'s test red', !!grey && !r6(grey), grey);
   const EDGEREAD = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g }; const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const hit = document.elementFromPoint(gr.left + gr.width / 2, gr.top + gr.height / 2); return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
@@ -141,6 +144,14 @@ await withHarness(async (app) => {
     && x.sort.length >= 2 && x.sort.every((b) => b.bg === 'rgba(0, 0, 0, 0)' && b.border === '0px') && x.sort.filter((b) => b.pressed === 'true').length === 1 && x.sort.filter((b) => b.pressed === 'true').every((b) => /underline/.test(b.line));
   ok('R10 in DOCS the Session\'s fold has no button face, its rows read 4.5:1, its Quota field has a 3:1 edge; Recent\'s sort is words, the chosen one underlined', r10(sess), sess);
 
+  // ---- the two counts the pop-outs' heads state ----
+  await app.evalJs(door('reorg-unfiled')); await sleep(700);
+  const orphansCount = await app.evalJs("document.querySelector('.wz-cascade-panel [data-reorg-count]')?.textContent ?? null");
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const nD = Number(drivesCount), nO = Number(orphansCount), dr = at('reorg-projects'), or = at('reorg-unfiled');
+  const driveHint = `${nD} ${nD === 1 ? 'drive' : 'drives'}`, orphanHint = nO === 1 ? '1 doc or circuit not filed in a drive' : `${nO} docs and circuits not filed in a drive`;
+  ok('R12 DRIVES and ORPHANS carry their true count and hover hint', drivesCount !== null && orphansCount !== null && nD >= 2 && nO >= 1 && !!dr && !!or && dr.reading === pad2(nD) && dr.hint === driveHint && or.reading === pad2(nO) && or.hint === orphanHint, { drivesCount, orphansCount, dr: dr && [dr.reading, dr.hint], or: or && [or.reading, or.hint], driveHint, orphanHint });
+
   // ---- 1920, Machina ----
   await open(app, `?arbor2=0&reorg=1&flux3=1${DOOR}`, { w: 1920, h: 1080 });
   await app.evalJs(door('reorg-projects')); await sleep(700); await app.mouseMove(1500, 500); await sleep(300);
@@ -155,7 +166,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 14;   // R0 to R11, MUT-R2, MUT-R6
+const EXPECTED = 15;   // R0 to R12, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
