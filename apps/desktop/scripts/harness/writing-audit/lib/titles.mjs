@@ -41,6 +41,9 @@ export const READ = (sel) => `(() => { const i = document.querySelector(${JSON.s
 
 // the caret of an <input> as painted: a frame with the caret, a frame with its colour made transparent (inline, !important), the difference between them
 export async function caretByDifference(d, app, sel, tries = 6) {
+  await d.ev("document.querySelectorAll('[data-flux3-room-ground]').forEach((x) => { x.style.visibility = 'hidden'; }); document.getAnimations().forEach((a) => { try { a.pause(); } catch {} }); null");
+  await sleep(120);
+  console.log('P69-STATE ' + JSON.stringify(await d.ev(`(() => { const i = document.querySelector(${JSON.stringify(sel)}); const cs = getComputedStyle(i); const r = i.getBoundingClientRect(); return { sel: ${JSON.stringify(sel)}, focused: document.activeElement === i, caretColor: cs.caretColor, color: cs.color, bg: cs.backgroundColor, opacity: cs.opacity, rect: [r.x, r.y, r.width, r.height], scrollLeft: i.scrollLeft, scrollWidth: i.scrollWidth, clientWidth: i.clientWidth, selEnd: i.selectionEnd, len: i.value.length, running: document.getAnimations().filter((a) => a.playState === 'running').length, top: (() => { const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return e ? e.tagName + '.' + String(e.className).slice(0, 40) : null; })() }; })()`)));
   for (let i = 0; i < tries; i++) {
     const A = await app.cdp('Page.captureScreenshot', { format: 'png' });
     await d.ev(`document.querySelector(${JSON.stringify(sel)}).style.setProperty('caret-color', 'transparent', 'important')`);
@@ -48,6 +51,7 @@ export async function caretByDifference(d, app, sel, tries = 6) {
     const B = await app.cdp('Page.captureScreenshot', { format: 'png' });
     await d.ev(`document.querySelector(${JSON.stringify(sel)}).style.removeProperty('caret-color')`);
     const r = await d.ev(`window.__wa.diff(${JSON.stringify(A.data)}, ${JSON.stringify(B.data)})`);
+    console.log('P69-TRY ' + i + ' ' + JSON.stringify(r));
     if (r && r.width <= 8) return r;
     await sleep(110);
   }
