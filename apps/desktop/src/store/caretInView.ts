@@ -107,19 +107,13 @@ export function openCaret(el: HTMLElement): void {
   try {
     if (typeof ResizeObserver === 'undefined') return;
     let done = false;
-    const sc0 = scrollerOf(el);
-    let own = sc0 ? sc0.scrollTop : 0;   // where this settle last put the scroller, and how tall it was then: a scroll that moves it with the height unchanged is someone else's, and ends the settle
-    let ownH = sc0 ? sc0.scrollHeight : 0;
-    const mark = () => { if (sc0) { own = sc0.scrollTop; ownH = sc0.scrollHeight; } };
-    const onScroll = () => { if (!done && sc0 && Math.abs(sc0.scrollTop - own) > 1 && sc0.scrollHeight === ownH) stop(); };
-    sc0?.addEventListener('scroll', onScroll, { passive: true });
-    const stop = () => { if (done) return; done = true; sc0?.removeEventListener('scroll', onScroll); ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
-    const ro = new ResizeObserver(() => { if (!done && el.isConnected) { restOnce(el); mark(); } });
+    const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
+    const ro = new ResizeObserver(() => { if (!done && el.isConnected) restOnce(el); });
     ro.observe(el);
     const sc = scrollerOf(el);
     if (sc && sc !== el) ro.observe(sc);   // a header that draws after the page opens moves the scroller's own edge
     // the rows go on settling after the page's size has stopped changing (a row's lines re-wrap as its font arrives): a slow look at the first row for the same few seconds
-    const look = window.setInterval(() => { if (!done && el.isConnected) { const sc2 = scrollerOf(el); if (sc2 && sc2.getAttribute('data-typewriter') !== 'true') { snapFirstRow(el, sc2); mark(); } } }, 250);
+    const look = window.setInterval(() => { if (!done && el.isConnected) { const sc2 = scrollerOf(el); if (sc2 && sc2.getAttribute('data-typewriter') !== 'true') snapFirstRow(el, sc2); } }, 250);
     const timer = window.setTimeout(stop, 3000);
     ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.addEventListener(t, stop, true));
   } catch { /* no observer: the page rests where the first measure put it */ }

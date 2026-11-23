@@ -106,6 +106,11 @@ try { await withHarness(async (app) => {
   const cfg = CONFIGS[0];
   const L = await ladder(cfg);
   if (L && L.m) {
+    // SUPERSEDED (Nov 22, train J3: the page keeps itself on a whole line for a few seconds after it opens, while it lays out, and stops at her first act, so a native scroll planted right after the open was put back before it was read). The lines as they stood, verbatim:
+    //   await ev("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; })()");
+    //   await sleep(200);
+    // successor: her first act (the wheel) ends that, then the page is scrolled by its overflow, as the browser's caret reveal did
+    await ev("(() => { document.dispatchEvent(new Event('wheel', { bubbles: true })); return true; })()");
     await ev("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; })()");
     await sleep(200);
     const m = await ev(MEASURE());
