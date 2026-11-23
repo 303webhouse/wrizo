@@ -1,0 +1,22 @@
+> @writer-studio/server@0.0.1 build /app/apps/server
+> tsc -p tsconfig.json
+
+
+[stage-0  9/11] RUN --mount=type=cache,id=s/d9a7894f-c7a0-415a-9fb5-48a34624fd18-node_modules/cache,target=/app/node_modules/.cache pnpm install --prod=false && pnpm --filter @writer-studio/desktop build:web && pnpm --filter @writer-studio/server build
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 10/11] RUN printf '\nPATH=/app/node_modules/.bin:$PATH' >> /root/.profile
+[stage-0 11/11] COPY . /app
+[stage-0 11/11] COPY . /app
+exporting to image
+exporting to image
+exporting cache to Amazon S3
+exporting to image
+exporting cache to Amazon S3
+exporting to image
+containerimage.descriptor: eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6Mzk3MjczYjQ2N2M4NTE0ODE0YTIxYTFiN2M0YWQ0NDIxYmYxZWUwYmIxYTE4Njc5NTEzNWZiNjlmNmZhYTcxZSIsInNpemUiOjI5NTgsInBsYXRmb3JtIjp7ImFyY2hpdGVjdHVyZSI6ImFtZDY0Iiwib3MiOiJsaW51eCJ9fQ==
+containerimage.config.digest: sha256:bfd7d464a7acf14ee89257d58fb8af0c18722b7ad958dadad4775f86d3a6c066
+containerimage.digest: sha256:397273b467c8514814a21a1b7c4ad4421bf1ee0bb1a186795135fb69f6faa71e
+image.name: production-dpsjc-b.railway-registry.com/d9a7894f-c7a0-415a-9fb5-48a34624fd18:1e9b8fcf-025f-43a5-b592-237851108b3d
+railway.push.duration: 9.721966164s
+Deploy complete
+exit 0 end 19:03:37Z
