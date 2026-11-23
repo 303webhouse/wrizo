@@ -16,5 +16,6 @@ export { type SystemBoardKind, getSystemKind, getOrCreateSystemBoard, reconcileS
 export { getDrawers, getDrawer, saveDrawer, createDrawer, renameDrawer, softDeleteDrawer, setProjectDrawer } from './persistence/drawers';
 import './persistence/seams';
 import './persistence/syncBase';
+import './persistence/cloneJson';
 export { type RemoteRecords, applyRemoteRecords, resetLocalData } from './persistence/syncApply';
 export { type PurgeAck, isPurged, subscribePurgedElsewhere, purgeEntry, purgeProject, purgeDrawer, purgeStoryPlan, emptyTrash, purgeAllDeleted, softDeleteProject, softDeleteStoryPlan, applyAcknowledgedPurged } from './persistence/purge';

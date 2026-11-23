@@ -65,18 +65,21 @@ export function restingScroll(need: number, max: number, offsets: readonly numbe
 
 /** THE ROWS ARE THE JUDGE: a long page's rows are laid out lazily, so the offsets measured by restOnce can be a little off by the time the scroll lands, or after it. Read the first row that shows; if the scroller's
  *  edge cuts it, go DOWN to the next row's top (the caret's line only moves further into view), or, at the foot where there is no further, UP to the cut row's own top. Two passes at most. */
-function snapFirstRow(el: HTMLElement, scroller: HTMLElement): void {
+function snapFirstRow(el: HTMLElement, scroller: HTMLElement): boolean {
+  let moved = false;
   for (let pass = 0; pass < 2; pass += 1) {
     const clip = scroller.getBoundingClientRect().top;
     let first: DOMRect | null = null;
     for (const r of Array.from(el.querySelectorAll<HTMLElement>('.wz-row'))) { const q = r.getBoundingClientRect(); if (q.height > 0 && q.bottom > clip + 1) { first = q; break; } }
-    if (!first || first.top >= clip - 0.5) return;
+    if (!first || first.top >= clip - 0.5) return moved;
     const downBy = first.bottom - clip;
     const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
     const by = downBy <= room + 0.5 ? downBy : first.top - clip;
-    if (Math.abs(by) < 0.5) return;
+    if (Math.abs(by) < 0.5) return moved;
     scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
+    moved = true;
   }
+  return moved;
 }
 
 /** The page has just opened with its caret at the end (the browser's scroll was prevented): rest it on a whole line, with the caret's line in view where that can be done without cutting the first line. */
@@ -100,21 +103,35 @@ function restOnce(el: HTMLElement): void {
   } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
 }
 
-/** Rest the page, and keep it resting on a whole line while a long page lays out (its rows are laid out lazily, so its scroll height changes in the moments after it opens, and a rest chosen from the first measure ends mid-line: flux3-s4b-l4 CLEAR at 1920).
- *  The rule is run again on each change of the page's or its scroller's size for a few seconds, and stops for good at her first act (a key, the wheel, a press, a touch). */
+const settles = new Set<() => void>();
+
+/** Ends every page's open settle (below). A script of the app that puts her scroll back where she left it (Back from the full-screen layer, the way back to a page) calls this first, so the settle never fights it. */
+export function endOpenSettles(): void { Array.from(settles).forEach((f) => f()); }
+
+/** Rest the page, and keep it resting on a whole line while a long page lays out (its rows are laid out lazily, so its scroll height changes in the moments after it opens, and a rest chosen from the first measure ends mid-line:
+ *  flux3-s4b-l4 CLEAR at 1920). The rule is run again on each change of the page's or its scroller's size, and the first row is looked at every 250 ms; the settle ENDS when the page has been quiet for half a second (nothing
+ *  changed size, nothing was moved), at two seconds at the latest, at her first act (a key, the wheel, a press, a touch), or when the app puts her scroll back (endOpenSettles). A page that is already laid out is not touched again. */
 export function openCaret(el: HTMLElement): void {
   restOnce(el);
   try {
     if (typeof ResizeObserver === 'undefined') return;
     let done = false;
-    const stop = () => { if (done) return; done = true; ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
-    const ro = new ResizeObserver(() => { if (!done && el.isConnected) restOnce(el); });
+    let lastAct = performance.now();
+    const stop = () => { if (done) return; done = true; settles.delete(stop); ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
+    settles.add(stop);
+    const ro = new ResizeObserver(() => { if (done || !el.isConnected) return; lastAct = performance.now(); restOnce(el); });
     ro.observe(el);
     const sc = scrollerOf(el);
     if (sc && sc !== el) ro.observe(sc);   // a header that draws after the page opens moves the scroller's own edge
-    // the rows go on settling after the page's size has stopped changing (a row's lines re-wrap as its font arrives): a slow look at the first row for the same few seconds
-    const look = window.setInterval(() => { if (!done && el.isConnected) { const sc2 = scrollerOf(el); if (sc2 && sc2.getAttribute('data-typewriter') !== 'true') snapFirstRow(el, sc2); } }, 250);
-    const timer = window.setTimeout(stop, 3000);
+    // the rows go on settling after the page's size has stopped changing (a row's lines re-wrap as its font arrives): a slow look at the first row
+    const look = window.setInterval(() => {
+      if (done) return;
+      if (!el.isConnected) { stop(); return; }
+      const sc2 = scrollerOf(el);
+      if (sc2 && sc2.getAttribute('data-typewriter') !== 'true' && snapFirstRow(el, sc2)) lastAct = performance.now();
+      if (performance.now() - lastAct > 500) stop();
+    }, 250);
+    const timer = window.setTimeout(stop, 2000);
     ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.addEventListener(t, stop, true));
   } catch { /* no observer: the page rests where the first measure put it */ }
 }

@@ -2,5 +2,7 @@
 // It marks the root and loads flux-v3.css: every Flux 3 rule is scoped to :root[data-flux3][data-theme='flux'], so the other themes never
 // see one, and without the flag the file is never fetched at all (POLISH's request, Nov 5: never an @import in index.css).
 import './flux-v3.css';
+import './flux-current.css';   // the hands' current and the stage current (fluxCurrent.ts): one layer, drawn only after a click
+import './fluxCurrent';
 
 document.documentElement.setAttribute('data-flux3', '');

@@ -27,7 +27,7 @@ import { REORG, SPRINT_CONSULTANT } from '../reorg/flag';
 import { setWritingSettings, useWritingSettings } from '../store/writingSettings';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { BeforeExport } from '../reorg/BeforeExport';
-import { themeHas } from '../reorg/themeGate';
+import { reorgFor, themeHas } from '../reorg/themeGate';
 import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
@@ -163,8 +163,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
-  const back = REORG && themeHas('back', tutorTheme) && pageKind !== 'board';
-  const splitOn = REORG && themeHas('split', tutorTheme);
+  const back = reorgFor(tutorTheme) && themeHas('back', tutorTheme) && pageKind !== 'board';   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
+  const splitOn = reorgFor(tutorTheme) && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
   const sprint = back && mode === 'journal';
   // THE LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): in BUILD and EDIT the Back menu's FEEDBACK is Structure / Tone / Consistency (EDIT adds Usage / Punctuation / Citations above them) plus "Ask Your Own"; it replaces the four-ask roster and the three computed sections
@@ -194,7 +194,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (search.open) { noteWasOpen(open); searchSeen.current = true; setOpen(true); return; }
     if (searchSeen.current) { searchSeen.current = false; setOpen(restoreAfterSearch()); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.open]);
+  }, [search.open, search.opened]);   // R3 (POLISH's audit, Fable Nov 22): the door pressed on a search that is already open only bumps `opened`; the drawer she shut by clicking back into the page must open again on it
   // A PART ROW'S LINK BADGE (reorg/backMenu/assetsFocus.ts): its press opens this drawer on ASSETS; the Assets tab opens that Part (mounting
   // fresh or already drawn). Off the Back menu there is no Assets tab to take it, so the ask is spent here.
   useEffect(() => subscribeAssetsFocus(() => {
@@ -389,12 +389,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const onKeyDown = (e: KeyboardEvent) => {
       if (showDisclosure) return; // the disclosure has no Escape-dismiss, by design (hb1.1's own UnlockCeremony precedent)
       const target = e.target as HTMLElement | null;
-      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the tab when it was in the drawer [Tutor §18]
+      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, the tab when the page has no editor [Tutor §18, bug-list #49]
       if (e.key === 'Escape' && !e.defaultPrevented) {
         const inDrawer = !!target?.closest?.('.wz-tutor-zone');
         if (getLinkDock(entry.id)) setLinkDock(entry.id, null);   // Esc leaves a docked reader with the dock [Tutor §19]
         setOpen(false); setDocked(false);
-        if (inDrawer) document.querySelector<HTMLElement>('.wz-tutor-grip')?.focus();
+        if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? document.querySelector<HTMLElement>('.wz-tutor-grip'))?.focus({ preventScroll: true });
         return;
       }
       if (target?.closest?.('.wz-tutor-zone')) return;

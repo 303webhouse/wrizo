@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { getWayBack, type WayBackSession } from '../../store/wayBack';
 import { liveQuery, registerLiveSite } from '../../store/liveDom';
 import { setCaretOffset } from '../../store/caretOffset';
+import { endOpenSettles } from '../../store/caretInView';
 
 // FULL SCREEN ON A BOARD (reorg plan v2.1 §3b, ARBOR item 3; Nick, Team B row 2: "Full Screen on a Board opens the Board's own screen, with a Back
 // button to the page she came from"; Fable, Nov 21 11:45 am, RULED: the return restores scroll, caret, stage and split).
@@ -66,6 +67,7 @@ registerLiveSite('split.trip.editor', pageEditor);
 export function restoreTripPage(wb: WayBackSession | null): () => void {
   if (!wb) return () => {};
   const apply = () => {
+    endOpenSettles();   // the page's own open settle must not fight her scroll being put back
     const ed = pageEditor();
     if (ed && typeof wb.caret === 'number') { ed.focus({ preventScroll: true }); setCaretOffset(ed, wb.caret); }
     const sc = pageScroll();

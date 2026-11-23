@@ -7,6 +7,7 @@ import { flushNow, getJournalEntry, isAutoSet, removePageLink, subscribe } from 
 import { routeForEntry } from '../store/routeForEntry';
 import { unbornHref } from '../store/unbornPage';
 import { partsOfDoc, type PartRow } from './partsSeam';
+import { wantPartFocus } from './partFocus';
 import {
   ensureDoc, isPartColor, joinPart, movePart, partById, partsOfDoc as inkPartsOf, runOf, setPartColor, setPartLevel, undoJoin, undoSplit, MAX_PART_LEVEL, PART_COLORS,
   type JoinToken, type PartColor, type SplitToken,
@@ -100,6 +101,7 @@ export function PartsList({ entry, beforeLeave, stage = null, host, docMenu }: {
     if (!target) return;
     // the top rail's drop hands in the host's flush (her typing first); the Front menu's tab needs none (the press there blurs the editor)
     if (beforeLeave) beforeLeave(); else save();
+    wantPartFocus(id);   // her own move: the Part that opens takes her caret (reorg/partFocus.ts, bug R1)
     navigate(routeForEntry(target));
   };
   // AN ASSET ONTO A PART (reorg/assetConnect.ts): a row takes a drag of the Assets tab's own type and nothing else; the line below the list says

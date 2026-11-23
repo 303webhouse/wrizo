@@ -225,7 +225,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   // exactly the way the writer's own click would.
   useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
 
-  // Esc closes the open drawer unless a control inside handled it; focus returns to the tab when it was in the drawer, and stays on the page otherwise [Sliver §8]
+  // Esc closes the open drawer unless a control inside handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, and stays on the page otherwise; a page with no editor (a Board) gets the tab [Sliver §8, bug-list #49: the focus used to stay on the tab and the next key went nowhere]
   useEffect(() => {
     if (!open) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -233,7 +233,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
       const root = rootRef.current;
       const inDrawer = !!root && !!document.activeElement && root.contains(document.activeElement);
       setOpen(false);
-      if (inDrawer) root?.querySelector<HTMLElement>('.wz-sliver-grip')?.focus();
+      if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? root?.querySelector<HTMLElement>('.wz-sliver-grip'))?.focus({ preventScroll: true });
     };
     document.addEventListener('keydown', onEsc);
     return () => document.removeEventListener('keydown', onEsc);
@@ -355,7 +355,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
         {/* THE REORG: the session (the goal, what it counts, the timer, progress) is DOCS' last group (reorg/panels/DocsPanel.tsx; Fable, Nov 20),
             so the Front menu's foot no longer carries it: no goal foot, no Progress switch, no Progress block; the Typewriter's block stays */}
-        {(!reorgFront || sliverTheme === 'plateau') && <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} named={reorgFront && sliverTheme === 'plateau'} />}
+        {!reorgFront && <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />}
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -891,7 +891,7 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // exactly (the numeral still shows, reading 0:00, before the writer's
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
-function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt, named }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null; /** the Arbor reorg's Front menu names its bar (the Wrizors' pass 3: the stray bar under the list) */ named?: boolean }) {
+function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
   const { t } = useDeskLexicon();
   // The goal NUMBER is set under Progress Tracking. This foot only shows the
   // hairline and, when the timer is on, the clock. Full screen is not here:
@@ -913,7 +913,6 @@ function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt, named }
     <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {named && target != null && settings.instrumentsOn && <div className="wz-sliver-goal-name">{t('goalLabel')}</div>}
       {settings.instrumentsOn && target != null && (
         <div className="wz-sliver-goal-hairline" aria-hidden="true">
           <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />

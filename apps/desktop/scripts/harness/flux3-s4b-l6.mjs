@@ -29,7 +29,7 @@ const INSTRUMENT = `(() => {
   // the control arm: the L6 dress away (the theatre attribute and every flag-scoped rule naming it or the preset's first line)
   I.undress = () => { let n = 0; document.querySelectorAll('.flux3-node-f[data-st]').forEach((e) => { e.removeAttribute('data-st'); n += 1; });
     for (const sh of [...document.styleSheets]) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
-      for (let i = rules.length - 1; i >= 0; i--) { const t = rules[i].selectorText || ''; if (t.indexOf('data-flux3') >= 0 && (t.indexOf('data-st') >= 0 || t.indexOf('first-line') >= 0)) { sh.deleteRule(i); n += 1; } } } return n; };
+      for (let i = rules.length - 1; i >= 0; i--) { const t = rules[i].selectorText || ''; if (t.indexOf('data-flux3') >= 0 && (t.indexOf('[data-st]') >= 0 || t.indexOf('first-line') >= 0)) { sh.deleteRule(i); n += 1; } } } return n; };
 })()`;
 
 const says = (n, word) => !!n && n.node && typeof n.after === 'string' && n.after.toLowerCase().includes(word.toLowerCase()) && n.tt === 'uppercase';

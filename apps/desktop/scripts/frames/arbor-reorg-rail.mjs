@@ -36,7 +36,17 @@ async function boxSet(app) {
   await app.mouseMove(900, 400); await sleep(400);
 }
 
+// the Session in PAGES (spec section 7; POLISH's shared SessionGroup on train J): PAGES open, the Session unfolded
+async function session(app) {
+  await app.evalJs(`${door('reorg-docs')}?.click(); null`); await sleep(800);
+  await app.evalJs("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(500);
+  await app.evalJs("document.querySelector('.wz-cascade-panel [data-reorg-group=\"session\"]')?.scrollIntoView({ block: 'nearest' }); null"); await sleep(300);
+  await app.mouseMove(900, 400); await sleep(400);
+}
+
 export default {
+  'rail-session-day': async (app) => { await setUp(app, 'day'); await session(app); await report(app, 'rail-session-day'); },
+  'rail-session-night': async (app) => { await setUp(app, 'night'); await session(app); await report(app, 'rail-session-night'); },
   'rail-day': async (app) => { await setUp(app, 'day'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'rail-day'); },
   'rail-night': async (app) => { await setUp(app, 'night'); await app.mouseMove(700, 400); await sleep(400); await report(app, 'rail-night'); },
   'rail-shelf-day': async (app) => { await setUp(app, 'day'); await app.evalJs(`${door('reorg-unfiled')}?.click(); null`); await sleep(800); await app.mouseMove(700, 400); await sleep(400); await report(app, 'rail-shelf-day'); },
