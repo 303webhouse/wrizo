@@ -343,6 +343,22 @@ await withHarness(async (app) => {
       const past = Math.max(...ss.flatMap((s) => s.els.map((e) => e.belowSheet)));
       judge('P2', 'a speech longer than a page stays inside the page', 'no text below the bottom margin', { pages: ss.length, linesBelowMargin: over, linesBelowSheet: past, sheetOverflowCss: ss[0]?.overflow, sheetHeightIn: ss[0]?.hIn }, over <= 0);
       { const at = ss.find((s) => s.els.some((e) => e.t === 'dialogue')); await ev(`document.querySelector('.script-sheet[data-page-index="${at ? at.i : 0}"]')?.scrollIntoView({ block: 'end' })`); await sleep(250); await d.shot('P2-long-speech-overflow'); }
+      // the words past the sheet's foot: can the writer SEE them, or does the next sheet paint over them?
+      const seen = await ev(`(async () => {
+        const dlg = [...document.querySelectorAll('.script-el[data-type="dialogue"]')].sort((a, b) => b.textContent.length - a.textContent.length)[0];
+        const t = dlg.firstChild; const probe = async (word) => {
+          const i = t.data.indexOf(word); const r = document.createRange(); r.setStart(t, i); r.setEnd(t, i + word.length);
+          const box = document.querySelector('.desk-frame-scroll-cap') || document.scrollingElement;
+          const b0 = r.getBoundingClientRect(); const top = box.getBoundingClientRect ? box.getBoundingClientRect().top : 0; box.scrollTop += b0.top - top - 220;
+          await new Promise((k) => requestAnimationFrame(() => requestAnimationFrame(k)));
+          const b = r.getBoundingClientRect(); const h = document.elementFromPoint(b.left + 3, b.top + b.height / 2);
+          return { word, onItsOwnElement: !!h && (h === dlg || dlg.contains(h)), topmost: h ? String(h.className || h.tagName).slice(0, 40) : null, topmostSheet: h && h.closest('.script-sheet') ? h.closest('.script-sheet').dataset.pageIndex : null };
+        };
+        const own = dlg.closest('.script-sheet').dataset.pageIndex;
+        return { ownSheet: own, first: await probe('word5 '), mid: await probe('word300 '), last: await probe('word419') };
+      })()`);
+      await sleep(200); await d.shot('P2b-last-words');
+      judge('P2b', 'every word of the over-long speech can be seen on screen', 'the last words are visible', seen, !!seen.last?.onItsOwnElement && !!seen.mid?.onItsOwnElement);
     }
     {
       // page 1 ends on a scene heading; page 2 is full: the heading travels, and page 2's last line must reflow onto page 3
@@ -568,6 +584,9 @@ await withHarness(async (app) => {
     const contd = g.filter((e) => /CONT'D/i.test(e.x)).map((e) => e.x);
     const typedMatches = g.length === LIST.length && g.every((e, i) => e.t === T[LIST[i][0]]);
     rec('W1', 'the short, typed through', `${LIST.length} elements, each its own type`, { elements: g.length, typedMatches, words: wordsN, pages: ss.length, contd, sheetLines: ss.map((s) => s.els.length) }, typedMatches ? 'OK' : 'BREAK');
+    const perPage = await ev(`[...document.querySelectorAll('.script-sheet')].map((s) => { const r = s.getBoundingClientRect(); const em = parseFloat(getComputedStyle(s).fontSize); const els = [...s.querySelectorAll('.script-el')]; const l = els[els.length - 1].getBoundingClientRect(); return Math.round((l.bottom - (r.top + 6 * em)) / em); })`);
+    const totalLines = perPage.reduce((a, b) => a + b, 0);
+    rec('W3', 'how full each page of the short is (54 lines is a full page)', 'pages full except the last', { linesPerPage: perPage, totalLines, pagesIfTheLinesRanOn: Math.ceil(totalLines / 54), pagesShown: ss.length }, 'INFO');
     const moreOnPage = ss.flatMap((s) => s.els.map((e) => e.x)).filter((x) => /\(MORE\)/.test(x));
     rec('W2', 'the long speech at a page break', '(MORE) / (CONT\'D)', { more: moreOnPage.length }, moreOnPage.length ? 'OK' : 'BREAK');
     for (let i = 0; i < Math.min(ss.length, 7); i++) { await ev(`document.querySelector('.script-sheet[data-page-index="${i}"]')?.scrollIntoView({ block: 'start' })`); await sleep(160); await d.shot(`W-page-${i + 1}`); }
