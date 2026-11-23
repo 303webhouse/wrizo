@@ -11,6 +11,8 @@ import { isArbor2 } from '../arbor2/flag';
 import { ArborThemeRoomRow } from '../arbor2/themeRoom';
 import { isMachina2 } from '../machina2/flag';
 import { MachinaThemeRoomRow } from '../machina2/themeRoom';
+import { FLUX3 } from '../flux3/flag';
+import { FluxMarkStill } from '../flux3/fluxMark';
 
 // the theme picker's body: one card per BUILT theme (absent, never greyed); card art is keyed by the card's own theme, so it shows that theme's look from inside another [ThemePicker §1]
 interface ThemeCardDef {
@@ -60,7 +62,8 @@ function ArborPlate() {
 function FluxPlate({ glitching }: { glitching: boolean }) {
   return (
     <>
-      <div className="wz-theme-plate-prompt" aria-hidden="true">&gt;_</div>
+      {/* FLUX'S MARK (S5, v5): the picker card carries the mark, still */}
+      <div className="wz-theme-plate-prompt" aria-hidden="true">{FLUX3 ? <FluxMarkStill /> : <>&gt;_</>}</div>
       <div className={`wz-theme-plate-tick wz-theme-plate-tick-cyan${glitching ? ' wz-theme-glitching' : ''}`} aria-hidden="true" />
       <div className={`wz-theme-plate-tick wz-theme-plate-tick-lime${glitching ? ' wz-theme-glitching' : ''}`} aria-hidden="true" />
     </>

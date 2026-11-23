@@ -535,6 +535,8 @@ export type DeskTermId =
   | 'authAdultConfirm' | 'authAdultRequired'
   // the splash's cycling loading line, four phrases per theme [deskLexicon §22]
   | 'splashLoading1' | 'splashLoading2' | 'splashLoading3' | 'splashLoading4'
+  // FLUX'S SPLASH, v5 (S5): its status line, tagline and two doors of its own (LOG IN is authSignIn); drawn in capitals, the brackets are the drawing's
+  | 'splashWiringIn' | 'splashTagline' | 'splashDoorCompose' | 'splashDoorResume'
   // W4 (Help me choose) - the panel's chrome words and the questions' answers (labels + hints) and the deck cover lines.
   | 'formsIntakeHint' | 'formsFoot' | 'formsFootBlocks'
   | 'helpDoor'

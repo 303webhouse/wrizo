@@ -106,6 +106,7 @@ try { await withHarness(async (app) => {
   // REDUCED MOTION AND SMALL WINDOWS
   await open({ reduced: true });
   await soft('!!document.querySelector(".wz-flux5")', 3000);
+  await live();   // the doors wait only for the session's answer here, never for a run: MS16 below still reads no status, no glitch
   const still = await ev(READ);
   await sleep(1200);
   const stillLater = await ev(READ);

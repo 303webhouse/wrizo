@@ -233,6 +233,7 @@ export const FLUX_OVERRIDES = {
     graftPairedPage: 'Doc',
     // THE SIGN-IN POP-OUT: Flux's own words (the node's tag, and LOG IN for the sign-in door and the panel's button; the capitals and the brackets are the stylesheet's)
     authSignIn: 'Log in',
+    cascadeSettingsSignOut: 'Log out',   // the sheet (S5): the sign-in form's button and the settings row say Log in / Log out in Flux
     authPanelTag: 'N.01 · INPUT',
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;

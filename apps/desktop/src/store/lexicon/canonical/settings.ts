@@ -67,4 +67,8 @@ export const CANONICAL_SETTINGS = {
   splashLoading2: 'Turning the soil…',
   splashLoading3: 'Watering the roots…',
   splashLoading4: 'Opening the notebook…',
+  splashWiringIn: 'Wiring in',
+  splashTagline: '// For humans who write',
+  splashDoorCompose: 'Compose',
+  splashDoorResume: 'Resume',
 } satisfies Partial<Record<DeskTermId, string>>;
