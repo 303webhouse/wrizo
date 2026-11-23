@@ -62,11 +62,11 @@ async function seed(app) {
     return null;
   })()`);
 }
-async function open(app, id, { w = 1366, lift = LIFT, flux3 = true, theme = 'flux' } = {}) {
+async function open(app, id, { w = 1366, lift = LIFT, flux3 = true, theme = 'flux', reorg = 1 } = {}) {
   await app.emulateDpr(1, w, 768);
   await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });   // item141: the seam is read only after a settle
   await app.evalJs(`window.wrizoTheme.set('${theme}'); null`);
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${flux3 ? '&flux3=1' : ''}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=${reorg}&arbor2=0${flux3 ? '&flux3=1' : '&flux3=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -182,17 +182,26 @@ await withHarness(async (app) => {
   const wireOff = await app.evalJs("({ sliver: !!document.querySelector('.wz-sliver'), page: !!document.querySelector('.forward-only-editor') })");
   ok('FF10 Wire In draws no Front menu', wire === true && !!wireOff && wireOff.sliver === false && wireOff.page === true, { wire, wireOff });
 
-  await open(app, 'ff-1', { lift: 'flux.top' });
+  await open(app, 'ff-1', { lift: '' });
+  await drawer(app);
+  const noDoor = await app.evalJs("({ grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
+  ok('FF11b with no door the Front menu stands in Flux (flux.front is on in the table): the TRACKS tab is there', !!noDoor && noDoor.parts === true, noDoor);
+  // the piece is on in the table, so today's drawer (FF11, FF19) is now read with ?reorg=0
+  await open(app, 'ff-1', { lift: 'flux.top', reorg: 0 });
   await drawer(app);
   const off = await app.evalJs("({ grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
   const todayEdge = await app.evalJs(CS('.wz-action-btn', ['border-top-color']));
-  ok('FF11 piece OFF without the door: with only the top bar lifted, the drawer has no TRACKS tab', !!off && off.grip === true && off.parts === false && off.list === false, off);
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('FF11 piece OFF without the door: with only the top bar lifted, the drawer has no TRACKS tab', !!off && off.grip === true && off.parts === false && off.list === false, off);
+  ok('FF11 [successor] with ?reorg=0 the drawer has no TRACKS tab', !!off && off.grip === true && off.parts === false && off.list === false, off);
 
   ok('FF19 the COMMANDS edges are #5F8F95 in the Front menu, and today\'s drawer keeps its own', !!frontEdge && frontEdge['border-top-color'] === 'rgb(95, 143, 149)' && !!todayEdge && todayEdge['border-top-color'] !== 'rgb(95, 143, 149)', { frontEdge, todayEdge });
   await open(app, 'ff-1', { flux3: false });
   await drawer(app);
   const plain = await app.evalJs("({ flux3: document.documentElement.hasAttribute('data-flux3'), grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
-  ok('FF12 the plain Flux never has it: without ?flux3=1 even the door gives no Front menu', !!plain && plain.flux3 === false && plain.grip === true && plain.parts === false && plain.list === false, plain);
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('FF12 the plain Flux never has it: without ?flux3=1 even the door gives no Front menu', !!plain && plain.flux3 === false && plain.grip === true && plain.parts === false && plain.list === false, plain);
+  ok('FF12 [successor] the plain Flux never has it: with ?flux3=0 even the door gives no Front menu', !!plain && plain.flux3 === false && plain.grip === true && plain.parts === false && plain.list === false, plain);
 
   await open(app, 'ff-1', { lift: '', flux3: false, theme: 'machina' });
   await drawer(app);
@@ -215,7 +224,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 19;
+const EXPECTED = 20;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`

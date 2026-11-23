@@ -109,8 +109,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door: the reorg's facts are the reorg's, not Machina's: reorgInMachina is the reorg ON FOR THE THEME): the original S1 successor, verbatim:
   // ok('S1 [successor] a reorg fact is Machina\'s: in Arbor a set writes no local copy and keeps nothing (a round may still run, for the switchless facts); in Machina it is written, kept and sent to /api/prefs',
   // inArbor.seam && !inArbor.wrote && !inArbor.kept && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0, { inArbor, inMachina });
-  ok('S1 [successor 2] a reorg fact is the reorg\'s: in Arbor and in Machina (the reorg on) a set is written, kept and sent to /api/prefs; in Flux (the reorg off) it writes no local copy and keeps nothing (a round may still run, for the switchless facts)',
-    inArbor.seam && inArbor.wrote && inArbor.kept && inArbor.calls > 0 && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0 && inFlux.seam && !inFlux.wrote && !inFlux.kept, { inArbor, inMachina, inFlux });
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('S1 [successor 2] a reorg fact is the reorg\'s: in Arbor and in Machina (the reorg on) a set is written, kept and sent to /api/prefs; in Flux (the reorg off) it writes no local copy and keeps nothing (a round may still run, for the switchless facts)',
+  // inArbor.seam && inArbor.wrote && inArbor.kept && inArbor.calls > 0 && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0 && inFlux.seam && !inFlux.wrote && !inFlux.kept, { inArbor, inMachina, inFlux });
+  ok('S1 [successor 3] a reorg fact is the reorg\'s: in Flux, Arbor and Machina (the reorg on in all three) a set is written, kept and sent to /api/prefs',
+    inFlux.seam && inFlux.wrote && inFlux.kept && inFlux.calls > 0 && inArbor.seam && inArbor.wrote && inArbor.kept && inArbor.calls > 0 && inMachina.seam && inMachina.wrote && inMachina.kept && inMachina.calls > 0, { inArbor, inMachina, inFlux });
 
   // ---- PIN -------------------------------------------------------------------------------------------------------------------------------
   delete process.env.WS_REORG;

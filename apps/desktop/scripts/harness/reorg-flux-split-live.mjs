@@ -42,10 +42,10 @@ async function seed(app) {
     return null;
   })()`);
 }
-async function open(app, id, { lift = 'flux.back,flux.split', flux3 = true } = {}) {
+async function open(app, id, { lift = 'flux.back,flux.split', flux3 = true, reorg = 1 } = {}) {
   await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('flux'); null");
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${flux3 ? '&flux3=1' : '&flux3=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=${reorg}&arbor2=0${flux3 ? '&flux3=1' : '&flux3=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -89,7 +89,12 @@ await withHarness(async (app) => {
   await open(app, 'fs-1', { flux3: false });
   await split(app);
   const plain = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('FS5 OFF: with the door on flux.back only, the split never draws; and the plain Flux (?flux3=0) never draws it even through the door', noCell === false && plain === false, { noCell, plain });
+  await open(app, 'fs-1', { reorg: 0 });
+  await split(app);
+  const reorgOff = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('FS5 OFF: with the door on flux.back only, the split never draws; and the plain Flux (?flux3=0) never draws it even through the door', noCell === false && plain === false, { noCell, plain });
+  ok('FS5 [successor] the split draws with the door on flux.back only (flux.split is on in the table); ?reorg=0 and the plain Flux (?flux3=0) never draw it', noCell === true && reorgOff === false && plain === false, { noCell, reorgOff, plain });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

@@ -109,11 +109,13 @@ await withHarness(async (app) => {
   const noSwitch = await app.evalJs("!!document.querySelector('.reorg-top')");
   await visit(app, '/?arbor2=0&reorg=1&flux3=1');
   const noDoor = await app.evalJs("!!document.querySelector('.reorg-top')");
-  await visit(app, `/?arbor2=0&reorg=1${DOOR}`);
+  await visit(app, `/?arbor2=0&reorg=1&flux3=0${DOOR}`);
   const noRedesign = await app.evalJs("!!document.querySelector('.reorg-top')");
   await visit(app, BASE);
   const on = await app.evalJs("!!document.querySelector('.reorg-top')");
-  ok('T0 the reorg\'s top bar stands in Flux with the redesign, the switch and the door, and not without the door, the redesign or the switch', on && !noDoor && !noRedesign && !noSwitch, { on, noDoor, noRedesign, noSwitch });
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('T0 the reorg\'s top bar stands in Flux with the redesign, the switch and the door, and not without the door, the redesign or the switch', on && !noDoor && !noRedesign && !noSwitch, { on, noDoor, noRedesign, noSwitch });
+  ok('T0 [successor] the reorg\'s top bar stands in Flux with the redesign and the switch, with or without the door, and not with ?flux3=0 or without the switch', on && noDoor && !noRedesign && !noSwitch, { on, noDoor, noRedesign, noSwitch });
 
   // ---- the crumb ----
   await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor('ft-2', 'c'); null"); await sleep(800);

@@ -57,11 +57,11 @@ async function seed(app) {
     return null;
   })()`);
 }
-async function open(app, id, { w = 1366, lift = 'flux.back', flux3 = true } = {}) {
+async function open(app, id, { w = 1366, lift = 'flux.back', flux3 = true, reorg = 1 } = {}) {
   await app.emulateDpr(1, w, 768);
   await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });   // item141: the seam is read only after a settle
   await app.evalJs("window.wrizoTheme.set('flux'); null");
-  await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0${flux3 ? '&flux3=1' : ''}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '/?reorg=${reorg}&arbor2=0${flux3 ? '&flux3=1' : '&flux3=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.wz-tutor-grip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -137,7 +137,9 @@ await withHarness(async (app) => {
   await open(app, 'fb-1', { lift: '' });
   await drawer(app);
   const off =await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
-  ok('FB5 piece OFF without the door: in Flux the drawer is today\'s (no Spine tab, no reorg markup)', !!off && Array.isArray(off.tabs) && !off.tabs.includes('wz-tutor-tab-plan') && off.reorg === false, off);
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('FB5 piece OFF without the door: in Flux the drawer is today\'s (no Spine tab, no reorg markup)', !!off && Array.isArray(off.tabs) && !off.tabs.includes('wz-tutor-tab-plan') && off.reorg === false, off);
+  ok('FB5 [successor] with no door the Back menu stands in Flux (flux.back is on in the table): the Spine tab and the reorg markup are on the page', !!off && Array.isArray(off.tabs) && off.tabs.includes('wz-tutor-tab-plan') && off.reorg === true, off);
 
   // FB14 (the Wrizors' pass 2, REAL 3): the Operator's two fields are in field dress (fill #020C10, a 1 px #5F8F95 edge) and every hint is text-low #7EB4C4 (8.67:1), not the browser's green-grey
   await open(app, 'fb-1'); await drawer(app); await tab(app, 'tutor');
@@ -166,14 +168,20 @@ await withHarness(async (app) => {
   const act = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'); if (!p) return null; const b = [...p.querySelectorAll('button')].find((x) => /writing prompt/i.test(x.textContent || '')); if (!b) return { found: false }; const pr = p.getBoundingClientRect(), br = b.getBoundingClientRect(); return { found: true, inside: br.top >= pr.top - 1 && br.bottom <= pr.bottom + 1, btnBottom: Math.round(br.bottom), panelBottom: Math.round(pr.bottom) }; })()");
   ok('FB15 Wire In (the Corridor): the Writing prompt button is wholly inside the opened panel', !!act && act.found === true && act.inside === true, act);
 
+  await open(app, 'fb-1', { lift: '', reorg: 0 });
+  await drawer(app);
+  const today = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
+  ok('FB5b with ?reorg=0 the drawer is today\'s (no Spine tab, no reorg markup)', !!today && Array.isArray(today.tabs) && !today.tabs.includes('wz-tutor-tab-plan') && today.reorg === false, today);
   await open(app, 'fb-1', { flux3: false });
   await drawer(app);
   const plain = await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), flux3: document.documentElement.hasAttribute('data-flux3') }; })()");
-  ok('FB7 the plain Flux never has the reorg: without ?flux3=1 even the preview door gives Flux no Back menu', !!plain && plain.flux3 === false && Array.isArray(plain.tabs) && !plain.tabs.includes('wz-tutor-tab-plan') && plain.reorg === false, plain);
+  // SUPERSEDED (Nov 23, Fable 8:20 am, the Flux live join: all six Flux cells are on, Flux is on by default, and FLUX3 is on unless ?flux3=0). The original, verbatim:
+  // ok('FB7 the plain Flux never has the reorg: without ?flux3=1 even the preview door gives Flux no Back menu', !!plain && plain.flux3 === false && Array.isArray(plain.tabs) && !plain.tabs.includes('wz-tutor-tab-plan') && plain.reorg === false, plain);
+  ok('FB7 [successor] the plain Flux never has the reorg: with ?flux3=0 even the preview door gives Flux no Back menu', !!plain && plain.flux3 === false && Array.isArray(plain.tabs) && !plain.tabs.includes('wz-tutor-tab-plan') && plain.reorg === false, plain);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 15;
+const EXPECTED = 16;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`
