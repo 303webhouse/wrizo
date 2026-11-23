@@ -152,6 +152,7 @@ try { await withHarness(async (app) => {
     await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: "window.__scr = []; document.addEventListener('scroll', (e) => { const t = e.target; if (t && t.classList && t.classList.contains('mode-scroll')) window.__scr.push([Math.round(performance.now()), t.scrollTop, t.scrollHeight]); }, true);" });
     await open('l4-long', { w, h });
     const flat = await ev('window.__l4.clear()');
+    console.log('INFO SETTLE ' + w + ' ' + JSON.stringify(await ev('window.__wzS')));
     console.log('INFO SCROLLS ' + w + ' ' + JSON.stringify(await ev('window.__scr')) + ' rows ' + JSON.stringify(await ev("(() => { const sc = document.querySelector('.mode-page .mode-scroll'); const c = sc.getBoundingClientRect().top; return [...document.querySelectorAll('.mode-page .forward-only-editor .wz-row')].map((r) => r.getBoundingClientRect()).filter((r) => r.bottom > c - 400 && r.top < c + 300).map((r) => [Math.round(r.top - c), Math.round(r.height)]); })()")));
     await ev("(() => { const sc = document.querySelector('.mode-page .mode-scroll'); if (sc) sc.scrollTop = 37; return null; })()");
     await sleep(700);

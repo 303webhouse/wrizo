@@ -65,6 +65,7 @@ export function restingScroll(need: number, max: number, offsets: readonly numbe
 
 /** THE ROWS ARE THE JUDGE: a long page's rows are laid out lazily, so the offsets measured by restOnce can be a little off by the time the scroll lands, or after it. Read the first row that shows; if the scroller's
  *  edge cuts it, go DOWN to the next row's top (the caret's line only moves further into view), or, at the foot where there is no further, UP to the cut row's own top. Two passes at most. */
+const T = (k: string, v?: unknown) => { try { const w = window as unknown as { __wzS?: unknown[] }; (w.__wzS ??= []).push([Math.round(performance.now()), k, v]); } catch { /* */ } };
 function snapFirstRow(el: HTMLElement, scroller: HTMLElement): void {
   for (let pass = 0; pass < 2; pass += 1) {
     const clip = scroller.getBoundingClientRect().top;
@@ -75,6 +76,7 @@ function snapFirstRow(el: HTMLElement, scroller: HTMLElement): void {
     const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
     const by = downBy <= room + 0.5 ? downBy : first.top - clip;
     if (Math.abs(by) < 0.5) return;
+    T('snap', [Math.round(by), Math.round(scroller.scrollTop)]);
     scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
   }
 }
@@ -95,6 +97,7 @@ function restOnce(el: HTMLElement): void {
     const max = scroller.scrollHeight - scroller.clientHeight;
     const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
+    T('rest', [Math.round(need), Math.round(max), Math.round(to), Math.round(scroller.scrollTop), offsets.length]);
     if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
     snapFirstRow(el, scroller);
   } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
@@ -113,7 +116,7 @@ export function openCaret(el: HTMLElement): void {
     const mark = () => { if (sc0) { own = sc0.scrollTop; ownH = sc0.scrollHeight; } };
     const onScroll = () => { if (!done && sc0 && Math.abs(sc0.scrollTop - own) > 1 && sc0.scrollHeight === ownH) stop(); };
     sc0?.addEventListener('scroll', onScroll, { passive: true });
-    const stop = () => { if (done) return; done = true; sc0?.removeEventListener('scroll', onScroll); ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
+    const stop = () => { if (done) return; done = true; T('stop', new Error().stack?.split(String.fromCharCode(10)).slice(1, 3).join('|')); sc0?.removeEventListener('scroll', onScroll); ro.disconnect(); window.clearTimeout(timer); window.clearInterval(look); ['keydown', 'wheel', 'pointerdown', 'touchstart'].forEach((t) => document.removeEventListener(t, stop, true)); };
     const ro = new ResizeObserver(() => { if (!done && el.isConnected) { restOnce(el); mark(); } });
     ro.observe(el);
     const sc = scrollerOf(el);
