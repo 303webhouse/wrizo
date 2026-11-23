@@ -5,7 +5,7 @@
 // they are never the card's text: not selected, copied, counted, exported or read by a screen reader (the overlay is aria-hidden).
 // Colour (q3): a doc node (a pinned page) is outlined in cyan, never orange; a dealt preset step in lime; the LAST-touched node wears the orange
 // bar (lastTouched.ts: derived in-session, nothing stored).
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { Box } from '../types/board';
 import { useTheme } from '../store/theme';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -57,6 +57,14 @@ function NodeRecord({ box, connections, peers }: Props) {
   }, [sig, box.id]);
 
   const kind = box.kind === 'page-pin' ? 'doc' : box.kind === 'ink' ? 'ink' : box.deckStep ? 'preset' : 'text';
+  // the card carries the preset mark for the lime first line (flux-v3.css). It was a :has() on the card, and that one rule made the first key in ANY Flux page restyle the whole document (Nov 23, KL-FLIP-flux)
+  const recordRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const card = recordRef.current?.closest('.board-box');
+    if (!card || kind !== 'preset') return undefined;
+    card.setAttribute('data-flux3-preset', '');
+    return () => card.removeAttribute('data-flux3-preset');
+  }, [kind]);
   const deck = box.deckStep ? DECKS.find((d) => d.id === box.deckStep?.deck) : undefined;
   const kindWord = kind === 'doc' ? t('linksKindPage')
     : kind === 'ink' ? t('inkModeInk')
@@ -72,7 +80,7 @@ function NodeRecord({ box, connections, peers }: Props) {
   const title = kind === 'preset' ? splitCard(box.text).title.trim()
     : kind === 'doc' && box.entryId ? docTitle(box.entryId) : '';
   return (
-    <span className="flux3-node" data-node-kind={kind} data-last={last === box.id ? 'true' : undefined} aria-hidden="true">
+    <span ref={recordRef} className="flux3-node" data-node-kind={kind} data-last={last === box.id ? 'true' : undefined} aria-hidden="true">
       {title && <i className="flux3-node-t" data-flux3-node-title="" data-title={title} />}
       <i className="flux3-node-h" data-addr={`${t('linksKindCard').toUpperCase()} 0x${nodeHex(box.id)}`} data-kind-word={kindWord} />
       <i className="flux3-node-f" data-links={`${n} ${n === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}`} data-ok={box.lit ? t('flux3ChecksumOk') : undefined} data-st={theatre} />

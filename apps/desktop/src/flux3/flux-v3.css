@@ -256,7 +256,7 @@
 /* ---- S4b L6: THE NODE VOICE, the overlay half (flux3-s4b-plan.md L6; Fable, Nov 21, 6:54 pm: the caps titles HELD, S1's cards never move). From the board mockup:
    a preset step's first line in the preset's lime (colour only: the line's box, wrap and the card's height are untouched), and the footer's status theatre
    (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */
-:root[data-flux3][data-theme='flux'] .board-box:has(> .flux3-node[data-node-kind='preset']) .board-text::first-line{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .board-box[data-flux3-preset] .board-text::first-line{ color:var(--f3-lime); }   /* the mark is set by FluxNodeRecord; never a :has() here (this one restyled the whole document at the first key) */
 :root[data-flux3][data-theme='flux'] .flux3-node-f[data-st]:not([data-ok])::after{ content:attr(data-st); color:var(--f3-quiet); }
 /* ---- S4b L5: THE PORT BOX'S PREVIEW (flux3-s4b-plan.md L5; the doc mockup's .pbox .node): the linked node in the box a port opens, read-only. Its address in the box's
    quiet caps (the 0x stays lower case), its name in the chrome face's capitals, a short body clamped to three lines; a preset step in lime. Room colours (the box stands on the
