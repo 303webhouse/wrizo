@@ -22,6 +22,7 @@ const require = createRequire(path.join(DESKTOP, 'package.json'));
 const { build } = createRequire(require.resolve('vite'))('esbuild');
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
+const pok = (name, pass, detail = '') => { if (process.env.HARNESS_PARKED === '1') ok(name, pass, detail); };
 const load = async (rel, mutate) => {
   const file = path.join(SRC, rel);
   const res = mutate
@@ -145,7 +146,7 @@ const s5bRead = (cloneJson, t) => {
 const s5bWhole = (r) => r.same && r.fresh && r.generic && r.wired && r.pushed;
 const s5bLive = s5bRead((await load(S5B_CLONE)).cloneJson, s5bTexts);
 ok('S5b2: the client clones (cloneJson) and pushes a journal record WHOLE: every key of a box survives, unknown ones too, with no per-key mapping of a box', s5bWhole(s5bLive), JSON.stringify(s5bLive));
-if (process.env.HARNESS_PARKED === '1') ok('PARKED (was "S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box") - SUPERSEDED: #85 replaced the round trip with cloneJson; live successor: S5b2 + MUT-S5b2', !/function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && s5bWhole(s5bLive));
+pok('PARKED (was "S5b: the client clones and pushes a journal record WHOLE (JSON round trip), with no per-key mapping of a box") - SUPERSEDED: #85 replaced the round trip with cloneJson; live successor: S5b2 + MUT-S5b2', !/function clone<T>\(value: T\): T \{\s*return JSON\.parse\(JSON\.stringify\(value\)\) as T;/.test(persist) && s5bWhole(s5bLive));
 const S5B_MUTANTS = [
   { id: 'drops-the-mark', part: 'clone', from: 'const x = walk((v as Record<string, unknown>)[k], false);', to: "if (k === 'sizedByHand') continue;\n    const x = walk((v as Record<string, unknown>)[k], false);", guard: 'same' },
   { id: 'loses-an-unknown-key', part: 'clone', from: 'Object.keys(v as object)', to: "Object.keys(v as object).filter((k) => k !== 'notYetInvented')", guard: 'same' },
