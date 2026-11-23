@@ -9,6 +9,9 @@
 //   FF14  each Track's name keeps its room at 1366, the narrowest menu (none cut), with the link badge on the first row
 //   FF15  Uplink's greyed MARKUP is text-low at full strength, not dimmed (spec draft 4, section 11 rule 5)
 //   FF16  a Track's menu says Merge and Nest, never Join or Level (rule 9)
+//   FF17  the colour picker opens clear of the page's glass (NIT 6)
+//   FF18  Uplink's ticks are the one Flux tick, in TRACKS and in the view (pass 1, REAL)
+//   FF19  the COMMANDS edges are #5F8F95 in the Front menu, and today's drawer keeps its own (ship must)
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -90,6 +93,7 @@ await withHarness(async (app) => {
   const edgeTab = await app.evalJs(CS('#wz-sliver-tab-text', ['border-top-color', 'text-transform']));
   for (let i = 0; i < 2; i += 1) { await app.evalJs("(() => { for (const b of document.querySelectorAll('.wz-sliver-panel [data-text-fold][aria-expanded=\"false\"]')) b.click(); return null; })()"); await sleep(250); }
   const rawMarkup = await app.evalJs(RAW);
+  const frontEdge = await app.evalJs(CS('.wz-action-btn', ['border-top-color']));
   const mid = await app.evalJs(PAGE);
 
   await tab(app, 'parts');
@@ -152,6 +156,8 @@ await withHarness(async (app) => {
   const custom = await app.evalJs(press('[data-colour-custom]'));
   await sleep(300);
   const picker = await app.evalJs("(() => { const p = document.querySelector('.reorg-colour-picker'); if (!p) return null; const c = getComputedStyle(p); const codes = [...p.querySelectorAll('.reorg-colour-swatch')].map((s) => getComputedStyle(s, '::after').content); const f = p.querySelector('.reorg-colour-hex'); const fc = f ? getComputedStyle(f) : null; return { bg: c.backgroundColor, edge: c.borderTopColor, codes, field: fc && { bg: fc.backgroundColor, edge: fc.borderTopColor } }; })()");
+  const clear = await app.evalJs("(() => { const p = document.querySelector('.reorg-colour-picker'), g = document.querySelector('.mode-page'); if (!p || !g) return null; const a = p.getBoundingClientRect(), b = g.getBoundingClientRect(); return { right: Math.round(a.right), left: Math.round(a.left), glass: Math.round(b.left) }; })()");
+  ok('FF17 the colour picker opens clear of the page\'s glass', !!clear && clear.right <= clear.glass && clear.left >= 8, clear);
   ok('FF8 the colour picker is in node dress with the six codes, and its Custom field is in Flux\'s field dress',
     opened === true && custom === true && !!picker && picker.bg === 'rgb(4, 20, 26)' && picker.edge === 'rgb(126, 180, 196)' && picker.codes.join(',') === '"[01]","[02]","[03]","[04]","[05]","[06]"'.split('"').join('"') && !!picker.field && picker.field.bg === 'rgb(2, 12, 16)', { opened, custom, picker });
 
@@ -161,7 +167,12 @@ await withHarness(async (app) => {
   const up = await app.evalJs(TABS);
   const upMark = Array.isArray(up) ? up.find((x) => x.id === 'text') : null, upTrack = Array.isArray(up) ? up.find((x) => x.id === 'parts') : null;
   const greyed = await app.evalJs(CS('#wz-sliver-tab-text', ['opacity', 'color']));
-  ok('FF15 Uplink\'s greyed MARKUP is text-low at full strength, not dimmed', !!greyed && greyed.opacity === '1' && greyed.color === 'rgb(126, 180, 196)', greyed);
+  // SUPERSEDED (Nov 22, the Wrizors' Front pass 1 @ d72cc6ea), the original, verbatim:
+  // ok('FF15 Uplink\'s greyed MARKUP is text-low at full strength, not dimmed', !!greyed && greyed.opacity === '1' && greyed.color === 'rgb(126, 180, 196)', greyed);
+  ok('FF15 Uplink\'s greyed MARKUP looks locked at full strength: #5F8F95, not dimmed', !!greyed && greyed.opacity === '1' && greyed.color === 'rgb(95, 143, 149)', greyed);
+  const TICK = (sel) => `(() => { const e = document.querySelector(${q(sel)}); if (!e) return null; const c = getComputedStyle(e), a = getComputedStyle(e, '::after'); return { look: c.appearance, bg: c.backgroundColor, edge: c.borderTopColor, radius: c.borderTopLeftRadius, mark: a.content !== 'none', markEdge: a.borderRightColor }; })()`;
+  const ticks = [await app.evalJs(TICK('.reorg-pubparts-row input')), await app.evalJs(TICK('.reorg-pub-tick input'))];
+  ok('FF18 Uplink\'s ticks are the one Flux tick, in TRACKS and in the view', ticks.every((x) => !!x && x.look === 'none' && x.bg === 'rgb(4, 20, 26)' && x.edge === 'rgb(126, 180, 196)' && x.radius === '0px' && x.mark && x.markEdge === CYAN), ticks);
   ok('FF9 Uplink: MARKUP is greyed with Flux\'s note, and TRACKS is the open tab', !!upMark && upMark.off === true && upMark.title === 'Markup and Ink lock at Uplink. Patch to change the words.' && !!upTrack && upTrack.on === true && upTrack.off === false, up);
 
   // on ff-2: a page keeps the mode it was left in, so Wire In pressed on ff-1 would leave every later check on a page with no drawer (run 45112891211: FF11, FF13)
@@ -174,8 +185,10 @@ await withHarness(async (app) => {
   await open(app, 'ff-1', { lift: 'flux.top' });
   await drawer(app);
   const off = await app.evalJs("({ grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
+  const todayEdge = await app.evalJs(CS('.wz-action-btn', ['border-top-color']));
   ok('FF11 piece OFF without the door: with only the top bar lifted, the drawer has no TRACKS tab', !!off && off.grip === true && off.parts === false && off.list === false, off);
 
+  ok('FF19 the COMMANDS edges are #5F8F95 in the Front menu, and today\'s drawer keeps its own', !!frontEdge && frontEdge['border-top-color'] === 'rgb(95, 143, 149)' && !!todayEdge && todayEdge['border-top-color'] !== 'rgb(95, 143, 149)', { frontEdge, todayEdge });
   await open(app, 'ff-1', { flux3: false });
   await drawer(app);
   const plain = await app.evalJs("({ flux3: document.documentElement.hasAttribute('data-flux3'), grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
@@ -202,7 +215,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;
+const EXPECTED = 19;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`

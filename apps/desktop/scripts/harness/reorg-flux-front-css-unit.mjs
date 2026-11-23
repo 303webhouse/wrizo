@@ -17,6 +17,9 @@
 //   SITES    MARKUP names the first tab, and Presets, the kind row and Frame live in the TRACKS head menu, in Arbor and Flux through ONE rule (frontKindHead); Machina keeps its reading
 //   WORDS    the spec's words are in the table, and no string the Front menu reads still says "Part" in Flux
 //   WIRED    the global stylesheet imports both sheets once, the tokens first
+//   TICK     the one Flux tick, at all four of the reorg's checkboxes: no browser control, node dress, a 1 px #7EB4C4 edge, a cyan tick (pass 1, REAL; INK's pass 2, REAL 5)
+//   EDGES    the COMMANDS buttons' edges are #5F8F95, 3:1 or better, only in the reorg's Front menu (pass 1, ship must)
+//   USE      the picker's "Use" wears the button dress (NIT 4); a greyed tab looks locked (NIT 7)
 //   CUSTOM   her own colour is its 3 px bar, inside a 1 px edge that holds it on the panel (rule 1), with the code [##] in text-hi (spec draft 4, sections 6 and 11)
 //   NODIM    nothing in the Front sheet is dimmed by opacity: a greyed control goes to text-low (rule 5)
 //   SEAM     a tab rule here names the left hand, so the Back menu's tabs (INK's) are untouched
@@ -36,6 +39,7 @@ const J = (v) => JSON.stringify(v);
 const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
 const SC = ":root[data-flux3][data-theme='flux']";
 const SLOTS = ['a', 'b', 'c', 'd', 'e', 'f'];
+const HAND = '.desk-frame-sliver-anchor:has(#wz-sliver-tab-parts)';   // only the reorg's Front menu has the TRACKS tab, so a rule under it never reaches today's drawer
 
 const FRONT = rd('styles/24-reorg-flux-front.css');
 const TAGS = rd('styles/24-reorg-flux-tags.css');
@@ -122,11 +126,16 @@ function suite(front, tags, sliver, ftabs, words) {
     return { pass: edge && bar, detail: J({ edge, bar, rules: before.length }) };
   });
   t('TABS', () => {
-    const tab = bodyOf(rs, '.wz-drawer-slide--left .wz-drawer-tab');
+    // SUPERSEDED (Nov 22, the Wrizors' Front pass 1 @ d72cc6ea), the original, verbatim: the tab rules now stand under the Front menu alone, so today's drawer is untouched
+    // const tab = bodyOf(rs, '.wz-drawer-slide--left .wz-drawer-tab');
+    const tab = bodyOf(rs, `${HAND} .wz-drawer-slide--left .wz-drawer-tab`);
     const caps = /text-transform:\s*uppercase/.test(tab) && /font-family:\s*var\(--font-chromeLabel/.test(tab);
-    const on = /border-color:\s*var\(--line-active\)/.test(bodyOf(rs, ".wz-drawer-slide--left .wz-drawer-tab[data-on='true']"));
-    const bar = isBar(bodyOf(rs, ".wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before"));
-    const focus = /outline:\s*1px solid var\(--line-active\)/.test(bodyOf(rs, '.wz-drawer-slide--left .wz-drawer-tab:focus-visible'));
+    // const on = /border-color:\s*var\(--line-active\)/.test(bodyOf(rs, ".wz-drawer-slide--left .wz-drawer-tab[data-on='true']"));
+    const on = /border-color:\s*var\(--line-active\)/.test(bodyOf(rs, `${HAND} .wz-drawer-slide--left .wz-drawer-tab[data-on='true']`));
+    // const bar = isBar(bodyOf(rs, ".wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before"));
+    const bar = isBar(bodyOf(rs, `${HAND} .wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before`));
+    // const focus = /outline:\s*1px solid var\(--line-active\)/.test(bodyOf(rs, '.wz-drawer-slide--left .wz-drawer-tab:focus-visible'));
+    const focus = /outline:\s*1px solid var\(--line-active\)/.test(bodyOf(rs, `${HAND} .wz-drawer-slide--left .wz-drawer-tab:focus-visible`));
     return { pass: caps && on && bar && focus, detail: J({ caps, on, bar, focus }) };
   });
   t('NODE', () => {
@@ -165,7 +174,7 @@ function suite(front, tags, sliver, ftabs, words) {
     return { pass: helper && word && retire && setup && imported, detail: J({ helper, word, retire, setup, imported }) };
   });
   t('WORDS', () => {
-    const want = { reorgFrontLabel: 'Tools', reorgColourThisPart: 'This track', reorgSchemeLine: "Changes every Track's colours.", reorgColourHex: 'Hex colour', reorgPresetGroupWeb: 'Web and journalism', reorgPartIn: 'Nest', reorgPartOut: 'Unnest', reorgPartJoin: 'Merge', reorgPartJoinNo: 'Not merged.', reorgPartsJoinDone: 'Merged into Track {n}.', reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.', reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.' };   // spec draft 4, section 11 rule 9: Merge, not Join; Nest / Unnest, not Level in / out
+    const want = { reorgFrontLabel: 'Tools', reorgColourThisPart: 'This track', reorgSchemeLine: "Changes every Track's colours in this Doc.", reorgColourHex: 'Hex colour', reorgPresetGroupWeb: 'Web and journalism', reorgPartIn: 'Nest', reorgPartOut: 'Unnest', reorgPartJoin: 'Merge', reorgPartJoinNo: 'Not merged.', reorgPartsJoinDone: 'Merged into Track {n}.', reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.', reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.' };   // spec draft 4, section 11 rule 9: Merge, not Join; Nest / Unnest, not Level in / out
     const wordOf = (k) => { const m = new RegExp('^\\s*' + k + ":\\s*(?:'((?:[^'\\\\]|\\\\.)*)'|\"([^\"]*)\")", 'm').exec(words); return m ? (m[1] ?? m[2]).replace(/\\'/g, "'") : null; };
     const wrong = Object.entries(want).filter(([k, v]) => wordOf(k) !== v).map(([k]) => k);
     const keys = new Set(); for (const s of READERS) for (const m of s.matchAll(/['"`](reorg[A-Z][A-Za-z0-9]*)['"`]/g)) keys.add(m[1]);
@@ -190,12 +199,24 @@ function suite(front, tags, sliver, ftabs, words) {
     return { pass: bar && code, detail: J({ bar, code }) };
   });
   t('NODIM', () => { const bad = rs.filter((x) => { const m = /(?:^|[ ;])opacity:\s*([\d.]+)/.exec(x.body); return m && +m[1] < 1; }).map((x) => x.sel.slice(-50)); return { pass: bad.length === 0, detail: J({ bad }) }; });
-  t('SEAM', () => { const bad = rs.flatMap((x) => topSplit(x.sel)).filter((p) => p.includes('.wz-drawer-tab') && !p.includes('.wz-drawer-slide--left')); return { pass: bad.length === 0, detail: J({ bad: bad.slice(0, 3) }) }; });
+  // SUPERSEDED (Nov 22, the Wrizors' Front pass 1 @ d72cc6ea), the original, verbatim:
+  // t('SEAM', () => { const bad = rs.flatMap((x) => topSplit(x.sel)).filter((p) => p.includes('.wz-drawer-tab') && !p.includes('.wz-drawer-slide--left')); return { pass: bad.length === 0, detail: J({ bad: bad.slice(0, 3) }) }; });
+  t('SEAM', () => { const parts = rs.flatMap((x) => topSplit(x.sel)); const bad = parts.filter((p) => (p.includes('.wz-drawer-tab') && !p.includes(`${HAND} .wz-drawer-slide--left`)) || (p.includes('.wz-action-btn') && !p.includes(`${HAND} `))); return { pass: bad.length === 0 && parts.some((p) => p.includes('.wz-action-btn')), detail: J({ bad: bad.slice(0, 3) }) }; });
+  t('TICK', () => {
+    const box = ":is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox']";
+    const b = bodyOf(rs, box), c = bodyOf(rs, `${box}:checked::after`);
+    const dress = /(?:^|[ ;])appearance:\s*none/.test(b) && /background:\s*#04141A/i.test(b) && /border:\s*1px solid #7EB4C4/i.test(b) && /border-radius:\s*0/.test(b);
+    const mark = /content:\s*''/.test(c) && /border:\s*solid var\(--line-active\)/.test(c) && /rotate\(45deg\)/.test(c);
+    const focus = /outline:\s*1px solid var\(--line-active\)/.test(bodyOf(rs, `${box}:focus-visible`));
+    return { pass: dress && mark && focus, detail: J({ dress, mark, focus }) };
+  });
+  t('EDGES', () => { const b = bodyOf(rs, `${HAND} .wz-action-btn`); const pass = /border-color:\s*#5F8F95/i.test(b) && ratio('#5F8F95', '#0F1926') >= 3 && /border-color:\s*var\(--choice\)/.test(bodyOf(rs, `${HAND} .wz-action-btn[aria-pressed='true']`)) && /outline:\s*1px solid var\(--line-active\)/.test(bodyOf(rs, `${HAND} .wz-action-btn:focus-visible`)); return { pass, detail: J({ b }) }; });
+  t('USE', () => { const u = bodyOf(rs, '.reorg-colour-use'); const dressed = /background:\s*#04141A/i.test(u) && /border:\s*1px solid #7EB4C4/i.test(u); const g = bodyOf(rs, `${HAND} .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true']`); const locked = /color:\s*#5F8F95/i.test(g); return { pass: dressed && locked, detail: J({ dressed, locked }) }; });
   t('HINT', () => { const b = bodyOf(rs, '.reorg-pubparts .reorg-parts-head'); const pass = /text-transform:\s*none/.test(b) && /letter-spacing:\s*normal/.test(b) && /font-family:\s*var\(--font-ui\)/.test(b); return { pass, detail: J({ b }) }; });
   return R;
 }
 
-const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS', 'ROOM', 'HINT', 'CUSTOM', 'NODIM', 'SEAM'];
+const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS', 'ROOM', 'HINT', 'CUSTOM', 'NODIM', 'SEAM', 'TICK', 'EDGES', 'USE'];
 const base = suite(FRONT, TAGS, SLIVER, FTABS, WORDS);
 for (const k of KEYS) ok(`${k} on the real sheets, sites and words`, base[k] && base[k].pass, base[k] ? base[k].detail : 'not run');
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
@@ -241,6 +262,12 @@ const MUT = [
   ['a greyed control is dimmed again', 'NODIM', 'front', (t) => t.replace(`${SC} .reorg-colour-use[disabled]{`, () => `${SC} .reorg-colour-use[disabled]{ opacity:.4;`)],
   ['a tab rule reaches the Back menu', 'SEAM', 'front', (t) => t + `\n${SC} .wz-drawer-tab[data-disabled='true']{ cursor:default; }`],
   ['Merge goes back to Join', 'WORDS', 'words', (t) => t.replace("reorgPartJoin: 'Merge'", () => "reorgPartJoin: 'Join to the one above'")],
+  ['a tab rule reaches today\'s drawer', 'SEAM', 'front', (t) => t.replace(`${SC} ${HAND} .wz-drawer-slide--left .wz-drawer-tab{`, () => `${SC} .wz-drawer-slide--left .wz-drawer-tab{`)],
+  ['a command edge reaches today\'s drawer', 'SEAM', 'front', (t) => t.replace(`${SC} ${HAND} .wz-action-btn{`, () => `${SC} .wz-action-btn{`)],
+  ['the tick goes back to the browser', 'TICK', 'front', (t) => t.replace('-webkit-appearance:none; appearance:none;', () => '')],
+  ['the tick is no longer cyan', 'TICK', 'front', (t) => t.replace('border:solid var(--line-active); border-width:0 2px 2px 0', () => 'border:solid #7EB4C4; border-width:0 2px 2px 0')],
+  ['the command edges fall back', 'EDGES', 'front', (t) => t.replace(`${HAND} .wz-action-btn{ border-color:#5F8F95;`, () => `${HAND} .wz-action-btn{ border-color:#1A3656;`)],
+  ['Use loses its button dress', 'USE', 'front', (t) => t.replace(`${SC} .reorg-colour-use{ height:26px; padding:0 10px; background:#04141A; border:1px solid #7EB4C4;`, () => `${SC} .reorg-colour-use{ height:26px; padding:0 10px;`)],
   ['the hint goes back to caps', 'HINT', 'front', (t) => t.replace(`${SC} .reorg-pubparts .reorg-parts-head{ text-transform:none;`, () => `${SC} .reorg-pubparts .reorg-parts-head{ text-transform:uppercase;`)],
   ['a word is lost', 'WORDS', 'words', (t) => t.replace(/^\s*reorgColourThisPart:.*\n/m, () => '')],
 ];
