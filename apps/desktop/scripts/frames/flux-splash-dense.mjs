@@ -98,7 +98,11 @@ const glitches = async (app, name, ctx, markSel) => {
   for (const t of takes) for (const f of t.frames || []) { const c = (cursorReading[t.mode || '?'] ||= { frames: 0, hiddenByCode: 0, offByBlink: 0, shown: 0 }); c.frames += 1; if (f.cursor && f.cursor.visibility === 'hidden') c.hiddenByCode += 1; else if (f.cursor && f.cursor.opacity === '0') c.offByBlink += 1; else c.shown += 1; }
   writeFileSync(path.join(dir, 'dense.json'), JSON.stringify({ screen: name, stepMs: STEP, seen, cursorReading, takes, flashLog }, null, 2) + '\n');
   console.log('DENSE cursor ' + name + ' ' + JSON.stringify(cursorReading));
-  if (!(seen.tear && seen.decode && seen.signal)) throw new Error(`glitches seen: ${JSON.stringify(seen)}`);
+  if (!(seen.tear && seen.decode && seen.signal)) {
+    // what the page said: why no glitch began (the in-app mark glitches only while flicker is on, the ambiance dial is up and no corridor is jacked in; its own flash budget may be spent by the page's)
+    const why = await app.evalJs(`(() => { const a = document.querySelector('[data-flux-appmark]'); const m = document.querySelector(${JSON.stringify(markSel)}); return { appmark: !!a, mark: !!m, glitch: m ? m.getAttribute('data-glitch') : null, shift: window.__f3MarkIdleShift, jacked: document.documentElement.hasAttribute('data-flux3-jacked'), hidden: document.hidden, ambiance: document.documentElement.getAttribute('data-ambiance'), flashes: (window.__wzFlashLog || []).slice(-6) }; })()`);
+    throw new Error(`glitches seen: ${JSON.stringify(seen)}; page: ${JSON.stringify(why)}`);
+  }
 };
 
 const run = async (app, ctx) => {
