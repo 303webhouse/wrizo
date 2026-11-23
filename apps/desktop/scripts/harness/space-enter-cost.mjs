@@ -59,6 +59,20 @@ try { await withHarness(async (app) => {
       profile.samples.forEach((id, i) => { const cf = byId.get(id).callFrame; const k = (cf.functionName || '(anonymous)') + ' ' + String(cf.url).split('/').pop() + ':' + (cf.lineNumber + 1); self.set(k, (self.get(k) || 0) + (profile.timeDeltas[i] || 0)); });
       const top = [...self.entries()].sort((x, y) => y[1] - x[1]).slice(0, 9).map(([k, v]) => k + ' ' + (v / 24000).toFixed(1) + ' ms/key');
       console.log('PROFILE ' + n + 'w ' + kind + ': ' + top.join(' | '));
+      // WHAT THE HOT FUNCTIONS ARE (the bundle is minified): for the app's top two self-time frames, the callers up the stack and the source text where each starts, read from the served bundle
+      if (kind === 'space') {
+        const parent = new Map(); profile.nodes.forEach((nn) => (nn.children || []).forEach((c) => parent.set(c, nn.id)));
+        const hot = [...self.entries()].filter(([k]) => /index-.*\.js/.test(k)).sort((x, y) => y[1] - x[1]).slice(0, 2).map(([k]) => k);
+        const srcCache = {};
+        for (const k of hot) {
+          const node = profile.nodes.find((nn) => ((nn.callFrame.functionName || '(anonymous)') + ' ' + String(nn.callFrame.url).split('/').pop() + ':' + (nn.callFrame.lineNumber + 1)) === k);
+          const chain = []; let cur = node;
+          for (let up = 0; cur && up < 6; up += 1) { chain.push(cur.callFrame); cur = byId.get(parent.get(cur.id)); }
+          const text = async (cf) => { if (!cf.url || !/\.js/.test(cf.url)) return ''; srcCache[cf.url] = srcCache[cf.url] || (await ev('fetch(' + JSON.stringify(cf.url) + ').then((r) => r.text())')); const line = String(srcCache[cf.url]).split(String.fromCharCode(10))[cf.lineNumber] || ''; return line.slice(cf.columnNumber, cf.columnNumber + 300); };
+          console.log('HOT ' + n + 'w space ' + k + ' <- ' + chain.slice(1).map((c) => (c.functionName || '(anon)') + ':' + (c.lineNumber + 1) + ':' + c.columnNumber).join(' < '));
+          for (const cf of chain.slice(0, 4)) console.log('  SRC ' + (cf.functionName || '(anon)') + ' ' + (cf.lineNumber + 1) + ':' + cf.columnNumber + '  ' + (await text(cf)).replace(/\s+/g, ' '));
+        }
+      }
     }
     for (const [kind, rows] of Object.entries(kinds)) {
       const dts = rows.map((r) => r.dt); const sels = rows.map((r) => r.sel); const htmls = rows.map((r) => r.html);
