@@ -168,7 +168,7 @@ function suite(front, tags, sliver, ftabs, words) {
     return { pass: wrong.length === 0 && part.length === 0 && keys.size > 60, detail: J({ wrong, part, keys: keys.size }) };
   });
   t('ROOM', () => {
-    const last = (tail, prop) => { const hit = exact(rs, tail).map((x) => new RegExp('(?:^|[ ;])' + prop + ':\\s*(?:calc\\()?(\\d+(?:\\.\\d+)?)px').exec(x.body)).filter(Boolean).pop(); return hit ? +hit[1] : NaN; };
+    const last = (tail, prop) => { const hit = exact(rs, tail).map((x) => new RegExp('(?:^|[ ;])' + prop + ':\\s*(?:calc\\()?(\\d+(?:\\.\\d+)?)(?:px)?(?![\\d.%a-z])').exec(x.body)).filter(Boolean).pop(); return hit ? +hit[1] : NaN; };
     const row = '.reorg-parts-list > li > .reorg-parts-row';
     const pad = last(row, 'padding-left'), gap = last(row, 'gap'), num = last('.reorg-parts-num', 'width'), tag = last('.reorg-parts-tag', 'min-width'), more = last('.reorg-parts-more', 'width'), moreM = last('.reorg-parts-more', 'margin-right');
     const left = pad + num + gap + tag + gap;
