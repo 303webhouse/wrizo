@@ -136,8 +136,11 @@ await withHarness(async (app) => {
   const h1 = await app.evalJs(`(() => { const st = document.querySelector('.desk-frame-stage[data-split="true"]'); if (!st) return null;
     // the asset's side is portalled into <body> (SplitHost), outside the stage: both are searched (Nov 20, Actions 44825171366: the stage alone found no side)
     const scrollers = [...st.querySelectorAll('*'), ...document.querySelectorAll('.wz-split-asset, .wz-split-asset *')].filter((e) => { const cs = getComputedStyle(e); return /auto|scroll/.test(cs.overflowY) && e.scrollHeight > e.clientHeight + 4; });
-    const out = scrollers.map((e) => { const before = e.scrollTop; e.scrollTop = before + 40; const moved = e.scrollTop !== before; e.scrollTop = before;
-      return { cls: String(e.className).slice(0, 40), sw: getComputedStyle(e).scrollbarWidth, gutter: e.offsetWidth - e.clientWidth - parseFloat(getComputedStyle(e).borderLeftWidth) - parseFloat(getComputedStyle(e).borderRightWidth), moved }; });
+    // SUPERSEDED (Nov 22, train J2: a page now opens RESTING WITH HER CARET'S LINE IN VIEW, so a page only a little taller than its sheet can open at the foot of its scroll, where +40 cannot move it; the scroller still scrolls, the other way). The line as it stood, verbatim:
+    //   const out = scrollers.map((e) => { const before = e.scrollTop; e.scrollTop = before + 40; const moved = e.scrollTop !== before; e.scrollTop = before;
+    // successor: it scrolls if it moves by 40 down, or (resting at the foot) by 40 up
+    const out = scrollers.map((e) => { const before = e.scrollTop; e.scrollTop = before + 40; let moved = e.scrollTop !== before; if (!moved) { e.scrollTop = before - 40; moved = e.scrollTop !== before; } e.scrollTop = before;
+      return { cls: String(e.className).slice(0, 40), sw: getComputedStyle(e).scrollbarWidth, gutter: e.offsetWidth - e.clientWidth - parseFloat(getComputedStyle(e).borderLeftWidth) - parseFloat(getComputedStyle(e).borderRightWidth), moved, at: before, max: e.scrollHeight - e.clientHeight }; });
     return { n: out.length, page: !!scrollers.find((e) => e.contains(document.querySelector('.forward-only-editor'))), side: !!scrollers.find((e) => e.closest('.wz-split-asset')), out }; })()`);
   ok('H1 with a card open beside, every scroller on the stage (the page\'s and the asset\'s side) hides its scrollbar, and both still scroll',
     !!h1 && h1.n >= 2 && h1.page && h1.side && h1.out.every((o) => o.sw === 'none' && Math.round(o.gutter) === 0 && o.moved), h1);
