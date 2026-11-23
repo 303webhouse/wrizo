@@ -15,6 +15,7 @@
 //   FF20  Wire In's end-of-Track line is DRAWN in text-low #7EB4C4: its three pieces, read from the screenshot's pixels (Fable, Nov 23, 8:20 am; the Wrizors' top bar pass 1 read 2.47 to 3.49, under the Typewriter's mask)
 //   FF21  the band over her words is untouched: only the fade BELOW the writing line is lifted, in a Doc with a foot
 //   FF22  a page with no foot keeps the Typewriter's whole band
+//   FF23  the end-of-Track line and its links read 4.5:1 or better on the paper, DRAWN, in both page tones (Fable, Nov 23, 12:40 pm: 1.46 and 1.88 on the light page)
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -182,6 +183,32 @@ await withHarness(async (app) => {
   ok('FF18 Uplink\'s ticks are the one Flux tick, in TRACKS and in the view', ticks.every((x) => !!x && x.look === 'none' && x.bg === 'rgb(4, 20, 26)' && x.edge === 'rgb(126, 180, 196)' && x.radius === '0px' && x.mark && x.markEdge === CYAN), ticks);
   ok('FF9 Uplink: MARKUP is greyed with Flux\'s note, and TRACKS is the open tab', !!upMark && upMark.off === true && upMark.title === 'Markup and Ink lock at Uplink. Patch to change the words.' && !!upTrack && upTrack.on === true && upTrack.off === false, up);
 
+  // FF23: read from the pixels of each piece: the commonest pixel is the paper, and the pixel farthest from it is the ink's core
+  await open(app, 'ff-2');
+  const tone0 = await app.evalJs("document.documentElement.getAttribute('data-page')");
+  const toneRows = [];
+  for (const tone of ['dark', 'light']) {
+    await app.evalJs(`window.wrizoThemePrefs.set({ page: '${tone}' }); null`);
+    await app.mouseMove(900, 460); await sleep(700);
+    const page = await app.evalJs("document.documentElement.getAttribute('data-page')");
+    const pieces = await app.evalJs("(() => { const f = document.querySelector('[data-part-foot]'); if (!f) return []; return ['.reorg-part-foot-go:not(.is-next)', '.reorg-part-foot-end', '.reorg-part-foot-go.is-next'].map((s) => { const e = f.querySelector(s); if (!e) return { s, missing: true }; const r = e.getBoundingClientRect(); return { s, x: r.left, y: r.top, w: r.width, h: r.height }; }); })()");
+    for (const r of pieces) {
+      if (r.missing || !(r.w > 0 && r.h > 0)) { toneRows.push({ tone, page, s: r.s, ratio: 0 }); continue; }
+      try {
+        const shot = await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: r.x, y: r.y, width: r.w, height: r.h, scale: 1 } });
+        const img = decodeShot(Buffer.from(shot.data, 'base64'));
+        const hex = (i) => '#' + [img.data[i], img.data[i + 1], img.data[i + 2]].map((c) => c.toString(16).padStart(2, '0')).join('');
+        const seen = new Map();
+        for (let i = 0; i < img.data.length; i += 4) { const h = hex(i); seen.set(h, (seen.get(h) || 0) + 1); }
+        const bg = [...seen.entries()].sort((a, b) => b[1] - a[1])[0][0];
+        let ink = bg, ratio = 1;
+        for (const h of seen.keys()) { const v = contrast(h, bg); if (v > ratio) { ratio = v; ink = h; } }
+        toneRows.push({ tone, page, s: r.s, bg, ink, ratio: Math.round(ratio * 100) / 100 });
+      } catch (e) { toneRows.push({ tone, page, s: r.s, ratio: 0, err: String(e.message || e).slice(0, 120) }); }
+    }
+  }
+  await app.evalJs(`window.wrizoThemePrefs.set({ page: '${tone0 === 'light' ? 'light' : 'dark'}' }); null`);
+  ok('FF23 the end-of-Track line and its links are drawn at 4.5:1 or better on the paper, in both page tones', toneRows.length === 6 && toneRows.every((x) => x.page === x.tone && x.ratio >= 4.5), toneRows);
   // on ff-2: a page keeps the mode it was left in, so Wire In pressed on ff-1 would leave every later check on a page with no drawer (run 45112891211: FF11, FF13)
   await open(app, 'ff-2');
   const wire = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
@@ -263,7 +290,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 23;
+const EXPECTED = 24;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`
