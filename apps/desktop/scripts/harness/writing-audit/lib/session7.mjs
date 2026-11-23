@@ -80,12 +80,21 @@ export async function main({ title }) {
     await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E(), E(), K('Backspace')]);
     await scriptCase('SC3', 'type, Backspace twice, type on', [T('Hello'), K('Backspace'), K('Backspace'), T('p')]);
     await scriptCase('SC4', 'type, Home, End, Left, Right inside one element', [T('Hello world'), K('Home'), K('End'), K('ArrowLeft'), K('ArrowRight')]);
-    await run('SC5', 'Tab cycles the element type and the text stays', async (fails) => {
-      const pid = await openScript(); await d.type('Hello'); await sleep(300);
-      const typeOf = () => ev("(() => { const a = document.querySelector('.script-el-active'); return a ? (a.getAttribute('data-t') || a.className) : null; })()");
+    // SUPERSEDED (SCRIPT #2, Fable, Nov 22: Tab on a WRITTEN line keeps the line and adds the next element; a blank line still changes type in place). The case, verbatim:
+    // await run('SC5', 'Tab cycles the element type and the text stays', async (fails) => {
+    //   const pid = await openScript(); await d.type('Hello'); await sleep(300);
+    //   const typeOf = () => ev("(() => { const a = document.querySelector('.script-el-active'); return a ? (a.getAttribute('data-t') || a.className) : null; })()");
+    //   const t0 = await typeOf(); await d.key('Tab'); await sleep(400); const t1 = await typeOf(); const e1 = (await els()).map((x) => x.t);
+    //   if (t0 === t1) fails.push(`Tab did not change the element's type (${JSON.stringify(t0)})`);
+    //   if (JSON.stringify(e1) !== JSON.stringify(['Hello'])) fails.push(`after Tab the elements read ${JSON.stringify(e1)}`);
+    // });
+    // [successor] the written line keeps its words and its type, the next element opens below it with the caret in it (the type is read from data-type)
+    await run('SC5', 'Tab on a written line keeps it and adds the next element', async (fails) => {
+      await openScript(); await d.type('Hello'); await sleep(300);
+      const typeOf = () => ev("document.querySelector('.script-el-active')?.dataset.type ?? null");
       const t0 = await typeOf(); await d.key('Tab'); await sleep(400); const t1 = await typeOf(); const e1 = (await els()).map((x) => x.t);
-      if (t0 === t1) fails.push(`Tab did not change the element's type (${JSON.stringify(t0)})`);
-      if (JSON.stringify(e1) !== JSON.stringify(['Hello'])) fails.push(`after Tab the elements read ${JSON.stringify(e1)}`);
+      if (t0 !== 'scene' || t1 !== 'action') fails.push(`the active line went from ${JSON.stringify(t0)} to ${JSON.stringify(t1)}, expected a new action line after the scene heading`);
+      if (JSON.stringify(e1) !== JSON.stringify(['HELLO', ''])) fails.push(`after Tab the elements read ${JSON.stringify(e1)}`);
     });
     await run('SC6', 'type two lines and reload AT ONCE (autosave is 2 s): every word survives', async (fails, notes) => {
       const pid = await openScript(); await d.type('INT. ROOM'); await d.key('Enter'); await d.type('Last words typed.');
