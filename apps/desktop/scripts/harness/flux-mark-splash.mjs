@@ -145,6 +145,16 @@ try { await withHarness(async (app) => {
   }
 
   // CONTROLS (these pass today: they show the harness is driving the app, and the build must keep them)
+  // THE WRIZORS' REALS (Fable, Nov 23): (1) the box edges and names are #7EB4C4, not #8FB4AC (the IDEAS edges render from it); (3) the sign-in pop-out's N.01 label is 10 px
+  await open();
+  await soft('!!document.querySelector(".wz-flux5")');
+  await seek(DONE + 1); await sleep(80);
+  const cols = await ev(`(() => { const r = document.querySelector('.wz-splash .wz-flux5') || document.querySelector('.wz-flux5'); if (!r) return null; const lit = [...r.querySelectorAll('[data-flux-tile] rect, [data-flux-node] rect')].map((x) => (x.getAttribute('stroke') || '').toUpperCase()); return { tiles: [...r.querySelectorAll('[data-flux-tile] rect')].map((x) => (x.getAttribute('stroke') || '').toUpperCase()), lit, old: r.outerHTML.toUpperCase().includes('#8FB4AC') }; })()`);
+  ok('MS21 the lit box edges (the IDEAS tiles and the nodes) are #7EB4C4, and #8FB4AC is nowhere in the drawing', cols && cols.tiles.length === 5 && cols.tiles.every((c) => c === '#7EB4C4') && cols.lit.filter((c) => c !== '#2A6A76').every((c) => c === '#7EB4C4') && cols.old === false, cols);
+  await open();
+  if (await live()) { await pressDoor('login'); await soft("!!document.querySelector('.wz-popout[data-popout=signin]')", 3000); await sleep(300); }
+  const tagPx = await ev(`(() => { const t = document.querySelector('.wz-popout .wz-popout-tag') || document.querySelector('.wz-popout-tag'); return t ? { text: t.textContent, px: getComputedStyle(t).fontSize } : null; })()`);
+  ok("MS22 the sign-in pop-out's N.01 label is 10 px", tagPx && /N\.01/.test(tagPx.text) && tagPx.px === '10px', tagPx);
   await open({ query: 'flux3=0', hold: '4000' });
   ok('MC1 control: with ?flux3=0 Flux keeps the schematic it has today', await soft("!!document.querySelector('.wz-splash-flux')", 4000) && !(await ev("!!document.querySelector('.wz-flux5')")), await ev("document.querySelector('.wz-splash') ? document.querySelector('.wz-splash').dataset.splashTheme : null"));
   await open({ theme: 'plateau', hold: '4000' });
