@@ -905,6 +905,9 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .wz-sliver-item-btn:hover{ color:var(--text-hi); border-color:var(--ink-border-strong); }
 .wz-sliver-format{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
 .wz-sliver-format .mode-tbtn{ display:inline-flex; align-items:center; justify-content:center; }
+/* SUPERSCRIPT AND SUBSCRIPT (POLISH's audit, Nov 22): inside the inline-flex button the <sup> and <sub> are flex items, where vertical-align does nothing, so both 2s sat centred and the two buttons looked alike. Raised and lowered by position, smaller, one shared rule in all three themes. */
+.wz-sliver-format .mode-tbtn > sup{ position:relative; top:-.38em; font-size:.72em; line-height:1; vertical-align:baseline; }
+.wz-sliver-format .mode-tbtn > sub{ position:relative; top:.3em; font-size:.72em; line-height:1; vertical-align:baseline; }
 .wz-sliver-format--letters{ flex-wrap:nowrap; }
 .wz-sliver-format--letters .mode-tbtn{ flex:1 1 0; min-width:0; padding:0 2px; }
 .wz-format-mark{ display:block; }
