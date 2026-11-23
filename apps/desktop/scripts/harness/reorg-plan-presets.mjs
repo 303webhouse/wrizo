@@ -143,8 +143,8 @@ await withHarness(async (app) => {
   const names = await app.evalJs("[...document.querySelectorAll('[data-plan-preset]')].map((b) => b.textContent.trim())");
   await click(app, '[data-plan-presets]'); await sleep(300);
   const shut = await app.evalJs("!!document.querySelector('[data-plan-preset-list]')");
-  ok("PR1 the Presets control lists the three presets by the draft's names; it opens and closes",
-    closed.btn && !closed.list && names.join('|') === "Stasis Theory|The Hero's Journey|Three-Act Structure" && shut === false, { closed, names, shut });
+  ok("PR1 the Presets control lists the live three by the draft's names, then the first slice's twelve (PRESETS-B, Nov 23); it opens and closes",
+    closed.btn && !closed.list && names.join('|') === "Stasis Theory|The Hero's Journey|Three-Act Structure|Story Circle|Seven-Point|Freytag's Pyramid|Fifteen Beats|Scene–Sequel|Toulmin|Rogerian|Classical Oration|CARS: Create a Research Space|IMRaD|Answer First|Inverted Pyramid" && shut === false, { closed, names, shut });
 
   // ---- PR2 ----
   const boardBefore = await planBoard(app, 'pr-e');

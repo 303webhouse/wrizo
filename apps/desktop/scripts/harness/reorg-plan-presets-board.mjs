@@ -109,8 +109,8 @@ await withHarness(async (app) => {
   const sb = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length");
   await openBoard(app, 'bd-1', 'open');
   const op = await app.evalJs("document.querySelectorAll('[data-plan-presets]').length");
-  ok("B1 the Board's Outline view carries a Presets control listing the three presets by name; Storyboard and Open carry none",
-    ol.btn && !ol.list && names.join('|') === "Stasis Theory|The Hero's Journey|Three-Act Structure" && sb === 0 && op === 0, { ol, names, sb, op });
+  ok("B1 the Board's Outline view carries a Presets control listing the live three presets by name, then the first slice's twelve (PRESETS-B, Nov 23); Storyboard and Open carry none",
+    ol.btn && !ol.list && names.join('|') === "Stasis Theory|The Hero's Journey|Three-Act Structure|Story Circle|Seven-Point|Freytag's Pyramid|Fifteen Beats|Scene–Sequel|Toulmin|Rogerian|Classical Oration|CARS: Create a Research Space|IMRaD|Answer First|Inverted Pyramid" && sb === 0 && op === 0, { ol, names, sb, op });
 
   // ---- B2 ----
   await load(app, 'bd-1', 'stasis');
