@@ -35,15 +35,28 @@ async function open(app, lift = LIFT) {
 }
 const tab = async (app, id) => { await app.evalJs(`document.getElementById('wz-sliver-tab-${id}')?.click(); null`); await sleep(500); };
 
+const CARET_LOG = "(() => { window.__cl = []; const snap = () => { const c = document.querySelector('.flux-block-caret'); const z = document.querySelector('.mode-pagecol'); const m = document.querySelector('.desk-mode-tab.active'); const r = c && c.getBoundingClientRect(); const k = [r ? Math.round(r.left) : '-', r ? Math.round(r.top) : '-', r ? Math.round(r.height) : '-', z ? (z.getAttribute('data-zoom') || 'nozoom') : 'nopage', m ? m.getAttribute('data-mode-key') : 'nomode'].join(' '); const L = window.__cl; if (!L.length || L[L.length - 1][1] !== k) L.push([Math.round(performance.now()), k]); }; new MutationObserver(snap).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'data-zoom', 'class'] }); })()";
+const READ = "(() => { const c = document.querySelector('.flux-block-caret'); const r = c && c.getBoundingClientRect(); const s = getSelection(); let x = null; try { x = s && s.rangeCount ? s.getRangeAt(0).getClientRects()[0] : null; } catch { x = null; } return { caret: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.height)] : null, sel: x ? [Math.round(x.left), Math.round(x.top), Math.round(x.height)] : null }; })()";
+async function caretProbe(app, lift) {
+  await seed(app);
+  const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: CARET_LOG });
+  await open(app, lift);
+  await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+  const before = await app.evalJs(READ);
+  const log = await app.evalJs('(window.__cl || []).slice(-9)');
+  await app.evalJs("document.dispatchEvent(new Event('wz-caret-moved')); null"); await sleep(250);
+  const after = await app.evalJs(READ);
+  const text = JSON.stringify({ lift: lift || 'none', vw: await app.evalJs('innerWidth'), before, afterWake: after, log });
+  await app.evalJs(`(() => { const d = document.createElement('div'); d.textContent = ${q(text)}; d.style.cssText = 'position:fixed;left:380px;top:270px;width:600px;z-index:99999;padding:8px;background:#000;color:#fff;font:12px/1.35 monospace;word-break:break-all'; document.body.appendChild(d); return null; })()`);
+  await sleep(150);
+}
+
 export default {
   'flux-front-markup': async (app) => { await seed(app); await open(app); await tab(app, 'text'); },
-  // a DIAGNOSTIC frame, not for review: the MARKUP frame with a readout of where the block caret is drawn, what the selection says and what stands at the stray bar's place (x 479, y 459 at 1366)
-  'flux-front-probe': async (app) => {
-    await seed(app); await open(app); await tab(app, 'text');
-    await app.evalJs("(() => { const c = document.querySelector('.flux-block-caret'); const r = c && c.getBoundingClientRect(); const s = getSelection(); let sr = null; try { if (s && s.rangeCount) { const x = s.getRangeAt(0).getClientRects()[0]; sr = x ? [Math.round(x.left), Math.round(x.top), Math.round(x.height)] : 'no rect'; } } catch { sr = 'threw'; } const a = document.activeElement; const info = { vw: innerWidth, caret: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null, sel: sr, anchor: s && s.anchorNode ? s.anchorNode.nodeName + ':' + s.anchorOffset : null, active: a ? String(a.className || a.tagName).slice(0, 30) : null, at: document.elementsFromPoint(479, 459).slice(0, 3).map((x) => String(x.className || x.tagName).split(' ')[0]) }; const d = document.createElement('div'); d.textContent = JSON.stringify(info); d.style.cssText = 'position:fixed;left:380px;top:300px;width:600px;z-index:99999;padding:8px;background:#000;color:#fff;font:13px monospace;word-break:break-all'; document.body.appendChild(d); return null; })()");
-    await sleep(200);
-  },
-  'flux-front-folds': async (app) => {
+  // DIAGNOSTIC frames, not for review: the stray brass bar IS the block caret, drawn away from the selection. Each frame logs every place the caret was drawn while the page loaded (with the zoom and the mode at that moment), then wakes it once with the caret's own redraw event, under three lifts.
+  'flux-front-probe': async (app) => { await caretProbe(app, LIFT); },
+  'flux-front-probe-top': async (app) => { await caretProbe(app, 'flux.top'); },
+  'flux-front-probe-none': async (app) => { await caretProbe(app, ''); },  'flux-front-folds': async (app) => {
     await seed(app); await open(app); await tab(app, 'text');
     for (let i = 0; i < 2; i += 1) { await app.evalJs("(() => { for (const b of document.querySelectorAll('.wz-sliver-panel [data-text-fold][aria-expanded=\"false\"]')) b.click(); return null; })()"); await sleep(300); }
   },
