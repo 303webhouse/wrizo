@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { ThemeId } from '../store/theme';
 import { isArbor2 } from '../arbor2/flag';
+import { FLUX3 } from '../flux3/flag';
+import { FluxFive } from '../flux3/FluxFive';
 
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
@@ -435,9 +437,13 @@ export interface SplashMarkProps {
   width: number;
   height: number;
   onFloorReached: () => void;
+  /** FLUX v5: which door the run types (true: RESUME); the other themes ignore it */
+  authed?: boolean | null;
 }
 
-export function SplashMark({ theme, ...rest }: SplashMarkProps) {
+export function SplashMark({ theme, authed, ...rest }: SplashMarkProps) {
   if (theme === 'machina') return <MachinaMark {...rest} />;
+  // FLUX'S SPLASH, v5 (S5, flux3/FluxFive.tsx): under the redesign's flag; `reduced` is the finished frame (the front door's copy behind the pop-out). ?flux3=0 keeps the schematic below.
+  if (theme === 'flux' && FLUX3) return <FluxFive mode={rest.reduced ? 'still' : 'splash'} width={rest.width} height={rest.height} authed={authed} onFloorReached={rest.onFloorReached} />;
   return theme === 'flux' ? <FluxMark {...rest} /> : <ArborMark {...rest} />;
 }

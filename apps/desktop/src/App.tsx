@@ -5,6 +5,8 @@ import { useTheme } from './store/theme';
 import { isArbor2 } from './arbor2/flag';
 import { machina2Enabled } from './machina2/flag';
 import { MachinaWordmark } from './machina2/wordmark';
+import { FLUX3 } from './flux3/flag';
+import { FluxAppMark } from './flux3/fluxMark';
 import { Arrival } from './components/Arrival';
 import { DrawersPage } from './pages/Drawers';
 import { DeskRail } from './components/DeskRail';
@@ -222,6 +224,8 @@ function BrandMark() {
   // MACHINA'S MARK IS WRIZO under its look (Nick, Nov 21, via Fable 1:30 pm): the mockup's five letters and the brass notch on the O, real markup
   // so the notch can stand on the O (machina2/wordmark.tsx); the same corner box, so it recedes while she types as the mark always has
   if (theme === 'machina' && machina2Enabled()) return <div className="brand-mark machina2-wordmark" aria-hidden="true"><MachinaWordmark /></div>;
+  // FLUX'S MARK (S5, v5): WRIZ and the brass cursor, with its 60 s idle glitch, in the same corner box
+  if (theme === 'flux' && FLUX3) return <div className="brand-mark flux5-appmark" aria-hidden="true"><FluxAppMark /></div>;
   // ITEM arbor-quiet-brass — a div, not an <img>: a CSS mask (index.css's own
   // .brand-mark rule) recolors the PNG brass by painting the mask shape with a
   // background color, which only works when the element has no image content

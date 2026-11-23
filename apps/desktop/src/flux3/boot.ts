@@ -4,5 +4,6 @@
 import './flux-v3.css';
 import './flux-current.css';   // the hands' current and the stage current (fluxCurrent.ts): one layer, drawn only after a click
 import './fluxCurrent';
+import '@fontsource/chakra-petch/600.css';   // the v5 splash's door commands (S5); bundled, no web-font call
 
 document.documentElement.setAttribute('data-flux3', '');

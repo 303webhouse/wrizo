@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { SplashMark, prefersReducedMotion } from './SplashMark';
 import { isArbor2 } from '../arbor2/flag';
 import { ArborFront, startArborFront, finishArborFront } from '../arbor2/frontLayer';
+import { FLUX3 } from '../flux3/flag';
+import { FX } from '../flux3/fluxMark';
+import { beginFluxRun, finishFluxRun, fluxBoxFor } from '../flux3/FluxFive';
 
 // the splash: pointer-events:none so it never eats a keystroke; sized by the ink's bounding box to about a quarter of the screen's area (capped at 60% height, 70% width); per-theme animation; holds until its animation ends and the app is ready; once per app load [Splash §1]
 
@@ -103,6 +106,15 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
   // uses — HomeFlow.tsx/RhizomeField.tsx/UnlockCeremony.tsx — nobody flips
   // the OS setting mid-splash), not a reactive subscription.
   const [reduced] = useState(prefersReducedMotion);
+  // FLUX'S SPLASH, v5 (S5): under the redesign's flag the run ends on the front door's own finished frame. Reduced motion has no run at all: the finished frame at once.
+  const fluxFive = FLUX3 && theme === 'flux';
+  const [fluxRun] = useState(() => { const on = live && fluxFive && !reduced; if (on) beginFluxRun(); return on; });
+  useLayoutEffect(() => {
+    if (!live || !fluxFive || !reduced) return;
+    goneRef.current = true;
+    delete document.documentElement.dataset.splashHold;
+    setLive(false);
+  }, [live, fluxFive, reduced]);
 
   // SplashMark's timeline calls this once, at its hold point; refs keep its identity stable so SplashMark's mount effect never re-runs [Splash §5]
   const tryEndRef = useRef<(() => void) | null>(null);
@@ -126,6 +138,8 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
       if (!readyRef.current && !ceilingPassedRef.current) return;
       goneRef.current = true;
       delete document.documentElement.dataset.splashHold;
+      // FLUX v5: on the front door the finished frame is handed over in the same box, with no fade; over a page the splash leaves as it always has
+      if (fluxRun) { finishFluxRun(); if (/^#?\/?$/.test(location.hash)) { setLive(false); return; } }
       setLeaving(true);
     };
     tryEndRef.current = tryEnd;
@@ -143,18 +157,18 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
     // ARBOR v2 MOCKUP r19 - THE SPLASH IS ALWAYS SKIPPABLE (Fable, Nov 4): any click, Esc or key jumps to the finished frame with the doors -
     // the splash goes at once, ready or not (the front door's own boot state takes over); Enter = Write at any moment. Arbor only.
     const skip = (e: Event) => {
-      if (!arborFront || goneRef.current) return;
+      if ((!arborFront && !fluxRun) || goneRef.current) return;
       // (r20, main's splash law - "a writer who opens Wrizo and immediately types must not have that first character eaten"): the key is the
       // skip's own only on the front door, where no page waits under the splash; over a page it ends the splash and goes on to the page.
       const front = /^#?\/?$/.test(location.hash);
       const enter = front && e.type === 'keydown' && (e as KeyboardEvent).key === 'Enter';
       if (front) { if (e.type === 'keydown') e.preventDefault(); e.stopImmediatePropagation(); }
-      finishArborFront({ write: enter });
+      if (fluxRun) finishFluxRun({ compose: enter }); else finishArborFront({ write: enter });   // FLUX v5: a click or any key skips to the finished frame; Enter means COMPOSE
       goneRef.current = true;
       delete document.documentElement.dataset.splashHold;
       setLive(false);
     };
-    if (arborFront) { window.addEventListener('pointerdown', skip, true); window.addEventListener('keydown', skip, true); }
+    if (arborFront || fluxRun) { window.addEventListener('pointerdown', skip, true); window.addEventListener('keydown', skip, true); }
     const opts: AddEventListenerOptions = { passive: true, capture: false };
     const events = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
     events.forEach((e) => window.addEventListener(e, noop, opts));
@@ -183,6 +197,7 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
   // have THIS effect quietly end the hold anyway the moment `ready` turns true.
   useEffect(() => {
     if (!live || !ready || forcedNotReady() || !floorPassedRef.current || goneRef.current) return;
+    if (fluxRun) { tryEndRef.current?.(); return; }   // FLUX v5: the one hand-over, in tryEnd
     goneRef.current = true;
     delete document.documentElement.dataset.splashHold;
     setLeaving(true);
@@ -201,7 +216,8 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
     return () => window.clearTimeout(t);
   }, [leaving]);
 
-  if (!live) return null;
+  if (!live || (fluxFive && reduced)) return null;
+  const drawn = fluxFive ? fluxBoxFor(window.innerWidth, window.innerHeight) : box;
 
   return (
     <div
@@ -213,21 +229,21 @@ export function Splash({ ready, authed = null }: { ready: boolean; authed?: bool
       // just below the drawing's own measured edge (CSS has no sibling-height
       // combinator), so the loading line can be an absolutely-positioned element,
       // never a flex participant that could shift the drawing off true centre again.
-      style={{ ['--mark-h' as unknown as string]: `${box.height}px` } as React.CSSProperties}
+      style={{ ['--mark-h' as unknown as string]: `${drawn.height}px` } as React.CSSProperties}
     >
-      <div className="wz-splash-veil" />
+      <div className="wz-splash-veil" style={fluxFive ? { background: FX.ground } : undefined} />
       <div
         className="wz-splash-mark"
-        style={{ width: `${box.width}px`, height: `${box.height}px` }}
+        style={{ width: `${drawn.width}px`, height: `${drawn.height}px` }}
         onTransitionEnd={() => { if (leaving) setLive(false); }}
       >
-        <SplashMark theme={theme} reduced={reduced} width={box.width} height={box.height} onFloorReached={arborFront ? arborFloor : onFloorReached} />
+        <SplashMark theme={theme} reduced={reduced} width={drawn.width} height={drawn.height} authed={authed} onFloorReached={arborFront ? arborFloor : onFloorReached} />
         {/* ARBOR v2 MOCKUP r18 (Nick, via Fable, Nov 3): the logo written out where the drawing's top line stood, the tagline under it (src/arbor2/frontLayer.tsx) */}
         {arborFront && <ArborFront mode="splash" width={box.width} authed={authed} />}
       </div>
       {/* (r16's logo written out in the corner mark's rect moved into the drawing in r18, above) */}
       {/* role=status: announced politely; `key` remounts each line to restart the fade, which reduced motion drops [Splash §7] */}
-      {t(LOADING_LINE_KEYS[lineIndex]) !== '' && (
+      {!fluxFive && t(LOADING_LINE_KEYS[lineIndex]) !== '' && (
         <div className="wz-splash-loading" role="status">
           <span key={lineIndex} className="wz-splash-loading-text">{t(LOADING_LINE_KEYS[lineIndex])}</span>
         </div>

@@ -280,3 +280,17 @@
 :root[data-flux3][data-theme='flux'] .flux3-node-t::after{ content:attr(data-title); }
 :root[data-flux3][data-theme='flux'] .flux3-node[data-node-kind='doc'] > .flux3-node-t{ font-family:var(--font-proseSerif); font-weight:500; font-size:15px; letter-spacing:0;
   text-transform:none; color:var(--f3-label); }
+
+/* FLUX'S SPLASH AND MARK, v5 (S5; flux3/FluxFive.tsx, flux3/fluxMark.tsx). A door is the whole node: pointing or Tab turns its command cyan with a thin brass bar beside it; the ring is Tab's. The cursor blinks at 1.05 s once the doors are open, and everywhere in the app; reduced motion holds it steady. */
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):hover .cmd,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .cmd{ fill:#00C2FF; }
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):hover .bar,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .bar,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .ring{ opacity:1; }
+:root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
+:root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:flux5-blink 1.05s steps(1) infinite; }
+@keyframes flux5-blink{ 0%{ opacity:1; } 50%{ opacity:0; } }
+@media (prefers-reduced-motion:reduce){
+  :root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
+  :root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:none; }
+}
