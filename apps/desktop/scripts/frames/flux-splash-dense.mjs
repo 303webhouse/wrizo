@@ -60,7 +60,7 @@ const page = async (app, id) => {
 };
 
 // glitches, read at 33 ms: the mark is `markSel`; the clock is the harness's.
-const glitches = async (app, name, ctx, markSel) => {
+const glitches = async (app, name, ctx, markSel, idleMs) => {
   const dir = folder(name, ctx);
   await app.evalJs(VCLOCK);
   await app.evalJs('window.__f3MarkIdleShift = 61; true');
@@ -70,7 +70,7 @@ const glitches = async (app, name, ctx, markSel) => {
     // idle: the page's clock goes on six seconds once (the door's own idle period is five), then it is only LOOKED at: the page's own 200 ms interval (real time) decides when a glitch begins,
     // and its first animation frame is run by a step of 0 (a step of a second would end the glitch before it was read)
     let mode = null;
-    await app.evalJs('window.__vstep(6000)');
+    if (idleMs) await app.evalJs(`window.__vstep(${idleMs})`);   // the door's mark waits out five seconds of the page's clock; the in-app mark takes the harness's idle shift instead (a long idle on the page jacks it in, and a jacked page draws no in-app mark glitch)
     for (let i = 0; i < 200 && !mode; i += 1) {
       await sleep(60);
       await app.evalJs('window.__vstep(33)');   // a 33 ms step a look: the in-app mark waits out the page's own screen-wide glitch (useJacked), which runs on these steps too
@@ -134,6 +134,6 @@ run.liveSplash = true;
 
 export default {
   'flux5-dense-run': run,
-  'flux5-dense-door': async (app, ctx) => { await front(app); await glitches(app, 'flux5-dense-door', ctx, '.wz-flux5 [data-flux-mark]'); },
-  'flux5-dense-app': async (app, ctx) => { await page(app, `f5-dense-${ctx.tone}-${ctx.width}`); await glitches(app, 'flux5-dense-app', ctx, '[data-flux-appmark] [data-flux-mark]'); },
+  'flux5-dense-door': async (app, ctx) => { await front(app); await glitches(app, 'flux5-dense-door', ctx, '.wz-flux5 [data-flux-mark]', 6000); },
+  'flux5-dense-app': async (app, ctx) => { await page(app, `f5-dense-${ctx.tone}-${ctx.width}`); await glitches(app, 'flux5-dense-app', ctx, '[data-flux-appmark] [data-flux-mark]', 0); },
 };
