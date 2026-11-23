@@ -1,0 +1,161 @@
+/* FLUX'S RAIL ON THE REORG (claude/wrizors/flux-reorg-spec.md sections 1, 2, 7 and 11; Fable, Nov 22 9:20 pm; INK's gate, reorg/themeGate.ts flux.rail).
+   The doors are the redesign's command boxes (flux3/flux-v3.css L2 already dresses .wz-strip-item, its readout and her orange place); this sheet draws the reorg's
+   own pieces and pop-outs on it. The structure is Machina's (22-reorg-rail.css), re-scoped to the redesign: hairlines #1D4A52, field edges #5F8F95, her place
+   orange, the pointer and current row #0A2A33. Every rule needs :root[data-flux3], so the plain Flux draws none of it.
+   Checked by scripts/harness/reorg-flux-rail-live.mjs. */
+/* the four groups, set apart by the 2 px rule the Wrizors asked for (pass 3, B1: #1D4A52) */
+:root[data-flux3][data-theme='flux'] .wz-reorg-where,
+:root[data-flux3][data-theme='flux'] .wz-reorg-pins{ border-bottom:2px solid #1D4A52; padding-bottom:6px; margin-bottom:6px; }
+
+/* 1. where she is: her box over her name, the rail's where-you-are edge on the left */
+:root[data-flux3][data-theme='flux'] .wz-reorg-where-item{ cursor:pointer; padding-top:8px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-where-item:hover{ background:none; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-where-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; }
+
+/* a Project's box: two letters on its colour (RailBox.tsx sets the colour and the letters' ink) */
+:root[data-flux3][data-theme='flux'] .wz-reorg-box{ display:inline-flex; align-items:center; justify-content:center; flex:none; box-sizing:border-box;
+  font-family:var(--font-chromeLabel); letter-spacing:.06em; line-height:1; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box--rail{ width:38px; height:38px; font-size:12px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box--pin{ width:34px; height:34px; font-size:11px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box--row{ width:30px; height:30px; font-size:11px; border:1px solid #5F8F95; }
+
+/* 2. her pins: two boxes a row (R1), or one a row with its name (R2); the small switch under them */
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-grid{ display:grid; grid-template-columns:repeat(2, 34px); gap:6px; justify-content:center; padding:6px 0 4px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-pin-grid{ grid-template-columns:1fr; gap:4px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin{ display:flex; flex-direction:column; align-items:center; gap:3px; padding:0; background:none; border:0;
+  color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin:focus-visible, :root[data-flux3][data-theme='flux'] .wz-reorg-where-item:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pins[data-pin-view='list'] .wz-reorg-box--pin{ width:24px; height:24px; font-size:9px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view{ display:flex; justify-content:center; gap:8px; padding-top:2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn{ width:22px; height:18px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid transparent; color:var(--text-mid); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn svg{ width:14px; height:14px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn[aria-pressed='true']{ border-color:var(--text-hi); color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
+
+/* 3. a door that is not lit yet (DOCS in step 5, UNFILED in step 6): drawn, not pressable */
+:root[data-flux3][data-theme='flux'] .wz-reorg-rail .wz-strip-item[aria-disabled='true']{ cursor:default; opacity:.45; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-rail .wz-strip-item[aria-disabled='true']:hover{ background:none; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-rail .wz-reorg-where-item[aria-disabled='true']{ opacity:1; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-rail .wz-strip-label{ text-transform:uppercase; }
+
+/* PROJECTS (R4): the head's count, + New project, the two groups, one row a Project */
+:root[data-flux3][data-theme='flux'] .wz-reorg-head-count{ margin-left:auto; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-projects{ padding:0; gap:0; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-new{ display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:none; border:0;
+  border-bottom:1px solid #1D4A52; color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-new:hover{ background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-new-input{ margin:8px 14px; font-family:var(--font-contentLabel); font-size:13px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-group-head{ display:flex; align-items:center; gap:6px; padding:12px 14px 4px; font-family:var(--font-chromeLabel);
+  font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-rows{ list-style:none; margin:0; padding:0; }
+/* DOCS' Recent, long (reorg/panels/DocsPanel.tsx): the box is five rows tall (its max-height is measured from the rows) and scrolls past
+   them on a thin scrollbar; the sort sits at the end of the group's head, the pressed word in the brighter ink. */
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-head{ justify-content:space-between; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort > button:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
+/* DOCS' Session (reorg/panels/DocsPanel.tsx): its head is the fold (closed when DOCS opens); its rows are the defaults' rows */
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-fold{ width:100%; justify-content:space-between; background:none; border:0; cursor:pointer; text-align:left; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-fold::after{ content:'\25B8'; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-fold[aria-expanded='true']::after{ content:'\25BE'; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-fold:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-goal{ width:64px; font-family:var(--font-chromeLabel); font-size:12px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid #1D4A52; border-left:3px solid transparent; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location']{ border-left-color:#FF9800; background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
+  color:var(--text-hi); text-align:left; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-text{ display:flex; flex-direction:column; min-width:0; gap:2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-name{ font-family:var(--font-contentLabel); font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location'] .wz-reorg-row-name{ font-weight:600; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-meta{ font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-pin{ width:32px; height:32px; margin-right:8px; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:0; color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-pin[aria-pressed='false']{ color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-pin:hover{ color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row-pin:focus-visible,
+:root[data-flux3][data-theme='flux'] .wz-reorg-new:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+
+/* a box she gave a picture: the picture fills it, no letters (step 4) */
+:root[data-flux3][data-theme='flux'] .wz-reorg-box--picture{ background-size:cover; background-position:center; }
+
+/* A PROJECT'S OWN LIST (step 3): + New doc and + New board side by side; Docs, then Boards with no doc; a Doc's Parts and its boards indented */
+:root[data-flux3][data-theme='flux'] .wz-reorg-list{ padding:0; gap:0; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-head-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-transform:none; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-new{ display:flex; border-bottom:1px solid #1D4A52; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-new .wz-reorg-new{ border-bottom:0; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-group-count{ margin-left:auto; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-doc{ list-style:none; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-row{ border-bottom:1px solid #1D4A52; border-left:3px solid transparent; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-row[aria-current='page']{ border-left-color:#FF9800; background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-open{ display:flex; align-items:baseline; gap:8px; width:100%; padding:8px 14px 8px 13px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-row--part .wz-reorg-list-open{ padding-left:31px; font-size:12px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-row[data-kind='board'] .wz-reorg-list-title::before{ content:'\25A6\00A0'; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-title{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-meta{ margin-left:auto; flex:none; font-family:var(--font-chromeLabel); font-size:11px; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-open:hover{ background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-open:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-empty{ margin:0; padding:8px 14px; color:var(--text-mid); font-size:12px; }
+
+/* BOX SETTINGS (step 4, frame R5): one closed drop-down at the foot of PROJECTS, for the Project she is in */
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings{ margin-top:auto; border-top:1px solid #1D4A52; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-head{ display:flex; align-items:center; gap:10px; width:100%; padding:14px; background:none; border:0;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-for{ margin-left:auto; color:var(--text-mid); letter-spacing:.08em; max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-body{ display:flex; flex-direction:column; gap:12px; padding:4px 14px 16px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-row--indent{ padding-left:68px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-label{ width:58px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-letters{ width:54px; height:28px; padding:0 8px; box-sizing:border-box; font-family:var(--font-chromeLabel); font-size:13px;
+  letter-spacing:.06em; text-transform:uppercase; border:1px solid #5F8F95; background:none; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-chip{ display:inline-flex; align-items:center; gap:6px; padding:3px 6px; background:none; border:1px solid #5F8F95;
+  color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-chip[aria-pressed='true']{ border-color:var(--accent-rest); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-own-colour input{ width:18px; height:14px; padding:0; border:0; background:none; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatches{ display:flex; gap:8px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatch{ width:22px; height:22px; padding:0; border:1px solid #5F8F95; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid var(--text-hi); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-chip:focus-visible, :root[data-flux3][data-theme='flux'] .wz-reorg-swatch:focus-visible,
+:root[data-flux3][data-theme='flux'] .wz-reorg-letters:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
+
+/* DOCS (step 5, frame R7): New doc's kinds, Recent (a title over its Project and words), the two Page defaults as OFF | ON switches */
+:root[data-flux3][data-theme='flux'] .wz-reorg-docs, :root[data-flux3][data-theme='flux'] .wz-reorg-unfiled{ padding:0; gap:0; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-kind{ border-bottom:0; padding:9px 14px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-two-line{ flex-direction:column; align-items:flex-start; gap:2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-two-line .wz-reorg-list-title{ max-width:100%; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-default{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 14px;
+  border-bottom:1px solid #1D4A52; font-family:var(--font-contentLabel); font-size:13px; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-toggle{ display:inline-flex; border:1px solid #5F8F95; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-toggle button{ min-width:34px; padding:4px 6px; background:none; border:0; color:var(--text-mid); cursor:pointer;
+  font-family:var(--font-chromeLabel); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-toggle button[aria-pressed='true']{ background:#00C2FF; color:#04141A; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-toggle button:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+
+/* UNFILED (step 6, frame R6): a row's two acts (File, Trash) as small boxed icons; the Trash is the row at the very foot */
+:root[data-flux3][data-theme='flux'] .wz-reorg-unfiled-row{ display:flex; align-items:center; gap:6px; padding-right:10px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-unfiled-row .wz-reorg-list-open{ flex:1; min-width:0; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-icon-btn{ width:28px; height:28px; flex:none; display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid #5F8F95; color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-icon-btn:focus-visible, :root[data-flux3][data-theme='flux'] .wz-reorg-trash:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-trash{ margin-top:auto; display:flex; align-items:center; gap:10px; width:100%; padding:14px 16px; background:none; border:0;
+  border-top:2px solid #1D4A52; color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-trash-go{ margin-left:auto; color:var(--text-mid); }
+
+/* FLUX'S OWN: each place opens a node-dress panel (spec section 2); data-category is only set under the reorg (Cascade.tsx) */
+:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]{ background:#04141A; border-color:#7EB4C4; }
+/* the pop-out stops before the page's left opener, and keeps its 300 px where there is room (reorg/railRoom.ts publishes the room) */
+:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
+/* Box settings: fields on the field fill; Custom… in sentence case; each swatch carries its code, 01 to 06, in the chrome's face */
+:root[data-flux3][data-theme='flux'] .wz-reorg-letters, :root[data-flux3][data-theme='flux'] .wz-reorg-new-input{ background:#020C10; border:1px solid #5F8F95; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-chip{ text-transform:none; letter-spacing:.04em; font-size:11px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatches{ flex-wrap:wrap; gap:6px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatch{ display:inline-flex; align-items:center; justify-content:center; font-family:var(--font-chromeLabel); font-size:10px; font-weight:600; line-height:1; }
+/* the Session's Quota field: a 1 px field edge on the field fill (spec section 11, rule 6) */
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-goal{ box-sizing:border-box; padding:3px 6px; border:1px solid #5F8F95; border-radius:0; background:#020C10; color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-session-goal:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }

@@ -211,6 +211,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   }, [boxes, hintWords.doc, hintWords.circuit, hintWords.rack, hintWords.log, place.kind, place.id, place.setId, subject.entry.id, subject.entry.pageType]);
   // the foot's boxes read the two settings they open (live: the prefs store notifies). The Trash has NO count: the Trash is a place, not a nag (TrashPanel: A18's anti-solicitation core).
   const footReads = boxes ? { settings: { count: prefs.voice.toUpperCase(), hint: railHint('voice', prefs.voice, 'journal', hintWords) }, theme: { count: prefs.page.toUpperCase(), hint: railHint('tone', prefs.page, 'journal', hintWords) } } : null;
+  // FLUX'S REORG RAIL (flux-reorg-spec.md section 2): the same true readings, handed to the reorg's doors; compared by value there, so a keystroke renders nothing
+  const railReads = readouts && footReads ? { place: readouts.place, page: readouts.page, plan: readouts.plan, journal: readouts.journal, settings: footReads.settings, theme: footReads.theme } : null;
   const lastReadout = boxes && lastNode ? `${t('flux3ReadLast').toUpperCase()} 0x${nodeHex(lastNode)}` : null;
   // PW1 S4 — THE CASCADE SURVIVES TRAVEL. This state is per-surface: a travel
   // unmounts the whole hook, so before this the destination always mounted at
@@ -384,7 +386,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
 
   // the reorg's rail takes the strip's track only under the gate; today's strip above stays exactly as it was written (big-projects-1a P1
   // reads it from `const strip = (`: a gate written into that line hid it, train 14's pair, run 43643612187)
-  return { strip: reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} /> : strip, layers };
+  return { strip: reorg ? <ReorgRail entry={subject.entry} open={state.category} toggle={toggleCategory} reads={railReads} /> : strip, layers };
 }
 
 function renderSection(

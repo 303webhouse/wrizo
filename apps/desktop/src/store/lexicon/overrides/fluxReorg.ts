@@ -127,6 +127,12 @@ export const FLUX_REORG_WORDS = {
   reorgPartJoinCarries: 'Not joined: this Track holds ink, cards, links or a Operator thread, and joining would drop them.',
   reorgPartJoinScript: 'Not joined: a screenplay Track has no plain text to join.',
   reorgPartsJoinDone: 'Joined onto Track {n}.',
+  // ARBOR lane's block, Flux's rail (spec sections 1 and 7): Box settings' own colour, and the Session in DOCS
+  reorgOwnColour: 'Custom…',
+  plainTrackerSwitch: "Use the skin's meter",
+  reorgSessionGoal: 'Quota',
+  reorgSessionTimer: 'Clock',
+  reorgSessionProgress: 'Load',
 } satisfies Partial<Record<DeskTermId, string>>;
 
 /** The reorg strings this table deliberately leaves at their canonical words, by the Wrizors' ruling. */

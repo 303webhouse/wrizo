@@ -4,14 +4,16 @@ import type { CategoryId } from '../components/cascade/shared';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useLexicon } from '../store/themeLexicon';
 import { getDrawer, getDrawers, getSystemKind } from '../store/persistence';
+import { railHint, railReadout } from '../store/fluxReadouts';
 import { isDefaultRoot, JOURNAL, UNSORTED } from '../store/place';
 import { usePlace } from '../store/usePlace';
-import { NOTEBOOK, projectOfEntry } from './railData';
+import { NOTEBOOK, projectOfEntry, unfiledMembers } from './railData';
 import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
 import { REORG } from './flag';
 import { useChromeScale } from './chromeScale';
 import { useTheme } from '../store/theme';
+import { ThemeIcon as SetIcon } from '../components/ThemeIcon';
 import { JournalIcon as ArborJournalIcon, PageIcon as ArborPageIcon, PlanIcon as ArborPlanIcon, SettingsIcon as ArborSettingsIcon, SkinIcon as ArborSkinIcon } from '../components/Cascade';
 import './parts';   // a side-effect import on purpose: the Parts layer installs its harness door (window.wrizoParts) when the bundle loads; nothing here draws it yet (the Parts list is POLISH's)
 
@@ -23,7 +25,10 @@ import './parts';   // a side-effect import on purpose: the Parts layer installs
 // ARBOR (spec §2, the rail-tab rule, Nick Nov 8): each door stands in its own CLOTH - olive, cold blue or madder - drawn by 25-reorg-arbor-rail.css; Machina
 // draws no cloth (data-cloth is only set in Arbor).
 type Cloth = 'olive' | 'blue' | 'madder';
-interface Door { id: CategoryId; label: string; icon: ReactNode; lit: boolean; cloth?: Cloth }
+interface Door { id: CategoryId; label: string; icon: ReactNode; lit: boolean; cloth?: Cloth; read?: RailRead }
+/** FLUX's command-box readings (the redesign's L2, read in Cascade.tsx): a true count and the hover hint that says what it counts. Absent in every other theme. */
+export interface RailRead { count: string; hint: string }
+export type RailReads = Record<'place' | 'page' | 'plan' | 'journal' | 'settings' | 'theme', RailRead>;
 
 /** A Project's name as the rail shows it: the Drawer's own name (Top Drawer, while it keeps its born-with name, by the theme's word), the Notebook, or Unfiled. */
 export function useProjectName(): (id: string | null) => string {
@@ -66,16 +71,18 @@ function railSignature(entry: JournalEntry): string {
   return [entry.id, getSystemKind(entry) ?? '', projectOfEntry(entry) ?? '', ...getDrawers().map((d) => `${d.id}\u0001${d.name}`)].join('\u0002');
 }
 
-export function ReorgRail({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void }) {
+export function ReorgRail({ entry, open, toggle, reads = null }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; reads?: RailReads | null }) {
   // §3b item 4: while the reorg's rail stands in Machina, the chrome grows with the window (./chromeScale.ts)
   useChromeScale();
   latestToggle = toggle;
-  return <RailBody entry={entry} open={open} toggle={stableToggle} sig={railSignature(entry)} />;
+  // Flux's readings join the memo by VALUE (the foot's object is new each render; its words are not)
+  const readSig = reads ? Object.values(reads).map((r) => `${r.count}\u0001${r.hint}`).join('\u0002') : '';
+  return <RailBody entry={entry} open={open} toggle={stableToggle} sig={railSignature(entry)} reads={reads} readSig={readSig} />;
 }
 
-const RailBody = memo(RailBodyImpl, (a, b) => a.open === b.open && a.sig === b.sig);
+const RailBody = memo(RailBodyImpl, (a, b) => a.open === b.open && a.sig === b.sig && a.readSig === b.readSig);
 
-function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; sig: string }) {
+function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; open: CategoryId | null; toggle: (id: CategoryId) => void; sig: string; reads: RailReads | null; readSig: string }) {
   const theme = useTheme();
   railRenders += 1;
   const { t } = useDeskLexicon();
@@ -95,7 +102,21 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
     if (open !== 'reorg-list') toggle('reorg-list');
   };
   const arbor = theme === 'plateau';
-  const doors: Door[] = arbor
+  const flux = theme === 'flux';
+  // FLUX: DRIVES and ORPHANS count what their pop-outs list, read when the rail renders (a new place, page or open door), never per key; L2's sentence frames
+  const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
+  const drives = flux && reads ? getDrawers().length : 0;
+  const orphans = flux && reads ? unfiledMembers().length : 0;
+  const doors: Door[] = flux
+    // FLUX'S PLACES (flux-reorg-spec.md section 2): the redesign's command boxes (flux3/flux-v3.css L2), each with its true count and hover hint
+    ? [
+      { id: 'reorg-docs', label: lex.tMany('page'), icon: <SetIcon id="docs" fallback={<DocsIcon />} />, lit: true, read: reads?.page },
+      { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true, read: reads ? { count: railReadout(drives), hint: railHint('drives', drives, 'journal', hintWords) } : undefined },
+      { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true, read: reads ? { count: railReadout(orphans), hint: railHint('place', orphans, 'journal', hintWords) } : undefined },
+      { id: 'plan', label: t('stripPlan'), icon: <SetIcon id="circuits" fallback={<ArborPlanIcon />} />, lit: true, read: reads?.plan },
+      { id: 'journal', label: t('drawerPlaceJournal'), icon: <SetIcon id="log" fallback={<ArborJournalIcon />} />, lit: true, read: reads?.journal },
+    ]
+    : arbor
     // ARBOR'S PLACES (spec §2): PAGES cold blue (the session is its last item, §7), DRAWERS olive, SHELF cold blue (Nick, Nov 20 4:13 pm), CANVASES
     // madder and JOURNAL olive (both live, where they stand today: their own pop-outs), in Arbor's live icons
     ? [
@@ -110,9 +131,9 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
       { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true },
       { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true },
     ];
-  const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode }[] = [
-    { id: 'theme', term: 'stripChangeTheme', icon: arbor ? <ArborSkinIcon /> : <ThemeIcon /> },
-    { id: 'settings', term: 'stripSettings', icon: arbor ? <ArborSettingsIcon /> : <SettingsIcon /> },
+  const foot: { id: CategoryId; term: DeskTermId; icon: ReactNode; read?: RailRead }[] = [
+    { id: 'theme', term: 'stripChangeTheme', icon: flux ? <SetIcon id="skin" fallback={<ThemeIcon />} /> : arbor ? <ArborSkinIcon /> : <ThemeIcon />, read: reads?.theme },
+    { id: 'settings', term: 'stripSettings', icon: flux ? <SetIcon id="config" fallback={<SettingsIcon />} /> : arbor ? <ArborSettingsIcon /> : <SettingsIcon />, read: reads?.settings },
   ];
   return (
     <div className="wz-strip wz-reorg-rail" data-reorg-rail="">
@@ -120,9 +141,10 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
       <div className="wz-strip-section wz-reorg-where">
         <button type="button" className="wz-strip-item wz-reorg-where-item" data-reorg-where={here ?? 'unfiled'}
           aria-disabled={here == null ? 'true' : undefined} aria-pressed={here == null ? undefined : listShown(here)} onClick={here == null ? undefined : () => openListOf(here)}
-          aria-label={fill(t('reorgWhereLabel'), hereName)} aria-current="location">
+          aria-label={fill(t('reorgWhereLabel'), hereName)} aria-current="location" title={reads?.place.hint}>
           <RailBox id={here} name={hereName} size="rail" />
           <span className="wz-strip-label wz-reorg-where-name">{hereName}</span>
+          {reads ? <span className="wz-strip-readout" aria-hidden="true">{reads.place.count}</span> : null}
         </button>
       </div>
       {/* 2. her pins (none on day one, frame R3), as boxes or as a list, with the small switch under them */}
@@ -149,9 +171,10 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
       <div className="wz-strip-section wz-reorg-doors">
         {doors.map((d) => (
           <button key={d.id} type="button" data-category={d.id} data-cloth={d.cloth} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}
-            aria-disabled={d.lit ? undefined : 'true'} onClick={d.lit ? () => toggle(d.id) : undefined}>
+            aria-disabled={d.lit ? undefined : 'true'} onClick={d.lit ? () => toggle(d.id) : undefined} title={d.read?.hint}>
             <span className="wz-strip-glyph" aria-hidden="true">{d.icon}</span>
             <span className="wz-strip-label">{d.label}</span>
+            {d.read ? <span className="wz-strip-readout" aria-hidden="true">{d.read.count}</span> : null}
           </button>
         ))}
       </div>
@@ -160,9 +183,10 @@ function RailBodyImpl({ entry, open, toggle }: { entry: JournalEntry; open: Cate
         <div className="wz-strip-sep" role="separator" aria-orientation="horizontal" />
         <div className="wz-strip-section">
           {foot.map((f) => (
-            <button key={f.id} type="button" data-category={f.id} className={`wz-strip-item${open === f.id ? ' active' : ''}`} aria-pressed={open === f.id} onClick={() => toggle(f.id)}>
+            <button key={f.id} type="button" data-category={f.id} className={`wz-strip-item${open === f.id ? ' active' : ''}`} aria-pressed={open === f.id} onClick={() => toggle(f.id)} title={f.read?.hint}>
               <span className="wz-strip-glyph" aria-hidden="true">{f.icon}</span>
               <span className="wz-strip-label">{t(f.term)}</span>
+              {f.read ? <span className="wz-strip-readout" aria-hidden="true">{f.read.count}</span> : null}
             </button>
           ))}
         </div>
