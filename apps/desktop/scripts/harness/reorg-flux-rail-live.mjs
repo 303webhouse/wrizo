@@ -8,7 +8,9 @@
 // DOORS   R1  the doors read, in order, DOCS · DRIVES · ORPHANS · CIRCUITS · LOG, and the foot SKIN · CONFIG
 // DRESS   R2  every door is a command box: a hairline 1 px #1D4A52 edge, a 2 px left edge, its name in 9 px capitals
 //         MUT-R2  the same reading with the browser's own button face turns R2's test red
-// READ    R3  DOCS, CIRCUITS and LOG each carry the TRUE reading and hover hint the live Flux rail shows for this same page (the live rail is the oracle)
+// READ    R3  [parked Nov 23: the live rail counts PAGES, the reorg counts DOCS; successor R3-B] DOCS, CIRCUITS and LOG each carry the TRUE reading and hover hint the live Flux rail shows for this same page (the live rail is the oracle)
+//         R3-B DOCS, CIRCUITS, LOG and her place each carry the count the reorg's OWN lists state (her Drive's row, the Log's row, the Circuits in her Drive's list) and L2's hover hint
+//         MUT-R3-B  the same reading at the live rail's page counts turns R3-B's test red
 // PLACE   R4  her place is orange: the where box's left edge and its name #FF9800 (the one brass mark on the rail)
 // OPEN    R5  an opened door has the electric-blue left edge #00C2FF
 // PANEL   R6  the opened DRIVES pop-out is in node dress (fill #04141A, a 1 px #7EB4C4 edge), its rows draw no button face, its words 4.5:1 or better
@@ -100,7 +102,11 @@ await withHarness(async (app) => {
   ok('MUT-R2 the same reading with the browser\'s own button face turns R2\'s test red', !!faced && !r2(faced), faced && faced.doors[0].top);
   const at = (c) => d0 && d0.doors.find((x) => x.cat === c);
   const r3pair = (a, b) => !!a && !!b && !!b.reading && a.reading === b.reading && !!b.hint && a.hint === b.hint;
-  ok('R3 DOCS, CIRCUITS and LOG carry the true reading and hover hint the live Flux rail shows for this same page', !!live && r3pair(at('reorg-docs'), live.docs) && r3pair(at('plan'), live.plan) && r3pair(at('journal'), live.journal), { live, reorg: d0 && ['reorg-docs', 'plan', 'journal'].map((c) => at(c) && { reading: at(c).reading, hint: at(c).hint }) });
+  // SUPERSEDED (Nov 23, the frames on 5fa0119c: DOCS read 02 where DRIVES' own row says "1 doc", because a set of two Tracks is one Doc, and LOG read 02 where its row says "0 docs",
+  // because those pages are Orphans: the live rail counts pages, so it is no oracle for the reorg's Docs). Successor R3-B, below. The original, verbatim:
+  // ok('R3 DOCS, CIRCUITS and LOG carry the true reading and hover hint the live Flux rail shows for this same page', !!live && r3pair(at('reorg-docs'), live.docs) && r3pair(at('plan'), live.plan) && r3pair(at('journal'), live.journal), { live, reorg: d0 && ['reorg-docs', 'plan', 'journal'].map((c) => at(c) && { reading: at(c).reading, hint: at(c).hint }) });
+  void r3pair;
+  const whereRead = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where-item'); if (!b) return null; const o = b.querySelector('.wz-strip-readout'); return { reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title') }; })()");
   const where = await app.evalJs("(() => { const b = document.querySelector('[data-reorg-rail] .wz-reorg-where-item'); if (!b) return null; const n = b.querySelector('.wz-reorg-where-name'); return { left: getComputedStyle(b).borderLeftColor, name: n ? getComputedStyle(n).color : null }; })()");
   ok('R4 her place is orange: the where box\'s left edge and its name #FF9800', !!where && where.left === ORANGE && where.name === ORANGE, where);
 
@@ -118,6 +124,7 @@ await withHarness(async (app) => {
   const r6 = (x) => !!x && x.bg === NODE && x.edge === `1px ${NODE_EDGE}` && x.rowBg === 'rgba(0, 0, 0, 0)' && x.rowBorder === '0px' && !!x.ink && !!x.ground && contrast(x.ink, x.ground) >= 4.5;
   ok('R6 the opened DRIVES pop-out is in node dress (#04141A, a 1 px #7EB4C4 edge), its rows draw no button face, its words 4.5:1 or better', r6(panelRead), panelRead);
   const drivesCount = await app.evalJs("document.querySelector('.wz-cascade-panel [data-reorg-count]')?.textContent ?? null");
+  const listCounts = await app.evalJs("(() => { const n = (s) => { const e = document.querySelector(s); return e ? Number(e.getAttribute('data-reorg-docs')) : null; }; return { docs: n(\".wz-reorg-row[aria-current='location'] [data-reorg-docs]\"), log: n(\".wz-reorg-row[data-notebook='true'] [data-reorg-docs]\") }; })()");
   const grey = panelRead ? { ...panelRead, bg: 'rgb(30, 38, 46)', edge: '1px rgb(58, 64, 71)' } : null;
   ok('MUT-R6 the same reading on Machina\'s grey panel turns R6\'s test red', !!grey && !r6(grey), grey);
   const EDGEREAD = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g }; const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const hit = document.elementFromPoint(gr.left + gr.width / 2, gr.top + gr.height / 2); return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
@@ -155,6 +162,19 @@ await withHarness(async (app) => {
   await app.evalJs(door('reorg-unfiled')); await sleep(700);
   const orphansCount = await app.evalJs("document.querySelector('.wz-cascade-panel [data-reorg-count]')?.textContent ?? null");
   const pad2 = (n) => String(n).padStart(2, '0');
+  await app.evalJs("document.querySelector('[data-reorg-rail] .wz-reorg-where-item')?.click(); null"); await sleep(600);
+  const nCircuits = await app.evalJs("document.querySelector('.wz-cascade-panel') ? document.querySelectorAll(\".wz-cascade-panel .wz-reorg-list-row[data-kind='board']\").length : null");
+  const many = (n, w) => `${n} ${n === 1 ? w : `${w}s`}`;
+  const r3b = (x, c) => !!c && Number.isInteger(c.docs) && Number.isInteger(c.log) && Number.isInteger(c.circuits) && !!x.docs && !!x.plan && !!x.log && !!x.place
+    && x.docs.reading === pad2(c.docs) && x.docs.hint === `${many(c.docs, 'doc')} in this drive`
+    && x.plan.reading === pad2(c.circuits) && x.plan.hint === `${many(c.circuits, 'circuit')} in this drive`
+    && x.log.reading === pad2(c.log) && x.log.hint === `${many(c.log, 'doc')} in the Log`
+    && x.place.reading === pad2(c.docs + c.circuits) && x.place.hint === (c.docs + c.circuits === 1 ? '1 doc or circuit in this drive' : `${c.docs + c.circuits} docs and circuits in this drive`);
+  const truth = listCounts && { docs: listCounts.docs, log: listCounts.log, circuits: nCircuits };
+  const shown = { docs: at('reorg-docs'), plan: at('plan'), log: at('journal'), place: whereRead };
+  ok('R3-B DOCS, CIRCUITS, LOG and her place carry the count the reorg\'s own lists state, with L2\'s hover hint', r3b(shown, truth), { truth, shown: Object.fromEntries(Object.entries(shown).map(([k, v]) => [k, v && [v.reading, v.hint]])) });
+  const pagesCounted = live ? { ...shown, docs: live.docs, log: live.journal } : null;
+  ok('MUT-R3-B the same reading at the live rail\'s page counts turns R3-B\'s test red', !!pagesCounted && !r3b(pagesCounted, truth), pagesCounted && [pagesCounted.docs, pagesCounted.log]);
   const nD = Number(drivesCount), nO = Number(orphansCount), dr = at('reorg-projects'), or = at('reorg-unfiled');
   const driveHint = `${nD} ${nD === 1 ? 'drive' : 'drives'}`, orphanHint = nO === 1 ? '1 doc or circuit not filed in a drive' : `${nO} docs and circuits not filed in a drive`;
   ok('R12 DRIVES and ORPHANS carry their true count and hover hint', drivesCount !== null && orphansCount !== null && nD >= 2 && nO >= 1 && !!dr && !!or && dr.reading === pad2(nD) && dr.hint === driveHint && or.reading === pad2(nO) && or.hint === orphanHint, { drivesCount, orphansCount, dr: dr && [dr.reading, dr.hint], or: or && [or.reading, or.hint], driveHint, orphanHint });
@@ -173,7 +193,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
+const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
