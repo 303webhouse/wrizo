@@ -230,6 +230,7 @@ await withHarness(async (app) => {
       row.md5 = md5(path.join(OUT, file));
       row.height = await app.evalJs('innerHeight');   // the window as it stands (the -short screens are 560 tall, not the width's default)
       row.hash = await app.evalJs('location.hash');
+      row.address = await app.evalJs('location.pathname + location.search + location.hash');   // the full address a frame was shot at, query included (Fable, Nov 22, 10:10 pm: frames.json records it)
       row.attrs = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), voice: document.documentElement.getAttribute('data-voice') })");
     } catch (e) { row.status = 'failed'; row.error = String(e && e.message || e).slice(0, 300); }
     rows.push(row);
