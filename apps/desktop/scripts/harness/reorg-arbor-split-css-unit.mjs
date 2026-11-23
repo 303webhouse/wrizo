@@ -43,10 +43,15 @@ function suite(css) {
     return { pass: line && handle && fill, detail: J({ line, handle, fill }) };
   });
   t('SCROLL', () => {
-    const stage = has(rs, /desk-frame-stage\[data-split='true'\] \*$/, /scrollbar-width:\s*none/) && has(rs, /desk-frame-stage\[data-split='true'\] \*::-webkit-scrollbar$/, /display:\s*none/);
-    const asset = has(rs, /:is\(\.wz-split-asset, \.wz-split-asset \*\)$/, /scrollbar-width:\s*none/) && has(rs, /:is\(\.wz-split-asset, \.wz-split-asset \*\)::-webkit-scrollbar$/, /display:\s*none/);
+    // SUPERSEDED (Nov 22, train I2's scrollbar-flush-source T5: "the webkit mechanism lives in EXACTLY ONE place, inside the @supports exception in index.css"; Chromium 121 and later ignore a ::-webkit-scrollbar rule wherever scrollbar-width is set, so scrollbar-width:none alone hides them). The original, verbatim:
+    // const stage = has(rs, /desk-frame-stage\[data-split='true'\] \*$/, /scrollbar-width:\s*none/) && has(rs, /desk-frame-stage\[data-split='true'\] \*::-webkit-scrollbar$/, /display:\s*none/);
+    // const asset = has(rs, /:is\(\.wz-split-asset, \.wz-split-asset \*\)$/, /scrollbar-width:\s*none/) && has(rs, /:is\(\.wz-split-asset, \.wz-split-asset \*\)::-webkit-scrollbar$/, /display:\s*none/);
+    // SUCCESSOR: scrollbar-width:none alone, and no ::-webkit-scrollbar selector anywhere in this file
+    const stage = has(rs, /desk-frame-stage\[data-split='true'\] \*$/, /scrollbar-width:\s*none/);
+    const asset = has(rs, /:is\(\.wz-split-asset, \.wz-split-asset \*\)$/, /scrollbar-width:\s*none/);
+    const noWebkit = !rs.some((x) => /::-webkit-scrollbar/.test(x.sel));
     const noOverflow = !rs.some((x) => /overflow\s*:\s*hidden/.test(x.body) && /desk-frame-stage|mode-stage/.test(x.sel));
-    return { pass: stage && asset && noOverflow, detail: J({ stage, asset, noOverflow }) };
+    return { pass: stage && asset && noWebkit && noOverflow, detail: J({ stage, asset, noWebkit, noOverflow }) };
   });
   t('QUIET', () => {
     const touches = rs.filter((x) => /\.mode-stage|\.mode-pagecol|\.mode-page\b|\.forward-only-editor|\.mode-paper/.test(x.sel)).map((x) => x.sel.slice(0, 70));
@@ -77,6 +82,7 @@ const MUT = [
   ['the grip line is 2 px', 'GRIP', (t) => t.replace('width:1px', () => 'width:2px')],
   ['the handle is not 6 px', 'GRIP', (t) => t.replace('width:6px', () => 'width:12px')],
   ['the handle fills brass on hover', 'BRASS', (t) => t.replace(':hover::after{ background:#56632E', () => ':hover::after{ background:var(--brass)')],
+  ['a ::-webkit-scrollbar rule is added to the split sheet', 'SCROLL', (t) => `${t}\n${AR} .wz-split-asset::-webkit-scrollbar{ width:0; }\n`],
   ['the stage keeps its scrollbars in a split', 'SCROLL', (t) => t.replace("[data-arbor2-room]", () => '[data-arbor2-room]').split('scrollbar-width:none').join('scrollbar-width:auto')],
   ['the count row stays at the unshifted centre', 'COUNT', (t) => t.replace('left:calc(50% + var(--wz-split-shift, 0px))', () => 'left:50%')],
   ['the page side is moved', 'QUIET', (t) => `${t}\n${AR} .mode-stage{ left:40px; }\n`],

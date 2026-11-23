@@ -8,10 +8,8 @@
 :root[data-arbor2][data-theme='plateau'] .wz-split-grip::after{ left:6px; width:6px; height:44px; background:transparent; border:1px solid var(--arbor-line); box-sizing:border-box; border-radius:3px; }
 :root[data-arbor2][data-theme='plateau'] .wz-split-grip:hover::after{ background:#56632E; border-color:#56632E; }
 :root[data-arbor2][data-theme='plateau'] .wz-split-grip:focus-visible::after{ background:#56632E; border-color:#56632E; }
-/* scrollbars hidden: the stage's scrollers in a split and the asset's own half (the Machina rules' Arbor twins); both still scroll */
+/* scrollbars hidden: the stage's scrollers in a split and the asset's own half (the Machina rules' Arbor twins); both still scroll. scrollbar-width:none alone hides them: Chromium 121 and later ignore a ::-webkit-scrollbar rule wherever scrollbar-width is set, and index.css keeps the one webkit exception (scrollbar-flush-source T5) */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] *{ scrollbar-width:none; }
-:root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] *::-webkit-scrollbar{ width:0; height:0; display:none; }
 :root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *){ scrollbar-width:none; }
-:root[data-arbor2][data-theme='plateau'] :is(.wz-split-asset, .wz-split-asset *)::-webkit-scrollbar{ width:0; height:0; display:none; }
 /* the count row stands under HER page (the Wrizors' pass 1, split NIT): the instrument under the page is centred on the stage, so it stayed where the page used to be and ran under the docked half; it takes the page's own shift (--wz-split-shift), so it stays centred on the page. It is a status row, not the page: the page's geometry is untouched. */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage[data-split='true'] .desk-frame-instrument{ left:calc(50% + var(--wz-split-shift, 0px)); }

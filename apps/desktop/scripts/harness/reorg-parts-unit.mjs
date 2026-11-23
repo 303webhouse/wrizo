@@ -16,6 +16,7 @@
 //   BOLD  a cut inside a styled run (bold, italic, underline, strike, a font span, nested) closes the style at the cut and reopens it in the tail; a join gives the text back byte for byte; the cut never lands inside a mark (Fable, Nov 20)
 //   COL   PART_COLORS is the slots a to f (each theme draws its own six); an old clay, amber, moss, teal, slate or plum is READ as its slot and never written back (Fable, Nov 20)
 //   FN    footnotes and endnotes ride the Parts layer (Nick ruled A, Nov 21): a split sends each note to the half holding its marker, a join brings the lower Part's notes after the upper's and renames a label already taken, a split then a join gives the text back byte for byte, and both undos restore the exact earlier texts
+//   COLB  (colour B, Nov 21) a Part's colour is a slot a-f OR exactly #RRGGBB: a hex is stored in capitals (one spelling per colour), read back as `hex` (its slot colour is none), and replaces or is replaced by a slot; a short or long hex, a missing #, a stray word, spaces and an old colour name are refused and write nothing; an old name and a hex a client never wrote still read once and write nothing
 //   TOMB  a card deleted from a Part's page (a tombstone, or a purge marker) is not carried by the Part: a join is not refused for it; a live card still refuses (ARBOR's T11 report, Nov 20)
 // Run: node scripts/harness/reorg-parts-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -223,6 +224,39 @@ function suite(src) {
     // a Part carrying an old name, split: the tail takes no colour (a per-Part fact, as before)
     R.COL = { pass: slots && accepts && mapped && stored === 'c' && refusedOld, detail: JSON.stringify({ slots, accepts, read, stored, refusedOld }) };
   }
+  // COLB (colour B, Nov 21; Fable: "setPartColor (and the card path) stores a slot a-f OR exactly #RRGGBB, validated; anything else refused; old names still read once as their slot")
+  {
+    const L = fixture(src, ['one', 'two']);
+    const a = L.ids[0];
+    const pc = () => L.api.getJournalEntry(a).pageSettings && L.api.getJournalEntry(a).pageSettings.color;
+    const row = () => L.P.partsOfDoc(DOC)[0];
+    const ok1 = L.P.setPartColor(a, '#ff8800'), stored1 = pc(), r1 = { color: row().color, hex: row().hex };
+    const upper = L.P.setPartColor(a, '#00AAFF'), stored2 = pc();
+    const writes0 = L.S.log.length; const again = L.P.setPartColor(a, '#00aaff'); const noWrite = L.S.log.length === writes0;
+    L.P.setPartColor(a, 'c'); const slotAfter = { stored: pc(), color: row().color, hex: row().hex };
+    L.P.setPartColor(a, '#123456'); const hexAfter = { stored: pc(), color: row().color, hex: row().hex };
+    L.P.setPartColor(a, null); const cleared = L.api.getJournalEntry(a).pageSettings; const clearedOk = !('color' in cleared) && JSON.stringify(cleared).indexOf('null') < 0;
+    const L2 = fixture(src, ['one']);
+    const REFUSED = ['#FFF', '#ff00', '#GG0000', '#ff00000', 'ff0000', ' #ff0000', '#ff0000 ', '#ff 000', 'red', '', 'plum', 'clay', 'g', '#'];
+    // tried on a Part that already holds a slot: a refusal must leave it exactly as it was (a refusal that cleared the colour would show as a lost 'c')
+    L2.P.setPartColor(L2.ids[0], 'c');
+    const w1 = L2.S.log.length; const refused = REFUSED.map((v) => L2.P.setPartColor(L2.ids[0], v)); const none = L2.S.log.length === w1 && L2.api.getJournalEntry(L2.ids[0]).pageSettings.color === 'c';
+    // a client never wrote a hex, or an old name: read once, write nothing
+    const L3 = fixture(src, ['one']);
+    const readOf = {};
+    for (const [stored, want] of Object.entries({ moss: { color: 'c', hex: null }, '#a1b2c3': { color: null, hex: '#A1B2C3' }, '#12345': { color: null, hex: null }, c: { color: 'c', hex: null }, mauve: { color: null, hex: null } })) {
+      L3.api.saveJournalEntry({ ...L3.api.getJournalEntry(L3.ids[0]), pageSettings: { ...FALLBACK, size: 11, color: stored } });
+      const wr = L3.S.log.length; const p = L3.P.partsOfDoc(DOC)[0];
+      readOf[stored] = { got: { color: p.color, hex: p.hex }, want, wrote: L3.S.log.length - wr };
+    }
+    const reads = Object.values(readOf).every((r) => r.got.color === r.want.color && r.got.hex === r.want.hex && r.wrote === 0);
+    const X = load(src).P;
+    const vocab = !!X.isHexColour && X.isHexColour('#0A1b2C') && !X.isHexColour('#0A1b2') && !X.isPartColor('#0A1b2C') && X.colourToStore('#0a1b2c') === '#0A1B2C' && X.colourToStore('b') === 'b' && X.colourToStore('moss') === null && X.colorHex('#0a1b2c') === '#0A1B2C' && X.colorHex('c') === null;
+    R.COLB = { pass: ok1 === true && stored1 === '#FF8800' && r1.color === null && r1.hex === '#FF8800' && upper === true && stored2 === '#00AAFF' && again === false && noWrite
+      && slotAfter.stored === 'c' && slotAfter.color === 'c' && slotAfter.hex === null && hexAfter.stored === '#123456' && hexAfter.color === null && hexAfter.hex === '#123456' && clearedOk
+      && refused.every((r) => r === false) && none && reads && vocab,
+      detail: JSON.stringify({ ok1, stored1, r1, upper, stored2, again, noWrite, slotAfter, hexAfter, clearedOk, refused, none, readOf, vocab }) };
+  }
   // TOMB (ARBOR's report, Nov 20: box-tombstones T11 reads parts.ts's raw `.boxes`): a card deleted from a Part's page is a tombstone, hidden from every reader; the Part does not carry it, so a join is not refused for it
   {
     const mk = (boxes) => { const L = fixture(src, ['above words', 'below words']); L.api.saveJournalEntry({ ...L.api.getJournalEntry(L.ids[1]), boxes }); return L; };
@@ -305,7 +339,9 @@ function suite(src) {
     // ORIGINAL, SUPERSEDED Nov 20 (Fable: PART_COLORS is the slots a-f; the old colour names are read as slots, never written). The check stands on the slot below:
     // L.P.setPartColor(a, 'plum'); const col1 = L.api.getJournalEntry(a).pageSettings.color;
     L.P.setPartColor(a, 'f'); const col1 = L.api.getJournalEntry(a).pageSettings.color;
-    const bad = L.P.setPartColor(a, '#ff0000'); const col2 = L.api.getJournalEntry(a).pageSettings.color;
+    // ORIGINAL, SUPERSEDED Nov 21 (colour B: a valid #RRGGBB is now stored; the refusal stands on a hex that is not one, and the full matrix is COLB below), kept verbatim:
+    // const bad = L.P.setPartColor(a, '#ff0000'); const col2 = L.api.getJournalEntry(a).pageSettings.color;
+    const bad = L.P.setPartColor(a, '#ff00'); const col2 = L.api.getJournalEntry(a).pageSettings.color;
     L.P.setPartColor(a, null); const col3 = L.api.getJournalEntry(a).pageSettings;
     L.P.setPartLimit(a, { unit: 'words', max: 800.7 }); const lim = L.api.getJournalEntry(a).pageSettings.lengthLimit;
     const badLim = L.P.setPartLimit(a, { unit: 'pages', max: 3 });
@@ -445,7 +481,7 @@ function suite(src) {
 
 // ---- baseline: every check green on the real source ------------------------------------------------------------------------------------------------
 const base = suite(partsText);
-const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL', 'TOMB', 'FN'];
+const KEYS = ['SJ', 'SN', 'NL-S', 'NL-J', 'RO', 'RUN-move', 'RUN-clamp', 'RUN-shift', 'KEY', 'JR', 'UN', 'OD', 'NP', 'ED', 'BOLD', 'COL', 'COLB', 'TOMB', 'FN'];
 for (const k of KEYS) ok(`${k} on the real parts.ts`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 // DEF: pageDefaults strips a Part's own facts at the door (a source read: the strip is one destructure)
@@ -455,6 +491,12 @@ ok('DEF pageDefaults strips name, level, color and lengthLimit (the Part\'s own 
 
 // ---- mutants: each rewrite of parts.ts must land exactly once and turn its own check red -----------------------------------------------------------------
 const MUT = [
+  ['a hex is stored as typed, in lower case (one colour, two spellings)', 'COLB', (t) => t.replace('? (v.toUpperCase() as PartHex) : null;', () => '? (v as PartHex) : null;')],
+  ['a three-digit hex is accepted', 'COLB', (t) => t.replace('/^#[0-9A-Fa-f]{6}$/', () => '/^#[0-9A-Fa-f]{3,6}$/')],
+  ['setPartColor writes whatever it is given', 'COLB', (t) => t.replace('if (color !== null && store === null) return false;', () => '')],
+  ['an old colour name is written, not only read', 'COLB', (t) => t.replace('  if (isPartColor(v)) return v;\n  return isHexColour(v)', () => '  if (isPartColor(v)) return v;\n  if (typeof v === "string" && Object.prototype.hasOwnProperty.call(OLD_COLOR_NAMES, v)) return OLD_COLOR_NAMES[v];\n  return isHexColour(v)')],
+  ['a Part never reports its hex', 'COLB', (t) => t.replace('hex: colorHex(k.color),', () => 'hex: null,')],
+  ['a hex reads as a slot colour too', 'COLB', (t) => t.replace('color: colorSlot(k.color),', () => 'color: colorSlot(k.color) ?? (colorHex(k.color) as never),')],
   ['the split writes the SHORTENED source before the tail', 'NL-S', (t) => t.replace('  saveJournalEntry(row);\n', () => '').replace("  if (again) saveJournalEntry({ ...again, text: head });", () => "  if (again) saveJournalEntry({ ...again, text: head });\n  saveJournalEntry(row);")],
   // SUPERSEDED (footnotes, Nov 21: joinPart now writes joinWithNotes(...) into a `joined` first, so this anchor no longer lands; the law is unchanged, its successor stands below), kept verbatim:
   // ['the join soft-deletes the emptied Part BEFORE the words are appended', 'NL-J', (t) => t.replace("  saveJournalEntry({ ...aboveE, text: joinText(above, below) });\n  if (between) between();\n  softDeleteEntry(partId);", () => "  softDeleteEntry(partId);\n  if (between) between();\n  saveJournalEntry({ ...aboveE, text: joinText(above, below) });")],
@@ -471,7 +513,9 @@ const MUT = [
   ['an undo joins by the halves, not by the whole it was cut from (successor)', 'BOLD', (t) => t.replace('text: t.whole ?? joinWithNotes(t.head, t.tail, joinText)', () => 'text: joinWithNotes(t.head, t.tail, joinText)')],
   ['a join is refused for a deleted card too (the raw read)', 'TOMB', (t) => t.replace('liveBoxes(e.boxes).length > 0', () => '!!(e.boxes && e.boxes.length)')],
   ['an old colour name is read as no colour', 'COL', (t) => t.replace("{ clay: 'a', amber: 'b', moss: 'c', teal: 'd', slate: 'e', plum: 'f' }", () => '{}')],
-  ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
+  // ORIGINAL, SUPERSEDED Nov 21 (colour B: setPartColor's refusal now reads `store === null`, so this anchor no longer lands; its successor stands below), kept verbatim:
+  // ['an old colour name is written back', 'COL', (t) => t.replace('if (color !== null && !isPartColor(color)) return false;', () => '')],
+  ['an old colour name is written back (successor)', 'COL', (t) => t.replace('if (color !== null && store === null) return false;', () => '')],
   ['the slots stop at e', 'COL', (t) => t.replace("['a', 'b', 'c', 'd', 'e', 'f'] as const", () => "['a', 'b', 'c', 'd', 'e'] as const")],
   ['a cut may land between the halves of an emoji', 'SN', (t) => t.replace('if (a >= 0xD800 && a <= 0xDBFF && b >= 0xDC00 && b <= 0xDFFF) return o - 1;', () => '')],
   ['a move leaves the subsections behind', 'RUN-move', (t) => t.replace('const [s, t] = runOf(parts.map(p => p.level), i);\n  const run = parts.slice(s, t);\n  const rest', () => 'const s = i, t = i + 1;\n  const run = parts.slice(s, t);\n  const rest')],

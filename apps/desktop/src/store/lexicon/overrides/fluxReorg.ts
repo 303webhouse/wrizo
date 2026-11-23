@@ -1,6 +1,6 @@
 import type { ThemeId } from '../../theme';
 import type { DeskTermId } from '../terms';
-import { REORG } from '../../../reorg/flag';
+import { reorgFor } from '../../../reorg/flag';
 import { FLUX_OVERRIDES as LIVE } from './flux';
 
 // THE REORG'S FLUX WORDS, behind ?reorg=1 only (Fable, Nov 21: "the Flux reorg build from claude/wrizors/flux-reorg-spec.md"; Nick, Nov 20, 4:43 pm: SPINE for PLAN, the teal swap only if TK6 flags it, DOCK for the split).
@@ -136,4 +136,5 @@ export const FLUX_REORG_KEPT: readonly string[] = [
 ];
 
 export const FLUX_OVERRIDES: Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>> =
-  REORG ? { flux: { ...LIVE.flux, ...FLUX_REORG_WORDS } } : LIVE;
+  // the switch-over (Fable, Nov 21, 9:40 pm): Flux's reorg words follow reorgFor('flux'): the ask (?reorg=1) today, the default once flag.ts REORG_DEFAULT_ON.flux turns true
+  reorgFor('flux') ? { flux: { ...LIVE.flux, ...FLUX_REORG_WORDS } } : LIVE;

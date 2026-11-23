@@ -141,12 +141,9 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='d']){ background:color-mix(in srgb, var(--reorg-tag-d-fill) 22%, transparent); }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='e']){ background:color-mix(in srgb, var(--reorg-tag-e-fill) 22%, transparent); }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-list > li:has(> .reorg-parts-row[data-tint='f']){ background:color-mix(in srgb, var(--reorg-tag-f-fill) 22%, transparent); }
-/* the current Section: Arbor's chosen-row rule: a 4 px brass mark at its left edge and roman 500; by night the words are brass (8.56:1), by day they stay olive (brass on cream is 1.91:1), and on a tinted row by day the drawer's dark olive, which holds 4.5:1 on every tint */
+/* the current Section: Arbor's chosen-row rule: a 4 px brass mark at its left edge and roman 500; its name is the drawer's label colour in both rooms (the Wrizors' pass 3: "the current name in the label colour both rooms"), which holds 4.5:1 on every tint */
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here::before{ content:''; position:absolute; left:0; top:4px; bottom:4px; width:4px; background:var(--brass); }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--brass); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here .reorg-parts-name{ color:var(--accent-rest); }
-:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-row.is-here[data-tint] .reorg-parts-name{ color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:500; font-style:normal; color:var(--text-hi); }
 /* the link badge (D2): a small cloth-edged count, in GRAFTS' cold blue edge; it opens GRAFTS at that Section */
 :root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets{ border:1px solid var(--reorg-tag-c-edge); color:var(--text-hi); }
 /* the edge keeps 3:1 and the count 4.5:1 on the wash and on the plain drawer, in both rooms (the unit computes every slot over every ground): a deeper cold blue by day, the cold blue cloth itself by night */
@@ -160,3 +157,34 @@
 
 /* pass 1, NIT 1 (Nick, Oct 9), the left opener's mirror of the Back menu's: with the Front menu on, the Tools drawer's opener keeps its olive when the drawer is open */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-sliver-anchor:has(:is(#wz-sliver-tab-text, #wz-sliver-tab-parts)) .wz-sliver[data-open='true'] .wz-sliver-grip{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }
+/* COLOUR B (Nick's own colour; train H, Machina first): the Part colour picker and the custom-colour tag, the Machina rules re-scoped to the live Arbor (Machina's light room is Arbor's day room; brass is her choice on the chosen scheme and swatch; a custom colour is a swatch with no number) */
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-tag[data-colour-hex]{ background:var(--part-hex); color:var(--part-hex-ink); border:1px solid var(--part-hex-edge-dark); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-parts-tag[data-colour-hex]{ border-color:var(--part-hex-edge-light); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-picker{ position:fixed; z-index:195; box-sizing:border-box; display:flex; flex-direction:column; gap:8px; padding:12px 14px 14px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); border-radius:0; color:var(--text-hi); font-family:var(--font-ui); font-size:12px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-head{ font-size:13px; font-weight:600; color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-label{ margin-top:4px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-schemes{ display:flex; gap:4px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-scheme{ flex:1 1 0; height:26px; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font:inherit; color:var(--text-mid); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-scheme[aria-checked='true']{ color:var(--text-hi); border-color:transparent; box-shadow:inset 0 0 0 1.5px var(--brass); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-colour-scheme[aria-checked='true']{ box-shadow:inset 0 0 0 1.5px var(--brass), 0 0 0 1px var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-line{ font-size:11px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatches{ display:flex; gap:8px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch{ width:32px; height:32px; padding:0; box-sizing:border-box; border:1px solid var(--text-low); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; font-weight:500; cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='a']{ background:var(--reorg-tag-a-fill); color:var(--reorg-tag-a-ink); border-color:var(--reorg-tag-a-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='b']{ background:var(--reorg-tag-b-fill); color:var(--reorg-tag-b-ink); border-color:var(--reorg-tag-b-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='c']{ background:var(--reorg-tag-c-fill); color:var(--reorg-tag-c-ink); border-color:var(--reorg-tag-c-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='d']{ background:var(--reorg-tag-d-fill); color:var(--reorg-tag-d-ink); border-color:var(--reorg-tag-d-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='e']{ background:var(--reorg-tag-e-fill); color:var(--reorg-tag-e-ink); border-color:var(--reorg-tag-e-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[data-colour='f']{ background:var(--reorg-tag-f-fill); color:var(--reorg-tag-f-ink); border-color:var(--reorg-tag-f-edge); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch[aria-checked='true']{ box-shadow:0 0 0 2px var(--chrome-surface), 0 0 0 4px var(--brass); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-colour-swatch[aria-checked='true']{ box-shadow:0 0 0 2px var(--chrome-surface), 0 0 0 4px var(--brass), 0 0 0 5px var(--arbor-line); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-swatch:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:6px; }
+:root[data-arbor2][data-theme='plateau'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open){ align-self:flex-start; padding:0; background:none; border:0; font:inherit; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open):hover:not([disabled]){ text-decoration:underline; text-underline-offset:3px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-use[disabled]{ opacity:.4; cursor:default; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-custom{ display:flex; align-items:center; gap:8px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-hex{ width:96px; height:26px; box-sizing:border-box; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; color:var(--text-hi); }
+:root[data-arbor2][data-theme='plateau'] .reorg-colour-preview{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:26px; box-sizing:border-box; border:1px solid var(--part-hex-edge-dark, var(--ink-border-strong)); font-size:12px; color:var(--text-mid); }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='day'] .reorg-colour-preview{ border-color:var(--part-hex-edge-light, var(--ink-border-strong)); }
+/* pass 3 (the Wrizors, Nov 22), REAL: by night every tag wears a 1 px edge in Arbor's night line, the slot tags and a custom colour's alike */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour], :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .reorg-parts-tag[data-colour-hex]{ border-color:var(--arbor-line); }

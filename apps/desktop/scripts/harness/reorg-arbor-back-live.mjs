@@ -52,6 +52,7 @@ async function seed(app) {
 }
 async function open(app, id, { w = 1366, lift = 'plateau.back', arbor2 = true } = {}) {
   await app.emulateDpr(1, w, 768);
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1${arbor2 ? '' : '&arbor2=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
@@ -74,9 +75,12 @@ await withHarness(async (app) => {
     Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'PLAN,GRAFTS,TUTOR' && tabs.map((x) => x.id).join(',') === 'plan,links,tutor' && tabs.map((x) => x.on).join(',') === 'false,true,false', tabs);
 
   const cloth = {};
-  for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.desk-frame-stage'); return s ? getComputedStyle(s).getPropertyValue('--arbor2-chosen-r').trim() : null; })()") }; }
+  // SUPERSEDED (Nov 22, arbor-keyflip: the Back menu's rules no longer set --arbor2-chosen-r on the stage; the edge is read from what is drawn). The original, verbatim:
+  // for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.desk-frame-stage'); return s ? getComputedStyle(s).getPropertyValue('--arbor2-chosen-r').trim() : null; })()") }; }
+  for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); cloth[id] = { tab: await app.evalJs(rgb(id)), edge: await app.evalJs("(() => { const s = document.querySelector('.wz-tutor-panel .wz-drawer-slide--right'); const m = s ? /rgb\\(\\d+, \\d+, \\d+\\)/.exec(getComputedStyle(s).boxShadow) : null; return m ? m[0] : null; })()") }; }
   const want = { plan: ['rgb(168, 57, 47)', '#A8392F'], links: ['rgb(127, 160, 188)', '#7FA0BC'], tutor: ['rgb(86, 99, 46)', '#56632E'] };
-  const clothOk = Object.entries(want).every(([id, [bg, hex]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && String(cloth[id].edge).toUpperCase() === hex && cloth[id].tab['z-index'] === '3');
+  // const clothOk = Object.entries(want).every(([id, [bg, hex]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && String(cloth[id].edge).toUpperCase() === hex && cloth[id].tab['z-index'] === '3');
+  const clothOk = Object.entries(want).every(([id, [bg]]) => cloth[id].tab && cloth[id].tab['background-color'] === bg && cloth[id].edge === bg && cloth[id].tab['z-index'] === '3');
   ok('AB2 the cloths: PLAN madder, GRAFTS cold blue, TUTOR olive; the open tab comes forward (z-index 3) and the drawer\'s edge takes its cloth', clothOk, cloth);
 
   await tab(app, 'plan');
@@ -134,8 +138,11 @@ await withHarness(async (app) => {
   await open(app, 'ab-1', { arbor2: false });
   await drawer(app);
   const classic = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')]; return { tabs: all.length ? all.map((b) => b.id.replace('wz-tutor-tab-', '')) : null, reorg: !!document.querySelector('.reorg-search-door, .wz-back-assets'), arbor2: document.documentElement.hasAttribute('data-arbor2') }; })()");
-  ok('AB8 OFF: without the door Arbor\'s own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 even the door gives no Back menu',
-    Array.isArray(off) && off.map((x) => x.id).join(',') === 'tutor,links,board' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AB8, verbatim:
+  // ok('AB8 OFF: without the door Arbor\'s own drawer stands (TUTOR | GRAFTS | BOARD, no Plan tab); with ?arbor2=0 even the door gives no Back menu',
+  // Array.isArray(off) && off.map((x) => x.id).join(',') === 'tutor,links,board' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
+  ok('AB8 ON [successor]: without the door Arbor\'s Back menu stands (PLAN | GRAFTS | TUTOR, the Plan tab included: the cell is the table\'s); with ?arbor2=0 even the door gives no Back menu',
+    Array.isArray(off) && off.map((x) => x.id).join(',') === 'plan,links,tutor' && !!classic && Array.isArray(classic.tabs) && !classic.tabs.includes('plan') && classic.reorg === false, { off, classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

@@ -1,12 +1,17 @@
 import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
-import { addPageLink, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
+import { routeForEntry } from '../store/routeForEntry';
+import { pressTripBack, useBoardTrip } from './split/fullTrip';
+import { addPageLink, flushNow, getDrawer, getJournalEntries, getJournalEntry, getPageLinksOf, getPageLinksTo, getPairedPageId, getProject, getSystemKind, isAutoSet, isPairedPlanBoard, isUnborn, renameDrawer, saveProject, subscribe } from '../store/persistence';
 import { firstLine } from '../store/entryText';
 import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
+import { useSchemeOnPage } from './colourScheme';
+import { useTheme } from '../store/theme';
 import { REORG } from './flag';
 import { openSearch } from './search/searchStore';
 
@@ -206,7 +211,9 @@ function sigOf(e: JournalEntry): string {
   const siblings = set
     ? getJournalEntries().filter((x) => x.projectId === set.id).map((x) => `${x.id}:${x.orderIndex ?? ''}:${x.pageType ?? ''}:${x.deletedAt ? 1 : 0}`).join(',')
     : '';
-  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings].join('\u0001');
+  // the Section's own colour too (Arbor's tag before its name, spec §3: a colour chosen in the Front menu redraws the tag; Actions 44974589071)
+  const colour = String((e.pageSettings as { color?: unknown } | undefined)?.color ?? '');
+  return [e.id, e.projectId ?? '', e.origin ?? '', set?.title ?? '', set?.drawerId ?? '', drawer?.name ?? '', e.pageSettings?.name ?? '', firstLine(e.text ?? ''), siblings, colour].join('\u0001');
 }
 
 interface NamesProps { entry: JournalEntry; canRename: boolean; beforeWrite: () => void }
@@ -231,6 +238,8 @@ function PartsDrop({ entry, beforeLeave, onClose }: { entry: JournalEntry; befor
 
 function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   useSyncExternalStore(subscribe, () => namesSig(entry.id));
+  // colour B: the Doc on screen draws its slots in its own scheme (reorg/colourScheme.ts; it re-renders only when the scheme changes)
+  useSchemeOnPage(entry.id);
   namesRenders += 1;
   const { t } = useDeskLexicon();
   const latest = getJournalEntry(entry.id) ?? entry;
@@ -241,6 +250,8 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   const write = (fn: () => void) => { beforeWrite(); fn(); };
   // the Part line drops every Part of the Doc (the prototype's parts drop, frame P2-12C, ruled B): the Front menu's own Parts list
   const [dropped, setDropped] = useState(false);
+  // ARBOR (spec §3): the Section's tag (§6, Arbor's numbered cloth: INK's tokens in 25-reorg-arbor-tags.css) stands before its name; Machina draws none
+  const arbor = useTheme() === 'plateau';
   return (
     <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
       <ProjectName entry={latest} />
@@ -259,6 +270,7 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
         {made && part && (
           <>
             <span className="reorg-top-dot" aria-hidden="true">·</span>
+            {arbor && part.color && <span className="reorg-top-tag" data-top-tag={part.color} aria-hidden="true" />}
             <Name id="part" text={part.name || t('reorgUntitled')} editable={canRename} onCommit={(v) => write(() => renamePart(latest.id, v))} />
           </>
         )}
@@ -293,8 +305,20 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
   const latest = getJournalEntry(entry.id) ?? entry;
   const docs = boardDocs(latest);
   const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0].name || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
+  // BACK (§3b item 3, split/fullTrip.ts): this Board opened from Full Screen beside a page; Back returns to that page, which puts its split, scroll and
+  // caret back. Reached any other way, the Board shows no Back.
+  const trip = useBoardTrip(entry.id);
+  const navigate = useNavigate();
+  const tripPage = trip ? getJournalEntry(trip.pageId) : undefined;
+  const goBack = () => {
+    if (!tripPage) return;
+    pressTripBack();
+    flushNow();
+    navigate(routeForEntry(tripPage));
+  };
   return (
     <div className="reorg-top" data-reorg-top="board">
+      {tripPage && <button type="button" className="reorg-top-back" data-top-back="" onClick={goBack}>{t('reorgFullBack')}</button>}
       <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
         <ProjectName entry={latest} />
         <Sep />

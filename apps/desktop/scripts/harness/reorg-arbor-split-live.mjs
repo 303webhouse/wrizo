@@ -40,6 +40,7 @@ async function seed(app, tone) {
   })()`);
 }
 async function open(app, id, { lift = 'plateau.back,plateau.split', arbor2 = true } = {}) {
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1${arbor2 ? '' : '&arbor2=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
@@ -88,13 +89,18 @@ await withHarness(async (app) => {
   const centred = !!cnt && !!cnt.row && !!cnt.page && Math.abs((cnt.row.left + cnt.row.width / 2) - (cnt.page.left + cnt.page.width / 2)) <= 2;
   ok('AS6 the count row stands under her page: it ends before the docked half starts and is centred on the page', centred && cnt.row.right <= cnt.asset.left + 1, cnt);
 
-  await open(app, 'as-1', { lift: 'plateau.back' });
-  await split(app);
-  const noCell = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  await open(app, 'as-1', { arbor2: false });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AS5, verbatim:
+  // await open(app, 'as-1', { lift: 'plateau.back' });
+  // await split(app);
+  // const noCell = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  // await open(app, 'as-1', { arbor2: false });
+  // await split(app);
+  // const classic = await app.evalJs("!!document.querySelector('.wz-split-asset')");
+  // ok('AS5 OFF: with the door on plateau.back only, the split never draws; and the classic Plateau (?arbor2=0) never draws it even through the door', noCell === false && classic === false, { noCell, classic });
+  await open(app, 'as-1', { arbor2: false });   // [successor] the classic Plateau (?arbor2=0) never draws the split, door or no door
   await split(app);
   const classic = await app.evalJs("!!document.querySelector('.wz-split-asset')");
-  ok('AS5 OFF: with the door on plateau.back only, the split never draws; and the classic Plateau (?arbor2=0) never draws it even through the door', noCell === false && classic === false, { noCell, classic });
+  ok('AS5 OFF [successor]: the classic Plateau (?arbor2=0) never draws the split (the redesign off: the reorg never draws there), though the back cell is on', classic === false, { classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

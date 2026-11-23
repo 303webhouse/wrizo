@@ -95,7 +95,6 @@ async function partsTab(app) {
 const DOCS_OF = (part) => `[...document.querySelectorAll('[data-assets-part="${part}"] [data-back-asset][data-graft-entry]')].map((r) => r.getAttribute('data-graft-entry')).filter((id) => /^wa-d[ABC]$/.test(id)).map((id) => id.slice(-1)).join('')`;
 // a Part's own page links, read through the store's seam (the cache, never storage: no flush to wait for)
 const LINKS = (id) => `(window.wrizoPageLinksOf(${q(id)}) || []).filter((l) => !l.deletedAt).map((l) => l.bEntryId)`;
-const DOC_ASSETS = "(() => { const D = window.wrizoDocSettings; if (!D) return { seam: false }; const s = D.of('wa-1') || {}; return { seam: true, assets: s.assets ?? null }; })()";
 const DOC_ROWS = "[...document.querySelectorAll('[data-assets-doc] [data-back-asset][data-graft-entry]')].map((r) => r.getAttribute('data-graft-entry'))";
 const HEAD = "((document.querySelector('[data-back-assets-head]') || {}).textContent || '').replace(/\\s+/g, ' ').trim()";
 async function openMenu(app, target) {
@@ -163,6 +162,10 @@ await withHarness(async (app) => {
   const docsListed = await app.evalJs(PICKER);
   await app.evalJs(click('[data-assets-picker] [data-assets-pick][data-graft-entry="wa-d3"]')); await sleep(500);
   await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); null"); await sleep(250);
+  // item141 (train F): the Doc settings seam is read only after a waitFor that names it (a navigation is a request; the waitFor is the proof). If it
+  // never arrives the probe still answers { seam: false } and M3/M4 fail on it.
+  await app.waitFor("typeof window.wrizoDocSettings === 'object' && !!window.wrizoDocSettings", { label: 'the Doc settings seam', timeout: 8000 }).catch(() => {});
+  const DOC_ASSETS = "(() => { const D = window.wrizoDocSettings; if (!D) return { seam: false }; const s = D.of('wa-1') || {}; return { seam: true, assets: s.assets ?? null }; })()";
   const m3 = { stored: await app.evalJs(DOC_ASSETS), rows: await app.evalJs(DOC_ROWS), head: await app.evalJs(HEAD), wa1: await app.evalJs(LINKS('wa-1')) };
   const a3 = m3.stored.assets;
   ok('M3 Existing Doc from the Doc\'s "+": the picker lists docs only; a pick writes docSettings.assets = [{ entryId, at }], the Doc\'s list draws it, "Assets (n)" counts it, and her Part gains no link',
@@ -208,8 +211,14 @@ await withHarness(async (app) => {
   const missing = need.filter((k) => !terms.includes(`'${k}'`) || !new RegExp(`\\b${k}:`).test(canon) || !used.includes(`'${k}'`));
   ok('W1 every new word is a lexicon key (terms.ts, the canonical table, used in the source)', missing.length === 0, { missing });
   const rec = src('types/records.ts'), ds = src('reorg/docSettings.ts').replace(/\/\/.*$/gm, '');
-  ok('D1 the Doc\'s assets are typed on DocSettings and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
-    /export type DocSettings = \{[^\n]*assets\?: DocAsset\[\][^\n]*\};/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
+  // SUPERSEDED (train H, Nov 21: Chat 1 composed arbor/colour-b's colourScheme onto DocSettings, so the type now spans two lines; the reader matched it on ONE line
+  // only, a spelling, not the sense; train-h4 3ab78c73, pair 44973956599). The original, verbatim:
+  // ok('D1 the Doc\'s assets are typed on DocSettings and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
+  //   /export type DocSettings = \{[^\n]*assets\?: DocAsset\[\][^\n]*\};/.test(rec) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), {});
+  // [successor] the same sense, read across lines: the whole DocSettings type (from its head to the `};` that ends a line) carries assets?: DocAsset[]
+  const dsType = (rec.match(/export type DocSettings = \{[\s\S]*?\};[ \t]*$/m) || [''])[0];
+  ok('D1 [successor] the Doc\'s assets are typed on DocSettings (read across lines) and written only through reorg/docSettings.ts (saveProject), which touches no storage of its own',
+    /\bassets\?: DocAsset\[\]/.test(dsType) && /export function addDocAsset\(/.test(ds) && /saveProject\(/.test(ds) && !/localStorage|sessionStorage|indexedDB/.test(ds), { dsType: dsType.slice(0, 300) });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);

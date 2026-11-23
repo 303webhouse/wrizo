@@ -57,6 +57,7 @@ async function seed(app) {
 }
 async function open(app, id, { w = 1366, lift = LIFT, arbor2 = true, room = null } = {}) {
   await app.emulateDpr(1, w, 768);
+  await app.waitFor("typeof window.wrizoTheme === 'object'", { label: 'the theme seam', timeout: 15000 });
   await app.evalJs("window.wrizoTheme.set('plateau'); null");
   await app.evalJs(`history.replaceState(null, '', '/?reorg=1${arbor2 ? '' : '&arbor2=0'}${lift ? '&reorglift=' + lift : ''}#/page/${id}')`);
   await app.reload();
@@ -90,19 +91,26 @@ await withHarness(async (app) => {
 
   // AF3: FORMAT
   await tab(app, 'text');
-  const fmt = await app.evalJs(`(() => { const root = document.querySelector('.wz-sliver-panel'); const folds = [...root.querySelectorAll('[data-text-fold]')]; return { templates: !!root.querySelector('.wz-sliver-templates'), presetsHead: /ready-made|presets/i.test([...root.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent).join(' ')), folds: folds.map((b) => ({ k: b.getAttribute('data-text-fold'), open: b.getAttribute('aria-expanded') })), typeface: !!root.querySelector('.wz-sliver-type'), setup: !!root.querySelector('.wz-page-setup') }; })()`);
+  const fmt = await app.evalJs(`(() => { const root = document.querySelector('.wz-sliver-panel'); const folds = [...root.querySelectorAll('[data-text-fold]')]; return { templates: !!root.querySelector('.wz-sliver-templates'), presetsHead: /ready-made|presets/i.test([...root.querySelectorAll('.wz-sliver-h')].map((h) => h.textContent).join(' ')), folds: folds.map((b) => ({ k: b.getAttribute('data-text-fold'), open: b.getAttribute('aria-expanded') })), typeface: !!root.querySelector('.wz-sliver-type'), setup: !!root.querySelector('.wz-page-setup'), pageKind: !!root.querySelector('.wz-sliver-page-kind'), goalFoot: !!root.querySelector('.wz-sliver-goal') }; })()`);
   await tab(app, 'parts');
   const menu = await app.evalJs(`(async () => { const btn = document.querySelector('[data-doc-kind]'); if (!btn) return null; btn.click(); await new Promise((r) => setTimeout(r, 300)); const items = [...document.querySelectorAll('.reorg-dockind-item > button')].map((b) => (b.textContent || '').replace(/[▸▾]/g, '').trim()); const pre = [...document.querySelectorAll('.reorg-dockind-item > button')].find((b) => /^Presets/.test((b.textContent || '').trim())); if (pre) { pre.click(); await new Promise((r) => setTimeout(r, 300)); } const starts = document.querySelectorAll('[data-doc-sub="presets"] button').length; const su = [...document.querySelectorAll('.reorg-dockind-item > button')].find((b) => /^Page/.test((b.textContent || '').trim())); if (su) { su.click(); await new Promise((r) => setTimeout(r, 300)); } return { items, starts, setup: !!document.querySelector('[data-doc-sub="setup"] .wz-page-setup') }; })()`);
   await app.evalJs("document.querySelector('[data-doc-kind]')?.click(); null");
-  ok("AF3 FORMAT: Arbor's Presets and Page setup live in the kind menu only: no templates section and no Page setup on FORMAT; the folds stand folded; the kind menu's Presets holds the ready-made starts and its Page setup holds the zone",
-    !!fmt && fmt.templates === false && fmt.setup === false && fmt.typeface === true && fmt.folds.length >= 1 && fmt.folds.every((f) => f.open === 'false') && !!menu && menu.items.some((x) => /^Presets/.test(x)) && menu.starts >= 10 && menu.setup === true, { fmt, menu });
+  // SUPERSEDED (Nov 22, the Wrizors pass 6 NIT 2 and Fable 3:20 pm: no Pages Kind row on FORMAT, no goal foot under the Front menu): the original, verbatim:
+  // ok("AF3 FORMAT: Arbor's Presets and Page setup live in the kind menu only: no templates section and no Page setup on FORMAT; the folds stand folded; the kind menu's Presets holds the ready-made starts and its Page setup holds the zone",
+  // !!fmt && fmt.templates === false && fmt.setup === false && fmt.typeface === true && fmt.folds.length >= 1 && fmt.folds.every((f) => f.open === 'false') && !!menu && menu.items.some((x) => /^Presets/.test(x)) && menu.starts >= 10 && menu.setup === true, { fmt, menu });
+  ok("AF3 FORMAT: Arbor's Presets and Page setup live in the kind menu only: no templates section, no Page setup and no Pages Kind row on FORMAT, and no goal foot (the Session row holds the goal); the folds stand folded; the kind menu's Presets holds the ready-made starts and its Page setup holds the zone",
+    !!fmt && fmt.templates === false && fmt.setup === false && fmt.pageKind === false && fmt.goalFoot === false && fmt.typeface === true && fmt.folds.length >= 1 && fmt.folds.every((f) => f.open === 'false') && !!menu && menu.items.some((x) => /^Presets/.test(x)) && menu.starts >= 10 && menu.setup === true, { fmt, menu });
 
   // AF4: SECTIONS
   await sleep(300);
   const sec = await app.evalJs(`(() => { const root = document.querySelector('.wz-sliver-panel'); const head = root.querySelector('.reorg-parts-head'); const kind = root.querySelector('[data-doc-kind]'); const fresh = root.querySelector('[data-parts-new]'); const st = root.querySelector('[data-parts-structure-toggle]'); const body = root.querySelector('.reorg-parts-structure-body'); return { head: head ? head.textContent.trim() : null, kind: kind ? kind.textContent.replace(/[▸▾]/g, '').trim() : null, fresh: fresh ? fresh.textContent.replace('+', '').trim() : null, structure: st ? { open: st.getAttribute('aria-expanded'), hidden: !!(body && body.hidden) } : null, rows: root.querySelectorAll('.reorg-parts-row').length }; })()`);
-  ok('AF4 SECTIONS: the kind menu at the head (Normal; its items Style guide, Presets, Page setup, Special Sections), "Sections (3)", "New section", Structure closed by default',
+  // SUPERSEDED (Nov 22, the Wrizors pass 6 NIT 3: the kind menu in Arbor's sentence case): the original, verbatim:
+  // ok('AF4 SECTIONS: the kind menu at the head (Normal; its items Style guide, Presets, Page setup, Special Sections), "Sections (3)", "New section", Structure closed by default',
+  // !!sec && sec.kind === 'Normal' && sec.head === 'Sections (3)' && sec.fresh === 'New section' && !!sec.structure && sec.structure.open === 'false' && sec.structure.hidden === true && sec.rows === 3
+  // && !!menu && ['Style', 'Presets', 'Page', 'Special'].every((w) => menu.items.some((x) => x.startsWith(w))), { sec, items: menu && menu.items });
+  ok('AF4 SECTIONS: the kind menu at the head (Normal; its items Style guide, Presets, Page setup, Special sections), "Sections (3)", "New section", Structure closed by default',
     !!sec && sec.kind === 'Normal' && sec.head === 'Sections (3)' && sec.fresh === 'New section' && !!sec.structure && sec.structure.open === 'false' && sec.structure.hidden === true && sec.rows === 3
-      && !!menu && ['Style', 'Presets', 'Page', 'Special'].every((w) => menu.items.some((x) => x.startsWith(w))), { sec, items: menu && menu.items });
+      && !!menu && ['Style guide', 'Presets', 'Page setup', 'Special sections'].every((w) => menu.items.some((x) => x === w || x.startsWith(w + ' '))), { sec, items: menu && menu.items });
 
   // AF5: tags, tint, chosen row, by night and by day, measured from the drawn colours
   const measure = (room) => `(() => { ${PARSE} ${ratioJs}
@@ -112,7 +120,7 @@ await withHarness(async (app) => {
     const out = rows.map((r) => { const name = r.querySelector('.reorg-parts-name'); const tag = r.querySelector('.reorg-parts-tag'); const rc = getComputedStyle(r); const bg = parse(rc.backgroundColor); const drawn = ground(r); const wash = Math.max(bg[3], parse(getComputedStyle(r.parentElement).backgroundColor)[3]); const fg = parse(getComputedStyle(name).color);
       const before = getComputedStyle(r, '::before'); const after = tag ? getComputedStyle(tag, '::after') : null; const tc = tag ? getComputedStyle(tag) : null;
       return { name: name.textContent, here: r.classList.contains('is-here'), tint: r.getAttribute('data-tint'), alpha: Math.round(wash * 100) / 100, weight: getComputedStyle(name).fontWeight, style: getComputedStyle(name).fontStyle, ink: fg.slice(0, 3).map(Math.round).join(','), ratio: Math.round(ratio(fg, drawn) * 100) / 100,
-        mark: { w: before.width, bg: before.backgroundColor, left: before.left }, tag: tag ? { colour: tag.getAttribute('data-colour'), bg: tc.backgroundColor, num: after && after.content, fs: tc.fontSize } : null }; });
+        mark: { w: before.width, bg: before.backgroundColor, left: before.left }, tag: tag ? { colour: tag.getAttribute('data-colour'), bg: tc.backgroundColor, num: after && after.content, fs: tc.fontSize, edge: tc.borderTopColor, edgeW: tc.borderTopWidth } : null }; });
     return out; })()`;
   await open(app, 'af-1', { room: 'dark' }); await leaveFreeWrite(app); await drawer(app); await tab(app, 'parts');
   const night = await app.evalJs(measure('night'));
@@ -123,11 +131,19 @@ await withHarness(async (app) => {
   const here = (rows) => rows && rows.find((r) => r.here);
   const tagOk = (rows) => !!rows && rows[0].tag.colour === 'c' && rows[0].tag.bg === 'rgb(127, 160, 188)' && /3/.test(rows[0].tag.num) && rows[0].tag.fs === '0px' && rows[1].tag.colour === 'd' && rows[1].tag.bg === 'rgb(168, 57, 47)' && /4/.test(rows[1].tag.num);
   const markOk = (r) => !!r && r.mark.w === '4px' && r.mark.bg === 'rgb(255, 152, 0)' && r.weight === '500' && r.style === 'normal';
-  ok('AF5 tags and tint: the slot\'s cloth with its number (c = 3, d = 4); the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500; brass words by night, olive by day (the drawer\'s dark olive on a tinted row); every pair reads 4.5:1 or better, measured from the drawn colours',
-    tagOk(night) && tagOk(day) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
-      && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '255,152,0' && here(night).ratio >= 4.5
+  // SUPERSEDED (pass 3, Nov 22: the current name takes the label colour in both rooms, not brass by night or olive by day; and by night every tag wears a 1 px #9C8A6E edge). The original, verbatim:
+  // ok('AF5 tags and tint: the slot\'s cloth with its number (c = 3, d = 4); the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500; brass words by night, olive by day (the drawer\'s dark olive on a tinted row); every pair reads 4.5:1 or better, measured from the drawn colours',
+  // tagOk(night) && tagOk(day) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
+  // && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '255,152,0' && here(night).ratio >= 4.5
+  // && here(day).tint === 'c' && here(day).ink === '51,64,31' && here(day).ratio >= 4.5
+  // && here(dayPlain).tint === null && here(dayPlain).ink === '85,97,45' && here(dayPlain).ratio >= 4.5,
+  // { night: here(night), day: here(day), dayPlain: here(dayPlain), tagsNight: night && night.slice(0, 2).map((r) => r.tag) });
+  const nightEdge = (rows) => !!rows && rows.slice(0, 2).every((r) => r.tag.edge === 'rgb(156, 138, 110)' && r.tag.edgeW === '1px');
+  ok('AF5 tags, tint and the current name: the slot\'s cloth with its number (c = 3, d = 4); by night every tag has a 1 px #9C8A6E edge; the chosen row washes at 22% of its cloth; its mark is 4 px brass, roman 500, and its name is the label colour in both rooms; every pair reads 4.5:1 or better, measured from the drawn colours',
+    tagOk(night) && tagOk(day) && nightEdge(night) && markOk(here(night)) && markOk(here(day)) && markOk(here(dayPlain))
+      && here(night).tint === 'c' && Math.abs(here(night).alpha - 0.22) < 0.02 && here(night).ink === '237,230,218' && here(night).ratio >= 4.5
       && here(day).tint === 'c' && here(day).ink === '51,64,31' && here(day).ratio >= 4.5
-      && here(dayPlain).tint === null && here(dayPlain).ink === '85,97,45' && here(dayPlain).ratio >= 4.5,
+      && here(dayPlain).tint === null && here(dayPlain).ink === '51,64,31' && here(dayPlain).ratio >= 4.5,
     { night: here(night), day: here(day), dayPlain: here(dayPlain), tagsNight: night && night.slice(0, 2).map((r) => r.tag) });
 
   // AF6: the link badge: a cloth-edged count; the chosen row's wash runs the FULL row under it (Fable, Nov 21, 11:20 pm); its edge keeps 3:1 and its count 4.5:1 on that wash, by night and by day, measured from the drawn colours; a press opens GRAFTS at that Section
@@ -181,8 +197,11 @@ await withHarness(async (app) => {
   await open(app, 'af-1', { arbor2: false }); await leaveFreeWrite(app);
   await drawer(app);
   const classic = await app.evalJs("(() => { const all = [...document.querySelectorAll('[id^=\"wz-sliver-tab-\"]')]; return { tabs: all.length ? all.map((b) => b.id.replace('wz-sliver-tab-', '')) : null, reorg: !!document.querySelector('.reorg-parts, [data-reorg-parts]') }; })()");
-  ok("AF9 OFF: without the door Arbor's own drawer stands (Format | Presets, no SECTIONS tab); with ?arbor2=0 even the door gives no Front menu",
-    Array.isArray(off) && off.map((x) => x.id).join(',') === 'format,presets' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AF9, verbatim:
+  // ok("AF9 OFF: without the door Arbor's own drawer stands (Format | Presets, no SECTIONS tab); with ?arbor2=0 even the door gives no Front menu",
+  // Array.isArray(off) && off.map((x) => x.id).join(',') === 'format,presets' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  ok("AF9 ON [successor]: without the door Arbor's Front menu stands (Format | Sections, the SECTIONS tab included: the cell is the table's); with ?arbor2=0 even the door gives no Front menu",
+    Array.isArray(off) && off.map((x) => x.id).join(',') === 'text,parts' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);

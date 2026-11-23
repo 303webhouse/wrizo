@@ -198,8 +198,15 @@ await withHarness(async (app) => {
   // SUPERSEDED (SPRINT HAS NO MENUS (Nick, Nov 20, 1:13 and 1:20 pm; Fable 5:05 pm: behind the reorg's switch, Machina): with the switch on, a Free Write page draws no Front menu at all, so no TEXT, INK or PARTS tab and no pen: the Free Write page has no TEXT tab to compare). The original, verbatim:
   // ok('F3 [Draft Part, Free Write page, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
   //   ['draft', 'freewrite', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
-  ok('F3 [successor]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
-    ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // SUPERSEDED (Find in the Front menu's TEXT tab, stage menus T3, Nick's word; Fable, Nov 21, 12:35 am: TEXT gains Find in BUILD and EDIT, above Page
+  // setup; Actions 44881500925 read the Find row after the drawer's sections on the Draft Part and the screenplay, both in BUILD). The sprint-no-menus
+  // successor above, verbatim:
+  // ok('F3 [successor]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Page setup at its foot',
+  //   ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify(offSections[s]) && onSections[s].setup), { offSections, onSections });
+  // [successor] the same, but TEXT in BUILD (the Draft Part, the screenplay) ends with the one Find row, then Page setup
+  const findRow = 'wz-sliver-section wz-front-find-row';
+  ok('F3 [successor 2]: [Draft Part, screenplay] TEXT holds exactly the switch-off drawer\'s sections, in order, then Find (BUILD), then Page setup at its foot',
+    ['draft', 'script'].every((s) => Array.isArray(offSections[s]) && JSON.stringify(onSections[s].sec) === JSON.stringify([...offSections[s], findRow]) && onSections[s].setup), { offSections, onSections });
 
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   const s0 = await app.evalJs(COLLECTIONS);

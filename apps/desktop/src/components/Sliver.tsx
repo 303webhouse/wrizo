@@ -37,6 +37,7 @@ import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgPiece } from '../reorg/themeGate';
 import { frontTabsFor, frontSectionAllowed, type FrontTab } from '../reorg/frontTabs';
+import { openSearch, setSearchReach } from '../reorg/search/searchStore';
 import { PartsList, type PartsHost, type PartsStage } from '../reorg/PartsList';
 import { PublishParts } from '../reorg/PublishParts';
 import { SymbolPicker, TextFold } from '../reorg/TextFolds';
@@ -352,7 +353,9 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
-        <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />
+        {/* THE REORG: the session (the goal, what it counts, the timer, progress) is DOCS' last group (reorg/panels/DocsPanel.tsx; Fable, Nov 20),
+            so the Front menu's foot no longer carries it: no goal foot, no Progress switch, no Progress block; the Typewriter's block stays */}
+        {!reorgFront && <SliverGoalFoot target={target} done={done} fraction={fraction} timerOn={settings.timer} firstWriteAt={firstWriteAt} />}
         {/* FX3 S5 — the foot's new instruments row, beneath the goal block.
             Nested inside THIS panel (which already carries chrome-fade
             desk-dissolve) so its own open gear/instruments popovers dissolve
@@ -367,6 +370,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
           pageEmpty={content.kind === 'draft' ? content.pageEmpty : undefined}
           target={target}
           typewriterAvailable={content.kind === 'freewrite'}
+          session={!reorgFront}
           goalText={goalText}
           onPopoutHold={setPopoutHold}
         />
@@ -844,6 +848,13 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
           {/* CONNECTOR-A: the "Show grafts" toggle is RETIRED - a card's connection footers are simply on. */}
         </div>
       )}
+      {/* FIND (stage menus T3, Nick's word; Fable, Nov 21: "opens YOUR Find & Replace in this Doc (no second finder)"): in BUILD and EDIT only, above Page setup.
+          It opens the one search the top rail opens (the Back menu as the search menu), on This Doc even when the search is already open on another scope. */}
+      {frontTab === 'text' && frontEntry && (content.kind === 'draft' || content.kind === 'revise') && (
+        <div className="wz-sliver-section wz-front-find-row">
+          <button type="button" className="wz-sliver-item wz-sliver-item-btn wz-front-find" data-front-find="" onClick={() => { openSearch('bar'); setSearchReach('doc'); }}>{t('reorgFrontFind')}</button>
+        </div>
+      )}
       {/* THE REORG'S FRONT MENU: Page setup moves in at the foot of TEXT (from the rail's Pages pop-out, which the reorg's rail no longer has); the same zone, the same act */}
       {frontTab === 'text' && frontEntry && theme !== 'plateau' && <PageSetupZone entry={getJournalEntry(frontEntry.id) ?? frontEntry} />}
     </div>
@@ -881,6 +892,7 @@ function SliverToggle({ label, on, onToggle, className }: { label: string; on: b
 // first keystroke — same as that pattern always has — it just doesn't
 // start ADVANCING until they do).
 function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { target: WritingGoal | null; done: number; fraction: number; timerOn: boolean; firstWriteAt: number | null }) {
+  const { t } = useDeskLexicon();
   // The goal NUMBER is set under Progress Tracking. This foot only shows the
   // hairline and, when the timer is on, the clock. Full screen is not here:
   // the app already offers it outside this drawer.
@@ -901,7 +913,7 @@ function SliverGoalFoot({ target, done, fraction, timerOn, firstWriteAt }: { tar
     <div className="wz-sliver-goal" data-target={target?.n ?? ''} data-unit={target?.unit ?? ''} data-done={done}>
       {timerOn && <div className="wz-sliver-goal-timer">{clock}</div>}
 
-      {target != null && settings.instrumentsOn && (
+      {settings.instrumentsOn && target != null && (
         <div className="wz-sliver-goal-hairline" aria-hidden="true">
           <div className="wz-sliver-goal-hairline-fill" style={{ width: `${(fraction * 100).toFixed(1)}%` }} />
         </div>
@@ -924,7 +936,7 @@ function countPeriods(text: string): number {
   return n;
 }
 
-function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, pageId, pageEmpty, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; pageId?: string; pageEmpty?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
+function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true, session = true, pageId, pageEmpty, goalText, onPopoutHold }: { hasMilestones?: boolean; target: WritingGoal | null; typewriterAvailable?: boolean; session?: boolean; pageId?: string; pageEmpty?: boolean; goalText: string; onPopoutHold: (hold: boolean) => void }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const theme = useTheme();
@@ -977,12 +989,14 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
           ON is a brass icon with no fill, OFF is quiet; the state is aria-pressed, the name never changes. Their own class, NOT the row's: the row stays
           the "..." button alone. */}
       <div className="wz-sliver-instruments-modes">
+        {session && (
         <button type="button" className="wz-sliver-mode-btn" data-mode-toggle="progress"
           aria-label={t('modeToggleProgress')} title={t('modeToggleProgress')}
           aria-pressed={settings.instrumentsOn}
           onClick={() => setWritingSettings({ instrumentsOn: !settings.instrumentsOn })}>
           <ProgressModeIcon />
         </button>
+        )}
       </div>
       </div>
       {open && (
@@ -1002,10 +1016,12 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
                 onPick={v => setWritingSettings({ flicker: v === 'on' })} />
             </section>
           )}
+          {session && (
           <section className="wz-foot-settings-block">
             <h4>{t('footMenuProgress')}</h4>
             <ProgressFields target={target} hasMilestones={hasMilestones} />
           </section>
+          )}
         </div>
       )}
     </div>
@@ -1102,6 +1118,10 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
           onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
       )}
       <Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
+      {/* the session's "Use Theme Progress Tracker" switch: off, every theme shows the plain row under the page (components/PlainTracker.tsx) */}
+      <div data-tracker-switch>
+        <Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off} opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]} onPick={v => setWritingSettings({ themeTracker: v === 'on' })} />
+      </div>
     </>
   );
 }

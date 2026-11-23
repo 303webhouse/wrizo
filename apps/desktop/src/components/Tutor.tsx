@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
 import { generateId, getBinderPages, getJournalEntry, appendTutorMessage, advanceTutorCursor, isUnborn } from '../store/persistence';
-import { apiTutorChat } from '../store/api';
+import { apiSprintPrompt, apiTutorChat } from '../store/api';
 import { computeConsistencyObservations } from '../store/tutorConsistency';
 import { computeStructureFacts, computeFragmentItems } from '../store/tutorLenses';
 // FX12 S1 — the computeNudges import is retired; store/tutorNudges.ts sleeps dormant.
@@ -23,13 +23,15 @@ import { DrawerNote } from './DrawerNote';
 import { HelpButton } from './HelpButton';
 import { ConnectionsDrawerPanel } from './ConnectionsDrawerPanel';
 import { RIGHT_TABS, type RightTab } from '../store/drawerSet';
-import { REORG } from '../reorg/flag';
+import { REORG, SPRINT_CONSULTANT } from '../reorg/flag';
+import { setWritingSettings, useWritingSettings } from '../store/writingSettings';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { BeforeExport } from '../reorg/BeforeExport';
-import { themeHas } from '../reorg/themeGate';
+import { reorgFor, themeHas } from '../reorg/themeGate';
 import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
+import { chromeK } from '../reorg/chromeScale';
 import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
@@ -161,8 +163,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
-  const back = REORG && themeHas('back', tutorTheme) && pageKind !== 'board';
-  const splitOn = REORG && themeHas('split', tutorTheme);
+  const back = reorgFor(tutorTheme) && themeHas('back', tutorTheme) && pageKind !== 'board';   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
+  const splitOn = reorgFor(tutorTheme) && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
   const sprint = back && mode === 'journal';
   // THE LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): in BUILD and EDIT the Back menu's FEEDBACK is Structure / Tone / Consistency (EDIT adds Usage / Punctuation / Citations above them) plus "Ask Your Own"; it replaces the four-ask roster and the three computed sections
@@ -417,7 +419,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
       const paper = tutorPaper();
       if (!stage || !paper) { setPanelWidthPx(null); return; }
-      const openW = Math.max(320, Math.min(0.34 * window.innerWidth, 460)); // --tutor-panel-open-w
+      // §3b item 4 (reorg/chromeScale.ts): under the reorg's chrome scale the drawer opens k times as wide (its words are k times as large); k is 1 everywhere else
+      const ck = chromeK();
+      const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       if (geoMargin >= DRAWER_MIN) {
@@ -433,7 +437,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     document.addEventListener('wz-board-moved', measure);    // the board narrows after the drawer opens [Tutor §23]
-    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); };
+    window.addEventListener('wz-chrome-scale', measure);     // §3b item 4: the chrome scale arrived or changed
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); window.removeEventListener('wz-chrome-scale', measure); };
   }, [open, docked, pageKind, linkDock]);
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
@@ -630,6 +635,33 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     setRefillNote(null);                    // a real draw answers any standing note
   };
 
+  // SPRINT'S PROMPT FROM THE CONSULTANT (FIX's queue item 6; behind ?sprint=consultant, default OFF: the deck press above is what ships for Monday and stays untouched). The press asks the server for ONE prompt under the strict rules
+  // (server/tutor.ts POST /tutor/sprint-prompt): the body is exactly { seen: [the last prompts shown] }, nothing of her page. The ceiling is the deck's. Any failure answers from the local deck, so a press always answers. A press in flight
+  // is ignored (busy), so one press is one request.
+  const [sprintBusy, setSprintBusy] = useState(false);
+  const sprintBusyRef = useRef(false);
+  const sprintSeenRef = useRef<string[]>([]);
+  const writerConsultant = useWritingSettings().consultant;
+  const consultantOn = SPRINT_CONSULTANT && writerConsultant;   // the build has it AND the writer has not turned it off: only then does a press leave the page
+  const pressSprint = () => {
+    if (!consultantOn) { pressPreset('writingPrompt'); return; }
+    if (!freeWrite || sprintBusyRef.current) return;
+    const used = drawCounts.writingPrompt;
+    if (used >= DRAW_CEILING) { setRefillNote('writingPrompt'); return; }   // the spent ask answers with its note and makes no request
+    sprintBusyRef.current = true;
+    setSprintBusy(true);
+    void apiSprintPrompt(sprintSeenRef.current.slice(-3)).then((text) => {
+      sprintBusyRef.current = false;
+      setSprintBusy(false);
+      if (!text) { pressPreset('writingPrompt'); return; }   // offline, an error, "not configured", a daily limit: the local deck answers
+      sprintSeenRef.current = [...sprintSeenRef.current, text].slice(-3);
+      if (used + 1 >= DRAW_CEILING) spentAnchorRef.current.writingPrompt = pageWords;
+      setDraw({ preset: 'writingPrompt', text });          // REPLACES - never appends
+      setDrawCounts((c) => ({ ...c, writingPrompt: c.writingPrompt + 1 }));
+      setRefillNote(null);
+    });
+  };
+
   // ITEM 84, THE DRAFT ROSTER — THE PRESS. Staging, not sending: the ask lands in
   // the composer as ordinary editable text and NOTHING goes on the wire. As with
   // the deck phase's own press, what matters most is what is NOT here — no fetch,
@@ -820,6 +852,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           className="wz-tutor-grip"
           data-open={open ? 'true' : 'false'}
           data-docked={docked ? 'true' : 'false'}
+          data-back={back ? 'true' : undefined}
+          data-sprint={sprint ? 'true' : undefined}
           aria-expanded={open}
           aria-label={open ? t('tutorClose') : t('tutorOpen')}
           title={open ? t('tutorClose') : t('tutorOpen')}
@@ -833,7 +867,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           {/* while a linked card or page stands docked, the docked panel is its reader [Tutor §34] */}
@@ -853,7 +887,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             {sprint ? (
-              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={() => pressPreset('writingPrompt')} noteId="wz-sprint-note" />
+              <SprintFeedback t={t} prompt={draw && draw.preset === 'writingPrompt' ? draw.text : null} refillNote={refillNote === 'writingPrompt'} onPress={pressSprint} busy={sprintBusy} travels={consultantOn} use={SPRINT_CONSULTANT ? consultantOn : undefined} onUse={(next) => setWritingSettings({ consultant: next })} noteId="wz-sprint-note" />
             ) : (<>
             {/* no standing header (the tab row names it); the dock toggle is icon-only, its full wording on aria-label and title [Tutor §36] */}
             <button type="button" className="wz-tutor-dock-btn" aria-label={docked ? t('tutorClose') : t('tutorDockClose')} title={docked ? t('tutorClose') : t('tutorDockClose')} onClick={handleDockButton}>
@@ -1096,7 +1130,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
             </div>
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
-          {back && rightTab === 'export' && <BeforeExport entry={entry} />}
+          {back && rightTab === 'export' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}
           {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>

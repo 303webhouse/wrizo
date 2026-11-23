@@ -221,6 +221,19 @@
 :root[data-machina2][data-cast='neutral'] .machina2-nameplate-tick{ background:#332F2A; }
 :root[data-machina2][data-wz-writing='true'] .machina2-nameplate{ opacity:0; }   /* it recedes with the bar while she types, as the door does */
 :root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .brand-mark{ display:none; }
+/* ==========================================================================================================================================
+   THE MARK IS WRIZO (Nick, Nov 21, via Fable 1:30 pm: "the logo in the top left corner was made for the mockup"; the mockup's mark, cursor/reorg-
+   prototype docs/mockups/reorg/reorg.css 45-52). The corner mark and the bar's nameplate both draw machina2/wordmark.tsx: WRIZO in Plex Sans 500
+   at 13 px, .26em apart, the left padding making up the spacing after the last letter, and one brass notch 6 x 2 px under the O, centred on the
+   O's inked middle (the O is its own box without the spacing after it). No line above, below or beside it: the corner mark's WRIZ and square
+   (05-machina.css) are not drawn. Where the mark sits on the light room's ground (the corner) the notch wears the 1 px ink edge the Run's notch
+   wears there; the bars are dark in both rooms. Checked by scripts/harness/machina-logo-wrizo.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::before, :root[data-machina2][data-theme='machina'] .brand-mark.machina2-wordmark::after{ content:none; display:none; }
+.machina2-wm{ display:inline-block; font:500 13px/1 'IBM Plex Sans', sans-serif; letter-spacing:.26em; padding-left:.26em; white-space:nowrap; }
+.machina2-wm-o{ position:relative; display:inline-block; letter-spacing:0; margin-right:.26em; }
+.machina2-wm-notch{ position:absolute; left:50%; top:calc(100% + 1px); width:6px; height:2px; margin-left:-3px; background:var(--brass); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .brand-mark .machina2-wm-notch{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
 :root[data-machina2][data-theme='machina'][data-machina2-dots='in'] .chrome-top.sprint-nav{ padding-left:calc(16px + var(--machina2-plate-w, 62px) + 12px); }
 
 /* r5 - the Lighting row's "?" (spec draft 9 §2f: "a '?' explains it in one line") */
@@ -274,3 +287,16 @@
    ========================================================================================================================================== */
 :root[data-machina2][data-theme='machina'][data-machina2-room='light'] .machina-run-strip > i.here::after{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
 :root[data-machina2][data-theme='machina'][data-page='dark'] .mode-page:not([data-instrument='ink']) .forward-only-editor{ caret-color:var(--brass) !important; }
+
+/* ==========================================================================================================================================
+   §2e (Law 3; Fable, Nov 9, 6:35 pm, the Wrizors' default ruled as Machina's rule): ON A LIGHT SURFACE BRASS NEVER STANDS ALONE. In the light room a
+   chosen option in a drawer, a pop-out or the theme picker keeps its words in the label colour (--text-mid, #3A4047: 9.6:1 on the light panel)
+   and draws its brass outline as a ring inside its edge (nothing moves) with a 1 px ink keyline (#23272B) outside it - Arbor's day rule's five
+   kinds (arbor-v2.css r19 §18.4). The dark room is unchanged. (The Wrizors' carry, chrome scale pass 2, Nov 21: "Whole document" and the
+   chosen Form were brass words on the light drawer, about 1.9:1.) Checked by scripts/harness/machina-brass-chosen.mjs.
+   ========================================================================================================================================== */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] :is(.wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel, .wz-theme-picker) :is(.mode-seg button.on, .wz-type-scope[data-on='true'], .wz-sliver-mode-btn[aria-pressed='true'], .wz-page-setup-chip[aria-checked='true'], .wz-template-row[aria-pressed='true']){
+  color:var(--text-mid); border-color:transparent; outline:none; box-shadow:inset 0 0 0 1.5px var(--brass), 0 0 0 1px #23272B; }
+/* (the Wrizors' chrome scale pass 3, REAL, Nov 21 4:00 pm) the readout's "page n of m" under the page read #878E9C on the light room, 3.0:1: in the light room it is
+   the quiet G4, --text-low #5E666E (4.75:1), as the spec's readouts are. Checked by machina-brass-chosen.mjs B3. */
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .wz-pagecount{ color:var(--text-low); }

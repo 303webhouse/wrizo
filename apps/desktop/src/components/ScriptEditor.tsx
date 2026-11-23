@@ -18,7 +18,7 @@ import { exportPageFiles, exportBinderDocument, exportEverythingDocument } from 
 import { triggerDownload } from '../store/download';
 import { useSessionLog } from './useSessionLog';
 import { useWayBack } from './useWayBack';
-import { useChromeDissolve } from './useChromeDissolve';
+import { useChromeDissolve, LIVE_FADE_REFS } from './useChromeDissolve';
 import { useLexicon } from '../store/themeLexicon';
 import { DeskFrame, useDeskFrameViewport } from './DeskFrame';
 import { ModeStrip } from './ModeStrip';
@@ -91,7 +91,7 @@ export function ScriptEditor({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // no typewriter seed here (it writes the shared setting, and would flip prose's); the vanishing law reaches the script surface's own chrome, triggered only when framed [ScriptEditor §7]
-  const scriptDissolve = useChromeDissolve({ surface: 'script', editorSelector: '.script-sheet' });
+  const scriptDissolve = useChromeDissolve({ surface: 'script', rootRef: LIVE_FADE_REFS, editorSelector: '.script-sheet' });   // bug #90: never <html> (the first key's whole-document restyle)
 
   // W2 — route + mount identity only (S1: element-level state — active index,
   // caret hint — is this surface's own thing; no scroll/caret capture here).

@@ -57,9 +57,8 @@
 /* ---- ARBOR'S DRESS (arbor-reorg-spec sections 0, 5, 6, 8) ---- */
 /* the drawer-tab rule for PLAN: Arbor's own three tabs name their cloth by id (arbor-v2.css: TUTOR olive, GRAFTS cold blue, BOARD madder); PLAN takes the madder cloth the Canvas tab had ("the Plan replaces that tab's job"), comes forward when open, and its cloth is the drawer's 3 px border */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) :is(#wz-tutor-tab-plan){ background:#A8392F; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']){ --arbor2-chosen-r:#A8392F; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 #wz-tutor-tab-plan[data-on='true']{ z-index:3; box-shadow:none; text-decoration-line:none; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan[data-on='true']) .wz-tutor-panel .wz-drawer-slide--right{ box-shadow:inset 0 3px 0 var(--arbor2-chosen-r), inset -3px 0 0 var(--arbor2-chosen-r), inset 0 -3px 0 var(--arbor2-chosen-r); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-tutor-panel[data-back-tab='plan'] .wz-drawer-slide--right{ box-shadow:inset 0 3px 0 #A8392F, inset -3px 0 0 #A8392F, inset 0 -3px 0 #A8392F; }
 /* a search field heads each tab, in the drawer's own field style: 1 px --arbor-line (#9C8A6E by night); focused, "where you are" olive (never brass) */
 :root[data-arbor2][data-theme='plateau'] :is(.reorg-search-field, .reorg-search-door){ border:1px solid var(--arbor-line); background:transparent; color:var(--text-mid); }
 :root[data-arbor2][data-theme='plateau'] :is(.reorg-search-field, .reorg-search-door) input{ color:var(--text-hi); }
@@ -80,8 +79,10 @@
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-assets-add-pop{ background:#261A12; }
 /* what the search finds is lit in Arbor's honey, on the page and in the list */
 :root[data-arbor2][data-theme='plateau'] .reorg-search-hit mark{ background:rgba(201, 164, 107, .45); color:inherit; }
-:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search){ background-color:rgba(201, 164, 107, .35); }
-:root[data-arbor2][data-theme='plateau'] ::highlight(wz-search-cur){ background-color:rgba(201, 164, 107, .7); }
+/* ARBOR-KEYFLIP: a ::highlight() rule has a universal subject, so one with a root-attribute ancestor in front of it made the whole document depend on the root's attributes and the first key restyled 895 of ~1930 elements. The honey rides custom properties on the root itself and the two ::highlight() rules are BARE (no ancestor): a theme with its own scoped rule (Machina, Flux) wins by specificity, and where nothing sets the properties the highlight is transparent, as before. reorg-arbor-no-stage-has-unit.mjs (HL) holds it. */
+:root[data-arbor2][data-theme='plateau']{ --wz-search-hl:rgba(201, 164, 107, .35); --wz-search-hl-cur:rgba(201, 164, 107, .7); }
+::highlight(wz-search){ background-color:var(--wz-search-hl, transparent); }
+::highlight(wz-search-cur){ background-color:var(--wz-search-hl-cur, transparent); }
 
 /* ---- PASS 1 (the Wrizors, Nov 21, 7:00 pm; Fable, Nov 21, 9:40 pm) ---- */
 /* NIT 3: a graft's colour chip shows its slot's cloth, edged and numbered as the Section tags are (the tokens are 25-reorg-arbor-tags.css's); the DOM holds the slot's letter, hidden */
@@ -99,12 +100,18 @@
 :root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='e']::after{ content:var(--reorg-tag-e-num); font-size:10px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-tag[data-colour-slot='f']::after{ content:var(--reorg-tag-f-num); font-size:10px; }
 /* NIT 1 (Nick, Oct 9: opening a menu is not a choice, so an opener never takes brass): with the Back menu on, the Tutor drawer's opener keeps its olive when the drawer is open */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(#wz-tutor-tab-plan) .wz-tutor-grip[data-open='true']{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-tutor-grip[data-back='true'][data-open='true']{ background:#6B7A3A; border-color:#6B7A3A; color:#EFE4CB; }
 /* REAL 4 (pass 1): a canvas group head's name ("Plan canvas", "This canvas") takes the row, and its buttons (Beside, To Section, Colour, Open) wrap under it instead of squeezing the name to "PLAN ..."; always visible, as a touch screen has no hover */
 :root[data-arbor2][data-theme='plateau'] .wz-back-boardhead{ flex-wrap:wrap; row-gap:2px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-boardhead > .wz-back-boardname{ flex:1 1 calc(100% - 64px); }
 /* REAL 1 and NIT 2 (pass 1): in Free Write (the zoomed page) the three cloth tabs take the same edge the opener does (--arbor2-drawer-zx), not the unzoomed --arbor2-drawer-r that left them 300 px off the screen; and the opened panel stays in the band above her writing line: at most 38% of the stage's height (the typewriter line holds at about 54%), the rest of its list scrolls, so it never covers the line (law 1) */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-stage:has(.mode-pagecol[data-zoom='true']):has(#wz-tutor-tab-plan) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-zx, 100%); }
-:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:has(.mode-pagecol[data-zoom='true']):has(#wz-tutor-tab-plan) .wz-tutor-panel{ max-height:38%; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip[data-back='true'][data-sprint='true']:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-zx, 100%); }
+:root[data-arbor2][data-theme='plateau'] .wz-tutor-panel[data-back-sprint='true']{ max-height:38%; }
 /* NIT 2 (pass 1): a locked cloth tab (PLAN and GRAFTS in Free Write) keeps its cloth but is greyed: faded, desaturated, no pointer. The Machina locked rule (dashed edge, low words) cannot be seen on a cloth. The note in the panel says why. */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2 .wz-drawer-tab[data-locked='true']{ opacity:.45; filter:saturate(.35); cursor:default; }
+/* POLISH's search rows (train H, Machina first): a hit and its side button on one row, the hit taking the width: the Machina rules re-scoped to the live Arbor */
+:root[data-arbor2][data-theme='plateau'] .reorg-search-row{ display:flex; align-items:flex-start; }
+:root[data-arbor2][data-theme='plateau'] .reorg-search-row > .reorg-search-hit{ flex:1; min-width:0; }
+/* KEYFLIP (Fable, Nov 22): none of this sheet asks the stage. The first key flips conditions on the stage, and a :has() there (or a custom property set on it) restyled 895 of 1929 elements at that key: the Back menu's own state rides the grip (data-back, data-sprint) and the panel (data-back-tab, data-back-sprint), and each rule asks only the element it styles or its own anchor. reorg-arbor-no-stage-has-unit.mjs holds it. */
+/* pass 3 (Nov 22): by night the graft chips wear the same 1 px --arbor-line edge as the Section tags */
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .wz-back-tag[data-colour-slot]{ border-color:var(--arbor-line); }

@@ -42,7 +42,13 @@ for (const f of ['chrome', 'settings', 'decks', 'help']) {
   }
 }
 const holes = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
-const load = (src, reorg = true) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': { REORG: reorg }, './flux': { FLUX_OVERRIDES: LIVE.FLUX_OVERRIDES } });
+// the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is
+// ?reorg=0, asked is ?reorg=1, the default is no query (POLISH, the bare-switch census, Nov 21: a hand stub would test the stub, not the rule)
+const FLAG_SRC = rd('reorg/flag.ts');
+const realFlag = (reorg, asked) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : asked ? '?reorg=1' : '' }, undefined);
+  return m.exports; };
+const load = (src, reorg = true) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': realFlag(reorg, reorg), './flux': { FLUX_OVERRIDES: LIVE.FLUX_OVERRIDES } });   // on = asked: Flux's words come with the ask
 
 // what the spec writes out exactly (section 1, "Strings that need more than a swap", and the two notes)
 const EXACT = {
@@ -141,7 +147,15 @@ const MUT = [
   ['the Plan word is not swapped', 'SWAP', (t) => t.replace("reorgBackPlan: 'Spine'", () => "reorgBackPlan: 'Plan'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgPlanToPart: '\u2192 Track'", () => "reorgPlanToPart: '\u2192 Track {part}'")],
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
-  ['the switch is ignored', 'OFF', (t) => t.replace('  REORG ? { flux:', () => '  true ? { flux:')],
+  // SUPERSEDED (the switch-over, Fable, Nov 21, 9:40 pm: the reorg is on by default in Machina ONLY, so Flux's reorg words come with the ASK, REORG_ASKED, not the
+  // default; POLISH, reorg-switchover). The original, verbatim (its target line is gone, so it no longer lands):
+  // ['the switch is ignored', 'OFF', (t) => t.replace('  REORG ? { flux:', () => '  true ? { flux:')],
+  // [successor] the same mutant aimed at the ask: ignoring it must turn OFF red
+  // SUPERSEDED (the bare-switch census, Fable, Nov 21, 11:20 pm: Flux's words follow reorgFor('flux'), which moved into reorg/flag.ts; POLISH). The successor of the
+  // switch-over park above, verbatim (its target line is gone, so it no longer lands):
+  // ['the ask is ignored', 'OFF', (t) => t.replace('  REORG_ASKED ? { flux:', () => '  true ? { flux:')],
+  // [successor 2] the same mutant aimed at reorgFor('flux'): ignoring it must turn OFF red
+  ['the reorgFor gate is ignored', 'OFF', (t) => t.replace("  reorgFor('flux') ? { flux:", () => '  true ? { flux:')],
   // SUPERSEDED (Nov 21): ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
   ['the Typewriter is named for what it was', 'ANSWERS', (t) => t.replace("reorgTypewriter: 'Wire In'", () => "reorgTypewriter: 'Typewriter'")],
   ['a kept string is changed', 'KEPT', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgKindResearch: 'Intel paper',\n")],

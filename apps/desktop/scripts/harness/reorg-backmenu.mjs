@@ -301,8 +301,23 @@ await withHarness(async (app) => {
   await click(app, '[data-split-close]'); await sleep(500);
   // a Board beside the page: its cards, in its own order
   await app.evalJs(`document.querySelector('[data-back-board="bm-x"] [data-back-beside]')?.click()`); await sleep(900);
-  const boardBody = await app.evalJs("[...document.querySelectorAll('.wz-split-asset [data-split-card]')].map((c) => c.querySelector('strong')?.textContent).join('|') + '#' + document.querySelector('.wz-split-asset .wz-link-dock-kind')?.textContent");
-  ok("SP9: a Board opens beside the page as its cards in the board's own order", boardBody === 'Xcard one|Xcard two#Board', boardBody);
+  // SUPERSEDED (Nov 21; §3b ARBOR item 2a, a Board in the split, Fable Nov 20 11:45 pm: the split draws a Board on its own canvas with its views, pans and zooms
+  // - reorg/split/SplitBoard.tsx - not as a list of [data-split-card] rows; arbor/reorg-split-board). What SP9 guarded - the Board's cards, in the Board's
+  // own order, under the kind "Board" - is SP9-B's: the canvas draws both cards with the Board's own card, and the Outline view lists them in order. Verbatim:
+  // const boardBody = await app.evalJs("[...document.querySelectorAll('.wz-split-asset [data-split-card]')].map((c) => c.querySelector('strong')?.textContent).join('|') + '#' + document.querySelector('.wz-split-asset .wz-link-dock-kind')?.textContent");
+  // ok("SP9: a Board opens beside the page as its cards in the board's own order", boardBody === 'Xcard one|Xcard two#Board', boardBody);
+  const sp9b = async () => {
+    const canvas = await app.evalJs("[...document.querySelectorAll('.wz-split-asset [data-split-board] [data-split-box] .board-text')].map((c) => c.textContent.trim()).sort().join('|') + '#' + document.querySelector('.wz-split-asset .wz-link-dock-kind')?.textContent");
+    await app.evalJs("document.querySelector('.wz-split-asset [data-split-view=\"outline\"]')?.click(); null"); await sleep(400);
+    const outline = await app.evalJs("[...document.querySelectorAll('.wz-split-asset [data-split-board] .board-outline-text')].map((i) => (i.value ?? i.textContent).trim()).join('|')");
+    return { canvas, outline };
+  };
+  const sp9Pass = (r) => r.canvas === 'Xcard one|Xcard two#Board' && r.outline === 'Xcard one|Xcard two';
+  const sp9r = await sp9b();
+  ok("SP9-B: a Board opens beside the page on its canvas, both its cards drawn by the Board's own card under the kind Board, and its Outline lists them in the board's own order", sp9Pass(sp9r), JSON.stringify(sp9r));
+  // MUT-SP9-B: the Outline in the wrong order turns SP9-B red (the mutant LANDED: the reading changed)
+  const sp9m = { ...sp9r, outline: sp9r.outline.split('|').reverse().join('|') };
+  ok('MUT-SP9-B: the Board\'s cards out of its own order turn SP9-B red', sp9m.outline !== sp9r.outline && !sp9Pass(sp9m), JSON.stringify(sp9m));
   await click(app, '[data-split-close]'); await sleep(500);
   // Free Writing: no split
   await toMode('freewrite');

@@ -7,6 +7,7 @@
 //   OFF     with the switch off, or with the redesign off (?arbor2=0), the table IS the live one (the same object): the lexicon reads byte-identically
 // SUPERSEDED (Nov 21, 6:54 pm, the Wrizors answered): //   UNSET   what the swaps and the spec do not settle stays unset (it keeps its canonical words, Arbor's own) and is listed in ARBOR_REORG_UNSET for the Wrizors: the five box swatches (five names, Arbor's six) and the lens label
 //   ANSWERS the Wrizors' words are set exactly: the box swatches are Arbor's cloths (the five old keys read Olive, Sea, Cold blue, Madder, Honey: never brass for a box), "Your own colour" reads "Custom…", the lens panel is the Tutor's ("Tutor lenses"), the lens box asks "Ask about this Page…"; ARBOR_REORG_UNSET is empty
+//   PASS6   [Wrizors' pass 6, Nov 22, 2:35 pm, NITs 1 and 3; Fable, 3:20 pm] Structure's words are Nick's (Merge, not Join, and a merge's messages say merged; Nest / Unnest, not Level in / Level out), and the kind menu is in Arbor's sentence case (Style guide, Page setup, Special sections, Title page, Web and journalism)
 // Run: node scripts/harness/reorg-arbor-words-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -32,12 +33,20 @@ const LIVE = run(ARBOR, { '../../theme': {}, '../terms': {}, '../../../arbor2/fl
 const canon = new Map();
 for (const f of ['chrome', 'settings', 'decks', 'help']) {
   for (const line of rd(`store/lexicon/canonical/${f}.ts`).split('\n')) {
-    const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // SUPERSEDED (Nov 22, ARBOR's pass 7 NIT 1 sets plainTrackerSwitch, a key the table is allowed besides the reorg* keys): the matcher read reorg* keys only. The original, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    const m = /^  (reorg[A-Za-z0-9]*|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }
 const holes = (s) => (s.match(/\{\w+\}/g) || []).sort().join(',');
-const load = (src, { reorg = true, arbor2 = true } = {}) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': { REORG: reorg }, '../../../arbor2/flag': { arbor2Enabled: () => arbor2 }, './arbor': LIVE });
+// the REAL reorg/flag.ts (the switch-over's rule lives there: REORG, REORG_ASKED, REORG_DEFAULT_ON, reorgFor), run with a page load's location: off is ?reorg=0, on is
+// ?reorg=1 (Arbor's words come with the ask until its six cells pass; POLISH, the switch-over on train I: a hand stub would test the stub, not the rule)
+const FLAG_SRC = rd('reorg/flag.ts');
+const realFlag = (reorg) => { const out = ts.transpileModule(FLAG_SRC, TS_OPTS).outputText; const m = { exports: {} };
+  new Function('require', 'exports', 'module', 'location', 'window', out)((p) => { throw new Error('flag.ts imports nothing: ' + p); }, m.exports, m, { search: reorg === false ? '?reorg=0' : '?reorg=1' }, undefined);
+  return m.exports; };
+const load = (src, { reorg = true, arbor2 = true } = {}) => run(src, { '../../theme': {}, '../terms': {}, '../../../reorg/flag': realFlag(reorg), '../../../arbor2/flag': { arbor2Enabled: () => arbor2 }, './arbor': LIVE });
 
 // what the spec writes out exactly (section 1, "Strings that need more than a swap", and the two notes)
 const EXACT = {
@@ -67,6 +76,15 @@ const SAMPLES = {
   reorgTagA: 'Olive', reorgTagB: 'Sea', reorgTagC: 'Cold blue', reorgTagD: 'Madder', reorgTagE: 'Honey', reorgTagF: 'Iron',
   reorgAddNewBoard: 'New Canvas', reorgAddNewDoc: 'New Page', reorgBxEmptyMany: '{n} Sections with no words',
 };
+// the Wrizors' pass 6 (Nov 22): Nick's Structure words (Nov 20-21) and Arbor's sentence case (spec section 0) for the kind menu
+const PASS6 = {
+  reorgPartIn: 'Nest', reorgPartOut: 'Unnest', reorgPartJoin: 'Merge',
+  reorgPartsJoinDone: 'Merged into Section {n}.',
+  reorgPartJoinCarries: 'Not merged: this Section holds ink, cards, links or a Tutor thread, and merging would drop them.',
+  reorgPartJoinScript: 'Not merged: a screenplay Section has no plain text to merge.',
+  reorgPartJoinNo: 'Not merged.',
+  reorgDocStyleGuide: 'Style guide', reorgDocPageSetup: 'Page setup', reorgDocSpecialParts: 'Special sections', reorgSpecialTitle: 'Title page', reorgPresetGroupWeb: 'Web and journalism',
+};
 // SUPERSEDED (Nov 21): const UNSET = ['reorgSwatchPale', 'reorgSwatchGrey', 'reorgSwatchBlue', 'reorgSwatchBrass', 'reorgSwatchOrange', 'reorgLensLabel'];
 const ANSWERS = { reorgSwatchPale: 'Olive', reorgSwatchGrey: 'Sea', reorgSwatchBlue: 'Cold blue', reorgSwatchBrass: 'Madder', reorgSwatchOrange: 'Honey', reorgOwnColour: 'Custom…', reorgLensLabel: 'Tutor lenses', reorgLensAskPlaceholder: 'Ask about this Page…' };
 
@@ -90,7 +108,9 @@ function suite(src) {
   });
   t('ONLY', () => {
     const E = load(src), W = E.ARBOR_REORG_WORDS, live = (LIVE.ARBOR_OVERRIDES.plateau) || {};
-    const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 22, ARBOR's pass 7 NIT 1 sets plainTrackerSwitch, a key the table is allowed besides the reorg* keys): the original, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    const bad = Object.keys(W).filter((k) => !(/^reorg/.test(k) || k === 'plainTrackerSwitch') || !canon.has(k) || k in live);   // [successor] reorg* keys and the one named exception
     const merged = E.ARBOR_REORG_OVERRIDES.plateau;
     const kept = Object.keys(live).every((k) => merged[k] === live[k]);
     const others = Object.keys(E.ARBOR_REORG_OVERRIDES).sort().join(',') === 'plateau';
@@ -113,23 +133,37 @@ function suite(src) {
     const brass = ['reorgSwatchBrass'].filter((k) => /brass/i.test(W[k] || ''));
     return { pass: bad.length === 0 && brass.length === 0 && Array.isArray(E.ARBOR_REORG_UNSET) && E.ARBOR_REORG_UNSET.length === 0, detail: J({ bad, brass, unset: E.ARBOR_REORG_UNSET }) };
   });
+  t('PASS6', () => {
+    const W = load(src).ARBOR_REORG_WORDS;
+    const bad = Object.entries(PASS6).filter(([k, v]) => W[k] !== v).map(([k, v]) => ({ k, want: v, got: W[k] }));
+    const joined = Object.entries(W).filter(([k, v]) => /\bjoin(ed|ing)?\b/i.test(v) && /^reorgPart/.test(k)).map(([k]) => k);
+    return { pass: bad.length === 0 && joined.length === 0, detail: J({ bad, joined }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS']) ok(`${k} on the real arborReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'arborReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS', 'PASS6']) ok(`${k} on the real arborReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'arborReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
   ['the spec string for the Back tabs is reworded', 'EXACT', (t) => t.replace("reorgBackTabsLabel: 'Plan, grafts and the Tutor'", () => "reorgBackTabsLabel: 'Plan, grafts and feedback'")],
   ['the Part word is not swapped', 'SWAP', (t) => t.replace("reorgPlanToPart: '→ Section'", () => "reorgPlanToPart: '→ Part'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgAssetsHead: 'Grafts ({n})'", () => "reorgAssetsHead: 'Grafts ({graft})'")],
   ['a key that is not a reorg key is set', 'ONLY', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  railTemplates: 'Sets',\n")],
-  ['the switch is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'arbor2Enabled()')],
-  ['the redesign flag is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'REORG')],
+  // SUPERSEDED (the switch-over on train I, Fable, Nov 21, 11:20 pm: arborReorg.ts reads reorgFor('plateau'), not the bare REORG; POLISH). The originals, verbatim
+  // (their target is gone, so they no longer land):
+  // ['the switch is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'arbor2Enabled()')],
+  // ['the redesign flag is ignored', 'OFF', (t) => t.replace('REORG && arbor2Enabled()', () => 'REORG')],
+  // [successors] the same two mutants aimed at the gate as it now reads
+  ['the reorgFor gate is ignored', 'OFF', (t) => t.replace("reorgFor('plateau') && arbor2Enabled()", () => 'arbor2Enabled()')],
+  ['the redesign flag is ignored [switch-over successor]', 'OFF', (t) => t.replace("reorgFor('plateau') && arbor2Enabled()", () => "reorgFor('plateau')")],
   // SUPERSEDED (Nov 21): ['a box swatch is guessed at', 'UNSET', (t) => t.replace('export const ARBOR_REORG_WORDS = {\n', () => "export const ARBOR_REORG_WORDS = {\n  reorgSwatchBrass: 'Madder',\n")],
   ['a box swatch is still named for brass', 'ANSWERS', (t) => t.replace("reorgSwatchBrass: 'Madder'", () => "reorgSwatchBrass: 'Brass'")],
   ['the own-colour word is left as it was', 'ANSWERS', (t) => t.replace("reorgOwnColour: 'Custom\u2026'", () => "reorgOwnColour: 'Your own colour'")],
+  ['Structure still says Level in', 'PASS6', (t) => t.replace("reorgPartIn: 'Nest',", () => "reorgPartIn: 'Level in',")],
+  ['the kind menu is back in Title Case', 'PASS6', (t) => t.replace("reorgDocSpecialParts: 'Special sections',", () => "reorgDocSpecialParts: 'Special Sections',")],
+  ['a merge still says joined', 'PASS6', (t) => t.replace("reorgPartsJoinDone: 'Merged into Section {n}.',", () => "reorgPartsJoinDone: 'Joined onto Section {n}.',")],
   ['the lens panel is still called Feedback', 'ANSWERS', (t) => t.replace("reorgLensLabel: 'Tutor lenses'", () => "reorgLensLabel: 'Feedback lenses'")],
 ];
 for (const [name, key, fn] of MUT) {

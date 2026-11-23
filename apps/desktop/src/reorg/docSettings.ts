@@ -19,7 +19,22 @@ const EXPORT_FORMATS = ['md', 'txt', 'html'] as const;
 const isExportFormat = (v: unknown): v is 'md' | 'txt' | 'html' => typeof v === 'string' && (EXPORT_FORMATS as readonly string[]).includes(v);
 
 /** What a write may carry. `null` (or 'none' for the style guide) clears the key; absent leaves it alone. */
-export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null } | null }
+export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null; attach?: string[] | null } | null; colourScheme?: ColourScheme }
+
+/** The key an asset of the Doc is ticked under for export (item 5b): its entry's id, then "|", then the card's id when it is one card of a board ("page-1|", "board-1|c1"). */
+export const attachKey = (a: { entryId: string; boxId?: string }): string => a.entryId + '|' + (a.boxId ?? '');
+const isAttachList = (v: unknown): v is string[] => Array.isArray(v) && v.every((x) => typeof x === 'string' && x.length > 0);
+// COLOUR B (Nick, Nov 21 4:53 pm: "each Doc keeps its own scheme, saved with the account"; Fable 4:58 pm: doc_settings.colourScheme = 'default' | 'muted' |
+// 'vivid', written through this guard and MERGED with the Doc's other keys). A made Doc only: a loose page has no Doc record of its own, so it
+// keeps Default (refused here, not stored).
+export const COLOUR_SCHEMES = ['default', 'muted', 'vivid'] as const;
+export type ColourScheme = (typeof COLOUR_SCHEMES)[number];
+export const isColourScheme = (v: unknown): v is ColourScheme => typeof v === 'string' && (COLOUR_SCHEMES as readonly string[]).includes(v);
+/** The scheme this Part's Doc draws in: the Doc's own, else Default (a loose page, a missing page, a stray value). */
+export function colourSchemeOf(entryId: string): ColourScheme {
+  const s = docSettingsOf(entryId).colourScheme;
+  return isColourScheme(s) ? s : 'default';
+}
 
 /** The set she made that this page is a Part of; null for a loose page (the app's own set, or none). */
 function madeDocOf(entry: JournalEntry): Project | null {
@@ -54,10 +69,14 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   if ('export' in patch && patch.export !== null && patch.export !== undefined && patch.export.format !== undefined && !isExportFormat(patch.export.format)) return false;
   // the "Include the Plan" tick (Fable, Nov 21: remembered per Doc, beside the format): only true is stored; null takes the key off
   if ('export' in patch && patch.export && patch.export.includePlan !== undefined && patch.export.includePlan !== null && patch.export.includePlan !== true) return false;
+  // the assets she attaches (item 5b, Fable, Nov 21: remembered per Doc, beside the format and the Plan tick): a list of the keys she ticked; null or an empty list takes the key off; anything else is refused
+  if ('export' in patch && patch.export && patch.export.attach !== undefined && patch.export.attach !== null && !isAttachList(patch.export.attach)) return false;
+  if ('colourScheme' in patch && !isColourScheme(patch.colourScheme)) return false;
   const set = madeDocOf(e);
   if (!set) {
-    // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting
+    // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting and no scheme of its own
     if (patch.export !== undefined && patch.export !== null) return false;
+    if ('colourScheme' in patch) return false;
     if (!('styleGuide' in patch)) return false;
     const cur = e.pageSettings?.styleGuide;
     const next = isClear(patch.styleGuide) ? undefined : (patch.styleGuide as StyleGuide);
@@ -75,9 +94,12 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
     else if (patch.export !== undefined) {
       const merged: Record<string, unknown> = { ...(cur.export as object | undefined), ...patch.export };
       if (merged.includePlan === null) delete merged.includePlan;
+      if (merged.attach === null || (Array.isArray(merged.attach) && merged.attach.length === 0)) delete merged.attach;
+      else if (Array.isArray(merged.attach)) merged.attach = [...new Set(merged.attach as string[])];
       if (Object.keys(merged).length === 0) delete next.export; else next.export = merged;
     }
   }
+  if ('colourScheme' in patch && isColourScheme(patch.colourScheme)) next.colourScheme = patch.colourScheme;
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
   // the last key removed leaves {} on the record, never absence and never null: the server keeps what it has for a push that carries none (an older device), so a clear must say so
@@ -89,6 +111,19 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
 /** Whether this Doc remembers "Include the Plan" as ticked: true only for a stored true on the Doc this page is a Part of (a loose page, a missing page and a malformed value read false). */
 export function includePlanOf(entryId: string): boolean {
   return docSettingsOf(entryId).export?.includePlan === true;
+}
+
+/** The assets this Doc remembers as ticked to go out (the keys, in the order the Back menu lists them): the stored list for the Doc this page is a Part of; absent, malformed, a loose page and a missing page read as none. */
+export function attachedOf(entryId: string): string[] {
+  const a = docSettingsOf(entryId).export?.attach;
+  return Array.isArray(a) ? a.filter((x): x is string => typeof x === 'string' && x.length > 0) : [];
+}
+
+/** An asset leaves the Doc: its tick goes with it, so an asset added again later is not found ticked (never by default). */
+function pruneAttach(entryId: string, key: string): void {
+  const cur = attachedOf(entryId);
+  if (!cur.includes(key)) return;
+  setDocSetting(entryId, { export: { attach: cur.filter((k) => k !== key) } });
 }
 
 // THE DOC'S OWN ASSETS (Nick ruled A, Nov 20, 11:55 pm: "Doc-level assets YES. Home: the Doc's settings column, key `assets` = [{entryId, boxId?, at}]").
@@ -134,10 +169,13 @@ export function addDocAsset(entryId: string, asset: { entryId: string; boxId?: s
 export function removeDocAsset(entryId: string, asset: { entryId: string; boxId?: string }): boolean {
   const list = docAssetsOf(entryId);
   const next = list.filter((a) => !sameAsset(a, asset));
-  return next.length !== list.length && writeDocAssets(entryId, next);
+  if (next.length === list.length) return false;
+  const done = writeDocAssets(entryId, next);
+  if (done) pruneAttach(entryId, attachKey(asset));
+  return done;
 }
 
 // the harness's door, present only under the reorg switch
 if (REORG && typeof window !== 'undefined') {
-  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, set: setDocSetting, includePlan: includePlanOf, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
+  (window as unknown as { wrizoDocSettings?: unknown }).wrizoDocSettings = { of: docSettingsOf, styleGuideOf, colourScheme: colourSchemeOf, set: setDocSetting, includePlan: includePlanOf, attached: attachedOf, assets: docAssetsOf, addAsset: addDocAsset, removeAsset: removeDocAsset };
 }

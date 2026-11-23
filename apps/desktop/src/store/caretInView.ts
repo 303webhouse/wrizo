@@ -47,3 +47,35 @@ export function revealCaret(el: HTMLElement): void {
     if (delta) scroller.scrollBy({ top: delta, behavior: 'instant' as ScrollBehavior });
   } catch { /* a caret that cannot be revealed stays where it is: never an error into the writer's key */ }
 }
+
+// A PAGE OPENS ON A WHOLE LINE (Fable, Nov 21, 6:54 pm; POLISH's measurement at 1366: the first line was cut by the scroller's edge). A Draft page mounts with the caret at the END of its words. Focusing
+// there made the browser scroll the caret into view by exactly the page's overflow, so a page only a few pixels taller than its sheet rested scrolled by those pixels and its FIRST line, the one she reads first,
+// lost its top. The mount now focuses without that scroll (setCaretOffset's preventScroll) and openCaret() chooses where the page rests, by one pure rule (restingScroll): the page may scroll to bring the
+// caret's line into view, but only to a place where a line begins at the top of the sheet; and where the overflow is too small for that (the caret's line cannot be shown without cutting the first line), the page
+// stays at its top: the first line whole, the caret's line a little low, and the first typed letter scrolls it into view as it always did.
+
+/** How far an opened page rests scrolled. `need` is how far it must scroll for the caret's line to show, `max` the most it can scroll, `offsets` where each line begins (from the top of the page's content).
+ *  The smallest line start at or beyond `need` that the page can reach; else the farthest line start it can reach (the top, 0, always can be). Never a place that cuts the top line. */
+export function restingScroll(need: number, max: number, offsets: readonly number[]): number {
+  if (need <= 0 || max <= 0) return 0;
+  const reach = [0, ...offsets].filter((o) => o >= 0 && o <= max).sort((a, b) => a - b);
+  const enough = reach.find((o) => o >= need);
+  return enough !== undefined ? enough : reach[reach.length - 1];
+}
+
+/** The page has just opened with its caret at the end (the browser's scroll was prevented): rest it on a whole line, with the caret's line in view where that can be done without cutting the first line. */
+export function openCaret(el: HTMLElement): void {
+  try {
+    const scroller = scrollerOf(el);
+    if (!scroller || scroller.getAttribute('data-typewriter') === 'true') return;
+    const line = caretLine(el);
+    if (!line) return;
+    const box = scroller.getBoundingClientRect();
+    const bottom = Math.min(box.bottom, window.innerHeight) - PAD;
+    const need = line.bottom > bottom ? line.bottom - bottom : 0;
+    const max = scroller.scrollHeight - scroller.clientHeight;
+    const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
+    const to = restingScroll(need, max, offsets);
+    if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
+  } catch { /* a page that cannot be rested stays where it opened: never an error into the writer's page */ }
+}

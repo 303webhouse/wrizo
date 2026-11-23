@@ -10,7 +10,8 @@
 //   name        a Part's name. Absent: the first few words of its text stand in (the Sep 12 rule).
 //   level       0, 1 or 2: a Part can sit one or two levels under the one above (Act, then Scene). A flat ordered list with levels, no parent pointers, so a move can never leave a
 //               child pointing at a missing parent under last-writer-wins.
-//   color       a SLOT from PART_COLORS ('a' to 'f'), never a colour name or a hex: each theme draws its own six (Fable, Nov 20). An old clay..plum is READ as its slot, never written back.
+//   color       a SLOT from PART_COLORS ('a' to 'f'): each theme draws its own six (Fable, Nov 20); or, since colour B (Fable, Nov 21), exactly #RRGGBB (her own custom colour, written in capitals). Never a colour name.
+//               An old clay..plum is READ as its slot, never written back.
 //   template    the existing `PageTemplate` lens key (outline / title / bibliography), set through here too.
 //   lengthLimit { unit, max }: the writer's own ceiling for this Part.
 // None of them is dress: store/pageDefaults.ts strips all four new ones, so "Set as my default" on one Part never names, colours or limits every future page.
@@ -52,12 +53,26 @@ export function colorSlot(v: unknown): PartColor | null {
   return typeof v === 'string' && Object.prototype.hasOwnProperty.call(OLD_COLOR_NAMES, v) ? OLD_COLOR_NAMES[v] : null;
 }
 
+/** A custom colour (colour B, Fable, Nov 21): exactly #RRGGBB. The picker (ARBOR's, "Custom" and a hex field) hands one in; this layer validates it and stores it in capitals, so one colour has one spelling. */
+export type PartHex = `#${string}`;
+const HEX_COLOUR = /^#[0-9A-Fa-f]{6}$/;
+export const isHexColour = (v: unknown): v is PartHex => typeof v === 'string' && HEX_COLOUR.test(v);
+/** What a colour is WRITTEN as: a slot as itself, a hex in capitals; anything else is null (an old colour name is only ever read, never written). */
+export function colourToStore(v: unknown): PartColor | PartHex | null {
+  if (isPartColor(v)) return v;
+  return isHexColour(v) ? (v.toUpperCase() as PartHex) : null;
+}
+/** A stored colour as a custom hex (capitals), or null: a slot, an old name, a hex that is not exactly #RRGGBB and a stray word all read none. */
+export function colorHex(v: unknown): PartHex | null {
+  return isHexColour(v) ? (v.toUpperCase() as PartHex) : null;
+}
+
 export type PartLevel = 0 | 1 | 2;
 export const MAX_PART_LEVEL = 2;
 export interface PartLengthLimit { unit: 'words' | 'characters'; max: number }
 export const PART_NAME_MAX = 120;
 
-type PartKeys = { name?: string; level?: number; color?: PartColor; lengthLimit?: PartLengthLimit };
+type PartKeys = { name?: string; level?: number; color?: PartColor | PartHex; lengthLimit?: PartLengthLimit };
 const keysOf = (e: JournalEntry): PartKeys => (e.pageSettings ?? {}) as PartKeys;
 
 // ---------------------------------------------------------------- what a Part is
@@ -74,7 +89,10 @@ export interface Part {
   /** The level as DRAWN: never deeper than one under the Part above, and the first Part is always 0. `storedLevel` is what was written. */
   level: PartLevel;
   storedLevel: number | undefined;
+  /** the Part's slot colour (an old name reads as its slot); null when it has none or holds a custom hex */
   color: PartColor | null;
+  /** the Part's custom colour, #RRGGBB in capitals, or null (colour B) */
+  hex: PartHex | null;
   template: PageTemplate | null;
   lengthLimit: PartLengthLimit | null;
   /** A script Part is a screenplay: it lists, moves and renames, but it has no plain text to split or join. */
@@ -142,6 +160,7 @@ function toPart(e: JournalEntry, docId: string, index: number, level: PartLevel)
     named: !!own,
     level, storedLevel: typeof k.level === 'number' ? k.level : undefined,
     color: colorSlot(k.color),
+    hex: colorHex(k.color),
     template: (e.pageSettings?.template as PageTemplate | undefined) ?? null,
     lengthLimit: k.lengthLimit && typeof k.lengthLimit.max === 'number' && (k.lengthLimit.unit === 'words' || k.lengthLimit.unit === 'characters') ? { unit: k.lengthLimit.unit, max: k.lengthLimit.max } : null,
     kind: isScript ? 'script' : 'text',
@@ -197,10 +216,11 @@ export function renamePart(partId: string, name: string): boolean {
   return patchKeys(partId, { name: n || undefined });
 }
 
-/** Colour a Part from the fixed set, or clear it with null. A name outside the set is refused (a hex never gets in). */
-export function setPartColor(partId: string, color: PartColor | null): boolean {
-  if (color !== null && !isPartColor(color)) return false;
-  return patchKeys(partId, { color: color ?? undefined });
+/** Colour a Part: a slot a-f, or exactly #RRGGBB (stored in capitals), or clear it with null. Anything else (a colour name, an old name, a short hex, a hex with a space) is refused and nothing is written. */
+export function setPartColor(partId: string, color: PartColor | PartHex | null): boolean {
+  const store = color === null ? null : colourToStore(color);
+  if (color !== null && store === null) return false;
+  return patchKeys(partId, { color: store ?? undefined });
 }
 
 /** The existing template lens, set through here too (null is Blank). */
@@ -550,7 +570,7 @@ if (typeof window !== 'undefined') {
     // the app's own lazy set of a Drawer (a loose page in a Drawer lives in it): the harness asks for it through the app's own function, never raw storage
     autoSet: (drawerId: string) => durable(ensureSet(drawerId)),
     renamePart: (id: string, name: string) => durable(renamePart(id, name)),
-    setPartColor: (id: string, c: PartColor | null) => durable(setPartColor(id, c)),
+    setPartColor: (id: string, c: PartColor | PartHex | null) => durable(setPartColor(id, c)),
     setPartTemplate: (id: string, t: PageTemplate | null) => durable(setPartTemplate(id, t)),
     setPartLimit: (id: string, l: PartLengthLimit | null) => durable(setPartLimit(id, l)),
     setPartLevel: (docId: string, id: string, level: number) => durable(setPartLevel(docId, id, level)),

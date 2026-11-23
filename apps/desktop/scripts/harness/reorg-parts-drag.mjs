@@ -232,8 +232,15 @@ await withHarness(async (app) => {
   // ---- STAGES ----------------------------------------------------------------------------------------------------------------------------
   await stage(app, 'freewrite');
   const dragSprint = await app.evalJs(`(() => [...(${L}?.querySelectorAll('[data-part-row]') || [])].map((b) => b.getAttribute('draggable')))()`);
-  ok('D1 BUILD: every row is draggable; SPRINT: no row is', !!dragBuild && dragBuild.length === 5 && dragBuild.every((d) => d === 'true')
-    && !!dragSprint && dragSprint.length > 0 && dragSprint.every((d) => d !== 'true'), { dragBuild, dragSprint });
+  // SUPERSEDED (Nov 21, train F pair 44944613263; main's sprint-no-menus, live in train E: SPRINT draws no Front menu at all): D1 asked SPRINT for rows that are not draggable (dragSprint.length > 0); SPRINT now draws no rows. D1-B keeps the claim - no
+  // row draggable in SPRINT - with no rows counting. Verbatim:
+  // ok('D1 BUILD: every row is draggable; SPRINT: no row is', !!dragBuild && dragBuild.length === 5 && dragBuild.every((d) => d === 'true')
+  //   && !!dragSprint && dragSprint.length > 0 && dragSprint.every((d) => d !== 'true'), { dragBuild, dragSprint });
+  const d1b = (b, s) => !!b && b.length === 5 && b.every((d) => d === 'true') && !!s && s.every((d) => d !== 'true');
+  ok('D1-B BUILD: every row is draggable; SPRINT: no row is (no rows drawn counts)', d1b(dragBuild, dragSprint), { dragBuild, dragSprint });
+  // MUT-D1-B: a SPRINT reading with one draggable row turns D1-B red (the mutant LANDED: the reading changed)
+  const ds = [...(dragSprint || []), 'true'];
+  ok('MUT-D1-B a SPRINT with a draggable row turns D1-B red', ds.length === (dragSprint || []).length + 1 && !d1b(dragBuild, ds), ds);
 
   await stage(app, 'revise');
   const dragEdit = await app.evalJs(`(() => [...(${L}?.querySelectorAll('[data-part-row]') || [])].map((b) => b.getAttribute('draggable')))()`);
@@ -272,7 +279,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 16;   // 12 - G1 (parked) + G1-B + C1 + MUT-G1-B + H1 + W2 (Nov 21)
+const EXPECTED = 17;   // 12 - G1 (parked) + G1-B + C1 + MUT-G1-B + H1 + W2 (Nov 21); - D1 (parked, Nov 21) + D1-B + MUT-D1-B
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PARTS-DRAG VERIFY: PASS (${checks.length} checks)`

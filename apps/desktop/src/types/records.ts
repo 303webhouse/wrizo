@@ -110,7 +110,7 @@ export type BinderKind =
 /** A Doc-level asset (Nick ruled A, Nov 20, 11:55 pm): connected to the whole Doc, not to a Part. `at` is when it was connected. Listed under the Assets tab's
  *  head; dragged into a Part it also becomes that Part's own PageLink (graftTo) and stays here. Read and written only through reorg/docSettings.ts. */
 export interface DocAsset { entryId: string; boxId?: string; at: string }
-export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean }; assets?: DocAsset[] };
+export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean; /** the Doc's assets she ticked to go out, as docSettings.ts attachKey writes them; absent = none */ attach?: string[] }; assets?: DocAsset[]; /** colour B (Nick, Nov 21 4:53 pm): this Doc's colour scheme for its slots; absent = Default (each theme draws its own version) */ colourScheme?: 'default' | 'muted' | 'vivid' };
 export interface Project {
   id: string;
   title: string;

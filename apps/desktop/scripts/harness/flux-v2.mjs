@@ -126,6 +126,7 @@ const KEEP = {
   reorgNewBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoardsNoDoc: 'the reorg rail, Machina only: never rendered in Flux',
   reorgUntitledBoard: 'the reorg rail, Machina only: never rendered in Flux', reorgBoxSettings: 'the reorg rail, Machina only: never rendered in Flux',
   reorgDefaults: 'the reorg rail, Machina only: never rendered in Flux',
+  reorgSprintTravels: "SPRINT's Back menu note (the Consultant's prompts), Machina only: never rendered in Flux",
   // THE ASSETS "+" (POLISH, Nov 21, reorg-plan-v2 3b item 1): read only in the reorg's Assets tab under ?reorg=1 in Machina; Flux never renders it. Each names Machina's Board.
   reorgAddNewBoard: 'the reorg Assets tab, Machina only: never rendered in Flux', reorgAddExistingBoard: 'the reorg Assets tab, Machina only: never rendered in Flux',
   reorgAddSearchBoards: 'the reorg Assets tab, Machina only: never rendered in Flux',
