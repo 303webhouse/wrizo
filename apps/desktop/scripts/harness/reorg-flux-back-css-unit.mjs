@@ -125,18 +125,27 @@ function suite(css) {
     const leftHidden = !rs.some((x) => /wz-sliver-grip/.test(x.sel) && /visibility:\s*visible/.test(x.body));
     return { pass: g && leftHidden, detail: J({ g, leftHidden }) };
   });
+  t('CORRIDOR3', () => {
+    // the Wrizors-bound frames of Nov 23 (flux-back-wirein): the grip drew INSIDE the opened panel, on its OPERATOR tab. Wire In is the zoom, which widens the page's half, so the grip's formula (the page's right edge) and the panel (clamp(320px, 34vw, 460px), flush to the stage's right) no longer meet. In the Corridor the grip's anchor is placed from the panel: opened, 16 px left of the panel's own width; closed, flush to the stage's right edge. Marked by data-open on the anchor
+    const sel = (open) => rs.filter((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.desk-frame-tutor-anchor\[data-back='true'\]/.test(x.sel) && (open ? /\[data-open='true'\]/.test(x.sel) : /\[data-open='false'\]/.test(x.sel)));
+    const opened = sel(true).some((x) => /left:\s*calc\(100% - clamp\(320px, 34vw, 460px\) - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
+    const closed = sel(false).some((x) => /left:\s*calc\(100% - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
+    return { pass: opened && closed, detail: J({ opened, closed }) };
+  });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR3'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
+  ['the opened grip is placed from the page again (inside the panel)', 'CORRIDOR3', (t) => t.replace('left:calc(100% - clamp(320px, 34vw, 460px) - 16px)', () => 'left:auto')],
+  ['the closed grip is not flush to the stage edge', 'CORRIDOR3', (t) => t.replace('left:calc(100% - 16px)', () => 'left:50%')],
   ['the grip stays hidden in the Corridor', 'CORRIDOR2', (t) => t.replace('visibility:visible', () => 'visibility:hidden')],
   ['the grip of the left hand is shown in the Corridor too', 'CORRIDOR2', (t) => `${t}
 :root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-sliver-grip{ visibility:visible; }
