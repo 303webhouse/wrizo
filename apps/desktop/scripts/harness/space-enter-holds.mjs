@@ -21,13 +21,13 @@ const q = (a, p) => { const s = a.slice().sort((x, y) => x - y); return s.length
 
 const INSTRUMENT = () => `(() => {
   if (window.__seh) return true;
-  const S = window.__seh = { sel: 0, bytes: 0, big: [] };
-  document.addEventListener('keydown', () => { S.sel = 0; S.bytes = 0; S.big = []; }, true);
+  const S = window.__seh = { sel: 0, bytes: 0, other: 0, big: [] };
+  document.addEventListener('keydown', () => { S.sel = 0; S.bytes = 0; S.other = 0; S.big = []; }, true);
   for (const m of ['removeAllRanges', 'addRange']) { const o = Selection.prototype[m]; Selection.prototype[m] = function (...a) { const t = performance.now(); try { return o.apply(this, a); } finally { S.sel += performance.now() - t; } }; }
   const d = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-  Object.defineProperty(Element.prototype, 'innerHTML', { configurable: true, get() { return d.get.call(this); }, set(v) { const n = String(v).length; S.bytes += n; if (n > 2000 && S.big.length < 3) S.big.push({ n, el: (this.className || this.tagName) + '', at: (new Error().stack || '').split('\\n').slice(2, 6).map((l) => l.trim().replace(/^at /, '').slice(0, 90)).join(' < ') }); d.set.call(this, v); } });
+  Object.defineProperty(Element.prototype, 'innerHTML', { configurable: true, get() { return d.get.call(this); }, set(v) { const n = String(v).length; const inEd = !!(this.closest && this.closest('.forward-only-editor')); if (inEd) S.bytes += n; else S.other += n; if (n > 2000 && S.big.length < 3) S.big.push({ inEd, n, el: (this.className || this.tagName) + '', at: (new Error().stack || '').split('\\n').slice(2, 6).map((l) => l.trim().replace(/^at /, '').slice(0, 90)).join(' < ') }); d.set.call(this, v); } });
   return true; })()`;
-const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ sel: window.__seh.sel, bytes: window.__seh.bytes, big: window.__seh.big }), 0)))";
+const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ sel: window.__seh.sel, bytes: window.__seh.bytes, other: window.__seh.other, big: window.__seh.big }), 0)))";
 
 try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
