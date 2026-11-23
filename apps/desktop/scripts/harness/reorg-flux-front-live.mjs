@@ -6,6 +6,7 @@
 //   FF3   TRACKS' head menu holds Style guide, Frame, Special tracks and Presets, in node dress, and its Frame opens the page setup
 //   FF4   a Track's tag is the bracketed code and a 3 px bar in the slot's signal: no fill, no box, and the row is not tinted; her own colour draws a bar with no code
 //   FF5   the current Track wears the choice mark: a cyan edge and the 3 x 24 brass bar
+//   FF14  each Track's name keeps its room at 1366, the narrowest menu (none cut), with the link badge on the first row
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -105,6 +106,9 @@ await withHarness(async (app) => {
   const here = await app.evalJs(CS('.reorg-parts-row.is-here', ['box-shadow']));
   const hereBar = await app.evalJs(CS('.reorg-parts-row.is-here', ['width', 'height', 'background-color'], '::before'));
   ok('FF5 the current Track wears the choice mark: a cyan edge and the 3 x 24 brass bar', !!here && here['box-shadow'].includes(CYAN) && !!hereBar && hereBar.width === '3px' && hereBar.height === '24px' && hereBar['background-color'] === BRASS, { here, hereBar });
+  const names = await app.evalJs("(() => [...document.querySelectorAll('.reorg-parts-list .reorg-parts-name')].map((e) => ({ t: (e.textContent || '').trim(), w: Math.round(e.getBoundingClientRect().width), cut: e.scrollWidth > e.clientWidth + 1 })))()");
+  const badge = await app.evalJs("!!document.querySelector('button.reorg-parts-assets')");
+  ok('FF14 each Track\'s name keeps its room at 1366 (none cut), with the link badge on the first row', Array.isArray(names) && names.length === 3 && names.every((x) => !x.cut && x.w >= 40) && badge === true, { names, badge });
   ok('FF6 the open tab wears the mark, and no control in MARKUP or TRACKS is the browser\'s grey or white',
     !!barTab && barTab.width === '3px' && barTab.height === '24px' && barTab['background-color'] === BRASS && !!edgeTab && edgeTab['border-top-color'] === CYAN && edgeTab['text-transform'] === 'uppercase'
     && !!rawMarkup && rawMarkup.n >= 12 && rawMarkup.bad.length === 0 && !!rawTracks && rawTracks.n >= 4 && rawTracks.bad.length === 0, { barTab, edgeTab, rawMarkup, rawTracks });
@@ -169,10 +173,18 @@ await withHarness(async (app) => {
   const mac = await app.evalJs(TABS);
   const macSetup = await app.evalJs("document.querySelectorAll('.wz-sliver-panel .wz-page-setup-seg, .wz-sliver-panel .wz-page-setup-chip').length");
   ok('FF13 Machina is unchanged: its first tab reads TEXT and Page setup stays at its foot (the FF2 probe, seen present)', Array.isArray(mac) && (mac[0]?.text || '').toUpperCase() === 'TEXT' && macSetup > 0, { mac, macSetup });
+
+  // INFO, no verdict: where the block caret is drawn on load (a bar stood mid-page, off the text, in this file's first frames with the top bar lifted). Which lift brings it decides whose it is.
+  const CARET = "(() => { const c = document.querySelector('.flux-block-caret'); const r = c && c.getBoundingClientRect(); const s = getSelection(); const a = document.activeElement; const e = document.querySelector('.forward-only-editor'); const er = e && e.getBoundingClientRect(); let sr = null; try { if (s && s.rangeCount) { const x = s.getRangeAt(0).getClientRects()[0]; sr = x ? [Math.round(x.left), Math.round(x.top)] : 'no rect'; } } catch { sr = 'threw'; } return { caret: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.height)] : null, active: a ? String(a.className || a.tagName).slice(0, 36) : null, anchor: s && s.anchorNode ? s.anchorNode.nodeName : null, offset: s ? s.anchorOffset : null, sel: sr, editor: er ? [Math.round(er.left), Math.round(er.top), Math.round(er.height)] : null }; })()";
+  for (const [label, lift, open2] of [['no lift', '', false], ['top', 'flux.top', false], ['top+front', LIFT, false], ['top+front, drawer open', LIFT, true]]) {
+    await open(app, 'ff-1', { lift });
+    if (open2) await drawer(app);
+    console.log('INFO caret ' + label + ' ' + JSON.stringify(await app.evalJs(CARET)));
+  }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 13;
+const EXPECTED = 14;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`

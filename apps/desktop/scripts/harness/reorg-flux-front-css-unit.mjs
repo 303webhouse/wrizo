@@ -17,6 +17,8 @@
 //   SITES    MARKUP names the first tab, and Presets, the kind row and Frame live in the TRACKS head menu, in Arbor and Flux through ONE rule (frontKindHead); Machina keeps its reading
 //   WORDS    the spec's words are in the table, and no string the Front menu reads still says "Part" in Flux
 //   WIRED    the global stylesheet imports both sheets once, the tokens first
+//   ROOM     a Track's name keeps the row (the Wrizors' Flux pass 1, REAL 4, on the Back menu: "The c"): what stands left of the name is at most 58 px and the row's "..." at most 22 px
+//   HINT     Uplink's hint is a sentence, so it is in sentence case in the UI face (flux-reorg-words B), not the list head's caps
 // Run: node scripts/harness/reorg-flux-front-css-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -165,10 +167,18 @@ function suite(front, tags, sliver, ftabs, words) {
     const part = [...keys].filter((k) => { const c = new RegExp('^\\s*' + k + ":\\s*(['\"`])(.*?)\\1", 'm').exec(CANON); return c && /\bParts?\b/.test(c[2].replace(/\{part\}/g, '')) && wordOf(k) === null; });
     return { pass: wrong.length === 0 && part.length === 0 && keys.size > 60, detail: J({ wrong, part, keys: keys.size }) };
   });
+  t('ROOM', () => {
+    const last = (tail, prop) => { const hit = exact(rs, tail).map((x) => new RegExp('(?:^|[ ;])' + prop + ':\\s*(?:calc\\()?(\\d+(?:\\.\\d+)?)px').exec(x.body)).filter(Boolean).pop(); return hit ? +hit[1] : NaN; };
+    const row = '.reorg-parts-list > li > .reorg-parts-row';
+    const pad = last(row, 'padding-left'), gap = last(row, 'gap'), num = last('.reorg-parts-num', 'width'), tag = last('.reorg-parts-tag', 'min-width'), more = last('.reorg-parts-more', 'width'), moreM = last('.reorg-parts-more', 'margin-right');
+    const left = pad + num + gap + tag + gap;
+    return { pass: left <= 58 && more + moreM <= 22, detail: J({ pad, gap, num, tag, left, more, moreM }) };
+  });
+  t('HINT', () => { const b = bodyOf(rs, '.reorg-pubparts .reorg-parts-head'); const pass = /text-transform:\s*none/.test(b) && /letter-spacing:\s*normal/.test(b) && /font-family:\s*var\(--font-ui\)/.test(b); return { pass, detail: J({ b }) }; });
   return R;
 }
 
-const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS'];
+const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS', 'ROOM', 'HINT'];
 const base = suite(FRONT, TAGS, SLIVER, FTABS, WORDS);
 for (const k of KEYS) ok(`${k} on the real sheets, sites and words`, base[k] && base[k].pass, base[k] ? base[k].detail : 'not run');
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
@@ -204,6 +214,9 @@ const MUT = [
   ['Presets stay on MARKUP', 'SITES', 'sliver', (t) => t.replace('section, frontKindHead(theme))', () => "section, theme === 'plateau')")],
   ['Frame stays on MARKUP', 'SITES', 'sliver', (t) => t.replace('!frontKindHead(theme) && <PageSetupZone', () => "theme !== 'plateau' && <PageSetupZone")],
   ['the rule also takes Machina', 'SITES', 'ftabs', (t) => t.replace("theme === 'plateau' || theme === 'flux';", () => "theme === 'plateau' || theme === 'flux' || theme === 'machina';")],
+  ['the row goes back to its wide left', 'ROOM', 'front', (t) => t.replace('padding-left:calc(7px + var(--part-level, 0) * 14px)', () => 'padding-left:calc(12px + var(--part-level, 0) * 14px)')],
+  ['the row\'s "..." widens', 'ROOM', 'front', (t) => t.replace(`${SC} .reorg-parts-more{ width:20px; margin-right:0; }`, () => `${SC} .reorg-parts-more{ width:26px; margin-right:4px; }`)],
+  ['the hint goes back to caps', 'HINT', 'front', (t) => t.replace(`${SC} .reorg-pubparts .reorg-parts-head{ text-transform:none;`, () => `${SC} .reorg-pubparts .reorg-parts-head{ text-transform:uppercase;`)],
   ['a word is lost', 'WORDS', 'words', (t) => t.replace(/^\s*reorgColourThisPart:.*\n/m, () => '')],
 ];
 const IDX = { front: 0, tags: 1, sliver: 2, ftabs: 3, words: 4 };
