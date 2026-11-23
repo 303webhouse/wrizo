@@ -12,6 +12,9 @@
 //   FF17  the colour picker opens clear of the page's glass (NIT 6)
 //   FF18  Uplink's ticks are the one Flux tick, in TRACKS and in the view (pass 1, REAL)
 //   FF19  the COMMANDS edges are #5F8F95 in the Front menu, and today's drawer keeps its own (ship must)
+//   FF20  Wire In's end-of-Track line is DRAWN in text-low #7EB4C4: its three pieces, read from the screenshot's pixels (Fable, Nov 23, 8:20 am; the Wrizors' top bar pass 1 read 2.47 to 3.49, under the Typewriter's mask)
+//   FF21  the band over her words is untouched: only the fade BELOW the writing line is lifted, in a Doc with a foot
+//   FF22  a page with no foot keeps the Typewriter's whole band
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -22,11 +25,15 @@
 //   FF13  Machina is unchanged: its first tab reads TEXT and Page setup stays at its foot (the probe the FF2 absence relies on, seen present)
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-front-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
+import zlib from 'node:zlib';
+import { contrast } from '../arbor2-png.mjs';
 
 process.env.WS_PLACE = '1';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Chrome's screenshot is 8-bit RGB (colour type 2), which arbor2-png's decodePng refuses (runs 45202747676, 45202901240: FF20 read no pixel at all, so its first red was the instrument's)
+const decodeShot = (buf) => { let o = 8, w = 0, h = 0, ct = 0; const idat = []; while (o < buf.length) { const n = buf.readUInt32BE(o), ty = buf.toString('latin1', o + 4, o + 8), d = buf.subarray(o + 8, o + 8 + n); if (ty === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); ct = d[9]; if (d[8] !== 8 || d[12] !== 0 || (ct !== 2 && ct !== 6)) throw new Error('unsupported PNG: depth ' + d[8] + ', colour type ' + ct + ', interlace ' + d[12]); } else if (ty === 'IDAT') idat.push(d); o += n + 12; } const bpp = ct === 6 ? 4 : 3, stride = w * bpp, raw = zlib.inflateSync(Buffer.concat(idat)), px = Buffer.alloc(stride * h); for (let y = 0, p = 0; y < h; y += 1) { const f = raw[p]; p += 1; for (let x = 0; x < stride; x += 1, p += 1) { const a = x >= bpp ? px[y * stride + x - bpp] : 0, b = y ? px[(y - 1) * stride + x] : 0, c = x >= bpp && y ? px[(y - 1) * stride + x - bpp] : 0; let v = raw[p]; if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1; else if (f === 4) { const q = a + b - c, pa = Math.abs(q - a), pb = Math.abs(q - b), pc = Math.abs(q - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; } px[y * stride + x] = v & 255; } } const data = Buffer.alloc(w * h * 4, 255); for (let i = 0, j = 0; i < px.length; i += bpp, j += 4) { data[j] = px[i]; data[j + 1] = px[i + 1]; data[j + 2] = px[i + 2]; } return { width: w, height: h, data }; };
 const q = (s) => JSON.stringify(s);
 const LIFT = 'flux.top,flux.front';
 const BRASS = 'rgb(255, 152, 0)', CYAN = 'rgb(0, 194, 255)', NONE = 'rgba(0, 0, 0, 0)';
@@ -180,6 +187,38 @@ await withHarness(async (app) => {
   const wire = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
   const wireOff = await app.evalJs("({ sliver: !!document.querySelector('.wz-sliver'), page: !!document.querySelector('.forward-only-editor') })");
+  // INFO, no verdict: the end-of-Track line in Wire In (the Wrizors' top-bar pass 1 read it at 2.47 to 3.49 in a frame shot 350 ms after a pointer move): its opacity, up the whole chain, at rest and through that moment
+  const FOOT = "(() => { const f = document.querySelector('[data-part-foot]'); if (!f) return null; let o = 1; for (let e = f; e; e = e.parentElement) o *= +getComputedStyle(e).opacity; const g = f.querySelector('.is-next'); const st = document.querySelector('.mode-stage'); return { chain: Math.round(o * 100) / 100, own: getComputedStyle(f).opacity, next: g ? getComputedStyle(g).color : null, writing: st && st.getAttribute('data-writing'), running: f.getAnimations().length }; })()";
+  console.log('INFO foot rest ' + JSON.stringify(await app.evalJs(FOOT)));
+  console.log('INFO foot paint ' + JSON.stringify(await app.evalJs("(() => { const g = document.querySelector('[data-part-foot] .is-next'); if (!g) return null; const r = g.getBoundingClientRect(); const root = document.documentElement; const stack = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).slice(0, 7).map((e) => { const c = getComputedStyle(e); return String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || e.tagName).split(' ')[0].slice(0, 28) + ' bg=' + c.backgroundColor + ' o=' + c.opacity; }); const up = []; for (let e = g; e; e = e.parentElement) { const c = getComputedStyle(e); const x = [c.filter !== 'none' ? 'filter ' + c.filter : '', c.mixBlendMode !== 'normal' ? 'blend ' + c.mixBlendMode : '', c.maskImage !== 'none' ? 'mask ' + c.maskImage.slice(0, 90) : '', c.clipPath !== 'none' ? 'clip ' + c.clipPath.slice(0, 50) : ''].filter(Boolean); if (x.length) up.push(String(e.className || e.tagName).split(' ')[0] + ': ' + x.join('; ')); } return { wirein: root.hasAttribute('data-wirein'), jacked: root.hasAttribute('data-flux3-jacked'), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom'), box: [Math.round(r.left), Math.round(r.top)], stack, up }; })()")));
+  await app.mouseMove(900, 460);
+  for (const ms of [120, 230, 650, 1500, 2000]) { await sleep(ms); console.log('INFO foot +' + ms + ' ' + JSON.stringify(await app.evalJs(FOOT))); }
+  // FF20: what is DRAWN, not what is computed (the foot's own opacity read 1 while the column's mask drew it at 2.47:1). The brightest pixel of each piece is its ink's core.
+  const GROUND = '#020C10', LOW = 'rgb(126, 180, 196)';
+  const footPieces = await app.evalJs("(() => { const f = document.querySelector('[data-part-foot]'); if (!f) return null; return ['.reorg-part-foot-go:not(.is-next)', '.reorg-part-foot-end', '.reorg-part-foot-go.is-next'].map((s) => { const e = f.querySelector(s); if (!e) return { s, missing: true }; const r = e.getBoundingClientRect(); return { s, x: r.left, y: r.top, w: r.width, h: r.height, color: getComputedStyle(e).color }; }); })()");
+  const jacked = await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')");
+  const drawn = [];
+  for (const r of footPieces || []) {
+    if (r.missing || !(r.w > 0 && r.h > 0)) { drawn.push({ s: r.s, ratio: 0, color: r.color || null }); continue; }
+    try {
+      const shot = await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: r.x, y: r.y, width: r.w, height: r.h, scale: 1 } });
+      // SUPERSEDED (runs 45202747676, 45202901240: 'unsupported PNG: depth 8, colour type 2'). The line, verbatim:
+      // const img = decodePng(Buffer.from(shot.data, 'base64'));
+      const img = decodeShot(Buffer.from(shot.data, 'base64'));
+      let peak = '#000000', best = -1;
+      for (let i = 0; i < img.data.length; i += 4) { const v = img.data[i] * 0.2126 + img.data[i + 1] * 0.7152 + img.data[i + 2] * 0.0722; if (v > best) { best = v; peak = '#' + [img.data[i], img.data[i + 1], img.data[i + 2]].map((c) => c.toString(16).padStart(2, '0')).join(''); } }
+      drawn.push({ s: r.s, peak, ratio: Math.round(contrast(peak, GROUND) * 100) / 100, color: r.color });
+    } catch (e) { drawn.push({ s: r.s, ratio: 0, color: r.color, err: String(e.message || e).slice(0, 120) }); }
+  }
+  ok('FF20 Wire In\'s end-of-Track line is drawn in text-low #7EB4C4, all three pieces (8:1 or better at the ink\'s core)', jacked === true && drawn.length === 3 && drawn.every((d) => d.color === LOW && d.ratio >= 8), { jacked, drawn });
+  const BAND = "(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return null; const m = getComputedStyle(c).webkitMaskImage || getComputedStyle(c).maskImage || ''; const n = (x) => m.split(x).length - 1; return { zoom: c.getAttribute('data-zoom'), foot: !!document.querySelector('[data-part-foot]'), s12: n('rgba(0, 0, 0, 0.12)'), s40: n('rgba(0, 0, 0, 0.4)'), s72: n('rgba(0, 0, 0, 0.72)') }; })()";
+  const bandFoot = await app.evalJs(BAND);
+  ok('FF21 with a foot, the band above her line is whole (.12, .4, .72) and only the fade below it is lifted', !!bandFoot && bandFoot.zoom === 'true' && bandFoot.foot === true && bandFoot.s12 === 1 && bandFoot.s40 === 1 && bandFoot.s72 === 1, bandFoot);
+  await open(app, 'ff-note');
+  const wireNote = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
+  await sleep(900);
+  const bandNone = await app.evalJs(BAND);
+  ok('FF22 a page with no foot keeps the Typewriter\'s whole band in Wire In', wireNote === true && !!bandNone && bandNone.zoom === 'true' && bandNone.foot === false && bandNone.s12 === 1 && bandNone.s40 === 2 && bandNone.s72 === 1, { wireNote, bandNone });
   ok('FF10 Wire In draws no Front menu', wire === true && !!wireOff && wireOff.sliver === false && wireOff.page === true, { wire, wireOff });
 
   await open(app, 'ff-1', { lift: '' });
@@ -224,7 +263,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 20;
+const EXPECTED = 23;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`
