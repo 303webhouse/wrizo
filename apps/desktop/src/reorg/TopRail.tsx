@@ -278,7 +278,7 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
           <>
             {!flux && <span className="reorg-top-dot" aria-hidden="true">·</span>}
             {arbor && part.color && <span className="reorg-top-tag" data-top-tag={part.color} aria-hidden="true" />}
-            {flux && (part.color || part.hex) && <span className="reorg-top-tag" data-top-tag={part.hex ? 'hex' : part.color ?? undefined} aria-hidden="true" style={part.hex ? customVars(part.hex) as CSSProperties : undefined} />}
+            {flux && (part.color || part.hex) && <span className="reorg-top-tag" data-top-tag={part.hex ? 'hex' : part.color ?? undefined} data-quiet={part.hex && customVars(part.hex)['--part-hex-edge-dark'] !== part.hex ? 'true' : undefined} aria-hidden="true" style={part.hex ? customVars(part.hex) as CSSProperties : undefined} />}
             <Name id="part" text={part.name || t('reorgUntitled')} editable={canRename} onCommit={(v) => write(() => renamePart(latest.id, v))} />
           </>
         )}

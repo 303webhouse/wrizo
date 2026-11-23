@@ -17,6 +17,11 @@
 //   SITES    MARKUP names the first tab, and Presets, the kind row and Frame live in the TRACKS head menu, in Arbor and Flux through ONE rule (frontKindHead); Machina keeps its reading
 //   WORDS    the spec's words are in the table, and no string the Front menu reads still says "Part" in Flux
 //   WIRED    the global stylesheet imports both sheets once, the tokens first
+//   CUSTOM   her own colour is its 3 px bar, inside a 1 px edge that holds it on the panel (rule 1), with the code [##] in text-hi (spec draft 4, sections 6 and 11)
+//   NODIM    nothing in the Front sheet is dimmed by opacity: a greyed control goes to text-low (rule 5)
+//   SEAM     a tab rule here names the left hand, so the Back menu's tabs (INK's) are untouched
+//   ROOM     a Track's name keeps the row (the Wrizors' Flux pass 1, REAL 4, on the Back menu: "The c"): what stands left of the name is at most 58 px and the row's "..." at most 22 px
+//   HINT     Uplink's hint is a sentence, so it is in sentence case in the UI face (flux-reorg-words B), not the list head's caps
 // Run: node scripts/harness/reorg-flux-front-css-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -86,7 +91,9 @@ function suite(front, tags, sliver, ftabs, words) {
     if (!TK6_RE) return { pass: false, detail: "TK6's matcher was not found in flux-v2.mjs" };
     const teal = TK6_RE.test('#7FA8A0') ? '#7EB4C4' : '#7FA8A0';
     const want = { a: '#00C2FF', b: '#B7FF3C', c: '#FF2E97', d: '#E7F4F1', e: teal, f: '#3A8FA5' };
-    const bad = SLOTS.filter((s, i) => tk[`${s}-fill`] !== 'transparent' || (tk[`${s}-ink`] || '').toUpperCase() !== want[s] || (tk[`${s}-edge`] || '').toUpperCase() !== want[s] || tk[`${s}-num`] !== `'[0${i + 1}]'`);
+    // SUPERSEDED (Nov 22, spec draft 4, section 11 rule 2: beside its bar on the panel the code is text-hi; section 6: her own colour is a bar with the code [##]), the original, verbatim:
+    // const bad = SLOTS.filter((s, i) => tk[`${s}-fill`] !== 'transparent' || (tk[`${s}-ink`] || '').toUpperCase() !== want[s] || (tk[`${s}-edge`] || '').toUpperCase() !== want[s] || tk[`${s}-num`] !== `'[0${i + 1}]'`);
+    const bad = SLOTS.filter((s, i) => tk[`${s}-fill`] !== 'transparent' || (tk[`${s}-ink`] || '').toUpperCase() !== '#E7F4F1' || (tk[`${s}-edge`] || '').toUpperCase() !== want[s] || tk[`${s}-num`] !== `'[0${i + 1}]'`);
     return { pass: bad.length === 0, detail: J({ bad, teal, tk: bad.length ? tk : undefined }) };
   });
   t('CONTRAST', () => {
@@ -158,17 +165,37 @@ function suite(front, tags, sliver, ftabs, words) {
     return { pass: helper && word && retire && setup && imported, detail: J({ helper, word, retire, setup, imported }) };
   });
   t('WORDS', () => {
-    const want = { reorgFrontLabel: 'Tools', reorgColourThisPart: 'This track', reorgSchemeLine: "Changes every Track's colours.", reorgColourHex: 'Hex colour', reorgPresetGroupWeb: 'Web and journalism' };
+    const want = { reorgFrontLabel: 'Tools', reorgColourThisPart: 'This track', reorgSchemeLine: "Changes every Track's colours.", reorgColourHex: 'Hex colour', reorgPresetGroupWeb: 'Web and journalism', reorgPartIn: 'Nest', reorgPartOut: 'Unnest', reorgPartJoin: 'Merge', reorgPartJoinNo: 'Not merged.', reorgPartsJoinDone: 'Merged into Track {n}.', reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.', reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.' };   // spec draft 4, section 11 rule 9: Merge, not Join; Nest / Unnest, not Level in / out
     const wordOf = (k) => { const m = new RegExp('^\\s*' + k + ":\\s*(?:'((?:[^'\\\\]|\\\\.)*)'|\"([^\"]*)\")", 'm').exec(words); return m ? (m[1] ?? m[2]).replace(/\\'/g, "'") : null; };
     const wrong = Object.entries(want).filter(([k, v]) => wordOf(k) !== v).map(([k]) => k);
     const keys = new Set(); for (const s of READERS) for (const m of s.matchAll(/['"`](reorg[A-Z][A-Za-z0-9]*)['"`]/g)) keys.add(m[1]);
     const part = [...keys].filter((k) => { const c = new RegExp('^\\s*' + k + ":\\s*(['\"`])(.*?)\\1", 'm').exec(CANON); return c && /\bParts?\b/.test(c[2].replace(/\{part\}/g, '')) && wordOf(k) === null; });
     return { pass: wrong.length === 0 && part.length === 0 && keys.size > 60, detail: J({ wrong, part, keys: keys.size }) };
   });
+  t('ROOM', () => {
+    const last = (tail, prop) => { const hit = exact(rs, tail).map((x) => new RegExp('(?:^|[ ;])' + prop + ':\\s*(?:calc\\()?(\\d+(?:\\.\\d+)?)(?:px)?(?![\\d.%a-z])').exec(x.body)).filter(Boolean).pop(); return hit ? +hit[1] : NaN; };
+    const row = '.reorg-parts-list > li > .reorg-parts-row';
+    const pad = last(row, 'padding-left'), gap = last(row, 'gap'), num = last('.reorg-parts-num', 'width'), tag = last('.reorg-parts-tag', 'min-width'), more = last('.reorg-parts-more', 'width'), moreM = last('.reorg-parts-more', 'margin-right');
+    const left = pad + num + gap + tag + gap;
+    const li = '.reorg-parts-list > li[data-part-li]';
+    const grid = /display:\s*grid/.test(bodyOf(rs, li)) && /grid-template-columns:\s*minmax\(0, 1fr\) auto/.test(bodyOf(rs, li));
+    const under = /grid-row:\s*2/.test(bodyOf(rs, `${li} > button.reorg-parts-assets`)) && /grid-row:\s*1/.test(bodyOf(rs, `${li} > .reorg-parts-row`)) && /grid-row:\s*3/.test(bodyOf(rs, `${li} > .reorg-part-menu`));
+    return { pass: left <= 58 && more + moreM <= 22 && grid && under, detail: J({ pad, gap, num, tag, left, more, moreM, grid, under }) };
+  });
+  t('CUSTOM', () => {
+    const tag = '.reorg-parts-tag[data-colour-hex]';
+    const b = bodyOf(rs, `${tag}::before`), a = bodyOf(rs, `${tag}::after`), base = bodyOf(rs, tag);
+    const bar = /width:\s*3px/.test(b) && /background:\s*var\(--part-hex\)/.test(b) && /box-shadow:\s*0 0 0 1px var\(--part-hex-edge-dark\)/.test(b);
+    const code = /content:\s*'\[##\]'/.test(a) && /color:\s*var\(--text-hi\)/.test(base) && /background:\s*none/.test(base);
+    return { pass: bar && code, detail: J({ bar, code }) };
+  });
+  t('NODIM', () => { const bad = rs.filter((x) => { const m = /(?:^|[ ;])opacity:\s*([\d.]+)/.exec(x.body); return m && +m[1] < 1; }).map((x) => x.sel.slice(-50)); return { pass: bad.length === 0, detail: J({ bad }) }; });
+  t('SEAM', () => { const bad = rs.flatMap((x) => topSplit(x.sel)).filter((p) => p.includes('.wz-drawer-tab') && !p.includes('.wz-drawer-slide--left')); return { pass: bad.length === 0, detail: J({ bad: bad.slice(0, 3) }) }; });
+  t('HINT', () => { const b = bodyOf(rs, '.reorg-pubparts .reorg-parts-head'); const pass = /text-transform:\s*none/.test(b) && /letter-spacing:\s*normal/.test(b) && /font-family:\s*var\(--font-ui\)/.test(b); return { pass, detail: J({ b }) }; });
   return R;
 }
 
-const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS'];
+const KEYS = ['SCOPED', 'COVER', 'TAGS', 'CONTRAST', 'BAR', 'NOTINT', 'CHOICE', 'TABS', 'NODE', 'FIELD', 'BADGE', 'TK6', 'BRASS', 'NOARBOR', 'SITES', 'WORDS', 'ROOM', 'HINT', 'CUSTOM', 'NODIM', 'SEAM'];
 const base = suite(FRONT, TAGS, SLIVER, FTABS, WORDS);
 for (const k of KEYS) ok(`${k} on the real sheets, sites and words`, base[k] && base[k].pass, base[k] ? base[k].detail : 'not run');
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
@@ -204,6 +231,17 @@ const MUT = [
   ['Presets stay on MARKUP', 'SITES', 'sliver', (t) => t.replace('section, frontKindHead(theme))', () => "section, theme === 'plateau')")],
   ['Frame stays on MARKUP', 'SITES', 'sliver', (t) => t.replace('!frontKindHead(theme) && <PageSetupZone', () => "theme !== 'plateau' && <PageSetupZone")],
   ['the rule also takes Machina', 'SITES', 'ftabs', (t) => t.replace("theme === 'plateau' || theme === 'flux';", () => "theme === 'plateau' || theme === 'flux' || theme === 'machina';")],
+  ['the row goes back to its wide left', 'ROOM', 'front', (t) => t.replace('padding-left:calc(7px + var(--part-level, 0) * 14px)', () => 'padding-left:calc(12px + var(--part-level, 0) * 14px)')],
+  ['the row\'s "..." widens', 'ROOM', 'front', (t) => t.replace(`${SC} .reorg-parts-more{ width:20px; margin-right:0; }`, () => `${SC} .reorg-parts-more{ width:26px; margin-right:4px; }`)],
+  ['the badge goes back beside the name', 'ROOM', 'front', (t) => t.replace('> button.reorg-parts-assets{ grid-row:2; grid-column:1;', () => '> button.reorg-parts-assets{ grid-row:1; grid-column:2;')],
+  ['the Track row stops being a grid', 'ROOM', 'front', (t) => t.replace('li[data-part-li]{ display:grid;', () => 'li[data-part-li]{ display:flex;')],
+  ['the code goes back to the signal', 'TAGS', 'tags', (t) => t.replace('--reorg-tag-c-ink:#E7F4F1', () => '--reorg-tag-c-ink:#FF2E97')],
+  ['her own colour loses its code', 'CUSTOM', 'front', (t) => t.replace("content:'[##]'", () => "content:''")],
+  ['her own colour loses its edge', 'CUSTOM', 'front', (t) => t.replace('box-shadow:0 0 0 1px var(--part-hex-edge-dark)', () => 'box-shadow:none')],
+  ['a greyed control is dimmed again', 'NODIM', 'front', (t) => t.replace(`${SC} .reorg-colour-use[disabled]{`, () => `${SC} .reorg-colour-use[disabled]{ opacity:.4;`)],
+  ['a tab rule reaches the Back menu', 'SEAM', 'front', (t) => t + `\n${SC} .wz-drawer-tab[data-disabled='true']{ cursor:default; }`],
+  ['Merge goes back to Join', 'WORDS', 'words', (t) => t.replace("reorgPartJoin: 'Merge'", () => "reorgPartJoin: 'Join to the one above'")],
+  ['the hint goes back to caps', 'HINT', 'front', (t) => t.replace(`${SC} .reorg-pubparts .reorg-parts-head{ text-transform:none;`, () => `${SC} .reorg-pubparts .reorg-parts-head{ text-transform:uppercase;`)],
   ['a word is lost', 'WORDS', 'words', (t) => t.replace(/^\s*reorgColourThisPart:.*\n/m, () => '')],
 ];
 const IDX = { front: 0, tags: 1, sliver: 2, ftabs: 3, words: 4 };

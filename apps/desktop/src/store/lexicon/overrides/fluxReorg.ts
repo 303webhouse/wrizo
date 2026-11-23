@@ -98,6 +98,10 @@ export const FLUX_REORG_WORDS = {
   reorgTopConnectUnborn: 'Add a node first: a circuit is kept once it has one, and then it can join a doc.',
   reorgTopConnectNewHeld: 'A new doc would be made for this circuit. That is not switched on yet, so nothing changed.',
   reorgFrontLabel: 'Tools',
+  reorgPartIn: 'Nest',
+  reorgPartOut: 'Unnest',
+  reorgPartJoin: 'Merge',
+  reorgPartJoinNo: 'Not merged.',
   reorgFrontParts: 'Tracks',
   reorgColourThisPart: 'This track',
   reorgSchemeLine: 'Changes every Track\'s colours.',
@@ -129,6 +133,7 @@ export const FLUX_REORG_WORDS = {
   reorgPartsSplitCaret: 'Put the caret where the new Track starts, then split.',
   reorgPartsSplitNo: 'This Track can’t be split.',
   reorgPartsSplitDone: 'Split: the words after the caret are Track {n} now.',
+<<<<<<< HEAD
   reorgPartJoinCarries: 'Not joined: this Track holds ink, cards, links or a Operator thread, and joining would drop them.',
   reorgPartJoinScript: 'Not joined: a screenplay Track has no plain text to join.',
   reorgPartsJoinDone: 'Joined onto Track {n}.',
@@ -138,6 +143,11 @@ export const FLUX_REORG_WORDS = {
   reorgSessionGoal: 'Quota',
   reorgSessionTimer: 'Clock',
   reorgSessionProgress: 'Load',
+=======
+  reorgPartJoinCarries: 'Not merged: this Track holds ink, nodes, links or an Operator thread, and merging would drop them.',
+  reorgPartJoinScript: 'Not merged: a screenplay Track has no plain text to merge.',
+  reorgPartsJoinDone: 'Merged into Track {n}.',
+>>>>>>> b07d53541dcc8a968e1a9c0fc9bb4273ec611bd0
 } satisfies Partial<Record<DeskTermId, string>>;
 
 /** The reorg strings this table deliberately leaves at their canonical words, by the Wrizors' ruling. */

@@ -21,7 +21,7 @@
 :root[data-flux3][data-theme='flux'] .reorg-part-acts{ display:flex; flex-wrap:wrap; gap:4px 12px; }
 :root[data-flux3][data-theme='flux'] .reorg-part-acts > button, :root[data-flux3][data-theme='flux'] .reorg-parts-tool, :root[data-flux3][data-theme='flux'] .reorg-parts-undo{ padding:0; border:0; background:none; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-part-acts > button:hover:not([disabled]), :root[data-flux3][data-theme='flux'] .reorg-parts-tool:hover, :root[data-flux3][data-theme='flux'] .reorg-parts-undo:hover{ text-decoration:underline; text-underline-offset:3px; }
-:root[data-flux3][data-theme='flux'] .reorg-part-acts > button[disabled]{ color:var(--text-mid); opacity:.55; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-part-acts > button[disabled]{ color:var(--text-low); cursor:default; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-part-acts > button, .reorg-parts-tool, .reorg-parts-undo, .reorg-part-swatch):focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 :root[data-flux3][data-theme='flux'] .reorg-part-colours{ display:flex; gap:6px; }
 :root[data-flux3][data-theme='flux'] .reorg-part-swatch{ width:18px; height:18px; padding:0; box-sizing:border-box; border:1px solid var(--text-low); background:transparent; cursor:pointer; }
@@ -35,7 +35,7 @@
 :root[data-flux3][data-theme='flux'] .reorg-part-arrow.is-down{ bottom:4px; }
 :root[data-flux3][data-theme='flux'] .reorg-part-arrow:hover:not([disabled]){ background:var(--ink-900); }
 :root[data-flux3][data-theme='flux'] .reorg-part-arrow:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
-:root[data-flux3][data-theme='flux'] .reorg-part-arrow[disabled]{ opacity:.35; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-part-arrow[disabled]{ color:var(--text-low); cursor:default; }
 :root[data-flux3][data-theme='flux'] .reorg-part-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:26px; padding-top:12px; border-top:1px solid var(--ink-border); font-family:var(--font-chromeLabel, monospace); font-size:11px; color:var(--text-mid); user-select:none; }
 :root[data-flux3][data-theme='flux'] .reorg-part-foot-go{ border:0; background:none; padding:0; font:inherit; color:inherit; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-part-foot-go.is-next{ color:var(--line-active); }
@@ -83,18 +83,17 @@
 :root[data-flux3][data-theme='flux'] .reorg-text-fold-body[hidden]{ display:none; }
 :root[data-flux3][data-theme='flux'] .reorg-text-fold .reorg-text-fold{ margin-left:10px; }
 :root[data-flux3][data-theme='flux'] .reorg-text-symbols{ flex-wrap:wrap; }
-:root[data-flux3][data-theme='flux'] .wz-drawer-tab[data-disabled='true']{ opacity:.4; cursor:default; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-note{ margin:0 0 10px; font-size:12px; line-height:1.45; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-one{ margin:0; font-size:12px; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-row{ display:flex; align-items:center; gap:8px; min-height:28px; box-sizing:border-box; border-top:1px solid var(--ink-border); }
-:root[data-flux3][data-theme='flux'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ opacity:.4; }
+:root[data-flux3][data-theme='flux'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-row input{ flex:none; margin:0; width:15px; height:15px; accent-color:var(--line-active); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-n{ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-move{ flex:none; box-sizing:border-box; width:24px; height:24px; padding:0; border:1px solid var(--text-low); border-radius:0; background:transparent; color:var(--text-hi); font-size:13px; line-height:1; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-move:hover:not([disabled]){ background:var(--ink-900); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-move:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
-:root[data-flux3][data-theme='flux'] .reorg-pubparts-move[disabled]{ opacity:.35; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-pubparts-move[disabled]{ color:var(--text-low); border-color:var(--ink-border); cursor:default; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-group{ display:flex; flex-direction:column; padding:2px 0 4px; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-group + .reorg-dockind-group{ border-top:1px solid var(--ink-border-strong); margin-top:2px; padding-top:6px; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-grouphead{ padding:2px 12px 4px 0; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); }
@@ -115,7 +114,7 @@
 :root[data-flux3][data-theme='flux'] .reorg-colour-swatch:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:6px; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open){ align-self:flex-start; padding:0; background:none; border:0; font:inherit; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open):hover:not([disabled]){ text-decoration:underline; text-underline-offset:3px; }
-:root[data-flux3][data-theme='flux'] .reorg-colour-use[disabled]{ opacity:.4; cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-colour-use[disabled]{ color:var(--text-low); cursor:default; }
 :root[data-flux3][data-theme='flux'] .reorg-colour-custom{ display:flex; align-items:center; gap:8px; }
 :root[data-flux3][data-theme='flux'] .reorg-colour-hex{ width:96px; height:26px; box-sizing:border-box; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .reorg-colour-preview{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:26px; box-sizing:border-box; border:1px solid var(--part-hex-edge-dark, var(--ink-border-strong)); font-size:12px; color:var(--text-mid); }
@@ -126,10 +125,12 @@
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab:hover{ color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-on='true']{ position:relative; color:var(--text-hi); border-color:var(--line-active); }
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* a greyed tab (MARKUP at Uplink) is text-low at full strength, hovered or not: nothing is dimmed (spec draft 4, section 11 rule 5) */
+:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true'], :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true']:hover{ color:var(--text-low); cursor:default; }
 :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
 /* a Track's tag: a bracketed code and a 3 px bar in the slot's signal, no chip; the DOM holds the slot's letter (hidden by font-size:0), the code is drawn from the slot's token */
-:root[data-flux3][data-theme='flux'] .reorg-parts-tag{ width:auto; min-width:30px; justify-content:flex-start; }
-:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour]{ box-sizing:border-box; padding-left:4px; background:none; border-style:solid; border-width:0 0 0 3px; border-color:var(--text-low); font-size:0; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-tag{ width:auto; min-width:26px; justify-content:flex-start; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour]{ box-sizing:border-box; padding-left:3px; background:none; border-style:solid; border-width:0 0 0 3px; border-color:var(--text-low); font-size:0; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='a']{ color:var(--reorg-tag-a-ink); border-left-color:var(--reorg-tag-a-edge); }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='b']{ color:var(--reorg-tag-b-ink); border-left-color:var(--reorg-tag-b-edge); }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='c']{ color:var(--reorg-tag-c-ink); border-left-color:var(--reorg-tag-c-edge); }
@@ -142,8 +143,10 @@
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='d']::after{ content:var(--reorg-tag-d-num); font-size:10px; line-height:1; letter-spacing:.04em; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='e']::after{ content:var(--reorg-tag-e-num); font-size:10px; line-height:1; letter-spacing:.04em; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour='f']::after{ content:var(--reorg-tag-f-num); font-size:10px; line-height:1; letter-spacing:.04em; }
-/* her own colour (Custom...): no code to draw, so the 3 px bar alone, in her colour, inside the 1 px edge that keeps it visible on the dark panel */
-:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour-hex]{ flex:none; box-sizing:border-box; width:5px; min-width:5px; margin-right:25px; padding:0; background:var(--part-hex); border:1px solid var(--part-hex-edge-dark); font-size:0; }
+/* her own colour (Custom...): its 3 px bar, inside the 1 px edge that holds it on the dark panel (rule 1), with the code [##] (spec draft 4, section 6) */
+:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour-hex]{ position:relative; box-sizing:border-box; padding-left:7px; background:none; border:0; color:var(--text-hi); font-size:0; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour-hex]::before{ content:''; position:absolute; left:1px; top:1px; bottom:1px; width:3px; background:var(--part-hex); box-shadow:0 0 0 1px var(--part-hex-edge-dark); }
+:root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour-hex]::after{ content:'[##]'; font-size:10px; line-height:1; letter-spacing:.04em; }
 /* the row's small swatches and the picker's: the same code-and-bar language, no filled chips */
 :root[data-flux3][data-theme='flux'] .reorg-part-swatch[data-colour]{ background:none; border:1px solid var(--text-low); border-left-width:3px; }
 :root[data-flux3][data-theme='flux'] .reorg-part-swatch[data-colour='a']{ border-left-color:var(--reorg-tag-a-edge); }
@@ -176,6 +179,18 @@
 :root[data-flux3][data-theme='flux'] .reorg-parts-row.is-here::before{ content:''; position:absolute; left:0; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
 :root[data-flux3][data-theme='flux'] .reorg-parts-row.is-here .reorg-parts-name{ font-weight:600; text-decoration:none; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .reorg-parts-words{ color:var(--text-low); }
+/* a Track's name keeps the row (the Wrizors' Flux pass 1, REAL 4): the number, the code and the row's "..." stand closer so the name has the room */
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li > .reorg-parts-row{ gap:5px; padding-left:calc(7px + var(--part-level, 0) * 14px); padding-right:2px; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-num{ width:13px; font-size:10.5px; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-more{ width:20px; margin-right:0; }
+/* Uplink's hint is a sentence: sentence case in the UI face (flux-reorg-words B), not the list head's caps */
+:root[data-flux3][data-theme='flux'] .reorg-pubparts .reorg-parts-head{ text-transform:none; letter-spacing:normal; font-family:var(--font-ui); font-size:12px; line-height:1.45; color:var(--text-low); }
+/* the link badge stands UNDER the name (run 45115349149: beside it, a linked Track's name had 38 px of its 77): the row and its "..." on the first line, the badge on the second under the name, the row's menu below; a Track with no links stays one line */
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li]{ display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-parts-row{ grid-row:1; grid-column:1; width:100%; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-parts-more{ grid-row:1; grid-column:2; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > button.reorg-parts-assets{ grid-row:2; grid-column:1; justify-self:start; margin:-5px 0 4px calc(51px + var(--part-level, 0) * 14px); }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-part-menu{ grid-row:3; grid-column:1 / -1; }
 /* the link badge: [chain n] in text-low, no box; it opens INPUTS at that Track */
 :root[data-flux3][data-theme='flux'] button.reorg-parts-assets{ border:0; padding:0 2px; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] button.reorg-parts-assets::before{ content:'['; }
