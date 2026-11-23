@@ -21,13 +21,14 @@ const q = (a, p) => { const s = a.slice().sort((x, y) => x - y); return s.length
 
 const INSTRUMENT = () => `(() => {
   if (window.__seh) return true;
-  const S = window.__seh = { sel: 0, bytes: 0 };
-  document.addEventListener('keydown', () => { S.sel = 0; S.bytes = 0; }, true);
+  const S = window.__seh = { sel: 0, bytes: 0, big: [] };
+  document.addEventListener('keydown', () => { S.sel = 0; S.bytes = 0; S.big = []; }, true);
   for (const m of ['removeAllRanges', 'addRange']) { const o = Selection.prototype[m]; Selection.prototype[m] = function (...a) { const t = performance.now(); try { return o.apply(this, a); } finally { S.sel += performance.now() - t; } }; }
   const d = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
-  Object.defineProperty(Element.prototype, 'innerHTML', { configurable: true, get() { return d.get.call(this); }, set(v) { S.bytes += String(v).length; d.set.call(this, v); } });
+  Object.defineProperty(Element.prototype, 'innerHTML', { configurable: true, get() { return d.get.call(this); }, set(v) { const n = String(v).length; S.bytes += n; if (n > 2000 && S.big.length < 3) S.big.push({ n, el: (this.className || this.tagName) + '', at: (new Error().stack || '').split('
+').slice(2, 6).map((l) => l.trim().replace(/^at /, '').slice(0, 90)).join(' < ') }); d.set.call(this, v); } });
   return true; })()`;
-const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ sel: window.__seh.sel, bytes: window.__seh.bytes }), 0)))";
+const AFTER = "new Promise((res) => requestAnimationFrame(() => setTimeout(() => res({ sel: window.__seh.sel, bytes: window.__seh.bytes, big: window.__seh.big }), 0)))";
 
 try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
@@ -61,7 +62,7 @@ try { await withHarness(async (app) => {
       for (const [kind, ch] of [['letter', 'a'], ['letter', 'b'], ['space', ' '], ['letter', 'c'], ['enter', NL]]) { await app.typeKeys(ch); rows[kind].push(await ev(AFTER)); await sleep(50); }
     }
     const med = (k, f) => q(rows[k].map(f), 0.5);
-    const bytes = { letter: med('letter', (r) => r.bytes), space: q(rows.space.map((r) => r.bytes), 0.95), enter: q(rows.enter.map((r) => r.bytes), 0.95) };
+    const bytes = { letter: med('letter', (r) => r.bytes), space: q(rows.space.map((r) => r.bytes), 0.95), enter: q(rows.enter.map((r) => r.bytes), 0.95), bigWrites: rows.space.concat(rows.enter).flatMap((r) => r.big || []).slice(0, 3) };
     ok(`SE1 [${words} words] a Space writes at most 2,000 bytes of html into the page (p95 over 12), a letter writes ${bytes.letter}`, bytes.space <= 2000, JSON.stringify(bytes));
     ok(`SE2 [${words} words] an Enter writes at most 2,000 bytes of html into the page (p95 over 12)`, bytes.enter <= 2000, JSON.stringify(bytes));
     if (words === 50000) {
@@ -91,6 +92,11 @@ try { await withHarness(async (app) => {
   const stored = await ev("document.querySelector('.forward-only-editor').textContent.replace(/\\u200b/g, '')");
   const strip = (s) => String(s).replace(/\s+/g, ' ').trim();
   ok('SE5 the page reopened from storage shows the same words as the page that was typed into (nothing lost or doubled by appending; struck words are history and stay)', strip(typedText).startsWith(strip(stored).slice(0, 400)) && Math.abs(strip(typedText).length - strip(stored).length) < 60, JSON.stringify({ typed: strip(typedText).length, stored: strip(stored).length }));
+  // the reader can go red: a probe that writes the host's html whole, as React did
+  await ev(INSTRUMENT());
+  await ev("(() => { const ed = document.querySelector('.forward-only-editor'); window.__seh.bytes = 0; ed.innerHTML = ed.innerHTML; return true; })()");
+  const m = await ev('window.__seh.bytes');
+  ok('MUT-SE1 the SE1 reader goes RED on a whole-page write: setting the host\'s html as React did counts well over 2,000 bytes through the same counter', m > 2000, String(m));
   // SE6 (the rework of #110, Fable Nov 23): THE FIRST WORD OF A NEW PAGE READS BACK. The page is born empty, so the host's first html is '' (no word span); React is never handed another, so a letter had nowhere to land until the first Space
   // (arbor-redesign-groups G1, fx15 S1, item121 S3, wa-red-70 FW02/FW12, c13-12f-sprout-invite all read the first word back empty on #110's tip).
   const freshId = await ev("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
@@ -104,11 +110,6 @@ try { await withHarness(async (app) => {
   await app.typeKeys(' world'); await sleep(300);
   const w2 = await ev("document.querySelector('.forward-only-editor').textContent.replace(/\u200b/g, '')");
   ok('SE6b and the words after it (a Space between) read back whole', w2 === 'hello world', JSON.stringify(w2));
-  // the reader can go red: a probe that writes the host's html whole, as React did
-  await ev(INSTRUMENT());
-  await ev("(() => { const ed = document.querySelector('.forward-only-editor'); window.__seh.bytes = 0; ed.innerHTML = ed.innerHTML; return true; })()");
-  const m = await ev('window.__seh.bytes');
-  ok('MUT-SE1 the SE1 reader goes RED on a whole-page write: setting the host\'s html as React did counts well over 2,000 bytes through the same counter', m > 2000, String(m));
   void id;
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); checks.push({ name: 'HARNESS', pass: false, detail: String(e && e.message || e) }); }
 
