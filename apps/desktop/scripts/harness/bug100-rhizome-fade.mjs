@@ -16,6 +16,9 @@
 // FAST    F0F / F1F / FAF-<room> (Nov 23: Chat 1's box run at 90 ms showed no fade tail; rhizome-latency's comes from fade keys typed 25 ms apart) the same, at
 //             rhizome-latency's own pace: 22 control keys 25 ms apart at rest, the crossing, 14 keys 85 ms apart through the hold, then 22 keys 25 ms apart
 //             into the fade, then 10 at 90 ms
+// (information) PROF-<room>  (Nov 23: long-animation-frame entries never arrive on this Chrome) in the fast pace's first round, the CPU profile of the control
+//             burst at rest and of the fade burst: the dearest functions by self time in each, each with a snippet of the bundle at its position (the
+//             bundle is minified, so the snippet's strings name the code)
 // (information) FA-<room>  the five dearest fade keys with the long animation frame that holds each (script, style and layout, render, top scripts)
 //
 // Run (repo root; Actions, or a box turn by Chat 1): node apps/desktop/scripts/harness/bug100-rhizome-fade.mjs
@@ -33,6 +36,29 @@ const show = (st) => ({ n: st.n, median: r1(st.median), p95: r1(st.p95), max: r1
 const overShare = (xs) => { const v = (xs || []).filter((x) => x != null); return v.length ? v.filter((x) => x > MAX_MS).length / v.length : 0; };
 const f1 = (ctl, fade) => ctl.cost.max != null && fade.cost.max != null && fade.cost.max <= ctl.cost.max + SLACK && fade.over <= ctl.over + 0.05;
 
+// PROF: Chrome's sampling profiler over one burst; self time per function, the dearest first
+async function profStart(app) { await app.cdp('Profiler.enable'); await app.cdp('Profiler.setSamplingInterval', { interval: 200 }); await app.cdp('Profiler.start'); }
+async function profStop(app) {
+  const { profile } = await app.cdp('Profiler.stop');
+  if (!profile || !profile.nodes) return null;
+  const dt = profile.timeDeltas || []; const hits = new Map();
+  for (let i = 0; i < (profile.samples || []).length; i += 1) hits.set(profile.samples[i], (hits.get(profile.samples[i]) || 0) + (dt[i] || 0));
+  const byFn = new Map(); let total = 0;
+  for (const n of profile.nodes) { const us = hits.get(n.id) || 0; total += us; const c = n.callFrame; if (c.functionName === '(idle)' || c.functionName === '(program)') continue;
+    const key = `${c.functionName || '(anon)'}|${String(c.url).split('/').pop()}|${c.lineNumber}|${c.columnNumber}`; byFn.set(key, (byFn.get(key) || 0) + us); }
+  const top = [...byFn.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k, us]) => { const [fn, file, line, col] = k.split('|'); return { fn, file, line: +line, col: +col, ms: Math.round(us / 100) / 10 }; });
+  return { totalMs: Math.round(total / 100) / 10, top };
+}
+async function withSnippets(app, prof) {
+  if (!prof) return prof;
+  const want = prof.top.filter((x) => /\.js$/.test(x.file)).map((x) => [x.file, x.line, x.col]);
+  const snips = await app.evalJs(`(async () => { const want = ${JSON.stringify(want)}; const cache = {}; const out = [];
+    for (const [file, line, col] of want) { const s = [...document.scripts].map((x) => x.src).find((u) => u.endsWith('/' + file)); if (!s) { out.push(null); continue; }
+      if (!cache[s]) cache[s] = (await (await fetch(s)).text()).split('\\n'); const L = cache[s][line] || ''; out.push(L.slice(Math.max(0, col - 20), col + 140)); }
+    return out; })()`).catch(() => null);
+  let j = 0; for (const x of prof.top) if (/\.js$/.test(x.file)) x.snippet = snips ? snips[j++] : null;
+  return prof;
+}
 const ARM = `(() => {
   window.__k = []; window.__loaf = []; window.__fl = []; let cur = null;
   if (window.__off) window.__off();
@@ -67,6 +93,7 @@ await withHarness(async (app) => {
   for (const pace of ['steady', 'fast']) for (const room of ['day', 'night']) {
   const tag = pace === 'fast' ? 'F' : '';
     const rounds = [];
+    let profCtl = null, profFade = null;
     for (let r = 0; r < ROUNDS; r += 1) {
       const id = `b100f-${pace}-${room}-${r}`;
       await app.goto('/');
@@ -86,11 +113,15 @@ await withHarness(async (app) => {
       await app.evalJs(ARM);
       const CTL = pace === 'fast' ? 22 : CONTROL;
       if (pace === 'fast') {
+        if (r === 0) await profStart(app);
         for (let i = 0; i < CTL; i += 1) { await app.typeKeys('a'); await sleep(25); }
+        if (r === 0) profCtl = await profStop(app);
         await sleep(400); await app.typeKeys(' '); await sleep(GAP); await app.typeKeys('x'); await sleep(85);
         for (let i = 0; i < 14; i += 1) { await app.typeKeys('y'); await sleep(85); }
         await app.waitFor("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'fading'", { label: 'the fade', timeout: 4000 }).catch(() => {});
+        if (r === 0) await profStart(app);
         for (let i = 0; i < 22; i += 1) { await app.typeKeys('y'); await sleep(25); }
+        if (r === 0) profFade = await withSnippets(app, await profStop(app));
         for (let i = 0; i < 10; i += 1) { await app.typeKeys('y'); await sleep(GAP); }
       } else {
       for (let i = 0; i < CONTROL; i += 1) { await app.typeKeys('a'); await sleep(GAP); }
@@ -119,6 +150,7 @@ await withHarness(async (app) => {
       const f = (y.loaf || []).find((e) => e.start <= y.t0 + 20 && e.end >= y.t0);
       return { cost: r1(y.cost), busy: r1(y.busy), frame: r1(y.frame), ms: r1(y.ms), loaf: f ? { dur: r1(f.dur), block: r1(f.block), script: r1(f.script), styleLayout: r1(f.styleLayout), render: r1(f.render), scripts: f.scripts } : null };
     });
+    if (pace === 'fast') ok(`PROF-${room} (information) the CPU profile of the control burst at rest and of the fade burst (self time, the dearest first)`, true, { control: profCtl, fade: profFade });
     ok(`FA${tag}-${room} (information) the five dearest fade keys and the long animation frame that holds each`, true, dear);
   }
   const any = fades['steady.day'] || fades['steady.night'];
@@ -127,8 +159,8 @@ await withHarness(async (app) => {
 });
 
 // the F1 and FA lines carry the numbers and the cause, so they print whether they pass or not
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^F[1A]F?-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
-const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A]F?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
+const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG100-RHIZOME-FADE VERIFY: PASS (${checks.length} checks)` : `\nBUG100-RHIZOME-FADE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
