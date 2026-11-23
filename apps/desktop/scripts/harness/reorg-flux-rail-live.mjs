@@ -202,6 +202,14 @@ await withHarness(async (app) => {
     if (!(await app.evalJs(`!!document.querySelector('.wz-cascade-panel[data-visible="true"][data-category="${cat}"]:not([data-leaving="true"])')`))) await app.evalJs(door(cat));
     await sleep(700);
   };
+  // DRIVER FIX (Nov 23, Actions 45122612667 on a6b3f6a9: every count equalled its list, but CIRCUITS listed the first Drive, because after a RELOAD LandingGate follows the page before
+  // sign-in resolves, so the signed-in writer's place stays where it was; a shared store behaviour, reported, not this ticket's). Travel to another page and back, as a writer does, so the
+  // place is her Drive and CIRCUITS has rows to count. No assertion changes.
+  for (const id of ['fl-2', 'fl-1']) {
+    await app.evalJs(`location.hash = '#/page/${id}'; null`);
+    await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('[data-reorg-rail]')", { label: `the page ${id}`, timeout: 15000 }).catch(() => {});
+    await sleep(800);
+  }
   const reads = {};
   for (const cat of Object.keys(LISTS)) {
     await openDoor(cat);
