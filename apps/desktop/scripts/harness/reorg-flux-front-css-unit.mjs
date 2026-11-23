@@ -197,7 +197,7 @@ const MUT = [
   ['the kind menu drifts off node dress', 'NODE', 'front', (t) => t.replace(/(\.reorg-dockind-menu\{[^}]*background:)#04141A/, (m, a) => a + '#0A1814')],
   ['the hex field drifts', 'FIELD', 'front', (t) => t.replace('background:#020C10', () => 'background:#041214')],
   ['the badge gets a box', 'BADGE', 'front', (t) => t.replace(/(button\.reorg-parts-assets\{[^}]*)border:0/, (m, a) => a + 'border:1px solid #7EB4C4')],
-  ['a green-grey tier enters the sheet', 'TK6', 'front', (t) => t.replace('#7EB4C4', () => '#8FB4AC')],
+  ['a green-grey tier enters the sheet', 'TK6', 'front', (t) => t.replace('border:1px solid #7EB4C4', () => 'border:1px solid #8FB4AC')],
   ['brass becomes an edge', 'BRASS', 'front', (t) => t.replace(`${SC} .reorg-dockind-btn{`, () => `${SC} .reorg-dockind-btn{ border-color:var(--orange);`)],
   ["Arbor's olive comes across", 'NOARBOR', 'front', (t) => t.replace('var(--line-active)', () => '#56632E')],
   ['the first tab goes back to TEXT', 'SITES', 'sliver', (t) => t.replace("text: frontKindHead(sliverTheme) ? 'railFormat' : 'inkModeText'", () => "text: sliverTheme === 'plateau' ? 'railFormat' : 'inkModeText'")],
