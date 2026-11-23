@@ -114,20 +114,22 @@
 :root[data-flux3][data-theme='flux'] .reorg-colour-swatch:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:6px; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open){ align-self:flex-start; padding:0; background:none; border:0; font:inherit; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-colour-customize, .reorg-colour-none, .reorg-colour-use, .reorg-part-colour-open):hover:not([disabled]){ text-decoration:underline; text-underline-offset:3px; }
-:root[data-flux3][data-theme='flux'] .reorg-colour-use[disabled]{ color:var(--text-low); cursor:default; }
+:root[data-flux3][data-theme='flux'] .reorg-colour-use{ height:26px; padding:0 10px; background:#04141A; border:1px solid #7EB4C4; color:var(--text-hi); align-self:auto; }
+:root[data-flux3][data-theme='flux'] .reorg-colour-use:hover:not([disabled]){ border-color:var(--line-active); text-decoration:none; }
+:root[data-flux3][data-theme='flux'] .reorg-colour-use[disabled]{ color:#5F8F95; border-color:#5F8F95; cursor:default; }
 :root[data-flux3][data-theme='flux'] .reorg-colour-custom{ display:flex; align-items:center; gap:8px; }
 :root[data-flux3][data-theme='flux'] .reorg-colour-hex{ width:96px; height:26px; box-sizing:border-box; padding:0 6px; background:none; border:1px solid var(--ink-border-strong); border-radius:0; font-family:var(--font-chromeLabel, monospace); font-size:12px; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .reorg-colour-preview{ display:inline-flex; align-items:center; justify-content:center; width:32px; height:26px; box-sizing:border-box; border:1px solid var(--part-hex-edge-dark, var(--ink-border-strong)); font-size:12px; color:var(--text-mid); }
 
 /* ---- FLUX'S DRESS (flux-reorg-spec sections 0, 4 and 6) ---- */
 /* the tabs across the hand's top edge: caps in the chrome face; the others in text-low; the open one wears the choice mark, a cyan edge and the thin 3 x 24 brass bar; focus is cyan ("live / here"), never brass */
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab{ font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); border-color:var(--ink-border-strong); }
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab:hover{ color:var(--text-hi); }
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-on='true']{ position:relative; color:var(--text-hi); border-color:var(--line-active); }
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
-/* a greyed tab (MARKUP at Uplink) is text-low at full strength, hovered or not: nothing is dimmed (spec draft 4, section 11 rule 5) */
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true'], :root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true']:hover{ color:var(--text-low); cursor:default; }
-:root[data-flux3][data-theme='flux'] .wz-drawer-slide--left .wz-drawer-tab:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab{ font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-low); border-color:var(--ink-border-strong); }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab:hover{ color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab[data-on='true']{ position:relative; color:var(--text-hi); border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab[data-on='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* a greyed tab (MARKUP at Uplink) looks locked: #5F8F95 (5.2:1), a quieter edge, at full strength, hovered or not (rule 5; the Wrizors' pass 1, NIT 7) */
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true'], :root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab[data-disabled='true']:hover{ color:#5F8F95; border-color:var(--ink-border); cursor:default; }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-drawer-slide--left .wz-drawer-tab:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
 /* a Track's tag: a bracketed code and a 3 px bar in the slot's signal, no chip; the DOM holds the slot's letter (hidden by font-size:0), the code is drawn from the slot's token */
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag{ width:auto; min-width:26px; justify-content:flex-start; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-tag[data-colour]{ box-sizing:border-box; padding-left:3px; background:none; border-style:solid; border-width:0 0 0 3px; border-color:var(--text-low); font-size:0; }
@@ -206,5 +208,16 @@
 :root[data-flux3][data-theme='flux'] .reorg-colour-hex{ background:#020C10; border:1px solid #5F8F95; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .reorg-colour-hex:focus{ outline:none; border-color:var(--line-active); }
 :root[data-flux3][data-theme='flux'] .reorg-colour-custom:has(.reorg-colour-hex:focus)::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+/* THE ONE FLUX TICK (the Wrizors' Front pass 1, REAL; INK's Back pass 2, REAL 5: shared): all four of the reorg's checkboxes, never the browser's: node dress, a 1 px #7EB4C4 edge, a cyan tick */
+:root[data-flux3][data-theme='flux'] :is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox']{ -webkit-appearance:none; appearance:none; position:relative; flex:none; box-sizing:border-box; width:15px; height:15px; margin:0; background:#04141A; border:1px solid #7EB4C4; border-radius:0; cursor:pointer; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox']:checked::after{ content:''; position:absolute; left:4px; top:1px; width:4px; height:8px; box-sizing:border-box; border:solid var(--line-active); border-width:0 2px 2px 0; transform:rotate(45deg); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox']:hover:not([disabled]){ border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] :is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox']:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
+:root[data-flux3][data-theme='flux'] :is(.reorg-pubparts-row, .reorg-pub-tick, .reorg-attach-row, .reorg-plan-include) input[type='checkbox'][disabled]{ border-color:#5F8F95; cursor:default; }
+/* the COMMANDS buttons' edges reach 3:1 in the Front menu only (the ship must, pass 1): #5F8F95, 5.2:1 on the panel; hover and focus are cyan, the pressed one keeps its choice colour */
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-action-btn{ border-color:#5F8F95; }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-action-btn:hover{ border-color:var(--line-active); }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-action-btn[aria-pressed='true']{ border-color:var(--choice); }
+:root[data-flux3][data-theme='flux'] .desk-frame-sliver-anchor:has(#wz-sliver-tab-parts) .wz-action-btn:focus-visible{ outline:1px solid var(--line-active); outline-offset:1px; }
 /* every control's focus ring is cyan ("live / here") */
 :root[data-flux3][data-theme='flux'] :is(.reorg-parts-row, .reorg-dockind-btn, .reorg-parts-structure-btn, .reorg-text-fold-btn):focus-visible{ outline:1px solid var(--line-active); outline-offset:-2px; }

@@ -104,7 +104,7 @@ export const FLUX_REORG_WORDS = {
   reorgPartJoinNo: 'Not merged.',
   reorgFrontParts: 'Tracks',
   reorgColourThisPart: 'This track',
-  reorgSchemeLine: 'Changes every Track\'s colours.',
+  reorgSchemeLine: 'Changes every Track\'s colours in this Doc.',
   reorgColourHex: 'Hex colour',
   reorgPresetGroupWeb: 'Web and journalism',
   reorgPartsHead: 'Tracks ({n})',
