@@ -401,6 +401,16 @@ export function ScriptEditor({ id }: { id: string }) {
     if (e.key === 'Backspace' && collapsed && offset === 0 && activeIndex > 0) {
       e.preventDefault();
       const prevIndex = activeIndex - 1;
+      // SCRIPT #3 (Fable, Nov 23): into a blank line above, the blank goes and the written line keeps its own type, as Delete does
+      if ((elements[prevIndex]?.text.trim().length ?? 0) === 0 && text.trim().length > 0) {
+        setElements(prev => {
+          const next = prev.map((el, i) => (i === activeIndex ? { ...el, text } : el));
+          next.splice(prevIndex, 1);
+          return next;
+        });
+        moveActive(prevIndex, 'start');
+        return;
+      }
       const boundary = elements[prevIndex]?.text.length ?? 0;
       setElements(prev => {
         // `text` is read from the live DOM, the ground truth of what is typed right now [ScriptEditor §9]
