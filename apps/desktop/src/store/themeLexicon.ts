@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme, type ThemeId } from './theme';
-import { REORG } from '../reorg/flag';
+import { reorgFor } from '../reorg/flag';
 import { ARBOR_CANVAS } from './lexicon/overrides/arbor';
 
 // TH1 Slice 1 — lexicon projection (canon §5). Display projection ONLY: data,
@@ -78,7 +78,7 @@ const OVERRIDES: Partial<Record<ThemeId, Partial<Record<TermId, Partial<TermForm
     binder: { one: 'Folder', many: 'Folders' },
     box: { one: 'Block', many: 'Blocks' },
     // the reorg (?reorg=1 only; reorg-word-changes.md 2a, Nick Nov 14): Machina's surface is Board, written out so it never falls through
-    board: REORG ? { one: 'Board', many: 'Boards' } : { one: 'Plan', many: 'Plans' },
+    board: reorgFor('machina') ? { one: 'Board', many: 'Boards' } : { one: 'Plan', many: 'Plans' },
     journal: { one: 'Notebook', many: 'Notebooks' },
     milestone: { one: 'Deliverable', many: 'Deliverables' },
     freewrite: { one: 'Sprint', many: 'Sprints' },

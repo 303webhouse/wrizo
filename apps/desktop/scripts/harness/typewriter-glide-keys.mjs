@@ -51,6 +51,11 @@ await withHarness(async (app) => {
     await sleep(600);
     await app.evalJs(`(() => { const ed = document.querySelector('${ED}'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false);
       const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()`);
+    // STAGING CHANGED 2026-11-19 (#113, Fable's ruling "opening lands at the writing line at once"; no assertion below is touched): these scenarios used to GET their glide in flight with the view off the
+    // top from the OPENING staircase (the page opened at the top owing 30 lines, and the typed burst rode on that debt, past scrollTop 100). The page now opens AT the writing line, so the writer is
+    // put where she would be - at the end of her page, caret there - and the burst follows her from there (a glide in flight, the view well off the top). Original staging: nothing here.
+    await app.evalJs(`(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = sc.scrollHeight; return true; })()`);
+    await sleep(500);
     // the sampler (frames), and the DROP: the box lands on the top (what a key's scroll, or the re-render's clamp, does). It runs IN THE PAGE - for a key, a task after its keydown;
     // for the control, called at once - so it lands while the glide is still travelling (a glide is 160 ms; every round trip from here costs a good part of that). It records
     // whether a glide was in flight at that instant (the last of step/land in the engine's trace is a step) and where the box was.

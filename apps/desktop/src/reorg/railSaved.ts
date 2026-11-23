@@ -1,4 +1,5 @@
 import { REORG } from './flag';
+import { reorgInMachina } from './useReorg';
 import { subscribeSyncStatus } from '../store/sync';
 import { RAIL_KEY, onRailReset } from './railSavedKey';
 
@@ -15,7 +16,8 @@ import { RAIL_KEY, onRailReset } from './railSavedKey';
 // fact meet, and the later one wins. The server compares-and-swaps the merged record (apps/server/src/rail.ts), so an interleaved GET/PUT is
 // refused (409) and merged again rather than written over, and it drops a Project deleted for good, naming it in `dropped`.
 //
-// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on.
+// SWITCH OFF, NOTHING HAPPENS: this module reads no storage, writes none and never calls the server unless REORG is on. OUTSIDE MACHINA (the
+// switch-over, Nov 20): it writes none and calls no server either (persist and syncRail start on reorgInMachina).
 
 export type PinView = 'boxes' | 'list';
 export interface RailPin { order: number; at: string; removedAt?: string }
@@ -162,7 +164,7 @@ function notify(): void {
 // read, merge, write: another window of this device may have written since (its acts are kept, never written over). Written ONLY when what it
 // holds changed: a rail she never touched leaves storage exactly as it was (no key at all), and a round that learned nothing writes nothing.
 function persist(): void {
-  if (!REORG) return;
+  if (!reorgInMachina()) return;
   const stored = readMirror();
   rail = mergeRail(rail, stored.rail);
   pending = livePending({ ...stored.pending, ...pending });
@@ -324,7 +326,7 @@ function forget(ids: unknown): void {
 
 /** One round with the server. Offline, signed out, or a server without the routes: the local copy governs and the next round merges. */
 export async function syncRail(): Promise<void> {
-  if (!REORG) return;
+  if (!reorgInMachina()) return;
   if (inRound) { again = true; return; }
   inRound = true;
   const gen = generation;

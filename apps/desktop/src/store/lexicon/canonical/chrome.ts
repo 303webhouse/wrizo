@@ -223,6 +223,8 @@ export const CANONICAL_CHROME = {
   flux3LinkOne: 'connection',
   flux3LinkMany: 'connections',
   flux3ChecksumOk: 'Checksum OK',
+  flux3TheatreHuman: 'Unresolved // human',   // S4b L6: a node's footer status, the board mockup's theatre (under the Ambiance dial only)
+  flux3TheatreInk: 'Raster // human',
   flux3ReadLevel: 'Level',
   flux3ReadZoom: 'Zoom',
   // the way home: the ZOOM readout is a button that returns the board to true size; this is its hint (the key it answers to is Ctrl + 0)
@@ -234,6 +236,8 @@ export const CANONICAL_CHROME = {
   flux3ViewHologram: 'Hologram',
   flux3WordOne: 'word',
   flux3WordMany: 'words',
+  flux3BlockOne: 'block',    // S4b L4: the page frame's header counts its blocks (a paragraph; a blank line is no block)
+  flux3BlockMany: 'blocks',
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',
@@ -549,6 +553,26 @@ export const CANONICAL_CHROME = {
   reorgReplacedMany: 'Replaced {n} in this Doc: “{q}” is now “{with}”.',
   reorgReplaceUndone: 'Undone.',
   reorgReplaceUndoNo: 'Not undone: the words have changed since.',
+  // THE PLAIN PROGRESS TRACKER (components/PlainTracker.tsx; POLISH, Nov 20; the Wrizors' spec draft 2): every theme
+  plainTrackerOf: '{n} / {goal} {unit}',
+  plainTrackerReached: 'Goal Reached · {goal} {unit}',
+  plainTrackerCount: '{n} {unit}',
+  plainTrackerWords: 'words',
+  plainTrackerLines: 'lines',
+  plainTrackerSwitch: 'Use Theme Progress Tracker',
+  // DOCS' Recent, its sort (reorg/panels/DocsPanel.tsx; Fable, Nov 20): placeholder words until the Wrizors word them
+  reorgRecentSort: 'Sort Recent',
+  reorgSortChanged: 'Changed',
+  reorgSortName: 'Name',
+  reorgSortWords: 'Words',
+  // DOCS' Session (reorg/panels/DocsPanel.tsx; Fable, Nov 20): placeholder words until the Wrizors word them
+  reorgSession: 'Session',
+  reorgSessionGoal: 'Goal',
+  reorgSessionCounts: 'Counts',
+  reorgSessionTimer: 'Timer',
+  reorgSessionProgress: 'Progress',
+  reorgSessionLines: 'Lines',
+  reorgSessionWords: 'Words',
   reorgDefaults: 'Page defaults · every doc',
   reorgTypewriter: 'Typewriter mode',
   reorgProgressBars: 'Progress bars',

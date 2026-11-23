@@ -255,19 +255,31 @@ await withHarness(async (app) => {
       requestAnimationFrame(watch);
     })()`);
     const lineHeightPx = await app.evalJs("parseFloat(getComputedStyle(document.querySelector('.forward-only-editor')).lineHeight) || 28");
+    await sleep(900);   // the opening cut has landed (it is one step, a frame or two after the mount)
+    const landedAt = await app.evalJs("Math.round(document.querySelector('.mode-scroll')?.scrollTop || 0)");
+    await sleep(700);
+    const stillAt = await app.evalJs("Math.round(document.querySelector('.mode-scroll')?.scrollTop || 0)");
     const preInfo = await app.evalJs("({ scrollHeight: document.querySelector('.mode-scroll')?.scrollHeight, clientHeight: document.querySelector('.mode-scroll')?.clientHeight, textLen: document.querySelector('.forward-only-editor')?.innerText?.length })");
     ok('S1 (a, first-engage) precondition: the reloaded page genuinely mounted with substantial pre-existing content, past the hold band', preInfo.textLen > 500 && preInfo.scrollHeight > preInfo.clientHeight, JSON.stringify(preInfo));
     await app.evalJs("document.querySelector('.forward-only-editor').focus()");
     await app.waitFor("window.__fx5first && window.__fx5first.done === true", { label: 'first-engage catch-up settled' });
     const feResult = await app.evalJs("({ max: window.__fx5first.max, moved: window.__fx5first.moved, finalScrollTop: window.__fx5first.last })");
+    feResult.landedAt = landedAt; feResult.stillAt = stillAt;
     const maxStep = feResult.max;
     // The mechanism clamps EVERY band() call to <=1 line-height (verified in (a)
     // above and by reading useTypewriterFade.ts's own band()); the OLD bug's
     // signature was a single many-lines-tall instant jump for the 20-line
     // backlog (hundreds of px). `moved` guards that the catch-up was actually
     // observed (a false 0-step pass is impossible); 2.5*lineHeight is the ceiling.
-    ok('S1 (a, first-engage): a page that mounts already deep past the hold band settles via the SAME one-line-at-a-time steps, never one big instant jump — "first-engage especially must not lurch"',
-      feResult.moved && maxStep <= lineHeightPx * 2.5, JSON.stringify({ lineHeightPx, maxStep, moved: feResult.moved, finalScrollTop: feResult.finalScrollTop }));
+    // PARKED 2026-11-19 (SUPERSEDED by #113 - Fable's ruling, Nov 19, 8:10 pm: "opening lands at the writing line at once (a cut); the glide stays only for the follow while typing").
+    // FX3/FX5's "first-engage must not lurch" paid a page's whole opening backlog by the typing staircase: at 5k words that was ~360 px/s, still moving 25 s later, and a writer who scrolled
+    // away had the page drift on down under her (scroll-measure.mjs, run 44665401447). The one-line-at-a-time law stays for typing (S1 (a) above, which is unchanged). Original, verbatim:
+    // ok('S1 (a, first-engage): a page that mounts already deep past the hold band settles via the SAME one-line-at-a-time steps, never one big instant jump — "first-engage especially must not lurch"',
+    //   feResult.moved && maxStep <= lineHeightPx * 2.5, JSON.stringify({ lineHeightPx, maxStep, moved: feResult.moved, finalScrollTop: feResult.finalScrollTop }));
+    // SUCCESSOR: the page was landed at the writing line AT ONCE when it opened - before this check's own focus (a focus scrolls a tall editable to its top, so the recorder's last value is no
+    // reading of the landing): the scroll position read before the focus is past the hold band, and a second read 700 ms on is the same (nothing is still being paid).
+    ok('S1 (a, first-engage) [successor, #113]: a page that mounts already deep past the hold band is LANDED at the writing line at once - off the top before anything is typed or focused, and still (a second read 700 ms on is the same)',
+      feResult.landedAt > 100 && Math.abs(feResult.landedAt - feResult.stillAt) <= 2, JSON.stringify({ landedAt: feResult.landedAt, stillAt: feResult.stillAt, maxStep, lineHeightPx }));
   }
 
   // (b) the fade band starts one line lower — --tw-fade-start is set to

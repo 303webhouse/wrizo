@@ -27,7 +27,7 @@ import { REORG, SPRINT_CONSULTANT } from '../reorg/flag';
 import { setWritingSettings, useWritingSettings } from '../store/writingSettings';
 import { BackPlan } from '../reorg/backMenu/BackPlan';
 import { BeforeExport } from '../reorg/BeforeExport';
-import { themeHas } from '../reorg/themeGate';
+import { reorgFor, themeHas } from '../reorg/themeGate';
 import { usePublishing } from '../reorg/publishPick';
 import { FeedbackLenses } from '../reorg/backMenu/LensPanel';
 import { SplitHost } from '../reorg/split/SplitHost';
@@ -163,8 +163,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
-  const back = REORG && themeHas('back', tutorTheme) && pageKind !== 'board';
-  const splitOn = REORG && themeHas('split', tutorTheme);
+  const back = reorgFor(tutorTheme) && themeHas('back', tutorTheme) && pageKind !== 'board';   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
+  const splitOn = reorgFor(tutorTheme) && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
   const sprint = back && mode === 'journal';
   // THE LENS FRAME (reorg/backMenu/feedbackLenses.ts; Nick's F2 and F3): in BUILD and EDIT the Back menu's FEEDBACK is Structure / Tone / Consistency (EDIT adds Usage / Punctuation / Citations above them) plus "Ask Your Own"; it replaces the four-ask roster and the three computed sections
@@ -176,7 +176,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4): a fourth Back menu tab that exists only while the publishing sheet is open on this page; with the sheet closed the drawer is back on a tab that is there
   const publishing = usePublishing(entry.id);
   const [exportOn, setExportOn] = useState(false);
-  const exportTab = back && publishing;
+  // Arbor and Flux fold it into their own main tab (arbor-reorg-spec section 5: "Before you publish in TUTOR", three tabs); Machina keeps it as a fourth tab
+  const foldExport = tutorTheme !== 'machina';
+  const exportTab = back && publishing && !foldExport;
   const rightTab: RightTab | 'plan' | 'export' = sprint ? 'tutor' : exportOn && exportTab ? 'export' : planOn ? 'plan' : tabState;
   const setRightTab = (v: RightTab | 'plan' | 'export'): void => { if (sprint) return; if (v === 'export') { setExportOn(true); return; } setExportOn(false); if (v === 'plan') setPlanOn(true); else { setPlanOn(false); setTabState(v); } };
   // the Back menu opens on ASSETS (the drawer is closed at mount, so nothing shows of the first render)
@@ -192,7 +194,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (search.open) { noteWasOpen(open); searchSeen.current = true; setOpen(true); return; }
     if (searchSeen.current) { searchSeen.current = false; setOpen(restoreAfterSearch()); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.open]);
+  }, [search.open, search.opened]);   // R3 (POLISH's audit, Fable Nov 22): the door pressed on a search that is already open only bumps `opened`; the drawer she shut by clicking back into the page must open again on it
   // A PART ROW'S LINK BADGE (reorg/backMenu/assetsFocus.ts): its press opens this drawer on ASSETS; the Assets tab opens that Part (mounting
   // fresh or already drawn). Off the Back menu there is no Assets tab to take it, so the ask is spent here.
   useEffect(() => subscribeAssetsFocus(() => {
@@ -387,12 +389,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     const onKeyDown = (e: KeyboardEvent) => {
       if (showDisclosure) return; // the disclosure has no Escape-dismiss, by design (hb1.1's own UnlockCeremony precedent)
       const target = e.target as HTMLElement | null;
-      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the tab when it was in the drawer [Tutor §18]
+      // Esc closes the drawer from inside it too, unless a control already handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, the tab when the page has no editor [Tutor §18, bug-list #49]
       if (e.key === 'Escape' && !e.defaultPrevented) {
         const inDrawer = !!target?.closest?.('.wz-tutor-zone');
         if (getLinkDock(entry.id)) setLinkDock(entry.id, null);   // Esc leaves a docked reader with the dock [Tutor §19]
         setOpen(false); setDocked(false);
-        if (inDrawer) document.querySelector<HTMLElement>('.wz-tutor-grip')?.focus();
+        if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? document.querySelector<HTMLElement>('.wz-tutor-grip'))?.focus({ preventScroll: true });
         return;
       }
       if (target?.closest?.('.wz-tutor-zone')) return;
@@ -850,6 +852,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           className="wz-tutor-grip"
           data-open={open ? 'true' : 'false'}
           data-docked={docked ? 'true' : 'false'}
+          data-back={back ? 'true' : undefined}
+          data-sprint={sprint ? 'true' : undefined}
           aria-expanded={open}
           aria-label={open ? t('tutorClose') : t('tutorOpen')}
           title={open ? t('tutorClose') : t('tutorOpen')}
@@ -863,14 +867,14 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       </div>
 
       <div className={`desk-frame-tutor-panel-anchor desk-frame-tutor-panel-anchor--${pageKind} wz-tutor-zone`}>
-        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
+        <div className="wz-tutor-panel" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-docked={docked ? 'true' : 'false'} data-back-tab={back ? rightTab : undefined} data-back-sprint={sprint ? 'true' : undefined} style={panelWidthPx != null ? { width: `${panelWidthPx}px`, maxWidth: `${panelWidthPx}px`, marginRight: `${panelOffsetPx}px` } : undefined}>
           {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab.
               No tab row yet (S3 adds TUTOR | the theme's links word). */}
           {/* while a linked card or page stands docked, the docked panel is its reader [Tutor §34] */}
           {linkDock && docked ? <LinkDockReader dock={linkDock} onClose={closeLinkDock} /> : searching ? (
             <SearchMenu entry={entry} open={open} backWord={search.wasOpen ? ((l) => (typeof l === 'string' ? l : null))(rightTabs.items.find((i) => i.id === rightTab)?.label) : null} />
           ) : (
-          <SideDrawer side="right" idPrefix="wz-tutor" tabs={(arborRightTabs ?? rightTabs) as DrawerTabsConfig<string>}>
+          <SideDrawer side="right" idPrefix="wz-tutor" tabs={((back ? rightTabs : arborRightTabs) ?? rightTabs) as DrawerTabsConfig<string>}>
           {/* THE REORG'S SEARCH DOOR: a field atop every Back menu tab; a press turns the menu into the search menu (reorg/search/SearchField.tsx) */}
           {back && <SearchField from={rightTab === 'plan' ? 'plan' : rightTab === 'links' ? 'links' : 'tutor'} />}
           {/* A11Y AUDIT A8 — the reply announcement, visually hidden. Lives at
@@ -879,6 +883,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
               never re-announces the last reply as if it were new. */}
           <div className="wz-sr-only" role="status" aria-live="polite">{replyAnnouncement}</div>
           {/* the body renders unconditionally inside the faded panel (the Sliver's shape), so the close fades the content instead of unmounting it and fading an empty box [Tutor §35] */}
+          {back && foldExport && publishing && !sprint && rightTab === 'tutor' && <BeforeExport entry={entry} />}
           {rightTab === 'tutor' && (
             <div className="wz-tutor-body">
             {sprint ? (
@@ -1126,7 +1131,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           )}
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
           {back && rightTab === 'export' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}
-          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
+          {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
             help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}

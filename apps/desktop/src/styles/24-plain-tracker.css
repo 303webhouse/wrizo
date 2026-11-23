@@ -1,0 +1,20 @@
+/* THE PLAIN PROGRESS TRACKER (components/PlainTracker.tsx; the Wrizors' spec draft 2, approved by Nick Nov 20, 3:57 pm). One row in the progress
+   lane under the page (DeskInstrument's: the same anchor, place and width as .desk-frame-instrument, so the paper's rect is immune to it), the
+   same shape in every theme: the count, a 4 px track (the label colour at 28% over the room) with her fill, a 2 x 12 brass tick at her point,
+   the elapsed time. Each theme's quiet label colour, measured on the drawn frames (Arbor day 4.74 / night 9.00, Flux 7.62, Machina 5.69 against
+   the room). No motion: the fill grows by a cut. Arbor by day keeps its count row's backing plate (the words over the trellis shadow) and gives
+   the tick a 1 px ink edge (on a light room the brass alone is 1.14). */
+.plain-tracker{ --pt:#878E9C; position:absolute; left:50%; bottom:5px; transform:translateX(-50%); box-sizing:border-box;
+  width:var(--wz-anchor-w, min(calc(760px * var(--paper-scale)), 60ch)); max-width:100%; pointer-events:none;
+  display:flex; align-items:center; gap:14px; color:var(--pt); font-family:var(--font-ui); font-size:11px; line-height:1.4; white-space:nowrap; }
+.plain-tracker-count, .plain-tracker-time{ flex:none; font-variant-numeric:tabular-nums; }
+.plain-tracker-track{ position:relative; flex:1 1 auto; height:4px; min-width:24px; background:color-mix(in srgb, var(--pt) 28%, transparent); }
+.plain-tracker-fill{ position:absolute; top:0; bottom:0; left:0; background:var(--pt); transition:none; animation:none; }
+.plain-tracker-tick{ position:absolute; top:50%; width:2px; height:12px; margin-left:-1px; transform:translateY(-50%); background:#FF9800; transition:none; animation:none; }
+.plain-tracker-time{ margin-left:auto; }
+:root[data-theme='plateau'] .plain-tracker{ --pt:#6B5F4E; background:var(--paper); padding:4px 10px; }
+:root[data-theme='plateau'] .plain-tracker-tick{ border:1px solid #23272B; margin-left:-2px; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .plain-tracker{ --pt:#B9AA8C; }
+:root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] .plain-tracker-tick{ border:0; margin-left:-1px; }
+[data-theme='flux'] .plain-tracker{ --pt:#7EB4C4; }
+[data-theme='machina'] .plain-tracker{ --pt:#878E9C; font-family:var(--font-chromeLabel, monospace); }

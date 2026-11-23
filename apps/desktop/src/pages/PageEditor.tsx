@@ -29,7 +29,9 @@ import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
 import { isTitlePageText } from '../store/titlePage';
 import { TitlePageSheet } from '../components/TitlePageSheet';
 import { useWayBack } from '../components/useWayBack';
+import { takePartFocus } from '../reorg/partFocus';
 import { setCaretOffset, setSelectionOffsets, getCaretOffset, getSelectionOffsets, rangeFromPlainOffsets } from '../store/caretOffset';
+import { endOpenSettles, openCaret } from '../store/caretInView';
 import type { Stroke } from '../types';
 import { projectMilestones } from '../store/milestones';
 import { copyText } from '../store/clipboard';
@@ -432,7 +434,7 @@ function PageEditorView({ id }: { id: string }) {
     mode,
     scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
     editorEl: () => editorRef.current,
-    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) el.scrollTop = y; },
+    applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) { endOpenSettles(); el.scrollTop = y; } },
     applyCaret: offset => { if (editorRef.current) setCaretOffset(editorRef.current, offset); },
   });
 
@@ -459,12 +461,33 @@ function PageEditorView({ id }: { id: string }) {
     let tries = 0;
     const place = () => {
       const ed = editorRef.current;
-      if (ed && ed.isConnected) { caretToEndRef.current = false; ed.focus(); setCaretOffset(ed, editorPlainText(ed).length); return; }
+      // preventScroll (#112, with #53's opening cut): a plain focus() on a tall editable scrolls the page to its top, which undid the landing of the writing line and, on a page that only just overflows, cut the first line; openCaret rests the page on a whole line (store/caretInView.ts)
+      if (ed && ed.isConnected) { caretToEndRef.current = false; ed.focus({ preventScroll: true }); setCaretOffset(ed, editorPlainText(ed).length, { preventScroll: true }); openCaret(ed); return; }
       if ((tries += 1) < 30) raf = requestAnimationFrame(place);
     };
     raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
     return () => cancelAnimationFrame(raf);
   }, [mode]);
+
+  // R1 (Fable, Nov 22, MONDAY BLOCKER): a Part opened by her own move between Parts (the arrow, the Part foot's line, the Parts list: reorg/partFocus.ts) takes her caret - the focus in this editor, at the START of a Draft Part, at the end of a
+  // Free Write one - so the next key types. PageEditor focused only an empty page and the move just opened this one, so the focus stayed on the body and her letters went nowhere. Any other way of opening a page leaves it as it was.
+  useEffect(() => {
+    if (!takePartFocus(entry.id)) return undefined;
+    let raf = 0;
+    let tries = 0;
+    const place = () => {
+      const ed = editorRef.current;
+      if (ed && ed.isConnected) {
+        const rows = !!ed.querySelector('.wz-row');   // Draft and Revise draw one row a line: a caret at the start; Free Write's insertion point is the end
+        ed.focus({ preventScroll: true });
+        setCaretOffset(ed, rows ? 0 : editorPlainText(ed).length);
+        return;
+      }
+      if ((tries += 1) < 40) raf = requestAnimationFrame(place);
+    };
+    raf = requestAnimationFrame(() => { raf = requestAnimationFrame(place); });
+    return () => cancelAnimationFrame(raf);
+  }, [entry.id]);
 
   const reconcileRef = useRef<() => boolean>(() => false);
   const lastTypedAtRef = useRef(0);   // when she last pressed a key in this editor: the page is not rebuilt under her fingers
@@ -486,6 +509,9 @@ function PageEditorView({ id }: { id: string }) {
     flush(); flushNow();
     const r = splitPart(id, sel.start, textRef.current);
     if (!r.ok) return { ok: false, why: 'text' };
+    // P3-mode (Fable, Nov 22, RULED): the Part she cuts opens in the mode it was cut from - this page's own per-page mode (the key the mode switch writes) is put on the tail, nothing new is saved. Without it a
+    // manuscript tail has no saved mode and opens in Free Write, the Typewriter zoom and no Front menu, on every split made in Draft.
+    try { localStorage.setItem(`wrizo-mode-page-${r.tailId}`, mode); } catch { /* storage refused: the tail opens in its default posture */ }
     flushNow();
     return { ok: true, token: r.token };
   };

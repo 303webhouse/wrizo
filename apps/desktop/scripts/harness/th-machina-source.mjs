@@ -323,8 +323,13 @@ ok('M14: the splash mark has a still state (reduced motion: the closed strip at 
 const rs = src('components/RunStrip.tsx');
 // SUPERSEDED (Fable, Oct 23: "under Machina the Run strip is the ONLY progress instrument"): this check used to require the Rhizome|Glitch|Run style slot
 // (`settings.progressStyle === 'rhizome'`) as part of the gate; Run no longer sits behind a style choice - successor below (the gate WITHOUT the slot, and M19).
-ok('M15: Run is gated on Machina + the instruments + Progress: Words + a goal - NOT on the style slot (it is Machina\'s only instrument) - and is mounted beside GlitchMeter on the framed page only',
-  /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && goal != null && n > 0/.test(rs) && !/progressStyle/.test(rs.replace(/\/\/.*$/gm, '')) && /\{glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx')), '');
+// SUPERSEDED (the plain Progress Tracker, Nick Nov 20 3:57 pm: with Use Theme Progress Tracker off the lane draws none of the theme's progress art,
+// the Run included): the mount reads `!plain && glitch`. The original, verbatim:
+// ok('M15: Run is gated on Machina + the instruments + Progress: Words + a goal - NOT on the style slot (it is Machina\'s only instrument) - and is mounted beside GlitchMeter on the framed page only',
+//   /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && goal != null && n > 0/.test(rs) && !/progressStyle/.test(rs.replace(/\/\/.*$/gm, '')) && /\{glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx')), '');
+ok('M15 [successor]: Run is gated on Machina + the instruments + Progress: Words + a goal - NOT on the style slot - and is mounted beside GlitchMeter on the framed page only, unless the plain tracker has the lane (Use Theme Progress Tracker off)',
+  /theme === 'machina' && settings\.instrumentsOn && settings\.progress === 'words' && goal != null && n > 0/.test(rs) && !/progressStyle/.test(rs.replace(/\/\/.*$/gm, '')) && /\{!plain && glitch && <RunStrip text=\{text\} \/>\}/.test(src('components/DeskInstrument.tsx'))
+    && /const plain = settings\.instrumentsOn && settings\.themeTracker === false;/.test(src('components/DeskInstrument.tsx')), '');
 ok('M15: twenty units; ONE celebration - the closed strip - and the sparks (eight ticks) appear ONLY under NEUTRAL and only when motion is welcome',
   /const UNITS = 20;/.test(rs) && /const sparks = celebrating && cast === 'neutral' && !still;/.test(rs) && /BURST_ANGLES = \[-90, -64, -38, -12, 12, 38, 64, 90\]/.test(rs) && /still = prefersReducedMotion\(\) \|\| dial === 0/.test(rs), '');
 ok('M15: the lap reuses useGoalProgress (one celebration grammar) and nothing in RunStrip is random', /useGoalProgress\(count, n\)/.test(rs) && !/Math\.random/.test(rs), '');
