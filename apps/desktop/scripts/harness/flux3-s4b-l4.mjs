@@ -102,7 +102,8 @@ try { await withHarness(async (app) => {
     await app.emulateDpr(1, w, h);
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = 'dark'; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', '50');
       localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); })()`);
-    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${id}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${id}')`);
+    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/?flux3=0')} + '#/page/${id}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.mode-page')", { timeout: 15000, label: `the page ${id}` }).catch(() => {});
     await splashGone();
