@@ -129,7 +129,8 @@ try { await withHarness(async (app) => {
     const has = await soft("!!document.querySelector('[data-flux-appmark]')", 3000);
     const m = has ? await ev(`(() => { const n = document.querySelector('[data-flux-appmark]'), b = n.getBoundingClientRect(), c = n.querySelector('[data-flux-cursor]'); return { left: b.left, top: b.top, word: [...n.querySelectorAll('[data-flux-letter]')].map((l) => l.textContent).join(''), cursor: c ? getComputedStyle(c).fill || getComputedStyle(c).backgroundColor : null }; })()`) : null;
     ok(`MS18 [${tone}] the in-app mark stands top-left, WRIZ with a brass cursor`, m && m.left < 200 && m.top < 80 && m.word === 'WRIZ' && m.cursor === BRASS, m);
-    await ev("window.__msSeen = []; if (document.querySelector('[data-flux-appmark]')) new MutationObserver(() => { const g = document.querySelector('[data-flux-appmark]').getAttribute('data-glitch'); if (g) window.__msSeen.push(g); }).observe(document.querySelector('[data-flux-appmark]'), { attributes: true, attributeFilter: ['data-glitch'] }); null");
+    // data-glitch stands on the mark itself (this file's contract) and is rewritten every frame of a glitch, so one glitch is counted once: when the attribute goes from absent to present
+    await ev("window.__msSeen = []; window.__msPrev = null; { const m = document.querySelector('[data-flux-appmark] [data-flux-mark]'); if (m) new MutationObserver(() => { const g = m.getAttribute('data-glitch'); if (g && !window.__msPrev) window.__msSeen.push(g); window.__msPrev = g; }).observe(m, { attributes: true, attributeFilter: ['data-glitch'] }); } null");
     await sleep(1200);
     await app.mouseMove(600, 400); await sleep(40);
     await ev('window.__f3MarkIdleShift = 59.2; null');
