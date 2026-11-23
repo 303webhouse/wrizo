@@ -7,6 +7,7 @@
 //   SE3  the caret re-anchor costs a Space no more than a letter plus 6 ms at 50,000 words (main: +21 ms) and an Enter the same
 //   SE4  what she typed IS on the page: letters, Space, Enter and words typed at the end of a 2,000-word page read back exactly; a Backspace (a strike) still works (a struck run, the text still there), and a word typed after it
 //   SE5  after all of it the page's text, read back from the editor, equals the page's own derived text (nothing was lost or doubled by appending)
+//   SE6  the first word typed into a NEW (empty) page reads back before any Space, and the words after it (the rework of #110)
 //   MUT  the reader goes RED on a whole-page write: a probe that sets the host's html as React did writes more than 2,000 bytes through the same counter
 // Run: node scripts/harness/space-enter-holds.mjs (from apps/desktop; a box turn or Actions)
 import { withHarness } from '../runtime-verify.mjs';
@@ -90,6 +91,19 @@ try { await withHarness(async (app) => {
   const stored = await ev("document.querySelector('.forward-only-editor').textContent.replace(/\\u200b/g, '')");
   const strip = (s) => String(s).replace(/\s+/g, ' ').trim();
   ok('SE5 the page reopened from storage shows the same words as the page that was typed into (nothing lost or doubled by appending; struck words are history and stay)', strip(typedText).startsWith(strip(stored).slice(0, 400)) && Math.abs(strip(typedText).length - strip(stored).length) < 60, JSON.stringify({ typed: strip(typedText).length, stored: strip(stored).length }));
+  // SE6 (the rework of #110, Fable Nov 23): THE FIRST WORD OF A NEW PAGE READS BACK. The page is born empty, so the host's first html is '' (no word span); React is never handed another, so a letter had nowhere to land until the first Space
+  // (arbor-redesign-groups G1, fx15 S1, item121 S3, wa-red-70 FW02/FW12, c13-12f-sprout-invite all read the first word back empty on #110's tip).
+  const freshId = await ev("window.wrizoCreateJournalPage({ text: '', projectId: null, origin: 'loose', source: 'page' }).id");
+  await ev(`(() => { localStorage.setItem('wrizo-mode-page-${freshId}', 'journal'); location.hash = '#/page/${freshId}'; })()`);
+  await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 20000, label: 'the new page' }).catch(() => {});
+  await sleep(800);
+  await ev("(() => { const ed = document.querySelector('.forward-only-editor'); if (document.activeElement !== ed) ed.focus({ preventScroll: true }); return true; })()");
+  await app.typeKeys('hello'); await sleep(300);
+  const w1 = await ev("document.querySelector('.forward-only-editor').textContent.replace(/\u200b/g, '')");
+  ok('SE6a the first word typed into a NEW page reads back before any Space', w1 === 'hello', JSON.stringify(w1));
+  await app.typeKeys(' world'); await sleep(300);
+  const w2 = await ev("document.querySelector('.forward-only-editor').textContent.replace(/\u200b/g, '')");
+  ok('SE6b and the words after it (a Space between) read back whole', w2 === 'hello world', JSON.stringify(w2));
   // the reader can go red: a probe that writes the host's html whole, as React did
   await ev(INSTRUMENT());
   await ev("(() => { const ed = document.querySelector('.forward-only-editor'); window.__seh.bytes = 0; ed.innerHTML = ed.innerHTML; return true; })()");
