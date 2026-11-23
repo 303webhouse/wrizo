@@ -313,7 +313,18 @@ const loadKeys = ['splashLoading1', 'splashLoading2', 'splashLoading3', 'splashL
 ok('M13: every splash loading line is the EMPTY string under Machina - present, not absent (an absent key would fall back to Arbor\'s "Turning the soil...")', loadKeys.every((k) => D(k) === '' && new RegExp(`^    ${k}: '',`, 'm').test(mBlock)), JSON.stringify(loadKeys.map(D)));
 ok('M13: ...Arbor and Flux keep their lines', loadKeys.every((k) => L.deskLexicon.deskTerm(k, 'plateau') !== '' && L.deskLexicon.deskTerm(k, 'flux') !== ''), '');
 const splash = src('components/Splash.tsx');
-ok('M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)', /\{t\(LOADING_LINE_KEYS\[lineIndex\]\) !== '' && \(\s*<div className="wz-splash-loading"/.test(splash), '');
+// ---- PARKED - SUPERSEDED (Nov 23, the Flux live join): Flux's v5 splash (200133f0b) opens the condition with !fluxFive, so this regex no longer matches; under Machina fluxFive is false and the line is still drawn only when non-empty. The original, verbatim:
+// ok('M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)', /\{t\(LOADING_LINE_KEYS\[lineIndex\]\) !== '' && \(\s*<div className="wz-splash-loading"/.test(splash), '');
+const M13_GATE = /\{!fluxFive && t\(LOADING_LINE_KEYS\[lineIndex\]\) !== '' && \(\s*<div className="wz-splash-loading"/;
+const M13_FLUX_ONLY = /const fluxFive = FLUX3 && theme === 'flux';/;
+const m13b = (s) => M13_GATE.test(s) && M13_FLUX_ONLY.test(s);
+ok('M13-B [successor]: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region), and the one added gate is Flux\'s alone', m13b(splash), '');
+{
+  const noEmpty = splash.replace("t(LOADING_LINE_KEYS[lineIndex]) !== '' && (", '(');
+  ok('MUT-M13-B the non-empty test removed (an empty live region under Machina) lands and M13-B goes RED', noEmpty !== splash && !m13b(noEmpty), '');
+  const allThemes = splash.replace("const fluxFive = FLUX3 && theme === 'flux';", 'const fluxFive = FLUX3;');
+  ok('MUT-M13-C the added gate widened past Flux lands and M13-B goes RED', allThemes !== splash && !m13b(allThemes), '');
+}
 // M14 - the splash mark
 const sm = src('components/SplashMark.tsx');
 ok('M14: SplashMark routes Machina to MachinaMark (the WRIZ[] wordmark, IDEAS / FINAL DRAFT end labels, twenty units that close orange once); Arbor and Flux routes unchanged',
@@ -493,11 +504,16 @@ if (process.env.HARNESS_PARKED === '1') {
   ].map((n) => ({ name: `PARKED (was "${n}") - page-size: Machina's vignette line collapsed into the base rule; successors read the base rule`, pass: !!o.ember4 && !!o.vignetteBase, detail: JSON.stringify(o) }));
   // #13 STEP 11 (Fable, Nov 5) - ONE park: M19 read JournalEntry.tsx's bar; the file is deleted. Its record re-verifies the successor.
   rec.push({ name: 'PARKED (was "M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched") - #13 step 11 deletes JournalEntry.tsx; live successor: M19 [step 11 successor]', pass: m19v2, detail: '' });
+  // Nov 23 - ONE park: M13 read Splash.tsx's condition from its first token; Flux's v5 splash put !fluxFive in front of it. Its record re-verifies the successor.
+  rec.push({ name: 'PARKED (was "M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)") - Flux v5 put !fluxFive before the condition; live successor: M13-B', pass: m13b(splash), detail: '' });
   for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${r.detail}]`);
   // ---- PARKED - SUPERSEDED (#13 step 11): the file parks 4 now. Kept VERBATIM.
   //
   // console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 3 (page-size, Oct 23)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
-  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 4 (page-size Oct 23: 3; #13 step 11: M19)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  // ---- PARKED - SUPERSEDED (Nov 23, M13's park): the file parks 5 now. Kept VERBATIM.
+  //
+  // console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 4 (page-size Oct 23: 3; #13 step 11: M19)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 5 (page-size Oct 23: 3; #13 step 11: M19; Nov 23: M13)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
 }
 const bad = checks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nTH-MACHINA-SOURCE VERIFY: PASS (${checks.length} checks)` : `\nTH-MACHINA-SOURCE VERIFY: FAIL - ${bad}/${checks.length}`);
