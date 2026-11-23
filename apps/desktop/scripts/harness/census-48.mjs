@@ -20,7 +20,8 @@ await census('48', async ({ q, shot, press, openPage, waitSoft, wake }) => {
     await sleep(1200);
     const fw = await q(READ);
     await wake();
-    const pressed = await press(tab('draft'));
+    // Flux's Free Write (Wire In) has no tabs on screen: the writer leaves it by its own X
+    const pressed = await press(theme === 'flux' ? '[data-flux3-leave]' : tab('draft'));
     const left = pressed && await waitSoft("document.querySelector('.desk-frame-stage .mode-pagecol')?.getAttribute('data-zoom') !== 'true'", { timeout: 5000, label: 'Draft unzoomed' });
     await sleep(1600);   // the mode switch's own re-persist lands about 1.1 s after it
     const dr = await q(READ);
