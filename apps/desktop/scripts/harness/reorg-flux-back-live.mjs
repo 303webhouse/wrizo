@@ -10,6 +10,7 @@
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
 //   FB8  the row names keep their room (none cut) and the open tab wears the 3 x 24 brass bar (the Wrizors Flux pass 1, REAL 4 and NIT 1)
 //   FB9  Uplink keeps the bar one row and the page rectangle; the view lies over the page, has no box, and its buttons and ticks are in Flux dress (REAL 1, 2 and 3)
+//   FB10 the Uplink sheet's label row starts below the page's L4 readout header (the Wrizors' Flux Uplink frames, Nov 23)
 //   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
 //   FB6  Wire In: Spine and Inputs are locked and say "Wired in: the Operator sends prompts only." in Flux's words; only the Operator can be used
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-back-live.mjs
@@ -125,6 +126,10 @@ await withHarness(async (app) => {
   ok('FB9 Uplink: the bar keeps its one row and the page its rectangle; the view lies exactly over the page, has no box of its own, and its buttons and ticks are in Flux\'s dress',
     !!beforeU && !!afterU && beforeU.bar === afterU.bar && beforeU.page === afterU.page && afterU.doc <= beforeU.doc && !!dressU && dressU.cover === true && dressU.outline === 'none' && dressU.border === '0px' && dressU.btns >= 6 && dressU.btnsDark === true && dressU.ticks.length >= 1 && dressU.ticks.every((x) => /0, 194, 255|00c2ff/i.test(x)), { beforeU, afterU, dressU });
 
+  // FB10 (the Wrizors' Flux Uplink frames, Nov 23): the sheet's label row starts BELOW the page's L4 readout header (DOC // address, the counts), never running into it; the sheet still covers the paper (FB9)
+  const head = await app.evalJs("(() => { const h = document.querySelector('[data-flux3-dochead]'), l = document.querySelector('.reorg-pub-label'); if (!h || !l) return null; const hb = h.getBoundingClientRect(), lb = l.getBoundingClientRect(); return { headBottom: Math.round(hb.bottom * 10) / 10, labelTop: Math.round(lb.top * 10) / 10, labelBottom: Math.round(lb.bottom * 10) / 10 }; })()");
+  ok('FB10 Uplink: the label row starts below the readout header of the page (no overlap)', !!head && head.labelTop >= head.headBottom - 1, head);
+
   await open(app, 'fb-1', { lift: '' });
   await drawer(app);
   const off =await app.evalJs("(() => { const row = document.querySelector('.wz-tutor-panel .wz-drawer-tabs'); return { tabs: row ? [...row.querySelectorAll('.wz-drawer-tab')].map((b) => b.id) : null, reorg: !!document.querySelector('.reorg-search-door, [data-back-export], .wz-back-assets'), gate: window.wrizoReorgGate ? 'seam' : 'none' }; })()");
@@ -145,7 +150,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 9;
+const EXPECTED = 10;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`
