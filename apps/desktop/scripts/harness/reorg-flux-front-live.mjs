@@ -7,6 +7,8 @@
 //   FF4   a Track's tag is the bracketed code and a 3 px bar in the slot's signal: no fill, no box, and the row is not tinted; her own colour draws a bar with no code
 //   FF5   the current Track wears the choice mark: a cyan edge and the 3 x 24 brass bar
 //   FF14  each Track's name keeps its room at 1366, the narrowest menu (none cut), with the link badge on the first row
+//   FF15  Uplink's greyed MARKUP is text-low at full strength, not dimmed (spec draft 4, section 11 rule 5)
+//   FF16  a Track's menu says Merge and Nest, never Join or Level (rule 9)
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -96,12 +98,17 @@ await withHarness(async (app) => {
   const codeA = await app.evalJs(CS(".reorg-parts-tag[data-colour='a']", ['content'], '::after'));
   const tagC = await app.evalJs(CS(".reorg-parts-tag[data-colour='c']", ['border-left-color']));
   const codeC = await app.evalJs(CS(".reorg-parts-tag[data-colour='c']", ['content'], '::after'));
-  const hexTag = await app.evalJs("(() => { const e = document.querySelector('.reorg-parts-tag[data-colour-hex]'); if (!e) return null; const c = getComputedStyle(e), r = e.getBoundingClientRect(); return { bg: c.backgroundColor, w: r.width, text: getComputedStyle(e, '::after').content }; })()");
+  const hexTag = await app.evalJs("(() => { const e = document.querySelector('.reorg-parts-tag[data-colour-hex]'); if (!e) return null; const c = getComputedStyle(e), r = e.getBoundingClientRect(); const bar = getComputedStyle(e, '::before'); return { bg: c.backgroundColor, w: r.width, bar: bar.backgroundColor, barW: bar.width, text: getComputedStyle(e, '::after').content }; })()");
   const tint = await app.evalJs("(() => [...document.querySelectorAll('.reorg-parts-list > li')].map((l) => getComputedStyle(l).backgroundColor))()");
-  ok('FF4 a tag is the code and a 3 px bar in the signal, no fill or box, the row untinted; her own colour draws a bar with no code',
-    !!tagA && tagA['background-color'] === NONE && tagA['border-left-width'] === '3px' && tagA['border-left-color'] === CYAN && tagA['border-top-width'] === '0px' && tagA['border-right-width'] === '0px' && tagA.color === CYAN
+  // SUPERSEDED (Nov 22, spec draft 4, section 11 rule 2: beside its bar on the panel the code is text-hi; section 6: her own colour is a bar with the code [##]), the original, verbatim:
+  // ok('FF4 a tag is the code and a 3 px bar in the signal, no fill or box, the row untinted; her own colour draws a bar with no code',
+  // !!tagA && tagA['background-color'] === NONE && tagA['border-left-width'] === '3px' && tagA['border-left-color'] === CYAN && tagA['border-top-width'] === '0px' && tagA['border-right-width'] === '0px' && tagA.color === CYAN
+  // && !!codeA && codeA.content === '"[01]"' && !!tagC && tagC['border-left-color'] === 'rgb(255, 46, 151)' && !!codeC && codeC.content === '"[03]"'
+  // && !!hexTag && hexTag.bg === 'rgb(192, 74, 43)' && hexTag.w === 5 && hexTag.text === 'none' && Array.isArray(tint) && tint.length === 3 && tint.every((x) => x === NONE), { tagA, codeA, tagC, codeC, hexTag, tint });
+  ok('FF4 a tag is the code in text-hi and a 3 px bar in the signal, no fill or box, the row untinted; her own colour is its bar inside a 1 px edge, with the code [##]',
+    !!tagA && tagA['background-color'] === NONE && tagA['border-left-width'] === '3px' && tagA['border-left-color'] === CYAN && tagA['border-top-width'] === '0px' && tagA['border-right-width'] === '0px' && tagA.color === 'rgb(231, 244, 241)'
     && !!codeA && codeA.content === '"[01]"' && !!tagC && tagC['border-left-color'] === 'rgb(255, 46, 151)' && !!codeC && codeC.content === '"[03]"'
-    && !!hexTag && hexTag.bg === 'rgb(192, 74, 43)' && hexTag.w === 5 && hexTag.text === 'none' && Array.isArray(tint) && tint.length === 3 && tint.every((x) => x === NONE), { tagA, codeA, tagC, codeC, hexTag, tint });
+    && !!hexTag && hexTag.bg === NONE && hexTag.bar === 'rgb(192, 74, 43)' && hexTag.barW === '3px' && hexTag.text === '"[##]"' && Array.isArray(tint) && tint.length === 3 && tint.every((x) => x === NONE), { tagA, codeA, tagC, codeC, hexTag, tint });
 
   const here = await app.evalJs(CS('.reorg-parts-row.is-here', ['box-shadow']));
   const hereBar = await app.evalJs(CS('.reorg-parts-row.is-here', ['width', 'height', 'background-color'], '::before'));
@@ -135,6 +142,10 @@ await withHarness(async (app) => {
 
   await open(app, 'ff-1');
   await drawer(app); await tab(app, 'parts');
+  await app.evalJs(press('[data-part-more="ff-2"]')); await sleep(300);
+  const acts = await app.evalJs("[...document.querySelectorAll('[data-part-menu=\"ff-2\"] .reorg-part-acts > button')].map((b) => (b.textContent || '').trim())");
+  ok('FF16 a Track\'s menu says Merge and Nest, never Join or Level', Array.isArray(acts) && acts.includes('Merge') && acts.includes('Nest') && !acts.some((x) => /join|level/i.test(x)), acts);
+  await app.evalJs(press('[data-part-more="ff-2"]')); await sleep(250);
   await app.evalJs(press('[data-part-more="ff-1"]')); await sleep(300);
   const opened = await app.evalJs(press('.reorg-part-colour-open'));
   await sleep(350);
@@ -149,6 +160,8 @@ await withHarness(async (app) => {
   await drawer(app);
   const up = await app.evalJs(TABS);
   const upMark = Array.isArray(up) ? up.find((x) => x.id === 'text') : null, upTrack = Array.isArray(up) ? up.find((x) => x.id === 'parts') : null;
+  const greyed = await app.evalJs(CS('#wz-sliver-tab-text', ['opacity', 'color']));
+  ok('FF15 Uplink\'s greyed MARKUP is text-low at full strength, not dimmed', !!greyed && greyed.opacity === '1' && greyed.color === 'rgb(126, 180, 196)', greyed);
   ok('FF9 Uplink: MARKUP is greyed with Flux\'s note, and TRACKS is the open tab', !!upMark && upMark.off === true && upMark.title === 'Markup and Ink lock at Uplink. Patch to change the words.' && !!upTrack && upTrack.on === true && upTrack.off === false, up);
 
   // on ff-2: a page keeps the mode it was left in, so Wire In pressed on ff-1 would leave every later check on a page with no drawer (run 45112891211: FF11, FF13)
@@ -189,7 +202,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 14;
+const EXPECTED = 16;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-FRONT-LIVE VERIFY: PASS (${checks.length} checks)`
