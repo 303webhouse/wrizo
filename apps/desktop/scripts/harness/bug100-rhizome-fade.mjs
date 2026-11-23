@@ -16,6 +16,9 @@
 // FAST    F0F / F1F / FAF-<room> (Nov 23: Chat 1's box run at 90 ms showed no fade tail; rhizome-latency's comes from fade keys typed 25 ms apart) the same, at
 //             rhizome-latency's own pace: 22 control keys 25 ms apart at rest, the crossing, 14 keys 85 ms apart through the hold, then 22 keys 25 ms apart
 //             into the fade, then 10 at 90 ms
+// A/B     F0M / F1M / FAM-<room> (Nov 23: the fade adds no JS and no per-key main-thread cost, only latency - frame production) the fast pace again with the
+//             brass copy's clip-path and mask-image taken away by an injected rule (.arbor2-vines-flash), the same run, so the box can compare the fade's
+//             latency with and without them (an experiment: the shipped look is untouched)
 // (information) PROF-<room>  (Nov 23: long-animation-frame entries never arrive on this Chrome) in the fast pace's first round, the CPU profile of the control
 //             burst at rest and of the fade burst: the dearest functions by self time in each, each with a snippet of the bundle at its position (the
 //             bundle is minified, so the snippet's strings name the code)
@@ -90,8 +93,8 @@ await withHarness(async (app) => {
   const words = (n) => Array.from({ length: n }, (_, i) => 'word' + i).join(' ');
   const fades = {};
 
-  for (const pace of ['steady', 'fast']) for (const room of ['day', 'night']) {
-  const tag = pace === 'fast' ? 'F' : '';
+  for (const pace of ['steady', 'fast', 'fastnomask']) for (const room of ['day', 'night']) {
+  const tag = pace === 'fast' ? 'F' : pace === 'fastnomask' ? 'M' : '';
     const rounds = [];
     let profCtl = null, profFade = null;
     for (let r = 0; r < ROUNDS; r += 1) {
@@ -111,17 +114,18 @@ await withHarness(async (app) => {
       await app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return false; e.focus(); const s = getSelection(); const rg = document.createRange(); rg.selectNodeContents(e); rg.collapse(false); s.removeAllRanges(); s.addRange(rg); return true; })()");
       await sleep(300);
       await app.evalJs(ARM);
-      const CTL = pace === 'fast' ? 22 : CONTROL;
-      if (pace === 'fast') {
-        if (r === 0) await profStart(app);
+      const CTL = pace === 'steady' ? CONTROL : 22;
+      if (pace === 'fastnomask') await app.evalJs("(() => { const s = document.createElement('style'); s.textContent = '.arbor2-vines-flash{ clip-path:none !important; mask-image:none !important; -webkit-mask-image:none !important; }'; document.head.appendChild(s); return true; })()");
+      if (pace !== 'steady') {
+        if (r === 0 && pace === 'fast') await profStart(app);
         for (let i = 0; i < CTL; i += 1) { await app.typeKeys('a'); await sleep(25); }
-        if (r === 0) profCtl = await profStop(app);
+        if (r === 0 && pace === 'fast') profCtl = await profStop(app);
         await sleep(400); await app.typeKeys(' '); await sleep(GAP); await app.typeKeys('x'); await sleep(85);
         for (let i = 0; i < 14; i += 1) { await app.typeKeys('y'); await sleep(85); }
         await app.waitFor("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'fading'", { label: 'the fade', timeout: 4000 }).catch(() => {});
-        if (r === 0) await profStart(app);
+        if (r === 0 && pace === 'fast') await profStart(app);
         for (let i = 0; i < 22; i += 1) { await app.typeKeys('y'); await sleep(25); }
-        if (r === 0) profFade = await withSnippets(app, await profStop(app));
+        if (r === 0 && pace === 'fast') profFade = await withSnippets(app, await profStop(app));
         for (let i = 0; i < 10; i += 1) { await app.typeKeys('y'); await sleep(GAP); }
       } else {
       for (let i = 0; i < CONTROL; i += 1) { await app.typeKeys('a'); await sleep(GAP); }
@@ -135,7 +139,7 @@ await withHarness(async (app) => {
       await app.evalJs('window.__off && window.__off(); null');
       rounds.push({ k, loaf, fl });
     }
-    const ctlKeys = rounds.flatMap((x) => x.k.slice(0, pace === 'fast' ? 22 : CONTROL));
+    const ctlKeys = rounds.flatMap((x) => x.k.slice(0, pace === 'steady' ? CONTROL : 22));
     const holdKeys = rounds.flatMap((x) => x.k.filter((y) => y.flash === 'true'));
     const fadeKeys = rounds.flatMap((x) => x.k.filter((y) => y.flash === 'fading').map((y) => ({ ...y, loaf: x.loaf })));
     const pack = (ks) => ({ cost: stat(ks.map((y) => y.cost)), ms: stat(ks.map((y) => y.ms)), over: overShare(ks.map((y) => y.ms)) });
@@ -159,8 +163,8 @@ await withHarness(async (app) => {
 });
 
 // the F1 and FA lines carry the numbers and the cause, so they print whether they pass or not
-for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A]F?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
-const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
+for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A][FM]?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
+const EXPECTED = 21;   // + F0M, F1M, FAM by day and by night (the A/B, Nov 23). Was: const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG100-RHIZOME-FADE VERIFY: PASS (${checks.length} checks)` : `\nBUG100-RHIZOME-FADE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
