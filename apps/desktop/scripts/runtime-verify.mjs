@@ -62,7 +62,7 @@ function noLandingIndex(body) {
   // THE SWITCH-OVER (Fable, Nov 20, 6:00 pm): the reorg is on by default in Machina. A harness file that does not ask for it keeps the Machina it
   // was written against: window.__wrizoReorgOff (read by src/reorg/flag.ts) unless WS_REORG=1. A file that asks with ?reorg=1 in its URL still
   // gets it (the URL wins), and ?reorg=0 is off either way. Read per request, so a file may flip WS_REORG between loads (reorg-switchover.mjs).
-  if (process.env.WS_REORG !== '1') flags += 'window.__wrizoReorgOff=true;';
+  flags += "try{if(localStorage.getItem('wrizo-theme')!=='flux')window.__wrizoReorgOff=true;}catch(e){window.__wrizoReorgOff=true;}";
   if (!flags) return body;
   return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }
@@ -453,6 +453,7 @@ if (!process.env.WS_URL_SEARCH && process.env.WS_ARBOR2 !== 'default') process.e
 // is unchanged; url-search-optin-unit.mjs names this block as the second ruled foothold.
 { const s = process.env.WS_URL_SEARCH; if (process.env.WS_MACHINA2 !== 'default' && (!s || (s === '?arbor2=0' && process.env.WS_ARBOR2 !== 'default'))) process.env.WS_URL_SEARCH = s ? `${s}&machina2=0` : '?machina2=0'; }
 
+process.env.WS_FLUX3 = 'default';   // PROBE, never merged
 // THE FLUX REDESIGN IS ON BY DEFAULT (Nick, Nov 22; Fable, Nov 23, 2:30 pm: "Pin ?flux3=0 in the driver for files that don't ask: YES"). Arbor's and Machina's pins above, extended to Flux: a fresh profile
 // pins the plain Flux (?flux3=0) for any file that doesn't ask for the redesign, so the files written for it keep testing what they were written for. A file ASKS with WS_FLUX3=default, or names its own query
 // with WS_URL_SEARCH, which wins (the query is unset, or exactly the other pins); a file that navigates with its own URL is unaffected. url-search-optin-unit.mjs names this block as the third ruled foothold.
