@@ -24,7 +24,7 @@ const SURFACES = [
 ];
 
 const SIGNATURE = `(() => {
-  const VOLATILE = new Set(['style', 'd', 'points', 'transform', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'viewBox', 'opacity', 'stroke-dashoffset', 'stroke-dasharray']);
+  const VOLATILE = new Set(['style', 'd', 'points', 'transform', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'viewBox', 'opacity', 'stroke-dashoffset', 'stroke-dasharray', 'data-arbor2-sb']);   // data-arbor2-sb: Arbor's scrollbar shows for a moment after a click (FT-CLICKCTRL read it differ between two default opens)
   const SKIP = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'LINK']);
   const mask = (v) => String(v).replace(/:r[0-9a-z]+:/g, ':r:').replace(/[0-9]+([.][0-9]+)?/g, '#');
   const attrs = (e, drop) => [...e.attributes].filter((a) => a.name !== 'class' && !VOLATILE.has(a.name) && !drop.has(a.name)).map((a) => a.name + '=' + mask(a.value)).sort().join(' ');
