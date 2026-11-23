@@ -321,7 +321,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const flashState = flashLap != null ? (flashFading ? 'fading' : 'true') : null;
   const flashCopy = vines && flashState && m ? (
     <svg className="arbor2-vines-flash" aria-hidden="true" focusable="false" data-flash={flashState} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none"
-      style={{ clipPath: clipD ? `path(evenodd, "${clipD}")` : undefined,
+      // #100 (Nov 23): the clip-path only while the mask is still the SVG fallback. The bitmap mask already cuts every hole (and draws the edge fade),
+      // and a path() clip on this animating layer cost fast keys in the fade ~7 ms of median latency and 10% over 40 ms by day (bug100-rhizome-fade.mjs)
+      style={{ clipPath: clipD && !flashMask ? `path(evenodd, "${clipD}")` : undefined,
         ...(flashMask ? { maskImage: `url("${flashMask}")`, WebkitMaskImage: `url("${flashMask}")`, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskMode: 'alpha' } : {}) }}
       data-mask={flashMask ? 'bitmap' : 'svg'}>
       <g mask={flashMask ? undefined : 'url(#wz-rhizome-mask)'}><ArborVines plan={plan} past={pastPlans} geo={CANON} room={roomStable!} p={vineP} fromTip={shownVisit > 0} /></g>
