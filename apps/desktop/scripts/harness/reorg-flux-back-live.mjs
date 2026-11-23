@@ -10,6 +10,7 @@
 //   FB5  piece OFF without the door: in Flux the drawer is today's (no Spine tab, no reorg markup), the table's flux.back is still off
 //   FB8  the row names keep their room (none cut) and the open tab wears the 3 x 24 brass bar (the Wrizors Flux pass 1, REAL 4 and NIT 1)
 //   FB9  Uplink keeps the bar one row and the page rectangle; the view lies over the page, has no box, and its buttons and ticks are in Flux dress (REAL 1, 2 and 3)
+//   FB15 Wire In (the Corridor): the Writing prompt button is wholly inside the opened panel (not scrolled out of view)
 //   FB13 Wire In (the Corridor): the opened Back menu ends above her line (the Wrizors' pass 2)
 //   FB14 the Operator's fields are in field dress with #7EB4C4 hints (pass 2)
 //   FB11 Wire In (the Corridor): the Back menu's opener and its opened panel are drawn and can be pressed; the left hand and the rail stay off (spec section 5)
@@ -161,6 +162,9 @@ await withHarness(async (app) => {
   // FB13 (the Wrizors' pass 2, REAL 1): in Wire In the opened panel ends above her line (its foot is capped), so it never covers what she is writing
   const cover = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (!last) return null; const r = document.createRange(); r.selectNodeContents(last); const rects = [...r.getClientRects()]; if (!rects.length) return null; return { panelBottom: Math.round(p.getBoundingClientRect().bottom), lineTop: Math.round(Math.min(...rects.map((x) => x.top))) }; })()");
   ok('FB13 Wire In (the Corridor): the opened Back menu ends above her line', !!cover && cover.panelBottom <= cover.lineTop, cover);
+  // FB15 (the frames after pass 2: the first cap hid the action): in Wire In the Writing prompt button is wholly inside the opened panel (not scrolled out of view)
+  const act = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'); if (!p) return null; const b = [...p.querySelectorAll('button')].find((x) => /writing prompt/i.test(x.textContent || '')); if (!b) return { found: false }; const pr = p.getBoundingClientRect(), br = b.getBoundingClientRect(); return { found: true, inside: br.top >= pr.top - 1 && br.bottom <= pr.bottom + 1, btnBottom: Math.round(br.bottom), panelBottom: Math.round(pr.bottom) }; })()");
+  ok('FB15 Wire In (the Corridor): the Writing prompt button is wholly inside the opened panel', !!act && act.found === true && act.inside === true, act);
 
   await open(app, 'fb-1', { flux3: false });
   await drawer(app);
@@ -169,7 +173,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 14;
+const EXPECTED = 15;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -104,5 +104,6 @@
 :root[data-flux3][data-theme='flux'] :is(.wz-tutor-panel, .wz-tutor-panel *){ scrollbar-color:#5F8F95 transparent; }
 /* NIT 1: the panel is node dress (#04141A), as the rail's panels are */
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel{ background:#04141A; }
-/* REAL 1 (Arbor's pass 1 had the same and the same fix): in Wire In the opened panel is capped, so it ends above her line (which sits at the stage's middle) and never covers it; its content scrolls inside */
-:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-back-sprint='true']{ max-height:38%; }
+/* REAL 1 (Arbor's pass 1 had the same fix): in Wire In the opened panel is capped, so it ends above her line (which sits at the stage's middle) and never covers it. The first cap (38%) left it about 213 px tall and the Writing prompt button scrolled out of sight, so the cap is 54% (about 300 px at 1366) and the search field is not drawn in Wire In (the Operator sends prompts only: there is nothing to search), which frees the room the action needs */
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-back-sprint='true']{ max-height:54%; }
+:root[data-flux3][data-theme='flux'] .wz-tutor-panel[data-back-sprint='true'] :is(.reorg-search-door, .reorg-search-field){ display:none; }
