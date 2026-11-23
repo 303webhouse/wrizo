@@ -147,7 +147,8 @@ await withHarness(async (app) => {
   const upMark = Array.isArray(up) ? up.find((x) => x.id === 'text') : null, upTrack = Array.isArray(up) ? up.find((x) => x.id === 'parts') : null;
   ok('FF9 Uplink: MARKUP is greyed with Flux\'s note, and TRACKS is the open tab', !!upMark && upMark.off === true && upMark.title === 'Markup and Ink lock at Uplink. Patch to change the words.' && !!upTrack && upTrack.on === true && upTrack.off === false, up);
 
-  await open(app, 'ff-1');
+  // on ff-2: a page keeps the mode it was left in, so Wire In pressed on ff-1 would leave every later check on a page with no drawer (run 45112891211: FF11, FF13)
+  await open(app, 'ff-2');
   const wire = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
   const wireOff = await app.evalJs("({ sliver: !!document.querySelector('.wz-sliver'), page: !!document.querySelector('.forward-only-editor') })");
@@ -160,8 +161,8 @@ await withHarness(async (app) => {
 
   await open(app, 'ff-1', { flux3: false });
   await drawer(app);
-  const plain = await app.evalJs("({ flux3: document.documentElement.hasAttribute('data-flux3'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
-  ok('FF12 the plain Flux never has it: without ?flux3=1 even the door gives no Front menu', !!plain && plain.flux3 === false && plain.parts === false && plain.list === false, plain);
+  const plain = await app.evalJs("({ flux3: document.documentElement.hasAttribute('data-flux3'), grip: !!document.querySelector('.wz-sliver-grip'), parts: !!document.querySelector('#wz-sliver-tab-parts'), list: !!document.querySelector('.reorg-parts') })");
+  ok('FF12 the plain Flux never has it: without ?flux3=1 even the door gives no Front menu', !!plain && plain.flux3 === false && plain.grip === true && plain.parts === false && plain.list === false, plain);
 
   await open(app, 'ff-1', { lift: '', flux3: false, theme: 'machina' });
   await drawer(app);
