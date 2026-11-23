@@ -172,7 +172,10 @@ function suite(front, tags, sliver, ftabs, words) {
     const row = '.reorg-parts-list > li > .reorg-parts-row';
     const pad = last(row, 'padding-left'), gap = last(row, 'gap'), num = last('.reorg-parts-num', 'width'), tag = last('.reorg-parts-tag', 'min-width'), more = last('.reorg-parts-more', 'width'), moreM = last('.reorg-parts-more', 'margin-right');
     const left = pad + num + gap + tag + gap;
-    return { pass: left <= 58 && more + moreM <= 22, detail: J({ pad, gap, num, tag, left, more, moreM }) };
+    const li = '.reorg-parts-list > li[data-part-li]';
+    const grid = /display:\s*grid/.test(bodyOf(rs, li)) && /grid-template-columns:\s*minmax\(0, 1fr\) auto/.test(bodyOf(rs, li));
+    const under = /grid-row:\s*2/.test(bodyOf(rs, `${li} > button.reorg-parts-assets`)) && /grid-row:\s*1/.test(bodyOf(rs, `${li} > .reorg-parts-row`)) && /grid-row:\s*3/.test(bodyOf(rs, `${li} > .reorg-part-menu`));
+    return { pass: left <= 58 && more + moreM <= 22 && grid && under, detail: J({ pad, gap, num, tag, left, more, moreM, grid, under }) };
   });
   t('HINT', () => { const b = bodyOf(rs, '.reorg-pubparts .reorg-parts-head'); const pass = /text-transform:\s*none/.test(b) && /letter-spacing:\s*normal/.test(b) && /font-family:\s*var\(--font-ui\)/.test(b); return { pass, detail: J({ b }) }; });
   return R;
@@ -216,6 +219,8 @@ const MUT = [
   ['the rule also takes Machina', 'SITES', 'ftabs', (t) => t.replace("theme === 'plateau' || theme === 'flux';", () => "theme === 'plateau' || theme === 'flux' || theme === 'machina';")],
   ['the row goes back to its wide left', 'ROOM', 'front', (t) => t.replace('padding-left:calc(7px + var(--part-level, 0) * 14px)', () => 'padding-left:calc(12px + var(--part-level, 0) * 14px)')],
   ['the row\'s "..." widens', 'ROOM', 'front', (t) => t.replace(`${SC} .reorg-parts-more{ width:20px; margin-right:0; }`, () => `${SC} .reorg-parts-more{ width:26px; margin-right:4px; }`)],
+  ['the badge goes back beside the name', 'ROOM', 'front', (t) => t.replace('> button.reorg-parts-assets{ grid-row:2; grid-column:1;', () => '> button.reorg-parts-assets{ grid-row:1; grid-column:2;')],
+  ['the Track row stops being a grid', 'ROOM', 'front', (t) => t.replace('li[data-part-li]{ display:grid;', () => 'li[data-part-li]{ display:flex;')],
   ['the hint goes back to caps', 'HINT', 'front', (t) => t.replace(`${SC} .reorg-pubparts .reorg-parts-head{ text-transform:none;`, () => `${SC} .reorg-pubparts .reorg-parts-head{ text-transform:uppercase;`)],
   ['a word is lost', 'WORDS', 'words', (t) => t.replace(/^\s*reorgColourThisPart:.*\n/m, () => '')],
 ];

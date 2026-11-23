@@ -37,6 +37,12 @@ const tab = async (app, id) => { await app.evalJs(`document.getElementById('wz-s
 
 export default {
   'flux-front-markup': async (app) => { await seed(app); await open(app); await tab(app, 'text'); },
+  // a DIAGNOSTIC frame, not for review: the MARKUP frame with a readout of where the block caret is drawn, what the selection says and what stands at the stray bar's place (x 479, y 459 at 1366)
+  'flux-front-probe': async (app) => {
+    await seed(app); await open(app); await tab(app, 'text');
+    await app.evalJs("(() => { const c = document.querySelector('.flux-block-caret'); const r = c && c.getBoundingClientRect(); const s = getSelection(); let sr = null; try { if (s && s.rangeCount) { const x = s.getRangeAt(0).getClientRects()[0]; sr = x ? [Math.round(x.left), Math.round(x.top), Math.round(x.height)] : 'no rect'; } } catch { sr = 'threw'; } const a = document.activeElement; const info = { vw: innerWidth, caret: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null, sel: sr, anchor: s && s.anchorNode ? s.anchorNode.nodeName + ':' + s.anchorOffset : null, active: a ? String(a.className || a.tagName).slice(0, 30) : null, at: document.elementsFromPoint(479, 459).slice(0, 3).map((x) => String(x.className || x.tagName).split(' ')[0]) }; const d = document.createElement('div'); d.textContent = JSON.stringify(info); d.style.cssText = 'position:fixed;left:380px;top:300px;width:600px;z-index:99999;padding:8px;background:#000;color:#fff;font:13px monospace;word-break:break-all'; document.body.appendChild(d); return null; })()");
+    await sleep(200);
+  },
   'flux-front-folds': async (app) => {
     await seed(app); await open(app); await tab(app, 'text');
     for (let i = 0; i < 2; i += 1) { await app.evalJs("(() => { for (const b of document.querySelectorAll('.wz-sliver-panel [data-text-fold][aria-expanded=\"false\"]')) b.click(); return null; })()"); await sleep(300); }

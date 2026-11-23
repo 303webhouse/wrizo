@@ -182,6 +182,12 @@
 :root[data-flux3][data-theme='flux'] .reorg-parts-more{ width:20px; margin-right:0; }
 /* Uplink's hint is a sentence: sentence case in the UI face (flux-reorg-words B), not the list head's caps */
 :root[data-flux3][data-theme='flux'] .reorg-pubparts .reorg-parts-head{ text-transform:none; letter-spacing:normal; font-family:var(--font-ui); font-size:12px; line-height:1.45; color:var(--text-low); }
+/* the link badge stands UNDER the name (run 45115349149: beside it, a linked Track's name had 38 px of its 77): the row and its "..." on the first line, the badge on the second under the name, the row's menu below; a Track with no links stays one line */
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li]{ display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:center; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-parts-row{ grid-row:1; grid-column:1; width:100%; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-parts-more{ grid-row:1; grid-column:2; }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > button.reorg-parts-assets{ grid-row:2; grid-column:1; justify-self:start; margin:-5px 0 4px calc(51px + var(--part-level, 0) * 14px); }
+:root[data-flux3][data-theme='flux'] .reorg-parts-list > li[data-part-li] > .reorg-part-menu{ grid-row:3; grid-column:1 / -1; }
 /* the link badge: [chain n] in text-low, no box; it opens INPUTS at that Track */
 :root[data-flux3][data-theme='flux'] button.reorg-parts-assets{ border:0; padding:0 2px; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] button.reorg-parts-assets::before{ content:'['; }
