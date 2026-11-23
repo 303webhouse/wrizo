@@ -54,24 +54,21 @@ try { await withHarness(async (app) => {
   ok(`PV1 at 50,000 words (${end.breaks.length} breaks) the marks layer holds at most ${MAX_PAIRS} pairs, not one for every break`, end.breaks.length >= 100 && judgeFew(end.pairs.length), JSON.stringify({ breaks: end.breaks.length, pairs: end.pairs.length }));
   const lastTwo = end.breaks.slice(-2);
   ok('PV2 the breaks nearest the caret (the end of the page) have their pairs', lastTwo.length === 2 && lastTwo.every((b) => end.pairs.includes(b)), JSON.stringify({ lastTwo, pairs: end.pairs.slice(-4) }));
+  // the keys as space-enter-cost.mjs sends them (the run that named this cost): fourteen of one kind back to back, a rAF + a task to read each, 60 ms between (the scroll rest's redraw lands in the next key's frame)
   const AFTER = "new Promise((res) => { const t0 = performance.now(); requestAnimationFrame(() => setTimeout(() => res(performance.now() - t0), 0)); })";
   const cost = { letter: [], space: [] };
-  for (let round = 0; round < 12; round += 1) {
-    for (const [kind, ch] of [['letter', 'a'], ['letter', 'b'], ['space', ' ']]) {
-      await app.typeKeys(ch);
-      const dt = await ev(AFTER);
-      cost[kind].push(dt);
-      await sleep(220);   // past the 150 ms scroll timer, as a writer's next key is
-    }
+  for (const [kind, ch] of [['letter', 'a'], ['space', ' ']]) {
+    for (let i = 0; i < 14; i += 1) { await app.typeKeys(ch); cost[kind].push(await ev(AFTER)); await sleep(60); }
+    await rest();
   }
   const med = { letter: q(cost.letter, 0.5), space: q(cost.space, 0.5) };
-  ok('PV3 a Space costs no more than a letter plus 60 ms at 50,000 words (key-to-frame median over 12)', med.space <= med.letter + 60, JSON.stringify({ letterMs: Math.round(med.letter), spaceMs: Math.round(med.space) }));
+  ok('PV3 a Space costs no more than a letter plus 60 ms at 50,000 words (key-to-frame median over 14)', med.space <= med.letter + 60, JSON.stringify({ letterMs: Math.round(med.letter), spaceMs: Math.round(med.space) }));
   await rest();
   await ev("(() => { const sc = document.querySelector('.mode-scroll'); sc.scrollTop = 0; sc.dispatchEvent(new Event('scroll')); return true; })()");
   await rest(); await rest();
   const top = await read();
-  const firstTwo = top.breaks.slice(0, 2), lastOne = top.breaks[top.breaks.length - 1];
-  ok('PV4 scrolled to the top and at rest: the first breaks are drawn, the last is not, still at most 12 pairs', firstTwo.every((b) => top.pairs.includes(b)) && !top.pairs.includes(lastOne) && judgeFew(top.pairs.length), JSON.stringify({ firstTwo, lastOne, pairs: top.pairs.length }));
+  const firstTwo = top.breaks.slice(0, 1), lastOne = top.breaks[top.breaks.length - 1];   // the first break is in the view's band; the second, a page on, is beyond a view and a half
+  ok('PV4 scrolled to the top and at rest: the first break is drawn, the last is not, still at most 12 pairs', firstTwo.every((b) => top.pairs.includes(b)) && !top.pairs.includes(lastOne) && judgeFew(top.pairs.length), JSON.stringify({ firstTwo, lastOne, pairs: top.pairs.length }));
 
   // ---- a short page: nothing is dropped ----
   await open(1000);
