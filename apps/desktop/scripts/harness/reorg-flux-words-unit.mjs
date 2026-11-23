@@ -37,7 +37,9 @@ const LIVE = run(FLUX, {});
 const canon = new Map();
 for (const f of ['chrome', 'settings', 'decks', 'help']) {
   for (const line of rd(`store/lexicon/canonical/${f}.ts`).split('\n')) {
-    const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // SUPERSEDED (Nov 23, Flux's rail: spec section 1 sets plainTrackerSwitch to "Use the skin's meter", the one key the table may set besides the reorg* keys, as Arbor's unit allows): the matcher read reorg* keys only. The original, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    const m = /^  (reorg[A-Za-z0-9]*|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }
@@ -79,7 +81,9 @@ const SAMPLES = {
 };
 // SUPERSEDED (Nov 21): const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
 const KEPT = ['reorgLensLabel', 'reorgKindResearch'];
-const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Meter', reorgLensAskPlaceholder: 'Query this doc…' };
+// SUPERSEDED (Nov 23, the Wrizors' rail pass 1 NIT 4, ruled by Fable, Nov 22 10:50 pm: "tell the two meter switches apart": the Doc default reads "Show the meter" beside the Session's "Use the skin's meter"). The original, verbatim:
+// const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Meter', reorgLensAskPlaceholder: 'Query this doc…' };
+const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Show the meter', plainTrackerSwitch: "Use the skin's meter", reorgLensAskPlaceholder: 'Query this doc…' };   // [successor]
 const CASE = { reorgAddNewBoard: 'New circuit', reorgAddExistingBoard: 'Existing circuit', reorgAddSearchBoards: 'Find a circuit', reorgAddNewDoc: 'New Doc', reorgAddSearchDocs: 'Find a Doc', reorgAssetsAdd: 'Add an input', reorgAssetsAddTo: 'Add an input to {part}', reorgPubTxt: 'Plain text', reorgPlanOpenPart: 'Open track', reorgSprintAnother: 'Another prompt', reorgDocStyleGuide: 'Style guide', reorgSearchReachProject: 'This drive', reorgPartPrevTo: 'Previous track: {part}', reorgSearchLineProject: 'Its Docs and circuits' };
 
 function suite(src) {
@@ -102,9 +106,13 @@ function suite(src) {
   });
   t('ONLY', () => {
     const E = load(src), W = E.FLUX_REORG_WORDS, live = (LIVE.FLUX_OVERRIDES.flux) || {};
-    const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 23, spec section 1: the reorg's own word for the live key plainTrackerSwitch, "Use the skin's meter", replaces "Use Skin Progress Tracker" while Flux's reorg is on; it is the ONE named exception). The originals, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // const kept = Object.keys(live).every((k) => merged[k] === live[k]);
+    const NAMED = 'plainTrackerSwitch';
+    const bad = Object.keys(W).filter((k) => k !== NAMED && (!/^reorg/.test(k) || !canon.has(k) || k in live));   // [successor]
     const merged = E.FLUX_OVERRIDES.flux;
-    const kept = Object.keys(live).every((k) => merged[k] === live[k]);
+    const kept = Object.keys(live).every((k) => k === NAMED || merged[k] === live[k]);   // [successor]
     const others = Object.keys(E.FLUX_OVERRIDES).sort().join(',') === Object.keys(LIVE.FLUX_OVERRIDES).sort().join(',');
     return { pass: bad.length === 0 && kept && others, detail: J({ bad, kept, others }) };
   });

@@ -85,7 +85,7 @@ export const FLUX_REORG_WORDS = {
   reorgSearchBoardHead: 'Circuit · {name}',
   reorgDefaults: 'Doc defaults · every doc',
   reorgTypewriter: 'Wire In',
-  reorgProgressBars: 'Meter',
+  reorgProgressBars: 'Show the meter',   // the Wrizors' rail pass 1, NIT 4: it no longer reads as a twin of "Use the skin's meter"
   reorgNoProjectHeading: 'Docs in Orphans',
   reorgFile: 'File {name} to a drive…',
   reorgUnfiledEmpty: 'No orphans.',

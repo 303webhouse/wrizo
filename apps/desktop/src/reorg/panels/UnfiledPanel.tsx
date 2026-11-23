@@ -9,6 +9,7 @@ import { firstLine } from '../../store/entryText';
 import { softDeleteEntry } from '../../store/persistence';
 import { wordCount } from '../../store/wordCount';
 import { unfiledMembers } from '../railData';
+import { useTheme } from '../../store/theme';
 
 // UNFILED (step 6, frame R6): writing with no Project, and only that (Fable, Nov 14: the hidden Journal is the Notebook, a place of its own,
 // listed last in All projects; never here, so a whole Journal never sits one press from the Trash). Each row: its title, its words and its
@@ -31,6 +32,8 @@ export function UnfiledCount() {
 export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeContext) {
   const { t } = useDeskLexicon();
   const [filing, setFiling] = useState<string | null>(null);
+  // FLUX: the two acts show their names (the Wrizors' rail pass 1, NIT 5: the first icon read as "add")
+  const named = useTheme() === 'flux';
   const rows = unfiledMembers().slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
   return (
     <div className="wz-cascade-panel-body wz-reorg-unfiled">
@@ -47,9 +50,9 @@ export function UnfiledPanel({ subject, navigate, travelFromCascade }: CascadeCo
                     <span className="wz-reorg-list-title">{title}</span>
                     <span className="wz-reorg-row-meta">{fill(t(words === 1 ? 'reorgWordsOne' : 'reorgWordsMany'), 'n', words.toLocaleString('en-US'))} · {new Date(e.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   </button>
-                  <button type="button" className="wz-reorg-icon-btn" data-unfiled-file={e.id} aria-label={fill(t('reorgFile'), 'name', title)} title={fill(t('reorgFile'), 'name', title)} onClick={() => setFiling(e.id)}><FileIcon /></button>
+                  <button type="button" className="wz-reorg-icon-btn" data-unfiled-file={e.id} aria-label={fill(t('reorgFile'), 'name', title)} title={fill(t('reorgFile'), 'name', title)} onClick={() => setFiling(e.id)}>{named ? t('reorgFileShort') : <FileIcon />}</button>
                   <button type="button" className="wz-reorg-icon-btn" data-unfiled-trash={e.id} aria-label={fill(t('reorgTrashOne'), 'name', title)} title={fill(t('reorgTrashOne'), 'name', title)}
-                    onClick={() => requestDelete(() => { softDeleteEntry(e.id); })}><TrashIcon /></button>
+                    onClick={() => requestDelete(() => { softDeleteEntry(e.id); })}>{named ? t('reorgTrash') : <TrashIcon />}</button>
                 </li>
               );
             })}

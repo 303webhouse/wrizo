@@ -206,7 +206,8 @@ await withHarness(async (app) => {
   for (const cat of Object.keys(LISTS)) {
     await openDoor(cat);
     reads[cat] = await app.evalJs(`(() => { const b = document.querySelector('[data-reorg-rail] [data-category="${cat}"]'), p = document.querySelector('.wz-cascade-panel[data-category="${cat}"]:not([data-leaving="true"])'); if (!b || !p) return null; const o = b.querySelector('.wz-strip-readout'), h = p.querySelector('[data-reorg-count]');
-      return { n: p.querySelectorAll(${q(LISTS[cat])}).length, head: h ? Number(h.textContent) : null, reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title'), trash: /in the Trash/.test(p.innerText || '') }; })()`);
+      const folded = ${cat === 'plan'} ? [...p.querySelectorAll('.wz-set-count')].reduce((s, e) => s + Number(e.textContent), 0) : 0;   // DRIVER FIX (Nov 23): CIRCUITS folds a set that is not the current one, so its head states the rows. No assertion changes.
+      return { where: (p.querySelector('.wz-sections-place-name') || {}).textContent || null, n: folded || p.querySelectorAll(${q(LISTS[cat])}).length, head: h ? Number(h.textContent) : null, reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title'), trash: /in the Trash/.test(p.innerText || '') }; })()`);
   }
   const hintFor = { 'reorg-docs': (n) => `${n} ${n === 1 ? 'doc' : 'docs'}`, 'reorg-projects': (n) => `${n} ${n === 1 ? 'drive' : 'drives'}`, 'reorg-unfiled': (n) => (n === 1 ? '1 doc or circuit not filed in a drive' : `${n} docs and circuits not filed in a drive`), plan: (n) => `${n} ${n === 1 ? 'circuit' : 'circuits'} in this drive`, journal: (n) => `${n} ${n === 1 ? 'doc' : 'docs'} in the Log` };
   const r15 = (x) => Object.keys(LISTS).every((c) => !!x[c] && x[c].n >= 1 && x[c].reading === pad2(x[c].n) && (x[c].head === null || x[c].head === x[c].n) && x[c].hint === hintFor[c](x[c].n) && !x[c].trash);

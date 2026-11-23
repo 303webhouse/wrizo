@@ -7,6 +7,7 @@ import { isDefaultRoot } from '../../store/place';
 import { NOTEBOOK, railProjects, type RailProject } from '../railData';
 import { isPinned, setOpenList, togglePin, useRailMemory } from '../railMemory';
 import { RailBox } from '../RailBox';
+import { useTheme } from '../../store/theme';
 import { useWhereSheIs } from '../ReorgRail';
 import { BoxSettings } from './BoxSettings';
 
@@ -22,13 +23,20 @@ const fillName = (s: string, name: string): string => s.replace('{name}', name);
 function useRows(): RailProject[] {
   const { t } = useDeskLexicon();
   const lex = useLexicon();
-  return railProjects(lex.t('journal')).map((p) => (p.drawer && isDefaultRoot(p.drawer) ? { ...p, name: t('placeRootName') } : p));
+  const all = railProjects(lex.t('journal')).map((p) => (p.drawer && isDefaultRoot(p.drawer) ? { ...p, name: t('placeRootName') } : p));
+  // FLUX: the Log has its own door on the rail, so DRIVES lists only Drives, and the Log only while it is pinned, so she can unpin it (the Wrizors' rail pass 1, REAL 2)
+  const flux = useTheme() === 'flux';
+  const pins = useRailMemory().pins;
+  return flux ? all.filter((r) => r.id !== NOTEBOOK || pins.includes(NOTEBOOK)) : all;
 }
 
 /** The pop-out head's count: how many Projects All projects lists (the Notebook is not a Project: not counted). */
 export function ProjectsCount() {
   // FIX 1 (Fable, Nov 14, 3:52 pm): All projects counts its Projects; the Notebook is listed, never counted
-  return <span className="wz-reorg-head-count" data-reorg-count="">{useRows().filter((r) => r.id !== NOTEBOOK).length}</span>;
+  // FLUX counts exactly the rows DRIVES lists (the Log among them only while it is pinned)
+  const rows = useRows();
+  const flux = useTheme() === 'flux';
+  return <span className="wz-reorg-head-count" data-reorg-count="">{flux ? rows.length : rows.filter((r) => r.id !== NOTEBOOK).length}</span>;
 }
 
 export function ProjectsPanel({ subject, openCategory }: CascadeContext) {

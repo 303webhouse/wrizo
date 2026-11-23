@@ -7,7 +7,7 @@ import { getDrawer, getDrawers, getSystemKind } from '../store/persistence';
 import { railHint, railReadout } from '../store/fluxReadouts';
 import { isDefaultRoot, JOURNAL, UNSORTED } from '../store/place';
 import { usePlace } from '../store/usePlace';
-import { countsOf, NOTEBOOK, notebookDocs, projectOfEntry, unfiledMembers } from './railData';
+import { NOTEBOOK, projectOfEntry, railCounts } from './railData';
 import { setOpenList, setPinView, useOpenList, useRailMemory } from './railMemory';
 import { RailBox } from './RailBox';
 import { REORG } from './flag';
@@ -107,21 +107,18 @@ function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; ope
   // FLUX: every door counts what the reorg's OWN lists show (a set of Tracks is one Doc; the Log is the Notebook, its loose pages are Orphans), read when the rail
   // renders (a new place, page or open door), never per key; L2's sentence frames. The live rail's page counts would contradict DRIVES' rows (the frames on 5fa0119c).
   const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
-  const drives = flux && reads ? getDrawers().length : 0;
-  const orphans = flux && reads ? unfiledMembers().length : 0;
-  const held = flux && reads ? countsOf(here) : null;
-  const logDocs = flux && reads ? notebookDocs().length : 0;
-  const scope = here != null && here !== NOTEBOOK ? 'drawer' : 'journal';
-  const heldRead = (kind: 'docs' | 'circuits' | 'place', n: number): RailRead => ({ count: railReadout(n), hint: railHint(kind, n, scope, hintWords) });
-  const placeRead = held ? heldRead('place', held.docs + held.boards) : null;
+  const place = usePlace();
+  const counts = flux && reads ? railCounts(place, here, memory.pins) : null;
+  const placeRead: RailRead | null = counts ? { count: railReadout(counts.held.docs + counts.held.boards), hint: railHint('place', counts.held.docs + counts.held.boards, here != null && here !== NOTEBOOK ? 'drawer' : 'journal', hintWords) } : null;
+  const drivesHint = counts ? `${railHint('drives', counts.drives, 'journal', hintWords)}${counts.logPinned ? ` and the ${hintWords.log}` : ''}` : '';
   const doors: Door[] = flux
     // FLUX'S PLACES (flux-reorg-spec.md section 2): the redesign's command boxes (flux3/flux-v3.css L2), each with its true count and hover hint
     ? [
-      { id: 'reorg-docs', label: lex.tMany('page'), icon: <SetIcon id="docs" fallback={<DocsIcon />} />, lit: true, read: held ? heldRead('docs', held.docs) : undefined },
-      { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true, read: reads ? { count: railReadout(drives), hint: railHint('drives', drives, 'journal', hintWords) } : undefined },
-      { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true, read: reads ? { count: railReadout(orphans), hint: railHint('place', orphans, 'journal', hintWords) } : undefined },
-      { id: 'plan', label: t('stripPlan'), icon: <SetIcon id="circuits" fallback={<ArborPlanIcon />} />, lit: true, read: held ? heldRead('circuits', held.boards) : undefined },
-      { id: 'journal', label: t('drawerPlaceJournal'), icon: <SetIcon id="log" fallback={<ArborJournalIcon />} />, lit: true, read: reads ? { count: railReadout(logDocs), hint: railHint('log', logDocs, 'journal', hintWords) } : undefined },
+      { id: 'reorg-docs', label: lex.tMany('page'), icon: <SetIcon id="docs" fallback={<DocsIcon />} />, lit: true, read: counts ? { count: railReadout(counts.docs), hint: railHint('recent', counts.docs, 'journal', hintWords, counts.docsAll) } : undefined },
+      { id: 'reorg-projects', label: lex.tMany('drawer'), icon: <ProjectsIcon />, lit: true, read: counts ? { count: railReadout(counts.drives + (counts.logPinned ? 1 : 0)), hint: drivesHint } : undefined },
+      { id: 'reorg-unfiled', label: t('reorgUnfiled'), icon: <UnfiledIcon />, lit: true, read: counts ? { count: railReadout(counts.orphans), hint: railHint('place', counts.orphans, 'journal', hintWords) } : undefined },
+      { id: 'plan', label: t('stripPlan'), icon: <SetIcon id="circuits" fallback={<ArborPlanIcon />} />, lit: true, read: counts ? { count: railReadout(counts.circuits), hint: railHint('circuits', counts.circuits, place.kind === 'drawer' ? 'drawer' : 'journal', hintWords) } : undefined },
+      { id: 'journal', label: t('drawerPlaceJournal'), icon: <SetIcon id="log" fallback={<ArborJournalIcon />} />, lit: true, read: counts ? { count: railReadout(counts.log), hint: railHint('log', counts.log, 'journal', hintWords) } : undefined },
     ]
     : arbor
     // ARBOR'S PLACES (spec §2): PAGES cold blue (the session is its last item, §7), DRAWERS olive, SHELF cold blue (Nick, Nov 20 4:13 pm), CANVASES

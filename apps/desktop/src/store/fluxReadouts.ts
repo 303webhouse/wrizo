@@ -51,11 +51,13 @@ const one = (n: number, w: string): string => `${n} ${n === 1 ? singular(w) : pl
 
 /** The hover hint that names what a rail box's count counts (a bare number is only true when its scope is clear). where: unfiled (the Journal) or inside a rack (a Drawer). Sentence frames live here; the
  *  nouns arrive in `words`. */
-export type RailHintKind = 'docs' | 'circuits' | 'log' | 'place' | 'voice' | 'tone' | 'drives';
-export function railHint(kind: RailHintKind, n: number | string, where: 'journal' | 'drawer', words: RailHintWords): string {
+export type RailHintKind = 'docs' | 'circuits' | 'log' | 'place' | 'voice' | 'tone' | 'drives' | 'recent';
+export function railHint(kind: RailHintKind, n: number | string, where: 'journal' | 'drawer', words: RailHintWords, total?: number): string {
   const num = typeof n === 'number' ? n : 0;
   const rack = singular(words.rack);
   const scope = where === 'journal' ? `not filed in a ${rack}` : `in this ${rack}`;
+  // the reorg's DOCS door counts the rows Recent lists; past its cap the hint says how many there are in all
+  if (kind === 'recent') return total != null && total > num ? `The ${num} latest of ${total} ${plural(words.doc)}` : one(num, words.doc);
   if (kind === 'drives') return one(num, words.rack);   // the reorg's DRIVES door: how many there are (flux-reorg-spec.md section 2)
   if (kind === 'docs') return `${one(num, words.doc)} ${scope}`;
   if (kind === 'circuits') return `${one(num, words.circuit)} ${scope}`;

@@ -1,11 +1,12 @@
 // FLUX'S RAIL ON THE REORG (flux-reorg-spec sections 1, 2, 7, 10 and 11), on the Flux REDESIGN (?flux3=1), as frames: the dark room only, at 1366 and 1920.
-//   gh workflow run frames.yml --ref ci/actions-harness -f ref=<full sha> -f screens=flux-rail-rest,flux-rail-orphans,flux-rail-drives,flux-rail-docs -f themes=flux -f tones=dark -f widths=1366,1920 -f screens_file=apps/desktop/scripts/frames/flux-reorg-rail.mjs
+//   gh workflow run frames.yml --ref ci/actions-harness -f ref=<full sha> -f screens=flux-rail-rest,flux-rail-orphans,flux-rail-drives,flux-rail-docs,flux-rail-session,flux-rail-reduced,flux-rail-off -f themes=flux -f tones=dark -f widths=1366,1920 -f screens_file=apps/desktop/scripts/frames/flux-reorg-rail.mjs
 // The piece is not switched on in reorg/themeGate.ts for Flux yet, so every frame takes it through the PREVIEW DOOR (?reorg=1&reorglift=flux.rail): the door only shows a piece, it flips no cell.
 // A frame is a LOOK (a PNG a person reads), never a verdict: it writes no assertion. Seeded through the app's own seams (window.wrizo*), never raw storage.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const press = (sel) => `(() => { const b = document.querySelector(${JSON.stringify(sel)}); if (!b || b.disabled) return false; b.click(); return true; })()`;
 
-async function seed(app) {
+async function seed(app, motion = '') {
+  await app.cdp('Emulation.setEmulatedMedia', { features: motion ? [{ name: 'prefers-reduced-motion', value: motion }] : [] });
   try { await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 }); } catch { /* the frame shows what is there */ }
   await app.evalJs(`(() => {
     const W = window;
@@ -48,9 +49,23 @@ export default {
   // DRIVES with Box settings open: the six signals by number, Custom…
   'flux-rail-drives': async (app) => { await seed(app); await open(app); await rest(app); },
   'flux-rail-docs': async (app) => {
+    await seed(app); await open(app); await door(app, 'reorg-docs'); await rest(app);
+  },
+  // the Session, open, scrolled so its group starts on a whole row
+  'flux-rail-session': async (app) => {
     await seed(app); await open(app); await door(app, 'reorg-docs');
     await app.evalJs(press('.wz-cascade-panel [data-session-fold]')); await sleep(350);
-    await app.evalJs("(() => { const s = document.querySelector('.wz-cascade-panel [data-session-fold]'); if (s) s.scrollIntoView({ block: 'start' }); return null; })()");
+    await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-docs\"]'), g = p && p.querySelector('[data-reorg-group=\"defaults\"]'); if (p && g) p.scrollTop += g.getBoundingClientRect().top - p.getBoundingClientRect().top; return null; })()");
     await rest(app);
+  },
+  // spec section 10: a door opened with reduced motion
+  'flux-rail-reduced': async (app) => { await seed(app, 'reduce'); await open(app); await door(app, 'reorg-unfiled'); await rest(app); },
+  // the same page with the reorg off (the redesign alone): what the room's foot looks like without this piece
+  'flux-rail-off': async (app) => {
+    await seed(app);
+    await app.evalJs("history.replaceState(null, '', '/?reorg=0&arbor2=0&flux3=1#/page/fr-1')");
+    await app.reload();
+    try { await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 }); } catch { /* the frame shows what is there */ }
+    await sleep(900); await rest(app);
   },
 };

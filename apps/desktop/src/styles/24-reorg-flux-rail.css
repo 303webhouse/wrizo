@@ -30,9 +30,9 @@
 :root[data-flux3][data-theme='flux'] .wz-reorg-pin-name{ text-transform:uppercase; max-width:76px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-pin-view{ display:flex; justify-content:center; gap:8px; padding-top:2px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn{ width:22px; height:18px; padding:0; display:inline-flex; align-items:center; justify-content:center;
-  background:none; border:1px solid transparent; color:var(--text-mid); cursor:pointer; }
+  background:none; border:1px solid transparent; color:#7EB4C4; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn svg{ width:14px; height:14px; }
-:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn[aria-pressed='true']{ border-color:var(--text-hi); color:var(--text-hi); }
+:root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn[aria-pressed='true']{ border-color:#7EB4C4; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .wz-reorg-pin-view-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:1px; }
 
 /* 3. a door that is not lit yet (DOCS in step 5, UNFILED in step 6): drawn, not pressable */
@@ -66,7 +66,7 @@
 :root[data-flux3][data-theme='flux'] .wz-reorg-session-fold:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-session-goal{ width:64px; font-family:var(--font-chromeLabel); font-size:12px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-row{ display:flex; align-items:center; border-bottom:1px solid #1D4A52; border-left:3px solid transparent; }
-:root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location']{ border-left-color:#FF9800; background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location']{ position:relative; border-left-color:#00C2FF; background:#0A2A33; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-row-open{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; padding:7px 0 7px 13px; background:none; border:0;
   color:var(--text-hi); text-align:left; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-row-text{ display:flex; flex-direction:column; min-width:0; gap:2px; }
@@ -91,7 +91,7 @@
 :root[data-flux3][data-theme='flux'] .wz-reorg-group-count{ margin-left:auto; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-doc{ list-style:none; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-list-row{ border-bottom:1px solid #1D4A52; border-left:3px solid transparent; }
-:root[data-flux3][data-theme='flux'] .wz-reorg-list-row[aria-current='page']{ border-left-color:#FF9800; background:#0A2A33; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-list-row[aria-current='page']{ position:relative; border-left-color:#00C2FF; background:#0A2A33; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-list-open{ display:flex; align-items:baseline; gap:8px; width:100%; padding:8px 14px 8px 13px; background:none; border:0;
   color:var(--text-hi); font-family:var(--font-contentLabel); font-size:13px; text-align:left; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-list-row--part .wz-reorg-list-open{ padding-left:31px; font-size:12px; }
@@ -120,7 +120,7 @@
 :root[data-flux3][data-theme='flux'] .wz-reorg-own-colour input{ width:18px; height:14px; padding:0; border:0; background:none; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-swatches{ display:flex; gap:8px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-swatch{ width:22px; height:22px; padding:0; border:1px solid #5F8F95; cursor:pointer; }
-:root[data-flux3][data-theme='flux'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid var(--text-hi); outline-offset:2px; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-swatch[aria-checked='true']{ outline:2px solid #00C2FF; outline-offset:2px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-chip:focus-visible, :root[data-flux3][data-theme='flux'] .wz-reorg-swatch:focus-visible,
 :root[data-flux3][data-theme='flux'] .wz-reorg-letters:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:2px; }
 
@@ -151,6 +151,12 @@
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]{ background:#04141A; border-color:#7EB4C4; }
 /* the pop-out stops before the page's left opener, and keeps its 300 px where there is room (reorg/railRoom.ts publishes the room) */
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
+/* the Wrizors' pass 1. REAL 1: every scrollbar in a pop-out draws its thumb in the field edge (5.2:1 on the panel) */
+:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category], :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category] *{ scrollbar-color:#5F8F95 transparent; }
+/* NIT 1: the choice mark, a cyan edge (above) with the thin 3 x 24 brass bar on the current row */
+:root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location']::before, :root[data-flux3][data-theme='flux'] .wz-reorg-list-row[aria-current='page']::before{ content:''; position:absolute; left:-3px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); pointer-events:none; }
+/* NIT 5: an orphan row's two acts are words */
+:root[data-flux3][data-theme='flux'] .wz-reorg-icon-btn{ width:auto; min-width:28px; padding:0 7px; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.04em; }
 /* Box settings: fields on the field fill; Custom… in sentence case; each swatch carries its code, 01 to 06, in the chrome's face */
 :root[data-flux3][data-theme='flux'] .wz-reorg-letters, :root[data-flux3][data-theme='flux'] .wz-reorg-new-input{ background:#020C10; border:1px solid #5F8F95; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] .wz-reorg-box-settings-caret{ text-transform:none; }   /* the head is caps; its open caret is a small v, never a letter V */
