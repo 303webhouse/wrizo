@@ -51,8 +51,10 @@ async function load(app, id) {
 
 const rest = [], drawer = [];
 await withHarness(async (app) => {
+  // one seed for both widths: a second localStorage.clear() in the same browser never got its Top Drawer back (run 45245370945)
+  await fresh(app, 1366);
   for (const w of [1366, 1920]) {
-    await fresh(app, w);
+    await app.emulateDpr(1, w, HEIGHT[w]);
     for (let i = 0; i < LOADS; i += 1) {
       await load(app, 'ff-1');
       await sleep(1200);   // past every settle the page has: what is drawn now stays drawn
