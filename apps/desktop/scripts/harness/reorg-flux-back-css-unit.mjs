@@ -21,6 +21,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
 const J = (v) => JSON.stringify(v);
 const CSS = rd('styles/24-reorg-flux.css');
+const TUTOR = rd('components/Tutor.tsx');
 const SRCDIR = fileURLToPath(new URL('../../src', import.meta.url));
 
 // a tiny reader: rules as { sel, body } (no nesting in this file), comments dropped
@@ -52,7 +53,7 @@ const machinaSelectors = () => {
   return [...out];
 };
 
-function suite(css) {
+function suite(css, tutor = TUTOR) {
   const R = {};
   const rs = rules(css);
   const t = (name, fn) => { try { R[name] = fn(); } catch (e) { R[name] = { pass: false, detail: 'THREW ' + String(e.message).slice(0, 160) }; } };
@@ -125,27 +126,37 @@ function suite(css) {
     const leftHidden = !rs.some((x) => /wz-sliver-grip/.test(x.sel) && /visibility:\s*visible/.test(x.body));
     return { pass: g && leftHidden, detail: J({ g, leftHidden }) };
   });
-  t('CORRIDOR3', () => {
-    // the Wrizors-bound frames of Nov 23 (flux-back-wirein): the grip drew INSIDE the opened panel, on its OPERATOR tab. Wire In is the zoom, which widens the page's half, so the grip's formula (the page's right edge) and the panel (clamp(320px, 34vw, 460px), flush to the stage's right) no longer meet. In the Corridor the grip's anchor is placed from the panel: opened, 16 px left of the panel's own width; closed, flush to the stage's right edge. Marked by data-open on the anchor
-    const sel = (open) => rs.filter((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.desk-frame-tutor-anchor\[data-back='true'\]/.test(x.sel) && (open ? /\[data-open='true'\]/.test(x.sel) : /\[data-open='false'\]/.test(x.sel)));
-    const opened = sel(true).some((x) => /left:\s*calc\(100% - clamp\(320px, 34vw, 460px\) - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
-    const closed = sel(false).some((x) => /left:\s*calc\(100% - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
-    return { pass: opened && closed, detail: J({ opened, closed }) };
+  // SUPERSEDED (Nov 23, Actions frames at 1920: the panel is not always clamp(320px, 34vw, 460px) wide, so a CSS placement of the grip cannot hold at every size; the grip is measured from the opened panel in Tutor.tsx instead, as a board's is). The original CORRIDOR3, verbatim:
+  // t('CORRIDOR3', () => {
+  // // the Wrizors-bound frames of Nov 23 (flux-back-wirein): the grip drew INSIDE the opened panel, on its OPERATOR tab. Wire In is the zoom, which widens the page's half, so the grip's formula (the page's right edge) and the panel (clamp(320px, 34vw, 460px), flush to the stage's right) no longer meet. In the Corridor the grip's anchor is placed from the panel: opened, 16 px left of the panel's own width; closed, flush to the stage's right edge. Marked by data-open on the anchor
+  // const sel = (open) => rs.filter((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.desk-frame-tutor-anchor\[data-back='true'\]/.test(x.sel) && (open ? /\[data-open='true'\]/.test(x.sel) : /\[data-open='false'\]/.test(x.sel)));
+  // const opened = sel(true).some((x) => /left:\s*calc\(100% - clamp\(320px, 34vw, 460px\) - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
+  // const closed = sel(false).some((x) => /left:\s*calc\(100% - 16px\)/.test(x.body) && /right:\s*auto/.test(x.body));
+  // return { pass: opened && closed, detail: J({ opened, closed }) };
+  // });
+  t('CORRIDOR4', () => {
+    // [successor] the opened grip is MEASURED from the panel: Tutor.tsx's grip-position effect runs for the reorg's Back menu too (not only a board), reads the panel's own rect, and in a prose page only in the Corridor (data-flux3-jacked); the sheet carries no guess of the panel's width
+    const effect = /\(pageKind !== 'board' && !back\)/.test(tutor) && /pageKind !== 'board' && !document\.documentElement\.hasAttribute\('data-flux3-jacked'\)/.test(tutor) && /\[open, docked, pageKind, panelWidthPx, back, sprint\]/.test(tutor);
+    const noGuess = !rs.some((x) => /desk-frame-tutor-anchor/.test(x.sel) && /\[data-flux3-jacked\]/.test(x.sel) && /(^|[\s;])left\s*:/.test(x.body));
+    return { pass: effect && noGuess, detail: J({ effect, noGuess }) };
   });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR3'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
 ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
 
 const MUT = [
-  ['the opened grip is placed from the page again (inside the panel)', 'CORRIDOR3', (t) => t.replace('left:calc(100% - clamp(320px, 34vw, 460px) - 16px)', () => 'left:auto')],
-  ['the closed grip is not flush to the stage edge', 'CORRIDOR3', (t) => t.replace('left:calc(100% - 16px)', () => 'left:50%')],
+  // [successors, against CORRIDOR4]
+  ['a CSS guess of the opened grip returns to the sheet', 'CORRIDOR4', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-tutor-anchor[data-back='true']{ left:calc(100% - 476px); }\n`],
+  // SUPERSEDED (Nov 23, see CORRIDOR3 above): its two mutants, verbatim:
+  // ['the opened grip is placed from the page again (inside the panel)', 'CORRIDOR3', (t) => t.replace('left:calc(100% - clamp(320px, 34vw, 460px) - 16px)', () => 'left:auto')],
+  // ['the closed grip is not flush to the stage edge', 'CORRIDOR3', (t) => t.replace('left:calc(100% - 16px)', () => 'left:50%')],
   ['the grip stays hidden in the Corridor', 'CORRIDOR2', (t) => t.replace('visibility:visible', () => 'visibility:hidden')],
   ['the grip of the left hand is shown in the Corridor too', 'CORRIDOR2', (t) => `${t}
 :root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-sliver-grip{ visibility:visible; }
@@ -176,6 +187,20 @@ for (const [name, key, fn] of MUT) {
   try { res = landed ? suite(after) : null; } catch (e) { err = e; }
   const red = !!res && res[key] && res[key].pass === false;
   ok(`MUT ${name}: it LANDED and ${key} goes RED`, landed && !err && red, J({ landed, err: err && String(err.message).slice(0, 120), key, pass: res && res[key] && res[key].pass }));
+}
+
+// CORRIDOR4's other half rewrites Tutor.tsx (a second source), so its mutants run here
+const TMUT = [
+  ['the measure effect loses the Back menu arm (a prose page is never measured)', (s) => s.replace("(pageKind !== 'board' && !back)", () => "pageKind !== 'board'")],
+  ['the measure runs in a prose page outside the Corridor too', (s) => s.replace("(pageKind !== 'board' && !document.documentElement.hasAttribute('data-flux3-jacked'))", () => 'false')],
+  ['the effect forgets the Back menu in its dependencies', (s) => s.replace('[open, docked, pageKind, panelWidthPx, back, sprint]', () => '[open, docked, pageKind, panelWidthPx]')],
+];
+for (const [name, fn] of TMUT) {
+  const after = TUTOR ? fn(TUTOR) : TUTOR;
+  const landed = !!TUTOR && after !== TUTOR;
+  let res = null, err = null;
+  try { res = landed ? suite(CSS, after) : null; } catch (e) { err = e; }
+  ok(`MUT ${name}: it LANDED and CORRIDOR4 goes RED`, landed && !err && !!res && res.CORRIDOR4 && res.CORRIDOR4.pass === false, J({ landed, err: err && String(err.message).slice(0, 120) }));
 }
 
 let bad = 0;
