@@ -56,7 +56,8 @@ export async function main({ title }) {
         const st = steps[i];
         const before = await d.read(); const e0 = d.errors.length;
         if (st.k === 'type') { m.type(st.s); want[active] = m.text; await d.type(st.s); }
-        else if (st.k === 'enter') { want.splice(active + 1, 0, ''); active += 1; m = new Model('', 0, 0, 'linux'); await d.key('Enter'); }
+        else if (st.k === 'enter') { if (st.committed) want[active] = st.committed; want.splice(active + 1, 0, ''); active += 1; m = new Model('', 0, 0, 'linux'); await d.key('Enter'); }
+        else if (st.k === 'join') { want.splice(active, 1); active -= 1; const n = want[active].length; m = new Model(want[active], n, n, 'linux'); await d.key('Backspace'); }   // Backspace at a line's start: the line joins the one above
         else if (st.k === 'key') { m.key(st); want[active] = m.text; await d.key(st.key, st); }
         else if (st.k === 'tab') { await d.key('Tab'); }
         await d.frames(); await sleep(450);
@@ -75,9 +76,12 @@ export async function main({ title }) {
       }
       if (tail) await tail({ pid, want, fails, notes });
     });
-    const T = (s) => ({ k: 'type', s }), E = () => ({ k: 'enter' }), K = (key, o = {}) => ({ k: 'key', key, ...o });
+    const T = (s) => ({ k: 'type', s }), E = (committed) => ({ k: 'enter', committed }), K = (key, o = {}) => ({ k: 'key', key, ...o }), J = () => ({ k: 'join' });
     await scriptCase('SC1', 'type a scene heading, Enter, action, Enter, a name, Enter, a line', [T('INT. KITCHEN'), E(), T('She enters.'), E(), T('ANNA'), E(), T('Hello.')]);
-    await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E(), E(), K('Backspace')]);
+    // SUPERSEDED (SCRIPT #3, Fable, Nov 23: a scene heading commits in capitals on Enter, so 'One' reads ONE, and Backspace on the empty line joins it to the line above; the model expected neither). The case, verbatim:
+    // await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E(), E(), K('Backspace')]);
+    // [successor] the same keys, expecting ONE after the first Enter and the empty line gone after Backspace
+    await scriptCase('SC2', 'Enter, Enter, then Backspace on the empty element', [T('One'), E('ONE'), E(), J()]);
     await scriptCase('SC3', 'type, Backspace twice, type on', [T('Hello'), K('Backspace'), K('Backspace'), T('p')]);
     await scriptCase('SC4', 'type, Home, End, Left, Right inside one element', [T('Hello world'), K('Home'), K('End'), K('ArrowLeft'), K('ArrowRight')]);
     await run('SC5', 'Tab cycles the element type and the text stays', async (fails) => {

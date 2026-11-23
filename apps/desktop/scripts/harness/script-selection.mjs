@@ -17,6 +17,12 @@
 //            D5  (control) Delete inside a line removes one character
 //            D6  Delete at the end of a line above a scene heading joins them with no word lost, saved
 // BACKSPACE  B1  (control) Backspace at the start of a line with no selection still joins it to the line above
+//            B2  Backspace into a blank line above: the blank goes, the written line keeps its type, and the next keys land at its start (Fable, Nov 23)
+//            B3  the same with a scene heading: it stays a scene heading
+//            B4  (control) Backspace on a blank line under a blank line leaves one blank line
+//            B5  (control) Backspace under a WRITTEN line still joins them in the upper line's type
+//            B6  a blank first heading above a written line: the line keeps its type and its words, saved
+//            B7  a line of only spaces above counts as blank
 //
 // Run (repo root; the Actions harness, or a box turn):  node apps/desktop/scripts/harness/script-selection.mjs
 import { withHarness } from '../runtime-verify.mjs';
@@ -124,12 +130,26 @@ await withHarness(async (app) => {
   // ---- BACKSPACE
   await open([HEAD, ['action', 'Alpha.'], ['action', 'Beta.']], 2); await caret(0); await press('Backspace'); const b1 = await lines(), b1a = await active(); await type('X'); const b1t = await lines();
   ok('B1 (control): Backspace at the start of a line with no selection still joins it to the line above', same(b1, [HEAD, ['action', 'Alpha.Beta.']]) && b1a?.i === 1 && b1t[1]?.[1] === 'Alpha.XBeta.', { b1, b1a, b1t });
+  await open([HEAD, A, ['action', ''], ['character', 'MARA'], ['dialogue', 'Hello.']], 3); await caret(0); await press('Backspace'); const b2 = await lines(), b2a = await active(); await type('X'); const b2t = await lines();
+  ok('B2: Backspace into a blank line above: the blank goes, the written line keeps its type, and the next keys land at its start', same(b2, [HEAD, A, ['character', 'MARA'], ['dialogue', 'Hello.']]) && b2a?.i === 2 && b2a?.focused === true && b2t[2]?.[1] === 'XMARA', { b2, b2a, b2t });
+  await open([HEAD, ['action', ''], ['scene', 'EXT. B - NIGHT'], ['action', 'Rain.']], 2); await caret(0); await press('Backspace'); g = await lines();
+  ok('B3: the same with a scene heading: it stays a scene heading', same(g, [HEAD, ['scene', 'EXT. B - NIGHT'], ['action', 'Rain.']]), g);
+  await open([HEAD, A, ['action', ''], ['character', '']], 3); await caret(0); await press('Backspace'); const b4 = await lines(), b4a = await active();
+  ok('B4 (control): Backspace on a blank line under a blank line leaves one blank line', same(b4, [HEAD, A, ['action', '']]) && b4a?.i === 2, { b4, b4a });
+  await open([HEAD, ['character', 'MARA'], ['dialogue', 'Hello.']], 2); await caret(0); await press('Backspace'); g = await lines();
+  ok('B5 (control): Backspace under a WRITTEN line still joins them in the upper line\'s type', same(g, [HEAD, ['character', 'MARAHello.']]), g);
+  const b6Id = await open([['scene', ''], ['action', 'Alpha.']], 1); await caret(0); await press('Backspace'); g = await lines();
+  await sleep(2700);   // the page's own autosave
+  const b6 = await app.evalJs(`(() => { window.wrizoFlushNow(); const all = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); const e = all.find((r) => r.id === ${q(b6Id)}); return e && e.script ? e.script.scenes.flatMap((s) => [s.heading, ...s.body]).map((x) => [x.t, x.text]).filter((x) => x[1] !== '') : null; })()`);
+  ok('B6: a blank first heading above a written line: the line keeps its type and its words, saved', same(g, [['action', 'Alpha.']]) && same(b6, [['action', 'Alpha.']]), { g, b6 });
+  await open([HEAD, ['action', '   '], ['character', 'MARA']], 2); await caret(0); await press('Backspace'); g = await lines();
+  ok('B7: a line of only spaces above counts as blank', same(g, [HEAD, ['character', 'MARA']]), g);
   return checks;
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 500)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 16;
+const EXPECTED = 22;
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nSCRIPT-SELECTION VERIFY: PASS (${checks.length} checks)` : `\nSCRIPT-SELECTION VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
