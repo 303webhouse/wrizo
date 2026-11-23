@@ -16,6 +16,33 @@ const PS = "{ margins: 'normal', lineSpacing: 1.6, pageNumbers: { on: false, pla
 
 // every place the caret is drawn while the page loads, with the zoom and the mode at that moment: printed for a stale load, so a red names its own moment
 const CARET_LOG = "(() => { window.__cl = []; const snap = () => { const c = document.querySelector('.flux-block-caret'); const z = document.querySelector('.mode-pagecol'); const m = document.querySelector('.desk-mode-tab.active'); const r = c && c.getBoundingClientRect(); const k = [r ? Math.round(r.left) : '-', r ? Math.round(r.top) : '-', r ? Math.round(r.height) : '-', z ? (z.getAttribute('data-zoom') || 'nozoom') : 'nopage', m ? m.getAttribute('data-mode-key') : 'nomode'].join(' '); const L = window.__cl; if (!L.length || L[L.length - 1][1] !== k) L.push([Math.round(performance.now()), k]); }; new MutationObserver(snap).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'data-zoom', 'class'] }); })()";
+// INFO for a stale load: what happened after the caret's last draw (stylesheets and fonts arriving, selection and caret events, resizes), and every change in where the editor and the selection stand, frame by frame for four seconds
+const LAYOUT_LOG = `(() => {
+  const E = window.__ev = [];
+  const t = () => Math.round(performance.now());
+  const say = (x) => { if (E.length < 70) E.push(t() + ' ' + x); };
+  document.addEventListener('load', (e) => { const n = e.target; if (n && n.tagName === 'LINK') say('css ' + String(n.href).split('/').pop()); }, true);
+  try { document.fonts.addEventListener('loadingdone', (e) => say('fonts ' + e.fontfaces.map((f) => f.family + ' ' + f.weight).join(','))); } catch {}
+  document.addEventListener('selectionchange', () => say('selectionchange'));
+  document.addEventListener('wz-caret-moved', () => say('wz-caret-moved'));
+  window.addEventListener('resize', () => say('resize'));
+  let last = '';
+  const t0 = performance.now();
+  const tick = () => {
+    const ed = document.querySelector('.forward-only-editor');
+    if (ed) {
+      const r = ed.getBoundingClientRect();
+      const s = getSelection();
+      let x = null;
+      try { x = s && s.rangeCount ? s.getRangeAt(0).getClientRects()[0] : null; } catch {}
+      const cs = getComputedStyle(ed);
+      const k = 'ed ' + [r.left, r.top, r.width, r.height].map(Math.round).join(',') + ' sel ' + (x ? [x.left, x.top, x.height].map(Math.round).join(',') : '-') + ' font ' + cs.fontSize + ' ' + cs.fontFamily.split(',')[0];
+      if (k !== last) { last = k; say(k); }
+    }
+    if (performance.now() - t0 < 4000) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})()`;
 const READ = "(() => { const c = document.querySelector('.flux-block-caret'); const r = c && c.getBoundingClientRect(); const s = getSelection(); let x = null; try { x = s && s.rangeCount ? s.getRangeAt(0).getClientRects()[0] : null; } catch { x = null; } const z = document.querySelector('.mode-pagecol'); return { caret: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.height)] : null, sel: x ? [Math.round(x.left), Math.round(x.top), Math.round(x.height)] : null, zoom: z ? z.getAttribute('data-zoom') : 'nopage', active: (document.activeElement && document.activeElement.className || '').toString().split(' ')[0] }; })()";
 const stale = (v) => !v || !v.caret || !v.sel || Math.abs(v.caret[0] - v.sel[0]) > 2 || Math.abs(v.caret[1] - v.sel[1]) > 2 || Math.abs(v.caret[2] - v.sel[2]) > 3;
 
@@ -45,9 +72,11 @@ async function fresh(app, w) {
 
 async function load(app, id) {
   const { identifier } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: CARET_LOG });
+  const { identifier: layoutId } = await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: LAYOUT_LOG });
   await app.evalJs(`history.replaceState(null, '', '/#/page/${id}')`);
   await app.reload();
   await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+  await app.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: layoutId });
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
 }
@@ -63,7 +92,7 @@ await withHarness(async (app) => {
       await sleep(1200);   // past every settle the page has: what is drawn now stays drawn
       const v = await app.evalJs(READ);
       const row = { w, i, ...v };
-      if (stale(v)) row.log = await app.evalJs('(window.__cl || []).slice(-8)');
+      if (stale(v)) { row.log = await app.evalJs('(window.__cl || []).slice(-8)'); console.log('INFO timeline ' + JSON.stringify({ w, i, ev: await app.evalJs('window.__ev || []') })); }
       rest.push(row);
       await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null");
       await sleep(900);
