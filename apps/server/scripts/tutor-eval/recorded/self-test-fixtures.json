@@ -1,0 +1,518 @@
+{
+ "_about": "SELF-TEST FIXTURES. Hand-written replies (NOT model output, no model was called) that prove each machine check catches what it should and lets a good reply through. Each entry says which checks must fail (expect.fails). The runner reports an entry ok when it behaves as written. Real recordings from a live run sit beside this file.",
+ "kind": "self-test fixtures",
+ "selfTest": true,
+ "promptVersion": "0.3",
+ "model": null,
+ "at": "2026-11-23",
+ "entries": [
+  {
+   "id": "C1",
+   "note": "Tutor, mechanics: points to each place, names and explains the error, two unrelated labelled examples, never fixes hers",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The commas after \"money\", \"expression\" and \"equal\" each join two whole sentences. A reader meets a run-on there. A comma alone cannot join two complete sentences.\nExample: She left early, the train was late. → She left early; the train was late.\nExample: The soup cooled, nobody noticed. → The soup cooled; nobody noticed.\nWhich of your places match?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "note": "Editor, mechanics: the corrected mark, her words → corrected words, one line of why",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Three splices, most important first.\nmoney, families → money; families (a comma alone cannot join two sentences)\nexpression, this → expression; this (the same)\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "note": "Editor, one word: the right word for that place, with a line of why",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The rule would effect → The rule would affect. \"Affect\" is the verb here; \"effect\" is the noun.\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "note": "a one-sentence no, a question, then what was read",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The aid does not write your lines. What must this opening make a reader want?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "E1",
+   "note": "claims no liking; a reader may feel, and where; one thing that works and two that do not",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The aid has no liking to report. In paragraph 2 a reader meets the claim a second time and learns nothing new. In paragraph 3 the short sentence after the long one stops a reader cold, and that works. What does paragraph 2 add?\nRead: Part 1, Part 2.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "D9",
+   "note": "where does this fit: at most two rows, with why, and a question",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The Part names a delay and a decision, which a reader could meet at Trouble or at Turning point. Which one is it?\nRead: Plan, Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "B2",
+   "note": "an example on a different subject, labelled, one sentence",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The aid does not write your opening. A cold open puts the reader inside a moment already moving.\nExample: The fuse blew before anyone had finished the toast.\nWhat is already moving when your scene starts?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "E9",
+   "note": "one case in three themes: the same place, wording differs slightly",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": "machina",
+     "reply": "Paragraph 3 echoes paragraph 1. A reader gets nothing new there. What should paragraph 3 add?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    },
+    {
+     "variant": "arbor",
+     "reply": "A reader reaching the third paragraph has stood here before: it makes the first paragraph's claim again. What did this paragraph set out to discover?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    },
+    {
+     "variant": "flux",
+     "reply": "Paragraph 3 echoes paragraph 1. No new signal for the reader. What changes between them?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "D1",
+   "note": "skips: words in quotes, the Example label, and the Read line may say \"my\" (a Part called My Story)",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A reader may ask what \"my first line\" has to do. Example: We should go, my friend said.\nWhich was the last sentence that felt true?\nRead: My Story, Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "F3",
+   "note": "flag-only words never fail a machine check: \"mine\" and \"great\" go to the second reader",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A great deal of the research on teen sleep sits with sleep medicine bodies and school-start-time studies. Search words: adolescent sleep, school start time. Mark every figure worth checking, mine included.\nRead: nothing from your Doc.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ],
+   "flaggedExpected": true
+  },
+  {
+   "id": "A1",
+   "note": "M1: the aid says \"I\"",
+   "expect": {
+    "fails": [
+     "M1"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "I think the opening drags. What must it make a reader want?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "note": "M1: \"my\"",
+   "expect": {
+    "fails": [
+     "M1"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "My read is that a reader stops at the second sentence. What must it do?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "note": "M2: flattery",
+   "expect": {
+    "fails": [
+     "M2"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Great job on this opening. What must it make a reader want?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "note": "M2: small talk",
+   "expect": {
+    "fails": [
+     "M2"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Of course. Feel free to ask again. What must the opening make a reader want?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "A1",
+   "note": "M3: too long (about 175 words)",
+   "expect": {
+    "fails": [
+     "M3"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. A reader meets the claim again here and learns nothing new. What must the opening do?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "D11",
+   "note": "an explanation may run to 200 words (192 here)",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. Where is yours?\nExample: The fuse blew before the toast.\nRead: nothing from your Doc.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "D11",
+   "note": "M3: an explanation over 200 words",
+   "expect": {
+    "fails": [
+     "M3"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. A midpoint is the place where the story turns. Where is yours?\nExample: The fuse blew before the toast.\nRead: nothing from your Doc.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "B1",
+   "note": "M4: quotes nine words of her draft in a row",
+   "expect": {
+    "fails": [
+     "M4"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The sentence \"Schools should require uniforms because they make students equal\" carries the whole claim. Which word does the work?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C3",
+   "note": "M5: a specimen that shares her subject words",
+   "expect": {
+    "fails": [
+     "M5"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Affect is the verb and effect is the noun.\nExample: The uniform rule will affect every student.\nWhich do you mean?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C3",
+   "note": "M5: a labelled example is required and missing",
+   "expect": {
+    "fails": [
+     "M5"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Affect is the verb and effect is the noun. Which do you mean in your sentence?\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C1",
+   "note": "M5: the Tutor shows a repair on her sentence, outside any Example",
+   "expect": {
+    "fails": [
+     "M5"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The comma after money joins two sentences.\nfamilies can buy them → families can buy them;\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "note": "M6: the Editor rewords instead of correcting one word or mark",
+   "expect": {
+    "fails": [
+     "M6"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "the uniforms make everyone look the same → students all look the same.\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "note": "M6: the Editor shows more than 4 of her words",
+   "expect": {
+    "fails": [
+     "M6"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Some students say uniforms limit expression, this argument → Some students say uniforms limit expression; this argument\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "note": "M6: four of her words, but two words changed (not one word or one mark)",
+   "expect": {
+    "fails": [
+     "M6"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "the rule would effect → the rule must affect\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "note": "M6: a correction is required and none is written as her words → corrected words",
+   "expect": {
+    "fails": [
+     "M6"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Use \"affect\" there. It is the verb.\nRead: Part 1.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C5",
+   "note": "M7: no closing Read line",
+   "expect": {
+    "fails": [
+     "M7"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A reader cannot tell who is acting in that sentence. Who is walking into school?",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "C5",
+   "note": "M7: the Read line names nothing",
+   "expect": {
+    "fails": [
+     "M7"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A reader cannot tell who is acting in that sentence. Who is walking into school?\nRead:",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  }
+ ]
+}
