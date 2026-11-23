@@ -49,6 +49,18 @@ export function getCaretOffset(el: HTMLElement): number {
   return pre.toString().length;
 }
 
+// SCRIPT #3: where the selection ENDS in this line (the same as getCaretOffset when nothing is selected). A selection running out past the line ends at the line's end.
+export function getSelectionEndOffset(el: HTMLElement): number {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return 0;
+  const range = sel.getRangeAt(0);
+  const pre = range.cloneRange();
+  pre.selectNodeContents(el);
+  if (!el.contains(range.endContainer)) return el.contains(range.startContainer) ? pre.toString().length : 0;
+  pre.setEnd(range.endContainer, range.endOffset);
+  return pre.toString().length;
+}
+
 export function setCaretOffset(el: HTMLElement, offset: number): void {
   const sel = window.getSelection();
   if (!sel) return;
