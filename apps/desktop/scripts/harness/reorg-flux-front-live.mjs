@@ -12,6 +12,9 @@
 //   FF17  the colour picker opens clear of the page's glass (NIT 6)
 //   FF18  Uplink's ticks are the one Flux tick, in TRACKS and in the view (pass 1, REAL)
 //   FF19  the COMMANDS edges are #5F8F95 in the Front menu, and today's drawer keeps its own (ship must)
+//   FF20  Wire In's end-of-Track line is DRAWN in text-low #7EB4C4: its three pieces, read from the screenshot's pixels (Fable, Nov 23, 8:20 am; the Wrizors' top bar pass 1 read 2.47 to 3.49, under the Typewriter's mask)
+//   FF21  the band over her words is untouched: only the fade BELOW the writing line is lifted, in a Doc with a foot
+//   FF22  a page with no foot keeps the Typewriter's whole band
 //   FF6   the open tab wears the same mark, and nothing in the menu is left to the browser's grey or white controls
 //   FF7   PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same through opening the menu, both tabs and the kind menu; the editor is the same node
 //   FF8   the colour picker is in node dress with the six codes, and its Custom field is in Flux's field dress
@@ -22,6 +25,7 @@
 //   FF13  Machina is unchanged: its first tab reads TEXT and Page setup stays at its foot (the probe the FF2 absence relies on, seen present)
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-front-live.mjs
 import { withHarness } from '../runtime-verify.mjs';
+import { decodePng, contrast } from '../arbor2-png.mjs';
 
 process.env.WS_PLACE = '1';
 const checks = [];
@@ -186,6 +190,30 @@ await withHarness(async (app) => {
   console.log('INFO foot paint ' + JSON.stringify(await app.evalJs("(() => { const g = document.querySelector('[data-part-foot] .is-next'); if (!g) return null; const r = g.getBoundingClientRect(); const root = document.documentElement; const stack = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).slice(0, 7).map((e) => { const c = getComputedStyle(e); return String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || e.tagName).split(' ')[0].slice(0, 28) + ' bg=' + c.backgroundColor + ' o=' + c.opacity; }); const up = []; for (let e = g; e; e = e.parentElement) { const c = getComputedStyle(e); const x = [c.filter !== 'none' ? 'filter ' + c.filter : '', c.mixBlendMode !== 'normal' ? 'blend ' + c.mixBlendMode : '', c.maskImage !== 'none' ? 'mask ' + c.maskImage.slice(0, 90) : '', c.clipPath !== 'none' ? 'clip ' + c.clipPath.slice(0, 50) : ''].filter(Boolean); if (x.length) up.push(String(e.className || e.tagName).split(' ')[0] + ': ' + x.join('; ')); } return { wirein: root.hasAttribute('data-wirein'), jacked: root.hasAttribute('data-flux3-jacked'), zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom'), box: [Math.round(r.left), Math.round(r.top)], stack, up }; })()")));
   await app.mouseMove(900, 460);
   for (const ms of [120, 230, 650, 1500, 2000]) { await sleep(ms); console.log('INFO foot +' + ms + ' ' + JSON.stringify(await app.evalJs(FOOT))); }
+  // FF20: what is DRAWN, not what is computed (the foot's own opacity read 1 while the column's mask drew it at 2.47:1). The brightest pixel of each piece is its ink's core.
+  const GROUND = '#020C10', LOW = 'rgb(126, 180, 196)';
+  const footPieces = await app.evalJs("(() => { const f = document.querySelector('[data-part-foot]'); if (!f) return null; return ['.reorg-part-foot-go:not(.is-next)', '.reorg-part-foot-end', '.reorg-part-foot-go.is-next'].map((s) => { const e = f.querySelector(s); if (!e) return { s, missing: true }; const r = e.getBoundingClientRect(); return { s, x: r.left, y: r.top, w: r.width, h: r.height, color: getComputedStyle(e).color }; }); })()");
+  const jacked = await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')");
+  const drawn = [];
+  for (const r of footPieces || []) {
+    if (r.missing || !(r.w > 0 && r.h > 0)) { drawn.push({ s: r.s, ratio: 0, color: r.color || null }); continue; }
+    try {
+      const shot = await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: r.x, y: r.y, width: r.w, height: r.h, scale: 1 } });
+      const img = decodePng(Buffer.from(shot.data, 'base64'));
+      let peak = '#000000', best = -1;
+      for (let i = 0; i < img.data.length; i += 4) { const v = img.data[i] * 0.2126 + img.data[i + 1] * 0.7152 + img.data[i + 2] * 0.0722; if (v > best) { best = v; peak = '#' + [img.data[i], img.data[i + 1], img.data[i + 2]].map((c) => c.toString(16).padStart(2, '0')).join(''); } }
+      drawn.push({ s: r.s, peak, ratio: Math.round(contrast(peak, GROUND) * 100) / 100, color: r.color });
+    } catch (e) { drawn.push({ s: r.s, ratio: 0, color: r.color, err: String(e.message || e).slice(0, 120) }); }
+  }
+  ok('FF20 Wire In\'s end-of-Track line is drawn in text-low #7EB4C4, all three pieces (8:1 or better at the ink\'s core)', jacked === true && drawn.length === 3 && drawn.every((d) => d.color === LOW && d.ratio >= 8), { jacked, drawn });
+  const BAND = "(() => { const c = document.querySelector('.mode-pagecol'); if (!c) return null; const m = getComputedStyle(c).webkitMaskImage || getComputedStyle(c).maskImage || ''; const n = (x) => m.split(x).length - 1; return { zoom: c.getAttribute('data-zoom'), foot: !!document.querySelector('[data-part-foot]'), s12: n('rgba(0, 0, 0, 0.12)'), s40: n('rgba(0, 0, 0, 0.4)'), s72: n('rgba(0, 0, 0, 0.72)') }; })()";
+  const bandFoot = await app.evalJs(BAND);
+  ok('FF21 with a foot, the band above her line is whole (.12, .4, .72) and only the fade below it is lifted', !!bandFoot && bandFoot.zoom === 'true' && bandFoot.foot === true && bandFoot.s12 === 1 && bandFoot.s40 === 1 && bandFoot.s72 === 1, bandFoot);
+  await open(app, 'ff-note');
+  const wireNote = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
+  await sleep(900);
+  const bandNone = await app.evalJs(BAND);
+  ok('FF22 a page with no foot keeps the Typewriter\'s whole band in Wire In', wireNote === true && !!bandNone && bandNone.zoom === 'true' && bandNone.foot === false && bandNone.s12 === 1 && bandNone.s40 === 2 && bandNone.s72 === 1, { wireNote, bandNone });
   ok('FF10 Wire In draws no Front menu', wire === true && !!wireOff && wireOff.sliver === false && wireOff.page === true, { wire, wireOff });
 
   await open(app, 'ff-1', { lift: 'flux.top' });
