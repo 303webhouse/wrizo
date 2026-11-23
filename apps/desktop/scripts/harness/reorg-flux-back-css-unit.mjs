@@ -116,7 +116,10 @@ function suite(css, tutor = TUTOR) {
   t('CORRIDOR', () => {
     // Wire In in Flux is the Corridor (data-flux3-jacked): flux-wirein.css hides every hand, anchor and handle there (Nick, Nov 8); Nick's Nov 20 word is the newer one: the Back menu's opener stays, and the opened Back menu with it. Only the RIGHT hand's anchors come back (marked data-back by the reorg's Tutor): the left hand stays off
     const back = rs.filter((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.desk-frame-tutor-anchor/.test(x.sel) && /\.desk-frame-tutor-panel-anchor/.test(x.sel) && /\[data-back='true'\]/.test(x.sel));
-    const shown = back.some((x) => /opacity:\s*1\s*!important/.test(x.body) && /pointer-events:\s*auto\s*!important/.test(x.body));
+    // SUPERSEDED (INK, Nov 23: the panel's anchor fills the stage, so pointer-events:auto on it swallowed every press on her page in Wire In; found reading flux3-s4c's CARET on live Flux). The original, verbatim:
+    // const shown = back.some((x) => /opacity:\s*1\s*!important/.test(x.body) && /pointer-events:\s*auto\s*!important/.test(x.body));
+    const grip = rs.some((x) => /\[data-flux3-jacked\]/.test(x.sel) && /\.wz-tutor-grip\[data-back='true'\]/.test(x.sel) && /pointer-events:\s*auto/.test(x.body));
+    const shown = grip && back.some((x) => /opacity:\s*1\s*!important/.test(x.body) && !/pointer-events:\s*auto/.test(x.body));
     const leftOff = !rs.some((x) => /desk-frame-sliver-anchor|desk-rail|desk-frame-strip|flux3-glitchbar/.test(x.sel) && /\[data-flux3-jacked\]/.test(x.sel));
     return { pass: shown && leftOff, detail: J({ rules: back.length, shown, leftOff }) };
   });
