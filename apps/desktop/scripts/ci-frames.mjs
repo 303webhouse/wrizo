@@ -198,13 +198,18 @@ if (unknown.length) { console.error(`CI-FRAMES: unknown screen(s): ${unknown.joi
 if (!DIST) { console.error('CI-FRAMES: --dist <dist-web> is required'); process.exit(2); }
 if (WIDTHS.some((w) => !HEIGHT[w])) { console.error(`CI-FRAMES: widths must be 1366 and/or 1920 (got ${WIDTHS.join(',')})`); process.exit(2); }
 
-const freshDesk = async (app, theme, tone, w) => {
+// THE LIVE-SPLASH OPT-IN (Fable, Nov 23, 1:00 pm; FIX's proposal): a screen function that carries `liveSplash = true` DECLARES that it shoots the live opening splash.
+// For such a screen (and only such a screen) the 50 ms test-speed hold is NOT set, the run waits for the splash to be ON SCREEN instead of gone, and the
+// "splash still on screen" refusal below is lifted; the row says `liveSplash: true`. Every other screen keeps the refusal: the default still refuses.
+const isLiveSplash = (fn) => !!fn && fn.liveSplash === true;
+const freshDesk = async (app, theme, tone, w, liveSplash = false) => {
   await app.emulateDpr(1, w, HEIGHT[w]);
   await app.goto('/');
-  await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
+  await app.evalJs(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); ${liveSplash ? '' : "localStorage.setItem('wrizo-splash-hold','50'); "}localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4');
     localStorage.setItem('wrizo-theme-prefs', ${JSON.stringify(JSON.stringify({ voice: 'serif', page: tone, fade: 'on' }))});
     localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)});`);
   await app.reload();
+  if (liveSplash) { await app.waitFor("!!document.querySelector('.wz-splash')", { label: 'the live splash on screen', timeout: 15000 }); return; }
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   // the opening splash plays on every load; the 50 ms hold override above is the harness's test speed, and a frame is only taken once it is GONE
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
@@ -219,12 +224,14 @@ await withHarness(async (app) => {
     const file = `${name}__${theme}-${tone}__${w}.png`;
     const row = { screen: name, theme, tone, width: w, height: HEIGHT[w], file };
     try {
-      await freshDesk(app, theme, tone, w);
+      const live = isLiveSplash(ALL[name]);
+      await freshDesk(app, theme, tone, w, live);
       const ctx = { theme, tone, width: w };
       await ALL[name](app, ctx);
       if (ctx.door) row.door = ctx.door;   // #87: which front door the signed-out driver took
-      // a frame of the opening splash is not a frame of the screen: refuse it rather than ship it
-      if (await app.evalJs("!!document.querySelector('.wz-splash')")) throw new Error('the opening splash is still on screen');
+      if (live) row.liveSplash = true;
+      // a frame of the opening splash is not a frame of the screen: refuse it rather than ship it (unless the screen declared `liveSplash`, above)
+      else if (await app.evalJs("!!document.querySelector('.wz-splash')")) throw new Error('the opening splash is still on screen');
       writeFileSync(path.join(OUT, file), Buffer.from(await app.screenshot(), 'base64'));
       row.status = 'ok';
       row.md5 = md5(path.join(OUT, file));
