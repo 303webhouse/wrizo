@@ -71,7 +71,7 @@ import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
 import { setFirstRunGateActive } from '../store/firstRunGateActive';
 import { useMonotonicWordCount, FirstRunVeil, FirstRunGateBanner, FirstRunGlow } from '../components/FirstRunGate';
 import { UnlockCeremony } from '../components/UnlockCeremony';
-import type { ThemeId } from '../store/theme';
+import { useTheme, type ThemeId } from '../store/theme';
 import { enterPageTypewriter, holdTypewriterPage, typewriterForPage } from '../store/writingSettings';   // PHASE 1 (S5) / typewriter-scope: per-page typewriter memory
 import { countLineEquivalents } from '../store/lineEquivalents';
 
@@ -121,6 +121,8 @@ function PageEditorView({ id }: { id: string }) {
   const framed = useDeskFrameViewport();
   // THE REORG'S TOP RAIL: on only under ?reorg=1 in Machina (reorg/TopRail.tsx); off, this header is byte-for-byte what it was
   const reorgTop = useReorgTop();
+  // FLUX's bar keeps CIRCUITS → as a live door (flux-reorg-spec.md section 3); elsewhere the reorg's bar holds only its strut
+  const fluxBar = useTheme() === 'flux';
   const reorgUplink = useReorgPiece('uplink');
   // non-null only while this surface has no row yet; every use below reads "if this page is still unborn", so the born path is the ordinary one, and `entry` resolves from the unborn slot meanwhile [PageEditor §1]
   const unborn = useUnborn(id);
@@ -1272,7 +1274,9 @@ function PageEditorView({ id }: { id: string }) {
                 // the PLAN door leaves the bar; a hidden strut keeps its height in its own place, so the row (and the page under it) never moves
                 stages={<ModeStrip mode={mode} onSwitch={(m) => { setPublishing(false); switchMode(m); }} publishActive={publishing}
                   onPublish={() => { if (publishing) setPublishing(false); else if (!unborn) { flush(); flushNow(); setPublishing(true); } }}
-                  end={<button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
+                  end={fluxBar
+                    ? <button type="button" className="btn-quiet page-plan-door" data-page-plan-door onClick={openPlanBoard}>{dt('pagePlanDoor')} <span aria-hidden="true">→</span></button>
+                    : <button type="button" tabIndex={-1} aria-hidden="true" className="btn-quiet page-plan-door" data-top-strut>{dt('pagePlanDoor')} <span>→</span></button>} />} />
             ) : <>
             {/* the address: crumb (marginRight:auto) · strip · actions, the shape the Board uses [PageEditor §33] */}
             <LocationCrumb entry={entry} project={project} drawer={drawer} title={pageTitle} />

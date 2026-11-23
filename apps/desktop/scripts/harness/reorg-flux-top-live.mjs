@@ -12,6 +12,7 @@
 // TAGS    T4  (spec 6, 11 rule 2) every slot a-f draws as its bracketed code [01]..[06] with a 3 px left bar in its signal and NO chip (no fill); the code in the signal holds
 //             4.5:1 on the bar's painted ground, the bar 3:1
 //         MUT-T4  the same reading with a filled chip turns T4's test red
+//         T4-B / MUT-T4-B  [T4 and its mutant parked Nov 23: spec 11 rule 2, "Beside its bar on the panel, the code is text-hi"; T4 asserted the code in the signal] the code is text-hi #E7F4F1
 //         T5  (spec 6) her own colour draws as its bar with the code [##]
 // STAGES  T6  (spec 3) the strip reads WIRE IN · TEXT · PATCH · UPLINK with CIRCUITS → after it; the current one has the cyan underline and the 3 x 24 brass bar, no other stage has the bar
 //         T7  (spec 11 rule 3) a hovered stage is never brass, and the current one keeps its bar
@@ -74,6 +75,8 @@ async function paintedGround(app, b) {
 const oneRow = (r) => !!r && !!r.bar && !!r.search && !!r.namesBox && Math.abs((r.search.t + r.search.h / 2) - (r.namesBox.t + r.namesBox.h / 2)) <= 6 && r.search.b <= r.bar.b + 1 && r.namesBox.t >= r.bar.t - 1;
 const t2 = (r) => !!r && r.names.length === 3 && r.names.every((n) => n.tt === 'uppercase' && n.ls >= 1 && n.bg === 'rgba(0, 0, 0, 0)' && n.border === '0px') && oneRow(r);
 const t4 = (list) => Object.keys(SIGNALS).every((s) => { const x = list[s]; return !!x && x.code === SIGNALS[s][0] && x.fill === 'rgba(0, 0, 0, 0)' && x.left === '3px' && x.bar === SIGNALS[s][1] && x.ink === SIGNALS[s][1] && x.top === '0px' && !!x.ground && contrast(x.ink, x.ground) >= 4.5 && contrast(x.bar, x.ground) >= 3; });
+const TEXT_HI = 'rgb(231, 244, 241)';
+const t4b = (list) => Object.keys(SIGNALS).every((s) => { const x = list[s]; return !!x && x.code === SIGNALS[s][0] && x.fill === 'rgba(0, 0, 0, 0)' && x.left === '3px' && x.bar === SIGNALS[s][1] && x.ink === TEXT_HI && x.top === '0px' && !!x.ground && contrast(x.ink, x.ground) >= 4.5 && contrast(x.bar, x.ground) >= 3; });
 const stage = async (app, key) => { await app.evalJs(`document.querySelector('.reorg-top .desk-mode-tab[data-mode-key="${key}"]')?.click(); null`); await sleep(1000); };
 
 await withHarness(async (app) => {
@@ -125,9 +128,16 @@ await withHarness(async (app) => {
     const x = await app.evalJs(TAG);
     tags[s] = x ? { ...x, ground: await paintedGround(app, x.clip) } : null;
   }
-  ok('T4 every slot a-f draws its code [01]..[06] with a 3 px left bar in its signal and no chip; the code 4.5:1 on the bar, the bar 3:1', t4(tags), tags);
+  // SUPERSEDED (Nov 23, before its first green: spec 11 rule 2 reads "Beside its bar on the panel, the code is text-hi"; this asserted the code in the signal). The original, verbatim:
+  // ok('T4 every slot a-f draws its code [01]..[06] with a 3 px left bar in its signal and no chip; the code 4.5:1 on the bar, the bar 3:1', t4(tags), tags);
+  void t4;
+  ok('T4-B every slot a-f draws its code [01]..[06] in text-hi beside a 3 px left bar in its signal, no chip; the code 4.5:1 on the bar, the bar 3:1', t4b(tags), tags);
   const chip = Object.fromEntries(Object.entries(tags).map(([k, v]) => [k, v && { ...v, fill: SIGNALS[k][1] }]));
-  ok('MUT-T4 the same reading with a filled chip turns T4\'s test red', !t4(chip), chip.a && chip.a.fill);
+  // SUPERSEDED with T4, the original, verbatim:
+  // ok('MUT-T4 the same reading with a filled chip turns T4\'s test red', !t4(chip), chip.a && chip.a.fill);
+  ok('MUT-T4-B the same reading with a filled chip turns T4-B\'s test red', !t4b(chip), chip.a && chip.a.fill);
+  const signalInk = Object.fromEntries(Object.entries(tags).map(([k, v]) => [k, v && { ...v, ink: SIGNALS[k][1] }]));
+  ok('MUT-T4-C the same reading with the code in its signal turns T4-B\'s test red', !t4b(signalInk), signalInk.a && signalInk.a.ink);
   await app.evalJs("window.wrizoParts && window.wrizoParts.setPartColor('ft-2', '#C0392B'); null"); await sleep(600);
   const own = await app.evalJs(TAG);
   ok('T5 her own colour draws as its bar with the code [##]', !!own && own.code === '[##]' && own.left === '3px' && own.bar === 'rgb(192, 57, 43)' && own.fill === 'rgba(0, 0, 0, 0)', own);
@@ -183,7 +193,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1600)}`);
-const EXPECTED = 17;   // T0 to T13, MUT-T2, MUT-T4, MUT-T8
+const EXPECTED = 18;   // T4 and MUT-T4 parked: + T4-B, MUT-T4-B, MUT-T4-C (Nov 23). Was: const EXPECTED = 17;   // T0 to T13, MUT-T2, MUT-T4, MUT-T8
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-TOP-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-TOP-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { memo, useCallback, useEffect, useReducer, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { JournalEntry } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -10,7 +10,7 @@ import { NOTEBOOK } from './railData';
 import { useProjectName, useWhereSheIs } from './ReorgRail';
 import { partsOfDoc, renamePart } from './partsSeam';
 import { PartsList } from './PartsList';
-import { useSchemeOnPage } from './colourScheme';
+import { customVars, useSchemeOnPage } from './colourScheme';
 import { useTheme } from '../store/theme';
 import { REORG } from './flag';
 import { openSearch } from './search/searchStore';
@@ -72,7 +72,8 @@ function Name({ id, text, editable, onCommit, why }: { id: string; text: string;
   );
 }
 
-const Sep = () => <span className="reorg-top-sep" aria-hidden="true">/</span>;
+// FLUX's crumb reads DRIVE ▸ DOC // TRACK (flux-reorg-spec.md section 3); every other theme keeps its slash
+const Sep = ({ glyph = '/' }: { glyph?: string }) => <span className="reorg-top-sep" aria-hidden="true">{glyph}</span>;
 
 /** The Project's name: a live Drawer's is editable; the Notebook and Unfiled are places. */
 function ProjectName({ entry }: { entry: JournalEntry }) {
@@ -251,29 +252,37 @@ function PageNamesImpl({ entry, canRename, beforeWrite }: NamesProps) {
   // the Part line drops every Part of the Doc (the prototype's parts drop, frame P2-12C, ruled B): the Front menu's own Parts list
   const [dropped, setDropped] = useState(false);
   // ARBOR (spec §3): the Section's tag (§6, Arbor's numbered cloth: INK's tokens in 25-reorg-arbor-tags.css) stands before its name; Machina draws none
-  const arbor = useTheme() === 'plateau';
+  const theme = useTheme();
+  const arbor = theme === 'plateau';
+  // FLUX (spec sections 3 and 6): the Track's name, then its readout TRK n/m; its tag is a bracketed code and a 3 px bar in its signal, or her own colour's bar with [##]
+  const flux = theme === 'flux';
+  const trackCount = (
+    <button type="button" className={`reorg-top-part-count${dropped ? ' is-open' : ''}`} data-top-part-count aria-expanded={dropped}
+      title={t('reorgTopPartsDrop')} onClick={() => setDropped((v) => !v)}>{fill(t('reorgTopPartOf'), { n: parts.here, m: parts.parts.length })}</button>
+  );
   return (
     <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
       <ProjectName entry={latest} />
-      <Sep />
+      <Sep glyph={flux ? '▸' : undefined} />
       <Name id="doc" text={docName} editable={canRename}
         onCommit={(v) => write(() => {
           // a Doc she made is renamed through its set's title (an existing field); a one-Part Doc's name is its page's own (pageSettings.name)
           if (made) { const set = getProject(parts.doc.set!.id); if (set && v.trim()) saveProject({ ...set, title: v.trim() }); }
           else renamePart(latest.id, v);
         })} />
-      <Sep />
+      <Sep glyph={flux ? '//' : undefined} />
       <span className="reorg-top-part" data-top-part>
-        <button type="button" className={`reorg-top-part-count${dropped ? ' is-open' : ''}`} data-top-part-count aria-expanded={dropped}
-          title={t('reorgTopPartsDrop')} onClick={() => setDropped((v) => !v)}>{fill(t('reorgTopPartOf'), { n: parts.here, m: parts.parts.length })}</button>
+        {!flux && trackCount}
         {dropped && <PartsDrop entry={latest} beforeLeave={beforeWrite} onClose={() => setDropped(false)} />}
         {made && part && (
           <>
-            <span className="reorg-top-dot" aria-hidden="true">·</span>
+            {!flux && <span className="reorg-top-dot" aria-hidden="true">·</span>}
             {arbor && part.color && <span className="reorg-top-tag" data-top-tag={part.color} aria-hidden="true" />}
+            {flux && (part.color || part.hex) && <span className="reorg-top-tag" data-top-tag={part.hex ? 'hex' : part.color ?? undefined} aria-hidden="true" style={part.hex ? customVars(part.hex) as CSSProperties : undefined} />}
             <Name id="part" text={part.name || t('reorgUntitled')} editable={canRename} onCommit={(v) => write(() => renamePart(latest.id, v))} />
           </>
         )}
+        {flux && trackCount}
       </span>
     </nav>
   );
@@ -302,6 +311,7 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
   useStoreTick();
   const { t } = useDeskLexicon();
   const [connecting, setConnecting] = useState(false);
+  const flux = useTheme() === 'flux';
   const latest = getJournalEntry(entry.id) ?? entry;
   const docs = boardDocs(latest);
   const place = !docs.length ? t('reorgTopPlaceNoDoc') : docs.length === 1 ? fill(t('reorgTopPlaceOne'), { name: docs[0].name || t('reorgUntitled') }) : fill(t('reorgTopPlaceMany'), { n: docs.length });
@@ -321,9 +331,9 @@ function BoardTop({ entry, views, boardName, boardAfter }: Pick<TopRailProps, 'e
       {tripPage && <button type="button" className="reorg-top-back" data-top-back="" onClick={goBack}>{t('reorgFullBack')}</button>}
       <nav className="reorg-top-names" aria-label={t('reorgTopWhere')}>
         <ProjectName entry={latest} />
-        <Sep />
+        <Sep glyph={flux ? '▸' : undefined} />
         <span className="reorg-top-name reorg-top-board" data-top-name="board" data-editable="true">{boardName}</span>
-        <Sep />
+        <Sep glyph={flux ? '//' : undefined} />
         <span className="reorg-top-place" data-top-place>{place}</span>
         {boardAfter}
       </nav>
