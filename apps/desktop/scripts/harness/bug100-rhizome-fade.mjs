@@ -21,6 +21,10 @@
 //             latency with and without them (an experiment: the shipped look is untouched)
 // A/B     F0C / F1C / FAC-<room> the fast pace with ONLY the copy's clip-path taken away - its bitmap mask kept, which already cuts the same holes (the
 //             canvas clears every hole and draws the edge fade) - so a fix can keep the look
+// FIX     B1  (Nov 23: on two Actions runs the shipped copy's clip-path cost fast fade keys ~7 ms of median latency and 10% over 40 ms by day; without it,
+//             the bitmap mask kept, ~1 ms and 1%) during the flash and the fade, once the brass copy's mask is the bitmap (data-mask="bitmap": it already
+//             cuts every hole and draws the edge fade), the copy carries NO clip-path - the clip is kept only while the mask is still the SVG fallback
+//         MUT-B1  the same reading with today's clip-path on the copy turns B1's test red
 // (information) PROF-<room>  (Nov 23: long-animation-frame entries never arrive on this Chrome) in the fast pace's first round, the CPU profile of the control
 //             burst at rest and of the fade burst: the dearest functions by self time in each, each with a snippet of the bundle at its position (the
 //             bundle is minified, so the snippet's strings name the code)
@@ -94,6 +98,7 @@ await withHarness(async (app) => {
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function' && typeof window.wrizoSetWritingGoal === 'function'", { label: 'seams', timeout: 20000 }).catch(() => {});
   const words = (n) => Array.from({ length: n }, (_, i) => 'word' + i).join(' ');
   const fades = {};
+  const copies = [];
 
   for (const pace of ['steady', 'fast', 'fastnomask', 'fastnoclip']) for (const room of ['day', 'night']) {
   const tag = pace === 'fast' ? 'F' : pace === 'fastnomask' ? 'M' : pace === 'fastnoclip' ? 'C' : '';
@@ -128,6 +133,7 @@ await withHarness(async (app) => {
         await app.waitFor("document.querySelector('.wz-rhizome-field')?.getAttribute('data-flash') === 'fading'", { label: 'the fade', timeout: 4000 }).catch(() => {});
         if (r === 0 && pace === 'fast') await profStart(app);
         for (let i = 0; i < 22; i += 1) { await app.typeKeys('y'); await sleep(25); }
+        if (pace === 'fast') copies.push(await app.evalJs("(() => { const c = document.querySelector('.arbor2-vines-flash'); if (!c) return null; const s = getComputedStyle(c); return { room: document.documentElement.getAttribute('data-arbor2-room'), flash: c.getAttribute('data-flash'), mask: c.getAttribute('data-mask'), clip: s.clipPath }; })()"));
         if (r === 0 && pace === 'fast') profFade = await withSnippets(app, await profStop(app));
         for (let i = 0; i < 10; i += 1) { await app.typeKeys('y'); await sleep(GAP); }
       } else {
@@ -160,6 +166,10 @@ await withHarness(async (app) => {
     if (pace === 'fast') ok(`PROF-${room} (information) the CPU profile of the control burst at rest and of the fade burst (self time, the dearest first)`, true, { control: profCtl, fade: profFade });
     ok(`FA${tag}-${room} (information) the five dearest fade keys and the long animation frame that holds each`, true, dear);
   }
+  const b1 = (list) => Array.isArray(list) && list.filter((x) => x && x.mask === 'bitmap').length >= 2 && list.filter((x) => x && x.mask === 'bitmap').every((x) => x.clip === 'none');
+  ok('B1 during the fade, once the brass copy\'s mask is the bitmap, the copy carries no clip-path (the mask cuts the holes)', b1(copies), copies);
+  const clipped = copies.map((x) => x && { ...x, clip: x.mask === 'bitmap' ? 'path(evenodd, "M0 0H10V10H0Z")' : x.clip });
+  ok('MUT-B1 the same reading with today\'s clip-path on the copy turns B1\'s test red', copies.some((x) => x && x.mask === 'bitmap') && !b1(clipped), clipped);
   const any = fades['steady.day'] || fades['steady.night'];
   const dearer = any ? { ctl: any.ctl, fade: { ...any.fade, cost: { ...any.fade.cost, max: (any.ctl.cost.max || 0) + SLACK + 30 } } } : null;
   ok('MUT-F1 a fade with one key 30 ms dearer than the control\'s worst turns F1\'s test red', !!dearer && !f1(dearer.ctl, dearer.fade), dearer && { ctlMax: r1(dearer.ctl.cost.max), fadeMax: r1(dearer.fade.cost.max) });
@@ -167,7 +177,7 @@ await withHarness(async (app) => {
 
 // the F1 and FA lines carry the numbers and the cause, so they print whether they pass or not
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass && !/^(F[1A][FMC]?|PROF)-/.test(c.name) ? '' : '\n     ' + String(c.detail).slice(0, 4000)}`);
-const EXPECTED = 27;   // + F0C, F1C, FAC by day and by night (the clip alone off, the bitmap mask kept: it already cuts the same holes; Nov 23). Was: const EXPECTED = 21;   // + F0M, F1M, FAM by day and by night (the A/B, Nov 23). Was: const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
+const EXPECTED = 29;   // + B1, MUT-B1 (#100's fix, Nov 23). Was: const EXPECTED = 27;   // + F0C, F1C, FAC by day and by night (the clip alone off, the bitmap mask kept: it already cuts the same holes; Nov 23). Was: const EXPECTED = 21;   // + F0M, F1M, FAM by day and by night (the A/B, Nov 23). Was: const EXPECTED = 15;   // + PROF-day, PROF-night (information). Was: const EXPECTED = 13;   // F0, F1, FA by day and by night at both paces (steady, fast), + MUT-F1. Was: const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nBUG100-RHIZOME-FADE VERIFY: PASS (${checks.length} checks)` : `\nBUG100-RHIZOME-FADE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
