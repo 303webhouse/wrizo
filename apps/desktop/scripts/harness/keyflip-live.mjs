@@ -81,6 +81,7 @@ const traceKey = async (app, key = 'a') => {
 const OLD_WRITE = `(() => { const de = document.documentElement; const orig = CSSStyleDeclaration.prototype.setProperty; if (orig.__klOld) return true;
   const wrapped = function (name, value, prio) { if (name === '--fade-dur' && this !== de.style) { try { orig.call(de.style, name, value, prio); } catch {} } return orig.call(this, name, value, prio); };
   wrapped.__klOld = true; CSSStyleDeclaration.prototype.setProperty = wrapped; return true; })()`;
+const DROP = (which, every) => `(() => { const out = []; const walk = (list, parent) => { for (let i = list.length - 1; i >= 0; i -= 1) { const r = list[i]; if (r.selectorText !== undefined) { if (r.selectorText.includes(':has(')) out.push({ parent, i, text: r.selectorText }); } else if (r.cssRules) walk(r.cssRules, r); } }; for (const s of document.styleSheets) { if (!${every} && !String(s.href || '').includes('/boot-')) continue; try { walk(s.cssRules, s); } catch {} } out.reverse(); const pick = ${JSON.stringify(which)} === 'all' ? out.slice().reverse() : [out[Number(${JSON.stringify(which)})]].filter(Boolean); for (const x of pick) x.parent.deleteRule(x.i); return { rules: out.length, deleted: pick.length, first: pick[0] ? pick[0].text.replace(/:root\\[data-flux3\\]\\[data-theme="?'?flux'?"?\\] ?/, '').slice(0, 110) : null }; })()`;
 const DOC_DIFF = `(() => { const seen = new Map(); window.__klDiff = seen; const name = (e) => e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || '').trim().split(/\\s+/).slice(0, 2).join('.'); new MutationObserver((rs) => { for (const r of rs) { if (r.type !== 'attributes') continue; const t = r.target; const now = String(t.getAttribute(r.attributeName) || ''); const old = String(r.oldValue || ''); if (now === old) continue; const k = name(t) + ' @' + r.attributeName; const row = seen.get(k) || { el: name(t), attr: r.attributeName, n: 0, subtree: t.querySelectorAll('*').length, old: old.slice(0, 160) }; row.n += 1; row.now = now.slice(0, 160); seen.set(k, row); } }).observe(document, { attributes: true, attributeOldValue: true, subtree: true }); return true; })()`;
 const DOC_DIFF_READ = `[...window.__klDiff.values()].sort((a, b) => b.subtree - a.subtree).slice(0, 30)`;
 const DOC_SHAPE = `(() => { const out = {}; for (const s of ['#root', '.mode-stage', '.desk-frame-host', '.mode-scroll', '.mode-pagecol', '.forward-only-editor', '.reorg-top', '.reorg-rail', '.theme-fx-layer', '.flux3-corridor', '.flux3-room-ground', '.flux-room-ground']) { const e = document.querySelector(s); out[s] = e ? e.querySelectorAll('*').length : null; } out.svg = document.querySelectorAll('svg, svg *').length; return out; })()`;
@@ -134,6 +135,7 @@ await withHarness(async (app) => {
     await sleep(1800);
     if (mutate === true || mutate === 'html') { await app.evalJs(OLD_WRITE); await sleep(200); }
     if (mutate === 'col') { await app.evalJs(COL_WRITE); await sleep(200); }
+    if (typeof mutate === 'string' && mutate.startsWith('drop')) { const every = mutate.startsWith('dropany'); const r = await app.evalJs(DROP(mutate.slice(mutate.indexOf(':') + 1), every)); console.log(`KL-DROP ${mutate}: ` + JSON.stringify(r)); await sleep(400); }
     if (mutate === 'noroot') { await app.evalJs("document.documentElement.removeAttribute('data-flux3'); null"); await sleep(500); }
     if (mutate === 'noanim') { await app.evalJs('document.getAnimations().forEach((a) => a.cancel()); null'); await sleep(100); }
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
@@ -159,7 +161,7 @@ await withHarness(async (app) => {
     return m;
   };
 
-  for (const arm of ['noroot', 'noanim']) for (let i = 0; i < 2; i += 1) { const p = await measure('flux', '', { mutate: arm }); console.log(`KL-ARM ${arm} ${i + 1}: keyEls ${p.tr && p.tr.keyEls}, all ${JSON.stringify(p.tr && p.tr.all)}`); }
+  for (const arm of ['drop:0', 'drop:1', 'drop:2', 'drop:3', 'drop:4', 'drop:5', 'drop:6', 'drop:7', 'drop:all', 'dropany:all']) { const p = await measure('flux', '', { mutate: arm }); console.log(`KL-ARM ${arm}: keyEls ${p.tr && p.tr.keyEls}, all ${JSON.stringify(p.tr && p.tr.all)}`); }
   const runs = {};
   for (const [theme, search] of THEMES) { runs[theme] = []; for (let i = 0; i < REOPENS; i += 1) runs[theme].push(await measure(theme, search)); }
   const busyRuns = {};
