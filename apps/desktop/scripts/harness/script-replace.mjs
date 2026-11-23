@@ -210,14 +210,17 @@ await withHarness(async (app) => {
   await openSearch('Zed', LONG);
   const sheetOf = "(() => { const a = document.querySelector('.script-el-active'); return a ? +a.closest('.script-sheet').dataset.pageIndex : null; })()";
   const scrollOf = "(() => { const b = document.querySelector('.desk-frame-scroll-cap'); return b ? Math.round(b.scrollTop) : null; })()";
-  const b0 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf) };
+  const lineTop = `(() => { const e = document.querySelector('.script-el[data-doc-index="20"]'), b = document.querySelector('.desk-frame-scroll-cap'); if (!e || !b) return null; const r = e.getBoundingClientRect(), v = b.getBoundingClientRect(); return { top: Math.round(r.top), onScreen: r.top >= v.top && r.bottom <= v.bottom }; })()`;
+  const b0 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf), seen: await app.evalJs(lineTop) };
   const bPressed = await press('[data-search-menu] [data-replace-all]');
   await sleep(500);
-  const b1 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf), inMenu: await app.evalJs("!!document.activeElement?.closest?.('[data-search-menu]')"), inPage: await app.evalJs("!!document.activeElement?.closest?.('.script-el')"), line1: (await page())[1] };
+  const b1 = { sheet: await app.evalJs(sheetOf), scroll: await app.evalJs(scrollOf), seen: await app.evalJs(lineTop), inMenu: await app.evalJs("!!document.activeElement?.closest?.('[data-search-menu]')"), inPage: await app.evalJs("!!document.activeElement?.closest?.('.script-el')"), line1: (await page())[1] };
   // SUPERSEDED (run 45117326946: the same premise as F2e, the pressed button turns disabled and focus falls to the body). The line, verbatim:
   // ok('B1: a replace that pushes the active line onto the next sheet keeps the keyboard in the menu and the page\'s scroll where it was', bPressed && b0.sheet === 0 && b1.sheet === 1 && b1.inMenu && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
-  // [successor] the remount across sheets must not pull the keyboard into the page or move its scroll
-  ok('B1-B: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page or move its scroll', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
+  // SUPERSEDED (run 45117703482, both legs: scroll 494 to 526, exactly the two lines the replace added ABOVE the view. That is the browser's scroll anchoring holding what she is reading still; an unchanged scrollTop would have made the page jump by two lines). The line, verbatim:
+  // ok('B1-B: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page or move its scroll', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && b1.scroll === b0.scroll && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
+  // [successor] what she sees: a line on screen before the press is at the same place on screen after it
+  ok('B1-C: a replace that pushes the active line onto the next sheet does not pull the keyboard into the page, and the lines on screen stay where they are', bPressed && b0.sheet === 0 && b1.sheet === 1 && !b1.inPage && !!b0.seen?.onScreen && !!b1.seen?.onScreen && Math.abs(b1.seen.top - b0.seen.top) <= 1 && b1.line1 === `${LONG[0].toUpperCase()}${LONG.slice(1)} stands.`, { b0, b1 });
   return checks;
 });
 
