@@ -49,12 +49,14 @@ async function open(app, theme, id, ready) {
   await app.evalJs(`window.wrizoTheme.set(${JSON.stringify(theme)}); null`);
   await app.evalJs(`history.replaceState(null, '', '/#/page/${id}'); null`);
   await app.reload();
-  try { await app.waitFor(`!!document.querySelector(${JSON.stringify(ready)}) && !!document.querySelector('.wz-sliver-grip')`, { label: `${id} in ${theme}`, timeout: 15000 }); } catch { return false; }
+  // a prose page opens in Free Write, which has no drawer grip in Arbor: the grip is waited for only after the Draft tab
+  try { await app.waitFor(`!!document.querySelector(${JSON.stringify(ready)})`, { label: `${id} in ${theme}`, timeout: 15000 }); } catch { return false; }
   await sleep(900);
   if (ready === '.forward-only-editor') {
     await app.evalJs("document.querySelector('.desk-mode-tab[data-mode-key=\"draft\"]')?.click(); null");
     await sleep(1200);
   }
+  try { await app.waitFor("!!document.querySelector('.wz-sliver-grip')", { label: `${id}'s drawer grip`, timeout: 8000 }); } catch { return false; }
   if (!(await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) {
     await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null");
     await sleep(800);
@@ -100,6 +102,27 @@ async function walk(app) {
 
 const hasAll = (w) => !!w && OTHERS.every((k) => w.reach.includes(k));
 
+// REPORTED, NOT COUNTED: whether the kind menu's controls can be pressed where they are drawn (the first frame showed the rail over the drawer's left edge in Arbor).
+const LAYOUT = `(() => {
+  const box = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; };
+  const hit = (e) => { const r = e.getBoundingClientRect(), y = r.top + r.height / 2, at = (x) => { const t = document.elementFromPoint(x, y); return !!t && (t === e || e.contains(t)); }; return { left: Math.round(r.left), leftEdge: at(r.left + 6), centre: at(r.left + r.width / 2) }; };
+  const controls = [...document.querySelectorAll('.wz-sliver [data-doc-kind], [data-doc-menu] [data-doc-menu-item], #wz-sliver-tab-text, #wz-sliver-tab-parts')];
+  return { w: innerWidth, rail: box('.desk-frame-strip'), panel: box('.wz-sliver-panel'), page: box('.mode-page'), controls: controls.map((e) => ({ what: e.getAttribute('data-doc-menu-item') || (e.hasAttribute('data-doc-kind') ? 'kind' : e.id.replace('wz-sliver-tab-', 'tab-')), ...hit(e) })) };
+})()`;
+async function layouts(app) {
+  const rows = [];
+  for (const w of [1366, 1920]) {
+    await app.emulateDpr(1, w, w === 1366 ? 768 : 1080);
+    await sleep(700);
+    await app.evalJs("document.getElementById('wz-sliver-tab-parts')?.click(); null"); await sleep(350);
+    if (!(await app.evalJs("!!document.querySelector('[data-doc-menu]')"))) { await app.evalJs("document.querySelector('.wz-sliver [data-doc-kind]')?.click(); null"); await sleep(280); }
+    rows.push(await app.evalJs(LAYOUT));
+  }
+  await app.emulateDpr(1, 1366, 768);
+  await sleep(500);
+  return rows;
+}
+
 await withHarness(async (app) => {
   await seed(app);
   const cases = [
@@ -114,6 +137,7 @@ await withHarness(async (app) => {
     const w = there ? await walk(app) : null;
     got[name] = w;
     console.log(`READ ${name}: ${JSON.stringify(w)}`);
+    if (w) console.log(`LAYOUT ${name}: ${JSON.stringify(await layouts(app))}`);
     if (w && w.items.length) {
       await app.evalJs("document.getElementById('wz-sliver-tab-parts')?.click(); null"); await sleep(350);
       if (!(await app.evalJs("!!document.querySelector('[data-doc-menu]')"))) { await app.evalJs("document.querySelector('.wz-sliver [data-doc-kind]')?.click(); null"); await sleep(280); }
