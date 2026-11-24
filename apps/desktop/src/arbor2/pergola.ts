@@ -214,6 +214,12 @@ export function mountPergola(): void {
   // wakes the moment writing ends, before the fade back in. Nothing visible changes - it sleeps only at opacity 0.
   const root = document.documentElement;
   const writing = () => root.getAttribute('data-wz-writing') === 'true';
+  // #120 (ARBOR, Nov 24): Nick's ruling B ("the leaves shiver only when she is not typing") on a Board too. Typing in a card's pop-up never sets
+  // <html data-wz-writing> (ModeStage, the page's recede, alone sets it), so the live drawing breezed on under the board and every key waited for the
+  // blurred shade's repaint (Event Timing ~170-280 ms a key by day against 24-32 by night). Her first key in a card makes the same cut a page makes (the
+  // still picture, nothing visible changes; no fade, the shade stays), and the breeze is back once the card's editor no longer holds the focus.
+  let carding = false;
+  const stilled = () => writing() || carding;
   const layers = () => [room.layer, ...[...copies.values()].map((c) => c.layer)];
   const sleep = (on: boolean) => layers().forEach((l) => { if (on) l.setAttribute('data-asleep', 'true'); else l.removeAttribute('data-asleep'); });
   // Nick's ruling B with Fable's (c): once the 200 ms cross-fade to the still picture has run (and 20 ms to spare), the live drawing leaves style
@@ -232,7 +238,7 @@ export function mountPergola(): void {
     const url = poseUrl(turned); p.pose = url;
     p.still.style.backgroundImage = `url("${url}")`;
     const img = new Image(); img.src = url;
-    img.decode().catch(() => {}).then(() => { if (writing() && p.pose === url) p.layer.setAttribute('data-live-off', 'true'); });
+    img.decode().catch(() => {}).then(() => { if (stilled() && p.pose === url) p.layer.setAttribute('data-live-off', 'true'); });
   };
   const uncut = (p: LiveParts) => {
     p.layer.removeAttribute('data-live-off');
@@ -243,7 +249,7 @@ export function mountPergola(): void {
   let sleepT = 0;
   const onWriting = () => {
     window.clearTimeout(sleepT);
-    if (!writing()) { liveOff(false); sleep(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
+    if (!writing()) { if (!carding) liveOff(false); sleep(false); if (!carding) requestAnimationFrame(() => requestAnimationFrame(clockAll)); return; }
     liveOff(true);
     // the fade's own length, as the stylesheet sets it while writing (6 s; reduced motion: none), and a quarter second to spare.
     // bug #80: read two frames AFTER the keystroke that starts writing, never inside it - a getComputedStyle here ran in the key's own task, right after
@@ -258,6 +264,19 @@ export function mountPergola(): void {
     }));
   };
   new MutationObserver(onWriting).observe(root, { attributes: true, attributeFilter: ['data-wz-writing'] });
+  // #120: the card's first key cuts (in its input event: no style read, as bug #80 asks); a quarter-second look at the focus (no style read either)
+  // brings the breeze back when she leaves the card (a closed pop-up takes its focused editor away without a reliable focusout)
+  let cardT = 0;
+  document.addEventListener('input', (e) => {
+    if (carding || !(e.target instanceof Element) || !e.target.closest('.board-popup-editor')) return;
+    carding = true; liveOff(true);
+    window.clearInterval(cardT);
+    cardT = window.setInterval(() => {
+      if (document.activeElement?.closest('.board-popup-editor')) return;
+      window.clearInterval(cardT); carding = false;
+      if (!writing()) { liveOff(false); requestAnimationFrame(() => requestAnimationFrame(clockAll)); }
+    }, 250);
+  }, true);
   attach();
   onWriting();
   requestAnimationFrame(() => requestAnimationFrame(clockAll));
