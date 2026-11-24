@@ -4,7 +4,7 @@
 //   FIT   every card of every counted deck (Relationship Map, Timeline, Literature Map, Interview Notes, Memory Map), dealt at EVERY count it offers, in Machina and in Arbor, at 1366 x 768 and 1920 x 1080,
 //         holds its title and its question with no scrolling: the card's own scroll height is no more than its client height (the card is .board-text, overflow:auto)
 //   ROWS  a card never lands on another: no two dealt cards of one deal overlap (a taller card must push the row under it down)
-// A deal goes through the app's own door: the board's deck wizard (#/page/new?kind=board&deck=library), the deck's row, the count option. Browser: needs a box turn (or Actions).
+// A deal goes through the app's own door: a board's sliver, "From a deck...", the deck's row, the count option. Browser: needs a box turn (or Actions).
 // Run: node scripts/harness/reorg-presets-b-cards-fit.mjs   (from apps/desktop; WS_BOX_TURN required, or a hosted runner)
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -29,12 +29,23 @@ const boot = async (app, theme, [w, h]) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* the checks record what follows */ }
   await app.evalJs(`window.wrizoTheme.set('${theme}'); null`);
+  try { await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 }); } catch { /* the checks record what follows */ }
   await sleep(400);
 };
-const deal = async (app, deckId, optionId) => {
-  await app.evalJs("location.hash = '#/page/new?kind=board&deck=library'; null");
-  try { await app.waitFor("!!document.querySelector('.deck-wizard-dialog')", { label: 'the deck wizard', timeout: 12000 }); } catch { return false; }
-  await sleep(700);
+const URLS = { machina: '/?reorg=1&arbor2=0', plateau: '/?reorg=1&reorglift=plateau.front,plateau.top,plateau.back' };
+// a deal goes through the app's own door, the way the frames did (run 45368638943): a board she opens, its sliver's "From a deck...", the deck's row, the count option
+const deal = async (app, theme, deckId, optionId) => {
+  const id = 'cf-' + deckId + '-' + optionId;
+  await app.evalJs(`(() => { const W = window; const project = W.wrizoCreateProject('Fit ' + ${JSON.stringify(id)}); W.wrizoCreateJournalPage({ id: ${JSON.stringify(id)}, text: 'Board', projectId: project.id, pageType: 'board', boxes: [], createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: null }); W.wrizoFlushNow(); return null; })()`);
+  await sleep(400);
+  await app.evalJs(`history.replaceState(null, '', '${URLS[theme]}#/page/${id}'); null`);
+  await app.reload();
+  try { await app.waitFor("!!document.querySelector('.board-canvas')", { label: 'the board', timeout: 15000 }); } catch { return false; }
+  await sleep(900);
+  if (!(await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null"); await sleep(500); }
+  await app.evalJs("(() => { const b = [...document.querySelectorAll('.wz-sliver-item-btn, button')].find((x) => /^\\s*From a deck/i.test(x.textContent || '')); if (b) b.click(); return null; })()"); await sleep(600);
+  try { await app.waitFor("!!document.querySelector('.deck-wizard-dialog')", { label: 'the deck wizard', timeout: 8000 }); } catch { return false; }
+  await sleep(500);
   await app.evalJs(`document.querySelector('[data-deck-id="${deckId}"]')?.click(); null`); await sleep(500);
   await app.evalJs(`document.querySelector('[data-option-id="${optionId}"]')?.click(); null`);
   try { await app.waitFor("!document.querySelector('.deck-wizard-dialog') && document.querySelectorAll('.board-text[data-prompt]').length > 0", { label: 'the deal lands', timeout: 12000 }); } catch { return false; }
@@ -59,7 +70,7 @@ await withHarness(async (app) => {
     await boot(app, theme, size);
     const fit = [], rows = [];
     for (const d of DECKS) for (const c of d.counts) {
-      const landed = await deal(app, d.id, c);
+      const landed = await deal(app, theme, d.id, c);
       const m = landed ? await app.evalJs(MEASURE) : null;
       const tag = `${d.id}/${c}`;
       if (!m || m.n === 0) { fit.push(`${tag}: no deal`); continue; }
