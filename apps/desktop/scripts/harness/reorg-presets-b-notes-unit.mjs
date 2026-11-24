@@ -65,7 +65,7 @@ const LINES = ['line', 'does', 'eg', 'credit', 'must', 'names'];
 
 const SRC = {
   notes: rd('reorg/presetNotes.ts'), note: rd('reorg/PresetNote.tsx'), kindMenu: rd('reorg/DocKindMenu.tsx'), presetsMenu: rd('reorg/backMenu/PresetsMenu.tsx'),
-  chrome: rd('store/lexicon/canonical/chrome.ts'),
+  chrome: rd('store/lexicon/canonical/chrome.ts'), css23: rd('styles/23-reorg-top.css'), css25: rd('styles/25-reorg-arbor-front.css'),
 };
 
 function suite(src) {
@@ -110,13 +110,27 @@ function suite(src) {
       && /PresetNote/.test(kind) && /PRESET_NOTES/.test(kind) && /PresetNote/.test(plan) && /STRUCTURE_NOTES/.test(plan) && written.length === 0 && typeof w.reorgPreNoteLabel === 'string',
     detail: J({ drawerNote: /<DrawerNote\b/.test(comp), kind: /PresetNote/.test(kind), plan: /PresetNote/.test(plan), written: written.length }) };
   });
+  // ESCAPE: the note is a fixed box (no ancestor's overflow clips it: the PARTS menu scrolls) that the component places from the button and keeps wholly inside the window
+  t('ESCAPE', () => {
+    const comp = src.note;
+    const rule = (css, prefix) => css.includes(prefix + ' .reorg-preset-note .wz-drawer-note-pop{ position:fixed;');
+    const has = (x) => comp.includes(x);
+    const placed = has('getBoundingClientRect()') && has('window.innerWidth') && has('window.innerHeight') && has('Math.max(EDGE, Math.min(') && has('new MutationObserver');
+    const flips = has('b.top - 4 - h') && has('maxHeight');
+    const css = rule(src.css23, "[data-theme='machina']") && rule(src.css25, ":root[data-arbor2][data-theme='plateau']");
+    return { pass: placed && flips && css, detail: J({ placed, flips, css }) };
+  });
   return R;
 }
 
 const base = suite(SRC);
-for (const k of ['NOTES', 'RULES', 'WIRING']) ok(`${k} on the real presetNotes.ts / PresetNote.tsx / menus / lexicon`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
+for (const k of ['NOTES', 'RULES', 'WIRING', 'ESCAPE']) ok(`${k} on the real presetNotes.ts / PresetNote.tsx / menus / lexicon`, base[k] && base[k].pass, base[k] ? base[k].detail : 'missing');
 
 const MUT = [
+  ['the escape rule is gone from Machina', 'ESCAPE', 'css23', (t) => t.replace('.reorg-preset-note .wz-drawer-note-pop{ position:fixed;', () => '.reorg-preset-note .wz-drawer-note-pop{ position:absolute;')],
+  ['the escape rule is gone from Arbor', 'ESCAPE', 'css25', (t) => t.replace('.reorg-preset-note .wz-drawer-note-pop{ position:fixed;', () => '.reorg-preset-note .wz-drawer-note-pop{ position:absolute;')],
+  ['the note is no longer kept inside the window', 'ESCAPE', 'note', (t) => t.replace('Math.max(EDGE, Math.min(b.left, window.innerWidth - w - EDGE))', () => 'b.left')],
+  ['the note no longer flips above the button', 'ESCAPE', 'note', (t) => t.replace('top = Math.max(EDGE, b.top - 4 - h)', () => 'top = top')],
   ['a note\'s first line is changed', 'NOTES', 'chrome', (t) => t.replace('A bare page for one poem.', () => 'A page.')],
   ['the Poem is given an example', 'RULES', 'notes', (t) => t.replace('poem: { line:', () => "poem: { eg: 'reorgKindNoteMemoirEg', line:")],
   ['Fifteen Beats is given an example (its deck\'s names a book)', 'RULES', 'notes', (t) => t.replace('beats: { line:', () => "beats: { eg: 'reorgPreNoteCircleEg', line:")],
@@ -124,7 +138,7 @@ const MUT = [
   ['the Class Essay loses its must-say line', 'RULES', 'notes', (t) => t.replace(", must: 'reorgKindNoteClassEssayMust'", () => '')],
   ['a gated name appears in a note', 'RULES', 'chrome', (t) => t.replace('Add or remove one whenever your argument needs it.', () => 'Add or remove one, as in the Kish\u014dtenketsu.')],
   ['the Grant Application note points at Quick Preset, which is not built', 'RULES', 'chrome', (t) => t.replace('or add your own with New Part.', () => 'or add your own with Quick Preset.')],
-  ['the "?" is hover-only', 'WIRING', 'note', (t) => t.replace('<span className="reorg-preset-note" data-preset-note={id}>', () => '<span className="reorg-preset-note" onMouseEnter={() => {}} data-preset-note={id}>')],
+  ['the "?" is hover-only', 'WIRING', 'note', (t) => t.replace('<span ref={ref} className="reorg-preset-note" data-preset-note={id}>', () => '<span ref={ref} className="reorg-preset-note" onMouseEnter={() => {}} data-preset-note={id}>')],
   ['the PARTS menu forgets the "?"', 'WIRING', 'kindMenu', (t) => t.split('PRESET_NOTES').join('NO_NOTES')],
   ['the PLAN list forgets the "?"', 'WIRING', 'presetsMenu', (t) => t.split('STRUCTURE_NOTES').join('NO_NOTES')],
   ['a note\'s words are written into the component', 'WIRING', 'note', (t) => t.replace('export function PresetNoteButton', () => "const WRITTEN = 'A bare page for one poem.';\nexport function PresetNoteButton")],

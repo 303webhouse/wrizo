@@ -76,8 +76,8 @@ async function seed(app) {
 }
 
 // ---- opening a page in a leg ---------------------------------------------------------------------------------------------------------------
-async function openParts(app, leg, id) {
-  await app.emulateDpr(1, leg === 'machina' ? 1920 : 1366, leg === 'machina' ? 1080 : 768);
+async function openParts(app, leg, id, w = leg === 'machina' ? 1920 : 1366) {
+  await app.emulateDpr(1, w, w === 1920 ? 1080 : 768);
   await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
   if (leg === 'machina') {
     await app.evalJs("window.wrizoTheme.set('machina'); null");
@@ -111,13 +111,19 @@ const ROWSOF = `(() => [...document.querySelectorAll('[data-doc-menu] [data-pres
   return { id: b.getAttribute('data-preset-pick'), row: !!row, note: !!n, side: !!nb && nb.left >= pb.left && nb.top < pb.bottom && nb.bottom > pb.top, shown: !!nb && nb.width > 0 && nb.height > 0 }; }))()`;
 const NOTEREAD = (id) => `(() => { const w = document.querySelector('[data-preset-note=${q(id)}]'); const pop = w && w.querySelector('[role=note]'); if (!pop) return null;
   return [...pop.querySelectorAll('[data-note-part]')].map((s) => s.getAttribute('data-note-part') + '|' + (s.textContent || '').replace(/\\s+/g, ' ').trim()); })()`;
+// THE OPEN NOTE'S BOX, not its words (Fable, Nov 23, 7:28 pm): whole inside the window, nothing clipping or covering it (three points of the box hit the note itself), wide enough to read, nothing scrolled inside it
+const NOTEBOX = (id) => `(() => { const w = document.querySelector('[data-preset-note=${q(id)}]'); const pop = w && w.querySelector('[role=note]'); if (!pop) return null; const r = pop.getBoundingClientRect(); const iw = innerWidth, ih = innerHeight;
+  const pts = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 6, r.top + 6], [r.right - 6, r.bottom - 6]];
+  const hit = pts.every(([x, y]) => { const e = document.elementFromPoint(x, y); return !!e && pop.contains(e); });
+  return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom), w: Math.round(r.width), h: Math.round(r.height), iw, ih, inside: r.left >= 0 && r.top >= 0 && r.right <= iw && r.bottom <= ih, hit, readable: r.width >= 180 && r.height >= 40 && pop.scrollHeight <= pop.clientHeight + 1 }; })()`;
+const boxOk = (b) => !!b && b.inside && b.hit && b.readable;
 const NOTEPRESS = (id) => `(() => { const b = document.querySelector('[data-preset-note=${q(id)}] .wz-drawer-note-btn'); if (!b) return false; b.focus(); b.click(); return true; })()`;
 const NOTEESC = (id) => `(() => { const b = document.querySelector('[data-preset-note=${q(id)}] .wz-drawer-note-btn'); if (!b) return false; b.focus(); b.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); return true; })()`;
 
 // the menu laws, for a leg whose Parts layer is mounted
-async function menuLaws(app, leg, tag) {
-  const L = leg.toUpperCase();
-  await openParts(app, leg, 'pb-menu');
+async function menuLaws(app, leg, tag, w, loads) {
+  const L = leg.toUpperCase() + ' @' + w;
+  await openParts(app, leg, 'pb-menu', w);
   const page0 = await app.evalJs(PAGE);
   await app.evalJs("(() => { const n = document.querySelector('.forward-only-editor'); if (n) n.__pbMark = 1; return null; })()");
   await openPresets(app);
@@ -130,27 +136,32 @@ async function menuLaws(app, leg, tag) {
   ok(`${tag}2 ${L}: each of the twenty new presets wears a "?" beside its name, on the same line and drawn; the live fourteen stay a lone button`,
     (rows || []).length === picks.length && bad.length === 0, { bad: bad.slice(0, 4) });
   const wrong = [];
+  const boxes = [];
   let escFails = 0;
   for (const p of NEW_PRESETS) {
     const want = noteLines(NOTES.PRESET_NOTES[p.id]);
     await app.evalJs(NOTEPRESS(p.id)); await sleep(150);
     const got = await app.evalJs(NOTEREAD(p.id));
     const expanded = await app.evalJs(`document.querySelector('[data-preset-note=${q(p.id)}] .wz-drawer-note-btn')?.getAttribute('aria-expanded')`);
+    const box = await app.evalJs(NOTEBOX(p.id));
+    if (!boxOk(box)) boxes.push({ id: p.id, box });
     if (JSON.stringify(got) !== JSON.stringify(want) || expanded !== 'true') wrong.push({ id: p.id, got: got && got.slice(0, 2), want: want.slice(0, 2) });
     await app.evalJs(NOTEESC(p.id)); await sleep(120);
     const after = await app.evalJs(`(() => ({ pop: !!document.querySelector('[data-preset-note=${q(p.id)}] [role=note]'), menu: !!document.querySelector('[data-doc-menu]') }))()`);
     if (after.pop || !after.menu) escFails += 1;
   }
   ok(`${tag}3 ${L}: each of the twenty "?" opens to its note (the lines in order, the lexicon's words); Escape closes the note and leaves the menu open`, wrong.length === 0 && escFails === 0, { wrong: wrong.slice(0, 2), escFails });
+  ok(`${tag}3b ${L}: each of the twenty open notes' BOX sits wholly inside the window, uncovered and unclipped, wide enough to read and not scrolled inside itself`, boxes.length === 0, { bad: boxes.length, first: boxes.slice(0, 2) });
   const page1 = await app.evalJs(PAGE);
   const same = await app.evalJs("document.querySelector('.forward-only-editor')?.__pbMark === 1");
   ok(`${tag}4 ${L}: PAGE IS PRIMARY: the page's rect and the editor's node are unmoved by the menu and twenty notes`, page0 === page1 && same === true && !/-/.test(page0.split('|')[2] || '-'), { page0, page1, same });
   await app.evalJs("document.querySelector('.wz-sliver [data-reorg-parts] [data-doc-kind]')?.click(); null"); await sleep(200);
+  if (!loads) return;
   // the loads, each in its own empty Doc
   const made = [];
   for (const id of SAMPLES) {
     const preset = KINDS.PRESETS.find((p) => p.id === id);
-    await openParts(app, leg, 'pb-' + leg + '-' + id);
+    await openParts(app, leg, 'pb-' + leg + '-' + id, w);
     await openPresets(app);
     await app.evalJs(`document.querySelector('[data-doc-menu] [data-preset-pick=${q(id)}]')?.click(); null`); await sleep(900);
     // the names as the Doc stores them (the list shows "Part 1" for a Doc of one Part, by its own rule: parts.length > 1 ? name : "Part n"), and the list itself where there are several
@@ -167,11 +178,12 @@ await withHarness(async (app) => {
   await seed(app);
 
   // ---- MACHINA: the PARTS menu ----
-  await menuLaws(app, 'machina', 'M');
+  await menuLaws(app, 'machina', 'M', 1920, true);
+  await menuLaws(app, 'machina', 'M', 1366, false);
 
   // ---- MACHINA: the PLAN tab ----
-  const planOpen = async (id) => {
-    await app.emulateDpr(1, 1920, 1080);
+  const planOpen = async (id, w = 1920) => {
+    await app.emulateDpr(1, w, w === 1920 ? 1080 : 768);
     await app.waitFor('!!window.wrizoTheme', { label: 'the theme seam', timeout: 20000 });
     await app.evalJs(`window.wrizoTheme.set('machina'); localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); null`);
     await app.evalJs(`history.replaceState(null, '', '/?reorg=1&arbor2=0#/page/${id}'); null`);
@@ -182,39 +194,46 @@ await withHarness(async (app) => {
     await app.evalJs("document.getElementById('wz-tutor-tab-plan')?.click(); null"); await sleep(500);
     await app.evalJs("document.querySelector('[data-plan-presets]')?.click(); null"); await sleep(300);
   };
-  await planOpen('pp-1');
+  for (const w of [1920, 1366]) {
+  await planOpen('pp-1', w);
   const planNames = await app.evalJs("[...document.querySelectorAll('[data-plan-preset]')].map((b) => b.textContent.trim())");
   const planRows = await app.evalJs(`(() => [...document.querySelectorAll('[data-plan-preset]')].map((b) => { const li = b.closest('li'); const n = li && li.querySelector('[data-preset-note]'); return { id: b.getAttribute('data-plan-preset'), note: n ? n.getAttribute('data-preset-note') : null }; }))()`);
   const newIds = new Set(NEW_PLAN.map((p) => p.id));
-  ok('P1 PLAN: the Presets list holds fifteen (the live three, then the twelve); a "?" beside each new one and none beside the live three',
+  ok('P1 PLAN @' + w + ': the Presets list holds fifteen (the live three, then the twelve); a "?" beside each new one and none beside the live three',
     Array.isArray(planNames) && planNames.length === 15 && planRows.every((r) => (newIds.has(r.id) ? r.note === r.id : r.note === null)) && planRows.filter((r) => r.note).length === 12, { planNames, noted: planRows.filter((r) => r.note).length });
   const planWrong = [];
+  const planBoxes = [];
   for (const p of NEW_PLAN) {
     const want = noteLines(NOTES.STRUCTURE_NOTES[p.id]);
     await app.evalJs(NOTEPRESS(p.id)); await sleep(150);
     const got = await app.evalJs(NOTEREAD(p.id));
+    const pbox = await app.evalJs(NOTEBOX(p.id));
+    if (!boxOk(pbox)) planBoxes.push({ id: p.id, box: pbox });
     await app.evalJs(NOTEESC(p.id)); await sleep(120);
     const after = await app.evalJs(`(() => ({ pop: !!document.querySelector('[data-preset-note=${q(p.id)}] [role=note]'), list: !!document.querySelector('[data-plan-preset-list]') }))()`);
     if (JSON.stringify(got) !== JSON.stringify(want) || after.pop || !after.list) planWrong.push({ id: p.id, got: got && got.slice(0, 2), want: want.slice(0, 2), after });
   }
-  ok('P2 PLAN: each of the twelve "?" opens to its note (the lines in order, the lexicon\'s words); Escape closes the note and leaves the Presets list open', planWrong.length === 0, planWrong.slice(0, 2));
+  ok('P2 PLAN @' + w + ': each of the twelve "?" opens to its note (the lines in order, the lexicon\'s words); Escape closes the note and leaves the Presets list open', planWrong.length === 0, planWrong.slice(0, 2));
+  ok('P2b PLAN @' + w + ': each of the twelve open notes BOX sits wholly inside the window, uncovered and unclipped, wide enough to read and not scrolled inside itself', planBoxes.length === 0, { bad: planBoxes.length, first: planBoxes.slice(0, 2) });
 
   const ROWS = `(() => [...document.querySelectorAll('[data-back-plan] [data-plan-row]')].map((r) => ({ depth: Number(r.dataset.planDepth), name: (r.querySelector('[data-plan-name]')?.value ?? r.querySelector('[data-plan-name]')?.textContent), hint: (r.querySelector('[data-plan-hint]') || {}).textContent || '' })))()`;
   const loaded = [];
-  for (let i = 0; i < PLAN_SAMPLES.length; i += 1) {
+  for (let i = 0; i < (w === 1920 ? PLAN_SAMPLES.length : 0); i += 1) {
     const id = PLAN_SAMPLES[i];
     const preset = PLAN.find((p) => p.id === id);
-    await planOpen('pp-' + (i + 1));
+    await planOpen('pp-' + (i + 1), w);
     await app.evalJs(`document.querySelector('[data-plan-preset=${q(id)}]')?.click(); null`); await sleep(1000);
     const rows = await app.evalJs(ROWS);
     const want = preset.rows.map((r) => `${r.depth}|${norm(W[r.title])}|${norm(W[r.prompt] || '')}`);
     const got = (rows || []).map((r) => `${r.depth}|${norm(r.name)}|${norm(r.hint)}`);
     loaded.push({ id, ok: JSON.stringify(got) === JSON.stringify(want), n: got.length, wantN: want.length, got: got.slice(0, 2), want: want.slice(0, 2) });
   }
-  ok(`P3 PLAN: ${PLAN_SAMPLES.join(', ')} loaded onto an empty Plan fill it with exactly their rows and grey prompts, in order`, loaded.every((l) => l.ok), loaded.filter((l) => !l.ok));
+  if (w === 1920) ok(`P3 PLAN: ${PLAN_SAMPLES.join(', ')} loaded onto an empty Plan fill it with exactly their rows and grey prompts, in order`, loaded.every((l) => l.ok), loaded.filter((l) => !l.ok));
+  }
 
   // ---- ARBOR ----
-  await menuLaws(app, 'arbor', 'A');
+  await menuLaws(app, 'arbor', 'A', 1366, true);
+  await menuLaws(app, 'arbor', 'A', 1920, false);
 
   // ---- FLUX ----
   await openParts(app, 'flux', 'pb-menu');
