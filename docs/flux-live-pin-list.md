@@ -15,7 +15,7 @@ The 24 successors are not built yet.
 ## Your rulings
 
 1. **The double Log (row 33).** On a Log page the rail shows her place as LOG and the LOG door below it, unmarked (`ReorgRail.tsx:46-51, 121, 146-151`). The L2 plan was "duplicate Log fix first". Lean: a bug; mark the door as her place and drop the second word.
-2. **The "?" on Inputs and Presets (row 22).** Flux has neither, and no file in `reorg/` uses HelpButton. Arbor keeps Inputs' only outside the reorg's Back menu (`Tutor.tsx:1136`: `arbor2 && !arborBoard`). Lean: add both, through the lexicon.
+2. **The "?" on Inputs and Presets (row 22).** Flux has neither, and no file in `reorg/` uses HelpButton. Arbor keeps Inputs' on its prose pages (`Tutor.tsx:1136`: `arbor2 && !arborBoard`). Lean: add both, through the lexicon.
 3. **A screenplay's templates (row 13).** The host still passes five, but the Front menu hides them and the kind menu reads none. **The same rule applies to Arbor** (`frontKindHead` covers `plateau` and `flux`), so this is not Flux-only and is already live in Arbor. Not yet confirmed on a frame. Lean: a separate ticket, not a Flux live blocker.
 4. **The room's drifting points (row 31).** They pause at whatever opacity they had when she types (read: 0.23 and 0.9), so they stay painted, against "nothing off the page paints while typing". The room ground's own spec says "pause" and "never flash". Lean: fade them with the chrome.
 
