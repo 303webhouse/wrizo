@@ -1133,7 +1133,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {back && rightTab === 'plan' && <BackPlan entry={entry} />}
           {back && rightTab === 'export' && <BeforeExport entry={entry} onShowPlan={() => setRightTab('plan')} />}
           {rightTab === 'links' && <ConnectionsDrawerPanel only={arbor2 && !back ? (arborBoard ? 'board' : 'grafts') : undefined} back={back} mode={mode} prose={pageKind === 'prose'}
-            help={arbor2 && !arborBoard ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
+            help={(arbor2 && !arborBoard) || (back && tutorTheme === 'flux') ? <HelpButton helpKey="helpGrafts" subjectLabel={t('drawerLinks')} /> : undefined} />}
           </SideDrawer>
           )}
         </div>

@@ -96,6 +96,9 @@
 /* ... and its grip: Wire In is the Typewriter zoom, and 13-desk-frame.css hides both grips while the page is zoomed (visibility:hidden), so the anchor alone is not enough. The Back menu's own grip (the reorg's, data-back) is shown again in the Corridor; the left hand's grip stays hidden. */
 :root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-tutor-grip[data-back='true']{ visibility:visible; pointer-events:auto; }
 /* ... and its place when OPENED is measured from the panel in Tutor.tsx (gripLeftPx, as a board's is): Wire In is the Typewriter zoom, which widens the page's half, so the grip's formula lands it inside the panel's tab row (the frames of Nov 23); no CSS guess of the panel's width holds at every size (it is 460 at 1366 and about 300 at 1920). Closed, it stays at the page's right edge (spec section 5). */
+/* the "?" on INPUTS (Fable, Nov 23, 6:14 pm): the shared HelpButton beside + the add button, on one row, as Arbor's twin rule draws it */
+:root[data-flux3][data-theme='flux'] .wz-graft-add-row{ display:flex; align-items:center; gap:6px; }
+:root[data-flux3][data-theme='flux'] .wz-graft-add-row .wz-graft-add{ flex:1 1 auto; min-width:0; }
 /* ---- THE WRIZORS' PASS 2 (flux-back-menu-pass-2.md, Nov 22, 10:55 pm) ---- */
 /* REAL 3: the Operator's two fields and the Spine's add field were the chrome's fill with a green-grey browser hint (3.50 to 3.96:1, TK6 and under 4.5): they are in field dress (fill #020C10, a 1 px #5F8F95 edge), and every hint is text-low #7EB4C4 (8.67:1) */
 :root[data-flux3][data-theme='flux'] :is(.wz-tutor-convo-input, .wz-tutor-bible-input, .wz-back-plan-input){ background:#020C10; border:1px solid #5F8F95; border-radius:0; color:var(--text-hi); }
