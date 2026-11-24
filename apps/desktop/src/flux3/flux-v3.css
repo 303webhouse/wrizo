@@ -122,15 +122,16 @@
   font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--f3-room-quiet); }
 :root[data-flux3][data-theme='flux'] .flux3-gutter-row b{ color:var(--f3-room-addr); font-weight:600; }
 
-/* ---- the per-doc link ports (FluxDoc.tsx): square ports straddling the page's right edge; a press draws the line into its box ---- */
+/* ---- the per-doc link ports (FluxDoc.tsx): square ports just beyond the page's right edge (#125, Nov 24: they straddled it, and the first one lay on
+   the Part arrow that caps the page's scrollbar; FluxDoc places them PORT_CLEAR past the page or its arrows); a press draws the line into its box ---- */
 :root[data-flux3][data-theme='flux'] .flux3-ports{ position:absolute; width:0; height:0; }
-:root[data-flux3][data-theme='flux'] .flux3-port{ position:absolute; left:-7px; width:14px; height:14px; padding:0; margin:0; border-radius:0; box-shadow:none;
+:root[data-flux3][data-theme='flux'] .flux3-port{ position:absolute; left:0; width:14px; height:14px; padding:0; margin:0; border-radius:0; box-shadow:none;
   background:var(--f3-room-fill); border:1.5px solid var(--f3-room-cyan); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .flux3-port[aria-expanded='true']{ background:var(--f3-room-cyan); }
 :root[data-flux3][data-theme='flux'] .flux3-port:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
-:root[data-flux3][data-theme='flux'] .flux3-port-more{ position:absolute; left:-9px; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; color:var(--f3-room-quiet); }
-:root[data-flux3][data-theme='flux'] .flux3-port-line{ position:absolute; left:7px; width:26px; margin-top:7px; border-top:1px solid var(--f3-room-cyan); pointer-events:none; }
-:root[data-flux3][data-theme='flux'] .flux3-port-box{ position:absolute; left:33px; min-width:180px; max-width:260px; padding:8px 10px; display:flex; flex-direction:column; gap:5px;
+:root[data-flux3][data-theme='flux'] .flux3-port-more{ position:absolute; left:-2px; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; color:var(--f3-room-quiet); }
+:root[data-flux3][data-theme='flux'] .flux3-port-line{ position:absolute; left:14px; width:26px; margin-top:7px; border-top:1px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-port-box{ position:absolute; left:40px; min-width:180px; max-width:260px; padding:8px 10px; display:flex; flex-direction:column; gap:5px;
   background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); border-radius:0; box-shadow:none; }
 :root[data-flux3][data-theme='flux'] .flux3-port-head{ font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.06em; color:var(--f3-room-text);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -244,6 +245,10 @@
    of the right hand's grip; pressed, a line runs down from it into the port box's own box (Connect another, the same picker). Room colours (the room is dark in both Page tones). An
    overlay in the page's column with chrome-fade: it recedes while she types and nothing moves (flux3-s4b-n5.mjs RECT). ---- */
 :root[data-flux3][data-theme='flux'] .flux3-plus-wrap{ position:absolute; z-index:3; width:32px; height:32px; }
+/* #125 (Nov 24): with the Back menu open its tab row (Spine, ...) stands where the + stands and lay over it (22x16 px; the + could not be pressed), so
+   the + steps down while that hand is open; the Back menu carries its own Assets "+". Keyed on the + wrap's own attribute (FluxDoc's useBackOpen
+   watches the Back panel's data-open), never a :has() on the stage: that re-reads on the first key's restyle (reorg-arbor-no-stage-has-unit.mjs) */
+:root[data-flux3][data-theme='flux'] .flux3-plus-wrap[data-back-open='true']{ visibility:hidden; }
 :root[data-flux3][data-theme='flux'] .flux3-plus{ position:absolute; inset:0; width:32px; height:32px; padding:0; margin:0; border-radius:0; box-shadow:none; cursor:pointer;
   background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); color:var(--f3-room-cyan); }
 :root[data-flux3][data-theme='flux'] .flux3-plus::before,
