@@ -19,6 +19,7 @@
 //   SL-SPLIT-READ    (row 28) the reader cannot be edited: a press and a key in it change nothing stored;  MUT-SL-SPLIT-READ a reader made editable goes red
 //   SL-SPLIT-CLOSE   (row 26) Close takes the reader away and gives the page its rect back
 //   SL-DOCK          (row 32) the docked Operator stays drawn while she types
+//   SL-PLACE-RENAMED (row 3's renamed half, owed after live) she renames the top drawer on the top rail; stored exactly, and the rail and crumb read it
 //   SL-POPOUT        (rows 44, 45, the panel's way in and out) signed out, [ LOG IN ] opens the one sign-in dialog with the focus in its first field, and Escape gives the doors back
 // HOW IT LOOKS AND READS (the second batch)
 //   SL-ORANGE        (row 1, flux-v2 F6) with a rail door open, nothing outside the allowed places paints in Flux's orange;  MUT-SL-ORANGE one more orange element goes red
@@ -338,6 +339,25 @@ await withHarness(async (app) => {
     ok('SL-PAPER the paper is the same size in Flux, Arbor and Machina at 1366 x 768, each on its own default', near(sizes.flux.w, sizes.plateau.w) && near(sizes.flux.h, sizes.plateau.h) && near(sizes.flux.w, sizes.machina.w) && near(sizes.flux.h, sizes.machina.h), sizes);
     await ev("localStorage.setItem('wrizo-theme', 'flux'); null");
   });
+  // OWED SUCCESSOR, row 3's renamed half (flux-v2 F8 "a renamed one keeps her name"; docs/flux-live-pin-list.md, owed after live). Placed LAST before the
+  // sign-out, so no earlier section's read of the untouched top drawer ("New Drive") sees the rename. She renames the top drawer through the top rail's
+  // own rename box (a real click on the name, real keys, Enter); the stored name is exactly hers, and after a reload the rail's place and the crumb read it.
+  await section(['SL-PLACE-RENAMED'], async () => {
+    await open('sl-t');
+    const NAME = 'Harbour Files';
+    const CRUMB = "(document.querySelector('.reorg-top-name[data-top-name=project]') || {}).textContent || null";
+    const before = { where: await ev(whereName), crumb: await ev(CRUMB) };
+    const p = await ev("(() => { const b = document.querySelector('.reorg-top-name[data-top-name=project] .reorg-top-name-btn'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    if (p) { await app.mouseMove(p.x, p.y); await sleep(120); await app.mouseDown(p.x, p.y); await sleep(50); await app.mouseUp(p.x, p.y); }
+    const editing = await soft("!!document.activeElement && document.activeElement.matches('input[data-top-rename=project]')", 4000);
+    if (editing) { await ev("(() => { document.activeElement.select(); return true; })()"); await app.typeKeys(NAME); await key('Enter', 'Enter', 13); }
+    const storedOk = await soft(`(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]').find((d) => d.id === ${q(seeded.top)}) || {}).name === ${q(NAME)}`, 6000);
+    await open('sl-t');
+    const after = { where: await ev(whereName), crumb: await ev(CRUMB),
+      stored: await ev(`(JSON.parse(localStorage.getItem('writer-studio-drawers')).find((d) => d.id === ${q(seeded.top)}) || {}).name`) };
+    ok('SL-PLACE-RENAMED she renames the top drawer on the top rail: its stored name is exactly hers, and after a reload the rail\'s place and the crumb read her name, not New Drive',
+      before.where === 'New Drive' && !!p && editing && storedOk && after.stored === NAME && after.where === NAME && after.crumb === NAME, { before, p, editing, storedOk, after });
+  });
   await section(['SL-POPOUT'], async () => {
     process.env.WS_ANON = '1';
     await ev("history.replaceState(null, '', '/#/'); null");
@@ -357,7 +377,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1200)}`);
-const EXPECTED = 30;   // 19 + the second batch's ten and MUT-SL-ORANGE
+const EXPECTED = 31;   // 19 + the second batch's ten and MUT-SL-ORANGE + SL-PLACE-RENAMED (row 3's renamed half, owed after live)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nFLUX-LIVE-SUCCESSORS VERIFY: PASS (${checks.length} checks)`
