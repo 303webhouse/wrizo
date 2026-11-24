@@ -8,6 +8,8 @@ import { cleanPoint } from './pageMeasure';
 
 const STEM = 14, ARM = 8, GAP = 12;
 const LAYER = 'wz-pb-marks';
+const ALL_UNDER = 24;   // a page with this many breaks or fewer draws every one (a handful of resolves)
+const NEAR = 1.5;       // the band drawn: the view and this many views beyond it, each way
 
 function layerFor(ed: HTMLElement): HTMLElement | null {
   const wrap = ed.parentElement;
@@ -20,6 +22,15 @@ function layerFor(ed: HTMLElement): HTMLElement | null {
     wrap.appendChild(L);
   }
   return L;
+}
+
+/** The client-px band the writer can see the page through: the editor's nearest scrolling ancestor, else the window. */
+function viewBand(ed: HTMLElement): { top: number; bottom: number } {
+  for (let el = ed.parentElement; el && el !== document.body; el = el.parentElement) {
+    const oy = getComputedStyle(el).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && el.clientHeight > 0) { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom }; }
+  }
+  return { top: 0, bottom: window.innerHeight };
 }
 
 export function clearMarks(ed: HTMLElement | null): void {
@@ -51,38 +62,63 @@ export function drawMarks(ed: HTMLElement, at: readonly number[]): void {
   const len = (dev: number) => dev / dpr / s;
   const R = document.createRange();
   const out: string[] = [];
-  for (const o of at) {
-    const pt = cleanPoint(ed, o);
-    let y: number | null = null;
-    // an empty row (a blank line opening the page): its own box top is the line's top
-    if (pt && pt.node.nodeType === Node.ELEMENT_NODE && (pt.node as Element).classList.contains('wz-row')) y = (pt.node as Element).getBoundingClientRect().top;
-    if (pt && pt.node.nodeType === Node.TEXT_NODE) {
-      const row = (pt.node as Text).parentElement?.closest('.wz-row') as HTMLElement | null;
-      // the first DRAWN character from the point on (a heading's hidden marker - "## " - has no box), within its row
-      const w = document.createTreeWalker(row ?? ed, NodeFilter.SHOW_TEXT);
-      w.currentNode = pt.node;
-      let t: Text | null = pt.node as Text, k = pt.offset, tries = 0;
-      while (t && y === null && tries < 60) {
-        if (k >= t.data.length) { t = w.nextNode() as Text | null; k = 0; continue; }
-        tries++;
-        R.setStart(t, k); R.setEnd(t, k + 1);
-        k++;
-        const q = Array.from(R.getClientRects()).find((r) => r.height >= 4);
-        if (!q) continue;
-        if (row) {
-          // the line's box top, in the walk's own unit: the row's top plus (its line index) x (row height / row lines), never a guess at the leading
-          const rr = row.getBoundingClientRect();
-          const tops = lineTops(row);
-          const idx = tops.filter((v) => v < q.top - 3).length;
-          y = rr.top + idx * (rr.height / Math.max(1, tops.length));
-        } else {
-          // Free Write's flow (no rows): the glyph box less half the leading of its own line-height
-          const lh = parseFloat(getComputedStyle(t.parentElement as Element).lineHeight);
-          y = q.top - (Number.isFinite(lh) ? (lh * s - q.height) / 2 : 0);
+  // the line top of the break at clean offset `o`, in client px (null: nothing of it is drawn)
+  const yFor = (o: number): number | null => {
+      const pt = cleanPoint(ed, o);
+      let y: number | null = null;
+      // an empty row (a blank line opening the page): its own box top is the line's top
+      if (pt && pt.node.nodeType === Node.ELEMENT_NODE && (pt.node as Element).classList.contains('wz-row')) y = (pt.node as Element).getBoundingClientRect().top;
+      if (pt && pt.node.nodeType === Node.TEXT_NODE) {
+        const row = (pt.node as Text).parentElement?.closest('.wz-row') as HTMLElement | null;
+        // the first DRAWN character from the point on (a heading's hidden marker - "## " - has no box), within its row
+        const w = document.createTreeWalker(row ?? ed, NodeFilter.SHOW_TEXT);
+        w.currentNode = pt.node;
+        let t: Text | null = pt.node as Text, k = pt.offset, tries = 0;
+        while (t && y === null && tries < 60) {
+          if (k >= t.data.length) { t = w.nextNode() as Text | null; k = 0; continue; }
+          tries++;
+          R.setStart(t, k); R.setEnd(t, k + 1);
+          k++;
+          const q = Array.from(R.getClientRects()).find((r) => r.height >= 4);
+          if (!q) continue;
+          if (row) {
+            // the line's box top, in the walk's own unit: the row's top plus (its line index) x (row height / row lines), never a guess at the leading
+            const rr = row.getBoundingClientRect();
+            const tops = lineTops(row);
+            const idx = tops.filter((v) => v < q.top - 3).length;
+            y = rr.top + idx * (rr.height / Math.max(1, tops.length));
+          } else {
+            // Free Write's flow (no rows): the glyph box less half the leading of its own line-height
+            const lh = parseFloat(getComputedStyle(t.parentElement as Element).lineHeight);
+            y = q.top - (Number.isFinite(lh) ? (lh * s - q.height) / 2 : 0);
+          }
         }
+        if (y === null && row) y = row.getBoundingClientRect().top;   // a row with nothing drawn: its own top is its line's
       }
-      if (y === null && row) y = row.getBoundingClientRect().top;   // a row with nothing drawn: its own top is its line's
-    }
+    return y;
+  };
+  // THE BREAKS IN OR NEAR THE VIEW (#114): a page of 50,000 words has hundreds, and a point resolved for each (a tree walk apiece) was 74 ms a key on every scroll rest; the marks outside the view are never seen.
+  // The offsets run down the page, so their lines do too: the first and last in the band (the view and a view and a half beyond it each way) are found by search, a handful of resolves, and only those are drawn.
+  // The scroll rest and the pause redraw, so the band follows the view. A short page (a few breaks) draws them all, as ever; any break that will not resolve draws them all.
+  let list: readonly number[] = at;
+  if (at.length > ALL_UNDER) {
+    const band = viewBand(ed);
+    const lo = band.top - NEAR * (band.bottom - band.top), hi = band.bottom + NEAR * (band.bottom - band.top);
+    const firstFrom = (limit: number, wantAfter: boolean): number => {   // the first index whose line is at or below `limit` (wantAfter), else the last whose line is at or above it
+      let l = 0, r = at.length - 1, found = -1;
+      while (l <= r) {
+        const m = (l + r) >> 1;
+        const y = yFor(at[m]);
+        if (y === null) return -2;
+        if (wantAfter ? y >= limit : y <= limit) { found = m; if (wantAfter) r = m - 1; else l = m + 1; } else if (wantAfter) l = m + 1; else r = m - 1;
+      }
+      return found;
+    };
+    const i0 = firstFrom(lo, true), i1 = firstFrom(hi, false);
+    list = i0 === -2 || i1 === -2 ? at : i0 >= 0 && i1 >= i0 ? at.slice(i0, i1 + 1) : [];
+  }
+  for (const o of list) {
+    const y = yFor(o);
     if (y === null) continue;
     // each piece snapped to whole device pixels from the UNROUNDED break line, so the stem's centre stays within half a pixel of it (an odd stem -
     // 15 at 1.088 - rounded from a rounded line drifted a whole pixel)
