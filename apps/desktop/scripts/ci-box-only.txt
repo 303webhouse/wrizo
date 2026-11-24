@@ -30,3 +30,5 @@ arbor2-sleep.mjs
 arbor2-swap.mjs
 # A measurement, not a check (Fable, Nov 23, 7:28 pm: "list it box-only (it measures and never fails)"): it prints its numbers and ends "a measurement: it never fails", so it has no verdict line and reads NOVERDICT on a runner by design. The plan job reads THIS copy (the workflow branch's), so the line is here as well as on main.
 space-enter-cost.mjs
+# Timing, and its undamped-layer mutant check (MUT-b) misses on the join AND on the control (Fable, Nov 23, 10:41 pm: "park it verbatim ... Add flux-wirein-latency to the box-only list on ci/actions-harness too"). Box-only until POLISH's sharper mutant lands.
+flux-wirein-latency.mjs
