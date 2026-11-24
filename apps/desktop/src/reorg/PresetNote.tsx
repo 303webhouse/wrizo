@@ -16,15 +16,17 @@ function place(root: HTMLElement) {
   const btn = root.querySelector<HTMLElement>('.wz-drawer-note-btn');
   if (!pop || !btn) return;
   const b = btn.getBoundingClientRect();
+  // the chrome scale zooms the drawers (Machina, 1366 up: 23-reorg-top.css "a zoomed box's own left and top scale too"): the box's own pixels are k viewport pixels, so sizes are measured and offsets written in its own
+  const k = pop.offsetWidth ? pop.getBoundingClientRect().width / pop.offsetWidth : 1;
   const room = window.innerHeight - 2 * EDGE;
-  pop.style.maxHeight = room + 'px';
+  pop.style.maxHeight = room / k + 'px';
   pop.style.overflowY = 'auto';
-  const w = pop.offsetWidth, h = pop.offsetHeight;
+  const w = pop.offsetWidth * k, h = pop.offsetHeight * k;   // viewport pixels
   const left = Math.max(EDGE, Math.min(b.left, window.innerWidth - w - EDGE));
   let top = b.bottom + 4;
   if (top + h > window.innerHeight - EDGE) top = Math.max(EDGE, b.top - 4 - h);
-  pop.style.left = left + 'px';
-  pop.style.top = top + 'px';
+  pop.style.left = left / k + 'px';
+  pop.style.top = top / k + 'px';
   pop.style.right = 'auto';
 }
 
