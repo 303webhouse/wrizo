@@ -23,8 +23,10 @@ const q = (s) => JSON.stringify(s);
 const HEAD = ['scene', 'INT. A LONG ROOM - NIGHT'];
 const act = (x) => ['action', x];
 
-// 47 sentences of nine words: 423 words, about 64 lines at the dialogue measure, so longer than the 54-line body; the last word is unique
-const SPEECH = [...Array.from({ length: 46 }, (_, i) => `Line ${String(i + 1).padStart(2, '0')} of the speech goes on and on.`), 'And that is all I have to say. Farewell.'].join(' ');
+// about 3,000 characters, about 90 lines at the 35-character dialogue measure: well over the 54-line body, as the review's 420-word monologue
+// was (it ran 46 lines past the margin). The first cut of this fixture was 1,788 characters, 1 px over the page, and could not show the hiding.
+// The last word is unique.
+const SPEECH = [...Array.from({ length: 49 }, (_, i) => `Line ${String(i + 1).padStart(2, '0')} of the speech goes on, and nobody in the room stops her.`), 'And that is all I have to say. Farewell.'].join(' ');
 // twelve sentences: about 35 lines, shorter than a page
 const SHORT_SPEECH = Array.from({ length: 12 }, (_, i) => `And another thing, number ${i}, which I have meant to say to you for a long time now.`).join(' ');
 // sixty sentences of action: longer than a page; its own last word is unique too
@@ -60,9 +62,10 @@ await withHarness(async (app) => {
     await app.cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1, pointerType: 'mouse' });
     await sleep(260);
   };
-  // a press near the top-left of a line's FIRST part
+  // a press near the top-left of a line's FIRST part. Its top is scrolled to a third of the way down: centring a line taller than the window
+  // (the whole speech, on main) puts its top above the window, and the first cut of this harness pressed on nothing there.
   const clickLine = async (at) => {
-    const p = await app.evalJs(`(() => { const e = document.querySelector('.script-el[data-doc-index="${at}"]'); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: Math.round(r.left + 12), y: Math.round(r.top + Math.min(r.height / 2, 8)) }; })()`);
+    const p = await app.evalJs(`(() => { const e = document.querySelector('.script-el[data-doc-index="${at}"]'); if (!e) return null; e.scrollIntoView({ block: 'start' }); let sc = e.parentElement; while (sc && !(sc.scrollHeight > sc.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement; if (sc) sc.scrollTop += e.getBoundingClientRect().top - innerHeight / 3; const r = e.getBoundingClientRect(); return { x: Math.round(r.left + 12), y: Math.round(r.top + Math.min(r.height / 2, 8)) }; })()`);
     if (p) await mouse(p.x, p.y);
     await app.waitFor(`document.querySelector('.script-el-active')?.dataset.docIndex === '${at}'`, { label: 'the line active', timeout: 4000 }).catch(() => {});
     await sleep(200);
