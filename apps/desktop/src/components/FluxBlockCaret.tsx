@@ -80,7 +80,7 @@ export function FluxBlockCaret() {
   // [FluxBlockCaret §7] remember the key (and a click) that last moved the caret
   useEffect(() => {
     if (theme !== 'flux') return undefined;
-    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; };
+    const onNav = (e: KeyboardEvent) => { if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return; lastNav = { key: e.ctrlKey || e.metaKey || e.altKey ? 'mod:' + e.key : e.key, at: performance.now() }; if (NAV_DOWNSTREAM.has(lastNav.key)) requestAnimationFrame(() => document.dispatchEvent(new Event('wz-caret-moved'))); };   // #67: Home on a caret already at a wrapped line's start moves no selection, so no selectionchange would redraw the block off the line above
     const onPointer = () => { lastNav = { key: 'pointer', at: performance.now() }; };
     document.addEventListener('keydown', onNav, { capture: true, passive: true });
     document.addEventListener('pointerdown', onPointer, { capture: true, passive: true });
@@ -213,6 +213,8 @@ export function FluxBlockCaret() {
     document.addEventListener('focusout', onBlurCheck, true);
     document.addEventListener('scroll', moved, { capture: true, passive: true });
     document.addEventListener('wz-caret-moved', moved);
+    // a web font that arrives after the caret has drawn moves the words with no selection change (a first visit on a slower line: flux-caret-settle.mjs CS3)
+    document.fonts?.addEventListener('loadingdone', moved);
     // #78: a resize re-lays the page out in steps that settle AFTER the resize event and its first frame (the page's width, the zoom, the scroller), and nothing else moves the selection, so the one redraw above stood at a stale place. The caret is drawn again as the layout settles:
     // right away and at three later moments after the LAST resize [FluxBlockCaret §3]
     let settle: number[] = [];
@@ -226,6 +228,7 @@ export function FluxBlockCaret() {
       document.removeEventListener('focusout', onBlurCheck, true);
       document.removeEventListener('scroll', moved, { capture: true });
       document.removeEventListener('wz-caret-moved', moved);
+      document.fonts?.removeEventListener('loadingdone', moved);
       window.removeEventListener('resize', onResize);
       clearActive();
     };

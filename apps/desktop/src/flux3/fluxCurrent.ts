@@ -142,7 +142,8 @@ function hideHand(s: Side): void {
 // ---- the electron rests while she is in her page ---------------------------------------------------------------------------------------------------
 
 const inPage = (e: Event): boolean => { const t = e.target as Element | null; return !!t && typeof t.closest === 'function' && !!t.closest('.forward-only-editor'); };
-function onFocusIn(e: FocusEvent): void { if (inPage(e)) document.documentElement.setAttribute('data-flux-writing', ''); }
+const inFlux = (): boolean => document.documentElement.getAttribute('data-theme') === 'flux';   // FLUX3 is on for every theme now: Machina's and Arbor's <html> never carries this Flux-only mark (flux3-other-themes-dom.mjs)
+function onFocusIn(e: FocusEvent): void { if (inPage(e) && inFlux()) document.documentElement.setAttribute('data-flux-writing', ''); }
 function onFocusOut(e: FocusEvent): void { if (inPage(e)) document.documentElement.removeAttribute('data-flux-writing'); }
 
 // ---- the one listener ---------------------------------------------------------------------------------------------------------------------------
@@ -172,7 +173,7 @@ function attach(): void {
   document.addEventListener('focusin', onFocusIn, true);
   document.addEventListener('focusout', onFocusOut, true);
   const ae = document.activeElement;
-  if (ae && typeof ae.closest === 'function' && ae.closest('.forward-only-editor')) document.documentElement.setAttribute('data-flux-writing', '');
+  if (ae && typeof ae.closest === 'function' && ae.closest('.forward-only-editor') && inFlux()) document.documentElement.setAttribute('data-flux-writing', '');
 }
 function detach(): void {
   document.removeEventListener('click', onClick, true);

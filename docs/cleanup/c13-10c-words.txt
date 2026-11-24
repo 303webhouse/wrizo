@@ -58,3 +58,4 @@ graftHideAria@machina=Hide from this doc
 graftHiddenLine@machina={title} hidden from this doc.
 graftDockAria@machina=Dock beside the doc
 graftPairedPage@machina=Doc
+cascadeSettingsSignOut@flux=Log out

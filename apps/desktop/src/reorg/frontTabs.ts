@@ -15,6 +15,9 @@ export function frontTabsFor(kind: DrawerKind, hasInstrument: boolean): FrontTab
   return hasInstrument ? ['text', 'ink', 'parts'] : ['text', 'parts'];
 }
 
+/** The themes whose Front menu has the kind menu at its Parts tab's head: the first tab takes the theme's Format word (Arbor's FORMAT, Flux's MARKUP), and the ready-made starts, the kind row and Page setup live in that head menu, not on the first tab (arbor-reorg-spec and flux-reorg-spec section 4). Machina keeps its own reading. */
+export const frontKindHead = (theme: string | null | undefined): boolean => theme === 'plateau' || theme === 'flux';
+
 // (the Wrizors' pass 6, NIT 2; Nick's 1A: the kind shows at SECTIONS' head and is not changed in one click once the page is made, so in Arbor FORMAT's Pages Kind row retires with the Presets)
 /** The sections a tab shows: drawerSet's own, unchanged, but in Arbor (retirePresets) the ready-made starts (templates) are not on FORMAT: they live in SECTIONS' head menu, the kind menu, as Arbor's Presets tab retires into it. PARTS shows none of them (the Parts list is the tab). */
 export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection, retirePresets = false): boolean {

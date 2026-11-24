@@ -8,6 +8,8 @@
 //   KL-COLUMN-<theme> NOTHING inside the page's column or editor restyles at the first key (read by CAUSE: a MutationObserver on the column, inside it and on its ancestors; the chrome's restyle swallows a count)
 //   KL-BUSY-<theme>   the first key's busy time (keydown to the end of its task, no tracing) is within Nick's 65 ms first-key bar (median of 3 reopens)
 //   KL-MUT / KL-MUT-COL  the <html> write put back, and a page-column restyle put in: each is RED on the successors above (the mutants LANDED)
+//   KL-REACH-flux     Flux's --fade-dur sits on the elements that read it (useChromeDissolve.ts; Fable, Nov 23, 2:30 pm): after the first key, EVERY element styled by a rule that reads var(--fade-dur) carries the recede's value
+//   KL-REACH-MUT      a reader the rule does not name reads no value, and KL-REACH's read goes red on it (the mutant LANDED)
 // A measurement of what is restyled; no clock for the restyle checks, so it holds on a loaded runner. Run: node scripts/harness/keyflip-live.mjs   (Actions harness or a box turn)
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +23,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const REOPENS = 3, WINDOW_US = 150000, SHARE = 0.25;
 const ABS = { machina: 220, flux: 400 }, BUSY_MS = 65;   // Fable's absolute bars (the chrome's receding set); the first-key bar is Nick's
 const PAGE_TEXT = 'word0 word1 word2 word3 word4 word5 word6';   // the page the bars were measured on (Machina 210, Flux 387: Fable's 220 and 400); a longer page adds rows to the restyle and moves the printed numbers   // 60 lines: a column with real depth, so a column restyle cannot hide inside the chrome's number
-const THEMES = [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
+// flux-keyflip-reorg.mjs (the Flux live join, Fable, Nov 23) runs this file on Flux alone, with the driver's reorg pin lifted
+const FLUX_REORG = process.env.WS_KL_FLUX_REORG === '1';
+// [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
+const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '?flux3=0']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
 const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
@@ -84,6 +89,9 @@ const FADE_STATE = `(() => { const de = document.documentElement; const own = (e
   const col = document.querySelector('.mode-pagecol') || document.querySelector('.mode-page'); const colSet = new Set(); if (col) { colSet.add(col); col.querySelectorAll('*').forEach((x) => colSet.add(x)); }
   let overlap = 0; for (const x of colSet) if (chromeSet.has(x)) overlap += 1;
   return { onHtml: own(de) || '', docEls: document.querySelectorAll('*').length, carriers: carriers.length, reads: [...new Set(reads)], chromeEls: chromeSet.size, columnEls: colSet.size, columnInChrome: overlap }; })()`;
+// every element a rule that READS var(--fade-dur) styles, and the value it carries (a rule's pseudo-elements are read on their element)
+const FADE_REACH = `(() => { const els = new Set(); const walk = (list) => { for (const r of list) { if (r.selectorText !== undefined) { if (r.style && r.style.cssText.includes('var(--fade-dur')) { try { document.querySelectorAll(r.selectorText.replace(/::?(before|after|first-line)/g, '')).forEach((e) => els.add(e)); } catch {} } } if (r.cssRules) walk(r.cssRules); } }; for (const s of document.styleSheets) { try { walk(s.cssRules); } catch {} }
+  const name = (e) => e.tagName.toLowerCase() + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className || '').trim().split(/\\s+/).slice(0, 2).join('.'); const values = {}, bad = []; for (const e of els) { const v = getComputedStyle(e).getPropertyValue('--fade-dur').trim(); values[v || 'none'] = (values[v || 'none'] || 0) + 1; if (!/^[0-9.]+s$/.test(v)) bad.push(name(e)); } return { n: els.size, values, bad: [...new Set(bad)].slice(0, 12) }; })()`;
 // the first key's busy time, no tracing: keydown to the end of the task that handled it (a message posted from the keydown runs after the key's task and React's flush)
 const BUSY_HOOK = `(() => { window.__klBusy = null; const mc = new MessageChannel(); let t0 = null; mc.port1.onmessage = () => { if (t0 !== null && window.__klBusy === null) window.__klBusy = performance.now() - t0; };
   window.addEventListener('keydown', () => { t0 = performance.now(); mc.port2.postMessage(0); }, { once: true, capture: true }); return true; })()`;
@@ -136,8 +144,9 @@ await withHarness(async (app) => {
     const tr = await traceKey(app, 'a');
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
+    const reach = theme === 'flux' ? await app.evalJs(FADE_REACH) : null;
     const colMut = (await app.evalJs('window.__klMut || null')) || [];
-    const m = { theme, before, after, tr, colMut };
+    const m = { theme, before, after, tr, colMut, reach };
     console.log(`KL-COLMUT ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify(colMut));
     const { invalidations, top, ...trShort } = tr || {};
     const { all, ...trLess } = trShort;
@@ -174,6 +183,18 @@ await withHarness(async (app) => {
     ok(`KL-TIMING-${theme} the dissolve-class elements read a --fade-dur after the first key, and no --fade-dur is written on <html> (printed: html '${R[0].after.onHtml}', ${R[0].after.carriers} carriers read ${JSON.stringify(R[0].after.reads)})`,
       R.every((m) => m.after.onHtml === '' && m.after.carriers >= 1 && m.after.reads.length >= 1 && m.after.reads.every((v) => /^[0-9.]+s$/.test(v))), JSON.stringify(R.map((m) => m.after)));
   }
+  {
+    const R = runs.flux, want = R[0].after.reads[0];
+    ok(`KL-REACH-flux after the first key every element a --fade-dur rule styles carries the recede's value (${want}), on all ${REOPENS} reopens (printed: ${R.map((m) => m.reach && m.reach.n).join(', ')} elements)`, R.every((m) => m.reach && m.reach.n > 0 && !m.reach.bad.length && Object.keys(m.reach.values).length === 1 && m.reach.values[want] === m.reach.n), JSON.stringify(R.map((m) => m.reach)));
+    await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'kl-reach-s'; s.textContent = '.kl-reach-probe{ transition:opacity var(--fade-dur, .2s) ease; }'; document.head.appendChild(s); const d = document.createElement('div'); d.id = 'kl-reach-d'; d.className = 'kl-reach-probe'; document.body.appendChild(d); return true; })()");
+    const mr = await app.evalJs(FADE_REACH);
+    await app.evalJs("document.getElementById('kl-reach-s').remove(); document.getElementById('kl-reach-d').remove(); null");
+    ok('KL-REACH-MUT a --fade-dur reader the rule does not name reads no value, and the read goes red on it (the mutant LANDED)', !!mr && mr.bad.some((x) => x.includes('kl-reach-probe')), JSON.stringify(mr));
+  }
+  if (FLUX_REORG) {
+    const on = await app.evalJs("({ theme: document.documentElement.getAttribute('data-theme'), flux3: document.documentElement.hasAttribute('data-flux3'), top: !!document.querySelector('.reorg-top') })");
+    ok('KFR-ON the page this run measured is the live Flux: the redesign and the reorg\'s top rail are both on it (the wrapper is not silently the old file)', on && on.theme === 'flux' && on.flux3 && on.top, JSON.stringify(on));
+  }
   // the mutant: the old write put back; the check must see the property on <html> and go red for every theme
   const mut = {};
   for (const [theme, search] of THEMES) mut[theme] = await measure(theme, search, { mutate: 'html' });
@@ -192,7 +213,7 @@ await withHarness(async (app) => {
 }, { label: 'keyflip-live' });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = THEMES.length * 4 + 2;
+const EXPECTED = THEMES.length * 4 + 4 + (FLUX_REORG ? 1 : 0);   // + KL-REACH-flux and its mutant
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nKEYFLIP-LIVE VERIFY: PASS (${checks.length} checks)`

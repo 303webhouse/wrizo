@@ -8,6 +8,8 @@
 :root[data-flux3][data-theme='flux']{
   --f3-addr:#57D0F5; --f3-quiet:#6E958D; --f3-cyan:#00C2FF; --f3-cyan-text:#00C2FF; --f3-lime:#B7FF3C; --f3-orange:#FF9800; --f3-orange-text:#FF9800;
   --f3-strip:rgba(9, 30, 36, .94); --f3-hair:#1D4A52; --f3-label:#E3F1EC;
+  /* the command boxes' own edge (Fable, Nov 22, 10:50 pm: the rail's boxes were drawn in the hairline, 1.83:1 on the rail; a graphic holds 3:1): the edge colour TK6 and the field dress already use (4.8:1 and up on the rail's grounds); the hairline itself is unchanged for the rail's own right edge, the strip and the node records */
+  --f3-box-edge:#5F8F95;
 }
 :root[data-flux3][data-theme='flux'][data-page='light']{
   --f3-addr:#17313A; --f3-quiet:#4F6B70; --f3-cyan-text:#006E91; --f3-lime:#3F6B00; --f3-orange-text:#7A3B00;
@@ -62,7 +64,7 @@
 
 /* ---- the rail in command-box dress (q9: the existing rail, the same items in the same order and rects; no new item, no new place) ---- */
 :root[data-flux3][data-theme='flux'] .desk-rail{ border-right:1px solid var(--f3-hair); }
-:root[data-flux3][data-theme='flux'] .desk-rail-item{ position:relative; box-shadow:inset 0 0 0 1px var(--f3-hair); }
+:root[data-flux3][data-theme='flux'] .desk-rail-item{ position:relative; box-shadow:inset 0 0 0 1px var(--f3-box-edge, var(--f3-hair)); }
 :root[data-flux3][data-theme='flux'] .desk-rail-label{ font-family:var(--font-chromeLabel); font-weight:600; text-transform:uppercase; letter-spacing:.08em; }
 :root[data-flux3][data-theme='flux'] .desk-rail-item.active{ box-shadow:inset 0 0 0 1px var(--f3-cyan); }
 :root[data-flux3][data-theme='flux'] .desk-rail-item.active::before{ content:''; position:absolute; left:2px; top:2px; width:7px; height:7px;
@@ -210,6 +212,8 @@
 :root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-item, .wz-crumb-home){ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb :is(.crumb-here, .crumb-rename-btn){ color:var(--text-hi); font-family:inherit; font-weight:600; letter-spacing:inherit; text-transform:inherit; }
 :root[data-flux3][data-theme='flux'] .sprint-crumb input.crumb-rename{ text-transform:none; letter-spacing:normal; }
+/* the board's rename box is an <input> carrying .crumb-here: it took the pale text above on the browser's white field, so her words and caret were near-white on white (wa-red-69; flux-rename-field.mjs). Flux's own field, in the crumb and the reorg's top bar */
+:root[data-flux3][data-theme='flux'] input.crumb-rename{ background:var(--chrome-surface); color:var(--text-hi); caret-color:var(--text-hi); border:1px solid var(--ink-border-strong); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep{ font-size:0; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .sprint-crumb .crumb-sep::before{ content:'\25B8' / ''; font-size:11px; letter-spacing:0; }
 :root[data-flux3][data-theme='flux'] .show-as .show-as-word{ display:inline; }
@@ -254,7 +258,7 @@
 /* ---- S4b L6: THE NODE VOICE, the overlay half (flux3-s4b-plan.md L6; Fable, Nov 21, 6:54 pm: the caps titles HELD, S1's cards never move). From the board mockup:
    a preset step's first line in the preset's lime (colour only: the line's box, wrap and the card's height are untouched), and the footer's status theatre
    (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */
-:root[data-flux3][data-theme='flux'] .board-box:has(> .flux3-node[data-node-kind='preset']) .board-text::first-line{ color:var(--f3-lime); }
+:root[data-flux3][data-theme='flux'] .board-box[data-flux3-preset] .board-text::first-line{ color:var(--f3-lime); }   /* the mark is set by FluxNodeRecord; never a :has() here (this one restyled the whole document at the first key) */
 :root[data-flux3][data-theme='flux'] .flux3-node-f[data-st]:not([data-ok])::after{ content:attr(data-st); color:var(--f3-quiet); }
 /* ---- S4b L5: THE PORT BOX'S PREVIEW (flux3-s4b-plan.md L5; the doc mockup's .pbox .node): the linked node in the box a port opens, read-only. Its address in the box's
    quiet caps (the 0x stays lower case), its name in the chrome face's capitals, a short body clamped to three lines; a preset step in lime. Room colours (the box stands on the
@@ -278,3 +282,17 @@
 :root[data-flux3][data-theme='flux'] .flux3-node-t::after{ content:attr(data-title); }
 :root[data-flux3][data-theme='flux'] .flux3-node[data-node-kind='doc'] > .flux3-node-t{ font-family:var(--font-proseSerif); font-weight:500; font-size:15px; letter-spacing:0;
   text-transform:none; color:var(--f3-label); }
+
+/* FLUX'S SPLASH AND MARK, v5 (S5; flux3/FluxFive.tsx, flux3/fluxMark.tsx). A door is the whole node: pointing or Tab turns its command cyan with a thin brass bar beside it; the ring is Tab's. The cursor blinks at 1.05 s once the doors are open, and everywhere in the app; reduced motion holds it steady. */
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):hover .cmd,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .cmd{ fill:#00C2FF; }
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):hover .bar,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .bar,
+:root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .ring{ opacity:1; }
+:root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
+:root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:flux5-blink 1.05s steps(1) infinite; }
+@keyframes flux5-blink{ 0%{ opacity:1; } 50%{ opacity:0; } }
+@media (prefers-reduced-motion:reduce){
+  :root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
+  :root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:none; }
+}

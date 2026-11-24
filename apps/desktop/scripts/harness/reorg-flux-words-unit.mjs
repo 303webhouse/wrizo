@@ -6,7 +6,11 @@
 //   HOLES   a {placeholder} is never swapped or dropped: every string set here has exactly the placeholders its canonical string has
 //   ONLY    only reorg* keys are set, each one a key the canonical table has, and none overwrites a word Flux already has live
 //   OFF     with the switch off the table IS the live one (the same object): the lexicon reads byte-identically
+// SUPERSEDED (Nov 21, the Wrizors answered the six open strings), kept verbatim:
 //   UNSET   the strings the swaps do not settle stay unset (they keep their canonical words) and are listed in FLUX_REORG_UNSET for the Wrizors
+//   ANSWERS the Wrizors' words are set exactly: Page Setup = Frame, the Typewriter = Wire In and its message in a split, Progress = Meter, the lens box asks "Query this doc…"
+//   KEPT    the two they keep (the lens names' panel label, and the "Research paper" preset) stay at their canonical words and are listed in FLUX_REORG_KEPT
+//   CASE    Flux's own case: buttons and lines in sentence case ("New circuit", "Add an input", "Plain text"), Flux's live Doc and Docs keep their capital
 // Run: node scripts/harness/reorg-flux-words-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
@@ -33,7 +37,12 @@ const LIVE = run(FLUX, {});
 const canon = new Map();
 for (const f of ['chrome', 'settings', 'decks', 'help']) {
   for (const line of rd(`store/lexicon/canonical/${f}.ts`).split('\n')) {
-    const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // SUPERSEDED (Nov 22, the Wrizors' pass 2: the OPERATOR tab's words are Tutor keys): the reading regexp read only reorg* keys; the successor also reads the four named Tutor keys. The original line's head, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):
+    // SUPERSEDED (Nov 23, Flux's rail: spec section 1 sets plainTrackerSwitch to "Use the skin's meter", the one key the table may set besides the reorg* keys, as Arbor's unit allows): the matcher read reorg* keys only. The original, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    // JOINED (Nov 23, the Flux live join): the matcher reads the four Operator keys (INK) and plainTrackerSwitch (ARBOR).
+    const m = /^  (reorg[A-Za-z0-9]*|tutorBibleTitle|tutorBibleEmpty|tutorBibleAddPlaceholder|tutorFreeWritePrompt|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }
@@ -65,14 +74,31 @@ const EXACT = {
   reorgUntitled: 'Unnamed',
   reorgSprintLocked: 'Wired in: the Operator sends prompts only.',
   reorgPubFrozen: 'Markup and Ink lock at Uplink. Patch to change the words.',
+  // the Wrizors' pass 2 (Nov 22, 10:55 pm): other themes' words (law 5) and the OPERATOR tab's words
+  reorgSprintUse: 'Prompts from the Operator',
+  reorgSprintTravels: 'A press asks the Operator for one prompt. Nothing of your page goes with it.',
+  reorgPubLabel: 'Uplink \u00b7 the whole doc, read-only, as it will go out',
+  reorgSplitFull: 'Full screen',
+  tutorBibleTitle: 'The canon',
+  tutorBibleEmpty: 'No canon yet.',
+  tutorBibleAddPlaceholder: 'Add a fact\u2026',
+  tutorFreeWritePrompt: 'Writing prompt',
 };
 const SAMPLES = {
   reorgBackPlan: 'Spine', reorgBackExport: 'Before uplink', reorgUnfiled: 'Orphans', reorgNewProject: 'New drive', reorgAllProjects: 'All drives',
-  reorgPlanToPart: '→ Track', reorgAssetsHead: 'Inputs ({n})', reorgPartAssetsMany: '{n} inputs', reorgSearchLineAll: 'Every Drive, the Log and Orphans',
+  reorgPlanToPart: '→ Track', reorgAssetsHead: 'Inputs ({n})', reorgPartAssetsMany: '{n} inputs', // SUPERSEDED (Nov 21, Flux's own case: sentence case for lines): reorgSearchLineAll: 'Every Drive, the Log and Orphans',
+  reorgSearchLineAll: 'Every drive, the log and orphans',
   reorgPubCopyText: 'Clone text', reorgPubCopyFormatted: 'Clone formatted', reorgTopConnect: 'Connect Docs', reorgDocKindStandard: 'Plain', reorgDocKindScreenplay: 'Script',
   reorgSpecialTitle: 'Cover', reorgSpecialBibliography: 'Sources', reorgTagA: 'Cyan', reorgTagB: 'Lime', reorgTagC: 'Pink', reorgTagD: 'Ice', reorgTagE: 'Teal', reorgTagF: 'Deep cyan',
 };
-const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
+// SUPERSEDED (Nov 21): const UNSET = ['reorgLensLabel', 'reorgDocPageSetup', 'reorgSplitNoTypewriter', 'reorgKindResearch', 'reorgTypewriter', 'reorgProgressBars'];
+const KEPT = ['reorgLensLabel', 'reorgKindResearch'];
+// the OPERATOR tab's own words (the Wrizors' pass 2): the only keys outside reorg* that the table sets, each named here
+const OPERATOR_WORDS = ['tutorBibleTitle', 'tutorBibleEmpty', 'tutorBibleAddPlaceholder', 'tutorFreeWritePrompt'];
+// SUPERSEDED (Nov 23, the Wrizors' rail pass 1 NIT 4, ruled by Fable, Nov 22 10:50 pm: "tell the two meter switches apart": the Doc default reads "Show the meter" beside the Session's "Use the skin's meter"). The original, verbatim:
+// const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Meter', reorgLensAskPlaceholder: 'Query this doc…' };
+const ANSWERS = { reorgDocPageSetup: 'Frame', reorgTypewriter: 'Wire In', reorgSplitNoTypewriter: 'Wire In is off in a split: unplug first.', reorgProgressBars: 'Show the meter', plainTrackerSwitch: "Use the skin's meter", reorgLensAskPlaceholder: 'Query this doc…' };   // [successor]
+const CASE = { reorgAddNewBoard: 'New circuit', reorgAddExistingBoard: 'Existing circuit', reorgAddSearchBoards: 'Find a circuit', reorgAddNewDoc: 'New Doc', reorgAddSearchDocs: 'Find a Doc', reorgAssetsAdd: 'Add an input', reorgAssetsAddTo: 'Add an input to {part}', reorgPubTxt: 'Plain text', reorgPlanOpenPart: 'Open track', reorgSprintAnother: 'Another prompt', reorgDocStyleGuide: 'Style guide', reorgSearchReachProject: 'This drive', reorgPartPrevTo: 'Previous track: {part}', reorgSearchLineProject: 'Its Docs and circuits' };
 
 function suite(src) {
   const R = {};
@@ -94,9 +120,16 @@ function suite(src) {
   });
   t('ONLY', () => {
     const E = load(src), W = E.FLUX_REORG_WORDS, live = (LIVE.FLUX_OVERRIDES.flux) || {};
-    const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 22, the Wrizors' pass 2: the Operator tab's words are theme words of the Tutor, not reorg* keys): the original, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // SUPERSEDED (Nov 23, spec section 1: the reorg's own word for the live key plainTrackerSwitch, "Use the skin's meter", replaces "Use Skin Progress Tracker" while Flux's reorg is on; it is the ONE named exception). The originals, verbatim:
+    // const bad = Object.keys(W).filter((k) => !/^reorg/.test(k) || !canon.has(k) || k in live);
+    // const kept = Object.keys(live).every((k) => merged[k] === live[k]);
+    const NAMED = 'plainTrackerSwitch';
+    // JOINED (Nov 23, the Flux live join): the Operator keys (INK) and the one named key (ARBOR) are both allowed.
+    const bad = Object.keys(W).filter((k) => k !== NAMED && (!(/^reorg/.test(k) || OPERATOR_WORDS.includes(k)) || !canon.has(k) || k in live));   // [successor]
     const merged = E.FLUX_OVERRIDES.flux;
-    const kept = Object.keys(live).every((k) => merged[k] === live[k]);
+    const kept = Object.keys(live).every((k) => k === NAMED || merged[k] === live[k]);   // [successor]
     const others = Object.keys(E.FLUX_OVERRIDES).sort().join(',') === Object.keys(LIVE.FLUX_OVERRIDES).sort().join(',');
     return { pass: bad.length === 0 && kept && others, detail: J({ bad, kept, others }) };
   });
@@ -104,20 +137,41 @@ function suite(src) {
     const E = load(src, false);
     return { pass: E.FLUX_OVERRIDES === LIVE.FLUX_OVERRIDES, detail: 'the live table itself' };
   });
-  t('UNSET', () => {
+  // SUPERSEDED (Nov 21, the Wrizors answered): the original UNSET check, kept verbatim:
+  // t('UNSET', () => {
+  // const E = load(src), W = E.FLUX_REORG_WORDS;
+  // const left = UNSET.filter((k) => k in W);
+  // const listed = UNSET.every((k) => (E.FLUX_REORG_UNSET || []).some((l) => l.startsWith(k)));
+  // return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+  // });
+  t('ANSWERS', () => {
+    const W = load(src).FLUX_REORG_WORDS;
+    const bad = Object.entries(ANSWERS).filter(([k, v]) => W[k] !== v).map(([k, v]) => ({ k, want: v, got: W[k] }));
+    return { pass: bad.length === 0, detail: J(bad) };
+  });
+  t('KEPT', () => {
     const E = load(src), W = E.FLUX_REORG_WORDS;
-    const left = UNSET.filter((k) => k in W);
-    const listed = UNSET.every((k) => (E.FLUX_REORG_UNSET || []).some((l) => l.startsWith(k)));
-    return { pass: left.length === 0 && listed && UNSET.every((k) => canon.has(k)), detail: J({ left, listed }) };
+    const left = KEPT.filter((k) => k in W);
+    const listed = KEPT.every((k) => (E.FLUX_REORG_KEPT || []).some((l) => l.startsWith(k)));
+    return { pass: left.length === 0 && listed && KEPT.every((k) => canon.has(k)), detail: J({ left, listed }) };
+  });
+  t('CASE', () => {
+    const W = load(src).FLUX_REORG_WORDS;
+    const bad = Object.entries(CASE).filter(([k, v]) => (W[k] ?? canon.get(k)) !== v).map(([k, v]) => ({ k, want: v, got: W[k] ?? canon.get(k) }));
+    return { pass: bad.length === 0, detail: J(bad) };
   });
   return R;
 }
 
 let base = null, baseErr = null;
 try { base = suite(SRC); } catch (e) { baseErr = e; }
-for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'UNSET']) ok(`${k} on the real fluxReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'fluxReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
+for (const k of ['EXACT', 'SWAP', 'HOLES', 'ONLY', 'OFF', 'ANSWERS', 'KEPT', 'CASE']) ok(`${k} on the real fluxReorg.ts`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : 'fluxReorg.ts: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 
 const MUT = [
+  ['the canon keeps the bible word', 'EXACT', (t) => t.replace("tutorBibleTitle: 'The canon'", () => "tutorBibleTitle: 'The book\u2019s Bible'")],
+  ['the Operator is the Consultant again', 'EXACT', (t) => t.replace("reorgSprintUse: 'Prompts from the Operator'", () => "reorgSprintUse: 'Prompts from the Consultant'")],
+  ['the Uplink header says Publishing again', 'EXACT', (t) => t.replace("reorgPubLabel: 'Uplink \u00b7", () => "reorgPubLabel: 'Publishing \u00b7")],
+  ['a Tutor key that is not the Operator tab\u2019s is set', 'ONLY', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  tutorConversationSend: 'Go',\n")],
   ['the spec string for the Back tabs is reworded', 'EXACT', (t) => t.replace("reorgBackTabsLabel: 'Spine, inputs and the Operator'", () => "reorgBackTabsLabel: 'Spine, inputs and feedback'")],
   ['the Plan word is not swapped', 'SWAP', (t) => t.replace("reorgBackPlan: 'Spine'", () => "reorgBackPlan: 'Plan'")],
   ['a placeholder is swapped with the word', 'HOLES', (t) => t.replace("reorgPlanToPart: '\u2192 Track'", () => "reorgPlanToPart: '\u2192 Track {part}'")],
@@ -131,7 +185,10 @@ const MUT = [
   // ['the ask is ignored', 'OFF', (t) => t.replace('  REORG_ASKED ? { flux:', () => '  true ? { flux:')],
   // [successor 2] the same mutant aimed at reorgFor('flux'): ignoring it must turn OFF red
   ['the reorgFor gate is ignored', 'OFF', (t) => t.replace("  reorgFor('flux') ? { flux:", () => '  true ? { flux:')],
-  ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
+  // SUPERSEDED (Nov 21): ['a doubtful string is guessed at', 'UNSET', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgTypewriter: 'Typewriter',\n")],
+  ['the Typewriter is named for what it was', 'ANSWERS', (t) => t.replace("reorgTypewriter: 'Wire In'", () => "reorgTypewriter: 'Typewriter'")],
+  ['a kept string is changed', 'KEPT', (t) => t.replace('export const FLUX_REORG_WORDS = {\n', () => "export const FLUX_REORG_WORDS = {\n  reorgKindResearch: 'Intel paper',\n")],
+  ['a button keeps the Title Case it had', 'CASE', (t) => t.replace("reorgAddNewBoard: 'New circuit'", () => "reorgAddNewBoard: 'New Circuit'")],
 ];
 for (const [name, key, fn] of MUT) {
   const after = SRC ? fn(SRC) : SRC;

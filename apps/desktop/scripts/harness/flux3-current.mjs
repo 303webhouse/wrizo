@@ -79,7 +79,8 @@ try { await withHarness(async (app) => {
       const w = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(w, { flicker: true, progressStyle: 'bar', progress: 'words', instrumentsOn: true, typewriter: false }); localStorage.setItem('wrizo-writing-settings', JSON.stringify(w));
       localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); })()`);
     await app.cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: reduced ? 'reduce' : 'no-preference' }] });
-    await ev(`history.replaceState(null, '', '/${flag ? '?flux3=1' : ''}#/page/${id}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', '/${flag ? '?flux3=1' : ''}#/page/${id}')`);
+    await ev(`history.replaceState(null, '', '/${flag ? '?flux3=1' : '?flux3=0'}#/page/${id}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 15000, label: 'the page' }).catch(() => {});
     await splashGone();

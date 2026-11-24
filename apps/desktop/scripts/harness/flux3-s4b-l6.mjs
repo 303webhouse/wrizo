@@ -63,7 +63,8 @@ try { await withHarness(async (app) => {
 
   const open = async ({ flag = true, dial = '50' } = {}) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = 'dark'; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-ambiance-dial', ${JSON.stringify(dial)}); })()`);
-    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
+    // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
+    await ev(`history.replaceState(null, '', ${JSON.stringify(flag ? '/?flux3=1' : '/?flux3=0')} + '#/page/${BOARD}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"l6-text\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
     await splashGone();

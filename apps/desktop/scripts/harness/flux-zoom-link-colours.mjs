@@ -46,8 +46,10 @@ const GROUND = (png) => `(async () => { const i = new Image(); await new Promise
   const med = (a) => { a.sort((p, q) => p - q); return a[Math.floor(a.length / 2)]; }; return [med(rs), med(gs), med(bs)]; })()`;
 
 const MUTANTS = {
-  old: [/(["'])#3A8FA5\1/g, '"rgba(0,194,255,.36)"', 'dark', 'the dark REST colour back to the old translucent cyan'],
-  low: [/(["'])#3A8FA5\1/g, '"#0A2630"', 'dark', 'the dark REST colour a near-ground colour'],
+  // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: old: [/(["'])#3A8FA5\1/g, '"rgba(0,194,255,.36)"', 'dark', 'the dark REST colour back to the old translucent cyan'],
+  old: [/link:(["'])#3A8FA5\1/g, 'link:"rgba(0,194,255,.36)"', 'dark', 'the dark REST colour back to the old translucent cyan'],
+  // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: low: [/(["'])#3A8FA5\1/g, '"#0A2630"', 'dark', 'the dark REST colour a near-ground colour'],
+  low: [/link:(["'])#3A8FA5\1/g, 'link:"#0A2630"', 'dark', 'the dark REST colour a near-ground colour'],
 };
 
 try { await withHarness(async (app) => {

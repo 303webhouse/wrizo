@@ -1,0 +1,10 @@
+/* THE TRACK TAGS' TOKENS IN FLUX (claude/wrizors/flux-reorg-spec.md section 6: colour slots a-f draw as Flux's six signals, Nick, Nov 11, 1:46 am). POLISH owns these tokens (agreed with ARBOR, Nov 22): the Front menu's TRACKS rows and the top bar both read --reorg-tag-<slot>-fill / -ink / -edge / -num, so they always match.
+   A Flux tag is a bracketed code and a 3 px bar, no chip: the fill is transparent, the signal is the bar's colour (-edge), the code beside it is text-hi (-ink, spec draft 4 section 11 rule 2), and -num is the code. d is the pinned text-hi #E7F4F1 (TK6). e stays #7FA8A0 while TK6's matcher does not flag it (Nick, Nov 20: #7EB4C4 only if it does). Never brass: brass is her act. */
+:root[data-flux3][data-theme='flux']{
+  --reorg-tag-a-fill:transparent; --reorg-tag-a-ink:#E7F4F1; --reorg-tag-a-edge:#00C2FF; --reorg-tag-a-num:'[01]';
+  --reorg-tag-b-fill:transparent; --reorg-tag-b-ink:#E7F4F1; --reorg-tag-b-edge:#B7FF3C; --reorg-tag-b-num:'[02]';
+  --reorg-tag-c-fill:transparent; --reorg-tag-c-ink:#E7F4F1; --reorg-tag-c-edge:#FF2E97; --reorg-tag-c-num:'[03]';
+  --reorg-tag-d-fill:transparent; --reorg-tag-d-ink:#E7F4F1; --reorg-tag-d-edge:#E7F4F1; --reorg-tag-d-num:'[04]';
+  --reorg-tag-e-fill:transparent; --reorg-tag-e-ink:#E7F4F1; --reorg-tag-e-edge:#7FA8A0; --reorg-tag-e-num:'[05]';
+  --reorg-tag-f-fill:transparent; --reorg-tag-f-ink:#E7F4F1; --reorg-tag-f-edge:#3A8FA5; --reorg-tag-f-num:'[06]';
+}

@@ -17,8 +17,16 @@ export const ARBOR_SWATCHES = ['#56632E', '#17454E', '#7FA0BC', '#A8392F', '#C9A
  *  night; walnut on cream 12.9. Derived, never stored; no swatch is chosen while a box has no colour of its own. */
 export const ARBOR_PLAIN_BOX = '#EFE4CB';
 export const ARBOR_PLAIN_INK = '#2B1D12';
-/** The swatches in force: Arbor's six in Arbor, the ruled five elsewhere. */
-export function useSwatches(): readonly string[] { return useTheme() === 'plateau' ? ARBOR_SWATCHES : SWATCHES; }
+/** FLUX's six signals (flux-reorg-words.md A: 01 to 06, named on hover; the same slots a to f as a Track's tag). Stored as the hex, as her own colour is. */
+export const FLUX_SWATCHES = ['#00C2FF', '#B7FF3C', '#FF2E97', '#E7F4F1', '#7FA8A0', '#3A8FA5'] as const;
+/** FLUX's uncoloured box (flux-reorg-spec.md section 11, rule 7: never a grey on the panel): node dress, a 1 px edge, text-hi letters. Derived, never stored. */
+export const FLUX_PLAIN_BOX = '#04141A';
+export const FLUX_PLAIN_INK = '#E7F4F1';
+export const FLUX_PLAIN_EDGE = '#7EB4C4';
+/** A code drawn ON a signal's colour (spec section 11, rule 2): dark on all six, lowest 5.05:1 on deep cyan. */
+export const FLUX_CODE_INK = '#04141A';
+/** The swatches in force: Arbor's six in Arbor, Flux's six signals in Flux, the ruled five elsewhere. */
+export function useSwatches(): readonly string[] { const theme = useTheme(); return theme === 'plateau' ? ARBOR_SWATCHES : theme === 'flux' ? FLUX_SWATCHES : SWATCHES; }
 const INKS = ['#1E262E', '#FFFFFF', '#000000'] as const;
 
 function luminance(hex: string): number {
@@ -40,9 +48,11 @@ export function letterInk(colour: string): string {
 export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: string; size?: 'rail' | 'pin' | 'row' }) {
   const look = useBoxes()[id ?? ''] || {};
   const swatches = useSwatches();
-  const plain = !look.colour && swatches === ARBOR_SWATCHES;   // Arbor's uncoloured box: cream, walnut letters
-  const colour = look.colour || (plain ? ARBOR_PLAIN_BOX : swatches[0]);
-  const ink = plain ? ARBOR_PLAIN_INK : letterInk(colour);
+  const flux = swatches === FLUX_SWATCHES;
+  const plain = !look.colour && (swatches === ARBOR_SWATCHES || flux);   // the uncoloured box: Arbor's cream with walnut letters, Flux's node dress
+  const colour = look.colour || (plain ? (flux ? FLUX_PLAIN_BOX : ARBOR_PLAIN_BOX) : swatches[0]);
+  const ink = plain ? (flux ? FLUX_PLAIN_INK : ARBOR_PLAIN_INK) : letterInk(colour);
+  const fluxEdge = plain && flux ? { border: `1px solid ${FLUX_PLAIN_EDGE}` } : {};
   // ARBOR: the letters' ink is also their text FILL. Arbor's night dim (arbor-v2.css section 6.2) letters every dimmed hook in --text-hi with a `color`
   // !important, which turned the cream box's walnut letters cream on cream (the frames on 2fc46347); the fill paints the letters and that rule does
   // not reach it, so they keep their ink and only the dim's opacity applies. Machina draws as before.
@@ -51,7 +61,7 @@ export function RailBox({ id, name, size = 'rail' }: { id: string | null; name: 
     return <span className={`wz-reorg-box wz-reorg-box--${size} wz-reorg-box--picture`} aria-hidden="true" data-box-picture="" style={{ backgroundImage: `url("${look.picture}")` }} />;
   }
   return (
-    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: ink, ...arborInk }}>
+    <span className={`wz-reorg-box wz-reorg-box--${size}`} aria-hidden="true" style={{ background: colour, color: ink, ...arborInk, ...fluxEdge }}>
       {look.letters !== undefined ? look.letters : lettersOf(name)}
     </span>
   );

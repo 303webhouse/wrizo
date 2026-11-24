@@ -136,7 +136,9 @@ async function seed(app) {
 async function open(app, theme, reorg, id, w = 1366) {
   await app.emulateDpr(1, w, 768);
   await app.evalJs(`window.wrizoTheme.set('${theme}'); null`);
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0' : '/?arbor2=0'}#/page/${id}')`);
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&flux3=0' : '/?arbor2=0&flux3=0'}#/page/${id}')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.desk-frame-host .sprint-nav') && !!document.querySelector('.desk-frame-strip')", { label: `the surface ${id}`, timeout: 15000 }).catch(() => {});
   await sleep(900);

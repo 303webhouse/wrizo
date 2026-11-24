@@ -4,5 +4,8 @@
 import './flux-v3.css';
 import './flux-current.css';   // the hands' current and the stage current (fluxCurrent.ts): one layer, drawn only after a click
 import './fluxCurrent';
+import '@fontsource/chakra-petch/600.css';   // the v5 splash's door commands (S5); bundled, no web-font call
 
 document.documentElement.setAttribute('data-flux3', '');
+// the mark restyles a page that may already be open, which moves its words with no selection change: the block caret is told, or it stands where the page was (flux-caret-settle.mjs; POLISH, Nov 23)
+document.dispatchEvent(new Event('wz-caret-moved'));

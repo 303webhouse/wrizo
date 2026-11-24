@@ -19,6 +19,9 @@ import { useTheme } from '../store/theme';
 import { SplashMark } from './SplashMark';
 import { splashSizeFor, arborBoxFor } from './Splash';
 import { ArborFront, takeWantWrite, WANT_WRITE } from '../arbor2/frontLayer';
+import { FLUX3 } from '../flux3/flag';
+import { FX } from '../flux3/fluxMark';
+import { FluxFive, fluxBoxFor, onFluxRun, takeFluxCompose, useFluxRunning } from '../flux3/FluxFive';
 
 // the Threshold, route '/' for every boot: Write is local-first and never needs an account; Open resumes an authed session or reaches sign-in [Arrival §1]
 export type ArrivalAuthState = 'loading' | 'anon' | 'authed';
@@ -123,7 +126,10 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   const theme = useTheme();
   const arborFront = isArbor2() && theme === 'plateau';
   // (r20: under the flag in Arbor the drawing's box takes even whole sizes, as the splash's does - the logo lands on the same whole pixel in both)
-  const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : splashSizeFor;
+  // FLUX'S SPLASH, v5 (S5): the splash's finished frame IS the front door, in the same box, with its two doors live; signing in opens the same pop-out over it
+  const fluxFive = FLUX3 && theme === 'flux';
+  const fluxRunning = useFluxRunning();
+  const sizeFor = isArbor2() && theme === 'plateau' ? arborBoxFor : fluxFive ? fluxBoxFor : splashSizeFor;
   const [frontBox, setFrontBox] = useState(() => (typeof window === 'undefined' ? { width: 0, height: 0 } : sizeFor(window.innerWidth, window.innerHeight)));
   // (Flux holds its chart's finished frame behind the pop-out, the same box the splash drew it in, so it needs the box too)
   useEffect(() => {
@@ -191,6 +197,21 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
     window.addEventListener(WANT_WRITE, take);
     return () => window.removeEventListener(WANT_WRITE, take);
   }, [arborFront, stage, ready]);
+  // FLUX v5: Enter on the front door means COMPOSE (a focused door presses itself); an Enter that skipped the run is taken here once the door can
+  useEffect(() => {
+    if (!fluxFive || stage !== 'doors') return undefined;
+    const take = () => { if (ready && takeFluxCompose()) writeRef.current(); };
+    take();
+    const off = onFluxRun(take);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.isComposing || e.repeat || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.defaultPrevented) return;
+      const el = e.target as Element | null;
+      if (el && el.closest && el.closest('input, textarea, select, button, a, [contenteditable="true"], [role="dialog"], [data-flux-door]')) return;
+      e.preventDefault(); writeRef.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => { off(); window.removeEventListener('keydown', onKey); };
+  }, [fluxFive, stage, ready]);
 
   const writeDoor = async () => {
     // B10.1 - derived per account, after the first pull (see store/firstRun.ts). Synchronous in every case but one: a signed-in
@@ -292,9 +313,16 @@ export function Arrival({ authState, onAuthed }: { authState: ArrivalAuthState; 
   return (
     <div className="wz-home wz-arrival" ref={rootRef} data-stage={stage} data-locked={locked ? 'true' : 'false'}>
       <div className="wz-ambient" aria-hidden="true" />
-      {!arborFront && <WrizoMark className="wz-mark show" alt="" />}
+      {!arborFront && !fluxFive && <WrizoMark className="wz-mark show" alt="" />}
 
-      {arborFront ? (
+      {fluxFive && stage === 'doors' ? (
+        <section className="flux5-front" aria-label="Wrizo" style={{ position: 'fixed', inset: 0, zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', background: FX.ground }}>
+          {!fluxRunning && (
+            <FluxFive mode="door" width={frontBox.width} height={frontBox.height} authed={authState === 'authed'} ready={ready}
+              onCompose={() => writeRef.current()} onLogin={() => { setError(''); setStage('signin'); }} onResume={handleOpen} />
+          )}
+        </section>
+      ) : arborFront ? (
         /* POP-OUT (Nov 18): signed out and pressing Log in / Sign in, the front door STAYS (dimmed by the .wz-arrival[data-stage] veil; `behind`) and the panel opens over it; it no longer goes. Not read out while behind, not pressable. */
         <section className={stage === 'doors' ? 'arbor2-front' : 'arbor2-front behind'} aria-label="Wrizo" aria-hidden={stage === 'doors' ? undefined : true}>
           <div className="arbor2-front-mark" style={{ width: `${frontBox.width}px`, height: `${frontBox.height}px`, marginLeft: `${-frontBox.width / 2}px`, marginTop: `${-frontBox.height / 2}px` }} aria-hidden="true">

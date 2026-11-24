@@ -45,7 +45,10 @@ export function ColourPicker({ partId, partName, current, at, onClose }: ColourP
     const el = rootRef.current;
     if (!el) return;
     const h = el.getBoundingClientRect().height;
-    setPos({ left: Math.max(8, Math.min(at.left, window.innerWidth - WIDTH - 8)), top: Math.max(8, Math.min(at.top, window.innerHeight - h - 8)) });
+    // Flux's picker opens to the menu's side, clear of the page's glass, so it never covers her lines (the Wrizors' Front pass 1, NIT 6); every other theme places it as before
+    const glass = document.documentElement.getAttribute('data-theme') === 'flux' ? document.querySelector('.mode-page')?.getBoundingClientRect() : undefined;
+    const wantLeft = glass && at.left + WIDTH > glass.left - 8 ? glass.left - WIDTH - 8 : at.left;
+    setPos({ left: Math.max(8, Math.min(wantLeft, window.innerWidth - WIDTH - 8)), top: Math.max(8, Math.min(at.top, window.innerHeight - h - 8)) });
   }, [at.left, at.top, custom]);
   useEffect(() => { swatchRefs.current[focusIdx]?.focus(); }, []);   // the keyboard lands on the chosen slot (or A)
   // a press outside the panel closes it

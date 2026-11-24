@@ -1,0 +1,41 @@
+/* FLUX'S TOP BAR ON THE REORG: its marks (claude/wrizors/flux-reorg-spec.md sections 0, 3, 6 and 11; INK's gate, reorg/themeGate.ts flux.top). 24-reorg-flux-top.css dresses
+   the bar's structure and carries no brass; this sheet holds the crumb's caps, the Track's tag (POLISH's tokens, 24-reorg-flux-tags.css) and the choice mark on the current stage and view.
+   Every rule needs :root[data-flux3], so the plain Flux draws none of it. Checked by scripts/harness/reorg-flux-top-live.mjs. */
+/* one height on a Doc and on a Circuit (spec section 11, rule 4) */
+:root[data-flux3][data-theme='flux'] .sprint-nav[data-reorg-top-row]{ min-height:52px; box-sizing:border-box; }
+/* the crumb in letter-spaced caps (L3): DRIVE > DOC // TRACK */
+:root[data-flux3][data-theme='flux'] .reorg-top-name:is([data-top-name='doc'], [data-top-name='part'], [data-top-name='board']){ font-family:var(--font-contentLabel); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-top-name='doc']{ color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-top-name='part']{ font-weight:600; }
+/* the Circuit's name in the same caps; while she renames it, her own case */
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-top-name='board'] :is(.crumb-here, .crumb-rename-btn){ font:inherit; letter-spacing:inherit; text-transform:inherit; }
+:root[data-flux3][data-theme='flux'] .reorg-top-name[data-top-name='board'] input.crumb-rename{ text-transform:none; letter-spacing:normal; }
+/* the Circuit's door is the Doc's door: the strip's type */
+:root[data-flux3][data-theme='flux'] .reorg-top .board-door{ font-family:var(--font-ui); font-size:10.4px; padding:9px 12.8px; letter-spacing:.08em; text-transform:uppercase; }
+/* the readout and the bar's two buttons at the chrome's 11 px; the buttons stay in sentence case (spec section 0) */
+:root[data-flux3][data-theme='flux'] .reorg-top-part-count{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.08em; color:var(--text-mid); }
+:root[data-flux3][data-theme='flux'] .reorg-top-connect:not(.is-icon), :root[data-flux3][data-theme='flux'] .sprint-nav[data-reorg-top-row] .board-pair{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.04em; text-transform:none; }
+/* a Track's tag: its code in text-hi beside a 3 px bar in its signal, no chip (spec section 6; section 11, rule 2) */
+:root[data-flux3][data-theme='flux'] .reorg-top-tag{ flex:none; display:inline-flex; align-items:center; box-sizing:border-box; height:16px; padding:0 0 0 5px; background:transparent; border:0; border-left:3px solid var(--text-low); color:var(--text-hi); font-family:var(--font-chromeLabel); font-size:11px; font-weight:600; letter-spacing:.06em; line-height:1; }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='a']{ border-left-color:var(--reorg-tag-a-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='a']::after{ content:var(--reorg-tag-a-num); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='b']{ border-left-color:var(--reorg-tag-b-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='b']::after{ content:var(--reorg-tag-b-num); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='c']{ border-left-color:var(--reorg-tag-c-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='c']::after{ content:var(--reorg-tag-c-num); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='d']{ border-left-color:var(--reorg-tag-d-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='d']::after{ content:var(--reorg-tag-d-num); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='e']{ border-left-color:var(--reorg-tag-e-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='e']::after{ content:var(--reorg-tag-e-num); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='f']{ border-left-color:var(--reorg-tag-f-edge); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='f']::after{ content:var(--reorg-tag-f-num); }
+/* her own colour IS the bar; one too dark for the panel keeps it and carries a 1 px edge that holds 3:1 (spec section 11, rule 1) */
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='hex']{ position:relative; margin-left:1px; border-left-color:var(--part-hex); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='hex'][data-quiet]::before{ content:''; position:absolute; left:-4px; top:-1px; bottom:-1px; width:3px; box-sizing:content-box; border:1px solid var(--part-hex-edge-dark); }
+:root[data-flux3][data-theme='flux'] .reorg-top-tag[data-top-tag='hex']::after{ content:'[##]'; }
+/* the choice mark (spec section 0): the current stage's and the chosen view's thin 3 x 24 brass bar, beside their cyan; only the chosen one (section 11, rule 3) */
+:root[data-flux3][data-theme='flux'] .reorg-top .desk-mode-tab.active{ position:relative; }
+:root[data-flux3][data-theme='flux'] .reorg-top .desk-mode-tab.active::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+:root[data-flux3][data-theme='flux'] .reorg-top .show-as button{ position:relative; }
+:root[data-flux3][data-theme='flux'] .reorg-top .show-as:not(:has([data-flux3-stack-tab][aria-pressed='true'])) .show-as-btn[aria-pressed='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }
+:root[data-flux3][data-theme='flux'] .reorg-top .show-as [data-flux3-stack-tab][aria-pressed='true']::before{ content:''; position:absolute; left:-1px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); }

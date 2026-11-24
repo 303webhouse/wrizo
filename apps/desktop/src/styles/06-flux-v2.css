@@ -54,6 +54,7 @@
 [data-theme='flux'] .brand-mark{ top:10px; left:14px; bottom:auto; right:auto; width:auto; aspect-ratio:auto; opacity:1; -webkit-mask:none; mask:none; background:none; filter:none;
   color:var(--orange); font-family:var(--font-chromeLabel); font-weight:700; font-size:15px; letter-spacing:.32em; line-height:1; }
 [data-theme='flux'] .brand-mark::before{ content:'WRIZO'; }
+[data-theme='flux'] .brand-mark.flux5-appmark::before{ content:none; }   /* the redesign's mark is its own drawing (S5, flux3/fluxMark.tsx) */
 
 [data-theme='flux'] .board-canvas{ --card-stock:#0E1E31; --card-hairline:rgba(0, 194, 255, .55); --ink-on-card:#E8F6FA; --ink-on-card-low:#57D0F5; --ink-on-card-meta:#8FD6EE; --badge-on-card:#57D0F5; }
 [data-theme='flux'] .board-text, [data-theme='flux'] .board-ink-canvas{ border:1px solid var(--card-hairline); box-shadow:0 0 0 1px rgba(0, 194, 255, .08), 0 6px 18px rgba(0, 0, 0, .45); }

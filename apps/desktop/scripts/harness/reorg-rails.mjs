@@ -152,7 +152,9 @@ async function openPage(app, theme, reorg) {
   // FABLE RULED, Nov 15, 10:40 pm. It wrote its own address and so skipped the driver's pin: O1/O2 read the redesign's strip against today's golden.)
   // (Machina's look, on by default since machina/look: the same pin for Machina, ?machina2=0 - FABLE ACCEPTED the Machina pin, Nov 20, 12:05 am, "as Arbor's Nov 15
   // pin". Actions 44691517313 read the look's Themes pop-out - its Room row - against today's golden: O1 [machina] [theme]. This file is on the pinned list.)
-  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
+  // SUPERSEDED (Nov 22, the Flux redesign is on by default: this file was written for the Flux of before, so its own address carries the pin ?flux3=0, as the Arbor files carry ?arbor2=0). The line as it stood, verbatim:
+  // await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0' : '/?arbor2=0&machina2=0'}#/page/rr-top-1')`);
+  await app.evalJs(`history.replaceState(null, '', '${reorg ? '/?reorg=1&arbor2=0&machina2=0&flux3=0' : '/?arbor2=0&machina2=0&flux3=0'}#/page/rr-top-1')`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor') && !!document.querySelector('.desk-frame-strip')", { label: 'the page', timeout: 15000 }).catch(() => {});
   await sleep(900);
@@ -205,7 +207,10 @@ await withHarness(async (app) => {
   ok('O0: the golden of main\'s switch-off DOM is committed beside this file, with the tree it was captured from', !!golden && /^[0-9a-f]{40}$/.test(golden.capturedFrom || '') && !!golden.surfaces, GOLDEN_FILE);
   const diffOf = (got, theme) => {
     if (!golden) return ['no golden'];
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== golden.surfaces[theme][k]);
+    // SUPERSEDED (INK, Nov 23: FIX's splash work made Flux's Settings action read "Log out", declared in c13-10c as cascadeSettingsSignOut@flux; that one word is the only difference from the golden, read byte for byte). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== golden.surfaces[theme][k]);
+    const ruled = (k, html) => (theme === 'flux' && k === 'settings' ? html.replace('>Sign out<', '>Log out<') : html);
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== ruled(k, golden.surfaces[theme][k]));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);

@@ -1,6 +1,6 @@
 import type { Drawer, JournalEntry, Project } from '../types';
-import { getDrawers, getJournalEntries, getProject, getSystemKind, inJournalView, isAutoSet, isPairedPlanBoard } from '../store/persistence';
-import { compareSections, createSet, ensureSet, journalMembers, setsOfDrawer, UNSORTED } from '../store/place';
+import { getDrawers, getJournalEntries, getJournalPages, getProject, getSystemKind, inJournalView, isAutoSet, isPairedPlanBoard } from '../store/persistence';
+import { compareSections, createSet, ensureSet, journalMembers, sectionsOf, setsOfDrawer, UNSORTED, type Place } from '../store/place';
 
 // THE RAIL'S READS (the reorg, phase 2, behind ?reorg=1 in Machina). Pure reads of what is already stored: nothing here writes, and nothing here
 // is a new saved field. Every rule below is a READ-TIME rule (reorg-plan-tech.md section 2; Fable's clearance, live-feedback-nov14i.md):
@@ -78,6 +78,43 @@ export function docsOf(drawerId: string): RailDoc[] {
 /** The Notebook's Docs: each of its pages is a one-Part Doc (it has no sets). */
 export function notebookDocs(): RailDoc[] {
   return listOf(NOTEBOOK).docs;
+}
+
+/** What a place holds by the reorg's own count, the one its lists show: Docs (a set of Parts is ONE Doc) and Circuits/Boards. id null is Unfiled, one row an entry. */
+export function countsOf(id: string | null): { docs: number; boards: number } {
+  if (id == null) { const m = unfiledMembers(); const boards = m.filter(isBoard).length; return { docs: m.length - boards, boards }; }
+  const l = listOf(id);
+  return { docs: l.docs.length, boards: l.boards.length + l.docs.reduce((n, d) => n + d.boards.length, 0) };
+}
+
+/** How many Docs Recent lists at most. */
+export const RECENT_DOCS = 25;
+/** One Doc, wherever it lives: its Parts, and the one she changed last (the row's way in). */
+export interface DocRow { lead: JournalEntry; set: Project | null; parts: JournalEntry[] }
+
+/** EVERY Doc anywhere, newest first, by the one read-time rule: each Drive's Docs, the Notebook's, and each page in Unfiled. A set of Parts is ONE row; the Trash is left out. */
+export function allDocRows(): DocRow[] {
+  const docs: RailDoc[] = [
+    ...getDrawers().flatMap((d) => docsOf(d.id)),
+    ...notebookDocs(),
+    ...unfiledMembers().filter((e) => !isBoard(e)).map((p) => ({ set: null, parts: [p], boards: [] })),
+  ];
+  const newest = (a: JournalEntry, b: JournalEntry) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id);
+  return docs.map((d) => ({ set: d.set, parts: d.parts, lead: [...d.parts].sort(newest)[0] })).sort((a, b) => newest(a.lead, b.lead));
+}
+
+/** FLUX'S DOORS, FROM ONE SOURCE (the Wrizors' rail pass 1, REAL 2; Fable, Nov 22 10:50 pm: every count counts exactly what its list shows, the Trash left out). Each number is the
+ *  length of the very list that door's pop-out draws. The Log has its own door in Flux, so DRIVES lists it only while it is pinned (she must be able to unpin it). */
+export function railCounts(place: Pick<Place, 'kind' | 'id'>, here: string | null, pins: readonly string[]) {
+  const all = allDocRows().length;
+  return {
+    docs: Math.min(all, RECENT_DOCS), docsAll: all,
+    drives: getDrawers().length, logPinned: pins.includes(NOTEBOOK),
+    orphans: unfiledMembers().length,
+    circuits: sectionsOf(place, 'boards').reduce((n, g) => n + g.items.length, 0),
+    log: getJournalPages().length,
+    held: countsOf(here),
+  };
 }
 
 /** Where a new Doc or Board from the rail is filed. ALWAYS a Doc of its own, or a Board with no Doc (Fable, Nov 14, 3:52 pm): into the Project's
