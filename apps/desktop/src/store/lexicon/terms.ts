@@ -858,5 +858,9 @@ export type DeskTermId =
   | 'guideAnsGameWorld'
   | 'guideAnsGameQuest'
   | 'guideAnsGameBranching'
-  | 'helpWhyFeatureStoryInvestigative';
+  | 'helpWhyFeatureStoryInvestigative'
+  // THE COMPANION (src/mobile, MOBILE slice 1): canonical/mobile.ts
+  | 'mobileDesk' | 'mobileLibrary' | 'mobileDocs' | 'mobileProjects' | 'mobileUnfiled' | 'mobileFind' | 'mobilePinned' | 'mobileRecent' | 'mobileRead' | 'mobilePlan' | 'mobileAssets' | 'mobileAll' | 'mobileCards' | 'mobileBoards'
+  | 'mobileSendTo' | 'mobileChange' | 'mobileSend' | 'mobileNote' | 'mobileMobile' | 'mobileWaiting' | 'mobileShowAs' | 'mobileWall' | 'mobileList' | 'mobileAddCard' | 'mobileNoPart' | 'mobileAddName'
+  | 'mobileBack' | 'mobileNoteLabel' | 'mobileNothingHere' | 'mobileNoResults' | 'mobileNoPlace' | 'mobileSignIn';
 
