@@ -57,6 +57,10 @@ const ARMS = {
   NOCARD: { theme: 'flux', flag: true, scale: 4, hide: 'NOCARD' },
   NOLAYER: { theme: 'flux', flag: true, scale: 4, hide: 'NOLAYER' },
   NOFOG: { theme: 'flux', flag: true, scale: 4, hide: 'NOFOG' },
+  // (added after the box turn of Nov 24 16:14Z: C read 184 ms by day against 16 the night before; Arbor's room follows the clock) the control with its
+  // room PINNED through the redesign's own test pin (arbor2/flag.ts arbor2RoomPin), so the room is named, not the hour
+  CDAY: { theme: 'plateau', flag: false, scale: null, url: '/?arbor2=1&arbor2room=day', room: 'day' },
+  CNIGHT: { theme: 'plateau', flag: false, scale: null, url: '/?arbor2=1&arbor2room=night', room: 'night' },
 };
 const ORDER = Object.keys(ARMS);
 const CYCLE = 'the signal holds while she writes on ';
@@ -79,7 +83,7 @@ try { await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before seed', timeout: 15000 });
     await ev(`window.wrizoPatchEntry(${J(BOARD)}, { boxes: ${J(makeBoxes())} })`);
     await ev(`localStorage.setItem('wrizo-theme', ${J(arm.theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'dark', fade: 'on' }));`);
-    await ev(`history.replaceState(null, '', ${J(arm.flag ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
+    await ev(`history.replaceState(null, '', ${J(arm.url || (arm.flag ? '/?flux3=1' : '/'))} + '#/page/${BOARD}')`);
     await app.reload();
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"f3-d\"]')", { timeout: 15000, label: 'the board' }).catch(() => {});
     await splashGone();
@@ -101,7 +105,7 @@ try { await withHarness(async (app) => {
     await sleep(IDLE_MS);
     const cardText = "(() => { const e = document.querySelector('.board-canvas .board-box[data-box-id=\"f3-d\"]'); return e ? (e.textContent || '').length : -1; })()";
     const where = await ev(`(() => { const r = document.documentElement, cv = document.querySelector('.board-canvas'), cr = cv && cv.getBoundingClientRect(), ed = document.querySelector('.board-popup-editor');
-      return { theme: r.getAttribute('data-theme'), layer: document.querySelectorAll('[data-flux3-layer]').length, scale: cr && cv.offsetWidth ? Math.round(cr.width / cv.offsetWidth * 100) / 100 : null,
+      return { theme: r.getAttribute('data-theme'), room: r.getAttribute('data-arbor2-room'), layer: document.querySelectorAll('[data-flux3-layer]').length, scale: cr && cv.offsetWidth ? Math.round(cr.width / cv.offsetWidth * 100) / 100 : null,
         focused: !!ed && document.activeElement === ed, before: ed ? ed.textContent.length : -1 }; })()`);
     const card0 = await ev(cardText);
     await ev(`(() => { window.__et = []; window.__work = []; let k0 = 0;
@@ -126,7 +130,7 @@ try { await withHarness(async (app) => {
   }
 
   const all = Object.values(res).flat();
-  const stood = all.every((r) => { const a = ARMS[r.name]; return r.where && r.where.theme === a.theme && r.where.focused && (a.flag ? r.where.layer === 1 : r.where.layer === 0) && (a.scale == null || Math.abs((r.where.scale || 0) - a.scale) < 0.05); });
+  const stood = all.every((r) => { const a = ARMS[r.name]; return r.where && r.where.theme === a.theme && r.where.focused && (a.flag ? r.where.layer === 1 : r.where.layer === 0) && (a.scale == null || Math.abs((r.where.scale || 0) - a.scale) < 0.05) && (!a.room || r.where.room === a.room); });
   ok('P1 (premise) every arm stood where it claims (theme, layer, the camera scale as measured, the card editor focused)', stood, J(all.map((r) => [r.name, r.round, r.where])));
   const hid = all.filter((r) => ARMS[r.name].hide);
   ok('P2 (premise) every suspect\'s style LANDED (a computed read) before its keys', hid.length > 0 && hid.every((r) => r.landed === true), J(hid.map((r) => [r.name, r.round, r.landed])));
@@ -134,7 +138,7 @@ try { await withHarness(async (app) => {
   for (const name of ORDER) {
     const s = stat(res[name].flatMap((r) => r.et)), w = stat(res[name].flatMap((r) => r.work));
     const live = res[name].map((r) => r.card1 - r.card0);
-    console.log(`P118 ${name.padEnd(8)} Event Timing keydown n ${s.n} med ${s.med} p95 ${s.p95} max ${s.max} >=48 ${s.ge48} | work med ${w.med == null ? null : Math.round(w.med * 10) / 10} | the board's card grew by ${J(live)} while the pop-up was open`);
+    console.log(`P118 ${name.padEnd(8)} room ${J([...new Set(res[name].map((r) => r.where && r.where.room))])} Event Timing keydown n ${s.n} med ${s.med} p95 ${s.p95} max ${s.max} >=48 ${s.ge48} | work med ${w.med == null ? null : Math.round(w.med * 10) / 10} | the board's card grew by ${J(live)} while the pop-up was open`);
   }
 }); } catch (e) { ok('the probe ran to the end', false, String(e && e.message || e).slice(0, 400)); }
 
