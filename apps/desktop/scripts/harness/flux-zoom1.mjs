@@ -126,9 +126,12 @@ const MUTANTS = {
   dragNotScaled: [/(\.clientX-[\w$]+\)\/)\(([\w$]+)\*[\w$]+\(\)\)(,[\w$]+=\([\w$]+\.clientY-[\w$]+\)\/)\(\2\*[\w$]+\(\)\)/g, '$1$2$3$2'],
   // the camera drawn by CSS zoom instead of a transform: zoom changes LAYOUT, so the board's frame (auto height) would move and resize
   zoomByLayout: [/(\w+)\.style\.transform=`translate\(\$\{\w+\}px, \$\{\w+\}px\) scale\(\$\{(\w+)\}\)`/g, '$1.style.zoom=String($2)'],
-  layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
+  // (Nov 24, train L6's pair, Actions 45362086040: these two anchors matched 0 once the L6 bundle's names moved - an identifier the minifier names `$X` is not `\w+`; the slots are `[\w$]+` now (the Nov 18 and Nov 19 fix, extended). The ORIGINALS are kept verbatim below, SUPERSEDED; the cuts and their checks are unchanged. Measured on the built bundles: 1 match each on the join 1bc2cda5 and on L6.)
+  // SUPERSEDED (Nov 24): layerScale1: [/s:\w+\(\)\}\)\};/g, 's:1})};'],
+  layerScale1: [/s:[\w$]+\(\)\}\)\};/g, 's:1})};'],
   // the camera does not file the board's scale when it goes (guard 7's memory): the call just before the live scale is set back to 1 is cut from the cleanup
-  keepForgets: [/(,\w+\(\),\w+\(\)),\w+\(\w+,\w+\(\)\)(,\w+\(1\),\w+\(\)\}\},\[\w+,\w+,\w+\]\))/g, '$1$2'],
+  // SUPERSEDED (Nov 24): keepForgets: [/(,\w+\(\),\w+\(\)),\w+\(\w+,\w+\(\)\)(,\w+\(1\),\w+\(\)\}\},\[\w+,\w+,\w+\]\))/g, '$1$2'],
+  keepForgets: [/(,[\w$]+\(\),[\w$]+\(\)),[\w$]+\([\w$]+,[\w$]+\(\)\)(,[\w$]+\(1\),[\w$]+\(\)\}\},\[[\w$]+,[\w$]+,[\w$]+\]\))/g, '$1$2'],
   // the readout's click calls nothing (the way home's button is there, the door does not open)
   // (Nov 18, train-22b's pair, Actions 44365317556: this anchor matched 0 - the minifier named the reset call `$X`, which `\w+` cannot match; the
   // identifier slots are `[\w$]+` now, JavaScript's own identifier characters. The cut and its check are unchanged.)
