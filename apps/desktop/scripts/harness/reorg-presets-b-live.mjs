@@ -155,7 +155,7 @@ async function menuLaws(app, leg, tag) {
     // the names as the Doc stores them (the list shows "Part 1" for a Doc of one Part, by its own rule: parts.length > 1 ? name : "Part n"), and the list itself where there are several
     const names = await app.evalJs(`(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === ${q('pb-' + leg + '-' + id)}); const P = window.wrizoParts; return e && P ? P.partsOfDoc(e.projectId).map((p) => p.name) : null; })()`);
     const want = KINDS.presetParts(preset, 'none');
-    const shown = await app.evalJs("(() => { const l = document.querySelector('.wz-sliver [data-reorg-parts]'); return l ? [...l.querySelectorAll('.reorg-parts-name')].map((x) => (x.textContent || '').replace(/\s+/g, ' ').trim()) : null; })()");
+    const shown = await app.evalJs("(() => { const l = document.querySelector('.wz-sliver [data-reorg-parts]'); return l ? [...l.querySelectorAll('.reorg-parts-name')].map((x) => (x.textContent || '').replace(/\\s+/g, ' ').trim()) : null; })()");
     const shownOk = want.length === 1 ? JSON.stringify(shown) === JSON.stringify(['Part 1']) : JSON.stringify(shown) === JSON.stringify(want);
     made.push({ id, ok: JSON.stringify(names) === JSON.stringify(want) && shownOk, names, want, shown });
   }
