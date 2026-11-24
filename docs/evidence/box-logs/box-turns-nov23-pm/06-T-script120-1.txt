@@ -1,0 +1,5 @@
+SCRIPT-TYPING-120: pages 118 (units 522, from 69 pages at 300), lines 1653, keys landed 120/120, timed 120/120
+SCRIPT-TYPING-120: WORK ms  median 12.0  p95 21.5  max 28.5
+SCRIPT-TYPING-120: PAINT ms median 16.6  p95 30.5  max 32.0
+
+SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)

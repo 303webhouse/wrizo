@@ -29,7 +29,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const STUBS = {
   persistence: `export const inJournalView = () => false; export const getProject = () => null; export const getProjects = () => [];
     export const getJournalEntry = () => null; export const getJournalEntries = () => []; export const getBinderPages = () => [];
-    export const getSystemKind = () => undefined; export const getDeletedEntries = () => [];`,
+    export const getSystemKind = () => undefined; export const getDeletedEntries = () => []; export const isAutoSet = () => false;`,
   deskLexicon: `export const deskTerm = (id) => id;`,
   react: `export const useSyncExternalStore = () => null;`,
   fontRoster: `export const ensureFaceLoaded = () => {}; export const faceForSlug = () => null; export const faceStack = () => '';`,
