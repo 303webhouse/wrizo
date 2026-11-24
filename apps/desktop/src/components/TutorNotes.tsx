@@ -12,9 +12,9 @@ import { NOTE_KINDS, NOTE_MAX_CHARS, proposeNote, useNoteProposal, useTutorNotes
 
 const KIND_TERM = { tendency: 'tutorNotesKindTendency', interest: 'tutorNotesKindInterest', blocker: 'tutorNotesKindBlocker', goal: 'tutorNotesKindGoal' } as const;
 
-export function TutorNotes() {
+export function TutorNotes({ open }: { open: boolean }) {
   const { t } = useDeskLexicon();
-  const { state, notes, failed, add, edit, remove, wipe } = useTutorNotes();
+  const { state, notes, failed, add, edit, remove, wipe } = useTutorNotes(open);
   const proposal = useNoteProposal();
   const [input, setInput] = useState('');
   const [kind, setKind] = useState<NoteKind>('tendency');

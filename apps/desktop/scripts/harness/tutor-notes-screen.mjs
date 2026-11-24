@@ -55,6 +55,9 @@ const ADD_INPUT = `${SEC} .wz-tutor-bible-row input.wz-tutor-bible-input`;
 await withHarness(async (app) => {
   await freshProsePage(app);
   await notesMode(app, { reset: true });
+  await sleep(700);
+  const closedCalls = (await notesState(app)).calls.length;
+  ok('NS1 a closed Tutor panel makes no notes call (a writing page loads what it did before notes existed)', closedCalls === 0, String(closedCalls));
   await openTutor(app);
   await app.waitFor(`!!document.querySelector(${JSON.stringify(SEC)})`, { label: 'the notes section in the Tutor panel' });
   await sleep(300);
@@ -163,7 +166,7 @@ await withHarness(async (app) => {
   const hook = fs.readFileSync(path.join(SRC, 'store', 'tutorNotes.ts'), 'utf8');
   const comp = fs.readFileSync(path.join(SRC, 'components', 'TutorNotes.tsx'), 'utf8');
   ok('NS9 signed out: the hook returns before any fetch, and the section renders nothing', /if \(!signedIn\) \{ setNotes\(\[\]\); setState\('anon'\); return; \}/.test(hook) && /if \(state === 'anon'\) return null;/.test(comp));
-  ok('NS9 no note is kept in the browser: no localStorage, sessionStorage or indexedDB in the notes store or screen', !/localStorage|sessionStorage|indexedDB/.test(hook + comp));
+  ok('NS9 no note is kept in the browser: no localStorage, sessionStorage or indexedDB in the notes store or screen', !/localStorage|sessionStorage|indexedDB/.test((hook + comp).replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, '')));
   ok('NS9 the screen touches no editor: no editorRef, no setText of the page, no import of an editor', !/editorRef|forward-only-editor|ForwardOnlyEditor|PageEditor/.test(comp + hook));
 });
 
