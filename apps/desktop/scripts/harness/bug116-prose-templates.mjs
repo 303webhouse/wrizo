@@ -133,8 +133,11 @@ await withHarness(async (app) => {
   });
 
   await guard('P5', async () => {
+    // read at 1920: until #116's rail fix (arbor/bug116-script-templates) lands, a screenplay's drawer runs under the rail at 1366 and its kind menu cannot be pressed (the first run read items: [])
+    await app.emulateDpr(1, 1920, 1080);
     opened.script = await open(app, 'plateau', 'b116p-script', '.script-el');
     const items = await menuItems(app);
+    await app.emulateDpr(1, 1366, 768);
     ok('P5 Arbor, a screenplay: the kind menu has no Templates fold (Fable, until Convert exists)', items.length > 0 && !items.includes('templates'), { items });
   });
 
