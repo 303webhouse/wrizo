@@ -104,6 +104,7 @@ import { presetBoxes } from '../reorg/backMenu/planPresetOps';
 import { docOfPage, partOfRow } from '../reorg/backMenu/planPart';
 import { getBoardScale } from '../flux3/boardZoom';
 import { FluxSchema } from '../flux3/FluxSchema';
+import { BoardZoom } from './BoardZoom';
 import { FluxNodeRecord } from '../flux3/FluxNodeRecord';
 import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 
@@ -1327,6 +1328,8 @@ export function BoardEditor({ id }: { id: string }) {
         onPointerCancel={onCanvasHandleUp}
       />
       {FLUX3 && <FluxSchema wrapRef={wrapRef} canvasRef={canvasRef} boxes={boxes} nodes={sorted} connections={connections} selectedId={selectedId} pageWidthPx={pageWidthPx} boardId={id} labelFor={boxLabel} />}
+      {/* Board zoom in Arbor and Machina (Nov 24): Flux's camera and a small bar over the frame's corner; it renders nothing in any other theme */}
+      <BoardZoom wrapRef={wrapRef} canvasRef={canvasRef} boardId={id} zTop={sorted.reduce((m, b) => Math.max(m, b.z), 0) + 1} />
     </div>
   );
 
