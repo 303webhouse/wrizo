@@ -86,6 +86,7 @@ import { usePageAutosave } from './pageEditor/usePageAutosave';
 import { useExternalPageText } from './pageEditor/useExternalPageText';
 import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
 import { mapCaretThrough, mergeText } from '../store/textMerge';
+import { CARET_PLACED } from '../store/caretPlaced';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -435,7 +436,7 @@ function PageEditorView({ id }: { id: string }) {
     scrollEl: () => surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll') ?? null,
     editorEl: () => editorRef.current,
     applyScrollY: y => { const el = surfaceRef.current?.querySelector<HTMLElement>('.mode-scroll'); if (el) { endOpenSettles(); el.scrollTop = y; } },
-    applyCaret: offset => { if (editorRef.current) setCaretOffset(editorRef.current, offset); },
+    applyCaret: offset => { if (editorRef.current) { setCaretOffset(editorRef.current, offset); editorRef.current.dispatchEvent(new Event(CARET_PLACED)); } },
   });
 
   const switchMode = (next: EditorMode) => {
