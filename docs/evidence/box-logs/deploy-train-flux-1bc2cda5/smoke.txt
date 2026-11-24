@@ -1,0 +1,14 @@
+Flux live deploy, Nov 24 2026 (08:06 MT / 15:06Z), probes after the upload (chat1-live-probe.mjs, smoke-login.mjs, chat1-prefs-probe.mjs):
+
+healthz 200 {"ok":true,"build":"index-CPlBeyQk"}
+auth/me 401
+served index-CPlBeyQk.js 1356941 bytes md5 1329c488e187
+served index-75VPLdEP.css 504379 bytes md5 7ecfd13e157c
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
+PREFS-PROBE: PASS (prefs status 200)
+
+Tested build (chat1-train-j, build:web of 1bc2cda5): index-CPlBeyQk.js 1356941 B md5 1329c488e187; index-75VPLdEP.css 504379 B md5 7ecfd13e157c. Identical to the served files.
+railway deployment list: 9b30f203-9395-44b8-8e38-eedf8256b3a1 SUCCESS 2026-11-24 08:05:27 -07:00; previous e9cbed5b-5fe7-4764-80e9-90c99c9ace12 (train L5) REMOVING.
