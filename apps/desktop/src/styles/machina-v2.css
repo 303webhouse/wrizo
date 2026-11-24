@@ -125,7 +125,7 @@
 :root[data-machina2][data-theme='machina'] .wz-strip-item.active{ border-left-color:var(--brass); }
 
 /* ---------- §3 TYPE: chrome Plex Sans 12-13 px; headings Plex Sans caps .12 em ---------- */
-:root[data-machina2][data-theme='machina'] :is(.wz-sliver-h, .wz-cascade-panel-title, .wz-drawers-cluster-title){ font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:11px;
+:root[data-machina2][data-theme='machina'] :is(.wz-sliver-h, .wz-cascade-panel-title, .wz-drawers-cluster-title){ font-family:'IBM Plex Sans', sans-serif; font-weight:500; font-size:11px;
   letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
 
 /* ---------- THE BLUE WASH - DROPPED in r4 (the Wrizors and Fable, Nov 1: "Drop Blue wash"); its rule and its switch are gone ---------- */

@@ -3,7 +3,7 @@
    only through reorg/themeGate.ts (the preview door shows it before then). Tags (the Sections' numbered cloth tabs) are ARBOR's, with the Front menu. */
 :root[data-arbor2][data-theme='plateau'] .wz-back-assets-head{ margin:0 0 6px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
-:root[data-arbor2][data-theme='plateau'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }

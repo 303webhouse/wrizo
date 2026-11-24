@@ -294,7 +294,7 @@
 [data-theme='machina'] button.reorg-parts-assets:hover, [data-theme='machina'] button.reorg-parts-assets:focus-visible{ border-color:var(--text-low); color:var(--text-hi); }
 [data-theme='machina'] .reorg-dockind{ position:relative; margin:0 0 8px; }
 [data-theme='machina'] .reorg-dockind-btn{ display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong);
-  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-dockind-btn[aria-expanded='true'], [data-theme='machina'] .reorg-dockind-btn:hover{ border-color:var(--text-low); }
 [data-theme='machina'] .reorg-dockind-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-dockind-caret, [data-theme='machina'] .reorg-dockind-fold, [data-theme='machina'] .reorg-parts-structure-fold{ font-size:10px; color:var(--text-mid); }
@@ -308,7 +308,7 @@
   outline:1px solid var(--text-low); outline-offset:-2px; }
 [data-theme='machina'] .reorg-parts-structure{ margin:4px 0 8px; }
 [data-theme='machina'] .reorg-parts-structure-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
-  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-parts-structure-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-parts-structure-body{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0 2px; }
 [data-theme='machina'] .reorg-parts-structure-body[hidden]{ display:none; }
@@ -318,7 +318,7 @@
    their rows are today's own; Insert Symbol's characters wrap in the drawer's width. No motion: a cut. */
 [data-theme='machina'] .reorg-text-fold{ margin:6px 0 0; }
 [data-theme='machina'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
-  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-text-fold-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-text-fold-mark{ font-size:10px; color:var(--text-mid); }
 [data-theme='machina'] .reorg-text-fold-body[hidden]{ display:none; }

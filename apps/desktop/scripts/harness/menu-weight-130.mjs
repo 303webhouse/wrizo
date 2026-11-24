@@ -35,12 +35,23 @@ const LINES = Array.from({ length: 24 }, (_, i) => `Paragraph ${i + 1}. The rain
 const READ = (tab) => `(() => {
   const skip = (e) => !!e.closest('.mode-page, .forward-only-editor, .wz-splash, .wz-split-asset');
   const region = (e) => e.closest('.desk-frame-strip') ? 'rail' : e.closest('.chrome-top') ? 'bar' : e.closest('.wz-sliver') ? 'front' : e.closest('.wz-tutor-panel, .wz-tutor') ? 'back' : null;
-  const CUR = /(^|\\s)(active|is-active|is-current|is-selected|selected|is-on|current)(\\s|$)/;
+  // SUPERSEDED (before this file's first green; the red run 45461540607): the classifier stopped AT the control, so the current Part's head
+  // (button.wz-back-part-head inside section.wz-back-part.is-here) read as TEXT, and is-here was not a current class. Verbatim:
+  //   const CUR = /(^|\\s)(active|is-active|is-current|is-selected|selected|is-on|current)(\\s|$)/;
+  //   const current = (e) => { for (let a = e, i = 0; a && i < 6; a = a.parentElement, i += 1) {
+  //       if (['aria-selected', 'aria-current', 'aria-pressed', 'aria-checked'].some((k) => { const v = a.getAttribute(k); return v && v !== 'false'; })) return true;
+  //       if (CUR.test(a.getAttribute('class') || '')) return true;
+  //       if (a.matches('button, a, [role="tab"], [role="option"], [role="menuitem"], li')) break; }
+  //     return false; };
+  // Successor: is-here counts as current, and the control's own parent (its row) is read too before the walk stops.
+  const CUR = /(^|\\s)(active|is-active|is-current|is-selected|selected|is-on|current|is-here)(\\s|$)/;
+  const marked = (a) => ['aria-selected', 'aria-current', 'aria-pressed', 'aria-checked'].some((k) => { const v = a.getAttribute(k); return v && v !== 'false'; }) || CUR.test(a.getAttribute('class') || '');
   const current = (e) => { for (let a = e, i = 0; a && i < 6; a = a.parentElement, i += 1) {
-      if (['aria-selected', 'aria-current', 'aria-pressed', 'aria-checked'].some((k) => { const v = a.getAttribute(k); return v && v !== 'false'; })) return true;
-      if (CUR.test(a.getAttribute('class') || '')) return true;
-      if (a.matches('button, a, [role="tab"], [role="option"], [role="menuitem"], li')) break; }
+      if (marked(a)) return true;
+      if (a.matches('button, a, [role="tab"], [role="option"], [role="menuitem"], li')) return !!a.parentElement && marked(a.parentElement); }
     return false; };
+  // ICON: a one-letter glyph that IS its control's picture (the Bold button's B, the Italic button's I) - not words; printed, not judged (asked of Fable)
+  const icon = (e, s) => s.length === 1 && !!e.closest('button') && e.closest('button') !== e;
   const out = []; const seen = new Map();
   const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   while (w.nextNode()) {
@@ -52,7 +63,7 @@ const READ = (tab) => `(() => {
     const rg = document.createRange(); rg.selectNodeContents(t); const rs = rg.getClientRects(); if (!rs.length) continue;
     const r0 = rs[0]; if (r0.width < 2 || r0.height < 2 || r0.right <= 0 || r0.bottom <= 0 || r0.left >= innerWidth || r0.top >= innerHeight) continue;
     const caps = cs.textTransform === 'uppercase' || /small-caps|all-small-caps/.test(cs.fontVariantCaps || '') || /small-caps/.test(cs.fontVariant || '') || (/\\p{Lu}/u.test(s) && !/\\p{Ll}/u.test(s));
-    const kind = current(e) ? 'CURRENT' : caps ? 'LABEL' : 'TEXT';
+    const kind = icon(e, s) ? 'ICON' : current(e) ? 'CURRENT' : caps ? 'LABEL' : 'TEXT';
     const cls = e.tagName.toLowerCase() + '.' + ((e.getAttribute('class') || '').split(/\\s+/)[0] || '');
     const base = ${q(tab)} + '|' + reg + '|' + cls + '|' + s.slice(0, 30);
     const n = (seen.get(base) || 0) + 1; seen.set(base, n);
@@ -146,11 +157,23 @@ for (const t of RULED) {
   const bad = all.filter(heavy);
   ok(`H-${t} menu and rail text is regular (TEXT at most 400, section LABELs at most 500, 600+ only on the CURRENT item) at 1366, 1920 and 2560: ${bad.length} too heavy of ${all.length} read`, hOk(all), groups(all));
 }
+// SUPERSEDED (before the first green; run 45461540607: Arbor's rail words are all capitals, so they read as LABELs and there was no regular rail
+// TEXT to plant on - the mutant never landed). MUT-H-B plants on any regular TEXT in the reading. Verbatim:
+// {
+//   const R = read.plateau && read.plateau[1366];
+//   const pick = R && R.items.find((x) => x.reg === 'rail' && x.kind === 'TEXT' && !heavy(x));
+//   const mut = pick ? R.items.map((x) => (x.key === pick.key ? { ...x, wt: 700 } : x)) : null;
+//   ok(`MUT-H a reading with one regular rail label set to 700 turns H's test red (${pick ? pick.key : 'no regular rail label to plant on'})`, !!mut && mut.find((x) => x.key === pick.key).wt !== pick.wt && !hOk(mut), pick && { was: pick.wt, now: 700 });
+// }
 {
   const R = read.plateau && read.plateau[1366];
-  const pick = R && R.items.find((x) => x.reg === 'rail' && x.kind === 'TEXT' && !heavy(x));
+  const pick = R && R.items.find((x) => x.kind === 'TEXT' && !heavy(x));
   const mut = pick ? R.items.map((x) => (x.key === pick.key ? { ...x, wt: 700 } : x)) : null;
-  ok(`MUT-H a reading with one regular rail label set to 700 turns H's test red (${pick ? pick.key : 'no regular rail label to plant on'})`, !!mut && mut.find((x) => x.key === pick.key).wt !== pick.wt && !hOk(mut), pick && { was: pick.wt, now: 700 });
+  ok(`MUT-H-B a reading with one regular menu or rail word set to 700 turns H's test red (${pick ? pick.key : 'no regular word to plant on'})`, !!mut && mut.find((x) => x.key === pick.key).wt !== pick.wt && !hOk(mut), pick && { was: pick.wt, now: 700 });
+}
+{
+  const icons = RULED.flatMap((t) => SIZES.flatMap(([w]) => (read[t] && read[t][w] ? read[t][w].items : []).filter((x) => x.kind === 'ICON').map((x) => `${t} ${w} ${x.cls} '${x.text}' ${x.wt}`)));
+  ok(`INFO the one-letter glyphs that are their control's picture (not judged; asked of Fable): ${[...new Set(icons.map((s) => s.replace(/ \d{4} /, ' ')))].join(' | ') || 'none'}`, true);
 }
 {
   const all = SIZES.flatMap(([w]) => (read.flux && read.flux[w] ? read.flux[w].items : []));
@@ -158,7 +181,7 @@ for (const t of RULED) {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 3000)}`);
-const EXPECTED = 5;   // P1, H x2, MUT-H, INFO
+const EXPECTED = 6;   // P1, H x2, MUT-H-B (MUT-H parked before the first green), INFO Flux, INFO icons
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nMENU-WEIGHT-130 VERIFY: PASS (${checks.length} checks)`

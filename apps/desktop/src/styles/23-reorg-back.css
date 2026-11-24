@@ -170,9 +170,9 @@
 [data-theme='machina'] .wz-back-assets-head{ margin:0 0 6px; }
 [data-theme='machina'] .wz-back-part{ margin:0 0 6px; border-top:1px solid var(--ink-border-strong); }
 [data-theme='machina'] .wz-back-part-head{ display:flex; align-items:center; gap:6px; width:100%; min-height:28px; padding:0 4px; background:none; border:0; text-align:left;
-  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .wz-back-part-head:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:-2px; }
-[data-theme='machina'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; }
+[data-theme='machina'] .wz-back-part.is-here > .wz-back-part-head{ box-shadow:inset 3px 0 0 var(--accent-rest); padding-left:8px; font-weight:600; }
 [data-theme='machina'] .wz-back-part-fold{ flex:none; width:10px; font-size:10px; color:var(--text-mid); }
 [data-theme='machina'] .wz-back-part-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 [data-theme='machina'] .wz-back-part-count{ flex:none; font-family:var(--font-chromeLabel, monospace); font-size:10px; font-weight:400; color:var(--text-mid); }
