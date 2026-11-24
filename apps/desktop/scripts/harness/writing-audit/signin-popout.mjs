@@ -89,7 +89,14 @@ await withHarness(async (app) => {
   const want = cfg.theme === 'machina' ? 417 : 400;
   check('P6', Math.abs(sp.w - want) <= 1 && sp.w >= 360, `panel ${sp.w} px at ${sp.vw} (want ${want}, never under 360)`);
   const veilOk = cfg.theme === 'flux' ? sp.veilShown && sp.veilBg === 'rgba(2, 12, 16, 0.74)' : cfg.theme === 'machina' ? !sp.veilShown : sp.veilShown;
-  check('P7', veilOk && !!realWrite && sp.ghost === realWrite, `veil ${sp.veilShown ? sp.veilBg : 'none'}; ghost door ${JSON.stringify(sp.ghost)} against the real door ${JSON.stringify(realWrite)}`);
+  if (!V5) check('P7', veilOk && !!realWrite && sp.ghost === realWrite, `veil ${sp.veilShown ? sp.veilBg : 'none'}; ghost door ${JSON.stringify(sp.ghost)} against the real door ${JSON.stringify(realWrite)}`);
+  else {
+    // P7 on the v5 door (row 45; run 45441205946 read the old ghost's text "Write" against v5's "[ COMPOSE ]", never asking whether the ghost is DRAWN):
+    // the veil as P7 has it, and any ghost door that is drawn behind the panel reads the real door's word (the v5 dress's brackets and case aside)
+    const gd = await ev("(() => { const g = document.querySelector('.wz-arrival-doors-ghost'); if (!g) return { drawn: false, why: 'absent' }; const r = g.getBoundingClientRect(); let o = 1; for (let n = g; n && n !== document.documentElement; n = n.parentElement) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility === 'hidden') return { drawn: false, why: 'hidden' }; o *= Number(c.opacity); } return { drawn: r.width > 0 && r.height > 0 && o > 0.01, opacity: Math.round(o * 100) / 100, w: Math.round(r.width) }; })()");
+    const norm = (s) => String(s || '').replace(/[[\]]/g, '').trim().toLowerCase();
+    check('P7v5', veilOk && !!realWrite && (!gd.drawn || norm(sp.ghost) === norm(realWrite)), `veil ${sp.veilShown ? sp.veilBg : 'none'}; ghost door ${JSON.stringify(gd)} reading ${JSON.stringify(sp.ghost)} against the real door ${JSON.stringify(realWrite)}`);
+  }
   const same = (a, h) => !!a && hex(a) === h;
   const p8 = cfg.theme === 'plateau' ? sp.ph === 'rgb(156, 144, 129)' : cfg.theme === 'machina' ? same(sp.edge, '#9AA1A8') && same(sp.link, '#9AA1A8') && sp.ph === 'rgb(154, 161, 168)' : cfg.theme === 'flux' ? same(sp.edge, '#5F8F95') && same(sp.link, '#9AD7EA') && same(sp.tag, '#7EB4C4') && same(sp.panelEdge, '#7EB4C4') && sp.panelEdgeW === '1px' && sp.br.toUpperCase() === '#7EB4C4' && same(sp.head, '#E7F4F1') && same(sp.typed, '#E7F4F1') : true;
   check('P8', p8, `placeholder ${sp.ph}; edge ${sp.edge && hex(sp.edge)}; links ${sp.link && hex(sp.link)}; tag ${sp.tag ? hex(sp.tag) : null}`);
@@ -122,9 +129,19 @@ await withHarness(async (app) => {
     await ev("document.querySelector('.wz-popout-switch').click()"); await sleep(600);
     for (const [w, h] of [[1920, 1080], [1366, 768]]) { await app.emulateDpr(1, w, h); await sleep(700); c20.push({ w, account: await ev(CLEAR) }); }
     check('P20', c20.every((r) => clearOk(r.signin || r.account)), JSON.stringify(c20));
-    await ev("(() => { const st = document.createElement('style'); st.id = 'mut-top'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ top:max(6vh, calc(50% - 175px)) !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
-    const m20 = await ev(CLEAR);
-    check('P20M', !!m20 && m20.gap < 8 && !clearOk(m20), `the old top (landed: panel top ${m20 && m20.panelTop}, mark foot ${m20 && m20.inkFoot}): P20's read goes RED`);
+    if (!V5) {
+      await ev("(() => { const st = document.createElement('style'); st.id = 'mut-top'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ top:max(6vh, calc(50% - 175px)) !important; }'; document.head.appendChild(st); return true; })()"); await sleep(300);
+      const m20 = await ev(CLEAR);
+      check('P20M', !!m20 && m20.gap < 8 && !clearOk(m20), `the old top (landed: panel top ${m20 && m20.panelTop}, mark foot ${m20 && m20.inkFoot}): P20's read goes RED`);
+    } else {
+      // P20M on the v5 door (row 45; run 45441205946: v5's panel already sits at the old top, 209, which clears v5's mark - foot 189.3 - so the old mutant
+      // moved nothing): the panel's top planted 20 px ABOVE the mark's ink foot, measured first; asserted landed by the same read
+      const c0 = await ev(CLEAR);
+      const plant = c0 ? Math.round(c0.inkFoot - 20) : 0;
+      await ev(`(() => { const st = document.createElement('style'); st.id = 'mut-top'; st.textContent = '.wz-arrival .wz-screen.wz-popout{ top:${plant}px !important; }'; document.head.appendChild(st); return true; })()`); await sleep(300);
+      const m20 = await ev(CLEAR);
+      check('P20Mv5', !!c0 && !!m20 && Math.abs(m20.panelTop - plant) <= 1 && m20.gap < 8 && !clearOk(m20), `the panel's top planted at ${plant} (the mark's foot ${c0 && c0.inkFoot} less 20; landed: panel top ${m20 && m20.panelTop}, gap ${m20 && m20.gap}): P20's read goes RED`);
+    }
     await ev("document.getElementById('mut-top').remove(); true");
     await ev("document.querySelector('.wz-popout-back').click()"); await sleep(600);
   }
@@ -164,7 +181,14 @@ await withHarness(async (app) => {
   const top2 = await ev("document.querySelector('.wz-popout').getBoundingClientRect().top");
   const h2 = await ev("document.querySelector('.wz-popout').getBoundingClientRect().height");
   const growsDown = Math.abs(top2 - top1) <= 1 && h2 > h1;
-  check('P2', p2a && (cfg.theme === 'machina' ? h2 > h1 : growsDown), `words ${JSON.stringify(w)}; top ${Math.round(top1)} then ${Math.round(top2)}, height ${Math.round(h1)} then ${Math.round(h2)}`);
+  if (!V5) check('P2', p2a && (cfg.theme === 'machina' ? h2 > h1 : growsDown), `words ${JSON.stringify(w)}; top ${Math.round(top1)} then ${Math.round(top2)}, height ${Math.round(h1)} then ${Math.round(h2)}`);
+  else {
+    // P2 on the v5 door (row 45; run 45441205946: the v5 door reads "[ LOG IN ]", the same lexicon word in the v5 dress - brackets and capitals): the door's word
+    // read without its dress equals the panel button's, which is the lexicon's word exactly as P2 has it; the rest of P2 unchanged
+    const door5 = String(w.door || '').replace(/[[\]]/g, '').trim().toLowerCase();
+    const p2v5 = door5 === WORDS.door.toLowerCase() && w.button === WORDS.door && w.head === 'Welcome back.' && (WORDS.tag === null ? (w.tag === 'Input' || w.tag === null) : w.tag === WORDS.tag);
+    check('P2v5', p2v5 && growsDown, `words ${JSON.stringify(w)} (the door undressed: ${JSON.stringify(door5)}); top ${Math.round(top1)} then ${Math.round(top2)}, height ${Math.round(h1)} then ${Math.round(h2)}`);
+  }
   if (cfg.theme === 'machina') {
     const GEOM = `(() => { const p = document.querySelector('.wz-popout'); const l = document.querySelector('.wz-hero .wz-logo'); const r = p.getBoundingClientRect(); const lr = l ? l.getBoundingClientRect() : null; return { winH: window.innerHeight, top: Math.round(r.top * 10) / 10, bottom: Math.round(r.bottom * 10) / 10, logoBottom: lr ? Math.round(lr.bottom * 10) / 10 : null, scrolls: p.scrollHeight > p.clientHeight + 1, btnReachable: !!p.querySelector('button[type=submit]') }; })()`;
     const geomOk = (g) => !!g && Math.abs(g.bottom - (g.winH - 24)) <= 1 && g.logoBottom !== null && g.top >= g.logoBottom + 7 && g.btnReachable;

@@ -84,6 +84,9 @@ await withHarness(async (app) => {
       const i = MARGINS.indexOf(margin);
       const radioSel = `[data-doc-sub=setup] .wz-page-setup-seg[role=radiogroup] > [role=radio]:nth-of-type(${i + 1})`;
       const radioWord = menu ? await ev(`(document.querySelector(${q(radioSel)}) || {}).textContent || null`) : null;
+      // DIAG (run 45441205946: Normal's press stored, Narrow's and Wide's stored nothing): each radio's box and what the point at its centre really hits
+      const hits = menu ? await ev("[...document.querySelectorAll('[data-doc-sub=setup] .wz-page-setup-seg[role=radiogroup] > [role=radio]')].map((b) => { const r = b.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const h = document.elementFromPoint(x, y); return { word: b.textContent.trim(), box: [r.left, r.top, r.width, r.height].map((n) => Math.round(n)), hit: h === b || b.contains(h) ? 'itself' : h ? (h.tagName.toLowerCase() + '.' + [...h.classList].slice(0, 3).join('.') + ' ' + (h.textContent || '').trim().slice(0, 24)) : null }; })") : null;
+      console.log(`DIAG FX [${label}, ${margin}] the radios ${q(hits)}`);
       const pressed = menu && (await press(radioSel));
       // DIAG (run 45437975159: presses that landed did not always store, and the page's margin factor stayed 1): what the store and the sheet hold, every
       // 200 ms for 3 s after the press, then after the drawer closes, then after a reload. Information; the checks below are unchanged.
