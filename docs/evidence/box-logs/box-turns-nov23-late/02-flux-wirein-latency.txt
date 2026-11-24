@@ -1,0 +1,17 @@
+BUILD: tree=4cf35181 bundle=index-CSzauuL3.js builtAt=2026-11-24T04:21:07.449Z lastSrcCommit=2026-11-24T02:07:27.000Z dirtySrcFiles=0 stale=false
+COST-INFO per round work median/p95: C 1.8/2.4 2.1/2.7 2/3 1.9/2.8 | X 1.6/2.1 1.6/2.2 1.6/2.2 1.6/2.3 | W 1.8/2.5 1.8/2.2 1.8/2.5 1.9/2.5 | M 1.9/3.5 2/2.8 2/3.4 1.8/2.8
+
+ROWS-SHADOW VERIFY: PASS (405 renders checked, shadow == DOM on every one)
+PASS  P1 every arm stood where it claims (C: Arbor; X: Flux in TEXT; W and M: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M only; Page: Dark; the instrument in place): 16/16
+PASS  P2 the paper Typewriter is off in the Draft arms (C and X): 8/8; W and M are the Corridor (P1)
+PASS  P5 at least 40 keys painted in every arm-round (44 typed each)
+PASS  P6 no key was dropped: in every arm-round the stored page holds the seed plus every typed character
+PASS  L typing in Wire In on today's Flux (no flag) adds no latency beyond the control's own spread: W median 25.6 <= C 25.6 + 1.6, W p95 32.7 <= C 32.3 + 0.7, no W key over 100 ms
+PASS  SPLIT (information) median/p95 ms: C Arbor 25.6/32.3 | X Flux TEXT 24.6/32.4 | W Wire In 25.6/32.7
+PASS  MUT premise: the mutant landed - with its layer undamped it drew through the typing (>= 80% of the frames while the keys landed, every round)
+FAIL  MUT-b the undamped-layer mutant FAILS L (M median 24.8 p95 28.4 max 34.7 against C 25.6 / 32.3; caught: NO)  -- C {"n":176,"median":25.6,"p95":32.3,"max":34.6} | M {"n":176,"median":24.8,"p95":28.4,"max":34.7}
+PASS  COST (information) the key's own synchronous work, median/p95 ms: C Arbor 1.9/2.9 | X Flux TEXT 1.6/2.2 | W Wire In 1.8/2.5 | M undamped-layer mutant 2/3.5
+PASS  COST-W (information) Wire In against the control on the work reading: W median 1.8 vs C 1.9 + 0.3, p95 2.5 vs C 2.9 + 0.6: the measure passed; this line gates nothing
+PASS  B the build: served index-CSzauuL3.js = dist-web's index-CSzauuL3.js, built 2026-11-24T04:21:07.449Z after the last src commit 2026-11-24T02:07:27.000Z (tree 4cf35181, 0 uncommitted src file(s))
+
+FLUX-WIREIN-LATENCY VERIFY: FAIL - 1/11 failed

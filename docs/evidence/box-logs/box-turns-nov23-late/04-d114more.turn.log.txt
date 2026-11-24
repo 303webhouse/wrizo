@@ -1,0 +1,55 @@
+2026-11-24T04:48:49Z tree F:/wrizo-work/chat1-box-d114: HEAD 8f8b5bdf (want 8f8b5bdf), dirty 0, bundle index-DMI91fIJ.js, stop 05:08Z
+2026-11-24T04:48:49Z tree F:/wrizo-work/chat1-box-arbl3: HEAD 0844e787 (want 0844e787), dirty 0, bundle index-BO8-DDZO.js, stop 05:08Z
+2026-11-24T04:48:49Z chrome processes before: 10
+2026-11-24T04:48:49Z take: granted to lane "chat1" and bound to the process tree of pid 10184 - name this turn's start and end in your report
+TURN START 2026-11-24T04:48:49Z
+2026-11-24T04:48:50Z [01-D114-space-enter-cost-3] start space-enter-cost.mjs on 8f8b5bdf (index-DMI91fIJ.js)
+2026-11-24T04:49:52Z [01-D114-space-enter-cost-3] exit 1; window 2026-11-24T04:48:50Z - 2026-11-24T04:49:52Z
+2026-11-24T04:49:52Z   SUITE START HARNESS_PARKED=unset files=1 tree=8f8b5bdf7 bundle=index-DMI91fIJ.js/1328115b NO-REBUILD out=F:\wrizo-work\chat1-turn-d114more-0448Z\01-D114-space-enter-cost-3
+2026-11-24T04:49:52Z   [01/1] NOVERDICT exit=0   61s space-enter-cost.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-d114more-0448Z\01-D114-space-enter-cost-3\space-enter-cost.mjs.default.txt)
+2026-11-24T04:49:52Z   SUITE RESULT: NOT CLEAN — tree=8f8b5bdf7 bundle=index-DMI91fIJ.js/1328115b NO-REBUILD
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3]   SRC J 220:30845  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),Z=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*yse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math.
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 5000w letter: key-to-frame median 16.6 p95 22.4 | selection calls median 0.9 ms (n 2) p95 2 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 56 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 5000w space: key-to-frame median 17 p95 20.7 | selection calls median 2.8 ms (n 2) p95 3.9 | innerHTML median 0.1 ms (writes 3, bytes 25485) | total selection over 14 keys 40.5 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 5000w enter: key-to-frame median 17.3 p95 22.3 | selection calls median 2.9 ms (n 2) p95 3.2 | innerHTML median 0.1 ms (writes 3, bytes 25592) | total selection over 14 keys 40.7 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 20000w letter: key-to-frame median 19.9 p95 24.3 | selection calls median 2.9 ms (n 4) p95 4 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 150.1 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 20000w space: key-to-frame median 30.5 p95 37.9 | selection calls median 8.9 ms (n 4) p95 9.3 | innerHTML median 0.1 ms (writes 3, bytes 101564) | total selection over 14 keys 124.2 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 20000w enter: key-to-frame median 26.4 p95 36.7 | selection calls median 9 ms (n 4) p95 9.4 | innerHTML median 0.1 ms (writes 3, bytes 101666) | total selection over 14 keys 127 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 50000w letter: key-to-frame median 30.6 p95 43.8 | selection calls median 6.8 ms (n 4) p95 8.6 | innerHTML median 0.1 ms (writes 2, bytes 32) | total selection over 42 keys 338.6 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 50000w space: key-to-frame median 58.8 p95 144.7 | selection calls median 20.7 ms (n 4) p95 25.2 | innerHTML median 0.2 ms (writes 3, bytes 253722) | total selection over 14 keys 298.1 ms
+2026-11-24T04:49:52Z   [01-D114-space-enter-cost-3] PROBE 50000w enter: key-to-frame median 52.8 p95 61 | selection calls median 20.7 ms (n 4) p95 22.9 | innerHTML median 0.2 ms (writes 3, bytes 253824) | total selection over 14 keys 294.6 ms
+2026-11-24T04:49:52Z [02-C-space-enter-cost-4] start space-enter-cost.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:51:07Z [02-C-space-enter-cost-4] exit 1; window 2026-11-24T04:49:52Z - 2026-11-24T04:51:07Z
+2026-11-24T04:51:07Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-d114more-0448Z\02-C-space-enter-cost-4
+2026-11-24T04:51:07Z   [01/1] NOVERDICT exit=0   73s space-enter-cost.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-d114more-0448Z\02-C-space-enter-cost-4\space-enter-cost.mjs.default.txt)
+2026-11-24T04:51:07Z   SUITE RESULT: NOT CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 5000w letter: key-to-frame median 16.5 p95 21.9 | selection calls median 0.9 ms (n 2) p95 1.8 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 54.6 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 5000w space: key-to-frame median 18.2 p95 22.4 | selection calls median 2.8 ms (n 2) p95 3.1 | innerHTML median 0 ms (writes 3, bytes 25485) | total selection over 14 keys 39.6 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 5000w enter: key-to-frame median 17.1 p95 21.2 | selection calls median 2.9 ms (n 2) p95 3.8 | innerHTML median 0 ms (writes 3, bytes 25592) | total selection over 14 keys 41.2 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 20000w letter: key-to-frame median 22.6 p95 32.9 | selection calls median 2.9 ms (n 4) p95 4.4 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 158.4 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 20000w space: key-to-frame median 36.8 p95 48.4 | selection calls median 9 ms (n 4) p95 9.7 | innerHTML median 0.1 ms (writes 3, bytes 101559) | total selection over 14 keys 126.7 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 20000w enter: key-to-frame median 28.9 p95 38.2 | selection calls median 9.1 ms (n 4) p95 9.7 | innerHTML median 0.1 ms (writes 3, bytes 101666) | total selection over 14 keys 128.3 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 50000w letter: key-to-frame median 41.3 p95 67.9 | selection calls median 6.9 ms (n 4) p95 9 | innerHTML median 0.1 ms (writes 2, bytes 32) | total selection over 42 keys 372.4 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 50000w space: key-to-frame median 1003.5 p95 1084.8 | selection calls median 21.1 ms (n 4) p95 30.4 | innerHTML median 0.2 ms (writes 3, bytes 253727) | total selection over 14 keys 308.9 ms
+2026-11-24T04:51:07Z   [02-C-space-enter-cost-4] PROBE 50000w enter: key-to-frame median 64.7 p95 79.2 | selection calls median 20.9 ms (n 4) p95 23.5 | innerHTML median 0.2 ms (writes 3, bytes 253824) | total selection over 14 keys 295.2 ms
+2026-11-24T04:51:07Z [03-D114-space-enter-cost-4] start space-enter-cost.mjs on 8f8b5bdf (index-DMI91fIJ.js)
+2026-11-24T04:52:10Z [03-D114-space-enter-cost-4] exit 1; window 2026-11-24T04:51:07Z - 2026-11-24T04:52:10Z
+2026-11-24T04:52:10Z   SUITE START HARNESS_PARKED=unset files=1 tree=8f8b5bdf7 bundle=index-DMI91fIJ.js/1328115b NO-REBUILD out=F:\wrizo-work\chat1-turn-d114more-0448Z\03-D114-space-enter-cost-4
+2026-11-24T04:52:10Z   [01/1] NOVERDICT exit=0   61s space-enter-cost.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-d114more-0448Z\03-D114-space-enter-cost-4\space-enter-cost.mjs.default.txt)
+2026-11-24T04:52:10Z   SUITE RESULT: NOT CLEAN — tree=8f8b5bdf7 bundle=index-DMI91fIJ.js/1328115b NO-REBUILD
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4]   SRC J 220:30845  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),Z=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*yse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math.
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 5000w letter: key-to-frame median 16.4 p95 25.8 | selection calls median 1 ms (n 2) p95 2.3 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 64.2 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 5000w space: key-to-frame median 19.8 p95 23.6 | selection calls median 3.1 ms (n 2) p95 4.9 | innerHTML median 0.1 ms (writes 3, bytes 25485) | total selection over 14 keys 45.6 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 5000w enter: key-to-frame median 19.7 p95 31.9 | selection calls median 3.1 ms (n 2) p95 5.9 | innerHTML median 0.1 ms (writes 3, bytes 25592) | total selection over 14 keys 46.8 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 20000w letter: key-to-frame median 20 p95 24.5 | selection calls median 2.9 ms (n 4) p95 4.4 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 155.2 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 20000w space: key-to-frame median 29.4 p95 37.7 | selection calls median 8.8 ms (n 4) p95 9.2 | innerHTML median 0.1 ms (writes 3, bytes 101559) | total selection over 14 keys 124 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 20000w enter: key-to-frame median 25.6 p95 36.7 | selection calls median 9.1 ms (n 4) p95 9.7 | innerHTML median 0.2 ms (writes 3, bytes 101666) | total selection over 14 keys 127.5 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 50000w letter: key-to-frame median 30.1 p95 43.1 | selection calls median 7.1 ms (n 4) p95 8.8 | innerHTML median 0.1 ms (writes 2, bytes 32) | total selection over 42 keys 344.7 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 50000w space: key-to-frame median 62.2 p95 137.7 | selection calls median 20.4 ms (n 4) p95 21.7 | innerHTML median 0.2 ms (writes 3, bytes 253722) | total selection over 14 keys 287.4 ms
+2026-11-24T04:52:10Z   [03-D114-space-enter-cost-4] PROBE 50000w enter: key-to-frame median 54.1 p95 60.6 | selection calls median 20.8 ms (n 4) p95 22.8 | innerHTML median 0.2 ms (writes 3, bytes 253824) | total selection over 14 keys 294.9 ms
+2026-11-24T04:52:10Z chrome processes after: 11
+2026-11-24T04:52:10Z release: released
+TURN END 2026-11-24T04:52:10Z

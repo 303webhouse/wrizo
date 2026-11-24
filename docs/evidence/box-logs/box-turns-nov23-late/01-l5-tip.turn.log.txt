@@ -1,0 +1,120 @@
+2026-11-24T04:23:08Z tree F:/wrizo-work/chat1-train-f: HEAD 41fbe9b8 (want 41fbe9b8), dirty 0, bundle index-D_TmQMNA.js, stop 04:50Z
+2026-11-24T04:23:08Z tree F:/wrizo-work/chat1-box-arbl3: HEAD 0844e787 (want 0844e787), dirty 0, bundle index-BO8-DDZO.js, stop 04:50Z
+2026-11-24T04:23:09Z chrome processes before: 10
+2026-11-24T04:23:09Z take: granted to lane "chat1" and bound to the process tree of pid 26420 - name this turn's start and end in your report
+TURN START 2026-11-24T04:23:09Z
+2026-11-24T04:23:09Z [01-T-space-enter-cost] start space-enter-cost.mjs on 41fbe9b8 (index-D_TmQMNA.js)
+2026-11-24T04:24:13Z [01-T-space-enter-cost] exit 1; window 2026-11-24T04:23:09Z - 2026-11-24T04:24:13Z
+2026-11-24T04:24:13Z   SUITE START HARNESS_PARKED=unset files=1 tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\01-T-space-enter-cost
+2026-11-24T04:24:13Z   [01/1] NOVERDICT exit=0   62s space-enter-cost.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-l5box-0423Z\01-T-space-enter-cost\space-enter-cost.mjs.default.txt)
+2026-11-24T04:24:13Z   SUITE RESULT: NOT CLEAN — tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD
+2026-11-24T04:24:13Z   [01-T-space-enter-cost]   SRC J 220:30853  ()=>{const Pe=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Pe??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*Nse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 5000w letter: key-to-frame median 17.4 p95 21.2 | selection calls median 1 ms (n 2) p95 2 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 58.2 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 5000w space: key-to-frame median 18.6 p95 28 | selection calls median 3 ms (n 2) p95 3.4 | innerHTML median 0.1 ms (writes 3, bytes 25485) | total selection over 14 keys 42.1 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 5000w enter: key-to-frame median 19.1 p95 22.7 | selection calls median 3.1 ms (n 2) p95 3.9 | innerHTML median 0 ms (writes 3, bytes 25592) | total selection over 14 keys 43.5 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 20000w letter: key-to-frame median 20.5 p95 25.3 | selection calls median 3 ms (n 4) p95 4.4 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 153.9 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 20000w space: key-to-frame median 29.3 p95 37.5 | selection calls median 9 ms (n 4) p95 9.8 | innerHTML median 0.1 ms (writes 3, bytes 101564) | total selection over 14 keys 127 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 20000w enter: key-to-frame median 26.3 p95 36.8 | selection calls median 9.2 ms (n 4) p95 9.6 | innerHTML median 0.1 ms (writes 3, bytes 101666) | total selection over 14 keys 128.4 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 50000w letter: key-to-frame median 35.4 p95 44.7 | selection calls median 7 ms (n 4) p95 9.1 | innerHTML median 0.1 ms (writes 2, bytes 32) | total selection over 42 keys 346.5 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 50000w space: key-to-frame median 62.5 p95 139.6 | selection calls median 20.8 ms (n 4) p95 22 | innerHTML median 0.2 ms (writes 3, bytes 253722) | total selection over 14 keys 291.9 ms
+2026-11-24T04:24:13Z   [01-T-space-enter-cost] PROBE 50000w enter: key-to-frame median 52.4 p95 59.2 | selection calls median 20.9 ms (n 4) p95 23.2 | innerHTML median 0.3 ms (writes 3, bytes 253824) | total selection over 14 keys 295.6 ms
+2026-11-24T04:24:13Z [02-C-space-enter-cost] start space-enter-cost.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:25:28Z [02-C-space-enter-cost] exit 1; window 2026-11-24T04:24:13Z - 2026-11-24T04:25:28Z
+2026-11-24T04:25:28Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\02-C-space-enter-cost
+2026-11-24T04:25:28Z   [01/1] NOVERDICT exit=0   73s space-enter-cost.mjs :: (no verdict — see F:\wrizo-work\chat1-turn-l5box-0423Z\02-C-space-enter-cost\space-enter-cost.mjs.default.txt)
+2026-11-24T04:25:28Z   SUITE RESULT: NOT CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:25:28Z   [02-C-space-enter-cost]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 5000w letter: key-to-frame median 15.5 p95 26 | selection calls median 1 ms (n 2) p95 2.7 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 60.3 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 5000w space: key-to-frame median 18.7 p95 22.3 | selection calls median 3 ms (n 2) p95 3.2 | innerHTML median 0.1 ms (writes 3, bytes 25485) | total selection over 14 keys 42.7 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 5000w enter: key-to-frame median 18.8 p95 23.1 | selection calls median 3 ms (n 2) p95 3.3 | innerHTML median 0.1 ms (writes 3, bytes 25592) | total selection over 14 keys 42.2 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 20000w letter: key-to-frame median 22.4 p95 29 | selection calls median 3 ms (n 4) p95 4.4 | innerHTML median 0 ms (writes 2, bytes 32) | total selection over 42 keys 162.9 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 20000w space: key-to-frame median 38 p95 52 | selection calls median 8.9 ms (n 4) p95 10.3 | innerHTML median 0.1 ms (writes 3, bytes 101559) | total selection over 14 keys 126.7 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 20000w enter: key-to-frame median 34.1 p95 44.1 | selection calls median 9.1 ms (n 4) p95 9.5 | innerHTML median 0.1 ms (writes 3, bytes 101666) | total selection over 14 keys 127.7 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost]   SRC Y 220:30853  ()=>{const Ae=r?null:d.closest(".desk-frame-stage")||d.closest(".mode-stage"),ee=r?window.innerHeight:(Ae??d).clientHeight;if(m.style.setProperty("--tw-fade-band",`${Math.round(b()*wse)}px`),m.style.setProperty("--tw-fade-start",`${Math.round(b())}px`),m.style.setProperty("--tw-start-offset",`${Math
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 50000w letter: key-to-frame median 42.7 p95 55 | selection calls median 7 ms (n 4) p95 8.9 | innerHTML median 0.1 ms (writes 2, bytes 32) | total selection over 42 keys 359.8 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 50000w space: key-to-frame median 998.7 p95 1152.4 | selection calls median 21.5 ms (n 4) p95 31 | innerHTML median 0.2 ms (writes 3, bytes 253727) | total selection over 14 keys 311.4 ms
+2026-11-24T04:25:28Z   [02-C-space-enter-cost] PROBE 50000w enter: key-to-frame median 62.5 p95 76.1 | selection calls median 21.8 ms (n 4) p95 22.7 | innerHTML median 0.2 ms (writes 3, bytes 253824) | total selection over 14 keys 304.3 ms
+2026-11-24T04:25:28Z [03-T-typing-latency-scroll] start typing-latency-scroll.mjs on 41fbe9b8 (index-D_TmQMNA.js)
+2026-11-24T04:25:56Z [03-T-typing-latency-scroll] exit 0; window 2026-11-24T04:25:28Z - 2026-11-24T04:25:56Z
+2026-11-24T04:25:56Z   SUITE START HARNESS_PARKED=unset files=1 tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\03-T-typing-latency-scroll
+2026-11-24T04:25:56Z   [01/1] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T04:25:56Z   SUITE RESULT: CLEAN — tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD
+2026-11-24T04:25:56Z   [03-T-typing-latency-scroll] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T04:25:56Z   [03-T-typing-latency-scroll] TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T04:25:57Z [04-C-typing-latency-scroll] start typing-latency-scroll.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:26:25Z [04-C-typing-latency-scroll] exit 0; window 2026-11-24T04:25:57Z - 2026-11-24T04:26:25Z
+2026-11-24T04:26:25Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\04-C-typing-latency-scroll
+2026-11-24T04:26:25Z   [01/1] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T04:26:25Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:26:25Z   [04-C-typing-latency-scroll] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T04:26:25Z   [04-C-typing-latency-scroll] TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T04:26:25Z [05-T-rhizome-latency] start rhizome-latency.mjs on 41fbe9b8 (index-D_TmQMNA.js)
+2026-11-24T04:27:24Z [05-T-rhizome-latency] exit 0; window 2026-11-24T04:26:25Z - 2026-11-24T04:27:24Z
+2026-11-24T04:27:24Z   SUITE START HARNESS_PARKED=unset files=1 tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\05-T-rhizome-latency
+2026-11-24T04:27:24Z   [01/1] OK        exit=0   58s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T04:27:24Z   SUITE RESULT: CLEAN — tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] RL-RAW: {"mutantMs":0,"mutantStallMs":0,"mutantFadeMs":0,"mutantSwapMs":0,"mutantSecondMs":0,"attempts":[{"n":1,"t0":"2026-11-24T04:26:35.232Z","t1":"2026-11-24T04:27:22.722Z","void":false,"ok":true,"control":"{\"n\":80,\"median\":24.6,\"p95\":32.3,\"max\":33.6}","controlFast":"{\"n\":110,\"median\":25.8,\"p95\":32.8,\"max\":33.8}","flash":"{\"n\":80,\"median\":26.5,\"p95\":33.3,\"max\":34.7}","fade":"{\"n\":120,\"me
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  A the rest numbers: 40+ keys with the field at rest are measured (the first block of the baseline every flash number is held against; the control bursts around each crossing join it, below)  [{"n":44,"median":22.7,"p95":32.3,"max":33.8}]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: 80 keys at the hold's pace and 110 at the fade's, over 5 round(s), 1 measurement(s) (a control key over 50 ms - any key but the day swap key, which is A+S's - = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)  [control {"n":80,"median":24.6,"p95":32.3,"max":33
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  B premise: at least 40 keys were painted while data-flash was true (5 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":80,"median":26.5,"p95":33.3,"max":34.7}]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":80,"median":24.6,"p95":32.3,"max":33.6} | flash {"n":80,"median":26.5,"p95":33.3,"max":34.7}]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":120,"median":28.8,"p95":48.3,"max":65.7}]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":80,"median":14.1,"p95":34.8,"max":43.3} | flash {"n":80,"median":13.8,"p95":32.9,"max":45.9}]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":110,"median":13.9,"p95":34,"max":37} | fade {"n":120,"median":15.6,"p95":40.2,"max":101.8} | shift 1.7 vs ref 2.8]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":110,"median":25.8,"p95":32.8,"max":33.8} | fade {"n":120,"median":28.8,"p95":48.3,"max":65.7} | shift median 3 p95 15.5 vs ref 9/17.5]
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] PASS  C attribution (information, never a verdict): 5 slow fade key(s) over 5 round(s), 1 within 150 ms of the fade's start - SOME line up with the fade start
+2026-11-24T04:27:24Z   [05-T-rhizome-latency] RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T04:27:25Z [06-C-rhizome-latency] start rhizome-latency.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:28:24Z [06-C-rhizome-latency] exit 0; window 2026-11-24T04:27:25Z - 2026-11-24T04:28:24Z
+2026-11-24T04:28:24Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\06-C-rhizome-latency
+2026-11-24T04:28:24Z   [01/1] OK        exit=0   58s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T04:28:24Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] RL-RAW: {"mutantMs":0,"mutantStallMs":0,"mutantFadeMs":0,"mutantSwapMs":0,"mutantSecondMs":0,"attempts":[{"n":1,"t0":"2026-11-24T04:27:34.935Z","t1":"2026-11-24T04:28:22.553Z","void":false,"ok":true,"control":"{\"n\":80,\"median\":24.8,\"p95\":32.9,\"max\":44}","controlFast":"{\"n\":110,\"median\":25.3,\"p95\":32.9,\"max\":33.5}","flash":"{\"n\":80,\"median\":25.8,\"p95\":31.8,\"max\":33.2}","fade":"{\"n\":119,\"medi
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  A the rest numbers: 40+ keys with the field at rest are measured (the first block of the baseline every flash number is held against; the control bursts around each crossing join it, below)  [{"n":44,"median":21.8,"p95":31.9,"max":33.4}]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: 80 keys at the hold's pace and 110 at the fade's, over 5 round(s), 1 measurement(s) (a control key over 50 ms - any key but the day swap key, which is A+S's - = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)  [control {"n":80,"median":24.8,"p95":32.9,"max":44
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  B premise: at least 40 keys were painted while data-flash was true (5 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":80,"median":25.8,"p95":31.8,"max":33.2}]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":80,"median":24.8,"p95":32.9,"max":44} | flash {"n":80,"median":25.8,"p95":31.8,"max":33.2}]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":119,"median":26.1,"p95":42.6,"max":57.3}]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":80,"median":13.2,"p95":33,"max":35.6} | flash {"n":80,"median":13.7,"p95":20.6,"max":45.1}]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":110,"median":14,"p95":35.5,"max":38} | fade {"n":119,"median":13.4,"p95":32.9,"max":82.8} | shift -0.6 vs ref 2.8]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":110,"median":25.3,"p95":32.9,"max":33.5} | fade {"n":119,"median":26.1,"p95":42.6,"max":57.3} | shift median 0.8 p95 9.7 vs ref 9/17.5]
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] PASS  C attribution (information, never a verdict): 5 slow fade key(s) over 5 round(s), 0 within 150 ms of the fade's start - NONE line up with the fade start (not the filter drop)
+2026-11-24T04:28:24Z   [06-C-rhizome-latency] RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T04:28:24Z [07-T-script120] start script-typing-120.mjs on 41fbe9b8 (index-D_TmQMNA.js)
+2026-11-24T04:28:45Z [07-T-script120] exit 0; window 2026-11-24T04:28:24Z - 2026-11-24T04:28:45Z
+2026-11-24T04:28:45Z   SUITE START HARNESS_PARKED=unset files=1 tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\07-T-script120
+2026-11-24T04:28:45Z   [01/1] OK        exit=0   18s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:28:45Z   SUITE RESULT: CLEAN — tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD
+2026-11-24T04:28:45Z   [07-T-script120] SCRIPT-TYPING-120: WORK ms  median 12.6  p95 22.3  max 27.0
+2026-11-24T04:28:45Z   [07-T-script120] SCRIPT-TYPING-120: PAINT ms median 16.8  p95 31.6  max 32.7
+2026-11-24T04:28:45Z   [07-T-script120] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:28:45Z [08-C-script120] start script-typing-120.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:29:05Z [08-C-script120] exit 0; window 2026-11-24T04:28:45Z - 2026-11-24T04:29:05Z
+2026-11-24T04:29:05Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\08-C-script120
+2026-11-24T04:29:05Z   [01/1] OK        exit=0   19s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:05Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:29:05Z   [08-C-script120] SCRIPT-TYPING-120: WORK ms  median 12.3  p95 23.4  max 31.1
+2026-11-24T04:29:05Z   [08-C-script120] SCRIPT-TYPING-120: PAINT ms median 15.7  p95 31.8  max 33.3
+2026-11-24T04:29:05Z   [08-C-script120] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:05Z [09-T-script120-2] start script-typing-120.mjs on 41fbe9b8 (index-D_TmQMNA.js)
+2026-11-24T04:29:25Z [09-T-script120-2] exit 0; window 2026-11-24T04:29:05Z - 2026-11-24T04:29:25Z
+2026-11-24T04:29:25Z   SUITE START HARNESS_PARKED=unset files=1 tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\09-T-script120-2
+2026-11-24T04:29:25Z   [01/1] OK        exit=0   18s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:25Z   SUITE RESULT: CLEAN — tree=41fbe9b82 bundle=index-D_TmQMNA.js/1331706b NO-REBUILD
+2026-11-24T04:29:25Z   [09-T-script120-2] SCRIPT-TYPING-120: WORK ms  median 12.7  p95 22.0  max 32.7
+2026-11-24T04:29:25Z   [09-T-script120-2] SCRIPT-TYPING-120: PAINT ms median 17.3  p95 31.4  max 32.2
+2026-11-24T04:29:25Z   [09-T-script120-2] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:26Z [10-C-script120-2] start script-typing-120.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:29:46Z [10-C-script120-2] exit 0; window 2026-11-24T04:29:26Z - 2026-11-24T04:29:46Z
+2026-11-24T04:29:46Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-l5box-0423Z\10-C-script120-2
+2026-11-24T04:29:46Z   [01/1] OK        exit=0   19s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:46Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:29:46Z   [10-C-script120-2] SCRIPT-TYPING-120: WORK ms  median 12.4  p95 22.3  max 25.9
+2026-11-24T04:29:46Z   [10-C-script120-2] SCRIPT-TYPING-120: PAINT ms median 15.6  p95 30.7  max 31.9
+2026-11-24T04:29:46Z   [10-C-script120-2] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T04:29:47Z chrome processes after: 10
+2026-11-24T04:29:47Z release: released
+TURN END 2026-11-24T04:29:47Z
