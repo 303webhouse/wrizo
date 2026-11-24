@@ -30,7 +30,9 @@ const ON_BOX = isOnBox();
 const timing = (name, pass, detail = '') => { const g = timingGate(ON_BOX, pass); checks.push({ name: g.info ? `${name} [INFORMATION on Actions: the measure ${g.actual ? 'PASSED' : 'did NOT pass'}; this line gates nothing here]` : name, pass: g.pass, detail }); };
 const stat = (xs) => { const s = (xs || []).filter((x) => x != null).slice().sort((a, b) => a - b); const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null); return { n: s.length, med: q(0.5), p95: q(0.95), max: s.length ? s[s.length - 1] : null }; };
 // the mutant: pergola's input listener looks for the card's editor with e.target.closest('.board-popup-editor') (the only target.closest() of that class in the bundle)
-const MUTANTS = { cardCut: [/target\.closest\("\.board-popup-editor"\)\)return;/g, 'target.closest(".board-popup-editor-MUT"))return;'] };
+// (the first anchor, /target\.closest\("\.board-popup-editor"\)\)return;/, matched NOTHING in run 45466869106's bundle, both legs: the minifier folds an early
+// `if (...) return;` into `...||(...)`, so no ")return;" follows. Re-anchored before the mutant had ever landed, Nov 24: the call alone, which only that listener makes)
+const MUTANTS = { cardCut: [/target\.closest\("\.board-popup-editor"\)/g, 'target.closest(".board-popup-editor-MUT")'] };
 const countOf = (re, t) => (t.match(re) || []).length;
 
 const makeBoxes = () => {
