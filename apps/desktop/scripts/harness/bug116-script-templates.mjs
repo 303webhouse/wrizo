@@ -6,6 +6,7 @@
 //   B1  the control: Machina's Front menu shows all four on an empty screenplay (if this fails the walk is blind)
 //   B2  Arbor, an empty screenplay: all four can be reached
 //   B3  Arbor, a screenplay with words: all four can be reached (there a press opens a new page; the words never move)
+//   B4  Arbor, a screenplay at 1366 and 1920: the drawer starts past the rail and its controls can be pressed from edge to edge
 // READ lines print what each walk found, including a Standard page in Arbor (reported, not counted). Frames go to $RUNNER_TEMP/suite/bug116 on Actions.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -105,7 +106,7 @@ const hasAll = (w) => !!w && OTHERS.every((k) => w.reach.includes(k));
 // REPORTED, NOT COUNTED: whether the kind menu's controls can be pressed where they are drawn (the first frame showed the rail over the drawer's left edge in Arbor).
 const LAYOUT = `(() => {
   const box = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; };
-  const hit = (e) => { const r = e.getBoundingClientRect(), y = r.top + r.height / 2, at = (x) => { const t = document.elementFromPoint(x, y); return !!t && (t === e || e.contains(t)); }; return { left: Math.round(r.left), leftEdge: at(r.left + 6), centre: at(r.left + r.width / 2) }; };
+  const hit = (e) => { const r = e.getBoundingClientRect(), y = r.top + r.height / 2, at = (x) => { const t = document.elementFromPoint(x, y); return !!t && (t === e || e.contains(t)); }; return { left: Math.round(r.left), right: Math.round(r.right), leftEdge: at(r.left + 6), centre: at(r.left + r.width / 2), rightEdge: at(r.right - 6) }; };
   const controls = [...document.querySelectorAll('.wz-sliver [data-doc-kind], [data-doc-menu] [data-doc-menu-item], #wz-sliver-tab-text, #wz-sliver-tab-parts')];
   return { w: innerWidth, rail: box('.desk-frame-strip'), panel: box('.wz-sliver-panel'), page: box('.mode-page'), controls: controls.map((e) => ({ what: e.getAttribute('data-doc-menu-item') || (e.hasAttribute('data-doc-kind') ? 'kind' : e.id.replace('wz-sliver-tab-', 'tab-')), ...hit(e) })) };
 })()`;
@@ -137,7 +138,7 @@ await withHarness(async (app) => {
     const w = there ? await walk(app) : null;
     got[name] = w;
     console.log(`READ ${name}: ${JSON.stringify(w)}`);
-    if (w) console.log(`LAYOUT ${name}: ${JSON.stringify(await layouts(app))}`);
+    if (w) { w.layout = await layouts(app); console.log(`LAYOUT ${name}: ${JSON.stringify(w.layout)}`); }
     if (w && w.items.length) {
       await app.evalJs("document.getElementById('wz-sliver-tab-parts')?.click(); null"); await sleep(350);
       if (!(await app.evalJs("!!document.querySelector('[data-doc-menu]')"))) { await app.evalJs("document.querySelector('.wz-sliver [data-doc-kind]')?.click(); null"); await sleep(280); }
@@ -149,10 +150,13 @@ await withHarness(async (app) => {
   ok("B1 the control: Machina's drawer shows Blank, Outline, Title Page and Bibliography on an empty screenplay", hasAll(got['machina-empty']), got['machina-empty']);
   ok('B2 Arbor, an empty screenplay: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-empty']), got['arbor-empty']);
   ok('B3 Arbor, a screenplay with words: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-words']), got['arbor-words']);
+  // the second half of #116, found by the first frames: drawerEdge.ts measures the room beside '.mode-page', a screenplay has none, so its drawer takes the default width and runs under the rail at 1366
+  const clear = (w) => !!w && w.layout.length === 2 && w.layout.every((r) => !!r.rail && !!r.panel && r.panel[0] >= r.rail[1] && r.controls.length >= 4 && r.controls.every((c) => c.leftEdge && c.centre && c.rightEdge && c.right <= r.panel[1] + 1));
+  ok("B4 Arbor, a screenplay at 1366 and 1920: the drawer starts past the rail, and its tabs, kind menu and the menu's rows can be pressed from edge to edge", clear(got['arbor-empty']) && clear(got['arbor-words']), { empty: got['arbor-empty']?.layout, words: got['arbor-words']?.layout });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 4;
+const EXPECTED = 5;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nBUG116-SCRIPT-TEMPLATES VERIFY: PASS (${checks.length} checks)`
