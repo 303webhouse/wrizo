@@ -27,7 +27,8 @@ export function groupIntoScenes(elements: ScriptEl[], prevScenes: Scene[] = []):
   const prevById = new Map(prevScenes.map(s => [s.id, s]));
   const scenes: Scene[] = [];
   for (const el of elements) {
-    if (el.t === 'scene') {
+    // SCRIPT #7: the first line leads its group whatever its type (a script can open on FADE IN:), so no blank scene heading is ever written above it.
+    if (el.t === 'scene' || scenes.length === 0) {
       const prev = prevById.get(el.id);
       scenes.push({
         id: el.id,
@@ -38,14 +39,6 @@ export function groupIntoScenes(elements: ScriptEl[], prevScenes: Scene[] = []):
         ...(prev?.beatId != null ? { beatId: prev.beatId } : null),
       });
       continue;
-    }
-    // An element before any scene heading — normally impossible (a doc always
-    // starts with a scene-heading element), but Tab/Ctrl+N can retype that
-    // very first element away from 'scene'. Synthesize an empty leading
-    // heading rather than dropping the element (no data loss either way).
-    if (scenes.length === 0) {
-      const headingId = newId();
-      scenes.push({ id: headingId, heading: { id: headingId, t: 'scene', text: '' }, body: [] });
     }
     scenes[scenes.length - 1].body.push(el);
   }
