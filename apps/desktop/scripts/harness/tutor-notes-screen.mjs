@@ -50,7 +50,7 @@ const clickBtn = (app, text) => app.evalJs(`(() => { const b = [...document.quer
 const hasBtn = (app, text) => app.evalJs(`[...document.querySelectorAll(${JSON.stringify(SEC + ' button')})].some((x) => x.textContent.trim() === ${JSON.stringify(text)})`);
 const editorProbe = (app) => app.evalJs(`(() => { const e = document.querySelector('.forward-only-editor'); if (!e) return null; const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height, text: e.textContent }; })()`);
 const same = (a, b) => !!a && !!b && a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height && a.text === b.text;
-const ADD_INPUT = `${SEC} .wz-tutor-bible-row .wz-tutor-bible-input`;
+const ADD_INPUT = `${SEC} .wz-tutor-bible-row input.wz-tutor-bible-input`;
 
 await withHarness(async (app) => {
   await freshProsePage(app);

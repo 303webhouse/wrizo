@@ -109,7 +109,7 @@ export default {
   'tutor-notes-offline': async (app) => {
     await openNotes(app, SEED);
     await app.evalJs('window.__notesFail = true; true');
-    await app.setText('Loves short scenes.', `${SEC} .wz-tutor-bible-row .wz-tutor-bible-input`);
+    await app.setText('Loves short scenes.', `${SEC} .wz-tutor-bible-row input.wz-tutor-bible-input`);
     await clickBtn(app, await lex(app, 'tutorBibleAdd'));
     await sleep(500);
     await show(app);
