@@ -523,8 +523,12 @@ export function ScriptEditor({ id }: { id: string }) {
       try {
         const range = caretApi.call(document, clientX, clientY);
         // a continuation part holds only the end of its element's text, so its offset counts from where that part begins (SCRIPT batch 2, item 1)
-        const shift = part && part.contains(range?.startContainer ?? null) ? Number(part.getAttribute('data-char-offset')) || 0 : 0;
-        if (range) hint = range.startOffset + shift;
+        // (`.call` hands back `any` in this project's non-strict settings, so the offset is typed here: any + number reads as string | number)
+        if (range) {
+          const offset: number = range.startOffset;
+          const shift: number = part && part.contains(range.startContainer) ? Number(part.getAttribute('data-char-offset')) || 0 : 0;
+          hint = offset + shift;
+        }
       } catch { /* best-effort */ }
     }
     moveActive(index, hint);
