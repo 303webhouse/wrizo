@@ -87,9 +87,10 @@ try { await withHarness(async (app) => {
   await app.keyCombo('z'); await sleep(300);
   const b1 = await text();
   ok('UB2 Undo takes back her unsaved word, keeps THEIRS, and writes nothing twice', count(b1, 'THEIRS') === 1 && count(b1, 'three') === 0 && count(b1, 'alpha') === 1 && count(b1, 'two') === 1, JSON.stringify(b1.slice(-60)));
-  await app.keyCombo('z'); await sleep(300);
-  const b2 = await text();
-  ok('UB3 a second Undo takes back "two", keeps THEIRS, nothing twice', count(b2, 'THEIRS') === 1 && count(b2, 'two') === 0 && count(b2, 'one') === 1 && count(b2, 'alpha') === 1, JSON.stringify(b2.slice(-60)));
+  // more Undo takes back what she typed before it (the space that closed her word is a step of its own), never THEIRS: within four, "two" goes
+  let b2 = b1, undos = 0;
+  while (undos < 4 && count(b2, 'two') > 0) { await app.keyCombo('z'); await sleep(300); b2 = await text(); undos += 1; }
+  ok('UB3 further Undo takes back "two" (within four), keeps THEIRS, nothing written twice', count(b2, 'THEIRS') === 1 && count(b2, 'two') === 0 && count(b2, 'one') === 1 && count(b2, 'alpha') === 1 && count(b2, 'beta') === 1, JSON.stringify({ undos, tail: b2.slice(-60) }));
   await app.keyCombo('z', { shift: true }); await sleep(300);
   const b3 = await text();
   ok('UB4 Redo brings "two" back with THEIRS, nothing twice', count(b3, 'two') === 1 && count(b3, 'THEIRS') === 1 && count(b3, 'alpha') === 1, JSON.stringify(b3.slice(-60)));
