@@ -71,9 +71,13 @@ async function openNotes(app, seed, fail = false) {
   await app.click('Draft'); await sleep(600);   // out of Free Write: there the Tutor only offers prompts, and the notes list is not on show
   await app.evalJs(`(${installNotesApi.toString()})(${JSON.stringify(seed)}, ${fail ? 'true' : 'false'})`);
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
+  await sleep(500);
+  // some themes open the panel on another tab (Arbor: Grafts): the notes live in the Tutor's own tab
+  await app.evalJs(`(() => { const t = [...document.querySelectorAll('.wz-tutor-panel [role="tab"]')].find((b) => /tutor|feedback|coach|ask/i.test(b.textContent || '')); if (t && t.getAttribute('aria-selected') !== 'true') t.click(); return !!t; })()`);
+  await sleep(500);
   try { await app.waitFor(`!!document.querySelector(${JSON.stringify(SEC)})`, { label: 'the notes section in the Tutor panel', timeout: 8000 }); } catch (e) {
     // say what the page looks like instead (kept short: the frames job cuts an error to 300 characters)
-    const d = await app.evalJs(`JSON.stringify({ open: document.querySelector('.wz-tutor-panel')?.dataset.open ?? null, grip: !!document.querySelector('.wz-tutor-grip'), bible: !!document.querySelector('.wz-tutor-bible-row'), anyNotes: document.querySelectorAll('[data-testid]').length, hint: (document.querySelector('.wz-tutor-panel')?.textContent || '').slice(0, 60), user: !!window.wrizoDeskLexicon })`);
+    const d = await app.evalJs(`JSON.stringify({ open: document.querySelector('.wz-tutor-panel')?.dataset.open ?? null, grip: !!document.querySelector('.wz-tutor-grip'), bible: !!document.querySelector('.wz-tutor-bible-row'), anyNotes: document.querySelectorAll('[data-testid]').length, tabs: [...document.querySelectorAll('.wz-tutor-panel [role="tab"]')].map((b) => (b.textContent || '').trim()).join('|').slice(0, 90) })`);
     throw new Error('no notes section: ' + d);
   }
   await sleep(500);
