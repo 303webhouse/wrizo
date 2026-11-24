@@ -5,7 +5,7 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
-import { buildSystemPrompt, buildSprintSystemPrompt, CHAT_PROMPT_DEFAULT, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -52,7 +52,8 @@ tutorRouter.use(requireAuth);
 // (rateLimit.ts's existing precedent).
 tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));
 
-// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the Arbor voice (the route is not told the theme), the typed-question task.
+// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the typed-question task, and the voice for the theme the client names in `theme` (voiceForTheme: one of three from a fixed list;
+// anything else, or no theme, gets no voice block: the neutral BASE). `theme` is read as a plain value and never put into the prompt.
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -87,7 +88,7 @@ interface InboundMessage {
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string; theme?: unknown } {
   if (!body || typeof body !== 'object') return false;
   const { messages, delta, bible, selection } = body as { messages?: unknown; delta?: unknown; bible?: unknown; selection?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
@@ -262,7 +263,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     const response = await client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
-      system: buildSystemPrompt(CHAT_PROMPT_DEFAULT),
+      system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });
     const text = response.content
