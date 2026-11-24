@@ -107,8 +107,9 @@ try { await withHarness(async (app) => {
   const near = (a, b, e) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= e;
   const centreOf = (s) => ({ x: s.frame.x + s.cw / 2 + 1, y: s.frame.y + s.ch / 2 + 1 });
   const zoomTo = (s) => ev(`typeof window.wrizoFluxZoomTo === 'function' ? window.wrizoFluxZoomTo(${s}) : null`);
-  // the readout is true: its figure within 1% of the measured scale, and its raw scale within 0.2%
-  const trueRead = (s) => !!s && near(s.readVal / s.s, 1, 0.012) && near(s.raw / s.s, 1, 0.002);
+  // the readout is true: its figure is the measured scale to its own precision (a whole percent, or two decimals: within half a step, 0.005), and its raw scale within 0.2%
+  // (the first draft held the figure to 1% of the scale, Flux's rule for its three-figure mantissa; a whole percent cannot meet that below 50%, e.g. 23% for 0.233. Changed before the file's first green, Nov 24)
+  const trueRead = (s) => !!s && near(s.readVal, s.s, 0.0051) && near(s.raw / s.s, 1, 0.002);
   const press = async (k) => { const h = await ev(`window.__z.hit(${JSON.stringify(k)})`); if (!h || !h.hit) return h; await app.mouseMove(h.x, h.y); await mouse('mousePressed', h.x, h.y); await mouse('mouseReleased', h.x, h.y); return h; };
 
   let mutant = null;
