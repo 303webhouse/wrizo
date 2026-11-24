@@ -16,6 +16,12 @@
 //   NOVIG      CDAY, the room's vignette (body::after, the day's inset 170 px shadow and its mask) not painted
 //   NOFOG      CDAY, the board's .55 fade and its 80% veil gone (INK's NOFOG, word for word)
 //   NOPAPER    CDAY, paper.ts's sheet (.arbor2-paper) not painted
+// (added after run 45462428088 found no sun on a Board: the day room's shade is r19's PERGOLA, arbor2/pergola.ts, a live blurred SVG whose leaves breeze every
+// 16 s; Nick's ruling B swaps the live drawing for its still picture while she types, but only on <html data-wz-writing>, which ModeStage alone sets)
+//   NOPERGOLA  CDAY, the room's and the copies' shade layers (.arbor2-pergola, .arbor2-pagesh) not painted
+//   NOBREEZE   CDAY, the leaves' breeze stopped (.wz-leaf animation none)
+//   LIVEOFF    CDAY, the shade layers' own still swap forced (data-live-off on every .arbor2-pergola / .arbor2-pagesh: the live drawing leaves style and paint)
+//   WRITING    CDAY, <html data-wz-writing=true> as a page sets it on the first key (the product's whole rest->writing path for the shade), removed after the keys
 // PRINTS: per arm, Event Timing keydown n / median / p95 / max / >= 48 ms and the key's own work (keydown -> input) median. Premises gate (every arm stood
 // where it claims, every suspect's style landed, the day room's sun was drawn in the arms that keep it, the keys reached the editor); the numbers are
 // information. ARBOR_120_ROUNDS=<n> (default 2). Run: node scripts/harness/arbor-120-probe.mjs (from apps/desktop; Actions or a box turn)
@@ -53,6 +59,12 @@ const SUSPECTS = {
   NOVIG: { css: 'body::after{ display:none !important; }', landed: `${cs('body', 'display', '::after')} === 'none'` },
   NOFOG: { css: '.board-canvas-blurred > .board-canvas-dim{ opacity:1 !important; } .board-canvas-dim::after{ display:none !important; }', landed: "(() => { const e = document.querySelector('.board-canvas-dim'); return !!e && getComputedStyle(e).opacity === '1' && getComputedStyle(e, '::after').display === 'none'; })()" },
   NOPAPER: { css: '.arbor2-paper{ display:none !important; }', landed: `${cs('.arbor2-paper', 'display')} === 'none'` },
+  NOPERGOLA: { css: '.arbor2-pergola, .arbor2-pagesh{ display:none !important; }', landed: `${cs('.arbor2-pergola', 'display')} === 'none'` },
+  NOBREEZE: { css: '.wz-leaf{ animation:none !important; }', landed: `${cs('.arbor2-pergola .wz-leaf', 'animationName')} === 'none'` },
+  LIVEOFF: { js: "document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => l.setAttribute('data-live-off', 'true'))", undo: "document.querySelectorAll('.arbor2-pergola, .arbor2-pagesh').forEach((l) => l.removeAttribute('data-live-off'))",
+    landed: "(() => { const l = document.querySelector('.arbor2-pergola .arbor2-live'); return !!l && getComputedStyle(l).contentVisibility === 'hidden'; })()" },
+  WRITING: { js: "document.documentElement.setAttribute('data-wz-writing', 'true')", undo: "document.documentElement.removeAttribute('data-wz-writing')",
+    landed: "(() => { const l = document.querySelector('.arbor2-pergola'); return document.documentElement.getAttribute('data-wz-writing') === 'true' && !!l && l.getAttribute('data-live-off') === 'true'; })()" },
 };
 const DAY = '/?arbor2=1&arbor2room=day', NIGHT = '/?arbor2=1&arbor2room=night';
 const ARMS = {
@@ -65,6 +77,10 @@ const ARMS = {
   NOVIG: { url: DAY, room: 'day', hide: 'NOVIG' },
   NOFOG: { url: DAY, room: 'day', hide: 'NOFOG' },
   NOPAPER: { url: DAY, room: 'day', hide: 'NOPAPER' },
+  NOPERGOLA: { url: DAY, room: 'day', hide: 'NOPERGOLA' },
+  NOBREEZE: { url: DAY, room: 'day', hide: 'NOBREEZE' },
+  LIVEOFF: { url: DAY, room: 'day', hide: 'LIVEOFF' },
+  WRITING: { url: DAY, room: 'day', hide: 'WRITING' },
 };
 const ORDER = Object.keys(ARMS);
 // THE DIFF (added after run 45462428088: no day-only layer moved the cost, and the sun is not drawn on a Board at all): the board with the pop-up open in each
@@ -114,8 +130,9 @@ try { await withHarness(async (app) => {
     if (arm.snap) { await sleep(IDLE_MS); return { name, snap: await ev(SNAP), room: await ev("document.documentElement.getAttribute('data-arbor2-room')") }; }
     let landed = null;
     if (arm.hide) {
-      await ev(`(() => { const s = document.createElement('style'); s.setAttribute('data-p120', ''); s.textContent = ${J(SUSPECTS[arm.hide].css)}; document.head.appendChild(s); })()`);
-      await sleep(200);
+      if (SUSPECTS[arm.hide].css) await ev(`(() => { const s = document.createElement('style'); s.setAttribute('data-p120', ''); s.textContent = ${J(SUSPECTS[arm.hide].css)}; document.head.appendChild(s); })()`);
+      if (SUSPECTS[arm.hide].js) await ev(`(() => { ${SUSPECTS[arm.hide].js}; return true; })()`);
+      await sleep(SUSPECTS[arm.hide].js ? 600 : 200);
       landed = await ev(SUSPECTS[arm.hide].landed);
     }
     await sleep(IDLE_MS);
@@ -133,6 +150,7 @@ try { await withHarness(async (app) => {
     await sleep(600);
     const got = await ev("(() => { const ed = document.querySelector('.board-popup-editor'); const out = { et: window.__et.slice(), work: window.__work.slice(), after: ed ? ed.textContent.length : -1 }; if (window.__p120Off) window.__p120Off(); return out; })()");
     await ev("document.querySelectorAll('style[data-p120]').forEach((s) => s.remove())");
+    if (arm.hide && SUSPECTS[arm.hide].undo) await ev(`(() => { ${SUSPECTS[arm.hide].undo}; return true; })()`);
     return { name, round, where, landed, ...got };
   };
 
