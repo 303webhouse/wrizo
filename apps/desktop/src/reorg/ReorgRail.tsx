@@ -104,6 +104,8 @@ function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; ope
   };
   const arbor = theme === 'plateau';
   const flux = theme === 'flux';
+  // THE LOG ONCE (Fable, Nov 23, 6:14 pm; the L2 plan's "duplicate-Log fix"): in Flux, on a Log page, her place IS the LOG door, so it wears the place mark and the separate place box (which would read LOG again) is not drawn
+  const logIsHere = flux && here === NOTEBOOK;
   // FLUX: every door counts what the reorg's OWN lists show (a set of Tracks is one Doc; the Log is the Notebook, its loose pages are Orphans), read when the rail
   // renders (a new place, page or open door), never per key; L2's sentence frames. The live rail's page counts would contradict DRIVES' rows (the frames on 5fa0119c).
   const hintWords = { doc: t('drawerPage'), circuit: t('stripPlan'), rack: t('drawerPlaceDrawers'), log: t('drawerPlaceJournal') };
@@ -142,7 +144,7 @@ function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; ope
   return (
     <div className="wz-strip wz-reorg-rail" data-reorg-rail="">
       {/* 1. where she is: her Project's box and name; it opens her Project's own list (Unfiled writing has no list: its door is UNFILED) */}
-      <div className="wz-strip-section wz-reorg-where">
+      {!logIsHere && <div className="wz-strip-section wz-reorg-where">
         <button type="button" className="wz-strip-item wz-reorg-where-item" data-reorg-where={here ?? 'unfiled'}
           aria-disabled={here == null ? 'true' : undefined} aria-pressed={here == null ? undefined : listShown(here)} onClick={here == null ? undefined : () => openListOf(here)}
           aria-label={fill(t('reorgWhereLabel'), hereName)} aria-current="location" title={placeRead?.hint}>
@@ -150,7 +152,7 @@ function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; ope
           <span className="wz-strip-label wz-reorg-where-name">{hereName}</span>
           {placeRead ? <span className="wz-strip-readout" aria-hidden="true">{placeRead.count}</span> : null}
         </button>
-      </div>
+      </div>}
       {/* 2. her pins (none on day one, frame R3), as boxes or as a list, with the small switch under them */}
       {pins.length > 0 && (
         <div className="wz-strip-section wz-reorg-pins" data-pin-view={memory.pinView} role="group" aria-label={t('reorgPinsLabel')}>
@@ -174,7 +176,7 @@ function RailBodyImpl({ entry, open, toggle, reads }: { entry: JournalEntry; ope
       {/* 3. DOCS, PROJECTS, UNFILED: each a pop-out (the Trash sits at the foot of UNFILED) */}
       <div className="wz-strip-section wz-reorg-doors">
         {doors.map((d) => (
-          <button key={d.id} type="button" data-category={d.id} data-cloth={d.cloth} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id}
+          <button key={d.id} type="button" data-category={d.id} data-cloth={d.cloth} className={`wz-strip-item${open === d.id ? ' active' : ''}`} aria-pressed={open === d.id} aria-current={logIsHere && d.id === 'journal' ? 'location' : undefined}
             aria-disabled={d.lit ? undefined : 'true'} onClick={d.lit ? () => toggle(d.id) : undefined} title={d.read?.hint}>
             <span className="wz-strip-glyph" aria-hidden="true">{d.icon}</span>
             <span className="wz-strip-label">{d.label}</span>
