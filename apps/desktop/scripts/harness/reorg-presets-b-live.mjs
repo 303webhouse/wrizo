@@ -61,7 +61,7 @@ async function seed(app) {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk' });
   try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* the checks record what follows */ }
   await app.waitFor("(JSON.parse(localStorage.getItem('writer-studio-drawers') || '[]')).some((d) => /^top-drawer-/.test(d.id))", { label: 'Top Drawer', timeout: 30000 });
-  const ids = [...SAMPLES, 'menu'];
+  const ids = ['menu', ...['machina', 'arbor'].flatMap((leg) => SAMPLES.map((id) => leg + '-' + id))];   // a Doc per leg: a preset pressed in a Doc stays in it
   return app.evalJs(`(() => {
     const W = window;
     const drawer = W.wrizoCreateDrawer('Presets');
@@ -112,7 +112,6 @@ const NOTEREAD = (id) => `(() => { const w = document.querySelector('[data-prese
   return [...pop.querySelectorAll('[data-note-part]')].map((s) => s.getAttribute('data-note-part') + '|' + (s.textContent || '').replace(/\\s+/g, ' ').trim()); })()`;
 const NOTEPRESS = (id) => `(() => { const b = document.querySelector('[data-preset-note=${q(id)}] .wz-drawer-note-btn'); if (!b) return false; b.focus(); b.click(); return true; })()`;
 const NOTEESC = (id) => `(() => { const b = document.querySelector('[data-preset-note=${q(id)}] .wz-drawer-note-btn'); if (!b) return false; b.focus(); b.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); return true; })()`;
-const PARTNAMES = "[...document.querySelectorAll('.wz-sliver [data-reorg-parts] .reorg-parts-name')].map((s) => (s.textContent || '').replace(/\\s+/g, ' ').trim())";
 
 // the menu laws, for a leg whose Parts layer is mounted
 async function menuLaws(app, leg, tag) {
@@ -150,11 +149,15 @@ async function menuLaws(app, leg, tag) {
   const made = [];
   for (const id of SAMPLES) {
     const preset = KINDS.PRESETS.find((p) => p.id === id);
-    await openParts(app, leg, 'pb-' + id);
+    await openParts(app, leg, 'pb-' + leg + '-' + id);
     await openPresets(app);
     await app.evalJs(`document.querySelector('[data-doc-menu] [data-preset-pick=${q(id)}]')?.click(); null`); await sleep(900);
-    const names = await app.evalJs(PARTNAMES);
-    made.push({ id, ok: JSON.stringify(names) === JSON.stringify(preset.parts), names: names && names.slice(0, 4), want: preset.parts.slice(0, 4), n: names && names.length, wantN: preset.parts.length });
+    // the names as the Doc stores them (the list shows "Part 1" for a Doc of one Part, by its own rule: parts.length > 1 ? name : "Part n"), and the list itself where there are several
+    const names = await app.evalJs(`(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === ${q('pb-' + leg + '-' + id)}); const P = window.wrizoParts; return e && P ? P.partsOfDoc(e.projectId).map((p) => p.name) : null; })()`);
+    const want = KINDS.presetParts(preset, 'none');
+    const shown = await app.evalJs("(() => { const l = document.querySelector('.wz-sliver [data-reorg-parts]'); return l ? [...l.querySelectorAll('.reorg-parts-name')].map((x) => (x.textContent || '').replace(/\s+/g, ' ').trim()) : null; })()");
+    const shownOk = want.length === 1 ? JSON.stringify(shown) === JSON.stringify(['Part 1']) : JSON.stringify(shown) === JSON.stringify(want);
+    made.push({ id, ok: JSON.stringify(names) === JSON.stringify(want) && shownOk, names, want, shown });
   }
   ok(`${tag}5 ${L}: ${SAMPLES.join(', ')}, each pressed in its own empty Doc, make exactly their Parts, in order`, made.every((m) => m.ok), made.filter((m) => !m.ok));
 }
