@@ -24,6 +24,8 @@ const SUBS: ReadonlyArray<readonly [string, number, number]> = [
   ['POLISH', 1060, 644], ['ERROR-FREE', 1060, 679], ['FILE TYPE', 1060, 714], ['SHAREABLE', 1060, 749], ['AUTOMATED', 650, 914], ['AI TUTOR', 650, 949], ['WORKSHOPS', 650, 984],
 ];
 const TREES = ['M84,566 L84,681 M84,611 L104,611 M84,646 L104,646 M84,681 L104,681', 'M420,577 L420,692 M420,622 L440,622 M420,657 L440,657 M420,692 L440,692', 'M712,577 L712,657 M712,622 L728,622 M712,657 L728,657', 'M1030,592 L1030,742 M1030,637 L1050,637 M1030,672 L1050,672 M1030,707 L1050,707 M1030,742 L1050,742', 'M620,867 L620,977 M620,907 L640,907 M620,942 L640,942 M620,977 L640,977'];
+/** The lit IDEAS tile edge (the Wrizors' REAL 1, Nov 23): its own constant, drawn exactly, not derived from FX.mid. */
+const IDEAS_EDGE = '#5F8F95';
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 /** The whole 1350 x 1080 drawing fits the window: at the shared splash size its 17-unit tags would be about 8 px at 1366 x 768 (the sheet's guard 2: no word under 10 px). */
@@ -90,7 +92,7 @@ export function FluxFive({ mode, width, height, authed = null, ready = false, on
     if (tag) tag.textContent = w.tagline.slice(0, Math.max(0, Math.min(w.tagline.length, Math.floor((at - T.tag) / T.tch) + 1)));
     svg.querySelectorAll<SVGGElement>('[data-flux-tile]').forEach((g, k) => {
       const on = at >= T.tiles + k * 45;
-      g.querySelector('rect')?.setAttribute('stroke', on ? FX.mid : FX.hair2);
+      g.querySelector('rect')?.setAttribute('stroke', on ? IDEAS_EDGE : FX.hair2);
       g.querySelector('text')?.setAttribute('fill', on ? FX.ink : FX.mid);
     });
     svg.querySelectorAll('[data-flux-wire]').forEach((p, k) => p.setAttribute('stroke-dashoffset', (1 - clamp((at - WIRES[k][2]) / WIRES[k][3])).toFixed(4)));
