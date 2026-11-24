@@ -12,6 +12,11 @@
 //   C3  every key reached the card (it grew by the keys typed)
 //   C4  she leaves the card (Escape closes the pop-up): within a second the room's live drawing is back (no data-live-off, content-visibility visible)
 //   T   (information; a timing line gates only on a box turn) Event Timing per key in the card, day, keys 2..N: median / p95, beside the same keys by night
+//       PARKED Nov 24 (SUPERSEDED by T-B): Chat 1's box turn (19:41Z-19:58Z, 682ff6b8) read it red in 3 of 4 runs on its SAMPLE premise alone (night n 18, 19, 18
+//       against the 20 it asked), every speed clause holding. The observer reports only keys of 16 ms or more (durationThreshold 16), so a FAST arm delivers
+//       FEWER entries: the premise punished speed. The original is printed verbatim on the parked leg.
+//   T-B (timing) the same day-against-night bars over ALL her keys: a key Event Timing did not report was under the observer's 16 ms threshold, so it counts
+//       as 16 (its ceiling); the premise is only that the observer reported at least one key. Its mutant MUT-T-B: with the card hook blind, T-B goes RED.
 //   MUT-cardCut  the fix's input hook made blind in the BUILT bundle (its '.board-popup-editor' look in pergola's input listener matches nothing): it LANDS
 //                (one anchor) and C1 goes RED
 // Run: node scripts/harness/arbor-120-card-breeze.mjs (from apps/desktop; Actions or a box turn)
@@ -126,24 +131,33 @@ try { await withHarness(async (app) => {
   await openCard(NIGHT);
   const night = await typeKeys(KEYS);
   const sd = stat(day.et.slice(1)), sn = stat(night.et.slice(1));
+  // T-B's reading: every key typed, a key the observer did not report (under its 16 ms threshold) counted as 16
+  const allKeys = (et) => et.concat(Array(Math.max(0, KEYS - et.length)).fill(16));
+  const judgeB = (dEt, nEt) => { const d = stat(allKeys(dEt)), n = stat(allKeys(nEt)); return { d, n, live: dEt.length + nEt.length > 0, pass: dEt.length + nEt.length > 0 && d.med <= n.med + 16 && d.p95 <= n.p95 + 24 }; };
   console.log(`T120 Event Timing keydown keys 2..${KEYS} (ms): day n ${sd.n} med ${sd.med} p95 ${sd.p95} max ${sd.max} | night n ${sn.n} med ${sn.med} p95 ${sn.p95} max ${sn.max}`);
-  timing(`T the card by day paints a key as the card by night does: day median ${sd.med} <= night ${sn.med} + 16, p95 ${sd.p95} <= night ${sn.p95} + 24`, sd.n >= KEYS - 4 && sn.n >= KEYS - 4 && sd.med <= sn.med + 16 && sd.p95 <= sn.p95 + 24, { sd, sn });
+  // PARKED (see the header): the original T, printed verbatim on the parked leg, asserting T-B's truth
+  const tOrig = sd.n >= KEYS - 4 && sn.n >= KEYS - 4 && sd.med <= sn.med + 16 && sd.p95 <= sn.p95 + 24;
+  const tb = judgeB(day.et, night.et);
+  if (process.env.HARNESS_PARKED === '1') console.log(`${timingGate(ON_BOX, tb.pass).pass ? 'PASS' : 'FAIL'} PARKED (was "T the card by day paints a key as the card by night does: day median ${sd.med} <= night ${sn.med} + 16, p95 ${sd.p95} <= night ${sn.p95} + 24", read ${tOrig}) - SUPERSEDED: its sample premise (n >= ${KEYS - 4} per arm) punished speed, the observer reporting only keys of 16 ms or more (box turn 19:41Z-19:58Z: night n 18/19/18); live successor: T-B`);
+  timing(`T-B the card by day paints a key as the card by night does, over all ${KEYS} keys (a key under the observer's 16 ms threshold counts as 16): day median ${tb.d.med} <= night ${tb.n.med} + 16, p95 ${tb.d.p95} <= night ${tb.n.p95} + 24 (reported day ${day.et.length}, night ${night.et.length})`, tb.pass, { tb, day: day.et, night: night.et });
 
   // ---- the mutant: the card hook blind in the built bundle -> C1 goes red
   mutant = 'cardCut'; landed.cardCut = 0;
-  let mres = { pass: true, detail: '' };
+  let mres = { pass: true, detail: '' }, mutT = null;
   try {
     await openCard(DAY);
-    await typeKeys(6);
+    const mk = await typeKeys(KEYS);
+    mutT = judgeB(mk.et, night.et);
     const m = await ev(SHADE);
     mres = { pass: m.layers.length > 0 && m.layers.every((l) => l.off === 'true' && l.live !== 'visible'), detail: J(m.layers) };
   } catch (e) { mres = { pass: false, detail: 'threw ' + String(e.message || e).slice(0, 160) }; }
   mutant = null;
   ok(`MUT-cardCut (the card's input hook blind in the built bundle): the mutant LANDED (${landed.cardCut} anchor) and C1 goes RED`, landed.cardCut === 1 && mres.pass === false, `landed ${landed.cardCut}; ${mres.detail}`);
+  timing(`MUT-T-B with the card hook blind T-B goes RED (caught: ${mutT && !mutT.pass ? 'YES' : 'no'}): day median ${mutT && mutT.d.med} p95 ${mutT && mutT.d.p95} against night ${mutT && mutT.n.med} / ${mutT && mutT.n.p95}`, landed.cardCut === 1 && !!mutT && mutT.live && !mutT.pass, J(mutT));
 }); } catch (e) { ok('the run reached its end', false, String((e && e.stack) || e).split('\n').slice(0, 3).join(' | ')); }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + String(c.detail).slice(0, 1600)}`);
-const EXPECTED = 7;
+const EXPECTED = 8;
 const failed = checks.filter((c) => !c.pass);
 console.log(failed.length || checks.length !== EXPECTED ? `\nARBOR-120-CARD-BREEZE VERIFY: FAIL - ${failed.length}/${checks.length} failed${checks.length !== EXPECTED ? ` (expected ${EXPECTED} checks)` : ''}` : `\nARBOR-120-CARD-BREEZE VERIFY: PASS (${checks.length} checks)`);
 process.exit(failed.length || checks.length !== EXPECTED ? 1 : 0);
