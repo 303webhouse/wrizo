@@ -41,13 +41,21 @@ async function partsPresets(app, theme, tone) {
   await app.evalJs("document.querySelector('.wz-sliver [data-reorg-parts] [data-doc-kind]')?.click(); null"); await sleep(400);
   await app.evalJs("document.querySelector('[data-doc-menu] [data-doc-menu-item=\"presets\"]')?.click(); null"); await sleep(500);
 }
+// a "?" opened in the PARTS menu: scrolled into view first, then pressed (the note must be whole inside the window, wherever its row is)
+const partsNote = (id) => async (app, ctx) => {
+  await seed(app); await partsPresets(app, ctx.theme, ctx.tone);
+  await app.evalJs(`(() => { const r = document.querySelector('[data-preset-row="${id}"]'); if (r) r.scrollIntoView({ block: 'center' }); return null; })()`); await sleep(300);
+  await app.evalJs(`(() => { const b = document.querySelector('[data-preset-note="${id}"] .wz-drawer-note-btn'); if (b) { b.focus(); b.click(); } return null; })()`); await sleep(500);
+};
+// a "?" opened in the PLAN list (Machina; Arbor has no Plan tab)
+const planNote = (id) => async (app, ctx) => {
+  await SCREENS['presets-plan-list'](app, ctx);
+  await app.evalJs(`(() => { const b = document.querySelector('[data-preset-note="${id}"] .wz-drawer-note-btn'); if (b) { b.scrollIntoView({ block: 'center' }); b.focus(); b.click(); } return null; })()`); await sleep(500);
+};
 const SCREENS = {
   'presets-parts-list': async (app, ctx) => { await seed(app); await partsPresets(app, ctx.theme, ctx.tone); },
-  'presets-parts-note': async (app, ctx) => {
-    await seed(app); await partsPresets(app, ctx.theme, ctx.tone);
-    await app.evalJs("(() => { const r = document.querySelector('[data-preset-row=\"class-essay\"]'); if (r) r.scrollIntoView({ block: 'center' }); return null; })()"); await sleep(300);
-    await app.evalJs("(() => { const b = document.querySelector('[data-preset-note=\"class-essay\"] .wz-drawer-note-btn'); if (b) { b.focus(); b.click(); } return null; })()"); await sleep(500);
-  },
+  'presets-parts-note': partsNote('class-essay'),
+  'presets-parts-note-last': partsNote('how-to-guide'),
   'presets-plan-list': async (app, ctx) => {
     await seed(app);
     await open(app, ctx.theme, ctx.tone, 'pp-1');
@@ -57,5 +65,7 @@ const SCREENS = {
     // Arbor has no Plan tab: open its drawer as it stands, so the frame is of what a writer sees there
     if (!(await app.evalJs("!!document.querySelector('[data-plan-preset-list]')")) && !(await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null"); await sleep(700); }
   },
+  'presets-plan-note': planNote('circle'),
+  'presets-plan-note-last': planNote('inverted'),
 };
 export default SCREENS;
