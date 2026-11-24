@@ -1,0 +1,125 @@
+2026-11-24T01:03:51Z tree F:/wrizo-work/chat1-box-undo2: HEAD 22172644 (want 22172644), dirty 0, bundle index-pWx3WKdq.js, stop 01:14Z
+2026-11-24T01:03:51Z tree F:/wrizo-work/chat1-box-undoctl: HEAD 9eff97a7 (want 9eff97a7), dirty 0, bundle index-DUPaFp6l.js, stop 01:14Z
+2026-11-24T01:03:51Z chrome processes before: 10
+2026-11-24T01:03:51Z take: granted to lane "chat1" and bound to the process tree of pid 11956 - name this turn's start and end in your report
+TURN START 2026-11-24T01:03:51Z
+2026-11-24T01:03:51Z [01-T-script120-1] start script-typing-120.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:04:12Z [01-T-script120-1] exit 0; window 2026-11-24T01:03:51Z - 2026-11-24T01:04:12Z
+2026-11-24T01:04:12Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\01-T-script120-1
+2026-11-24T01:04:12Z   [01/1] OK        exit=0   18s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:12Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:04:12Z   [01-T-script120-1] SCRIPT-TYPING-120: WORK ms  median 12.0  p95 21.5  max 28.5
+2026-11-24T01:04:12Z   [01-T-script120-1] SCRIPT-TYPING-120: PAINT ms median 16.6  p95 30.5  max 32.0
+2026-11-24T01:04:12Z   [01-T-script120-1] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:12Z [02-C-script120-1] start script-typing-120.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:04:32Z [02-C-script120-1] exit 0; window 2026-11-24T01:04:12Z - 2026-11-24T01:04:32Z
+2026-11-24T01:04:32Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\02-C-script120-1
+2026-11-24T01:04:32Z   [01/1] OK        exit=0   18s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:32Z   SUITE RESULT: CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:04:32Z   [02-C-script120-1] SCRIPT-TYPING-120: WORK ms  median 11.5  p95 23.8  max 27.9
+2026-11-24T01:04:32Z   [02-C-script120-1] SCRIPT-TYPING-120: PAINT ms median 16.7  p95 31.2  max 32.7
+2026-11-24T01:04:32Z   [02-C-script120-1] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:32Z [03-T-script120-2] start script-typing-120.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:04:52Z [03-T-script120-2] exit 0; window 2026-11-24T01:04:32Z - 2026-11-24T01:04:52Z
+2026-11-24T01:04:52Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\03-T-script120-2
+2026-11-24T01:04:52Z   [01/1] OK        exit=0   19s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:52Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:04:52Z   [03-T-script120-2] SCRIPT-TYPING-120: WORK ms  median 12.7  p95 22.6  max 30.8
+2026-11-24T01:04:52Z   [03-T-script120-2] SCRIPT-TYPING-120: PAINT ms median 16.3  p95 31.4  max 32.9
+2026-11-24T01:04:52Z   [03-T-script120-2] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:04:53Z [04-C-script120-2] start script-typing-120.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:05:13Z [04-C-script120-2] exit 0; window 2026-11-24T01:04:53Z - 2026-11-24T01:05:13Z
+2026-11-24T01:05:13Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\04-C-script120-2
+2026-11-24T01:05:13Z   [01/1] OK        exit=0   18s script-typing-120.mjs :: SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:05:13Z   SUITE RESULT: CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:05:13Z   [04-C-script120-2] SCRIPT-TYPING-120: WORK ms  median 12.1  p95 23.0  max 29.9
+2026-11-24T01:05:13Z   [04-C-script120-2] SCRIPT-TYPING-120: PAINT ms median 16.5  p95 30.9  max 32.5
+2026-11-24T01:05:13Z   [04-C-script120-2] SCRIPT-TYPING-120 VERIFY: PASS (the measure was taken; compare the numbers against the control)
+2026-11-24T01:05:13Z [05-T-typing-latency-scroll] start typing-latency-scroll.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:05:41Z [05-T-typing-latency-scroll] exit 0; window 2026-11-24T01:05:13Z - 2026-11-24T01:05:41Z
+2026-11-24T01:05:41Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\05-T-typing-latency-scroll
+2026-11-24T01:05:41Z   [01/1] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T01:05:41Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:05:41Z   [05-T-typing-latency-scroll] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T01:05:41Z   [05-T-typing-latency-scroll] TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T01:05:41Z [06-C-typing-latency-scroll] start typing-latency-scroll.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:06:10Z [06-C-typing-latency-scroll] exit 0; window 2026-11-24T01:05:41Z - 2026-11-24T01:06:10Z
+2026-11-24T01:06:10Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\06-C-typing-latency-scroll
+2026-11-24T01:06:10Z   [01/1] OK        exit=0   27s typing-latency-scroll.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T01:06:10Z   SUITE RESULT: CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:06:10Z   [06-C-typing-latency-scroll] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T01:06:10Z   [06-C-typing-latency-scroll] TYPING-LATENCY-SCROLL VERIFY: PASS (10 checks)
+2026-11-24T01:06:10Z [07-T-arbor2-caret-latency] start arbor2-caret-latency.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:06:11Z [07-T-arbor2-caret-latency] exit 0; window 2026-11-24T01:06:10Z - 2026-11-24T01:06:11Z
+2026-11-24T01:06:11Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\07-T-arbor2-caret-latency
+2026-11-24T01:06:11Z   [01/1] OK        exit=0    0s arbor2-caret-latency.mjs :: ARBOR2-CARET-LATENCY RETIRED: PASS (0 checks run) - the drawn caret is scrapped (Nick, Nov 14); successor arbor-native-caret.mjs
+2026-11-24T01:06:11Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:06:12Z [08-C-arbor2-caret-latency] start arbor2-caret-latency.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:06:13Z [08-C-arbor2-caret-latency] exit 0; window 2026-11-24T01:06:12Z - 2026-11-24T01:06:13Z
+2026-11-24T01:06:13Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\08-C-arbor2-caret-latency
+2026-11-24T01:06:13Z   [01/1] OK        exit=0    0s arbor2-caret-latency.mjs :: ARBOR2-CARET-LATENCY RETIRED: PASS (0 checks run) - the drawn caret is scrapped (Nick, Nov 14); successor arbor-native-caret.mjs
+2026-11-24T01:06:13Z   SUITE RESULT: CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:06:14Z [09-T-rhizome-latency] start rhizome-latency.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:07:23Z [09-T-rhizome-latency] exit 0; window 2026-11-24T01:06:14Z - 2026-11-24T01:07:23Z
+2026-11-24T01:07:23Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\09-T-rhizome-latency
+2026-11-24T01:07:23Z   [01/1] OK        exit=0   67s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T01:07:23Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] RL-RAW: {"mutantMs":0,"mutantStallMs":0,"mutantFadeMs":0,"mutantSwapMs":0,"mutantSecondMs":0,"attempts":[{"n":1,"t0":"2026-11-24T01:06:23.581Z","t1":"2026-11-24T01:07:20.832Z","void":false,"ok":true,"control":"{\"n\":96,\"median\":25.8,\"p95\":32.8,\"max\":33.6}","controlFast":"{\"n\":132,\"median\":25.7,\"p95\":32.8,\"max\":33.9}","flash":"{\"n\":91,\"median\":25.8,\"p95\":32.2,\"max\":33.2}","fade":"{\"n\":145,\"me
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  A the rest numbers: 40+ keys with the field at rest are measured (the first block of the baseline every flash number is held against; the control bursts around each crossing join it, below)  [{"n":44,"median":21.3,"p95":30.6,"max":31.2}]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: 96 keys at the hold's pace and 132 at the fade's, over 6 round(s), 1 measurement(s) (a control key over 50 ms - any key but the day swap key, which is A+S's - = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)  [control {"n":96,"median":25.8,"p95":32.8,"max":33
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":91,"median":25.8,"p95":32.2,"max":33.2}]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":25.8,"p95":32.8,"max":33.6} | flash {"n":91,"median":25.8,"p95":32.2,"max":33.2}]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":145,"median":26.4,"p95":47.2,"max":77.3}]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":14.2,"p95":35.3,"max":39.4} | flash {"n":91,"median":13.9,"p95":32.3,"max":34.4}]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":132,"median":13,"p95":32.4,"max":37.7} | fade {"n":145,"median":13.2,"p95":34,"max":70} | shift 0.2 vs ref 2.8]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.7,"p95":32.8,"max":33.9} | fade {"n":145,"median":26.4,"p95":47.2,"max":77.3} | shift median 0.7 p95 14.4 vs ref 9/17.5]
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] PASS  C attribution (information, never a verdict): 9 slow fade key(s) over 6 round(s), 4 within 150 ms of the fade's start - SOME line up with the fade start
+2026-11-24T01:07:23Z   [09-T-rhizome-latency] RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T01:07:23Z [10-C-rhizome-latency] start rhizome-latency.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:08:32Z [10-C-rhizome-latency] exit 0; window 2026-11-24T01:07:23Z - 2026-11-24T01:08:32Z
+2026-11-24T01:08:32Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\10-C-rhizome-latency
+2026-11-24T01:08:32Z   [01/1] OK        exit=0   68s rhizome-latency.mjs :: RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T01:08:32Z   SUITE RESULT: CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] RL-RAW: {"mutantMs":0,"mutantStallMs":0,"mutantFadeMs":0,"mutantSwapMs":0,"mutantSecondMs":0,"attempts":[{"n":1,"t0":"2026-11-24T01:07:32.917Z","t1":"2026-11-24T01:08:30.466Z","void":false,"ok":true,"control":"{\"n\":96,\"median\":24.8,\"p95\":32.3,\"max\":33.7}","controlFast":"{\"n\":132,\"median\":25.7,\"p95\":32.8,\"max\":33.4}","flash":"{\"n\":84,\"median\":25.3,\"p95\":32.7,\"max\":35}","fade":"{\"n\":145,\"medi
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  A the rest numbers: 40+ keys with the field at rest are measured (the first block of the baseline every flash number is held against; the control bursts around each crossing join it, below)  [{"n":44,"median":21.7,"p95":31.8,"max":32}]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  A+ the rest baselines are the control bursts typed on the crossing page seconds before the 8th word: 96 keys at the hold's pace and 132 at the fade's, over 6 round(s), 1 measurement(s) (a control key over 50 ms - any key but the day swap key, which is A+S's - = a box stall: the measurement is void and taken again; a failing one is measured again to confirm it)  [control {"n":96,"median":24.8,"p95":32.3,"max":33
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  B premise: every round crossed the goal and the flash was HOLDING - on main with the drop-shadow actually applied to the full field, under Arbor's vines with the brass copy's composited layer running its animation
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  B premise: at least 40 keys were painted while data-flash was true (6 round(s); a flash that was over before the keys landed certifies nothing)  [{"n":84,"median":25.3,"p95":32.7,"max":35}]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  B typing inside the flash is as fast as typing at rest: median within 5 ms and p95 within 25 ms of the rest numbers, and no key over 100 ms  [rest {"n":96,"median":24.8,"p95":32.3,"max":33.7} | flash {"n":84,"median":25.3,"p95":32.7,"max":35}]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  C premise: at least 40 keys were painted during the fade (enough that a percentile means something)  [{"n":145,"median":29.5,"p95":49.8,"max":64.4}]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  B2 main-thread time per key inside the flash (the key's handler task + the frame that paints it, ms): the median is within 4 ms of the same page's control - a cost the frame clock hides  [control {"n":96,"median":14,"p95":36.2,"max":44.8} | flash {"n":84,"median":13.8,"p95":34.1,"max":37.1}]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  C2 main-thread time per key inside the fade: the median is within 4 ms of the fast control's PLUS the fade's reference cost (2.8 ms, the default (the Nov 6 20-run medians; no RL_REF given))  [control {"n":132,"median":15,"p95":35.7,"max":54.3} | fade {"n":145,"median":15.2,"p95":39.7,"max":133.7} | shift 0.2 vs ref 2.8]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  C typing inside the fade is as fast as at rest at the same pace (the same budgets over the fade's reference shift - median +9 ms, p95 +17.5 ms, the default (the Nov 6 20-run medians; no RL_REF given) - against the fast control; no key over 100 ms)  [rest {"n":132,"median":25.7,"p95":32.8,"max":33.4} | fade {"n":145,"median":29.5,"p95":49.8,"max":64.4} | shift median 3.8 p95 17 vs ref 9/17.5]
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] PASS  C attribution (information, never a verdict): 7 slow fade key(s) over 6 round(s), 0 within 150 ms of the fade's start - NONE line up with the fade start (not the filter drop)
+2026-11-24T01:08:32Z   [10-C-rhizome-latency] RHIZOME-LATENCY VERIFY: PASS (25 checks)
+2026-11-24T01:08:32Z [11-T-flux-wirein-latency] start flux-wirein-latency.mjs on 22172644 (index-pWx3WKdq.js)
+2026-11-24T01:12:07Z [11-T-flux-wirein-latency] exit 0; window 2026-11-24T01:08:32Z - 2026-11-24T01:12:07Z
+2026-11-24T01:12:07Z   SUITE START HARNESS_PARKED=unset files=1 tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\11-T-flux-wirein-latency
+2026-11-24T01:12:07Z   [01/1] OK        exit=0  213s flux-wirein-latency.mjs :: ROWS-SHADOW VERIFY: PASS (405 renders checked, shadow == DOM on every one) ;; FLUX-WIREIN-LATENCY VERIFY: PASS (11 checks)
+2026-11-24T01:12:07Z   SUITE RESULT: CLEAN — tree=22172644d bundle=index-pWx3WKdq.js/1330172b NO-REBUILD
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] COST-INFO per round work median/p95: C 2.2/3.3 2/2.5 2.1/2.6 2.2/2.9 | X 2/2.6 1.6/2.4 1.7/2.4 1.9/2.7 | W 2/2.4 1.8/2.2 1.9/2.5 2/2.8 | M 2.2/3.6 2/3.9 2/3.9 2.1/2.6
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] ROWS-SHADOW VERIFY: PASS (405 renders checked, shadow == DOM on every one)
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] PASS  L typing in Wire In on today's Flux (no flag) adds no latency beyond the control's own spread: W median 25.6 <= C 25.6 + 1.6, W p95 33.2 <= C 32.8 + 1.2, no W key over 100 ms
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] PASS  SPLIT (information) median/p95 ms: C Arbor 25.6/32.8 | X Flux TEXT 25.5/32.7 | W Wire In 25.6/33.2
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] PASS  MUT-b the undamped-layer mutant FAILS L (M median 25 p95 42.4 max 58.3 against C 25.6 / 32.8; caught: YES)
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] PASS  COST (information) the key's own synchronous work, median/p95 ms: C Arbor 2.1/3 | X Flux TEXT 1.7/2.6 | W Wire In 1.9/2.6 | M undamped-layer mutant 2.1/3.9
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] PASS  COST-W (information) Wire In against the control on the work reading: W median 1.9 vs C 2.1 + 0.2, p95 2.6 vs C 3 + 0.8: the measure passed; this line gates nothing
+2026-11-24T01:12:07Z   [11-T-flux-wirein-latency] FLUX-WIREIN-LATENCY VERIFY: PASS (11 checks)
+2026-11-24T01:12:07Z [12-C-flux-wirein-latency] start flux-wirein-latency.mjs on 9eff97a7 (index-DUPaFp6l.js)
+2026-11-24T01:15:42Z [12-C-flux-wirein-latency] exit 1; window 2026-11-24T01:12:07Z - 2026-11-24T01:15:42Z
+2026-11-24T01:15:42Z   SUITE START HARNESS_PARKED=unset files=1 tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD out=F:\wrizo-work\chat1-turn-undo4-0103Z\12-C-flux-wirein-latency
+2026-11-24T01:15:42Z   [01/1] FAIL      exit=1  213s flux-wirein-latency.mjs :: ROWS-SHADOW VERIFY: PASS (405 renders checked, shadow == DOM on every one) ;; FLUX-WIREIN-LATENCY VERIFY: FAIL - 1/11 failed
+2026-11-24T01:15:42Z   SUITE RESULT: NOT CLEAN — tree=9eff97a74+1dirty bundle=index-DUPaFp6l.js/1327037b NO-REBUILD
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] COST-INFO per round work median/p95: C 1.9/2.5 2.1/2.7 2.1/2.9 1.9/2.4 | X 1.7/2.3 1.6/2.4 1.6/2.7 1.6/2.1 | W 1.9/2.6 1.9/2.3 1.9/2.6 1.7/2.1 | M 2/2.9 2.1/3 2.1/3.2 1.9/4
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] ROWS-SHADOW VERIFY: PASS (405 renders checked, shadow == DOM on every one)
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] PASS  L typing in Wire In on today's Flux (no flag) adds no latency beyond the control's own spread: W median 25.8 <= C 25.6 + 1.1, W p95 33.5 <= C 33.2 + 0.4, no W key over 100 ms
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] PASS  SPLIT (information) median/p95 ms: C Arbor 25.6/33.2 | X Flux TEXT 24.9/32.5 | W Wire In 25.8/33.5
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] FAIL  MUT-b the undamped-layer mutant FAILS L (M median 24.5 p95 29.6 max 43.2 against C 25.6 / 33.2; caught: NO)  -- C {"n":176,"median":25.6,"p95":33.2,"max":34.6} | M {"n":176,"median":24.5,"p95":29.6,"max":43.2}
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] PASS  COST (information) the key's own synchronous work, median/p95 ms: C Arbor 2/2.6 | X Flux TEXT 1.7/2.4 | W Wire In 1.8/2.6 | M undamped-layer mutant 2/3.8
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] PASS  COST-W (information) Wire In against the control on the work reading: W median 1.8 vs C 2 + 0.2, p95 2.6 vs C 2.6 + 0.5: the measure passed; this line gates nothing
+2026-11-24T01:15:42Z   [12-C-flux-wirein-latency] FLUX-WIREIN-LATENCY VERIFY: FAIL - 1/11 failed
+2026-11-24T01:15:42Z STOP: past 01:14Z, not starting step 13
+2026-11-24T01:15:42Z chrome processes after: 10
+2026-11-24T01:15:42Z release: released
+TURN END 2026-11-24T01:15:42Z

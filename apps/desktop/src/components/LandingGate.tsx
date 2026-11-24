@@ -37,14 +37,16 @@ type AuthState = 'loading' | 'anon' | 'authed';
 // BIG PROJECTS 1a - THE PLACE FOLLOWS THE PAGE. When the writer opens a page, where they are becomes that page's home (a Drawer or the Journal) and the
 // open is counted on this device (wz.opens, read by the Most opened sort in step 4). Once per open: switching place in the switcher while a page stays
 // open is the writer's choice and is not undone by the next render. An unborn page has no home yet and is skipped.
+// #112: the once is per ACCOUNT (the latch holds the uid with the page), and it is not spent before the session has answered (see the recorder below): a reload on a page's
+// address rendered LandingGate with no user yet, so the follow was made under 'anon' and the latch kept it from ever being made for her.
 let followedPage: string | null = null;
 function followOpenPage(p: { kind: PlaceKind; id: string } | null): void {
   if (!p || p.kind !== 'page') { followedPage = null; return; }
-  if (followedPage === p.id) return;
+  const uid = placeUid();
+  if (followedPage === `${uid}|${p.id}`) return;
   const e = getJournalEntries().find(x => x.id === p.id);
   if (!e) return;
-  followedPage = p.id;
-  const uid = placeUid();
+  followedPage = `${uid}|${p.id}`;
   followEntry(uid, e);
   noteOpen(uid, e.id);
 }
@@ -79,7 +81,8 @@ export function LandingGate({ authState }: { authState: AuthState }) {
   // 1. THE RECORDER — every render, cheap: the in-memory comparison inside recordLastPlace avoids a write per render.
   useEffect(() => {
     const p = placeInAddress();
-    followOpenPage(p);
+    // #112: while the session has not answered there is no account to follow the page for (placeUid() reads 'anon'): the follow waits for the answer, signed in or not
+    if (authState === 'loading') { if (!p) followedPage = null; } else followOpenPage(p);
     const user = getCurrentUser();
     if (!user) return;
     if (p) recordLastPlace(user.id, p.kind, p.id);

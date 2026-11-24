@@ -3,13 +3,27 @@ import type { ScriptEl } from '../types';
 // S1 — smart conversions that happen WHILE typing (live), distinct from the
 // autocomplete popover. Pure/testable, no DOM.
 
-// A leading int./ext./est./i/e (with or without a trailing period) promotes
+// A leading int./ext./i/e, followed by a period, a space or a slash, promotes
 // an action element to a scene heading, live — as soon as it's recognizable,
-// not on commit.
-const SLUGLINE_PROMOTE_RE = /^\s*(int|ext|est|i\/e)\.?(\s|\/|$)/i;
+// not on commit. SCRIPT #7: the mark must be finished, so Interesting, Extra and
+// Estelle stay action; and EST counts only in capitals, because "Est. 1962" is
+// a sentence.
+const SLUGLINE_PROMOTE_RE = /^\s*(int|ext|i\/e)[.\s/]/i;
+const ESTABLISHING_PROMOTE_RE = /^\s*EST[.\s/]/;
 
 export function shouldPromoteToScene(text: string): boolean {
-  return SLUGLINE_PROMOTE_RE.test(text);
+  return SLUGLINE_PROMOTE_RE.test(text) || ESTABLISHING_PROMOTE_RE.test(text);
+}
+
+// SCRIPT #7: a parenthetical wears its parentheses once the line is left. A finished one is untouched; a blank one stays blank.
+export function withParentheses(text: string): string {
+  const s = text.trim();
+  if (!s) return text;
+  const opens = s.startsWith('(');
+  const closes = s.endsWith(')');
+  if (opens && closes) return text;
+  if (opens) return `${s})`;
+  return closes && !s.includes('(') ? `(${s}` : `(${s})`;
 }
 
 // Auto (CONT'D): committing a character element whose name (sans extension)
