@@ -11,7 +11,13 @@
 //   NEVER TO ANOTHER WRITER. Every statement in the SQL store (tutorNotesRoutes.ts) is scoped by `user_id = $1`, and $1 is always the session's own user id, never
 //                           a value from the request. Another writer's note id answers 404, the same as an id that does not exist.
 //
+//   ONLY PROPOSALS ARE FILTERED. A note the AI proposes goes through the note filter (tutorNoteFilter.ts, check M8: nothing that guesses at her health, identity or state of mind) before she is shown
+//                           it, and again here when it is kept (source "proposed"), so a client that mislabels a note cannot walk one past. A note she types herself ("own") and her interview answers
+//                           ("interview") are her words and are never filtered; editing a kept note is hers too.
+//
 // No database here: the SQL is behind NotesStore, so these rules run unchanged in the browserless check (scripts/harness/tutor-notes.mjs) against an in-memory store.
+
+import { noteFilter } from './tutorNoteFilter';
 
 export const NOTE_KINDS = ['tendency', 'interest', 'blocker', 'goal'] as const; // rules-of-the-road section 8: "her tendencies, interests, blockers and goals"
 export type NoteKind = (typeof NOTE_KINDS)[number];
@@ -63,6 +69,7 @@ export async function notesAdd(store: NotesStore, userId: string, body: unknown)
   if (!isMap(body) || !onlyKeys(body, ['kind', 'text', 'source'])) return BAD;
   const text = cleanText(body.text);
   if (!isKind(body.kind) || text === null || !isSource(body.source)) return BAD;
+  if (body.source === 'proposed' && !noteFilter(text).pass) return { status: 422, json: { error: 'not kept' } };
   if ((await store.count(userId)) >= NOTES_MAX_PER_WRITER) return { status: 409, json: { error: 'full', limit: NOTES_MAX_PER_WRITER } };
   return { status: 201, json: { note: await store.insert(userId, { kind: body.kind, text, source: body.source }) } };
 }

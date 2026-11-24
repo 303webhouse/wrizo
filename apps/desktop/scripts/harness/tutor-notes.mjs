@@ -14,6 +14,13 @@
 //   TN6  the migration: tutor_notes is created on the boot path with the kinds and sources checked in the table, a 1 to 400 text, on delete cascade from the writer, no deleted_at; and it is mounted before the chat route
 //   MUT1 a delete that loses its user scope: TN4 goes RED   MUT2 a wipe that only hides (a deleted_at): TN3 goes RED   MUT3 the cap removed: TN1 goes RED   MUT4 extra keys allowed: TN1 goes RED
 //   MUT5 a list that loses its user scope: TN4 goes RED   MUT6 the notes mounted after the chat route: TN6 goes RED   MUT7 a note saved on GET (a proposal kept without her yes): TN1 goes RED
+//   FL1  the note filter (check M8; runner-kit.md v0.2 section 4): the kit's twenty made-up notes N1-N20 come out as marked
+//   FL2  the matching rules: whole words, any case, a star is any ending, ADD capitals only, a phrase as written, an apostrophe does not join a word, a writing word clears List B and never List A
+//   FL3  every entry of the kit's three lists does its job (A always stops, B stops alone and clears with a writing word, C clears B)
+//   FL4  only a PROPOSAL is filtered (Fable, Nov 24): her own note and her interview answer are kept as written; a stopped proposal is refused 422 with no row; a clean one is kept on her yes; an edit is hers
+//   FL5  the filter is wired at the one place a proposed note is kept, and is a pure module
+//   MUT8 List A emptied: FL1 N9-N11, N13-N17 go RED   MUT9 step 2 removed: FL1 N12, N18, N20 go RED   MUT10 a writing word clears List A too: N11 goes RED   MUT11 ADD in any case   MUT12 no star   MUT13 no word boundary
+//   MUT14 a proposal kept without the filter   MUT15 her own note filtered too: FL4 goes RED
 // RED on main, where the table and the routes do not exist. Run (from apps/desktop): node scripts/harness/tutor-notes.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,7 +30,7 @@ let fails = 0;
 let checks = 0;
 const ok = (cond, msg, detail = '') => { checks += 1; console.log(`${cond ? 'PASS' : 'FAIL'}  ${msg}${detail ? `  [${String(detail).replace(/\s+/g, ' ').slice(0, 400)}]` : ''}`); if (!cond) fails += 1; };
 const read = (f) => fs.readFileSync(path.join(SERVER_SRC, f), 'utf8').replace(/\r\n/g, '\n');
-const FILES = ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorNotes.ts', 'tutorNotesRoutes.ts'];
+const FILES = ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorNoteFilter.ts', 'tutorNotes.ts', 'tutorNotesRoutes.ts'];
 
 // ---- the stand-in database: it reads the SQL text the route sends and does what that text says ----
 function makeDb() {
@@ -249,6 +256,103 @@ if (!fs.existsSync(path.join(SERVER_SRC, 'tutorNotes.ts')) || !fs.existsSync(pat
   ok(/create index if not exists tutor_notes_user_created on tutor_notes \(user_id, created_at\)/.test(read('migrate.ts')), 'TN6 the table is indexed by writer');
 }
 
+
+// =============================== the note filter (check M8) ===============================
+// the kit's twenty made-up notes (runner-kit.md v0.2 section 4), each with the result the kit marks: true = let through, false = stopped
+const KIT_NOTES = [
+  ['N1', 'Comma splices recur, about one per paragraph.', true],
+  ['N2', 'Gets stuck at endings; the last scene is often missing.', true],
+  ['N3', 'Working toward a finished novel draft by spring.', true],
+  ['N4', 'Wants feedback on dialogue first.', true],
+  ['N5', 'Asked for very plain feedback.', true],
+  ['N6', 'Male narrators in every story so far.', true],
+  ['N7', 'Uses white space between stanzas in poems.', true],
+  ['N8', 'The essay loses focus after the second claim.', true],
+  ['N9', 'Seems to rush the final chapters.', false],
+  ['N10', 'Has ADHD and prefers short tasks.', false],
+  ['N11', 'You are a young mother who writes poems at night.', false],
+  ['N12', 'Anxious about sharing work.', false],
+  ['N13', 'English is a second language; article errors are common.', false],
+  ['N14', 'She avoids conflict in scenes.', false],
+  ['N15', 'Perfectionism stalls revision.', false],
+  ['N16', 'Writes about growing up Catholic.', false],
+  ['N17', 'Probably a student; essays follow school prompts.', false],
+  ['N18', 'Loses focus after an hour.', false],
+  ['N19', 'Dialogue feels stiff in group scenes.', true],
+  ['N20', 'You feel stuck most mornings.', false],
+];
+const sameSet = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+// a word from a list as it would appear in a note ("diagnos*" -> "diagnosing")
+const asWritten = (w) => (w.endsWith('*') ? w.slice(0, -1) + 'ing' : w);
+
+// everything the filter must do, run against one build of the files (the real one, or a mutant). Returns what went wrong, by name.
+async function filterRun(mutate = {}) {
+  const b = boot(mutate);
+  const wrong = { kit: [], matching: [], lists: [], route: [] };
+  try {
+    const F = b.s.load('tutorNoteFilter.ts');
+    const pass = (t) => F.noteFilter(t).pass;
+    for (const [id, text, want] of KIT_NOTES) if (pass(text) !== want) wrong.kit.push(id);
+    const cases = [
+      ['whole words only: "seamless" is not "seem", "transitions" is not "trans"', pass('Prefers seamless transitions.') === true],
+      ['any letter case: all capitals still stop ADHD and SEEMS', pass('HAS ADHD AND PREFERS SHORT TASKS.') === false && pass('SEEMS to rush the end.') === false],
+      ['a star is any ending: diagnosed, diagnosis, traumatic', pass('Was diagnosed years back.') === false && pass('A diagnosis came late.') === false && pass('Writes about traumatic days.') === false],
+      ['ADD is capitals only: "Add a scene break" passes, "ADD" stops', pass('Add a scene break after the ending.') === true && pass('Has ADD.') === false],
+      ['a phrase as written: "may be" stops, "may" alone does not', pass('It may be fine.') === false && pass('Wants to rush endings, may cut them.') === true],
+      ['an apostrophe does not join a word to its neighbour: "she\'s" holds "she"', pass("She's quick to cut.") === false && pass('She’s quick to cut.') === false],
+      ['a phrase\'s spaces may be any run, including a line break', pass('English as a second\nlanguage.') === false && pass("You’re a poet.") === false],
+      ['List C clears List B ("Male narrators"), never List A ("Poems about grief" is stopped)', pass('Male narrators.') === true && pass('Male.') === false && pass('Poems about grief.') === false],
+      ['nothing to propose: an empty or non-text note does not pass', pass('') === false && pass('   ') === false && pass(null) === false && pass(42) === false && F.noteFilter('').step === 0],
+      ['the step is named: a List A hit is step 1, a List B hit with no List C is step 2', F.noteFilter('Seems to rush.').step === 1 && F.noteFilter('Anxious about sharing work.').step === 2 && F.noteFilter('Comma splices recur.').step === null],
+    ];
+    for (const [name, good] of cases) if (!good) wrong.matching.push(name);
+    // every word of the kit's three lists does its job
+    const A = F.LIST_A.flatMap((g) => g.words); const B = F.LIST_B.flatMap((g) => g.words); const C = F.LIST_C_WORDS;
+    const aMiss = A.filter((w) => F.noteFilter(`Notes: ${asWritten(w)}.`).step !== 1 || F.noteFilter(`Notes: ${asWritten(w)} story.`).pass);
+    // a List B word that a List C entry also matches clears itself (the kit's own lists: "memory" is matched by C's "memo*"); named here so a new overlap cannot slip in unseen
+    const selfCleared = B.filter((w) => F.noteFilter(`${asWritten(w)}.`).pass);
+    wrong.selfCleared = selfCleared;
+    const bMiss = B.filter((w) => !selfCleared.includes(w)).filter((w) => F.noteFilter(`Notes: ${asWritten(w)}.`).step !== 2 || !F.noteFilter(`Notes: ${asWritten(w)} story.`).pass);
+    const cMiss = C.filter((w) => !F.noteFilter(`A woman ${asWritten(w)}.`).pass);
+    if (aMiss.length) wrong.lists.push('List A entries that do not always stop: ' + aMiss.join(' | '));
+    if (bMiss.length) wrong.lists.push('List B entries that do not stop alone and clear with a writing word: ' + bMiss.join(' | '));
+    if (cMiss.length) wrong.lists.push('List C words that do not clear a List B word: ' + cMiss.join(' | '));
+    wrong.counts = { A: A.length, B: B.length, C: C.length };
+    // the route: only a PROPOSAL is filtered (Fable, Nov 24)
+    const post = (userId, source, text) => call(b, 'post', '/tutor/notes', { userId, body: { kind: 'tendency', text, source } });
+    const adhd = 'Has ADHD and prefers short tasks.';
+    const own = await post('u-f', 'own', adhd);
+    const intv = await post('u-f', 'interview', adhd);
+    const rowsBefore = b.db.rows.length;
+    const prop = await post('u-f', 'proposed', adhd);
+    const prop2 = await post('u-f', 'proposed', 'Anxious about sharing work.');
+    const prop3 = await post('u-f', 'proposed', 'Seems to rush the final chapters.');
+    const rowsAfter = b.db.rows.length;
+    const clean = await post('u-f', 'proposed', 'Comma splices recur, about one per paragraph.');
+    const own2 = await post('u-f', 'own', 'Anxious about sharing work.');
+    const edit = await call(b, 'patch', '/tutor/notes/:id', { userId: 'u-f', id: clean.body && clean.body.note && clean.body.note.id, body: { text: adhd } });
+    if (own.status !== 201) wrong.route.push('her own note naming ADHD must be kept (' + own.status + ')');
+    if (intv.status !== 201) wrong.route.push('her interview answer naming ADHD must be kept (' + intv.status + ')');
+    if (own2.status !== 201) wrong.route.push('her own note "Anxious about sharing work." must be kept (' + own2.status + ')');
+    if (prop.status !== 422 || prop2.status !== 422 || prop3.status !== 422 || rowsAfter !== rowsBefore) wrong.route.push('a proposed note that is stopped must be refused 422 with no row (' + [prop.status, prop2.status, prop3.status].join('/') + ', rows ' + rowsBefore + '->' + rowsAfter + ')');
+    if (clean.status !== 201) wrong.route.push('a clean proposed note must be kept on her yes (' + clean.status + ')');
+    if (edit.status !== 200 || !edit.body.note || edit.body.note.text !== adhd) wrong.route.push('editing a kept note is hers: it is never filtered (' + edit.status + ')');
+  } finally { b.s.cleanup(); }
+  return wrong;
+}
+
+{
+  const w = await filterRun();
+  ok(w.kit.length === 0, 'FL1 the kit\'s twenty made-up notes come out as marked (N1-N8 and N19 let through; N9-N18 and N20 stopped)', 'wrong: ' + w.kit.join(' '));
+  ok(w.matching.length === 0, 'FL2 the matching rules: whole words, any case, a star is any ending, ADD capitals only, a phrase as written, an apostrophe does not join, List C clears B and never A', w.matching.join(' || '));
+  ok(w.lists.length === 0, `FL3 every entry of the kit's lists does its job (${w.counts.A} in List A always stop, ${w.counts.B} in List B stop alone and clear with a writing word, ${w.counts.C} in List C clear a List B word)`, w.lists.join(' || ').slice(0, 380));
+  ok(JSON.stringify(w.selfCleared) === JSON.stringify(['memory']), "FL3 the one List B word the kit's own List C also matches is 'memory' ('memo*' in List C matches 'memory', so a note holding 'memory' is let through; reported to Fable and the kit's owner, lists left as written)", JSON.stringify(w.selfCleared));
+  ok(w.route.length === 0, 'FL4 only a PROPOSAL is filtered: her own note and her interview answer are kept as she wrote them, a stopped proposal is refused 422 with no row, a clean one is kept on her yes, an edit is hers', w.route.join(' || '));
+  const fsrc = read('tutorNoteFilter.ts'); const rsrc = read('tutorNotes.ts');
+  ok(/import \{ noteFilter \} from '\.\/tutorNoteFilter';/.test(rsrc) && /body\.source === 'proposed' && !noteFilter\(text\)\.pass/.test(rsrc), 'FL5 the filter is wired where a proposed note is kept (tutorNotes.ts), and only there');
+  ok(!/^import /m.test(fsrc), 'FL5 the filter is a pure module: no imports, no database, nothing it could send anywhere');
+}
+
 // =============================== the mutants ===============================
 async function mutantRed(label, mutate, probe) {
   let red = false; let why = '';
@@ -286,6 +390,24 @@ await mutantRed('MUT7 (a note kept without her yes: TN1)', { 'tutorNotes.ts': sw
   const idx = files['index.ts'];
   const mut = idx.replace("app.use('/api', tutorNotesRouter);\n", '').replace("app.use('/api', tutorRouter);", "app.use('/api', tutorRouter);\napp.use('/api', tutorNotesRouter);");
   ok(mut !== idx && !scans({ ...files, 'index.ts': mut }).mount, 'MUT6 (the notes mounted after the chat route: TN6) goes RED');
+}
+
+
+// ---- the filter's mutants (the kit: "with List A emptied, N9 to N11 and N13 to N17 must go red; with step 2 removed, N12, N18 and N20 must go red") ----
+{
+  const filterMut = async (label, mutate, expect) => {
+    let w; try { w = await filterRun(mutate); } catch (e) { ok(false, `${label} could not run: ${String(e.message).slice(0, 90)}`); return; }
+    const red = expect(w);
+    ok(red, `${label} goes RED`, 'kit wrong: ' + w.kit.join(' ') + ' | matching: ' + w.matching.length + ' | route: ' + w.route.length);
+  };
+  await filterMut('MUT8 (List A emptied: FL1 N9-N11 and N13-N17)', { 'tutorNoteFilter.ts': swap('export const LIST_A_WORDS: readonly string[] = LIST_A.flatMap((g) => g.words);', 'export const LIST_A_WORDS: readonly string[] = [];') }, (w) => ['N9', 'N10', 'N11', 'N13', 'N14', 'N15', 'N16', 'N17'].every((id) => w.kit.includes(id)));
+  await filterMut('MUT9 (step 2 removed: FL1 N12, N18 and N20)', { 'tutorNoteFilter.ts': swap("if (b.length > 0 && hits(t, C_RES).length === 0) return { pass: false, step: 2, hits: b };", '') }, (w) => sameSet(w.kit.filter((id) => ['N12', 'N18', 'N20'].includes(id)), ['N12', 'N18', 'N20']));
+  await filterMut('MUT10 (a writing word clears List A too: FL1 N11)', { 'tutorNoteFilter.ts': swap('if (a.length > 0) return { pass: false, step: 1, hits: a };', 'if (a.length > 0 && hits(t, C_RES).length === 0) return { pass: false, step: 1, hits: a };') }, (w) => w.kit.includes('N11') && w.matching.length > 0);
+  await filterMut('MUT11 (ADD in any letter case: FL2)', { 'tutorNoteFilter.ts': swap("const CAPITALS_ONLY = new Set(['ADD']);", 'const CAPITALS_ONLY = new Set<string>([]);') }, (w) => w.matching.length > 0);
+  await filterMut('MUT12 (a star not read as any ending: FL2/FL3)', { 'tutorNoteFilter.ts': swap("const star = entry.endsWith('*');", 'const star = false;') }, (w) => w.matching.length > 0 || w.lists.length > 0 || w.kit.length > 0);
+  await filterMut('MUT13 (no whole-word boundary: FL2)', { 'tutorNoteFilter.ts': swap('return new RegExp(`${L}${body}${star ? \'\\\\p{L}*\' : \'\'}${R}`', 'return new RegExp(`${body}${star ? \'\\\\p{L}*\' : \'\'}`') }, (w) => w.matching.length > 0 || w.kit.length > 0);
+  await filterMut('MUT14 (a proposal kept without the filter: FL4)', { 'tutorNotes.ts': swap("if (body.source === 'proposed' && !noteFilter(text).pass) return { status: 422, json: { error: 'not kept' } };", '') }, (w) => w.route.length > 0);
+  await filterMut('MUT15 (her own note filtered too: FL4)', { 'tutorNotes.ts': swap("if (body.source === 'proposed' && !noteFilter(text).pass)", 'if (!noteFilter(text).pass)') }, (w) => w.route.length > 0);
 }
 
 console.log(fails === 0 ? `\nTUTOR-NOTES VERIFY: PASS (${checks} checks)` : `\nTUTOR-NOTES VERIFY: FAIL - ${fails}/${checks} failed`);
