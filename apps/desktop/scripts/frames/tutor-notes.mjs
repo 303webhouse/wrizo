@@ -68,6 +68,7 @@ async function openNotes(app, seed, fail = false) {
   await app.click('Start writing');
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page' });
   await sleep(500);
+  await app.click('Draft'); await sleep(600);   // out of Free Write: there the Tutor only offers prompts, and the notes list is not on show
   await app.evalJs(`(${installNotesApi.toString()})(${JSON.stringify(seed)}, ${fail ? 'true' : 'false'})`);
   await app.evalJs("document.querySelector('.wz-tutor-grip').click()");
   try { await app.waitFor(`!!document.querySelector(${JSON.stringify(SEC)})`, { label: 'the notes section in the Tutor panel', timeout: 8000 }); } catch (e) {
