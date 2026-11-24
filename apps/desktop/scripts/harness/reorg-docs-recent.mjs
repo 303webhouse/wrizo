@@ -65,7 +65,7 @@ const RECENT = `(() => {
     rows: lis.map((li) => { const t = li.querySelector('.wz-reorg-list-title'), m = li.querySelector('.wz-reorg-row-meta'), lr = li.getBoundingClientRect();
       const words = m ? Number(((m.textContent || '').split('·').pop() || '').replace(/[^0-9]/g, '')) : null;
       return { id: li.getAttribute('data-entry-id'), title: t ? (t.textContent || '').trim() : null, words, top: lr.top, bottom: lr.bottom, h: lr.height }; }),
-    box: r ? { top: r.top, bottom: r.bottom, h: r.height, client: ul.clientHeight, scroll: ul.scrollHeight, top0: ul.scrollTop, oy: cs.overflowY, sw: cs.scrollbarWidth } : null,
+    box: r ? { top: r.top, bottom: r.bottom, h: r.height, client: ul.clientHeight, scroll: ul.scrollHeight, top0: ul.scrollTop, oy: cs.overflowY, sw: cs.scrollbarWidth, sc: cs.scrollbarColor, bar: ul.offsetWidth - ul.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0) } : null,
     sort,
   };
 })()`;
@@ -124,8 +124,14 @@ await withHarness(async (app) => {
   ok('R1: Recent lists more than three Docs: the fixture\'s eight lead it, newest first (rd-8 ... rd-1), and it holds at most 25 rows',
     touched === 8 && !!d1 && d1.rows.length >= 8 && d1.rows.length <= 25 && JSON.stringify(d1.rows.slice(0, 8).map((r) => r.id)) === q(BY_CHANGED),
     { touched, rows: d1 && d1.rows.map((r) => r.id) });
-  ok('R2: the list\'s box is five rows tall (the first five rows\' own height, within a pixel), it scrolls (overflow auto, more below), its scrollbar is thin, and the sixth row starts at the box\'s foot',
-    fiveTall(d1) && d1.box.oy === 'auto' && d1.box.scroll > d1.box.client + 10 && d1.box.sw === 'thin' && d1.box.top0 === 0 && near(d1.rows[0].top, d1.box.top, 1.5) && near(d1.rows[5].top, d1.box.bottom, 1.5),
+  // SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): `thin` was scrollbar-width:thin, the standard property, which in Chromium
+  // draws the native bar whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar at 10 px (02-scrollbars.css; the list's own `thin` is
+  // gone), so its computed scrollbar-width is auto. R2-B keeps the claim - a thin bar - by its painted width (1-10 px) and the mechanism. Verbatim:
+  //   ok('R2: the list\'s box is five rows tall (the first five rows\' own height, within a pixel), it scrolls (overflow auto, more below), its scrollbar is thin, and the sixth row starts at the box\'s foot',
+  //   fiveTall(d1) && d1.box.oy === 'auto' && d1.box.scroll > d1.box.client + 10 && d1.box.sw === 'thin' && d1.box.top0 === 0 && near(d1.rows[0].top, d1.box.top, 1.5) && near(d1.rows[5].top, d1.box.bottom, 1.5),
+  //   { box: d1 && d1.box, tops: d1 && d1.rows.slice(0, 7).map((r) => Math.round(r.top * 10) / 10) });
+  ok('R2-B: the list\'s box is five rows tall (the first five rows\' own height, within a pixel), it scrolls (overflow auto, more below), its scrollbar is thin (1-10 px painted, drawn by ::-webkit-scrollbar: no arrows), and the sixth row starts at the box\'s foot',
+    fiveTall(d1) && d1.box.oy === 'auto' && d1.box.scroll > d1.box.client + 10 && d1.box.sw === 'auto' && d1.box.sc === 'auto' && d1.box.bar >= 1 && d1.box.bar <= 10 && d1.box.top0 === 0 && near(d1.rows[0].top, d1.box.top, 1.5) && near(d1.rows[5].top, d1.box.bottom, 1.5),
     { box: d1 && d1.box, tops: d1 && d1.rows.slice(0, 7).map((r) => Math.round(r.top * 10) / 10) });
   await app.evalJs("(() => { const ul = document.querySelector('.wz-reorg-docs [data-reorg-group=\"recent\"] ul'); if (ul) ul.scrollTop = ul.scrollHeight; return null; })()");
   await sleep(300);
@@ -188,7 +194,7 @@ await withHarness(async (app) => {
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 10;
+const EXPECTED = 10;   // R2 parked for R2-B (#128, Nov 24): the count is unchanged
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nREORG-DOCS-RECENT VERIFY: PASS (${checks.length} checks)` : `\nREORG-DOCS-RECENT VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);

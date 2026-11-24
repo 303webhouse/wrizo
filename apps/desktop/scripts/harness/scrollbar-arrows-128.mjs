@@ -57,6 +57,7 @@ const FIND = (scope) => `(() => {
       sw: cs.scrollbarWidth, sc: cs.scrollbarColor, h: e.clientHeight, x: Math.round(x * 10) / 10, top: Math.round(top * 10) / 10, foot: Math.round(foot * 10) / 10,
       hitTop: document.elementFromPoint(x, top) === e, hitFoot: document.elementFromPoint(x, foot) === e,
       room: e.scrollHeight - e.clientHeight, tiny: (e.scrollHeight - e.clientHeight) < 0.6 * e.clientHeight,
+      seen: (() => { let k = 0; for (let y = r.top + 1; y < r.bottom - 1; y += 4) if (document.elementFromPoint(x, y) === e) k += 1; return k; })(),
       covers: (() => { const hit = new Set(); for (let y = r.top + 1; y < r.bottom - 1; y += 4) { const o = document.elementFromPoint(x, y); const c = o && o !== e ? o.closest('button, a, [role="button"]') : null; if (c && c !== e) hit.add(((c.getAttribute('class') || c.tagName).split(/\s+/)[0]) + (c.getAttribute('aria-label') ? ' "' + c.getAttribute('aria-label').slice(0, 40) + '"' : '')); } return [...hit]; })(),
       over: (() => { const o = document.elementFromPoint(x, top); return o && o !== e ? (o.getAttribute('class') || o.tagName).split(/\s+/)[0] : null; })() });
   }
@@ -68,6 +69,7 @@ const TOP = (id) => `(() => { const e = ${SEL(id)}; return e ? e.scrollTop : nul
 
 async function press(app, s, end) {
   const t0 = await app.evalJs(MID(s.id));
+  if (Number.isFinite(t0)) s[end === 'foot' ? 'avFoot' : 'avTop'] = end === 'foot' ? s.room - t0 : t0;   // the room this press could use (A-B)
   await sleep(250);
   const y = end === 'foot' ? s.foot : s.top;
   await app.mouseDown(s.x, y); await app.mouseUp(s.x, y);
@@ -197,12 +199,27 @@ const pressed = (s) => s.what === 'page' && (s.hitTop || s.hitFoot);
 const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && pressed(s)) && (t !== 'flux' || (R.loose && R.loose.jacked))));
 ok(`P1-B at every theme x size the page's scroller (her Part, and a loose page: Wire In in Flux) was found with a bar and pressed at one end or both: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
   p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, loose: R && R.loose, found: R && R.scrollers.map((s) => ({ scope: s.scope, what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
-const aOk = (rs) => rs.length > 0 && rs.every((s) => s.tiny || (!s.hitFoot || judge(s).kind.foot === 'track') && (!s.hitTop || judge(s).kind.top === 'track'));
+// SUPERSEDED (the fix run 45468457970 on 1230334b, before this file's first green): A judged a press by half the scroller's height, but a short scroller's
+// track runs to its END and stops - Machina's Front menu moved 390 / 488 px, exactly the room left from its middle: a track step, read as an arrow. A-B
+// judges by the smaller of half a page and the room that press had (an arrow moves about 40 px however much room there is). Verbatim:
+//   const aOk = (rs) => rs.length > 0 && rs.every((s) => s.tiny || (!s.hitFoot || judge(s).kind.foot === 'track') && (!s.hitTop || judge(s).kind.top === 'track'));
+//   for (const t of THEMES) {
+//     const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
+//     const bad = rs.filter((s) => !aOk([s]));
+//     ok(`A-${t} every scroller's bar, pressed 3 px inside each end, moves a page (the track), never a line (an arrow) or nothing, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`,
+//       aOk(rs), bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, bar: s.bar, sw: s.sw, h: s.h, foot: s.dFoot, top: s.dTop, kind: s.kind })));
+//   }
+const judgeB = (s) => {
+  const end = (d, av) => { if (!Number.isFinite(d)) return 'none'; const want = Math.min(0.5 * s.h, Number.isFinite(av) ? av : 0.5 * s.h) - 2; if (want <= 2) return 'no room'; return d === 0 ? 'blind' : d < want ? 'ARROW' : 'track'; };
+  return { foot: end(s.dFoot, s.avFoot), top: end(Number.isFinite(s.dTop) ? -s.dTop : s.dTop, s.avTop) };
+};
+const endOk = (k) => k === 'track' || k === 'no room';
+const aOkB = (rs) => rs.length > 0 && rs.every((s) => s.tiny || ((!s.hitFoot || endOk(judgeB(s).foot)) && (!s.hitTop || endOk(judgeB(s).top))));
 for (const t of THEMES) {
   const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
-  const bad = rs.filter((s) => !aOk([s]));
-  ok(`A-${t} every scroller's bar, pressed 3 px inside each end, moves a page (the track), never a line (an arrow) or nothing, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`,
-    aOk(rs), bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, bar: s.bar, sw: s.sw, h: s.h, foot: s.dFoot, top: s.dTop, kind: s.kind })));
+  const bad = rs.filter((s) => !aOkB([s]));
+  ok(`A-B-${t} every scroller's bar, pressed 3 px inside each end, moves a page or to its end (the track), never a line (an arrow) or nothing, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`,
+    aOkB(rs), bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, bar: s.bar, sw: s.sw, h: s.h, room: s.room, foot: s.dFoot, avFoot: s.avFoot, top: s.dTop, avTop: s.avTop, kind: judgeB(s) })));
 }
 // M (frames 45463510262): a bar with too little room to move a page cannot tell an arrow's press from the track's, so every bar is ALSO judged by what
 // draws it. In Chromium the standard properties (a computed scrollbar-width other than auto/none, or a scrollbar-color other than auto) draw the native
@@ -214,30 +231,52 @@ for (const t of THEMES) {
   ok(`M-${t} every bar shown, at 1366, 1920 and 2560, is drawn by the ::-webkit-scrollbar mechanism (computed scrollbar-width and -color auto), never the native one whose arrows cannot be hidden: ${rs.length - bad.length}/${rs.length} (${rs.filter((s) => s.tiny).length} with too little room for a press)`,
     rs.length > 0 && bad.length === 0, [...new Map(bad.map((s) => [`${s.scope}/${s.what} ${s.cls} sw ${s.sw} sc ${s.sc}`, { w: s.w, room: s.room }])).entries()].slice(0, 12));
 }
-// C (INK, Nov 24, from Nick's screenshots: the boxed ^ and v capping the page's bar are the reorg's Part arrows, .reorg-part-arrow, 4 px inside each
-// end - the 3 px presses above passed between them and the bar's ends): no button or link is drawn over any bar, sampled every 4 px down its middle.
-const cOk = (rs) => rs.length > 0 && rs.every((s) => !(s.covers && s.covers.length));
+// SUPERSEDED (the same fix run): C read every bar found, including one of which nothing shows - the closed Front drawer's panel, whose bar lies wholly
+// under the drawer's own grip ("Open hand tools"); a control over a bar she cannot see is not on a bar she sees. C-B judges the bars that show at
+// least one sample of themselves (seen > 0) and prints how many it set aside. Verbatim:
+//   // C (INK, Nov 24, from Nick's screenshots: the boxed ^ and v capping the page's bar are the reorg's Part arrows, .reorg-part-arrow, 4 px inside each
+//   // end - the 3 px presses above passed between them and the bar's ends): no button or link is drawn over any bar, sampled every 4 px down its middle.
+//   const cOk = (rs) => rs.length > 0 && rs.every((s) => !(s.covers && s.covers.length));
+//   for (const t of THEMES) {
+//     const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
+//     const bad = rs.filter((s) => s.covers && s.covers.length);
+//     ok(`C-${t} no button or link (an arrow, a scroll-step control) sits on any bar, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`, cOk(rs),
+//       bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, covers: s.covers })));
+//   }
+const cOkB = (rs) => rs.length > 0 && rs.every((s) => !(s.seen > 0 && s.covers && s.covers.length));
 for (const t of THEMES) {
   const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
-  const bad = rs.filter((s) => s.covers && s.covers.length);
-  ok(`C-${t} no button or link (an arrow, a scroll-step control) sits on any bar, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`, cOk(rs),
-    bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, covers: s.covers })));
+  const bad = rs.filter((s) => s.seen > 0 && s.covers && s.covers.length);
+  ok(`C-B-${t} no button or link (an arrow, a scroll-step control) sits on any bar she can see, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length} (${rs.filter((s) => !(s.seen > 0)).length} bar(s) wholly hidden, set aside)`, cOkB(rs),
+    bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, seen: s.seen, covers: s.covers })));
 }
+// SUPERSEDED with C (its mutant moves to C-B's test). Verbatim:
+//   {
+//     const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page')).find(Boolean);
+//     const mut = base ? { ...base, covers: ['reorg-part-arrow "Next Part"'] } : null;
+//     ok("MUT-C a reading with a Part arrow on the page's bar turns C's test red", !!mut && JSON.stringify(mut.covers) !== JSON.stringify(base.covers) && !cOk([mut]), mut && mut.covers);
+//   }
 {
-  const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page')).find(Boolean);
+  const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page' && s.seen > 0)).find(Boolean);
   const mut = base ? { ...base, covers: ['reorg-part-arrow "Next Part"'] } : null;
-  ok("MUT-C a reading with a Part arrow on the page's bar turns C's test red", !!mut && JSON.stringify(mut.covers) !== JSON.stringify(base.covers) && !cOk([mut]), mut && mut.covers);
+  ok("MUT-C-B a reading with a Part arrow on the page's (seen) bar turns C-B's test red", !!mut && JSON.stringify(mut.covers) !== JSON.stringify(base.covers) && !cOkB([mut]), mut && mut.covers);
 }
 const wheels = cells.map(({ t, w, R }) => ({ t, w, d: R && R.wheel }));
 ok(`W the wheel still scrolls the page's scroller in every theme x size: ${wheels.filter((x) => x.d > 0).length}/${wheels.length}`, wheels.every((x) => x.d > 0), wheels);
+// SUPERSEDED with A (its mutant moves to A-B's test). Verbatim:
+//   {
+//     const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page' && s.hitFoot)).find(Boolean);
+//     const mut = base ? { ...base, dFoot: 40 } : null;
+//     ok('MUT-A a reading whose foot press moved 40 px (an arrow\'s step) turns A\'s test red', !!mut && mut.dFoot !== base.dFoot && !aOk([mut]), mut && { was: base.dFoot, now: mut.dFoot });
+//   }
 {
-  const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page' && s.hitFoot)).find(Boolean);
+  const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page' && s.hitFoot && s.avFoot > 200)).find(Boolean);
   const mut = base ? { ...base, dFoot: 40 } : null;
-  ok('MUT-A a reading whose foot press moved 40 px (an arrow\'s step) turns A\'s test red', !!mut && mut.dFoot !== base.dFoot && !aOk([mut]), mut && { was: base.dFoot, now: mut.dFoot });
+  ok("MUT-A-B a reading whose foot press moved 40 px with room for a page (an arrow's step) turns A-B's test red", !!mut && mut.dFoot !== base.dFoot && !aOkB([mut]), mut && { was: base.dFoot, now: mut.dFoot, room: base.avFoot });
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 13;   // P1-B (P1 parked before the first green), A x3, M x3 (frames 45463510262), C x3 + MUT-C (INK: the Part arrows), W, MUT-A
+const EXPECTED = 13;   // P1-B, A-B x3, M x3, C-B x3 + MUT-C-B, W, MUT-A-B (A, C and their mutants parked before the first green, run 45468457970)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nSCROLLBAR-ARROWS-128 VERIFY: PASS (${checks.length} checks)`
