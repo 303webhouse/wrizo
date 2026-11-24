@@ -271,8 +271,12 @@ try { await withHarness(async (app) => {
   const mLanded = loadedM.length > 0 && loadedM.every((r) => r.typing.n > 0 && r.typing.drawFrames >= 0.8 * r.typing.n);
   ok('MUT premise: the mutant landed - with its layer undamped it drew through the typing (>= 80% of the frames while the keys landed, every round)', mLanded,
     JSON.stringify(loadedM.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames }))));
-  timing(`MUT-b the undamped-layer mutant FAILS L (M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)} against C ${r1(m.C.median)} / ${r1(m.C.p95)}; caught: ${m.lat ? 'NO' : 'YES'})`,
-    mLanded && !m.lat, `C ${show(m.C)} | M ${show(m.X)}`);
+  // PARKED 2026-11-23 (SUPERSEDED, Fable's ruling Nov 23, 10:41 pm: "MUT-b missed on the join AND the control: park it verbatim with both run ids; POLISH owes a sharper mutant"). The undamped-layer mutant is not caught by this
+  // clock: on the box it read M p95 28.4 against C 32.3 on the Flux join 4cf35181 (box turn 2026-11-24 04:39:15Z to 04:42:49Z, log chat1-turn-join-0431Z, step 05) and M p95 29.6 against C 33.2 on the CONTROL tree 9eff97a7
+  // (box turn 2026-11-24 01:03:51Z to 01:15:42Z, log chat1-turn-undo4-0103Z, step 12, the file on the control failed 1/11 the same way): a mutant that lands (MUT premise passes) yet reads no slower than the control, so
+  // the check cannot tell a layer that draws through typing from one that does not. Its successor is a sharper mutant (POLISH owes it). The premise line above stays live. Original, verbatim:
+  // timing(`MUT-b the undamped-layer mutant FAILS L (M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)} against C ${r1(m.C.median)} / ${r1(m.C.p95)}; caught: ${m.lat ? 'NO' : 'YES'})`,
+  //   mLanded && !m.lat, `C ${show(m.C)} | M ${show(m.X)}`);
 
   // COST reading, INFORMATION ONLY (Fable Nov 14, 12:24 pm: "add the cost reading to the Wire In probe as information only"). The clock (keydown -> the second frame) cannot see a cost smaller than a frame (the zoom probe's per-key print,
   // Actions run 43626167023: a 24 ms burn on every key LOWERED the clock); the reading that rises with a burn is WORK, the key's own synchronous work: keydown capture -> the `input` event's bubble at the document
