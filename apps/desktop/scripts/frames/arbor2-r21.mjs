@@ -203,17 +203,41 @@ const screens = {
     const R = `(() => { const op = (e) => { let o = 1; for (let n = e; n && n !== document.documentElement; n = n.parentElement) o *= Number(getComputedStyle(n).opacity); return Math.round(o * 100) / 100; };
       const g = [...document.querySelectorAll('.wz-sliver-grip, .wz-tutor-grip')].filter((e) => e.getBoundingClientRect().width > 0); const sc = document.querySelector('.mode-scroll');
       return { grips: g.map((e) => [op(e), getComputedStyle(e).pointerEvents]), bar: sc ? getComputedStyle(sc).scrollbarColor : null, scrolls: sc ? sc.scrollHeight > sc.clientHeight + 1 : null, writing: document.documentElement.getAttribute('data-wz-writing') }; })()`;
+    // #119 successor's instrument: the page's bar box (offsetWidth - clientWidth), and the thumb AS DRAWN - the bar's strip captured with the thumb
+    // forced to paint (data-arbor2-sb="on", scrollReveal.ts's own switch), pixels counted that differ from the strip's commonest colour
+    const BOX = "(() => { const s = document.querySelector('.mode-scroll'); return s ? s.offsetWidth - s.clientWidth : null; })()";
+    const stripInk = async () => {
+      const b = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; s.setAttribute('data-arbor2-sb', 'on'); const r = s.getBoundingClientRect(); const w = s.offsetWidth - s.clientWidth; return w > 0 ? { x: r.right - w, y: r.top, w, h: r.height } : null; })()");
+      if (!b) return { ink: null };
+      await sleep(120);
+      const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.w, height: b.h, scale: 1 } })).data;
+      await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (s) s.removeAttribute('data-arbor2-sb'); })()");
+      return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; const freq = new Map(); for (let i = 0; i < d.length; i += 4) { const k = d[i] + ',' + d[i + 1] + ',' + d[i + 2]; freq.set(k, (freq.get(k) || 0) + 1); }
+        const g = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0].split(',').map(Number);
+        let ink = 0; for (let i = 0; i < d.length; i += 4) if (Math.max(Math.abs(d[i] - g[0]), Math.abs(d[i + 1] - g[1]), Math.abs(d[i + 2] - g[2])) > 24) ink += 1; return { ink, px: d.length / 4, ground: g }; })()`);
+    };
     const rest = await app.evalJs(R);
+    const restBox = await app.evalJs(BOX);
     await typeKeys(app, ' w'); await sleep(3500); await app.evalJs(FINISH);
     const wr = await app.evalJs(R);
+    const wrBox = await app.evalJs(BOX);
+    const wrInk = await stripInk();
     await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await sleep(1500); await app.evalJs(FINISH);
     const back = await app.evalJs(R);
+    const backInk = await stripInk();
     const shown = (x) => x.grips.length === 2 && x.grips.every(([o]) => o === 1), gone = (x) => x.grips.length === 2 && x.grips.every(([o, pe]) => o === 0 && pe === 'none');
-    const ok = { restShown: shown(rest), writing: wr.writing === 'true', openersRecede: gone(wr), scrollbarRecedes: /transparent transparent|rgba\(0, 0, 0, 0\) rgba\(0, 0, 0, 0\)/.test(String(wr.bar)), returned: back.writing !== 'true',
+    // SUPERSEDED (#119, Nov 24): the recede hid the page's bar by scrollbar-color, which in Chromium drops the 10 px webkit bar for the 15 px native one
+    // and re-wraps the page (the caret off screen after Plan -> back). The prose page now hides its THUMB while she writes, so its scrollbar-color stays
+    // 'auto' by design. The original read, kept verbatim, no longer used:
+    //   scrollbarRecedes: /transparent transparent|rgba\(0, 0, 0, 0\) rgba\(0, 0, 0, 0\)/.test(String(wr.bar)),
+    // successor: the thumb is not drawn while she writes (even forced on), it IS drawn once she is back (the instrument sees a thumb), and the bar keeps its box
+    const ok = { restShown: shown(rest), writing: wr.writing === 'true', openersRecede: gone(wr),
+      scrollbarRecedes119: wrInk.ink !== null && wrInk.ink <= 2 && backInk.ink !== null && backInk.ink > 20 && restBox === wrBox, returned: back.writing !== 'true',
       openersBack: shown(back), scrollbarBack: !/transparent transparent|rgba\(0, 0, 0, 0\) rgba\(0, 0, 0, 0\)/.test(String(back.bar)), pageScrolls: rest.scrolls === true };
-    if (Object.values(ok).some((x) => !x)) fail('R21-RECEDE', { ok, rest, wr, back });
-    say('r21-recede', { ok, rest, wr, back });
+    if (Object.values(ok).some((x) => !x)) fail('R21-RECEDE', { ok, rest, wr, back, restBox, wrBox, wrInk, backInk });
+    say('r21-recede', { ok, rest, wr, back, restBox, wrBox, wrInk, backInk });
   },
 
   // ── scrollbars only when something scrolls ──────────────────────────────────────────────────────────────────────────────────────────────

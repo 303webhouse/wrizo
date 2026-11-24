@@ -88,7 +88,11 @@ await withHarness(async (app) => {
   await app.evalJs(`(() => { const s = document.createElement('style'); s.setAttribute('data-a119-mut', ''); s.textContent = ":root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }"; document.head.appendChild(s); })()`);
   await sleep(400);
   const mut = await column(app);
-  const landed = !!mut && mut.writing === 'true' && /transparent/.test(String(mut.sbColor));
+  // SUPERSEDED (red run 45422880591, 72c7444e): Chromium computes `transparent` as 'rgba(0, 0, 0, 0)', so this reader called a landed mutant
+  // not landed (the column did narrow: mutRed true). Kept verbatim, no longer used:
+  // const landed = !!mut && mut.writing === 'true' && /transparent/.test(String(mut.sbColor));
+  // successor: any scrollbar-color but 'auto' on the scroller while she writes is the rule landing (the fixed tip leaves it 'auto' on the prose page)
+  const landed = !!mut && mut.writing === 'true' && String(mut.sbColor) !== 'auto' && /rgba\(0, 0, 0, 0\)|transparent/.test(String(mut.sbColor));
   const mutRed = !!mut && !!rest && (Math.abs(mut.edW - rest.edW) > 0.5 || Math.abs(mut.scClientW - rest.scClientW) > 0.5);
   ok('MUT: the r21 rule put back verbatim LANDS (scrollbar-color transparent while she writes) and W1\'s read goes RED (the column narrows)', landed && mutRed, J({ rest, mut, landed, mutRed }));
   await app.evalJs("document.querySelectorAll('style[data-a119-mut]').forEach((s) => s.remove())");
