@@ -190,6 +190,8 @@ jobs:
           # output goes to a FILE, never a pipe (a harness child holding a pipe open hangs the runner)
           node scripts/run-suite.mjs --only "$FILE_LIST" $flag --out "$out" > "$RUNNER_TEMP/run.log" 2>&1 || rc=$?
           mkdir -p "$out"; cp "$RUNNER_TEMP/run.log" "$out/run.log"
+          # #98: with ONE shard artifact the download lands flat (no suite-<leg>-<n> folder); leg.txt lets ci-merge name it
+          echo "$LEG ${{ matrix.shard }}" > "$out/leg.txt"
           cat "$RUNNER_TEMP/run.log"
           exit $rc
 

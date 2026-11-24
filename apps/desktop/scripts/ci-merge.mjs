@@ -27,6 +27,12 @@ for (const d of readdirSync(IN, { withFileTypes: true })) {
   (shards[x[1]] ||= []).push({ idx: +x[2], log: path.join(IN, d.name, 'run.log') });
 }
 
+// #98: a pair with ONE shard artifact (a single leg, one shard) is downloaded FLAT: run.log and leg.txt sit in IN itself, not in suite-<leg>-<n>. leg.txt is "<leg> <shard>".
+if (!Object.keys(shards).length && existsSync(path.join(IN, 'run.log'))) {
+  const m = existsSync(path.join(IN, 'leg.txt')) ? /^(default|parked)\s+(\d+)/.exec(readFileSync(path.join(IN, 'leg.txt'), 'utf8').trim()) : null;
+  if (m) shards[m[1]] = [{ idx: +m[2], log: path.join(IN, 'run.log') }];
+}
+
 const out = [];
 let clean = true;
 for (const leg of ['default', 'parked']) {
