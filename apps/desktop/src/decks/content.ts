@@ -604,6 +604,128 @@ export const DECK_CONTENT: Record<string, Record<string, StepContent>> = {
       "e": "The gaps readout lists the parts with nothing yet, and the Tutor can ask what joins two neighbours.",
       "x": "Between scene three and scene four, nothing says how she got to the harbour."
     }
+  },
+  // PRESETS-B item 4 (load sheet v2, section 4, Nov 23): the eight new decks, copied word for word
+  "relationship-map": {
+    "person": {
+      "q": "What do they want from the person they're tied to?",
+      "e": "A person card names one person by what they want from someone else on the map.",
+      "x": "Ines wants her older brother to say, once, that she was right to stay."
+    },
+    "tie": {
+      "q": "What holds these two together, and which of them needs it more?",
+      "e": "A tie card holds what binds two people, and which way the need runs.",
+      "x": "Ines and Tomas share the house and its debt. He needs her signature, and she needs his blessing."
+    }
+  },
+  "timeline": {
+    "event": {
+      "q": "What happened, when, and who knows about it?",
+      "e": "An event card pins one thing that happened to its date and to the people who know.",
+      "x": "March 1931: the mill closes for good. Only the foreman knows it won't reopen."
+    }
+  },
+  "literature-map": {
+    "theme": {
+      "q": "Which sources speak to this, and do they agree?",
+      "e": "A theme card gathers the sources on one idea, so you can see where they agree and where they split.",
+      "x": "Naps and recall: four studies find a short nap helps. One finds no effect in adults over sixty."
+    }
+  },
+  "narrow-my-question": {
+    "topic": {
+      "q": "What is the broad subject?",
+      "e": "The topic is the wide subject you start from, before it has a question in it.",
+      "x": "School lunches."
+    },
+    "curious": {
+      "q": "What about it do you actually want to know?",
+      "e": "Curiosity is the part of the topic you'd read about even if no one had set it.",
+      "x": "Why so much of the food ends up in the bin."
+    },
+    "who-cares": {
+      "q": "Who would want the answer?",
+      "e": "Naming who wants the answer tells you what kind of answer is worth finding.",
+      "x": "The kitchen manager who pays for the waste, and the parents on the lunch committee."
+    },
+    "one-question": {
+      "q": "What question could you answer in the time and pages you have?",
+      "e": "A question you can answer is small enough for your time and pages, and still worth asking.",
+      "x": "Do students at my school throw away less when lunch comes after break and not before it?"
+    },
+    "find-out": {
+      "q": "Where would the answer come from?",
+      "e": "How you'd find out names where the evidence would come from, before you promise an answer.",
+      "x": "Weigh the bins for two weeks on each timetable, and ask thirty students why."
+    }
+  },
+  "pitch-story": {
+    "problem": {
+      "q": "Who has it, and how much does it hurt?",
+      "e": "The problem is a real person's trouble, sized so the room can feel it.",
+      "x": "Four thousand people cycle to this station, and the only repair shop shuts before their train gets back."
+    },
+    "why-now": {
+      "q": "What has changed that makes this the moment?",
+      "e": "Why now is the change that makes this the moment and not last year.",
+      "x": "The council has just doubled the bike parking at the station."
+    },
+    "solution": {
+      "q": "What do you do about it?",
+      "e": "The solution is what you do about the problem, said in one breath.",
+      "x": "A van at the station three evenings a week that mends a bike while its owner is at work."
+    },
+    "proof": {
+      "q": "What shows it works?",
+      "e": "Proof is the evidence that it works: a trial, a number, or a customer's own words.",
+      "x": "A four-week trial mended 212 bikes, and half the owners came back."
+    },
+    "ask": {
+      "q": "What do you want from this room?",
+      "e": "The ask is the one thing you want from this room, as a number or a yes.",
+      "x": "Six thousand for a second-hand van, repaid over two years."
+    }
+  },
+  "logic-model": {
+    "inputs": {
+      "q": "What do you need: people, money, places?",
+      "e": "Inputs are what the work needs before it can start.",
+      "x": "A church kitchen on Saturdays, two volunteer cooks and money for ingredients."
+    },
+    "activities": {
+      "q": "What will you do with them?",
+      "e": "Activities are what you actually do with the inputs.",
+      "x": "A ten-week course where twelve teenagers cook one full meal each Saturday."
+    },
+    "outputs": {
+      "q": "What will exist when you've done it?",
+      "e": "Outputs are the countable things that exist once the activities are done.",
+      "x": "Ten sessions run, twelve teenagers trained, and 120 meals cooked and taken home."
+    },
+    "outcomes": {
+      "q": "What will be different for the people you serve?",
+      "e": "Outcomes are what changes for the people you serve because of those outputs.",
+      "x": "By the end, nine of the twelve cook dinner at home at least once a week."
+    },
+    "impact": {
+      "q": "What larger change does that feed?",
+      "e": "Impact is the larger, slower change that your outcomes feed into.",
+      "x": "Teenagers on the estate who can feed themselves, and families who rely less on takeaways."
+    }
+  },
+  "interview-notes": {
+    "interview": {
+      "q": "Who are they, what is their best quote, and what do they know that no one else does?",
+      "e": "An interview card keeps one person's place in the story: who they are, their best line and what only they can tell you.",
+      "x": "The night porter, twenty-two years at the hotel: \"Nobody rings after two unless something's wrong.\" Only he saw who left by the kitchen door."
+    }
+  },
+  "memory-map": {
+    "memory": {
+      "q": "What do you remember, and what are you unsure of?",
+      "e": "A memory card holds one memory and marks which parts you are sure of and which you have filled in since.",
+      "x": "The kitchen of the flat on Calle Alta: I am sure of the yellow oilcloth. I am not sure my grandmother was still alive that summer."
+    }
   }
 };
 

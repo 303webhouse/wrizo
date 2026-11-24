@@ -131,4 +131,13 @@ export const CANONICAL_HELP = {
   helpCoverGrant: 'what you want to fund, and why',
   helpCoverFeatureStory: 'a lead, a nut graf, the story',
   helpCoverFromMyPages: 'your own pages, in your own order',
+  // PRESETS-B item 4: the new decks' cover line is the deck's own "In a line" (load sheet v2, section 4)
+  helpCoverRelationshipMap: "Who wants what from whom.",
+  helpCoverTimeline: "What happened, in the order it happened.",
+  helpCoverLiteratureMap: "Your sources, grouped by what they are about.",
+  helpCoverNarrowMyQuestion: "From a big topic to one question you can answer.",
+  helpCoverPitchStory: "A pitch told as a short story: the trouble, the timing, the answer, the proof, the ask.",
+  helpCoverLogicModel: "The chain from what you put in to what changes.",
+  helpCoverInterviewNotes: "One card for each person you spoke to.",
+  helpCoverMemoryMap: "One card for each memory, with what you're not sure of.",
 } satisfies Partial<Record<DeskTermId, string>>;

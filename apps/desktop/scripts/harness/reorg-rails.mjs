@@ -210,7 +210,12 @@ await withHarness(async (app) => {
     // SUPERSEDED (INK, Nov 23: FIX's splash work made Flux's Settings action read "Log out", declared in c13-10c as cascadeSettingsSignOut@flux; that one word is the only difference from the golden, read byte for byte). The original, verbatim:
     // return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== golden.surfaces[theme][k]);
     const ruled = (k, html) => (theme === 'flux' && k === 'settings' ? html.replace('>Sign out<', '>Log out<') : html);
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== ruled(k, golden.surfaces[theme][k]));
+    // SUPERSEDED (PRESETS-B items 4-5, Nov 24: the library's eight new decks are eight more buttons in the Plan pop-out's Presets list - intended product DOM, the deck list lengthening 14 -> 22; where they stand differs by theme, so the check takes exactly those eight out of the live DOM and holds EVERYTHING else to the golden byte for byte). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => (got[k] ?? 'null') !== ruled(k, golden.surfaces[theme][k]));
+    const NEW_DECKS = ['relationship-map', 'timeline', 'literature-map', 'narrow-my-question', 'pitch-story', 'logic-model', 'interview-notes', 'memory-map'];
+    const withoutNewDecks = (html) => NEW_DECKS.reduce((h, id) => h.replace(new RegExp('<button type="button" class="wz-sections-preset" data-preset="' + id + '"><span>[^<]*</span></button>'), ''), String(html));
+    const liveOf = (k) => (k === 'plan' && got[k] != null && NEW_DECKS.every((id) => String(got[k]).split('data-preset="' + id + '"').length === 2) ? withoutNewDecks(got[k]) : (got[k] ?? 'null'));
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);

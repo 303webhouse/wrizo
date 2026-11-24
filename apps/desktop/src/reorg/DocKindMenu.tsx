@@ -5,6 +5,8 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { flushNow, subscribe } from '../store/persistence';
 import { applyPreset, applyStyleGuide, addSpecialPart } from './docKindActs';
 import { PRESETS, STYLES, specialName, type DocStyle, type PresetGroup, type SpecialKind } from './docKinds';
+import { PRESET_NOTES } from './presetNotes';
+import { PresetNoteButton } from './PresetNote';
 import { styleGuideOf } from './docSettings';
 import { PageSetupZone } from '../components/cascade/PagePanel';
 import { useTheme } from '../store/theme';
@@ -104,9 +106,12 @@ export function DocKindMenu({ entry, host, beforeWrite }: { entry: JournalEntry;
                   {GROUPS.filter((g) => PRESETS.some((p) => p.group === g && (p.kind === 'screenplay') === screenplay)).map((g) => (
                     <div key={g} className="reorg-dockind-group" data-preset-group={g} role="group" aria-label={t(GROUP_WORD[g])}>
                       <div className="reorg-dockind-grouphead">{t(GROUP_WORD[g])}</div>
-                      {PRESETS.filter((p) => p.group === g).map((p) => (
-                        <button key={p.id} type="button" data-preset-pick={p.id} onClick={() => act(() => { applyPreset(entry.id, p.id); })}>{p.label}</button>
-                      ))}
+                      {PRESETS.filter((p) => p.group === g).map((p) => {
+                        const pick = <button key={p.id} type="button" data-preset-pick={p.id} onClick={() => act(() => { applyPreset(entry.id, p.id); })}>{p.label}</button>;
+                        // the new presets carry a "?" (presetNotes.ts); the live ones stay as they were, a lone button
+                        const note = PRESET_NOTES[p.id];
+                        return note ? <span key={p.id} className="reorg-dockind-prow" data-preset-row={p.id}>{pick}<PresetNoteButton id={p.id} name={p.label} note={note} /></span> : pick;
+                      })}
                     </div>
                   ))}
                 </div>
