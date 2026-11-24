@@ -37,6 +37,7 @@
 //         R20 (NIT 3) DOCS opens at its top
 //         R21 (NIT 4) the two meter switches read apart: "Show the meter" and "Use the skin's meter"
 //         R22 (NIT 5) an orphan row's two buttons show their names: File, Trash
+//   R23, R24, MUT-R23  on a Log page the rail says LOG once, that door is her place, and it still opens its list (the double LOG, Fable Nov 23, 6:14 pm)
 //
 // Run (repo root; a box turn, or the Actions harness):  node apps/desktop/scripts/harness/reorg-flux-rail-live.mjs
 process.env.WS_PLACE = '1';
@@ -259,6 +260,19 @@ await withHarness(async (app) => {
   await app.evalJs(door('reorg-projects')); await sleep(700); await app.mouseMove(1500, 500); await sleep(300);
   const edge1920 = await app.evalJs(EDGEREAD);
   ok('R8 at 1366 the open pop-out ends before the page\'s left opener and the opener takes a press; at 1920 it keeps its 300 px', !!edge1366 && edge1366.right <= edge1366.gripLeft + 0.5 && edge1366.hit === true && !!edge1920 && Math.abs(edge1920.width - 300) <= 1 && edge1920.right <= edge1920.gripLeft + 0.5, { edge1366, edge1920 });
+  // R23, R24 (Fable, Nov 23, 6:14 pm: the double LOG, fixed on the join): on a Log page the rail says LOG once, and that door is her place
+  const LOG_RAIL = "(() => { const r = document.querySelector('[data-reorg-rail]'); if (!r) return null; const d = r.querySelector('[data-category=\"journal\"]'); const l = d && d.querySelector('.wz-strip-label'); const s = d && getComputedStyle(d); return { words: [...r.querySelectorAll('.wz-strip-label')].filter((e) => e.textContent.trim().toUpperCase() === 'LOG').length, placeBox: r.querySelectorAll('.wz-reorg-where-item').length, current: d && d.getAttribute('aria-current'), left: s && s.borderLeftColor, word: l && getComputedStyle(l).color }; })()";
+  await open(app, `?arbor2=0&reorg=1&flux3=1${DOOR}`, { id: 'fl-j' });
+  const logRail = await app.evalJs(LOG_RAIL);
+  ok('R23 on a Log page the rail says LOG once, and the LOG door is her place: aria-current, the orange edge and word, no second place box', !!logRail && logRail.words === 1 && logRail.placeBox === 0 && logRail.current === 'location' && logRail.left === ORANGE && logRail.word === ORANGE, logRail);
+  await app.evalJs(door('journal')); await sleep(700);
+  const logPanel = await app.evalJs("!!document.querySelector('.wz-cascade-panel[data-category=\"journal\"]:not([data-leaving=\"true\"])')");
+  await app.evalJs(door('journal')); await sleep(500);
+  ok('R24 from a Log page the LOG door still opens its own list', logPanel === true, { logPanel });
+  await app.evalJs("(() => { const d = document.querySelector('[data-reorg-rail] [data-category=\"journal\"]'); const c = d.cloneNode(true); c.id = 'r23-mut'; d.parentElement.appendChild(c); return true; })()");
+  const logMut = await app.evalJs(LOG_RAIL);
+  await app.evalJs("document.getElementById('r23-mut')?.remove(); null");
+  ok('MUT-R23 a second LOG drawn in the rail: R23\'s read goes red (the mutant LANDED)', !!logMut && logMut.words === 2, logMut);
   await open(app, '?reorg=1&arbor2=0', { theme: 'machina' });
   const dm = await app.evalJs(DOORS);
   await app.evalJs(door('reorg-projects')); await sleep(700);
@@ -268,7 +282,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 25;   // R3-B and MUT-R3-B parked: + R15, MUT-R15, R16 to R22 (the Wrizors' pass 1, Nov 23). Was: const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
+const EXPECTED = 28;   // + R23, R24, MUT-R23 (the double LOG, Nov 23). Was: const EXPECTED = 25;   // R3-B and MUT-R3-B parked: + R15, MUT-R15, R16 to R22 (the Wrizors' pass 1, Nov 23). Was: const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
