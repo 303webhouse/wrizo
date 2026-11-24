@@ -72,6 +72,10 @@
 :root[data-flux3][data-theme='flux'] .reorg-dockind-menu{ position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20; display:flex; flex-direction:column; padding:4px 0; background:var(--desk-ground); border:1px solid var(--ink-border-strong); max-height:60vh; overflow-y:auto; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-item > button, :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-sub{ display:flex; flex-direction:column; padding:0 0 4px 12px; border-left:1px solid var(--ink-border-strong); margin-left:12px; }
+/* #122 (Nov 24, live): in Frame (the setup sub) the margins row's three chips (Normal, Narrow, Wide) ran past the narrow drawer and Narrow and Wide could
+   not be pressed (their centres lay under the drawer's body and on the page). The chips wrap inside the row instead, as the page numbers' row already
+   does (PagePanel's .wz-page-setup-seg--wrap; 19-beginnings.css). Flux only, and no DOM change: the switch-off goldens keep their class names */
+:root[data-flux3][data-theme='flux'] .reorg-dockind-setup .wz-page-setup-seg{ flex-wrap:wrap; padding-bottom:2px; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button[aria-checked='true'], :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):hover, :root[data-flux3][data-theme='flux'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-structure{ margin:4px 0 8px; }
