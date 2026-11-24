@@ -150,7 +150,18 @@ try { await withHarness(async (app) => {
   await soft('!!document.querySelector(".wz-flux5")');
   await seek(DONE + 1); await sleep(80);
   const cols = await ev(`(() => { const r = document.querySelector('.wz-splash .wz-flux5') || document.querySelector('.wz-flux5'); if (!r) return null; const lit = [...r.querySelectorAll('[data-flux-tile] rect, [data-flux-node] rect')].map((x) => (x.getAttribute('stroke') || '').toUpperCase()); return { tiles: [...r.querySelectorAll('[data-flux-tile] rect')].map((x) => (x.getAttribute('stroke') || '').toUpperCase()), lit, old: r.outerHTML.toUpperCase().includes('#8FB4AC') }; })()`);
-  ok('MS21 the lit box edges (the IDEAS tiles and the nodes) are #7EB4C4, and #8FB4AC is nowhere in the drawing', cols && cols.tiles.length === 5 && cols.tiles.every((c) => c === '#7EB4C4') && cols.lit.filter((c) => c !== '#2A6A76').every((c) => c === '#7EB4C4') && cols.old === false, cols);
+  ok('MS21 the lit IDEAS tile edges are #5F8F95 (their own constant), the lit nodes #7EB4C4, and #8FB4AC is nowhere in the drawing', cols && cols.tiles.length === 5 && cols.tiles.every((c) => c === '#5F8F95') && cols.lit.filter((c) => c !== '#2A6A76' && c !== '#5F8F95').every((c) => c === '#7EB4C4') && cols.old === false, cols);
+  // MS23 the IDEAS tile edge, MEASURED on one frame (Fable, Nov 23: "draw it at #5F8F95 exactly, and measure it"): the finished frame is screenshotted and the pixels across the first tile's top edge are read back; one of them is #5F8F95 to the channel
+  for (const [w, h] of [[1366, 768], [1920, 1080]]) {
+    await open({ w, h });
+    await soft('!!document.querySelector(".wz-flux5")');
+    await seek(DONE + 1); await sleep(150);
+    const box = await ev(`(() => { const r = document.querySelector('.wz-flux5 [data-flux-tile] rect'); if (!r) return null; const b = r.getBoundingClientRect(); return { x: Math.round(b.left + b.width / 2), top: b.top, bottom: b.bottom }; })()`);
+    const png = await app.screenshot();
+    const px = box && await ev(`(async () => { const blob = await fetch('data:image/png;base64,${png}').then((r) => r.blob()); const bm = await createImageBitmap(blob); const c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; const g = c.getContext('2d'); g.drawImage(bm, 0, 0);
+      const out = []; for (let y = Math.floor(${box.top}) - 3; y <= Math.ceil(${box.top}) + 3; y += 1) { const d = g.getImageData(${box.x}, y, 1, 1).data; out.push(['#', ...[d[0], d[1], d[2]].map((v) => v.toString(16).padStart(2, '0'))].join('').toUpperCase()); } return out; })()`);
+    ok(`MS23 [${w}] the IDEAS tile's top edge reads #5F8F95 on a pixel of the finished frame`, !!px && px.includes('#5F8F95'), { top: box && box.top, column: px });
+  }
   await open();
   if (await live()) { await pressDoor('login'); await soft("!!document.querySelector('.wz-popout[data-popout=signin]')", 3000); await sleep(300); }
   const tagPx = await ev(`(() => { const t = document.querySelector('.wz-popout .wz-popout-tag') || document.querySelector('.wz-popout-tag'); return t ? { text: t.textContent, px: getComputedStyle(t).fontSize } : null; })()`);
