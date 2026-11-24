@@ -20,6 +20,17 @@
 //   SL-SPLIT-CLOSE   (row 26) Close takes the reader away and gives the page its rect back
 //   SL-DOCK          (row 32) the docked Operator stays drawn while she types
 //   SL-POPOUT        (rows 44, 45, the panel's way in and out) signed out, [ LOG IN ] opens the one sign-in dialog with the focus in its first field, and Escape gives the doors back
+// HOW IT LOOKS AND READS (the second batch)
+//   SL-ORANGE        (row 1, flux-v2 F6) with a rail door open, nothing outside the allowed places paints in Flux's orange;  MUT-SL-ORANGE one more orange element goes red
+//   SL-TARGETS       (row 2, flux-v2 F7) every rail door and foot box is at least a 44 px target
+//   SL-NO-PNG        (row 7, flux-v2 F12 and F19) neither the front door nor the page draws Arbor's wrizo PNG
+//   SL-DOOR          (row 8, flux-v2 F19) [ COMPOSE ]'s words are not brass, and its focus ring is the choice cyan
+//   SL-ORDER         (row 12, drawers L5) MARKUP's sections run Typeface, Format, Commands, with no Presets or kind row among them
+//   SL-HEADS         (row 25, page-templates X1) MARKUP's first head reads Typeface and TRACKS' head menu offers Presets
+//   SL-GRIP          (row 14, drawers L6) an open drawer's tab is the choice cyan, never brass, and differs from the closed tab
+//   SL-PROGRESS      (row 16, drawers L9) DOCS' Show the meter reports its state and writes the setting; no Typewriter toggle in TEXT
+//   SL-FONTS         (row 41, th2 R2) the chrome's two faces, Rajdhani and Chakra Petch, are really loaded on the front door
+//   SL-PAPER         (row 43, polish-arbor-chrome P8) the paper is the same size in Flux, Arbor and Machina at 1366 x 768, each on its own default
 // A read of the live build; no clock. Run: node scripts/harness/flux-live-successors.mjs   (from apps/desktop; Actions harness or a box turn)
 process.env.WS_REORG = '1';
 process.env.WS_FLUX3 = 'default';
@@ -76,13 +87,13 @@ await withHarness(async (app) => {
   })()`);
   await sleep(500);
 
-  const open = async (id, { tone = 'dark', mode = 'drafting', w = 1366, h = 768, ready = "!!document.querySelector('.forward-only-editor')" } = {}) => {
-    await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${q(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); localStorage.setItem('wrizo-mode-page-${id}', ${q(mode)}); history.replaceState(null, '', ${q(`/#/page/${id}`)}); return true; })()`);
+  const open = async (id, { tone = 'dark', mode = 'drafting', w = 1366, h = 768, theme = 'flux', ready = "!!document.querySelector('.forward-only-editor')" } = {}) => {
+    await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${q(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', ${q(theme)}); localStorage.setItem('wrizo-mode-page-${id}', ${q(mode)}); history.replaceState(null, '', ${q(`/#/page/${id}`)}); return true; })()`);
     await app.emulateDpr(1, w, h);
     await app.reload();
     await app.waitFor(ready, { label: `the page ${id}`, timeout: 20000 });
     await soft("!document.querySelector('.wz-splash')", 25000);
-    await soft("document.documentElement.hasAttribute('data-flux3') && !!document.querySelector('.reorg-top')", 10000);
+    await soft(theme === 'flux' ? "document.documentElement.hasAttribute('data-flux3') && !!document.querySelector('.reorg-top')" : "!!document.querySelector('.reorg-top')", 10000);
     await sleep(900);
   };
   const toEnd = () => ev("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const s = getSelection(); s.selectAllChildren(e); s.collapseToEnd(); return true; })()");
@@ -246,6 +257,87 @@ await withHarness(async (app) => {
     const o = await ev("(() => { const a = document.querySelector('.wz-tutor-panel'); if (!a) return null; let o = 1; for (let n = a; n && n.nodeType === 1; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity); return { o, docked: a.getAttribute('data-docked'), writing: document.documentElement.getAttribute('data-wz-writing') }; })()");
     ok('SL-DOCK the docked Operator stays drawn while she types', docked && !!o && o.o === 1 && o.docked === 'true' && o.writing === 'true', { docked, o });
   });
+  // ---- HOW IT LOOKS AND READS ------------------------------------------------------------------------------------------------------------
+  await section(['SL-ORANGE', 'MUT-SL-ORANGE', 'SL-TARGETS'], async () => {
+    await open('sl-1');
+    await ev("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null");
+    await sleep(700);
+    const SCAN = `(() => { const O = /rgba?\\(\\s*255,\\s*152,\\s*0/; const bad = []; const allowed = (e) => e.closest('.flux-block-caret, .mode-pfill, .mode-pfill-sparks, [data-uplink], [data-flux-mark], .wz-logo, .wz-mark, .splash-mark, .brand-mark, .flux5-appmark') || e.closest('[aria-current]');
+      for (const e of document.querySelectorAll('body *')) { const cs = getComputedStyle(e); if ([cs.color, cs.backgroundColor, cs.borderTopColor, cs.borderLeftColor, cs.outlineColor, cs.boxShadow, cs.fill, cs.stroke].some((v) => v && O.test(v)) && !allowed(e)) bad.push((e.tagName + '.' + String(e.className && e.className.baseVal !== undefined ? e.className.baseVal : e.className).split(' ').slice(0, 2).join('.')).slice(0, 60)); }
+      return [...new Set(bad)].slice(0, 12); })()`;
+    const scan = await ev(SCAN);
+    ok('SL-ORANGE with a rail door open, nothing outside the allowed places paints in Flux\'s orange', Array.isArray(scan) && scan.length === 0, scan);
+    await ev("(() => { const d = document.createElement('div'); d.id = 'sl-orange'; d.style.cssText = 'position:fixed;left:0;top:0;width:4px;height:4px;background:rgb(255,152,0)'; document.body.appendChild(d); return true; })()");
+    const m = await ev(SCAN);
+    await ev("document.getElementById('sl-orange')?.remove(); null");
+    ok('MUT-SL-ORANGE one more orange element: the scan goes red (the mutant LANDED)', Array.isArray(m) && m.some((x) => x.startsWith('DIV.')) && m.length === scan.length + 1, m);
+    const small = await ev("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-doors .wz-strip-item, [data-reorg-rail] .wz-strip-foot .wz-strip-item')].map((b) => { const r = b.getBoundingClientRect(); return [b.getAttribute('data-category'), Math.round(Math.min(r.width, r.height))]; })");
+    ok('SL-TARGETS every rail door and foot box is at least a 44 px target', Array.isArray(small) && small.length >= 7 && small.every(([, n]) => n >= 44), small);
+    await ev("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null");
+  });
+  await section(['SL-NO-PNG', 'SL-DOOR', 'SL-FONTS'], async () => {
+    const PNG = "[...document.querySelectorAll('body *')].filter((e) => { const s = getComputedStyle(e); return (e.tagName === 'IMG' && /wrizo/i.test(e.currentSrc || e.src || '')) || /wrizo[^)]*\\.png/i.test(s.backgroundImage + s.maskImage); }).length";
+    const onPage = await ev(PNG);
+    await ev("history.replaceState(null, '', '/#/'); null");
+    await app.reload();
+    const live = await soft("!!document.querySelector('[data-flux-door=compose]:not([data-wait])')", 25000);
+    await sleep(500);
+    const onDoor = await ev(PNG);
+    ok('SL-NO-PNG neither the front door nor the page draws Arbor\'s wrizo PNG', live && onPage === 0 && onDoor === 0, { live, onPage, onDoor });
+    const door = await ev("(() => { const d = document.querySelector('[data-flux-door=compose]'); if (!d) return null; d.focus(); const c = d.querySelector('.cmd'), r = d.querySelector('.ring'); return { text: getComputedStyle(c).fill, ring: r.getAttribute('stroke'), focused: document.activeElement === d }; })()");
+    await sleep(250);
+    const ringOn = await ev("(() => { const r = document.querySelector('[data-flux-door=compose] .ring'); return r ? Number(getComputedStyle(r).opacity) : null; })()");
+    ok('SL-DOOR [ COMPOSE ]\'s words are not brass, and its focus ring is the choice cyan', !!door && door.focused && !/255,\s*152,\s*0/.test(door.text) && /^#00C2FF$/i.test(door.ring) && ringOn > 0, { door, ringOn });
+    await ev('document.fonts.ready.then(() => true)');
+    const fonts = await ev("({ rajdhani: document.fonts.check(\"700 12px 'Rajdhani'\"), chakra: document.fonts.check(\"600 12px 'Chakra Petch'\") })");
+    ok('SL-FONTS the chrome\'s two faces, Rajdhani and Chakra Petch, are really loaded on the front door', fonts.rajdhani && fonts.chakra, fonts);
+  });
+  await section(['SL-ORDER', 'SL-HEADS', 'SL-GRIP'], async () => {
+    await open('sl-1');
+    const closed = await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); return g ? getComputedStyle(g).color : null; })()");
+    await ev("document.querySelector('.wz-sliver-grip')?.click(); null");
+    await soft("document.querySelector('.wz-sliver-panel')?.getAttribute('data-open') === 'true'", 4000);
+    await sleep(500);
+    const openColour = await ev("(() => { const g = document.querySelector('.wz-sliver-grip'); return g ? getComputedStyle(g).color : null; })()");
+    ok('SL-GRIP an open drawer\'s tab is the choice cyan, never brass, and differs from the closed tab', openColour === 'rgb(0, 194, 255)' && closed !== openColour, { closed, openColour });
+    const order = await ev("[...document.querySelectorAll('.wz-sliver-panel .wz-sliver-body > .wz-sliver-section')].map((s) => [...s.classList].find((c) => /^wz-sliver-(type|actions|templates|page-kind)$/.test(c)) || (s.querySelector('.wz-sliver-fieldset, .wz-sliver-format--letters') ? 'format' : 'other')).filter((x) => x !== 'other')");
+    ok('SL-ORDER MARKUP\'s sections run Typeface, Format, Commands, with no Presets or kind row among them', JSON.stringify(order) === JSON.stringify(['wz-sliver-type', 'format', 'wz-sliver-actions']), order);
+    const head = await ev("(document.querySelector('.wz-sliver-panel .wz-sliver-type .wz-sliver-h') || {}).textContent || null");
+    await ev("document.getElementById('wz-sliver-tab-parts')?.click(); null");
+    await sleep(400);
+    await ev("document.querySelector('.wz-sliver-panel [data-doc-kind]')?.click(); null");
+    await sleep(350);
+    const menu = await ev("(document.querySelector('.wz-sliver-panel .reorg-dockind-menu, .wz-sliver-panel [data-doc-menu]') || {}).textContent || null");
+    ok('SL-HEADS MARKUP\'s first head reads Typeface and TRACKS\' head menu offers Presets', head === 'Typeface' && /Presets/.test(menu || ''), { head, menu: menu && menu.slice(0, 80) });
+    await ev("document.querySelector('.wz-sliver-grip')?.click(); null");
+  });
+  await section(['SL-PROGRESS'], async () => {
+    await open('sl-1');
+    const tw = await ev("[...document.querySelectorAll('.typewriter-toggle')].filter((e) => { const s = getComputedStyle(e), r = e.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0; }).length");
+    await ev("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null");
+    await sleep(600);
+    if (!(await ev("!!document.querySelector('[data-reorg-default=\"progress\"]')"))) { await ev("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(350); }
+    const READ = "(() => { const on = document.querySelector('[data-reorg-default=\"progress\"] [data-toggle=on]'), off = document.querySelector('[data-reorg-default=\"progress\"] [data-toggle=off]'); return on && off ? { on: on.getAttribute('aria-pressed'), off: off.getAttribute('aria-pressed'), stored: (JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}')).instrumentsOn } : null; })()";
+    const start = await ev(READ);
+    await ev("document.querySelector('[data-reorg-default=\"progress\"] [data-toggle=off]')?.click(); null");
+    await sleep(500);
+    const off = await ev(READ);
+    await ev("document.querySelector('[data-reorg-default=\"progress\"] [data-toggle=on]')?.click(); null");
+    await sleep(500);
+    const on = await ev(READ);
+    ok('SL-PROGRESS DOCS\' Show the meter reports its state and writes the setting; no Typewriter toggle in TEXT', tw === 0 && !!off && off.off === 'true' && off.on === 'false' && off.stored === false && !!on && on.on === 'true' && on.off === 'false' && on.stored === true, { tw, start, off, on });
+    await ev("document.querySelector('[data-reorg-rail] [data-category=\"reorg-docs\"]')?.click(); null");
+  });
+  await section(['SL-PAPER'], async () => {
+    const sizes = {};
+    for (const theme of ['flux', 'plateau', 'machina']) {
+      await open('sl-2', { theme });
+      sizes[theme] = await ev("(() => { const r = document.querySelector('.mode-page').getBoundingClientRect(); return { w: r.width, h: r.height }; })()");
+    }
+    const near = (a, b) => Math.abs(a - b) <= 0.6;
+    ok('SL-PAPER the paper is the same size in Flux, Arbor and Machina at 1366 x 768, each on its own default', near(sizes.flux.w, sizes.plateau.w) && near(sizes.flux.h, sizes.plateau.h) && near(sizes.flux.w, sizes.machina.w) && near(sizes.flux.h, sizes.machina.h), sizes);
+    await ev("localStorage.setItem('wrizo-theme', 'flux'); null");
+  });
   await section(['SL-POPOUT'], async () => {
     process.env.WS_ANON = '1';
     await ev("history.replaceState(null, '', '/#/'); null");
@@ -265,7 +357,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1200)}`);
-const EXPECTED = 19;
+const EXPECTED = 30;   // 19 + the second batch's ten and MUT-SL-ORANGE
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nFLUX-LIVE-SUCCESSORS VERIFY: PASS (${checks.length} checks)`
