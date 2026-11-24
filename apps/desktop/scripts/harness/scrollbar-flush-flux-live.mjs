@@ -83,10 +83,18 @@ await withHarness(async (app) => {
       const menu = await soft("!!document.querySelector('[data-doc-sub=setup] .wz-page-setup-seg[role=radiogroup]')", 4000);
       const i = MARGINS.indexOf(margin);
       const radioSel = `[data-doc-sub=setup] .wz-page-setup-seg[role=radiogroup] > [role=radio]:nth-of-type(${i + 1})`;
+      const radioWord = menu ? await ev(`(document.querySelector(${q(radioSel)}) || {}).textContent || null`) : null;
       const pressed = menu && (await press(radioSel));
-      const stored = await soft(`${MARG} === ${q(margin)}`, 6000);
+      // DIAG (run 45437975159: presses that landed did not always store, and the page's margin factor stayed 1): what the store and the sheet hold, every
+      // 200 ms for 3 s after the press, then after the drawer closes, then after a reload. Information; the checks below are unchanged.
+      const FACTOR = "(() => { const e = [...document.querySelectorAll('[style]')].find((x) => x.style.getPropertyValue('--wz-page-margin-in')); return e ? e.style.getPropertyValue('--wz-page-margin-in') : null; })()";
+      const line = [];
+      for (let k = 0; k < 15; k += 1) { line.push(`${k * 200}:${await ev(MARG)}/${await ev(FACTOR)}`); await sleep(200); }
+      const stored = await soft(`${MARG} === ${q(margin)}`, 3000);
       // the drawer closed again, so nothing covers the bar it measures
       await press('.wz-sliver-grip'); await soft("document.querySelector('.wz-sliver-panel')?.getAttribute('data-open') !== 'true'", 4000); await sleep(500);
+      const afterClose = `${await ev(MARG)}/${await ev(FACTOR)}`;
+      console.log(`DIAG FX [${label}, ${margin}] radio ${q(radioWord)} | stored/factor after the press ${line.join(' ')} | after the drawer closed ${afterClose}`);
       const m = await ev(MEASURE);
       ok(`FX-SET [${label}, margin=${margin}] TRACKS' Frame took the press: the stored margins read ${margin}, and the page's padding changed (${prevPad} -> ${m && m.padX})`,
         menu && pressed && stored && !!m && m.padX !== prevPad, { menu, pressed, stored, storedNow: await ev(MARG), padX: m && m.padX, prevPad });
@@ -98,6 +106,12 @@ await withHarness(async (app) => {
       ok(`FX-TONE [${label}, margin=${margin}] the bar's thumb wears this cell's own paper-toned --ink-on-paper-low`,
         !!m && !!m.inkOnPaperLow && typeof m.thumbColor === 'string' && m.thumbColor.includes(hexToRgbFragment(m.inkOnPaperLow)), m);
     }
+    // DIAG: what a reload shows (the stored margins, the factor on the sheet, the padding)
+    await app.reload();
+    await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the long page again', timeout: 20000 });
+    await sleep(1200);
+    const rl = await ev(MEASURE);
+    console.log(`DIAG FX [${label}] after a reload: stored ${await ev(MARG)} factor ${await ev("(() => { const e = [...document.querySelectorAll('[style]')].find((x) => x.style.getPropertyValue('--wz-page-margin-in')); return e ? e.style.getPropertyValue('--wz-page-margin-in') : null; })()")} padX ${rl && rl.padX}`);
   }
 });
 
