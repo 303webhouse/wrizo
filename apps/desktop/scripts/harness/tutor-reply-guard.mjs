@@ -8,9 +8,12 @@
 //   RG6  the global budget: the same, across accounts
 //   RG7  a clean first reply never spends a second unit; a clean SPRINT line is one model call, today's cleaning
 //   RG8  the SPRINT route is guarded with the same guard (Fable, Nov 23, call 3): a line that says "I"/"we" or flatters is asked for again once; the second, clean line is the one she gets; failing twice is the route's existing plain failure (502, so the client gives her a line from its local deck), never the chat fallback line; the retry is paid from the same two budgets and never passes a cap
-//   MUT1 the guard removed: RG2/RG3 go RED   MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED   MUT4 the sprint guard removed: RG8 goes RED   MUT5 the sprint retry not paid for: RG8 goes RED
+//   RG9  the safety message and the guard (Fable, Nov 23, 6:14 pm): a reply that holds the marker is never guarded or asked for again, however it is worded around it (one model call, no budget spent on a retry), and she sees the fixed words; the fixed words themselves pass the guard; a first reply that fails the guard whose retry holds the marker gets the words too
+//   MUT1 the guard removed: RG2/RG3 go RED   MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED   MUT4 the sprint guard removed: RG8 goes RED   MUT5 the sprint retry not paid for: RG8 goes RED   MUT6 the marker not exempt from the guard: RG9 goes RED
 // RED on main (5487be6b), where nothing guards a reply. Run (from apps/desktop): node scripts/harness/tutor-reply-guard.mjs
-import { loadServer, swap, findHandler, callRoute } from '../../../server/scripts/tutor-eval/load-server.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadServer, swap, findHandler, callRoute, SERVER } from '../../../server/scripts/tutor-eval/load-server.mjs';
 import { startStandInModel } from '../../../server/scripts/tutor-eval/stand-in-model.mjs';
 
 let fails = 0;
@@ -181,6 +184,34 @@ const sprintGlobal3 = await callRoute(r.sprint, { seen: [] }, 'u-rg8c3');
 ok(sprintGlobal.status === 502 && sprintGlobal3.status === 429, 'RG8 the global budget holds for the SPRINT retry too', 'status=' + sprintGlobal.status + '/' + sprintGlobal3.status);
 done(r);
 
+// ---- RG9: the safety message and the guard ----
+const WORDS = JSON.parse(fs.readFileSync(path.join(SERVER, 'scripts', 'tutor-eval', 'prompts-v0.5.json'), 'utf8')).blocks.safetyMessage;
+const MARK = '[[WRIZO-SAFETY]]';
+r = fresh({}, 2, 5000);
+const guardMod = r.s.load('tutorGuard.ts');
+const gw = guardMod.guardReply(WORDS);
+ok(gw.ok === true && gw.failed.length === 0, 'RG9 the fixed words themselves pass the guard (no I, we or flattery in them)', JSON.stringify(gw));
+model.reset(); model.say('Great job. I think you should talk to someone. ' + MARK + ' We are here.', GOOD);
+const mk1 = await callRoute(r.chat, BODY, 'u-rg9a');
+ok(mk1.status === 200 && mk1.body && mk1.body.reply === WORDS && model.requests.length === 1, 'RG9 a reply that holds the marker, with flattery and "I" around it, is never asked for again: one model call, she sees only the fixed words', 'calls=' + model.requests.length + ' ' + JSON.stringify(mk1.body && mk1.body.reply).slice(0, 80));
+model.reset(); model.say(MARK);
+const mk2 = await callRoute(r.chat, BODY, 'u-rg9b');
+ok(mk2.status === 200 && mk2.body && mk2.body.reply === WORDS && model.requests.length === 1, 'RG9 and a 2-unit budget is spent one unit at a time: the marker reply took one unit, so a third request is still refused only after the second', 'calls=' + model.requests.length);
+model.reset(); model.say(MARK);
+const mk3 = await callRoute(r.chat, BODY, 'u-rg9b');
+model.reset(); model.say(GOOD);
+const mk4 = await callRoute(r.chat, BODY, 'u-rg9b');
+ok(mk3.body && mk3.body.reply === WORDS && mk4.status === 429, 'RG9 the marker reply cost exactly one unit (the count stopped at the cap of 2 for that person)', 'status=' + mk4.status);
+done(r);
+r = fresh();
+model.reset(); model.say(bad('I'), MARK);
+const mk5 = await callRoute(r.chat, BODY, 'u-rg9c');
+ok(mk5.status === 200 && mk5.body && mk5.body.reply === WORDS && model.requests.length === 2, 'RG9 a first reply that fails the guard whose retry holds the marker: she gets the fixed words (two calls)', 'calls=' + model.requests.length + ' ' + JSON.stringify(mk5.body && mk5.body.reply).slice(0, 60));
+model.reset(); model.say(bad('I'), bad('we'));
+const mk6 = await callRoute(r.chat, BODY, 'u-rg9d');
+ok(mk6.body && mk6.body.reply === FALLBACK, 'RG9 and two failing replies with no marker still give the fallback line, as before');
+done(r);
+
 // ---- mutants ----
 {
   const m1 = loadServerMut({ 'tutor.ts': (s) => s.replace(/!guardReply\([^)]*\)\.ok/g, 'false') });
@@ -212,6 +243,11 @@ done(r);
   const v = await callRoute(m5.sprint, { seen: [] }, 'u-m5');
   ok(model.requests.length === 2 && v.body && v.body.prompt === SPRINT_GOOD, 'MUT5 the sprint retry not paid for: RG8 goes RED (a second call is made on the last unit)', 'calls=' + model.requests.length);
   done(m5);
+  const m6 = loadServerMut({ 'tutor.ts': swap('if (!holdsSafetyMarker(text) && !guardReply(text).ok) {', 'if (!guardReply(text).ok) {') });
+  model.reset(); model.say('Great job. I think you should talk to someone. ' + MARK + ' We are here.', GOOD);
+  const u = await callRoute(m6.chat, BODY, 'u-m6');
+  ok(model.requests.length === 2, 'MUT6 the marker not exempt from the guard: RG9 goes RED (a marker reply with "I" around it is asked for again)', 'calls=' + model.requests.length);
+  done(m6);
 }
 function loadServerMut(mutate, daily = 500) {
   setEnv(daily, 5000);

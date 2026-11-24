@@ -6,7 +6,7 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -280,7 +280,10 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     // fallback line instead. The retry is a second model call, so it is paid for from the SAME two daily budgets as any other (consumeTutorBudget, then consumeGlobalTutorBudget): those refuse
     // at the cap and never count past it, so a retry cannot carry a count over a cap. With no unit left the retry is not made at all and the fallback line shows. Both calls' tokens are added into
     // `usage` so the session meter stays honest. The first reply is never shown when it fails, so the writer sees one answer or the fallback, never two.
-    if (!guardReply(text).ok) {
+    // THE SAFETY MESSAGE (R12, Fable Nov 23, 6:14 pm): BASE tells the model to reply with one fixed marker only when she says she herself is in danger. A reply that holds the marker (alone or with other text) is NEVER guarded
+    // or asked for again; at the very end it is replaced whole by Nick's exact words (tutorPrompts.ts SAFETY_MESSAGE), which the model never writes and the guard never reads. If the first reply fails the guard and the retry
+    // holds the marker, she gets the words too.
+    if (!holdsSafetyMarker(text) && !guardReply(text).ok) {
       const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
       if (retryAllowed) {
         response = await ask();
@@ -288,8 +291,9 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
         inputTokens += response.usage.input_tokens;
         outputTokens += response.usage.output_tokens;
       }
-      if (!retryAllowed || !guardReply(text).ok) text = FALLBACK_LINE;
+      if (!retryAllowed || (!holdsSafetyMarker(text) && !guardReply(text).ok)) text = FALLBACK_LINE;
     }
+    text = withSafetyMessage(text);
     // TU2 S2 — usage threaded through now (not consumed until S5's session
     // meter) so that later, client-only slice never has to re-open this
     // closed-census file. Absent on the {configured:false}/error shapes
@@ -397,13 +401,14 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
       .trim();
     const text = textOf(await askModel());
     const prompt = cleanSprintPrompt(text);
-    let line = prompt;
+    let line = holdsSafetyMarker(text) ? null : prompt;   // the marker is for the chat route (her words ride only there); in SPRINT a reply that holds it is no writing prompt: the same plain failure, the client's local deck answers
     // TUTOR-B — THE REPLY GUARD, on this route too (Fable, Nov 23, call 3): the SAME guard (tutorGuard.ts) reads the one cleaned line that would leave. A line that says "I", "we" and the rest of the kit's M1 list, or
     // flatters (M2), is asked for again ONCE, paid from the same two daily budgets as any other call (both refuse at their cap and never count past it). If the second one fails too, or no unit is left to ask with,
     // nothing is sent: the route answers its existing plain failure and the client gives her a prompt from its local deck. The chat route's fallback line is never used here, because it is not a writing prompt.
     if (line && !guardReply(line).ok) {
       const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
-      line = retryAllowed ? cleanSprintPrompt(textOf(await askModel())) : null;
+      const retryText = retryAllowed ? textOf(await askModel()) : null;
+      line = retryText !== null && !holdsSafetyMarker(retryText) ? cleanSprintPrompt(retryText) : null;
       if (line && !guardReply(line).ok) line = null;
     }
     if (!line) {
