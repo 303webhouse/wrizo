@@ -245,10 +245,11 @@
    of the right hand's grip; pressed, a line runs down from it into the port box's own box (Connect another, the same picker). Room colours (the room is dark in both Page tones). An
    overlay in the page's column with chrome-fade: it recedes while she types and nothing moves (flux3-s4b-n5.mjs RECT). ---- */
 :root[data-flux3][data-theme='flux'] .flux3-plus-wrap{ position:absolute; z-index:3; width:32px; height:32px; }
-/* #125 (Nov 24): with the Back menu open its tab row (Spine, ...) stands where the + stands and lay over it (22x16 px; the + could not be pressed), so
-   the + steps down while that hand is open; the Back menu carries its own Assets "+". Keyed on the + wrap's own attribute (FluxDoc's useBackOpen
-   watches the Back panel's data-open), never a :has() on the stage: that re-reads on the first key's restyle (reorg-arbor-no-stage-has-unit.mjs) */
-:root[data-flux3][data-theme='flux'] .flux3-plus-wrap[data-back-open='true']{ visibility:hidden; }
+/* #125 (Nov 24): with the Back menu open its tab row (Spine, ...) stands where the + stands and lay over it (22x16 px; the + could not be pressed), and
+   its panel covers the strip beside the page where the ports stand; so the + and the ports step down while that hand is open (the Back menu carries
+   its own Assets "+" and lists the same connections). Keyed on their own attribute (FluxDoc's useBackOpen watches the Back panel's data-open), never a
+   :has() on the stage: that re-reads on the first key's restyle (reorg-arbor-no-stage-has-unit.mjs) */
+:root[data-flux3][data-theme='flux'] :is(.flux3-plus-wrap, .flux3-ports)[data-back-open='true']{ visibility:hidden; }
 :root[data-flux3][data-theme='flux'] .flux3-plus{ position:absolute; inset:0; width:32px; height:32px; padding:0; margin:0; border-radius:0; box-shadow:none; cursor:pointer;
   background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); color:var(--f3-room-cyan); }
 :root[data-flux3][data-theme='flux'] .flux3-plus::before,

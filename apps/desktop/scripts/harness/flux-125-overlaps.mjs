@@ -10,7 +10,8 @@
 //   (the second run, 10067323, found Nick's case: with the Back menu OPEN its tab row (Spine...) lies over the page's + by 22x16 px and the + cannot be
 //   pressed, at every width and in both views; and at rest the first port covers the Part "up" arrow, which cannot be pressed at 1366 and 1920)
 //   Each arm is read in three states: at REST, with the BACK menu open (the right hand's drawer), with the FRONT menu open (the left hand's).
-//   O<w><view><state>  no drawn control's box crosses another control's box, the page (a control outside the page), or a corner mark
+//   O<w><view><state>  no drawn control's box crosses another control's box, the page (a control outside the page), a corner mark, or an open
+//                      hand's panel (a control outside it, on its border or over it: #129's extension of the rule, Fable 11:31 am)
 //   H<w><view><state>  every drawn control can be pressed: the element at its centre is the control or inside it
 //   CM<w><view>        (INK's reading of "the edge tabs CROWD the corner marks", for Fable to keep or drop) at rest, every drawn control stands at
 //                      least 8 px clear of each corner mark (on the box, either axis). PENDING: printed as READ always, a check only under WS_125_CM=1
@@ -75,6 +76,10 @@ const CENSUS = `(() => {
     overlaps.push({ kind: 'control', a: a.name, ab: box(a.b), b: b.name, bb: box(b.b), by: c }); }
   if (pr) for (const a of ctl) { if (page.contains(a.el)) continue; const c = cross(a.b, pr); if (c) overlaps.push({ kind: 'page', a: a.name, ab: box(a.b), b: 'the page', bb: box(pr), by: c }); }
   for (const m of marks) if (m.shown) for (const a of ctl) { const c = cross(a.b, m.b); if (c) overlaps.push({ kind: 'mark', a: a.name, ab: box(a.b), b: m.name, bb: box(m.b), by: c }); }
+  // #129 (Fable, 11:31 am: the rule now covers A PANEL BORDER, every theme): an open hand's panel (its drawn box, border included); a control outside it
+  // whose box crosses it lies on its border or over it. Touching the border is not crossing (more than 0.5 px each way)
+  const panels = [...document.querySelectorAll(".wz-tutor-panel[data-open='true'], .wz-sliver-panel[data-open='true']")].map((p) => ({ el: p, b: drawn(p) })).filter((p) => p.b);
+  for (const p of panels) for (const a of ctl) { if (p.el.contains(a.el)) continue; const c = cross(a.b, p.b); if (c) overlaps.push({ kind: 'panel', a: a.name, ab: box(a.b), b: 'the ' + (p.el.classList.contains('wz-tutor-panel') ? 'Back' : 'Front') + ' menu panel', bb: box(p.b), by: c }); }
   const covered = [];
   for (const a of ctl) { const x = a.b.left + a.b.width / 2, y = a.b.top + a.b.height / 2; const hit = document.elementFromPoint(x, y);
     if (!hit || !(hit === a.el || a.el.contains(hit))) covered.push({ a: a.name, ab: box(a.b), hit: hit ? name(hit) : null }); }

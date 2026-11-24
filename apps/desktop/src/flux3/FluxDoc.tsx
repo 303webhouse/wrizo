@@ -63,6 +63,7 @@ function Doc({ paperRef, entryId }: Props) {
   const [totals, setTotals] = useState<Totals>({ blocks: 0, words: 0 });
   const [, setTick] = useState(0);
   const measures = useRef(0);
+  const backOpen = useBackOpen();   // #125: the + and the ports step down while the Back menu is open
 
   // the column the page stands in: the overlay's positioned parent (it does not clip, and it stands under the hands)
   useEffect(() => { setHost(paperRef.current?.parentElement ?? null); }, [paperRef]);
@@ -174,8 +175,8 @@ function Doc({ paperRef, entryId }: Props) {
           </span>
         ))}
       </div>
-      <Ports ports={shown} hidden={hidden} entryId={entryId} x={frame.edge + PORT_CLEAR} y={frame.top + PORT_TOP} />
-      <PlusCorner entryId={entryId} connections={ports.length} x={frame.right + PLUS_GAP} y={frame.top - 1} />
+      <Ports ports={shown} hidden={hidden} entryId={entryId} x={frame.edge + PORT_CLEAR} y={frame.top + PORT_TOP} backOpen={backOpen} />
+      <PlusCorner entryId={entryId} connections={ports.length} x={frame.right + PLUS_GAP} y={frame.top - 1} backOpen={backOpen} />
     </>,
     host,
   );
@@ -189,7 +190,7 @@ const PLUS_LINE = 40;   // the line it draws down the page's side into its box
 // dress, the same Connect another (the Grafts pane's own picker, GraftPicker, with this page as its subject). It adds no action and writes nothing of its own: a
 // connection made in the picker is the picker's. Esc or a press elsewhere closes it. A chrome overlay in the page's column, beyond the page: no rect moves.
 /** #125: is the Back menu (the right hand's drawer, Tutor.tsx's .wz-tutor-panel) open? Watches that one element's data-open attribute: nothing
- *  else, so her typing never wakes it. The panel is looked up when the + first draws (after the page's first measure), with a few frames' retry. */
+ *  else, so her typing never wakes it. The panel is looked up when the Doc's frame mounts, with up to 120 frames' retry (the hands mount beside it). */
 function useBackOpen(): boolean {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -208,9 +209,8 @@ function useBackOpen(): boolean {
   return open;
 }
 
-function PlusCorner({ entryId, connections, x, y }: { entryId: string; connections: number; x: number; y: number }) {
+function PlusCorner({ entryId, connections, x, y, backOpen }: { entryId: string; connections: number; x: number; y: number; backOpen: boolean }) {
   const { t } = useDeskLexicon();
-  const backOpen = useBackOpen();
   const [open, setOpen] = useState(false);
   const [picking, setPicking] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -265,7 +265,7 @@ function PortPreview({ row, kind, kindWord }: { row: GraftRow; kind: 'card' | 'b
   );
 }
 
-function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: number; entryId: string; x: number; y: number }) {
+function Ports({ ports, hidden, entryId, x, y, backOpen }: { ports: GraftRow[]; hidden: number; entryId: string; x: number; y: number; backOpen: boolean }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
@@ -288,7 +288,7 @@ function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: nu
   const at = ports.findIndex((p) => p.key === open);
   const row = at >= 0 ? ports[at] : null;
   return (
-    <div className="flux3-ports chrome-fade" data-flux3-ports="" style={{ left: x, top: y }}>
+    <div className="flux3-ports chrome-fade" data-flux3-ports="" data-back-open={backOpen ? 'true' : undefined} style={{ left: x, top: y }}>
       {ports.map((p, i) => (
         <button key={p.key} type="button" className="flux3-port" data-port-kind={kindOf(p)} data-port-key={p.key} aria-expanded={open === p.key}
           aria-label={`${kindWord(kindOf(p))}: ${p.title}`} title={`${kindWord(kindOf(p))}: ${p.title}`} style={{ top: i * PORT_STEP }}
