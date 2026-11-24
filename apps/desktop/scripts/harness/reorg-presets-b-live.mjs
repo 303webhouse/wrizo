@@ -86,6 +86,7 @@ async function openParts(app, leg, id) {
     await app.evalJs("window.wrizoTheme.set('plateau'); null");
     await app.evalJs(`history.replaceState(null, '', '/?reorg=1&reorglift=plateau.front,plateau.top,plateau.back#/page/${id}'); null`);
   } else {
+    await app.evalJs("window.wrizoTheme.set('flux'); null");   // the leg is FLUX: without this it ran in whatever theme the leg before it left (Arbor), a Flux leg in name only (caught by the frames, Nov 23)
     await app.evalJs(`history.replaceState(null, '', '/?flux3=1&reorg=1#/page/${id}'); null`);
   }
   await app.reload();
@@ -217,7 +218,7 @@ await withHarness(async (app) => {
 
   // ---- FLUX ----
   await openParts(app, 'flux', 'pb-menu');
-  const fx = await app.evalJs("(() => ({ editor: !!document.querySelector('.forward-only-editor') || !!document.querySelector('[contenteditable=true]'), flux: !!document.querySelector('[data-flux3]') || !!document.documentElement.hasAttribute('data-flux3'), kind: !!document.querySelector('[data-doc-kind]') }))()");
+  const fx = await app.evalJs("(() => ({ theme: document.documentElement.getAttribute('data-theme'), editor: !!document.querySelector('.forward-only-editor') || !!document.querySelector('[contenteditable=true]'), flux: !!document.querySelector('[data-flux3]') || !!document.documentElement.hasAttribute('data-flux3'), kind: !!document.querySelector('[data-doc-kind]') }))()");
   let fxNotes = null;
   if (fx.kind) {
     await openPresets(app);
@@ -231,7 +232,7 @@ await withHarness(async (app) => {
     fxNotes = { wrong };
   }
   ok('F1 FLUX (?flux3=1&reorg=1): the page mounts' + (fx.kind ? '; its Parts menu is present and all twenty notes open to their words' : '; the Parts menu is ABSENT here (recorded: nothing to prove there)'),
-    fx.editor && (!fx.kind || (fxNotes && fxNotes.wrong.length === 0)), { fx, fxNotes });
+    fx.theme === 'flux' && fx.editor && (!fx.kind || (fxNotes && fxNotes.wrong.length === 0)), { fx, fxNotes });
 });
 
 let bad = 0;
