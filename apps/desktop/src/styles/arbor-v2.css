@@ -790,19 +790,28 @@
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tabs{ flex-direction:row; align-items:flex-end; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ width:96px; height:25px; clip-path:path('M0 25 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 25 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:-12px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ width:104px; height:36px; margin:0 -4px -3px; clip-path:path('M0 36 L8.4 4 Q10 0 14 0 L90 0 Q94 0 95.6 4 L104 36 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-left:-16px; }
+/* #129 (Fable, Nov 24, 11:29: no control overlaps another control or a panel border): the folder tabs no longer lie over each other or over the panel's
+   top edge. Each tab stands in a 104 px slot (the inactive 96 px tab with 4 px either side, the active 104 px tab filling it), slots 2 px apart, so
+   choosing a tab moves no other tab; the active tab sits ON the panel's edge, not 3 px into it. (Was: margin-left -12px between tabs; the active tab
+   margin 0 -4px -3px, after a tab -16px.) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ margin:0 4px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:6px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ width:104px; height:36px; margin:0; clip-path:path('M0 36 L8.4 4 Q10 0 14 0 L90 0 Q94 0 95.6 4 L104 36 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-left:2px; }
 /* Tutor: off the drawer's right edge, where the opener rides (its left = the drawer's width once open) */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right{ top:62px; left:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:-10px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:-4px 0 -4px -3px; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:-14px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin-top:0; margin-bottom:-8px; }
+/* #129: the same for the Back menu's tabs down its right edge: 106 px slots (the 98 px tab with 4 px above and below, the active 106 px tab filling
+   it), 2 px apart; the active tab stands ON the panel's edge, not 3 px into it. (Was: margin-top -10px; active margin -4px 0 -4px -3px, after a tab
+   -14px, as the first tab margin-bottom -8px.) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ margin:4px 0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:6px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:0; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:2px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin:0; }
 /* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
