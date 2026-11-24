@@ -192,7 +192,9 @@ await withHarness(async (app) => {
   await q("location.hash = '#/page/gw3-board'"); await sleep(900);
   await click('.wz-strip [data-category="plan"]'); await sleep(700);
   const presetIds = await q("[...document.querySelectorAll('.wz-sections-preset')].map((b) => b.getAttribute('data-preset'))");
-  ok('From my pages is in the Presets list, first in Arbor (the pantser\'s door), and the rest keep the library order', presetIds[0] === 'from-my-pages' && presetIds.length === 14 && presetIds[1] === 'three-act', JSON.stringify(presetIds));
+  // SUPERSEDED (PRESETS-B items 4-5, Nov 24: 14 decks became 22, the eight new ones appended in the library's order after Business Proposal); original, verbatim:
+  // ok('From my pages is in the Presets list, first in Arbor (the pantser\'s door), and the rest keep the library order', presetIds[0] === 'from-my-pages' && presetIds.length === 14 && presetIds[1] === 'three-act', JSON.stringify(presetIds));
+  ok('From my pages is in the Presets list, first in Arbor (the pantser\'s door), and the rest keep the library order', presetIds[0] === 'from-my-pages' && presetIds.length === 22 && presetIds[14] === 'relationship-map' && presetIds[21] === 'memory-map' && presetIds[1] === 'three-act', JSON.stringify(presetIds));
   await click(".wz-sections-preset[data-preset='from-my-pages']");
   await waitSoft("!!document.querySelector('.deck-wizard-dialog')", { label: 'preset wizard', timeout: 6000 });
   // a preset-born board is a DECK (W1: home view Walk), so the deal would land in the Walk, where there is no .board-text to press (train #9's verdict, item 3). The fixture asks for TOOLS' own landing hint, `land=open`: the same address with it added, the wizard reopened.

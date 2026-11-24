@@ -88,8 +88,12 @@ function suite(front, tags, sliver, ftabs, words) {
   t('COVER', () => {
     const cls = (c) => new Set(strip(c).match(/\.reorg-[a-z0-9-]+/g) || []);
     const want = [...cls(ARBOR)], have = cls(front);
-    const missing = want.filter((w) => !have.has(w));
-    return { pass: want.length > 40 && missing.length === 0, detail: J({ want: want.length, missing: missing.slice(0, 8) }) };
+    // SUPERSEDED (PRESETS-B items 1-3, Nov 24: the PARTS Presets list's "?" row (.reorg-dockind-prow) and its note (.reorg-preset-note) are Arbor's, with no Flux dress yet - Fable asked for frames of that row in Flux first; the unit names them, so a THIRD class lost is still red); original, verbatim:
+    // const missing = want.filter((w) => !have.has(w));
+    // return { pass: want.length > 40 && missing.length === 0, detail: J({ want: want.length, missing: missing.slice(0, 8) }) };
+    const PENDING = ['.reorg-dockind-prow', '.reorg-preset-note'];   // Arbor-only until Flux's dress is drawn; when Flux gains a rule for one, take it out of this list (a stale name is red)
+    const stale = PENDING.filter((c) => have.has(c)), unlisted = want.filter((w) => !have.has(w) && !PENDING.includes(w));
+    return { pass: want.length > 40 && unlisted.length === 0 && stale.length === 0 && PENDING.every((c) => want.includes(c)), detail: J({ want: want.length, missing: unlisted.slice(0, 8), stale }) };
   });
   t('TAGS', () => {
     if (!TK6_RE) return { pass: false, detail: "TK6's matcher was not found in flux-v2.mjs" };
