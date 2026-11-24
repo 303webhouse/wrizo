@@ -86,6 +86,7 @@ import { usePageAutosave } from './pageEditor/usePageAutosave';
 import { useExternalPageText } from './pageEditor/useExternalPageText';
 import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
 import { mapCaretThrough, mergeText } from '../store/textMerge';
+import { throughArrival } from '../store/undoRebase';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -526,7 +527,8 @@ function PageEditorView({ id }: { id: string }) {
     const undo = ed && ed.isConnected ? getRegisteredUndoStack(ed) : undefined;
     if (undo && how.base !== undefined && undo.peek().text === textRef.current) {
       const base = how.base, theirs = how.theirs ?? next, shown = textRef.current;
-      undo.rebase((t) => (t === shown ? next : mergeText(base, t, theirs).text));
+      const carry = throughArrival(base, theirs);
+      undo.rebase((t) => (t === shown ? next : carry(t)));
       carryUndoStack(undo);
     }
     const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
