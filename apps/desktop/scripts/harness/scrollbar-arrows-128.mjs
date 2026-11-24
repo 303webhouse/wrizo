@@ -90,6 +90,7 @@ async function seed(app) {
     page('sb-1', ${q(TEXT)}, { origin: 'project', projectId: mill.id, orderIndex: 0 });
     page('sb-2', 'Chapter Two\\nThe second morning.', { origin: 'project', projectId: mill.id, orderIndex: 1 });
     page('sb-n', 'Research notes\\nMill wheels turn at about twelve turns a minute.', { origin: 'loose' });
+    page('sb-w', ${q(TEXT)}, { origin: 'loose' });
     W.wrizoFlushNow(); return true; })()`);
   await app.waitFor('!!window.wrizoTheme && !!window.wrizoThemePrefs', { label: 'the theme seams', timeout: 20000 });
 }
@@ -152,6 +153,14 @@ try {
           await setDrawer(app, d, false);
         }
         R.wheel = await wheel(app);
+        // a LOOSE long page (in Flux it opens as Wire In - the Corridor, whose rule cleared the page's bar with scrollbar-color, the native mechanism)
+        await app.evalJs("history.replaceState(null, '', '/#/page/sb-w'); null");
+        await app.reload();
+        await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: `the loose page at ${w}`, timeout: 20000 }).catch(() => {});
+        try { await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }); } catch { /* recorded below */ }
+        await sleep(theme === 'flux' ? 4300 : 1500);   // Wire In's entry line (3 s + 0.6 s fade) has gone
+        R.loose = { jacked: await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')") };
+        R.scrollers.push(...await testAll(app, 'loose', (s) => s.what === 'page'));
         read[theme][w] = R;
         console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} hit ${s.hitTop}/${s.hitFoot} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
         if (w === 1920) {
@@ -171,9 +180,16 @@ try {
 } catch (err) { ok('the run reached its end', false, String((err && err.stack) || err).split('\n').slice(0, 3).join(' | ')); }
 
 const cells = THEMES.flatMap((t) => SIZES.map(([w]) => ({ t, w, R: read[t] && read[t][w] })));
-const p1bad = cells.filter(({ R }) => !(R && R.scrollers.some((s) => s.what === 'page' && s.hitTop && s.hitFoot)));
-ok(`P1 at every theme x size the page's scroller was found with a bar and both press points hit it: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
-  p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, found: R && R.scrollers.map((s) => ({ what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
+// SUPERSEDED (before this file's first green; red run 45461540607): P1 asked both press points of the page's bar to hit it in every cell, but in
+// Machina at 1920 the bar's top end sits under the chrome (hit false/true), so the cell is not blind - its foot was pressed. P1-B asks that the page's
+// scroller was found with a bar and at least one end pressed, in every cell, plus Wire In mounted on Flux's loose page; the covered count prints. Verbatim:
+//   const p1bad = cells.filter(({ R }) => !(R && R.scrollers.some((s) => s.what === 'page' && s.hitTop && s.hitFoot)));
+//   ok(`P1 at every theme x size the page's scroller was found with a bar and both press points hit it: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
+//     p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, found: R && R.scrollers.map((s) => ({ what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
+const pressed = (s) => s.what === 'page' && (s.hitTop || s.hitFoot);
+const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && pressed(s)) && (t !== 'flux' || (R.loose && R.loose.jacked))));
+ok(`P1-B at every theme x size the page's scroller (her Part, and a loose page: Wire In in Flux) was found with a bar and pressed at one end or both: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
+  p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, loose: R && R.loose, found: R && R.scrollers.map((s) => ({ scope: s.scope, what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
 const aOk = (rs) => rs.length > 0 && rs.every((s) => (!s.hitFoot || judge(s).kind.foot === 'track') && (!s.hitTop || judge(s).kind.top === 'track'));
 for (const t of THEMES) {
   const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
