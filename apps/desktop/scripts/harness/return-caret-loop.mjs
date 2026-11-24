@@ -37,6 +37,10 @@ window.__setCaretAt = function(selector, target) {
   el.focus();
   return true;
 };
+window.__anchorNow = function() {
+  const s = window.getSelection(); const n = s.anchorNode;
+  return n ? { node: n.nodeType === 3 ? '#text' : (n.tagName.toLowerCase() + '.' + String(n.className || '').split(' ')[0]), offset: s.anchorOffset, children: n.nodeType === 1 ? n.childNodes.length : null, focusInEditor: !!(document.activeElement && document.activeElement.classList.contains('forward-only-editor')) } : null;
+};
 window.__caretNow = function() {
   const el = document.querySelector('.forward-only-editor');
   const sel = window.getSelection();
@@ -84,8 +88,9 @@ try { await withHarness(async (app) => {
     const soon = await ev('window.__caretNow()');
     await sleep(1350);
     const late = await ev('window.__caretNow()');
-    if (soon !== want) misses.soon.push({ cycle: i, want, soon, late });
-    if (late !== want) misses.late.push({ cycle: i, want, soon, late });
+    const anchor = soon !== want || late !== want ? await ev('window.__anchorNow()') : null;   // where the selection actually sits when the offset read fails
+    if (soon !== want) misses.soon.push({ cycle: i, want, soon, late, anchor });
+    if (late !== want) misses.late.push({ cycle: i, want, soon, late, anchor });
     done += 1;
   }
   console.log(`RC cycles ${done} of ${N}; misses at 450 ms: ${misses.soon.length}; at 1,800 ms: ${misses.late.length}`);
