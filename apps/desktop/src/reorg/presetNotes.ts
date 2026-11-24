@@ -11,7 +11,7 @@ export const STRUCTURE_NOTES: Partial<Record<PlanPresetId, PresetNote>> = {
   circle: { line: 'reorgPreNoteCircleLine', does: 'reorgPreNoteCircleDoes', eg: 'reorgPreNoteCircleEg', credit: 'reorgPreNoteCircleCredit' },
   seven: { line: 'reorgPreNoteSevenLine', does: 'reorgPreNoteSevenDoes', eg: 'reorgPreNoteSevenEg', credit: 'reorgPreNoteSevenCredit' },
   freytag: { line: 'reorgPreNoteFreytagLine', does: 'reorgPreNoteFreytagDoes', eg: 'reorgPreNoteFreytagEg', credit: 'reorgPreNoteFreytagCredit' },
-  beats: { line: 'reorgPreNoteBeatsLine', does: 'reorgPreNoteBeatsDoes' },
+  beats: { line: 'reorgPreNoteBeatsLine', does: 'reorgPreNoteBeatsDoes', eg: 'reorgPreNoteBeatsEg' },
   scene: { line: 'reorgPreNoteSceneLine', does: 'reorgPreNoteSceneDoes', eg: 'reorgPreNoteSceneEg', credit: 'reorgPreNoteSceneCredit' },
   toulmin: { line: 'reorgPreNoteToulminLine', does: 'reorgPreNoteToulminDoes', eg: 'reorgPreNoteToulminEg', credit: 'reorgPreNoteToulminCredit' },
   rogerian: { line: 'reorgPreNoteRogerianLine', does: 'reorgPreNoteRogerianDoes', eg: 'reorgPreNoteRogerianEg', credit: 'reorgPreNoteRogerianCredit' },
