@@ -495,7 +495,7 @@ await withHarness(async (app) => {
     return out;
   })()`);
   // ARCHIVED PARK (#13 step 14): archive/b3.mjs.parked.md record 3
-  ok('S4: the definitions sweep [guided-w3 successor 2] - all fourteen decks are registered (the seven live + the six Tier 1 additions + From my pages)', Object.keys(sweepResult).length === 14, JSON.stringify(Object.keys(sweepResult)));
+  ok('S4: the definitions sweep [guided-w3 successor 2] - all twenty-two decks are registered (the seven live + the six Tier 1 additions + From my pages + the eight PRESETS-B item 4 decks, Nov 23)', Object.keys(sweepResult).length === 22, JSON.stringify(Object.keys(sweepResult)));
   ok('S4 sweep [guided-w3]: "from-my-pages" with its default answers (no pages picked) deals nothing, without error', sweepResult['from-my-pages'] === 0, 'got ' + sweepResult['from-my-pages']);
   for (const [deckId, expected] of Object.entries({ 'hero-journey': 12, 'story-circle': 8, 'scene-sequel': 6, 'argument-essay': 5, 'research-paper': 5, 'business-proposal': 7 })) {
     ok(`S4 sweep [guided-w3]: "${deckId}" deals without error and lands its own exact declared card count (${expected})`, sweepResult[deckId] === expected, `got ${sweepResult[deckId]}`);

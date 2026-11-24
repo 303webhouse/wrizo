@@ -34,11 +34,11 @@ export interface FormsGroup { group: string; room: DeckRoom; decks: readonly str
 
 /** Machina's group labels (the `group` strings are the canonical English kickers; the panel reads the lexicon's deckRoom* words for display) and their decks, in the mockup's order. */
 export const FORMS_GROUPS: readonly FormsGroup[] = [
-  { group: 'FICTION', room: 'fiction', decks: ['three-act', 'hero-journey', 'story-circle', 'character-study', 'scene-sequel'] },
+  { group: 'FICTION', room: 'fiction', decks: ['three-act', 'hero-journey', 'story-circle', 'character-study', 'scene-sequel', 'relationship-map', 'timeline', 'memory-map'] },
   { group: 'WORLD', room: 'speculative', decks: ['worldbuilding'] },
   { group: 'SCREEN', room: 'screen', decks: ['feature-screenplay'] },
-  { group: 'ACADEMIC', room: 'academy', decks: ['thesis', 'argument-essay', 'research-paper'] },
-  { group: 'BUSINESS', room: 'business', decks: ['grant', 'business-proposal'] },
-  { group: 'NEWSROOM', room: 'newsroom', decks: ['feature-story'] },
+  { group: 'ACADEMIC', room: 'academy', decks: ['thesis', 'argument-essay', 'research-paper', 'literature-map', 'narrow-my-question'] },
+  { group: 'BUSINESS', room: 'business', decks: ['grant', 'business-proposal', 'pitch-story', 'logic-model'] },
+  { group: 'NEWSROOM', room: 'newsroom', decks: ['feature-story', 'interview-notes'] },
   { group: 'YOUR FILES', room: 'every', decks: ['from-my-pages'] },
 ];
