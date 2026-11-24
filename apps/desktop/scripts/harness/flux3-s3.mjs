@@ -13,7 +13,7 @@
 //          so with a port's box open and with the TOOLS hand open.
 //   GUTTER every paragraph's row: its number, its words (the app's own rule: a token with a letter or digit), beside its first line (+-2 px),
 //          and wholly outside the page's left edge.
-//   PORTS  one per link, named for it, straddling the page's right edge; a press draws the box (the name; Dock; Connect another; Disconnect).
+//   PORTS  one per link, named for it, wholly beyond the page's right edge (#125, Nov 24; they straddled it before); a press draws the box (the name; Dock; Connect another; Disconnect).
 //   TYPE   the recede rule and zero work while keys land: the gutter and the ports go and come back WITH the page's own chrome (the app's rule:
 //          away while she types, back on her intent, a pointer moving), and the gutter measures NOTHING while keys land (its count is the same at
 //          the first key and the last); the Glitch bar changes no glyph while keys land. On the pause the gutter is measured again (the new words
@@ -315,8 +315,14 @@ try { await withHarness(async (app) => {
     JSON.stringify({ expect, rows: G && G.rows, paras: on0.paras.map((p) => p.top), pageX: on0.page.x }));
   const P = on0.ports;
   const pageRight = on0.page.x + on0.page.w;
-  ok('PORTS one per link, named for it, straddling the page\'s right edge',
-    P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x < pageRight && p.r.x + p.r.w > pageRight),
+  // PARKED, SUPERSEDED Nov 24 (#125, Fable's 11:15 rule: "no control overlaps another control, the page, or its corner marks"; a straddling port
+  // overlapped the page by 7 px and its first one lay on the Part arrow that caps the page's scrollbar). ORIGINAL, verbatim:
+  //   ok('PORTS one per link, named for it, straddling the page\'s right edge',
+  //     P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x < pageRight && p.r.x + p.r.w > pageRight),
+  //     JSON.stringify({ ports: P && P.list, pageRight }));
+  // live successor PORTS-BEYOND: the same ports, each wholly beyond the page's right edge and within 40 px of it (flux-125-overlaps.mjs reads the rule itself)
+  ok('PORTS-BEYOND (successor of "PORTS ... straddling the page\'s right edge", SUPERSEDED Nov 24 by #125) one per link, named for it, each wholly beyond the page\'s right edge and within 40 px of it',
+    P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x >= pageRight && p.r.x < pageRight + 40),
     JSON.stringify({ ports: P && P.list, pageRight }));
   const bx = reads['on|dark|1920'].withBox;
   ok('PORTS a press draws the box: the item\'s name, Dock, Connect another, Disconnect',
