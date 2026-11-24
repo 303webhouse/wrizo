@@ -6,7 +6,7 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, CHAT_PROMPT_DEFAULT, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -53,7 +53,8 @@ tutorRouter.use(requireAuth);
 // (rateLimit.ts's existing precedent).
 tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));
 
-// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the Arbor voice (the route is not told the theme), the typed-question task.
+// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the typed-question task, and the voice for the theme the client names in `theme` (voiceForTheme: one of three from a fixed list;
+// anything else, or no theme, gets no voice block: the neutral BASE). `theme` is read as a plain value and never put into the prompt.
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -88,7 +89,7 @@ interface InboundMessage {
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string; theme?: unknown } {
   if (!body || typeof body !== 'object') return false;
   const { messages, delta, bible, selection } = body as { messages?: unknown; delta?: unknown; bible?: unknown; selection?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
@@ -263,7 +264,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     const ask = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
-      system: buildSystemPrompt(CHAT_PROMPT_DEFAULT),
+      system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });
     const textOf = (r: Anthropic.Message): string => r.content
@@ -383,23 +384,33 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
     ? `Prompts already given this session (do not repeat or paraphrase them):\n${seen.map((x) => `- ${x}`).join('\n')}\n\nGive one new writing prompt.`
     : 'Give one writing prompt.';
   try {
-    const response = await client().messages.create({
+    const askModel = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: SPRINT_MAX_TOKENS,
       system: SPRINT_SYSTEM_PROMPT,
       messages: [{ role: 'user' as const, content: ask }],
     });
-    const text = response.content
+    const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
       .trim();
+    const text = textOf(await askModel());
     const prompt = cleanSprintPrompt(text);
-    if (!prompt) {
+    let line = prompt;
+    // TUTOR-B — THE REPLY GUARD, on this route too (Fable, Nov 23, call 3): the SAME guard (tutorGuard.ts) reads the one cleaned line that would leave. A line that says "I", "we" and the rest of the kit's M1 list, or
+    // flatters (M2), is asked for again ONCE, paid from the same two daily budgets as any other call (both refuse at their cap and never count past it). If the second one fails too, or no unit is left to ask with,
+    // nothing is sent: the route answers its existing plain failure and the client gives her a prompt from its local deck. The chat route's fallback line is never used here, because it is not a writing prompt.
+    if (line && !guardReply(line).ok) {
+      const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
+      line = retryAllowed ? cleanSprintPrompt(textOf(await askModel())) : null;
+      if (line && !guardReply(line).ok) line = null;
+    }
+    if (!line) {
       res.status(502).json({ configured: true, error: 'The Consultant could not give a prompt right now.' });
       return;
     }
-    res.json({ configured: true, prompt });
+    res.json({ configured: true, prompt: line });
   } catch (err) {
     logError('tutor-sprint', err);
     res.status(502).json({ configured: true, error: 'The Consultant could not be reached right now.' });

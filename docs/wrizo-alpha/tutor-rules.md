@@ -4,10 +4,12 @@
 rules of the road (version 1, signed by Nick, Nov 23, 2026). This file is still the disk home of the shipped prompt, and its rule is unchanged: it holds the prompt the chat route sends
 **verbatim**, byte-for-byte, so the record and the running system can never quietly diverge.
 
-**Source of truth:** `apps/server/src/tutorPrompts.ts` → `buildSystemPrompt()` with its defaults (the Tutor hat, the Arbor voice, the typed-question task), which is what `apps/server/src/tutor.ts`
-sends on `/tutor/chat` (`buildSystemPrompt(CHAT_PROMPT_DEFAULT)`). The block below is that string: BASE, then the Tutor hat, then the Arbor voice, then the ASK ABOUT THIS DOC task, then CONTEXT
-(what it may read), each block the kit's own words, joined by a blank line. The Editor hat, the Machina and Flux voices and the other tasks live in the same file and are built the same way; they
-are not what the chat route sends today (the hat choice is TUTOR item 4, not built). SPRINT's one-line prompt is built from the same BASE (without its reply-length and "Read:" rules), the Machina
+**Source of truth:** `apps/server/src/tutorPrompts.ts` → `buildSystemPrompt()` with its defaults (the Tutor hat, the Arbor voice, the typed-question task). The block below is that string: BASE, then the
+Tutor hat, then the Arbor voice, then the ASK ABOUT THIS DOC task, then CONTEXT (what it may read), each block the kit's own words, joined by a blank line.
+
+**What `/tutor/chat` sends:** the same string, except the VOICE block follows the theme the client names in the request (`theme`): `machina`, `arbor` or `flux` (`voiceForTheme`, an exact match against that fixed list)
+swaps in that voice; anything else, or no theme, drops the voice block and sends the neutral BASE + hat + task + CONTEXT. Nothing else the client sends reaches the prompt. The Editor hat and the other tasks live in
+the same file and are not what the chat route sends today (the hat choice is TUTOR item 4, not built). SPRINT's one-line prompt is built from the same BASE (without its reply-length and "Read:" rules), the Machina
 voice and the SPRINT task, ahead of the rules that already lived on the server.
 
 What the old prompt carried and the kit's does not: the "Reference atoms are lawful" paragraph, the standing instruction to answer only what was asked of the page delta (conduct rule 37), and the

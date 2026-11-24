@@ -126,7 +126,8 @@ ok(/exactly one/i.test(sys) && /short/i.test(sys) && /no question back|never ask
 const cases = [
   ['"Write about the sea."', 'Write about the sea.'],
   ["Here's a prompt: Describe the last room you left.", 'Describe the last room you left.'],
-  ['1. Tell me what the stairs remember.', 'Tell me what the stairs remember.'],
+  // TUTOR-B: was "Tell me what ..."; the reply guard now (rightly) refuses a line that says "me", so the numbering fixture says it without the word
+  ['1. Name what the stairs remember.', 'Name what the stairs remember.'],
   ['**Write about a locked drawer.**', 'Write about a locked drawer.'],
   ['Begin with the smell of rain.\n\nThat should get you going. Would you like another?', 'Begin with the smell of rain.'],
 ];

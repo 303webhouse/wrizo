@@ -173,17 +173,25 @@ const HATS: Record<Hat, string> = { tutor: HAT_TUTOR, editor: HAT_EDITOR };
 const VOICES: Record<Voice, string> = { machina: VOICE_MACHINA, arbor: VOICE_ARBOR, flux: VOICE_FLUX };
 const TASKS: Record<Task, string> = { lens: TASK_LENS, ask: TASK_ASK, sprint: TASK_SPRINT, fit: TASK_FIT, sharper: TASK_SHARPER, explain: TASK_EXPLAIN, sayback: TASK_SAYBACK, stops: TASK_STOPS, note: TASK_NOTE };
 
-export interface PromptChoice { hat?: Hat; voice?: Voice; task?: Task }
+// voice: null means NO voice block (the neutral BASE + HAT + TASK + CONTEXT); undefined means the default below.
+export interface PromptChoice { hat?: Hat; voice?: Voice | null; task?: Task }
 
-// What /tutor/chat sends today: the Tutor hat for everyone (the hat choice is TUTOR item 4, not built), the Arbor voice (the route is not told the theme yet), the typed-question task.
+// What the builder falls back to when nothing is named, and what the record docs/wrizo-alpha/tutor-rules.md holds: the Tutor hat, the Arbor voice, the typed-question task. The chat route sends the Tutor hat for
+// everyone (the hat choice is TUTOR item 4, not built) and picks the voice from the theme the client sends (voiceForTheme below).
 export const CHAT_PROMPT_DEFAULT: { hat: Hat; voice: Voice; task: Task } = { hat: 'tutor', voice: 'arbor', task: 'ask' };
 
-// The system prompt for one request: BASE + HAT + VOICE + TASK + CONTEXT. Anything not named falls to the default above.
+// The system prompt for one request: BASE + HAT + VOICE + TASK + CONTEXT. Anything not named falls to the default above; a voice of null drops the voice block.
 export function buildSystemPrompt(choice: PromptChoice = {}): string {
   const hat = choice.hat ?? CHAT_PROMPT_DEFAULT.hat;
-  const voice = choice.voice ?? CHAT_PROMPT_DEFAULT.voice;
+  const voice = choice.voice === null ? null : (choice.voice ?? CHAT_PROMPT_DEFAULT.voice);
   const task = choice.task ?? CHAT_PROMPT_DEFAULT.task;
-  return [BASE, HATS[hat], VOICES[voice], TASKS[task], CONTEXT].join('\n\n');
+  return [BASE, HATS[hat], ...(voice === null ? [] : [VOICES[voice]]), TASKS[task], CONTEXT].join('\n\n');
+}
+
+// The voice for the theme the client names with an ask: one of three, from a FIXED list, exact match. Anything else (absent, wrong type, an unknown word, a different case) is null: no voice block, the neutral BASE.
+// Nothing the client sends reaches the prompt except through this list.
+export function voiceForTheme(theme: unknown): Voice | null {
+  return theme === 'machina' || theme === 'arbor' || theme === 'flux' ? theme : null;
 }
 
 // SPRINT (the Consultant's one prompt): BASE without its reply-length and "Read:" rules (the task wants ONE sentence of 25 words at most, and nothing of her page is sent), the Machina voice, the SPRINT
