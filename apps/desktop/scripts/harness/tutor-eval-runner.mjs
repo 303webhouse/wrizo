@@ -42,7 +42,7 @@ ok(set.filter((c) => c.kind === 'reply').every((c) => typeof c.says === 'string'
 
 // ---- RN2 ----
 const mods = run.loadModules();
-const oracle = withDepartures(JSON.parse(fs.readFileSync(path.join(EVAL, 'prompts-v0.3.json'), 'utf8')).blocks); // the kit's words with the two departures Fable ruled on Nov 23 (kit-departures.mjs)
+const oracle = withDepartures(JSON.parse(fs.readFileSync(path.join(EVAL, 'prompts-v0.5.json'), 'utf8')).blocks); // the kit's words with the two departures Fable ruled on Nov 23 (kit-departures.mjs)
 const dflt = [oracle.base, oracle.hatTutor, oracle.voiceArbor, oracle.taskAsk, oracle.context].join('\n\n');
 ok(mods.prompts.buildSystemPrompt() === dflt && mods.prompts.buildSystemPrompt(mods.prompts.CHAT_PROMPT_DEFAULT) === dflt, 'RN2 the prompt builder the runner loads gives the string /tutor/chat sends');
 const tutorSrc = fs.readFileSync(path.join(SERVER, 'src', 'tutor.ts'), 'utf8');

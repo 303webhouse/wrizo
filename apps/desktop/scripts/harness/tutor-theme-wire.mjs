@@ -72,7 +72,7 @@ process.env.TUTOR_GLOBAL_DAILY_BUDGET = '5000';
 process.env.SESSION_SECRET = 'harness-secret';
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgres://unused/unused';
 delete process.env.TUTOR_DISABLED;
-const ORACLE = withDepartures(JSON.parse(fs.readFileSync(path.join(SERVER, 'scripts', 'tutor-eval', 'prompts-v0.3.json'), 'utf8')).blocks);
+const ORACLE = withDepartures(JSON.parse(fs.readFileSync(path.join(SERVER, 'scripts', 'tutor-eval', 'prompts-v0.5.json'), 'utf8')).blocks);
 const voiceOf = { plateau: ORACLE.voiceArbor, flux: ORACLE.voiceFlux, machina: ORACLE.voiceMachina };
 const srv = loadServer();
 const handler = findHandler(srv.load('tutor.ts').tutorRouter, '/tutor/chat');
