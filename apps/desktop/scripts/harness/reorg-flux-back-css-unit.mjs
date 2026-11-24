@@ -202,7 +202,10 @@ const MUT = [
 :root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .wz-sliver-grip{ visibility:visible; }
 `],
   ['the Corridor stops showing the opener', 'CORRIDOR', (t) => t.replace(/opacity:1 !important;/, () => 'opacity:0 !important;')],
-  ['the opener cannot be pressed in the Corridor', 'CORRIDOR', (t) => t.replace('pointer-events:auto !important', () => 'pointer-events:none !important')],
+  // SUPERSEDED (INK, Nov 23: the anchors no longer take the pointer, the grip's own rule does). The original, verbatim:
+  // ['the opener cannot be pressed in the Corridor', 'CORRIDOR', (t) => t.replace('pointer-events:auto !important', () => 'pointer-events:none !important')],
+  ['the opener cannot be pressed in the Corridor', 'CORRIDOR', (t) => t.replace(".wz-tutor-grip[data-back='true']{ visibility:visible; pointer-events:auto; }", () => ".wz-tutor-grip[data-back='true']{ visibility:visible; pointer-events:none; }")],
+  ['the Back menu\'s anchors take the pointer again in the Corridor (the panel\'s fills the stage and swallows her press)', 'CORRIDOR', (t) => t.replace("[data-back='true']{ opacity:1 !important; }", () => "[data-back='true']{ opacity:1 !important; pointer-events:auto !important; }")],
   ['the left hand comes back in the Corridor too', 'CORRIDOR', (t) => `${t}\n:root[data-flux3][data-theme='flux'][data-wirein][data-flux3-jacked] .desk-frame-sliver-anchor{ opacity:1 !important; }\n`],
   // SUPERSEDED (Nov 21): ['a rule escapes the Flux scope', 'SCOPED', (t) => t.replace("[data-theme='flux'] .wz-assets-sort{", () => '.wz-assets-sort{')],
   ['a rule escapes the redesign scope (the plain Flux gets it)', 'SCOPED', (t) => t.replace(":root[data-flux3][data-theme='flux'] .wz-assets-sort{", () => ":root[data-theme='flux'] .wz-assets-sort{")],

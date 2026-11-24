@@ -174,7 +174,7 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('.wz-tutor-grip').click(); null");
   await sleep(500);
   const pressShut = await app.evalJs(PRESS);
-  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'fb16-mut'; s.textContent = ':root .desk-frame-tutor-panel-anchor[data-back=\"true\"]{ pointer-events:auto !important; }'; document.head.appendChild(s); return true; })()");
+  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'fb16-mut'; s.textContent = ':root[data-flux3][data-theme=flux][data-wirein][data-flux3-jacked] .desk-frame-tutor-panel-anchor[data-back=\"true\"]{ pointer-events:auto !important; }'; document.head.appendChild(s); return true; })()");
   const pressMut = await app.evalJs(PRESS);
   await app.evalJs("document.getElementById('fb16-mut').remove(); document.querySelector('.wz-tutor-grip').click(); null");
   await sleep(500);
