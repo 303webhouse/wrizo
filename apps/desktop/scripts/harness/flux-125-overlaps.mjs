@@ -3,7 +3,9 @@
 // MARKS, AT 1366, 1920 AND 2560. Read on the Flux a writer gets (the redesign and the reorg by default), a Doc of two Parts, the chrome standing (the
 // pointer on the rail's side, nothing typed), in TEXT (Draft) and in Uplink (the whole-Doc view).
 //   P0  (premise) every arm is the live Flux at its width (the window read back), the Doc seeded, and the view it names is the one open
-//   P1  (premise) every arm found the page, its two corner marks, and at least 8 drawn controls (a census that found nothing would pass blind)
+//   P1  (premise) every arm found the page, its two corner marks, and at least 8 drawn controls (a census that found nothing would pass blind); the page
+//       carries four connections (seeded through wrizoAddPageLink), so its four ports stand on its right edge in TEXT
+//   (the first run, 09a26ed8, had no connections: no ports drew, and the + stood 4 px clear of the Back menu's tab at every width)
 //   O<w><view>  no drawn control's box crosses another control's box, the page (a control outside the page), or a corner mark
 //   H<w><view>  every drawn control can be pressed: the element at its centre is the control or inside it
 // A "control" is anything she can press or tab to (button, link, tab, radio, checkbox, menu item, field, a positive tabindex), outside the editor's text,
@@ -74,7 +76,10 @@ await withHarness(async (app) => {
   const seeded = await ev(`(() => { const W = window; const doc = W.wrizoCreateProject('Harbour');
     const a = W.wrizoCreateJournalPage({ id: 'ov-a', text: ${q(TEXT_A)}, createdAt: '2026-04-01T00:00:00.000Z', origin: 'project', projectId: doc.id, orderIndex: 0, source: 'page' });
     const b = W.wrizoCreateJournalPage({ id: 'ov-b', text: ${q(TEXT_B)}, createdAt: '2026-04-01T00:01:00.000Z', origin: 'project', projectId: doc.id, orderIndex: 1, source: 'page' });
-    W.wrizoFlushNow(); return !!doc && !!a && !!b; })()`);
+    // four connections (the page's ports on its right edge, where the hands' tabs and the Part arrows also stand): a link to its sibling Part and to three loose pages
+    const loose = [1, 2, 3].map((n) => W.wrizoCreateJournalPage({ id: 'ov-l' + n, text: 'Loose page ' + n + ' about the harbour.', createdAt: '2026-04-01T00:0' + (n + 1) + ':00.000Z', origin: 'loose', projectId: null, source: 'page' }));
+    const links = ['ov-b', 'ov-l1', 'ov-l2', 'ov-l3'].map((id) => W.wrizoAddPageLink('ov-a', { bEntryId: id }));
+    W.wrizoFlushNow(); return !!doc && !!a && !!b && loose.every(Boolean) && links.every(Boolean); })()`);
   const lives = [], counts = [];
   for (const [w, h] of WIDTHS) {
     await app.emulateDpr(1, w, h);
@@ -92,15 +97,25 @@ await withHarness(async (app) => {
       const live = await ev(LIVE);
       lives.push([arm, live.theme === 'flux' && live.flux3 && live.top && !/flux3|reorg/.test(live.search) && live.w === w && live.h === h && live.uplink === (view === 'uplink'), live]);
       const c = await ev(CENSUS);
-      counts.push([arm, c.controls.length, c.marks.filter((m) => m.shown).length, !!c.page]);
+      counts.push([arm, c.controls.length, c.marks.filter((m) => m.shown).length, !!c.page, await ev("document.querySelectorAll('.flux3-port').length")]);
       console.log(`DIAG 125 [${arm}] page ${q(c.page)} marks ${q(c.marks)}`);
       console.log(`DIAG 125 [${arm}] controls ${c.controls.length}: ${q(c.controls)}`);
       ok(`O${w}${view === 'text' ? 'T' : 'U'} [${arm}] no drawn control crosses another control, the page, or a corner mark (${c.overlaps.length} crossing)`, c.overlaps.length === 0, c.overlaps);
       ok(`H${w}${view === 'text' ? 'T' : 'U'} [${arm}] every drawn control can be pressed: the element at its centre is the control or inside it (${c.covered.length} covered)`, c.covered.length === 0, c.covered);
+      // DIAG only (not a check yet): each hand's drawer open in turn, the census printed, to find the state Nick's screenshot shows
+      for (const grip of ['.wz-tutor-grip', '.wz-sliver-grip']) {
+        await press(grip); await sleep(900);
+        await app.mouseMove(4, Math.round(h / 2)); await sleep(600);
+        await ev("document.getAnimations().forEach((a) => { try { a.finish(); } catch {} }); true");
+        const d = await ev(CENSUS);
+        console.log(`DIAG 125 [${arm} + ${grip} open] overlaps ${d.overlaps.length}: ${q(d.overlaps)} | covered ${d.covered.length}: ${q(d.covered)}`);
+        console.log(`DIAG 125 [${arm} + ${grip} open] controls ${d.controls.length}: ${q(d.controls)}`);
+        await press(grip); await sleep(700);
+      }
     }
   }
   ok('P0 (premise) every arm is the live Flux at its width (read back), the Doc of two Parts seeded, and the view it names open', seeded && lives.length === 6 && lives.every((l) => l[1]), { seeded, lives });
-  ok('P1 (premise) every arm found the page, both corner marks drawn, and at least 8 drawn controls', counts.length === 6 && counts.every((c) => c[1] >= 8 && c[2] === 2 && c[3]), counts);
+  ok('P1 (premise) every arm found the page, both corner marks drawn, at least 8 drawn controls, and the page\'s four ports (its four connections) drawn in TEXT', counts.length === 6 && counts.every((c) => c[1] >= 8 && c[2] === 2 && c[3] && (!/TEXT/.test(c[0]) || c[4] === 4)), counts);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 2400)}`);
