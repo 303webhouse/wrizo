@@ -27,16 +27,18 @@ export function loadModules() {
   const s = loadServer({ files: ['tutorGuard.ts', 'tutorPrompts.ts'] });
   return { guard: s.load('tutorGuard.ts'), prompts: s.load('tutorPrompts.ts'), cleanup: s.cleanup };
 }
+// the kit's section 8 words, read from the kit's own file: the safety cases compare what she would see with THIS, not with the code's copy
+const KIT_WORDS = JSON.parse(fs.readFileSync(path.join(here, 'prompts-v0.5.json'), 'utf8')).blocks.safetyMessage;
 
 // ---- evaluate recordings (free) ----
-export function evaluateRecording(file, { guard }) {
+export function evaluateRecording(file, { guard, prompts = null }) {
   const rec = JSON.parse(fs.readFileSync(file, 'utf8'));
   const byId = new Map(CASES.map((c) => [c.id, c]));
   const results = [];
   for (const e of rec.entries ?? []) {
     const c = e.case ? { ...e.case, ...(byId.get(e.id) ?? {}), ...e.case } : byId.get(e.id);
     if (!c) { results.push({ id: e.id, status: 'unknown-case', notes: ['no such case'] }); continue; }
-    const r = evaluateCase(c, e, { guard, drafts: DRAFTS });
+    const r = evaluateCase(c, e, { guard, drafts: DRAFTS, prompts, words: KIT_WORDS });
     if (e.expect) {
       const failed = r.machine.filter((k) => !k.pass).map((k) => k.id);
       const wantFailed = (e.expect.fails ?? []).slice().sort();
@@ -79,8 +81,8 @@ async function liveRun(args) {
   const useGrader = !args.noGrader && !!clients.grader;
   const { guard, prompts, cleanup } = loadModules();
   const only = args.only ? new Set(args.only.split(',')) : null;
-  const todo = CASES.filter((c) => c.kind === 'reply' && (!only || only.has(c.id)));
-  const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.3', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [] };
+  const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (!only || only.has(c.id)));
+  const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.5', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [] };
   console.log(`LIVE RUN: ${todo.length} cases, reply model ${clients.replyModel}, second reader ${useGrader ? clients.graderModel : 'off'}, cap ${cap.state.maxCalls} calls / ${cap.state.maxTokens} tokens`);
   let stop = false;
   const runOne = async (c) => {
@@ -92,7 +94,7 @@ async function liveRun(args) {
       const entry = { id: c.id, replies };
       if (useGrader) {
         // the machine checks first: the second reader is asked for what the case lists, plus G8 when a word was flagged
-        const first = evaluateCase(c, entry, { guard, drafts: DRAFTS });
+        const first = evaluateCase(c, entry, { guard, drafts: DRAFTS, prompts, words: KIT_WORDS });
         const questions = [...c.graders, ...(first.flagged.length ? ['G8'] : [])];
         if (questions.length) entry.graded = await liveGrade({ clients, cap, c, draftText, replies, questions });
       }
@@ -128,7 +130,7 @@ if (isMain) {
   }
   if (args.list) {
     const k = (x) => CASES.filter((c) => c.kind === x);
-    console.log(`${CASES.length} cases: ${k('reply').length} the runner runs, ${k('app').length} test the app (not run here), ${k('skipped').length} wait for something not built:`);
+    console.log(`${CASES.length} cases: ${k('reply').length} the runner runs, ${k('safety').length} expect the safety marker (run, checked without a second reader), ${k('app').length} test the app (not run here), ${k('skipped').length} wait for something not built:`);
     for (const c of k('skipped')) console.log(`  ${c.id}: ${c.skip}`);
     process.exit(0);
   }
@@ -138,18 +140,19 @@ if (isMain) {
     const m = loadModules();
     const tmp = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-')), 'this-run.json');
     fs.writeFileSync(tmp, JSON.stringify(out));
-    const ev = evaluateRecording(tmp, { guard: m.guard });
+    const ev = evaluateRecording(tmp, { guard: m.guard, prompts: m.prompts });
     fs.rmSync(path.dirname(tmp), { recursive: true, force: true });
     m.cleanup();
     printEval(ev);
     const s = summarise([ev]);
     console.log(`\nTUTOR-EVAL LIVE: ${s.fail === 0 ? 'PASS' : 'FAIL'} (${s.pass} pass, ${s.pending} machine-pass with the second reader pending, ${s.fail} fail, ${out.notRun.length} not run)`);
-    process.exit(s.fail === 0 && out.notRun.length === 0 ? 0 : 1);
+    // NOT process.exit(): the model client leaves keep-alive sockets open, and on Windows (Node 24) exiting with them still open aborts the process (libuv assertion) and hides this verdict behind a crash code. Setting the code and letting the loop drain is clean.
+    process.exitCode = s.fail === 0 && out.notRun.length === 0 ? 0 : 1;
   } else {
     const dir = path.join(here, 'recorded');
     const files = args.files.length ? args.files : fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => path.join(dir, f));
     const m = loadModules();
-    const evals = files.map((f) => evaluateRecording(f, { guard: m.guard }));
+    const evals = files.map((f) => evaluateRecording(f, { guard: m.guard, prompts: m.prompts }));
     m.cleanup();
     evals.forEach(printEval);
     const s = summarise(evals);

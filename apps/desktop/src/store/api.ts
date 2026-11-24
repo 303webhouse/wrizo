@@ -158,6 +158,15 @@ export async function apiSprintPrompt(seen: string[]): Promise<string | null> {
   }
 }
 
+// TUTOR-B (Fable, Nov 23, call 2) — the Tutor speaks in the voice of the theme she is writing in, so the ask carries the theme's NAME and nothing else about it (never her words): plateau is the Arbor
+// room, flux and machina are their own. The server takes exactly these three names from a fixed list and sends the neutral prompt for anything else, so a missing or unknown theme is safe. Read from
+// the root's data-theme (store/theme.ts puts it there), so this file imports no UI code; with no document there is no key at all.
+function tutorThemeName(): 'arbor' | 'flux' | 'machina' | undefined {
+  if (typeof document === 'undefined' || !document.documentElement) return undefined;
+  const t = document.documentElement.getAttribute('data-theme');
+  return t === 'plateau' ? 'arbor' : t === 'flux' || t === 'machina' ? t : undefined;
+}
+
 // TU2 S2 / TU5 S4 — `delta` and `bible` are BOTH optional and, when present,
 // already fully assembled by Tutor.tsx (delta: sliced from the persisted
 // cursor, tail-capped, honesty line baked in if truncated; bible: the project's
@@ -194,6 +203,7 @@ export async function apiTutorChat(
     const res = await postJson('/api/tutor/chat', {
       messages: messages.map((m) => (m.text.includes('{.font-') || m.text.includes('{.size-') ? { ...m, text: withoutFontMarks(m.text) } : m)),
       delta: plain(delta), bible: plain(bible), selection: plain(selection),
+      theme: tutorThemeName(),
     });
     if (!res.ok) return { ok: false, configured: true };
     const data = (await res.json()) as {
