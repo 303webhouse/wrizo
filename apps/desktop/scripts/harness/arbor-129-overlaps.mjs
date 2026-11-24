@@ -127,7 +127,7 @@ await withHarness(async (app) => {
     const parts = [[40, 'Chapter One'], [12, 'Chapter Two'], [8, 'Chapter Three']].map(([n, t], i) => W.wrizoCreateJournalPage({ id: 'ov129-' + i, text: t + '\\n\\n' +${q(TEXT(40))}.split('\\n\\n').slice(0, n).join('\\n\\n'), createdAt: '2026-04-01T00:0' + i + ':00.000Z', origin: 'project', projectId: doc.id, orderIndex: i, source: 'page' }));
     const dr = W.wrizoCreateDrawer('Fiction'); const set = dr && W.wrizoSetProjectDrawer(doc.id, dr.id);
     W.wrizoFlushNow(); return !!doc && parts.every(Boolean) && !!dr && !!set; })()`);
-  const lives = [], counts = [], notes = [];
+  const lives = [], counts = [], notes = [], cloths = [];
   for (const [theme, T] of THEMES) for (const tone of TONES) for (const [w, h] of WIDTHS) for (const state of STATES) {
     const arm = `${T}${tone === 'light' ? 'L' : 'D'}${w}${state[0].toUpperCase()}`;
     await app.emulateDpr(1, w, h);
@@ -151,6 +151,9 @@ await withHarness(async (app) => {
       && (state === 'drawers' ? (live.drawersActive || live.slide) : (live.front === wantFront && live.back === wantBack));
     lives.push([arm, stood, live]);
     const c = await ev(CENSUS);
+    // D2 (Nov 24, 1:20 pm): the census's panels did not include the rail's own pop-out (.wz-cascade-panel), so O<...>D compared the opened cloth only with
+    // the rows inside it. D2 reads the opened cloth's box against the pop-out's own box (its 3 px edge included): the cloth may touch it, never cross it.
+    if (state === 'drawers') cloths.push([arm, await ev("(() => { const d = [...document.querySelectorAll('[aria-pressed=true], .active')].find((e) => /^drawers$/i.test((e.textContent || '').trim()) && e.closest('nav, aside')); const p = [...document.querySelectorAll('.wz-cascade-panel')].find((e) => e.getAttribute('data-visible') !== 'false' && e.getBoundingClientRect().width > 50); if (!d || !p) return { cloth: !!d, panel: !!p }; const a = d.getBoundingClientRect(), b = p.getBoundingClientRect(); const w = Math.min(a.right, b.right) - Math.max(a.left, b.left), h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top); return { cloth: [Math.round(a.left * 10) / 10, Math.round(a.right * 10) / 10], panel: [Math.round(b.left * 10) / 10, Math.round(b.right * 10) / 10], cross: w > 0.5 && h > 0.5 ? Math.round(w * 10) / 10 : 0 }; })()")]);
     // N-B (Fable's condition, 1:15 pm): in Arbor's Back arms each tab-note cell's middle is level with its own tab's middle
     if (theme === 'plateau' && state === 'back') notes.push([arm, await ev("(() => { const tabs = [...document.querySelectorAll('.arbor2-c2--right .wz-drawer-tab')], cells = [...document.querySelectorAll('.arbor2-c2--right .wz-drawer-tabnote-cell')]; const mid = (e) => { const r = e.getBoundingClientRect(); return Math.round((r.top + r.height / 2) * 10) / 10; }; return { tabs: tabs.map(mid), cells: cells.map(mid) }; })()")]);
     counts.push([arm, c.controls.length, !!c.page, c.panels.length, state]);
@@ -162,12 +165,13 @@ await withHarness(async (app) => {
   }
   const n = THEMES.length * TONES.length * WIDTHS.length * STATES.length;
   ok('P0 (premise) every arm is the theme it names at its width (read back), the Doc seeded, and the state it names standing', seeded && lives.length === n && lives.every((l) => l[1]), { seeded, bad: lives.filter((l) => !l[1]) });
+  ok(`D2 the rail's opened Drawers cloth touches its pop-out at most, never crossing the pop-out's box (its edge included), in every DRAWERS arm (${cloths.length})`, cloths.length === THEMES.length * TONES.length * WIDTHS.length && cloths.every(([, v]) => Array.isArray(v.cloth) && v.cross === 0), cloths);
   ok(`N-B in Arbor's Back menu every tab-note cell stands level with its own tab (middles within 1.5 px), in every Back arm (${notes.length})`, notes.length === WIDTHS.length * TONES.length && notes.every(([, v]) => v.tabs.length >= 3 && v.cells.length === v.tabs.length && v.cells.every((y, i) => Math.abs(y - v.tabs[i]) <= 1.5)), notes);
   ok('P1 (premise) every arm found the page and at least 8 drawn controls, and every FRONT/BACK arm found its open panel', counts.length === n && counts.every((c) => c[1] >= 8 && c[2] && (c[4] === 'drawers' || c[3] >= 1)), counts);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 2400)}`);
-const EXPECTED = 3 + 2 * THEMES.length * TONES.length * WIDTHS.length * STATES.length;
+const EXPECTED = 4 + 2 * THEMES.length * TONES.length * WIDTHS.length * STATES.length;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-129-OVERLAPS VERIFY: PASS (${checks.length} checks)` : `\nARBOR-129-OVERLAPS VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
