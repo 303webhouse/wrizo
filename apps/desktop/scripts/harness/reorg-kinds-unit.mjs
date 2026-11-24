@@ -77,8 +77,8 @@ function suite(src) {
   // PRESETS
   {
     const groups = {};
-    for (const p of K.PRESETS) groups[p.group] = (groups[p.group] || 0) + 1;
-    const by = (id) => K.PRESETS.find((p) => p.id === id);
+    for (const p of K.LIVE_PRESETS) groups[p.group] = (groups[p.group] || 0) + 1;
+    const by = (id) => K.LIVE_PRESETS.find((p) => p.id === id);
     const names = (id, style) => (by(id) ? K.presetParts(by(id), style) : null);
     const acad = names('academic-research', 'apa'), acadMla = names('academic-research', 'mla'), acadAp = names('academic-research', 'ap'), acadNone = names('academic-research', 'none');
     const wantAcad = ['Title Page', 'Abstract', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusion', 'References', 'Appendix'];
@@ -88,9 +88,9 @@ function suite(src) {
     const blog = names('blog-post', 'none'), news = names('newsletter', 'none'), story = names('news-story', 'none'), feat = names('feature', 'none');
     const short = names('short-story', 'none'), novel = names('novel', 'none'), pe = names('personal-essay', 'none');
     const fi = names('screenplay-feature', 'none'), half = names('tv-half-hour', 'none'), hour = names('tv-hour', 'none'), film = names('short-film', 'none');
-    const kinds = Object.fromEntries(K.PRESETS.map((p) => [p.id, p.kind]));
+    const kinds = Object.fromEntries(K.LIVE_PRESETS.map((p) => [p.id, p.kind]));
     R.PRESETS = {
-      pass: J(groups) === J({ academic: 3, business: 4, web: 4, creative: 3, screenplay: 4 }) && K.PRESETS.length === 18
+      pass: J(groups) === J({ academic: 3, business: 4, web: 4, creative: 3, screenplay: 4 }) && K.LIVE_PRESETS.length === 18 && K.PRESETS.length === 38
         && J(acad) === J(wantAcad) && J(acadMla) === J(['Heading Block', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusion', 'Works Cited', 'Appendix'])
         && J(acadAp) === J(['Title Page', 'Abstract', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusion', 'Appendix']) && acadNone[7] === 'Sources'
         && J(arg) === J(['Introduction', 'Background', 'Claim and Evidence 1', 'Claim and Evidence 2', 'Claim and Evidence 3', 'Counterargument', 'Rebuttal', 'Conclusion', 'Works Cited'])

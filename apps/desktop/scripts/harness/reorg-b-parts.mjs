@@ -186,8 +186,8 @@ await withHarness(async (app) => {
   const order5 = await app.evalJs(ORDER(ids.novel));
   const t5b = await app.evalJs(TEXTS);
   const ps5 = await app.evalJs(`${ALL}.filter((e) => e.projectId === ${q(ids.novel)} && !e.deletedAt).sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)).slice(6).map((e) => [e.pageSettings?.lineSpacing, e.pageSettings?.size, e.text])`);
-  ok('K5 Presets lists academic 3, business 4, web 4, creative 3; Memo adds Header, Purpose, Discussion, Action Needed AFTER her six Parts (which keep their order and every word), empty, in APA\'s Page Setup; she stays on her page',
-    JSON.stringify(groups) === JSON.stringify([['academic', 3], ['business', 4], ['web', 4], ['creative', 3]]) && order5.length === 10 && order5.slice(0, 6).map((o) => o[0]).join() === order.map((o) => o[0]).join()
+  ok('K5 Presets lists academic 7, business 9, web 7, creative 11 (the live 3, 4, 4, 3 first, then the first slice\'s 4, 5, 3, 8: PRESETS-B, Nov 23); Memo adds Header, Purpose, Discussion, Action Needed AFTER her six Parts (which keep their order and every word), empty, in APA\'s Page Setup; she stays on her page',
+    JSON.stringify(groups) === JSON.stringify([['academic', 7], ['business', 9], ['web', 7], ['creative', 11]]) && order5.length === 10 && order5.slice(0, 6).map((o) => o[0]).join() === order.map((o) => o[0]).join()
       && order5.slice(6).map((o) => o[1]).join('|') === 'Header|Purpose|Discussion|Action Needed' && Object.keys(t5a).every((id) => t5b[id] === t5a[id]) && ps5.length === 4 && ps5.every((p) => p[0] === 2 && p[1] === 12 && p[2] === '') && /wb-1/.test(await app.evalJs('location.hash')), { groups, order5, ps5 });
 
   // ---- STRUCTURE -------------------------------------------------------------------------------------------------------------------------
