@@ -30,3 +30,5 @@ typewriter-fade.mjs
 # Card-height parity not yet explained: the item-12 wrap cards read 4 of 21 red on the runner and 21/21 on the box. Both machines wrap card g4 the same; the runner's board grows the card (the reflow effect only ever grows h, so a transient overflow during load sticks), the box's does not. Green on the box.
 polish10-12-part2.mjs
 flux-wirein-latency.mjs
+# A measurement, not a check (Fable, Nov 23, 7:28 pm: "list it box-only (it measures and never fails)"): it prints its numbers and ends "a measurement: it never fails", so it has no verdict line and reads NOVERDICT on a runner by design. The box decides whether a writer feels it.
+space-enter-cost.mjs
