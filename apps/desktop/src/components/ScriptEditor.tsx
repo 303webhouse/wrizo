@@ -45,6 +45,9 @@ import { getCaretOffset, getSelectionEndOffset, setCaretOffset } from './script/
 import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
 import { createHistory, linesKey, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
 import { storedRowToken } from '../store/persistence/entries';
+import { useExternalPageText } from '../pages/pageEditor/useExternalPageText';
+import { mergeScriptLines, scriptLineKeys } from '../store/scriptMerge';
+import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
 
 // S1 — the Screenplay Room: a house-native block editor, one styled block per
 // element, ONLY the active element a live contenteditable (the BoardTextBox
@@ -159,9 +162,17 @@ export function ScriptEditor({ id }: { id: string }) {
       if (theirs === asStored(elementsRef.current) || theirs === asStored(lastSavedRef.current)) return;
       const { activeId, caret } = historyRef.current.present;
       historyRef.current = createHistory(elementsRef.current, activeId, caret);
+      outsidePendingRef.current = true;   // SCRIPT #115: reconcileRef takes them in, at the next pause in typing or before the next save, whichever is first
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+  // SCRIPT #115 (Fable, Nov 23, 5:10 pm): the same wait prose's #76 has, so the page is never rebuilt under her fingers. It runs after the subscriber above, which marks what has arrived.
+  const outsidePendingRef = useRef(false);
+  const reconcilingRef = useRef(false);
+  const reconcileRef = useRef<() => boolean>(() => false);
+  const lastTypedAtRef = useRef(0);
+  const notUnbornRef = useRef(false);
+  useExternalPageText({ id, unbornRef: notUnbornRef, lastTypedAtRef, reconcileRef });
 
   // SC2 S2b — the projection. Derived from `elements` and nothing else, so it is
   // recomputed exactly when the document changes and not when the caret hint,
@@ -200,6 +211,7 @@ export function ScriptEditor({ id }: { id: string }) {
   useEffect(() => {
     if (elements === lastSavedRef.current) return;
     const h = setTimeout(() => {
+      reconcileRef.current();   // SCRIPT #115: never a save over lines this page has not seen
       const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
       scenesRef.current = scenes;
       saveScriptDoc(id, { v: 1, scenes });
@@ -210,6 +222,7 @@ export function ScriptEditor({ id }: { id: string }) {
 
   useEffect(() => {
     const doFlush = () => {
+      reconcileRef.current();   // SCRIPT #115
       if (elementsRef.current !== lastSavedRef.current) {
         const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
         scenesRef.current = scenes;
@@ -297,7 +310,10 @@ export function ScriptEditor({ id }: { id: string }) {
     const stored = getJournalEntry(id)?.script;
     if (!stored) return;
     const next = flattenScenes(stored.scenes);
-    const at = Math.min(activeIndex, Math.max(0, next.length - 1));
+    // SCRIPT #115: lines from outside can land above this one, so the writer's line is found by its id
+    const activeId = elementsRef.current[activeIndex]?.id;
+    const sameLine = next.findIndex(el => el.id === activeId);
+    const at = sameLine >= 0 ? sameLine : Math.min(activeIndex, Math.max(0, next.length - 1));
     const node = activeElRef.current;
     const shown = elementsRef.current[activeIndex]?.text ?? '';   // the model, current because the page saved its typing first (typing-latency-readers-guard)
     const inLine = !!node && document.activeElement === node;
@@ -318,6 +334,30 @@ export function ScriptEditor({ id }: { id: string }) {
       liveCaret.current = { key: `${next[at].id}:${seedNonce}`, offset: to };
     } else if (liveCaret.current) {
       liveCaret.current = { ...liveCaret.current, offset: mapCaretThrough(shown, text, liveCaret.current.offset) };
+    }
+  };
+
+  // SCRIPT #115 (Fable, Nov 23, 5:10 pm) — lines from another window or device. Nothing unsaved here: take them through Replace's path. Unsaved typing: merge, save the merge and take it, never dropping either side's words.
+  reconcileRef.current = () => {
+    if (!outsidePendingRef.current || reconcilingRef.current) return false;
+    reconcilingRef.current = true;
+    try {
+      const stored = getJournalEntry(id)?.script;
+      if (!stored) return false;
+      const theirs = flattenScenes(stored.scenes);
+      const asStored = (els: ScriptEl[]) => linesKey(flattenScenes(groupIntoScenes(els, scenesRef.current)));
+      const theirsKey = linesKey(theirs), mineKey = asStored(elementsRef.current), savedKey = asStored(lastSavedRef.current);
+      if (theirsKey === mineKey || theirsKey === savedKey) return false;
+      if (mineKey === savedKey) { adoptRef.current(); return true; }
+      const merged = mergeScriptLines(scriptLineKeys(lastSavedRef.current), elementsRef.current, theirs);
+      noteMerge({ at: 'script-page-merge', lines: merged.elements.length, kept: merged.kept });
+      saveScriptDoc(id, { v: 1, scenes: groupIntoScenes(merged.elements, stored.scenes) });
+      adoptRef.current();
+      if (merged.kept) announceKeptBoth(id);
+      return true;
+    } finally {
+      reconcilingRef.current = false;
+      outsidePendingRef.current = false;
     }
   };
 
@@ -358,6 +398,7 @@ export function ScriptEditor({ id }: { id: string }) {
     noteFirstKeystroke();
     noteCaret();
     typedRef.current = true;
+    lastTypedAtRef.current = Date.now();
     if (framed) scriptDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
     setElements(prev => {
       const el = prev[activeIndex];
@@ -581,6 +622,7 @@ export function ScriptEditor({ id }: { id: string }) {
   // so a download the instant after typing can't lose the keystroke the
   // 2s autosave debounce hasn't flushed yet.
   const flushScriptNow = () => {
+    reconcileRef.current();   // SCRIPT #115
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     scenesRef.current = scenes;
     saveScriptDoc(id, { v: 1, scenes });
@@ -589,6 +631,7 @@ export function ScriptEditor({ id }: { id: string }) {
     return scenes;
   };
   const downloadThisPage = (format: 'md' | 'txt') => {
+    reconcileRef.current();   // SCRIPT #115
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     const liveEntry = { ...initialEntry, script: { v: 1 as const, scenes } };
     const files = exportPageFiles(liveEntry);
@@ -614,6 +657,7 @@ export function ScriptEditor({ id }: { id: string }) {
   // adopt it verbatim. Element types do not survive — the one-way warning
   // this gates. Mechanical only: no AI, nothing here rewrites a word.
   const convertToProse = () => {
+    reconcileRef.current();   // SCRIPT #115
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     const doc = { v: 1 as const, scenes };
     saveScriptDoc(id, doc); // flush the live doc + its shadow first
@@ -629,6 +673,7 @@ export function ScriptEditor({ id }: { id: string }) {
   const applyTemplate = (key: TemplateKey) => {
     if (key === 'screenplay') return;
     const template = key === 'blank' ? undefined : key;
+    reconcileRef.current();   // SCRIPT #115
     const scenes = groupIntoScenes(elementsRef.current, scenesRef.current);
     if (isScriptEmpty({ v: 1, scenes })) {
       saveScriptDoc(id, { v: 1 as const, scenes });

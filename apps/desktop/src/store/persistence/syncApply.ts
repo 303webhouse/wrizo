@@ -5,6 +5,7 @@ import { clearRailLocal } from '../../reorg/railSavedKey';
 import { mergeBoxLists } from '../boxTombstones';
 import { type CollectionName, COLLECTIONS, DIRTY_KEY, KEYS, cache, clone, dirty, flushTimers, isUnflushed, lastRaw, notify, onDisk, onDiskText, persistDirty, scheduleFlush, setPreFlush } from './core';
 import { mergeText } from '../textMerge';
+import { mergeScriptDocs } from '../scriptMerge';
 import { announceKeptBoth, noteMerge } from '../mergeNotice';
 import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
@@ -91,6 +92,19 @@ function mergeRemoteTextInto(loc: JournalEntry, rem: JournalEntry): boolean {
   if (rem.text === loc.text) return false;
   const base = getSyncBase(loc.id);
   if (base === null || rem.text === base) return false;   // no base: the old rule; the server's text is the one this device started from: every word of it is already here
+  // SCRIPT #115: a screenplay's truth is its lines and its text only their rendering, so the lines are what merge
+  if (loc.pageType === 'script' && loc.script && rem.script) {
+    const s = mergeScriptDocs(base, loc.script, rem.script);
+    noteMerge({ at: 'sync-merge-script', base, mine: loc.text, theirs: rem.text, out: s.text });
+    setSyncBase(loc.id, rem.text);
+    if (s.text === loc.text) return false;
+    loc.script = s.doc;
+    loc.text = s.text;
+    const at = new Date().toISOString();
+    loc.updatedAt = at > rem.updatedAt ? at : new Date(Date.parse(rem.updatedAt) + 1).toISOString();
+    if (s.kept) announceKeptBoth(loc.id);
+    return true;
+  }
   const r = mergeText(base, loc.text, rem.text);
   noteMerge({ at: 'sync-merge', base, mine: loc.text, theirs: rem.text, out: r.text });
   setSyncBase(loc.id, rem.text);
@@ -162,7 +176,10 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
     const stamp = [theirs.updatedAt ?? '', mine.updatedAt ?? '', new Date().toISOString()].sort().pop() as string;
     const winner = (theirs.updatedAt ?? '') > (mine.updatedAt ?? '') ? theirs : mine;
     const out = clone(winner) as JournalEntry;
-    out.text = r.text;
+    // SCRIPT #115: a screenplay's lines merge too; its text is their rendering
+    const script = mine.pageType === 'script' && mine.script && theirs.script ? mergeScriptDocs(base, mine.script, theirs.script) : null;
+    if (script) out.script = script.doc;
+    out.text = script ? script.text : r.text;
     out.updatedAt = stamp;
     mergeBoxesInto(out, mine, theirs);
     const i = cache.journalEntries.findIndex((x) => x.id === theirs.id);
@@ -172,7 +189,7 @@ function mergeUnflushedPages(rows: JournalEntry[], mineById: Map<string, Journal
     persistDirty();
     onDiskText.set(theirs.id, t);                        // the store holds the other window's text: that is the starting point of the next merge
     onDisk.journalEntries.set(theirs.id, theirs.updatedAt);
-    if (r.kept) announceKeptBoth(theirs.id);
+    if (script ? script.kept : r.kept) announceKeptBoth(theirs.id);
     any = true;
   }
   return any;
