@@ -357,7 +357,9 @@ try { await withHarness(async (app) => {
       // PARKED (Nov 24, ARBOR; SUPERSEDED by PI-B): run 45423945840 read Arbor's pinch drift 3.01 board px in BOTH legs (Machina's under 3): the 3 px allowance was a guess, and the camera's anchor moves by
       // the whole-pixel scroll once per pinch event (10 here), which that guess did not count. The original, verbatim, printed on the parked leg and not counted:
       //   { const r = await probes.pinch(); ok(`${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint`, r.pass, r.detail); }
-      if (process.env.HARNESS_PARKED === '1') console.log(`PARKED ${r.pass ? 'PASS' : 'FAIL'}  ${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint  ${r.detail}`);
+      // the parked record in the house form (pok, as bug116-script-templates prints it): the original's words under SUPERSEDED, asserting its successor's truth (the first form printed the original's own
+      // predicate, which the parked leg's verdict then counted as a red: run 45435045102)
+      if (process.env.HARNESS_PARKED === '1') console.log(`${r.passB ? 'PASS' : 'FAIL'} PARKED (was "${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint", 3 board px) - SUPERSEDED: the allowance did not count the scroll's whole-pixel rounding per pinch event (read 3.01 in both legs of 45423945840); live successor: ${P}PI-B  ${r.detail}`);
       ok(`${P}PI-B ${name} [successor]: two fingers spread to twice their distance zoom x2 about their midpoint: the midpoint's board point drifts no more than the scroll's whole-pixel rounding allows (1 screen px per axis per pinch event, over the scale), a bound under a tenth of an unanchored pinch's drift`, r.passB, r.detail);
     }
     await open(th);
