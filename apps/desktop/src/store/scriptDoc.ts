@@ -15,7 +15,13 @@ function newId(): string {
 }
 
 export function flattenScenes(scenes: Scene[]): ScriptEl[] {
-  return scenes.flatMap(s => [s.heading, ...s.body]);
+  const elements = scenes.flatMap(s => [s.heading, ...s.body]);
+  // SCRIPT batch 2, item 5 (the review's finding 8): before SCRIPT #7 the save wrote a blank scene heading above a script's first line, so a
+  // script that opens on FADE IN: (or any transition) still carries one from then. It is left out when the script is read, and the next save
+  // writes the script without it. Only that shape: a blank heading the writer left above action or dialogue stays theirs, and a new script's
+  // one blank heading (the caret's home) is untouched.
+  const [first, second] = elements;
+  return first && second && first.t === 'scene' && !first.text.trim() && second.t === 'transition' ? elements.slice(1) : elements;
 }
 
 // Regroup a flat element array back into scenes. `prevScenes` (the scenes
