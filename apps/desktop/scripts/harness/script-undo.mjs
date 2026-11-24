@@ -22,6 +22,8 @@
 // FROM OUTSIDE  U19  lines another window saved are not taken back by Ctrl+Z (Fable, Nov 23, 3:25 pm: they reset the history, as Replace does)
 //               U20  (control) this page's own autosave does not reset the history
 //               U21  the same with unsaved typing here when the other window's lines arrive
+// THE COST      U22  a store notice about another page builds no key of this script (Fable, Nov 23, 5:10 pm)
+//               U23  a typed key builds no key of this script
 //               The other window is a real one: a same-origin iframe of the app, its own realm and cache on the one localStorage, writing through the app's own seam.
 //
 // Run (repo root; the Actions harness, or a box turn):  node apps/desktop/scripts/harness/script-undo.mjs
@@ -130,6 +132,7 @@ await withHarness(async (app) => {
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk', timeout: 20000 });
   await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
   const docId = await app.evalJs("window.wrizoCreateProject('Spin').id");
+  await app.evalJs("window.wrizoCreateJournalPage({ id: 'su-elsewhere', text: 'Another page.', origin: 'journal', source: 'page' }); null");
 
   // ---- ACROSS LINES
   const R1 = [HEAD, act('First second')];
@@ -310,12 +313,25 @@ await withHarness(async (app) => {
   const u21 = await lines();
   ok('U21: with unsaved typing here when the other window\'s lines arrive, Ctrl+Z does not step back across them', u21[1]?.[1] === 'Minex', { u21 });
   await dropOther();
+
+  // ---- THE COST: the script's key is the only thing in the app joined on this separator, so counting those joins counts the keys built
+  await open([HEAD, act('Mine')], 1);
+  await app.evalJs("(() => { if (!window.__suKeys) { const real = Array.prototype.join; window.__suKeys = { n: 0 }; Array.prototype.join = function (s) { if (s === '\\u0002') window.__suKeys.n += 1; return real.call(this, s); }; } window.__suKeys.n = 0; return true; })()");
+  await app.evalJs("(() => { for (let i = 0; i < 5; i++) window.wrizoPatchEntry('su-elsewhere', { starred: i % 2 === 0 }); return true; })()");
+  const u22 = await app.evalJs('window.__suKeys.n');
+  ok('U22: a store notice about another page builds no key of this script', u22 === 0, { keysBuilt: u22, notices: 5 });
+  await caret('end');
+  await app.evalJs('window.__suKeys.n = 0; true');
+  await type('abcde');
+  const u23 = await app.evalJs('window.__suKeys.n');
+  const u23t = await lines();
+  ok('U23: a typed key builds no key of this script', u23 === 0 && u23t[1]?.[1] === 'Mineabcde', { keysBuilt: u23, keys: 5, line: u23t[1] });
   return checks;
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 21;
+const EXPECTED = 23;
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nSCRIPT-UNDO VERIFY: PASS (${checks.length} checks)` : `\nSCRIPT-UNDO VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
