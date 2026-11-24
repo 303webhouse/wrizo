@@ -814,7 +814,9 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin:0; }
 /* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
+/* #129 (Fable's condition, Nov 24, 1:15 pm): the notes column keeps the tabs' new pitch - each cell a 106 px slot, 2 px apart, so a "?" stands level with
+   the middle of its own tab (was height 98px, margin-top -10px: the old overlapping tabs' 88 px pitch) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:106px; margin:2px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell:first-child{ margin-top:0; }
 /* r19 - THE DRAWER'S BORDER IS ITS CHOSEN TAB'S COLOUR (§18.3): 3 px on the top, the outer side and the bottom, the page side flush; the chosen
    tab reaches 3 px into it, so tab and border are one piece of cloth (GRAFTS chosen = a blue border, BOARD = madder). */
