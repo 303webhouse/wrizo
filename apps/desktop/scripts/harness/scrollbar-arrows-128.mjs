@@ -57,6 +57,7 @@ const FIND = (scope) => `(() => {
       sw: cs.scrollbarWidth, sc: cs.scrollbarColor, h: e.clientHeight, x: Math.round(x * 10) / 10, top: Math.round(top * 10) / 10, foot: Math.round(foot * 10) / 10,
       hitTop: document.elementFromPoint(x, top) === e, hitFoot: document.elementFromPoint(x, foot) === e,
       room: e.scrollHeight - e.clientHeight, tiny: (e.scrollHeight - e.clientHeight) < 0.6 * e.clientHeight,
+      covers: (() => { const hit = new Set(); for (let y = r.top + 1; y < r.bottom - 1; y += 4) { const o = document.elementFromPoint(x, y); const c = o && o !== e ? o.closest('button, a, [role="button"]') : null; if (c && c !== e) hit.add(((c.getAttribute('class') || c.tagName).split(/\s+/)[0]) + (c.getAttribute('aria-label') ? ' "' + c.getAttribute('aria-label').slice(0, 40) + '"' : '')); } return [...hit]; })(),
       over: (() => { const o = document.elementFromPoint(x, top); return o && o !== e ? (o.getAttribute('class') || o.tagName).split(/\s+/)[0] : null; })() });
   }
   return out;
@@ -168,7 +169,7 @@ try {
         R.loose = { jacked: await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')") };
         R.scrollers.push(...await testAll(app, 'loose', (s) => s.what === 'page'));
         read[theme][w] = R;
-        console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} room ${s.room}${s.tiny ? ' TINY' : ''} hit ${s.hitTop}/${s.hitFoot}${s.over ? ' over ' + s.over : ''} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
+        console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} room ${s.room}${s.tiny ? ' TINY' : ''} hit ${s.hitTop}/${s.hitFoot}${s.over ? ' over ' + s.over : ''}${s.covers && s.covers.length ? ' COVERED BY ' + s.covers.join(' + ') : ''} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
         if (w === 1920) {
           probe[theme] = {};
           for (const [v, css] of [['V1', V1], ['V2', V2]]) {
@@ -213,6 +214,20 @@ for (const t of THEMES) {
   ok(`M-${t} every bar shown, at 1366, 1920 and 2560, is drawn by the ::-webkit-scrollbar mechanism (computed scrollbar-width and -color auto), never the native one whose arrows cannot be hidden: ${rs.length - bad.length}/${rs.length} (${rs.filter((s) => s.tiny).length} with too little room for a press)`,
     rs.length > 0 && bad.length === 0, [...new Map(bad.map((s) => [`${s.scope}/${s.what} ${s.cls} sw ${s.sw} sc ${s.sc}`, { w: s.w, room: s.room }])).entries()].slice(0, 12));
 }
+// C (INK, Nov 24, from Nick's screenshots: the boxed ^ and v capping the page's bar are the reorg's Part arrows, .reorg-part-arrow, 4 px inside each
+// end - the 3 px presses above passed between them and the bar's ends): no button or link is drawn over any bar, sampled every 4 px down its middle.
+const cOk = (rs) => rs.length > 0 && rs.every((s) => !(s.covers && s.covers.length));
+for (const t of THEMES) {
+  const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
+  const bad = rs.filter((s) => s.covers && s.covers.length);
+  ok(`C-${t} no button or link (an arrow, a scroll-step control) sits on any bar, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`, cOk(rs),
+    bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, covers: s.covers })));
+}
+{
+  const base = cells.map((c) => c.R && c.R.scrollers.find((s) => s.what === 'page')).find(Boolean);
+  const mut = base ? { ...base, covers: ['reorg-part-arrow "Next Part"'] } : null;
+  ok("MUT-C a reading with a Part arrow on the page's bar turns C's test red", !!mut && JSON.stringify(mut.covers) !== JSON.stringify(base.covers) && !cOk([mut]), mut && mut.covers);
+}
 const wheels = cells.map(({ t, w, R }) => ({ t, w, d: R && R.wheel }));
 ok(`W the wheel still scrolls the page's scroller in every theme x size: ${wheels.filter((x) => x.d > 0).length}/${wheels.length}`, wheels.every((x) => x.d > 0), wheels);
 {
@@ -222,7 +237,7 @@ ok(`W the wheel still scrolls the page's scroller in every theme x size: ${wheel
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 9;   // P1-B (P1 parked before the first green), A x3, M x3 (frames 45463510262), W, MUT-A
+const EXPECTED = 13;   // P1-B (P1 parked before the first green), A x3, M x3 (frames 45463510262), C x3 + MUT-C (INK: the Part arrows), W, MUT-A
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nSCROLLBAR-ARROWS-128 VERIFY: PASS (${checks.length} checks)`
