@@ -54,7 +54,7 @@ window.__caretNow = function() {
 
 try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
-  await app.emulateDpr(1, 1366, 768);
+  await app.emulateDpr(1, 1024, 1400);   // w2.mjs's own window (the driver's default): the rail with the return chip is in this layout
   await app.goto('/');
   await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4')");
   await app.reload();
@@ -77,7 +77,7 @@ try { await withHarness(async (app) => {
     await sleep(150);
     const set = await ev('window.__caretNow()');
     if (set !== want) { misses.soon.push({ cycle: i, want, set, note: 'the caret was not placed before leaving' }); continue; }
-    await ev("location.hash = '#/journal'; true");   // she leaves by a route change (the rail's Journal)
+    await app.click('Journal');   // she leaves by the rail, as w2.mjs does
     await app.waitFor("!!document.querySelector('.board-canvas')", { timeout: 15000, label: 'the Journal board' });
     await sleep(150);
     const chip = await ev("!!document.querySelector('.desk-rail-wayback')");
