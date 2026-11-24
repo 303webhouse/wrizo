@@ -156,7 +156,7 @@ async function menuLaws(app, leg, tag) {
     const names = await app.evalJs(`(() => { const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === ${q('pb-' + leg + '-' + id)}); const P = window.wrizoParts; return e && P ? P.partsOfDoc(e.projectId).map((p) => p.name) : null; })()`);
     const want = KINDS.presetParts(preset, 'none');
     const shown = await app.evalJs("(() => { const l = document.querySelector('.wz-sliver [data-reorg-parts]'); return l ? [...l.querySelectorAll('.reorg-parts-name')].map((x) => (x.textContent || '').replace(/\\s+/g, ' ').trim()) : null; })()");
-    const shownOk = want.length === 1 ? JSON.stringify(shown) === JSON.stringify(['Part 1']) : JSON.stringify(shown) === JSON.stringify(want);
+    const shownOk = want.length === 1 ? JSON.stringify(shown) === JSON.stringify([leg === 'arbor' ? 'Section 1' : 'Part 1']) : JSON.stringify(shown) === JSON.stringify(want);
     made.push({ id, ok: JSON.stringify(names) === JSON.stringify(want) && shownOk, names, want, shown });
   }
   ok(`${tag}5 ${L}: ${SAMPLES.join(', ')}, each pressed in its own empty Doc, make exactly their Parts, in order`, made.every((m) => m.ok), made.filter((m) => !m.ok));
