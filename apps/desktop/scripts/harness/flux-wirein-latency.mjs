@@ -8,10 +8,16 @@
 //   M  the MUTANT: W with an UNDAMPED drawing layer under it (flux3-latency's stand-in, damping skipped: it draws every frame while she types). It must FAIL L.
 // Keys: one character every ~90 ms, the latency of each read IN the page as rhizome-latency and flux3-latency read it (keydown -> the second animation frame after its `beforeinput`).
 // VERDICTS: L  W's pooled median <= C's + C's median spread, W's pooled p95 <= C's + C's p95 spread, and no W key over 100 ms.
-//   MUT-b  the mutant FAILS L (its premise asserted first: its layer really drew through the typing).
+//   MUT-b  the mutant FAILS L (its premise asserted first: its layer really drew through the typing).   [PARKED Nov 23: it missed - see the verdicts]
+//   N  the SHARPER mutant (POLISH, Nov 24, owed by Fable's Nov 23 ruling): M's undamped layer whose every frame ALSO spends FLUX_WIREIN_BURN ms (default 8) of
+//      main-thread work - the cost damping exists to keep off her keys. M's layer is a GPU canvas: on the box it costs the main thread nothing and keeps the
+//      frame chain warm, so the clock read it FASTER than the control (p95 28.4 vs 32.3 on the join, 29.6 vs 33.2 on the control tree) - a mutant the
+//      clock cannot see by construction, not a blind clock. N's cost is on the thread the clock measures: in each frame its callback runs before the meter's.
+//   MUT-c  the N mutant FAILS L (its premise asserted first: the layer's frame callbacks really spent >= 90% of the burn on >= 80% of the frames while the
+//          keys landed, every round). FLUX_WIREIN_BURN=0 makes N the same as M: MUT-c must then go RED (the mutant's own red; a box turn reads both).
 //   Premises: P1 each arm stood where it claims (theme, no flag in the URL or on the root, Wire In mounted in W and M and in no other arm, the stand-in only in M), P2 the Typewriter off in every arm,
 //   P5 at least 40 keys painted per arm per round, P6 every typed key reached the stored page, B the build is the one served (built after the last src commit).
-// FLUX_WIREIN_ROUNDS=<n> (default 4). Run: node scripts/harness/flux-wirein-latency.mjs   (from apps/desktop; a box turn)
+// FLUX_WIREIN_ROUNDS=<n> (default 4). FLUX_WIREIN_BURN=<ms> (default 8; 0 = N without its burn, MUT-c's own red). Run: node scripts/harness/flux-wirein-latency.mjs   (from apps/desktop; a box turn)
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -26,6 +32,7 @@ const ROUNDS = Math.max(3, Number(process.env.FLUX_WIREIN_ROUNDS || 4));
 const KEYS = 44, MIN_KEYS = 40, GAP = 90, MAX_MS = 100, IDLE_MS = 1500, BUSY_MS = 600;
 const VIEW = [1920, 1080];
 const LOAD = { traces: 300, electrons: 120, busyMs: BUSY_MS };
+const BURN_MS = Math.max(0, Number(process.env.FLUX_WIREIN_BURN ?? 8));   // N's main-thread work per frame (MUT-c)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail });
@@ -123,7 +130,9 @@ function standIn(opts) {
     ctx.shadowBlur = 0;
   };
   let raf = 0;
-  const frame = (t) => { raf = requestAnimationFrame(frame); draw(t); };   // UNDAMPED: it draws every frame, typing or not
+  // N (MUT-c): the same layer, and its frame ALSO spends opts.burnMs of main-thread work (a spin on performance.now, an observable exit); M passes none
+  const burn = (ms) => { if (!(ms > 0)) return; const end = performance.now() + ms; while (performance.now() < end) { /* the layer's own per-frame work */ } };
+  const frame = (t) => { raf = requestAnimationFrame(frame); draw(t); burn(opts.burnMs); };   // UNDAMPED: it draws every frame, typing or not
   draw(performance.now());
   raf = requestAnimationFrame(frame);
   return true;
@@ -151,6 +160,7 @@ const ARMS = {
   X: { theme: 'flux', mode: 'draft', load: false },
   W: { theme: 'flux', mode: null, load: false },
   M: { theme: 'flux', mode: null, load: true },
+  N: { theme: 'flux', mode: null, load: true, burnMs: BURN_MS },   // the sharper mutant (MUT-c)
 };
 
 try { await withHarness(async (app) => {
@@ -191,7 +201,7 @@ try { await withHarness(async (app) => {
     // Wire In: the entry line (3 s + 0.6 s fade) has gone before the clock starts; the others wait out the mode's own re-persist (~1.1 s)
     await sleep(arm.mode ? 1500 : 4300);
     const rectOf = "(() => { const r = document.querySelector('.mode-page')?.getBoundingClientRect(); return r ? [r.x, r.y, r.width, r.height].map((v) => v.toFixed(2)).join(',') : null; })()";
-    if (arm.load) await app.evalJs(`(${standIn.toString()})(${JSON.stringify(LOAD)})`);
+    if (arm.load) await app.evalJs(`(${standIn.toString()})(${JSON.stringify({ ...LOAD, burnMs: arm.burnMs || 0 })})`);
     await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); if (!ed) return false; ed.focus(); const s = getSelection(); s.selectAllChildren(ed); s.collapseToEnd(); return true; })()");
     const idle0 = await app.evalJs('performance.now()');
     await sleep(IDLE_MS);
@@ -234,22 +244,31 @@ try { await withHarness(async (app) => {
 
   // warm-up (discarded), then the rounds, the arm order rotating each round
   await runArm('C', 0);
-  const order = ['C', 'X', 'W', 'M'];
-  const res = { C: [], X: [], W: [], M: [] };
+  const order = ['C', 'X', 'W', 'M', 'N'];
+  const res = { C: [], X: [], W: [], M: [], N: [] };
   for (let round = 1; round <= ROUNDS; round += 1) {
     const rot = order.slice((round - 1) % order.length).concat(order.slice(0, (round - 1) % order.length));
     for (const name of rot) res[name].push(await runArm(name, round));
   }
-  const all = [...res.C, ...res.X, ...res.W, ...res.M];
+  const all = [...res.C, ...res.X, ...res.W, ...res.M, ...res.N];
 
   // ---- premises
-  const placed = all.filter((r) => {
-    const a = ARMS[r.name], w = r.where, wired = r.name === 'W' || r.name === 'M';
+  // SUPERSEDED (Nov 24, the sharper mutant): P1 named Wire In in W and M and the stand-in in M only; N is a third Wire In arm with the stand-in. P1-B is the
+  // same reading with N counted. P1, verbatim:
+  //   const placed = all.filter((r) => {
+  //   const a = ARMS[r.name], w = r.where, wired = r.name === 'W' || r.name === 'M';
+  //   // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: return w.theme === a.theme && w.page === 'dark' && w.queryFlag === null && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
+  //   return w.theme === a.theme && w.page === 'dark' && w.queryFlag === '0' && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
+  //   });
+  //   ok(`P1 every arm stood where it claims (C: Arbor; X: Flux in TEXT; W and M: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M only; Page: Dark; the instrument in place): ${placed.length}/${all.length}`,
+  //   placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
+  const placedB = all.filter((r) => {
+    const a = ARMS[r.name], w = r.where, wired = r.name === 'W' || r.name === 'M' || r.name === 'N';
     // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: return w.theme === a.theme && w.page === 'dark' && w.queryFlag === null && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
     return w.theme === a.theme && w.page === 'dark' && w.queryFlag === '0' && !w.rootFlag && w.jacked === wired && w.corridor === wired && w.standin === a.load && w.instrument;
   });
-  ok(`P1 every arm stood where it claims (C: Arbor; X: Flux in TEXT; W and M: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M only; Page: Dark; the instrument in place): ${placed.length}/${all.length}`,
-    placed.length === all.length, JSON.stringify(all.filter((r) => !placed.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
+  ok(`P1-B every arm stood where it claims (C: Arbor; X: Flux in TEXT; W, M and N: Flux with Wire In mounted, the Corridor present; no ?flux3 in the URL and none on the root in any arm; the stand-in in M and N only; Page: Dark; the instrument in place): ${placed.length}/${all.length}`,
+    placedB.length === all.length, JSON.stringify(all.filter((r) => !placedB.includes(r)).slice(0, 2).map((r) => ({ arm: r.name, round: r.round, where: r.where }))));
   // (first version counted every arm; Wire In's own typewriter-run page carries data-typewriter="true" by design, so W and M are asserted by P1 (Wire In mounted), and P2 is about the paper Typewriter in C and X)
   const plain = all.filter((r) => r.name === 'C' || r.name === 'X');
   const tw = plain.filter((r) => r.where.typewriter === 'true');
@@ -277,6 +296,16 @@ try { await withHarness(async (app) => {
   // the check cannot tell a layer that draws through typing from one that does not. Its successor is a sharper mutant (POLISH owes it). The premise line above stays live. Original, verbatim:
   // timing(`MUT-b the undamped-layer mutant FAILS L (M median ${r1(m.X.median)} p95 ${r1(m.X.p95)} max ${r1(m.X.max)} against C ${r1(m.C.median)} / ${r1(m.C.p95)}; caught: ${m.lat ? 'NO' : 'YES'})`,
   //   mLanded && !m.lat, `C ${show(m.C)} | M ${show(m.X)}`);
+  // MUT-c (the sharper mutant; POLISH, Nov 24): N = M's layer + FLUX_WIREIN_BURN ms of main-thread work in each of its frames. Premise first: the burn LANDED
+  // (the instrument's per-frame callback time, cbMs, while the keys landed). Then the mutant must FAIL L. With FLUX_WIREIN_BURN=0 the premise is
+  // vacuous (asserted: the burn asked is 0) and MUT-c must read red - the mutant's own red.
+  const mN = judge(res.C, res.N);
+  const nLanded = BURN_MS > 0 && res.N.length > 0 && res.N.every((r) => r.typing.n > 0 && r.typing.cbMs.filter((x) => x >= 0.9 * BURN_MS).length >= 0.8 * r.typing.n && r.typing.drawFrames >= 0.8 * r.typing.n);
+  ok(`MUT-c premise: the sharper mutant landed - its layer drew through the typing AND spent >= ${r1(0.9 * BURN_MS)} ms of main-thread work on >= 80% of the frames while the keys landed, every round (burn ${BURN_MS} ms)`, nLanded,
+    JSON.stringify(res.N.map((r) => ({ round: r.round, typingFrames: r.typing.n, drew: r.typing.drawFrames, burned: r.typing.cbMs.filter((x) => x >= 0.9 * BURN_MS).length, cbMedian: r1(stat(r.typing.cbMs).median) }))));
+  timing(`MUT-c the main-thread layer (burn ${BURN_MS} ms a frame) FAILS L (N median ${r1(mN.X.median)} p95 ${r1(mN.X.p95)} max ${r1(mN.X.max)} against C ${r1(mN.C.median)} / ${r1(mN.C.p95)}; caught: ${mN.lat ? 'NO' : 'YES'})`,
+    nLanded && !mN.lat, `C ${show(mN.C)} | N ${show(mN.X)}`);
+  ok(`N (information) the sharper mutant against M, median/p95 ms: M ${r1(m.X.median)}/${r1(m.X.p95)} | N ${r1(mN.X.median)}/${r1(mN.X.p95)} | C ${r1(mN.C.median)}/${r1(mN.C.p95)}`, true, '');
 
   // COST reading, INFORMATION ONLY (Fable Nov 14, 12:24 pm: "add the cost reading to the Wire In probe as information only"). The clock (keydown -> the second frame) cannot see a cost smaller than a frame (the zoom probe's per-key print,
   // Actions run 43626167023: a 24 ms burn on every key LOWERED the clock); the reading that rises with a burn is WORK, the key's own synchronous work: keydown capture -> the `input` event's bubble at the document
