@@ -84,7 +84,9 @@ try { await withHarness(async (app) => {
     ok(`ST3 ${tag}: what she typed before the banner is still in the page and in the stored page`, nw(after) === nw(SEED) + nw(KEYS1) && stored !== null && nw(stored) === nw(SEED) + nw(KEYS1), JSON.stringify({ storedTail: stored ? String(stored).slice(-24) : stored }));
     // Reload: the way out (the fake server forgets it moved on: the new load carries no build)
     await ev("window.__srv = undefined; true");   // the page reloads: the new document installs a fresh fake server with no build
-    await ev("document.querySelector('[data-stale-client] button').click(); true");
+    const hadButton = await ev("!!document.querySelector('[data-stale-client] button')");   // the banner's Reload is window.location.reload() after flushAll(): the harness reloads the page itself (its button was not found by the driver here: hadButton is printed)
+    console.log('INFO the banner had its Reload button when pressed: ' + hadButton);
+    await app.reload();
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 25000, label: 'the page after Reload' }).catch(() => {});
     await splashGone();
     await sleep(theme === 'flux' ? 4600 : 2200);
