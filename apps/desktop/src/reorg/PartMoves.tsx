@@ -10,7 +10,10 @@ import { REORG } from './flag';
 
 // MOVING BETWEEN PARTS (Fable's add-on, Nov 19 3:55 pm; plan: "forward and back arrows that show with the scrollbar", Nick's idea; built to the
 // prototype's page, docs/mockups/reorg/app.js arrowBtn and partFoot, frame P2-12D). Behind ?reorg=1 in Machina, on a Page.
-//   PartArrows: two arrows capping the page's own scrollbar (.mode-scroll's), previous above and next below, disabled at either end. They sit in
+//   #128 (Nick, Nov 24: "lose the scrollbar arrows on every page in every theme"; Fable 11:28 am, RULED: our own up/down controls beside the page
+//     go unless one is the only way to do something): PartArrows is NO LONGER MOUNTED (PageEditor). Previous/next Part stays reachable by the foot below
+//     ("< 1 · name", "Next · 3 · name >") and the Parts list (the Part line's drop; FINALIZE's PARTS / Flux's TRACKS). Kept here, unmounted, for the record.
+//   PartArrows (was): two arrows capping the page's own scrollbar (.mode-scroll's), previous above and next below, disabled at either end. They sit in
 //     the paper's overlay slot (ModeStage's `readouts`, absolutely placed inside .mode-page), measured from the scroller's own layout box, so
 //     neither the paper, the column nor the editor moves (page primacy).
 //   PartFoot: the quiet line at a Part's foot, after her words in the same scroll: "< 1 · name", "end of Part 2", "Next · 3 · name >". Only in
