@@ -66,7 +66,7 @@ try { await withHarness(async (app) => {
 
   // ---- UB: the merge case. A fresh page; two words saved, a third NOT; theirs arrives from the record as it was saved ----
   const ID2 = 'ua82-merge';
-  await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: ID2, text: 'alpha', createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })}); window.wrizoFlushNow(); localStorage.setItem('wrizo-mode-page-${ID2}', 'drafting'); history.replaceState(null, '', '/#/page/${ID2}'); true`);
+  await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: ID2, text: ['alpha', 'beta', 'gamma'].join(String.fromCharCode(10)), createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })}); window.wrizoFlushNow(); localStorage.setItem('wrizo-mode-page-${ID2}', 'drafting'); history.replaceState(null, '', '/#/page/${ID2}'); true`);
   await app.reload();
   await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 20000, label: 'the merge page' }).catch(() => {});
   await splashGone();
@@ -74,7 +74,7 @@ try { await withHarness(async (app) => {
   await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus({ preventScroll: true }); const s = window.getSelection(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); s.removeAllRanges(); s.addRange(r); return true; })()");
   await app.typeKeys(' one'); await app.typeKeys(' two');
   await sleep(2500);
-  // `front`: their words go at the START of the page (a merge whose two edits do not touch; where they touch, #76's keep-both writes the line twice by design, and that is not this ticket's)
+  // `front`: their words go at the START of the page, on another line from hers (a merge of two edits to different lines; where both change the same line, #76's keep-both writes it twice by design, and that is not this ticket's)
   const arrive = (id, word, front = false) => ev(`(() => { const rows = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); r.text = ${front ? `'${word} ' + r.text` : `r.text + ' ${word}'`}; r.updatedAt = new Date(Date.now() + 5000 + Math.floor(Math.random() * 1000)).toISOString(); const raw = JSON.stringify(rows); localStorage.setItem(${JSON.stringify(KEY)}, raw);
     window.dispatchEvent(new StorageEvent('storage', { key: ${JSON.stringify(KEY)}, newValue: raw, storageArea: localStorage })); return true; })()`);
   await app.typeKeys(' three');   // not saved yet
@@ -82,7 +82,7 @@ try { await withHarness(async (app) => {
   await app.waitFor("document.querySelector('.forward-only-editor') && document.querySelector('.forward-only-editor').innerText.includes('THEIRS')", { timeout: 8000, label: 'their words shown (merge)' }).catch(() => {});
   await sleep(800);
   const merged = await text();
-  ok('UB1 the merged page holds alpha, one, two, three and THEIRS, each once (no line written twice)', ['alpha', 'one', 'two', 'three', 'THEIRS'].every((w) => count(merged, w) === 1), JSON.stringify(merged.slice(-60)));
+  ok('UB1 the merged page holds alpha, beta, gamma, one, two, three and THEIRS, each once (no line written twice)', ['alpha', 'beta', 'gamma', 'one', 'two', 'three', 'THEIRS'].every((w) => count(merged, w) === 1), JSON.stringify(merged.slice(-60)));
   await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
   await app.keyCombo('z'); await sleep(300);
   const b1 = await text();
