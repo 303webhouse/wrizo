@@ -74,10 +74,11 @@ try { await withHarness(async (app) => {
   await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus({ preventScroll: true }); const s = window.getSelection(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); s.removeAllRanges(); s.addRange(r); return true; })()");
   await app.typeKeys(' one'); await app.typeKeys(' two');
   await sleep(2500);
-  const arrive = (id, word) => ev(`(() => { const rows = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); r.text = r.text + ' ${word}'; r.updatedAt = new Date(Date.now() + 5000 + Math.floor(Math.random() * 1000)).toISOString(); const raw = JSON.stringify(rows); localStorage.setItem(${JSON.stringify(KEY)}, raw);
+  // `front`: their words go at the START of the page (a merge whose two edits do not touch; where they touch, #76's keep-both writes the line twice by design, and that is not this ticket's)
+  const arrive = (id, word, front = false) => ev(`(() => { const rows = JSON.parse(localStorage.getItem(${JSON.stringify(KEY)})); const r = rows.find((x) => x.id === ${JSON.stringify(id)}); r.text = ${front ? `'${word} ' + r.text` : `r.text + ' ${word}'`}; r.updatedAt = new Date(Date.now() + 5000 + Math.floor(Math.random() * 1000)).toISOString(); const raw = JSON.stringify(rows); localStorage.setItem(${JSON.stringify(KEY)}, raw);
     window.dispatchEvent(new StorageEvent('storage', { key: ${JSON.stringify(KEY)}, newValue: raw, storageArea: localStorage })); return true; })()`);
   await app.typeKeys(' three');   // not saved yet
-  await arrive(ID2, 'THEIRS');
+  await arrive(ID2, 'THEIRS', true);
   await app.waitFor("document.querySelector('.forward-only-editor') && document.querySelector('.forward-only-editor').innerText.includes('THEIRS')", { timeout: 8000, label: 'their words shown (merge)' }).catch(() => {});
   await sleep(800);
   const merged = await text();
