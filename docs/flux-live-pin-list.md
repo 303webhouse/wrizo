@@ -1,29 +1,70 @@
 # Flux live: the pin list
 
-For Fable's reading before Flux live (ruling of Nov 23, 2:30 pm). Join: `ink/flux-live` @ c72a2af8, on L3 live. The driver pin is merged (`ink/flux-driver-pin` e09a6629).
+For Fable's reading before Flux live (rulings of Nov 23, 2:30 pm and 6:14 pm). The driver pin is merged (`ink/flux-driver-pin` e09a6629).
 
-## The answer
+## Where it stands
 
-- **141 browser harness files name Flux.** The driver pins each to `?flux3=0` wherever it opens a page without its own query.
-- **104 keep their subject:** they also pass on the Flux a writer gets.
-- **20 changed subject.** They hold 48 writer-facing promises: 9 have a successor on default Flux, 11 are retired by a ruling, **24 need a new successor**, and **4 may be real bugs**.
-- **11 were red for another reason** (listed below). Two of them found real bugs, both now fixed on the join.
-- **6 are box-only** and have no live reading yet.
+- **Join:** `ink/flux-live` @ 4cf35181, on L4 live (main 3c2763f5). Its full Actions pair is the check on this tip; the box's typing turns wait for Nick's bedtime, as ruled.
+- **31 first-parent commits** since L live 4f434319, **59 product files** against it (the merge points are at the end).
 
-The 24 successors are not built yet.
+## Your four rulings, as applied
 
-## Your rulings
+1. **The double LOG (row 33): fixed.** On a Log page the LOG door is her place and the second word is gone (`ink/flux-log-once`; R23, R24, MUT-R23).
+2. **The "?" (row 22): Inputs yes, Presets no.** Inputs carries the same shared `HelpButton` and `helpGrafts` words Flux's Links tab had before the reorg (`ink/flux-inputs-note`; FB17). It is a `HelpButton`, not a `DrawerNote`: that is the control and word this tab already had. Presets gets none, because `presets/3-notes` brings a "?" per preset.
+3. **Screenplay templates (row 13): #116, ARBOR's,** handed over with the evidence. Not on this train.
+4. **The room's points (row 31): left painted.** `polish10-recede` R1 stays verbatim on plain Flux; the live read is owed below.
 
-1. **The double Log (row 33).** On a Log page the rail shows her place as LOG and the LOG door below it, unmarked (`ReorgRail.tsx:46-51, 121, 146-151`). The L2 plan was "duplicate Log fix first". Lean: a bug; mark the door as her place and drop the second word.
-2. **The "?" on Inputs and Presets (row 22).** Flux has neither, and no file in `reorg/` uses HelpButton. Arbor keeps Inputs' on its prose pages (`Tutor.tsx:1136`: `arbor2 && !arborBoard`). Lean: add both, through the lexicon.
-3. **A screenplay's templates (row 13).** The host still passes five, but the Front menu hides them and the kind menu reads none. **The same rule applies to Arbor** (`frontKindHead` covers `plateau` and `flux`), so this is not Flux-only and is already live in Arbor. Not yet confirmed on a frame. Lean: a separate ticket, not a Flux live blocker.
-4. **The room's drifting points (row 31).** They pause at whatever opacity they had when she types (read: 0.23 and 0.9), so they stay painted, against "nothing off the page paints while typing". The room ground's own spec says "pause" and "never flash". Lean: fade them with the chrome.
+## What became of the 24 owed successors
+
+**21 are built** in `flux-live-successors.mjs` (30 checks, on the Flux a writer gets: no `?flux3`, no `?reorg`), her words, saving, typing and getting around first:
+
+| Row | Successor |
+|---|---|
+| 1 | SL-ORANGE, MUT-SL-ORANGE |
+| 2 | SL-TARGETS |
+| 3 | SL-PLACE (**half:** the untouched top drawer and her own Drive; a RENAMED top drawer is still owed) |
+| 7 | SL-NO-PNG |
+| 8 | SL-DOOR |
+| 12 | SL-ORDER |
+| 14 | SL-GRIP |
+| 15 | SL-TABS-KEYS |
+| 16 | SL-PROGRESS |
+| 17 | SL-VIEWS, MUT-SL-VIEWS |
+| 20 | SL-COMPOSE |
+| 25 | SL-HEADS |
+| 26 | SL-SPLIT-OPEN, SL-SPLIT-CLOSE |
+| 27 | SL-SPLIT-TYPE |
+| 28 | SL-SPLIT-READ, MUT-SL-SPLIT-READ |
+| 32 | SL-DOCK |
+| 34 | SL-LOG-DRIVES |
+| 35 | SL-PLACE |
+| 41 | SL-FONTS |
+| 43 | SL-PAPER (1366 x 768 only) |
+| 46 | SL-CARET-LIGHT, SL-CARET-WIRED, MUT-SL-CARET |
+
+**Owed after live.** Each old check stays verbatim and keeps running, pinned to plain Flux:
+
+| Row | The check that stays | The successor it owes on default Flux |
+|---|---|---|
+| 3 (half) | flux-v2 F8, a renamed top drawer | The rail reads a RENAMED top drawer's own name |
+| 31 | polish10-recede R1 | The Wrizors' look at the room's points, then a census with their ruling |
+| 36 | scrollbar-flush | The scrollbar flush at each margin, set through TRACKS' Frame |
+| 42 | polish-arbor-chrome P7 | Flux's glyph, tab and rail-edge sizes on the reorg rail |
+| 45 | wa-red-popout P2 to P28 on Flux | The panel's words, colours, fit, tick and errors through the v5 door (SL-POPOUT holds only the way in and out) |
+
+## One finding outside this train
+
+**`w2` is intermittent on live main too.** After the return chip the caret can fall out of its text node to the editor element. Measured with the same diagnostic: 1 of 48 on the join and 1 of 48 on main, and 3 of 72 against 1 of 72 over both rounds. The likely cause, not proven, is a row replaced after the restore. It can turn any pair red, and it has no owner yet.
+
+## The count, from the live read (run 45287446449)
+
+141 browser harness files name Flux: 104 keep their subject, 20 changed it (48 promises: 9 had a successor, 11 are retired by a ruling, 24 needed a new one, 4 were possible bugs), 11 were red for other reasons, and 6 are box-only with no live reading.
 
 ## How this was read
 
 - Run 45287446449 ran all 135 Actions-runnable files on `ink/flux-live-read`, a probe that is never merged: a file that does not ask gets the redesign, with the reorg on for pages **loaded with Flux stored**.
 - **Limit:** a file that switches to Flux after the page loads read the redesign without the reorg, a pair no writer gets. flux-v2 F6, F7, F8 and F14 are in that group, and other green files could be too.
-- The promise map was drafted by a read-only agent. I checked rulings 1 to 3 against the source. The other rows are its reading of code and logs, and no frame was taken.
+- The promise map was drafted by a read-only agent. I then read every line it cites, for all 20 changed files, and the successor checks it relies on. Its "no live check exists" claims were spot-checked by search, not proven one by one, and no frame was taken.
 - `flux-reorg-spec.md` is not in the repo, so a RETIRED row quotes code and harness comments. The spec could change a row.
 - hb1, polish-arbor-chrome and scrollbar-flush crashed before printing, so their earlier checks have no live reading.
 
@@ -225,3 +266,41 @@ The 24 successors are not built yet.
 | wa-red-popout | driver (pinned) | red | **Yes**: rows 44, 45 |
 | walk-open-select | driver (pinned) | green | No |
 | width-gate | driver (pinned) | green | No |
+
+## The merge points (first-parent, from L live 4f434319)
+
+Conflicts were resolved in four files at three merges: `index.css` import order and `reorg-flux-words-unit` both sides' parks (1af3387a), `flux3/boot.ts` both sides' imports (4f8c2ab8), and `reorg-flux-front-live` EXPECTED (0bc11294). Every other merge was clean.
+
+| Commit | What | Product files |
+|---|---|---|
+| 6e08c45f | Flux live join: INK Back menu join (piece 2 + POLISH 7fbd9827) (c737ffb8) | 13: components/Sliver.tsx, components/Tutor.tsx, index.css, reorg/ColourPicker.tsx, reorg/frontTabs.ts, reorg/themeGate.ts, +7 |
+| e7905d2c | Flux live join: INK command-box edges (1a74ba32) | 1: flux3/flux-v3.css |
+| 1af3387a | Flux live join: ARBOR rail and top (8f9b62b2); index.css keeps INK's import order (the three sheets share no class); r | 18: components/Cascade.tsx, index.css, pages/PageEditor.tsx, reorg/RailBox.tsx, reorg/ReorgRail.tsx, reorg/TopRail.tsx, +12 |
+| 4f8c2ab8 | Flux live join: FIX mark and splash (fa110ed4); flux3/boot.ts keeps both sides' imports (the current's and the splash' | 13: App.tsx, components/Arrival.tsx, components/Splash.tsx, components/SplashMark.tsx, components/ThemePicker.tsx, flux3/FluxFive.tsx, +7 |
+| aaa6251e | Flux live join: FIX switch-over (fix-flux-live 4aa557c8): FLUX3 on by default, ?flux3=0 off | 1: flux3/flag.ts |
+| d8a5f351 | c13-10c: declare the Flux splash's four new words and its Log out word (fa110ed4 added them undeclared) | none |
+| b1a6b165 | Flux live: all six Flux cells on and REORG_DEFAULT_ON.flux = true (Fable, Nov 23, 8:20 am) | 2: reorg/flag.ts, reorg/themeGate.ts |
+| 304faef7 | harness: flux-keyflip-reorg runs keyflip-live on Flux with the reorg on (KFR-ON reads that it did) | none |
+| 5fb9c133 | Flux live join: ARBOR's DOCS door check (38f80a70, harness only: DOCS and CIRCUITS compute to the same text-mid) | none |
+| 829d9e02 | harness: the checks the Flux flip falsified, parked verbatim with successors | none |
+| 0bc11294 | Flux live join: POLISH's end-of-Track line (a3c32a1d); reorg-flux-front-live EXPECTED = 23 (19 + FF11b + FF20 to FF22) | 1: styles/24-reorg-flux-front.css |
+| 8d65f9a3 | frames: flux-live, one shoot of every Flux piece as the table draws it (no preview door) | none |
+| 94c49904 | harness: flux3-other-themes-dom, Arbor and Machina draw the same DOM by default and with ?flux3=0 (Fable, Nov 23, 12:4 | none |
+| 22eaff54 | Flux live join: POLISH's end-of-Track tones on the light page (flux-foot-tones 7954b739) | 1: styles/24-reorg-flux-front.css |
+| ba1218d5 | flux current: data-flux-writing is written only in Flux (FLUX3 is on for every theme now); flux3-other-themes-dom read | 1: flux3/fluxCurrent.ts |
+| 91c9d295 | flux3-other-themes-dom: Arbor's momentary scrollbar attribute is not part of the read | none |
+| 1040339e | Flux live join: a preset card's first line without :has() (ink/flux-first-line dee4e7e5): the rule restyled the whole  | 2: flux3/FluxNodeRecord.tsx, flux3/flux-v3.css |
+| e631919f | Flux live join: L2 live (main 9eff97a7: train L2 a1bb70f1 and ledger 315) | 4: components/ScriptEditor.tsx, components/script/caret.ts, reorg/search/searchStore.ts, store/scriptKeys.ts |
+| d1389da0 | Flux live join: POLISH's #113, the block caret redraws when the redesign's mark or a web font moves the words (flux-ca | 2: components/FluxBlockCaret.tsx, flux3/boot.ts |
+| 2e015329 | Flux live join: --fade-dur on the elements that read it (ink/flux-fade-narrow 9fe08985; Fable, Nov 23, 2:30 pm): live  | 1: components/useChromeDissolve.ts |
+| 105b66c8 | Flux live join: ARBOR's File word and the M13 park (arbor/flux-file-word eff34fa8) | 2: store/lexicon/canonical/chrome.ts, store/lexicon/overrides/fluxReorg.ts |
+| 658fbad3 | Flux live join: a navigation key that moves no selection still redraws the block caret (ink/flux-wrap-home 2bbdec94; w | 1: components/FluxBlockCaret.tsx |
+| f523b852 | Flux live join: the board's rename box is a readable field (ink/flux-rename-field 2f230621; flux-rename-field 5/5) | 1: flux3/flux-v3.css |
+| 0f1e5e5c | Flux live join: L3 live (main 5487be6b) | 5: components/ScriptEditor.tsx, reorg/PartsList.tsx, reorg/backMenu/BackPlan.tsx, reorg/backMenu/planPart.ts, store/pageExport.ts |
+| e41c6942 | Flux live join: the driver pins ?flux3=0 for files that don't ask (ink/flux-driver-pin e09a6629; Fable, Nov 23, 2:30 p | none |
+| c72a2af8 | Flux live join: in Wire In a press on her page lands on her page (ink/flux-wirein-press 298ea8f7): the Back menu's ful | 1: styles/24-reorg-flux.css |
+| 26d661b7 | Flux live join: the Log once (ink/flux-log-once 77a1e6f5; Fable, Nov 23, 6:14 pm) | 1: reorg/ReorgRail.tsx |
+| 5cd6192c | Flux live join: the shared "?" on INPUTS (ink/flux-inputs-note ef06eea5; Fable, Nov 23, 6:14 pm) | 2: components/Tutor.tsx, styles/24-reorg-flux.css |
+| c0e9e0cd | Flux live join: the successors on default Flux, her words, saving, typing and getting around (ink/flux-live-successors | none |
+| 2fa1a54d | Flux live join: L4 live (main 3c2763f5) | 6: components/LandingGate.tsx, components/ScriptEditor.tsx, components/script/elements.tsx, store/pageExport.ts, store/scriptDoc.ts, store/scriptSmartText.ts |
+| 4cf35181 | Flux live join: the successors' second batch (ink/flux-live-successors2 8f1d92c5, 30 checks) | none |
