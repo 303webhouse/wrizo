@@ -166,7 +166,11 @@ await withHarness(async (app) => {
   const n = THEMES.length * TONES.length * WIDTHS.length * STATES.length;
   ok('P0 (premise) every arm is the theme it names at its width (read back), the Doc seeded, and the state it names standing', seeded && lives.length === n && lives.every((l) => l[1]), { seeded, bad: lives.filter((l) => !l[1]) });
   ok(`D2 the rail's opened Drawers cloth touches its pop-out at most, never crossing the pop-out's box (its edge included), in every Arbor DRAWERS arm (${cloths.length})`, cloths.length === TONES.length * WIDTHS.length && cloths.every(([, v]) => Array.isArray(v.cloth) && v.cross === 0), cloths);
-  ok(`N-B in Arbor's Back menu every tab-note cell stands level with its own tab (middles within 1.5 px), in every Back arm (${notes.length})`, notes.length === WIDTHS.length * TONES.length && notes.every(([, v]) => v.tabs.length >= 3 && v.cells.length === v.tabs.length && v.cells.every((y, i) => Math.abs(y - v.tabs[i]) <= 1.5)), notes);
+  // N-B CORRECTED BEFORE ITS FIRST GREEN (run 45478979634 read cells [] in all six arms): Arbor's Back menu draws NO tab-note cell. The reorg Back menu's tabs
+  // carry no notes (Tutor.tsx rightTabs), and r18 (the Wrizors, Nov 4) moved the Grafts '?' into the Grafts pane, so no '?' stands beside a tab to sit at
+  // the wrong height. N-B asserts exactly that, with the tabs read (a census that found no tabs would pass blind). The original asked every cell to stand
+  // level with its tab, and a cell list that is empty cannot answer that.
+  ok(`N-B Arbor's Back menu draws no tab-note cell beside its tabs (the Grafts '?' stands in its pane since r18), so none can stand at the wrong height, in every Back arm (${notes.length})`, notes.length === WIDTHS.length * TONES.length && notes.every(([, v]) => v.tabs.length >= 3 && v.cells.length === 0), notes);
   ok('P1 (premise) every arm found the page and at least 8 drawn controls, and every FRONT/BACK arm found its open panel', counts.length === n && counts.every((c) => c[1] >= 8 && c[2] && (c[4] === 'drawers' || c[3] >= 1)), counts);
 });
 
