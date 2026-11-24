@@ -869,7 +869,8 @@ try { await withHarness(async (app) => {
     await sleep(80); // one frame's worth of headroom — reduced motion sets the end state synchronously in SplashMark's own mount effect
     const s17 = theme === 'plateau'
       ? await app.evalJs(`(() => {
-          const stages = [...document.querySelectorAll('[data-stage]')].map((el) => Math.round(parseFloat(getComputedStyle(el).opacity) * 100) / 100);
+          // the splash's own five outline stages: the front door under it (.wz-arrival) carries a data-stage of its own since the sign-in pop-out (Nov 18), a sixth, which this read counted (box turn Nov 24: six values, all 1, red on a count of 5)
+          const stages = [...document.querySelectorAll('.wz-splash [data-stage]')].map((el) => Math.round(parseFloat(getComputedStyle(el).opacity) * 100) / 100);
           const dashoffsets = [...document.querySelectorAll('.wz-splash-arbor mask path')].map((p) => getComputedStyle(p).strokeDashoffset);
           return { stages, dashoffsets };
         })()`)
