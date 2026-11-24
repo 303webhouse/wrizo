@@ -38,4 +38,7 @@ export const CANONICAL_MOBILE = {
   mobileNoResults: 'Nothing found.',
   mobileNoPlace: 'Choose a place first.',
   mobileSignIn: 'Sign In',
+  // a Doc chosen as the place whose own connected Boards are none (Fable, Nov 24, in her words); and leaving the note unfiled
+  mobileDocNoBoard: 'This Doc has no Board yet',
+  mobileLeaveUnfiled: 'Leave It Unfiled',
 } as const satisfies Partial<Record<DeskTermId, string>>;

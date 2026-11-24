@@ -178,6 +178,34 @@ async function main() {
     }
   }
 
+  // WQ-DOCPLACE (Fable, Nov 24: choosing a Doc offers THAT Doc's own connected Boards; one -> the note lands there; several -> she picks; none -> "this Doc has no Board yet" and she picks a Board or leaves it unfiled; never a per-Doc Mobile Board)
+  {
+    const rows = [
+      { id: 'b-filed', pageType: 'board', projectId: 'docA', text: 'Filed in A', updatedAt: '2026-11-23T05:00:00.000Z', boxes: [] },
+      { id: 'b-linked', pageType: 'board', projectId: null, text: 'Linked to A', updatedAt: '2026-11-23T06:00:00.000Z', boxes: [] },
+      { id: 'b-card-only', pageType: 'board', projectId: null, text: 'Only one card of it is an asset', updatedAt: '2026-11-23T04:00:00.000Z', boxes: [] },
+      { id: 'b-plan', pageType: 'board', projectId: 'docA', text: 'A plan face', updatedAt: '2026-11-23T07:00:00.000Z', boxes: [] },
+      { id: 'b-sys', pageType: 'board', projectId: 'docA', text: 'Journal', origin: 'system', updatedAt: '2026-11-23T07:30:00.000Z', boxes: [{ id: 'm', kind: 'board-meta', systemKind: 'journal', x: 0, y: 0, w: 0, h: 0, z: 0 }] },
+      { id: 'b-dead', pageType: 'board', projectId: 'docA', text: 'Deleted', deletedAt: '2026-11-23T01:00:00.000Z', updatedAt: '2026-11-23T08:00:00.000Z', boxes: [] },
+      { id: 'b-other', pageType: 'board', projectId: 'docB', text: 'Filed in B', updatedAt: '2026-11-23T09:00:00.000Z', boxes: [] },
+      { id: 'page1', pageType: 'manuscript', projectId: 'docA', text: 'A part', updatedAt: '2026-11-23T03:00:00.000Z', planBoardId: 'b-plan' },
+    ];
+    const projects = { docA: { id: 'docA', docSettings: { assets: [{ entryId: 'b-linked', at: 'x' }, { entryId: 'b-card-only', boxId: 'c1', at: 'x' }, { entryId: 'page1', at: 'x' }] } }, docB: { id: 'docB' }, docEmpty: { id: 'docEmpty', docSettings: {} } };
+    const persistence = { getJournalEntries: () => rows.filter((r) => !r.deletedAt), getProject: (id) => projects[id] ?? null, getSystemKind: (e) => (e.boxes || []).find((b) => b.kind === 'board-meta')?.systemKind, isPairedPlanBoard: (id) => rows.some((r) => r.planBoardId === id) };
+    const D = load('mobile/docBoards.ts', { '../store/persistence': persistence });
+    if (D.missing || D.error || typeof D.M.placesOfDoc !== 'function') ok('WQ-DOCPLACE a Doc offers its own connected Boards: one lands, several are picked from, none says so', false, 'src/mobile/docBoards.ts: ' + (D.missing ? 'the module does not exist yet' : D.error || 'no placesOfDoc'));
+    else {
+      const many = D.M.placesOfDoc('docA');
+      const one = D.M.placesOfDoc('docB');
+      const none = D.M.placesOfDoc('docEmpty');
+      const ghost = D.M.placesOfDoc('nope');
+      const ids = (many.boards || []).map((b) => b.id);
+      ok('WQ-DOCPLACE a Doc offers its own connected Boards: one lands, several are picked from, none says so',
+        many.kind === 'many' && ids.join() === 'b-linked,b-filed' && one.kind === 'one' && one.board.id === 'b-other' && none.kind === 'none' && ghost.kind === 'none',
+        `A -> ${many.kind}[${ids.join(',')}] (the plan face, the system board, the deleted one, the one-card asset and the page are not offered); B -> ${one.kind}; empty -> ${none.kind}; unknown -> ${ghost.kind}`);
+    }
+  }
+
   // WQ-HERS, WQ-ONLY
   if (qwhy) { ok('WQ-HERS sign-out leaves nothing in storage; another account never sees or sends her waiting note', false, 'noteQueue.ts: ' + qwhy); ok('WQ-ONLY only her own unsent notes are kept, and nothing but notes', false, 'noteQueue.ts: ' + qwhy); }
   else {

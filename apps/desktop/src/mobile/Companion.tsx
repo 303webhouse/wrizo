@@ -14,7 +14,8 @@ import { planOrder } from '../reorg/backMenu/planOps';
 import type { JournalEntry, Box } from '../types';
 import { whoIsHere, type Who } from './session';
 import { sendWaiting, waitingNotes, writeNote } from './sendNote';
-import type { WaitingNote } from './noteQueue';
+import type { WaitingNote, NoteTarget } from './noteQueue';
+import { placesOfDoc } from './docBoards';
 
 type T = (term: DeskTermId) => string;
 type Route =
@@ -199,7 +200,8 @@ function Doc({ t, route }: { t: T; route: Extract<Route, { at: 'doc' }> }): Reac
   const planId = part ? getPlanBoardId(part.id) : null;
   const plan = planId ? getJournalEntry(planId) : null;
   const planRows = plan ? planOrder(plan.boxes).map((id) => (plan.boxes ?? []).find((b) => b.id === id)).filter((b): b is Box => !!b && b.kind === 'text') : [];
-  const docBoards = allBoards().filter((b) => b.projectId === route.id);
+  const places = placesOfDoc(route.id);
+  const docBoards = (places.kind === 'many' ? places.boards : places.kind === 'one' ? [places.board] : []).map((b) => getJournalEntry(b.id)).filter((b): b is JournalEntry => !!b);
   const entry = part ? getJournalEntry(part.id) : null;
   return (
     <>
@@ -257,14 +259,24 @@ function Board({ t, route, waiting }: { t: T; route: Extract<Route, { at: 'board
 // ---- The + : a Note to a Board, in two taps (type, Send). Send To is filled in: the Board she is on; otherwise she Changes it. ----
 function AddSheet({ t, defaultBoard, onClose, onSent }: { t: T; defaultBoard: string | null; onClose: () => void; onSent: () => void }): ReactNode {
   const [text, setText] = useState('');
-  const [place, setPlace] = useState<string | null>(defaultBoard);
+  const [place, setPlace] = useState<NoteTarget | null>(defaultBoard ? { kind: 'board', id: defaultBoard } : null);
   const [choosing, setChoosing] = useState(!defaultBoard);
+  // choosing a Doc: its own connected Boards (one lands at once; several are listed; none says so). Never a Mobile Board made for a Doc.
+  const [inDoc, setInDoc] = useState<string | null>(null);
   const boards = allBoards();
-  const placeName = place ? titleOf(getJournalEntry(place) ?? ({ text: '' } as JournalEntry)) : '';
+  const docs = getProjects().slice().sort(byRecent);
+  const docPlaces = inDoc ? placesOfDoc(inDoc) : null;
+  const pickBoard = (id: string) => { setPlace({ kind: 'board', id }); setInDoc(null); setChoosing(false); };
+  const pickDoc = (id: string) => {
+    const p = placesOfDoc(id);
+    if (p.kind === 'one') pickBoard(p.board.id); else setInDoc(id);
+  };
+  const placeName = !place ? '' : place.kind === 'unfiled' ? t('mobileUnfiled') : titleOf(getJournalEntry(place.id) ?? ({ text: '' } as JournalEntry));
   const send = () => {
     if (!place || !text.trim()) return;
-    void writeNote(text, { kind: 'board', id: place }).then(onSent);
+    void writeNote(text, place).then(onSent);
   };
+  const boardRow = (id: string) => <li key={id}><button type="button" className="mc-row" aria-pressed={place?.kind === 'board' && place.id === id} onClick={() => pickBoard(id)}>{titleOf(getJournalEntry(id) ?? ({ text: '' } as JournalEntry))}</button></li>;
   return (
     <div className="mc-sheet" role="dialog" aria-modal="true" aria-label={t('mobileNote')}>
       <div className="mc-sheet-in">
@@ -274,11 +286,30 @@ function AddSheet({ t, defaultBoard, onClose, onSent }: { t: T; defaultBoard: st
           <span>{t('mobileSendTo')}: <strong>{place ? placeName : t('mobileNoPlace')}</strong></span>
           <button type="button" className="mc-link" onClick={() => setChoosing((c) => !c)}>{t('mobileChange')}</button>
         </div>
-        {choosing && (
-          <ul className="mc-list mc-pick">
-            {boards.map((b) => <li key={b.id}><button type="button" className="mc-row" aria-pressed={place === b.id} onClick={() => { setPlace(b.id); setChoosing(false); }}>{titleOf(b)}</button></li>)}
-            {boards.length === 0 && <li className="mc-dim">{t('mobileNothingHere')}</li>}
-          </ul>
+        {choosing && !inDoc && (
+          <div className="mc-pick">
+            <h2 className="mc-h2">{t('mobileDocs')}</h2>
+            <ul className="mc-list">{docs.map((d) => <li key={d.id}><button type="button" className="mc-row" onClick={() => pickDoc(d.id)}>{d.title || '—'}</button></li>)}</ul>
+            <h2 className="mc-h2">{t('mobileBoards')}</h2>
+            <ul className="mc-list">
+              {boards.map((b) => boardRow(b.id))}
+              {boards.length === 0 && <li className="mc-dim">{t('mobileNothingHere')}</li>}
+            </ul>
+          </div>
+        )}
+        {choosing && inDoc && docPlaces && (
+          <div className="mc-pick">
+            <button type="button" className="mc-back" onClick={() => setInDoc(null)}>{t('mobileBack')}</button>
+            <h2 className="mc-h2">{docs.find((d) => d.id === inDoc)?.title || '—'}</h2>
+            {docPlaces.kind === 'many' && <ul className="mc-list">{docPlaces.boards.map((b) => boardRow(b.id))}</ul>}
+            {docPlaces.kind === 'none' && (
+              <>
+                <p className="mc-dim">{t('mobileDocNoBoard')}</p>
+                <button type="button" className="mc-btn" onClick={() => setInDoc(null)}>{t('mobileBoards')}</button>
+                <button type="button" className="mc-btn" onClick={() => { setPlace({ kind: 'unfiled' }); setInDoc(null); setChoosing(false); }}>{t('mobileLeaveUnfiled')}</button>
+              </>
+            )}
+          </div>
         )}
         <div className="mc-actions">
           <button type="button" className="mc-btn" onClick={onClose}>{t('mobileBack')}</button>
