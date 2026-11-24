@@ -1,6 +1,6 @@
 // #123 - FREE WRITE ON A REAL PAGE, SIGNED IN (Chat 1's suspect, Nov 24: free-write-real-page.mjs is not signed in and Nick is: a server copy applied back into the open page would make typing "do nothing" and the text flash).
 // A SIGNED-IN session without a server: the page's own fetch is answered in the page (a new-document script, in every arm alike):
-//   /auth/me  -> a signed-in user;   /api/sync -> a fake server that keeps every row pushed to it and, like the real one, answers with every row stamped after the caller's lastSyncAt (so a push comes back as its own echo);
+//   /auth/me  -> a signed-in user;   /api/sync -> a fake server that keeps every row pushed to it and answers every sync with its copy of them (FWS_ECHO=stamped: only rows stamped after the caller's lastSyncAt, as the real one);
 //   /api/prefs, /api/rail, /api/page-defaults, /api/proofing, /api/theme-unlock -> 404 (the app treats them as absent).
 // Per arm (theme x seed, 1366 wide): the same page as free-write-real-page.mjs (saved text, three ink strokes), 20 keys 90 ms apart and, at the 10th key, a sync round (the 'online' event: the page is pushed and its echo comes back
 // while she is mid-word, as the 20 s timer does); then a second round of 20 keys with a sync at every 5th key.
@@ -36,7 +36,9 @@ const nw = (s) => String(s || '').replace(/[\s​ ]/g, '');
 const landed = (shown, seed, typed) => nw(shown) === nw(seed) + nw(typed);
 const sameEditor = (before, after) => before === true && after === true;   // SI2's judge: the element read at the end is still the one marked at the start
 
+const ECHO_ALL = process.env.FWS_ECHO !== 'stamped';   // default: the server hands back every row it holds at every sync (a re-delivery: the worst case of its own copy coming back); FWS_ECHO=stamped: only rows stamped after lastSyncAt
 const FAKE_SERVER = `(() => {
+  const ECHO_ALL = ${ECHO_ALL};
   const rows = new Map(), stamps = new Map(); const orig = window.fetch.bind(window);
   window.__srv = { me: 0, syncs: 0, echoed: 0 };
   const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'Content-Type': 'application/json' } });
@@ -48,7 +50,7 @@ const FAKE_SERVER = `(() => {
       const pushed = (body.push && body.push.journalEntries) || [];
       for (const r of pushed) { rows.set(r.id, JSON.parse(JSON.stringify(r))); stamps.set(r.id, now); }
       window.__srv.syncs += 1;
-      const pull = body.pull === false ? {} : { journalEntries: [...rows.values()].filter((r) => (stamps.get(r.id) || '') > since) };
+      const pull = body.pull === false ? {} : { journalEntries: [...rows.values()].filter((r) => ECHO_ALL || (stamps.get(r.id) || '') > since) };
       window.__srv.echoed += (pull.journalEntries || []).length;
       return json({ serverTime: now, pull });
     }
