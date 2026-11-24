@@ -1,4 +1,4 @@
-// THE NOTE FILTER (TUTOR build-list item 7, Memory step 1; runner-kit.md v0.2 section 4, check M8). The word lists are the kit's, copied word for word; the matcher below is the kit's own rule.
+// THE NOTE FILTER (TUTOR build-list item 7, Memory step 1; runner-kit.md v0.3 section 4, check M8). The word lists are the kit's, copied word for word; the matcher below is the kit's own rule.
 // What it guards: rules-of-the-road section 8 and red line R13 - nothing is kept that guesses at her health, her identity or her state of mind. It runs on the server on every note the AI
 // PROPOSES, before she is shown the proposal (and again where a proposed note is saved, tutorNotes.ts, so a mislabelled client cannot walk one past). It never touches a note she types herself
 // or her own answers to the voluntary interview: those are her words, and she may say what she likes about herself (Fable, Nov 24: "applies only to notes the AI proposes").
@@ -32,14 +32,14 @@ export const LIST_A: NoteWordGroup[] = [
 /** List B: stops the note unless it is plainly about the writing (a List C word in the same note clears it). */
 export const LIST_B: NoteWordGroup[] = [
   { group: 'Gender and age', words: ['woman', 'women', 'man', 'men', 'girl*', 'boy*', 'female', 'male', 'lady', 'ladies', 'guy', 'guys', 'feminine', 'masculine', 'young', 'younger', 'old', 'older', 'adult*', 'child', 'children', 'kid', 'kids', 'baby', 'minor', 'junior', 'senior', 'sophomore', 'student*', 'college', 'school'] },
-  { group: 'Family', words: ['mother', 'father', 'mom', 'dad', 'parent*', 'wife', 'husband', 'partner', 'boyfriend', 'girlfriend', 'son', 'daughter', 'sister', 'brother', 'family'] },
+  { group: 'Family', words: ['mother', 'father', 'mom', 'dad', 'parent', 'parents', 'parental', 'parenting', 'wife', 'husband', 'partner', 'boyfriend', 'girlfriend', 'son', 'daughter', 'sister', 'brother', 'family'] },
   { group: 'Words with two meanings', words: ['Black', 'white', 'straight', 'native', 'class', 'poor', 'rich', 'liberal', 'conservative', 'progressive', 'political', 'politics', 'patient', 'clinical', 'treatment', 'doctor'] },
   { group: 'Feelings and attention', words: ['feel', 'feels', 'felt', 'feeling*', 'mood*', 'stress', 'stressed', 'stressful', 'motivation', 'fear*', 'anger', 'angry', 'anxious', 'emotion*', 'emotional', 'confident', 'confidence', 'sensitive', 'doubt*', 'focus*', 'attention', 'memory', 'energy'] },
 ];
 export const LIST_B_WORDS: readonly string[] = LIST_B.flatMap((g) => g.words);
 
 /** List C: writing words. They clear List B only, never List A. */
-export const LIST_C_WORDS: readonly string[] = ['character*', 'narrator*', 'protagonist*', 'hero', 'heroine', 'villain*', 'cast', 'dialogue', 'scene*', 'chapter*', 'story', 'stories', 'novel*', 'novella*', 'poem*', 'poetry', 'stanza*', 'line', 'lines', 'essay*', 'memoir*', 'script*', 'screenplay*', 'play', 'fiction', 'nonfiction', 'fantasy', 'romance', 'thriller*', 'mystery', 'genre*', 'reader*', 'audience', 'voice', 'tone', 'point of view', 'POV', 'tense', 'plot*', 'subplot*', 'ending*', 'opening*', 'draft*', 'sentence*', 'paragraph*', 'verb*', 'noun*', 'comma*', 'theme*', 'topic*', 'subject*', 'argument*', 'thesis', 'claim*', 'evidence', 'source*', 'citation*', 'image*', 'imagery', 'metaphor*', 'description*', 'detail*', 'pacing', 'structure', 'outline*', 'heading*', 'title*', 'report*', 'memo*', 'proposal*', 'pitch*', 'article*', 'part', 'parts', 'page', 'pages'];
+export const LIST_C_WORDS: readonly string[] = ['character', 'characters', 'characterisation', 'characterization', 'narrator*', 'protagonist*', 'hero', 'heroine', 'villain*', 'cast', 'dialogue', 'scene', 'scenes', 'chapter*', 'story', 'stories', 'novel', 'novels', 'novella*', 'poem*', 'poetry', 'stanza*', 'line', 'lines', 'essay*', 'memoir*', 'script', 'scripts', 'screenplay*', 'play', 'fiction', 'nonfiction', 'fantasy', 'romance', 'thriller*', 'mystery', 'genre*', 'reader*', 'audience', 'voice', 'tone', 'point of view', 'POV', 'tense', 'plot', 'plots', 'plotting', 'subplot*', 'ending', 'endings', 'opening', 'openings', 'draft*', 'sentence*', 'paragraph*', 'verb', 'verbs', 'noun', 'nouns', 'comma', 'commas', 'theme', 'themes', 'topic', 'topics', 'subject', 'subjects', 'argument', 'arguments', 'thesis', 'claim', 'claims', 'evidence', 'source', 'sources', 'citation*', 'image', 'images', 'imagery', 'metaphor*', 'description*', 'detail', 'details', 'pacing', 'structure', 'outline*', 'heading*', 'title', 'titles', 'report', 'reports', 'memo', 'memos', 'memorandum', 'memoranda', 'proposal*', 'pitch', 'pitches', 'article', 'articles', 'part', 'parts', 'page', 'pages'];
 
 // ---- the matcher ----
 // Matching (the kit): whole words, any letter case. A star means any ending ("diagnos*" matches "diagnosis" and "diagnosed"). One entry is capitals only, because the small word is ordinary:
@@ -56,6 +56,8 @@ function entryRe(entry: string): RegExp {
   const body = esc(stem).replace(/\\?'/g, "['’]").replace(/ +/g, '\\s+');
   return new RegExp(`${L}${body}${star ? '\\p{L}*' : ''}${R}`, CAPITALS_ONLY.has(entry) ? 'u' : 'iu');
 }
+/** Whether one list entry (a word, a phrase, "stem*" or ADD) matches a text, by the filter's own rule. Used by the check on the lists themselves (no List C entry may match an A or B entry, nor the reverse). */
+export const entryMatches = (entry: string, text: string): boolean => entryRe(entry).test(text.normalize('NFC'));
 type Compiled = Array<{ entry: string; re: RegExp }>;
 const compile = (words: readonly string[]): Compiled => words.map((entry) => ({ entry, re: entryRe(entry) }));
 const hits = (text: string, list: Compiled): string[] => list.filter(({ re }) => re.test(text)).map(({ entry }) => entry);
@@ -75,7 +77,7 @@ export interface NoteVerdict {
 }
 
 /**
- * Check M8, the note filter (runner-kit.md v0.2 section 4). Rules section 8 and red line R13: nothing is kept that guesses at her health, her identity or her state of mind.
+ * Check M8, the note filter (runner-kit.md v0.3 section 4). Rules section 8 and red line R13: nothing is kept that guesses at her health, her identity or her state of mind.
  * It runs on every note the AI PROPOSES, on the server, before she is shown the proposal. A note she types herself, and her own interview answers, never come here.
  *   Step 1  any List A word or phrase: stop it. Nothing clears a List A hit.
  *   Step 2  a List B word and no List C word: stop it.
