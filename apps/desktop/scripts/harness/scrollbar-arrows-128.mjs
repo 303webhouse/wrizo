@@ -40,7 +40,10 @@ const FIND = (scope) => `(() => {
   const out = []; let n = 0;
   for (const e of document.querySelectorAll('*')) {
     const cs = getComputedStyle(e); if (!/(auto|scroll)/.test(cs.overflowY)) continue;
-    if (e.scrollHeight <= e.clientHeight + 4) continue;
+    // SUPERSEDED (frames 45463510262: a scroller round the page overflowing by a few px showed a NATIVE bar with arrows at both ends - Flux and
+    // Machina - and this filter skipped it). Every element that overflows at all and shows a bar is read now; one with too little room to move a
+    // page (tiny) is judged by M (its mechanism), not by a press. Verbatim:  if (e.scrollHeight <= e.clientHeight + 4) continue;
+    if (e.scrollHeight <= e.clientHeight) continue;
     const r = e.getBoundingClientRect(); if (r.width < 24 || r.height < 60 || r.bottom <= 0 || r.top >= innerHeight || r.right <= 0 || r.left >= innerWidth) continue;
     const bl = parseFloat(cs.borderLeftWidth) || 0, br = parseFloat(cs.borderRightWidth) || 0, bt = parseFloat(cs.borderTopWidth) || 0, bb = parseFloat(cs.borderBottomWidth) || 0;
     const bar = e.offsetWidth - e.clientWidth - bl - br; if (bar <= 0) continue;
@@ -52,7 +55,9 @@ const FIND = (scope) => `(() => {
     const what = e.classList.contains('mode-scroll') ? 'page' : e.closest('.wz-sliver') ? 'front' : e.closest('.wz-tutor-panel, .wz-tutor') ? 'back' : 'other';
     out.push({ id, scope: ${q(scope)}, what, cls: (e.getAttribute('class') || e.tagName).split(/\\s+/).slice(0, 2).join('.'), bar: Math.round(bar * 10) / 10, k: Math.round(k * 1000) / 1000,
       sw: cs.scrollbarWidth, sc: cs.scrollbarColor, h: e.clientHeight, x: Math.round(x * 10) / 10, top: Math.round(top * 10) / 10, foot: Math.round(foot * 10) / 10,
-      hitTop: document.elementFromPoint(x, top) === e, hitFoot: document.elementFromPoint(x, foot) === e });
+      hitTop: document.elementFromPoint(x, top) === e, hitFoot: document.elementFromPoint(x, foot) === e,
+      room: e.scrollHeight - e.clientHeight, tiny: (e.scrollHeight - e.clientHeight) < 0.6 * e.clientHeight,
+      over: (() => { const o = document.elementFromPoint(x, top); return o && o !== e ? (o.getAttribute('class') || o.tagName).split(/\s+/)[0] : null; })() });
   }
   return out;
 })()`;
@@ -118,6 +123,7 @@ async function setDrawer(app, d, want) {
 async function testAll(app, scope, filter) {
   const found = (await app.evalJs(FIND(scope))).filter(filter);
   for (const s of found) {
+    if (s.tiny) { s.kind = { foot: 'tiny', top: 'tiny' }; continue; }
     if (s.hitFoot) s.dFoot = await press(app, s, 'foot');
     if (s.hitTop) s.dTop = await press(app, s, 'top');
     s.kind = judge(s).kind;
@@ -162,7 +168,7 @@ try {
         R.loose = { jacked: await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')") };
         R.scrollers.push(...await testAll(app, 'loose', (s) => s.what === 'page'));
         read[theme][w] = R;
-        console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} hit ${s.hitTop}/${s.hitFoot} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
+        console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} room ${s.room}${s.tiny ? ' TINY' : ''} hit ${s.hitTop}/${s.hitFoot}${s.over ? ' over ' + s.over : ''} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
         if (w === 1920) {
           probe[theme] = {};
           for (const [v, css] of [['V1', V1], ['V2', V2]]) {
@@ -190,12 +196,22 @@ const pressed = (s) => s.what === 'page' && (s.hitTop || s.hitFoot);
 const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && pressed(s)) && (t !== 'flux' || (R.loose && R.loose.jacked))));
 ok(`P1-B at every theme x size the page's scroller (her Part, and a loose page: Wire In in Flux) was found with a bar and pressed at one end or both: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
   p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, loose: R && R.loose, found: R && R.scrollers.map((s) => ({ scope: s.scope, what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
-const aOk = (rs) => rs.length > 0 && rs.every((s) => (!s.hitFoot || judge(s).kind.foot === 'track') && (!s.hitTop || judge(s).kind.top === 'track'));
+const aOk = (rs) => rs.length > 0 && rs.every((s) => s.tiny || (!s.hitFoot || judge(s).kind.foot === 'track') && (!s.hitTop || judge(s).kind.top === 'track'));
 for (const t of THEMES) {
   const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
   const bad = rs.filter((s) => !aOk([s]));
   ok(`A-${t} every scroller's bar, pressed 3 px inside each end, moves a page (the track), never a line (an arrow) or nothing, at 1366, 1920 and 2560: ${rs.length - bad.length}/${rs.length}`,
     aOk(rs), bad.map((s) => ({ w: s.w, scope: s.scope, what: s.what, cls: s.cls, bar: s.bar, sw: s.sw, h: s.h, foot: s.dFoot, top: s.dTop, kind: s.kind })));
+}
+// M (frames 45463510262): a bar with too little room to move a page cannot tell an arrow's press from the track's, so every bar is ALSO judged by what
+// draws it. In Chromium the standard properties (a computed scrollbar-width other than auto/none, or a scrollbar-color other than auto) draw the native
+// bar, whose arrows no CSS hides (the Front menu's 40 px steps above); auto/auto is the ::-webkit-scrollbar mechanism, whose buttons are hidden.
+const native = (s) => s.sw !== 'none' && (s.sw !== 'auto' || s.sc !== 'auto');
+for (const t of THEMES) {
+  const rs = SIZES.flatMap(([w]) => ((read[t] && read[t][w] && read[t][w].scrollers) || []).map((s) => ({ ...s, w })));
+  const bad = rs.filter(native);
+  ok(`M-${t} every bar shown, at 1366, 1920 and 2560, is drawn by the ::-webkit-scrollbar mechanism (computed scrollbar-width and -color auto), never the native one whose arrows cannot be hidden: ${rs.length - bad.length}/${rs.length} (${rs.filter((s) => s.tiny).length} with too little room for a press)`,
+    rs.length > 0 && bad.length === 0, [...new Map(bad.map((s) => [`${s.scope}/${s.what} ${s.cls} sw ${s.sw} sc ${s.sc}`, { w: s.w, room: s.room }])).entries()].slice(0, 12));
 }
 const wheels = cells.map(({ t, w, R }) => ({ t, w, d: R && R.wheel }));
 ok(`W the wheel still scrolls the page's scroller in every theme x size: ${wheels.filter((x) => x.d > 0).length}/${wheels.length}`, wheels.every((x) => x.d > 0), wheels);
@@ -206,7 +222,7 @@ ok(`W the wheel still scrolls the page's scroller in every theme x size: ${wheel
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 6;   // P1, A x3, W, MUT-A
+const EXPECTED = 9;   // P1-B (P1 parked before the first green), A x3, M x3 (frames 45463510262), W, MUT-A
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nSCROLLBAR-ARROWS-128 VERIFY: PASS (${checks.length} checks)`
