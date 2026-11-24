@@ -16,7 +16,7 @@
 :root[data-arbor2][data-theme='plateau'] .wz-back-assets-headrow > .wz-back-assets-head{ margin:0; }
 :root[data-arbor2][data-theme='plateau'] .wz-assets-add-wrap{ position:relative; flex:none; }
 :root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add{ position:relative; }
-:root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add > .wz-back-part-head{ padding-right:30px; }
+:root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add > .wz-back-part-head{ width:calc(100% - 28px); padding-right:4px; }   /* #129: the row stops short of its + (was padding-right:30px under it) */
 :root[data-arbor2][data-theme='plateau'] .wz-back-part.has-add > .wz-assets-add-wrap{ position:absolute; top:3px; right:2px; }
 :root[data-arbor2][data-theme='plateau'] .wz-assets-add{ width:22px; height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; background:none; border:1px solid var(--ink-border-strong); color:var(--text-mid); font-size:14px; line-height:1; cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .wz-assets-add:hover, :root[data-arbor2][data-theme='plateau'] .wz-assets-add:focus-visible, :root[data-arbor2][data-theme='plateau'] .wz-assets-add[aria-expanded='true']{ border-color:var(--text-low); color:var(--text-hi); }

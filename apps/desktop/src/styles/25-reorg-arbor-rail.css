@@ -16,7 +16,10 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-strip:has(> .wz-reorg-rail){ overflow:visible; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ position:relative; z-index:1; transition:transform .15s ease, background-color .15s ease; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible){ transform:translateX(6px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
-:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true']{ transform:translateX(12px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true']{ transform:translateX(1px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+/* #129 follow-up (D3, Nov 24): while a cloth's pop-out stands open flush on the rail, a hovered cloth pulls out 1 px, not 6, so it touches the pop-out and never
+   lies over its edge (6 px crossed it by 5 px in every arm). A rail-level :has(), not the stage's (reorg-arbor-no-stage-has-unit). */
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail:has(.wz-strip-item[data-cloth][aria-pressed='true']) .wz-strip-item[data-cloth]:not([aria-pressed='true']):is(:hover, :focus-visible){ transform:translateX(1px); }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible, [aria-pressed='true']) :is(.wz-strip-label, .wz-strip-glyph){ color:var(--arbor-cloth-ink); }
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ transition:none; }
