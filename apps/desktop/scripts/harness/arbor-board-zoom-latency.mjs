@@ -10,6 +10,8 @@
 // centred, double-clicked open, the editor focused, then 44 keys one every 90 ms, each read keydown -> the second animation frame after its beforeinput (the clock) and keydown -> the input event (WORK,
 // the cost reading). The arm order rotates each round; one discarded warm-up. 1920x1080, Page: Dark.
 // VERDICTS: L-zoom-gate@S and L-zoom-cost-gate@S per theme at 0.20 and 4.00 (timing); VOID-check per theme's 1.00; MUT-z-cost (the burn at 4.00 is caught); MUTS-ORDER; P1 / P5 / P6 premises; B the build.
+// PARK (Nov 24, Fable's ruling (a)): for ARBOR, L-zoom-gate@S is parked (printed verbatim on the parked leg) and L-zoom-gate-B@S judges the median and p95 against A100 without the "no key over 100 ms"
+// clause (#120's known fault: Arbor's control breaks it at true size); its mutant MUT-zB-clock. Machina keeps every clause.
 // FLUX3_ROUNDS=<n> (default 4). Run: node scripts/harness/arbor-board-zoom-latency.mjs   (from apps/desktop; a box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -203,7 +205,19 @@ try { await withHarness(async (app) => {
     timing(`VOID-check ${name} at 1.00, the zoom's control, is quiet enough to judge anything: its cost spread (median ${r1(q.spreadMed)}, p95 ${r1(q.spreadP95)}) is within the cap (${CAP_MED} / ${CAP_P95}); over the cap the run is VOID`, q.quiet, `${base} cost ${show(q.C)} | per round ${perRound(base, costOf)}`);
     for (const [arm, label] of [[`${T}020`, '0.20'], [`${T}400`, '4.00']]) {
       const jc = judge(res[base], res[arm]);
-      timing(`L-zoom-gate@${label} ${name}: the zoom adds no latency beyond ${name}'s own at true size (the clock): ${arm} median ${r1(jc.X.median)} <= ${base} ${r1(jc.C.median)} + ${r1(jc.spreadMed)}, p95 ${r1(jc.X.p95)} <= ${base} ${r1(jc.C.p95)} + ${r1(jc.spreadP95)}, no key over ${MAX_MS} ms (max ${r1(jc.X.max)})`, jc.lat, `${base} ${show(jc.C)} | ${arm} ${show(jc.X)} | ${base} per round ${perRound(base)}`);
+      const origLine = `L-zoom-gate@${label} ${name}: the zoom adds no latency beyond ${name}'s own at true size (the clock): ${arm} median ${r1(jc.X.median)} <= ${base} ${r1(jc.C.median)} + ${r1(jc.spreadMed)}, p95 ${r1(jc.X.p95)} <= ${base} ${r1(jc.C.p95)} + ${r1(jc.spreadP95)}, no key over ${MAX_MS} ms (max ${r1(jc.X.max)})`;
+      const jcDetail = `${base} ${show(jc.C)} | ${arm} ${show(jc.X)} | ${base} per round ${perRound(base)}`;
+      if (T === 'M') timing(origLine, jc.lat, jcDetail);
+      else {
+        // PARKED (Nov 24, ARBOR; Fable's ruling (a), orders-nov24.md Clearances 10:33 am; SUPERSEDED by L-zoom-gate-B for Arbor only, Machina keeps the original): on the box (Chat 1's turn
+        // 16:46:34Z, tree @ 95cd33d8) Arbor's OWN control A100 broke "no key over 100 ms" (median 106.3, p95 182.8, max 222.3) while both zoomed arms sat under its median and p95. That clause reads
+        // #120 (Arbor's card editor costs ~100+ ms a key by day at TRUE SIZE), not the zoom. The successor keeps every other clause against A100: enough keys, the median and the p95 within A100's own
+        // spread. Its mutant is MUT-zB-clock below (the 24 ms burn at 4.00 must fail the successor's clock judge).
+        const latB = jc.enough && jc.X.median <= jc.C.median + jc.spreadMed && jc.X.p95 <= jc.C.p95 + jc.spreadP95;
+        const succ = `L-zoom-gate-B@${label} Arbor`;
+        timing(`${succ}: the zoom adds no latency beyond Arbor's own at true size (the clock, judged against A100; the "no key over ${MAX_MS} ms" clause is #120's known fault, parked): ${arm} median ${r1(jc.X.median)} <= ${base} ${r1(jc.C.median)} + ${r1(jc.spreadMed)}, p95 ${r1(jc.X.p95)} <= ${base} ${r1(jc.C.p95)} + ${r1(jc.spreadP95)} (max ${r1(jc.X.max)}, information)`, latB, jcDetail);
+        if (process.env.HARNESS_PARKED === '1') console.log(`${timingGate(ON_BOX, latB).pass ? 'PASS' : 'FAIL'} PARKED (was "${origLine}") - SUPERSEDED: Arbor's own control A100 breaks the 100 ms clause at true size on the box (max 222.3, bug #120), so the clause cannot see the zoom; ruled (a) by Fable, Nov 24 10:33 am; live successor: ${succ}  ${jcDetail}`);
+      }
       const k = judgeCost(res[base], res[arm]);
       timing(`L-zoom-cost-gate@${label} ${name}: the zoom adds no main-thread cost beyond ${name}'s own at true size (capped): ${arm} cost median ${r1(k.X.median)} <= ${base} ${r1(k.C.median)} + ${r1(k.allowMed)}, p95 ${r1(k.X.p95)} <= ${base} ${r1(k.C.p95)} + ${r1(k.allowP95)}`, k.pass, `${base} ${show(k.C)} | ${arm} ${show(k.X)} | spread ${r1(k.spreadMed)}/${r1(k.spreadP95)} quiet ${k.quiet}`);
     }
@@ -216,6 +230,10 @@ try { await withHarness(async (app) => {
   for (const [k, ms] of [['MUT', BURN_MS], ['MUT5', 5], ['MUT10', 10], ['MUT24', BURN_MS]]) ok(`${k} premise: the ${ms} ms burn landed on every key (${res[k].map((r) => r.burned).join('/')} keys burned)`, mutLanded(k), JSON.stringify(res[k].map((r) => ({ round: r.round, burned: r.burned }))));
   const cz = judgeCost(res.A100, res.MUT);
   timing(`MUT-z-cost the ${BURN_MS} ms burn at 4.00 FAILS the zoom bar, judged against A100 (caught: ${cz.caught ? 'YES' : 'no'}) - MUT cost median ${r1(cz.X.median)} p95 ${r1(cz.X.p95)}`, mutLanded('MUT') && cz.caught, `A100 ${show(cz.C)} | MUT ${show(cz.X)}`);
+  // MUT-zB-clock (Nov 24, the parked clause's mutant): the successor L-zoom-gate-B (median and p95 against A100, no 100 ms clause) must still FAIL the 24 ms burn at 4.00 on the clock
+  const mb = judge(res.A100, res.MUT);
+  const caughtB = mb.enough && !(mb.X.median <= mb.C.median + mb.spreadMed && mb.X.p95 <= mb.C.p95 + mb.spreadP95);
+  timing(`MUT-zB-clock the ${BURN_MS} ms burn at 4.00 FAILS L-zoom-gate-B (Arbor's successor clock judge against A100) (caught: ${caughtB ? 'YES' : 'no'}) - MUT clock median ${r1(mb.X.median)} <= ${r1(mb.C.median)} + ${r1(mb.spreadMed)}? p95 ${r1(mb.X.p95)} <= ${r1(mb.C.p95)} + ${r1(mb.spreadP95)}?`, mutLanded('MUT') && caughtB, `A100 ${show(mb.C)} | MUT ${show(mb.X)}`);
   const lift = (k) => costS[k].median - costS.A100.median;
   const l5 = lift('MUT5'), l10 = lift('MUT10'), l24 = lift('MUT24');
   timing(`MUTS-ORDER the three mutants lift A100's cost median in order, +5 ms -> +${r1(l5)}, +10 ms -> +${r1(l10)}, +${BURN_MS} ms -> +${r1(l24)} (the run is NOT VALID unless the lifts rise with the burn)`, l5 < l10 && l10 < l24,
