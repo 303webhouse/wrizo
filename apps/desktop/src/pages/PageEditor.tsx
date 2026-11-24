@@ -66,7 +66,7 @@ const MARK_KIND: Record<string, MarkKind> = Object.fromEntries(Object.entries(MA
 import { decorateEditorFor, decorateMarkdownForCard, readEditorPlainText } from '../store/draftDecoration';
 import { editorPlainText, writeRows } from '../store/lineRows';
 import { LEAVE_JACK_EVENT } from '../flux3/jackIn';
-import { getRegisteredUndoStack } from '../store/textUndo';
+import { carryUndoStack, getRegisteredUndoStack } from '../store/textUndo';
 import { proseTextToScriptDoc, isProseEmpty } from '../store/structureConvert';
 import { serializeScriptDoc } from '../store/scriptText';
 import { getFirstRunComplete, setFirstRunComplete } from '../store/firstRun';
@@ -86,6 +86,7 @@ import { usePageAutosave } from './pageEditor/usePageAutosave';
 import { useExternalPageText } from './pageEditor/useExternalPageText';
 import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
 import { mapCaretThrough, mergeText } from '../store/textMerge';
+import { throughArrival } from '../store/undoRebase';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -520,8 +521,16 @@ function PageEditorView({ id }: { id: string }) {
   const [partsHost] = useState<PartsHost>(() => ({ flush: () => leaveRef.current(), splitHere: () => splitRef.current() }));
 
   // #76 PART 1 - another window saved this page and this one has nothing unsaved: show the saved words now. The editor mounts again on them (keyed on `remount`), and a writer who was in it keeps focus and her caret (clamped to the new text).
-  const adoptOtherWindowText = (next: string, how: { lastSaved: string; mapCaret?: (offset: number) => number }) => {
+  const adoptOtherWindowText = (next: string, how: { lastSaved: string; base?: string; theirs?: string; mapCaret?: (offset: number) => number }) => {
     const ed = editorRef.current;
+    // #82: her undo history is kept: every state in it takes the other window's words (a three-way merge from the text this editor last agreed with the record on), and the editor that mounts on `next` takes it over
+    const undo = ed && ed.isConnected ? getRegisteredUndoStack(ed) : undefined;
+    if (undo && how.base !== undefined && undo.peek().text === textRef.current) {
+      const base = how.base, theirs = how.theirs ?? next, shown = textRef.current;
+      const carry = throughArrival(base, theirs);
+      undo.rebase((t) => (t === shown ? next : carry(t)));
+      carryUndoStack(undo);
+    }
     const had = !!ed && ed.isConnected && !!document.activeElement && ed.contains(document.activeElement);
     // her caret is kept whether or not the editor has focus (a window she is not in still has a caret in it); a merged text maps it to where the same character now is
     const sel = ed && ed.isConnected ? getSelectionOffsets(ed) : null;
@@ -548,11 +557,11 @@ function PageEditorView({ id }: { id: string }) {
     if (!latest) return false;
     const theirs = latest.text ?? '', mine = textRef.current, base = lastSavedRef.current;
     if (theirs === base || theirs === mine) return false;
-    if (mine === base) { noteMerge({ at: 'adopt', mine, theirs }); adoptOtherWindowText(theirs, { lastSaved: theirs }); return true; }
+    if (mine === base) { noteMerge({ at: 'adopt', mine, theirs }); adoptOtherWindowText(theirs, { lastSaved: theirs, base, theirs }); return true; }
     const r = mergeText(base, mine, theirs);
     noteMerge({ at: 'merge', base, mine, theirs, out: r.text });
     saveJournalEntry({ ...latest, text: r.text });
-    adoptOtherWindowText(r.text, { lastSaved: r.text, mapCaret: r.mapCaret });
+    adoptOtherWindowText(r.text, { lastSaved: r.text, base, theirs, mapCaret: r.mapCaret });
     if (r.kept) announceKeptBoth(id);
     return true;
   };
