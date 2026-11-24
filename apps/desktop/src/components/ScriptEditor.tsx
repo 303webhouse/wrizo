@@ -42,7 +42,7 @@ import { registerOpenScript } from '../reorg/search/openScript';
 import { mapCaretThrough } from '../store/textMerge';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, getSelectionEndOffset, setCaretOffset } from './script/caret';
-import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
+import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, partStart, textOfPart } from './script/elements';
 import { createHistory, linesKey, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
 import { storedRowToken } from '../store/persistence/entries';
 
@@ -510,7 +510,7 @@ export function ScriptEditor({ id }: { id: string }) {
     }
   };
 
-  const activateAt = (index: number, clientX: number, clientY: number) => {
+  const activateAt = (index: number, clientX: number, clientY: number, part?: Element) => {
     if (index === activeIndex) return;
     const domText = activeElRef.current?.textContent;
     setElements(prev => commitElement(
@@ -522,7 +522,9 @@ export function ScriptEditor({ id }: { id: string }) {
     if (caretApi) {
       try {
         const range = caretApi.call(document, clientX, clientY);
-        if (range) hint = range.startOffset;
+        // a continuation part holds only the end of its element's text, so its offset counts from where that part begins (SCRIPT batch 2, item 1)
+        const shift = part && part.contains(range?.startContainer ?? null) ? Number(part.getAttribute('data-char-offset')) || 0 : 0;
+        if (range) hint = range.startOffset + shift;
       } catch { /* best-effort */ }
     }
     moveActive(index, hint);
@@ -552,7 +554,7 @@ export function ScriptEditor({ id }: { id: string }) {
     }
     const index = Number(target.getAttribute('data-doc-index'));
     if (!Number.isInteger(index) || index < 0 || index >= elements.length) return;
-    activateAt(index, e.clientX, e.clientY);
+    activateAt(index, e.clientX, e.clientY, target);
   };
 
   // copyScriptText is used by BOTH the legacy (<1100px) toolbar's own
@@ -740,7 +742,8 @@ export function ScriptEditor({ id }: { id: string }) {
           takes the sequence's flex gap. aria-describedby on the active element finds it by id. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {pages.map((page) => (
-        <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}>
+        <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}
+          data-holds-whole={page.placed.some((p) => p.continues && !p.continuedFrom && docIndexById.get(p.entry.id) === activeIndex) ? 'true' : undefined}>
           {/* the page number lives on the page artifact only (top margin, from page two, "2."), never a total anywhere; it is chrome outside the 54-line block, so it costs no counted line [ScriptEditor §13] */}
           {page.index > 0 && <div className="script-page-number">{page.index + 1}.</div>}
           {page.placed.map((p) => {
@@ -752,9 +755,12 @@ export function ScriptEditor({ id }: { id: string }) {
               // contenteditable cannot be cut in half, so an active element the
               // projection splits renders WHOLE on the page where it begins and
               // its continuation parts are skipped. The bound is exact and
-              // small: it applies only while the caret is inside an ACTION
-              // block longer than a full page (54 lines, ~3,200 characters),
-              // and only to that one element. Everything else on every page,
+              // small: it applies only while the caret is inside an action
+              // block or a speech longer than a full page (54 lines), and only
+              // to that one element. SCRIPT batch 2, item 1: its sheet carries
+              // data-holds-whole and grows to hold it (09-board-card.css), so the end
+              // the writer is typing is never under the next sheet; the page
+              // count does not move. Everything else on every page,
               // and that element itself the moment the caret leaves it, renders
               // the projection exactly. Stated rather than hidden — the
               // alternative was to let pagination depend on where the caret is,
@@ -789,6 +795,7 @@ export function ScriptEditor({ id }: { id: string }) {
                 docIndex={i}
                 continues={p.continues}
                 continuedFrom={p.continuedFrom}
+                charOffset={partStart(el, p)}
               />
             );
           })}

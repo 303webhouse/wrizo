@@ -25,11 +25,13 @@ export const BREAK_RULES: Record<ScriptElType, BreakRule> = {
   scene: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
   // a character cue is never the last line of a page: it travels with its dialogue [scriptPaginate §3]
   character: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
-  // The one permitted split: an action block longer than a full page cannot
-  // move whole, so it breaks at a line boundary.
+  // An action block longer than a full page cannot move whole, so it breaks at
+  // a line boundary.
   action: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
-  // No element splits in SC2. Dialogue's row is what SC2.1 edits.
-  dialogue: { neverLast: false, keepWithNext: false, splittable: false, keepWithPrevious: false },
+  // SCRIPT batch 2, item 1 (the review's finding 2): a speech longer than a full page cannot move whole either. Unsplittable, it ran past the
+  // sheet's bottom margin and the next sheet painted over its end. It breaks at a line boundary as action does, and only when it is longer
+  // than a page: a speech that merely does not fit the room left still moves whole (the (MORE)/(CONT'D) break is batch 2's next item).
+  dialogue: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
   // a parenthetical modifies the line beneath it, so it is never last on a page [scriptPaginate §4]
   paren: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
   // a transition keeps with the previous element, expressed as the same FORWARD move (the previous page's tail moves to join it), so the pass has one direction and terminates [scriptPaginate §5]

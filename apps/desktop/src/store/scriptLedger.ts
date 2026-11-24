@@ -14,11 +14,12 @@ export interface LedgerEntry {
    */
   spaceBefore: number;
   /**
-   * May the paginator split this element across a page boundary? In SC2 only
-   * an action block may, and only because an action longer than a full page
-   * cannot move whole. Everything else moves entire; dialogue splitting waits
-   * for SC2.1's (MORE)/(CONT'D), and until then page counts run slightly long
-   * against Final Draft — a named approximation, never a silent one.
+   * May the paginator split this element across a page boundary? An action
+   * block or a speech may, and only because one longer than a full page cannot
+   * move whole (SCRIPT batch 2, item 1, for the speech). Everything else moves
+   * entire; a speech that merely does not fit the room left moves whole until
+   * (MORE)/(CONT'D) lands, so page counts run slightly long against Final Draft
+   * — a named approximation, never a silent one.
    */
   mayBreak: boolean;
 }
@@ -80,6 +81,6 @@ export function lineLedger(elements: ScriptEl[]): LedgerEntry[] {
     // every element onto a page of its own. Named at the seam, not caught later.
     lines: wrappedLines(el.text, widthChFor(el.t)),
     spaceBefore: spaceBeforeFor(el.t),
-    mayBreak: el.t === 'action',
+    mayBreak: el.t === 'action' || el.t === 'dialogue',
   }));
 }
