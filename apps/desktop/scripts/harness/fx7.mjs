@@ -386,8 +386,13 @@ await withHarness(async (app) => {
   //   ok('S4: the sliver panel ALSO carries the minimal thin scrollbar — the systemic default reaches it with no per-class opt-in needed',
   //   sliverPanelStyle === 'thin', sliverPanelStyle);
   fx7ParkReads.sliver = { ...sliverPanel128, inkBorderStrong };
-  ok('S4-B [#128]: the sliver panel ALSO carries the minimal scrollbar, drawn by ::-webkit-scrollbar (no arrows), its thumb the systemic default (--ink-border-strong) - it reaches it with no per-class opt-in needed',
-    sliverPanel128.scrollbarWidth === 'auto' && sliverPanel128.scrollbarColor === 'auto' && (sliverPanel128.thumb || '').includes(hexToRgbFragment(inkBorderStrong)), JSON.stringify(sliverPanel128));
+  // SUPERSEDED (before its first green; run 45473167217): S4-B's colour premise was mine, not the original's - the sliver panel's thumb is its theme's own
+  // (Arbor's text-low at 28%, arbor-v2.css's drawer rule), never the systemic default; the original asserted only `thin`. S4-C keeps what the original said:
+  // the minimal bar reaches the panel with no per-class opt-in - drawn by ::-webkit-scrollbar (no arrows), its thumb a real colour. S4-B, verbatim:
+  //   ok('S4-B [#128]: the sliver panel ALSO carries the minimal scrollbar, drawn by ::-webkit-scrollbar (no arrows), its thumb the systemic default (--ink-border-strong) - it reaches it with no per-class opt-in needed',
+  //   sliverPanel128.scrollbarWidth === 'auto' && sliverPanel128.scrollbarColor === 'auto' && (sliverPanel128.thumb || '').includes(hexToRgbFragment(inkBorderStrong)), JSON.stringify(sliverPanel128));
+  ok('S4-C [#128]: the sliver panel ALSO carries the minimal scrollbar, drawn by ::-webkit-scrollbar (scrollbar-width and -color auto: no arrows), its thumb a real colour - it reaches it with no per-class opt-in needed',
+    ((x) => x.scrollbarWidth === 'auto' && x.scrollbarColor === 'auto' && /^(rgb|color\()/.test(x.thumb || '') && !/rgba\(0, 0, 0, 0\)|\/ 0\)$/.test(x.thumb || ''))(sliverPanel128), JSON.stringify(sliverPanel128));
 
   // Theme-awareness: switching to Flux re-resolves the SAME custom
   // properties to Flux's own values, live, no separate scrollbar rule
@@ -753,8 +758,11 @@ if (process.env.HARNESS_PARKED === '1') {
     const c = fx7ParkReads.cascade, v = fx7ParkReads.sliver, x = fx7ParkReads.flux;
     pok('PARKED (was "S4: a cascade panel (explicitly named in the brief) carries the minimal thin scrollbar, themed via the dark-chrome token pair (--ink-border-strong)") - SUPERSEDED by #128 (Fable, Nov 24): drawn by ::-webkit-scrollbar, buttons hidden; live successor: S4-B (the cascade panel)',
       !!c && c.scrollbarWidth === 'auto' && c.scrollbarColor === 'auto' && (c.thumb || '').includes(hexToRgbFragment(c.inkBorderStrong)), JSON.stringify(c));
-    pok('PARKED (was "S4: the sliver panel ALSO carries the minimal thin scrollbar — the systemic default reaches it with no per-class opt-in needed") - SUPERSEDED by #128; live successor: S4-B (the sliver panel)',
-      !!v && v.scrollbarWidth === 'auto' && v.scrollbarColor === 'auto' && (v.thumb || '').includes(hexToRgbFragment(v.inkBorderStrong)), JSON.stringify(v));
+    // (the record as first written read S4-B's colour premise, parked above; it never ran green. Verbatim:)
+    //   pok('PARKED (was "S4: the sliver panel ALSO carries the minimal thin scrollbar — the systemic default reaches it with no per-class opt-in needed") - SUPERSEDED by #128; live successor: S4-B (the sliver panel)',
+    //   !!v && v.scrollbarWidth === 'auto' && v.scrollbarColor === 'auto' && (v.thumb || '').includes(hexToRgbFragment(v.inkBorderStrong)), JSON.stringify(v));
+    pok('PARKED (was "S4: the sliver panel ALSO carries the minimal thin scrollbar — the systemic default reaches it with no per-class opt-in needed") - SUPERSEDED by #128; live successor: S4-C (the sliver panel)',
+      !!v && ((x) => x.scrollbarWidth === 'auto' && x.scrollbarColor === 'auto' && /^(rgb|color\()/.test(x.thumb || '') && !/rgba\(0, 0, 0, 0\)|\/ 0\)$/.test(x.thumb || ''))(v), JSON.stringify(v));
     pok('PARKED (was "S4: Flux resolves its OWN scrollbar color (a different --ink-border-strong value) with zero theme-specific scrollbar CSS of its own") - SUPERSEDED by #128: the colour is on the ::-webkit-scrollbar thumb; live successor: S4-B (Flux)',
       !!x && x.fluxInkBorderStrong !== x.inkBorderStrong && x.fluxCascadeColor === 'auto' && (x.fluxCascadeThumb || '').includes(hexToRgbFragment(x.fluxInkBorderStrong)), JSON.stringify(x));
   }
