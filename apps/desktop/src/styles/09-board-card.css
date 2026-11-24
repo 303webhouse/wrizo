@@ -236,6 +236,11 @@
   padding:6em 6em 6em 9em;          /* 1in top/right/bottom, 1.5in left */
   margin:0 auto;
 }
+/* SCRIPT batch 2, item 1 — the one sheet allowed to be taller: while the caret is in a speech or action block longer than a page, that one
+   live block renders whole on the sheet where it begins (a contenteditable cannot be cut in half), so the sheet grows to hold it instead of
+   letting the next sheet paint over the words being typed. The projection and the page count do not change; when the caret leaves, the
+   block breaks again and the sheet is exactly 11in. */
+.script-sheet[data-holds-whole]{ height:auto; min-height:66em; }
 /* THE SEQUENCE, and the gap between sheets: the gap is chrome, never body. In rem, never the sheet's em, so it does not scale with the paper; not a multiple of --script-line (1.5 lines at 24px), so no one can mistake it for blank lines; and flex gap, so nothing can render into it (sc2.mjs asserts none does). align-items:stretch keeps each sheet filling the column [board-card §9] */
 .script-sequence{ --script-sheet-gap:1.5rem; display:flex; flex-direction:column; gap:var(--script-sheet-gap); }
 /* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid

@@ -26,6 +26,16 @@ export function withParentheses(text: string): string {
   return closes && !s.includes('(') ? `(${s}` : `(${s})`;
 }
 
+// SCRIPT batch 2, item 2 — the page furniture of a speech broken across a page: (MORE) under its last line on one page, and its cue with
+// (CONT'D) over the rest on the next. Drawn by the paginator's renderer, never stored: the writer's text holds neither.
+export const MORE_MARK = '(MORE)';
+export const CONTD_MARK = "(CONT'D)";
+/** The cue drawn over a continued speech: the writer's cue with (CONT'D) after it, once (a cue that already ends in (CONT'D) keeps the one). */
+export function contdCue(cueText: string): string {
+  const base = cueText.replace(/\s*\(CONT'D\)\s*$/i, '').trim();
+  return `${base} ${CONTD_MARK}`;
+}
+
 // Auto (CONT'D): committing a character element whose name (sans extension)
 // matches the most recent PRIOR character element, with at least one action
 // element between them, gains " (CONT'D)" — unless it's already present.

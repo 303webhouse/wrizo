@@ -9,7 +9,7 @@ import { lineLedger } from '../store/scriptLedger';
 import { paginate, type Page } from '../store/scriptPaginate';
 import { ENTER_MAP, TAB_MAP, TYPE_CYCLE, cycleBackward, tabAfterWritten } from '../store/scriptKeys';
 import { computeAutocomplete, applyAutocomplete } from '../store/scriptAutocomplete';
-import { shouldPromoteToScene } from '../store/scriptSmartText';
+import { MORE_MARK, contdCue, shouldPromoteToScene } from '../store/scriptSmartText';
 import { copyText } from '../store/clipboard';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { escapeFromEditor, ESC_HINT_ID } from '../store/escapeExit';
@@ -42,7 +42,7 @@ import { registerOpenScript } from '../reorg/search/openScript';
 import { mapCaretThrough } from '../store/textMerge';
 import { wordCount } from '../store/wordCount';
 import { getCaretOffset, getSelectionEndOffset, setCaretOffset } from './script/caret';
-import { ActiveScriptElement, AutocompletePopover, type CaretHint, StaticScriptElement, commitElement, textOfPart } from './script/elements';
+import { ActiveScriptElement, AutocompletePopover, type CaretHint, ScriptFurniture, StaticScriptElement, commitElement, partStart, textOfPart } from './script/elements';
 import { createHistory, linesKey, noteChange, noteKeyCaret, stepBack, stepForward, type ScriptHistory } from './script/history';
 import { storedRowToken } from '../store/persistence/entries';
 import { useExternalPageText } from '../pages/pageEditor/useExternalPageText';
@@ -195,6 +195,11 @@ export function ScriptEditor({ id }: { id: string }) {
     elements.forEach((el, i) => { if (!m.has(el.id)) m.set(el.id, i); });
     return m;
   }, [elements]);
+  // SCRIPT batch 2, item 2: the cue a broken speech's (CONT'D) repeats — the ledger names the speech by its cue's id
+  const cueTextOf = (p: Page['placed'][number]): string => {
+    const ci = p.entry.speech === null ? undefined : docIndexById.get(p.entry.speech);
+    return ci === undefined ? '' : elements[ci].text;
+  };
 
   const project: Project | null = initialEntry?.projectId ? getProject(initialEntry.projectId) : null;
   const drawer = project?.drawerId ? getDrawer(project.drawerId) : null;
@@ -551,7 +556,7 @@ export function ScriptEditor({ id }: { id: string }) {
     }
   };
 
-  const activateAt = (index: number, clientX: number, clientY: number) => {
+  const activateAt = (index: number, clientX: number, clientY: number, part?: Element) => {
     if (index === activeIndex) return;
     const domText = activeElRef.current?.textContent;
     setElements(prev => commitElement(
@@ -563,7 +568,13 @@ export function ScriptEditor({ id }: { id: string }) {
     if (caretApi) {
       try {
         const range = caretApi.call(document, clientX, clientY);
-        if (range) hint = range.startOffset;
+        // a continuation part holds only the end of its element's text, so its offset counts from where that part begins (SCRIPT batch 2, item 1)
+        // (`.call` hands back `any` in this project's non-strict settings, so the offset is typed here: any + number reads as string | number)
+        if (range) {
+          const offset: number = range.startOffset;
+          const shift: number = part && part.contains(range.startContainer) ? Number(part.getAttribute('data-char-offset')) || 0 : 0;
+          hint = offset + shift;
+        }
       } catch { /* best-effort */ }
     }
     moveActive(index, hint);
@@ -593,7 +604,7 @@ export function ScriptEditor({ id }: { id: string }) {
     }
     const index = Number(target.getAttribute('data-doc-index'));
     if (!Number.isInteger(index) || index < 0 || index >= elements.length) return;
-    activateAt(index, e.clientX, e.clientY);
+    activateAt(index, e.clientX, e.clientY, target);
   };
 
   // copyScriptText is used by BOTH the legacy (<1100px) toolbar's own
@@ -785,7 +796,8 @@ export function ScriptEditor({ id }: { id: string }) {
           takes the sequence's flex gap. aria-describedby on the active element finds it by id. */}
       <span id={ESC_HINT_ID} className="wz-sr-only">{dt('pageEscHint')}</span>
       {pages.map((page) => (
-        <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}>
+        <div className="script-sheet" data-page-index={page.index} style={{ position: 'relative' }} key={page.index}
+          data-holds-whole={page.placed.some((p) => p.continues && !p.continuedFrom && docIndexById.get(p.entry.id) === activeIndex) ? 'true' : undefined}>
           {/* the page number lives on the page artifact only (top margin, from page two, "2."), never a total anywhere; it is chrome outside the 54-line block, so it costs no counted line [ScriptEditor §13] */}
           {page.index > 0 && <div className="script-page-number">{page.index + 1}.</div>}
           {page.placed.map((p) => {
@@ -797,9 +809,12 @@ export function ScriptEditor({ id }: { id: string }) {
               // contenteditable cannot be cut in half, so an active element the
               // projection splits renders WHOLE on the page where it begins and
               // its continuation parts are skipped. The bound is exact and
-              // small: it applies only while the caret is inside an ACTION
-              // block longer than a full page (54 lines, ~3,200 characters),
-              // and only to that one element. Everything else on every page,
+              // small: it applies only while the caret is inside an action
+              // block or a speech longer than a full page (54 lines), and only
+              // to that one element. SCRIPT batch 2, item 1: its sheet carries
+              // data-holds-whole and grows to hold it (09-board-card.css), so the end
+              // the writer is typing is never under the next sheet; the page
+              // count does not move. Everything else on every page,
               // and that element itself the moment the caret leaves it, renders
               // the projection exactly. Stated rather than hidden — the
               // alternative was to let pagination depend on where the caret is,
@@ -807,6 +822,7 @@ export function ScriptEditor({ id }: { id: string }) {
               if (p.continuedFrom) return null;
               return (
                 <Fragment key={`${el.id}:${seedNonce}:wrap`}>
+                  {p.contd && <ScriptFurniture kind="contd" text={contdCue(cueTextOf(p))} />}
                   <ActiveScriptElement
                     key={`${el.id}:${seedNonce}`}
                     el={el}
@@ -823,18 +839,32 @@ export function ScriptEditor({ id }: { id: string }) {
                   />
                   {/* rendered as the active element's flow-sibling, so its absolute position resolves beneath this block wherever it sits [ScriptEditor §14] */}
                   {acVisible && ac && <AutocompletePopover state={ac} index={acIndex} indentCh={INDENT_CH[el.t]} />}
+                  {/* SCRIPT batch 2, item 2: a live speech that the projection splits renders whole, so its own break draws no (MORE) */}
+                  {p.more && !p.continues && <ScriptFurniture kind="more" text={MORE_MARK} />}
                 </Fragment>
               );
             }
-            return (
+            const partKey = p.continuedFrom ? `${el.id}:@${p.lineOffset}` : el.id;
+            const part = (
               <StaticScriptElement
-                key={p.continuedFrom ? `${el.id}:@${p.lineOffset}` : el.id}
+                key={partKey}
                 el={el}
                 text={textOfPart(el, p)}
                 docIndex={i}
                 continues={p.continues}
                 continuedFrom={p.continuedFrom}
+                charOffset={partStart(el, p)}
               />
+            );
+            if (!p.more && !p.contd) return part;
+            // SCRIPT batch 2, item 2: a speech broken across pages wears its furniture, (MORE) under the line before the break and the cue
+            // with (CONT'D) over the line after it. Drawn here from the projection, never stored.
+            return (
+              <Fragment key={`${partKey}:furniture`}>
+                {p.contd && <ScriptFurniture kind="contd" text={contdCue(cueTextOf(p))} />}
+                {part}
+                {p.more && <ScriptFurniture kind="more" text={MORE_MARK} />}
+              </Fragment>
             );
           })}
         </div>
