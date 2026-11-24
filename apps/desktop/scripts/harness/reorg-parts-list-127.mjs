@@ -4,10 +4,10 @@
 // button does are unchanged; each theme's own dress. Checked at 1366, 1920 and 2560: one line per Part, no wrap, nothing overlapping, the buttons reachable by keyboard.
 //
 // THE FIXTURE   a Doc of five Parts whose names run from short to far longer than the drawer is wide (the cut must be the name's, never a wrapped row)
-// ONE LINE  L1  every row: the tick, the number-and-name, the up and the down all sit on ONE line (their centres within 3 px of each other), and no row is taller than 40 px (so nothing wrapped under a row)
+// ONE LINE  L1  every row: the tick, the number-and-name, the up and the down all sit on ONE line (their centres within 3 px of each other), and no row is taller than its button plus 16 px (so nothing wrapped under a row)
 //           L2  the name is ONE line cut with an ellipsis: nowrap, hidden overflow, ellipsis; the long names are cut, the short one is not
-// SIZE      S1  [1366] a row is about 32 px (28 to 36); at every width, no taller than 40
-//           S2  each up and down is a 24 px target: 24 px wide and 24 px tall (22 to 26), the tick a small box (no larger than 20 px)
+// SIZE      S1  [1366] a row is about 32 px (28 to 36)
+//           S2  [1366] each up and down is a 24 px target (22 to 26) and square at every width; the tick no larger than a button (the 1920 and 2560 sizes are the chrome scale, #126)
 // ORDER     R1  the tick, then the name, then the up and the down, left to right; the up and the down at the row's right end (within 12 px of it)
 // ENDS      E1  the first Part's up and the last Part's down are disabled; every other up and down is enabled
 // SEEN      V1  the buttons are always visible: full opacity, visible, not hidden at rest (nothing hover-only)
@@ -64,7 +64,9 @@ async function open(app, theme, [w, h]) {
   for (let i = 0; i < 3 && !(await app.evalJs("!!document.querySelector('[data-reorg-pub]')")); i += 1) {
     await app.evalJs("(() => { const b = document.querySelector('.reorg-top .desk-mode-tab[data-mode-key=\"publish\"]'); if (b) b.click(); return null; })()"); await sleep(900);
   }
-  if (!(await app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'"))) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); document.querySelector('[data-menus-handle]')?.click(); null"); await sleep(800); }
+  const isOpen = () => app.evalJs("document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'");
+  if (!(await isOpen())) { await app.evalJs("document.querySelector('.wz-sliver-grip')?.click(); null"); await sleep(800); }
+  if (!(await isOpen())) { await app.evalJs("document.querySelector('[data-menus-handle]')?.click(); null"); await sleep(800); }
 }
 const MEASURE = `(() => {
   const rows = [...document.querySelectorAll('.wz-sliver [data-pubparts-row]')];
@@ -97,12 +99,13 @@ await withHarness(async (app) => {
     if (!have) continue;
     const bad = (fn) => rows.filter((r) => !fn(r)).map((r) => `#${r.i + 1}`);
     const detail = (fn) => rows.map((r) => `#${r.i + 1}:${fn(r)}`).join(' ');
-    const l1 = bad((r) => r.cyMax - r.cyMin <= 3 && r.rowH <= 40);
-    ok(`L1 [${tag}]: every row is ONE line - tick, name, up and down share a centre line, and no row is taller than 40 px`, l1.length === 0, detail((r) => `h${r.rowH} dy${Math.round((r.cyMax - r.cyMin) * 10) / 10}`));
+    const l1 = bad((r) => r.cyMax - r.cyMin <= 3 && r.rowH <= Math.max(r.upH, 24) + 16);
+    ok(`L1 [${tag}]: every row is ONE line - tick, name, up and down share a centre line, and no row is taller than its button plus 16 px`, l1.length === 0, detail((r) => `h${r.rowH} dy${Math.round((r.cyMax - r.cyMin) * 10) / 10}`));
     const l2 = bad((r) => r.nameWS === 'nowrap' && r.nameOv === 'hidden' && r.nameTO === 'ellipsis') ; const longCut = rows.filter((r) => r.i === 1 || r.i === 3).every((r) => r.nameCut);
     ok(`L2 [${tag}]: the name is one line cut with an ellipsis (nowrap, hidden, ellipsis); the two long names are cut`, l2.length === 0 && longCut, detail((r) => `${r.nameWS}/${r.nameOv}/${r.nameTO}/cut${r.nameCut ? 1 : 0}`));
     if (size[0] === 1366) ok(`S1 [${tag}]: a row is about 32 px (28 to 36)`, bad((r) => r.rowH >= 28 && r.rowH <= 36).length === 0, detail((r) => String(r.rowH)));
-    ok(`S2 [${tag}]: each up and down is a 24 px target (22 to 26) and the tick a small box (20 px at most)`, bad((r) => [r.upW, r.upH, r.downW, r.downH].every((v) => v >= 22 && v <= 26) && r.tickW <= 20 && r.tickH <= 20).length === 0, detail((r) => `${r.upW}x${r.upH} ${r.downW}x${r.downH} tick${r.tickW}`));
+    // the buttons' size at 1920 and 2560 is the chrome scale's (Machina's menus grow with the screen: #126, POLISH's); this file holds the 1366 size to the spec and, at every width, the button square
+    ok(`S2 [${tag}]: each up and down is a square target - 24 px (22 to 26) at 1366 - and the tick a small box`, bad((r) => r.upW === r.upH && r.downW === r.downH && (size[0] !== 1366 || [r.upW, r.downW].every((v) => v >= 22 && v <= 26)) && r.tickW <= r.upW).length === 0, detail((r) => `${r.upW}x${r.upH} ${r.downW}x${r.downH} tick${r.tickW}`));
     ok(`R1 [${tag}]: tick, then name, then up and down, left to right; the buttons at the row's right end (within 12 px)`, bad((r) => r.order && r.rightGap <= 12).length === 0, detail((r) => `${r.order ? 'ok' : 'order'} gap${r.rightGap}`));
     ok(`E1 [${tag}]: the first up and the last down are disabled; every other up and down is enabled`, rows.every((r, n) => r.upDis === (n === 0) && r.downDis === (n === rows.length - 1)), detail((r) => `${r.upDis ? 'U' : 'u'}${r.downDis ? 'D' : 'd'}`));
     ok(`V1 [${tag}]: the buttons are always visible (nothing hover-only): visible, not hidden, opacity .3 or more`, bad((r) => r.upVis && r.downVis).length === 0, detail((r) => `${r.upOp}/${r.downOp}`));
