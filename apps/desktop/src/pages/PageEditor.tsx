@@ -8,7 +8,7 @@ import { describePageHome } from '../store/pageHome';
 import { LocationCrumb } from '../components/LocationCrumb';
 import { TopRail, useReorgTop } from '../reorg/TopRail';
 import { useReorgPiece } from '../reorg/themeGate';
-import { PartArrows, PartFoot } from '../reorg/PartMoves';
+import { PartFoot } from '../reorg/PartMoves';
 import { PublishView } from '../reorg/PublishView';
 import { REORG_JOIN_STATE, type PartsHost } from '../reorg/PartsList';
 import { joinPart, splitPart } from '../reorg/parts';
@@ -1413,7 +1413,7 @@ function PageEditorView({ id }: { id: string }) {
             inkPermission={inkPermission}
             /* THE REORG - the Part arrows cap the page's own scrollbar from the paper's overlay slot (switch off: exactly today's readouts) */
             readouts={unborn ? undefined : reorgTop
-              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing && reorgUplink ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : <PartArrows entry={entry} beforeLeave={leaveStable} />}</>
+              ? <><FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />{publishing && reorgUplink ? <PublishView entryId={entry.id} onClose={() => setPublishing(false)} /> : null /* #128: no Part arrows on the bar (see PartMoves.tsx) */}</>
               : <FluxReadouts entry={realEntry ?? null} surface={mode === 'journal' ? 'wireIn' : 'prose'} />}
             framed
             firstRunGateActive={gateActive}

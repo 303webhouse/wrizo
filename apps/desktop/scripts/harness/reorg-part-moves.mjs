@@ -7,6 +7,7 @@
 //   Top Drawer   its app-made set: "Notes on the ledgers" (a one-Part Doc)
 //
 // OFF    M0  switch off in Machina, and on in Arbor and Flux: no arrows, no foot, no Parts drop on a Part
+// (#128, Nov 24: the arrows are RETIRED - no longer mounted; A1, A2, A4, A5, F3 parked, K1 and S1 parked for their sentences; successors A-B, A4-B, A5-B, K1-B, S1-B, F3-B)
 // ARROWS A1  on Budget two (Part 2 of 3): two arrows, "Previous Part: 1, Budget one" above and "Next Part: 3, Budget three" below, both live
 //        A2  they cap the page's own scrollbar: centred on the scroller's bar, the upper at its top and the lower at its bottom
 //        A3  [1366, 1920] the page's rect (column, paper, editor) is the same with the switch off and on; the editor is the same node with the
@@ -122,8 +123,11 @@ await withHarness(async (app) => {
   // ---- ARROWS ----------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pm-g-2');
   const a1 = await app.evalJs(ARROWS);
-  ok('A1 on Budget two: "Previous Part: 1, Budget one" above, "Next Part: 3, Budget three" below, both live',
-    a1.box && a1.up && a1.up.label === 'Previous Part: 1, Budget one' && !a1.up.off && a1.down && a1.down.label === 'Next Part: 3, Budget three' && !a1.down.off, a1);
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: our own up/down controls on the page's scrollbar go, unless one is the only way to do something - they are not: the Part's foot and the Parts list move between Parts): the Part arrows are no longer mounted (PageEditor; PartArrows kept, unmounted, in PartMoves.tsx). Fix run 45468457970 read these red). A1, verbatim:
+  //   ok('A1 on Budget two: "Previous Part: 1, Budget one" above, "Next Part: 3, Budget three" below, both live',
+  //   a1.box && a1.up && a1.up.label === 'Previous Part: 1, Budget one' && !a1.up.off && a1.down && a1.down.label === 'Next Part: 3, Budget three' && !a1.down.off, a1);
+  const aGone = await app.evalJs("!document.querySelector('[data-part-arrows], [data-part-step], .reorg-part-arrow')");
+  ok('A-B on Budget two no Part arrow is drawn on the page (#128): no arrows box, no step button - the foot and the Parts list are the moves', aGone === true, { aGone, a1 });
 
   const cap = await app.evalJs(`(() => {
     const sc = document.querySelector('.mode-scroll'); const up = document.querySelector('[data-part-step="-1"]'); const dn = document.querySelector('[data-part-step="1"]');
@@ -133,8 +137,9 @@ await withHarness(async (app) => {
     const bar = (sc.offsetWidth - sc.clientWidth) * k;
     return { bar, barMid: s.right - bar / 2, upMid: (u.left + u.right) / 2, dnMid: (d.left + d.right) / 2, upTop: u.top - s.top, dnBottom: s.bottom - d.bottom, k };
   })()`);
-  ok('A2 the arrows cap the page\'s own scrollbar: centred on its bar, the upper at its top and the lower at its bottom',
-    !!cap && cap.bar > 0 && Math.abs(cap.upMid - cap.barMid) <= 2 && Math.abs(cap.dnMid - cap.barMid) <= 2 && cap.upTop >= 0 && cap.upTop <= 12 && cap.dnBottom >= 0 && cap.dnBottom <= 12, cap);
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: our own up/down controls on the page's scrollbar go, unless one is the only way to do something - they are not: the Part's foot and the Parts list move between Parts): the Part arrows are no longer mounted (PageEditor; PartArrows kept, unmounted, in PartMoves.tsx). Fix run 45468457970 read these red). There are no arrows to cap the bar; the live successors are A-B above and scrollbar-arrows-128.mjs C-B (no button or link on any bar). A2, verbatim:
+  //   ok('A2 the arrows cap the page\'s own scrollbar: centred on its bar, the upper at its top and the lower at its bottom',
+  //   !!cap && cap.bar > 0 && Math.abs(cap.upMid - cap.barMid) <= 2 && Math.abs(cap.dnMid - cap.barMid) <= 2 && cap.upTop >= 0 && cap.upTop <= 12 && cap.dnBottom >= 0 && cap.dnBottom <= 12, cap);
 
   const geo = {};
   for (const w of [1366, 1920]) {
@@ -177,23 +182,39 @@ await withHarness(async (app) => {
   for (const ch of ' and a few more words here') { await app.typeKeys(ch); await sleep(50); }
   await sleep(150);
   const k1 = await app.evalJs('window.wrizoPartMovesRenders ? window.wrizoPartMovesRenders() : null');
-  ok('K1 while she types 26 keys on a Part, the arrows and the foot render zero times (the counter is live)',
+  // SUPERSEDED (#128: still green, but its sentence names the arrows, which no longer render - the counter now counts the foot alone; parked for what it says). K1, verbatim:
+  //   ok('K1 while she types 26 keys on a Part, the arrows and the foot render zero times (the counter is live)',
+  //   typeof live0 === 'number' && live0 > 0 && k0 !== null && k1 === k0, { live0, k0, k1 });
+  ok('K1-B while she types 26 keys on a Part, the foot renders zero times (the counter is live: it counted the foot\'s first render; the arrows are retired, #128)',
     typeof live0 === 'number' && live0 > 0 && k0 !== null && k1 === k0, { live0, k0, k1 });
 
-  const moved = await app.evalJs(press('[data-part-step="1"]'));
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: our own up/down controls on the page's scrollbar go, unless one is the only way to do something - they are not: the Part's foot and the Parts list move between Parts): the Part arrows are no longer mounted (PageEditor; PartArrows kept, unmounted, in PartMoves.tsx). Fix run 45468457970 read these red). A4's claim - typed, then moved at once, her words are stored before the move - stands; A4-B moves by the foot's Next. A4 and its driver, verbatim:
+  //   const moved = await app.evalJs(press('[data-part-step="1"]'));
+  //   await arrived(app, 'pm-g-3');
+  //   const stored2 = await app.evalJs("((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'pm-g-2') || {}).text || '')");
+  //   const a4 = { moved, hash: await app.evalJs('location.hash'), line: await app.evalJs(PARTLINE), arrows: await app.evalJs(ARROWS), stored2 };
+  //   ok('A4 typed, then the lower arrow at once: her words are stored on Budget two and Budget three opens ("Part 3 of 3"); its lower arrow is "No Part after this one", disabled',
+  //   moved && /pm-g-3/.test(a4.hash) && /few more words/.test(stored2) && a4.line && a4.line.text === 'Part 3 of 3' && a4.arrows.down && a4.arrows.down.off && a4.arrows.down.label === 'No Part after this one' && a4.arrows.up && !a4.arrows.up.off, a4);
+  const moved = await app.evalJs(press('[data-part-go="pm-g-3"]'));
   await arrived(app, 'pm-g-3');
   const stored2 = await app.evalJs("((JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((e) => e.id === 'pm-g-2') || {}).text || '')");
-  const a4 = { moved, hash: await app.evalJs('location.hash'), line: await app.evalJs(PARTLINE), arrows: await app.evalJs(ARROWS), stored2 };
-  ok('A4 typed, then the lower arrow at once: her words are stored on Budget two and Budget three opens ("Part 3 of 3"); its lower arrow is "No Part after this one", disabled',
-    moved && /pm-g-3/.test(a4.hash) && /few more words/.test(stored2) && a4.line && a4.line.text === 'Part 3 of 3' && a4.arrows.down && a4.arrows.down.off && a4.arrows.down.label === 'No Part after this one' && a4.arrows.up && !a4.arrows.up.off, a4);
+  const a4 = { moved, hash: await app.evalJs('location.hash'), line: await app.evalJs(PARTLINE), gone: await app.evalJs("!document.querySelector('[data-part-arrows], [data-part-step], .reorg-part-arrow')"), stored2 };
+  ok('A4-B typed, then the foot\'s Next at once: her words are stored on Budget two and Budget three opens ("Part 3 of 3"), with no Part arrow on it (#128)',
+    moved && /pm-g-3/.test(a4.hash) && /few more words/.test(stored2) && a4.line && a4.line.text === 'Part 3 of 3' && a4.gone === true, a4);
 
   await open(app, 'machina', true, 'pm-g-1');
-  const a5a = await app.evalJs(ARROWS);
-  const moved5 = await app.evalJs(press('[data-part-step="1"]'));
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: our own up/down controls on the page's scrollbar go, unless one is the only way to do something - they are not: the Part's foot and the Parts list move between Parts): the Part arrows are no longer mounted (PageEditor; PartArrows kept, unmounted, in PartMoves.tsx). Fix run 45468457970 read these red). A5 and its driver, verbatim:
+  //   const a5a = await app.evalJs(ARROWS);
+  //   const moved5 = await app.evalJs(press('[data-part-step="1"]'));
+  //   await arrived(app, 'pm-g-2');
+  //   const a5hash = await app.evalJs('location.hash');
+  //   ok('A5 on Part 1 the upper arrow reads "No Part before this one", disabled; the lower opens Part 2',
+  //   a5a.up && a5a.up.off && a5a.up.label === 'No Part before this one' && a5a.down && !a5a.down.off && moved5 && /pm-g-2/.test(a5hash), { a5a, moved5, a5hash });
+  const a5gone = await app.evalJs("!document.querySelector('[data-part-arrows], [data-part-step], .reorg-part-arrow')");
+  const moved5 = await app.evalJs(press('[data-part-go="pm-g-2"]'));
   await arrived(app, 'pm-g-2');
   const a5hash = await app.evalJs('location.hash');
-  ok('A5 on Part 1 the upper arrow reads "No Part before this one", disabled; the lower opens Part 2',
-    a5a.up && a5a.up.off && a5a.up.label === 'No Part before this one' && a5a.down && !a5a.down.off && moved5 && /pm-g-2/.test(a5hash), { a5a, moved5, a5hash });
+  ok('A5-B on Part 1 no Part arrow is drawn (#128); the foot\'s Next opens Part 2', a5gone === true && moved5 && /pm-g-2/.test(a5hash), { a5gone, moved5, a5hash });
 
   // ---- FOOT ------------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pm-g-2');
@@ -225,13 +246,19 @@ await withHarness(async (app) => {
 
   await app.evalJs('window.wrizoFlushNow && window.wrizoFlushNow(); null'); await sleep(400);
   const sQ1 = await app.evalJs(ENTRIES);
-  ok('S1 the moves (foot, drop, arrow above) store nothing: every entry\'s text, boxes, page settings and links are byte-identical',
+  // SUPERSEDED (#128: still green, but its sentence names an arrow move, and there is none now; parked for what it says). S1, verbatim:
+  //   ok('S1 the moves (foot, drop, arrow above) store nothing: every entry\'s text, boxes, page settings and links are byte-identical',
+  //   JSON.stringify(sQ0) === JSON.stringify(sQ1), { before: sQ0.length, after: sQ1.length });
+  ok('S1-B the moves (the foot, the drop) store nothing: every entry\'s text, boxes, page settings and links are byte-identical',
     JSON.stringify(sQ0) === JSON.stringify(sQ1), { before: sQ0.length, after: sQ1.length });
 
   // ---- ONE-PART DOC ----------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'pm-top-1');
   const f3 = { foot: await app.evalJs(FOOT), arrows: await app.evalJs(ARROWS) };
-  ok('F3 a one-Part Doc has no foot, and both its arrows are disabled', f3.foot === null && f3.arrows.box && f3.arrows.up?.off && f3.arrows.down?.off, f3);
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: our own up/down controls on the page's scrollbar go, unless one is the only way to do something - they are not: the Part's foot and the Parts list move between Parts): the Part arrows are no longer mounted (PageEditor; PartArrows kept, unmounted, in PartMoves.tsx). Fix run 45468457970 read these red). F3, verbatim:
+  //   ok('F3 a one-Part Doc has no foot, and both its arrows are disabled', f3.foot === null && f3.arrows.box && f3.arrows.up?.off && f3.arrows.down?.off, f3);
+  const f3gone = await app.evalJs("!document.querySelector('[data-part-arrows], [data-part-step], .reorg-part-arrow')");
+  ok('F3-B a one-Part Doc has no foot, and no Part arrow (#128)', f3.foot === null && f3gone === true, { ...f3, f3gone });
 });
 
 // ---- WORDS (source) --------------------------------------------------------------------------------------------------------------------
@@ -247,7 +274,7 @@ await withHarness(async (app) => {
 }
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 15;   // 14 + MUT-A3 (A3 parked, the chrome scale successor, Nov 21)
+const EXPECTED = 14;   // #128 (Nov 24): A1, A2, A4, A5, F3 parked (the arrows are retired) and K1, S1 parked for what they say; + A-B, A4-B, A5-B, K1-B, S1-B, F3-B. Was: const EXPECTED = 15;   // 14 + MUT-A3 (A3 parked, the chrome scale successor, Nov 21)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-PART-MOVES VERIFY: PASS (${checks.length} checks)`

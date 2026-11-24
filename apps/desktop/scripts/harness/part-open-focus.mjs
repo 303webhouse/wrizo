@@ -2,6 +2,7 @@
 // an empty page; PartMoves just opens it). Fix: focus lands in the new Part's editor with the caret at its start. Red first, in Machina and Arbor (reorg on)"). POLISH's pointer: in a Doc of two Parts, caret in Part 1, press `[data-part-step="1"]`, type Q: the active
 // element is the body and the Q is lost, 12 of 12 jobs (Machina live, Arbor's preview door ?reorglift=, both tones, both widths).
 // Every door that opens another Part of the Doc she is writing in: the next-Part arrow on the scrollbar (PartMoves), the line at the Part's foot ("Next · 2 · name"), and a row of the Parts list the top rail's Part name drops. After each, with her caret in the
+// (#128, Nov 24: the next-Part arrow on the scrollbar is retired - no longer mounted; its door is parked below and PF0-B asserts it is gone. The foot and the Parts list remain.)
 // first Part before it:
 //   PF1  the new Part's editor holds the focus (the active element is inside it) and its caret is a collapsed one inside the editor
 //   PF2  Draft (BUILD): the caret is at the START of the Part (Fable's word), so the next key types there: a Q typed after the move is the first character of the Part's words
@@ -22,7 +23,10 @@ const CFGS = [
   { name: 'Arbor', theme: 'plateau', q: `reorg=1&arbor2=1&reorglift=${LIFT}` },
 ];
 const DOORS = [
-  { id: 'arrow', label: 'the next-Part arrow on the scrollbar', press: (ids) => `(() => { const b = document.querySelector('[data-part-step="1"]'); if (!b || b.disabled) return false; b.click(); return true; })()` },
+  // SUPERSEDED (#128, Fable Nov 24 11:28 am: our own up/down controls on the page's scrollbar go; the reorg's Part arrows are no longer mounted - the fix run
+  // 45468457970 read 'the door exists on the page' false four times). The arrow's PF1-PF4 are parked with it; the foot and the Parts list stay her doors,
+  // and PF0-B (below) asserts the arrow is gone. The door, verbatim:
+  //   { id: 'arrow', label: 'the next-Part arrow on the scrollbar', press: (ids) => `(() => { const b = document.querySelector('[data-part-step="1"]'); if (!b || b.disabled) return false; b.click(); return true; })()` },
   { id: 'foot', label: 'the "Next" line at the Part\'s foot', press: (ids) => `(() => { const b = document.querySelector('[data-part-go="${ids[1]}"]'); if (!b) return false; b.click(); return true; })()` },
   { id: 'rail', label: 'a row of the Parts list the top rail\'s Part name drops', first: () => "(() => { const c = document.querySelector('[data-top-part-count]'); if (!c) return false; c.click(); return true; })()", press: (ids) => `(() => { const r = document.querySelector('[data-top-parts-drop] [data-part-row="${ids[1]}"]'); if (!r) return 'norow'; r.click(); return true; })()` },
 ];
@@ -59,6 +63,8 @@ try { await withHarness(async (app) => {
       return ids;
     };
     for (const [stage, mode] of [['Draft', 'drafting'], ['Free Write', 'journal']]) {
+      // PF0-B (#128): no next-Part arrow on the scrollbar - the move between Parts is the foot's and the Parts list's
+      { await openDoc(mode); const gone = await ev("!document.querySelector('[data-part-step], .reorg-part-arrow')"); ok(`PF0-B [${cfg.name} ${stage}] no next-Part arrow sits on the scrollbar (#128): her doors to the next Part are the foot and the Parts list`, gone === true, JSON.stringify({ gone })); }
       for (const door of DOORS) {
         const ids = await openDoc(mode);
         // her caret in the first Part: she is writing there (a few characters typed first)

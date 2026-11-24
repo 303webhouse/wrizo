@@ -2,6 +2,7 @@
 // Red first, in Machina and Arbor (reorg on)"). POLISH's repro: Split in Draft, then the next-Part arrow: the tail opens in Free Write (the Typewriter zoom, no Front menu); run 5 read the tail's stored mode as null and the head's as 'drafting'.
 //   PM1  after "Split here" in Draft, the tail's stored mode is the head's: wrizo-mode-page-<tail> is 'drafting', as the head's is
 //   PM2  the next-Part arrow opens the tail IN DRAFT: the editor draws Draft's rows (.wz-row), and not Free Write's forward-only host
+//        (#128, Nov 24: the arrow is retired; PM2 parked, PM2-B moves by the Part's foot - the same claim)
 //   PM3  nothing else is saved for it: the only new storage key the split makes for the tail is that existing per-page mode key (no new key is invented)
 //   PM4  CONTROL: a manuscript page that has no saved mode still opens in Free Write (the default is untouched), and the head keeps Draft
 // In Machina (?reorg=1) and Arbor (?reorg=1&arbor2=1 with the preview door ?reorglift= for the pieces the table has not switched on).
@@ -65,13 +66,19 @@ try { await withHarness(async (app) => {
     ok(`PM1 [${cfg.name}] after "Split here" in Draft the tail's stored mode is the head's ('drafting')`, placed === true && pressed === true && !!tailId && headMode === 'drafting' && tailMode === 'drafting', JSON.stringify({ placed, pressed, split, tailId, headMode, tailMode }));
     const added = after.filter((k) => !before.includes(k));
     ok(`PM3 [${cfg.name}] the split saves nothing new but that existing per-page mode key`, !!tailId && added.length === 1 && added[0] === `wrizo-mode-page-${tailId}`, JSON.stringify({ added }));
-    // the arrow to the tail
-    const stepped = await ev(click('[data-part-step="1"]'));
+    // SUPERSEDED (#128, Fable Nov 24 11:28 am: the reorg's Part arrows on the page's scrollbar are no longer mounted; the fix run 45468457970 read
+    // stepped false). PM2's claim - the tail opens in Draft - stands; PM2-B moves to it by the Part's foot ("Next · 2 · name"), her door now. Verbatim:
+    //   // the arrow to the tail
+    //   const stepped = await ev(click('[data-part-step="1"]'));
+    // the foot's Next to the tail
+    const stepped = await ev(click(`[data-part-go="${tailId}"]`));
     await app.waitFor(`location.hash.indexOf(${JSON.stringify(tailId || 'none')}) >= 0`, { label: 'the tail opens', timeout: 8000 }).catch(() => {});
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the tail editor', timeout: 8000 }).catch(() => {});
     await sleep(1500);
     const tailPage = await ev(READ);
-    ok(`PM2 [${cfg.name}] the next-Part arrow opens the tail in Draft (rows drawn), not in Free Write`, stepped === true && tailPage.rows > 0 && (tailPage.text || '').indexOf('The tail') === 0, JSON.stringify({ stepped, tailPage }));
+    // SUPERSEDED with the arrow (#128): PM2, verbatim:
+    //   ok(`PM2 [${cfg.name}] the next-Part arrow opens the tail in Draft (rows drawn), not in Free Write`, stepped === true && tailPage.rows > 0 && (tailPage.text || '').indexOf('The tail') === 0, JSON.stringify({ stepped, tailPage }));
+    ok(`PM2-B [${cfg.name}] the foot's Next (the next-Part arrow is retired, #128) opens the tail in Draft (rows drawn), not in Free Write`, stepped === true && tailPage.rows > 0 && (tailPage.text || '').indexOf('The tail') === 0, JSON.stringify({ stepped, tailPage }));
     // the control: a page with no saved mode opens in Free Write, as it always did
     await ev("location.hash = '#/page/pm-ctl'");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the control page', timeout: 8000 }).catch(() => {});

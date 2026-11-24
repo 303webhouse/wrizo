@@ -1,23 +1,36 @@
 /* Scrollbars, app-wide: thin, quiet, square and theme-toned. Declared on every element, not only :root, because scrollbar-width does not reliably inherit in Chromium [scrollbars §1] */
-/* the standard properties are the one scrollbar mechanism: Chromium 121+ ignores ::-webkit-scrollbar wherever they are set; the width is native thin (10px or less) [scrollbars §2] */
+/* #128 (Nick, Nov 24; Fable 11:28 am, RULED: every scroller shows track and thumb only, no arrow buttons, in every theme). In Chromium the standard
+   properties draw the NATIVE bar, and the native bar carries arrow buttons no CSS can hide: ::-webkit-scrollbar-button (like every ::-webkit-scrollbar
+   rule) is ignored wherever scrollbar-width or scrollbar-color is set (scrollbar-arrows-128.mjs, run 45461540607: Machina's Front menu, pressed at
+   either end of its bar, moved 40 px, an arrow's line; the page, drawn by the webkit pseudo-elements, moved a page). So where the browser has
+   ::-webkit-scrollbar, EVERY scroller is drawn by the pseudo-elements, with no buttons; its colours ride two inherited custom properties,
+   --wz-sb-thumb and --wz-sb-track, which every rule that used to set scrollbar-color now sets instead. A browser without ::-webkit-scrollbar keeps
+   the standard pair, reading the same two properties. scrollbar-width:none still hides a bar in both (it is never undone here). [scrollbars §2] */
 *{
   scrollbar-width: thin;
-  scrollbar-color: var(--ink-border-strong) transparent;
+  scrollbar-color: var(--wz-sb-thumb, var(--ink-border-strong)) var(--wz-sb-track, transparent);
 }
 /* paper and card scroll regions take the paper family's subdued pair; the board canvas sits on the paper, so it joins the paper pair [scrollbars §3] */
 .mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap{
-  scrollbar-color: var(--ink-on-paper-low) transparent;
+  --wz-sb-thumb: var(--ink-on-paper-low); --wz-sb-track: transparent;
 }
-.board-text{ scrollbar-color: var(--ink-on-card-low) transparent; }
-/* the one exception: .mode-scroll sits inside the scaled page, so its bar is the webkit mechanism at 10px divided by the applied scale, painted back to 10px; @supports keeps Firefox on thin [scrollbars §4] */
+.board-text{ --wz-sb-thumb: var(--ink-on-card-low); --wz-sb-track: transparent; }
 @supports selector(::-webkit-scrollbar){
+  /* #128: the pseudo-elements draw every bar - 10 px (the native thin width it replaces), a square thumb inset 2 px, no buttons */
+  *{ scrollbar-width:auto; scrollbar-color:auto; }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:var(--wz-sb-track, transparent); }
+  ::-webkit-scrollbar-thumb{ background:var(--wz-sb-thumb, var(--ink-border-strong)); background-clip:padding-box; border:2px solid transparent; border-radius:0; }
+  ::-webkit-scrollbar-corner{ background:transparent; }
+  ::-webkit-scrollbar-button{ display:none; width:0; height:0; }
+  /* the page: .mode-scroll sits inside the scaled page, so its bar is 10px divided by the applied scale, painted back to 10px [scrollbars §4] */
   /* the padding keeps the text column one width at every scale: the margin cancellation plus 10px less the bar, with the bar capped at 10 layout px [scrollbars §5] */
   .desk-frame-stage--prose .mode-scroll{ --wz-sb-k: var(--wz-k, 1); --wz-sb-w: min(10px, round(nearest, calc(10px / var(--wz-sb-k)), 1px)); padding-right:calc(var(--wz-page-pad-x, 38px) * var(--paper-scale, 1) + 10px - var(--wz-sb-w)); scrollbar-width:auto; scrollbar-color:auto; }
   .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ --wz-sb-k: calc(var(--wz-k, 1) * var(--wz-zoom, 1.6)); }
   .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar{ width:var(--wz-sb-w); }
   .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-track{ background:transparent; }
-  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; border-left:calc(4px / var(--wz-sb-k)) solid transparent; border-radius:0; }
+  /* (#128: the thumb reads --wz-sb-thumb, so a rule that clears the page's bar - Wire In's - clears it through the property, as scrollbar-color did) */
+  .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:var(--wz-sb-thumb, var(--ink-on-paper-low)); background-clip:padding-box; border:0; border-left:calc(4px / var(--wz-sb-k)) solid transparent; border-radius:0; }
 }
-/* (The per-element `::-webkit-scrollbar-thumb` colour and hover-darken rules that used to follow were dead under
-   Chromium >= 121 wherever scrollbar-color is set - see the one-mechanism note on the systemic `*` rule above.) */
-
+/* (The per-element `::-webkit-scrollbar-thumb` colour and hover-darken rules that used to follow were dead under Chromium >= 121 wherever
+   scrollbar-color was set; #128 makes the pseudo-elements the mechanism again, through the two properties above, not through those rules.) */
