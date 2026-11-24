@@ -90,8 +90,9 @@ if (tsSrc !== null && mdSrc !== null) {
   const m = built === null ? null : [null, built];
   ok('the chat prompt is built by tutorPrompts.ts buildSystemPrompt() — this check reads the string the real builder returns, rather than a literal in tutor.ts that no longer exists',
     !!m, m ? `${built.length} chars` : `could not build: ${buildErr}`);
-  ok('and tutor.ts really sends that builder\'s default (buildSystemPrompt(CHAT_PROMPT_DEFAULT)), so the record and the running system are the same string',
-    /system:\s*buildSystemPrompt\(CHAT_PROMPT_DEFAULT\)/.test(tsSrc), '');
+  // the route sends the builder's Tutor hat and typed-question task, with the voice picked from the theme (voiceForTheme: the Arbor voice is the record's; no theme drops the voice block)
+  ok('and tutor.ts really sends that builder (Tutor hat, typed-question task, the voice from voiceForTheme), so the record is the string it sends for the Arbor theme',
+    /system:\s*buildSystemPrompt\(\{\s*hat:\s*'tutor',\s*voice:\s*voiceForTheme\(req\.body\.theme\),\s*task:\s*'ask'\s*\}\)/.test(tsSrc), '');
 
   // The mirror's body is everything after the `---` that closes its header.
   // The header explains the law; the body IS the prompt.

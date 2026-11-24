@@ -6,8 +6,9 @@
 //   RG4  what the check skips: anything in quotation marks, the sentence after the label "Example", the closing "Read:" line, the capital-letter "US"; and words only FLAGGED for the second reader (mine, great, perfect...) are never failed
 //   RG5  the per-account budget: the retry takes a second unit; with one unit left it is refused (no second model call, the fallback shows) and the count never passes the cap
 //   RG6  the global budget: the same, across accounts
-//   RG7  a clean first reply never spends a second unit; the guard does not touch the SPRINT route (one model call, today's cleaning)
-//   MUT1 the guard removed: RG2/RG3 go RED   MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED
+//   RG7  a clean first reply never spends a second unit; a clean SPRINT line is one model call, today's cleaning
+//   RG8  the SPRINT route is guarded with the same guard (Fable, Nov 23, call 3): a line that says "I"/"we" or flatters is asked for again once; the second, clean line is the one she gets; failing twice is the route's existing plain failure (502, so the client gives her a line from its local deck), never the chat fallback line; the retry is paid from the same two budgets and never passes a cap
+//   MUT1 the guard removed: RG2/RG3 go RED   MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED   MUT4 the sprint guard removed: RG8 goes RED   MUT5 the sprint retry not paid for: RG8 goes RED
 // RED on main (5487be6b), where nothing guards a reply. Run (from apps/desktop): node scripts/harness/tutor-reply-guard.mjs
 import { loadServer, swap, findHandler, callRoute } from '../../../server/scripts/tutor-eval/load-server.mjs';
 import { startStandInModel } from '../../../server/scripts/tutor-eval/stand-in-model.mjs';
@@ -144,7 +145,40 @@ const rg7 = await callRoute(r.chat, BODY, 'u-rg7');
 ok(rg7.status === 429, 'RG7 clean replies spend exactly one unit each: two requests used a 2-unit budget, the third is refused', `status=${rg7.status}`);
 model.reset(); model.say('Write about the last door you walked through.');
 const sp = await callRoute(r.sprint, { seen: [] }, 'u-rg7s');
-ok(sp.status === 200 && sp.body && sp.body.prompt === 'Write about the last door you walked through.' && model.requests.length === 1, 'RG7 the SPRINT route is unchanged: one model call, today\'s one-line cleaning', JSON.stringify(sp.body));
+ok(sp.status === 200 && sp.body && sp.body.prompt === 'Write about the last door you walked through.' && model.requests.length === 1, 'RG7 a clean SPRINT line is one model call with today\'s one-line cleaning', JSON.stringify(sp.body));
+done(r);
+
+// ---- RG8: the SPRINT route, guarded the same way ----
+const SPRINT_GOOD = 'Write about the last door you walked through.';
+const sprintBad = ['I want you to describe a kitchen at dawn.', 'Great job so far: write the next sound you hear.', 'Write what we would see from the window.'];
+r = fresh();
+let sprintOk = true; const sprintWhy = [];
+for (const [i, b] of sprintBad.entries()) {
+  model.reset(); model.say(b, SPRINT_GOOD);
+  const x = await callRoute(r.sprint, { seen: [] }, 'u-rg8-' + i);
+  if (!(x.status === 200 && x.body && x.body.prompt === SPRINT_GOOD && model.requests.length === 2)) { sprintOk = false; sprintWhy.push(i + ':' + x.status + '/calls=' + model.requests.length); }
+}
+ok(sprintOk, 'RG8 a SPRINT line that says "I", "we" or flatters is asked for again once; the second, clean line is the one she gets', sprintWhy.join(' '));
+model.reset(); model.say(sprintBad[0], sprintBad[1]);
+const sprintTwice = await callRoute(r.sprint, { seen: [] }, 'u-rg8-twice');
+ok(sprintTwice.status === 502 && model.requests.length === 2 && !JSON.stringify(sprintTwice.body).includes('No answer this time') && !(sprintTwice.body && sprintTwice.body.prompt), 'RG8 two failing SPRINT lines: the route\'s existing plain failure (502, no prompt), never the chat fallback line', JSON.stringify(sprintTwice.body) + ' calls=' + model.requests.length);
+done(r);
+r = fresh({}, 2, 5000);
+model.reset(); model.say(SPRINT_GOOD); await callRoute(r.sprint, { seen: [] }, 'u-rg8b'); // unit 1
+model.reset(); model.say(sprintBad[0], SPRINT_GOOD);
+const sprintCap = await callRoute(r.sprint, { seen: [] }, 'u-rg8b'); // unit 2 is the first call; the retry would be unit 3: refused
+ok(sprintCap.status === 502 && model.requests.length === 1, 'RG8 with one unit left the SPRINT retry is refused: no second model call', 'status=' + sprintCap.status + ' calls=' + model.requests.length);
+model.reset(); model.say(SPRINT_GOOD);
+const sprintAfter = await callRoute(r.sprint, { seen: [] }, 'u-rg8b');
+ok(sprintAfter.status === 429 && model.requests.length === 0, 'RG8 the SPRINT count stops at the cap: the next request is refused and the model is not called', 'status=' + sprintAfter.status);
+done(r);
+r = fresh({}, 500, 2);
+model.reset(); model.say(SPRINT_GOOD); await callRoute(r.sprint, { seen: [] }, 'u-rg8c1'); // global 1
+model.reset(); model.say(sprintBad[0], SPRINT_GOOD);
+const sprintGlobal = await callRoute(r.sprint, { seen: [] }, 'u-rg8c2'); // global 2; the retry would be 3: refused
+model.reset(); model.say(SPRINT_GOOD);
+const sprintGlobal3 = await callRoute(r.sprint, { seen: [] }, 'u-rg8c3');
+ok(sprintGlobal.status === 502 && sprintGlobal3.status === 429, 'RG8 the global budget holds for the SPRINT retry too', 'status=' + sprintGlobal.status + '/' + sprintGlobal3.status);
 done(r);
 
 // ---- mutants ----
@@ -166,11 +200,23 @@ done(r);
   const z = await callRoute(m3.chat, BODY, 'u-m3');
   ok(!(z.body && z.body.reply === FALLBACK), 'MUT3 the fallback line swapped: RG3 goes RED');
   done(m3);
+  const m4 = loadServerMut({ 'tutor.ts': swap('if (line && !guardReply(line).ok) {', 'if (false) {') });
+  model.reset(); model.say(sprintBad[0], SPRINT_GOOD);
+  const w = await callRoute(m4.sprint, { seen: [] }, 'u-m4');
+  ok(!(w.body && w.body.prompt === SPRINT_GOOD && model.requests.length === 2), 'MUT4 the sprint guard removed: RG8 goes RED (the bad line goes through, no second call)', JSON.stringify(w.body));
+  done(m4);
+  const m5 = loadServerMut({ 'tutor.ts': (src) => { const t = 'const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();'; const i = src.lastIndexOf(t); return src.slice(0, i) + 'const retryAllowed = true;' + src.slice(i + t.length); } }, 2);
+  model.reset(); model.say(SPRINT_GOOD);
+  await callRoute(m5.sprint, { seen: [] }, 'u-m5');
+  model.reset(); model.say(sprintBad[0], SPRINT_GOOD);
+  const v = await callRoute(m5.sprint, { seen: [] }, 'u-m5');
+  ok(model.requests.length === 2 && v.body && v.body.prompt === SPRINT_GOOD, 'MUT5 the sprint retry not paid for: RG8 goes RED (a second call is made on the last unit)', 'calls=' + model.requests.length);
+  done(m5);
 }
 function loadServerMut(mutate, daily = 500) {
   setEnv(daily, 5000);
   const s = loadServer({ mutate });
-  return { s, chat: findHandler(s.load('tutor.ts').tutorRouter, '/tutor/chat') };
+  return { s, chat: findHandler(s.load('tutor.ts').tutorRouter, '/tutor/chat'), sprint: findHandler(s.load('tutor.ts').tutorRouter, '/tutor/sprint-prompt') };
 }
 
 finish();
