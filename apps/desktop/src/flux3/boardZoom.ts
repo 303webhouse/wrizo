@@ -31,6 +31,10 @@ export function keptBoardScale(boardId: string): number { return kept.get(boardI
 let home: (() => void) | null = null;
 export function registerZoomHome(fn: () => void): () => void { home = fn; return () => { if (home === fn) home = null; }; }
 export function zoomHome(): void { home?.(); }
+// ONE NOTCH (Arbor and Machina's zoom bar, ARBOR, Nov 24): the camera registers what Ctrl + = / - does (one x1.25 glide about the centre); the bar's + and - ask for it with the factor.
+let step: ((factor: number) => void) | null = null;
+export function registerZoomStep(fn: (factor: number) => void): () => void { step = fn; return () => { if (step === fn) step = null; }; }
+export function zoomStep(factor: number): void { step?.(factor); }
 export function useBoardScale(): number { return useSyncExternalStore(subscribeBoardScale, getBoardScale, getBoardScale); }
 
 /** The outer limit (spec §2): the whole board - its longer side - fills 60% of the stage's shorter side; never below 0.10, and never above true size (1.00). */
