@@ -827,8 +827,8 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
      right. It is overlay-thin and only paints when the content is taller
      than the drawer — settings open, or a short screen. No reserved gutter. */
   direction: rtl;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--text-low) 28%, transparent) transparent;
+
+  --wz-sb-thumb:color-mix(in srgb, var(--text-low) 28%, transparent); --wz-sb-track:transparent;
 }
 .wz-sliver-panel > *{ direction: ltr; }
 /* (Its `::-webkit-scrollbar` 4px rules are deleted: dead under Chromium >= 121 because scrollbar-width/color are set above - one mechanism per element.) */

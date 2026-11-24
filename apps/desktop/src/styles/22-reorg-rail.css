@@ -51,7 +51,7 @@
 [data-theme='machina'] .wz-reorg-rows{ list-style:none; margin:0; padding:0; }
 /* DOCS' Recent, long (reorg/panels/DocsPanel.tsx): the box is five rows tall (its max-height is measured from the rows) and scrolls past
    them on a thin scrollbar; the sort sits at the end of the group's head, the pressed word in the brighter ink. */
-[data-theme='machina'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+[data-theme='machina'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; }
 [data-theme='machina'] .wz-reorg-recent-head{ justify-content:space-between; }
 [data-theme='machina'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
 [data-theme='machina'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }

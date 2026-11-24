@@ -53,7 +53,7 @@
 :root[data-flux3][data-theme='flux'] .wz-reorg-rows{ list-style:none; margin:0; padding:0; }
 /* DOCS' Recent, long (reorg/panels/DocsPanel.tsx): the box is five rows tall (its max-height is measured from the rows) and scrolls past
    them on a thin scrollbar; the sort sits at the end of the group's head, the pressed word in the brighter ink. */
-:root[data-flux3][data-theme='flux'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
+:root[data-flux3][data-theme='flux'] .wz-reorg-recent-rows{ overflow-y:auto; overscroll-behavior:contain; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-recent-head{ justify-content:space-between; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort{ display:inline-flex; gap:8px; }
 :root[data-flux3][data-theme='flux'] .wz-reorg-recent-sort > button{ padding:0; border:0; background:none; font:inherit; color:var(--text-mid); cursor:pointer; }
@@ -152,7 +152,7 @@
 /* the pop-out stops before the page's left opener, and keeps its 300 px where there is room (reorg/railRoom.ts publishes the room) */
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
 /* the Wrizors' pass 1. REAL 1: every scrollbar in a pop-out draws its thumb in the field edge (5.2:1 on the panel) */
-:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category], :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category] *{ scrollbar-color:#5F8F95 transparent; }
+:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category], :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category] *{ --wz-sb-thumb:#5F8F95; --wz-sb-track:transparent; }
 /* NIT 1: the choice mark, a cyan edge (above) with the thin 3 x 24 brass bar on the current row */
 :root[data-flux3][data-theme='flux'] .wz-reorg-row[aria-current='location']::before, :root[data-flux3][data-theme='flux'] .wz-reorg-list-row[aria-current='page']::before{ content:''; position:absolute; left:-3px; top:50%; width:3px; height:24px; margin-top:-12px; background:var(--orange); pointer-events:none; }
 /* NIT 5: an orphan row's two acts are words */
