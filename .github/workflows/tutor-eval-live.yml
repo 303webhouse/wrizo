@@ -1,0 +1,110 @@
+# The TUTOR test set, LIVE: real model replies and the second reader, under a HARD CAP. By hand only. (TUTOR-B, item 2; apps/server/scripts/tutor-eval/run.mjs)
+# The free half (the machine checks on recorded replies) is NOT this job: it is apps/desktop/scripts/harness/tutor-eval-runner.mjs, run with the harness workflow.
+#
+# THIS JOB IS WRITTEN BUT NOT RUN until Nick adds the repository secrets (Settings -> Secrets and variables -> Actions -> New repository secret). The names:
+#   TUTOR_EVAL_API_KEY          the key for the model whose replies are tested (the same kind of key as the server's TUTOR_API_KEY). Required. Give it a spending limit at the provider.
+#   TUTOR_EVAL_GRADER_API_KEY   the key for the second reader (the kit says a Fable call). Optional: without it the run records the replies and runs the machine checks only.
+# With no TUTOR_EVAL_API_KEY the run stops at once, makes no call, and says it is waiting for the secret.
+#
+# HOW: gh workflow run tutor-eval-live.yml -f ref=<branch> [-f only=A1,C2] [-f max_calls=220] [-f max_tokens=300000]
+#
+# THE CAP: the runner counts every model call and every token BEFORE it makes the call and refuses one that would pass either cap (max_calls, max_tokens). The two cap inputs below are the most this run may use; the runner
+# also holds its own ceilings (400 calls, 600000 tokens) whatever is typed. A full run of the 89 reply cases is about 90 reply calls and up to 90 second-reader calls.
+#
+# SECURITY (the repo is PUBLIC, so every log line is public):
+#   - trigger: workflow_dispatch ONLY. No push, no pull_request, no schedule, no fork trigger. Only people with write access can dispatch it.
+#   - the two secrets are referenced in ONE step, as environment variables of that step; nothing prints them (the runner never logs a key and cuts a failure down to its status), and GitHub masks them.
+#   - the cases are synthetic (made-up drafts); no real writer's words are sent anywhere.
+#   - workflow inputs are validated and passed through env, never interpolated into a shell line. Third-party actions are pinned to full commit SHAs. permissions: contents: read.
+name: Tutor eval (live, by hand)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or commit SHA of this repo to test (empty = the ref this workflow was dispatched from)'
+        required: false
+        default: ''
+      only:
+        description: 'Optional: comma-separated case ids (e.g. A1,C2). Empty = every case the runner runs.'
+        required: false
+        default: ''
+      max_calls:
+        description: 'Hard cap: most model calls this run may make (plain number)'
+        required: true
+        default: '220'
+      max_tokens:
+        description: 'Hard cap: most tokens (in plus out) this run may use (plain number)'
+        required: true
+        default: '300000'
+
+concurrency:
+  group: tutor-eval-live
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24.13.0'
+
+jobs:
+  live:
+    name: Run the test set live
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check the inputs
+        env:
+          I_REF: ${{ inputs.ref }}
+          I_ONLY: ${{ inputs.only }}
+          I_CALLS: ${{ inputs.max_calls }}
+          I_TOKENS: ${{ inputs.max_tokens }}
+        run: |
+          set -eu
+          if [ -n "$I_REF" ]; then printf '%s' "$I_REF" | grep -Eq '^[A-Za-z0-9._/-]{1,200}$' || { echo "::error::ref may only hold letters, digits and . _ / -"; exit 2; }; fi
+          if [ -n "$I_ONLY" ]; then printf '%s' "$I_ONLY" | grep -Eq '^[A-K][0-9]{1,2}(,[A-K][0-9]{1,2}){0,99}$' || { echo "::error::only must be case ids like A1,C2"; exit 2; }; fi
+          printf '%s' "$I_CALLS" | grep -Eq '^[0-9]{1,3}$' || { echo "::error::max_calls must be a plain number"; exit 2; }
+          printf '%s' "$I_TOKENS" | grep -Eq '^[0-9]{1,6}$' || { echo "::error::max_tokens must be a plain number"; exit 2; }
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: package.json
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install the server's packages only
+        run: pnpm install --frozen-lockfile --filter @writer-studio/server
+
+      - name: Run the test set (live, capped)
+        env:
+          # the ONLY step that sees the secrets
+          TUTOR_EVAL_API_KEY: ${{ secrets.TUTOR_EVAL_API_KEY }}
+          TUTOR_EVAL_GRADER_API_KEY: ${{ secrets.TUTOR_EVAL_GRADER_API_KEY }}
+          I_ONLY: ${{ inputs.only }}
+          I_CALLS: ${{ inputs.max_calls }}
+          I_TOKENS: ${{ inputs.max_tokens }}
+        run: |
+          set -u
+          mkdir -p "$RUNNER_TEMP/eval"
+          args="--live --out $RUNNER_TEMP/eval/live-run.json --max-calls $I_CALLS --max-tokens $I_TOKENS"
+          if [ -n "$I_ONLY" ]; then args="$args --only $I_ONLY"; fi
+          node apps/server/scripts/tutor-eval/run.mjs $args
+
+      - name: Keep the recording (14 days)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tutor-eval-live-run
+          path: ${{ runner.temp }}/eval
+          retention-days: 14
+          if-no-files-found: warn
