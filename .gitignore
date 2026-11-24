@@ -36,3 +36,6 @@ docs/evidence/*
 docs/evidence/box-logs/**
 !docs/evidence/box-logs/**/
 !docs/evidence/box-logs/**/*.txt
+
+# TUTOR-B scratch folders (the tutor checks write and remove them)
+apps/server/.tutor-eval-scratch-*/

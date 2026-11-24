@@ -16,7 +16,8 @@ export function mountDrawerEdge(root: HTMLElement, prefix: string): void {
   const strip = (p: HTMLElement) => `${Math.max(0, p.offsetWidth - p.clientWidth)}px`;
   const readRoom = () => {
     const rail = document.querySelector<HTMLElement>('.desk-frame-strip, .desk-rail');
-    const page = document.querySelector<HTMLElement>('.desk-frame-stage .mode-page');
+    // bug #116: a screenplay's page is its .script-sheet (it has no .mode-page), so its room went unmeasured and its drawer ran under the rail at 1366
+    const page = document.querySelector<HTMLElement>('.desk-frame-stage .mode-page, .desk-frame-stage .script-sheet');
     const next = rail && page ? `${Math.round(page.getBoundingClientRect().left - rail.getBoundingClientRect().right)}px` : '';
     if (next === room) return;
     room = next;

@@ -96,6 +96,8 @@ const COALESCE_IDLE_MS = 600;
 // Generous but bounded — a very long single session can't grow this
 // unboundedly; far more than any felt-test session will ever need.
 const MAX_DEPTH = 500;
+// #82: how many steps of history are carried across an arrival of another window's words (each is one three-way merge of the page's text)
+const REBASE_KEEP = 60;
 
 export interface TextUndoStack {
   /** Record that the editor now reads `next`, having just made an edit of
@@ -114,6 +116,11 @@ export interface TextUndoStack {
    * (not required by any current caller, but a cheap, honest capability). */
   canUndo(): boolean;
   canRedo(): boolean;
+  /** The state the stack stands at (what the editor shows). */
+  peek(): TextSnapshot;
+  /** #82: words arrived from another window, so every state this history holds is mapped through them (`map`: a state's text -> that text with theirs in it). Only the last REBASE_KEEP steps are kept
+   * (each is one merge of the page's text); their carets are dropped (an undo puts the caret at the change, as it does for any step). The next edit opens a fresh step. */
+  rebase(map: (text: string) => string): void;
 }
 
 // #74: a step remembers the caret of the edit that MADE it (or the page's first caret), which is not where the edit it undoes was: an Enter in the middle of a line
@@ -190,6 +197,16 @@ export function createTextUndoStack(initial: TextSnapshot): TextUndoStack {
     },
     canUndo: () => past.length > 0,
     canRedo: () => future.length > 0,
+    peek: () => current,
+    rebase(map) {
+      if (past.length > REBASE_KEEP) past.splice(0, past.length - REBASE_KEEP);
+      const through = (x: TextSnapshot): TextSnapshot => ({ text: map(x.text), caret: null });
+      for (let i = 0; i < past.length; i += 1) past[i] = through(past[i]);
+      for (let i = 0; i < future.length; i += 1) future[i] = through(future[i]);
+      current = { text: map(current.text), caret: current.caret };
+      pendingBoundary = true;
+      lastKind = null;
+    },
   };
 }
 
@@ -242,4 +259,14 @@ export function unregisterUndoStack(el: HTMLElement): void {
 
 export function getRegisteredUndoStack(el: HTMLElement): TextUndoStack | undefined {
   return registry.get(el);
+}
+
+// #82: the editor mounts AGAIN when words another window saved are adopted (PageEditor keys it on `remount`), and its mount makes a new stack: the writer's history was gone. PageEditor rebases the old stack through the arrival
+// and hands it over here; the new mount takes it if it stands at the very text it mounts with, and only once (anything else is a stale hand-over and is dropped).
+let carried: { stack: TextUndoStack; at: number } | null = null;
+export function carryUndoStack(stack: TextUndoStack): void { carried = { stack, at: Date.now() }; }
+export function takeCarriedUndoStack(text: string): TextUndoStack | null {
+  const c = carried;
+  carried = null;
+  return c && Date.now() - c.at < 5000 && c.stack.peek().text === text ? c.stack : null;
 }

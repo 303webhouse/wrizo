@@ -117,6 +117,7 @@ function parseDoc() {
 const combos = (deck) => deck.questions.reduce((acc, q) => acc.flatMap((a) => (q.kind === 'pages' ? [{ ...a, [q.id]: 'pg-a,pg-b,pg-c' }] : q.options.map((o) => ({ ...a, [q.id]: o.id })))), [{}]);
 const rectsOverlap = (a, b) => a.x < b.x + b.w - 1e-9 && b.x < a.x + a.w - 1e-9 && a.y < b.y + b.h - 1e-9 && b.y < a.y + a.h - 1e-9;
 const sentences = (s) => (s.match(/[.!?]["\u201d\u2019)]?(?=\s+[A-Z"\u201c(]|$)/g) || []).length;
+const ADDED8 = ['relationship-map', 'timeline', 'memory-map', 'literature-map', 'narrow-my-question', 'pitch-story', 'logic-model', 'interview-notes'];
 const NEW_DECKS = ['hero-journey', 'story-circle', 'scene-sequel', 'argument-essay', 'research-paper', 'business-proposal'];
 const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
 const KEEP_FLUX = {   // the live decks' own pre-existing strings the Flux census already reviewed (flux-v2.mjs KEEP) - not part of W3
@@ -170,7 +171,7 @@ function suite(M, read, doc) {
     for (const id of Object.keys(M.DECK_CONTENT[d.id] || {})) if (!dealtSteps.has(id) && !(d.id === 'from-my-pages' && id === 'gaps')) gaps.push(`${d.id}.${id} never dealt`);   // the doc's 'gaps' row is the local Gaps readout (W5): content for its "?", not a card
     for (const id of dealtSteps) if (!(M.DECK_CONTENT[d.id] || {})[id]) gaps.push(`${d.id}.${id} no content`);
   }
-  keep('DC4', decks.length === 14 && gaps.length === 0, gaps.slice(0, 4).join(', ') || `${decks.length} decks`);
+  keep('DC4', decks.length === 22 && gaps.length === 0, gaps.slice(0, 4).join(', ') || `${decks.length} decks`);
 
   // DC5 - the question varies where the doc says it does
   const q = (id, a, step) => (cardsOf(id, a).find((b) => b.deckStep && b.deckStep.step === step) || {}).prompt;
@@ -357,7 +358,7 @@ function suite(M, read, doc) {
   try {
     const w = globalThis.window.wrizoDecks;
     const all = w.ids().map((id) => [id, w.dealCount(id, w.defaultAnswers(id))]);
-    daOk = all.length === 14 && same(w.defaultAnswers('from-my-pages'), { pages: '' }) && all.find(([id]) => id === 'from-my-pages')[1] === 0 && all.filter(([id]) => id !== 'from-my-pages').every(([, n]) => n >= 5);
+    daOk = all.length === 22 && same(w.defaultAnswers('from-my-pages'), { pages: '' }) && all.find(([id]) => id === 'from-my-pages')[1] === 0 && all.filter(([id]) => id !== 'from-my-pages' && !ADDED8.includes(id)).every(([, n]) => n >= 5) && all.filter(([id]) => ADDED8.includes(id)).every(([, n]) => n >= 2);   // PRESETS-B item 4 (Nov 23): 22 decks; the eight added decks deal as few as two (Interview Notes' first answer)
     daDetail = JSON.stringify(all);
   } catch (e) { daDetail = String(e && e.message); }
   keep('DA1', daOk, daDetail);

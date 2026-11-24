@@ -101,7 +101,7 @@ export interface Preset {
 const S = '{sources}';
 const std = (id: string, group: PresetGroup, label: string, parts: readonly string[], variants?: Preset['variants']): Preset => ({ id, group, label, kind: 'standard', parts, ...(variants ? { variants } : {}) });
 const scr = (id: string, label: string, parts: readonly string[]): Preset => ({ id, group: 'screenplay', label, kind: 'screenplay', parts });
-export const PRESETS: readonly Preset[] = [
+export const LIVE_PRESETS: readonly Preset[] = [
   std('academic-research', 'academic', 'Academic Research', ['Title Page', 'Abstract', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusion', S, 'Appendix'],
     { mla: ['Heading Block', 'Introduction', 'Methods', 'Results', 'Discussion', 'Conclusion', S, 'Appendix'] }),
   std('argumentative-essay', 'academic', 'Argumentative Essay', ['Introduction', 'Background', 'Claim and Evidence 1', 'Claim and Evidence 2', 'Claim and Evidence 3', 'Counterargument', 'Rebuttal', 'Conclusion', S]),
@@ -122,6 +122,37 @@ export const PRESETS: readonly Preset[] = [
   scr('tv-hour', 'TV Hour', ['Teaser', 'Act One', 'Act Two', 'Act Three', 'Act Four', 'Act Five']),
   scr('short-film', 'Short Film', ['Beginning', 'Middle', 'End']),
 ];
+
+// THE FIRST SLICE (PRESETS-B, Nov 23: the PRESETS load sheet, section 3; Fable: "Copy from it only; invent nothing"). Twenty more presets, Parts only: no Plan, no Board, no Part questions (build items 11 and 12). Each is a Standard Doc with the app's ordinary Page Setup:
+// a preset never sets a Page Setup or chooses a Style Guide (the Style Guide menu does, as today). Light sets only (Memoir, Thesis or Dissertation). In the menu a group lists its live presets first, then these. The italic Special Parts of the sheet
+// are the live ones: Title Page and Abstract by name, and `S`, the sources Part wearing the style guide's word. Lyric Essay, Collage Essay and the How-To Guide stand in for Braided Essay, Zuihitsu and the Game Design Document until their gates are passed.
+const FIRST_SLICE_PRESETS: readonly Preset[] = [
+  // Academic
+  std('class-essay', 'academic', 'Class Essay', ['Introduction', 'Body 1', 'Body 2', 'Body 3', 'Conclusion', S]),
+  std('thesis-or-dissertation', 'academic', 'Thesis or Dissertation', ['Title Page', 'Abstract', 'Chapter 1', 'Chapter 2', 'Chapter 3', 'Chapter 4', 'Chapter 5', S]),
+  std('lab-report', 'academic', 'Lab Report', ['Title Page', 'Aim', 'Method', 'Results', 'Discussion', S]),
+  std('research-proposal', 'academic', 'Research Proposal', ['Title Page', 'The Question', 'Background', 'Method', 'Timeline', 'What It Will Add', S]),
+  // Business
+  std('grant-application', 'business', 'Grant Application', ['Summary', 'Need', 'Goals and Outcomes', 'Activities', 'Evaluation', 'Budget Narrative', 'About the Organization']),
+  std('one-pager', 'business', 'One-Pager', ['The Point', 'Why It Matters', 'The Evidence', 'The Ask']),
+  std('decision-memo', 'business', 'Decision Memo', ['Decision Needed', 'Options', 'Trade-Offs', 'Recommendation', 'What Happens Next']),
+  std('product-spec', 'business', 'Product Spec', ['The Problem', 'Who It\'s For', 'What We\'ll Build', 'What We Won\'t', 'How We\'ll Know It Worked', 'Open Questions']),
+  std('status-update', 'business', 'Status Update', ['Done', 'Next', 'Blocked', 'Decisions Needed']),
+  // Web and Journalism
+  std('op-ed', 'web', 'Op-Ed', ['The Claim', 'Why Now', 'The Evidence', 'The Other Side', 'What Should Happen']),
+  std('profile', 'web', 'Profile', ['The Scene', 'Who They Are', 'Why Now', 'The Complication', 'Where It Leaves Them']),
+  std('explainer', 'web', 'Explainer', ['The Question', 'The Short Answer', 'How It Works', 'What\'s Disputed', 'What Happens Next']),
+  // Creative
+  std('poem', 'creative', 'Poem', ['Poem']),
+  std('memoir', 'creative', 'Memoir', ['Chapter 1', 'Chapter 2', 'Chapter 3']),
+  std('flash-fiction', 'creative', 'Flash Fiction', ['Story']),
+  std('novella', 'creative', 'Novella', ['Part One', 'Part Two', 'Part Three']),
+  std('lyric-essay', 'creative', 'Lyric Essay', ['Section 1', 'Section 2', 'Section 3', 'Section 4', 'Section 5']),
+  std('collage-essay', 'creative', 'Collage Essay', ['Fragment 1', 'Fragment 2', 'Fragment 3', 'Fragment 4', 'Fragment 5', 'Fragment 6', 'Fragment 7']),
+  std('treatment', 'creative', 'Treatment', ['Logline', 'The World', 'Characters', 'Act One', 'Act Two', 'Act Three', 'Tone']),
+  std('how-to-guide', 'creative', 'How-To Guide', ['What You\'ll Be Able to Do', 'What You Need', 'Steps', 'If It Goes Wrong', 'What Next']),
+];
+export const PRESETS: readonly Preset[] = [...LIVE_PRESETS, ...FIRST_SLICE_PRESETS];
 
 /** The names of a preset's Parts under a style guide: the sources Part wears the style's word, and AP (which has none) leaves it out. */
 export function presetParts(preset: Preset, style: DocStyle): string[] {

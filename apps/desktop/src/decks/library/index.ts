@@ -12,6 +12,14 @@ import { argumentEssayDeck } from './argumentEssay';
 import { researchPaperDeck } from './researchPaper';
 import { businessProposalDeck } from './businessProposal';
 import { fromMyPagesDeck } from './fromMyPages';
+import { relationshipMapDeck } from './relationshipMap';
+import { timelineDeck } from './timeline';
+import { literatureMapDeck } from './literatureMap';
+import { narrowMyQuestionDeck } from './narrowMyQuestion';
+import { pitchStoryDeck } from './pitchStory';
+import { logicModelDeck } from './logicModel';
+import { interviewNotesDeck } from './interviewNotes';
+import { memoryMapDeck } from './memoryMap';
 import type { DeckDefinition, DeckRoom } from '../types';
 
 // the ship set: the six flagships plus Character Study, the threads demonstration. This array is the ONE place the set lives; every door (CreateProject.tsx, BoardEditor.tsx) reads it, never a hand-copied list. [index §1]
@@ -31,6 +39,15 @@ export const DECKS: DeckDefinition[] = [
   researchPaperDeck,
   businessProposalDeck,
   fromMyPagesDeck,
+  // PRESETS-B item 4 (load sheet v2): the eight new decks
+  relationshipMapDeck,
+  timelineDeck,
+  literatureMapDeck,
+  narrowMyQuestionDeck,
+  pitchStoryDeck,
+  logicModelDeck,
+  interviewNotesDeck,
+  memoryMapDeck,
 ];
 
 // The catalog's own room order (fiction -> speculative -> screen -> academy

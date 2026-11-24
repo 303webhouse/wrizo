@@ -28,6 +28,8 @@ const MOCK = [
   ['YOUR FILES', [['from-my-pages', '']]],     // one block per picked page: no count
 ];
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// PRESETS-B item 4 (Nov 23): the eight decks added after the mockup; each sits at the END of its room's group, after the mockup's own rows
+const ADDED = ['relationship-map', 'timeline', 'memory-map', 'literature-map', 'narrow-my-question', 'pitch-story', 'logic-model', 'interview-notes'];
 
 const pnpmDir = join(REPO, 'node_modules', '.pnpm');
 const esb = join(pnpmDir, readdirSync(pnpmDir).find((d) => /^esbuild@/.test(d)), 'node_modules', 'esbuild', 'bin', 'esbuild');
@@ -65,10 +67,10 @@ for (const [, rows] of MOCK) for (const [id, want] of rows) {
 {
   const g = m ? m.FORMS_GROUPS : null;
   ok('C2: the groups are FICTION · WORLD · SCREEN · ACADEMIC · BUSINESS · NEWSROOM · YOUR FILES, in that order', !!g && same(g.map((x) => x.group), MOCK.map(([name]) => name)), JSON.stringify(g && g.map((x) => x.group)));
-  ok('C2: the rows inside each group are in the mockup\'s order', !!g && MOCK.every(([name, rows]) => { const x = g.find((y) => y.group === name); return !!x && same(x.decks, rows.map(([id]) => id)); }), JSON.stringify(g && g.map((x) => x.decks)));
+  ok('C2: the rows inside each group are in the mockup\'s order', !!g && MOCK.every(([name, rows]) => { const x = g.find((y) => y.group === name); return !!x && same(x.decks.slice(0, rows.length), rows.map(([id]) => id)) && x.decks.slice(rows.length).every((id) => ADDED.includes(id)); }) && g.flatMap((x) => x.decks).filter((id) => ADDED.includes(id)).length === ADDED.length, JSON.stringify(g && g.map((x) => x.decks)));
   const all = g ? g.flatMap((x) => x.decks) : [];
   const registry = m && m.DECKS ? m.DECKS.map((d) => d.id) : [];
-  ok('C2: EVERY registered deck is listed exactly once (nothing the library knows is left out, nothing is listed twice, nothing is invented)', registry.length === 14 && all.length === registry.length && new Set(all).size === all.length && registry.every((id) => all.includes(id)), JSON.stringify({ missing: registry.filter((id) => !all.includes(id)), extra: all.filter((id) => !registry.includes(id)) }));
+  ok('C2: EVERY registered deck is listed exactly once (nothing the library knows is left out, nothing is listed twice, nothing is invented)', registry.length === 14 + ADDED.length && all.length === registry.length && new Set(all).size === all.length && registry.every((id) => all.includes(id)), JSON.stringify({ missing: registry.filter((id) => !all.includes(id)), extra: all.filter((id) => !registry.includes(id)) }));
   ok('C2: each group maps onto the registry\'s own room of its decks (the rooms are Machina\'s group labels\' source: fiction, speculative, screen, academy, business, newsroom, every)', !!g && g.every((x) => x.decks.every((id) => { const d = byId(id); return !!d && d.room === x.room; })), JSON.stringify(g && g.map((x) => x.room)));
 }
 // C3 - Machina's WORD for pages is FILES (train #7 red 6, Oct 25): every string the From-my-pages row and its question and the librarian's pick can say under Machina says "files", never "pages" - the canonical

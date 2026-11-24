@@ -4,7 +4,8 @@ import type { DeskTermId } from '../../store/lexicon/terms';
 // (twelve steps grouped under three acts), Three-Act Structure. Every heading and every prompt is a LEXICON key, never a string here. A prompt is guidance in grey under its heading, never her text; the Plan hides it once a Part
 // under that heading has words (planPresetOps.ts). A preset is a starting shape, not a rule: she can rename, drop, add and re-order every row.
 export interface PresetRow { depth: 0 | 1; title: DeskTermId; prompt?: DeskTermId }
-export interface PlanPreset { id: 'stasis' | 'hero' | 'three'; name: DeskTermId; rows: PresetRow[] }
+export type PlanPresetId = 'stasis' | 'hero' | 'three' | 'circle' | 'seven' | 'freytag' | 'beats' | 'scene' | 'toulmin' | 'rogerian' | 'oration' | 'cars' | 'imrad' | 'answer' | 'inverted';
+export interface PlanPreset { id: PlanPresetId; name: DeskTermId; rows: PresetRow[] }
 
 export const PLAN_PRESETS: PlanPreset[] = [
   { id: 'stasis', name: 'reorgPreStasis', rows: [
@@ -46,5 +47,106 @@ export const PLAN_PRESETS: PlanPreset[] = [
     { depth: 0, title: 'reorgPreThreeActThree' },
     { depth: 1, title: 'reorgPreThreeClimax', prompt: 'reorgPreThreeClimaxP' },
     { depth: 1, title: 'reorgPreThreeResolution', prompt: 'reorgPreThreeResolutionP' },
+  ] },
+  // THE FIRST SLICE (PRESETS-B, Nov 23: the PRESETS load sheet, section 2, and the live decks' own step titles for Fifteen Beats, Scene–Sequel and IMRaD): twelve more starting shapes, flat (no Acts), after the live three. Freytag's Pyramid stands in for Kishōtenketsu until its origin note has been seen by a real reader.
+  { id: 'circle', name: 'reorgPreCircle', rows: [
+    { depth: 0, title: 'reorgPreCircleYou', prompt: 'reorgPreCircleYouP' },
+    { depth: 0, title: 'reorgPreCircleNeed', prompt: 'reorgPreCircleNeedP' },
+    { depth: 0, title: 'reorgPreCircleGo', prompt: 'reorgPreCircleGoP' },
+    { depth: 0, title: 'reorgPreCircleSearch', prompt: 'reorgPreCircleSearchP' },
+    { depth: 0, title: 'reorgPreCircleFind', prompt: 'reorgPreCircleFindP' },
+    { depth: 0, title: 'reorgPreCircleTake', prompt: 'reorgPreCircleTakeP' },
+    { depth: 0, title: 'reorgPreCircleReturn', prompt: 'reorgPreCircleReturnP' },
+    { depth: 0, title: 'reorgPreCircleChange', prompt: 'reorgPreCircleChangeP' },
+  ] },
+  { id: 'seven', name: 'reorgPreSeven', rows: [
+    { depth: 0, title: 'reorgPreSevenHook', prompt: 'reorgPreSevenHookP' },
+    { depth: 0, title: 'reorgPreSevenFirstPlotTurn', prompt: 'reorgPreSevenFirstPlotTurnP' },
+    { depth: 0, title: 'reorgPreSevenFirstPinch', prompt: 'reorgPreSevenFirstPinchP' },
+    { depth: 0, title: 'reorgPreSevenMidpoint', prompt: 'reorgPreSevenMidpointP' },
+    { depth: 0, title: 'reorgPreSevenSecondPinch', prompt: 'reorgPreSevenSecondPinchP' },
+    { depth: 0, title: 'reorgPreSevenSecondPlotTurn', prompt: 'reorgPreSevenSecondPlotTurnP' },
+    { depth: 0, title: 'reorgPreSevenResolution', prompt: 'reorgPreSevenResolutionP' },
+  ] },
+  { id: 'freytag', name: 'reorgPreFreytag', rows: [
+    { depth: 0, title: 'reorgPreFreytagIntroduction', prompt: 'reorgPreFreytagIntroductionP' },
+    { depth: 0, title: 'reorgPreFreytagRise', prompt: 'reorgPreFreytagRiseP' },
+    { depth: 0, title: 'reorgPreFreytagClimax', prompt: 'reorgPreFreytagClimaxP' },
+    { depth: 0, title: 'reorgPreFreytagReturnOrFall', prompt: 'reorgPreFreytagReturnOrFallP' },
+    { depth: 0, title: 'reorgPreFreytagCatastropheOrResolution', prompt: 'reorgPreFreytagCatastropheOrResolutionP' },
+  ] },
+  { id: 'beats', name: 'reorgPreBeats', rows: [
+    { depth: 0, title: 'deckScreenplayOpeningImageTitle', prompt: 'reorgPreBeatsOpeningImageP' },
+    { depth: 0, title: 'deckScreenplayThemeStatedTitle', prompt: 'reorgPreBeatsThemeStatedP' },
+    { depth: 0, title: 'deckScreenplaySetupTitle', prompt: 'reorgPreBeatsSetUpP' },
+    { depth: 0, title: 'deckScreenplayCatalystTitle', prompt: 'reorgPreBeatsCatalystP' },
+    { depth: 0, title: 'deckScreenplayDebateTitle', prompt: 'reorgPreBeatsDebateP' },
+    { depth: 0, title: 'deckScreenplayBreakTwoTitle', prompt: 'reorgPreBeatsBreakIntoTwoP' },
+    { depth: 0, title: 'deckScreenplayBStoryTitle', prompt: 'reorgPreBeatsBStoryP' },
+    { depth: 0, title: 'deckScreenplayFunGamesTitle', prompt: 'reorgPreBeatsFunAndGamesP' },
+    { depth: 0, title: 'deckScreenplayMidpointTitle', prompt: 'reorgPreBeatsMidpointP' },
+    { depth: 0, title: 'deckScreenplayBadGuysTitle', prompt: 'reorgPreBeatsBadGuysCloseInP' },
+    { depth: 0, title: 'deckScreenplayAllIsLostTitle', prompt: 'reorgPreBeatsAllIsLostP' },
+    { depth: 0, title: 'deckScreenplayDarkNightTitle', prompt: 'reorgPreBeatsDarkNightOfTheSoulP' },
+    { depth: 0, title: 'deckScreenplayBreakThreeTitle', prompt: 'reorgPreBeatsBreakIntoThreeP' },
+    { depth: 0, title: 'deckScreenplayFinaleTitle', prompt: 'reorgPreBeatsFinaleP' },
+    { depth: 0, title: 'deckScreenplayFinalImageTitle', prompt: 'reorgPreBeatsFinalImageP' },
+  ] },
+  { id: 'scene', name: 'reorgPreScene', rows: [
+    { depth: 0, title: 'deckSceneSequelGoalTitle', prompt: 'reorgPreSceneGoalP' },
+    { depth: 0, title: 'deckSceneSequelConflictTitle', prompt: 'reorgPreSceneConflictP' },
+    { depth: 0, title: 'deckSceneSequelDisasterTitle', prompt: 'reorgPreSceneDisasterP' },
+    { depth: 0, title: 'deckSceneSequelReactionTitle', prompt: 'reorgPreSceneReactionP' },
+    { depth: 0, title: 'deckSceneSequelDilemmaTitle', prompt: 'reorgPreSceneDilemmaP' },
+    { depth: 0, title: 'deckSceneSequelDecisionTitle', prompt: 'reorgPreSceneDecisionP' },
+  ] },
+  { id: 'toulmin', name: 'reorgPreToulmin', rows: [
+    { depth: 0, title: 'reorgPreToulminClaim', prompt: 'reorgPreToulminClaimP' },
+    { depth: 0, title: 'reorgPreToulminGrounds', prompt: 'reorgPreToulminGroundsP' },
+    { depth: 0, title: 'reorgPreToulminWarrant', prompt: 'reorgPreToulminWarrantP' },
+    { depth: 0, title: 'reorgPreToulminBacking', prompt: 'reorgPreToulminBackingP' },
+    { depth: 0, title: 'reorgPreToulminQualifier', prompt: 'reorgPreToulminQualifierP' },
+    { depth: 0, title: 'reorgPreToulminRebuttal', prompt: 'reorgPreToulminRebuttalP' },
+  ] },
+  { id: 'rogerian', name: 'reorgPreRogerian', rows: [
+    { depth: 0, title: 'reorgPreRogerianTheIssue', prompt: 'reorgPreRogerianTheIssueP' },
+    { depth: 0, title: 'reorgPreRogerianTheirView', prompt: 'reorgPreRogerianTheirViewP' },
+    { depth: 0, title: 'reorgPreRogerianWhereTheyReRight', prompt: 'reorgPreRogerianWhereTheyReRightP' },
+    { depth: 0, title: 'reorgPreRogerianYourView', prompt: 'reorgPreRogerianYourViewP' },
+    { depth: 0, title: 'reorgPreRogerianCommonGround', prompt: 'reorgPreRogerianCommonGroundP' },
+  ] },
+  { id: 'oration', name: 'reorgPreOration', rows: [
+    { depth: 0, title: 'reorgPreOrationOpening', prompt: 'reorgPreOrationOpeningP' },
+    { depth: 0, title: 'reorgPreOrationBackground', prompt: 'reorgPreOrationBackgroundP' },
+    { depth: 0, title: 'reorgPreOrationTheMap', prompt: 'reorgPreOrationTheMapP' },
+    { depth: 0, title: 'reorgPreOrationProof', prompt: 'reorgPreOrationProofP' },
+    { depth: 0, title: 'reorgPreOrationAnsweringObjections', prompt: 'reorgPreOrationAnsweringObjectionsP' },
+    { depth: 0, title: 'reorgPreOrationClose', prompt: 'reorgPreOrationCloseP' },
+  ] },
+  { id: 'cars', name: 'reorgPreCars', rows: [
+    { depth: 0, title: 'reorgPreCarsEstablishTheTerritory', prompt: 'reorgPreCarsEstablishTheTerritoryP' },
+    { depth: 0, title: 'reorgPreCarsEstablishTheNiche', prompt: 'reorgPreCarsEstablishTheNicheP' },
+    { depth: 0, title: 'reorgPreCarsOccupyTheNiche', prompt: 'reorgPreCarsOccupyTheNicheP' },
+  ] },
+  { id: 'imrad', name: 'reorgPreImrad', rows: [
+    { depth: 0, title: 'deckImradIntroductionTitle', prompt: 'reorgPreImradIntroductionP' },
+    { depth: 0, title: 'deckImradMethodsTitle', prompt: 'reorgPreImradMethodsP' },
+    { depth: 0, title: 'deckImradResultsTitle', prompt: 'reorgPreImradResultsP' },
+    { depth: 0, title: 'deckImradDiscussionTitle', prompt: 'reorgPreImradDiscussionP' },
+    { depth: 0, title: 'deckImradAbstractTitle', prompt: 'reorgPreImradAbstractWriteMeLastP' },
+  ] },
+  { id: 'answer', name: 'reorgPreAnswer', rows: [
+    { depth: 0, title: 'reorgPreAnswerSituation', prompt: 'reorgPreAnswerSituationP' },
+    { depth: 0, title: 'reorgPreAnswerComplication', prompt: 'reorgPreAnswerComplicationP' },
+    { depth: 0, title: 'reorgPreAnswerQuestion', prompt: 'reorgPreAnswerQuestionP' },
+    { depth: 0, title: 'reorgPreAnswerAnswer', prompt: 'reorgPreAnswerAnswerP' },
+    { depth: 0, title: 'reorgPreAnswerSupport1', prompt: 'reorgPreAnswerSupport1P' },
+    { depth: 0, title: 'reorgPreAnswerSupport2', prompt: 'reorgPreAnswerSupport2P' },
+    { depth: 0, title: 'reorgPreAnswerSupport3', prompt: 'reorgPreAnswerSupport3P' },
+  ] },
+  { id: 'inverted', name: 'reorgPreInverted', rows: [
+    { depth: 0, title: 'reorgPreInvertedMostImportant', prompt: 'reorgPreInvertedMostImportantP' },
+    { depth: 0, title: 'reorgPreInvertedNext', prompt: 'reorgPreInvertedNextP' },
+    { depth: 0, title: 'reorgPreInvertedBackground', prompt: 'reorgPreInvertedBackgroundP' },
   ] },
 ];
