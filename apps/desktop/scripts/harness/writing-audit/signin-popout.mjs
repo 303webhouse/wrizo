@@ -40,7 +40,14 @@ process.env.WS_ANON = '1';
 const env = process.env;
 const cfg = { theme: env.WA_THEME || 'plateau', flag: env.WA_FLAG || 'off', tone: env.WA_TONE || 'light', width: 1366, height: 768, out: env.WA_OUT || null };
 if (!THEMES[cfg.theme]) { console.error('WA_THEME must be plateau, flux or machina'); process.exit(2); }
-const TAG = `${THEMES[cfg.theme].label}/${cfg.tone}`;
+// WA_DOOR=v5 (row 45's successor, docs/flux-live-pin-list.md: wa-red-popout-flux-live.mjs sets it): live Flux's front door is the v5 door
+// ([data-flux-door=login] / [data-flux-door=compose]), not the splash's .wz-arrival-signin; ONLY the way the panel is reached changes. Unset, every line
+// below reads exactly as before (the default door constants are the old selectors, verbatim).
+const V5 = env.WA_DOOR === 'v5';
+const DOOR = V5 ? '[data-flux-door=login]' : '.wz-arrival-signin';
+const DOOR_READY = V5 ? "!!document.querySelector('[data-flux-door=login]:not([data-wait])')" : "!!document.querySelector('.wz-arrival-signin') && !document.querySelector('.wz-arrival-signin').disabled";
+const WRITE = V5 ? '[data-flux-door=compose]' : '.wz-hero .wz-arrival-write';
+const TAG = `${THEMES[cfg.theme].label}/${cfg.tone}${V5 ? '/v5' : ''}`;
 const WORDS = { plateau: { door: 'Sign in', tag: null }, flux: { door: 'Log in', tag: 'N.01 · INPUT' }, machina: { door: 'Sign in', tag: null } }[cfg.theme];
 const lum = ([r, g, b]) => { const f = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
 const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
@@ -58,11 +65,11 @@ await withHarness(async (app) => {
   const ev = d.ev;
   const ESCKEY = async () => { for (const type of ['rawKeyDown', 'keyUp']) await app.cdp('Input.dispatchKeyEvent', { type, key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27 }); await sleep(500); };
   const STAGE = "(() => { const a = document.querySelector('.wz-arrival'); const p = document.querySelector('.wz-popout'); return { stage: a && a.getAttribute('data-stage'), panel: p ? p.getAttribute('data-popout') : null, back: !!document.querySelector('.wz-popout-back') }; })()";
-  await app.waitFor("!!document.querySelector('.wz-arrival-signin') && !document.querySelector('.wz-arrival-signin').disabled", { label: 'the sign-in door' });
+  await app.waitFor(DOOR_READY, { label: 'the sign-in door' });
   await sleep(500);
-  const doorWord = await ev("document.querySelector('.wz-arrival-signin').textContent.trim()");
-  const realWrite = await ev("(document.querySelector('.wz-hero .wz-arrival-write') || {}).textContent");
-  const pt = await ev("(() => { const r = document.querySelector('.wz-arrival-signin').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  const doorWord = await ev(`document.querySelector(${JSON.stringify(DOOR)}).textContent.trim()`);
+  const realWrite = await ev(`(document.querySelector(${JSON.stringify(WRITE)}) || {}).textContent`);
+  const pt = await ev(`(() => { const r = document.querySelector(${JSON.stringify(DOOR)}).getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`);
   await d.click(pt.x, pt.y, 1);
   await app.waitFor("!!document.querySelector('.wz-popout')", { label: 'the panel', timeout: 8000 }).catch(() => {});
   await sleep(900);
@@ -397,7 +404,8 @@ await withHarness(async (app) => {
     await ESCKEY(); const s1 = await ev(STAGE);
     await ESCKEY(); const s2 = await ev(STAGE);
     check('P23', s0.panel === 'account' && s1.panel === 'signin' && s2.panel === null && s2.stage === 'doors', `Esc on the create-account face: ${JSON.stringify(s0)} then ${JSON.stringify(s1)} (to sign-in); Esc on sign-in: ${JSON.stringify(s2)} (to the doors)`);
-    await ev("document.querySelector('.wz-arrival-signin').click(); true");
+    if (!V5) await ev("document.querySelector('.wz-arrival-signin').click(); true");
+    else { const q5 = await ev(`(() => { const r = document.querySelector(${JSON.stringify(DOOR)}).getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()`); await d.click(q5.x, q5.y, 1); }
     await app.waitFor("!!document.querySelector('.wz-popout[data-popout=signin]')", { label: 'the panel again', timeout: 6000 }).catch(() => {});
     await sleep(400);
     await ev("document.querySelector('.wz-popout-switch').click()");
