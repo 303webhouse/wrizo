@@ -14,6 +14,7 @@ import path from 'node:path';
 process.env.WS_PLACE = '1';
 process.env.WS_ARBOR2 = 'default';
 process.env.WS_MACHINA2 = 'default';
+process.env.WS_REORG = '1';   // as shipped: without this the driver serves __wrizoReorgOff and the old drawer (the first run read that, and B0 caught it)
 const { withHarness } = await import('../runtime-verify.mjs');
 
 const checks = [];
