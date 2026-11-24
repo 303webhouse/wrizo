@@ -160,6 +160,7 @@ try { await withHarness(async (app) => {
     const png = await app.screenshot();
     const px = box && await ev(`(async () => { const blob = await fetch('data:image/png;base64,${png}').then((r) => r.blob()); const bm = await createImageBitmap(blob); const c = document.createElement('canvas'); c.width = bm.width; c.height = bm.height; const g = c.getContext('2d'); g.drawImage(bm, 0, 0);
       const out = []; for (let y = Math.floor(${box.top}) - 3; y <= Math.ceil(${box.top}) + 3; y += 1) { const d = g.getImageData(${box.x}, y, 1, 1).data; out.push(['#', ...[d[0], d[1], d[2]].map((v) => v.toString(16).padStart(2, '0'))].join('').toUpperCase()); } return out; })()`);
+    console.log(`MS23 [${w}] the column of pixels across the first IDEAS tile's top edge (top ${box && box.top}): ${JSON.stringify(px)}`);   // printed on a pass too
     ok(`MS23 [${w}] the IDEAS tile's top edge reads #5F8F95 on a pixel of the finished frame`, !!px && px.includes('#5F8F95'), { top: box && box.top, column: px });
   }
   await open();
