@@ -91,7 +91,7 @@ ok(s1.status === 502 && !(s1.body && s1.body.prompt) && s2.status === 502 && !(s
 
 // ---- mutants ----
 {
-  const m1 = loadServer({ mutate: { 'tutor.ts': swap('const text = withSafetyMessage(response.content', 'const text = (response.content') } });
+  const m1 = loadServer({ mutate: { 'tutor.ts': (src) => { const one = 'const text = withSafetyMessage(response.content'; const two = 'text = withSafetyMessage(text);'; if (src.includes(one)) return src.replace(one, 'const text = (response.content'); if (src.includes(two)) return src.replace(two, ''); throw new Error('mutant anchor missing: the swap in the route'); } } });
   const h1 = findHandler(m1.load('tutor.ts').tutorRouter, '/tutor/chat');
   const x1 = await ask(h1, SAFETY_MARKER);
   ok(!(x1.body && x1.body.reply === WORDS), 'MUT1 the swap removed from the route: SM1/SM2 go RED (the marker itself reaches her)');

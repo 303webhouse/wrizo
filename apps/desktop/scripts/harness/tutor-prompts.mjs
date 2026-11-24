@@ -158,7 +158,7 @@ ok(ORACLE.hatEditor.includes('her words → corrected words') && P.buildSystemPr
   await callRoute(h4, { messages: [{ role: 'writer', text: 'Hi' }], theme: 'flux' }, 'u-m4');
   ok((model.requests[0] || {}).system !== join(ORACLE.base, ORACLE.hatTutor, ORACLE.voiceFlux, ORACLE.taskAsk, ORACLE.context), 'MUT4 the theme ignored (one voice for all): TP8 goes RED');
   m4.cleanup();
-  const m5 = loadServer({ mutate: { 'tutorPrompts.ts': (src) => { const a = src.indexOf('- The aid sees only what is shown here'); const b = src.indexOf('\n\nASKING TO SEE MORE', a); if (a < 0 || b < 0) throw new Error('mutant anchor missing: the CONTEXT lines'); return src.slice(0, a - 1) + src.slice(b); } } });
+  const m5 = loadServer({ mutate: { 'tutorPrompts.ts': (src0) => { const src = src0.replace(/\r\n/g, '\n'); const a = src.indexOf('- The aid sees only what is shown here'); const b = src.indexOf('\n\nASKING TO SEE MORE', a); if (a < 0 || b < 0) throw new Error('mutant anchor missing: the CONTEXT lines'); return src.slice(0, a - 1) + src.slice(b); } } });
   const h5 = findHandler(m5.load('tutor.ts').tutorRouter, '/tutor/chat');
   model.reset(); model.say('x?\nRead: Part 1.');
   await callRoute(h5, { messages: [{ role: 'writer', text: 'Hi' }] }, 'u-m5');
