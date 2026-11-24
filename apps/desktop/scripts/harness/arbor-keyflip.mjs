@@ -21,7 +21,7 @@
 //   MUT-KF-FLIP  T2's two rules put back verbatim into the running page (the fix's two style queries taken out): KF-FLIP is RED on every reopen.
 //   KF-READ      no getComputedStyle on a shade layer inside the key's task; the pergola's read is seen, one frame or more after the flip (liveness).
 //   KF-FLIP-SP   (Fable Nov 19) the same read for a SPACE as the first key (a Space commits the word and rebuilds the committed runs: the page's nodes are written again, as every letter once did): green on the fix
-//   (PARKED 2026-11-23, bug #110: a Space appends now) MUT-KF-FLIP-HAS-SP  T2's rule 642 put back, the first key a Space: KF-FLIP-SP is RED (successor of MUT-KF-FLIP-HAS, parked: since the Free Write fix a letter no longer replaces the page, so the restyle that rule feeds is not provoked by a letter)
+//   MUT-KF-FLIP-HAS-SP  T2's rule 642 put back, the first key a Space: KF-FLIP-SP is RED (successor of MUT-KF-FLIP-HAS, parked: since the Free Write fix a letter no longer replaces the page, so the restyle that rule feeds is not provoked by a letter)
 //   MUT-KF-READ  T2's pattern rebuilt in the page (an observer of the flip that reads the shade layer's style at once): KF-READ is RED.
 //   KF-LOOK-*    by NIGHT (where both rules apply), at rest and while writing: the computed opacity and colour of every element are the same with
 //                the fix as with T2's rules put back (transitions off for the read); coverage: T2's rules change some element at rest.
@@ -303,7 +303,7 @@ await withHarness(async (app) => {
   const traceKey = async (key = 'a') => {
     await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
     await sleep(400);
-    if (key === 'Backspace') await app.key('Backspace'); else await app.typeKeys(key);   // (a Backspace is a key, not a character: it strikes, and a strike writes the whole host again)
+    await app.typeKeys(key);
     await sleep(700);
     const done = app.waitEvent('Tracing.tracingComplete', 30000);
     await app.cdp('Tracing.end');
@@ -354,9 +354,6 @@ await withHarness(async (app) => {
   // Fable Nov 19: the first key a SPACE (it rebuilds the committed runs; a letter no longer does)
   const fixSp = await measure('fix-space', { key: ' ' });
   const mutHasSp = await measure('mut-has-space', { swap: 'oldhas', key: ' ' });
-  // Nov 23, bug #110: a Space appends now, so the Space pair above no longer provokes the restyle; a Backspace STRIKE still writes the whole host (freeWriteHost.ts: 'full'), which is what the first-key read needs
-  const fixBs = await measure('fix-backspace', { key: 'Backspace' });
-  const mutHasBs = await measure('mut-has-backspace', { swap: 'oldhas', key: 'Backspace' });
   // information (the third pass, Nov 12): run 43299418991 left ONE whole-document restyle (1099, forced by the editor's caret effect) right after the
   // dissolve hook writes --fade-dur on <html>. What would take it out: (a) the live shade drawings out of style work before the key (data-live-off,
   // the product's own cut), (b) the <html> --fade-dur write held back
@@ -561,16 +558,8 @@ await withHarness(async (app) => {
   //   mutHas.tr && mutHas.tr.keyEls != null && !flipOk(mutHas), JSON.stringify({ tr: mutHas.tr, docEls: mutHas.before.docEls }));
   ok(`KF-FLIP-SP the same read with a Space as the first key: the largest single restyle touches at most ${SHARE * 100}% of the document's elements (printed: ${fixSp.tr.keyEls}/${fixSp.before.docEls})`,
     flipOk(fixSp), JSON.stringify({ tr: fixSp.tr, docEls: fixSp.before.docEls }));
-  // PARKED 2026-11-23 (SUPERSEDED - Fable's ruling, bug #110: a Space no longer writes the page's nodes again, it APPENDS to the last run (freeWriteHost.ts), so T2's rule 642 put back is not provoked into the whole-document
-  // restyle by a Space either (Actions run 45257271496: printed 348/1931 on #110's tip; the same file is 24/24 on main). Its successor is a first key that still rewrites the host whole (a Backspace strike), and must be
-  // proven red on a mutant first: not written yet. Original, verbatim:
-  // ok(`MUT-KF-FLIP-HAS-SP with T2's rule 642 put back in the running page (the edit landed) and a Space as the first key, KF-FLIP-SP is RED (printed: ${mutHasSp.tr.keyEls}/${mutHasSp.before.docEls})`,
-  // !!mutHasSp.swap && mutHasSp.swap.containers === 1 && mutHasSp.swap.inserted === 1 && mutHasSp.swap.tutorProp === 1 && mutHasSp.tr && mutHasSp.tr.keyEls != null && !flipOk(mutHasSp), JSON.stringify({ swap: mutHasSp.swap, tr: mutHasSp.tr, docEls: mutHasSp.before.docEls }));
-  // SUCCESSOR of the parked MUT-KF-FLIP-HAS-SP (Nov 23, bug #110): the first key a Backspace STRIKE, which still writes the whole host
-  ok(`KF-FLIP-BS the same read with a Backspace strike as the first key: the largest single restyle touches at most ${SHARE * 100}% of the document's elements (printed: ${fixBs.tr.keyEls}/${fixBs.before.docEls})`,
-    flipOk(fixBs), JSON.stringify({ tr: fixBs.tr, docEls: fixBs.before.docEls }));
-  ok(`MUT-KF-FLIP-HAS-BS with T2's rule 642 put back in the running page (the edit landed) and a Backspace strike as the first key, KF-FLIP-BS is RED (printed: ${mutHasBs.tr.keyEls}/${mutHasBs.before.docEls})`,
-    !!mutHasBs.swap && mutHasBs.swap.containers === 1 && mutHasBs.swap.inserted === 1 && mutHasBs.swap.tutorProp === 1 && mutHasBs.tr && mutHasBs.tr.keyEls != null && !flipOk(mutHasBs), JSON.stringify({ swap: mutHasBs.swap, tr: mutHasBs.tr, docEls: mutHasBs.before.docEls }));
+  ok(`MUT-KF-FLIP-HAS-SP with T2's rule 642 put back in the running page (the edit landed) and a Space as the first key, KF-FLIP-SP is RED (printed: ${mutHasSp.tr.keyEls}/${mutHasSp.before.docEls})`,
+    !!mutHasSp.swap && mutHasSp.swap.containers === 1 && mutHasSp.swap.inserted === 1 && mutHasSp.swap.tutorProp === 1 && mutHasSp.tr && mutHasSp.tr.keyEls != null && !flipOk(mutHasSp), JSON.stringify({ swap: mutHasSp.swap, tr: mutHasSp.tr, docEls: mutHasSp.before.docEls }));
   // PARKED 2026-11-12 (SUPERSEDED, no successor - its premise is falsified, Actions run 43299418991: the shade layers' own --fade-dur did not stop the
   // restyle (fix 1099, mutant 1095), so the rule it guarded is taken out of the fix). Original, verbatim:
   // ok(`MUT-KF-FLIP-FADE with the shade layers' own --fade-dur taken out, KF-FLIP is RED (printed: ${mutFade.tr.keyEls}/${mutFade.before.docEls})`,
@@ -645,7 +634,7 @@ await withHarness(async (app) => {
   console.log('KF BUNDLE: ' + fix[0].before.bundle);
 }, { label: 'arbor-keyflip' });
 
-const WANT_CHECKS = 25;   // 23 with MUT-KF-FLIP-HAS-SP parked, +2 for its successor pair (Backspace strike, Nov 23); 24 before MUT-KF-FLIP-HAS-SP was parked (Nov 23, bug #110; its successor, a Backspace strike, adds one back when it is proven red). A check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15, + 1 for the Space successor pair net of the parked MUT-KF-FLIP-HAS, Nov 19)
+const WANT_CHECKS = 24;   // a check that never ran is a failure, never a quiet pass (10, + 7 for the second pass, + 1 for the third, + 3 for option (a), Nov 12, + 2 for the slow return, Nov 15, + 1 for the Space successor pair net of the parked MUT-KF-FLIP-HAS, Nov 19)
 const failed = checks.filter((c) => !c.pass);
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.pass ? '' : '  -- ' + c.detail}`);
 const pass = checks.length === WANT_CHECKS && !failed.length;
