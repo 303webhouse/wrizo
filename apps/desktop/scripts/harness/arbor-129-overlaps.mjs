@@ -19,6 +19,12 @@
 // in the window, at least 4x4 px, visible, its opacity (with every ancestor's) at least 0.1. A pair where one holds the other is not an overlap.
 // A "panel" is the largest drawn element inside an open dock ([data-menus-dock] Front, .wz-tutor's dock Back, .wz-drawer-slide) or the dock itself, at least
 // 150 x 200 px, with a border on at least two sides.
+// CORRECTED BEFORE ITS FIRST GREEN (Nov 24, after the red run 45471640855; no check had passed or been relied on):
+//   (1) "drawn" is the part of the box she can SEE: clipped to the window AND to every ancestor that clips (overflow not visible, up to a fixed box). INK's
+//       census took the whole box, so a control scrolled out of sight inside a menu or under the page's scroller counted as drawn and its centre as covered
+//       (Machina's template rows below a 768-high window; the page's foot button below the page's scroll at 1366).
+//   (2) the panel is the open dock's own .wz-drawer-slide when it stands (drawn, at least 150 x 200); the bordered-element search is the fallback. The
+//       search alone missed Machina's panels at 1920 and 2560 (P1).
 // FRAMES: $RUNNER_TEMP/suite/arbor-129 (else the OS temp), one per arm. Run: node scripts/harness/arbor-129-overlaps.mjs (from apps/desktop; Actions or a box turn)
 import fs from 'node:fs';
 import os from 'node:os';
@@ -52,8 +58,13 @@ const CENSUS = `(() => {
     const id = e.id ? '#' + e.id : ''; const cls = [...e.classList].slice(0, 2).map((c) => '.' + c).join('');
     const data = [...e.attributes].filter((a) => a.name.startsWith('data-')).slice(0, 2).map((a) => '[' + a.name + (a.value ? '=' + a.value.slice(0, 16) : '') + ']').join('');
     return e.tagName.toLowerCase() + id + cls + data + (t ? ' "' + t + '"' : ''); };
-  const drawn = (e) => { const b = e.getBoundingClientRect(); if (b.width < 4 || b.height < 4) return null;
-    if (b.right <= 0 || b.bottom <= 0 || b.left >= innerWidth || b.top >= innerHeight) return null;
+  // the SEEN box: the element's box clipped to the window and to every clipping ancestor (overflow not visible), stopping at a fixed box
+  const seen = (e) => { const b = e.getBoundingClientRect(); let l = Math.max(b.left, 0), t = Math.max(b.top, 0), r = Math.min(b.right, innerWidth), btm = Math.min(b.bottom, innerHeight);
+    for (let n = e; n && n.nodeType === 1; n = n.parentElement) { const s = getComputedStyle(n); if (n !== e && (s.overflowX !== 'visible' || s.overflowY !== 'visible')) { const c = n.getBoundingClientRect();
+      if (s.overflowX !== 'visible') { l = Math.max(l, c.left); r = Math.min(r, c.right); } if (s.overflowY !== 'visible') { t = Math.max(t, c.top); btm = Math.min(btm, c.bottom); } }
+      if (s.position === 'fixed') break; }
+    return { left: l, top: t, right: r, bottom: btm, width: r - l, height: btm - t }; };
+  const drawn = (e) => { const b = seen(e); if (b.width < 4 || b.height < 4) return null;
     const s = getComputedStyle(e); if (s.visibility !== 'visible') return null; if (opac(e) < 0.1) return null; return b; };
   const page = document.querySelector('.mode-page'); const pr = page ? page.getBoundingClientRect() : null;
   const marks = [...document.querySelectorAll('[data-flux3-bracket]')].map((m) => ({ el: m, b: drawn(m) || m.getBoundingClientRect(), shown: !!drawn(m), name: 'corner mark ' + m.getAttribute('data-flux3-bracket') }));
@@ -61,7 +72,9 @@ const CENSUS = `(() => {
   const bordered = (e) => { const s = getComputedStyle(e); return ['Top', 'Right', 'Bottom', 'Left'].filter((k) => parseFloat(s['border' + k + 'Width']) >= 1 && s['border' + k + 'Style'] !== 'none').length >= 2; };
   const docks = [...document.querySelectorAll('.wz-sliver[data-open=true], .wz-tutor-grip[aria-expanded=true], .wz-drawer-slide')].map((d) => d.classList.contains('wz-tutor-grip') ? d.parentElement : d).filter(Boolean);
   const panels = [];
-  for (const d of docks) { let best = null; for (const e of [d, ...d.querySelectorAll('*')]) { const b = drawn(e); if (!b || b.width < 150 || b.height < 200 || !bordered(e)) continue; if (!best || b.width * b.height > best.b.width * best.b.height) best = { el: e, b }; }
+  for (const d of docks) { const slide = d.matches('.wz-drawer-slide') ? d : d.querySelector('.wz-drawer-slide'); const sb = slide && drawn(slide);
+    if (sb && sb.width >= 150 && sb.height >= 200) { if (!panels.some((p) => p.el === slide)) panels.push({ el: slide, b: sb, name: 'panel ' + name(slide).slice(0, 60) }); continue; }
+    let best = null; for (const e of [d, ...d.querySelectorAll('*')]) { const b = drawn(e); if (!b || b.width < 150 || b.height < 200 || !bordered(e)) continue; if (!best || b.width * b.height > best.b.width * best.b.height) best = { el: e, b }; }
     if (best && !panels.some((p) => p.el === best.el)) panels.push({ ...best, name: 'panel ' + name(best.el).slice(0, 60) }); }
   const all = [...document.querySelectorAll(SEL)].filter((e) => !e.closest('.forward-only-editor, [contenteditable=true]'));
   const ctl = []; for (const e of all) { const b = drawn(e); if (b) ctl.push({ el: e, b, name: name(e) }); }
