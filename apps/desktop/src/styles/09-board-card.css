@@ -101,7 +101,7 @@
   cursor:nwse-resize; border-radius:0;
   border-right:2px solid var(--ink-border-strong); border-bottom:2px solid var(--ink-border-strong);
 }
-/* BOARD ZOOM (Arbor and Machina, Nov 24; components/board/BoardZoom.tsx): out, the readout, in, laid over the frame's lower-left corner, clear of a scrollbar. An overlay: it takes no
+/* BOARD ZOOM (Arbor and Machina, Nov 24; components/BoardZoom.tsx): out, the readout, in, laid over the frame's lower-left corner, clear of a scrollbar. An overlay: it takes no
    room, so the frame and every card keep their places. Rendered only in Arbor and Machina; each wears its theme's dress below. */
 .board-zoom{ position:absolute; left:10px; bottom:22px; display:flex; align-items:stretch; }
 .board-zoom > button{ min-width:28px; height:26px; padding:0 8px; margin:0; background:var(--paper); border:1px solid var(--ink-border-strong); border-radius:0; color:var(--text-mid); cursor:pointer;

@@ -6,11 +6,11 @@
 // Its words are the lexicon's existing keys (Zoom, Zoom Out, Zoom In, Reset zoom (Ctrl + 0)); the figure is each theme's own: Arbor a whole percent, Machina two decimals and a times sign.
 // Flux keeps its own (the Schema mounts the camera under ?flux3=1), so this is gated to the two themes and never mounts twice.
 import type { RefObject } from 'react';
-import { useTheme } from '../../store/theme';
-import { useAmbianceDial } from '../../store/ambianceDial';
-import { useDeskLexicon } from '../../store/deskLexicon';
-import { ZOOM_NOTCH, useBoardScale, zoomHome, zoomStep } from '../../flux3/boardZoom';
-import { useFluxCamera } from '../../flux3/useFluxCamera';
+import { useTheme } from '../store/theme';
+import { useAmbianceDial } from '../store/ambianceDial';
+import { useDeskLexicon } from '../store/deskLexicon';
+import { ZOOM_NOTCH, useBoardScale, zoomHome, zoomStep } from '../flux3/boardZoom';
+import { useFluxCamera } from '../flux3/useFluxCamera';
 
 interface Props {
   wrapRef: RefObject<HTMLDivElement | null>;

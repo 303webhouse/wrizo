@@ -10,7 +10,8 @@
 //   <T>B   the browser's own page zoom never fires: the Ctrl + wheel and the Ctrl + keys arrive defaultPrevented
 //   <T>A   the pointer is the anchor: the board point under the pointer holds through a Ctrl + wheel climb and the descent (2.5 board px)
 //   <T>L   the limits: Ctrl + wheel in stops at EXACTLY 4.00 (monotonic, a further wheel changes nothing), out stops at the outer limit (60% / 0.10 / 1.00)
-//   <T>PI  the pinch: two fingers spread to twice their distance zoom x2 (5%), about their midpoint (3 board px)
+//   <T>PI-B the pinch: two fingers spread to twice their distance zoom x2 (5%), about their midpoint: the drift within the scroll's whole-pixel rounding (1 screen px per axis per event, over the
+//          scale), a bound under a tenth of an unanchored pinch's drift. (PI, parked Nov 24: a 3 board px guess; it read 3.01 in both legs of run 45423945840. Its successor's mutant: MUT-pinchCorner.)
 //   <T>C   the controls: + is one notch, - undoes it, the readout at 2.00 returns to exactly 1.00; each is pressable at its centre (elementFromPoint), the words are the lexicon's; the readout is true at every step
 //   <T>F   the page never moves: the board frame, its host, the rail and the zoom bar keep their rects through a sweep of scales (0.5 px), and the page's scroll size is unchanged
 //   <T>G   the board's own gestures at scale: a card dragged 80 screen px at 2.00 moves 80 on the screen
@@ -35,7 +36,7 @@ const BOARD = 'abz-board';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${pass || !detail ? '' : `  [${String(detail).slice(0, 700)}]`}`); };
-const EXPECTED = 1 + 2 * 12 + 1 + 2;
+const EXPECTED = 1 + 2 * 12 + 1 + 3;
 
 // ---- the outside instrument (installed before any page script)
 const INSTRUMENT = `(() => {
@@ -88,6 +89,8 @@ const MUTANTS = {
   gateNoMachina: [/([\w$]+)==="plateau"\|\|\1==="machina"/g, '$1==="plateau"'],
   // the readout's click calls nothing (the bar's way home does not open)
   barHomeNoop: [/("data-board-zoom-act":"home",[^}]{0,400}?onClick:\(\)=>)[\w$]+\(\)/g, '$1void 0'],
+  // (Nov 24, with PI-B) the pinch zooms about the window's corner, not its midpoint: the camera's two midpoint arguments replaced by 0, 0
+  pinchCorner: [/\(([\w$]+)\[0\]\.clientX\+\1\[1\]\.clientX\)\/2,\(\1\[0\]\.clientY\+\1\[1\]\.clientY\)\/2/g, '0,0'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
 
@@ -236,7 +239,14 @@ try { await withHarness(async (app) => {
       await settle(); const s1 = await S();
       const drift = Math.hypot(bp(s1).x - bp(s0).x, bp(s1).y - bp(s0).y);
       await key('0'); await settle(500);
-      return { pass: near(s1.s, 2, 0.1) && drift <= 3 && trueRead(s1), detail: JSON.stringify({ s: s1.s, drift: +drift.toFixed(2), readout: s1.readout }) };
+      // PI-B's reading: the camera re-anchors on EVERY pinch event and writes the frame's scroll, which the browser holds in whole pixels, so each of the 10 events may move the anchor by up to
+      // 1 screen px on each axis: the worst case is 10 x sqrt(2) screen px, over the final scale in board px. A pinch NOT anchored at its midpoint (about the canvas corner) moves the midpoint's board
+      // point by its distance from the corner times (1 - 1/s): the bound must sit far under that (a tenth), or the check could not tell an anchored pinch from an unanchored one.
+      const bound = (10 * Math.SQRT2) / (s1.s || 1);
+      const unanchored = Math.hypot(bp(s0).x, bp(s0).y) * (1 - 1 / (s1.s || 1));
+      return { pass: near(s1.s, 2, 0.1) && drift <= 3 && trueRead(s1),   // PARKED predicate (PI), verbatim: see the PI line below
+        passB: near(s1.s, 2, 0.1) && drift <= bound && bound <= unanchored / 10 && trueRead(s1),
+        detail: JSON.stringify({ s: s1.s, drift: +drift.toFixed(2), bound: +bound.toFixed(2), unanchored: +unanchored.toFixed(1), readout: s1.readout }) };
     },
     async controls() {
       const s0 = await S(); if (!s0.bar) return { pass: false, homed: false, detail: 'no zoom bar' };
@@ -342,7 +352,14 @@ try { await withHarness(async (app) => {
     { const r = await probes.anchor(); ok(`${P}A ${name}: the board point under the pointer holds through a Ctrl + wheel climb and the descent; the readout is true`, r.pass, r.detail); }
     { const r = await probes.limits(); ok(`${P}L ${name}: Ctrl + wheel in stops at exactly 4.00 (no bounce, a further wheel changes nothing); out stops at the outer limit (60% of the stage's shorter side over the board's longer, 0.10 .. 1.00)`, r.pass, r.detail); }
     await open(th);
-    { const r = await probes.pinch(); ok(`${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint`, r.pass, r.detail); }
+    {
+      const r = await probes.pinch();
+      // PARKED (Nov 24, ARBOR; SUPERSEDED by PI-B): run 45423945840 read Arbor's pinch drift 3.01 board px in BOTH legs (Machina's under 3): the 3 px allowance was a guess, and the camera's anchor moves by
+      // the whole-pixel scroll once per pinch event (10 here), which that guess did not count. The original, verbatim, printed on the parked leg and not counted:
+      //   { const r = await probes.pinch(); ok(`${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint`, r.pass, r.detail); }
+      if (process.env.HARNESS_PARKED === '1') console.log(`PARKED ${r.pass ? 'PASS' : 'FAIL'}  ${P}PI ${name}: two fingers spread to twice their distance zoom x2 about their midpoint  ${r.detail}`);
+      ok(`${P}PI-B ${name} [successor]: two fingers spread to twice their distance zoom x2 about their midpoint: the midpoint's board point drifts no more than the scroll's whole-pixel rounding allows (1 screen px per axis per pinch event, over the scale), a bound under a tenth of an unanchored pinch's drift`, r.passB, r.detail);
+    }
     await open(th);
     { const r = await probes.controls(); ok(`${P}C ${name}: the bar's + is one notch, - undoes it, the readout at 2.00 returns to exactly 1.00; each control pressable at its centre; the readout true at every step; the frame and the bar unmoved`, r.pass, r.detail); }
     {
@@ -388,6 +405,7 @@ try { await withHarness(async (app) => {
   };
   await mutantRun('gateNoMachina', 'machina', probes.keys, "the camera's theme gate drops Machina -> MK");
   await mutantRun('barHomeNoop', 'plateau', async () => { const r = await probes.controls(); return { pass: r.homed, detail: r.detail }; }, "the readout's click does nothing -> AC");
+  await mutantRun('pinchCorner', 'plateau', async () => { const r = await probes.pinch(); return { pass: r.passB, detail: r.detail }; }, 'the pinch zooms about the corner, not its midpoint -> API-B');
   await open('plateau');
 }); } catch (e) { failedRun = true; console.error('HARNESS ERROR', e && e.stack ? e.stack : e); }
 

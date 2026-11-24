@@ -104,7 +104,7 @@ import { presetBoxes } from '../reorg/backMenu/planPresetOps';
 import { docOfPage, partOfRow } from '../reorg/backMenu/planPart';
 import { getBoardScale } from '../flux3/boardZoom';
 import { FluxSchema } from '../flux3/FluxSchema';
-import { BoardZoom } from './board/BoardZoom';
+import { BoardZoom } from './BoardZoom';
 import { FluxNodeRecord } from '../flux3/FluxNodeRecord';
 import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 
