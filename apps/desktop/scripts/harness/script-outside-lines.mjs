@@ -28,10 +28,14 @@ const textOf = (rows) => rows.map((r) => r[1]).join('\n\n');
 const times = (rows, s) => (rows ?? []).filter((r) => r[1] === s).length;
 
 let n = 0;
+// a line keeps its id from copy to copy, as it does in the app, so a line another window added above this one does not take this line's id
 const docOf = (id, rows) => {
   const scenes = [];
-  rows.forEach(([t, text], i) => {
-    const el = { id: `${id}-${i}`, t, text };
+  const seen = new Map();
+  rows.forEach(([t, text]) => {
+    const slug = text.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'blank';
+    seen.set(slug, (seen.get(slug) ?? 0) + 1);
+    const el = { id: `${id}-${slug}-${seen.get(slug)}`, t, text };
     if (t === 'scene') scenes.push({ id: el.id, heading: el, body: [] });
     else scenes[scenes.length - 1].body.push(el);
   });
