@@ -207,7 +207,11 @@ const screens = {
     // forced to paint (data-arbor2-sb="on", scrollReveal.ts's own switch), pixels counted that differ from the strip's commonest colour
     const BOX = "(() => { const s = document.querySelector('.mode-scroll'); return s ? s.offsetWidth - s.clientWidth : null; })()";
     const stripInk = async () => {
-      const b = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; s.setAttribute('data-arbor2-sb', 'on'); const r = s.getBoundingClientRect(); const w = s.offsetWidth - s.clientWidth; return w > 0 ? { x: r.right - w, y: r.top, w, h: r.height } : null; })()");
+      // SUPERSEDED (frames run 45430089418 on 951229d9: wrInk 84 / backInk 972): the clip took the bar's LAYOUT width (10) from the painted right edge, but the
+      // page is painted at --wz-k (DeskFrame's transform), so it reached past the bar into the page. Kept verbatim, no longer used:
+      // const b = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; s.setAttribute('data-arbor2-sb', 'on'); const r = s.getBoundingClientRect(); const w = s.offsetWidth - s.clientWidth; return w > 0 ? { x: r.right - w, y: r.top, w, h: r.height } : null; })()");
+      // successor: the bar's width AS PAINTED (layout width x the painted scale), less 1 px at its inner edge; the scale is printed
+      const b = await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; s.setAttribute('data-arbor2-sb', 'on'); const r = s.getBoundingClientRect(); const k = s.offsetWidth ? r.width / s.offsetWidth : 1; const w = (s.offsetWidth - s.clientWidth) * k; return w > 1 ? { x: r.right - w + 1, y: r.top, w: w - 1, h: r.height, k: Math.round(k * 1000) / 1000 } : null; })()");
       if (!b) return { ink: null };
       await sleep(120);
       const data = (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.w, height: b.h, scale: 1 } })).data;
@@ -215,7 +219,7 @@ const screens = {
       return app.evalJs(`(async () => { const img = new Image(); img.src = 'data:image/png;base64,${data}'; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
         const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, c.width, c.height).data; const freq = new Map(); for (let i = 0; i < d.length; i += 4) { const k = d[i] + ',' + d[i + 1] + ',' + d[i + 2]; freq.set(k, (freq.get(k) || 0) + 1); }
         const g = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0].split(',').map(Number);
-        let ink = 0; for (let i = 0; i < d.length; i += 4) if (Math.max(Math.abs(d[i] - g[0]), Math.abs(d[i + 1] - g[1]), Math.abs(d[i + 2] - g[2])) > 24) ink += 1; return { ink, px: d.length / 4, ground: g }; })()`);
+        let ink = 0; for (let i = 0; i < d.length; i += 4) if (Math.max(Math.abs(d[i] - g[0]), Math.abs(d[i + 1] - g[1]), Math.abs(d[i + 2] - g[2])) > 24) ink += 1; return { ink, px: d.length / 4, ground: g, k: ${b.k}, clip: ${JSON.stringify(b)} }; })()`);
     };
     const rest = await app.evalJs(R);
     const restBox = await app.evalJs(BOX);
