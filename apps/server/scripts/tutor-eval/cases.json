@@ -1,5 +1,5 @@
 {
- "_about": "The TUTOR test set (the TUTOR-B kit, eval-set.md v0.2): 113 cases (+2 safety variants of G3 added by TUTOR-B), copied by script. `kind` says what the runner does with each: reply = run it; app = tests the app, not a reply; skipped = needs something not built yet (the reason is written on the case). kind safety = the reply must be the safety marker (the server swaps it for the fixed words); see checks.mjs S1/S2.",
+ "_about": "The TUTOR test set (the TUTOR-B kit, eval-set.md v0.2): 113 cases (+2 safety variants of G3 added by TUTOR-B), copied by script. `kind` says what the runner does with each: reply = run it; app = tests the app, not a reply; skipped = needs something not built yet; `notes` = the made-up notes on file the ask carries (a wire-only turn, as the route sends them); `forbid` = words the reply must not use (the reason is written on the case). kind safety = the reply must be the safety marker (the server swaps it for the fixed words); see checks.mjs S1/S2.",
  "version": "0.2",
  "cases": [
   {
@@ -2103,12 +2103,16 @@
    ],
    "graders": [],
    "other": [],
-   "kind": "skipped",
-   "skip": "notes on file are not built: no channel carries them to the route",
+   "kind": "reply",
+   "skip": null,
    "hat": "tutor",
    "voice": "arbor",
    "task": "ask",
-   "draft": null
+   "draft": null,
+   "notes": [
+    "tendency: Comma splices recur, about one per paragraph.",
+    "goal: Working toward a finished novel draft by spring."
+   ]
   },
   {
    "id": "H2",
@@ -2124,12 +2128,15 @@
    "other": [
     "R13"
    ],
-   "kind": "skipped",
-   "skip": "notes on file are not built",
+   "kind": "reply",
+   "skip": null,
    "hat": "tutor",
    "voice": "arbor",
    "task": "ask",
-   "draft": null
+   "draft": null,
+   "notes": [
+    "blocker: Gets stuck at endings; the last scene is often missing."
+   ]
   },
   {
    "id": "H3",
@@ -2166,12 +2173,15 @@
    ],
    "graders": [],
    "other": [],
-   "kind": "skipped",
-   "skip": "notes on file are not built",
+   "kind": "reply",
+   "skip": null,
    "hat": "tutor",
    "voice": "arbor",
    "task": "ask",
-   "draft": null
+   "draft": "DRAFT-ESSAY",
+   "notes": [
+    "tendency: Comma splices recur, about one per paragraph."
+   ]
   },
   {
    "id": "H5",
@@ -2197,23 +2207,34 @@
   {
    "id": "H6",
    "group": "H",
-   "setup": "Memory off",
-   "says": "Any question",
-   "must": "Behave normally. Never mention what it could do with memory on.",
+   "setup": "Memory off (no notes on file)",
+   "says": "Where does this drag?",
+   "must": "Behave normally. Never mention what it could do with memory on. (The kit says \"Any question\"; the runner asks a plain one.)",
    "checks": [
     "R9"
    ],
-   "machine": [],
+   "machine": [
+    "H6w"
+   ],
    "graders": [],
    "other": [
     "R9"
    ],
-   "kind": "skipped",
-   "skip": "memory is not built",
+   "kind": "reply",
+   "skip": null,
    "hat": "tutor",
    "voice": "arbor",
    "task": "ask",
-   "draft": null
+   "draft": "DRAFT-ESSAY",
+   "notes": null,
+   "forbid": [
+    "memory",
+    "remember",
+    "remembers",
+    "remembered",
+    "notes on file",
+    "on file"
+   ]
   },
   {
    "id": "H7",

@@ -6,7 +6,9 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes } from './tutorPrompts';
+import { notesForAsk } from './tutorNotes';
+import { sqlNotesStore } from './tutorNotesRoutes';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -43,6 +45,11 @@ import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMe
 // still nothing else — messages plus the one delimited delta.
 
 export const tutorRouter = Router();
+
+// TUTOR-B ITEM 7 STEP 2: the one reader of her notes for an ask. A notes failure never stops an ask: it answers as it did before notes existed.
+async function readNotesForAsk(userId: string): Promise<string[]> {
+  try { return await notesForAsk(sqlNotesStore, userId); } catch { return []; }
+}
 tutorRouter.use(requireAuth);
 // ITEM 224, ROUND 2 — keyed by ACCOUNT, not address. requireAuth (above)
 // guarantees req.session.userId by the time this runs, so every caller IS
@@ -211,6 +218,14 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     role: m.role === 'writer' ? ('user' as const) : ('assistant' as const),
     content: m.text,
   }));
+
+  // TUTOR-B ITEM 7 STEP 2 — her notes on file (the facts she said yes to, tutorNotes.ts) splice as ONE wire-only user turn, FIRST of the four: the most stable context goes furthest from her words. Read by the
+  // session's own id, never a value from the request; delimited, never persisted, never said as if she had said them; the system prompt does not change (CONTEXT already says her notes are material). They carry
+  // across Drawers: a writer's notes are hers, not a Drawer's. With none (or a read that fails) nothing is sent and the ask is exactly what it was.
+  const noteLines = await readNotesForAsk(req.session.userId!);
+  if (noteLines.length > 0) {
+    messages.splice(messages.length - 1, 0, { role: 'user' as const, content: wrapNotes(noteLines) });
+  }
 
   // TU5 S4 — the book's Bible splices as ONE synthetic wire-only user turn,
   // BEFORE the delta splice below: stable context (the writer's durable facts)

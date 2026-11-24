@@ -1,6 +1,6 @@
 // TUTOR-B ITEM 2 — THE TEST RUNNER (TUTOR build-list item 2, shaped as Fable ruled). BROWSERLESS, NO REAL KEY, NO REAL MODEL: the free half runs on recorded replies; the live half is proved against a stand-in model on localhost
 // with a fake key. The runner is apps/server/scripts/tutor-eval/. The real live run is a separate, by-hand Actions job (.github/workflows/tutor-eval-live.yml) that waits for Nick to add the repository secret.
-//   RN1  the test set is the kit's: 113 cases in the kit's eleven groups plus 2 safety variants of G3 added by TUTOR-B; 89 reply cases run, 3 safety cases (they expect the marker) run, 13 test the app (not run), 10 wait for something not built, each with its reason written on it
+//   RN1  the test set is the kit's: 113 cases in the kit's eleven groups plus 2 safety variants of G3 added by TUTOR-B; 93 reply cases run (H1, H2, H4 and H6 since the notes reach the ask), 3 safety cases (they expect the marker) run, 13 test the app (not run), 6 wait for something not built, each with its reason written on it
 //   RN2  the runner imports the SAME prompt builder and the SAME reply guard the server ships (not copies): the builder's default is the string /tutor/chat sends, and tutor.ts imports the guard the runner loads
 //   RN3  the machine checks M1 to M7 run FREE on recorded replies: every hand-written fixture behaves as written (good replies pass; each bad one fails exactly the check it was written to fail), and every check is shown both passing and failing
 //   RN4  the checks are load-bearing: a runner with the M3 limit blown up, or M6 passing everything, or M1 blind, has fixtures that go wrong
@@ -38,7 +38,7 @@ const per = {}; for (const c of set) per[c.group] = (per[c.group] || 0) + 1;
 const kit = { A: 12, B: 24, C: 12, D: 14, E: 12, F: 8, G: 9, H: 9, I: 8, J: 4, K: 3 }; // G is the kit's 7 plus G3b and G3c (TUTOR-B's safety variants)
 const kinds = set.reduce((a, c) => (a[c.kind] = (a[c.kind] || 0) + 1, a), {});
 ok(set.length === 115 && JSON.stringify(per) === JSON.stringify(kit) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b and G3c (marked as added)', JSON.stringify(per));
-ok(kinds.reply === 89 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 10 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 89 reply cases and 3 safety cases run, 13 test the app, 10 wait for something not built, and each one not run says why', JSON.stringify(kinds));
+ok(kinds.reply === 93 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 93 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
 ok(set.filter((c) => c.kind === 'reply' || c.kind === 'safety').every((c) => typeof c.says === 'string' && c.says.length > 0 && (!c.draft || fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8').includes(`"${c.draft}"`))), 'RN1 every case that runs has something she says, and a made-up draft that exists when it names one');
 
 // ---- RN2 ----
@@ -124,6 +124,21 @@ const runCli = (args, env) => new Promise((resolve) => {
   child.on('close', (status) => { clearTimeout(timer); resolve({ status, stdout, stderr }); });
 });
 const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
+// RN8 (item 7 step 2): a case with notes on file sends them as the route does, one <notes-on-file> turn before her words
+{
+  model.reset();
+  model.say('On file: one tendency. Change it in the notes list.\nRead: notes on file.');
+  const out = path.join(tmpdir, 'live-h1.json');
+  const r = await runCli(['--live', '--only', 'H1', '--no-grader', '--out', out, '--max-calls', '5'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const turns = (model.requests[0] && model.requests[0].messages) || [];
+  const H1 = set.find((c) => c.id === 'H1');
+  ok(r.status === 0 && turns.length === 2 && turns[0].content === `<notes-on-file>\n${H1.notes.join('\n')}\n</notes-on-file>` && turns[1].content === H1.says, 'RN8 a case with notes on file sends them as ONE <notes-on-file> turn before her words, as the route does', JSON.stringify(turns).slice(0, 240));
+  model.reset();
+  model.say('Which claim does the second paragraph set out to prove?\nRead: Part 1.');
+  await runCli(['--live', '--only', 'H6', '--no-grader', '--out', path.join(tmpdir, 'live-h6.json'), '--max-calls', '5'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const t6 = (model.requests[0] && model.requests[0].messages) || [];
+  ok(t6.length === 2 && !JSON.stringify(t6).includes('notes-on-file'), 'RN8 memory off (H6): no notes turn is sent, only her draft and her question', JSON.stringify(t6).slice(0, 200));
+}
 // RN7 first: no key, no call
 {
   model.reset();

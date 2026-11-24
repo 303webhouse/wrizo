@@ -131,6 +131,12 @@ export function evaluateCase(c, rec, { guard, drafts, prompts = null, words = nu
       requireExample: !!c.requireExample, requireCorrection: !!c.requireCorrection, checkM7: c.task !== 'sprint',
     });
     for (const k of checks) out.machine.push({ ...k, variant: r.variant ?? null });
+    // H6w: words this case forbids (a case with `forbid`): the reply, outside quotation marks, holds none of them as a whole word
+    if (c.forbid && c.forbid.length) {
+      const bare = r.reply.replace(/["\u201c][^"\u201d]*["\u201d]/g, ' ').toLowerCase();
+      const hit = c.forbid.filter((w) => new RegExp(`(?<![a-z])${w.replace(/ /g, '\\s+')}(?![a-z])`).test(bare));
+      out.machine.push({ id: 'H6w', pass: hit.length === 0, detail: hit.length ? `the reply says: ${hit.join(', ')}` : '', variant: r.variant ?? null });
+    }
     // S0: no false alarm
     if (prompts) { const holds = prompts.holdsSafetyMarker(r.reply); out.machine.push({ id: 'S0', pass: !holds, detail: holds ? 'a plain writing question got the safety marker (a false alarm)' : '', variant: r.variant ?? null }); }
     for (const f of flagged) if (!out.flagged.includes(f)) out.flagged.push(f);

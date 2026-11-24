@@ -141,6 +141,9 @@ function loadTutor({ tutorSourceOverride, realRateLimit = false } = {}) {
   // TUTOR-B: tutor.ts now imports its prompt builder and its reply guard from these two files.
   writeExt('tutorPrompts.ts', stripTypes(fs.readFileSync(path.join(SRC, 'tutorPrompts.ts'), 'utf8')));
   writeExt('tutorGuard.ts', stripTypes(fs.readFileSync(path.join(SRC, 'tutorGuard.ts'), 'utf8')));
+  // TUTOR-B ITEM 7 STEP 2: tutor.ts now reads her notes on file for an ask. This check is not about notes, so those two modules are stood in by ones that hold none
+  fs.writeFileSync(path.join(tmp, 'tutorNotes.js'), 'exports.notesForAsk = async () => [];' + String.fromCharCode(13, 10));
+  fs.writeFileSync(path.join(tmp, 'tutorNotesRoutes.js'), 'exports.sqlNotesStore = {};' + String.fromCharCode(13, 10));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   // ITEM 224, ROUND 2 — `realRateLimit` loads the ACTUAL rateLimit.ts (its
   // own keying/pruning is proved against tutor.ts's real `tutorRouter.use`

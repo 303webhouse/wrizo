@@ -60,6 +60,9 @@ function loadAll(mutate) {
     fs.writeFileSync(path.join(tmp, rel.replace(/\.ts$/, '.js')), out);
   };
   for (const rel of ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorPrompts.ts', 'tutorGuard.ts']) put(rel, fs.readFileSync(path.join(SERVER_SRC, rel), 'utf8'));
+  // TUTOR-B ITEM 7 STEP 2: tutor.ts now reads her notes on file for an ask. This check is not about notes, so those two modules are stood in by ones that hold none
+  fs.writeFileSync(path.join(tmp, 'tutorNotes.js'), 'exports.notesForAsk = async () => [];' + String.fromCharCode(13, 10));
+  fs.writeFileSync(path.join(tmp, 'tutorNotesRoutes.js'), 'exports.sqlNotesStore = {};' + String.fromCharCode(13, 10));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
   let src = fs.readFileSync(path.join(SERVER_SRC, 'tutor.ts'), 'utf8');

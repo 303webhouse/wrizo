@@ -224,3 +224,6 @@ export function buildSprintSystemPrompt(rulesAlreadyOnTheServer: string): string
 export const wrapBible = (text: string): string => `<book-bible>\n${text}\n</book-bible>`;
 export const wrapDelta = (text: string): string => `<page-since-last-read>\n${text}\n</page-since-last-read>`;
 export const wrapSelection = (text: string): string => `<selected-stretch>\n${text}\n</selected-stretch>`;
+// TUTOR-B ITEM 7 STEP 2: her notes on file ride the same way (the server reads them, tutorNotes.ts notesForAsk; the browser never sends one). One line per note, "kind: text". A note is her own words, so angle brackets
+// and line breaks are flattened: no note can close this block early or start a line that looks like another turn.
+export const wrapNotes = (lines: string[]): string => `<notes-on-file>\n${lines.map((l) => l.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()).join('\n')}\n</notes-on-file>`;
