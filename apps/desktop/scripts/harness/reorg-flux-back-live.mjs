@@ -14,6 +14,7 @@
 //   FB13 Wire In (the Corridor): the opened Back menu ends above her line (the Wrizors' pass 2)
 //   FB14 the Operator's fields are in field dress with #7EB4C4 hints (pass 2)
 //   FB16 Wire In (the Corridor): a press on her page lands on her page, with the Back menu open and shut (its full-stage anchor is drawn but click-through); MUT-FB16 the anchor taking the pointer again goes red
+//   FB17 INPUTS carries the one shared "?" on the add row, in Flux's own word (helpGrafts: no new key), and opening it leaves the page where it was; MUT-FB17 with the "?" gone the read goes red
 //   FB11 Wire In (the Corridor): the Back menu's opener and its opened panel are drawn and can be pressed; the left hand and the rail stay off (spec section 5)
 //   FB10 the Uplink sheet's label row starts below the page's L4 readout header (the Wrizors' Flux Uplink frames, Nov 23)
 //   FB7  the rule (Nick, Nov 21, 4:40 pm): the plain Flux never has the reorg: with ?flux3=1 off, even the preview door gives Flux no Back menu
@@ -115,6 +116,18 @@ await withHarness(async (app) => {
   await app.evalJs("(() => { const D = window.wrizoDocSettings; D.addAsset('fb-1', { entryId: 'fb-note' }); D.addAsset('fb-1', { entryId: 'fb-own', boxId: 'c2' }); window.wrizoFlushNow(); return null; })()");
   await sleep(500);
   await drawer(app); await tab(app, 'links');
+  // FB17 (Fable, Nov 23, 6:14 pm): the same "?" and words the Links tab carried in Flux before the reorg
+  const NOTE = "(() => { const b = document.querySelector('.wz-tutor-panel .wz-graft-add-row .wz-help'), a = document.querySelector('.wz-tutor-panel .wz-graft-add-row .wz-graft-add'); if (!b || !a) return null; const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); return { label: b.getAttribute('aria-label'), oneRow: Math.abs((ra.top + ra.height / 2) - (rb.top + rb.height / 2)) <= 2 && rb.left >= ra.right, n: document.querySelectorAll('.wz-tutor-panel .wz-help').length }; })()";
+  const PAGE_RECT = "(() => { const r = document.querySelector('.mode-page').getBoundingClientRect(); return [r.left, r.top, r.width, r.height].join(); })()";
+  const inputsNote = await app.evalJs(NOTE), rectBefore = await app.evalJs(PAGE_RECT);
+  await app.evalJs("document.querySelector('.wz-tutor-panel .wz-graft-add-row .wz-help')?.click(); null"); await sleep(250);
+  const noteWords = await app.evalJs("(document.querySelector('.wz-help-pop') || {}).textContent || null"), rectOpen = await app.evalJs(PAGE_RECT);
+  await app.evalJs("document.querySelector('.wz-tutor-panel .wz-graft-add-row .wz-help')?.click(); null"); await sleep(200);
+  ok('FB17 INPUTS carries the one shared "?" on its add row, in Flux\'s own word, and opening it does not move the page', !!inputsNote && inputsNote.oneRow && inputsNote.n === 1 && inputsNote.label === 'What is Inputs?' && /Inputs join docs, nodes and circuits\./.test(noteWords || '') && rectOpen === rectBefore, { inputsNote, noteWords, rectBefore, rectOpen });
+  await app.evalJs("(() => { const b = document.querySelector('.wz-tutor-panel .wz-graft-add-row .wz-help'); if (b) b.style.display = 'none'; const c = b && b.cloneNode(true); if (b) b.remove(); window.__fb17 = c; return true; })()");
+  const noteMut = await app.evalJs(NOTE);
+  await app.evalJs("(() => { const r = document.querySelector('.wz-tutor-panel .wz-graft-add-row'); if (r && window.__fb17) { window.__fb17.style.display = ''; r.appendChild(window.__fb17); } return true; })()");
+  ok('MUT-FB17 with the "?" gone from the row, FB17\'s read goes red', noteMut === null, { noteMut });
   const rows = await app.evalJs("(() => { const out = []; for (const e of document.querySelectorAll('.wz-tutor-panel .wz-back-asset .wz-links-label, .wz-tutor-panel .wz-back-boardname')) { const r = e.getBoundingClientRect(); out.push({ t: (e.textContent || '').trim().slice(0, 28), w: Math.round(r.width), cut: e.scrollWidth > e.clientWidth + 1 }); } return out; })()");
   const tabBar = await app.evalJs(CS('#wz-tutor-tab-links', ['width', 'height', 'background-color'], '::before'));
   ok('FB8 the row names keep their room (none cut: each label is at least 90 px wide and not clipped) and the open tab wears the 3 x 24 brass bar',
@@ -194,7 +207,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 18;   // 16 + FB16 and its mutant (Nov 23)
+const EXPECTED = 20;   // + FB17 and its mutant. Was: const EXPECTED = 18;   // 16 + FB16 and its mutant (Nov 23)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`
