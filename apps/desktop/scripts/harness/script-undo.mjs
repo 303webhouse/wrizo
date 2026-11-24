@@ -314,9 +314,10 @@ await withHarness(async (app) => {
   ok('U21: with unsaved typing here when the other window\'s lines arrive, Ctrl+Z does not step back across them', u21[1]?.[1] === 'Minex', { u21 });
   await dropOther();
 
-  // ---- THE COST: the script's key is the only thing in the app joined on this separator, so counting those joins counts the keys built
-  await open([HEAD, act('Mine')], 1);
-  await app.evalJs("(() => { if (!window.__suKeys) { const real = Array.prototype.join; window.__suKeys = { n: 0 }; Array.prototype.join = function (s) { if (s === '\\u0002') window.__suKeys.n += 1; return real.call(this, s); }; } window.__suKeys.n = 0; return true; })()");
+  // ---- THE COST: a key of the script is a join on this separator of parts that each start with a line type (the rail and the export sheet join other things on it, so the matcher reads the parts);
+  // the last step below proves the counter is alive: a real change to this page's row must build a key
+  const costId = await open([HEAD, act('Mine')], 1);
+  await app.evalJs("(() => { if (!window.__suKeys) { const real = Array.prototype.join; const line = /^(scene|action|character|paren|dialogue|transition|shot|general)\\u0001/; window.__suKeys = { n: 0 }; Array.prototype.join = function (s) { if (s === '\\u0002' && this.length > 0 && typeof this[0] === 'string' && line.test(this[0])) window.__suKeys.n += 1; return real.call(this, s); }; } window.__suKeys.n = 0; return true; })()");
   await app.evalJs("(() => { for (let i = 0; i < 5; i++) window.wrizoPatchEntry('su-elsewhere', { starred: i % 2 === 0 }); return true; })()");
   const u22 = await app.evalJs('window.__suKeys.n');
   ok('U22: a store notice about another page builds no key of this script', u22 === 0, { keysBuilt: u22, notices: 5 });
@@ -325,7 +326,9 @@ await withHarness(async (app) => {
   await type('abcde');
   const u23 = await app.evalJs('window.__suKeys.n');
   const u23t = await lines();
-  ok('U23: a typed key builds no key of this script', u23 === 0 && u23t[1]?.[1] === 'Mineabcde', { keysBuilt: u23, keys: 5, line: u23t[1] });
+  await app.evalJs(`window.__suKeys.n = 0; window.wrizoPatchEntry(${q(costId)}, { starred: true }); true`);
+  const alive = await app.evalJs('window.__suKeys.n');
+  ok('U23: a typed key builds no key of this script (and the counter is alive: a change to this page\'s row builds one)', u23 === 0 && u23t[1]?.[1] === 'Mineabcde' && alive > 0, { keysBuilt: u23, keys: 5, line: u23t[1], alive });
   return checks;
 });
 
