@@ -5,6 +5,7 @@
 // The fixture (seams only): a set "The Mill" in a Drawer with three Parts, the first 24 paragraphs long; a loose Doc "Research notes". She is on the
 // first Part in BUILD. The window is 1366x768, 1920x1080 and 2560x1440 in turn; every size is read against the 1366 reading of the same run.
 //
+// (#126, Fable Nov 24 11:15 am: the chrome stops growing at 1920, so k at 2560 is 1.406: K1 and WANT_K are parked below, K1-B is K1's successor)
 // SCALE   K1  k is published only in Machina under the reorg: 'base' at 1366 (no scale), 1.406 at 1920 and 1.874 at 2560 (window / 1366, three places);
 //             Machina without the reorg publishes nothing
 // RAIL    K2  the rail is 84 x k px wide and its first door is k times as tall as at 1366 (within 5%)
@@ -41,7 +42,10 @@ const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
 const SIZES = [[1366, 768], [1920, 1080], [2560, 1440]];
-const WANT_K = { 1366: 1, 1920: 1.406, 2560: 1.874 };
+// SUPERSEDED (#126, Fable Nov 24 11:15 am, RULED: the menus and rails stop growing at their 1920-wide size; k is capped at 1920 / 1366 in
+// reorg/chromeScale.ts, menu-cap-126.mjs): k at 2560 is 1.406, no longer 1.874. Every check below that reads WANT_K reads the successor. Verbatim:
+//   const WANT_K = { 1366: 1, 1920: 1.406, 2560: 1.874 };
+const WANT_K = { 1366: 1, 1920: 1.406, 2560: 1.406 };
 const LINES = Array.from({ length: 24 }, (_, i) => `Paragraph ${i + 1}. The rain had not stopped for three days, and the river was up past the second step of the mill.`);
 const near = (a, b, tol) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= tol;
 const ratioOk = (v, base, k) => Number.isFinite(v) && Number.isFinite(base) && base > 0 && Math.abs(v / base - k) <= 0.05 * k;
@@ -144,8 +148,13 @@ await withHarness(async (app) => {
   console.log('CHROME-SCALE READINGS ' + JSON.stringify(read));
 
   const b = read[1366];
-  ok(`K1 k only in Machina under the reorg: 1366 ${J(read[1366].scale)}, 1920 ${J(read[1920].scale)}, 2560 ${J(read[2560].scale)}; without the reorg ${J(plain)}`,
-    read[1366].scale.attr === 'base' && read[1920].scale.attr === 'on' && near(parseFloat(read[1920].scale.k), 1.406, 0.001) && read[2560].scale.attr === 'on' && near(parseFloat(read[2560].scale.k), 1.874, 0.001) && !plain.attr && !plain.k,
+  // SUPERSEDED (#126, Fable Nov 24 11:15 am, RULED: the chrome stops growing at its 1920-wide size): K1's 1.874 at 2560 is falsified by the cap;
+  // K1-B asserts 1.406 there. Verbatim:
+  //   ok(`K1 k only in Machina under the reorg: 1366 ${J(read[1366].scale)}, 1920 ${J(read[1920].scale)}, 2560 ${J(read[2560].scale)}; without the reorg ${J(plain)}`,
+  //     read[1366].scale.attr === 'base' && read[1920].scale.attr === 'on' && near(parseFloat(read[1920].scale.k), 1.406, 0.001) && read[2560].scale.attr === 'on' && near(parseFloat(read[2560].scale.k), 1.874, 0.001) && !plain.attr && !plain.k,
+  //     { s: SIZES.map(([w]) => read[w].scale), plain });
+  ok(`K1-B k only in Machina under the reorg, capped at the 1920 window's (#126): 1366 ${J(read[1366].scale)}, 1920 ${J(read[1920].scale)}, 2560 ${J(read[2560].scale)}; without the reorg ${J(plain)}`,
+    read[1366].scale.attr === 'base' && read[1920].scale.attr === 'on' && near(parseFloat(read[1920].scale.k), 1.406, 0.001) && read[2560].scale.attr === 'on' && near(parseFloat(read[2560].scale.k), 1.406, 0.001) && !plain.attr && !plain.k,
     { s: SIZES.map(([w]) => read[w].scale), plain });
   const k2 = (R, k) => !!R.rail && near(R.rail.w, 84 * k, 1.5) && !!R.door && ratioOk(R.door.h, b.door && b.door.h, k);
   ok('K2 the rail is 84 x k px wide and its first door k times as tall as at 1366 (5%)', SIZES.every(([w]) => k2(read[w], WANT_K[w])), SIZES.map(([w]) => ({ w, rail: read[w].rail && read[w].rail.w, door: read[w].door && read[w].door.h })));

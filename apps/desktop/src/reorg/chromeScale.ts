@@ -7,7 +7,7 @@ import { liveQuery } from '../store/liveDom';
 // the Wrizors: "the whole layout grows with the window, from 1366 up, by one zoom"; Fable, Nov 21 11:45 am, RULED: one chrome scale from the
 // window's width / 1366, Machina under the reorg only, the page's rect rule untouched).
 //
-// k = max(1, innerWidth / 1366), on <html> as --wz-chrome-k with data-wz-chrome-scale, while the reorg's rail is mounted in Machina (Machina is
+// k = max(1, min(innerWidth, 1920) / 1366) (the cap: #126, below), on <html> as --wz-chrome-k with data-wz-chrome-scale, while the reorg's rail is mounted in Machina (Machina is
 // the only theme the reorg draws in). The rules that read it (styles/23-reorg-top.css, "THE CHROME SCALE") zoom the chrome's CONTENTS - the rail's,
 // the bar's, the two drawers' and the split's side - and widen their tracks by the same k; never a box that script places by measuring, and never
 // the page (the page already grows with its stage: store/pageScale.ts). Nothing is stored. At 1366 and below k is 1 and nothing changes.
@@ -42,8 +42,12 @@ export const barGrowth = (contentsH: number, k: number): number => (Number.isFin
 const FRAME_GAP = 28;
 export const frontScaleFor = (k: number, anchorW: number): number => (Number.isFinite(anchorW) && anchorW > 0 ? Math.max(1, Math.min(k, Math.round((anchorW / FRONT_BASE) * 1000) / 1000)) : k);
 
-/** The chrome scale for a window this wide: 1 at 1366 and below, rounded to three places. */
-export const chromeScaleFor = (w: number): number => (Number.isFinite(w) && w > CHROME_BASE_W ? Math.round((w / CHROME_BASE_W) * 1000) / 1000 : 1);
+// #126 (Fable, Nov 24 11:15 am, RULED, from Nick's 30" 4K screen: at 2560 the menus' words overwhelmed the page): the menus and rails stop growing
+// at their 1920-wide size, k = 1920 / 1366 = 1.406 at every wider window; the page keeps its own rule (store/pageScale.ts). scripts/harness/menu-cap-126.mjs.
+export const CHROME_CAP_W = 1920;
+
+/** The chrome scale for a window this wide: 1 at 1366 and below, growing to the 1920 window's 1.406 and no further, rounded to three places. */
+export const chromeScaleFor = (w: number): number => (Number.isFinite(w) && w > CHROME_BASE_W ? Math.round((Math.min(w, CHROME_CAP_W) / CHROME_BASE_W) * 1000) / 1000 : 1);
 
 /** The scale in force now: 1 unless the chrome scale is on (read from <html>, so a caller outside React needs no hook). */
 export function chromeK(): number {
