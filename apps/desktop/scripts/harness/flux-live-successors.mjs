@@ -305,7 +305,7 @@ await withHarness(async (app) => {
     const head = await ev("(document.querySelector('.wz-sliver-panel .wz-sliver-type .wz-sliver-h') || {}).textContent || null");
     await ev("document.getElementById('wz-sliver-tab-parts')?.click(); null");
     await sleep(400);
-    await ev("document.querySelector('.wz-sliver-panel .reorg-dockind-head, .wz-sliver-panel [data-doc-kind-head]')?.click(); null");
+    await ev("document.querySelector('.wz-sliver-panel [data-doc-kind]')?.click(); null");
     await sleep(350);
     const menu = await ev("(document.querySelector('.wz-sliver-panel .reorg-dockind-menu, .wz-sliver-panel [data-doc-menu]') || {}).textContent || null");
     ok('SL-HEADS MARKUP\'s first head reads Typeface and TRACKS\' head menu offers Presets', head === 'Typeface' && /Presets/.test(menu || ''), { head, menu: menu && menu.slice(0, 80) });
