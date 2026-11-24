@@ -72,11 +72,12 @@ try { await withHarness(async (app) => {
     await ev(CARET_HELPER);
     await ev("document.querySelector('.mode-scroll').scrollTop = 300; true");
     await sleep(150);
-    await ev(`window.__setCaretAt('.forward-only-editor', ${want}); true`);
+    // the caret is placed as a writer places it: a press first (the host notes the writer moved it), then the offset
+    await ev(`document.querySelector('.forward-only-editor').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); window.__setCaretAt('.forward-only-editor', ${want}); true`);
     await sleep(150);
     const set = await ev('window.__caretNow()');
     if (set !== want) { misses.soon.push({ cycle: i, want, set, note: 'the caret was not placed before leaving' }); continue; }
-    await app.click('Journal');
+    await ev("location.hash = '#/journal'; true");   // she leaves by a route change (the rail's Journal)
     await app.waitFor("!!document.querySelector('.board-canvas')", { timeout: 15000, label: 'the Journal board' });
     await sleep(150);
     const chip = await ev("!!document.querySelector('.desk-rail-wayback')");
