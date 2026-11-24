@@ -10,7 +10,8 @@
 // DOORS   A1  the doors read, in order, PAGES · DRAWERS · SHELF · CANVASES · JOURNAL, and the foot THEMES · SETTINGS
 // CLOTH   A2  each door wears its cloth: PAGES cold blue, DRAWERS olive, SHELF cold blue, CANVASES madder, JOURNAL olive; THEMES and SETTINGS none
 // HOVER   A3  a pointer on PAGES slides it 6 px out in cold blue #7FA0BC, its words walnut #2B1D12 (4.5:1 or better on the cloth)
-// OPEN    A4  DRAWERS opened stands 12 px out in olive #56632E with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive
+// OPEN    A4  DRAWERS opened stands 12 px out in olive #56632E with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive  [A4 parked Nov 24: #129]
+//         A4-B  the same, standing out at least 1 px and reaching no further than its pop-out's edge; MUT-A4-B the cloth read 12 px out fails
 // PAGE    A5  the page's rect is the same with a rail door open and closed
 // MACHINA A6  Machina's reorg rail is as it was: DOCS · PROJECTS · UNFILED, no cloth on any door
 // DRESS   A7  (the first frames, Actions 44970675573: the DRAWERS pop-out drew as bare buttons) the opened DRAWERS pop-out's rows are dressed: a row's
@@ -150,8 +151,17 @@ await withHarness(async (app) => {
   ok('A7 the opened DRAWERS pop-out is dressed: a row\'s open button draws no button chrome, and "+ New Drawer" is a full-width row', a7(dress), dress);
   const raw = dress ? { ...dress, openBorder: '2px' } : null;
   ok('MUT-A7 the reading with a browser button face (a border) turns A7\'s test red', !!raw && raw.openBorder !== dress.openBorder && !a7(raw), raw);
-  ok('A4 DRAWERS opened stands 12 px out in olive with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive',
-    !!p4 && p4.pressed === 'true' && Math.abs(tx(p4.tx) - 12) <= 0.5 && p4.bg === OLIVE && p4.ink === CREAM && contrast(p4.ink, p4.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow), { p4, panel });
+  // PARKED (Nov 24, ARBOR; Fable's #129 ruling 11:29 am, Nick's 2560 screenshot: "the rail's active tab (DRAWERS) runs into the open drawer's panel border"):
+  // SUPERSEDED by A4-B. The pop-out stands flush on the rail, so Nick's Nov 8 "opened stays out 12 px" laid the cloth 8-9 px over its rows. The original's
+  // predicate is kept verbatim below and printed on the parked leg, asserting A4-B's truth. Its successor keeps every other clause and asks that the opened
+  // cloth still stands out (at least 1 px) and reaches no further than its pop-out's edge; its mutant, MUT-A4-B, the cloth read 12 px out, turns red.
+  const a4orig = !!p4 && p4.pressed === 'true' && Math.abs(tx(p4.tx) - 12) <= 0.5 && p4.bg === OLIVE && p4.ink === CREAM && contrast(p4.ink, p4.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow);
+  const a4geo = await app.evalJs("(() => { const d = document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]'), p = document.querySelector('.wz-cascade-panel[data-category]'); if (!d || !p) return null; return { clothRight: Math.round(d.getBoundingClientRect().right * 10) / 10, panelLeft: Math.round(p.getBoundingClientRect().left * 10) / 10 }; })()");
+  const a4b = (p, g) => !!p && p.pressed === 'true' && tx(p.tx) >= 1 && !!g && g.clothRight <= g.panelLeft + 0.5 && p.bg === OLIVE && p.ink === CREAM && contrast(p.ink, p.bg) >= 4.5 && !!panel && panel.cat === 'reorg-projects' && /rgb\(86, 99, 46\) 0px 0px 0px 3px inset/.test(panel.shadow);
+  if (process.env.HARNESS_PARKED === '1') console.log(`${a4b(p4, a4geo) ? 'PASS' : 'FAIL'} PARKED (was "A4 DRAWERS opened stands 12 px out in olive with cream words (4.5:1 or better), and its pop-out is edged 3 px in olive", read ${a4orig}) - SUPERSEDED: #129 (Fable, Nov 24, 11:29 am): 12 px out ran the cloth into its pop-out's rows; live successor: A4-B`);
+  ok('A4-B DRAWERS opened stands out in olive with cream words (4.5:1 or better), reaching no further than its pop-out\'s edge, and its pop-out is edged 3 px in olive', a4b(p4, a4geo), { p4, a4geo, panel });
+  const a4over = a4geo ? { ...a4geo, clothRight: a4geo.clothRight + 9 } : null;
+  ok('MUT-A4-B the reading with the cloth 12 px out (9 px further, over its pop-out) turns A4-B\'s test red', !!a4over && a4b(p4, a4geo) !== a4b(p4, a4over) && !a4b(p4, a4over), a4over);
   // ---- A10: the open pop-out against the page's left opener ----
   const EDGE = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g };\n" +
     "  const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2; const hit = document.elementFromPoint(cx, cy);\n" +
@@ -306,7 +316,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 31;   // A19 parked: + A19-B, MUT-A19-B (Nov 22). Was: const EXPECTED = 30;   // + A17, A18, MUT-A18, A19 (the Wrizors' pass 7, Nov 22). Was: const EXPECTED = 26;   // + A16, MUT-A16 (the Recent group's sort in Arbor's PAGES, Nov 22). Was: const EXPECTED = 24;   // + A15, MUT-A15 (the Session in Arbor's PAGES, Nov 22). Was: const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
+const EXPECTED = 32;   // A4 parked: + A4-B, MUT-A4-B (#129, Nov 24). Was: const EXPECTED = 31;   // A19 parked: + A19-B, MUT-A19-B (Nov 22). Was: const EXPECTED = 30;   // + A17, A18, MUT-A18, A19 (the Wrizors' pass 7, Nov 22). Was: const EXPECTED = 26;   // + A16, MUT-A16 (the Recent group's sort in Arbor's PAGES, Nov 22). Was: const EXPECTED = 24;   // + A15, MUT-A15 (the Session in Arbor's PAGES, Nov 22). Was: const EXPECTED = 22;   // + A14, MUT-A14 (Box settings in sentence case, Nov 22). Was: const EXPECTED = 20;   // + A13, MUT-A13 (the box's letters by night, Nov 21). Was: const EXPECTED = 18;   // + A12, MUT-A12 (the uncoloured box, cream; Nov 21). Was: const EXPECTED = 16;   // 8 + A7, MUT-A7 (the pop-out's dress, Nov 21) + A8, MUT-A8, A9 (Arbor's box swatches, Nov 21) + A10, MUT-A10, A11 (the edge NIT; the cell on)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-ARBOR-RAIL-LIVE VERIFY: PASS (${checks.length} checks)`
