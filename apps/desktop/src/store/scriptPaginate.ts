@@ -25,8 +25,9 @@ export const BREAK_RULES: Record<ScriptElType, BreakRule> = {
   scene: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
   // a character cue is never the last line of a page: it travels with its dialogue [scriptPaginate §3]
   character: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
-  // An action block longer than a full page cannot move whole, so it breaks at
-  // a line boundary.
+  // SCRIPT batch 2, item 4 (the review's finding 15): an action block that does not fit breaks at a sentence end when two of its lines can
+  // stay and two go (FD §1.10.1.3.3); with no sentence end in reach it moves whole, unless it is longer than a full page, which cannot move
+  // whole and breaks at a line boundary.
   action: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
   // SCRIPT batch 2, items 1 and 2 (the review's findings 2 and 12): a speech's dialogue breaks at a page foot, preferring a sentence end,
   // keeping at least two of its lines on each side, with (MORE) under it and the cue with (CONT'D) over the rest (see `paginate`). A dialogue
@@ -92,6 +93,19 @@ function speechTake(entry: LedgerEntry, taken: number, remaining: number, room: 
   return most;
 }
 
+// SCRIPT batch 2, item 4 — how many of an action block's remaining lines stay on this page: the latest sentence end that keeps at least two
+// lines on each side. 0 when there is none, and the block moves whole (FD breaks action only at a sentence).
+const MIN_ACTION_LINES = 2;
+function actionTake(entry: LedgerEntry, taken: number, remaining: number, room: number): number {
+  const most = Math.min(room, remaining - MIN_ACTION_LINES);
+  for (let i = entry.sentenceEnds.length - 1; i >= 0; i--) {
+    const take = entry.sentenceEnds[i] - taken;
+    if (take < MIN_ACTION_LINES) break;
+    if (take <= most) return take;
+  }
+  return 0;
+}
+
 export interface Page {
   index: number;          // 0-based; page ONE is index 0 and prints no number (R1)
   placed: Placed[];
@@ -137,8 +151,16 @@ export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINE
           flush(); contd = true;
           continue;
         }
+      } else if (entry.t === 'action' && actionTake(entry, taken, remaining, L - used - space) > 0) {
+        // An action block breaks at a sentence end, no furniture (SCRIPT batch 2, item 4).
+        const take = actionTake(entry, taken, remaining, L - used - space);
+        place({ entry, lines: take, spaceBefore: space, continues: true, continuedFrom: taken > 0, lineOffset: taken, more: false, contd: false });
+        taken += take; remaining -= take;
+        flush();
+        continue;
       } else if (ruleFor(entry.t).splittable && space + remaining > L) {
-        // An element longer than a whole page cannot move whole: an action block (or a dialogue line in no speech) breaks at a line boundary.
+        // An element longer than a whole page cannot move whole: an action block with no sentence end in reach (or a dialogue line in no
+        // speech) breaks at a line boundary.
         const room = L - used - space;
         if (room > 0) {
           place({ entry, lines: room, spaceBefore: space, continues: true, continuedFrom: taken > 0, lineOffset: taken, more: false, contd: false });

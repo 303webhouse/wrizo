@@ -16,7 +16,8 @@ export interface LedgerEntry {
   spaceBefore: number;
   /**
    * May the paginator split this element across a page boundary? An action
-   * block may when it is longer than a full page. A speech's dialogue may at
+   * block may at a sentence end (SCRIPT batch 2, item 4), and at any line when
+   * it is longer than a full page. A speech's dialogue may at
    * any page foot, with (MORE) under it and the cue with (CONT'D) over the rest
    * (SCRIPT batch 2, items 1 and 2).
    */
@@ -31,9 +32,9 @@ export interface LedgerEntry {
   /** Lines the cue with (CONT'D) takes at the top of a page that continues this line's speech; 0 outside a speech. */
   contdLines: number;
   /**
-   * For dialogue only: each line count k (1 <= k < lines) after which a
-   * sentence ends, so a speech can break at a sentence where it can. Empty for
-   * every other type.
+   * For dialogue and action: each line count k (1 <= k < lines) after which a
+   * sentence ends, so a speech or an action block can break at a sentence
+   * (SCRIPT batch 2, items 2 and 4). Empty for every other type.
    */
   sentenceEnds: number[];
 }
@@ -105,7 +106,7 @@ export function lineLedger(elements: ScriptEl[]): LedgerEntry[] {
       mayBreak: el.t === 'action' || el.t === 'dialogue',
       speech,
       contdLines: speech === null ? 0 : contdLines,
-      sentenceEnds: el.t === 'dialogue' ? sentenceEndsOf(wrapped) : NONE,
+      sentenceEnds: el.t === 'dialogue' || el.t === 'action' ? sentenceEndsOf(wrapped) : NONE,
     };
   });
 }
