@@ -1052,7 +1052,10 @@
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame[data-writing='true'] .desk-frame-sliver-anchor .arbor2-c2--left{ transition:none; }
 }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
+/* #119 (Nov 24): not on the prose page. In Chromium a scrollbar-color drops the element's ::-webkit-scrollbar rules, so here it swapped the page's
+   10 px bar for the 15 px native one the moment she wrote: the column narrowed 5 px, all her lines re-wrapped, and Plan -> back restored a scrollTop
+   over the other height (caret off screen). The prose page hides its thumb while she writes below, keeping the 10 px box. */
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll:not(.desk-frame-stage--prose .mode-scroll){ scrollbar-color:transparent transparent; }
 /* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */
 /* 4b (the Wrizors, Nov 10, via Fable; Nick's Nov 4 rule): the page's thumb is 4 px (it was 6: the 10 px webkit bar less a 4 px clear edge) and is
    painted only while the page scrolls or the pointer is on its strip, ~1 s after (src/arbor2/scrollReveal.ts); at rest the strip is clear. The bar
@@ -1060,6 +1063,8 @@
 /* (the rules are flag-scoped and webkit-only by their own selectors: a browser without ::-webkit-scrollbar drops them, so no @supports wrapper - arbor2-r5-unit R4 keeps every rule in this file under the flag) */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
+/* #119: while she writes the prose page's thumb is clear (the recede's hiding, by the thumb, not by scrollbar-color); after the rule above, same weight */
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; }
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
 /* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
 :root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }
