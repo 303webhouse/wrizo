@@ -16,12 +16,16 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-strip:has(> .wz-reorg-rail){ overflow:visible; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ position:relative; z-index:1; transition:transform .15s ease, background-color .15s ease; }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible){ transform:translateX(6px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
-:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true']{ transform:translateX(3px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
+:root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth][aria-pressed='true']{ transform:translateX(12px); background:var(--arbor-cloth); color:var(--arbor-cloth-ink); }
 :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]:is(:hover, :focus-visible, [aria-pressed='true']) :is(.wz-strip-label, .wz-strip-glyph){ color:var(--arbor-cloth-ink); }
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau'] .wz-reorg-rail .wz-strip-item[data-cloth]{ transition:none; }
 }
 /* the opened place's pop-out, edged 3 px in its door's cloth (Cascade.tsx marks the pop-out with its category); a ring inside its edge: nothing moves */
+/* #129 (b) (Fable, Nov 24, 11:29: no control runs into a panel border; Nick's rail-tab rule of Nov 8: "opened stays out 12 px"): the pop-out stands 12 px
+   off the rail, so the opened cloth's 12 px reaches its edge and stops there, bridging the gap instead of lying over the panel. It overlays; it moves no
+   page (arbor-129-overlaps R-D reads the page's rect before and after). */
+:root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category]{ margin-left:12px; }
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel:is([data-category='reorg-docs'], [data-category='reorg-unfiled']){ --arbor-cloth:#7FA0BC; --arbor-cloth-ink:#2B1D12; box-shadow:inset 0 0 0 3px #7FA0BC; }
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel:is([data-category='reorg-projects'], [data-category='reorg-list'], [data-category='journal']){ --arbor-cloth:#56632E; --arbor-cloth-ink:#EFE4CB; box-shadow:inset 0 0 0 3px #56632E; }
 :root[data-arbor2][data-theme='plateau'] .wz-cascade-panel[data-category='plan']{ --arbor-cloth:#A8392F; --arbor-cloth-ink:#EFE4CB; box-shadow:inset 0 0 0 3px #A8392F; }

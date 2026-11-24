@@ -127,7 +127,7 @@ await withHarness(async (app) => {
     const parts = [[40, 'Chapter One'], [12, 'Chapter Two'], [8, 'Chapter Three']].map(([n, t], i) => W.wrizoCreateJournalPage({ id: 'ov129-' + i, text: t + '\\n\\n' +${q(TEXT(40))}.split('\\n\\n').slice(0, n).join('\\n\\n'), createdAt: '2026-04-01T00:0' + i + ':00.000Z', origin: 'project', projectId: doc.id, orderIndex: i, source: 'page' }));
     const dr = W.wrizoCreateDrawer('Fiction'); const set = dr && W.wrizoSetProjectDrawer(doc.id, dr.id);
     W.wrizoFlushNow(); return !!doc && parts.every(Boolean) && !!dr && !!set; })()`);
-  const lives = [], counts = [];
+  const lives = [], counts = [], rects = [];
   for (const [theme, T] of THEMES) for (const tone of TONES) for (const [w, h] of WIDTHS) for (const state of STATES) {
     const arm = `${T}${tone === 'light' ? 'L' : 'D'}${w}${state[0].toUpperCase()}`;
     await app.emulateDpr(1, w, h);
@@ -142,6 +142,8 @@ await withHarness(async (app) => {
     if (st0.front !== wantFront) await press('.wz-sliver-grip');
     if (st0.back !== wantBack) await press('.wz-tutor-grip');
     await sleep(700);
+    const RECT = "(() => Object.fromEntries(['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const e = document.querySelector(s); const r = e && e.getBoundingClientRect(); return [s, r ? [Math.round(r.left * 10) / 10, Math.round(r.top * 10) / 10, Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10] : null]; })))()";
+    const rect0 = state === 'drawers' ? await ev(RECT) : null;
     if (state === 'drawers') { await pressDrawers(); await sleep(1000); }
     await app.mouseMove(4, Math.round(h / 2));   // the pointer on the rail's side, nothing typed
     await sleep(1200);
@@ -151,6 +153,7 @@ await withHarness(async (app) => {
       && (state === 'drawers' ? (live.drawersActive || live.slide) : (live.front === wantFront && live.back === wantBack));
     lives.push([arm, stood, live]);
     const c = await ev(CENSUS);
+    if (state === 'drawers') { const rect1 = await ev(RECT); rects.push([arm, q(rect0) === q(rect1) && Object.values(rect0).every(Boolean), rect0, rect1]); }
     counts.push([arm, c.controls.length, !!c.page, c.panels.length, state]);
     await shot(`${arm}-${theme}-${tone}-${w}-${state}`);
     console.log(`DIAG 129 [${arm}] room ${live.room} page ${q(c.page)} panels ${q(c.panels)} marks ${q(c.marks.filter((m) => m.shown))}`);
@@ -160,11 +163,13 @@ await withHarness(async (app) => {
   }
   const n = THEMES.length * TONES.length * WIDTHS.length * STATES.length;
   ok('P0 (premise) every arm is the theme it names at its width (read back), the Doc seeded, and the state it names standing', seeded && lives.length === n && lives.every((l) => l[1]), { seeded, bad: lives.filter((l) => !l[1]) });
+  // R-D (#129 (b), Nov 24): the rail's Drawers pop-out overlays and moves no page (Page Is Primary): the column, the page and the editor read the same rect before and after
+  ok(`R-D the rail's Drawers pop-out moves no page: the column, page and editor rects are the same before and after it opens, in every DRAWERS arm (${rects.filter((r) => r[1]).length}/${rects.length})`, rects.length === n / STATES.length && rects.every((r) => r[1]), rects.filter((r) => !r[1]));
   ok('P1 (premise) every arm found the page and at least 8 drawn controls, and every FRONT/BACK arm found its open panel', counts.length === n && counts.every((c) => c[1] >= 8 && c[2] && (c[4] === 'drawers' || c[3] >= 1)), counts);
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 2400)}`);
-const EXPECTED = 2 + 2 * THEMES.length * TONES.length * WIDTHS.length * STATES.length;
+const EXPECTED = 3 + 2 * THEMES.length * TONES.length * WIDTHS.length * STATES.length;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nARBOR-129-OVERLAPS VERIFY: PASS (${checks.length} checks)` : `\nARBOR-129-OVERLAPS VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);
