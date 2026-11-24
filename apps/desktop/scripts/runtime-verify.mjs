@@ -156,6 +156,8 @@ function startServer(dist) {
   // a stand-in for a failed request instead of a failed request; this returns a
   // real 503, so the client takes its own genuine catch/backoff branch.
   let syncMode = {};
+  // TUTOR item 7 step 1: the notes double's table, its call log, its armed failure and its id counter (see the /api/tutor/notes routes below)
+  const notesTable = []; const notesCalls = []; let notesFail = false; let notesSeq = 0;
   const server = http.createServer(async (req, res) => {
     const p = decodeURIComponent(req.url.split('?')[0].split('#')[0]);
     // Auth/sync double: let the real renderer past the W2 login gate. Empty
@@ -177,6 +179,57 @@ function startServer(dist) {
         return res.end(JSON.stringify({ error: 'unauthorized' }));
       }
       return sendJson(res, { id: 'test-user', email: 'tester@example.com', name: 'Tester' });
+    }
+    // TUTOR item 7 step 1 - the Tutor's notes on file. This double keeps the notes in memory and answers the REAL server's contract (apps/server/src/tutorNotes.ts: GET/POST
+    // /api/tutor/notes, PATCH/DELETE /api/tutor/notes/:id, DELETE /api/tutor/notes) just far enough for the screen: it proves the CLIENT's half. The server's own rules (only on her
+    // yes, scoped by writer, a wipe that truly deletes) are proven by tutor-notes.mjs against the real routes. Introspection: GET /api/_notes_state -> { notes, calls }; POST
+    // /api/_notes_mode { fail?: boolean, seed?: [{ kind, text, source }], reset?: true } arms a real 503 on every notes call, seeds rows, or clears the table and the call log.
+    if (p === '/api/_notes_state') {
+      return sendJson(res, { notes: notesTable, calls: notesCalls });
+    }
+    if (p === '/api/_notes_mode' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        let m = {};
+        try { m = JSON.parse(body || '{}') || {}; } catch { m = {}; }
+        notesFail = !!m.fail;
+        if (m.reset) { notesTable.length = 0; notesCalls.length = 0; }
+        for (const n of m.seed || []) notesTable.push({ id: `00000000-0000-4000-8000-${String(++notesSeq).padStart(12, '0')}`, kind: n.kind, text: n.text, source: n.source || 'own', createdAt: new Date(1700000000000 + notesSeq * 1000).toISOString(), updatedAt: new Date(1700000000000 + notesSeq * 1000).toISOString() });
+        sendJson(res, { ok: true, count: notesTable.length });
+      });
+      return;
+    }
+    if (p === '/api/tutor/notes' || p.startsWith('/api/tutor/notes/')) {
+      const id = p.startsWith('/api/tutor/notes/') ? p.slice('/api/tutor/notes/'.length) : null;
+      let body = '';
+      req.on('data', (c) => { body += c; });
+      req.on('end', () => {
+        let b = null;
+        try { b = body ? JSON.parse(body) : null; } catch { b = null; }
+        notesCalls.push({ method: req.method, path: p, body: b });
+        if (notesFail) { res.writeHead(503, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'harness: notes unavailable' })); }
+        const stamp = () => new Date(1700000000000 + (++notesSeq) * 1000).toISOString();
+        if (!id && req.method === 'GET') return sendJson(res, { notes: notesTable.map((n) => ({ ...n })) });
+        if (!id && req.method === 'POST') {
+          if (!b || !['tendency', 'interest', 'blocker', 'goal'].includes(b.kind) || typeof b.text !== 'string' || !b.text.trim() || !['proposed', 'interview', 'own'].includes(b.source)) { res.writeHead(400, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'bad request' })); }
+          const note = { id: `00000000-0000-4000-8000-${String(++notesSeq).padStart(12, '0')}`, kind: b.kind, text: b.text.trim(), source: b.source, createdAt: stamp(), updatedAt: stamp() };
+          notesTable.push(note);
+          res.writeHead(201, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ note }));
+        }
+        if (!id && req.method === 'DELETE') { const n = notesTable.length; notesTable.length = 0; return sendJson(res, { deleted: n }); }
+        const i = notesTable.findIndex((n) => n.id === id);
+        if (i < 0) { res.writeHead(404, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'not found' })); }
+        if (req.method === 'PATCH') {
+          if (b && typeof b.text === 'string' && b.text.trim()) notesTable[i].text = b.text.trim();
+          if (b && ['tendency', 'interest', 'blocker', 'goal'].includes(b.kind)) notesTable[i].kind = b.kind;
+          notesTable[i].updatedAt = stamp();
+          return sendJson(res, { note: { ...notesTable[i] } });
+        }
+        if (req.method === 'DELETE') { notesTable.splice(i, 1); return sendJson(res, { deleted: 1 }); }
+        res.writeHead(405, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'method' }));
+      });
+      return;
     }
     // Test introspection: what the client has pushed + how many syncs ran.
     if (p === '/api/_state') {
