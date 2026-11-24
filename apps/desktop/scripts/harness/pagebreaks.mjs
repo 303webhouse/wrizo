@@ -82,9 +82,15 @@ function lib() {
 
 // ---- the judges (pure, so each mutant is the same judge on a planted observation) ----
 const judgeSnips = (a, b) => a.length > 0 && same(a, b);
+// BUG #114 (Fable, Nov 23: "drawMarks draws only the breaks in or near the scroller's view"): a page with more than ALL_UNDER (24) breaks draws a handful of pairs, the ones in or near the view, never one for every break; a page with 24 or fewer
+// draws them all. The count a judge expects follows (pagebreaks-view.mjs holds the window itself: where, and that it follows the scroll). Every pair that IS drawn is judged on geometry and line exactly as before.
+const ALL_UNDER = 24, MAX_NEAR = 12;
+const pairsOk = (n, want) => (want > ALL_UNDER ? n >= 1 && n <= MAX_NEAR : n === want);
 const judgePair = (M, pages, head, geo) => {
   const want = pages - 1 + (head ? 1 : 0);
-  if (M.pairs.length !== want) return { pass: false, why: `pairs ${M.pairs.length} want ${want}` };
+  // SUPERSEDED by pairsOk (#114), original, verbatim:
+  // if (M.pairs.length !== want) return { pass: false, why: `pairs ${M.pairs.length} want ${want}` };
+  if (!pairsOk(M.pairs.length, want)) return { pass: false, why: `pairs ${M.pairs.length} want ${want > ALL_UNDER ? `1 to ${MAX_NEAR} (the view's, of ${want})` : want}` };
   if (!head && M.pairs.some((p) => p.at === 0)) return { pass: false, why: 'a pair on page 1' };
   let seen = 0;
   for (const p of M.pairs) {
@@ -239,7 +245,7 @@ await withHarness(async (app) => {
         const r = await read(); const M = await marks();
         out[theme] = { count: r.count, n: r.n, page: r.st.page, total: r.st.total, dataPage: r.dataPage, pairs: M.pairs.length };
         const m = r.st.total;
-        const jc = (x) => x.n === 1 && x.count[0] === (theme === 'flux' ? `${want.flux}${m}` : `${want[theme]}${m}`) && x.page === 3 && x.dataPage === '2' && x.pairs === m - 1;
+        const jc = (x) => x.n === 1 && x.count[0] === (theme === 'flux' ? `${want.flux}${m}` : `${want[theme]}${m}`) && x.page === 3 && x.dataPage === '2' && pairsOk(x.pairs, m - 1);   // (was: x.pairs === m - 1, until #114's window)
         ok(`C3 ${theme}: the count reads "${want[theme]}${m}", the list's page 3, data-page 2, pairs ${m - 1}`, jc(out[theme]), JSON.stringify(out[theme]));
         if (theme === 'arbor') mutant('C3: the count from today\'s rule (p.N of the sheet height)', jc({ ...out[theme], count: [`p. ${Math.max(1, out[theme].page - 1)} of ${m}`] }));
       }

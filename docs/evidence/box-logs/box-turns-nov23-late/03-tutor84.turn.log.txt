@@ -1,0 +1,36 @@
+2026-11-24T04:44:54Z tree F:/wrizo-work/chat1-box-tutor: HEAD 7075b3bf (want 7075b3bf), dirty 0, bundle index-w3gz_Ouf.js, stop 05:08Z
+2026-11-24T04:44:54Z tree F:/wrizo-work/chat1-box-arbl3: HEAD 0844e787 (want 0844e787), dirty 0, bundle index-BO8-DDZO.js, stop 05:08Z
+2026-11-24T04:44:54Z chrome processes before: 10
+2026-11-24T04:44:54Z take: granted to lane "chat1" and bound to the process tree of pid 23640 - name this turn's start and end in your report
+TURN START 2026-11-24T04:44:54Z
+2026-11-24T04:44:55Z [01-T-item84] start item84.mjs on 7075b3bf (index-w3gz_Ouf.js)
+2026-11-24T04:45:28Z [01-T-item84] exit 0; window 2026-11-24T04:44:55Z - 2026-11-24T04:45:28Z
+2026-11-24T04:45:28Z   SUITE START HARNESS_PARKED=unset files=1 tree=7075b3bf3 bundle=index-w3gz_Ouf.js/1327693b NO-REBUILD out=F:\wrizo-work\chat1-turn-tutor84-0444Z\01-T-item84
+2026-11-24T04:45:28Z   [01/1] OK        exit=0   32s item84.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; ITEM84 VERIFY: PASS (57 checks)
+2026-11-24T04:45:28Z   SUITE RESULT: CLEAN — tree=7075b3bf3 bundle=index-w3gz_Ouf.js/1327693b NO-REBUILD
+2026-11-24T04:45:28Z   [01-T-item84] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T04:45:28Z   [01-T-item84] ITEM84 VERIFY: PASS (57 checks)
+2026-11-24T04:45:28Z [02-C-item84] start item84.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:46:01Z [02-C-item84] exit 0; window 2026-11-24T04:45:28Z - 2026-11-24T04:46:01Z
+2026-11-24T04:46:01Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-tutor84-0444Z\02-C-item84
+2026-11-24T04:46:01Z   [01/1] OK        exit=0   32s item84.mjs :: ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one) ;; ITEM84 VERIFY: PASS (57 checks)
+2026-11-24T04:46:01Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:46:01Z   [02-C-item84] ROWS-SHADOW VERIFY: PASS (3 renders checked, shadow == DOM on every one)
+2026-11-24T04:46:01Z   [02-C-item84] ITEM84 VERIFY: PASS (57 checks)
+2026-11-24T04:46:02Z [03-T-item84b] start item84b.mjs on 7075b3bf (index-w3gz_Ouf.js)
+2026-11-24T04:46:43Z [03-T-item84b] exit 0; window 2026-11-24T04:46:02Z - 2026-11-24T04:46:43Z
+2026-11-24T04:46:43Z   SUITE START HARNESS_PARKED=unset files=1 tree=7075b3bf3 bundle=index-w3gz_Ouf.js/1327693b NO-REBUILD out=F:\wrizo-work\chat1-turn-tutor84-0444Z\03-T-item84b
+2026-11-24T04:46:43Z   [01/1] OK        exit=0   39s item84b.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM84B VERIFY: PASS (57 checks)
+2026-11-24T04:46:43Z   SUITE RESULT: CLEAN — tree=7075b3bf3 bundle=index-w3gz_Ouf.js/1327693b NO-REBUILD
+2026-11-24T04:46:43Z   [03-T-item84b] ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one)
+2026-11-24T04:46:43Z   [03-T-item84b] ITEM84B VERIFY: PASS (57 checks)
+2026-11-24T04:46:43Z [04-C-item84b] start item84b.mjs on 0844e787 (index-BO8-DDZO.js)
+2026-11-24T04:47:24Z [04-C-item84b] exit 0; window 2026-11-24T04:46:43Z - 2026-11-24T04:47:24Z
+2026-11-24T04:47:24Z   SUITE START HARNESS_PARKED=unset files=1 tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD out=F:\wrizo-work\chat1-turn-tutor84-0444Z\04-C-item84b
+2026-11-24T04:47:24Z   [01/1] OK        exit=0   40s item84b.mjs :: ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one) ;; ITEM84B VERIFY: PASS (57 checks)
+2026-11-24T04:47:24Z   SUITE RESULT: CLEAN — tree=0844e787d+2dirty bundle=index-BO8-DDZO.js/1327485b NO-REBUILD
+2026-11-24T04:47:24Z   [04-C-item84b] ROWS-SHADOW VERIFY: PASS (12 renders checked, shadow == DOM on every one)
+2026-11-24T04:47:24Z   [04-C-item84b] ITEM84B VERIFY: PASS (57 checks)
+2026-11-24T04:47:24Z chrome processes after: 10
+2026-11-24T04:47:24Z release: released
+TURN END 2026-11-24T04:47:24Z

@@ -408,6 +408,12 @@ export function getJournalEntry(id: string): JournalEntry | null {
   return unbornSlot && unbornSlot.id === id ? clone(unbornSlot) : null;
 }
 
+/** SCRIPT #4: whether this page's stored row changed, without copying it: the row object and its stamp. A save replaces the object; a merge in place moves the stamp. For comparing only. */
+export function storedRowToken(id: string): { row: unknown; at: string | null } {
+  const row = cache.journalEntries.find(e => e.id === id) ?? null;
+  return { row, at: row?.updatedAt ?? null };
+}
+
 // a soft delete (a synced row travels its deletion, never a hard delete); every getter already filters deletedAt [persistence §26]
 export function softDeleteEntry(id: string): void {
   const entry = getJournalEntry(id);
