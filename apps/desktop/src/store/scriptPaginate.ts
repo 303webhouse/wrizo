@@ -13,8 +13,8 @@ export interface BreakRule {
   splittable: boolean;
   /**
    * This element may never be the FIRST on a page — it belongs with the element
-   * that precedes it. SC2 S2b's fourth column; see `transition`'s row and
-   * `applyBreakRules`' termination proof for why it took a slice of its own.
+   * that precedes it. SC2 S2b's fourth column; see `transition`'s row and the
+   * termination note after `paginate` for why it took a slice of its own.
    */
   keepWithPrevious: boolean;
 }
@@ -154,22 +154,29 @@ export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINE
         break;
       }
 
-      // It moves to the next page. Inside a speech the break then falls between two of its lines (SCRIPT batch 2, item 2): a parenthetical
-      // left at the foot goes with it, (MORE) goes under the dialogue above, and the cue with (CONT'D) over the next page. When only the cue
-      // is left above, the cue goes too and the speech simply starts on the next page.
+      // It moves to the next page, and the page it leaves must end well (SCRIPT batch 2, item 3, the review's finding 13). Lines that may not
+      // end a page (a scene heading, a cue, a parenthetical: neverLast) go over with it, as many as end the page; a line that may not open a
+      // page (a transition: keepWithPrevious) takes the line above it over too. The rules are kept HERE, while the pages fill, so what moves
+      // takes everything after it along and the pages after it flow on: no page is opened for one line, and no cue is left alone on one. A
+      // page is never emptied, and half of a split line never travels alone (the stated refusals; in each the rule yields).
       const carry: Placed[] = [];
+      const tail = () => cur[cur.length - 1];
+      const movable = () => cur.length > 1 && !tail().continues && !tail().continuedFrom;
+      const endsBadly = () => { const r = ruleFor(tail().entry.t); return r.neverLast || r.keepWithNext; };
+      while (movable() && endsBadly()) carry.unshift(unplace());
+      if (!carry.length && ruleFor(entry.t).keepWithPrevious && movable()) {
+        carry.unshift(unplace());
+        while (movable() && endsBadly()) carry.unshift(unplace());
+      }
+      // Inside a speech the break then falls between two of its lines (item 2): (MORE) goes under the dialogue above, and the cue with
+      // (CONT'D) over the next page. Its line is always free: a speech line the speech goes on after keeps one (`reserve`).
       contd = false;
-      if (isSpeechLine(entry)) {
-        const tail = () => cur[cur.length - 1];
-        while (cur.length > 1 && tail().entry.speech === entry.speech && tail().entry.t === 'paren') carry.unshift(unplace());
-        const last = tail();
-        if (last && last.entry.speech === entry.speech && last.entry.t === 'dialogue') {
-          cur[cur.length - 1] = { ...last, more: true };
-          used += 1;
-          contd = true;
-        } else if (cur.length > 1 && last && last.entry.speech === entry.speech && last.entry.t === 'character') {
-          carry.unshift(unplace());
-        }
+      const last = tail();
+      const firstOver = carry.length ? carry[0].entry : entry;
+      if (last && isSpeechLine(last.entry) && isSpeechLine(firstOver) && last.entry.speech === firstOver.speech) {
+        cur[cur.length - 1] = { ...last, more: true };
+        used += 1;
+        contd = true;
       }
       flush();
       carry.forEach((c, j) => place({ ...c, spaceBefore: j === 0 ? 0 : c.entry.spaceBefore, more: false, contd: j === 0 && contd }));
@@ -178,86 +185,31 @@ export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINE
   }
   flush();
 
-  return markSpeechBreaks(applyBreakRules(pages, linesPerPage)).map((placed, index) => ({
+  return markSpeechBreaks(pages).map((placed, index) => ({
     index,
     placed,
     linesUsed: heightOf(placed),
   }));
 }
 
-/**
- * Push trailing elements forward until no page ends on an element that may not
- * end one, and no page BEGINS on an element that may not begin one. A page is
- * never emptied to satisfy a rule — an element alone on a page has nowhere to
- * go, and orphan-avoidance must not become an infinite regress.
+/*
+ * SCRIPT batch 2, item 3 (the review's finding 13) — THE BREAK RULES ARE KEPT WHILE THE PAGES FILL. They used to be a second pass over
+ * finished pages (`applyBreakRules`, SC2 S2b): it pushed a page's bad tail onto the next page, and when that page then overflowed it opened a
+ * NEW page for the one line it pushed out, instead of letting the pages after it flow on. The panel's short showed five pages for four, one
+ * holding four lines, and a cue could end up alone on a page. Now a line that may not end a page goes over with what follows it at the
+ * moment the page is closed, so everything after it simply fills on from there.
  *
- * THE PASS HAS EXACTLY ONE MOVE, AND IT ONLY EVER GOES FORWARD (SC2 S2b).
- * Both families of rule are repaired by the same action: pop page p's LAST part
- * and prepend it to page p+1. `neverLast` fires when page p's tail may not end a
- * page; `keepWithPrevious` fires when page p+1's HEAD may not begin one, and it
- * is repaired by sending p's tail forward to join it rather than by pulling the
- * head back. Nothing in this function ever moves a part to a lower page index.
- *
- * TERMINATION, PROVED RATHER THAN CAPPED. This runs on every keystroke, so an
- * oscillation would not be a wrong page count — it would be a frozen editor. A
- * retry limit would hide exactly that, so there is none; the bound is
- * structural:
- *
- *   1. MONOTONICITY. Let Φ = the sum, over every placed part, of the index of
- *      the page it sits on. The primary move takes one part from page p to page
- *      p+1 (+1); the overflow correction takes one part from page p+1 to a fresh
- *      page p+2 (+1). No part's page index ever decreases, and each iteration
- *      strictly increases Φ. A state can therefore never recur — which is what
- *      "cannot oscillate" means precisely.
- *   2. A LINEAR BOUND. `p` only ever increases and a page is visited once. The
- *      inner loop at page p removes one part from page p per iteration and stops
- *      at `page.length < 2`, so it runs at most `|page p| − 1` times. Summed
- *      over pages that is at most N − P primary moves for N parts on P pages,
- *      each followed by at most one correction: AT MOST 2N MOVES, always.
- *   3. THE REFUSALS ARE PART OF THE PROOF, not gaps in it. A page holding a
- *      single part cannot give it up (it would empty the page); the last page
- *      of the document has nowhere to push to; a part that is half of a split
- *      cannot travel alone. In each case the rule yields and the orphan stands.
- *      That is a deliberate, bounded failure to be pretty, chosen over an
- *      unbounded attempt to be perfect.
- *
- * sc2.mjs proves it on the fixture engineered to trip both directions at once —
- * a transition at a page top whose previous page ends on a scene heading — which
- * is the case a two-directional pass would spin on.
+ * TERMINATION, structural as before (this runs on every keystroke; an oscillation would be a frozen editor, so there is no retry cap). Each
+ * turn of the inner loop either places a part, or closes a page that holds at least one part, so the document is consumed in order and the
+ * page count only grows. Lines only ever travel FORWARD, onto the page being opened, and only from the tail of the page being closed. The
+ * refusals stay part of the proof: a page is never emptied (`cur.length > 1`), half of a split line never travels alone, and the last page has
+ * nothing after it to keep with. sc2.mjs's two-directions fixture (a transition opening a page after a heading) is the case a two-way pass
+ * would spin on; here the heading and the line above the transition simply go over together.
  */
-function applyBreakRules(pages: Placed[][], linesPerPage: number): Placed[][] {
-  for (let p = 0; p < pages.length; p++) {
-    const page = pages[p];
-    for (;;) {
-      if (page.length < 2) break;                      // never empty a page
-      // `pages.length` grows as corrections append, so this is re-read, never hoisted.
-      if (p === pages.length - 1) break;               // nothing follows it to join
-      const last = page[page.length - 1];
-      if (last.continues || last.continuedFrom) break; // a split part cannot travel alone
-      const next = pages[p + 1];
-      const rule = ruleFor(last.entry.t);
-      const endsBadly = rule.neverLast || rule.keepWithNext;
-      const opensBadly = ruleFor(next[0].entry.t).keepWithPrevious && !next[0].continuedFrom;
-      if (!endsBadly && !opensBadly) break;
-      page.pop();
-      // It becomes the first element of the next page, so it loses its space.
-      next.unshift({ ...last, spaceBefore: 0 });
-      // The element it displaced is no longer at a page top and regains its own.
-      if (next.length > 1) next[1] = { ...next[1], spaceBefore: next[1].entry.spaceBefore };
-      // Only re-check if the next page still fits; overflow is corrected below.
-      const over = heightOf(next) - linesPerPage;
-      if (over > 0) {
-        const moved = next.pop();
-        if (moved) pages.splice(p + 2, 0, [{ ...moved, spaceBefore: 0 }]);
-      }
-    }
-  }
-  return pages.filter((pg) => pg.length > 0);
-}
 
 // SCRIPT batch 2, item 2 — the furniture is a fact about where the pages break, so it is read off the final pages: a boundary that falls
 // between two lines of one speech carries (MORE) above it and the cue with (CONT'D) below it, and no other boundary or line does. The
-// filling loop has already placed and counted it; this keeps it true at a boundary the repair pass above moved.
+// filling loop has already placed and counted it; this re-reads it from the finished pages, so the drawing can never disagree with a break.
 function markSpeechBreaks(pages: Placed[][]): Placed[][] {
   const inside = (a: Placed | undefined, b: Placed | undefined) =>
     !!a && !!b && isSpeechLine(a.entry) && isSpeechLine(b.entry) && a.entry.speech === b.entry.speech;
