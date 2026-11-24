@@ -108,10 +108,11 @@ export function TutorNotes({ open }: { open: boolean }) {
       )}
 
       {state === 'ready' && (
-        <div className="wz-tutor-bible-row">
+        <div className="wz-tutor-bible-row" style={{ flexWrap: 'wrap' }}>
           {kindSelect(kind, setKind, t('tutorNotesKindLabel'))}
           <input
             className="wz-tutor-bible-input"
+            style={{ flex: '1 1 7rem', minWidth: 0 }}
             type="text"
             value={input}
             maxLength={NOTE_MAX_CHARS}
