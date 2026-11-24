@@ -84,7 +84,7 @@ try { await withHarness(async (app) => {
     ok(`ST3 ${tag}: what she typed before the banner is still in the page and in the stored page`, nw(after) === nw(SEED) + nw(KEYS1) && stored !== null && nw(stored) === nw(SEED) + nw(KEYS1), JSON.stringify({ storedTail: stored ? String(stored).slice(-24) : stored }));
     // Reload: the way out (the fake server forgets it moved on: the new load carries no build)
     await ev("window.__srv = undefined; true");   // the page reloads: the new document installs a fresh fake server with no build
-    await ev("document.querySelector('.wz-stale-banner-reload').click(); true");
+    await ev("document.querySelector('[data-stale-client] button').click(); true");
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { timeout: 25000, label: 'the page after Reload' }).catch(() => {});
     await splashGone();
     await sleep(theme === 'flux' ? 4600 : 2200);
