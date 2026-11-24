@@ -4,8 +4,9 @@
 // folds, as a writer would, and records which of the other four templates (Blank, Outline, Title Page, Bibliography) has a door she can see.
 //   B0  the fixture: every page opened and its drawer has tabs
 //   B1  the control: Machina's Front menu shows all four on an empty screenplay (if this fails the walk is blind)
-//   B2  Arbor, an empty screenplay: all four can be reached
-//   B3  Arbor, a screenplay with words: all four can be reached (there a press opens a new page; the words never move)
+//   B2-B, B3-B  Arbor, a screenplay, empty and with words: NO template door (Fable, Nov 23, 7:28 pm, until Convert exists), the four screenplay presets still offered (B2 and B3 parked below)
+//   (parked) B2  Arbor, an empty screenplay: all four can be reached
+//   (parked) B3  Arbor, a screenplay with words: all four can be reached (there a press opens a new page; the words never move)
 //   B4-B  Arbor, a screenplay at 1366 and 1920: the drawer and its controls start past the rail; tabs press at the centre, the kind menu edge to edge (B4 parked below)
 // READ lines print what each walk found, including a Standard page in Arbor (reported, not counted). Frames go to $RUNNER_TEMP/suite/bug116 on Actions.
 import fs from 'node:fs';
@@ -149,8 +150,19 @@ await withHarness(async (app) => {
   }
   ok('B0 the fixture: all four pages opened, each with drawer tabs', cases.every(([n]) => !!got[n] && got[n].tabs.length > 0), Object.fromEntries(cases.map(([n]) => [n, got[n] ? got[n].tabs : null])));
   ok("B1 the control: Machina's drawer shows Blank, Outline, Title Page and Bibliography on an empty screenplay", hasAll(got['machina-empty']), got['machina-empty']);
-  ok('B2 Arbor, an empty screenplay: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-empty']), got['arbor-empty']);
-  ok('B3 Arbor, a screenplay with words: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-words']), got['arbor-words']);
+  // ---- PARKED - SUPERSEDED (Fable, Nov 23, 7:28 pm: "leave the template doors out on a screenplay until Convert exists. There they'd be the one-click kind change Nick's 1A retired."). B2 and B3 asked for those doors; the ruling is that they stay out. The originals, verbatim:
+  // ok('B2 Arbor, an empty screenplay: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-empty']), got['arbor-empty']);
+  // ok('B3 Arbor, a screenplay with words: Blank, Outline, Title Page and Bibliography can each be reached', hasAll(got['arbor-words']), got['arbor-words']);
+  const SCRIPT_PRESETS = ['Feature', 'TV Half-Hour', 'TV Hour', 'Short Film'];
+  const ruled = (w) => !!w && w.kind === 'Screenplay' && w.reach.length === 0 && w.items.includes('presets') && SCRIPT_PRESETS.every((p) => (w.folds.presets || []).includes(p));
+  ok("B2-B [successor]: Arbor, an empty screenplay: no template door anywhere in the drawer (ruled, until Convert exists), and the kind menu still offers the four screenplay presets", ruled(got['arbor-empty']), got['arbor-empty']);
+  ok("B3-B [successor]: Arbor, a screenplay with words: no template door anywhere in the drawer (ruled, until Convert exists), and the kind menu still offers the four screenplay presets", ruled(got['arbor-words']), got['arbor-words']);
+  {
+    const base = { kind: 'Screenplay', reach: [], items: ['setup', 'presets'], folds: { presets: SCRIPT_PRESETS } };
+    ok('MUT-B2-B a template door on a screenplay goes RED, and so does a kind menu that lost its presets', ruled(base) && !ruled({ ...base, reach: ['outline'] }) && !ruled({ ...base, folds: { presets: [] } }), '');
+  }
+  parked.push({ name: 'PARKED (was "B2 Arbor, an empty screenplay: ... can each be reached") - ruled out until Convert exists; live successor: B2-B', pass: ruled(got['arbor-empty']), detail: '' });
+  parked.push({ name: 'PARKED (was "B3 Arbor, a screenplay with words: ... can each be reached") - ruled out until Convert exists; live successor: B3-B', pass: ruled(got['arbor-words']), detail: '' });
   // the second half of #116, found by the first frames: drawerEdge.ts measures the room beside '.mode-page', a screenplay has none, so its drawer takes the default width and runs under the rail at 1366
   // ---- PARKED - SUPERSEDED (Nov 23, the first read after the fix): "edge to edge" also asked it of Arbor's two folder tabs, which overlap by design (the chosen cloth lies over its neighbour, at 1920 too) and stand above the page's top edge. The original, verbatim:
   // const clear = (w) => !!w && w.layout.length === 2 && w.layout.every((r) => !!r.rail && !!r.panel && r.panel[0] >= r.rail[1] && r.controls.length >= 4 && r.controls.every((c) => c.leftEdge && c.centre && c.rightEdge && c.right <= r.panel[1] + 1));
@@ -167,7 +179,7 @@ await withHarness(async (app) => {
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
 const parkedLeg = process.env.HARNESS_PARKED === '1';
 if (parkedLeg) for (const c of parked) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}`);
-const EXPECTED = 6;
+const EXPECTED = 7;
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nBUG116-SCRIPT-TEMPLATES VERIFY: PASS (${checks.length} checks)`
