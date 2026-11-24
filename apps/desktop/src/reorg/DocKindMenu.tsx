@@ -7,6 +7,7 @@ import { applyPreset, applyStyleGuide, addSpecialPart } from './docKindActs';
 import { PRESETS, STYLES, specialName, type DocStyle, type PresetGroup, type SpecialKind } from './docKinds';
 import { styleGuideOf } from './docSettings';
 import { PageSetupZone } from '../components/cascade/PagePanel';
+import { useTheme } from '../store/theme';
 
 // THE DOC'S KIND AT THE HEAD OF THE PARTS TAB (the Team B restyle, slice 2; Nick, Nov 20, 1A: "the head of the Front menu's PARTS tab shows the
 // Doc's kind ... the head is a toggle menu"; Decision 1: Research is a Standard Doc with a preset, so the kinds today are Standard and Screenplay;
@@ -18,20 +19,22 @@ import { PageSetupZone } from '../components/cascade/PagePanel';
 // THE ACTS ARE INK'S (Fable, Nov 20, 4:15 pm; the approved draft claude/wrizors/kind-menu-presets-draft.md): Style Guide is the DOC's own (None, MLA, APA, Chicago, AP: saved in its record, its Page Setup set on every Part, the sources
 // Part named by the style); Special Parts are six, each in its right place; Presets are the draft's 18 (the Parts, empty and named, in an empty Doc or after hers). Every act is reorg/docKindActs.ts; this file is the shell and the words. Escape closes it and gives the focus back; a press outside closes it.
 
-/** What the page's host used to lend the menu (today's per-page style guide and templates). Kept so the host's call stays as it is; the acts are the Doc's own now (docKindActs.ts) and read none of it. */
+/** What the page's host used to lend the menu (today's per-page style guide and templates). Kept so the host's call stays as it is; the acts are the Doc's own now (docKindActs.ts) and read none of it,
+ *  but the TEMPLATES (bug #116): in Arbor the Front menu takes them off FORMAT because they live here, so on a prose page this menu offers the host's own rows and acts. */
 export interface DocMenuHost {
   styleGuide?: StyleGuide;
   onPickStyleGuide?: (next: StyleGuide) => void;
   templates?: { key: string; label: string; selected?: boolean; onApply: () => void }[];
 }
-type Item = 'style' | 'setup' | 'special' | 'presets';
+type Item = 'style' | 'setup' | 'special' | 'presets' | 'templates';
 const GUIDE_WORD = { none: 'reorgDocStyleNone', mla: 'styleGuideMla', apa: 'styleGuideApa', chicago: 'styleGuideChicago', ap: 'styleGuideAp' } as const;
 const SPECIALS: readonly SpecialKind[] = ['title', 'abstract', 'toc', 'ack', 'sources', 'appendix'];
 const GROUPS: readonly PresetGroup[] = ['academic', 'business', 'web', 'creative', 'screenplay'];
 const GROUP_WORD = { academic: 'reorgPresetGroupAcademic', business: 'reorgPresetGroupBusiness', web: 'reorgPresetGroupWeb', creative: 'reorgPresetGroupCreative', screenplay: 'reorgPresetGroupScreenplay' } as const;
 
-export function DocKindMenu({ entry, beforeWrite }: { entry: JournalEntry; docId: string | null; host?: DocMenuHost; beforeWrite: () => void }) {
+export function DocKindMenu({ entry, host, beforeWrite }: { entry: JournalEntry; docId: string | null; host?: DocMenuHost; beforeWrite: () => void }) {
   const { t } = useDeskLexicon();
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [sub, setSub] = useState<Item | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -53,7 +56,12 @@ export function DocKindMenu({ entry, beforeWrite }: { entry: JournalEntry; docId
     ...(!screenplay ? ['special' as const] : []),
     'presets',
   ];
-  const WORD: Record<Item, Parameters<typeof t>[0]> = { style: 'reorgDocStyleGuide', setup: 'reorgDocPageSetup', special: 'reorgDocSpecialParts', presets: 'reorgDocPresets' };
+  // bug #116: Arbor's Front menu retires FORMAT's template rows into this menu (frontTabs.ts), so on a PROSE page they are here, with the host's own acts (an empty page takes one
+  // in place; a page with words opens a new page). Not on a screenplay, and not its Screenplay row on prose: each would be the one-click kind change Nick's 1A retired (Fable, Nov 23,
+  // 7:28 pm: "leave the template doors out on a screenplay until Convert exists"). Machina keeps its rows on TEXT, so its menu is unchanged.
+  const templates = theme === 'plateau' && !screenplay ? (host?.templates ?? []).filter((r) => r.key !== 'screenplay') : [];
+  if (templates.length) items.push('templates');
+  const WORD: Record<Item, Parameters<typeof t>[0]> = { style: 'reorgDocStyleGuide', setup: 'reorgDocPageSetup', special: 'reorgDocSpecialParts', presets: 'reorgDocPresets', templates: 'railTemplates' };
   // the Doc's own style guide (its record, else the page's own), followed live: choosing one writes the Doc, and the check mark moves
   const guide: DocStyle = useSyncExternalStore(subscribe, () => styleGuideOf(entry.id) ?? 'none');
   const act = (run: () => void) => { beforeWrite(); run(); flushNow(); close(true); };
@@ -100,6 +108,13 @@ export function DocKindMenu({ entry, beforeWrite }: { entry: JournalEntry; docId
                         <button key={p.id} type="button" data-preset-pick={p.id} onClick={() => act(() => { applyPreset(entry.id, p.id); })}>{p.label}</button>
                       ))}
                     </div>
+                  ))}
+                </div>
+              )}
+              {sub === it && it === 'templates' && (
+                <div className="reorg-dockind-sub" data-doc-sub="templates" role="group" aria-label={t('railTemplates')}>
+                  {templates.map((r) => (
+                    <button key={r.key} type="button" data-template={r.key} aria-pressed={r.selected ? 'true' : 'false'} onClick={() => act(r.onApply)}>{r.label}</button>
                   ))}
                 </div>
               )}
