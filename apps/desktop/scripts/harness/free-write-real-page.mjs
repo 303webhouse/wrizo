@@ -76,7 +76,7 @@ try { await withHarness(async (app) => {
         const tick = () => { if (!window.__fwr.on) return; const n = count(); if (n < window.__fwr.last) window.__fwr.regress += 1; window.__fwr.last = n; requestAnimationFrame(tick); };
         window.__fwr.last = count(); requestAnimationFrame(tick);
         window.__fwr.what = [];
-        new MutationObserver((m) => { if (window.__fwr.quiet) { window.__fwr.muts += m.length; for (const r of m.slice(0, 3)) if (window.__fwr.what.length < 6) window.__fwr.what.push({ t: r.type, a: r.attributeName, n: (r.target.nodeType === 3 ? '#text' : r.target.tagName.toLowerCase() + '.' + String(r.target.className || '').split(' ')[0]), add: r.addedNodes.length, rem: r.removedNodes.length, at: Math.round(performance.now() - window.__fwr.t0) }); } }).observe(ed, { subtree: true, childList: true, characterData: true, attributes: true });
+        new MutationObserver((m0) => { const m = m0.filter((r) => !(r.type === 'attributes' && r.attributeName === 'data-flux-caret-active')); /* Flux's own caret indicator blinks on the editor (the same on 1bc2cda5): it is not the host changing */ if (window.__fwr.quiet) { window.__fwr.muts += m.length; for (const r of m.slice(0, 3)) if (window.__fwr.what.length < 6) window.__fwr.what.push({ t: r.type, a: r.attributeName, n: (r.target.nodeType === 3 ? '#text' : r.target.tagName.toLowerCase() + '.' + String(r.target.className || '').split(' ')[0]), add: r.addedNodes.length, rem: r.removedNodes.length, at: Math.round(performance.now() - window.__fwr.t0) }); } }).observe(ed, { subtree: true, childList: true, characterData: true, attributes: true });
         return true; })()`);
       for (const ch of KEYS) { await app.typeKeys(ch); await sleep(90); }
       await sleep(400);
