@@ -1,12 +1,12 @@
 // #126 frames (Fable, Nov 24 11:15 am: "Frames at 2560 x 1440 in all three themes, both tones"): the Front menu on its TEXT tab (FONT, the Find
-// scope) and the Back menu on ASSETS, at 1920x1080 and 2560x1440, each theme as it is live. Each screen sets its OWN window (the job's widths are
+// scope) and the Back menu on ASSETS, at 1366x768, 1920x1080 and 2560x1440 (#126 and #130, one type pass), each theme as it is live. Each screen sets its OWN window (the job's widths are
 // 1366 and 1920 only, as reorg-scale.mjs does), so name one width and every screen still shoots at its own size:
 //   gh workflow run frames.yml --ref ci/actions-harness -f ref=<sha> -f themes=machina,plateau,flux -f widths=1920 \
-//      -f screens_file=apps/desktop/scripts/frames/menu-cap-126.mjs -f screens=cap-front-1920,cap-front-2560,cap-back-1920,cap-back-2560
+//      -f screens_file=apps/desktop/scripts/frames/menu-cap-126.mjs -f screens=cap-front-1366,cap-front-1920,cap-front-2560,cap-back-1366,cap-back-1920,cap-back-2560
 // The fixture is made through the app's own seams; the page is her first Part. Nothing here judges: menu-cap-126.mjs (harness) does.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
-const SIZE = { 1920: 1080, 2560: 1440 };
+const SIZE = { 1366: 768, 1920: 1080, 2560: 1440 };
 const LINES = Array.from({ length: 24 }, (_, i) => `Paragraph ${i + 1}. The rain had not stopped for three days, and the river was up past the second step of the mill.`);
 
 async function fixture(app) {
@@ -55,6 +55,6 @@ async function report(app, name) {
 const front = (w) => async (app) => { const ids = await fixture(app); await at(app, w, ids); await drawer(app, '.wz-sliver-grip', '.wz-sliver', '.wz-sliver [role="tab"]', '/^TEXT/i'); await app.mouseMove(4, 4); await sleep(300); await report(app, `cap-front-${w}`); };
 const back = (w) => async (app) => { const ids = await fixture(app); await at(app, w, ids); await drawer(app, '.wz-tutor-grip', '.wz-tutor-panel', '.wz-tutor-panel [role="tab"]', '/^ASSET/i'); await app.mouseMove(4, 4); await sleep(300); await report(app, `cap-back-${w}`); };
 export default {
-  'cap-front-1920': front(1920), 'cap-front-2560': front(2560),
-  'cap-back-1920': back(1920), 'cap-back-2560': back(2560),
+  'cap-front-1366': front(1366), 'cap-front-1920': front(1920), 'cap-front-2560': front(2560),
+  'cap-back-1366': back(1366), 'cap-back-1920': back(1920), 'cap-back-2560': back(2560),
 };
