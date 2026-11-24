@@ -4,7 +4,7 @@
 // defaults of every redesign (no pin: WS_ARBOR2 / WS_MACHINA2 = default; Flux's FLUX3 is on by default), 20 keys typed 90 ms apart at the end of the page:
 //   FW1  every one of the 20 keys is in the editor (the page's text then is the saved words + what she typed, once)
 //   FW2  and in the stored page (the record holds the same words)
-//   FW3  the host stops changing once she stops: no node added, removed or changed in the editor for 1.5 s (the "flashing")
+//   FW3  the host stops changing once she stops: no node added, removed or changed in the editor for 5 s (the "flashing")
 //   FW4  and never went backwards while she typed (no frame shows fewer of her words than the frame before: the text did not flash away)
 //   P1   premises: the theme is the one asked for, the page has ink (strokes stored) and its words are on the page, Wire In is up in Flux and only there
 //   MUT  the FW1 judge goes RED on a dropped key
@@ -26,6 +26,7 @@ const SEEDS = {
   line: Array.from({ length: 150 }, (_, i) => 'word' + i).join(' '),
   page: ['A Title For The Page', ...Array.from({ length: 40 }, (_, i) => PARA(i))].join(String.fromCharCode(10, 10)) + String.fromCharCode(10),
 };
+const QUIET_MS = 5000;
 const SEED_NAMES = (process.env.FWR_SEEDS || 'line,page').split(',');
 const KEYS = 'abc def ghi jkl mnop';   // 20 keys
 const INK = [
@@ -74,16 +75,17 @@ try { await withHarness(async (app) => {
         const count = () => ed.textContent.replace(/\\u200b/g, '').length;
         const tick = () => { if (!window.__fwr.on) return; const n = count(); if (n < window.__fwr.last) window.__fwr.regress += 1; window.__fwr.last = n; requestAnimationFrame(tick); };
         window.__fwr.last = count(); requestAnimationFrame(tick);
-        new MutationObserver((m) => { if (window.__fwr.quiet) window.__fwr.muts += m.length; }).observe(ed, { subtree: true, childList: true, characterData: true, attributes: true });
+        window.__fwr.what = [];
+        new MutationObserver((m) => { if (window.__fwr.quiet) { window.__fwr.muts += m.length; for (const r of m.slice(0, 3)) if (window.__fwr.what.length < 6) window.__fwr.what.push({ t: r.type, a: r.attributeName, n: (r.target.nodeType === 3 ? '#text' : r.target.tagName.toLowerCase() + '.' + String(r.target.className || '').split(' ')[0]), add: r.addedNodes.length, rem: r.removedNodes.length, at: Math.round(performance.now() - window.__fwr.t0) }); } }).observe(ed, { subtree: true, childList: true, characterData: true, attributes: true });
         return true; })()`);
       for (const ch of KEYS) { await app.typeKeys(ch); await sleep(90); }
       await sleep(400);
       const shown = await ev("document.querySelector('.forward-only-editor') ? document.querySelector('.forward-only-editor').textContent.replace(/\\u200b/g, '') : ''");
       ok(`FW1 ${tag}: all 20 keys landed in the editor, once`, landed(shown, SEED, KEYS), JSON.stringify({ tail: shown.slice(-40), len: nw(shown).length, want: (nw(SEED) + nw(KEYS)).length }));
-      await ev('window.__fwr.quiet = true; true');
-      await sleep(1500);
-      const meter = await ev('({ regress: window.__fwr.regress, muts: window.__fwr.muts })');
-      ok(`FW3 ${tag}: the host stops changing once she stops (${meter.muts} changes in 1.5 s)`, meter.muts === 0, JSON.stringify(meter));
+      await ev('window.__fwr.quiet = true; window.__fwr.t0 = performance.now(); true');
+      await sleep(QUIET_MS);
+      const meter = await ev('({ regress: window.__fwr.regress, muts: window.__fwr.muts, what: window.__fwr.what })');
+      ok(`FW3 ${tag}: the host stops changing once she stops (${meter.muts} changes in ${QUIET_MS / 1000} s)`, meter.muts === 0, JSON.stringify(meter));
       ok(`FW4 ${tag}: her words never went backwards while she typed (${meter.regress} frames showed fewer)`, meter.regress === 0, JSON.stringify(meter));
       await ev('window.__fwr.on = false; window.wrizoFlushNow(); true');
       await sleep(500);
