@@ -57,7 +57,7 @@ if (typeof window !== 'undefined') (window as unknown as Record<string, unknown>
 
 // ---- her list ----
 export type NotesState = 'anon' | 'loading' | 'ready' | 'error';
-export function useTutorNotes() {
+export function useTutorNotes(open: boolean) {
   const [signedIn, setSignedIn] = useState(!!getCurrentUser());
   const [notes, setNotes] = useState<TutorNote[]>([]);
   const [state, setState] = useState<NotesState>(signedIn ? 'loading' : 'anon');
@@ -67,11 +67,12 @@ export function useTutorNotes() {
 
   const reload = useCallback(async () => {
     if (!signedIn) { setNotes([]); setState('anon'); return; }
-    setState('loading');
+    setState((s) => (s === 'ready' ? s : 'loading'));   // a list already shown stays while it refreshes
     const r = await apiNotesList();
     if (r.ok) { setNotes(r.value.notes); setState('ready'); } else setState('error');
   }, [signedIn]);
-  useEffect(() => { void reload(); }, [reload]);
+  // loaded when her Tutor panel is OPEN (and again each time she opens it), never at page load: a closed panel makes no call, and a writing page loads exactly what it did before notes existed
+  useEffect(() => { if (open) void reload(); }, [open, reload]);
 
   // every act waits for the server: the screen shows what is on file, never what it hopes is on file
   const add = useCallback(async (kind: NoteKind, text: string, source: NoteSource): Promise<boolean> => {

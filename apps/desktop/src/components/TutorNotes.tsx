@@ -12,9 +12,9 @@ import { NOTE_KINDS, NOTE_MAX_CHARS, proposeNote, useNoteProposal, useTutorNotes
 
 const KIND_TERM = { tendency: 'tutorNotesKindTendency', interest: 'tutorNotesKindInterest', blocker: 'tutorNotesKindBlocker', goal: 'tutorNotesKindGoal' } as const;
 
-export function TutorNotes() {
+export function TutorNotes({ open }: { open: boolean }) {
   const { t } = useDeskLexicon();
-  const { state, notes, failed, add, edit, remove, wipe } = useTutorNotes();
+  const { state, notes, failed, add, edit, remove, wipe } = useTutorNotes(open);
   const proposal = useNoteProposal();
   const [input, setInput] = useState('');
   const [kind, setKind] = useState<NoteKind>('tendency');
@@ -108,10 +108,11 @@ export function TutorNotes() {
       )}
 
       {state === 'ready' && (
-        <div className="wz-tutor-bible-row">
+        <div className="wz-tutor-bible-row" style={{ flexWrap: 'wrap' }}>
           {kindSelect(kind, setKind, t('tutorNotesKindLabel'))}
           <input
             className="wz-tutor-bible-input"
+            style={{ flex: '1 1 7rem', minWidth: 0 }}
             type="text"
             value={input}
             maxLength={NOTE_MAX_CHARS}
