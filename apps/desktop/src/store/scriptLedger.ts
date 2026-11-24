@@ -1,5 +1,6 @@
 import type { ScriptEl, ScriptElType } from '../types';
 import { widthChFor, spaceBeforeFor } from './scriptMetrics';
+import { contdCue } from './scriptSmartText';
 
 // lineLedger: a pure function from a screenplay to the lines it occupies, from scriptMetrics' declared constants (never runtime `ch`), returning a structure the paginator needs, not a count [scriptLedger §1]
 
@@ -15,13 +16,26 @@ export interface LedgerEntry {
   spaceBefore: number;
   /**
    * May the paginator split this element across a page boundary? An action
-   * block or a speech may, and only because one longer than a full page cannot
-   * move whole (SCRIPT batch 2, item 1, for the speech). Everything else moves
-   * entire; a speech that merely does not fit the room left moves whole until
-   * (MORE)/(CONT'D) lands, so page counts run slightly long against Final Draft
-   * — a named approximation, never a silent one.
+   * block may when it is longer than a full page. A speech's dialogue may at
+   * any page foot, with (MORE) under it and the cue with (CONT'D) over the rest
+   * (SCRIPT batch 2, items 1 and 2).
    */
   mayBreak: boolean;
+  /**
+   * SCRIPT batch 2, item 2 — the speech this line belongs to: the id of its
+   * character cue, for the cue itself and for every parenthetical and dialogue
+   * line that follows it without a break; null for every other line (a
+   * dialogue line with no cue above it is not in a speech).
+   */
+  speech: string | null;
+  /** Lines the cue with (CONT'D) takes at the top of a page that continues this line's speech; 0 outside a speech. */
+  contdLines: number;
+  /**
+   * For dialogue only: each line count k (1 <= k < lines) after which a
+   * sentence ends, so a speech can break at a sentence where it can. Empty for
+   * every other type.
+   */
+  sentenceEnds: number[];
 }
 
 // lines one element occupies at a measure: a word longer than the measure hard-breaks (the CSS overflow-wrap matches); hard breaks start lines; trailing whitespace is ignored for the wrap only [scriptLedger §2]
@@ -72,15 +86,35 @@ function wrapSegmentLines(segment: string, width: number): string[] {
 
 // one LedgerEntry per element, in document order; pure and synchronous [scriptLedger §7]
 export function lineLedger(elements: ScriptEl[]): LedgerEntry[] {
-  return elements.map((el) => ({
-    id: el.id,
-    t: el.t,
+  let speech: string | null = null;
+  let contdLines = 0;
+  return elements.map((el) => {
+    // a speech is a cue and the parentheticals and dialogue that follow it; any other line ends it
+    if (el.t === 'character') { speech = el.id; contdLines = wrappedLines(contdCue(el.text), widthChFor('character')); }
+    else if (el.t !== 'paren' && el.t !== 'dialogue') { speech = null; contdLines = 0; }
     // SC2 S2b — through the TOTAL lookups (scriptMetrics.ts). A doc carrying an
     // element type this build has no row for used to produce `undefined` here,
     // and `undefined` in the paginator's arithmetic is NaN, which paginates
     // every element onto a page of its own. Named at the seam, not caught later.
-    lines: wrappedLines(el.text, widthChFor(el.t)),
-    spaceBefore: spaceBeforeFor(el.t),
-    mayBreak: el.t === 'action' || el.t === 'dialogue',
-  }));
+    const wrapped = wrapToLines(el.text, widthChFor(el.t));
+    return {
+      id: el.id,
+      t: el.t,
+      lines: Math.max(1, wrapped.length),
+      spaceBefore: spaceBeforeFor(el.t),
+      mayBreak: el.t === 'action' || el.t === 'dialogue',
+      speech,
+      contdLines: speech === null ? 0 : contdLines,
+      sentenceEnds: el.t === 'dialogue' ? sentenceEndsOf(wrapped) : NONE,
+    };
+  });
+}
+
+const NONE: number[] = [];
+// a line ends a sentence when its last word ends in . ! ? (or an ellipsis), with any closing quote or bracket after it
+const SENTENCE_END_RE = /[.!?…]["'”’)\]]*\s*$/;
+function sentenceEndsOf(wrapped: string[]): number[] {
+  const out: number[] = [];
+  for (let k = 1; k < wrapped.length; k++) if (SENTENCE_END_RE.test(wrapped[k - 1])) out.push(k);
+  return out;
 }

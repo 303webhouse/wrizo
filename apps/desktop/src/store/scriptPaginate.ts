@@ -28,9 +28,9 @@ export const BREAK_RULES: Record<ScriptElType, BreakRule> = {
   // An action block longer than a full page cannot move whole, so it breaks at
   // a line boundary.
   action: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
-  // SCRIPT batch 2, item 1 (the review's finding 2): a speech longer than a full page cannot move whole either. Unsplittable, it ran past the
-  // sheet's bottom margin and the next sheet painted over its end. It breaks at a line boundary as action does, and only when it is longer
-  // than a page: a speech that merely does not fit the room left still moves whole (the (MORE)/(CONT'D) break is batch 2's next item).
+  // SCRIPT batch 2, items 1 and 2 (the review's findings 2 and 12): a speech's dialogue breaks at a page foot, preferring a sentence end,
+  // keeping at least two of its lines on each side, with (MORE) under it and the cue with (CONT'D) over the rest (see `paginate`). A dialogue
+  // line with no cue above it is in no speech: it breaks only when it is longer than a page, as action does.
   dialogue: { neverLast: false, keepWithNext: false, splittable: true, keepWithPrevious: false },
   // a parenthetical modifies the line beneath it, so it is never last on a page [scriptPaginate §4]
   paren: { neverLast: true, keepWithNext: true, splittable: false, keepWithPrevious: false },
@@ -64,6 +64,32 @@ export interface Placed {
    * cannot land anywhere but where the arithmetic put the break.
    */
   lineOffset: number;
+  /** SCRIPT batch 2, item 2: the speech goes on past this page after this line, so (MORE) is drawn under it. One line. */
+  more: boolean;
+  /** SCRIPT batch 2, item 2: this line continues a speech from the page before, so its cue with (CONT'D) is drawn above it. `entry.contdLines` lines. */
+  contd: boolean;
+}
+
+/** The furniture lines a placed part carries: (MORE) under it, the cue with (CONT'D) over it. */
+export const furnitureOf = (p: Placed): number => (p.more ? 1 : 0) + (p.contd ? p.entry.contdLines : 0);
+const heightOf = (page: Placed[]): number => page.reduce((n, x) => n + x.spaceBefore + x.lines + furnitureOf(x), 0);
+
+// at least this many lines of a speech stay on a page before (MORE), and go on after it
+const MIN_SPEECH_LINES = 2;
+// a parenthetical or dialogue line of a speech (the cue is the speech's head, not one of its lines)
+const isSpeechLine = (e: LedgerEntry): boolean => e.speech !== null && e.t !== 'character';
+
+// SCRIPT batch 2, item 2 — how many of a speech's remaining lines go on this page before (MORE): the latest sentence end that keeps at least
+// two lines on each side, or, where no sentence ends in that range, as many as fit. 0 when two cannot stay and two go.
+function speechTake(entry: LedgerEntry, taken: number, remaining: number, room: number): number {
+  const most = Math.min(room, remaining - MIN_SPEECH_LINES);
+  if (most < MIN_SPEECH_LINES) return 0;
+  for (let i = entry.sentenceEnds.length - 1; i >= 0; i--) {
+    const take = entry.sentenceEnds[i] - taken;
+    if (take < MIN_SPEECH_LINES) break;
+    if (take <= most) return take;
+  }
+  return most;
 }
 
 export interface Page {
@@ -78,49 +104,84 @@ export function paginate(ledger: LedgerEntry[], linesPerPage: number = PAGE_LINE
   let cur: Placed[] = [];
   let used = 0;
 
+  const L = linesPerPage;
   const flush = () => { if (cur.length) { pages.push(cur); cur = []; used = 0; } };
+  const place = (p: Placed) => { cur.push(p); used += p.spaceBefore + p.lines + furnitureOf(p); };
+  const unplace = (): Placed => { const p = cur.pop() as Placed; used -= p.spaceBefore + p.lines + furnitureOf(p); return p; };
 
-  for (const entry of ledger) {
-    // the first element of a page contributes no space above it; the entries stay position-independent, and position is known here [scriptPaginate §8]
-    let space = cur.length === 0 ? 0 : entry.spaceBefore;
+  for (let k = 0; k < ledger.length; k++) {
+    const entry = ledger[k];
+    const next = ledger[k + 1];
+    // SCRIPT batch 2, item 2: a line of a speech that the speech goes on after keeps one line free under it, so (MORE) always has its line
+    // if the page breaks right after it.
+    const reserve = isSpeechLine(entry) && next !== undefined && next.speech === entry.speech ? 1 : 0;
     let remaining = entry.lines;
+    let taken = 0;                                    // lines of this element already placed
+    let contd = false;                                // the next part placed opens a page that continues this speech
 
-    if (used + space + remaining <= linesPerPage) {
-      cur.push({ entry, lines: remaining, spaceBefore: space, continues: false, continuedFrom: false, lineOffset: 0 });
-      used += space + remaining;
-      continue;
-    }
-
-    // It does not fit. An element longer than a whole page cannot move whole —
-    // if it is splittable it breaks at a line boundary, otherwise it moves.
-    if (ruleFor(entry.t).splittable && space + remaining > linesPerPage) {
-      let continuedFrom = false;
-      let taken = 0;                                  // lines of this element already placed
-      while (remaining > 0) {
-        const room = linesPerPage - used - space;
-        if (room <= 0) { flush(); space = 0; continue; }
-        const take = Math.min(room, remaining);
-        remaining -= take;
-        cur.push({ entry, lines: take, spaceBefore: space, continues: remaining > 0, continuedFrom, lineOffset: taken });
-        used += space + take;
-        taken += take;
-        space = 0;
-        continuedFrom = true;
-        if (remaining > 0) flush();
+    for (;;) {
+      // the first element of a page contributes no space above it; the entries stay position-independent, and position is known here [scriptPaginate §8]
+      const space = cur.length === 0 ? 0 : entry.spaceBefore;
+      const furniture = contd ? entry.contdLines : 0;
+      if (used + furniture + space + remaining + reserve <= L) {
+        place({ entry, lines: remaining, spaceBefore: space, continues: false, continuedFrom: taken > 0, lineOffset: taken, more: false, contd });
+        break;
       }
-      continue;
-    }
 
-    flush();
-    cur.push({ entry, lines: remaining, spaceBefore: 0, continues: false, continuedFrom: false, lineOffset: 0 });
-    used = remaining;
+      // It does not fit. A speech's dialogue breaks here with (MORE) under it, when two of its lines can stay and two go (SCRIPT batch 2, item 2).
+      if (entry.t === 'dialogue' && entry.speech !== null) {
+        const take = speechTake(entry, taken, remaining, L - used - furniture - space - 1);
+        if (take > 0) {
+          place({ entry, lines: take, spaceBefore: space, continues: true, continuedFrom: taken > 0, lineOffset: taken, more: true, contd });
+          taken += take; remaining -= take;
+          flush(); contd = true;
+          continue;
+        }
+      } else if (ruleFor(entry.t).splittable && space + remaining > L) {
+        // An element longer than a whole page cannot move whole: an action block (or a dialogue line in no speech) breaks at a line boundary.
+        const room = L - used - space;
+        if (room > 0) {
+          place({ entry, lines: room, spaceBefore: space, continues: true, continuedFrom: taken > 0, lineOffset: taken, more: false, contd: false });
+          taken += room; remaining -= room;
+        }
+        flush();
+        continue;
+      }
+
+      // Alone on a fresh page and still too long, and it may not break: it stands alone and overflows (the stated bound, sc2 P4).
+      if (cur.length === 0) {
+        place({ entry, lines: remaining, spaceBefore: 0, continues: false, continuedFrom: taken > 0, lineOffset: taken, more: false, contd });
+        break;
+      }
+
+      // It moves to the next page. Inside a speech the break then falls between two of its lines (SCRIPT batch 2, item 2): a parenthetical
+      // left at the foot goes with it, (MORE) goes under the dialogue above, and the cue with (CONT'D) over the next page. When only the cue
+      // is left above, the cue goes too and the speech simply starts on the next page.
+      const carry: Placed[] = [];
+      contd = false;
+      if (isSpeechLine(entry)) {
+        const tail = () => cur[cur.length - 1];
+        while (cur.length > 1 && tail().entry.speech === entry.speech && tail().entry.t === 'paren') carry.unshift(unplace());
+        const last = tail();
+        if (last && last.entry.speech === entry.speech && last.entry.t === 'dialogue') {
+          cur[cur.length - 1] = { ...last, more: true };
+          used += 1;
+          contd = true;
+        } else if (cur.length > 1 && last && last.entry.speech === entry.speech && last.entry.t === 'character') {
+          carry.unshift(unplace());
+        }
+      }
+      flush();
+      carry.forEach((c, j) => place({ ...c, spaceBefore: j === 0 ? 0 : c.entry.spaceBefore, more: false, contd: j === 0 && contd }));
+      if (carry.length) contd = false;                // the furniture went over the first carried line
+    }
   }
   flush();
 
-  return applyBreakRules(pages, linesPerPage).map((placed, index) => ({
+  return markSpeechBreaks(applyBreakRules(pages, linesPerPage)).map((placed, index) => ({
     index,
     placed,
-    linesUsed: placed.reduce((n, p) => n + p.spaceBefore + p.lines, 0),
+    linesUsed: heightOf(placed),
   }));
 }
 
@@ -184,7 +245,7 @@ function applyBreakRules(pages: Placed[][], linesPerPage: number): Placed[][] {
       // The element it displaced is no longer at a page top and regains its own.
       if (next.length > 1) next[1] = { ...next[1], spaceBefore: next[1].entry.spaceBefore };
       // Only re-check if the next page still fits; overflow is corrected below.
-      const over = next.reduce((n, x) => n + x.spaceBefore + x.lines, 0) - linesPerPage;
+      const over = heightOf(next) - linesPerPage;
       if (over > 0) {
         const moved = next.pop();
         if (moved) pages.splice(p + 2, 0, [{ ...moved, spaceBefore: 0 }]);
@@ -192,4 +253,23 @@ function applyBreakRules(pages: Placed[][], linesPerPage: number): Placed[][] {
     }
   }
   return pages.filter((pg) => pg.length > 0);
+}
+
+// SCRIPT batch 2, item 2 — the furniture is a fact about where the pages break, so it is read off the final pages: a boundary that falls
+// between two lines of one speech carries (MORE) above it and the cue with (CONT'D) below it, and no other boundary or line does. The
+// filling loop has already placed and counted it; this keeps it true at a boundary the repair pass above moved.
+function markSpeechBreaks(pages: Placed[][]): Placed[][] {
+  const inside = (a: Placed | undefined, b: Placed | undefined) =>
+    !!a && !!b && isSpeechLine(a.entry) && isSpeechLine(b.entry) && a.entry.speech === b.entry.speech;
+  return pages.map((page, p) => {
+    const after = pages[p + 1];
+    const before = pages[p - 1];
+    const breaksAfter = !!after && inside(page[page.length - 1], after[0]);
+    const breaksBefore = !!before && inside(before[before.length - 1], page[0]);
+    return page.map((x, j) => {
+      const more = breaksAfter && j === page.length - 1;
+      const contd = breaksBefore && j === 0;
+      return x.more === more && x.contd === contd ? x : { ...x, more, contd };
+    });
+  });
 }

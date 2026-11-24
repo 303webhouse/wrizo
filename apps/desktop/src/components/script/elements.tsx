@@ -7,7 +7,7 @@ import { applyAutoContd, withParentheses } from '../../store/scriptSmartText';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../../store/voiceWall';
 import { ESC_HINT_ID } from '../../store/escapeExit';
 import type { ScriptEl } from '../../types';
-import { GHOST_TEXT, PLAINTEXT_MODE, elementStyle, elementStyleStatic } from './styles';
+import { FURNITURE_STYLE, GHOST_TEXT, PLAINTEXT_MODE, elementStyle, elementStyleStatic } from './styles';
 import { keepCaretVisible, setCaretOffset } from './caret';
 
 // Commit-processing for an element that's about to stop being active:
@@ -219,6 +219,12 @@ export function textOfPart(el: ScriptEl, p: Placed): string {
   // never typed into the DOM.
   return wrapToLines(el.text, widthChFor(el.t)).slice(p.lineOffset, p.lineOffset + p.lines).join('');
 }
+
+// SCRIPT batch 2, item 2 — the page furniture of a speech broken across a page: (MORE), or the cue with (CONT'D). Not the writer's text: it
+// carries no doc index (so no click lands in it and no reader of the lines counts it), it cannot be typed in, and it is never stored.
+export const ScriptFurniture = memo(function ScriptFurniture({ kind, text }: { kind: 'more' | 'contd'; text: string }) {
+  return <div className="script-furniture" data-furniture={kind} aria-hidden="true" style={FURNITURE_STYLE}>{text}</div>;
+});
 
 // SCRIPT batch 2, item 1 — where a continuation part's text begins in the element's own text, from the same wrap as textOfPart, so a click
 // on page two's part of a speech (or an action block) puts the caret on the word clicked rather than that many characters from the start.

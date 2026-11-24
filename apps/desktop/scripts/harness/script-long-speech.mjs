@@ -9,7 +9,7 @@
 // WRITING IN IT LS5  while the caret is in the speech, all of it is on the paper: its sheet holds it, and the next sheet starts below it
 //              LS6  (control) typing at the end of the speech reaches storage
 //              LS7  when the caret leaves, the speech breaks again and every sheet is the same height
-// CONTROLS     LS8  (control) a speech SHORTER than a page that does not fit the room left still moves whole to the next page (sc2 P9)
+// CONTROLS     LS8  PARKED by item 2 ((MORE)/(CONT'D)): a speech shorter than a page now breaks at the page foot; the parked leg re-measures it
 //              LS9  (control) an action block longer than a page still breaks (sc2 P8)
 // THE CLICK    LS10 a click on the second part of a broken block puts the caret on the word clicked (the same click path serves action)
 //
@@ -18,6 +18,10 @@ import { withHarness } from '../runtime-verify.mjs';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
+// HARNESS_PARKED=1: the checks a later item superseded, re-measured under the rule that replaced them
+const PARKED = process.env.HARNESS_PARKED === '1';
+const parkedChecks = [];
+const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : JSON.stringify(detail) });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const q = (s) => JSON.stringify(s);
 const HEAD = ['scene', 'INT. A LONG ROOM - NIGHT'];
@@ -138,8 +142,19 @@ await withHarness(async (app) => {
   await open([HEAD, ...FILL, ['character', 'HOLLIS'], ['dialogue', SHORT_SPEECH]], 0);
   const parts8 = await app.evalJs(PARTS(22));
   const cue8 = await app.evalJs(PARTS(21));
-  ok('LS8 (control): a speech SHORTER than a page that does not fit the room left still moves whole to the next page, with its cue (sc2 P9)',
-    parts8.length === 1 && parts8[0].sheet === 1 && cue8.length === 1 && cue8[0].sheet === 1, { speech: parts8.map((p) => p.sheet), cue: cue8.map((p) => p.sheet) });
+  // ORIGINAL (item 1), verbatim:
+  //   ok('LS8 (control): a speech SHORTER than a page that does not fit the room left still moves whole to the next page, with its cue (sc2 P9)',
+  //     parts8.length === 1 && parts8[0].sheet === 1 && cue8.length === 1 && cue8[0].sheet === 1, { speech: parts8.map((p) => p.sheet), cue: cue8.map((p) => p.sheet) });
+  // SUPERSEDED by SCRIPT batch 2, item 2 ((MORE)/(CONT'D), Fable, Nov 24): a speech that does not fit the room left now breaks at the page
+  // foot, two lines or more on each side, with (MORE) under it and the cue with (CONT'D) over the rest. Live successors: script-more-contd.mjs
+  // MC1 to MC6. The parked leg re-measures this fixture under the new rule.
+  if (PARKED) {
+    const furn8 = await app.evalJs("(() => [...document.querySelectorAll('.script-furniture')].map((f) => [f.dataset.furniture, f.textContent, [...document.querySelectorAll('.script-sheet')].indexOf(f.closest('.script-sheet'))]))()");
+    pok('PARKED (was "LS8 (control): a speech SHORTER than a page that does not fit the room left still moves whole to the next page, with its cue (sc2 P9)") - SCRIPT batch 2 item 2: the speech breaks at the foot of page one with (MORE), and page two opens on HOLLIS (CONT\'D); live successors: script-more-contd.mjs MC1 to MC6',
+      parts8.length === 2 && parts8[0].sheet === 0 && parts8[1].sheet === 1 && cue8.length === 1 && cue8[0].sheet === 0
+        && JSON.stringify(furn8) === JSON.stringify([['more', '(MORE)', 0], ['contd', "HOLLIS (CONT'D)", 1]]),
+      { speech: parts8.map((p) => p.sheet), cue: cue8.map((p) => p.sheet), furniture: furn8 });
+  }
   await open([HEAD, act(LONG_ACTION), act('After.')], 2);
   const parts9 = await app.evalJs(PARTS(1));
   ok('LS9 (control): an action block longer than a page still breaks (sc2 P8)',
@@ -158,8 +173,14 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
+if (PARKED) {
+  for (const c of parkedChecks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);
+  const pp = parkedChecks.length === 1 && parkedChecks.every((c) => c.pass);
+  console.log(pp ? `\nSCRIPT-LONG-SPEECH PARKED: PASS (${parkedChecks.length} checks)` : `\nSCRIPT-LONG-SPEECH PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (1 expected)`);
+  if (!pp) process.exit(1);
+}
 const passed = checks.filter((c) => c.pass).length;
-const EXPECTED = 10;
+const EXPECTED = 9;   // was 10: LS8 parked by item 2
 const counted = checks.length === EXPECTED;
 if (!counted) console.log(`COUNT: ${checks.length} checks ran, ${EXPECTED} expected`);
 console.log(passed === checks.length && counted ? `\nSCRIPT-LONG-SPEECH VERIFY: PASS (${checks.length} checks)` : `\nSCRIPT-LONG-SPEECH VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
