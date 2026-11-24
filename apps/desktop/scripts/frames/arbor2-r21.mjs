@@ -206,6 +206,8 @@ const screens = {
     // #119 successor's instrument: the page's bar box (offsetWidth - clientWidth), and the thumb AS DRAWN - the bar's strip captured with the thumb
     // forced to paint (data-arbor2-sb="on", scrollReveal.ts's own switch), pixels counted that differ from the strip's commonest colour
     const BOX = "(() => { const s = document.querySelector('.mode-scroll'); return s ? s.offsetWidth - s.clientWidth : null; })()";
+    // SUPERSEDED WHOLE (frames run 45431344593 on 40acf4ae, k = 1.000 at 1366: wrInk 80 / backInk 968, and at 1920 the thumb itself became the
+    // "commonest colour"): counting against the strip's own commonest colour reads whatever else lies in the strip as ink. Kept verbatim, no longer called:
     const stripInk = async () => {
       // SUPERSEDED (frames run 45430089418 on 951229d9: wrInk 84 / backInk 972): the clip took the bar's LAYOUT width (10) from the painted right edge, but the
       // page is painted at --wz-k (DeskFrame's transform), so it reached past the bar into the page. Kept verbatim, no longer used:
@@ -221,16 +223,35 @@ const screens = {
         const g = [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0].split(',').map(Number);
         let ink = 0; for (let i = 0; i < d.length; i += 4) if (Math.max(Math.abs(d[i] - g[0]), Math.abs(d[i + 1] - g[1]), Math.abs(d[i + 2] - g[2])) > 24) ink += 1; return { ink, px: d.length / 4, ground: g, k: ${b.k}, clip: ${JSON.stringify(b)} }; })()`);
     };
+    // successor instrument: the bar's strip (as painted) captured TWICE at the same moment and scroll - the thumb switched off, then forced on
+    // (data-arbor2-sb="on", scrollReveal.ts's own switch) - and the pixels that differ between the two counted. Whatever else lies in the strip cancels out.
+    const shot = async (force) => {
+      const b = await app.evalJs(`(() => { const s = document.querySelector('.mode-scroll'); if (!s) return null; ${force ? "s.setAttribute('data-arbor2-sb', 'on');" : "s.removeAttribute('data-arbor2-sb');"}
+        const r = s.getBoundingClientRect(); const k = s.offsetWidth ? r.width / s.offsetWidth : 1; const w = (s.offsetWidth - s.clientWidth) * k; return w > 1 ? { x: r.right - w, y: r.top, w, h: r.height, k: Math.round(k * 1000) / 1000 } : null; })()`);
+      if (!b) return null;
+      await sleep(150);
+      return { b, data: (await app.cdp('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.w, height: b.h, scale: 1 } })).data };
+    };
+    const thumbDiff = async () => {
+      const off = await shot(false), on = await shot(true);
+      await app.evalJs("(() => { const s = document.querySelector('.mode-scroll'); if (s) s.removeAttribute('data-arbor2-sb'); })()");
+      if (!off || !on) return { diff: null };
+      return app.evalJs(`(async () => { const px = async (src) => { const img = new Image(); img.src = 'data:image/png;base64,' + src; await img.decode(); const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+          const x = c.getContext('2d'); x.drawImage(img, 0, 0); return x.getImageData(0, 0, c.width, c.height).data; };
+        const a = await px(${JSON.stringify(off.data)}), b = await px(${JSON.stringify(on.data)}); if (a.length !== b.length) return { diff: null, sizes: [a.length, b.length] };
+        let diff = 0; for (let i = 0; i < a.length; i += 4) if (Math.max(Math.abs(a[i] - b[i]), Math.abs(a[i + 1] - b[i + 1]), Math.abs(a[i + 2] - b[i + 2])) > 24) diff += 1;
+        return { diff, px: a.length / 4, clip: ${JSON.stringify(on.b)} }; })()`);
+    };
     const rest = await app.evalJs(R);
     const restBox = await app.evalJs(BOX);
     await typeKeys(app, ' w'); await sleep(3500); await app.evalJs(FINISH);
     const wr = await app.evalJs(R);
     const wrBox = await app.evalJs(BOX);
-    const wrInk = await stripInk();
+    const wrInk = await thumbDiff();
     await app.cdp('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
     await sleep(1500); await app.evalJs(FINISH);
     const back = await app.evalJs(R);
-    const backInk = await stripInk();
+    const backInk = await thumbDiff();
     const shown = (x) => x.grips.length === 2 && x.grips.every(([o]) => o === 1), gone = (x) => x.grips.length === 2 && x.grips.every(([o, pe]) => o === 0 && pe === 'none');
     // SUPERSEDED (#119, Nov 24): the recede hid the page's bar by scrollbar-color, which in Chromium drops the 10 px webkit bar for the 15 px native one
     // and re-wraps the page (the caret off screen after Plan -> back). The prose page now hides its THUMB while she writes, so its scrollbar-color stays
@@ -238,7 +259,10 @@ const screens = {
     //   scrollbarRecedes: /transparent transparent|rgba\(0, 0, 0, 0\) rgba\(0, 0, 0, 0\)/.test(String(wr.bar)),
     // successor: the thumb is not drawn while she writes (even forced on), it IS drawn once she is back (the instrument sees a thumb), and the bar keeps its box
     const ok = { restShown: shown(rest), writing: wr.writing === 'true', openersRecede: gone(wr),
-      scrollbarRecedes119: wrInk.ink !== null && wrInk.ink <= 2 && backInk.ink !== null && backInk.ink > 20 && restBox === wrBox, returned: back.writing !== 'true',
+      // SUPERSEDED with stripInk (above), kept verbatim:
+      //   scrollbarRecedes119: wrInk.ink !== null && wrInk.ink <= 2 && backInk.ink !== null && backInk.ink > 20 && restBox === wrBox, returned: back.writing !== 'true',
+      // successor: forcing the thumb on changes NOTHING in the strip while she writes, it changes it once she is back, and the bar keeps its box
+      scrollbarRecedes119b: wrInk.diff !== null && wrInk.diff <= 2 && backInk.diff !== null && backInk.diff > 20 && restBox === wrBox, returned: back.writing !== 'true',
       openersBack: shown(back), scrollbarBack: !/transparent transparent|rgba\(0, 0, 0, 0\) rgba\(0, 0, 0, 0\)/.test(String(back.bar)), pageScrolls: rest.scrolls === true };
     if (Object.values(ok).some((x) => !x)) fail('R21-RECEDE', { ok, rest, wr, back, restBox, wrBox, wrInk, backInk });
     say('r21-recede', { ok, rest, wr, back, restBox, wrBox, wrInk, backInk });
