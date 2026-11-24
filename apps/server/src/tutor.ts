@@ -5,7 +5,7 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection } from './tutorPrompts';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -266,11 +266,13 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
       system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });
-    const text = response.content
+    // THE SAFETY MESSAGE (R12, Fable Nov 23, 6:14 pm): BASE tells the model to reply with one fixed marker only when she says she herself is in danger. A reply that holds the marker, alone or with
+    // other text, is replaced whole by Nick's exact words (tutorPrompts.ts SAFETY_MESSAGE), written by people and never by the model; any other reply is untouched.
+    const text = withSafetyMessage(response.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
-      .trim();
+      .trim());
     // TU2 S2 — usage threaded through now (not consumed until S5's session
     // meter) so that later, client-only slice never has to re-open this
     // closed-census file. Absent on the {configured:false}/error shapes
@@ -377,7 +379,8 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
       .join('\n')
       .trim();
     const prompt = cleanSprintPrompt(text);
-    if (!prompt) {
+    // the marker is for the chat route (her words ride only there); in SPRINT a reply that holds it is no writing prompt, so it takes the same plain failure and the client's local deck answers
+    if (!prompt || holdsSafetyMarker(text)) {
       res.status(502).json({ configured: true, error: 'The Consultant could not give a prompt right now.' });
       return;
     }
