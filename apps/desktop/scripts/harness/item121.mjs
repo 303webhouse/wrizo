@@ -130,6 +130,15 @@ const openSliver = async (app) => {
   await sleep(260);
 };
 
+// VISUAL 1a.1 (driver): the brushes and the three sizes live in Studio's Brushes row now (the face carries the inks and the eraser). Every driver that picks a brush opens that
+// row first; it waits for the tab, which is fetched on the first INK open.
+const openBrushes = (app) => app.evalJs(`(async () => { const s = (ms) => new Promise((r) => setTimeout(r, ms));
+  for (let i = 0; i < 40 && !document.querySelector('.wz-ink-studio'); i++) await s(100);
+  const door = document.querySelector('.wz-ink-studio'); if (!door) return false;
+  if (door.getAttribute('aria-expanded') !== 'true') { door.click(); await s(150); }
+  const row = document.querySelector('[data-ink-row="brushes"]'); if (row && row.getAttribute('aria-expanded') !== 'true') { row.click(); await s(150); }
+  return !!document.querySelector('.wz-ink-tips'); })()`);
+
 const strokesOf = async (app, id) => app.evalJs(
   `(() => { const l = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]');
     const e = l.find(x => x.id === ${JSON.stringify(id)}); return (e && e.strokes) || []; })()`);
@@ -317,6 +326,7 @@ await withHarness(async (app) => {
   // the defaults an ABSENT field would read as — otherwise a stroke that
   // stamped nothing would pass a check for "stamped correctly."
   await openSliver(app);
+  await openBrushes(app);
   await app.evalJs(`(() => {
     const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label);
       if (!b) throw new Error('no option ' + label); b.click(); };
@@ -363,6 +373,7 @@ await withHarness(async (app) => {
   await setInstrument(app, 'text');
   await setInstrument(app, 'ink');
   await openSliver(app);
+  await openBrushes(app);
   await app.evalJs(`(() => {
     const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (b) b.click(); };
     pick('.wz-ink-tips .wz-ink-tip', 'Pencil');
@@ -481,6 +492,7 @@ await withHarness(async (app) => {
   // erase has something substantial to remove. A fine pen at 1.4px would make
   // this check hostage to a single anti-aliased pixel.
   await openSliver(app);
+  await openBrushes(app);
   await app.evalJs(`(() => {
     const pick = (sel, label) => { const b = [...document.querySelectorAll(sel)].find(x => (x.getAttribute('aria-label') || x.textContent).trim() === label); if (b) b.click(); };
     pick('.wz-ink-tips .wz-ink-tip', 'Marker');
@@ -657,6 +669,13 @@ await withHarness(async (app) => {
 
   await setInstrument(app, 'ink');
   await sleep(200);
+  // VISUAL 1a.1: read the face before Studio is opened, then open Brushes for the read below
+  const drawerInInkFace = await app.evalJs(`(async () => { const s = (ms) => new Promise((r) => setTimeout(r, ms)); for (let i = 0; i < 40 && !document.querySelector('.wz-ink-studio'); i++) await s(100);
+    const door = document.querySelector('.wz-ink-studio'); if (door && door.getAttribute('aria-expanded') === 'true') { door.click(); await s(150); }
+    return { tips: document.querySelectorAll('.wz-ink-tips .wz-ink-tip').length, nibs: document.querySelectorAll('.wz-ink-nibs .wz-ink-nib').length, eraser: document.querySelectorAll('.wz-ink-eraser').length,
+      swatches: [...document.querySelectorAll('.wz-sliver-inks .wz-ink-swatch')].map(b => b.getAttribute('aria-label')) }; })()`);
+  i121Ps.s10 = drawerInInkFace;
+  await openBrushes(app);
   const drawerInInk = await app.evalJs(`(() => ({
     heads: [...document.querySelectorAll('.wz-sliver-body .wz-sliver-h')].map(h => h.textContent.trim()),
     tips: [...document.querySelectorAll('.wz-ink-tips .wz-ink-tip')].map(b => b.getAttribute('aria-label')),
@@ -665,10 +684,20 @@ await withHarness(async (app) => {
     sliders: document.querySelectorAll('.wz-sliver-body input[type="range"]').length,
     pickers: document.querySelectorAll('.wz-sliver-body input[type="color"]').length,
   }))()`);
-  ok('S10: in INK the zone reveals in place with all three groups and the eraser — TIP (pen · pencil · marker as drawn glyphs), NIB (Fine · Regular · Broad) and INK (the theme\'s four named inks)',
+  // PARKED - SUPERSEDED by VISUAL 1a.1 (Nov 25, the INK tab's new shape): TIP and NIB no longer stand open in INK - they are inside Studio's Brushes row; the inks and the eraser are on the face.
+  // The original, verbatim:
+  // ok('S10: in INK the zone reveals in place with all three groups and the eraser — TIP (pen · pencil · marker as drawn glyphs), NIB (Fine · Regular · Broad) and INK (the theme\'s four named inks)',
+  //   JSON.stringify(drawerInInk.tips) === JSON.stringify(['Pen', 'Pencil', 'Marker'])
+  //     && JSON.stringify(drawerInInk.nibs) === JSON.stringify(['Fine', 'Regular', 'Broad'])
+  //     && JSON.stringify(drawerInInk.swatches) === JSON.stringify(['Walnut', 'Iron', 'Oxblood', 'Sea']),
+  //   JSON.stringify(drawerInInk));
+  ok('S10 successor [VISUAL 1a.1]: in INK the face shows at once - the four named inks and the eraser - and brushes and sizes wait in Studio, which starts closed',
+    drawerInInkFace.tips === 0 && drawerInInkFace.nibs === 0 && drawerInInkFace.eraser === 1
+      && JSON.stringify(drawerInInkFace.swatches) === JSON.stringify(['Walnut', 'Iron', 'Oxblood', 'Sea']),
+    JSON.stringify(drawerInInkFace));
+  ok('S10 successor [VISUAL 1a.1]: and the Brushes row of Studio holds the three brushes as drawn glyphs and the three sizes by name',
     JSON.stringify(drawerInInk.tips) === JSON.stringify(['Pen', 'Pencil', 'Marker'])
-      && JSON.stringify(drawerInInk.nibs) === JSON.stringify(['Fine', 'Regular', 'Broad'])
-      && JSON.stringify(drawerInInk.swatches) === JSON.stringify(['Walnut', 'Iron', 'Oxblood', 'Sea']),
+      && JSON.stringify(drawerInInk.nibs) === JSON.stringify(['Fine', 'Regular', 'Broad']),
     JSON.stringify(drawerInInk));
   ok('S10: and the nib is STOPS, not a slider, and the ink is SWATCHES, not a picker — zero range inputs and zero colour inputs anywhere in the drawer. A slider is a digital control; a nib is chosen, not dialled, and a journal has the inks that are on the desk',
     drawerInInk.sliders === 0 && drawerInInk.pickers === 0,
@@ -709,6 +738,7 @@ await withHarness(async (app) => {
     shots[`text-${label}`] = (await app.screenshot()).length;
     await setInstrument(app, 'ink');
     await openSliver(app);
+    await openBrushes(app);
     // One stroke per tip, so all three profiles appear in the same shot.
     for (const [tip, y] of [['Pen', 0.42], ['Pencil', 0.52], ['Marker', 0.62]]) {
       await app.evalJs(`(() => { const b = [...document.querySelectorAll('.wz-ink-tips .wz-ink-tip')]
@@ -753,10 +783,13 @@ if (process.env.HARNESS_PARKED === '1') {
   parkedChecks.push({ name: 'PARKED (was the drivers safePen/safeTouch: "fractions of the whole .wz-ink-sheet") - polish #10 item 5: in the zoom the sheet covers the visible page; successor: the same fractions on the sheet\'s text box',
     pass: i121Aim.length > 0 && i121Aim.every((b) => b.text.top >= b.sheet.top - 0.5 && b.text.top + b.text.h <= b.sheet.top + b.sheet.h + 0.5 && (b.zoom === 'true' ? b.sheet.h > b.text.h + 20 : Math.abs(b.sheet.h - b.text.h) <= 1)),
     detail: JSON.stringify(i121Aim) });
+  // VISUAL 1a.1 (Nov 25) - S10's "TIP, NIB and INK stand open in INK": its record re-verifies the falsification from the live run - in INK, before Studio is opened, no brush and no size is shown.
+  parkedChecks.push({ name: 'PARKED (was "S10: in INK the zone reveals in place with all three groups and the eraser") - VISUAL 1a.1: brushes and sizes fold into Studio; live successors: S10 successor [VISUAL 1a.1] (two)',
+    pass: !!i121Ps.s10 && i121Ps.s10.tips === 0 && i121Ps.s10.nibs === 0 && i121Ps.s10.eraser === 1, detail: JSON.stringify(i121Ps.s10 || null) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks TWO of its own (page-size, Oct 24: S5's mouse gesture; polish #10 item 5, Oct 26: the pen + touch drivers' aim, with S7's sampler following the renderer's origin); its other parks live in the files that own the falsified assertions.`);
+  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks THREE of its own (page-size, Oct 24: S5's mouse gesture; polish #10 item 5, Oct 26: the pen + touch drivers' aim, with S7's sampler following the renderer's origin; VISUAL 1a.1, Nov 25: S10's three open groups); its other parks live in the files that own the falsified assertions.`);
 }
 
 const pass = checks.every((c) => c.pass);

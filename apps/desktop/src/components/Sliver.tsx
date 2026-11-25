@@ -23,7 +23,8 @@ import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
 import type { InkPen } from './InkStratum';
-import { INKS, NIBS, TIPS } from '../store/ink';
+import { TIP_ICONS } from './ink/inkIcons';
+import { InkTabSlot } from './ink/InkTabSlot';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
 import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
 import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
@@ -32,7 +33,6 @@ import { arborToolTabs, arborSectionAllowed, type ArborToolTab } from '../arbor2
 import { DrawerActions } from './DrawerActions';
 import { TypewriterModeIcon, ProgressModeIcon } from './DrawerIcons';
 import type { PageActions } from '../store/pageActions';
-import type { StrokeInk, StrokeNib, StrokeTip } from '../types';
 import { wordCount } from '../store/wordCount';
 import type { JournalEntry } from '../types';
 import { useReorgPiece } from '../reorg/themeGate';
@@ -382,130 +382,6 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   );
 }
 
-// ITEM 121 I4 — THE TIPS, as inline SVG (R8: the desk's glyphs are drawn, not
-// typed — an emoji or a font glyph would wear whatever the OS decided today).
-// 16x16, currentColor, stroke-only so they inherit the zone's own rest/chosen
-// colours exactly like every other control here.
-const TIP_ICONS: Record<StrokeTip, React.ReactNode> = {
-  // A nib pen: barrel to a point, with the nib's slit.
-  pen: (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-      <path d="M11.5 2.2 4.3 9.4 3 13l3.6-1.3 7.2-7.2z" strokeLinejoin="round" />
-      <path d="M4.3 9.4 6.6 11.7" />
-    </svg>
-  ),
-  // A pencil: the same barrel, but with the sharpened collar a pencil has.
-  pencil: (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-      <path d="M11.2 2.5 3.9 9.8 2.7 13.3l3.5-1.2 7.3-7.3z" strokeLinejoin="round" />
-      <path d="M9.6 4.1 11.9 6.4" />
-      <path d="M2.7 13.3 5 11" />
-    </svg>
-  ),
-  // A marker: a fat barrel with a chisel wedge — the shape the square cap makes.
-  marker: (
-    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
-      <path d="M12.6 2.6 7.4 7.8l-2.6 1 -1 2.6 2.6-1 1-2.6 5.2-5.2z" strokeLinejoin="round" />
-      <path d="M2.6 13.4 4.8 11.2" strokeLinecap="round" />
-    </svg>
-  ),
-};
-
-// ITEM 121 I4 — THE INK OPTIONS ZONE. One zone, three groups and the eraser,
-// rendered only when the host passes `inkOptions` — which it does only in INK.
-//
-// EVERY GROUP IS A RADIOGROUP OF STOPS. Nib especially: "Fine · Regular ·
-// Broad" is three buttons and NOT a slider, because a slider is a digital
-// control and a nib is chosen, not dialled (ink pass §0.4). Ink is four
-// swatches and NOT a picker, because a journal has the inks that are on the
-// desk (§0.5). The swatches read the theme's own tokens, so what the writer
-// picks is a NAME (walnut, iron, oxblood, sea) and a theme change re-colours
-// every stroke ever drawn — see store/ink.ts.
-function SliverInkZone({ opts }: { opts: NonNullable<Extract<SliverContent, { kind: 'freewrite' }>['inkOptions']> }) {
-  const { t } = useDeskLexicon();
-  const nibLabel: Record<StrokeNib, string> = { fine: t('inkNibFine'), regular: t('inkNibRegular'), broad: t('inkNibBroad') };
-  const tipLabel: Record<StrokeTip, string> = { pen: t('inkTipPen'), pencil: t('inkTipPencil'), marker: t('inkTipMarker') };
-  const inkLabel: Record<StrokeInk, string> = { walnut: t('inkWalnut'), iron: t('inkIron'), oxblood: t('inkOxblood'), sea: t('inkSea') };
-  return (
-    <>
-      <div className="wz-sliver-section">
-        <div className="wz-sliver-h">{t('inkTip')}</div>
-        <div className="wz-sliver-format wz-ink-tips" role="radiogroup" aria-label={t('inkTip')}>
-          {TIPS.map(tip => (
-            <button
-              key={tip}
-              type="button"
-              role="radio"
-              className="mode-tbtn wz-ink-tip"
-              aria-checked={opts.pen.tip === tip}
-              data-on={opts.pen.tip === tip ? 'true' : 'false'}
-              title={tipLabel[tip]}
-              aria-label={tipLabel[tip]}
-              onClick={() => opts.onPick({ tip })}
-            >
-              {TIP_ICONS[tip]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="wz-sliver-section">
-        <div className="wz-sliver-h">{t('inkNib')}</div>
-        {/* STOPS, NOT A SLIDER — see this component's own comment. */}
-        <div className="wz-sliver-format wz-ink-nibs" role="radiogroup" aria-label={t('inkNib')}>
-          {NIBS.map(nib => (
-            <button
-              key={nib}
-              type="button"
-              role="radio"
-              className="mode-tbtn wz-ink-nib"
-              aria-checked={opts.pen.nib === nib}
-              data-on={opts.pen.nib === nib ? 'true' : 'false'}
-              onClick={() => opts.onPick({ nib })}
-            >
-              {nibLabel[nib]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="wz-sliver-section">
-        <div className="wz-sliver-h">{t('railInk')}</div>
-        <div className="wz-sliver-inks" role="radiogroup" aria-label={t('railInk')}>
-          {INKS.map(ink => (
-            <button
-              key={ink}
-              type="button"
-              role="radio"
-              /* The swatch paints from the THEME TOKEN, never a literal — the
-                 same var() the renderer resolves, so the chip and the stroke
-                 can never disagree about what "oxblood" means. */
-              className={`mode-swatch wz-ink-swatch${opts.pen.ink === ink ? ' active' : ''}`}
-              style={{ background: `var(--ink-${ink})` }}
-              aria-checked={opts.pen.ink === ink}
-              aria-label={inkLabel[ink]}
-              title={inkLabel[ink]}
-              onClick={() => opts.onPick({ ink })}
-            />
-          ))}
-          {/* the eraser is a real two-state toggle and tip-agnostic: it erases whatever tip laid the ink [Sliver §15] */}
-          <button
-            type="button"
-            className="mode-tbtn wz-ink-eraser"
-            aria-pressed={opts.eraserArmed}
-            data-on={opts.eraserArmed ? 'true' : 'false'}
-            aria-label={t('inkEraser')}
-            title={t('inkEraser')}
-            onClick={opts.onToggleEraser}
-          >
-            <span aria-hidden="true">&#9107;</span>
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
 /** Line icons for the Draft strip. Alignment is a stack of lines. Indent is
  *  those lines with an arrow, so it does not read as Back or as a tab key. */
 function FormatMark({ kind }: { kind: 'outdent' | 'indent' | 'left' | 'center' | 'right' }) {
@@ -623,7 +499,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   return (
     <div className="wz-sliver-body">
       {/* the ink zone is real ink (the stratum's tips and colours), not text colour; absent in TEXT, never greyed [Sliver §19] */}
-      {content.kind === 'freewrite' && content.inkOptions && allowed('ink') && <SliverInkZone opts={content.inkOptions} />}
+      {content.kind === 'freewrite' && content.inkOptions && allowed('ink') && <InkTabSlot opts={content.inkOptions} />}
 
       {/* Free Write offers no styling: B/I/U are absent, not disabled (the typewriter does not decorate); Draft's roster below is untouched and shares the styling keys [Sliver §20] */}
 

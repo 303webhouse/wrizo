@@ -127,6 +127,14 @@ export const CANONICAL_CHROME = {
   inkIron: 'Iron',
   inkOxblood: 'Oxblood',
   inkSea: 'Sea',
+  // VISUAL 1a.1 - the INK tab's face and Studio (the kit's own words)
+  inkBrush: 'Brush',
+  inkSizeSmaller: 'Smaller',
+  inkSizeLarger: 'Larger',
+  inkStudio: 'Studio',
+  inkGroupDraw: 'Draw',
+  inkRowBrushes: 'Brushes',
+  inkRowColour: 'Colour',
   drawerPage: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   // describePageHome's words, in the lexicon; pageHomeProject interpolates the place name [deskLexicon §30]
   pageHomeLoose: 'Unfiled',

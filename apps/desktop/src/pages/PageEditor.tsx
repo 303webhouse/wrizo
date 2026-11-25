@@ -18,7 +18,8 @@ import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEdi
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
-import { InkStratum, type InkPen, type InkPermission } from '../components/InkStratum';
+import type { InkPen, InkPermission } from '../components/InkStratum';
+import { InkLayer } from '../components/ink/InkLayer';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
@@ -899,7 +900,7 @@ function PageEditorView({ id }: { id: string }) {
       )}
       {/* the ink stratum paints OVER the text (a later sibling: ink under type would be hidden). It renders in every mode, since the ink is the page's, framed only (below 1100px the page keeps its pre-ink terms). Mode varies permission, not presence (`inkPermission`); both canvases stay pointer-events:none and routing belongs to the sheet. [PageEditor §15] */}
       {framed && (
-        <InkStratum
+        <InkLayer
           permission={inkPermission}
           sheetRef={inkSheetRef}
           strokes={strokes}
