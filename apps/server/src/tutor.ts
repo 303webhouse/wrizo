@@ -5,6 +5,10 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
+import { guardReply, FALLBACK_LINE } from './tutorGuard';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes } from './tutorPrompts';
+import { notesForAsk } from './tutorNotes';
+import { sqlNotesStore } from './tutorNotesRoutes';
 
 // TU1 S5 — the Tutor's ONE new route: a writer-initiated proxy to a
 // language model, key server-side only (env.tutorApiKey — never sent to,
@@ -21,8 +25,12 @@ import { logError } from './logSafe';
 // A13, mechanically: the system prompt binds the Tutor to speak ABOUT the
 // writing, never AS it — reference atoms lawful, composition declined in
 // character with a question that sends the writer back to the page. This
-// is the ONLY place that system prompt exists; the client never sees or
-// can influence it.
+// is the ONLY place that system prompt is chosen; the client never sees or
+// can influence it. TUTOR-B item 1: the prompt's own words now live in
+// tutorPrompts.ts (the kit's v0.3: BASE + HAT + VOICE + TASK + CONTEXT), built
+// the same way for the route and for the test runner; this file only picks
+// the hat, the voice and the task, and sends the Tutor hat to everyone until the
+// hat choice (item 4) is built.
 //
 // Privacy, matching the disclosure's own wording verbatim ("What you ask
 // the Tutor travels to a language model; your pages stay yours."): only
@@ -37,6 +45,11 @@ import { logError } from './logSafe';
 // still nothing else — messages plus the one delimited delta.
 
 export const tutorRouter = Router();
+
+// TUTOR-B ITEM 7 STEP 2: the one reader of her notes for an ask. A notes failure never stops an ask: it answers as it did before notes existed.
+async function readNotesForAsk(userId: string): Promise<string[]> {
+  try { return await notesForAsk(sqlNotesStore, userId); } catch { return []; }
+}
 tutorRouter.use(requireAuth);
 // ITEM 224, ROUND 2 — keyed by ACCOUNT, not address. requireAuth (above)
 // guarantees req.session.userId by the time this runs, so every caller IS
@@ -47,30 +60,8 @@ tutorRouter.use(requireAuth);
 // (rateLimit.ts's existing precedent).
 tutorRouter.use(rateLimit(10, 60_000, (req) => req.session.userId!));
 
-const SYSTEM_PROMPT = `
-You are the Tutor, a quiet writing mentor inside Wrizo. Your one job is to help a writer think about their own writing — you never write it for them.
-
-Absolute rules:
-- Speak ABOUT the writing, never AS it. You may point, name, and question — you may never phrase actual prose, dialogue, or description for the writer's work, no matter how short or how politely asked.
-- Reference atoms are lawful: a list of period-accurate names, a fact, a definition, a piece of research. Composition is never lawful: a sentence, a line of dialogue, a description, a paragraph, an outline written in prose — even one line, even "just as an example."
-- If asked to write any part of the work, decline warmly and briefly, in character, then ask a question that sends the writer back to their own page. Never apologize at length; never explain the policy — just decline and redirect with a question.
-- Voice: warm, brief, question-forward. A few sentences at most. No essays.
-- You know only what the writer gives you: this conversation, the page block when it rides, and the book's Bible when it rides. Never claim knowledge beyond those.
-
-Modeling is lawful; repair is not. You may compose a short parallel example — a sentence of your own, similar in structure and correctly punctuated — to demonstrate a rule. You may never return the writer's own sentence repaired, in whole or in part, however brief. The test: could the writer paste your words into their page and be done? If yes, you have written for them. A model is a specimen about grammar; a repair is their next revision performed by you.
-
-Speak at the work, never at the writer. The sentence has a problem; the writer does not have a problem.
-
-When you are asked again about the same error, the writer's edit did not clear it. Do not repeat your previous explanation. Take a different angle — a different model sentence, a different order of explanation, a different name for the rule. Never the same explanation louder.
-
-You do not refuse. If a request would cross into composition, do not answer with a refusal sentence. Return the question that leads back to the writer's own act.
-
-TU2 S2 — conduct rule 37 (this prompt carries no numbering scheme of its own, so this lands as its own clearly demarcated paragraph rather than a fabricated "37" bullet): a writer's send may now carry a delimited block of the page's own new-since-last-read writing, below their own message. That block is context, not an assignment — never volunteer unsolicited critique of it, never comment on it unasked. Answer what the writer actually asked, informed by what you read.
-
-A writer's send may carry their book's Bible — short facts they chose to save. The Bible is context, not an assignment: use it to stay consistent with the writer's own decisions; never volunteer critique of it; never treat a fact as an invitation to compose. You may suggest, in plain words, that the writer note something in their Bible; you cannot write to it — the Bible is theirs alone.
-
-A writer's send may carry one delimited stretch they selected on the page and pressed a chip to ask about. Answer about THAT stretch — it is the whole of what they pointed at, and you have not been given the surrounding page, so never claim to know what comes before or after it. It is context, not an assignment: name what the stretch is doing, question it, point — never rewrite it, never offer a replacement, not even a fragment.
-`;
+// The chat system prompt is built per request by buildSystemPrompt (tutorPrompts.ts): the Tutor hat, the typed-question task, and the voice for the theme the client names in `theme` (voiceForTheme: one of three from a fixed list;
+// anything else, or no theme, gets no voice block: the neutral BASE). `theme` is read as a plain value and never put into the prompt.
 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_CHARS = 4000;
@@ -105,7 +96,7 @@ interface InboundMessage {
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string } {
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string; theme?: unknown } {
   if (!body || typeof body !== 'object') return false;
   const { messages, delta, bible, selection } = body as { messages?: unknown; delta?: unknown; bible?: unknown; selection?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
@@ -228,6 +219,14 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     content: m.text,
   }));
 
+  // TUTOR-B ITEM 7 STEP 2 — her notes on file (the facts she said yes to, tutorNotes.ts) splice as ONE wire-only user turn, FIRST of the four: the most stable context goes furthest from her words. Read by the
+  // session's own id, never a value from the request; delimited, never persisted, never said as if she had said them; the system prompt does not change (CONTEXT already says her notes are material). They carry
+  // across Drawers: a writer's notes are hers, not a Drawer's. With none (or a read that fails) nothing is sent and the ask is exactly what it was.
+  const noteLines = await readNotesForAsk(req.session.userId!);
+  if (noteLines.length > 0) {
+    messages.splice(messages.length - 1, 0, { role: 'user' as const, content: wrapNotes(noteLines) });
+  }
+
   // TU5 S4 — the book's Bible splices as ONE synthetic wire-only user turn,
   // BEFORE the delta splice below: stable context (the writer's durable facts)
   // ahead of fresh context (the page delta), both ahead of the writer's own
@@ -240,7 +239,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (bible) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<book-bible>\n${bible}\n</book-bible>`,
+      content: wrapBible(bible),
     });
   }
 
@@ -256,7 +255,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (delta) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<page-since-last-read>\n${delta}\n</page-since-last-read>`,
+      content: wrapDelta(delta),
     });
   }
 
@@ -272,22 +271,44 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   if (selection) {
     messages.splice(messages.length - 1, 0, {
       role: 'user' as const,
-      content: `<selected-stretch>\n${selection}\n</selected-stretch>`,
+      content: wrapSelection(selection),
     });
   }
 
   try {
-    const response = await client().messages.create({
+    const ask = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });
-    const text = response.content
+    const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
       .trim();
+    let response = await ask();
+    let text = textOf(response);
+    let inputTokens = response.usage.input_tokens;
+    let outputTokens = response.usage.output_tokens;
+    // TUTOR-B ITEM 3 — THE REPLY GUARD. A reply that says "I" or flatters (tutorGuard.ts: the kit's M1 and M2 lists) is asked for again ONCE, and if the second one fails too she sees the plain
+    // fallback line instead. The retry is a second model call, so it is paid for from the SAME two daily budgets as any other (consumeTutorBudget, then consumeGlobalTutorBudget): those refuse
+    // at the cap and never count past it, so a retry cannot carry a count over a cap. With no unit left the retry is not made at all and the fallback line shows. Both calls' tokens are added into
+    // `usage` so the session meter stays honest. The first reply is never shown when it fails, so the writer sees one answer or the fallback, never two.
+    // THE SAFETY MESSAGE (R12, Fable Nov 23, 6:14 pm): BASE tells the model to reply with one fixed marker only when she says she herself is in danger. A reply that holds the marker (alone or with other text) is NEVER guarded
+    // or asked for again; at the very end it is replaced whole by Nick's exact words (tutorPrompts.ts SAFETY_MESSAGE), which the model never writes and the guard never reads. If the first reply fails the guard and the retry
+    // holds the marker, she gets the words too.
+    if (!holdsSafetyMarker(text) && !guardReply(text).ok) {
+      const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
+      if (retryAllowed) {
+        response = await ask();
+        text = textOf(response);
+        inputTokens += response.usage.input_tokens;
+        outputTokens += response.usage.output_tokens;
+      }
+      if (!retryAllowed || (!holdsSafetyMarker(text) && !guardReply(text).ok)) text = FALLBACK_LINE;
+    }
+    text = withSafetyMessage(text);
     // TU2 S2 — usage threaded through now (not consumed until S5's session
     // meter) so that later, client-only slice never has to re-open this
     // closed-census file. Absent on the {configured:false}/error shapes
@@ -305,7 +326,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     res.json({
       configured: true,
       reply: text,
-      usage: { inputTokens: response.usage.input_tokens, outputTokens: response.usage.output_tokens },
+      usage: { inputTokens, outputTokens },
       model: env.tutorModel,
     });
   } catch (err) {
@@ -318,7 +339,8 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
 // starts a back-and-forth"). A second route beside /tutor/chat, under the same auth, the same per-account rate limit and the SAME two daily budgets. It is not a chat: the body carries NOTHING OF HER PAGE and no
 // conversation, only the prompts already shown this session (`seen`, so the Consultant does not repeat itself), and the answer is ONE cleaned line, or a plain failure the client answers from its local deck.
 // The strict rules are the system prompt below and the cleaning after it: whatever the model says, only a single short sentence leaves this route.
-const SPRINT_SYSTEM_PROMPT = `
+// The rules that already lived on the server for this route; the kit's SPRINT task says so ("the rules already live on the server"). buildSprintSystemPrompt puts BASE, the Machina voice and the SPRINT task ahead of them.
+const SPRINT_RULES = `
 You are the Consultant inside Wrizo's SPRINT stage, where the writer is free-writing against the clock. Your only job is to give the writer exactly one short writing prompt that gets them writing again.
 
 Absolute rules:
@@ -329,6 +351,7 @@ Absolute rules:
 - Never write or compose prose, dialogue or description for the writer's work. The prompt points; it never writes.
 - Do not repeat or paraphrase a prompt you are told was already given.
 `;
+const SPRINT_SYSTEM_PROMPT = buildSprintSystemPrompt(SPRINT_RULES);
 const MAX_SEEN = 3;
 const MAX_SEEN_CHARS = 300;
 const MAX_SPRINT_PROMPT_CHARS = 200;
@@ -380,23 +403,34 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
     ? `Prompts already given this session (do not repeat or paraphrase them):\n${seen.map((x) => `- ${x}`).join('\n')}\n\nGive one new writing prompt.`
     : 'Give one writing prompt.';
   try {
-    const response = await client().messages.create({
+    const askModel = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: SPRINT_MAX_TOKENS,
       system: SPRINT_SYSTEM_PROMPT,
       messages: [{ role: 'user' as const, content: ask }],
     });
-    const text = response.content
+    const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('\n')
       .trim();
+    const text = textOf(await askModel());
     const prompt = cleanSprintPrompt(text);
-    if (!prompt) {
+    let line = holdsSafetyMarker(text) ? null : prompt;   // the marker is for the chat route (her words ride only there); in SPRINT a reply that holds it is no writing prompt: the same plain failure, the client's local deck answers
+    // TUTOR-B — THE REPLY GUARD, on this route too (Fable, Nov 23, call 3): the SAME guard (tutorGuard.ts) reads the one cleaned line that would leave. A line that says "I", "we" and the rest of the kit's M1 list, or
+    // flatters (M2), is asked for again ONCE, paid from the same two daily budgets as any other call (both refuse at their cap and never count past it). If the second one fails too, or no unit is left to ask with,
+    // nothing is sent: the route answers its existing plain failure and the client gives her a prompt from its local deck. The chat route's fallback line is never used here, because it is not a writing prompt.
+    if (line && !guardReply(line).ok) {
+      const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
+      const retryText = retryAllowed ? textOf(await askModel()) : null;
+      line = retryText !== null && !holdsSafetyMarker(retryText) ? cleanSprintPrompt(retryText) : null;
+      if (line && !guardReply(line).ok) line = null;
+    }
+    if (!line) {
       res.status(502).json({ configured: true, error: 'The Consultant could not give a prompt right now.' });
       return;
     }
-    res.json({ configured: true, prompt });
+    res.json({ configured: true, prompt: line });
   } catch (err) {
     logError('tutor-sprint', err);
     res.status(502).json({ configured: true, error: 'The Consultant could not be reached right now.' });

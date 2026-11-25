@@ -44,6 +44,7 @@ export function makeClients(env) {
 export async function liveReply({ clients, cap, prompts, c, variant, draftText }) {
   const system = prompts.buildSystemPrompt({ hat: c.hat, voice: variant ?? c.voice, task: c.task });
   const messages = [];
+  if (c.notes && c.notes.length) messages.push({ role: 'user', content: prompts.wrapNotes(c.notes) });   // her notes on file, first of the wire turns (tutor.ts, item 7 step 2)
   if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
   messages.push({ role: 'user', content: c.says });
   const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), clients.maxTokens);
