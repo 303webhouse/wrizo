@@ -84,6 +84,25 @@ export function placeSpecial(parts: readonly PlacePart[], kind: SpecialKind): { 
   return { afterId, existing: null };
 }
 
+// ---------------------------------------------------------------- Quick Preset (PRESETS-B item 14, Nov 25; the words are PROPOSED)
+
+/** Quick Preset: at most this many Parts at once (a list longer than a book's chapters is a paste gone wrong, and each Part is a saved page). */
+export const QUICK_MAX = 40;
+const QUICK_NAME_MAX = 120;   // the Part name's own limit (parts.ts PART_NAME_MAX)
+/**
+ * The Part names she typed into Quick Preset, as a list: one name per line; a lone line with commas in it is split at the commas (so "Intro, Middle, End" works too). Each name has its spaces gathered, is cut to the Part name limit
+ * and loses any brace (a typed `{sources}` is a name, never the style guide's sources word); empty lines drop out. Order is hers; a repeated name stays (two Parts can share a name, as in "Interlude"). Nothing else is read or kept.
+ */
+export function parseQuickNames(text: string): string[] {
+  const lines = text.split(/\r\n|\r|\n/).map(l => l.trim()).filter(Boolean);
+  const raw = lines.length === 1 && lines[0].includes(',') ? lines[0].split(',') : lines;
+  return raw.map(n => n.replace(/[{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, QUICK_NAME_MAX)).filter(Boolean).slice(0, QUICK_MAX);
+}
+/** The throwaway preset Quick Preset makes of her names: a Standard or Screenplay Doc's, by the Doc it is added to. It is never stored, listed or given an id she could pick again. */
+export function quickPreset(names: readonly string[], kind: 'standard' | 'screenplay'): Preset {
+  return { id: 'quick', group: kind === 'screenplay' ? 'screenplay' : 'creative', label: 'Quick Preset', kind, parts: names };
+}
+
 // ---------------------------------------------------------------- the presets (the draft's list, as approved)
 
 export type PresetGroup = 'academic' | 'business' | 'web' | 'creative' | 'screenplay';
