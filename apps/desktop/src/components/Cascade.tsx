@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { onePanelAt } from '../store/pageScale';
 import { CascadeSurvey } from './CascadeSurvey';
 import { PlaceBlock } from './PlaceBlock';
 import { usePlace } from '../store/usePlace';
@@ -266,7 +267,9 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const closePanel = () => {
     setState((s) => {
       if (!s.category) return s;
-      if (s.survey && availableCascadeMargin() >= DOCK_FLOOR_PX) return { ...s, docked: true };
+      // #133: a docked survey is a second panel, so the prose page has none at 1600 and narrower
+      const onlyOne = onePanelAt(window.innerWidth) && !!cascadeStage()?.classList.contains('desk-frame-stage--prose');
+      if (s.survey && !onlyOne && availableCascadeMargin() >= DOCK_FLOOR_PX) return { ...s, docked: true };
       return REST; // nothing to dock, or the dock affordance is unavailable below the floor
     });
   };

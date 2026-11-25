@@ -540,6 +540,13 @@
 .desk-frame-stage--prose .desk-frame-sliver-anchor,
 .desk-frame-stage--prose .desk-frame-tutor-anchor,
 .desk-frame-stage--prose .desk-frame-tutor-panel-anchor{ height: min(100%, var(--wz-page-foot, 100%)); }
+/* #133: at 1600 and narrower (store/pageScale.ts SMALL_W) a rail pop-out lies over the page's left edge, where the Front menu's opener stands: while the pop-out is open the opener is out of sight and reach, never under a panel's border [desk-frame §22] */
+@media (max-width:1600px){
+  .desk-frame-stage--prose:has(.wz-cascade-panel[data-visible='true']:not([data-leaving])) .wz-sliver-grip{ visibility:hidden; }
+  .desk-frame-stage--prose .wz-cascade-panel[data-category]:not([data-visible='false']){ max-width:var(--wz-rail-room, 300px); }
+}
+/* #133: the Back menu's tab leaves the page's edge with a drawer that lies over it (Tutor.tsx writes --wz-over-travel); Arbor and Machina name their own rule [desk-frame §23] */
+.desk-frame-stage--prose .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see
    that rule for the full SC-V1 derivation): the screenplay page is 8.5in
    wide, so the Tutor's grip rides half of that, not prose's half-measure. */

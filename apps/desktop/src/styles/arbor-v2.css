@@ -630,6 +630,8 @@
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-r, 0px); }
+/* #133: a drawer lying over the page's edge starts inside the page, so its tab travels to the drawer's own outer edge, not the drawer's width */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* REDUCED MOTION: the openers cut, they never travel (fix after runs 41588188108 / 41588256216 - the reduced-motion repeat's second miss, a real
    bug: main's floor makes every transition 0.01 ms, which still STARTS one, and its first frame shows the shut position; the read caught that
    frame). The position leaves the transition list, so the tab stands where it settles in the frame the drawer opens. */
@@ -803,6 +805,8 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
+/* #133: the tabs ride with the opener on a drawer lying over the page's edge */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--wz-over-travel); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
 /* #129: the same for the Back menu's tabs down its right edge: 106 px slots (the 98 px tab with 4 px above and below, the active 106 px tab filling
    it), 2 px apart; the active tab stands ON the panel's edge, not 3 px into it. (Was: margin-top -10px; active margin -4px 0 -4px -3px, after a tab

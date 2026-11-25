@@ -1,6 +1,6 @@
 // #133 (Nick, Nov 25: "on a small screen the page is too small"; Fable's order, orders-nov25.md POLISH) - BROWSERLESS checks of the page's size law
 // (src/store/pageScale.ts). No browser, no box turn. The real-page twin is page-small-133.mjs.
-//   The stage sizes are the ones the app draws (measured on train-l8-1, Draft: the window less 80 x 167).
+//   The stage sizes are the ones the app draws (measured, Draft: the window less 80 x 167, and never wider than 1720).
 //   S1  at 1366x768, 1536x864 and a 1600 window the page is 62% of the stage's width (today: 48%, 43%, 41%)
 //   S2  at 1920x1080 it is bigger than today and still no more than 62% of the stage
 //   S3  at 2560 and wider it is exactly today's size (today = the largest letter page the stage holds, never below 620 px)
@@ -34,7 +34,7 @@ const load = async (src) => {
 
 const PAGE_W = 620;
 const PAGE_H = (620 / 8.5) * 11;
-const stageOf = (w, h) => ({ w: w - 80, h: h - 167 });
+const stageOf = (w, h) => ({ w: Math.min(w - 80, 1720), h: h - 167 });
 // today's law, written out here so the check does not borrow the product's own arithmetic
 const todayK = (sw, sh) => Math.max(1, Math.min((sh - 40) / PAGE_H, (sw - 640) / PAGE_W));
 const todayZoom = (sw, k) => Math.max(1, Math.min(1.6, (sw - 96) / (PAGE_W * k)));
@@ -65,7 +65,7 @@ const judge = (M) => {
     let rises = 0; let jump = 0; let prev = null;
     for (let w = 1366; w <= 3000; w += 1) {
       const k = kAt(w, 864);
-      const sh = (k * PAGE_W) / (w - 80);
+      const sh = (k * PAGE_W) / stageOf(w, 864).w;
       if (prev) { if (sh > prev.sh + 1e-9) rises += 1; jump = Math.max(jump, Math.abs(k - prev.k)); }
       prev = { k, sh };
     }

@@ -755,3 +755,17 @@ From `apps/desktop/src/styles/13-desk-frame.css`, line 1359 at `25112784` (the c
    button is as wide as its label (and grows to share the row); when the two cannot sit side by side at the drawer's width, the second
    wraps under the first, each then the full width. No ellipsis. */
 ```
+
+## desk-frame §22
+
+#133 (pageScale §5). At 1600 and narrower a rail pop-out lies over the page's left margin, in every theme, and never over its text
+(reorg/railRoom.ts caps it at the text's left edge; never under 200 px). The Front menu's opener stands on the page's left edge, so
+while a pop-out is open that opener is hidden: no control stands under a panel's border. This replaces, at these widths only, the
+Wrizors' rail note (arbor-reorg-pass-1.md section 4: stop the pop-out short of the opener).
+
+## desk-frame §23
+
+#133. At these widths the margin right of the page is thinner than the Back menu's 320 px floor, so the drawer keeps 320 (times the
+chrome scale) and lies over the page's right margin. Its opener cannot stay on the page's edge, under the drawer: in Arbor and Machina it
+travels to the drawer's outer edge, as always; elsewhere it stands just off the drawer's inner edge. Tutor.tsx writes the distance as
+--wz-over-travel.

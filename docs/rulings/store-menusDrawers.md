@@ -158,3 +158,9 @@ From `apps/desktop/src/store/menusDrawers.ts`, line 219 at `e2898deb` (the comme
 /** POLISH #10 item 1 (Nick, Oct 25) - which of the page's two hands stand open right now: the Board narrows beside them. A string snapshot ('', 'T', 'U',
  *  'TU') so the store's identity is stable between changes. */
 ```
+
+## menusDrawers §11
+
+#133 (Nick and Fable, Nov 25; pageScale §5): at 1600 and narrower on the prose page the page takes 62% of the stage, so one side panel
+stands at a time: opening a rail pop-out, the Front menu or the Back menu closes the other two. A window narrowed with two open keeps the
+latest. The page never moves or resizes for any of them. Wider windows, the board and the screenplay page keep §6 and §8.
