@@ -9,7 +9,7 @@ import { guideTree, walk, factsOf, kindOf, BLANK, NOT_SURE, type GuideAnswer, ty
 // The LOGIC is presetGuide.ts (a fixed table: no model, the same answers give the same result); this file is the dress and the press-by-press flow, on the Help me choose panel's own dresses (Arbor's librarian, Machina's intake, Flux's diagnostic: the
 // `help-*` shells and tokens, and nothing new). LAWS: it NEVER opens itself (a host mounts it behind a press); NOTHING is stored (its state is local to this mount: no storage, no sync key, no draft); pressing Back or Close writes nothing (the host's
 // `onStart` is the only way out that writes, and it is the host's); Esc closes it and focus RETURNS to what opened it; reduced motion means it simply appears (no slide: `data-still`).
-export interface PresetGuideProps {
+export interface GuidePanelProps {
   /** Start: do this pick (the host makes the Doc and calls startGuide: presetGuideActs.ts). The pick's `kind` is `kindOf(pick)`. Blank is `BLANK`. */
   onStart: (pick: GuidePick) => void;
   onClose: () => void;
@@ -24,7 +24,7 @@ const NOTE_LINES: readonly { part: 'line' | 'does' | 'eg' | 'names' | 'must' | '
 // a *starred* span in a note's word is italic (a book's title in a credit), as PresetNote.tsx draws it
 const emph = (s: string) => s.split(/(\*[^*]+\*)/).map((p, i) => (/^\*[^*]+\*$/.test(p) ? <em key={i}>{p.slice(1, -1)}</em> : p));
 
-export function PresetGuide({ onStart, onClose, returnFocusTo }: PresetGuideProps) {
+export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   const variant: Variant = theme === 'plateau' ? 'librarian' : theme === 'flux' ? 'diagnostic' : 'intake';

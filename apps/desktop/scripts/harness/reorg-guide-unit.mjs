@@ -28,7 +28,7 @@ function load(src, deps = {}) {
 
 const SRC = {
   guide: rd('reorg/presetGuide.ts'), kinds: rd('reorg/docKinds.ts'), plan: rd('reorg/backMenu/planPresets.ts'),
-  panel: rd('reorg/PresetGuide.tsx'), acts: rd('reorg/presetGuideActs.ts'), loader: rd('reorg/backMenu/planPresetLoad.ts'), backplan: rd('reorg/backMenu/BackPlan.tsx'),
+  panel: rd('reorg/GuidePanel.tsx'), acts: rd('reorg/presetGuideActs.ts'), loader: rd('reorg/backMenu/planPresetLoad.ts'), backplan: rd('reorg/backMenu/BackPlan.tsx'),
   chrome: rd('store/lexicon/canonical/chrome.ts'), terms: rd('store/lexicon/terms.ts'),
 };
 

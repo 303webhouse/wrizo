@@ -246,7 +246,7 @@ export function walk(path: readonly string[], live: GuideLive = LIVE, tree: Guid
     asked += 1;
   }
   if (node.kind === 'landing') return { kind: 'landing', landing: node.landing, said };
-  return { kind: 'question', question: node, asked: asked + 1, of: depth(node) + asked - 1 };
+  return { kind: 'question', question: node, asked: asked + 1, of: depth(node) + asked };
 }
 function depth(node: GuideNode): number {
   if (node.kind === 'landing') return 0;
