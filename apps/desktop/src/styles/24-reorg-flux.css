@@ -44,7 +44,7 @@
 :root[data-flux3][data-theme='flux'] .reorg-search-scopes > button{ padding:0; border:0; background:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-search-scopes > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
 :root[data-flux3][data-theme='flux'] .reorg-search-scopes > button[disabled]{ opacity:.45; cursor:default; }
-:root[data-flux3][data-theme='flux'] .reorg-search-body{ flex:1; min-height:0; overflow-y:auto; padding:4px 0 12px; scrollbar-width:thin; }
+:root[data-flux3][data-theme='flux'] .reorg-search-body{ flex:1; min-height:0; overflow-y:auto; padding:4px 0 12px; }
 :root[data-flux3][data-theme='flux'] .reorg-search-quiet{ padding:10px 12px; font-size:12px; color:var(--text-mid); }
 :root[data-flux3][data-theme='flux'] .reorg-search-head{ padding:10px 12px 4px; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
 :root[data-flux3][data-theme='flux'] .reorg-search-group.is-top > .reorg-search-head{ color:var(--text-hi); border-top:1px solid var(--ink-border); }
@@ -104,7 +104,7 @@
 :root[data-flux3][data-theme='flux'] :is(.wz-tutor-convo-input, .wz-tutor-bible-input, .wz-back-plan-input){ background:#020C10; border:1px solid #5F8F95; border-radius:0; color:var(--text-hi); }
 :root[data-flux3][data-theme='flux'] :is(.wz-tutor-convo-input, .wz-tutor-bible-input, .wz-back-plan-input)::placeholder{ color:#7EB4C4; opacity:1; }
 /* REAL 4: INPUTS' scrollbar thumb was 2.06:1 (#254E7E on #101A27): everything in the Back menu scrolls with #5F8F95 (declared on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css) */
-:root[data-flux3][data-theme='flux'] :is(.wz-tutor-panel, .wz-tutor-panel *){ scrollbar-color:#5F8F95 transparent; }
+:root[data-flux3][data-theme='flux'] :is(.wz-tutor-panel, .wz-tutor-panel *){ --wz-sb-thumb:#5F8F95; --wz-sb-track:transparent; }
 /* NIT 1: the panel is node dress (#04141A), as the rail's panels are */
 :root[data-flux3][data-theme='flux'] .wz-tutor-panel{ background:#04141A; }
 /* REAL 1 (Arbor's pass 1 had the same fix): in Wire In the opened panel is capped, so it ends above her line (which sits at the stage's middle) and never covers it. The first cap (38%) left it about 213 px tall and the Writing prompt button scrolled out of sight, so the cap is 54% (about 300 px at 1366) and the search field is not drawn in Wire In (the Operator sends prompts only: there is nothing to search), which frees the room the action needs */

@@ -14,6 +14,7 @@
 //   P14 focus starts in the first field when the panel opens, and a real Tab walk reaches the button with the same brass-on-focus look; the mutant (focus dropped) turns it red
 //   P16 MACHINA: every edge of the panel is on a whole pixel at 1366, 1920 and an odd 1367 (a half pixel read 2.5:1; Fable Nov 18, 4:35 pm); P16M the old build (417 px, left 50% and a translate) turns it red
 //   P17 MACHINA create-account face at 1366x768 (the live splash): top 8 px under the logo or lower, foot at or above 744, NOTHING scrolls, no sub-line; P17M the old build (42 px fields, the sub-line back) scrolls and turns it red
+//   (#128, Nov 24: P18 parked - its colours were read from scrollbar-color; P18-B reads them from the ::-webkit-scrollbar thumb and track)
 //   P18 MACHINA, a shorter window (1366x560): only the fields scroll; the button row is pinned at the foot (the button does not move when the fields scroll, is in the window, Create my account left and back right on one row), the scroll thumb reads >= 3:1; P18M the old build (the panel scrolls as one) turns it red
 //   P19 MACHINA: an error line sits above the button row, and the button row stays in the window
 //   P20 FLUX: the panel's top sits at least 8 px under WRIZO's letters (their ink foot: the wordmark's box foot plus half its stroke) and covers no part of the mark, at 1366 and 1920, on both faces; P20M the old top (6vh / centred, 209 at 1366) turns it red (Fable Nov 18, 5:35 pm)
@@ -196,7 +197,7 @@ await withHarness(async (app) => {
     check('P17M', m17.sub === 'block' && !fitOk(m17), `the old build (42 px fields, the sub-line back; landed: sub ${m17.sub}, scroll over ${m17.scrollOver}): P17's read goes RED`);
     await ev("document.getElementById('mut-fat').remove(); true"); await sleep(200);
     // ---- P18: a shorter window, the button row pinned
-    const ROW = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { by: Math.round(br.top * 10) / 10, bb: Math.round(br.bottom * 10) / 10, rowDy: Math.round(Math.abs((kr.top + kr.height / 2) - (br.top + br.height / 2)) * 10) / 10, backRight: kr.left >= br.right, pb: Math.round(pr.bottom * 10) / 10, winH: innerHeight, scrollable: sc.scrollHeight > sc.clientHeight + 1, sc: getComputedStyle(sc).scrollbarColor }; })()";
+    const ROW = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); const b = p.querySelector('button[type=submit]'); const k = p.querySelector('.wz-popout-back'); const br = b.getBoundingClientRect(), kr = k.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { by: Math.round(br.top * 10) / 10, bb: Math.round(br.bottom * 10) / 10, rowDy: Math.round(Math.abs((kr.top + kr.height / 2) - (br.top + br.height / 2)) * 10) / 10, backRight: kr.left >= br.right, pb: Math.round(pr.bottom * 10) / 10, winH: innerHeight, scrollable: sc.scrollHeight > sc.clientHeight + 1, sc: getComputedStyle(sc).scrollbarColor, thumb: getComputedStyle(sc, '::-webkit-scrollbar-thumb').backgroundColor, track: getComputedStyle(sc, '::-webkit-scrollbar-track').backgroundColor }; })()";
     const SCROLLALL = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = sc.scrollHeight; p.scrollTop = p.scrollHeight; return true; })()";
     const TOP = "(() => { const p = document.querySelector('.wz-popout'); const sc = p.querySelector('.wz-popout-scroll'); sc.scrollTop = 0; p.scrollTop = 0; return true; })()";
     await app.emulateDpr(1, 1366, 560); await sleep(700);
@@ -204,7 +205,14 @@ await withHarness(async (app) => {
     const nums = (r0.sc.match(/[0-9]+/g) || []).map(Number); const thumb = nums.slice(0, 3), track = nums.slice(3, 6);
     const thumbRatio = thumb.length === 3 && track.length === 3 ? ratio(thumb, track) : 0;
     const pinned = (a, c) => a.scrollable && Math.abs(a.by - c.by) <= 0.5 && c.bb <= c.winH && a.bb <= a.winH && a.rowDy <= 2 && a.backRight && a.pb <= a.winH - 24 + 0.5;
-    check('P18', pinned(r0, r1) && thumbRatio >= 3, `top ${JSON.stringify(r0)}; scrolled ${JSON.stringify({ by: r1.by, bb: r1.bb })}; thumb ${thumbRatio.toFixed(2)}:1`);
+    // SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): the thumb and track were read from scrollbar-color, the standard property,
+    // which in Chromium draws the native bar whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar and scrollbar-color is auto, the pair
+    // riding --wz-sb-thumb / --wz-sb-track into the pseudo-elements. P18-B reads the same 3:1 from the thumb and track the pseudo-elements draw. P18, verbatim:
+    //   check('P18', pinned(r0, r1) && thumbRatio >= 3, `top ${JSON.stringify(r0)}; scrolled ${JSON.stringify({ by: r1.by, bb: r1.bb })}; thumb ${thumbRatio.toFixed(2)}:1`);
+    const px = (c) => (String(c || '').match(/[0-9]+/g) || []).slice(0, 3).map(Number);
+    const thumbB = px(r0.thumb), trackB = px(r0.track);
+    const thumbRatioB = thumbB.length === 3 && trackB.length === 3 ? ratio(thumbB, trackB) : 0;
+    check('P18-B', pinned(r0, r1) && r0.sc === 'auto' && thumbRatioB >= 3, `top ${JSON.stringify(r0)}; scrolled ${JSON.stringify({ by: r1.by, bb: r1.bb })}; thumb ${thumbRatioB.toFixed(2)}:1 (drawn by ::-webkit-scrollbar, #128)`);
     await ev("(() => { const st = document.createElement('style'); st.id = 'mut-unpin'; st.textContent = '.wz-arrival .wz-screen.wz-popout[data-popout=account]{ display:block !important; overflow-y:auto !important; } .wz-arrival .wz-popout .wz-popout-scroll{ display:contents !important; }'; document.head.appendChild(st); return true; })()");
     await sleep(300);
     await ev(TOP); const q0 = await ev(ROW); await ev(SCROLLALL); await sleep(150); const q1 = await ev(ROW);

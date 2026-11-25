@@ -369,8 +369,16 @@ await withHarness(async (app) => {
       if (!(await open(app, th, 'long', 1366, 768))) { ok(`L8 ${T} fixture: long page opened`, false); return; }
       await ensureLeft(app, true);
       const s = await app.evalJs(`(() => { const p = document.querySelector('.wz-sliver-panel'); if (!p) return null; const cs = getComputedStyle(p);
-        return { overflowY: cs.overflowY, scrollbarWidth: cs.scrollbarWidth, direction: cs.direction, canScroll: p.scrollHeight > p.clientHeight }; })()`);
-      ok(`L8 ${T} @1366x768: the panel scrolls, shows the THIN bar, and on its OUTER edge (direction rtl, children keep ltr)`, s && s.overflowY === 'auto' && s.scrollbarWidth === 'thin' && s.direction === 'rtl', JSON.stringify(s));
+        return { overflowY: cs.overflowY, scrollbarWidth: cs.scrollbarWidth, direction: cs.direction, canScroll: p.scrollHeight > p.clientHeight,
+          scrollbarColor: cs.scrollbarColor, bar: p.offsetWidth - p.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0) }; })()`);
+      // SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): `thin` was the standard property, and in Chromium it draws the native bar
+      // whose arrow buttons no CSS can hide; every bar is now drawn by ::-webkit-scrollbar at 10 px (02-scrollbars.css), so the panel's computed
+      // scrollbar-width is auto. The claim (a thin bar on the outer edge) stands: L8-B reads the bar's painted width (1-10 px) and the mechanism. Verbatim:
+      //   ok(`L8 ${T} @1366x768: the panel scrolls, shows the THIN bar, and on its OUTER edge (direction rtl, children keep ltr)`, s && s.overflowY === 'auto' && s.scrollbarWidth === 'thin' && s.direction === 'rtl', JSON.stringify(s));
+      pok(`PARKED (was "L8 ${T} @1366x768: the panel scrolls, shows the THIN bar, and on its OUTER edge (direction rtl, children keep ltr)") - SUPERSEDED by #128 (Fable, Nov 24): the bar is drawn by ::-webkit-scrollbar, not scrollbar-width:thin; live successor: L8-B ${T}`,
+        !!s && s.overflowY === 'auto' && s.direction === 'rtl' && s.scrollbarWidth === 'auto' && s.scrollbarColor === 'auto' && s.bar >= 1 && s.bar <= 10, JSON.stringify(s));
+      ok(`L8-B ${T} @1366x768: the panel scrolls, shows a thin bar (1-10 px painted, drawn by ::-webkit-scrollbar: no arrows), on its OUTER edge (direction rtl, children keep ltr)`,
+        !!s && s.overflowY === 'auto' && s.direction === 'rtl' && s.scrollbarWidth === 'auto' && s.scrollbarColor === 'auto' && s.bar >= 1 && s.bar <= 10, JSON.stringify(s));
     });
 
     // ===== L9 - ARIA AND KEYBOARD ===========================================================================================================================
@@ -492,7 +500,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 4 (page-size, Oct 23-24, and the drawer mirror, Oct 24): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer; Arbor only now) and L2's right-hand tab move (the tab never moves now), each recorded once per theme; plus Wire In (Nov 12), Flux only: L9's focus / Enter-flips / Space-flips-back on the retired Typewriter toggle (3 records, in place of the Space one there); the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 5 (page-size, Oct 23-24, the drawer mirror, Oct 24, and #128, Nov 24: L8's THIN bar, now drawn by ::-webkit-scrollbar): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer; Arbor only now) and L2's right-hand tab move (the tab never moves now), each recorded once per theme, and L8 once per theme; plus Wire In (Nov 12), Flux only: L9's focus / Enter-flips / Space-flips-back on the retired Typewriter toggle (3 records, in place of the Space one there); the older two-drawer law above L7 stays a comment-only park from Oct 12`
     : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 const failed = checks.filter((c) => !c.pass);

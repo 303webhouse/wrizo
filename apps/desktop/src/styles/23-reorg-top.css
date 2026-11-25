@@ -59,7 +59,7 @@
   background:#F4F5F6; border:1px solid #23272B; display:flex; flex-direction:column; color:#3A4047; font-family:var(--font-ui); }
 [data-theme='machina'] .reorg-top-drop-head{ padding:10px 14px 6px; font-family:var(--font-chromeLabel, monospace); font-size:10px; letter-spacing:.1em;
   text-transform:uppercase; color:#525A62; }
-[data-theme='machina'] .reorg-top-drop-scroll{ max-height:176px; overflow-y:auto; scrollbar-width:thin; }
+[data-theme='machina'] .reorg-top-drop-scroll{ max-height:176px; overflow-y:auto; }
 [data-theme='machina'] .reorg-top-drop-row{ display:flex; align-items:center; gap:8px; width:100%; height:34px; padding:0 14px; box-sizing:border-box;
   background:none; border:0; border-bottom:1px solid #D2D6DA; border-radius:0; font:inherit; font-size:13px; color:#3A4047; text-align:left;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
@@ -184,7 +184,7 @@
 [data-theme='machina'] .reorg-search-scopes > button{ padding:0; border:0; background:none; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; letter-spacing:.06em; color:var(--text-mid); cursor:pointer; }
 [data-theme='machina'] .reorg-search-scopes > button[aria-pressed='true']{ color:var(--text-hi); text-decoration:underline; text-underline-offset:3px; }
 [data-theme='machina'] .reorg-search-scopes > button[disabled]{ opacity:.45; cursor:default; }
-[data-theme='machina'] .reorg-search-body{ flex:1; min-height:0; overflow-y:auto; padding:4px 0 12px; scrollbar-width:thin; }
+[data-theme='machina'] .reorg-search-body{ flex:1; min-height:0; overflow-y:auto; padding:4px 0 12px; }
 [data-theme='machina'] .reorg-search-quiet{ padding:10px 12px; font-size:12px; color:var(--text-mid); }
 [data-theme='machina'] .reorg-search-head{ padding:10px 12px 4px; font-family:var(--font-chromeLabel, monospace); font-size:10.5px; color:var(--text-mid); }
 [data-theme='machina'] .reorg-search-group.is-top > .reorg-search-head{ color:var(--text-hi); border-top:1px solid var(--ink-border); }
@@ -294,7 +294,7 @@
 [data-theme='machina'] button.reorg-parts-assets:hover, [data-theme='machina'] button.reorg-parts-assets:focus-visible{ border-color:var(--text-low); color:var(--text-hi); }
 [data-theme='machina'] .reorg-dockind{ position:relative; margin:0 0 8px; }
 [data-theme='machina'] .reorg-dockind-btn{ display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong);
-  font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-dockind-btn[aria-expanded='true'], [data-theme='machina'] .reorg-dockind-btn:hover{ border-color:var(--text-low); }
 [data-theme='machina'] .reorg-dockind-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-dockind-caret, [data-theme='machina'] .reorg-dockind-fold, [data-theme='machina'] .reorg-parts-structure-fold{ font-size:10px; color:var(--text-mid); }
@@ -308,7 +308,7 @@
   outline:1px solid var(--text-low); outline-offset:-2px; }
 [data-theme='machina'] .reorg-parts-structure{ margin:4px 0 8px; }
 [data-theme='machina'] .reorg-parts-structure-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
-  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-parts-structure-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-parts-structure-body{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0 2px; }
 [data-theme='machina'] .reorg-parts-structure-body[hidden]{ display:none; }
@@ -318,7 +318,7 @@
    their rows are today's own; Insert Symbol's characters wrap in the drawer's width. No motion: a cut. */
 [data-theme='machina'] .reorg-text-fold{ margin:6px 0 0; }
 [data-theme='machina'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0;
-  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+  border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 [data-theme='machina'] .reorg-text-fold-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 [data-theme='machina'] .reorg-text-fold-mark{ font-size:10px; color:var(--text-mid); }
 [data-theme='machina'] .reorg-text-fold-body[hidden]{ display:none; }
@@ -331,10 +331,10 @@
 [data-theme='machina'] .wz-drawer-tab[data-disabled='true']{ opacity:.4; cursor:default; }
 [data-theme='machina'] .reorg-pubparts-note{ margin:0 0 10px; font-size:12px; line-height:1.45; color:#6A727B; }
 [data-theme='machina'] .reorg-pubparts-one{ margin:0; font-size:12px; color:#6A727B; }
-[data-theme='machina'] .reorg-pubparts-row{ display:flex; align-items:center; gap:8px; min-height:28px; box-sizing:border-box; border-top:1px solid #D2D6DA; }
+[data-theme='machina'] .reorg-pubparts-row{ display:flex; flex-wrap:nowrap; align-items:center; gap:8px; min-height:32px; box-sizing:border-box; border-top:1px solid #D2D6DA; }
 [data-theme='machina'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ opacity:.4; }
 [data-theme='machina'] .reorg-pubparts-row input{ flex:none; margin:0; width:15px; height:15px; accent-color:#3F6183; cursor:pointer; }
-[data-theme='machina'] .reorg-pubparts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+[data-theme='machina'] .reorg-pubparts-name{ flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 [data-theme='machina'] .reorg-pubparts-n{ color:#6A727B; }
 [data-theme='machina'] .reorg-pubparts-move{ flex:none; box-sizing:border-box; width:24px; height:24px; padding:0; border:1px solid #6A727B; border-radius:0; background:#F4F5F6; color:#3A4047; font-size:13px; line-height:1; cursor:pointer; }
 [data-theme='machina'] .reorg-pubparts-move:hover:not([disabled]){ background:#E6E8EA; }

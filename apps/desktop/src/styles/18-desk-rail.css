@@ -376,7 +376,7 @@ body:has(.walk)::after{ z-index:-1; }
 .walk-card{
   position:relative; box-sizing:border-box; width:100%; padding:30px 36px 44px;
   background:var(--card-stock); color:var(--ink-on-card); border:1px solid var(--card-hairline); border-radius:0; box-shadow:none;
-  overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--ink-on-card-low) transparent;
+  overflow-y:auto; --wz-sb-thumb:var(--ink-on-card-low); --wz-sb-track:transparent;
 }
 .walk-card .board-popup-editor, .walk-card .walk-static{
   display:block; width:100%; min-height:140px; padding:0; border:0; background:none; box-shadow:none; box-sizing:border-box; outline:none;

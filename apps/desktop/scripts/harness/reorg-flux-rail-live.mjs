@@ -230,7 +230,13 @@ await withHarness(async (app) => {
   const top = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-docs\"]'); return p ? p.scrollTop : null; })()");
   ok('R20 DOCS opens at its top', top === 0, top);
   const bars = await app.evalJs("(() => { const p = document.querySelector('.wz-cascade-panel[data-category=\"reorg-docs\"]'), r = document.querySelector('.wz-reorg-recent-rows'); return p && r ? [getComputedStyle(p).scrollbarColor, getComputedStyle(r).scrollbarColor] : null; })()");
-  ok('R17 the pop-out\'s and Recent\'s scrollbar thumb is #5F8F95', Array.isArray(bars) && bars.every((c) => /^rgb\(95, 143, 149\)/.test(c)), bars);
+  // SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): scrollbar-color is the standard property, which in Chromium draws the native
+  // bar whose arrows no CSS hides; the thumb now rides --wz-sb-thumb, read by ::-webkit-scrollbar-thumb (02-scrollbars.css), and scrollbar-color is auto.
+  // R17-B keeps the claim (#5F8F95) by resolving the property through a probe's color, with the mechanism. Verbatim:
+  //   ok('R17 the pop-out\'s and Recent\'s scrollbar thumb is #5F8F95', Array.isArray(bars) && bars.every((c) => /^rgb\(95, 143, 149\)/.test(c)), bars);
+  const bars2 = await app.evalJs(`(() => { const thumb = (e) => { if (!e) return null; const p = document.createElement('i'); p.style.cssText = 'color:var(--wz-sb-thumb);position:absolute;'; e.appendChild(p); const c = getComputedStyle(p).color; p.remove(); return { thumb: c, sc: getComputedStyle(e).scrollbarColor }; };
+    return [thumb(document.querySelector('.wz-cascade-panel[data-category="reorg-docs"]')), thumb(document.querySelector('.wz-reorg-recent-rows'))]; })()`);
+  ok('R17-B the pop-out\'s and Recent\'s scrollbar thumb is #5F8F95 (--wz-sb-thumb, drawn by ::-webkit-scrollbar: scrollbar-color auto, no arrows)', Array.isArray(bars2) && bars2.every((b) => !!b && /^rgb\(95, 143, 149\)/.test(b.thumb) && b.sc === 'auto'), bars2);
   const recent = await app.evalJs("[...document.querySelectorAll('.wz-reorg-recent-rows > li')].map((li) => ({ title: (li.querySelector('.wz-reorg-list-title')?.textContent || '').trim(), meta: (li.querySelector('.wz-reorg-row-meta')?.textContent || '').trim(), here: li.getAttribute('aria-current') }))");
   await app.evalJs("document.querySelector('.wz-cascade-panel [data-session-fold]')?.click(); null"); await sleep(350);
   const meters = await app.evalJs("(() => { const a = document.querySelector('[data-reorg-default=\"progress\"] .wz-reorg-default-label'), b = [...document.querySelectorAll('[data-session-row] .wz-reorg-default-label')].map((e) => e.textContent.trim()); return { doc: a ? a.textContent.trim() : null, session: b }; })()");
@@ -282,7 +288,7 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);
-const EXPECTED = 28;   // + R23, R24, MUT-R23 (the double LOG, Nov 23). Was: const EXPECTED = 25;   // R3-B and MUT-R3-B parked: + R15, MUT-R15, R16 to R22 (the Wrizors' pass 1, Nov 23). Was: const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
+const EXPECTED = 28;   // R17 parked for R17-B (#128, Nov 24): the count is unchanged.   // + R23, R24, MUT-R23 (the double LOG, Nov 23). Was: const EXPECTED = 25;   // R3-B and MUT-R3-B parked: + R15, MUT-R15, R16 to R22 (the Wrizors' pass 1, Nov 23). Was: const EXPECTED = 18;   // R3 parked: + R3-B, MUT-R3-B (Nov 23). Was: const EXPECTED = 17;   // R0 to R14, MUT-R2, MUT-R6
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass ? `\nREORG-FLUX-RAIL-LIVE VERIFY: PASS (${checks.length} checks)` : `\nREORG-FLUX-RAIL-LIVE VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed${checks.length === EXPECTED ? '' : ` (expected ${EXPECTED} checks)`}`);
 process.exit(pass ? 0 : 1);

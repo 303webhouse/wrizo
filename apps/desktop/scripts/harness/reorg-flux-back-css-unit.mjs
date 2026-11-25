@@ -150,9 +150,17 @@ function suite(css, tutor = TUTOR) {
     const hint = rs.some((x) => /\.wz-tutor-convo-input/.test(x.sel) && /\.wz-tutor-bible-input/.test(x.sel) && /\.wz-back-plan-input/.test(x.sel) && /::placeholder/.test(x.sel) && /color:\s*#7EB4C4/i.test(x.body) && /opacity:\s*1/.test(x.body));
     return { pass: fill && hint, detail: J({ dress: dress.length, fill, hint }) };
   });
-  t('THUMB', () => {
-    // pass 2 REAL 4: INPUTS' scrollbar thumb was 2.06:1; the Back menu's panel and everything in it scroll with #5F8F95 (the declaration is on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css)
-    const r = rs.some((x) => /:is\(\.wz-tutor-panel, \.wz-tutor-panel \*\)$/.test(x.sel) && /scrollbar-color:\s*#5F8F95 transparent/i.test(x.body));
+  // SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): scrollbar-color is the standard property, which in Chromium draws the native
+  // bar whose arrows no CSS hides; the colour now rides --wz-sb-thumb / --wz-sb-track, read by the ::-webkit-scrollbar thumb and track (02-scrollbars.css).
+  // The claim stands (the Back menu scrolls with #5F8F95); THUMB2 reads it where it now lives. Verbatim:
+  //   t('THUMB', () => {
+  //     // pass 2 REAL 4: INPUTS' scrollbar thumb was 2.06:1; the Back menu's panel and everything in it scroll with #5F8F95 (the declaration is on every element: scrollbar-color does not inherit reliably, 02-scrollbars.css)
+  //     const r = rs.some((x) => /:is\(\.wz-tutor-panel, \.wz-tutor-panel \*\)$/.test(x.sel) && /scrollbar-color:\s*#5F8F95 transparent/i.test(x.body));
+  //     return { pass: r, detail: J({ r }) };
+  //   });
+  t('THUMB2', () => {
+    // #128: the same #5F8F95 thumb on a clear track, carried by the two properties every scrollbar rule now sets
+    const r = rs.some((x) => /:is\(\.wz-tutor-panel, \.wz-tutor-panel \*\)$/.test(x.sel) && /--wz-sb-thumb:\s*#5F8F95/i.test(x.body) && /--wz-sb-track:\s*transparent/i.test(x.body) && !/scrollbar-color/.test(x.body));
     return { pass: r, detail: J({ r }) };
   });
   t('PANEL', () => {
@@ -177,7 +185,9 @@ function suite(css, tutor = TUTOR) {
 
 let base = null, baseErr = null;
 try { base = suite(CSS); } catch (e) { baseErr = e; }
-const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB', 'PANEL', 'WIRECAP2'];
+// SUPERSEDED (#128, Nov 24): THUMB parked for THUMB2 (above). Verbatim:
+//   const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB', 'PANEL', 'WIRECAP2'];
+const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TABS', 'ROOM', 'TABMARK', 'CORRIDOR', 'CORRIDOR2', 'CORRIDOR4', 'FIELDS', 'THUMB2', 'PANEL', 'WIRECAP2'];
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
@@ -186,7 +196,10 @@ ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-bac
 const MUT = [
   ['the fields lose their fill', 'FIELDS', (t) => t.replace('.wz-back-plan-input){ background:#020C10;', () => '.wz-back-plan-input){ background:#132437;')],
   ['the hints go back to the browser grey', 'FIELDS', (t) => t.replace('color:#7EB4C4; opacity:1', () => 'color:#787876; opacity:1')],
-  ['the thumb is the old colour', 'THUMB', (t) => t.replace('scrollbar-color:#5F8F95 transparent', () => 'scrollbar-color:#254E7E transparent')],
+  // SUPERSEDED with THUMB (#128): its mutant, verbatim:
+  //   ['the thumb is the old colour', 'THUMB', (t) => t.replace('scrollbar-color:#5F8F95 transparent', () => 'scrollbar-color:#254E7E transparent')],
+  ['the thumb is the old colour', 'THUMB2', (t) => t.replace('--wz-sb-thumb:#5F8F95', () => '--wz-sb-thumb:#254E7E')],
+  ['the thumb goes back to the native bar (scrollbar-color, with its arrows)', 'THUMB2', (t) => t.replace('--wz-sb-thumb:#5F8F95; --wz-sb-track:transparent;', () => '--wz-sb-thumb:#5F8F95; --wz-sb-track:transparent; scrollbar-color:#5F8F95 transparent;')],
   ['the panel is the chrome grey again', 'PANEL', (t) => t.replace(/\.wz-tutor-panel\{ background:#04141A;/, () => '.wz-tutor-panel{ background:#101A27;')],
   // SUPERSEDED (Nov 23, see WIRECAP above): its mutant, verbatim:
   // ['the Wire In panel runs to the foot again', 'WIRECAP', (t) => t.replace('max-height:38%', () => 'max-height:100%')],

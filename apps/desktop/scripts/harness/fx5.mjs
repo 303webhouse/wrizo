@@ -51,6 +51,7 @@ import { withHarness } from '../runtime-verify.mjs';
 import { assertHittable } from '../trusted-point.mjs';
 
 const checks = [];
+let fx5SbSeen = [];   // #128: S3 (a)'s board-wrap readings, kept for their parked records
 let fx5MaskSeen = null;   // S1 (b)'s computed mask, kept for its parked record (TYPEWRITER-FADE-ORDER)
 let fx5BandSeen = null;   // page-size: S1 (b)'s page-column band (the zoom's mask), kept for the re-parked record
 let fx5StartSeen = null;  // page-size: S1 (d)'s start reading, kept for its parked record
@@ -425,10 +426,16 @@ await withHarness(async (app) => {
   ], LAPTOP_W, 700);
   const scrollbarCss = await app.evalJs(`(() => {
     const cs = getComputedStyle(document.querySelector('.board-canvas-wrap'));
-    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor };
+    const w = document.querySelector('.board-canvas-wrap'); const tp = document.createElement('i'); tp.style.cssText = 'color:var(--wz-sb-thumb);position:absolute;'; w.appendChild(tp); const thumb = getComputedStyle(tp).color; tp.remove();
+    return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor, thumb, bar: w.offsetWidth - w.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0) };   // thumb, bar: #128
   })()`);
-  ok('S3 (a): the board canvas wrap declares a thin, low-contrast scrollbar (scrollbar-width:thin, a real scrollbar-color pair) — the Firefox-family half of the Plateau treatment',
-    scrollbarCss.scrollbarWidth === 'thin' && !!scrollbarCss.scrollbarColor && scrollbarCss.scrollbarColor !== 'auto', JSON.stringify(scrollbarCss));
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium scrollbar-width / scrollbar-color draw the native bar, whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar (buttons hidden), so both properties compute to auto, and the colour rides --wz-sb-thumb (02-scrollbars.css)). Verbatim:
+  //   ok('S3 (a): the board canvas wrap declares a thin, low-contrast scrollbar (scrollbar-width:thin, a real scrollbar-color pair) — the Firefox-family half of the Plateau treatment',
+  //   scrollbarCss.scrollbarWidth === 'thin' && !!scrollbarCss.scrollbarColor && scrollbarCss.scrollbarColor !== 'auto', JSON.stringify(scrollbarCss));
+  const fx5ThinWebkit = (c) => !!c && c.scrollbarWidth === 'auto' && c.scrollbarColor === 'auto' && c.bar >= 1 && c.bar <= 10;
+  ok('S3 (a)-B [#128]: the board canvas wrap shows a thin, low-contrast scrollbar - 1-10 px painted, drawn by ::-webkit-scrollbar (scrollbar-width and -color auto: no arrows), its thumb a real colour',
+    fx5ThinWebkit(scrollbarCss) && /^rgb/.test(scrollbarCss.thumb || '') && !/^rgba\(0, 0, 0, 0\)/.test(scrollbarCss.thumb || ''), JSON.stringify(scrollbarCss));
+  fx5SbSeen.push({ cell: 'Arbor light', css: scrollbarCss });
 
   // SCROLLBAR-FLUSH (Fable Oct 23, Nick: INK's light board shows a thick dark thumb at the
   // bottom) — the check above only asserted "thin" and "not auto," which the dark-chrome
@@ -440,8 +447,12 @@ await withHarness(async (app) => {
   // (Arbor light [default, already covered above]; Flux light; Flux dark - Arbor dark is
   // Plateau's own documented no-op, canon §11, skipped as uninformative for a colour check).
   const inkOnPaperLowArbor = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
-  ok('S3 (a) [scrollbar-flush successor]: Arbor\'s board canvas wrap resolves the PAPER-toned thumb colour (--ink-on-paper-low), not the dark-chrome default',
-    scrollbarCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLowArbor)), JSON.stringify({ scrollbarColor: scrollbarCss.scrollbarColor, inkOnPaperLowArbor }));
+  // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium scrollbar-width / scrollbar-color draw the native bar, whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar (buttons hidden), so both properties compute to auto, and the colour rides --wz-sb-thumb (02-scrollbars.css); the claim, the PAPER tone, stands on the thumb itself). Verbatim:
+  //   ok('S3 (a) [scrollbar-flush successor]: Arbor\'s board canvas wrap resolves the PAPER-toned thumb colour (--ink-on-paper-low), not the dark-chrome default',
+  //   scrollbarCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLowArbor)), JSON.stringify({ scrollbarColor: scrollbarCss.scrollbarColor, inkOnPaperLowArbor }));
+  ok('S3 (a)-B [scrollbar-flush successor, #128]: Arbor\'s board canvas wrap\'s thumb is the PAPER-toned colour (--ink-on-paper-low, through --wz-sb-thumb), not the dark-chrome default',
+    (scrollbarCss.thumb || '').includes(hexToRgbFragment(inkOnPaperLowArbor)), JSON.stringify({ thumb: scrollbarCss.thumb, inkOnPaperLowArbor }));
+  fx5SbSeen[fx5SbSeen.length - 1].paper = inkOnPaperLowArbor;
 
   for (const [theme, pageTone, label] of [['flux', 'light', 'Flux light'], ['flux', 'dark', 'Flux dark']]) {
     // freshBoard's own freshDesk() clears localStorage FIRST, so the theme/page-tone must be set
@@ -456,11 +467,16 @@ await withHarness(async (app) => {
     await sleep(300);
     const cellCss = await app.evalJs(`(() => {
       const cs = getComputedStyle(document.querySelector('.board-canvas-wrap'));
-      return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor };
+      const w = document.querySelector('.board-canvas-wrap'); const tp = document.createElement('i'); tp.style.cssText = 'color:var(--wz-sb-thumb);position:absolute;'; w.appendChild(tp); const thumb = getComputedStyle(tp).color; tp.remove();
+      return { scrollbarWidth: cs.scrollbarWidth, scrollbarColor: cs.scrollbarColor, thumb, bar: w.offsetWidth - w.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0) };   // thumb, bar: #128
     })()`);
     const inkOnPaperLow = await app.evalJs("getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim()");
-    ok(`S3 (a) [scrollbar-flush successor, ${label}]: the board canvas wrap resolves ITS OWN theme/page-tone paper colour with zero board-specific CSS of its own - genuinely theme-aware, not hardcoded`,
-      cellCss.scrollbarWidth === 'thin' && cellCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLow)), JSON.stringify({ cellCss, inkOnPaperLow }));
+    // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium scrollbar-width / scrollbar-color draw the native bar, whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar (buttons hidden), so both properties compute to auto, and the colour rides --wz-sb-thumb (02-scrollbars.css)). Verbatim:
+    //   ok(`S3 (a) [scrollbar-flush successor, ${label}]: the board canvas wrap resolves ITS OWN theme/page-tone paper colour with zero board-specific CSS of its own - genuinely theme-aware, not hardcoded`,
+    //   cellCss.scrollbarWidth === 'thin' && cellCss.scrollbarColor.includes(hexToRgbFragment(inkOnPaperLow)), JSON.stringify({ cellCss, inkOnPaperLow }));
+    ok(`S3 (a)-B [scrollbar-flush successor, #128, ${label}]: the board canvas wrap's thumb is ITS OWN theme/page-tone paper colour (--ink-on-paper-low through --wz-sb-thumb) with zero board-specific CSS of its own, drawn by ::-webkit-scrollbar 1-10 px (no arrows)`,
+      fx5ThinWebkit(cellCss) && (cellCss.thumb || '').includes(hexToRgbFragment(inkOnPaperLow)), JSON.stringify({ cellCss, inkOnPaperLow }));
+    fx5SbSeen.push({ cell: label, css: cellCss, paper: inkOnPaperLow });
   }
 
   // (b/c) The content-minimum trap: a PORTED long page gets a bounded
@@ -1305,6 +1321,21 @@ if (process.env.HARNESS_PARKED === '1') {
     // Quoted VERBATIM below. Successor: the pok directly below (generation 4); live ordered-labels successor in b3.mjs (generation 8).
     // pok('PARKED (was "S5: the board sliver carries EXACTLY two hand tools now — Add card + the footer toggle") — FX6 S2b: a THIRD tool joins them (New page card, the board-side door); generation 2: B2 S5 adds a FOURTH (Existing page…); generation 3: B3 S3 adds a FIFTH (From a deck…) — live successor: b3.mjs\'s own S4 section',
     //   sliverBoardShape.count === 5, JSON.stringify(sliverBoardShape));
+    // #128 (Nov 24): S3 (a)'s four - each record asserts its successor's truth from the readings kept in fx5SbSeen
+    {
+      const thinW = (c) => !!c && c.scrollbarWidth === 'auto' && c.scrollbarColor === 'auto' && c.bar >= 1 && c.bar <= 10;
+      const cell = (l) => fx5SbSeen.find((x) => x.cell === l);
+      const a = cell('Arbor light');
+      pok('PARKED (was "S3 (a): the board canvas wrap declares a thin, low-contrast scrollbar (scrollbar-width:thin, a real scrollbar-color pair) — the Firefox-family half of the Plateau treatment") - SUPERSEDED by #128 (Fable, Nov 24): drawn by ::-webkit-scrollbar, buttons hidden; live successor: S3 (a)-B',
+        !!a && thinW(a.css), JSON.stringify(a));
+      pok('PARKED (was "S3 (a) [scrollbar-flush successor]: Arbor\'s board canvas wrap resolves the PAPER-toned thumb colour (--ink-on-paper-low), not the dark-chrome default") - SUPERSEDED by #128: the colour rides --wz-sb-thumb; live successor: S3 (a)-B [scrollbar-flush successor, #128]',
+        !!a && !!a.paper && (a.css.thumb || '').includes(hexToRgbFragment(a.paper)), JSON.stringify(a));
+      for (const l of ['Flux light', 'Flux dark']) {
+        const c = cell(l);
+        pok(`PARKED (was "S3 (a) [scrollbar-flush successor, ${l}]: the board canvas wrap resolves ITS OWN theme/page-tone paper colour with zero board-specific CSS of its own - genuinely theme-aware, not hardcoded") - SUPERSEDED by #128; live successor: S3 (a)-B [scrollbar-flush successor, #128, ${l}]`,
+          !!c && thinW(c.css) && (c.css.thumb || '').includes(hexToRgbFragment(c.paper)), JSON.stringify(c));
+      }
+    }
     pok('PARKED, generation 4 [connector-a successor] - the board sliver carries FOUR hand tools now: the footer toggle is retired', sliverBoardShape.count === 4 && !sliverBoardShape.labels.includes('Show grafts'), JSON.stringify(sliverBoardShape));
 
     return parkedChecks;

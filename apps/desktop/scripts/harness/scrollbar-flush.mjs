@@ -47,7 +47,7 @@ import { withHarness } from '../runtime-verify.mjs';
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
 const parkedChecks = [];
-const parkReads = { page: [] };   // the default leg's own page-bar reads, for the parked records at the foot (item 3, 3840)
+const parkReads = { page: [], board: [] };   // board: #128's BOARD reads, for their parked records   // the default leg's own page-bar reads, for the parked records at the foot (item 3, 3840)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function hexToRgbFragment(hex) {
   const h = hex.replace('#', '');
@@ -231,12 +231,18 @@ await withHarness(async (app) => {
         vBar: w.offsetWidth - w.clientWidth - (parseFloat(cs.borderLeftWidth) || 0) - (parseFloat(cs.borderRightWidth) || 0),
         hBar: w.offsetHeight - w.clientHeight - (parseFloat(cs.borderTopWidth) || 0) - (parseFloat(cs.borderBottomWidth) || 0),
         wrapBackground: cs.backgroundColor, canvasBackground: getComputedStyle(document.querySelector('.board-canvas')).backgroundColor,
-        inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim() };
+        inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim(), thumb: getComputedStyle(w, '::-webkit-scrollbar-thumb').backgroundColor };   // thumb: #128
     })()`);
-    ok(`BOARD [${label}]: the canvas wrap's bars are THIN - scrollbar-width resolves to 'thin' and every bar that paints is 1-10px (a missing bar would be vacuous, so one must paint)`,
-      !!b && b.scrollbarWidthProp === 'thin' && (b.vBar > 0 || b.hBar > 0) && b.vBar <= 10 && b.hBar <= 10 && (b.hBar === 0 || b.hBar >= 1), JSON.stringify(b));
-    ok(`BOARD [${label}]: the canvas wrap's bar wears the cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default`,
-      !!b && !!b.inkOnPaperLow && b.scrollbarColor.includes(hexToRgbFragment(b.inkOnPaperLow)), JSON.stringify(b));
+    // SUPERSEDED (#128 (Fable, Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium scrollbar-width / scrollbar-color draw the native bar, whose arrows no CSS hides; every bar is now drawn by ::-webkit-scrollbar at 10 px (buttons hidden), both properties compute to auto, and the paper tone rides --wz-sb-thumb into the pseudo-element (02-scrollbars.css)). Both, verbatim (their records are in the PARKED block at the foot):
+    //   ok(`BOARD [${label}]: the canvas wrap's bars are THIN - scrollbar-width resolves to 'thin' and every bar that paints is 1-10px (a missing bar would be vacuous, so one must paint)`,
+    //   !!b && b.scrollbarWidthProp === 'thin' && (b.vBar > 0 || b.hBar > 0) && b.vBar <= 10 && b.hBar <= 10 && (b.hBar === 0 || b.hBar >= 1), JSON.stringify(b));
+    //   ok(`BOARD [${label}]: the canvas wrap's bar wears the cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default`,
+    //   !!b && !!b.inkOnPaperLow && b.scrollbarColor.includes(hexToRgbFragment(b.inkOnPaperLow)), JSON.stringify(b));
+    parkReads.board.push({ label, b });
+    ok(`BOARD-B [${label}, #128]: the canvas wrap's bars are THIN - drawn by ::-webkit-scrollbar (scrollbar-width and -color auto: no arrows) and every bar that paints is 1-10px (a missing bar would be vacuous, so one must paint)`,
+      !!b && b.scrollbarWidthProp === 'auto' && b.scrollbarColor === 'auto' && (b.vBar > 0 || b.hBar > 0) && b.vBar <= 10 && b.hBar <= 10 && (b.hBar === 0 || b.hBar >= 1), JSON.stringify(b));
+    ok(`BOARD-B [${label}, #128]: the canvas wrap's thumb wears the cell's own paper-toned colour (--ink-on-paper-low, through --wz-sb-thumb), not the dark-chrome default`,
+      !!b && !!b.inkOnPaperLow && (b.thumb || '').includes(hexToRgbFragment(b.inkOnPaperLow)), JSON.stringify(b));
     ok(`BOARD [${label}]: the bars sit on the board SURFACE - the wrap paints the same background as the canvas (the gutter beside it and the bar below it are paper, not the dark desk ground)`,
       !!b && !!b.wrapBackground && b.wrapBackground === b.canvasBackground && b.wrapBackground !== 'rgba(0, 0, 0, 0)', JSON.stringify(b));
   }
@@ -250,10 +256,16 @@ if (process.env.HARNESS_PARKED === '1') {
     reads.length === 12 && reads.every((r) => r.m && r.m.scrollbarWidthProp === 'auto' && r.m.scrollbarWidth >= 1 && r.m.scrollbarWidth <= 10), JSON.stringify(reads.map((r) => r.m && [r.m.scrollbarWidthProp, r.m.scrollbarWidth])));
   pok("PARKED (was \"TONE [${label}, margin=${margin}]: the bar wears this cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default\") - item 3 (Fable Oct 23, reading A): the page bar's scrollbar-color resolves to 'auto' (the exception resets it); the tone is read from the thumb's own pseudo-element; live successor: TONE [..] [item 3 successor]",
     reads.length === 12 && reads.every((r) => r.m && r.m.scrollbarColor === 'auto'), JSON.stringify(reads.map((r) => r.m && r.m.scrollbarColor)));
+  // #128 (Nov 24): BOARD's THIN (scrollbar-width 'thin') and TONE (scrollbar-color) claims, over every cell; each condition is its successor's truth
+  const board = parkReads.board;
+  pok("PARKED (was \"BOARD [${label}]: the canvas wrap's bars are THIN - scrollbar-width resolves to 'thin' and every bar that paints is 1-10px (a missing bar would be vacuous, so one must paint)\") - SUPERSEDED by #128 (Fable, Nov 24): drawn by ::-webkit-scrollbar, buttons hidden; live successor: BOARD-B [label, #128] THIN",
+    board.length === CELLS.length && board.every(({ b }) => !!b && b.scrollbarWidthProp === 'auto' && b.scrollbarColor === 'auto' && (b.vBar > 0 || b.hBar > 0) && b.vBar <= 10 && b.hBar <= 10), JSON.stringify(board.map(({ label, b }) => [label, b && b.scrollbarWidthProp, b && b.vBar, b && b.hBar])));
+  pok("PARKED (was \"BOARD [${label}]: the canvas wrap's bar wears the cell's own paper-toned colour (--ink-on-paper-low), not the dark-chrome default\") - SUPERSEDED by #128: the tone is on the ::-webkit-scrollbar thumb; live successor: BOARD-B [label, #128] TONE",
+    board.length === CELLS.length && board.every(({ b }) => !!b && !!b.inkOnPaperLow && (b.thumb || '').includes(hexToRgbFragment(b.inkOnPaperLow))), JSON.stringify(board.map(({ label, b }) => [label, b && b.thumb, b && b.inkOnPaperLow])));
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 2: the page bar's WIDTH-thin and TONE-scrollbar-color claims` : `\nSCROLLBAR-FLUSH PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 4: the page bar's WIDTH-thin and TONE-scrollbar-color claims; and #128 (Nov 24): the board wrap's THIN and TONE claims, over every cell` : `\nSCROLLBAR-FLUSH PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 // eslint-disable-next-line no-console

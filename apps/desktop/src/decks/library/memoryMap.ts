@@ -1,7 +1,7 @@
 import { deskTerm } from '../../store/deskLexicon';
-import { rowY, CARD_H } from '../layout';
+import { rowY } from '../layout';
 import { guidedStep } from '../guided';
-import { rowSlots } from './rowSlots';
+import { rowSlots, rowH } from './rowSlots';
 import type { DeckDefinition, DealtCardSpec } from '../types';
 
 // PRESETS-B item 4 (load sheet v2, section 4; content decks/content.ts): Memory Map (The Fiction Room): one Memory card for each the writer says (Three / Five / Seven), in one row. A dealt card is named "Memory (1)", "Memory (2)" (Feature Story's own numbering); she renames it.
@@ -18,7 +18,7 @@ function layout(n: number): DealtCardSpec[] {
   return rowSlots(n).map((s, i) => ({
     key: `memory-${i}`,
     ...guidedStep('memory-map', 'memory', `${TITLE} (${i + 1})`),
-    x: s.x, y: rowY(0), w: s.w, h: CARD_H,
+    x: s.x, y: rowY(0), w: s.w, h: rowH(n),
   }));
 }
 

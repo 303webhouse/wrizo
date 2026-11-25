@@ -661,7 +661,7 @@
 }
 /* ...and the strip reads as the drawer's own: the scrollbar's track is painted in the drawer's ground (--desk-ground, the sliding box's own
    background in every theme), so no sliver of room shows between the drawer and the page (green leg g3: a transparent track did). */
-:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) :is(.wz-sliver-panel, .wz-tutor-panel){ scrollbar-color:color-mix(in srgb, var(--text-low) 28%, transparent) var(--desk-ground); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) :is(.wz-sliver-panel, .wz-tutor-panel){ --wz-sb-thumb:color-mix(in srgb, var(--text-low) 28%, transparent); --wz-sb-track:var(--desk-ground); }
 
 /* ==========================================================================================================================================
    r13 - THE WRIZORS' THREE FIXES (wrizors-to-ARBOR-nov1d.md, md5 efd6b91b; Fable, Nov 1).
@@ -790,19 +790,28 @@
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tabs{ flex-direction:row; align-items:flex-end; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ width:96px; height:25px; clip-path:path('M0 25 L8.4 4 Q10 0 14 0 L82 0 Q86 0 87.6 4 L96 25 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:-12px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ width:104px; height:36px; margin:0 -4px -3px; clip-path:path('M0 36 L8.4 4 Q10 0 14 0 L90 0 Q94 0 95.6 4 L104 36 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-left:-16px; }
+/* #129 (Fable, Nov 24, 11:29: no control overlaps another control or a panel border): the folder tabs no longer lie over each other or over the panel's
+   top edge. Each tab stands in a 104 px slot (the inactive 96 px tab with 4 px either side, the active 104 px tab filling it), slots 2 px apart, so
+   choosing a tab moves no other tab; the active tab sits ON the panel's edge, not 3 px into it. (Was: margin-left -12px between tabs; the active tab
+   margin 0 -4px -3px, after a tab -16px.) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab{ margin:0 4px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab{ margin-left:6px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab[data-on='true']{ width:104px; height:36px; margin:0; clip-path:path('M0 36 L8.4 4 Q10 0 14 0 L90 0 Q94 0 95.6 4 L104 36 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--left .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-left:2px; }
 /* Tutor: off the drawer's right edge, where the opener rides (its left = the drawer's width once open) */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right{ top:62px; left:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:-10px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:-4px 0 -4px -3px; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:-14px; }
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin-top:0; margin-bottom:-8px; }
+/* #129: the same for the Back menu's tabs down its right edge: 106 px slots (the 98 px tab with 4 px above and below, the active 106 px tab filling
+   it), 2 px apart; the active tab stands ON the panel's edge, not 3 px into it. (Was: margin-top -10px; active margin -4px 0 -4px -3px, after a tab
+   -14px, as the first tab margin-bottom -8px.) */
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ margin:4px 0; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab{ margin-top:6px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab[data-on='true']{ width:36px; height:106px; margin:0; clip-path:path('M0 0 L31.6 8.4 Q36 10 36 14 L36 92 Q36 96 31.6 97.6 L0 106 Z'); }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab + .wz-drawer-tab[data-on='true']{ margin-top:2px; }
+:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab:first-child[data-on='true']{ margin:0; }
 /* the "?" beside a cloth (the Grafts note) stands just outside its tab, on the tab's row */
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnotes{ position:absolute; left:34px; top:0; width:16px; height:auto; display:flex; flex-direction:column; gap:0; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabnote-cell{ height:98px; margin:-10px 0 0; padding:0; display:flex; align-items:center; justify-content:center; }
@@ -1052,7 +1061,10 @@
 @media (prefers-reduced-motion: reduce){
   :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame[data-writing='true'] .desk-frame-sliver-anchor .arbor2-c2--left{ transition:none; }
 }
-:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll{ scrollbar-color:transparent transparent; }
+/* #119 (Nov 24): not on the prose page. In Chromium a scrollbar-color drops the element's ::-webkit-scrollbar rules, so here it swapped the page's
+   10 px bar for the 15 px native one the moment she wrote: the column narrowed 5 px, all her lines re-wrapped, and Plan -> back restored a scrollTop
+   over the other height (caret off screen). The prose page hides its thumb while she writes below, keeping the 10 px box. */
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .mode-scroll:not(.desk-frame-stage--prose .mode-scroll){ scrollbar-color:transparent transparent; }
 /* scrollbars only when something scrolls: every scroller in the room takes auto, never a standing bar */
 /* 4b (the Wrizors, Nov 10, via Fable; Nick's Nov 4 rule): the page's thumb is 4 px (it was 6: the 10 px webkit bar less a 4 px clear edge) and is
    painted only while the page scrolls or the pointer is on its strip, ~1 s after (src/arbor2/scrollReveal.ts); at rest the strip is clear. The bar
@@ -1060,6 +1072,8 @@
 /* (the rules are flag-scoped and webkit-only by their own selectors: a browser without ::-webkit-scrollbar drops them, so no @supports wrapper - arbor2-r5-unit R4 keeps every rule in this file under the flag) */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; border-left-width:calc(6px / var(--wz-sb-k)); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose .mode-scroll[data-arbor2-sb='on']::-webkit-scrollbar-thumb{ background:var(--ink-on-paper-low); background-clip:padding-box; }
+/* #119: while she writes the prose page's thumb is clear (the recede's hiding, by the thumb, not by scrollbar-color); after the rule above, same weight */
+:root[data-arbor2][data-theme='plateau'][data-wz-writing='true'] .desk-frame-stage--prose .mode-scroll::-webkit-scrollbar-thumb{ background:transparent; }
 :root[data-arbor2][data-theme='plateau'] :is(.mode-scroll, .wz-sliver-panel, .wz-tutor-panel, .wz-cascade-panel-body){ scrollbar-gutter:auto; }
 /* the "..." menu's full-screen line (an inline muted grey, near-invisible on the bar's ground): the bar's own cream */
 :root[data-arbor2][data-theme='plateau'] :is(.gh-corner-menu, .chrome-fade) button[aria-label$='full screen']{ color:var(--arbor-letter, #EFE4CB) !important; }

@@ -103,8 +103,14 @@ const outsideException = cssRules.replace(/@supports selector\(::-webkit-scrollb
 const EXC = '.desk-frame-stage--prose .mode-scroll';
 const exceptionRules = [...exceptionBlock.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [m[1].trim(), m[2].trim()]);
 const webkitSelectors = exceptionRules.map(([s]) => s).filter((s) => /::-webkit-scrollbar/.test(s));
-ok('T5 [successor]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (so Firefox keeps `thin`), and every ::-webkit-scrollbar selector there is on `.desk-frame-stage--prose .mode-scroll` - none anywhere else in index.css',
-  exceptionBlock.length > 0 && !/::-webkit-scrollbar/.test(outsideException) && webkitSelectors.length === 3 && webkitSelectors.every((s) => s.startsWith(EXC + '::-webkit-scrollbar')), JSON.stringify({ outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []), inside: webkitSelectors }));
+// SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium the standard properties draw the native bar, whose arrows no CSS hides; where ::-webkit-scrollbar is supported EVERY bar is now drawn by the pseudo-elements (buttons hidden), the colours riding --wz-sb-thumb / --wz-sb-track; the standard pair stays outside for Firefox, reading the same properties. The one-place law stands (only inside @supports, none outside); what is inside is now the app-wide bar plus the page's exception. Verbatim:
+//   ok('T5 [successor]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (so Firefox keeps `thin`), and every ::-webkit-scrollbar selector there is on `.desk-frame-stage--prose .mode-scroll` - none anywhere else in index.css',
+//     exceptionBlock.length > 0 && !/::-webkit-scrollbar/.test(outsideException) && webkitSelectors.length === 3 && webkitSelectors.every((s) => s.startsWith(EXC + '::-webkit-scrollbar')), JSON.stringify({ outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []), inside: webkitSelectors }));
+const appWideSel = ["::-webkit-scrollbar","::-webkit-scrollbar-track","::-webkit-scrollbar-thumb","::-webkit-scrollbar-corner","::-webkit-scrollbar-button"];
+const t5c = exceptionBlock.length > 0 && !/::-webkit-scrollbar/.test(outsideException) && appWideSel.every((x) => webkitSelectors.includes(x)) && webkitSelectors.filter((x) => x.startsWith(EXC + '::-webkit-scrollbar')).length === 3
+  && webkitSelectors.every((x) => appWideSel.includes(x) || x.startsWith(EXC + '::-webkit-scrollbar')) && exceptionRules.some(([x, b]) => x === '::-webkit-scrollbar-button' && /display:\s*none/.test(b));
+ok('T5-C [#128]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (Firefox keeps the standard pair) - and holds the app-wide bar (::-webkit-scrollbar, -track, -thumb, -corner, and -button hidden: no arrows) plus the page\'s own three on `.desk-frame-stage--prose .mode-scroll`; none anywhere else in index.css',
+  t5c, JSON.stringify({ outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []), inside: webkitSelectors }));
 const resetRule = exceptionRules.find(([s]) => s === EXC);
 ok('T5 [successor]: the exception RESETS scrollbar-width and scrollbar-color to auto on that element (the pseudo rules are ignored wherever either is set - the dead-code trap this ticket\'s one-mechanism note records)',
   !!resetRule && /scrollbar-width:\s*auto/.test(resetRule[1]) && /scrollbar-color:\s*auto/.test(resetRule[1]), JSON.stringify(resetRule));
@@ -129,12 +135,23 @@ const PAIR = /padding-right:\s*calc\(var\(--wz-page-pad-x, 38px\) \* var\(--pape
 ok('T5 [r2.1 successor]: the PAIRING - .mode-scroll takes padding-right: calc(<the margin cancellation it already carries: pad-x x paper-scale> + 10px - var(--wz-sb-w)), so bar + the extra is 10 layout px and the text column is one width at every scale and zoom',
   !!resetRule && PAIR.test(resetRule[1]), JSON.stringify(resetRule));
 // ARCHIVED PARK (#13 step 14): archive/scrollbar-flush-source.mjs.parked.md record 1
-ok('T5 [law-3 successor]: the thumb is the paper-toned --ink-on-paper-low, the track clear',
-  !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
-ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
-  /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--ink-border-strong\) transparent;\s*\}/.test(css), '');
-ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',
-  /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*scrollbar-color: var\(--ink-on-paper-low\) transparent;\s*\}/.test(css) && /\.board-text\{ scrollbar-color: var\(--ink-on-card-low\) transparent; \}/.test(css), '');
+
+// SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium the standard properties draw the native bar, whose arrows no CSS hides; where ::-webkit-scrollbar is supported EVERY bar is now drawn by the pseudo-elements (buttons hidden), the colours riding --wz-sb-thumb / --wz-sb-track; the standard pair stays outside for Firefox, reading the same properties. The page's thumb now reads --wz-sb-thumb (so a rule that clears the page's bar, Wire In's, clears it through the property), falling back to the paper tone, and the paper group sets that property. Verbatim:
+//   ok('T5 [law-3 successor]: the thumb is the paper-toned --ink-on-paper-low, the track clear',
+//     !!thumbRule && /background:\s*var\(--ink-on-paper-low\)/.test(thumbRule[1]) && exceptionRules.some(([s, b]) => s === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b)), JSON.stringify(thumbRule));
+const t5d = !!thumbRule && /background:\s*var\(--wz-sb-thumb, var\(--ink-on-paper-low\)\)/.test(thumbRule[1]) && exceptionRules.some(([x, b]) => x === EXC + '::-webkit-scrollbar-track' && /background:\s*transparent/.test(b))
+  && /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*--wz-sb-thumb: var\(--ink-on-paper-low\); --wz-sb-track: transparent;\s*\}/.test(css);
+ok('T5-D [law-3, #128]: the page\'s thumb is the paper-toned --ink-on-paper-low through --wz-sb-thumb (the paper group sets it), the track clear', t5d, JSON.stringify(thumbRule));
+// SUPERSEDED (#128, Fable Nov 24 11:28 am: no scrollbar arrows in any theme): in Chromium the standard properties draw the native bar, whose arrows no CSS hides; where ::-webkit-scrollbar is supported EVERY bar is now drawn by the pseudo-elements (buttons hidden), the colours riding --wz-sb-thumb / --wz-sb-track; the standard pair stays outside for Firefox, reading the same properties. Verbatim (both):
+//   ok('T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color',
+//     /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--ink-border-strong\) transparent;\s*\}/.test(css), '');
+//   ok('T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color',
+//     /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*scrollbar-color: var\(--ink-on-paper-low\) transparent;\s*\}/.test(css) && /\.board-text\{ scrollbar-color: var\(--ink-on-card-low\) transparent; \}/.test(css), '');
+const t5e = /\*\{\s*scrollbar-width: thin;\s*scrollbar-color: var\(--wz-sb-thumb, var\(--ink-border-strong\)\) var\(--wz-sb-track, transparent\);\s*\}/.test(css)
+  && exceptionRules.some(([x, b]) => x === '*' && /scrollbar-width:\s*auto/.test(b) && /scrollbar-color:\s*auto/.test(b));
+ok('T5-E [#128]: the standard pair is present for browsers without ::-webkit-scrollbar (the `*` rule: thin, coloured by --wz-sb-thumb / --wz-sb-track with the theme-token default), and inside @supports every element\'s pair is auto (the pseudo-elements draw)', t5e, '');
+const t5f = /\.mode-scroll, \.desk-frame-scroll-cap, \.board-canvas-wrap\{\s*--wz-sb-thumb: var\(--ink-on-paper-low\); --wz-sb-track: transparent;\s*\}/.test(css) && /\.board-text\{ --wz-sb-thumb: var\(--ink-on-card-low\); --wz-sb-track: transparent; \}/.test(css) && !/scrollbar-color: var\(--ink-on-paper-low\)/.test(css);
+ok('T5-F [#128]: the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their colours, now as --wz-sb-thumb / --wz-sb-track', t5f, '');
 
 // T6 - the board wrap paints the board surface, so the vertical bar (in its gutter) and the horizontal bar (below the canvas) sit on paper, not the dark desk ground
 const wrapRule = css.match(/\n\.board-canvas-wrap\{ scrollbar-gutter:stable; background:var\(--paper\); \}/);
@@ -192,11 +209,18 @@ const parkedChecks = [];
 if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   pok('PARKED (was "T5: ONE mechanism - index.css carries NO ::-webkit-scrollbar rule (they are dead under Chromium >= 121 wherever the standard properties are set, and the `*` rule sets them everywhere)") - Fable Oct 23 (3840: the page bar scales with page-size\'s transform), reading A: ONE scoped exception on `.desk-frame-stage--prose .mode-scroll`, inside @supports selector(::-webkit-scrollbar); live successor: T5 [successor]',
-    webkitScrollbarRules.length > 0 && webkitSelectors.length === 3 && !/::-webkit-scrollbar/.test(outsideException), JSON.stringify({ total: webkitScrollbarRules.length, outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []).length }));
+    // SUPERSEDED (#128, Fable Nov 24; PREPARED for Fable's word): this record's truth was "exactly three webkit selectors". #128 adds the five app-wide ones, so it went red on train-l8-1's parked leg (run 45489871289). Original condition, verbatim:
+    //   webkitScrollbarRules.length > 0 && webkitSelectors.length === 3 && !/::-webkit-scrollbar/.test(outsideException)
+    // Successor: T5-C [#128]'s predicate (the five app-wide, the page's own three, none outside).
+    webkitScrollbarRules.length > 0 && t5c, JSON.stringify({ total: webkitScrollbarRules.length, outside: (outsideException.match(/::-webkit-scrollbar[\w-]*/g) || []).length }));
   pok('PARKED (was "T5 [successor]: the bar is 10px / the APPLIED scale, rounded to the nearest whole layout pixel (the engine truncates a fractional bar width: 10/1.74 = 5.74 painted 8.7px) (--wz-sb-k = --wz-k, times --wz-zoom while the column is zoomed - the expressions page-size\'s own transform rules use)" - the bar rule carried the width expression itself) - Fable Oct 25 (FIX\'s line-break diagnosis): the expression moved into --wz-sb-w, capped at 10px, with the bar rule reading the variable and a right padding of 10px less that width; live successors: T5 [r2 successor] x2',
     !!barRule && !/width:\s*round\(nearest/.test(barRule[1]) && /width:\s*var\(--wz-sb-w\)/.test(barRule[1]) && !!resetRule && /--wz-sb-w:\s*min\(10px, round\(nearest, calc\(10px \/ var\(--wz-sb-k\)\), 1px\)\)/.test(resetRule[1]), JSON.stringify({ barRule }));
+  pok('PARKED (was "T5 [successor]: the webkit mechanism lives in EXACTLY ONE place - inside @supports selector(::-webkit-scrollbar){} (so Firefox keeps `thin`), and every ::-webkit-scrollbar selector there is on `.desk-frame-stage--prose .mode-scroll` - none anywhere else in index.css") - SUPERSEDED by #128 (Fable, Nov 24): every bar drawn by ::-webkit-scrollbar with its buttons hidden, colours on --wz-sb-thumb / --wz-sb-track', t5c, ''); // live successor: T5-C
+  pok('PARKED (was "T5 [law-3 successor]: the thumb is the paper-toned --ink-on-paper-low, the track clear") - SUPERSEDED by #128 (Fable, Nov 24): every bar drawn by ::-webkit-scrollbar with its buttons hidden, colours on --wz-sb-thumb / --wz-sb-track', t5d, ''); // live successor: T5-D
+  pok('PARKED (was "T5: ...and the standard mechanism IS present: the systemic `*` rule sets scrollbar-width:thin and a theme-token scrollbar-color") - SUPERSEDED by #128 (Fable, Nov 24): every bar drawn by ::-webkit-scrollbar with its buttons hidden, colours on --wz-sb-thumb / --wz-sb-track', t5e, ''); // live successor: T5-E
+  pok('PARKED (was "T5: ...and the paper-toned group (.mode-scroll, .desk-frame-scroll-cap, .board-canvas-wrap) and the card text keep their scrollbar-color") - SUPERSEDED by #128 (Fable, Nov 24): every bar drawn by ::-webkit-scrollbar with its buttons hidden, colours on --wz-sb-thumb / --wz-sb-track', t5f, ''); // live successor: T5-F
   console.log(JSON.stringify(parkedChecks, null, 2));
-  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH-SOURCE PARKED: PASS (${parkedChecks.length} checks) - this FILE parks 2: T5's no-webkit claim; T5's bar-width expression (item 3 r2)` : '\nSCROLLBAR-FLUSH-SOURCE PARKED: FAIL');
+  console.log(parkedChecks.every((c) => c.pass) ? `\nSCROLLBAR-FLUSH-SOURCE PARKED: PASS (${parkedChecks.length} checks) - this FILE parks 6: T5's no-webkit claim; T5's bar-width expression (item 3 r2); and #128 (Nov 24): T5's one-place selector set, its paper thumb, the standard * pair and the paper group's scrollbar-color` : '\nSCROLLBAR-FLUSH-SOURCE PARKED: FAIL');
 }
 
 const bad = checks.filter((c) => !c.pass).length;

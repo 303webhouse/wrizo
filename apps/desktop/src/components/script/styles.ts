@@ -52,3 +52,7 @@ for (const t of ['scene', 'action', 'character', 'paren', 'dialogue', 'transitio
 export const elementStyle = (t: ScriptElType): React.CSSProperties => EL_STYLE[t] ?? (EL_STYLE.action as React.CSSProperties);
 export const elementStyleStatic = (t: ScriptElType): React.CSSProperties => EL_STYLE_STATIC[t] ?? (EL_STYLE_STATIC.action as React.CSSProperties);
 
+// SCRIPT batch 2, item 2 — the page furniture of a broken speech, (MORE) and the cue with (CONT'D): set at the cue's indent and measure, in
+// capitals, with no space above (it sits directly under or over the speech's own lines), and not a place to type.
+export const FURNITURE_STYLE: React.CSSProperties = Object.freeze({ ...buildElementStyle('character'), marginTop: 0, cursor: 'default', userSelect: 'none' });
+

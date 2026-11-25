@@ -101,6 +101,18 @@
   cursor:nwse-resize; border-radius:0;
   border-right:2px solid var(--ink-border-strong); border-bottom:2px solid var(--ink-border-strong);
 }
+/* BOARD ZOOM (Arbor and Machina, Nov 24; components/BoardZoom.tsx): out, the readout, in, laid over the frame's lower-left corner, clear of a scrollbar. An overlay: it takes no
+   room, so the frame and every card keep their places. Rendered only in Arbor and Machina; each wears its theme's dress below. */
+.board-zoom{ position:absolute; left:10px; bottom:22px; display:flex; align-items:stretch; }
+.board-zoom > button{ min-width:28px; height:26px; padding:0 8px; margin:0; background:var(--paper); border:1px solid var(--ink-border-strong); border-radius:0; color:var(--text-mid); cursor:pointer;
+  font-family:var(--font-chromeLabel, var(--font-ui)); font-size:12px; line-height:1; font-variant-numeric:tabular-nums; }
+.board-zoom > button + button{ border-left-width:0; }
+.board-zoom > button[data-board-zoom-act='home']{ min-width:52px; }
+.board-zoom > button:hover, .board-zoom > button:focus-visible{ color:var(--text-hi); outline:1px solid var(--text-hi); outline-offset:-1px; }
+/* Arbor: the paper's own quiet, with brass at the readout */
+[data-theme='plateau'] .board-zoom > button[data-board-zoom-act='home']{ color:var(--brass, var(--text-hi)); font-size:11.5px; letter-spacing:.04em; }
+/* Machina: the console's chrome surface, the figure in mono capitals */
+[data-theme='machina'] .board-zoom > button{ background:var(--chrome-surface, var(--paper)); font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
 .board-sheet{
   position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
   background:rgba(0,0,0,.5);
@@ -224,6 +236,11 @@
   padding:6em 6em 6em 9em;          /* 1in top/right/bottom, 1.5in left */
   margin:0 auto;
 }
+/* SCRIPT batch 2, item 1 — the one sheet allowed to be taller: while the caret is in a speech or action block longer than a page, that one
+   live block renders whole on the sheet where it begins (a contenteditable cannot be cut in half), so the sheet grows to hold it instead of
+   letting the next sheet paint over the words being typed. The projection and the page count do not change; when the caret leaves, the
+   block breaks again and the sheet is exactly 11in. */
+.script-sheet[data-holds-whole]{ height:auto; min-height:66em; }
 /* THE SEQUENCE, and the gap between sheets: the gap is chrome, never body. In rem, never the sheet's em, so it does not scale with the paper; not a multiple of --script-line (1.5 lines at 24px), so no one can mistake it for blank lines; and flex gap, so nothing can render into it (sc2.mjs asserts none does). align-items:stretch keeps each sheet filling the column [board-card §9] */
 .script-sequence{ --script-sheet-gap:1.5rem; display:flex; flex-direction:column; gap:var(--script-sheet-gap); }
 /* SC1 S1 — an empty element occupies exactly ONE line of the 6-lpi grid
@@ -448,9 +465,9 @@
 .wz-arrival .wz-screen.wz-popout{ max-height:calc(100% - var(--ptop) - 24px); overflow-y:auto; }
 [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ top:auto; bottom:24px; max-height:calc(100% - 24px - var(--popout-floor, 300px)); }
 /* the scroll area (the fields and the tick) is the only thing that scrolls; the other themes leave it transparent to layout (display:contents) */
-.wz-popout-scroll{ display:flex; flex-direction:column; gap:.7rem; flex:0 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:0 6px; margin:0 -6px; scrollbar-width:thin; scrollbar-color:#9C8A6E #241811; }
-[data-theme='flux'] .wz-arrival .wz-popout .wz-popout-scroll{ scrollbar-color:#5F8F95 #04141A; }
-[data-theme='machina'] .wz-arrival .wz-popout .wz-popout-scroll{ scrollbar-color:#9AA1A8 #151719; gap:8px; }
+.wz-popout-scroll{ display:flex; flex-direction:column; gap:.7rem; flex:0 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; padding:0 6px; margin:0 -6px; --wz-sb-thumb:#9C8A6E; --wz-sb-track:#241811; }
+[data-theme='flux'] .wz-arrival .wz-popout .wz-popout-scroll{ --wz-sb-thumb:#5F8F95; --wz-sb-track:#04141A; }
+[data-theme='machina'] .wz-arrival .wz-popout .wz-popout-scroll{ --wz-sb-thumb:#9AA1A8; --wz-sb-track:#151719; gap:8px; }
 .wz-arrival .wz-popout .wz-form{ flex:0 1 auto; min-height:0; }
 .wz-arrival .wz-popout .wz-error, .wz-arrival .wz-popout .wz-btn, .wz-arrival .wz-popout .wz-popout-links, .wz-arrival .wz-popout .wz-secondary{ flex:none; }
 /* MACHINA's CREATE-ACCOUNT FACE, tighter (draft 5 §5 R1): no sub-line (the string stays in the lexicon); fields 36 px tall with 8 px gaps; padding 18 px; the tick row 20 px with 10 px above and below; the BUTTON ROW pinned at the foot ("Create my account" left, "← back" right, one row; an error line sits above it); only the fields scroll, and the thumb reads >= 3:1. Target at 1366x768: top 433 or lower, foot at or above 744, nothing scrolls. */
@@ -467,14 +484,14 @@
 [data-theme='machina'] .wz-arrival .wz-screen.wz-popout[data-popout='account']{ display:grid; grid-template-columns:1fr auto; grid-template-rows:auto minmax(0, 1fr) auto auto; align-items:center; gap:0; overflow:hidden; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-form{ display:contents; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-bighead{ grid-column:1 / -1; grid-row:1; margin-bottom:10px; }
-[data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-popout-scroll{ display:block; grid-column:1 / -1; grid-row:2; min-height:0; overflow-y:auto; align-self:stretch; display:block; padding:0; margin:0; scrollbar-width:thin; scrollbar-color:#9AA1A8 #151719; }
+[data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-popout-scroll{ display:block; grid-column:1 / -1; grid-row:2; min-height:0; overflow-y:auto; align-self:stretch; display:block; padding:0; margin:0; --wz-sb-thumb:#9AA1A8; --wz-sb-track:#151719; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-error{ grid-column:1 / -1; grid-row:3; margin-bottom:6px; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] .wz-form > .wz-btn{ grid-column:1; grid-row:4; justify-self:start; align-self:center; }
 [data-theme='machina'] .wz-arrival .wz-popout[data-popout='account'] > .wz-secondary{ grid-column:2; grid-row:4; justify-self:end; align-self:center; margin:0; }
 /* a scrolling panel anywhere keeps a visible thumb: Arbor's and Flux's edge colours on their own grounds (>= 3:1) */
-.wz-arrival .wz-screen.wz-popout{ scrollbar-width:thin; scrollbar-color:#9C8A6E #241811; }
-[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ scrollbar-color:#5F8F95 #04141A; }
-[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ scrollbar-color:#9AA1A8 #151719; }
+.wz-arrival .wz-screen.wz-popout{ --wz-sb-thumb:#9C8A6E; --wz-sb-track:#241811; }
+[data-theme='flux'] .wz-arrival .wz-screen.wz-popout{ --wz-sb-thumb:#5F8F95; --wz-sb-track:#04141A; }
+[data-theme='machina'] .wz-arrival .wz-screen.wz-popout{ --wz-sb-thumb:#9AA1A8; --wz-sb-track:#151719; }
 
 /* MACHINA, a SHORT window (Fable Nov 18, 10:15 pm): no face ever covers the mark. The sign-in face keeps the doors' place at 768 and above; on a short window its top goes no higher than the mark's floor (--popout-floor), its fields scroll and its button row stays pinned. */
 @media (max-height: 700px){

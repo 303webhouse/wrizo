@@ -72,6 +72,10 @@
 :root[data-flux3][data-theme='flux'] .reorg-dockind-menu{ position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:20; display:flex; flex-direction:column; padding:4px 0; background:var(--desk-ground); border:1px solid var(--ink-border-strong); max-height:60vh; overflow-y:auto; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-item > button, :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:6px 12px; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-sub{ display:flex; flex-direction:column; padding:0 0 4px 12px; border-left:1px solid var(--ink-border-strong); margin-left:12px; }
+/* #122 (Nov 24, live): in Frame (the setup sub) the margins row's three chips (Normal, Narrow, Wide) ran past the narrow drawer and Narrow and Wide could
+   not be pressed (their centres lay under the drawer's body and on the page). The chips wrap inside the row instead, as the page numbers' row already
+   does (PagePanel's .wz-page-setup-seg--wrap; 19-beginnings.css). Flux only, and no DOM change: the switch-off goldens keep their class names */
+:root[data-flux3][data-theme='flux'] .reorg-dockind-setup .wz-page-setup-seg{ flex-wrap:wrap; padding-bottom:2px; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button[aria-checked='true'], :root[data-flux3][data-theme='flux'] .reorg-dockind-sub > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
 :root[data-flux3][data-theme='flux'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):hover, :root[data-flux3][data-theme='flux'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 :root[data-flux3][data-theme='flux'] .reorg-parts-structure{ margin:4px 0 8px; }
@@ -89,10 +93,10 @@
 :root[data-flux3][data-theme='flux'] .reorg-text-symbols{ flex-wrap:wrap; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-note{ margin:0 0 10px; font-size:12px; line-height:1.45; color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-one{ margin:0; font-size:12px; color:var(--text-low); }
-:root[data-flux3][data-theme='flux'] .reorg-pubparts-row{ display:flex; align-items:center; gap:8px; min-height:28px; box-sizing:border-box; border-top:1px solid var(--ink-border); }
+:root[data-flux3][data-theme='flux'] .reorg-pubparts-row{ display:flex; flex-wrap:nowrap; align-items:center; gap:8px; min-height:32px; box-sizing:border-box; border-top:1px solid var(--ink-border); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-row input{ flex:none; margin:0; width:15px; height:15px; accent-color:var(--line-active); cursor:pointer; }
-:root[data-flux3][data-theme='flux'] .reorg-pubparts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+:root[data-flux3][data-theme='flux'] .reorg-pubparts-name{ flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-n{ color:var(--text-low); }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-move{ flex:none; box-sizing:border-box; width:24px; height:24px; padding:0; border:1px solid var(--text-low); border-radius:0; background:transparent; color:var(--text-hi); font-size:13px; line-height:1; cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-pubparts-move:hover:not([disabled]){ background:var(--ink-900); }
@@ -104,6 +108,13 @@
 :root[data-flux3][data-theme='flux'] .reorg-dockind-group > button{ display:flex; align-items:center; width:100%; padding:5px 12px 5px 0; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-group > button:hover, :root[data-flux3][data-theme='flux'] .reorg-dockind-group > button:focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 :root[data-flux3][data-theme='flux'] .reorg-dockind-group > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+/* #121 (Nov 24, live from L7): the new presets' rows (PRESETS-B item 3): the preset button and its "?" side by side, in Flux's own dress (the group
+   buttons' face, size and hover above); the live rows stay a lone .reorg-dockind-group > button, unchanged. Twins of Arbor's and Machina's rules */
+:root[data-flux3][data-theme='flux'] .reorg-dockind-prow{ display:flex; align-items:center; gap:6px; padding-right:12px; }
+:root[data-flux3][data-theme='flux'] .reorg-dockind-prow > button{ display:flex; align-items:center; flex:1 1 auto; min-width:0; padding:5px 0; background:none; border:0; text-align:left; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); cursor:pointer; }
+:root[data-flux3][data-theme='flux'] .reorg-dockind-prow > button:hover, :root[data-flux3][data-theme='flux'] .reorg-dockind-prow > button:focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
+/* the "?" note escapes the menu's scroll box (PRESETS-B, Nov 23, Fable: YES): fixed, so no ancestor's overflow clips it; PresetNote.tsx places it */
+:root[data-flux3][data-theme='flux'] .reorg-preset-note .wz-drawer-note-pop{ position:fixed; right:auto; z-index:60; }
 @container reorg-part-row (max-width: 179.98px){
   :root[data-flux3][data-theme='flux'] .reorg-parts-list > li > .reorg-parts-row .reorg-parts-words{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
 }

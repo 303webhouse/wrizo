@@ -73,7 +73,7 @@
 :root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets{ position:relative; z-index:1; background:none; line-height:1; cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets:hover, :root[data-arbor2][data-theme='plateau'] button.reorg-parts-assets:focus-visible{ border-color:var(--text-low); color:var(--text-hi); }
 :root[data-arbor2][data-theme='plateau'] .reorg-dockind{ position:relative; margin:0 0 8px; }
-:root[data-arbor2][data-theme='plateau'] .reorg-dockind-btn{ display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-dockind-btn{ display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 8px; background:none; border:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .reorg-dockind-btn[aria-expanded='true'], :root[data-arbor2][data-theme='plateau'] .reorg-dockind-btn:hover{ border-color:var(--text-low); }
 :root[data-arbor2][data-theme='plateau'] .reorg-dockind-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-dockind-caret, :root[data-arbor2][data-theme='plateau'] .reorg-dockind-fold, :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-fold{ font-size:10px; color:var(--text-mid); }
@@ -83,13 +83,13 @@
 :root[data-arbor2][data-theme='plateau'] .reorg-dockind-sub > button[aria-checked='true'], :root[data-arbor2][data-theme='plateau'] .reorg-dockind-sub > button[aria-pressed='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }
 :root[data-arbor2][data-theme='plateau'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):hover, :root[data-arbor2][data-theme='plateau'] :is(.reorg-dockind-item > button, .reorg-dockind-sub > button):focus-visible{ outline:1px solid var(--text-low); outline-offset:-2px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure{ margin:4px 0 8px; }
-:root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0; border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0; border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-body{ display:flex; flex-wrap:wrap; gap:6px 14px; padding:4px 0 2px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-body[hidden]{ display:none; }
 :root[data-arbor2][data-theme='plateau'] .reorg-parts-structure-body .reorg-parts-tool[disabled]{ color:var(--text-low); cursor:default; text-decoration:none; }
 :root[data-arbor2][data-theme='plateau'] .reorg-text-fold{ margin:6px 0 0; }
-:root[data-arbor2][data-theme='plateau'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0; border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:600; color:var(--text-hi); cursor:pointer; }
+:root[data-arbor2][data-theme='plateau'] .reorg-text-fold-btn{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:4px 0; background:none; border:0; border-top:1px solid var(--ink-border-strong); font-family:var(--font-ui); font-size:12px; font-weight:400; color:var(--text-hi); cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .reorg-text-fold-btn:focus-visible{ outline:1px solid var(--accent-rest); outline-offset:2px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-text-fold-mark{ font-size:10px; color:var(--text-mid); }
 :root[data-arbor2][data-theme='plateau'] .reorg-text-fold-body[hidden]{ display:none; }
@@ -98,10 +98,10 @@
 :root[data-arbor2][data-theme='plateau'] .wz-drawer-tab[data-disabled='true']{ opacity:.4; cursor:default; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-note{ margin:0 0 10px; font-size:12px; line-height:1.45; color:var(--text-low); }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-one{ margin:0; font-size:12px; color:var(--text-low); }
-:root[data-arbor2][data-theme='plateau'] .reorg-pubparts-row{ display:flex; align-items:center; gap:8px; min-height:28px; box-sizing:border-box; border-top:1px solid var(--ink-border); }
+:root[data-arbor2][data-theme='plateau'] .reorg-pubparts-row{ display:flex; flex-wrap:nowrap; align-items:center; gap:8px; min-height:32px; box-sizing:border-box; border-top:1px solid var(--ink-border); }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-row[data-in='false'] .reorg-pubparts-name{ opacity:.4; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-row input{ flex:none; margin:0; width:15px; height:15px; accent-color:#56632E; cursor:pointer; }
-:root[data-arbor2][data-theme='plateau'] .reorg-pubparts-name{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+:root[data-arbor2][data-theme='plateau'] .reorg-pubparts-name{ flex:1 1 0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-n{ color:var(--text-low); }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-move{ flex:none; box-sizing:border-box; width:24px; height:24px; padding:0; border:1px solid var(--text-low); border-radius:0; background:transparent; color:var(--text-hi); font-size:13px; line-height:1; cursor:pointer; }
 :root[data-arbor2][data-theme='plateau'] .reorg-pubparts-move:hover:not([disabled]){ background:var(--ink-900); }
