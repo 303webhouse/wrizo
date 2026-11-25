@@ -48,7 +48,7 @@ function oneEdit(a, b) {
 const strip = (s) => s.replace(/^[\s"'`“‘([]+|[\s"'`”’)\].,;:]+$/g, '');
 
 // ---- M3 to M7 and the M1/M2 split, on ONE reply ----
-export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText = null, subjectWords = [], guard, requireExample = false, requireCorrection = false, checkM7 = true }) {
+export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText = null, subjectWords = [], guard, requireExample = false, requireCorrection = false, checkM7 = true, nothingSupplied = false }) {
   const res = [];
   const { body, readLine } = splitReadLine(reply);
   const v = guard.guardReply(reply);
@@ -99,10 +99,13 @@ export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText
     if (requireCorrection && count === 0) { m6 = false; m6d.push('no correction written as her words -> corrected words'); }
     res.push({ id: 'M6', pass: m6, detail: m6d.slice(0, 3).join('; ') });
   }
-  // M7: the last line begins "Read:" and names something
+  // M7: the last line begins "Read:" and names something. ONE exception (#131, Nov 25): when the case sent nothing of hers (no draft, no notes), "Read: nothing." is the true line, and asking for a name would ask the
+  // model to invent one. (The live run failed E6, F6 and H5 on exactly that.) With a draft or notes sent, "nothing" still fails.
   if (checkM7) {
     const named = readLine ? readLine.replace(/^\s*Read:\s*/i, '').trim() : '';
-    res.push({ id: 'M7', pass: !!readLine && named.length > 0 && !/^(nothing|none)\.?$/i.test(named), detail: readLine ? (named ? '' : '"Read:" names nothing') : 'no closing "Read:" line' });
+    const empty = /^(nothing|none)\.?$/i.test(named);
+    const pass = !!readLine && named.length > 0 && (!empty || nothingSupplied);
+    res.push({ id: 'M7', pass, detail: pass ? '' : readLine ? '"Read:" names nothing' : 'no closing "Read:" line' });
   }
   return { checks: res, flagged: v.flagged };
 }
@@ -138,7 +141,7 @@ export function evaluateCase(c, rec, { guard, drafts, prompts = null, words = nu
     }
     const { checks, flagged } = runMachineChecks({
       reply: r.reply, hat: c.hat, task: c.task, draftText: draft?.text ?? null, subjectWords: draft?.subjectWords ?? [], guard,
-      requireExample: !!c.requireExample, requireCorrection: !!c.requireCorrection, checkM7: c.task !== 'sprint',
+      requireExample: !!c.requireExample, requireCorrection: !!c.requireCorrection, checkM7: c.task !== 'sprint', nothingSupplied: !c.draft && !(c.notes && c.notes.length),
     });
     for (const k of checks) out.machine.push({ ...k, variant: r.variant ?? null });
     // H6w: words this case forbids (a case with `forbid`): the reply, outside quotation marks, holds none of them as a whole word

@@ -16,6 +16,8 @@ What the old prompt carried and the kit's does not: the "Reference atoms are law
 
 **The safety message goes in by a marker** (Fable, Nov 23, 6:14 pm; the words are Nick's, approved Nov 23, 5:23 pm, prompts.md section 8). BASE tells the aid, if she says she herself is in danger, to reply with ONE fixed marker only (`[[WRIZO-SAFETY]]`; the kit's own bullet said "reply only with the fixed safety message supplied by Wrizo"). The server swaps any reply that holds the marker for the fixed words (`SAFETY_MESSAGE` in tutorPrompts.ts), which the model never writes and the reply guard never reads. The model is never sent the words. A review by a qualified person is still owed before this ships to under-18s (R12).
 
+**One rule is said more fully than the kit says it** (TUTOR-B, Nov 25, 2026, #131; named in `apps/server/scripts/tutor-eval/kit-departures.mjs`): the eight-word quoting limit now reads as eight words in a row, with or without quotation marks, because live replies quoted past it.
+
 Prompt and record move as one: any future change to the prompts amends this file in the same commit (`tutor-mirror.mjs` fails if they differ).
 
 ---
@@ -36,7 +38,8 @@ WHAT THE AID IS
 
 WHAT THE AID DOES
 1. Asks questions that move her forward, built from her own material.
-2. Points to exact places. Quote at most 8 of her words to locate a place.
+2. Points to exact places. Quote at most 8 of her words in a row to locate a place,
+   with or without quotation marks. For a longer sentence, quote only part of it.
 3. Says what a reader meets at that place, and why.
 4. Explains craft and grammar ideas in general terms.
 5. Opens directions as questions or as kinds of move. Never the filled-in move.

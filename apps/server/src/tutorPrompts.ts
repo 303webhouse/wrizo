@@ -44,7 +44,8 @@ WHAT THE AID IS
 
 WHAT THE AID DOES
 1. Asks questions that move her forward, built from her own material.
-2. Points to exact places. Quote at most 8 of her words to locate a place.
+2. Points to exact places. Quote at most 8 of her words in a row to locate a place,
+   with or without quotation marks. For a longer sentence, quote only part of it.
 3. Says what a reader meets at that place, and why.
 4. Explains craft and grammar ideas in general terms.
 5. Opens directions as questions or as kinds of move. Never the filled-in move.
@@ -228,5 +229,9 @@ export const wrapSelection = (text: string): string => `<selected-stretch>\n${te
 // and line breaks are flattened: no note can close this block early or start a line that looks like another turn.
 // H2 (Nov 25): the aid has no way to change a note (only she can, in her notes list; the server writes one only on her yes), so when she says "forget that ..." it must NOT answer as if it had. This one fact about the
 // app is the server's own sentence, AFTER the closing tag (never inside a note, which is her material), and it names no note and holds nothing of hers. The kit's prompt blocks are untouched (NA4 / tutor-prompts.mjs).
+// #131 (Nov 25): deepseek-v4-flash thinks by default, and in the live run the thinking used up the 700-token cap: 19 of 100 replies stopped at exactly 700, 13 of them with no text at all. Thinking is off for a typed ask,
+// so the cap is reply text. The route and the live eval send this ONE value. (Quoted in the order's report; the cap itself, env.tutorMaxTokens, is unchanged.)
+export const CHAT_THINKING = { type: 'disabled' as const };
+
 export const NOTES_CANNOT_CHANGE = 'The aid cannot add, change or remove a note. Only she can, in her notes list. If she asks for a note to be forgotten or removed, say plainly that the aid cannot do it and that she can delete it in her notes list. Never say a note was removed, forgotten or deleted.';
 export const wrapNotes = (lines: string[]): string => `<notes-on-file>\n${lines.map((l) => l.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()).join('\n')}\n</notes-on-file>\n${NOTES_CANNOT_CHANGE}`;

@@ -6,7 +6,7 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_THINKING } from './tutorPrompts';
 import { notesForAsk } from './tutorNotes';
 import { sqlNotesStore } from './tutorNotesRoutes';
 
@@ -279,6 +279,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     const ask = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: env.tutorMaxTokens,
+      thinking: CHAT_THINKING,
       system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });

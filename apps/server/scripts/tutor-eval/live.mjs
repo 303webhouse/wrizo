@@ -48,9 +48,9 @@ export async function liveReply({ clients, cap, prompts, c, variant, draftText }
   if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
   messages.push({ role: 'user', content: c.says });
   const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), clients.maxTokens);
-  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: clients.maxTokens, system, messages });
+  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: clients.maxTokens, thinking: prompts.CHAT_THINKING, system, messages });
   cap.settle(est, r.usage);
-  return { variant: variant ?? null, reply: textOf(r), usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } };
+  return { variant: variant ?? null, reply: textOf(r), stop: r.stop_reason ?? null, usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } };
 }
 
 export async function liveGrade({ clients, cap, c, draftText, replies, questions }) {
