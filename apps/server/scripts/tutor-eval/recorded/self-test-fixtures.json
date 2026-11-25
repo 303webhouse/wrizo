@@ -7,6 +7,42 @@
  "at": "2026-11-23",
  "entries": [
   {
+   "id": "C5",
+   "note": "M7: her draft was sent, so \"Read: nothing.\" names nothing and is not true",
+   "expect": {
+    "fails": [
+     "M7"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A reader cannot tell who is acting in that sentence. Who is walking into school?\nRead: nothing.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "F6",
+   "note": "M7: nothing of hers was sent, so \"Read: nothing.\" is the true line",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Nothing of your Doc was in view. Open the Part you mean and ask again from there.\nRead: nothing.",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
    "id": "C1",
    "note": "Tutor, mechanics: points to each place, names and explains the error, two unrelated labelled examples, never fixes hers",
    "expect": {

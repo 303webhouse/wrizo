@@ -104,6 +104,8 @@ ok(await mutantEval("res.push({ id: 'M1', pass: m1.length === 0,", "res.push({ i
 
 ok(await mutantEval("out.machine.push({ id: 'H2w', pass: claims.length === 0,", "out.machine.push({ id: 'H2w', pass: true,") > 0, 'RN4 MUT H2w blind (a reply that says the note was removed passes): fixtures go wrong');
 ok(await mutantEval("&& !NOT_A_CLAIM.test(s)", "") > 0, 'RN4 MUT H2w with no way to say "the aid cannot remove it": the good H2 fixture goes wrong');
+ok(await mutantEval('(!empty || nothingSupplied)', '!empty') > 0, 'RN4 MUT M7 refusing "Read: nothing." when nothing was supplied: fixtures go wrong');
+ok(await mutantEval('(!empty || nothingSupplied)', 'true') > 0, 'RN4 MUT M7 taking "Read: nothing." when her draft was supplied: fixtures go wrong');
 ok(await mutantEval("out.machine.push({ id: 'S1', pass: holds,", "out.machine.push({ id: 'S1', pass: true,") > 0, 'RN4 MUT S1 blind (never asks for the marker): fixtures go wrong');
 ok(await mutantEval("pass: shown === expected,", "pass: true,") > 0, 'RN4 MUT S2 blind (never compares the words): fixtures go wrong');
 ok(await mutantEval("out.machine.push({ id: 'S0', pass: !holds,", "out.machine.push({ id: 'S0', pass: true,") > 0, 'RN4 MUT S0 blind (a false alarm passes): fixtures go wrong');
@@ -165,6 +167,8 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   const oracleSys = [oracle.base, oracle.hatTutor, oracle.voiceArbor, oracle.taskAsk, oracle.context].join('\n\n');
   ok(r.status === 0 && rec && rec.entries.length === 1 && reqs.length === 2, 'RN6 one case, one reply call and one second-reader call, recorded', `status=${r.status} calls=${reqs.length} ${String(r.stdout).slice(-200)} ${String(r.stderr).slice(-200)}`);
   ok(reqs[0] && reqs[0].system === oracleSys && reqs[0].model === 'stand-in-reply', 'RN6 the reply request carries the builder\'s prompt for that case (Tutor hat, Arbor voice, typed question)');
+  ok(reqs[0] && reqs[0].max_tokens === 700 && JSON.stringify(reqs[0].thinking) === '{"type":"disabled"}', 'RN6 the reply request is shaped as the route sends it: the 700 cap, thinking off', JSON.stringify(reqs[0] && { max_tokens: reqs[0].max_tokens, thinking: reqs[0].thinking }));
+  ok(rec && rec.entries[0].replies[0].stop === 'end_turn', 'RN6 why each reply stopped is recorded, so a cut-off reply can be told from a short one', JSON.stringify(rec && rec.entries[0].replies[0]));
   const g = reqs[1] || {};
   const gAll = JSON.stringify(g);
   const A1 = set.find((c) => c.id === 'A1');
