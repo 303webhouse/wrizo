@@ -226,4 +226,7 @@ export const wrapDelta = (text: string): string => `<page-since-last-read>\n${te
 export const wrapSelection = (text: string): string => `<selected-stretch>\n${text}\n</selected-stretch>`;
 // TUTOR-B ITEM 7 STEP 2: her notes on file ride the same way (the server reads them, tutorNotes.ts notesForAsk; the browser never sends one). One line per note, "kind: text". A note is her own words, so angle brackets
 // and line breaks are flattened: no note can close this block early or start a line that looks like another turn.
-export const wrapNotes = (lines: string[]): string => `<notes-on-file>\n${lines.map((l) => l.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()).join('\n')}\n</notes-on-file>`;
+// H2 (Nov 25): the aid has no way to change a note (only she can, in her notes list; the server writes one only on her yes), so when she says "forget that ..." it must NOT answer as if it had. This one fact about the
+// app is the server's own sentence, AFTER the closing tag (never inside a note, which is her material), and it names no note and holds nothing of hers. The kit's prompt blocks are untouched (NA4 / tutor-prompts.mjs).
+export const NOTES_CANNOT_CHANGE = 'The aid cannot add, change or remove a note. Only she can, in her notes list. If she asks for a note to be forgotten or removed, say plainly that the aid cannot do it and that she can delete it in her notes list. Never say a note was removed, forgotten or deleted.';
+export const wrapNotes = (lines: string[]): string => `<notes-on-file>\n${lines.map((l) => l.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()).join('\n')}\n</notes-on-file>\n${NOTES_CANNOT_CHANGE}`;

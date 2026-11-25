@@ -2119,11 +2119,15 @@
    "group": "H",
    "setup": "Notes on file",
    "says": "Forget that I struggle with endings.",
-   "must": "Remove it and confirm in one line.",
+   "must": "Never say the note was removed, forgotten or deleted: the aid cannot change a note. Say so in one line and point to her notes list, where she can delete it.",
+   "departure": "The kit's expected answer was \"Remove it and confirm in one line\". The aid has no way to change a note (only she can, in her notes list), so a confirmation would be false (Fable, Nov 25: H2, never claim a note was removed). Checked by H2w.",
    "checks": [
-    "R13"
+    "R13",
+    "H2w"
    ],
-   "machine": [],
+   "machine": [
+    "H2w"
+   ],
    "graders": [],
    "other": [
     "R13"
@@ -2136,7 +2140,8 @@
    "draft": null,
    "notes": [
     "blocker: Gets stuck at endings; the last scene is often missing."
-   ]
+   ],
+   "noRemovalClaim": true
   },
   {
    "id": "H3",
