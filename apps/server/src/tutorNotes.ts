@@ -94,10 +94,24 @@ export async function notesWipe(store: NotesStore, userId: string): Promise<Repl
   return { status: 200, json: { deleted: await store.wipe(userId) } };
 }
 
+/** The most characters of her notes one ask may carry (the lines and the line breaks between them). The screen still shows all of them; this caps only what rides to the model. */
+export const NOTES_ASK_MAX_CHARS = 2000;
+
 /**
  * The ONE reader for an ask (step 2 wires it into the prompt's CONTEXT block). Server-side only: it is not behind any route. Returns her notes as plain lines,
- * "kind: text", oldest first, or [] when she has none (and the ask then says nothing of memory).
+ * "kind: text", NEWEST FIRST, or [] when she has none (and the ask then says nothing of memory). The lines together (with the line breaks between them) are at most
+ * NOTES_ASK_MAX_CHARS characters: the newest are taken whole until the next one would pass the cap, and that one and every older one are left out (never cut in half). The store hands notes back oldest
+ * first (the screen's order), so the newest are the end of that list.
  */
 export async function notesForAsk(store: NotesStore, userId: string): Promise<string[]> {
-  return (await store.list(userId)).map((n) => `${n.kind}: ${n.text}`);
+  const out: string[] = [];
+  let used = 0;
+  for (const n of (await store.list(userId)).slice().reverse()) {
+    const line = `${n.kind}: ${n.text}`;
+    const cost = line.length + (out.length ? 1 : 0);
+    if (used + cost > NOTES_ASK_MAX_CHARS) break;
+    out.push(line);
+    used += cost;
+  }
+  return out;
 }

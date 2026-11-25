@@ -240,7 +240,7 @@ if (!fs.existsSync(path.join(SERVER_SRC, 'tutorNotes.ts')) || !fs.existsSync(pat
   const store = b.routes.sqlNotesStore;
   const linesA = await b.rules.notesForAsk(store, 'u-a');
   const linesC = await b.rules.notesForAsk(store, 'u-c');
-  ok(JSON.stringify(linesA) === JSON.stringify(['interest: likes short scenes', 'blocker: stalls on openings']) && linesC.length === 0 && !linesA.join().includes('B only'), 'TN5 the one reader for an ask returns her own notes as "kind: text" lines, nothing of another writer\'s, and nothing for a writer with none', JSON.stringify(linesA));
+  ok(JSON.stringify(linesA) === JSON.stringify(['blocker: stalls on openings', 'interest: likes short scenes']) && linesC.length === 0 && !linesA.join().includes('B only'), 'TN5 the one reader for an ask returns her own notes as "kind: text" lines, nothing of another writer\'s, and nothing for a writer with none', JSON.stringify(linesA));
   const stack = b.routes.tutorNotesRouter.stack.filter((l) => l.route).map((l) => Object.keys(l.route.methods).join() + ' ' + l.route.path).sort();
   ok(JSON.stringify(stack) === JSON.stringify(['delete /tutor/notes', 'delete /tutor/notes/:id', 'get /tutor/notes', 'patch /tutor/notes/:id', 'post /tutor/notes']), 'TN5 the router has exactly the five routes (list, add, edit, remove, wipe): no route reads a note any other way', JSON.stringify(stack));
   const sc = scans(allFiles());
