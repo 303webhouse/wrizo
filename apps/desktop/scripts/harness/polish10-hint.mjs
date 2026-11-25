@@ -240,12 +240,16 @@ await withHarness(async (app) => {
     await app.emulateDpr(1, w, h);
     const tag = `Flux Wire In ${w}`;
     if (!(await fresh('flux', `p124-long-${w}`, PARA))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
-    const write = async () => { await toEnd(); await app.typeKeys(' and on'); await sleep(300); await settle(app); };
+    // she writes at the end, the hold settled; a page seeded long is not always carried to its end, so the fixture does what her own scrolling does (raiseHint's step). held: the line was on screen without it
+    const write = async () => { await toEnd(); await app.typeKeys(' and on'); await sleep(300); await settle(app);
+      const first = await app.evalJs(CARET_SEEN); const held = !!first && first.seen;
+      if (!held) { await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null, n; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (last && last.parentElement) { const r = document.createRange(); r.selectNodeContents(last); const q = [...r.getClientRects()].pop(); const s = document.querySelector('.mode-scroll'); if (q && s) s.scrollTop += q.top - innerHeight * 0.5; } return true; })()"); await sleep(300); await settle(app); }
+      const now = await app.evalJs(CARET_SEEN); return { held, seen: !!now && now.seen }; };
 
-    await write();
+    const wrote = await write();
     await waitIdle();
     const a = await seen();
-    ok(`${tag} I1: settled at the end of a long page, the idle line meets no text`, !!a && a.shown && a.lines >= 1 && clear(a), J(a));
+    ok(`${tag} I1: settled at the end of a long page, the idle line meets no text`, wrote.seen && !!a && a.shown && a.lines >= 1 && clear(a), J({ wrote, ...a }));
 
     // she scrolls the page under the line: neither a key nor a pointer move, so the line stays up
     await app.cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: Math.round(w / 2), y: Math.round(h * 0.35), deltaX: 0, deltaY: -90, pointerType: 'mouse' });
@@ -255,11 +259,11 @@ await withHarness(async (app) => {
     ok(`${tag} I2: after she scrolls the page under it (the text moved ${moved}px), the idle line meets no text`, moved != null && moved >= 20 && clear(b), J({ moved, ...b }));
 
     // no caret on the page (she clicked away): the line has no block caret to measure from
-    await write();
+    const again = await write();
     await app.evalJs("(() => { document.activeElement && document.activeElement.blur(); getSelection().removeAllRanges(); return true; })()");
     await waitIdle();
     const c = await seen();
-    ok(`${tag} I3: with no caret on the page, the idle line meets no text`, !!c && c.shown && !c.caret && c.lines >= 1 && clear(c), J(c));
+    ok(`${tag} I3: with no caret on the page, the idle line meets no text`, again.seen && !!c && c.shown && !c.caret && c.lines >= 1 && clear(c), J({ wrote: again, ...c }));
 
     // both quiet lines up: Backspace past the runway raises "keep writing", then she is still
     await write();
