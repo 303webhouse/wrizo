@@ -6,6 +6,8 @@ html, body { margin: 0; background: var(--mc-bg); color: var(--mc-tx); font: 16p
 .mc-main { flex: 1; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); max-width: 640px; width: 100%; box-sizing: border-box; margin: 0 auto; }
 .mc-h { font-size: 24px; margin: 8px 0 12px; } .mc-h2 { font-size: 18px; margin: 20px 0 6px; } .mc-h3 { font-weight: 600; display: block; margin: 12px 0 4px; }
 .mc-dim { color: var(--mc-dim); }
+.mc-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mc-find-door { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font: inherit; color: inherit; } .mc-find-door svg { width: 22px; height: 22px; }
 .mc-list { list-style: none; margin: 0; padding: 0; }
 .mc-row, .mc-btn, .mc-tab, .mc-chip, .mc-back, .mc-link, .mc-door, .mc-plus { font: inherit; color: inherit; cursor: pointer; }
 .mc-row { display: block; width: 100%; min-height: 48px; overflow-wrap: anywhere; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--mc-line); padding: 10px 4px; }

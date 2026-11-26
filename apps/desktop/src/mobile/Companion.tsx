@@ -152,22 +152,30 @@ function Section({ title, children }: { title: string; children: ReactNode }): R
   return <section><h2 className="mc-h2">{title}</h2>{children}</section>;
 }
 
-// ---- Desk: notes still waiting, the Mobile Board, Pinned, Recent Docs and Boards ----
+// ---- Desk, as the test version lays it out: Find at the top; notes still waiting; Pinned; Recent Docs and Boards together, newest first; the Mobile Board at the end ----
 function Desk({ t, words, waiting, rail }: { t: T; words: Words; waiting: WaitingNote[]; rail: unknown }): ReactNode {
   const mobile = findMobileBoard();
   const pinned = pinnedLines(rail, words.notebook, words.root);
-  const docs = docLines(words.untitled).slice(0, 5);
-  const boards = allBoardLines(words.untitled).filter((b) => b.id !== mobile).slice(0, 5);
+  const recent = [
+    ...docLines(words.untitled).map((d) => ({ ...d, to: toDoc(d.id) })),
+    ...allBoardLines(words.untitled).filter((b) => b.id !== mobile).map((b) => ({ ...b, to: toBoard(b.id) })),
+  ].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 8);
   return (
     <>
-      <h1 className="mc-h">{t('mobileDesk')}</h1>
+      <div className="mc-top">
+        <h1 className="mc-h">{t('mobileDesk')}</h1>
+        <button type="button" className="mc-link mc-find-door" data-find onClick={() => go('library', 'docs')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM16 16l5 5" fill="none" stroke="currentColor" strokeWidth="2" /></svg>{t('mobileFind')}
+        </button>
+      </div>
       {waiting.length > 0 && <WaitingList t={t} notes={waiting} />}
-      {mobile && <ul className="mc-list"><li><button type="button" className="mc-row" data-mobile-board onClick={() => go('board', mobile, 'wall')}>{t('mobileMobile')}</button></li></ul>}
       {pinned.length > 0 && <Section title={t('mobilePinned')}><Rows rows={pinned} to={toProject} /></Section>}
       <Section title={t('mobileRecent')}>
-        <Rows rows={docs} to={toDoc} />
-        <Rows rows={boards} to={toBoard} />
-        {docs.length + boards.length === 0 && <p className="mc-dim">{t('mobileNothingHere')}</p>}
+        <ul className="mc-list">
+          {recent.map((r) => <li key={r.id}><button type="button" className="mc-row" data-row={r.id} onClick={() => go(...r.to)}>{r.name}</button></li>)}
+          {mobile && <li><button type="button" className="mc-row" data-mobile-board onClick={() => go('board', mobile, 'wall')}>{t('mobileMobile')}</button></li>}
+        </ul>
+        {recent.length === 0 && !mobile && <p className="mc-dim">{t('mobileNothingHere')}</p>}
       </Section>
     </>
   );
@@ -254,9 +262,9 @@ function Doc({ t, words, route }: { t: T; words: Words; route: Extract<Route, { 
       <div className="mc-tabs" role="tablist">
         {views.map(([id, word]) => <button key={id} role="tab" type="button" aria-selected={route.view === id} className="mc-tab" data-view={id} onClick={() => turn('doc', route.id, id, part.id)}>{t(word)}</button>)}
       </div>
-      {doc.parts.length > 1 && (
+      {doc.parts.length > 1 && route.view !== 'plan' && (   // the Plan is the whole Doc's, so no Part is picked there
         <div className="mc-strip" role="tablist" ref={strip}>
-          {doc.parts.map((p) => <button key={p.id} role="tab" type="button" aria-selected={part.id === p.id} className="mc-chip" data-part={p.id} onClick={() => turn('doc', route.id, route.view, p.id)}>{p.name}</button>)}
+          {doc.parts.map((p, i) => <button key={p.id} role="tab" type="button" aria-selected={part.id === p.id} className="mc-chip" data-part={p.id} onClick={() => turn('doc', route.id, route.view, p.id)}>{i + 1} · {p.name}</button>)}
         </div>
       )}
       {route.view === 'read' && <ReadPart t={t} id={part.id} script={part.script} />}
