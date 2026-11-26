@@ -116,5 +116,5 @@ for (const [label, expect, mut] of MUTANTS) {
 }
 let fail = 0;
 for (const c of results) { if (!c.pass) fail++; console.log((c.pass ? 'PASS  ' : 'FAIL  ') + c.name + (c.pass ? '' : '   ' + c.detail)); }
-console.log(fail ? `\n${fail} FAILED of ${results.length}` : `\nall ${results.length} PASS`);
+console.log(fail ? `\nREORG-QUICK-PRESET-UNIT VERIFY: FAIL - ${fail}/${results.length} failed` : `\nREORG-QUICK-PRESET-UNIT VERIFY: PASS (${results.length} checks)`);
 process.exit(fail ? 1 : 0);
