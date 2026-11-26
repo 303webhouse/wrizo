@@ -21,6 +21,7 @@ const DPR_CAP = 2;
 const CALM_MS = 1500;        // quiet after her last key before the current drifts again
 const POINT_PX_PER_S = 60;   // a slow drift
 const MIN_TRACE_PX = 240;
+const MIN_OPEN_PX = 80;      // #133: the shortest trace the current will take when no long one runs clear of the page
 
 // the ROOM is dark in both Page tones today (the Page tone is the paper's; the white room is S5's Room setting), so the ground is the dark tone's, always
 const toneNow = (): 'dark' | 'light' => 'dark';
@@ -137,9 +138,17 @@ export function FluxRoomGround() {
         }
         return true;
       };
-      const picks = traces
+      const inside = traces
         .map((pts, i) => ({ pts, i, len: lengthOf(pts), open: open(pts) }))
-        .filter((t) => t.len >= MIN_TRACE_PX && t.pts.every((p) => p[0] > 8 && p[0] < W - 8 && p[1] > 8 && p[1] < H - 8))
+        .filter((t) => t.pts.every((p) => p[0] > 8 && p[0] < W - 8 && p[1] > 8 && p[1] < H - 8));
+      // #133: on a small screen the page takes most of the room and no long trace runs clear of it; then the SHORTER clear ones carry the current,
+      // so it still shows. With none clear at any length, the long pick stands as before
+      let pool = inside.filter((t) => t.len >= MIN_TRACE_PX);
+      if (!pool.some((t) => t.open)) {
+        const short = inside.filter((t) => t.open && t.len >= MIN_OPEN_PX);
+        if (short.length) pool = short;
+      }
+      const picks = pool
         .sort((a, b) => Number(b.open) - Number(a.open) || rnd(a.i, 5, 9) - rnd(b.i, 5, 9))
         .slice(0, MAX_POINTS);
       box.dataset.open = String(picks.filter((p) => p.open).length);

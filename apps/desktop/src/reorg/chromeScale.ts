@@ -101,7 +101,9 @@ export function useChromeScale(): void {
       const d = Number.isFinite(desk) ? `${desk}px` : '';
       if (d !== lastDesk) { lastDesk = d; if (d) r.style.setProperty(DESK_VAR, d); else r.style.removeProperty(DESK_VAR); }
       const a = document.querySelector<HTMLElement>('.desk-frame-sliver-anchor');
-      const fk = String(frontScaleFor(chromeScaleFor(window.innerWidth), a ? a.getBoundingClientRect().width : NaN));
+      // #133: where the drawer lies over the page's margin its panel is wider than the anchor (desk-frame §24): the contents scale by what is drawn, tab included
+      const panel = a?.querySelector<HTMLElement>('.wz-sliver-panel');
+      const fk = String(frontScaleFor(chromeScaleFor(window.innerWidth), a ? Math.max(a.getBoundingClientRect().width, (panel?.offsetWidth ?? 0) + 16) : NaN));
       if (fk === lastFront) return;
       lastFront = fk;
       r.style.setProperty(FRONT_VAR, fk);

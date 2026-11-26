@@ -183,7 +183,7 @@ const IDENT_PROBE = `(() => { const p = document.querySelector('.mode-page'); co
     lh: parseFloat(cs.getPropertyValue('--tw-lh')) || null, mask: String(cs.webkitMaskImage || cs.maskImage || 'none') }; })()`;
 const ident = {};
 const identMZ = {};   // Wire In: the MIZ mutant's reading (Flux dark, 1366)
-const psParks = { C: [], MW: [], WT: [], MBR: null, FZ: [], W0: [], IZ: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records (FZ, W0, IZ: Wire In, Nov 12)   // the park audit (Oct 24): the default leg's observations, for the parked records
+const psParks = { C: [], MW: [], WT: [], MBR: null, FZ: [], W0: [], IZ: [], R133: [], N133: [], Z133: [] };   // the park audit (Oct 24): the default leg's observations, for the parked records (FZ, W0, IZ: Wire In, Nov 12)   // the park audit (Oct 24): the default leg's observations, for the parked records
 const IDENT_TOL = 1;   // Nick's law, ±1px
 
 // strip every MASK the stage can paint, so a line's UNFADED ink can be read (layout is untouched: a mask never moves a line). MASKS ONLY - the red run (143)
@@ -282,6 +282,12 @@ const median = (a) => { const s = [...a].sort((x, y) => x - y); return s.length 
 // R, held to ruling c's law: the scale k is MEASURED (width / 620), then the page must be what that law says a page at k is
 const kOf = (g) => (g ? g.page.width / FRAME_PAGE_W : null);
 const inStage = (g) => !!g && !!g.stage && g.page.top >= g.stage.top - 0.5 && g.page.bottom <= g.stage.bottom + 0.5 && g.page.left >= g.stage.left - 0.5 && g.page.right <= g.stage.right + 0.5;
+// #133 (Nick, Nov 25; docs/rulings/store-pageScale.md §5) - below 2560 the page scales by the window's WIDTH: 62% of the stage at 1600 and narrower
+// (so it is no longer letter-proportioned: the sheet is capped to the stage and the text scrolls inside), easing to the letter fit at 2560.
+const SMALL_W = 1600, LARGE_W = 2560, SMALL_SHARE = 0.62;
+const r133 = (g, w) => !!g && !!g.stage && inStage(g) && (w <= SMALL_W ? Math.abs(g.page.width / g.stage.width - SMALL_SHARE) <= 0.01 : kOf(g) > 1 && g.page.width / g.stage.width <= SMALL_SHARE + 0.01);
+// the zoom keeps the size it had from the letter fit (never smaller than the normal page)
+const z133Want = (g0) => { const fit = Math.max(1, Math.min((g0.stage.height - 40) / (FRAME_PAGE_W / LETTER), (g0.stage.width - 640) / FRAME_PAGE_W)); return Math.max(g0.page.width, Math.min(ZOOM * fit * FRAME_PAGE_W, g0.stage.width - 96)); };
 const rPred = (g) => {
   if (!g || !g.stage) return false;
   const k = kOf(g);
@@ -310,7 +316,11 @@ const normalCase = async (app, th, w, h) => {
   const lines = await app.evalJs('window.__psLines()');
   const k = kOf(g);
   const kr = k == null ? null : Math.round(k * 1000) / 1000;
-  ok(`${th.name} ${w}x${h} R: the page follows the stage (k = ${kr}): at k = 1, 620 wide and capped to the stage; above 1, letter-proportioned and the largest that fits (within ${FIT_SLACK}px)`, rPred(g),
+  if (w < LARGE_W) {
+    psParks.R133.push({ skin: th.name, w, h, share: g && g.stage ? Math.round((g.page.width / g.stage.width) * 1000) / 1000 : null, pass: r133(g, w) });
+    ok(`${th.name} ${w}x${h} R [#133 successor]: the page follows the window's width - ${w <= SMALL_W ? '62% of the stage' : 'past 620 px and no more than 62% of the stage'}, inside the stage`, r133(g, w),
+      J({ k: kr, page: g && { w: Math.round(g.page.width), h: Math.round(g.page.height) }, stageW: g && g.stage && Math.round(g.stage.width), inStage: inStage(g) }));
+  } else ok(`${th.name} ${w}x${h} R: the page follows the stage (k = ${kr}): at k = 1, 620 wide and capped to the stage; above 1, letter-proportioned and the largest that fits (within ${FIT_SLACK}px)`, rPred(g),
     J({ k: kr, page: g && { w: Math.round(g.page.width), h: Math.round(g.page.height) }, ratio: g && Math.round((g.page.width / g.page.height) * 1000) / 1000, want: Math.round(LETTER * 1000) / 1000,
       stageH: g && g.stage && Math.round(g.stage.height), slack: g && g.stage && Math.round(g.stage.height - g.page.height), inStage: inStage(g) }));
   const lens = fullLineLengths(lines || []);
@@ -346,7 +356,13 @@ const normalCase = async (app, th, w, h) => {
   const roomForBoth = leftRoom >= DRAWER_MIN && rightRoom >= DRAWER_MIN;
   if (tOpen) {
     ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
-    if (roomForBoth) {
+    // SUPERSEDED at 1600 and narrower (#133: one side panel at a time, the Back menu over the page's margin); the original below runs above 1600.
+    if (w <= SMALL_W) {
+      const over = !!pp.tutor && !!gk && pp.tutor.left >= gk.page.right - gk.page.width / 8.5 - 1;
+      if (roomForBoth) psParks.N133.push({ skin: th.name, w, h, leftRoom: Math.round(leftRoom), rightRoom: Math.round(rightRoom), pass: !sOpen && over });
+      ok(`${th.name} ${w}x${h} N [#133 successor]: one side panel at a time - opening the Tutor closed the Sliver, and the Tutor lies over the page's margin at most, never its text`,
+        !sOpen && over, J({ sOpen, tOpen, tutor: pp.tutor, pageRight: gk && Math.round(gk.page.right) }));
+    } else if (roomForBoth) {
       // the Tutor's width alone: shut the Sliver (the Tutor stands), read it, then the Sliver is reopened for nothing - the close-down below shuts both
       let tutorAlone = null;
       if (bothOpen) { const gr = await rectOf(app, '.wz-sliver-grip'); if (gr) { await click(app, gr.x, gr.y); await sleep(600); } tutorAlone = wOf((await panels()).tutor); }
@@ -445,7 +461,13 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   // ~1.6x from the base scale, capped to the largest that fits the stage's width with the panels tucked; never overflowing the stage
   const fitsW = !!g1 && !!g1.stage && g1.page.left >= g1.stage.left - 0.5 && g1.page.right <= g1.stage.right + 0.5;
   const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM) <= ZOOM_TOL || (scale < ZOOM && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
-  ok(`${tag} Z: the page paints ~${ZOOM}x its normal width (within ${ZOOM_TOL}), or the largest that fits the stage's width, and never overflows the stage`, zPred,
+  if (w < LARGE_W) {
+    const want = g0 && g0.stage ? z133Want(g0) : null;
+    const z133 = fitsW && want != null && Math.abs(g1.page.width - want) <= 8 && g1.page.width >= g0.page.width - 0.5;
+    psParks.Z133.push({ tag, scale, pass: z133 });
+    ok(`${tag} Z [#133 successor]: the zoomed page keeps the size it had from the letter fit, never smaller than the normal page, and never overflows the stage`, z133,
+      J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), want: want && Math.round(want), fitsW }));
+  } else ok(`${tag} Z: the page paints ~${ZOOM}x its normal width (within ${ZOOM_TOL}), or the largest that fits the stage's width, and never overflows the stage`, zPred,
     J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), scale, stageW: g1 && g1.stage && Math.round(g1.stage.width), fitsW }));
   ok(`${tag} B: the line breaks are IDENTICAL in both views - scale, never reflow`, sameStarts(l0, l1),
     J({ normal: (l0 || []).length, zoom: (l1 || []).length, firstDiff: (l0 || []).findIndex((l, i) => !l1 || !l1[i] || l1[i].start !== l.start) }));
@@ -915,8 +937,11 @@ if (process.env.HARNESS_PARKED === '1') {
       rec.push({ name: 'PARKED (was "MBR (mutant) [polish #10 item 5 successor]: with the row moved onto the writing line (LANDED: its top ${br && br.rowTop} -> ${mbr2 && mbr2.rowTop}, the line ${br && br.lineTop}-${br && br.lineBottom}), it covers the line - BR fails") — #13 12f (Fable, Nov 1): there is no row to move; BR is retired', pass: !!o.now && o.now.row === false, detail: J(o) });
     }
   }
+  for (const o of psParks.R133) rec.push({ name: `PARKED (was "${o.skin} ${o.w}x${o.h} R: the page follows the stage: at k = 1, 620 wide and capped to the stage; above 1, letter-proportioned and the largest that fits") - #133 (Nick, Nov 25): below 2560 the page scales by width; live successor: R [#133 successor]`, pass: o.pass, detail: J(o) });
+  for (const o of psParks.N133) rec.push({ name: `PARKED (was "${o.skin} ${o.w}x${o.h} N: there is room for both drawers at their minimum, so BOTH stand open") - #133: one side panel at a time at 1600 and narrower; live successor: N [#133 successor]`, pass: o.pass, detail: J(o) });
+  for (const o of psParks.Z133) rec.push({ name: `PARKED (was "${o.tag} Z: the page paints ~1.6x its normal width (within 0.03), or the largest that fits the stage's width, and never overflows the stage") - #133: below 2560 the normal page grew and the zoom kept its size; live successor: Z [#133 successor]`, pass: o.pass, detail: J(o) });
   for (const c of rec) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}  [${c.detail}]`);
-  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 7 (C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19; MBR's sheet centre, polish #10 item 5; and, Wire In, Nov 12: Flux's zoom premise, Flux's W0 premise, Flux's zoom skin-parity)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
+  console.log(rec.length && rec.every((c) => c.pass) ? `\nPAGE-SIZE PARKED: PASS (${rec.length} records) - this FILE parks 10 (R, N and Z below 2560 / at 1600 and narrower, #133; C, one record per skin x size; MW's 60% name and W/T's on-screen premise, polish #10 item 19; MBR's sheet centre, polish #10 item 5; and, Wire In, Nov 12: Flux's zoom premise, Flux's W0 premise, Flux's zoom skin-parity)` : `\nPAGE-SIZE PARKED: FAIL - ${rec.filter((c) => !c.pass).length}/${rec.length} (${rec.length} records)`);
 }
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nPAGE-SIZE VERIFY: PASS (${checks.length} checks)` : `\nPAGE-SIZE VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
