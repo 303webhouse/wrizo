@@ -699,8 +699,13 @@ await withHarness(async (app) => {
     JSON.stringify(drawerInInk.tips) === JSON.stringify(['Pen', 'Pencil', 'Marker'])
       && JSON.stringify(drawerInInk.nibs) === JSON.stringify(['Fine', 'Regular', 'Broad']),
     JSON.stringify(drawerInInk));
-  ok('S10: and the nib is STOPS, not a slider, and the ink is SWATCHES, not a picker — zero range inputs and zero colour inputs anywhere in the drawer. A slider is a digital control; a nib is chosen, not dialled, and a journal has the inks that are on the desk',
-    drawerInInk.sliders === 0 && drawerInInk.pickers === 0,
+  // PARKED - SUPERSEDED by VISUAL 1a.2 (Nov 25, [DATA] D1 ruled yes: any size, any colour, see-through): the Brushes row has a size slider and a see-through slider. The original, verbatim:
+  // ok('S10: and the nib is STOPS, not a slider, and the ink is SWATCHES, not a picker — zero range inputs and zero colour inputs anywhere in the drawer. A slider is a digital control; a nib is chosen, not dialled, and a journal has the inks that are on the desk',
+  //   drawerInInk.sliders === 0 && drawerInInk.pickers === 0,
+  //   JSON.stringify({ sliders: drawerInInk.sliders, pickers: drawerInInk.pickers }));
+  i121Ps.s10b = { sliders: drawerInInk.sliders, pickers: drawerInInk.pickers };
+  ok('S10 successor [VISUAL 1a.2]: the ink stays swatches and the reorg picker\'s own field - no browser colour input anywhere in the drawer; the two range inputs are the Brushes row\'s size and see-through',
+    drawerInInk.sliders === 2 && drawerInInk.pickers === 0,
     JSON.stringify({ sliders: drawerInInk.sliders, pickers: drawerInInk.pickers }));
 
   // Draft keeps its own STYLING — R4 is untouched by R15, which is a ruling
@@ -786,10 +791,13 @@ if (process.env.HARNESS_PARKED === '1') {
   // VISUAL 1a.1 (Nov 25) - S10's "TIP, NIB and INK stand open in INK": its record re-verifies the falsification from the live run - in INK, before Studio is opened, no brush and no size is shown.
   parkedChecks.push({ name: 'PARKED (was "S10: in INK the zone reveals in place with all three groups and the eraser") - VISUAL 1a.1: brushes and sizes fold into Studio; live successors: S10 successor [VISUAL 1a.1] (two)',
     pass: !!i121Ps.s10 && i121Ps.s10.tips === 0 && i121Ps.s10.nibs === 0 && i121Ps.s10.eraser === 1, detail: JSON.stringify(i121Ps.s10 || null) });
+  // VISUAL 1a.2 (Nov 25) - S10's "the nib is stops, not a slider": its record re-verifies the falsification from the live run - the Brushes row holds range inputs, and still no colour input.
+  parkedChecks.push({ name: 'PARKED (was "S10: and the nib is STOPS, not a slider, and the ink is SWATCHES, not a picker") - VISUAL 1a.2: any size and see-through are sliders; live successor: S10 successor [VISUAL 1a.2]',
+    pass: !!i121Ps.s10b && i121Ps.s10b.sliders > 0 && i121Ps.s10b.pickers === 0, detail: JSON.stringify(i121Ps.s10b || null) });
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   // eslint-disable-next-line no-console
-  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks THREE of its own (page-size, Oct 24: S5's mouse gesture; polish #10 item 5, Oct 26: the pen + touch drivers' aim, with S7's sampler following the renderer's origin; VISUAL 1a.1, Nov 25: S10's three open groups); its other parks live in the files that own the falsified assertions.`);
+  console.log(parkedChecks.some((c) => !c.pass) ? `\nITEM121 PARKED: FAIL — ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed` : `\nITEM121 PARKED: PASS (${parkedChecks.length} checks) — HARNESS_PARKED=1 armed; item121.mjs parks FOUR of its own (page-size, Oct 24: S5's mouse gesture; polish #10 item 5, Oct 26: the pen + touch drivers' aim, with S7's sampler following the renderer's origin; VISUAL 1a.1, Nov 25: S10's three open groups; VISUAL 1a.2: S10's no-slider law); its other parks live in the files that own the falsified assertions.`);
 }
 
 const pass = checks.every((c) => c.pass);

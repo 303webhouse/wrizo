@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react';
-import { inkColor, renderStroke } from '../../store/ink';
+import { inkColor, nearestNib, nibWidth, renderStroke } from '../../store/ink';
 import type { Stroke, StrokePoint } from '../../types';
 import { inkOriginY, paintCommitted, syncCanvas, type InkPen } from '../InkStratum';
 
@@ -126,8 +126,11 @@ export function attachCapture(h: CaptureHost): () => void {
       stroke.eraser = true;
     } else {
       stroke.tip = p.tip;
-      stroke.nib = p.nib;
-      stroke.ink = p.ink;
+      // VISUAL 1a.2: a stroke of any size keeps the nearest nib, and her own colour goes in place of the named ink, so a client that reads only the old fields still paints it sensibly
+      stroke.nib = p.size != null ? nearestNib(p.tip, p.size) : p.nib;
+      if (p.hex) stroke.hex = p.hex; else stroke.ink = p.ink;
+      if (p.size != null && p.size !== nibWidth(p.tip, stroke.nib)) stroke.size = p.size;
+      if (p.alpha != null && p.alpha < 1) stroke.alpha = p.alpha;
     }
     activeStrokeRef.current = stroke;
     // best effort only: move and release are heard on window, so a capture that fails or does not reroute can no longer lose a stroke [InkStratum §11]

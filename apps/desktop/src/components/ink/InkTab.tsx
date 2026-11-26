@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
-import { INKS, NIBS, TIPS } from '../../store/ink';
+import { INKS, NIBS, SIZE_MAX, SIZE_MIN, TIPS, nibWidth } from '../../store/ink';
+import { isHexColour } from '../../reorg/parts';
+import { customVars, inkOn } from '../../reorg/colourScheme';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../../types';
 import type { InkPen } from '../InkStratum';
 import { TIP_ICONS } from './inkIcons';
@@ -19,9 +21,11 @@ export interface InkOpts {
 }
 
 type Row = 'brushes' | 'colour';
-interface Sitting { studio: boolean; row: Row | null; recent: StrokeTip[] }
+/** What a brush was last set to, this sitting. */
+type BrushSet = Pick<InkPen, 'nib' | 'size' | 'alpha'>;
+interface Sitting { studio: boolean; row: Row | null; recent: StrokeTip[]; byTip: Partial<Record<StrokeTip, BrushSet>>; lastHex: string | null }
 
-let sitting: Sitting = { studio: false, row: null, recent: [] };
+let sitting: Sitting = { studio: false, row: null, recent: [], byTip: {}, lastHex: null };
 const listeners = new Set<() => void>();
 const subscribe = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 const read = () => sitting;
@@ -30,6 +34,14 @@ const set = (next: Partial<Sitting>) => { sitting = { ...sitting, ...next }; lis
 const TIP_TERM: Record<StrokeTip, DeskTermId> = { pen: 'inkTipPen', pencil: 'inkTipPencil', marker: 'inkTipMarker' };
 const NIB_TERM: Record<StrokeNib, DeskTermId> = { fine: 'inkNibFine', regular: 'inkNibRegular', broad: 'inkNibBroad' };
 const INK_TERM: Record<StrokeInk, DeskTermId> = { walnut: 'inkWalnut', iron: 'inkIron', oxblood: 'inkOxblood', sea: 'inkSea' };
+
+// any size: minus and plus step this ladder (it holds the nib widths); the Brushes row slides to any value between
+const SIZE_STEPS = [0.5, 0.8, 1, 1.4, 2, 2.4, 3, 4, 5.4, 7, 8.6, 10, 12, 16, 20, 24, 32, 40];
+const tenth = (n: number) => Math.round(n * 10) / 10;
+const shown = (n: number) => Math.round(n * 100 + 0.001) / 100;   // the pencil's own 1.15 reads as 1.15
+
+// a code as she types or pastes it: the field opens holding '#', so her own '#' (or none) is forgiven
+const asCode = (v: string) => '#' + v.trim().replace(/#/g, '').slice(0, 6);
 
 /** Her brushes, newest first: the one in her hand, then the ones she used before it this sitting, then the rest. */
 function brushList(inHand: StrokeTip, recent: readonly StrokeTip[]): StrokeTip[] {
@@ -60,19 +72,35 @@ const Arrow = ({ open }: { open: boolean }) => <span className="wz-ink-arrow" ar
 
 export function InkTab({ opts }: { opts: InkOpts }) {
   const { t } = useDeskLexicon();
-  const { studio, row, recent } = useSyncExternalStore(subscribe, read, read);
+  const { studio, row, recent, byTip, lastHex } = useSyncExternalStore(subscribe, read, read);
   const [brushes, setBrushes] = useState(false);
+  const [custom, setCustom] = useState(false);
+  const [hex, setHex] = useState(lastHex ?? '#');
   const lineRef = useRef<HTMLDivElement>(null);
   const brushRef = useRef<HTMLButtonElement>(null);
   const { pen } = opts;
   const list = brushList(pen.tip, recent);
 
+  // each brush keeps its own size and see-through while she is here: the one in her hand is remembered as she leaves it, and the one she picks comes back as she left it
   const pickTip = (tip: StrokeTip) => {
-    set({ recent: brushList(tip, list) });
-    opts.onPick({ tip });
+    if (tip === pen.tip) { set({ recent: brushList(tip, list) }); return; }
+    const mine: BrushSet = { nib: pen.nib, size: pen.size, alpha: pen.alpha };
+    const theirs: BrushSet = byTip[tip] ?? { nib: pen.nib, size: undefined, alpha: undefined };
+    set({ recent: brushList(tip, list), byTip: { ...byTip, [pen.tip]: mine } });
+    opts.onPick({ tip, nib: theirs.nib, size: theirs.size, alpha: theirs.alpha });
   };
-  const nibAt = NIBS.indexOf(pen.nib);
-  const step = (by: number) => { const nib = NIBS[nibAt + by]; if (nib) opts.onPick({ nib }); };
+  const width = pen.size ?? nibWidth(pen.tip, pen.nib);
+  const smaller = [...SIZE_STEPS].reverse().find((v) => v < width - 0.001);
+  const larger = SIZE_STEPS.find((v) => v > width + 0.001);
+  const setSize = (v: number) => opts.onPick({ size: tenth(v) });
+  const clear = Math.round((1 - (pen.alpha ?? 1)) * 100);   // how see-through, in percent
+  const pickInk = (ink: StrokeInk) => opts.onPick({ ink, hex: undefined });
+  const pickHex = (value: string) => {
+    if (!isHexColour(value)) return;
+    const own = value.toUpperCase();
+    set({ lastHex: own });
+    opts.onPick({ hex: own });
+  };
 
   // the short list closes on a press anywhere else
   useEffect(() => {
@@ -83,10 +111,9 @@ export function InkTab({ opts }: { opts: InkOpts }) {
   }, [brushes]);
   // Esc closes the list first and stops there: the drawer only closes on an Esc nothing inside handled (Sliver.tsx)
   const onEsc = (e: React.KeyboardEvent) => {
-    if (e.key !== 'Escape' || !brushes) return;
+    if (e.key !== 'Escape' || (!brushes && !custom)) return;
     e.preventDefault();
-    setBrushes(false);
-    brushRef.current?.focus();
+    if (brushes) { setBrushes(false); brushRef.current?.focus(); } else setCustom(false);
   };
 
   return (
@@ -105,9 +132,9 @@ export function InkTab({ opts }: { opts: InkOpts }) {
             <Arrow open={brushes} />
           </button>
           <span className="wz-ink-size" role="group" aria-label={t('inkNib')}>
-            <button type="button" className="mode-tbtn wz-ink-size-down" aria-label={t('inkSizeSmaller')} title={t('inkSizeSmaller')} disabled={nibAt <= 0} onClick={() => step(-1)}>&minus;</button>
-            <span className="wz-ink-size-value" data-nib={pen.nib} aria-live="polite">{t(NIB_TERM[pen.nib])}</span>
-            <button type="button" className="mode-tbtn wz-ink-size-up" aria-label={t('inkSizeLarger')} title={t('inkSizeLarger')} disabled={nibAt >= NIBS.length - 1} onClick={() => step(1)}>+</button>
+            <button type="button" className="mode-tbtn wz-ink-size-down" aria-label={t('inkSizeSmaller')} title={t('inkSizeSmaller')} disabled={smaller === undefined} onClick={() => setSize(smaller!)}>&minus;</button>
+            <span className="wz-ink-size-value" data-size={shown(width)} aria-live="polite">{shown(width)} pt</span>
+            <button type="button" className="mode-tbtn wz-ink-size-up" aria-label={t('inkSizeLarger')} title={t('inkSizeLarger')} disabled={larger === undefined} onClick={() => setSize(larger!)}>+</button>
           </span>
           {brushes && (
             <div className="wz-ink-recent" role="radiogroup" aria-label={t('inkBrush')}>
@@ -128,14 +155,26 @@ export function InkTab({ opts }: { opts: InkOpts }) {
                 type="button"
                 role="radio"
                 /* The swatch paints from the THEME TOKEN, never a literal — the same var() the renderer resolves, so the chip and the stroke can never disagree about what "oxblood" means. */
-                className={`mode-swatch wz-ink-swatch${pen.ink === ink ? ' active' : ''}`}
+                className={`mode-swatch wz-ink-swatch${!pen.hex && pen.ink === ink ? ' active' : ''}`}
                 style={{ background: `var(--ink-${ink})` }}
-                aria-checked={pen.ink === ink}
+                aria-checked={!pen.hex && pen.ink === ink}
                 aria-label={t(INK_TERM[ink])}
                 title={t(INK_TERM[ink])}
-                onClick={() => opts.onPick({ ink })}
+                onClick={() => pickInk(ink)}
               />
             ))}
+            {/* her last colour; before she has one it opens the picker in Studio */}
+            <button
+              type="button"
+              role="radio"
+              className={`mode-swatch wz-ink-last${pen.hex && pen.hex === lastHex ? ' active' : ''}`}
+              style={lastHex ? { background: lastHex } : undefined}
+              data-last={lastHex ?? ''}
+              aria-checked={!!pen.hex && pen.hex === lastHex}
+              aria-label={lastHex ? `${t('inkLastColour')} ${lastHex}` : t('inkLastColour')}
+              title={t('inkLastColour')}
+              onClick={() => { if (lastHex) opts.onPick({ hex: lastHex }); else { set({ studio: true, row: 'colour' }); setCustom(true); } }}
+            />
             {/* the eraser is a real two-state toggle and tip-agnostic: it erases whatever tip laid the ink [Sliver §15] */}
             <button
               type="button"
@@ -178,13 +217,24 @@ export function InkTab({ opts }: { opts: InkOpts }) {
                   </button>
                 ))}
               </div>
+              <label className="wz-ink-slide">
+                <span className="wz-ink-slide-head"><span>{t('inkSize')}</span><span>{shown(width)} pt</span></span>
+                <input type="range" className="wz-ink-size-slide" min={SIZE_MIN} max={SIZE_MAX} step={0.1} value={width} onChange={(e) => setSize(Number(e.target.value))} />
+              </label>
               <div className="wz-ink-nibs" role="radiogroup" aria-label={t('inkNib')}>
-                {NIBS.map((nib) => (
-                  <button key={nib} type="button" role="radio" className="mode-tbtn wz-ink-nib" aria-checked={pen.nib === nib} data-on={pen.nib === nib ? 'true' : 'false'} onClick={() => opts.onPick({ nib })}>
-                    {t(NIB_TERM[nib])}
-                  </button>
-                ))}
+                {NIBS.map((nib) => {
+                  const on = pen.size === undefined && pen.nib === nib;
+                  return (
+                    <button key={nib} type="button" role="radio" className="mode-tbtn wz-ink-nib" aria-checked={on} data-on={on ? 'true' : 'false'} onClick={() => opts.onPick({ nib, size: undefined })}>
+                      {t(NIB_TERM[nib])}
+                    </button>
+                  );
+                })}
               </div>
+              <label className="wz-ink-slide">
+                <span className="wz-ink-slide-head"><span>{t('inkSeeThrough')}</span><span>{clear}%</span></span>
+                <input type="range" className="wz-ink-clear-slide" min={0} max={90} step={5} value={clear} onChange={(e) => { const c = Number(e.target.value); opts.onPick({ alpha: c ? (100 - c) / 100 : undefined }); }} />
+              </label>
             </div>
           )}
 
@@ -192,12 +242,24 @@ export function InkTab({ opts }: { opts: InkOpts }) {
             <div className="wz-ink-row-body" data-ink-row-body="colour">
               <div className="wz-ink-colours" role="radiogroup" aria-label={t('inkRowColour')}>
                 {INKS.map((ink) => (
-                  <button key={ink} type="button" role="radio" className="wz-ink-colour" aria-checked={pen.ink === ink} aria-label={t(INK_TERM[ink])} onClick={() => opts.onPick({ ink })}>
+                  <button key={ink} type="button" role="radio" className="wz-ink-colour" aria-checked={!pen.hex && pen.ink === ink} aria-label={t(INK_TERM[ink])} onClick={() => pickInk(ink)}>
                     <span className="wz-ink-colour-dot" style={{ background: `var(--ink-${ink})` }} aria-hidden="true" />
                     <span>{t(INK_TERM[ink])}</span>
                   </button>
                 ))}
               </div>
+              {/* any colour: the custom row of the reorg picker (reorg/ColourPicker.tsx) - the same field, preview, words and rule: any colour, no warning, no refusal */}
+              {!custom
+                ? <button type="button" className="reorg-colour-customize wz-ink-custom-open" data-colour-custom="" onClick={() => { setHex(pen.hex ?? lastHex ?? '#'); setCustom(true); }}>{t('reorgColourCustom')}</button>
+                : (
+                  <div className="reorg-colour-custom wz-ink-custom" data-colour-custom-row="">
+                    <input className="reorg-colour-hex" data-colour-hex="" aria-label={t('reorgColourHex')} value={hex} maxLength={8} autoFocus onFocus={(e) => e.target.select()}
+                      onChange={(e) => setHex(asCode(e.target.value))} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); pickHex(hex); } }} />
+                    <span className="reorg-colour-preview" data-colour-preview="" aria-hidden="true"
+                      style={isHexColour(hex) ? ({ ...customVars(hex.toUpperCase()), background: hex, color: inkOn(hex.toUpperCase()) } as React.CSSProperties) : undefined}>Aa</span>
+                    <button type="button" className="reorg-colour-use" data-colour-use="" disabled={!isHexColour(hex)} onClick={() => pickHex(hex)}>{t('reorgColourUse')}</button>
+                  </div>
+                )}
             </div>
           )}
         </div>

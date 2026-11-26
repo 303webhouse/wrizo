@@ -74,10 +74,16 @@
 
     const lines = all('.wz-ink-face .wz-ink-face-line');
     const l1 = lines[0], l2 = lines[1];
-    ok('F1: the face is two lines - line one the brush in her hand (a button, with its arrow) and the size between a minus and a plus; line two the four inks and the eraser',
+    // PARKED - SUPERSEDED by VISUAL 1a.2 (any size): the face's size is a number, no longer the nib's word. The original, verbatim:
+    // ok('F1: the face is two lines - line one the brush in her hand (a button, with its arrow) and the size between a minus and a plus; line two the four inks and the eraser',
+    //   lines.length === 2 && l1 && text(l1.querySelector('.wz-ink-brush .wz-ink-brush-word')) === 'Pen' && text(l1.querySelector('.wz-ink-brush .wz-ink-arrow')) === '▾'
+    //     && !!l1.querySelector('.wz-ink-size-down') && !!l1.querySelector('.wz-ink-size-up') && text(l1.querySelector('.wz-ink-size-value')) === 'Regular'
+    //     && l2 && l2.querySelectorAll('.wz-sliver-inks .wz-ink-swatch').length === 4 && l2.querySelectorAll('.wz-ink-eraser').length === 1,
+    //   { lines: lines.length, l1: text(l1), swatches: all('.wz-sliver-inks .wz-ink-swatch').length });
+    ok('F1 successor [1a.2]: the face is two lines - line one the brush in her hand (a button, with its arrow) and the size, a number, between a minus and a plus; line two the four inks, her last colour and the eraser',
       lines.length === 2 && l1 && text(l1.querySelector('.wz-ink-brush .wz-ink-brush-word')) === 'Pen' && text(l1.querySelector('.wz-ink-brush .wz-ink-arrow')) === '▾'
-        && !!l1.querySelector('.wz-ink-size-down') && !!l1.querySelector('.wz-ink-size-up') && text(l1.querySelector('.wz-ink-size-value')) === 'Regular'
-        && l2 && l2.querySelectorAll('.wz-sliver-inks .wz-ink-swatch').length === 4 && l2.querySelectorAll('.wz-ink-eraser').length === 1,
+        && !!l1.querySelector('.wz-ink-size-down') && !!l1.querySelector('.wz-ink-size-up') && text(l1.querySelector('.wz-ink-size-value')) === '1.4 pt'
+        && l2 && l2.querySelectorAll('.wz-sliver-inks .wz-ink-swatch').length === 4 && l2.querySelectorAll('.wz-ink-last').length === 1 && l2.querySelectorAll('.wz-ink-eraser').length === 1,
       { lines: lines.length, l1: text(l1), swatches: all('.wz-sliver-inks .wz-ink-swatch').length });
     ok('F2: Studio is one door under the face, closed at the start, its arrow down, and nothing stands open below it',
       !!q('.wz-ink-studio') && !studioOpen() && arrow('.wz-ink-studio') === '▾' && !q('.wz-ink-studio-body') && all('.wz-ink-tips, .wz-ink-nibs').length === 0,
@@ -126,17 +132,28 @@
     await click('.wz-ink-brush');
     ok('F11: the list holds her last brushes, newest first', J(order) === J(['marker', 'pencil', 'pen']) && !q('.wz-ink-recent'), { order });
 
-    await click('.wz-ink-size-up');
-    const upWord = text(q('.wz-ink-size-value'));
-    const upOff = q('.wz-ink-size-up') && q('.wz-ink-size-up').disabled;
+    // PARKED - SUPERSEDED by VISUAL 1a.2 (any size): minus and plus step a number, not the three nib words. The original, verbatim:
+    // await click('.wz-ink-size-up');
+    // const upWord = text(q('.wz-ink-size-value'));
+    // const upOff = q('.wz-ink-size-up') && q('.wz-ink-size-up').disabled;
+    // await draw([{ x: 0.2, y: 0.42 }, { x: 0.5, y: 0.44 }]);
+    // const s2 = strokesOf(id)[before + 1];
+    // await click('.wz-ink-size-down'); await click('.wz-ink-size-down');
+    // const downWord = text(q('.wz-ink-size-value'));
+    // const downOff = q('.wz-ink-size-down') && q('.wz-ink-size-down').disabled;
+    // await click('.wz-ink-size-up');
+    // ok('F12: the size steps with minus and plus (Fine, Regular, Broad), stops at each end, and the stroke takes it',
+    //   upWord === 'Broad' && upOff === true && downWord === 'Fine' && downOff === true && !!s2 && s2.nib === 'broad' && s2.tip === 'marker', { upWord, downWord, stroke: s2 && { tip: s2.tip, nib: s2.nib } });
+    const sizeText = () => text(q('.wz-ink-size-value'));
+    const seen = [sizeText()];
+    await click('.wz-ink-size-up'); seen.push(sizeText());
     await draw([{ x: 0.2, y: 0.42 }, { x: 0.5, y: 0.44 }]);
     const s2 = strokesOf(id)[before + 1];
-    await click('.wz-ink-size-down'); await click('.wz-ink-size-down');
-    const downWord = text(q('.wz-ink-size-value'));
-    const downOff = q('.wz-ink-size-down') && q('.wz-ink-size-down').disabled;
-    await click('.wz-ink-size-up');
-    ok('F12: the size steps with minus and plus (Fine, Regular, Broad), stops at each end, and the stroke takes it',
-      upWord === 'Broad' && upOff === true && downWord === 'Fine' && downOff === true && !!s2 && s2.nib === 'broad' && s2.tip === 'marker', { upWord, downWord, stroke: s2 && { tip: s2.tip, nib: s2.nib } });
+    await click('.wz-ink-size-down'); seen.push(sizeText());
+    await click('.wz-ink-size-down'); seen.push(sizeText());
+    await click('.wz-ink-size-up'); seen.push(sizeText());
+    ok('F12 successor [1a.2]: minus and plus step the size, shown as a number, and the stroke takes it (any size, with the nearest nib kept beside it)',
+      J(seen) === J(['5.4 pt', '7 pt', '5.4 pt', '4 pt', '5.4 pt']) && !!s2 && s2.size === 7 && s2.nib === 'regular' && s2.tip === 'marker', { seen, stroke: s2 && { tip: s2.tip, nib: s2.nib, size: s2.size } });
 
     await click('.wz-sliver-inks .wz-ink-swatch[aria-label="Oxblood"]');
     await draw([{ x: 0.2, y: 0.5 }, { x: 0.5, y: 0.52 }]);
@@ -164,6 +181,8 @@
 
   /** VISUAL check 3: never taller than the sheet, closed and with every row open in turn, and the face never scrolls away. */
   const height = async () => {
+    // a theme change (Flux's splash) can leave the page mid-change: measure once its height holds still
+    for (let i = 0, was = -1; i < 40; i++) { const r = rect('.mode-page'); const now = r ? r.height : 0; if (now > 0 && now === was) break; was = now; await sleep(400); }
     const reads = [];
     await setStudio(false); reads.push(await fit('closed'));
     await setStudio(true); reads.push(await fit('studio'));
@@ -184,6 +203,115 @@
     ];
   };
 
+  // React's own inputs: the native setter, then the event it listens for
+  const setValue = async (s, v) => {
+    const el = q(s);
+    if (!el) return false;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, String(v));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    await sleep(200);
+    return true;
+  };
+  const brush = async (tip) => { await click('.wz-ink-brush'); await click(`.wz-ink-recent [data-recent-tip="${tip}"]`); };
+  const last = (id) => { const s = strokesOf(id); return s[s.length - 1] || {}; };
+  const pick = (s, k) => { const o = {}; for (const key of k) if (s[key] !== undefined) o[key] = s[key]; return o; };
+  const line = (y) => [{ x: 0.2, y }, { x: 0.6, y }];
+
+  /** 1a.2: any size, any colour, see-through. Expects a fresh Free Write page with the drawer open on INK. */
+  const richer = async (id) => {
+    const out = [];
+    const ok = (name, pass, detail) => out.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : J(detail) });
+    const FIELDS = ['tip', 'nib', 'ink', 'hex', 'size', 'alpha'];
+
+    await draw(line(0.1));
+    ok('R0: with nothing changed, a stroke is stored exactly as before this slice (tip, nib, ink - no new field)', J(pick(last(id), FIELDS)) === J({ tip: 'pen', nib: 'regular', ink: 'walnut' }), pick(last(id), FIELDS));
+
+    await openRow('brushes');
+    const sizeSlide = q('.wz-ink-size-slide'), clearSlide = q('.wz-ink-clear-slide');
+    ok('R1: the Brushes row has Size and See-through sliders, real range inputs a keyboard reaches', !!sizeSlide && !!clearSlide && sizeSlide.type === 'range' && clearSlide.type === 'range' && sizeSlide.tabIndex >= 0 && clearSlide.tabIndex >= 0, text(q('.wz-ink-row-body')));
+    await setValue('.wz-ink-size-slide', 17);
+    const faceSize = text(q('.wz-ink-size-value'));
+    await draw(line(0.18));
+    ok('R2: any size - the slider sets 17, the face says so, and the stroke carries size 17 with the nearest nib', faceSize === '17 pt' && J(pick(last(id), FIELDS)) === J({ tip: 'pen', nib: 'broad', ink: 'walnut', size: 17 }), { faceSize, s: pick(last(id), FIELDS) });
+    await setValue('.wz-ink-clear-slide', 60);
+    await draw(line(0.26));
+    ok('R3: see-through - at 60% the stroke carries alpha 0.4', last(id).alpha === 0.4 && last(id).size === 17, pick(last(id), FIELDS));
+
+    await openRow('colour');
+    await click('.wz-ink-row-body [data-colour-custom]');
+    await setValue('.wz-ink-row-body [data-colour-hex]', 'red');
+    const refused = q('.wz-ink-row-body [data-colour-use]') && q('.wz-ink-row-body [data-colour-use]').disabled;
+    // the field opens holding '#': a code typed or pasted with its own '#', or with none, is the same colour
+    const forgiven = [];
+    for (const typed of ['##2f7d4f', '2f7d4f']) { await setValue('.wz-ink-row-body [data-colour-hex]', typed); forgiven.push(q('.wz-ink-row-body [data-colour-hex]').value); }
+    ok('R4b: a code with a doubled or a missing # is read as the colour she meant', J(forgiven) === J(['#2f7d4f', '#2f7d4f']), forgiven);
+    await setValue('.wz-ink-row-body [data-colour-hex]', '#2f7d4f');
+    await click('.wz-ink-row-body [data-colour-use]');
+    await draw(line(0.34));
+    ok('R4: any colour - + Custom, a hex, Use: the stroke carries #2F7D4F and no named ink; a word that is not a colour cannot be used', refused === true && J(pick(last(id), FIELDS)) === J({ tip: 'pen', nib: 'broad', hex: '#2F7D4F', size: 17, alpha: 0.4 }), { refused, s: pick(last(id), FIELDS) });
+
+    const dot = () => q('.wz-ink-last');
+    const ringed = () => !!dot() && dot().classList.contains('active');
+    const a = { last: dot() && dot().getAttribute('data-last'), ringed: ringed(), swatchRinged: all('.wz-ink-swatch.active').length };
+    await click('.wz-sliver-inks .wz-ink-swatch[aria-label="Walnut"]');
+    await draw(line(0.42));
+    const b = { s: pick(last(id), FIELDS), ringed: ringed() };
+    await click('.wz-ink-last');
+    await draw(line(0.5));
+    ok('R5: her last colour sits on the face: ringed while in use, still there after a desk ink, and one press brings it back', a.last === '#2F7D4F' && a.ringed && a.swatchRinged === 0 && b.s.ink === 'walnut' && b.s.hex === undefined && !b.ringed && last(id).hex === '#2F7D4F' && ringed(), { a, b, now: pick(last(id), FIELDS) });
+
+    await setStudio(false);
+    await brush('pencil');
+    const fresh = text(q('.wz-ink-size-value'));
+    await openRow('brushes');
+    const freshClear = q('.wz-ink-clear-slide') && q('.wz-ink-clear-slide').value;
+    await setValue('.wz-ink-size-slide', 6);
+    await brush('pen');
+    const penBack = [text(q('.wz-ink-size-value')), q('.wz-ink-clear-slide') && q('.wz-ink-clear-slide').value];
+    await brush('pencil');
+    const pencilBack = [text(q('.wz-ink-size-value')), q('.wz-ink-clear-slide') && q('.wz-ink-clear-slide').value];
+    ok('R6: each brush keeps its own size and see-through while she is here', fresh === '1.15 pt' && freshClear === '0' && J(penBack) === J(['17 pt', '60']) && J(pencilBack) === J(['6 pt', '0']), { fresh, freshClear, penBack, pencilBack });
+    await brush('pen');
+    await setStudio(false);
+    return out;
+  };
+
+  /** The painted colour at the middle of stored stroke `n` (a straight two-point line), from the committed canvas. */
+  const pixel = (id, n) => {
+    const st = strokesOf(id)[n], sheet = q('.wz-ink-sheet'), c = q('.ink-committed');
+    if (!st || !sheet || !c) return null;
+    const r = sheet.getBoundingClientRect(), k = sheet.offsetWidth ? r.width / sheet.offsetWidth : 1;
+    const oy = (parseFloat(getComputedStyle(sheet).paddingTop) || 0) * k, dpr = window.devicePixelRatio || 1;
+    const mx = (st.points[0].x + st.points[st.points.length - 1].x) / 2, my = (st.points[0].y + st.points[st.points.length - 1].y) / 2;
+    // a few pixels ACROSS the line, the most covered one: a thin line that falls between two pixel rows reads half-covered on either
+    const col = c.getContext('2d').getImageData(Math.round(mx * r.width * dpr), Math.round((oy + my * r.width) * dpr) - 3, 1, 7).data;
+    let best = 0;
+    for (let i = 4; i < col.length; i += 4) if (col[i + 3] > col[best + 3]) best = i;
+    return [...col.slice(best, best + 4)];
+  };
+  const near = (a, b, by = 6) => !!a && a.length === b.length && a.every((v, i) => Math.abs(v - b[i]) <= by);
+  const rgb = (css) => { const c = document.createElement('canvas'); c.width = c.height = 1; const x = c.getContext('2d'); x.fillStyle = css; x.fillRect(0, 0, 1, 1); return [...x.getImageData(0, 0, 1, 1).data]; };
+  const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  /** After a reload: the new fields read back and paint. `n` is the see-through custom stroke's place in the list (R4). */
+  const readBack = (id, n) => {
+    const s = strokesOf(id)[n] || {};
+    const px = pixel(id, n);
+    return [{ name: 'R7: after a reload the stroke reads back with its size, colour and see-through, and paints in that colour, see-through', pass: s.hex === '#2F7D4F' && s.size === 17 && s.alpha === 0.4 && near(px, [47, 125, 79, 102]), detail: J({ s: pick(s, ['hex', 'size', 'alpha']), px }) }];
+  };
+
+  /** An old stroke (none of the new fields) and a stroke with junk in them both paint as before: solid, the desk's default ink. Seeded through the app's own seam, then reload, then call. */
+  const OLD_AND_JUNK = [
+    { points: [{ x: 0.2, y: 0.1 }, { x: 0.6, y: 0.1 }] },
+    { points: [{ x: 0.2, y: 0.2 }, { x: 0.6, y: 0.2 }], size: 'huge', hex: 'red', alpha: 9 },
+  ];
+  const seedOld = async (id) => { window.wrizoPatchEntry(id, { strokes: OLD_AND_JUNK }); await sleep(100); };
+  const oldPaints = (id) => {
+    const want = rgb(token('--ink-stroke') || token('--ink-on-paper') || '#1A1206');
+    const px = [pixel(id, 0), pixel(id, 1)];
+    return [{ name: 'R8: an old stroke still paints as before, and unknown values in the new fields paint as the default (solid, the desk ink)', pass: px.every((p) => !!p && p[3] > 200 && near(p.slice(0, 3), want.slice(0, 3), 24)), detail: J({ px, want, stored: strokesOf(id).length }) }];
+  };
+
   const LOADS = { painter: /\/InkStratum[.\-]/, tab: /\/InkTab[.\-]/, capture: /\/inkCapture[.\-]/ };
   /** What has been fetched of the ink code on this page load (script requests, counted by name). */
   const loads = () => {
@@ -193,5 +321,5 @@
     return out;
   };
 
-  window.__vi = { sleep, q, all, click, text, rect, strokesOf, flush, draw, openDrawer, instrument, freePage, setStudio, openRow, rowOpen, rows, fit, fits, shape, height, loads };
+  window.__vi = { richer, pixel, readBack, seedOld, oldPaints, setValue, brush, sleep, q, all, click, text, rect, strokesOf, flush, draw, openDrawer, instrument, freePage, setStudio, openRow, rowOpen, rows, fit, fits, shape, height, loads };
 })();

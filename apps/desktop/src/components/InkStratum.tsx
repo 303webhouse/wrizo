@@ -8,6 +8,10 @@ export interface InkPen {
   tip: StrokeTip;
   nib: StrokeNib;
   ink: StrokeInk;
+  /** VISUAL 1a.2: any size (px), her own colour (#RRGGBB, instead of the named ink) and see-through (0.05 to 1). Absent = the nib, the named ink, solid. Session only, like the rest of the pen. */
+  size?: number;
+  hex?: string;
+  alpha?: number;
 }
 
 /**

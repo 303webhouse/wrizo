@@ -52,6 +52,24 @@ export function nibOf(stroke: Stroke): StrokeNib {
   return NIBS.includes(stroke.nib as StrokeNib) ? (stroke.nib as StrokeNib) : NIB_DEFAULT;
 }
 
+// VISUAL 1a.2 - the three richer fields, read the same way: what is not understood is not there, so it paints as the stroke would without it.
+export const SIZE_MIN = 0.5;
+export const SIZE_MAX = 40;   // the widest the tab sets; the read allows up to SIZE_CEIL, so a later brush is not clipped by this build
+const SIZE_CEIL = 64;
+export const ALPHA_MIN = 0.05;
+export function sizeOf(stroke: Stroke): number | null {
+  const v: unknown = stroke.size;
+  return typeof v === 'number' && v >= SIZE_MIN && v <= SIZE_CEIL ? v : null;
+}
+export function hexOf(stroke: Stroke): string | null {
+  const v: unknown = stroke.hex;
+  return typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : null;
+}
+export function alphaOf(stroke: Stroke): number {
+  const v: unknown = stroke.alpha;
+  return typeof v === 'number' && v >= ALPHA_MIN && v <= 1 ? v : 1;
+}
+
 // Read one CSS custom property off the root, with a hard fallback for the
 // no-DOM case (harness helpers, any future SSR). Shared by both readers below
 // so there is exactly one place that knows how a token becomes a colour.
@@ -82,6 +100,8 @@ export function inkColorOf(ink: StrokeInk): string {
 // caller supplies as inkColor()). An unrecognised name falls to the default
 // rather than to transparent — see the read-boundary note above.
 export function strokeColor(stroke: Stroke, fallback: string): string {
+  const hex = hexOf(stroke);
+  if (hex) return hex;
   return INKS.includes(stroke.ink as StrokeInk) ? inkColorOf(stroke.ink as StrokeInk) : fallback;
 }
 
@@ -114,8 +134,12 @@ const TIP_ALPHA: Record<StrokeTip, number> = {
  */
 export function strokeWidth(stroke: Stroke): number {
   if (stroke.eraser) return ERASER_WIDTH; // the eraser ignores tip and nib
-  return NIB_WIDTHS[tipOf(stroke)][nibOf(stroke)];
+  return sizeOf(stroke) ?? NIB_WIDTHS[tipOf(stroke)][nibOf(stroke)];
 }
+
+/** A nib stop as a width, and the stop nearest a width (what a stroke of any size carries for a client that reads only the nib). */
+export const nibWidth = (tip: StrokeTip, nib: StrokeNib): number => NIB_WIDTHS[tip][nib];
+export const nearestNib = (tip: StrokeTip, width: number): StrokeNib => NIBS.reduce((best, nib) => (Math.abs(nibWidth(tip, nib) - width) < Math.abs(nibWidth(tip, best) - width) ? nib : best), NIBS[0]);
 
 // ITEM 126 B3/B4 — HIT-TESTING AND GROUPING, and why they live in THIS file.
 //
@@ -346,7 +370,7 @@ export function renderStroke(
   ctx.strokeStyle = paint;
   // an erase is exempt: it has no tip, and a reduced alpha would erase only partially [ink §6]
   if (!stroke.eraser) {
-    ctx.globalAlpha = TIP_ALPHA[tip];
+    ctx.globalAlpha = TIP_ALPHA[tip] * alphaOf(stroke);
     if (tip === 'marker') {
       // A square cap and mitred joins give the chisel end its flat edge, and
       // `multiply` is what makes two marker strokes DARKEN where they cross
@@ -388,7 +412,7 @@ export function renderStroke(
   // stroke; a smoother dropping into this file later can replace the whole
   // pass without touching capture or persistence, exactly as J9 intended.
   if (!stroke.eraser && tip === 'pencil') {
-    ctx.globalAlpha = TIP_ALPHA.pencil * 0.55;
+    ctx.globalAlpha = TIP_ALPHA.pencil * 0.55 * alphaOf(stroke);
     ctx.lineWidth = lineWidth * 0.45;
     ctx.setLineDash([lineWidth * 1.9, lineWidth * 0.85]);
     ctx.stroke();

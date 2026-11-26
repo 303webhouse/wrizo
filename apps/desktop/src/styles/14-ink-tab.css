@@ -49,3 +49,14 @@
 [data-theme='flux'] .wz-ink-row[aria-expanded='true']{ box-shadow:inset 3px 0 0 var(--orange); }
 
 .wz-ink-tab :is(button):focus-visible{ outline:2px solid var(--choice); outline-offset:1px; }
+
+/* VISUAL 1a.2 - any size, any colour, see-through */
+.wz-ink-size-value{ min-width:38px; }
+.wz-ink-face-line--ink .wz-sliver-inks{ gap:5px; }
+.wz-ink-last{ background:linear-gradient(90deg, currentColor 50%, transparent 50%); border-radius:50%; }   /* the half-filled dot: no colour of her own yet */
+.wz-ink-slide{ display:flex; flex-direction:column; gap:4px; font-size:11px; }
+.wz-ink-slide-head{ display:flex; justify-content:space-between; gap:8px; }
+.wz-ink-slide input[type='range']{ width:100%; margin:0; accent-color:var(--choice); }
+.wz-ink-custom-open{ align-self:flex-start; background:none; border:0; padding:4px 6px; color:inherit; font:inherit; font-size:12px; cursor:pointer; }
+.wz-ink-custom{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:0 2px; }
+.wz-ink-custom .reorg-colour-hex{ width:82px; }
