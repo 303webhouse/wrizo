@@ -47,10 +47,12 @@ async function walkAndInk(app, theme) {
   const id = J(s.id), board = J(s.board);
   const read = (js) => run(app, `return ${js};`);
 
-  // ---- she draws, with her caret left after "The " ----
-  await run(app, 'await window.__vi.sleep(900); window.__vi3.caretAt(4); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();');
+  // ---- she draws; then back to her words, her caret left after "The ", and the pen taken up again ----
+  // (a real stroke on the paper moves her caret to the end by itself, walk or no walk: VISUAL's, reported to Fable on Nov 26. The caret is placed AFTER the stroke so that G4 measures the walk and nothing else.)
+  await run(app, 'await window.__vi.sleep(900); await window.__vi3.inkOnPaper();');
   await app.penStroke('.wz-ink-sheet', [{ x: 0.2, y: 0.45 }, { x: 0.45, y: 0.48 }, { x: 0.7, y: 0.45 }]);
   await sleep(900);
+  await run(app, "await window.__vi3.tab('text'); await window.__vi.sleep(600); window.__vi3.caretAt(4); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();");
   const before = await read(`({ walk: window.__gw.walk(), strokes: window.__gw.strokes(${id}) })`);
   const opened = await read('await window.__gw.openWalk()');
   const over = await read('window.__gw.walk()');
