@@ -21,7 +21,9 @@ const SEEDS = {
   long: Array.from({ length: 230 }, (_, i) => SENTENCE(i)).join(String.fromCharCode(10, 10)),
 };
 const BURST = ' the quick brown fox jumps over the lazy dog and runs home again now';
-const ARMS = [{ page: 'short', dpr: 1 }, { page: 'short', dpr: 2.5 }, { page: 'long', dpr: 1 }, { page: 'long', dpr: 2.5 }];
+const ARMS = [{ page: 'short', dpr: 1 }, { page: 'short', dpr: 2.5 }, { page: 'long', dpr: 1 }, { page: 'long', dpr: 2.5 },
+  // a busy laptop's stand-in: the processor slowed (measured and judged the same)
+  { page: 'short', dpr: 2.5, cpu: 6 }, { page: 'long', dpr: 2.5, cpu: 6 }];
 
 // a signed-in session without a server: /auth/me, /api/sync (keeps what is pushed), the rest absent
 const FAKE_SERVER = `(() => {
@@ -49,11 +51,11 @@ const READER = `(() => {
   const tick = () => {
     if (!L.on) return;
     const t = performance.now(); const text = letters(); const block = document.querySelector('.flux-block-caret');
-    let behind = null;
+    let behind = null; let range = document.createRange();
     if (text && block) {
       const b = block.getBoundingClientRect(); const mid = b.top + b.height / 2;
       let seen = 0;   // letters counted back from the end
-      const range = document.createRange();
+      range = document.createRange();
       for (let i = text.nodes.length - 1; i >= 0 && behind === null && seen < 90; i -= 1) {
         const n = text.nodes[i];
         for (let k = n.data.length - 1; k >= 0 && behind === null && seen < 90; k -= 1) {
@@ -69,7 +71,10 @@ const READER = `(() => {
       }
       if (behind === null) behind = 90;
     }
-    L.frames.push({ t, n: text ? text.total : 0, behind, block: !!block });
+    // where the block stands against the last letter's own box (px right of its right edge, px below its top), and the scroll
+    let dx = null, dy = null;
+    if (text && block) { const n = text.nodes[text.nodes.length - 1]; let k = n.data.length - 1; while (k > 0 && n.data[k] === '\u200b') k -= 1; range.setStart(n, k); range.setEnd(n, k + 1); const q = [...range.getClientRects()].pop(); const b = block.getBoundingClientRect(); if (q) { dx = Math.round(b.left - q.right); dy = Math.round(b.top - q.top); } }
+    L.frames.push({ t, n: text ? text.total : 0, behind, block: !!block, dx, dy, s: Math.round(document.querySelector('.mode-scroll')?.scrollTop ?? 0) });
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -104,8 +109,9 @@ try { await withHarness(async (app) => {
   await app.reload();
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams', timeout: 20000 });
   for (const arm of ARMS) {
-    const tag = `${arm.page} page, scale ${arm.dpr}`;
-    const id = `wcl-${arm.page}-${String(arm.dpr).replace('.', '_')}`;
+    const tag = `${arm.page} page, scale ${arm.dpr}${arm.cpu ? `, processor ${arm.cpu}x slower` : ''}`;
+    const id = `wcl-${arm.page}-${String(arm.dpr).replace('.', '_')}-${arm.cpu || 1}`;
+    await app.cdp('Emulation.setCPUThrottlingRate', { rate: 1 });
     await app.emulateDpr(arm.dpr, 1536, 864);
     await ev("location.hash = '#/'; true"); await sleep(300);
     await ev(`window.wrizoCreateJournalPage(${J({ id, text: SEEDS[arm.page], createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })}); window.wrizoFlushNow(); true`);
@@ -117,6 +123,7 @@ try { await withHarness(async (app) => {
     await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
     await app.typeKeys('.'); await sleep(800);   // one key first: the caret drawn at the end
     const where = await ev("({ jacked: document.documentElement.hasAttribute('data-flux3-jacked'), dpr: devicePixelRatio, block: !!document.querySelector('.flux-block-caret'), words: document.querySelector('.forward-only-editor').textContent.split(/\\s+/).length })");
+    await app.cdp('Emulation.setCPUThrottlingRate', { rate: arm.cpu || 1 });
     await ev(READER);
     await sleep(400);
     const start = await ev('window.__lag.count()');
@@ -125,6 +132,9 @@ try { await withHarness(async (app) => {
     const raw = await ev('(() => { window.__lag.on = false; return { keys: window.__lag.keys, frames: window.__lag.frames, sel: window.__lag.sel, end: window.__lag.count() }; })()');
     const r = read(start, raw.keys, raw.frames);
     const rest = raw.frames.length ? raw.frames[raw.frames.length - 1].behind : null;
+    const odd = raw.frames.filter((x) => x.block && x.behind > 2);
+    const frameMs = raw.frames.length > 1 ? Math.round((raw.frames[raw.frames.length - 1].t - raw.frames[0].t) / (raw.frames.length - 1)) : null;
+    console.log(`ODD ${tag}: ${odd.length} frames with the block more than 2 letters off; one frame is ${frameMs} ms; ` + J(odd.slice(0, 8).map((x) => ({ n: x.n, behind: x.behind, dx: x.dx, dy: x.dy, scroll: x.s, sinceKey: Math.round(x.t - Math.max(...raw.keys.map((k) => k.t).filter((k) => k <= x.t), 0)) }))));
     console.log(`MEASURE ${tag}: ${J({ ...where, ...r, selectionchanges: raw.sel, behindAtRest: rest })}`);
     ok(`K1 ${tag}: the block stands after each letter within 2 frames of it being drawn`, where.jacked && K1(r), J({ gapFrames: r.gapFrames, caretMs: r.caretMs, textMs: r.textMs, never: r.never }));
     ok(`K2 ${tag}: the block is never more than 2 letters behind the text`, where.block && K2(r), J({ behindLetters: r.behindLetters, behindAtRest: rest }));
