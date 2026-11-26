@@ -1,0 +1,17 @@
+/* COMPARE STRUCTURES (PRESETS-B item 18, Nov 25; reorg/backMenu/CompareStructures.tsx; the words are PROPOSED). Two structures side by side inside the PLAN tab's Presets list: the columns wrap to one under the other where the room is narrow (the drawer) and sit side by
+   side where it is not (a Board's Plan view). Theme-neutral: only the tokens the Plan tab's own rows already wear (--text-hi, --text-mid, --text-low, --ink-border-strong, --font-ui); no colour of its own, square, no shadow, no motion. */
+.reorg-compare{ box-sizing:border-box; max-width:100%; margin-top:4px; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
+.reorg-compare-cols{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+.reorg-compare-col{ min-width:0; display:flex; flex-direction:column; gap:4px; padding:6px 8px; border:1px solid var(--ink-border-strong); }
+.reorg-compare-label{ color:var(--text-mid); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+.reorg-compare-select{ box-sizing:border-box; width:100%; padding:4px 6px; font:inherit; color:var(--text-hi); background:transparent; border:1px solid var(--ink-border-strong); border-radius:0; }
+.reorg-compare-select option{ color:initial; }
+.reorg-compare-select:focus-visible, .reorg-compare button:focus-visible{ outline:2px solid currentColor; outline-offset:1px; }
+.reorg-compare-size{ color:var(--text-mid); font-size:11px; }
+.reorg-compare-line{ margin:0; color:var(--text-mid); font-size:11px; line-height:1.4; }
+.reorg-compare-rows{ list-style:decimal-leading-zero inside; margin:2px 0 0; padding:0; max-height:16em; overflow:auto; }
+.reorg-compare-row{ padding:1px 0; line-height:1.35; color:var(--text-hi); }
+.reorg-compare-row[data-shared='true']{ font-weight:600; text-decoration:underline; text-underline-offset:3px; }   /* a shared heading is marked by weight and an underline, never by colour alone */
+.reorg-compare-shared{ margin:8px 0 0; color:var(--text-hi); line-height:1.4; }
+.reorg-compare button{ align-self:flex-start; padding:4px 10px; font:inherit; color:var(--text-hi); background:none; border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer; }
+.reorg-compare-close{ margin-top:8px; }
