@@ -7,6 +7,7 @@ import { authRouter, requireAuth } from './auth';
 import { syncRouter } from './sync';
 import { railRouter } from './railRoutes';
 import { prefsRouter } from './prefsRoutes';
+import { cardHeldRouter } from './cardHeldRoutes';
 import { tutorNotesRouter } from './tutorNotesRoutes';
 import { tutorRouter } from './tutor';
 import { logError } from './logSafe';
@@ -109,6 +110,8 @@ app.use('/api', syncRouter);
 app.use('/api', railRouter);
 // The reorg's account preferences (Fable, Nov 19): GET/PUT /api/prefs, its own door and its own column, behind requireAuth.
 app.use('/api', prefsRouter);
+// The phone companion's one question (MOBILE-B): GET /api/card-held/:id, yes or no for her own account, behind requireAuth.
+app.use('/api', cardHeldRouter);
 // The Tutor's notes on file (item 7): /api/tutor/notes, each behind requireAuth, mounted BEFORE tutorRouter so the chat's 10-a-minute model limit never throttles her own notes screen.
 app.use('/api', tutorNotesRouter);
 // TU1 S5 — the Tutor's one new route (POST /api/tutor/chat).
