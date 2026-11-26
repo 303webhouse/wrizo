@@ -107,6 +107,9 @@ export interface Stroke {
 // are plain persisted CSS pixels, at most one 'board-meta' box per board
 // (BoardEditor.tsx enforces this by always updating the existing one, never
 // pushing a second).
+/** A stretch of a card's text drawn bold, italic, underlined or struck (store/textMarks.ts). */
+export interface TextMark { start: number; end: number; b?: true; i?: true; u?: true; s?: true }
+
 export interface Box {
   id: string;
   kind: 'text' | 'ink' | 'page-pin' | 'connection' | 'board-meta';
@@ -126,6 +129,11 @@ export interface Box {
   // (zero schema, like `prompt`): guidance, never her text (it is not in `text`, so it is never exported, copied, counted or read by the Tutor as her words); the Plan draws it under the heading until a Part under that heading has words.
   // Not `prompt`: that is a dealt step's question and the Walk and the Open view read it.
   planHint?: string;
+  // THE GUIDE WALK (PRESETS-B, Nov 25; Fable's placement, Nick ruled both saved-data questions yes). Two additive optional fields inside the board's `boxes` jsonb (zero schema), both ABSENT on every card that never used them.
+  // planSkipped: set only by Skip on an empty step; cleared when the row gains a note, and by "Not skipped" (the key is removed). Never counted, never celebrated.
+  planSkipped?: true;
+  // textMarks: bold, italic, underline, strike as ranges of offsets into `text`, which stays PLAIN (store/textMarks.ts keeps them on their words through every edit).
+  textMarks?: TextMark[];
   deckStep?: { deck: string; step: string };
   // The writer marks a step FINISHED by hand. One additive optional field inside the board's `boxes` jsonb (zero schema: sync stores the blob whole, like seq / onCanvas / deckStep). `true` = lit; ABSENT = not lit (unmarking REMOVES the key, so there is one way to be unlit), unmarked from the same door. A statement of the writer's, never a measurement: it never counts toward coverage (kindled() ignores it), never completes a Deck and never celebrates (store/guided.ts withLit, store/deckRewards.ts). [index §9]
   lit?: boolean;

@@ -37,7 +37,7 @@ function dressOnly(v: PageSettings | null): PageSettings | null {
   // BIG PROJECTS STEP 3 (3c) - the cards a page hides from its Grafts are that page's own choice: "Set as my default" on one page must not
   // carry its hidden list into every future page (the item-114 trap, closed at the door).
   // REORG PHASE 3 - a Part's name, level, colour and length limit are facts about THAT Part, never dress (the same trap, closed at the door).
-  const { kind, styleGuide, template, hiddenPlanCards, name, level, color, lengthLimit, ...dress } = v as PageSettings & Record<string, unknown>;
+  const { kind, styleGuide, template, hiddenPlanCards, name, level, color, lengthLimit, walk, ...dress } = v as PageSettings & Record<string, unknown>;
   void kind; void styleGuide; void template; void hiddenPlanCards; void name; void level; void color; void lengthLimit;
   return dress as PageSettings;
 }
