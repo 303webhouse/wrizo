@@ -29,7 +29,11 @@ const READ = (sel) => `(() => { const panel = document.querySelector(${J(sel)});
       const past = rects.some((q) => q.right > right + 1 || q.left < left - 1); const split = rects.length > 1 && !/[-\\u2013\\u2014\\/]/.test(m[0]) && Math.abs(rects[0].top - rects[rects.length - 1].top) > 2;
       if (ell || split || (past && !scrolls)) cut.push(m[0] + (ell ? ' (ellipsis)' : split ? ' (split)' : ' (past the edge)')); } }
   return { width: Math.round(pb.width), seen, cut: [...new Set(cut)] }; })()`;
-const FORCE = (sel, px) => `(() => { const p = document.querySelector(${J(sel)}); if (!p) return false; ${px === null ? "p.style.removeProperty('width'); p.style.removeProperty('max-width'); p.style.removeProperty('min-width');" : `p.style.setProperty('width', '${px}px', 'important'); p.style.setProperty('max-width', 'none', 'important'); p.style.setProperty('min-width', '0', 'important');`} return true; })()`;
+// force a width in place, and give back EXACTLY the inline widths that were there (the app sets the panel's own width inline: removing it would leave
+// every later reading at the stylesheet's width)
+const FORCE = (sel, px) => `(() => { const p = document.querySelector(${J(sel)}); if (!p) return false; const keys = ['width', 'max-width', 'min-width'];
+  ${px === null ? "for (const k of keys) { const was = (p.__w || {})[k]; if (was && was[0]) p.style.setProperty(k, was[0], was[1]); else p.style.removeProperty(k); }"
+    : `p.__w = Object.fromEntries(keys.map((k) => [k, [p.style.getPropertyValue(k), p.style.getPropertyPriority(k)]])); p.style.setProperty('width', '${px}px', 'important'); p.style.setProperty('max-width', 'none', 'important'); p.style.setProperty('min-width', '0', 'important');`} return true; })()`;
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
@@ -84,10 +88,10 @@ await withHarness(async (app) => {
       ok(`${at} (premise): at least one rail pop-out was read`, opened > 0, buttons);
       await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
       await sleep(900);
-      const tabs = await app.evalJs("[...document.querySelectorAll('.wz-tutor-panel [role=\"tab\"]')].map((t) => (t.textContent || '').trim())");
+      const tabs = await app.evalJs("[...document.querySelectorAll('[id^=\"wz-tutor-tab-\"]')].map((t) => (t.textContent || '').trim())");
       ok(`${at} (premise): the Back menu opens with its tabs`, tabs.length >= 2, tabs);
       for (const [n, label] of tabs.entries()) {
-        await app.evalJs(`document.querySelectorAll('.wz-tutor-panel [role="tab"]')[${n}]?.click()`);
+        await app.evalJs(`document.querySelectorAll('[id^="wz-tutor-tab-"]')[${n}]?.click()`);
         await sleep(700);
         await one(`Back "${label}"`, '.wz-tutor-panel', BEFORE[theme].back[i]);
       }
