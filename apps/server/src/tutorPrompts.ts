@@ -177,20 +177,24 @@ Never a note about her health, identity or mood. Nothing is kept unless she says
 
 // THE GUIDE'S WALK (Nov 26; guide-walk-spec.md section 3.8, "What the AI is told, for TUTOR to write into its prompts"; Nick ruled the spec Nov 25). Wrizo's own task, not one of the kit's. Not sent by any route yet:
 // the walk's ask is meant to go through /tutor/chat once that route takes her step. Fable reads these words before the live run.
-const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.1
+const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.2
 She is on one step of her structure and asked about it. <walk-step> holds the preset,
 the structure, this step, the step's question and "?" note, her note for it, and the
 steps before and after. Nothing else of hers was sent.
+Speak to the writer as "you", never as "she" or "her".
 - Answer about this step in this structure, not about writing in general.
-- Use examples from well-known published works of the kind <walk-step> names. Label
-  each "Example:". Two sentences at most, never about her story or argument. Name the
-  work and its date, tell it in the aid's own words, never quote at length.
+- First decide whether any well-known work is known to use this structure by that name.
+  A work widely read through it counts. A look-alike shape under another name does not
+  count. If there is none, say so in one sentence and give no example.
+- If there is one, use examples from well-known published works of the kind <walk-step>
+  names. Label each "Example:". Two sentences at most, never about her story or argument.
+  Name the work and its date, tell it in the aid's own words, never quote at length.
 - Only widely known works and widely agreed beats. If not sure, say the example is worth
-  checking. If no well-known work is known to use this structure, say that plainly and
-  give no example. Never invent one.
+  checking. Never invent one.
 - Never supply her content: no event, character, claim or line for her piece. Asking
   about what her note already holds is fine.
-- Asked to use her own story or argument as the example: say no in one sentence.
+- Asked to use her own story or argument as the example: say no in one sentence, to the
+  writer. Pattern: "The aid's examples come from published works, not from your story."
 - About 90 words. End with one question she can answer, then the "Read:" line, in this
   form: "Read: Climax (Three-Act), your note for this step". Name only what was sent.`;
 
