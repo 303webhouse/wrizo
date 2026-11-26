@@ -511,8 +511,13 @@ if (process.env.HARNESS_PARKED === '1') {
         oldToken: doc.getPropertyValue('--accent-rest').trim() };
     })()`);
     // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 14
-    pok('PARKED, generation 2 [faint-starters successor] (was the BG2-S1 re-derivation asserting opacity 1) - the board door keeps the olive value --accent-door (#4F5730) and rests at opacity 0.4 by Nick\'s faint-starters ruling',
-      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 0.4 &&
+    // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the 40% is the outline's alone; the board starters rest solid. The record as it stood, verbatim:
+    //    pok('PARKED, generation 2 [faint-starters successor] (was the BG2-S1 re-derivation asserting opacity 1) - the board door keeps the olive value --accent-door (#4F5730) and rests at opacity 0.4 by Nick\'s faint-starters ruling',
+    //      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 0.4 &&
+    //      paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
+    //      JSON.stringify(paintNow));
+    pok('PARKED, generation 3 [#136 successor] (was generation 2: the board door keeps the olive value --accent-door (#4F5730) and rests at opacity 0.4) - the board door keeps the olive value and rests solid (opacity 1); its thin outline alone is at about 40%',
+      paintNow.color === 'rgb(79, 87, 48)' && parseFloat(paintNow.opacity) === 1 &&
       paintNow.doorToken === '#4F5730' && paintNow.oldToken === '#96a05a',
       JSON.stringify(paintNow));
 
@@ -572,8 +577,11 @@ if (process.env.HARNESS_PARKED === '1') {
       !!bg1f.noSprout && !bg1f.noSprout.prompt && bg1f.noSprout.editorText === '', JSON.stringify(bg1f.noSprout));
     pok('PARKED (was "S2 (the rail): the first keystroke dismisses the drawn line — the writer\'s ink always wins the space") — #13 12f (Fable, Nov 1): there is no drawn line to dismiss',
       !!bg1f.noSprout && !bg1f.noSprout.prompt, JSON.stringify(bg1f.noSprout));
-    pok('PARKED (was "S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1") — #13 12f (Fable, Nov 1): the page row is deleted; the board row alone remains, at its 0.4 rest',
-      !!bg1f.grammar && bg1f.grammar.pageStyle === null && !!bg1f.grammar.boardStyle && bg1f.grammar.boardStyle.opacity === '0.4', JSON.stringify(bg1f.grammar));
+    // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the 40% is the outline's alone; the board starters rest solid. The record as it stood, verbatim:
+    //    pok('PARKED (was "S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1") — #13 12f (Fable, Nov 1): the page row is deleted; the board row alone remains, at its 0.4 rest',
+    //      !!bg1f.grammar && bg1f.grammar.pageStyle === null && !!bg1f.grammar.boardStyle && bg1f.grammar.boardStyle.opacity === '0.4', JSON.stringify(bg1f.grammar));
+    pok('PARKED (was "S3 [faint-starters successor]: the board row and the page row ARE one component - identical computed type, size and color on both surfaces - and differ in ONE thing only, by ruling: the board starters rest at opacity 0.4, the page row at 1") — #13 12f (Fable, Nov 1): the page row is deleted; the board row alone remains - #136 (Nov 25): it rests solid, its outline alone at about 40%',
+      !!bg1f.grammar && bg1f.grammar.pageStyle === null && !!bg1f.grammar.boardStyle && bg1f.grammar.boardStyle.opacity === '1', JSON.stringify(bg1f.grammar));
     return parkedChecks;
   });
   // eslint-disable-next-line no-console
