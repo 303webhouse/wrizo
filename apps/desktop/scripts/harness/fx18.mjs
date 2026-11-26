@@ -177,7 +177,15 @@ await withHarness(async (app) => {
       const FLOOR = 200;   // = store/menusDrawers.ts DRAWER_MIN (page-size)
       fx18Parks.push({ s: s.name, w, margin, panel, paper });
       if (margin != null && margin >= FLOOR) {
-        ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px >= ${FLOOR}): the OPEN panel OCCUPIES the margin (narrowed to it if need be) and NEVER covers the painted paper, stays wholly in the room, grip reachable`,
+        // #133 (Nick, Nov 25; docs/rulings/css-desk-frame.md §23): at 1600 and narrower the panel lies over the page's right margin, never its text.
+        if (w <= 1600) {
+          // SUPERSEDED at 1600 and narrower, the original verbatim:
+          // ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px >= ${FLOOR}): the OPEN panel OCCUPIES the margin (narrowed to it if need be) and NEVER covers the painted paper, stays wholly in the room, grip reachable`,
+          // !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
+          // JSON.stringify({ panel, paper, margin, grip, gd, w }));
+          ok(`S2 WIDE LAW [#133 successor] (${s.name} @ ${w}x${h}): the OPEN panel lies over the painted page's margin at most, never its text, stays wholly in the room, grip reachable`,
+            !!panel && !!paper && panel.l >= paper.r - paper.w / 8.5 - 2 && panel.w >= 200 && inRoom && grip === true, JSON.stringify({ panel, paper, margin, grip, gd, w }));
+        } else ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px >= ${FLOOR}): the OPEN panel OCCUPIES the margin (narrowed to it if need be) and NEVER covers the painted paper, stays wholly in the room, grip reachable`,
           !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
           JSON.stringify({ panel, paper, margin, grip, gd, w }));
         const sliverPanel = await rectOf(app, '.wz-sliver-panel');
@@ -185,7 +193,14 @@ await withHarness(async (app) => {
           !!sliverPanel && !!panel && sliverPanel.r <= panel.l + 1,
           JSON.stringify({ sliverPanel, tutorPanel: panel }));
       } else {
-        ok(`S2 DEGRADATION [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
+        if (w <= 1600) {
+          // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
+          // ok(`S2 DEGRADATION [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
+          // !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
+          // JSON.stringify({ panel, paper, margin, expectedOpenW: ow, grip, gd, w }));
+          ok(`S2 DEGRADATION [#133 successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel overlays the page's margin only, never its text, no narrower than ${FLOOR}, grip reachable`,
+            !!panel && !!paper && panel.l >= paper.r - paper.w / 8.5 - 2 && panel.w >= FLOOR && panel.w <= 321 && inRoom && grip === true, JSON.stringify({ panel, paper, margin, grip, gd, w }));
+        } else ok(`S2 DEGRADATION [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
           !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
           JSON.stringify({ panel, paper, margin, expectedOpenW: ow, grip, gd, w }));
       }

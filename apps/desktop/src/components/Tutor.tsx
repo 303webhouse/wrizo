@@ -428,7 +428,8 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps up to its 320 floor and lies over the page's margin, never its text
-      const small = pageKind === 'prose' && onePanelAt(window.innerWidth);
+      // never in the Typewriter zoom, where the openers are hidden and keep their boxes (desk-frame §12b)
+      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !document.querySelector('.mode-pagecol[data-zoom="true"]');
       const over = small && geoMargin < TUTOR_TAB_PX + 320 * ck;
       const panel = over ? document.querySelector('.wz-tutor-panel') : null;
       const box = panel?.getBoundingClientRect();
