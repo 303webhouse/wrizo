@@ -58,7 +58,7 @@ await withHarness(async (app) => {
     await sleep(1500);
     const rest = await app.evalJs(PROBE);
     ok(`${at} (premise): Arbor's look, a Board with its zoom row, the drawer closed`, rest.arbor && !rest.open && !!rest.zoom && rest.controls >= 3, rest);
-    ok(`${at} G: closed, the drawer's tab stands on the Board's left edge`, !!rest.grip && !!rest.board && Math.abs(rest.grip[2] - rest.board[0]) <= 2, { grip: rest.grip, board: rest.board });
+    ok(`${at} G: closed, the drawer's tab stands on the Board's left edge, and the closed drawer takes no press from the Board`, !!rest.grip && !!rest.board && Math.abs(rest.grip[2] - rest.board[0]) <= 2 && rest.dead.length === 0, { grip: rest.grip, board: rest.board, dead: rest.dead });
     await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
     await sleep(1200);
     const s = await app.evalJs(PROBE);
@@ -75,7 +75,9 @@ await withHarness(async (app) => {
       await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); ['height', 'width', 'left', 'right'].forEach((k) => p.style.removeProperty(k)); })()");
     }
     await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
-    await sleep(700);
+    await sleep(1200);
+    const back = await app.evalJs(PROBE);
+    ok(`${at} G2: closed again, the tab is back on the Board's left edge and the Board takes its presses`, !back.open && JSON.stringify(back.grip) === JSON.stringify(rest.grip) && back.dead.length === 0, { open: back.open, grip: back.grip, rest: rest.grip, dead: back.dead });
   }
 });
 
