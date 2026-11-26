@@ -249,6 +249,9 @@ const refs = [...wt.matchAll(/\$\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}/g)].map((m) 
 ok(refs.length > 0 && refs.every((n) => ['TUTOR_EVAL_API_KEY', 'TUTOR_EVAL_GRADER_API_KEY'].includes(n)) && !/\bsk-[A-Za-z0-9]/.test(wt), 'RN8 it names the two repository secrets Nick adds, TUTOR_EVAL_API_KEY and TUTOR_EVAL_GRADER_API_KEY, and holds no key itself', refs.join(','));
 ok(/permissions:\n\s+contents: read/.test(wt) && /timeout-minutes:\s*\d+/.test(wt) && /max_calls/.test(wt) && /max_tokens/.test(wt) && /concurrency:/.test(wt), 'RN8 read-only permissions, a timeout, a concurrency group, and call and token caps as inputs');
 ok(wt.includes("grep -Eq '^[0-9]{1,3}$'") && wt.includes("grep -Eq '^[0-9]{1,6}$'"), 'RN8 the two cap inputs are checked to be plain numbers before they are used');
+// RN12 (Nov 26): the job's `only` input takes the walk's case ids (group W) as well as the kit's A to K, and still nothing but case ids
+const onlyRe = (() => { const m = /I_ONLY" \| grep -Eq '([^']+)'/.exec(wt); return m ? new RegExp(m[1]) : null; })();
+ok(onlyRe && ['W1,W2', 'A1,C2', 'G3,W2'].every((s) => onlyRe.test(s)) && ['Z1', 'W1;ls', 'W1 W2', 'W', '$(x)', 'W1,'].every((s) => !onlyRe.test(s)), 'RN12 `only` takes W case ids too, and still only case ids', String(onlyRe));
 const inputLines = wt.split('\n').filter((l) => /\$\{\{\s*inputs\./.test(l));
 ok(inputLines.length > 0 && inputLines.every((l) => /^\s+(?:I_[A-Z]+|ref):\s/.test(l)), 'RN8 every input reaches the job as an env variable (or the checkout ref), never pasted into a shell line', inputLines.filter((l) => !/^\s+(?:I_[A-Z]+|ref):\s/.test(l)).join(' | '));
 

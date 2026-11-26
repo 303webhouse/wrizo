@@ -966,6 +966,25 @@
      }
     }
    ]
+  },
+  {
+   "id": "W2",
+   "note": "the walk: a no that speaks of \"her\" story to the writer herself (the live reply of run 45881901200 opened like this)",
+   "expect": {
+    "fails": [
+     "W2w"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "Not her story as the example.\nWhat does she find, and what can she now do?\nRead: Midpoint (Three-Act), your note for this step",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
   }
  ]
 }
