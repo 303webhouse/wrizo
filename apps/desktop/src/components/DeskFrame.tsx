@@ -196,7 +196,10 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const strip = rootRef.current?.querySelector<HTMLElement>('.desk-frame-strip')?.getBoundingClientRect();
       const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
       stage.style.setProperty('--wz-k', k.toFixed(4));
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset, fitScaleFor(s.width, s.height, top)).toFixed(4));
+      const fit = fitScaleFor(s.width, s.height, top);
+      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset, fit).toFixed(4));
+      // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
+      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);

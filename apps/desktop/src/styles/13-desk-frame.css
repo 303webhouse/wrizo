@@ -284,6 +284,7 @@
 }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
   transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
+  height:var(--wz-page-hl-zoom, var(--wz-page-hl, var(--wz-page-h)));
   box-shadow:none; border-color:transparent;
 }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-scroll{ -webkit-mask-image:none; mask-image:none;

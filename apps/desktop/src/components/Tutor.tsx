@@ -428,8 +428,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps up to its 320 floor and lies over the page's margin, never its text
-      // never in the Typewriter zoom, where the openers are hidden and keep their boxes (desk-frame §12b)
-      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !document.querySelector('.mode-pagecol[data-zoom="true"]');
+      // never in the Typewriter zoom, where the openers are hidden and keep their boxes (desk-frame §12b); never over the publishing view either, whose
+      // buttons run to the page's edges: there the drawer narrows beside the page, as it did
+      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !publishing && !liveQuery('.mode-pagecol[data-zoom="true"]');
       const over = small && geoMargin < TUTOR_TAB_PX + 320 * ck;
       const panel = over ? document.querySelector('.wz-tutor-panel') : null;
       const box = panel?.getBoundingClientRect();
@@ -454,7 +455,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     document.addEventListener('wz-board-moved', measure);    // the board narrows after the drawer opens [Tutor §23]
     window.addEventListener('wz-chrome-scale', measure);     // §3b item 4: the chrome scale arrived or changed
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); window.removeEventListener('wz-chrome-scale', measure); };
-  }, [open, docked, pageKind, linkDock]);
+  }, [open, docked, pageKind, linkDock, publishing]);
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
