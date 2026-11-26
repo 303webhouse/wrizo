@@ -195,8 +195,24 @@ export function FluxBlockCaret() {
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
       const nW = document.documentElement.hasAttribute('data-flux3-jacked') ? nWidthPx(surface, height) : null;
-      setRect({ left: r.left, top: r.top, width: nW ?? caretWidth(height), height });
+      const next = { left: r.left, top: r.top, width: nW ?? caretWidth(height), height };
+      // #137: the drawn block is written at once, so it is painted in THIS frame; React's own state follows with the same numbers
+      const drawn = caretElRef.current;
+      if (drawn) { drawn.style.left = `${next.left}px`; drawn.style.top = `${next.top}px`; drawn.style.width = `${next.width}px`; drawn.style.height = `${next.height}px`; }
+      setRect(next);
     };
+
+    // #137 (Nick, Nov 26: "the cursor doesn't keep up with typing"): selectionchange is a task of its own, so a frame could be painted with the new letter and the block still on the old one
+    // (measured: one to two frames, about 120 ms on a slowed processor). A typed key asks for one redraw before the next paint, after the editor has written the letter and placed its caret.
+    // Never by the probe span (update(false)): a caret with no rect keeps the drawn block until selectionchange resolves it, as before.
+    let typedRaf = 0;
+    const onTyped = (e: Event) => {
+      if (e.type === 'keydown') { const k = e as KeyboardEvent; if (k.ctrlKey || k.metaKey || k.altKey || !(k.key.length === 1 || k.key === 'Enter' || k.key === 'Backspace' || k.key === 'Delete')) return; }
+      cancelAnimationFrame(typedRaf);
+      typedRaf = requestAnimationFrame(() => update(false));
+    };
+    document.addEventListener('keydown', onTyped, { capture: true, passive: true });
+    document.addEventListener('beforeinput', onTyped, { capture: true, passive: true });
 
     const onBlurCheck = () => {
       setTimeout(() => {
@@ -224,6 +240,9 @@ export function FluxBlockCaret() {
     return () => {
       cancelAnimationFrame(raf);
       settle.forEach((t) => window.clearTimeout(t));
+      cancelAnimationFrame(typedRaf);
+      document.removeEventListener('keydown', onTyped, { capture: true });
+      document.removeEventListener('beforeinput', onTyped, { capture: true });
       document.removeEventListener('selectionchange', onSel);
       document.removeEventListener('focusout', onBlurCheck, true);
       document.removeEventListener('scroll', moved, { capture: true });
