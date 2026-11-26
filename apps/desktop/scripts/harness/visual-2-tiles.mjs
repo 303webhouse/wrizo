@@ -58,7 +58,7 @@ const PAGE = `(() => {
     },
     run: () => { const c = card('machina'), units = [...c.querySelectorAll('.wz-theme-plate-run > i')], notch = c.querySelector('.wz-theme-plate-notch'), strip = c.querySelector('.wz-theme-plate-run'), closed = c.querySelector('.wz-theme-plate-closed');
       const on = units.length ? css(units[0], 'backgroundColor') : null;
-      return { units: units.length, filled: units.filter((u) => css(u, 'backgroundColor') === on).length, notch: notch ? (rect(notch).x + rect(notch).w / 2 - rect(strip).x) / rect(strip).w : null, notchColour: notch && css(notch, 'backgroundColor'),
+      return { units: units.length, colours: [...new Set(units.map((u) => css(u, 'backgroundColor')))], filled: units.filter((u) => css(u, 'backgroundColor') === on).length, notch: notch ? (rect(notch).x + rect(notch).w / 2 - rect(strip).x) / rect(strip).w : null, notchColour: notch && css(notch, 'backgroundColor'),
         closed: closed ? { text: closed.textContent, upper: css(closed, 'textTransform'), opacity: Number(css(closed, 'opacity')), inside: rect(closed).h > 0 && rect(closed).b <= rect(c).b + 0.5 && rect(closed).x >= rect(c).x - 0.5 && rect(closed).r <= rect(c).r + 0.5 } : null };
     },
     flux: () => { const c = card('flux'), box = c.querySelector('.wz-theme-plate-check'); if (!box) return null; const units = [...box.querySelectorAll('i')];
@@ -82,7 +82,7 @@ await withHarness(async (app) => {
   const soft = async (expr) => { try { await app.waitFor(expr, { label: expr.slice(0, 60), timeout: 9000 }); return true; } catch { return false; } };
 
   // a page open under a theme, with the picker open; `room` is the session's own Room choice (data-room)
-  const open = async ({ theme, room = 'light', width = 1366, height = 768, unlock = ALL_OPEN, dial = null }) => {
+  const open = async ({ theme, room = 'light', width = 1366, height = 768, unlock = ALL_OPEN, dial = null, stage = 'draft' }) => {
     await app.emulateDpr(1, width, height);
     await app.goto('/');
     await ev(`localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4'); localStorage.setItem('wrizo-theme', ${J(theme)}); ${dial === null ? '' : `localStorage.setItem('wrizo-ambiance-dial', ${J(String(dial))});`} sessionStorage.setItem('vt-unlock', ${J(J(unlock))}); true`);
@@ -92,10 +92,12 @@ await withHarness(async (app) => {
     await ev(`document.documentElement.setAttribute('data-room', ${J(room)}); const p = window.wrizoCreateJournalPage({ origin: 'loose', source: 'page', text: 'The coat stayed on the seat.' }); window.wrizoFlushNow(); location.hash = '#/page/' + p.id; true`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 20000 });
     await sleep(1200);
-    // Draft / Build: there Arbor's and Flux's pop-outs have their normal width (in Free Write and Wire In the wide page leaves them 83 px at 1366 - reorg/railRoom.ts, older than these tiles; reported to Fable)
-    if (await ev("document.documentElement.hasAttribute('data-flux3-jacked')")) { await app.key('Escape'); await sleep(900); }
-    await ev("[...document.querySelectorAll('button')].find((b) => /^(draft|build|text)$/i.test(b.textContent.trim()) && b.getBoundingClientRect().width > 0)?.click(); true");
-    await sleep(1500);
+    // `draft` goes to Draft / Build (Flux's Text); `default` stays where a new page opens, Free Write or Wire In, where the wide page used to squeeze the pop-out
+    if (stage === 'draft') {
+      if (await ev("document.documentElement.hasAttribute('data-flux3-jacked')")) { await app.key('Escape'); await sleep(900); }
+      await ev("[...document.querySelectorAll('button')].find((b) => /^(draft|build|text)$/i.test(b.textContent.trim()) && b.getBoundingClientRect().width > 0)?.click(); true");
+      await sleep(1500);
+    }
     await ev(PAGE);
     const before = await vt('paper()');
     await ev("document.querySelector('[data-category=\"theme\"]')?.click(); true");
@@ -164,10 +166,10 @@ await withHarness(async (app) => {
 
     await away(); await sleep(1800);
     const m0 = await vt('run()');
-    ok('M1: at rest the Run stands at 6 of 20, the brass notch on the seventh, no "RUN CLOSED"', m0.units === 20 && m0.filled === 6 && Math.abs(m0.notch - 6 / 20) < 0.04 && !!m0.closed && m0.closed.opacity === 0, m0);
+    ok('M1: at rest the Run stands at 6 of 20, the brass notch on the seventh, no "RUN CLOSED"', m0.units === 20 && m0.filled === 6 && !m0.colours.includes('rgb(255, 152, 0)') && Math.abs(m0.notch - 6 / 20) < 0.04 && !!m0.closed && m0.closed.opacity === 0, m0);
     await hover('machina'); await sleep(2600);
     const m1 = await vt('run()');
-    ok('M2: on hover the Run fills to its close, the notch travels to the end, and "RUN CLOSED" appears', m1.filled === 20 && m1.notch > 0.95 && m1.notchColour === 'rgb(255, 152, 0)' && !!m1.closed && m1.closed.opacity === 1 && /^run closed$/i.test(m1.closed.text) && m1.closed.upper === 'uppercase' && m1.closed.inside, m1);
+    ok('M2: on hover the Run fills to its close, turns brass as the real Run does, the notch travels to the end, and "RUN CLOSED" appears', m1.filled === 20 && m1.colours.length === 1 && m1.colours[0] === 'rgb(255, 152, 0)' && m1.notch > 0.95 && m1.notchColour === 'rgb(255, 152, 0)' && !!m1.closed && m1.closed.opacity === 1 && /^run closed$/i.test(m1.closed.text) && m1.closed.upper === 'uppercase' && m1.closed.inside, m1);
 
     await away(); await sleep(900);
     const f0 = await vt('flux()');
@@ -221,16 +223,32 @@ await withHarness(async (app) => {
     ok('O3: Machina’s tile is light by day, and dark as soon as she picks a dark page', light.tone === 'light' && light.lum > 0.7 && dark.tone === 'dark' && dark.lum < 0.06, { light, dark });
   });
 
+  // ---------------------------------------------------------------- W: Free Write and Wire In, where the wide page used to leave the pop-out 83 px (Fable, Nov 26: it keeps 300 there, over the page; the page never moves)
+  for (const [theme, width, height] of [['plateau', 1366, 768], ['flux', 1366, 768], ['plateau', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
+    const before = await open({ theme, width, height, stage: 'default' });
+    const l = await vt('layout()');
+    const after = await vt('paper()');
+    ok(`W1 [${theme === 'flux' ? 'Flux, Wire In' : 'Arbor, Free Write'} ${width}]: the Theme pop-out keeps its 300 px, the tiles read, all five show, and the paper has not moved`,
+      Math.abs(l.panel.w - 300) <= 1 && l.rects.length === 5 && l.rects.every((r) => r.w >= 120 && r.b <= l.panel.b + 0.5) && !!before && before === after, { panel: l.panel.w, tiles: l.rects.map((r) => Math.round(r.w)), same: before === after });
+  });
+  await part('W2', async () => {
+    await open({ theme: 'plateau' });
+    const g = await ev("(() => { const p = document.querySelector('.wz-cascade-panel').getBoundingClientRect(), grip = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); return { right: p.right, width: p.width, grip: grip ? grip.getBoundingClientRect().left : null }; })()");
+    ok('W2: in Draft at 1366, where there is room for the tiles, the pop-out still stops before the page’s left opener, as before', g.grip != null && g.right <= g.grip + 0.5 && g.width >= 260, g);
+  });
+
   // ---------------------------------------------------------------- S: still frames
   for (const still of ['reduced motion', 'Ambiance 0']) await part(`S ${still}`, async () => {
     if (still === 'reduced motion') await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await open({ theme: 'machina', dial: still === 'Ambiance 0' ? 0 : null });
     await away(); await vt('watch()'); await sleep(1500);
     const a = await vt('arbor()'), m = await vt('run()'), f = await vt('flux()');
+    await hover('machina'); await sleep(200);
+    const mh = await vt('run()');
     await hover('flux'); await sleep(1200);
     const f2 = await vt('flux()'), log = await vt('log()');
     ok(`S1 [${still}]: Arbor holds its end frame: the rhizome grown, knots and all`, !!a && a.opacity === 1 && a.grown === a.n && a.knotsSeen === a.knots, a);
-    ok(`S2 [${still}]: Machina holds its end frame: the Run full, the notch at the end, "RUN CLOSED"`, m.filled === 20 && m.notch > 0.95 && !!m.closed && m.closed.opacity === 1, m);
+    ok(`S2 [${still}]: Machina holds its end frame: the Run full and brass, the notch at the end, "RUN CLOSED", under the pointer too`, m.filled === 20 && [m, mh].every((x) => x.colours.length === 1 && x.colours[0] === 'rgb(255, 152, 0)') && m.notch > 0.95 && !!m.closed && m.closed.opacity === 1, m);
     ok(`S3 [${still}]: Flux holds its end frame, all orange, and never glitches`, !!f && !!f2 && f.on === 10 && f.done === 'true' && f2.on === 10 && f2.done === 'true' && log.glitches.length === 0 && log.flashes.length === 0, { f, f2, glitches: log.glitches.length, flashes: log.flashes.length });
     if (still === 'reduced motion') await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
   });
