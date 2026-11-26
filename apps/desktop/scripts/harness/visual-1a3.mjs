@@ -105,6 +105,30 @@ await withHarness(async (app) => {
   const byEsc = await stored(app, own);
   ok('K9: closed by Escape with the pen down, then typed: every character is stored, at the caret she left', shutByEsc.open === false && shutByEsc.paper !== 'ink' && byEsc.text === 'One two EE XYZ QRS kthree four.', { shutByEsc, byEsc });
 
+  // ---- the same with the pen UP (Fable, Nov 25, 8:30 pm: the grip must not keep the focus) ----
+  await run(app, 'await window.__vi.openDrawer(); await window.__vi.sleep(500); window.__vi3.caretAt(8); await window.__vi.sleep(300);');
+  const grip = await app.evalJs("(() => { const r = document.querySelector('.wz-sliver-grip').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+  await app.mouseMove(grip.x + 60, grip.y + 60);   // faded chrome comes back for a moving pointer
+  await app.mouseMove(grip.x, grip.y);
+  await sleep(900);
+  await app.mouseDown(grip.x, grip.y);
+  await sleep(60);
+  await app.mouseUp(grip.x, grip.y);
+  await sleep(900);
+  const upShut = await run(app, 'return window.__vi3.shown();');
+  await app.typeKeys('GG ');
+  await sleep(2800);
+  const upByGrip = await stored(app, own);
+  ok('K10: pen up, closed by a real mouse press on the grip, then typed: every character is stored, at the caret she left', upShut.open === false && upShut.focus && upByGrip.text === 'One two GG EE XYZ QRS kthree four.', { upShut, upByGrip });
+  await run(app, 'await window.__vi.openDrawer(); await window.__vi.sleep(500); window.__vi3.caretAt(8); await window.__vi.sleep(300);');
+  await app.evalJs("document.querySelector('.wz-drawer-tab').focus()");   // where a click on a tab leaves her focus
+  await app.keyCombo('/');
+  await sleep(900);
+  await app.typeKeys('HH ');
+  await sleep(2800);
+  const upByKeys = await stored(app, own);
+  ok('K11: pen up, the focus in the drawer, closed by Ctrl+/, then typed: every character is stored, at the caret she left', upByKeys.text === 'One two HH GG EE XYZ QRS kthree four.', upByKeys);
+
   // ---- the Undo arrow stands off her words (the no-overlap rule) ----
   for (const [theme, stageName, width, height] of [['machina', 'draft', 1366, 768], ['plateau', 'revise', 1366, 768], ['flux', 'draft', 1366, 768], ['flux', 'draft', 1100, 700]]) {
     await boot(app, width, height);

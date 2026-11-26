@@ -221,9 +221,9 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
   }, [open]);
 
   // VISUAL 1a.3: her own closing of the drawer (grip, Ctrl+/, Esc) is marked, so another panel taking its place can be told apart from it
-  // 'words': her caret was live in the words when she closed it, so it is left alone; 'away': it was elsewhere, so the page puts it back where she left it. Read BEFORE anything moves the focus
-  const byHandRef = useRef<'words' | 'away' | null>(null);
-  const markByHand = () => { byHandRef.current = document.activeElement?.classList.contains('forward-only-editor') ? 'words' : 'away'; };
+  // where the focus stood when she closed it, read BEFORE anything moves it: 'words' (her caret is live, left alone), 'drawer' (on the grip or a control of this menu, which is going away), 'away' (elsewhere)
+  const byHandRef = useRef<'words' | 'drawer' | 'away' | null>(null);
+  const markByHand = () => { const a = document.activeElement; byHandRef.current = a?.classList.contains('forward-only-editor') ? 'words' : a && rootRef.current?.contains(a) ? 'drawer' : 'away'; };
   const toggleOpen = () => { markByHand(); setOpen(o => !o); };
   const wasOpenRef = useRef(open);
   useEffect(() => {
@@ -234,10 +234,11 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
     if (!was || open) return;
     // the drawer closed, by her own hand or by another panel taking its place: in BUILD, EDIT and on a Board the pen goes down with it (Fable, Nov 25: "keys must never go nowhere"), or the page
     // would stay in ink with its menu gone. Her own close also gives her caret back; another panel keeps the focus it took. Free Write is as it was.
-    if ((content.kind === 'draft' || content.kind === 'revise' || content.kind === 'board') && content.instrument?.value === 'ink') {
+    if (content.kind !== 'draft' && content.kind !== 'revise' && content.kind !== 'board') return;
+    if (content.instrument?.value === 'ink') {
       content.instrument.onChange('text');
-      if (byHand === 'away') content.instrument.onPenDown?.();
-    }
+      if (byHand && byHand !== 'words') content.instrument.onPenDown?.();
+    } else if (byHand === 'drawer') content.instrument?.onPenDown?.();   // pen up too (Fable, Nov 25): the grip must not keep the focus, or her next keys go nowhere
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
