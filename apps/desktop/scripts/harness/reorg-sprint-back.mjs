@@ -129,8 +129,13 @@ await withHarness(async (app) => {
   // ok('S10 in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is today\'s Tutor (the composer, the lenses, the Draft asks)',
   //   buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections >= 2 && bb.draftRoster === true, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb }));
   const lensN = await app.evalJs("document.querySelectorAll('.wz-tutor-panel [data-lens]').length");
-  ok('S10 [successor: the lens frame] in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is the lens frame and the composer (three lenses, no Draft asks, no computed sections)',
-    buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections === 0 && bb.draftRoster === false && lensN === 3, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb, lensN }));
+  // SUPERSEDED (L9, the Tutor's notes on file: the notes are a section of their own on this tab, which the count of every section took for a computed one). The original, verbatim:
+  // ok('S10 [successor: the lens frame] in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is the lens frame and the composer (three lenses, no Draft asks, no computed sections)',
+  //   buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && bb.sections === 0 && bb.draftRoster === false && lensN === 3, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb, lensN }));
+  const others = await app.evalJs(`document.querySelectorAll('#wz-tutor-panel .wz-tutor-section:not([data-testid="tutor-notes"])').length`);
+  const notesN = await app.evalJs(`document.querySelectorAll('#wz-tutor-panel [data-testid="tutor-notes"]').length`);
+  ok('S10 [successor: notes on file] in BUILD (Draft) nothing is locked: the three tabs press, and Feedback is the lens frame and the composer (three lenses, no Draft asks, no computed sections), with the notes on file as its one section',
+    buildOk && !!planSel && planSel.id === 'plan' && !!linksSel && linksSel.id === 'links' && !!bb && bb.sprint === false && bb.composer === true && others === 0 && notesN === 1 && bb.sections === 1 && bb.draftRoster === false && lensN === 3, JSON.stringify({ buildOk, planSel: planSel && planSel.id, linksSel: linksSel && linksSel.id, bb, others, notesN, lensN }));
 
   // ---- the switch off ----
   await openPage(app, 'sp-p', 'journal', { reorg: false });
