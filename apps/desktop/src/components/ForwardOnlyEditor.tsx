@@ -12,6 +12,7 @@ import { placeCaret } from '../store/hiddenMarksDom';
 import { openCaret, revealCaret } from '../store/caretInView';
 import { planHost, runElementHtml, type RunHtml } from './freeWriteHost';
 import { rowsVerticalKey, clearVerticalGoal } from '../store/rowsVertical';
+import { CARET_PLACED } from '../store/caretPlaced';
 import { escapeTyped } from '../store/hiddenMarks';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
 import { readEscapes } from '../store/markRuns';
@@ -696,9 +697,12 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     };
     el.addEventListener('pointerdown', onPress);
     el.addEventListener('keydown', onKey);
+    // #117: a caret the APP places (the way-back restore) is as much a placed caret as one she moved: the host's own end-anchor must leave it where it is until the next insert, or any render after the restore's last re-assert puts it back at the end
+    el.addEventListener(CARET_PLACED, onPress);
     return () => {
       el.removeEventListener('pointerdown', onPress);
       el.removeEventListener('keydown', onKey);
+      el.removeEventListener(CARET_PLACED, onPress);
     };
   }, [freeEdit]);
 
