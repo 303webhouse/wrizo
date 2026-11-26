@@ -9,6 +9,8 @@
 //   RENAME    a rename (the Plan tab's own) keeps the note and keeps the marks on their words
 //   SITES     every place that changes a card's text keeps its marks (the board editor, the split board, the Plan's rename)
 //   SAVED     `walk` is written through the Doc-settings guard, and never copied into the defaults for new pages
+//   HELD      while the walk is open the app behind it is inert (so no key lands on the page), and leaving lifts it and puts her caret back
+//   BACK      the way-back chip stands on any page of the Doc, a Part still to be born included
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +22,7 @@ const ts = require('typescript');
 const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
-const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx'];
+const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx'];
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
 
 /** A tiny loader: the real modules, their relative imports resolved from src (with `src` overriding a file's text). */
@@ -140,6 +142,16 @@ function suite(src) {
     const stripped = /const \{[^}]*\bwalk\b[^}]*\.\.\.dress \}/.test(pd);
     return { pass: guard && stripped, detail: J({ guard, stripped }) };
   });
+  t('HELD', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'];
+    const got = { on: /setAttribute\('inert', ''\)/.test(w), off: /return \(\) => \{[\s\S]{0,200}removeAttribute\('inert'\)/.test(w), caret: /caret && back\.contains\(caret\.startContainer\) \? caret/.test(w), keys: /e\.stopPropagation\(\);\s*\/\/ nothing leaves the walk/.test(w) };
+    return { pass: Object.values(got).every(Boolean), detail: J(got) };
+  });
+  t('BACK', () => {
+    const h = src['reorg/walk/WalkHost.tsx'];
+    const got = { born: /pageOfPath\(pathname\)/.test(h), unborn: /pathname === '\/page\/new' \? new URLSearchParams\(search\)\.get\('binder'\)/.test(h) && /newInDoc === docOfPage\(left\)/.test(h) };
+    return { pass: got.born && got.unborn, detail: J(got) };
+  });
   return R;
 }
 
@@ -158,8 +170,14 @@ const MUTANTS = [
   ['a new step loses its heading', 'ADD', sub(O, '...(after.parentId ? { parentId: after.parentId } : {}),', '')],
   ['the Plan rename drops the marks\' place', 'RENAME', sub('reorg/backMenu/planOps.ts', '...withCardText(x, next)', '...x, text: next')],
   ['the board editor writes bare text', 'SITES', sub('components/BoardEditor.tsx', 'withCardText(b, text)', '{ ...b, text }')],
-  ['the walk place is copied to new pages', 'SAVED', sub('store/pageDefaults.ts', 'lengthLimit, walk, ...dress', 'lengthLimit, ...dress')],
+  ['the walk place is copied to new pages', 'SAVED', sub('store/pageDefaults.ts', 'walk, lengthLimit, ...dress', 'lengthLimit, ...dress')],
 ];
+
+MUTANTS.push(
+  ['the page behind the walk is left live', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.setAttribute('inert', '');", '')],
+  ['leaving forgets to lift it', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.removeAttribute('inert');", '')],
+  ['the chip is lost on a new Part', 'BACK', sub('reorg/walk/WalkHost.tsx', ' || (newInDoc && newInDoc === docOfPage(left))', '')],
+);
 
 const results = [];
 const check = (name, pass, detail) => results.push({ name, pass: !!pass, detail });
@@ -171,5 +189,5 @@ for (const [label, expect, mut] of MUTANTS) {
 }
 let fail = 0;
 for (const c of results) { if (!c.pass) fail++; console.log((c.pass ? 'PASS  ' : 'FAIL  ') + c.name + (c.pass ? '' : '   ' + c.detail)); }
-console.log(fail ? `\n${fail} FAILED of ${results.length}` : `\nall ${results.length} PASS`);
+console.log(fail ? `\nREORG-GUIDE-WALK-UNIT VERIFY: FAIL - ${fail}/${results.length} failed` : `\nREORG-GUIDE-WALK-UNIT VERIFY: PASS (${results.length} checks)`);
 process.exit(fail ? 1 : 0);
