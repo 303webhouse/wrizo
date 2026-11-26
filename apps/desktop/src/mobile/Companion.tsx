@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { DeskTermId } from '../store/deskLexicon';
 import { useLexicon } from '../store/themeLexicon';
-import { subscribe, getJournalEntries, getJournalEntry, flushForReload } from '../store/persistence';
+import { subscribe, getJournalEntries, getJournalEntry, getSystemKind, isPairedPlanBoard, flushForReload } from '../store/persistence';
 import { startSync, stopSync } from '../store/sync';
 import { useStaleClient } from '../store/staleClient';
 import { SIGNED_OUT_KEY } from '../store/signedOutHere';
@@ -108,7 +108,10 @@ export function Companion(): ReactNode {
   }
 
   const here = route.at === 'desk' ? 'desk' : route.at === 'library' || route.at === 'find' || route.at === 'project' ? 'library' : null;
-  const sheetBoard = route.at === 'board' ? route.id : route.at === 'card' ? route.board : null;
+  // the + on a Board, or on one of its cards, is addressed to that Board; never to a Plan (read only on the phone), a system Board or one that has gone
+  const on = route.at === 'board' ? route.id : route.at === 'card' ? route.board : null;
+  const onBoard = on ? getJournalEntry(on) : null;
+  const sheetBoard = onBoard && onBoard.pageType === 'board' && !onBoard.purgedAt && !getSystemKind(onBoard) && !isPairedPlanBoard(onBoard.id) ? onBoard.id : null;
 
   return (
     <div className="mc-shell">
