@@ -130,6 +130,7 @@ const onScreen = (g) => !!g && g.nudge.top >= Math.max(0, g.stage.top) - 0.5 && 
   && (g.zoom === 'true' || (g.nudge.top >= g.page.top - 0.5 && g.nudge.bottom <= g.page.bottom + 0.5 && g.nudge.left >= g.page.left - 0.5 && g.nudge.right <= g.page.right + 0.5));
 
 await withHarness(async (app) => {
+  await app.cdp('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__wzTwTrace = [];' });   // #134 diagnostic
   await app.emulateDpr(1, 1366, 768);
   await app.goto('/');
   await app.evalJs("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1')");
@@ -243,6 +244,7 @@ await withHarness(async (app) => {
     // she writes at the end, the hold settled; a page seeded long is not always carried to its end, so the fixture does what her own scrolling does (raiseHint's step). held: the line was on screen without it
     const write = async () => { await toEnd(); await app.typeKeys(' and on'); await sleep(300); await settle(app);
       const first = await app.evalJs(CARET_SEEN); const held = !!first && first.seen;
+      console.log('DIAG134 ' + J(await app.evalJs(`(() => { const t = window.__wzTwTrace || []; const s = document.querySelector('.mode-scroll'); const ed = document.querySelector('.forward-only-editor'); const sel = getSelection(); const c = document.querySelector('.flux-block-caret'); const r = ed && ed.getBoundingClientRect(); return { held: ${held}, vw: innerWidth, hash: location.hash, scroll: s && Math.round(s.scrollTop), max: s && s.scrollHeight - s.clientHeight, edBottom: r && Math.round(r.bottom), caretTop: c && Math.round(c.getBoundingClientRect().top), selInEd: !!(sel.rangeCount && ed && ed.contains(sel.anchorNode)), focused: document.activeElement === ed, zoom: document.querySelector('.mode-pagecol')?.getAttribute('data-zoom'), steps: t.length, trace: t.slice(0, 6).concat(t.slice(-6)), keys: Object.keys(localStorage).filter((k) => /wrizo|writer/.test(k) && !/journal-entries|projects/.test(k)).map((k) => k + '=' + String(localStorage.getItem(k)).slice(0, 40)) }; })()`)));
       if (!held) { await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null, n; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (last && last.parentElement) { const r = document.createRange(); r.selectNodeContents(last); const q = [...r.getClientRects()].pop(); const s = document.querySelector('.mode-scroll'); if (q && s) s.scrollTop += q.top - innerHeight * 0.5; } return true; })()"); await sleep(300); await settle(app); }
       const now = await app.evalJs(CARET_SEEN); return { held, seen: !!now && now.seen }; };
 
