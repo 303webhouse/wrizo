@@ -1,12 +1,12 @@
 // #133 follow-on (POLISH, Nov 25; found through reorg-split-full F6): since #133 the prose page is PAINTED larger than its layout (a transform), and
 // every place that reads a distance off the screen (getBoundingClientRect) and gives it to the page's own scroller or to a box inside the page must
 // first divide it by the painted scale. These checks stand on a REAL page painted past 1.15:
-//   A1  Draft: the caret above the view, an arrow key brings its line into the sheet (store/caretInView.ts revealCaret)
+//   A1  Draft: the caret above the view, Enter brings the new line into the sheet (a script-placed caret: store/caretInView.ts revealCaret)
 //   A2  Draft: the caret below the view, the same
 //   O   a long page opened for the first time shows its caret's line, and its first drawn row is whole
 //   W   the open-page tint (components/useWarmStart.ts) lies over the last block
 //   S   a search result far down the page is brought into the sheet (reorg/search/searchMarks.ts)
-//   T   Flux's Typewriter (unzoomed) holds the writing line at its band (components/useTypewriterFade.ts)
+// The Typewriter is not here: a page painted large always runs it zoomed (ModeStage `zoomed`), and that path already divides by the painted scale.
 //   MUT the "line is in the sheet" reading goes false when the sheet is scrolled away from the line
 // THE PRODUCT'S OWN LOOKS, as page-small-133.mjs. Run: node scripts/harness/page-small-133-scroll.mjs  (from apps/desktop, dist-web built)
 Object.assign(process.env, { WS_REORG: '1', WS_ARBOR2: 'default', WS_MACHINA2: 'default', WS_FLUX3: 'default', WS_PLACE: '1' });
@@ -73,10 +73,10 @@ await withHarness(async (app) => {
     await app.evalJs(CARET_AT('Row 12'));
     await app.evalJs(SCROLL_TO(1e6));
     await sleep(400);
-    await app.key('ArrowDown');
+    await app.typeKeys('\n');
     await sleep(500);
     const a1 = { box: await app.evalJs(BOX), line: await app.evalJs(CARET) };
-    ok(`${at} A1: the caret above the view, an arrow key brings its line into the sheet`, inside(a1.line, a1.box), a1);
+    ok(`${at} A1: the caret above the view, Enter brings the new line into the sheet`, inside(a1.line, a1.box), a1);
     await app.evalJs(SCROLL_TO(a1.box.scrollTop + a1.box.h * 2));
     await sleep(200);
     const away = { box: await app.evalJs(BOX), line: await app.evalJs(CARET) };
@@ -86,23 +86,22 @@ await withHarness(async (app) => {
     await app.evalJs(CARET_AT('Row 45'));
     await app.evalJs(SCROLL_TO(0));
     await sleep(400);
-    await app.key('ArrowDown');
+    await app.typeKeys('\n');
     await sleep(500);
     const a2 = { box: await app.evalJs(BOX), line: await app.evalJs(CARET) };
-    ok(`${at} A2: the caret below the view, an arrow key brings its line into the sheet`, inside(a2.line, a2.box), a2);
+    ok(`${at} A2: the caret below the view, Enter brings the new line into the sheet`, inside(a2.line, a2.box), a2);
 
     // S: a search result far down the page
     await app.evalJs(SCROLL_TO(0));
-    await app.evalJs("document.querySelector('.wz-tutor-grip')?.click()");
-    await sleep(700);
-    await app.evalJs("document.querySelector('#wz-tutor-tab-assets')?.click()");
-    await sleep(700);
-    const field = await app.evalJs(`(() => { const i = document.querySelector('[data-search-menu] [data-search-q]') || document.querySelector('.wz-tutor-panel input[type=search], .wz-tutor-panel [data-search-q]'); if (!i) return false; i.focus();
+    const door = await app.evalJs("(() => { const b = document.querySelector('[data-top-search]'); if (!b) return false; b.click(); return true; })()");
+    await app.waitFor("!!document.querySelector('[data-search-menu] [data-search-q]')", { label: 'the search field', timeout: 5000 }).catch(() => {});
+    await sleep(500);
+    const field = await app.evalJs(`(() => { const i = document.querySelector('[data-search-menu] [data-search-q]'); if (!i) return false; i.focus();
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(i, 'zebra'); i.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
     await sleep(900);
     const hit = await app.evalJs(`(() => { const b = document.querySelector('[data-search-hit][data-hit-entry="s-${theme}"]'); if (!b) return false; b.click(); return true; })()`);
     await sleep(900);
-    const s = { field, hit, box: await app.evalJs(BOX), line: await app.evalJs(LINE('zebra')) };
+    const s = { door, field, hit, box: await app.evalJs(BOX), line: await app.evalJs(LINE('zebra')) };
     ok(`${at} S: a search result far down the page is brought into the sheet`, field && hit && inside(s.line, s.box), s);
 
     // W: the open-page tint, over the last block
@@ -116,18 +115,6 @@ await withHarness(async (app) => {
     ok(`${at} W: the open-page tint lies over the last block`, !!warm && !!last && warm.top <= last.top + 4 && warm.bottom >= last.bottom - 4 && last.top - warm.top <= 24 && warm.bottom - last.bottom <= 24 && Math.abs(warm.left - last.left) <= 24, { warm, last });
   }
 
-  // T: Flux's Typewriter runs unzoomed
-  await load(app, 'flux', 1366, 768);
-  await make(app, 't-flux', LINES(30).join('\n'), 'journal');
-  await openPage(app, 't-flux');
-  await app.evalJs("(() => { const ed = document.querySelector('.desk-frame-stage .forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
-  for (let i = 1; i <= 6; i += 1) { await app.typeKeys(`\nShe writes on, line ${i}.`); await sleep(250); }
-  await sleep(2200);
-  const t = { box: await app.evalJs(BOX), line: await app.evalJs(LINE('line 6.')), zoom: await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') || 'none'"), tw: await app.evalJs("document.querySelector('.desk-frame-stage .mode-scroll')?.getAttribute('data-typewriter')") };
-  ok('Flux 1366x768 (premise): Free Write runs the Typewriter unzoomed on a page painted past 1.15', t.tw === 'true' && t.zoom === 'none' && !!t.box && t.box.k > 1.15, t);
-  const frac = t.line && t.box ? (t.line.bottom - t.box.top) / t.box.h : null;
-  const lh = t.line && t.box ? (t.line.bottom - t.line.top) / t.box.h : 0;
-  ok('Flux 1366x768 T: the Typewriter holds the writing line at its band (46% of the sheet, within a line and a half)', frac !== null && Math.abs(frac - 0.46) <= lh * 1.5, { frac, lh });
 });
 
 const failed = checks.filter((c) => !c.pass).length;

@@ -109,6 +109,18 @@ await mutant('MUT1 the share at 0.43 turns S1 red', 'SMALL_SHARE = 0.62', 'SMALL
 await mutant('MUT2 no floor at today turns S4 red', 'return Math.max(today, eased)', 'return eased', 's4');
 await mutant('MUT3 the old law turns S1 red', 'return Math.max(today, eased)', 'return today', 's1');
 
+// P (follow-on): the prose page is painted by a transform, so each place that turns a screen distance into a distance inside it reads the painted scale
+// (store/paintScale.ts). The real-page twin is page-small-133-scroll.mjs.
+for (const [file, line] of [
+  ['store/caretInView.ts', 'delta / paintScaleOf(scroller)'],
+  ['components/useWarmStart.ts', 'paintScaleOf(relativeTo)'],
+  ['reorg/search/searchMarks.ts', 'paintScaleOf(scroller)'],
+  ['reorg/BeforeExport.tsx', 'paintScaleOf(sc)'],
+]) {
+  const src = fs.readFileSync(path.join(DESKTOP, 'src', file), 'utf8');
+  ok(`P ${file} converts screen distances by the page's painted scale`, src.includes(line));
+}
+
 const failed = results.filter((r) => !r.pass).length;
 console.log(`PAGE-SMALL-133-SOURCE VERIFY: ${failed ? `FAIL (${failed} of ${results.length})` : `PASS (${results.length} checks)`}`);
 process.exit(failed ? 1 : 0);
