@@ -75,6 +75,28 @@
     return out;
   };
 
+  /** P10-P11 (run in a narrow window, where one panel yields to another): a BUILD page in ink. Another panel taking the drawer's place puts the pen down; her own close keeps it. */
+  const yields = async (id) => {
+    const out = [];
+    const ok = (name, pass, detail) => out.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : J(detail) });
+    const grip = () => q('.wz-sliver-grip');
+    const open = () => grip() && grip().getAttribute('aria-expanded') === 'true';
+    await v().openDrawer();
+    await tab('ink');
+    await until(() => !!q('.wz-ink-face'));
+    await sleep(400);
+    grip().click();
+    await sleep(700);
+    ok('P11: closing the drawer herself keeps the pen (as Free Write), the grip showing it', !open() && paper() === 'ink' && !!q('.wz-sliver-grip-mark[data-instrument="ink"]'), { open: open(), paper: paper() });
+    grip().click();
+    await sleep(700);
+    const docs = all('.desk-frame-strip button').find((b) => b.textContent.trim() === 'Docs');
+    if (docs) docs.click();
+    await sleep(1200);
+    ok('P10: another panel taking the drawer\'s place puts the pen down - she is never left in ink with no menu, typing into nothing', !!docs && !open() && paper() !== 'ink', { docs: !!docs, open: open(), paper: paper() });
+    return out;
+  };
+
   /** A page with no ink, INK never opened: nothing of the ink code, and the drawer looks as it did but for the tab. */
   const cold = () => v().loads();
 
@@ -163,5 +185,5 @@
 
   const readBoard = (boardId) => { const e = entry(boardId); return { strokes: (e && e.strokes || []).length, boxes: (e && e.boxes || []).length, painted: (() => { const c = q('.wz-board-ink-sheet .ink-committed'); return c ? [c.width, c.height] : null; })() }; };
 
-  window.__vi3 = { beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
+  window.__vi3 = { yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
 })();

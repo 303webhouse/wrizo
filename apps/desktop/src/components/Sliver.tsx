@@ -220,7 +220,20 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
     else noteClosed('tools');
   }, [open]);
 
-  const toggleOpen = () => setOpen(o => !o);
+  // VISUAL 1a.3: her own closing of the drawer (grip, Ctrl+/, Esc) is marked, so another panel taking its place can be told apart from it
+  const byHandRef = useRef(false);
+  const toggleOpen = () => { byHandRef.current = true; setOpen(o => !o); };
+  const wasOpenRef = useRef(open);
+  useEffect(() => {
+    const was = wasOpenRef.current;
+    wasOpenRef.current = open;
+    const byHand = byHandRef.current;
+    byHandRef.current = false;
+    if (!was || open || byHand) return;
+    // another panel took the drawer's place: in BUILD, EDIT and on a Board the pen goes down with it, or the page would stay in ink with its menu gone and her typing would go nowhere. Free Write is as it was.
+    if ((content.kind === 'draft' || content.kind === 'revise' || content.kind === 'board') && content.instrument?.value === 'ink') content.instrument.onChange('text');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   // Register this drawer's own close path, so an exclusion handoff shuts it
   // exactly the way the writer's own click would.
@@ -233,6 +246,7 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
       if (e.key !== 'Escape' || e.defaultPrevented) return;
       const root = rootRef.current;
       const inDrawer = !!root && !!document.activeElement && root.contains(document.activeElement);
+      byHandRef.current = true;
       setOpen(false);
       if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? root?.querySelector<HTMLElement>('.wz-sliver-grip'))?.focus({ preventScroll: true });
     };

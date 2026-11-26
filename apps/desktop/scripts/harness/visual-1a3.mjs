@@ -61,6 +61,11 @@ await withHarness(async (app) => {
   const set = await run(app, "return await window.__vi3.buildPage('machina', 'The train was late and the coat stayed on the seat.');");
   add(await run(app, `return await window.__vi3.pageSet(${JSON.stringify(set)});`));
 
+  // ---- another panel takes the drawer's place (narrow window) ----
+  await boot(app, 1120, 760);
+  const narrow = await run(app, "return await window.__vi3.buildPage('machina', 'Words.');");
+  add(await run(app, `return await window.__vi3.yields(${JSON.stringify(narrow)});`));
+
   // ---- real keys: draw, type, the door, the Board, back, type ----
   await boot(app);
   const id = await run(app, "return await window.__vi3.buildPage('machina', 'Her first line.');");
