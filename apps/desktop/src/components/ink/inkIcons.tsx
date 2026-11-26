@@ -29,3 +29,12 @@ export const TIP_ICONS: Record<StrokeTip, React.ReactNode> = {
     </svg>
   ),
 };
+
+// The eraser, drawn like the tips (Fable, Nov 25: it was a typed character, U+2393, which some machines show as an empty box): a slanted block, its band, and the line it has rubbed.
+export const ERASER_ICON: React.ReactNode = (
+  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+    <path d="M9.6 2.8 13.9 7.1 8.4 12.6H5.3L2.7 10z" strokeLinejoin="round" />
+    <path d="M5.9 6.5 10.2 10.8" />
+    <path d="M8.4 12.6h5.1" strokeLinecap="round" />
+  </svg>
+);

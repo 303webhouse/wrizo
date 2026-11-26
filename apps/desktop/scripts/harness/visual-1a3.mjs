@@ -136,6 +136,10 @@ await withHarness(async (app) => {
       if (${JSON.stringify(stageName)} === 'revise') { await window.__vi3.stage('revise'); await window.__vi.sleep(900); }
       await window.__vi.openDrawer(); await window.__vi3.tab('ink'); await window.__vi3.until(() => !!document.querySelector('.wz-ink-face')); await window.__vi.sleep(900);
       await window.__vi.draw([{ x: 0.2, y: 0.6 }, { x: 0.5, y: 0.65 }]); await window.__vi.sleep(900); return window.__vi3.undoClear();`);
+    if (theme === 'machina') {
+      const er = await run(app, "const b = document.querySelector('.wz-ink-eraser'), s = b && b.querySelector('svg'), r = s && s.getBoundingClientRect(); return { text: b && b.textContent.trim(), svg: !!s, icon: r ? [Math.round(r.width), Math.round(r.height)] : null, name: b && b.getAttribute('aria-label') };");
+      ok('E1: the eraser is a drawn icon like the brushes, never a typed character, and keeps its name', er.svg && er.text === '' && er.icon[0] === 16 && er.icon[1] === 16 && !!er.name, er);
+    }
     ok(`U1: the Undo arrow stands in the page's margin, off her words, pressable, with no sideways scroll (${theme}, ${stageName === 'revise' ? 'EDIT' : 'BUILD'}, ${width})`, got.pass, got.why);
   }
 

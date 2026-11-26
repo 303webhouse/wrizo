@@ -5,7 +5,7 @@ import { isHexColour } from '../../reorg/parts';
 import { customVars, inkOn } from '../../reorg/colourScheme';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../../types';
 import type { InkPen } from '../InkStratum';
-import { TIP_ICONS } from './inkIcons';
+import { ERASER_ICON, TIP_ICONS } from './inkIcons';
 
 // VISUAL 1a.1 - THE INK TAB (VISUAL's ink-tab-plan §1, Nick's ruling of Nov 23). Loaded on the first INK open (InkTabSlot.tsx), never in the first download.
 //   the face    two lines: the brush in her hand (with her last brushes) and the size; the inks and the eraser. It never scrolls away. Move and Undo stay on the page until slice 1b.2.
@@ -191,7 +191,7 @@ export function InkTab({ opts }: { opts: InkOpts }) {
               title={t('inkEraser')}
               onClick={opts.onToggleEraser}
             >
-              <span aria-hidden="true">&#9107;</span>
+              {ERASER_ICON}
             </button>
           </div>
         </div>
