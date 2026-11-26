@@ -18,7 +18,7 @@ const LIMIT = 0.65;
 // READ: zooming in can add a scrollbar, which moves the frame's centre by half its width while the camera holds the point it took at the notch's start.
 const AT = (at) => `(() => { const w = document.querySelector('.board-canvas-wrap'), cv = document.querySelector('.board-canvas'); if (!w || !cv) return null; const wr = w.getBoundingClientRect(), c = cv.getBoundingClientRect();
   const x = ${at ? at.x : 'wr.left + w.clientLeft + w.clientWidth / 2'}, y = ${at ? at.y : 'wr.top + w.clientTop + w.clientHeight / 2'}; const s = c.width / cv.offsetWidth;
-  return { x, y, s, bx: (x - c.left) / s, by: (y - c.top) / s, sl: w.scrollLeft, st: w.scrollTop }; })()`;
+  return { x, y, s, frame: [wr.left, wr.top, wr.width, wr.height].map((n) => Math.round(n * 10) / 10), bx: (x - c.left) / s, by: (y - c.top) / s, sl: w.scrollLeft, st: w.scrollTop }; })()`;
 
 await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
@@ -48,6 +48,8 @@ await withHarness(async (app) => {
     const first = await ev(AT());
     if (first) await app.mouseMove(first.x, first.y);
 
+    // one notch to warm up, and the theme's own late layout (its bar, its rail) settles
+    await key('='); await sleep(800); await key('0'); await sleep(1500);
     const runs = [];
     for (let i = 0; i < 8; i += 1) {
       await key('0'); await sleep(500);
@@ -60,6 +62,7 @@ await withHarness(async (app) => {
     const zoomed = runs.every((r) => r.from && Math.abs(r.from - 1) < 0.004 && Math.abs(r.to - 1.25) < 0.004);
     ok(`${name} (premise): each notch went from true size to x1.25`, zoomed, runs.map((r) => [r.from, r.to]));
     const drifts = runs.map((r) => r.drift);
+    ok(`${name} (premise): the Board's frame stood still through every notch`, runs.every((r) => r.a && r.b && JSON.stringify(r.a.frame) === JSON.stringify(r.b.frame)), runs.map((r) => [r.a && r.a.frame, r.b && r.b.frame]).filter(([a, b]) => JSON.stringify(a) !== JSON.stringify(b)));
     ok(`${name} D: a gliding notch holds the centre's board point within one rounding (${LIMIT} board px) in all eight`, zoomed && drifts.every((d) => d !== null && d <= LIMIT), drifts);
 
     // P: a pan while the notch glides stays. Started at x1.25, where the frame already scrolls both ways, so the pan has room (the notch glides to x1.5625)
