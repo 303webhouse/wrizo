@@ -1,5 +1,5 @@
 // #134 - A LONG PAGE OPENS WITH THE WRITING LINE ON SCREEN (Fable, Nov 25, from polish10-hint's reads: after typing at the end of a freshly opened long page in Flux's Wire In the writing line was still off screen).
-// Free Write (the Typewriter; Wire In in Flux) on a long saved page of two shapes (one long paragraph; forty paragraphs), at 1366, 1920 and 2560; Arbor and Machina at 1366 for comparison. The writer's own paths only:
+// Free Write (the Typewriter; Wire In in Flux) on a long saved page (forty paragraphs) of three kinds (loose, Journal entry, legacy), at 1366, 1920 and 2560; Arbor and Machina at 1366 for comparison. The writer's own paths only:
 //   O1  opened from the Desk, nothing done: the page's last line stands inside the window
 //   O2  opened by a load of the page's own address, nothing done: the same
 //   O3  then she types (the editor focused, no caret moved by the fixture): her words land, and the writing line stands inside the window
@@ -15,13 +15,16 @@ const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); console.log(`${pass ? 'PASS' : 'FAIL'} ${name}${detail ? '  ' + String(detail).slice(0, 900) : ''}`); };
 const J = (v) => JSON.stringify(v);
 const PARA = (i) => `Paragraph ${i} of the draft: she kept going, and the river ran under the window of the room where she had left her coat, and word${i} stayed.`;
+// the page's kinds: a loose page (Free Write is its own default); a Journal entry and a legacy page with no origin (both carry the page's furniture above her words; Free Write is the stored choice)
+const LONG = Array.from({ length: 40 }, (_, i) => PARA(i)).join(String.fromCharCode(10, 10));
 const SEEDS = {
-  line: Array.from({ length: 40 }, (_, i) => PARA(i)).join(' '),
-  page: Array.from({ length: 40 }, (_, i) => PARA(i)).join(String.fromCharCode(10, 10)),
+  loose: { text: LONG, origin: 'loose', mode: null },
+  journal: { text: LONG, origin: 'journal', mode: 'journal' },
+  legacy: { text: LONG, origin: null, mode: 'journal' },
 };
 const ARMS = [
-  { theme: 'flux', w: 1366, h: 768 }, { theme: 'flux', w: 1920, h: 1080 }, { theme: 'flux', w: 2560, h: 1440 },
-  { theme: 'plateau', w: 1366, h: 768 }, { theme: 'machina', w: 1366, h: 768 },
+  { theme: 'flux', w: 1366, h: 768, seeds: ['loose', 'journal', 'legacy'] }, { theme: 'flux', w: 1920, h: 1080, seeds: ['loose'] }, { theme: 'flux', w: 2560, h: 1440, seeds: ['loose'] },
+  { theme: 'plateau', w: 1366, h: 768, seeds: ['loose', 'journal', 'legacy'] }, { theme: 'machina', w: 1366, h: 768, seeds: ['loose'] },
 ];
 // the last line of her words and the window; the judge: the whole line inside it
 const READ = `(() => {
@@ -51,13 +54,14 @@ try { await withHarness(async (app) => {
   const arrive = async () => { await soft("!!document.querySelector('.forward-only-editor')"); await soft("!document.querySelector('.wz-splash')"); await sleep(4600); await settle(); return ev(READ); };
 
   for (const arm of ARMS) {
-    for (const [shape, text] of Object.entries(SEEDS)) {
+    for (const shape of arm.seeds) {
+      const { text, origin, mode } = SEEDS[shape];
       const tag = `${arm.theme} ${arm.w} ${shape}`;
       const id = `wol-${arm.theme}-${arm.w}-${shape}`;
       await app.emulateDpr(1, arm.w, arm.h);
       await ev("location.hash = '#/'; true"); await sleep(300);
-      await ev(`window.wrizoCreateJournalPage(${J({ id, text, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })}); window.wrizoFlushNow(); true`);
-      await ev(`localStorage.setItem('wrizo-theme', ${J(arm.theme)}); localStorage.removeItem('wrizo-mode-page-${id}'); history.replaceState(null, '', '/#/'); true`);
+      await ev(`window.wrizoCreateJournalPage(${J({ id, text, createdAt: new Date().toISOString(), origin, source: 'page' })}); window.wrizoFlushNow(); true`);
+      await ev(`localStorage.setItem('wrizo-theme', ${J(arm.theme)}); ${mode ? `localStorage.setItem('wrizo-mode-page-${id}', '${mode}')` : `localStorage.removeItem('wrizo-mode-page-${id}')`}; history.replaceState(null, '', '/#/'); true`);
       await app.reload();
       await soft("!!document.querySelector('.wz-arrival')"); await soft("!document.querySelector('.wz-splash')"); await sleep(500);
       await ev(`window.__wzTwTrace.length = 0; location.hash = '#/page/${id}'; true`);
