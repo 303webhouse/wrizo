@@ -18,7 +18,7 @@ What the old prompt carried and the kit's does not: the "Reference atoms are law
 
 **One rule is said more fully than the kit says it** (TUTOR-B, Nov 25, 2026, #131; named in `apps/server/scripts/tutor-eval/kit-departures.mjs`): the eight-word quoting limit now reads as eight words in a row, with or without quotation marks, because live replies quoted past it.
 
-**The length line is tighter than the kit's** (TUTOR-B, Nov 25, 2026, M3; named in the same file): it gives a number to aim for (90), says what the 120 counts (every line but the "Read:" line), and says to keep what matters most. The limits (120, and 200 for explaining a concept) are the kit's. Not yet tried on the live model.
+**The length line is tighter than the kit's** (TUTOR-B, Nov 25, 2026, M3; named in the same file): it gives a number to aim for (90), says what the 120 counts (every line but the "Read:" line), and says to keep what matters most. The limits (120, and 200 for explaining a concept) are the kit's. Tried on the live model on Nov 26 (run 45881901200): replies over the limit went from 13 to 2.
 
 Prompt and record move as one: any future change to the prompts amends this file in the same commit (`tutor-mirror.mjs` fails if they differ).
 
