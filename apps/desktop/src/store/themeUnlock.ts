@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ThemeId } from './theme';
+import type { SyncStatus } from './sync';
 
 // a theme is OPEN if the server's precomputed `open` map says so, or it is the theme in use (the one clause the server cannot know); this file only reads [themeUnlock §1]
 
@@ -26,9 +27,8 @@ export function wordsToUnlock(id: ThemeId, status: ThemeUnlockStatus | null): nu
 
 // GET-only: nothing here ever writes words_written/themes_opened from the client - only an
 // accepted page save (server-side) and the migration's own backfill do (theme-unlock-count's
-// own house law). Fetched lazily when the picker itself mounts, not hydrated at boot like
-// page-defaults/proofing — "once open, always open" and a lifetime word count don't need
-// split-second freshness, and the picker is the only consumer today.
+// own house law). Fetched lazily, not hydrated at boot like page-defaults/proofing: the picker
+// is the only consumer today, and it reads when it opens and after each accepted sync (#132).
 //
 // Returns null (not an EMPTY-but-truthy object) on any failure or non-ok response, so a caller
 // can tell "no data yet" apart from "the server said nothing is open" - the distinction note
@@ -36,6 +36,7 @@ export function wordsToUnlock(id: ThemeId, status: ThemeUnlockStatus | null): nu
 export async function fetchThemeUnlockStatus(): Promise<ThemeUnlockStatus | null> {
   try {
     const r = await fetch('/api/theme-unlock', { credentials: 'include' });
+    if (r.status === 401) forgetThemeUnlock();
     if (!r.ok) return null;   // signed out (no session) or a server error
     const body = await r.json();
     return {
@@ -49,14 +50,33 @@ export async function fetchThemeUnlockStatus(): Promise<ThemeUnlockStatus | null
   }
 }
 
-/** Fetches once per mount. While loading (or signed out/offline), callers see null - every
- *  theme but the current one reads locked with no note, never a stale "open" or a guessed count. */
-export function useThemeUnlockStatus(): ThemeUnlockStatus | null {
-  const [status, setStatus] = useState<ThemeUnlockStatus | null>(null);
+// #132: the last status the server gave this session, in memory only (nothing is saved), so a failed read shows the cards as they last were. Sign-out and a 401 forget it.
+let lastStatus: ThemeUnlockStatus | null = null;
+export function forgetThemeUnlock(): void { lastStatus = null; }
+
+/** One read: the server's answer, or the last one it gave when this read fails (null if it never gave one). */
+export async function readThemeUnlock(): Promise<ThemeUnlockStatus | null> {
+  const fresh = await fetchThemeUnlockStatus();
+  if (fresh) lastStatus = fresh;
+  return lastStatus;
+}
+
+type SyncWatch = (listener: (status: SyncStatus) => void) => () => void;
+
+/** Reads each time the picker opens, and again after each accepted sync while it is open (`watchSync` is store/sync.ts's subscribeSyncStatus, handed in so this file stays free of the sync engine).
+ *  While nothing has ever been read (signed out, offline), callers see null: every theme but the current one reads locked with no note, never a guessed count. */
+export function useThemeUnlockStatus(watchSync: SyncWatch): ThemeUnlockStatus | null {
+  const [status, setStatus] = useState<ThemeUnlockStatus | null>(lastStatus);
   useEffect(() => {
     let active = true;
-    void fetchThemeUnlockStatus().then((s) => { if (active) setStatus(s); });
-    return () => { active = false; };
-  }, []);
+    let asked = 0;
+    // only the newest read speaks: an older answer that lands late is dropped
+    const read = () => { const mine = ++asked; void readThemeUnlock().then((s) => { if (active && mine === asked) setStatus(s); }); };
+    let subscribing = true;   // the watcher is told the current status at once; that is not a new sync
+    const stop = watchSync((s) => { if (!subscribing && s === 'synced') read(); });
+    subscribing = false;
+    read();
+    return () => { active = false; stop(); };
+  }, [watchSync]);
   return status;
 }

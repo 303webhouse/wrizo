@@ -1,0 +1,94 @@
+/* ============================================================================================================================================================
+   THE GUIDE (PRESETS-B, Nov 25; reorg/GuidePanel.tsx, logic in reorg/presetGuide.ts; the brief guide-brief-nov24.md). Its own SMALL panel over the dimmed room, on the Help me choose panel's own dresses (the `help-*` shells and tokens in
+   21-help-me-choose.css): Arbor's librarian, Machina's intake, Flux's diagnostic. NOTHING NEW: no token, no colour that file does not already use. Start is drawn as an INVITATION (an outline), never in brass: brass is kept for what she
+   has already done. No motion at all (it simply appears). Square edges, no shadow. Every rule is scoped to .guide-panel so the Help me choose panel is untouched.
+   ============================================================================================================================================================ */
+.guide-panel{ width:min(560px, calc(100vw - 48px)); min-height:0; box-sizing:border-box; }
+.guide-panel *, .guide-panel *::before, .guide-panel *::after{ transition:none !important; animation:none !important; }
+.guide-sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; }
+.guide-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+.guide-q{ margin:10px 0 0; }
+.guide-answers{ margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; }
+.guide-foot{ margin-top:22px; gap:18px; justify-content:flex-start; flex-wrap:wrap; }
+.guide-foot .guide-close{ margin-left:auto; }
+.guide-panel .guide-else, .guide-panel .guide-close, .guide-panel .guide-back{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:4px 0; }
+.guide-said{ margin:10px 0 0; font-size:13px; line-height:1.45; }
+.guide-card{ margin-top:14px; padding:14px 16px; }
+.guide-card-name{ font-size:19px; font-weight:600; line-height:1.25; }
+.guide-card-facts{ margin-top:6px; display:flex; align-items:center; gap:12px; font-size:13px; }
+.guide-card-line{ margin:0; font-size:15px; line-height:1.5; }
+.guide-card-act{ margin-top:12px; }
+.guide-why{ min-width:26px; height:26px; line-height:24px; text-align:center; font-weight:600; font-size:14px; border-radius:50% !important; box-shadow:inset 0 0 0 1px currentColor; }
+/* two classes: the shared `.help-panel button` reset (21-help-me-choose.css) outranks one */
+.guide-panel .guide-start{ display:inline-block; padding:8px 20px; font-size:14px; font-weight:600; box-shadow:inset 0 0 0 1.5px currentColor; }
+.guide-panel .guide-start-small{ padding:5px 14px; font-size:13px; }
+.guide-or{ margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:14px; }
+.guide-or-word{ font-style:italic; }
+.guide-note{ margin-top:6px; }
+.guide-note + .guide-note{ margin-top:18px; padding-top:14px; border-top:1px solid currentColor; }
+.guide-note-line{ margin:8px 0 0; font-size:14px; line-height:1.55; }
+
+/* ---- ARBOR: the librarian (the olive alcove's own colours, as the librarian's tiles wear them) ---- */
+.help-librarian.guide-panel{ width:min(600px, calc(100vw - 48px)); min-height:0; padding:34px 34px 22px; }
+.help-librarian .guide-head{ justify-content:center; position:relative; }
+.help-librarian .guide-stepof{ position:absolute; right:0; font-family:var(--font-ui); font-size:11px; letter-spacing:.16em; color:#fff3dc; }
+.help-librarian .guide-q{ text-align:center; font-size:30px; }
+.help-librarian .guide-answers{ justify-content:center; }
+.help-librarian .guide-ans{ padding:11px 18px; font-size:17px; font-weight:600; color:#efe6cf; background:#4b5329; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); }
+.help-librarian .guide-ans:hover, .help-librarian .guide-ans:focus-visible{ color:#fff3dc; background:#434b24; box-shadow:inset 0 0 0 2px #fff3dc }
+.help-librarian .guide-else, .help-librarian .guide-close, .help-librarian .guide-back{ color:#fff3dc; font-family:var(--font-ui); }
+.help-librarian .guide-said{ text-align:center; font-style:italic; color:#fff3dc; }
+.help-librarian .guide-card{ background:#434b24; box-shadow:inset 0 0 0 1px rgba(240,230,200,.35); color:#efe6cf; }
+.help-librarian .guide-card-name{ color:#fff3dc; font-family:var(--font-prose); }
+.help-librarian .guide-card-facts{ color:#e2d8bd; }
+.help-librarian .guide-start{ color:#fff3dc; }
+.help-librarian .guide-start:hover, .help-librarian .guide-start:focus-visible{ background:rgba(240,230,200,.14); box-shadow:inset 0 0 0 2.5px currentColor }
+.help-librarian .guide-or{ color:#fff3dc; }
+.help-librarian .guide-foot{ margin-top:26px; }
+
+/* ---- FLUX: the diagnostic ---- */
+.help-diagnostic.guide-panel{ width:min(620px, calc(100vw - 48px)); padding:22px 26px 16px; }
+.help-diagnostic .guide-stepof{ color:var(--text-mid); letter-spacing:.14em; font-size:11px; text-transform:uppercase; }
+.help-diagnostic .guide-q{ margin:6px 0 0; font-size:13px; font-weight:400; color:var(--text-mid); text-transform:uppercase; letter-spacing:.06em; }
+.help-diagnostic .guide-q::before{ content:'> '; color:var(--text-mid); }
+.help-diagnostic .guide-answers{ margin-top:8px; flex-direction:column; gap:0; }
+.help-diagnostic .guide-ans{ color:var(--line-active); text-transform:uppercase; padding:0 3px; align-self:flex-start; }
+.help-diagnostic .guide-ans::before{ content:'\2192  '; }
+.help-diagnostic .guide-ans:hover, .help-diagnostic .guide-ans:focus-visible{ color:var(--chrome-surface); background:var(--line-active) }
+.help-diagnostic .guide-else, .help-diagnostic .guide-close, .help-diagnostic .guide-back{ color:var(--text-mid); }
+.help-diagnostic .guide-else:hover, .help-diagnostic .guide-close:hover, .help-diagnostic .guide-back:hover, .help-diagnostic .guide-else:focus-visible{ color:var(--text-hi); }
+.help-diagnostic .guide-said{ margin-top:6px; color:var(--text-mid); text-transform:uppercase; font-size:12px; letter-spacing:.04em; }
+.help-diagnostic .guide-card{ margin-top:10px; border-left:2px solid var(--orange); padding:2px 0 2px 12px; }
+.help-diagnostic .guide-card-name{ color:var(--text-hi); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.help-diagnostic .guide-card-facts{ color:var(--text-mid); text-transform:uppercase; font-size:12px; }
+.help-diagnostic .guide-start{ color:var(--line-active); box-shadow:inset 0 0 0 1px var(--line-active); text-transform:uppercase; padding:3px 10px; font-size:12px; }
+.help-diagnostic .guide-start:hover, .help-diagnostic .guide-start:focus-visible{ color:var(--chrome-surface); background:var(--line-active) }
+.help-diagnostic .guide-or{ color:var(--text-mid); text-transform:uppercase; font-size:12px; }
+.help-diagnostic .guide-or-word{ font-style:normal; }
+.help-diagnostic .guide-why{ color:var(--line-active); }
+.help-diagnostic .guide-note-line{ text-transform:none; font-size:12px; color:var(--text-mid); }
+.help-diagnostic .guide-note .help-q{ font-size:14px; color:var(--text-hi); }
+
+/* ---- MACHINA: the intake (square, 1px hairlines, tokens only, no motion) ---- */
+.help-intake.guide-panel{ width:min(520px, calc(100vw - 48px)); padding:22px 26px 16px; }
+.help-intake .guide-stepof{ font-family:var(--font-chromeLabel); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-low); }
+.help-intake .guide-q{ margin:12px 0 0; font-size:22px; font-weight:600; color:var(--text-hi); line-height:1.25; }
+.help-intake .guide-answers{ flex-direction:column; gap:6px; }
+.help-intake .guide-ans{ display:block; width:100%; box-sizing:border-box; padding:9px 12px; font-size:14px; color:var(--text-mid); text-align:left; border:1px solid var(--ink-border-strong); background:var(--chrome-surface); }
+.help-intake .guide-ans:hover, .help-intake .guide-ans:focus-visible{ color:var(--text-hi); border-color:var(--choice); box-shadow:inset 2px 0 0 var(--choice) }
+.help-intake .guide-ans:focus-visible, .help-intake .guide-start:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
+.help-intake .guide-else, .help-intake .guide-close, .help-intake .guide-back{ font-family:var(--font-chromeLabel); font-size:10.5px; color:var(--text-mid); }
+.help-intake .guide-else:hover, .help-intake .guide-close:hover, .help-intake .guide-back:hover{ color:var(--text-hi); }
+.help-intake .guide-else:focus-visible, .help-intake .guide-close:focus-visible, .help-intake .guide-back:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
+.help-intake .guide-said{ font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-mid); }
+.help-intake .guide-card{ border:1px solid var(--ink-border-strong); background:var(--ink-800); }
+.help-intake .guide-card-name{ color:var(--text-hi); }
+.help-intake .guide-card-facts{ color:var(--text-mid); font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+.help-intake .guide-start{ color:var(--text-hi); box-shadow:none; border:1px solid var(--ink-border-strong); }
+.help-intake .guide-start:hover, .help-intake .guide-start:focus-visible{ border-color:var(--choice) }
+.help-intake .guide-or{ color:var(--text-mid); }
+.help-intake .guide-or-word{ font-style:normal; font-family:var(--font-chromeLabel); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+.help-intake .guide-why{ color:var(--text-hi); }
+.help-intake .guide-why:focus-visible{ outline:1px solid var(--choice); outline-offset:2px; }
+.help-intake .guide-note-line{ color:var(--text-mid); }
+.help-intake .guide-note .help-q{ font-size:17px; margin:8px 0 0; }
