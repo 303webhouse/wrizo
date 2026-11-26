@@ -134,8 +134,12 @@ const currentProjectId = async (app) => {
 
 // The Bible section is present iff its add-row input is mounted (always rendered
 // when the section mounts — the surest single marker).
+// SUPERSEDED (L9, the Tutor's notes on file: the notes section on every page wears the Bible's row classes, so this marker matched it too); original, verbatim:
+//   const bibleSectionPresent = async (app) =>
+//     app.evalJs("!!document.querySelector('.wz-tutor-bible-row .wz-tutor-bible-input')");
+// The same marker, counted only outside the notes section. The positive checks below get stricter by it: the notes row can no longer stand in for the Bible's.
 const bibleSectionPresent = async (app) =>
-  app.evalJs("!!document.querySelector('.wz-tutor-bible-row .wz-tutor-bible-input')");
+  app.evalJs(`[...document.querySelectorAll('.wz-tutor-bible-row .wz-tutor-bible-input')].some((e) => !e.closest('[data-testid="tutor-notes"]'))`);
 
 await withHarness(async (app) => {
   // ==========================================================================

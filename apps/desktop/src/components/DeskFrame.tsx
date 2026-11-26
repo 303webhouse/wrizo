@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { pageLayoutHeightFor, pageScaleFor, zoomFor } from '../store/pageScale';
+import { fitScaleFor, pageLayoutHeightFor, pageScaleFor, zoomFor } from '../store/pageScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
 
@@ -181,7 +181,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   // spent on a dead 260px column instead of reaching the composed frame.
   const hasCorkboard = corkboard != null;
 
-  // the prose page's scale from the stage's size alone (store/pageScale.ts): it lays out at scale 1 and is painted at k by a transform, so line breaks never move; measured on resize in a layout effect, never a container query [DeskFrame §3]
+  // the prose page's scale from the window and its stage, never a panel (store/pageScale.ts): it lays out at scale 1 and is painted at k by a transform, so line breaks never move; measured on resize in a layout effect, never a container query [DeskFrame §3]
   const stageRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const stage = stageRef.current;
@@ -191,12 +191,15 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const page = stage.querySelector<HTMLElement>('.mode-page');
       const col = page?.parentElement;
       const top = page && col ? col.getBoundingClientRect().top - s.top + page.offsetTop : 0;
-      const k = pageScaleFor(s.width, s.height, top);
+      const k = pageScaleFor(s.width, s.height, top, window.innerWidth);
       // the strip is fixed at the window's left and stands over the stage's edge: the zoomed page keeps clear of it (pageScale.ts ZOOM_CLEAR)
       const strip = rootRef.current?.querySelector<HTMLElement>('.desk-frame-strip')?.getBoundingClientRect();
       const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
       stage.style.setProperty('--wz-k', k.toFixed(4));
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset).toFixed(4));
+      const fit = fitScaleFor(s.width, s.height, top);
+      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset, fit).toFixed(4));
+      // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
+      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
@@ -204,7 +207,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
-    return () => ro.disconnect();
+    // the window's width is part of the law, and a stage may keep its size while the window changes
+    window.addEventListener('resize', apply);
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); };
   }, [pageKind]);
 
   return (

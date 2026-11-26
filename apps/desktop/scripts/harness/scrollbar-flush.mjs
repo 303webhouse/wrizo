@@ -98,7 +98,7 @@ const measure = (app) => app.evalJs(`(() => {
   const sr = scroll.getBoundingClientRect();
   const pr = page.getBoundingClientRect();
   return {
-    gapFromPageEdge: pr.right - sr.right,
+    gapFromPageEdge: (pr.right - sr.right) / (page.offsetWidth ? pr.width / page.offsetWidth : 1),   // #133 (Nick, Nov 25): the page is painted at more than scale 1 at these widths, so painted lengths are read back in page units
     pageBorderRight: parseFloat(getComputedStyle(page).borderRightWidth) || 0,
     scrollbarWidth: scroll.offsetWidth - scroll.clientWidth,
     scrollbarWidthProp: getComputedStyle(scroll).scrollbarWidth,
@@ -106,7 +106,7 @@ const measure = (app) => app.evalJs(`(() => {
     inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim(),
     scrollHeight: scroll.scrollHeight,
     clientHeight: scroll.clientHeight,
-    pageHeight: page.getBoundingClientRect().height,
+    pageHeight: page.getBoundingClientRect().height / (page.offsetWidth ? pr.width / page.offsetWidth : 1),
     // the applied scale is read from the page's OWN computed transform (matrix(a, ...)), never from the variable the rule reads - an independent measurement
     appliedScale: (() => { const t = getComputedStyle(page).transform; return !t || t === 'none' ? 1 : new DOMMatrixReadOnly(t).a; })(),
     thumbColor: getComputedStyle(scroll, '::-webkit-scrollbar-thumb').backgroundColor,
@@ -181,7 +181,9 @@ await withHarness(async (app) => {
   // scale took a different bite out of the column and reflowed the lines. The fix pairs the bar with a right padding of (10px - that width), so bar + padding is always 10 layout px and the column is the SAME width
   // at k = 1, k < 1, k > 1 and zoomed. Measured in layout px (offsetWidth / clientWidth), each against the k = 1 read; the scale is asserted to differ from 1 where the scenario claims it (the blind-pass guard).
   const col = {};
-  for (const [name, size, zoom, want] of [['1366', [1366, 768], false, 'one'], ['1100x900', [1100, 900], false, 'floor'], ['1280x900', [1280, 900], false, 'floor'], ['3840 (k>1)', [3840, 2160], false, 'scaled'], ['3840 zoomed', [3840, 2160], true, 'scaled'], ['1366 zoomed', [1366, 768], true, 'scaled']]) {
+  // SUPERSEDED (#133: under 2560 wide the page is painted past scale 1, so 1366, 1100 and 1280 no longer reach k = 1 or its floor), the original list verbatim:
+  // for (const [name, size, zoom, want] of [['1366', [1366, 768], false, 'one'], ['1100x900', [1100, 900], false, 'floor'], ['1280x900', [1280, 900], false, 'floor'], ['3840 (k>1)', [3840, 2160], false, 'scaled'], ['3840 zoomed', [3840, 2160], true, 'scaled'], ['1366 zoomed', [1366, 768], true, 'scaled']]) {
+  for (const [name, size, zoom, want] of [['2560x800', [2560, 800], false, 'one'], ['2560x860', [2560, 860], false, 'floor'], ['2800x900', [2800, 900], false, 'floor'], ['3840 (k>1)', [3840, 2160], false, 'scaled'], ['3840 zoomed', [3840, 2160], true, 'scaled'], ['1366 zoomed', [1366, 768], true, 'scaled']]) {
     await seedAndOpen(app, 'plateau', 'light', size);
     if (zoom) { await app.evalJs("document.querySelector('.mode-pagecol')?.setAttribute('data-zoom', 'true')"); await sleep(250); }
     let m = await measure(app);
@@ -191,7 +193,7 @@ await withHarness(async (app) => {
     ok(`COLUMN [${name}] premise: the page really is at the scale the scenario claims (${m ? m.appliedScale.toFixed(3) : '?'} - ${want === 'one' ? 'k = 1' : want === 'floor' ? 'k at its floor, ~1' : 'k > 1'})`, !!m && (want === 'one' ? Math.abs(m.appliedScale - 1) < 0.005 : want === 'floor' ? m.appliedScale > 0.99 && m.appliedScale < 1.005 : m.appliedScale > 1.005), m ? String(m.appliedScale) : '');
   }
   {
-    const base = col['1366'];
+    const base = col['2560x800'];
     const sizes = Object.keys(col);
     const ks = sizes.map((n) => col[n] && col[n].appliedScale).filter((x) => typeof x === 'number');
     // k BELOW 1 does not occur: page-size floors the applied scale at ~0.9996 (measured at 1000 / 1100 / 1280 wide, 700-900 tall), so the 10px cap (the 'k < 1' side of the bar's rounding) binds only by that rounding. The premise asserts the floor itself

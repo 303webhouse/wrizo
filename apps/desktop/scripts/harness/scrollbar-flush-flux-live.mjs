@@ -29,7 +29,7 @@ const isLive = (l) => !!l && l.theme === 'flux' && l.flux3 && l.top && !/flux3|r
 const MEASURE = `(() => {
   const scroll = document.querySelector('.mode-scroll'), page = document.querySelector('.mode-page'); if (!scroll || !page) return null;
   const sr = scroll.getBoundingClientRect(), pr = page.getBoundingClientRect();
-  return { gapFromPageEdge: pr.right - sr.right, pageBorderRight: parseFloat(getComputedStyle(page).borderRightWidth) || 0,
+  return { gapFromPageEdge: (pr.right - sr.right) / (page.offsetWidth ? pr.width / page.offsetWidth : 1), pageBorderRight: parseFloat(getComputedStyle(page).borderRightWidth) || 0,
     scrollbarWidth: scroll.offsetWidth - scroll.clientWidth, scrollbarWidthProp: getComputedStyle(scroll).scrollbarWidth,
     inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim(),
     scrollHeight: scroll.scrollHeight, clientHeight: scroll.clientHeight,

@@ -130,12 +130,13 @@ await withHarness(async (app) => {
   ok('[INDENT] three Tab taps are THREE levels in the stored text ("keep indenting further, even if already indented")', st === `\t\t\t${LONG}`, JSON.stringify(st && st.slice(0, 20)));
   const geo = () => app.evalJs(`(() => {
     const ed = document.querySelector('${ED}'); const cs = getComputedStyle(ed);
-    const inner = ed.getBoundingClientRect().left + parseFloat(cs.paddingLeft);
+    const s = (() => { const p = document.querySelector('.mode-page'); return p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; })();   // #133 (Nick, Nov 25): the page is painted at more than scale 1 at these widths, so painted offsets are read back in page units
+    const inner = ed.getBoundingClientRect().left + parseFloat(cs.paddingLeft) * s;
     const starts = []; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n;
     while ((n = w.nextNode())) { if (!n.data.includes('A paragraph')) continue;
       const r = document.createRange(); r.selectNodeContents(n);
       const byTop = new Map(); for (const x of [...r.getClientRects()].filter(x => x.width > 1)) { const k = Math.round(x.top); byTop.set(k, Math.min(byTop.get(k) ?? 1e9, x.left)); }
-      for (const [, l] of [...byTop.entries()].sort((a, b) => a[0] - b[0])) starts.push(l - inner);
+      for (const [, l] of [...byTop.entries()].sort((a, b) => a[0] - b[0])) starts.push((l - inner) / s);
     }
     return { starts, em: parseFloat(cs.fontSize) };
   })()`);

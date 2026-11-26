@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { paintScaleOf } from '../store/paintScale';
 
 // F2 warm start — a render-only landing glow. When the Desk's return card
 // navigates with `state.warmStart`, the editor lands the caret at the end and a
@@ -70,11 +71,13 @@ function measure(el: HTMLElement, relativeTo: HTMLElement): WarmRect | null {
   const base = relativeTo.getBoundingClientRect();
   // Match the mockup's padding: bleed 6px left (for the inset accent bar) + 2px
   // vertically so the tint frames the passage rather than clipping it.
+  // #133: the rects are screen px and the tint stands inside the painted page, so they are divided by its painted scale.
+  const k = paintScaleOf(relativeTo);
   return {
-    top: top - base.top - 2,
-    left: left - base.left - 6,
-    width: (right - left) + 12,
-    height: (bottom - top) + 4,
+    top: (top - base.top) / k - 2,
+    left: (left - base.left) / k - 6,
+    width: (right - left) / k + 12,
+    height: (bottom - top) / k + 4,
   };
 }
 
