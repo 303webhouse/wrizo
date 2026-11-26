@@ -429,8 +429,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps up to its 320 floor and lies over the page's margin, never its text
       // never in the Typewriter zoom, where the openers are hidden and keep their boxes (desk-frame §12b); never over the publishing view either, whose
-      // buttons run to the page's edges: there the drawer narrows beside the page, as it did
-      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !publishing && !liveQuery('.mode-pagecol[data-zoom="true"]');
+      // buttons run to the page's edges, and never while a link reader is docked (it stays up while she writes, so it stands beside the page): there the
+      // drawer narrows beside the page, as it did
+      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !publishing && !docked && !liveQuery('.mode-pagecol[data-zoom="true"]');
       const over = small && geoMargin < TUTOR_TAB_PX + 320 * ck;
       const panel = over ? document.querySelector('.wz-tutor-panel') : null;
       const box = panel?.getBoundingClientRect();
