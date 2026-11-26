@@ -92,7 +92,9 @@ await withHarness(async (app) => {
   const before = await app.evalJs(PAGE);
   await drawer(app);
   const tabs = await app.evalJs(TABS);
-  ok('FF1 the tab row reads MARKUP, TRACKS and MARKUP is open', Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'MARKUP,TRACKS' && tabs[0].on === true, tabs);
+  // SUPERSEDED (Nov 25, VISUAL 1a.3: INK joins BUILD, EDIT and a Board, VISUAL's kit §3), the original, verbatim:
+  // ok('FF1 the tab row reads MARKUP, TRACKS and MARKUP is open', Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'MARKUP,TRACKS' && tabs[0].on === true, tabs);
+  ok('FF1 [VISUAL 1a.3 successor] the tab row reads MARKUP, INK, TRACKS and MARKUP is open', Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'MARKUP,INK,TRACKS' && tabs[0].on === true && !tabs[1].on, tabs);
 
   const markup = await app.evalJs("(() => { const r = document.querySelector('.wz-sliver-panel'); if (!r) return null; return { type: !!r.querySelector('.wz-sliver-type'), marks: r.querySelectorAll('.wz-sliver-format--letters .mode-tbtn').length, folds: [...r.querySelectorAll('[data-text-fold]')].map((b) => b.getAttribute('data-text-fold')), templates: r.querySelectorAll('[data-template]').length, kind: r.querySelectorAll('.wz-sliver-page-kind').length, setup: r.querySelectorAll('.wz-page-setup-seg, .wz-page-setup-chip').length }; })()");
   ok('FF2 MARKUP holds Typeface, the marks and the folds; Presets, the kind row and Frame are not on it', !!markup && markup.type && markup.marks >= 6 && markup.folds.includes('paragraph') && markup.folds.includes('more') && markup.templates === 0 && markup.kind === 0 && markup.setup === 0, markup);

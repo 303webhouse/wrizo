@@ -123,6 +123,10 @@ function boardBody(entry: JournalEntry, plainCards = false): string {
       parts.push(UNKNOWN_KIND_PLACEHOLDER);
     }
   }
+  // VISUAL 1a.3: drawing on the Board itself (the row's own strokes) is named, never silently dropped
+  if (entry.strokes && entry.strokes.length > 0) parts.push(`## Ink
+
+${INK_PLACEHOLDER} (drawn on the board itself)`);
   if (parts.length === 0) return laneHeader + '(No cards on this board.)';
   return laneHeader + parts.join('\n\n---\n\n');
 }

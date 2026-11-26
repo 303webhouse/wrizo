@@ -19,7 +19,7 @@ const TABS: Record<DrawerKind, Partial<Record<ArborToolTab, readonly DrawerSecti
   freewrite: { format: ['typeface', 'forwardLock', 'capture'], ink: ['ink', 'forwardLock', 'capture'] },
   draft: { format: ['typeface', 'format', 'actions', 'pageKind'], presets: ['templates'] },
   revise: { format: ['typeface'] },
-  board: { format: ['boardTools'] },
+  board: { format: ['boardTools'], ink: ['ink'] },
 };
 const ORDER: readonly ArborToolTab[] = ['format', 'presets', 'ink'];
 
