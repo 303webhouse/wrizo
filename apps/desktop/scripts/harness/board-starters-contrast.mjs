@@ -4,6 +4,7 @@
 // Machina (the live redesign): the page tone (light, dark) x the room (Day, Night) x the cast (cool, neutral). A LIGHT BOARD is one whose ground is light; only those are judged:
 //   W  every starter's words reach 4.5:1        I  every starter's icon reaches 3:1
 //   P  premise: at least one light Board was read, with its three starters
+//   H  the pointer on a starter still lifts it
 //   MUT the judge goes RED on 40% of a mid colour on a light ground
 // Arbor and Flux (light and dark page) are READ AND PRINTED, never judged.
 // Run: node scripts/harness/board-starters-contrast.mjs (from apps/desktop; Actions or the box).
@@ -71,6 +72,14 @@ try { await withHarness(async (app) => {
     lightBoards += 1;
     ok(`W ${tag}: every starter's words reach 4.5:1 on this light Board`, got.length >= 3 && got.every((g) => g.words >= 4.5), detail);
     ok(`I ${tag}: every starter's icon reaches 3:1 on this light Board`, got.length >= 3 && got.every((g) => g.icon >= 3), detail);
+    // the lift is kept: the pointer on a starter changes what is drawn
+    const look = "(() => { const b = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning'); const c = getComputedStyle(b); return [c.color, c.borderTopColor, c.opacity].join('|'); })()";
+    const rest = await ev(look);
+    const box = await ev("(() => { const r = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    await app.mouseMove(box.x, box.y); await sleep(500);
+    const hover = await ev(look);
+    await app.mouseMove(4, 4);
+    ok(`H ${tag}: the pointer on a starter still lifts it`, hover !== rest, J({ rest, hover }));
   }
   ok(`P (premise): light Machina Boards were read (${lightBoards})`, lightBoards >= 1);
   ok('MUT: the judge goes RED on 40% of a mid colour over a light ground', judge({ word: 'x', color: [63, 97, 131, 1], icon: [63, 97, 131, 1], op: 0.4, bg: [233, 234, 235] }).words < 4.5 && judge({ word: 'x', color: [40, 40, 40, 1], icon: [40, 40, 40, 1], op: 1, bg: [233, 234, 235] }).words >= 4.5);

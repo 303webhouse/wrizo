@@ -38,6 +38,11 @@
 }
 .wz-beginnings[data-beginnings='board'] .wz-beginning:hover,
 .wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ opacity:.9; }
+/* #136 - MACHINA'S LIGHT BOARD: at 40% the starters read 1.4 to 1.8:1. There the words and icons are drawn solid (the door's steel, over 4.5:1 on the white paper, in either room) and only the thin outline
+   stays at 40%; hover and focus still lift the outline to full and take brass (board-starters-contrast.mjs) [beginnings §4] */
+:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning{ opacity:1; border-color:color-mix(in srgb, currentColor 40%, transparent); }
+:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:not(:hover):not(:focus-visible):not(:active){ color:#3F6183; }
+:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:is(:hover, :focus-visible){ border-color:currentColor; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
 
