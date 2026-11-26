@@ -156,7 +156,9 @@ const openTutorByGrip = async (app) => {
 const DRAWER_MIN = 200;
 const roomForBoth = (app) => app.evalJs(`(() => { const p = document.querySelector('.mode-page'); const s = document.querySelector('.desk-frame-stage'); if (!p || !s) return null;
   const a = p.getBoundingClientRect(); const b = s.getBoundingClientRect(); const left = a.left - b.left; const right = b.right - a.right;
-  return { left: Math.round(left), right: Math.round(right), both: left >= ${DRAWER_MIN} && right >= ${DRAWER_MIN} }; })()`);
+  const roomy = left >= ${DRAWER_MIN} && right >= ${DRAWER_MIN};
+  // #133 (Nick, Nov 25; docs/rulings/store-pageScale.md §5): at 1600 and narrower one side panel stands at a time, whatever the room
+  return { left: Math.round(left), right: Math.round(right), roomy, both: roomy && window.innerWidth > 1600 }; })()`);
 const openFarLeft = (app) => app.evalJs(`(() => {
   const b = document.querySelector('.wz-strip-item[data-category=journal]');
   if (!b) return null;
@@ -336,6 +338,11 @@ await withHarness(async (app) => {
     const room7 = await roomForBoth(app);
     ok(`S7 [measured] (premise @ ${w}x${h}): the page and the stage are measurable with both hands shut`, !!room7, JSON.stringify(room7));
     const both7 = !!room7 && room7.both;
+    if (room7 && room7.roomy && !room7.both) {
+      pok(`PARKED (was "S7 successor [measured] (§7.7 @ ${w}x${h}): the Counsel opens onto its own tab, and the Desk hand STILL STANDS - the band holds the page and both hands at their minimum") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
+      pok(`PARKED (was "S7 successor [measured] (§7.7 @ ${w}x${h}): the Desk drawer stands open onto EMPTY CONTENT WITHOUT ERROR (G3's absence-over-grayed does not govern an empty drawer), and the Counsel stands beside it") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
+      pok(`PARKED (was "S7 successor [measured] (§8 @ ${w}x${h}): every open hand CLOSES BY ITS OWN GRIP - the Desk and the Counsel, each by its own second press - and nothing is left open. §8's exit names open AND close") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
+    }
     await openSliverByGrip(app);
     await openTutorByGrip(app);
     const open = await app.evalJs(DRAWERS);
@@ -435,6 +442,7 @@ await withHarness(async (app) => {
     pok(`PARKED (was, VERBATIM: "S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line") - SUPERSEDED by page-size (Fable, Oct 23)`,
       true, 'successor: S3 successor [measured] - both hands stand where there is room, else they take turns; the paper never moves either way');
     const both3 = !!room3 && room3.both;
+    if (room3 && room3.roomy && !room3.both) pok(`PARKED (was "S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, BOTH hands stand (the band holds the page and both at their minimum) - and the paper is STILL where it was with both shut - chrome never reflows the writer's line") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
     ok(`S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, ${both3 ? 'BOTH hands stand (the band holds the page and both at their minimum)' : 'the hands TAKE TURNS (no room for both at their minimum)'} - and the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
       !!room3 && same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === (both3 ? 'true' : 'false'), JSON.stringify({ closed, bothOpen, drawers, room3 }));
 
@@ -489,14 +497,22 @@ await withHarness(async (app) => {
     // reconcile in the build.
     const deskDelta = geo.dock && geo.paper ? +(geo.paper.l - geo.dock.r).toFixed(2) : null;
     if (w >= 1366) {
-      ok(`S4 (§7.4 @ ${w}x${h}): the DESK hand is FLUSH TO THE PAPER — its right edge IS the paper column's left edge (delta ${deskDelta}px, tolerance 0.6). The ruled anchor contract, held`,
-        deskDelta != null && Math.abs(deskDelta) <= 0.6, JSON.stringify({ geo, deskDelta }));
+      // SUPERSEDED (#133: the page is painted larger than its column at these widths), the original verbatim:
+      // ok(`S4 (§7.4 @ ${w}x${h}): the DESK hand is FLUSH TO THE PAPER — its right edge IS the paper column's left edge (delta ${deskDelta}px, tolerance 0.6). The ruled anchor contract, held`,
+      // deskDelta != null && Math.abs(deskDelta) <= 0.6, JSON.stringify({ geo, deskDelta }));
+      const sheetDelta = geo.dock && geo.sheet ? +(geo.sheet.l - geo.dock.r).toFixed(2) : null;
+      ok(`S4 (§7.4 @ ${w}x${h}) [#133 successor]: the DESK hand is FLUSH TO THE PAINTED PAGE - its right edge IS the page's left edge (delta ${sheetDelta}px, tolerance 0.9). The ruled anchor contract, held`,
+        sheetDelta != null && Math.abs(sheetDelta) <= 0.9, JSON.stringify({ geo, sheetDelta }));
     } else {
       // ARCHIVED PARK (#13 step 14): archive/item112a.mjs.parked.md record 5
       pok(`PARKED (was "S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width ...") - page-size rulings a-b: the letter page is 620px, so the same overhang reads -32; live successor: S4 [page-size successor] PRE-EXISTING ANCHOR DEVIATION, RE-PINNED`,
         deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ deskDelta, pin: PAGE_SIZE_PIN }));
-      ok(`S4 (§7.4 @ ${w}x${h}) [page-size successor]: PRE-EXISTING ANCHOR DEVIATION, RE-PINNED on the letter page — the Desk hand overhangs the paper's left edge by ${-PAGE_SIZE_PIN}px at the frame's own minimum width (the 29.7px of main @ 89c5955, plus the 2.3px the 620px letter page adds on each side). A regression guard, still surfaced to the desk for 117/119`,
-        deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ geo, deskDelta, pin: PAGE_SIZE_PIN, was: -29.7 }));
+      // SUPERSEDED (#133), the original verbatim:
+      // ok(`S4 (§7.4 @ ${w}x${h}) [page-size successor]: PRE-EXISTING ANCHOR DEVIATION, RE-PINNED on the letter page — the Desk hand overhangs the paper's left edge by ${-PAGE_SIZE_PIN}px at the frame's own minimum width (the 29.7px of main @ 89c5955, plus the 2.3px the 620px letter page adds on each side). A regression guard, still surfaced to the desk for 117/119`,
+      // deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ geo, deskDelta, pin: PAGE_SIZE_PIN, was: -29.7 }));
+      const over = geo.dock && geo.sheet ? +(geo.dock.r - geo.sheet.l).toFixed(2) : null;
+      ok(`S4 (§7.4 @ ${w}x${h}) [#133 successor]: at the frame's own minimum width the Desk hand lies over the painted page's margin at most (${over}px), never its text`,
+        over != null && over >= -0.9 && over <= geo.sheet.w / 8.5, JSON.stringify({ geo, over }));
     }
 
     // WHAT 112-A ITSELF OWES, asserted directly: Revise's hand geometry is the SAME
@@ -562,7 +578,7 @@ await withHarness(async (app) => {
     ok(`S4 (@ ${w}x${h}): NEITHER hand is screen-anchored — the Desk hand does not start at x=0 and the Counsel hand does not end at the viewport's right edge. This is the fault the Anchor Law names, asserted as an absence`,
       !!geo.dock && !!geo.tutor && geo.dock.l > 1 && geo.tutor.r < geo.vw - 1,
       JSON.stringify({ dock: geo.dock, tutor: geo.tutor, vw: geo.vw }));
-    anchorTrack.push({ w, dockR: geo.dock ? geo.dock.r : null, paperL: geo.paper ? geo.paper.l : null, vw: geo.vw });
+    anchorTrack.push({ w, dockR: geo.dock ? geo.dock.r : null, paperL: geo.paper ? geo.paper.l : null, sheetL: geo.sheet ? geo.sheet.l : null, sheetW: geo.sheet ? geo.sheet.w : null, vw: geo.vw });
   }
 
   // PAPER-ANCHORED, NOT SCREEN-ANCHORED — proven ACROSS the two widths, which no
@@ -594,8 +610,12 @@ await withHarness(async (app) => {
       && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20;
     pok('PARKED (was "S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both) ...") - page-size rulings a-b: the re-pinned overhang is 32px; live successor: S4 (§7.4) [page-size successor]',
       anchored, JSON.stringify({ paperTravel, gapA, gapB, station }));
-    ok(`S4 (§7.4) [page-size successor]: THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 100px+ and the dock holds station on its edge (within the re-pinned ${station}px at both), while NEITHER viewport offset stays constant`,
-      anchored, JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, station, fromLeftA, fromLeftB, fromRightA, fromRightB }));
+    // SUPERSEDED (#133: the station is held on the painted page, which now grows with the window), the original verbatim:
+    // ok(`S4 (§7.4) [page-size successor]: THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 100px+ and the dock holds station on its edge (within the re-pinned ${station}px at both), while NEITHER viewport offset stays constant`,
+    // anchored, JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, station, fromLeftA, fromLeftB, fromRightA, fromRightB }));
+    const held = (x) => !!x && x.dockR != null && x.sheetL != null && x.dockR - x.sheetL >= -0.9 && x.dockR - x.sheetL <= x.sheetW / 8.5;
+    ok(`S4 (§7.4) [#133 successor]: THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED - across the two reference widths the painted page's left edge travels 40px+ and the dock holds station on it (flush, or over its margin only), while its offset from the right of the screen does not stay constant`,
+      held(a) && held(b) && Math.abs(b.sheetL - a.sheetL) > 40 && Math.abs(fromRightB - fromRightA) > 20, JSON.stringify({ anchorTrack, fromLeftA, fromLeftB, fromRightA, fromRightB }));
   }
 
   // =========================================================================
@@ -653,6 +673,7 @@ await withHarness(async (app) => {
     pok(`PARKED (was, VERBATIM: "S5 successor (§7.5 @ ${w}x${h}): the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (one drawer at a time, at every width), and the open Counsel panel is reachable") - SUPERSEDED by page-size (Fable, Oct 23)`,
       true, 'successor: S5 successor [measured] - both hands stand and do not overlap where there is room, else they take turns');
     const both5 = !!room5 && room5.both;
+    if (room5 && room5.roomy && !room5.both) pok(`PARKED (was "S5 successor [measured] (§7.5 @ ${w}x${h}): the two HANDS coexist in Revise - Desk and Counsel both stand open and DO NOT OVERLAP (the band holds the page and both at their minimum), and the open Counsel panel is reachable") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
     ok(`S5 successor [measured] (§7.5 @ ${w}x${h}): ${both5 ? 'the two HANDS coexist in Revise - Desk and Counsel both stand open and DO NOT OVERLAP (the band holds the page and both at their minimum)' : 'the two HANDS TAKE TURNS in Revise - opening the Counsel closes the Desk (no room for both at their minimum)'}, and the open Counsel panel is reachable`,
       !!room5 && state.tutorOpen === 'true' && !!tutorPanel && state.sliverOpen === (both5 ? 'true' : 'false')
         && (!both5 || (!!sliverPanel && sliverPanel.r <= tutorPanel.l + 1)),

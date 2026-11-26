@@ -90,6 +90,11 @@ const pred2 = (g, which) => !!g && !!g.page && (which === 'tools'
   ? !!g.sTab && !!g.sPanel && near(g.sTab.right, g.page.left) && near(g.sPanel.right, g.sTab.left) && g.sPanel.width > 0
   : !!g.tTab && !!g.tPanel && near(g.tTab.left, g.page.right) && near(g.tPanel.left, g.tTab.right) && g.tPanel.width > 0);
 const pred4 = (gs) => gs.every((g) => !!g && sameRect(gs[0].page, g.page));
+// #133 (Nick, Nov 25; docs/rulings/store-pageScale.md §5): at 1600 and narrower one side panel stands at a time, and the Back menu lies over the page's
+// right margin, never its text; its tab leaves the page's edge and stands against the drawer. The originals below still run above 1600.
+const SMALL_W = 1600;
+const overTab = (g) => !!g && !!g.tTab && !!g.tPanel && (near(g.tTab.right, g.tPanel.left, 2) || near(g.tTab.left, g.tPanel.right, 2));
+const pred2over = (g) => !!g && !!g.page && !!g.stage && overTab(g) && g.tPanel.width >= 200 && g.tPanel.left >= g.page.right - g.page.width / 8.5 - 1 && g.tPanel.right <= g.stage.right + 1;
 // Wire In successor read (Flux, Nov 12): the stored per-page Typewriter value no longer zooms a Flux page - not zoomed, room for both drawers on each side
 const fluxNoZoom = (g) => !!g && !!g.page && !!g.stage && g.zoom === false && (g.page.left - g.stage.left) >= DRAWER_MIN && (g.stage.right - g.page.right) >= DRAWER_MIN;
 
@@ -135,20 +140,44 @@ await withHarness(async (app) => {
       await press(app, 'tutor'); const g2 = await app.evalJs(GEO);
       const both = roomL != null && roomL >= DRAWER_MIN && roomR >= DRAWER_MIN;
       // (3) at these sizes the room is measured; where it holds, both stand
-      ok(`${tag} 3: there is room for both (${Math.round(roomL)} / ${Math.round(roomR)}px beside the page, >= ${DRAWER_MIN}) and BOTH stand open`,
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
+      // ok(`${tag} 3: there is room for both (${Math.round(roomL)} / ${Math.round(roomR)}px beside the page, >= ${DRAWER_MIN}) and BOTH stand open`,
+      // both && !!g2 && g2.sOpen && g2.tOpen, J({ roomL, roomR, sOpen: g2 && g2.sOpen, tOpen: g2 && g2.tOpen }));
+        ok(`${tag} 3-133: one side panel at a time - opening the Tutor after the Tools closes the Tools`, !!g1 && g1.sOpen && !!g2 && g2.tOpen && !g2.sOpen, J({ afterTools: g1 && g1.sOpen, after: g2 && { sOpen: g2.sOpen, tOpen: g2.tOpen } }));
+      } else ok(`${tag} 3: there is room for both (${Math.round(roomL)} / ${Math.round(roomR)}px beside the page, >= ${DRAWER_MIN}) and BOTH stand open`,
         both && !!g2 && g2.sOpen && g2.tOpen, J({ roomL, roomR, sOpen: g2 && g2.sOpen, tOpen: g2 && g2.tOpen }));
       // (1) the tabs: Tools' tab across its open, the Tutor's across its own
       ok(`${tag} 1 (Tools): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g1 && g1.sOpen && pred1(g0, g1, 'tools'), J({ shut: g0 && [g0.sTab, g0.sArrow], open: g1 && [g1.sTab, g1.sArrow] }));
-      ok(`${tag} 1 (Tutor): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g2 && g2.tOpen && pred1(g1, g2, 'tutor'), J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tArrow] }));
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
+      // ok(`${tag} 1 (Tutor): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g2 && g2.tOpen && pred1(g1, g2, 'tutor'), J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tArrow] }));
+        ok(`${tag} 1-133 (Tutor): over the page the tab goes with its drawer - it stands against the drawer, at the same height, its arrow flipped`, !!g2 && g2.tOpen && overTab(g2) && near(g1.tTab.top, g2.tTab.top) && g1.tArrow !== g2.tArrow, J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tPanel, g2.tArrow] }));
+      } else ok(`${tag} 1 (Tutor): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g2 && g2.tOpen && pred1(g1, g2, 'tutor'), J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tArrow] }));
       // (2) the open drawers meet the page
-      ok(`${tag} 2 (Tools): the open drawer's page-side edge is the page's left edge - its tab on the page's edge, its panel against its tab`, pred2(g2, 'tools'),
-        J({ page: g2 && g2.page, tab: g2 && g2.sTab, panel: g2 && g2.sPanel }));
-      ok(`${tag} 2 (Tutor): the open drawer's page-side edge is the page's right edge - its tab on the page's edge, its panel against its tab (the mirror)`, pred2(g2, 'tutor'),
+      // #133: at 1600 and narrower the Tools has closed by g2, so the same predicate reads it open (g1)
+      const toolsOpen = w <= SMALL_W ? g1 : g2;
+      ok(`${tag} 2 (Tools): the open drawer's page-side edge is the page's left edge - its tab on the page's edge, its panel against its tab`, pred2(toolsOpen, 'tools'),
+        J({ page: toolsOpen && toolsOpen.page, tab: toolsOpen && toolsOpen.sTab, panel: toolsOpen && toolsOpen.sPanel }));
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
+      // ok(`${tag} 2 (Tutor): the open drawer's page-side edge is the page's right edge - its tab on the page's edge, its panel against its tab (the mirror)`, pred2(g2, 'tutor'),
+      // J({ page: g2 && g2.page, tab: g2 && g2.tTab, panel: g2 && g2.tPanel }));
+        ok(`${tag} 2-133 (Tutor): the open drawer lies over the page's margin, never its text, inside the stage, its tab against it`, pred2over(g2), J({ page: g2 && g2.page, tab: g2 && g2.tTab, panel: g2 && g2.tPanel }));
+      } else ok(`${tag} 2 (Tutor): the open drawer's page-side edge is the page's right edge - its tab on the page's edge, its panel against its tab (the mirror)`, pred2(g2, 'tutor'),
         J({ page: g2 && g2.page, tab: g2 && g2.tTab, panel: g2 && g2.tPanel }));
       // ...and closing: the tabs come back to the same rect, arrows back
       await press(app, 'tutor'); const g3 = await app.evalJs(GEO);
       await press(app, 'tools'); const g4 = await app.evalJs(GEO);
-      ok(`${tag} 1 (both, closing): each tab's rect is unchanged by closing its drawer, and its arrow flips back`,
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133: both never stand), the original verbatim:
+      // ok(`${tag} 1 (both, closing): each tab's rect is unchanged by closing its drawer, and its arrow flips back`,
+      // !!g3 && !!g4 && !g4.sOpen && !g4.tOpen && sameRect(g2.tTab, g3.tTab) && sameRect(g3.sTab, g4.sTab) && g4.sArrow === g0.sArrow && g4.tArrow === g0.tArrow,
+      // J({ tTab: [g2 && g2.tTab, g3 && g3.tTab], sTab: [g3 && g3.sTab, g4 && g4.sTab], arrows: [g4 && g4.sArrow, g4 && g4.tArrow] }));
+        ok(`${tag} 1-133 (closing): closing the Tutor puts its tab back on the page's edge; the Tools then opens alone from its own unmoved tab`,
+          !!g3 && !!g4 && !g3.tOpen && sameRect(g1.tTab, g3.tTab) && g3.tArrow === g0.tArrow && g4.sOpen && !g4.tOpen && sameRect(g1.sTab, g4.sTab), J({ tTab: [g1 && g1.tTab, g3 && g3.tTab], after: g4 && { sOpen: g4.sOpen, tOpen: g4.tOpen, sTab: g4.sTab } }));
+        await setOpen(app, 'tools', false);
+      } else ok(`${tag} 1 (both, closing): each tab's rect is unchanged by closing its drawer, and its arrow flips back`,
         !!g3 && !!g4 && !g4.sOpen && !g4.tOpen && sameRect(g2.tTab, g3.tTab) && sameRect(g3.sTab, g4.sTab) && g4.sArrow === g0.sArrow && g4.tArrow === g0.tArrow,
         J({ tTab: [g2 && g2.tTab, g3 && g3.tTab], sTab: [g3 && g3.sTab, g4 && g4.sTab], arrows: [g4 && g4.sArrow, g4 && g4.tArrow] }));
       // (4) the page, through all of it
@@ -187,13 +216,19 @@ await withHarness(async (app) => {
         await style(app, 'dm-m1', ".desk-frame-stage:has(.wz-tutor-panel[data-open='true']) .wz-tutor-grip{ transform: translateX(-32px) !important; }");
         const m0 = await app.evalJs(GEO); await press(app, 'tutor'); const m1 = await app.evalJs(GEO);
         await press(app, 'tutor'); await style(app, 'dm-m1', null);
-        ok(`MI1 (mutant): with the Tutor tab pushed left while open (LANDED: ${m0 && m1 && m0.tTab && m1.tTab ? Math.round(m0.tTab.left - m1.tTab.left) : '?'}px), 1 fails`,
-          !!m0 && !!m1 && m1.tOpen && m0.tTab && m1.tTab && m0.tTab.left - m1.tTab.left >= 30 && !pred1(m0, m1, 'tutor'), J({ m0: m0 && m0.tTab, m1: m1 && m1.tTab }));
+        // SUPERSEDED at 1366 (#133: the tab travels with a drawer over the page), the original verbatim:
+        // ok(`MI1 (mutant): with the Tutor tab pushed left while open (LANDED: ${m0 && m1 && m0.tTab && m1.tTab ? Math.round(m0.tTab.left - m1.tTab.left) : '?'}px), 1 fails`,
+        // !!m0 && !!m1 && m1.tOpen && m0.tTab && m1.tTab && m0.tTab.left - m1.tTab.left >= 30 && !pred1(m0, m1, 'tutor'), J({ m0: m0 && m0.tTab, m1: m1 && m1.tTab }));
+        ok(`MI1-133 (mutant): with the Tutor tab pushed left while open (LANDED: tab at ${m1 && m1.tTab ? m1.tTab.left : '?'}, drawer at ${m1 && m1.tPanel ? m1.tPanel.left : '?'}), 1-133 fails`,
+          !!m1 && m1.tOpen && !!m1.tTab && !!m1.tPanel && !overTab(m1), J({ tab: m1 && m1.tTab, panel: m1 && m1.tPanel }));
         // M2: the Tutor panel pushed 40px off the page
         await style(app, 'dm-m2', ".wz-tutor-panel[data-open='true']{ transform: translateX(40px) !important; }");
         await press(app, 'tutor'); const m2 = await app.evalJs(GEO); await press(app, 'tutor'); await style(app, 'dm-m2', null);
-        ok(`MI2 (mutant): with the Tutor panel pushed 40px off the page (LANDED: panel at ${m2 && m2.tPanel ? m2.tPanel.left : '?'}, page at ${m2 && m2.page ? m2.page.right : '?'}), 2 fails`,
-          !!m2 && m2.tOpen && !!m2.tPanel && !!m2.page && m2.tPanel.left - m2.page.right >= 38 && !pred2(m2, 'tutor'), J({ page: m2 && m2.page, tab: m2 && m2.tTab, panel: m2 && m2.tPanel }));
+        // SUPERSEDED at 1366 (#133), the original verbatim:
+        // ok(`MI2 (mutant): with the Tutor panel pushed 40px off the page (LANDED: panel at ${m2 && m2.tPanel ? m2.tPanel.left : '?'}, page at ${m2 && m2.page ? m2.page.right : '?'}), 2 fails`,
+        // !!m2 && m2.tOpen && !!m2.tPanel && !!m2.page && m2.tPanel.left - m2.page.right >= 38 && !pred2(m2, 'tutor'), J({ page: m2 && m2.page, tab: m2 && m2.tTab, panel: m2 && m2.tPanel }));
+        ok(`MI2-133 (mutant): with the Tutor panel pushed 40px off its tab (LANDED: panel at ${m2 && m2.tPanel ? m2.tPanel.left : '?'}), 2-133 fails`,
+          !!m2 && m2.tOpen && !!m2.tPanel && !pred2over(m2), J({ page: m2 && m2.page, tab: m2 && m2.tTab, panel: m2 && m2.tPanel }));
         // M4: the page nudged while the Tutor is open
         await style(app, 'dm-m4', ".desk-frame-stage--prose:has(.wz-tutor-panel[data-open='true']) .mode-page{ translate: 24px 0 !important; }");
         const n0 = await app.evalJs(GEO); await press(app, 'tutor'); const n1 = await app.evalJs(GEO); await press(app, 'tutor'); await style(app, 'dm-m4', null);
@@ -262,10 +297,15 @@ await withHarness(async (app) => {
         if (await app.evalJs(OPEN.tools)) await zCtrlSlash();
       } else {
         // SUCCESSOR (Flux): the stored Typewriter value does NOT zoom the page, so the room is the normal view's and both drawers open together
-        ok(`FX-WI 3 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed (${Math.round(zl)} / ${Math.round(zr)}px beside it, >= ${DRAWER_MIN}), so opening the Tutor after the Tools leaves BOTH open`,
-          fluxNoZoom(z0) && !!zs && zs.sOpen && !!zt && zt.tOpen && zt.sOpen, J({ zoom: z0 && z0.zoom, zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
-        ok(`FX-WI 1 (${th.name} 1366x768, stored Typewriter 'on' is inert): the Tutor tab's rect is unchanged by opening its drawer (it rides the page's edge, which has not moved)`,
-          !!zs && !!zt && pred1(zs, zt, 'tutor') && !!z0 && sameRect(z0.page, zt.page), J({ shut: zs && zs.tTab, open: zt && zt.tTab, page0: z0 && z0.page, pageOpen: zt && zt.page }));
+        // SUPERSEDED (#133: one side panel at a time at 1366), the originals verbatim:
+        // ok(`FX-WI 3 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed (${Math.round(zl)} / ${Math.round(zr)}px beside it, >= ${DRAWER_MIN}), so opening the Tutor after the Tools leaves BOTH open`,
+        // fluxNoZoom(z0) && !!zs && zs.sOpen && !!zt && zt.tOpen && zt.sOpen, J({ zoom: z0 && z0.zoom, zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+        // ok(`FX-WI 1 (${th.name} 1366x768, stored Typewriter 'on' is inert): the Tutor tab's rect is unchanged by opening its drawer (it rides the page's edge, which has not moved)`,
+        // !!zs && !!zt && pred1(zs, zt, 'tutor') && !!z0 && sameRect(z0.page, zt.page), J({ shut: zs && zs.tTab, open: zt && zt.tTab, page0: z0 && z0.page, pageOpen: zt && zt.page }));
+        ok(`FX-WI 3-133 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed, and opening the Tutor after the Tools leaves the Tutor alone`,
+          fluxNoZoom(z0) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zoom: z0 && z0.zoom, zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
+        ok(`FX-WI 1-133 (${th.name} 1366x768): the Tutor tab goes with its drawer over the page, which has not moved`,
+          !!zs && !!zt && overTab(zt) && !!z0 && sameRect(z0.page, zt.page), J({ tab: zt && zt.tTab, panel: zt && zt.tPanel, page0: z0 && z0.page, pageOpen: zt && zt.page }));
         // MUTANT for FX-WI 3 (the old behaviour comes back: the page zoomed 1.6x, data-zoom on) - the SAME fluxNoZoom read goes red; asserted LANDED
         await setOpen(app, 'tutor', false); await setOpen(app, 'tools', false);
         const zPrev = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom')");
