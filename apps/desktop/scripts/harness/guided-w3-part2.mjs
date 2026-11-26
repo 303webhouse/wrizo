@@ -102,11 +102,17 @@ await withHarness(async (app) => {
         ok(`[${T}] Esc closes the popover and RETURNS focus to the "?"`, afterEsc.gone && afterEsc.focusOnGlyph, JSON.stringify(afterEsc));
 
         // MORE: stages an ask in the Tutor's composer and sends nothing
-        await q("window.__tutorCalls = 0; const f = window.fetch; window.fetch = function (u) { try { if (/tutor|chat/i.test(String(u && u.url || u))) window.__tutorCalls += 1; } catch (e) {} return f.apply(this, arguments); };");
+        // SUPERSEDED (L9, the Tutor's notes on file: opening the drawer now READS the notes, GET /api/tutor/notes, which the old count of every /tutor|chat/ request took for a send); original, verbatim:
+        //   await q("window.__tutorCalls = 0; const f = window.fetch; window.fetch = function (u) { try { if (/tutor|chat/i.test(String(u && u.url || u))) window.__tutorCalls += 1; } catch (e) {} return f.apply(this, arguments); };");
+        //   ... calls: window.__tutorCalls ... staged.calls === 0
+        // Now every such request is recorded with its method and whether it carries a body. "Sends nothing" = none of them is anything but a bodyless GET of the notes.
+        await q(`window.__tutorCalls = []; const f = window.fetch; window.fetch = function (u, o) { try { const url = String(u && u.url || u); if (/tutor|chat/i.test(url)) window.__tutorCalls.push({ m: String((o && o.method) || (u && u.method) || 'GET').toUpperCase(), u: url, b: !!(o && o.body) }); } catch (e) {} return f.apply(this, arguments); };`);
         await click('.board-box .board-step-help');
         await click('.board-step-pop-more'); await sleep(700);
         const staged = await q("({ popGone: !document.querySelector('.board-step-pop'), open: document.querySelector('.wz-tutor-panel')?.getAttribute('data-open') === 'true', value: document.querySelector('.wz-tutor-convo-input')?.value, calls: window.__tutorCalls, focus: document.activeElement && document.activeElement.classList.contains('wz-tutor-convo-input') })");
-        ok(`[${T}] "more" STAGES "What does Hook do?" in the Tutor composer (drawer opened, caret there) and sends NOTHING`, staged.popGone && staged.open && staged.value === 'What does Hook do?' && staged.calls === 0, JSON.stringify(staged));
+        const sent = (staged.calls || []).filter((c) => !(c.m === 'GET' && c.u.endsWith('/api/tutor/notes') && !c.b));
+        ok(`[${T}] "more" STAGES "What does Hook do?" in the Tutor composer (drawer opened, caret there) and sends NOTHING`, staged.popGone && staged.open && staged.value === 'What does Hook do?' && Array.isArray(staged.calls) && sent.length === 0, JSON.stringify(staged));
+        console.log(`      [${T}] tutor requests seen after "more": ${JSON.stringify(staged.calls)}`);
         await app.key('Escape'); await sleep(300);
 
         // THE FIRST KEYSTROKE hides the question; deleting the words brings it back
