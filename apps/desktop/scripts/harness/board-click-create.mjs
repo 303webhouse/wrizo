@@ -75,10 +75,24 @@ const pins = (text) => ({
     boardOnly: !/\n\.wz-beginning\{[^}]*opacity:\.4/.test(c),
   });
   const l3 = look3(css);
-  ok('S3 [law-3 successor]: the board\'s starters are a thin outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a hairline outline that never takes the pointer - and the look is scoped to the BOARD row',
-    Object.values(l3).every(Boolean), JSON.stringify(l3));
-  const mut3 = css.replace(/(\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor;[^}]*?)opacity:\.4;/, '$1opacity:1;');
-  ok('S3 [law-3 successor] (mutant): a full-opacity starter turns the pin RED (the mutation landed)', mut3 !== css && !look3(mut3).starter, '');
+  // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the 40% is the outline's alone now; the words and icons are solid. The originals, verbatim:
+  //  ok('S3 [law-3 successor]: the board\'s starters are a thin outline at about 40% opacity (lifted on hover and keyboard focus), they fade away with opacity first and visibility after, the ghost is a hairline outline that never takes the pointer - and the look is scoped to the BOARD row',
+  //    Object.values(l3).every(Boolean), JSON.stringify(l3));
+  //  const mut3 = css.replace(/(\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid currentColor;[^}]*?)opacity:\.4;/, '$1opacity:1;');
+  //  ok('S3 [law-3 successor] (mutant): a full-opacity starter turns the pin RED (the mutation landed)', mut3 !== css && !look3(mut3).starter, '');
+  void l3;
+  const look136 = (c) => ({
+    starter: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning\{\n\s*border:1px solid color-mix\(in srgb, currentColor 40%, transparent\);[^}]*?opacity:1;/.test(c),
+    lift: /\.wz-beginnings\[data-beginnings='board'\] \.wz-beginning:focus-visible\{ border-color:currentColor; \}/.test(c),
+    faded: look3(c).faded,
+    ghost: look3(c).ghost,
+    boardOnly: look3(c).boardOnly,
+  });
+  const l136 = look136(css);
+  ok('S3 [#136 successor]: the board\'s starters are a thin outline at about 40% (lifted to full on hover and keyboard focus) round solid words, they fade away with opacity first and visibility after, the ghost is a hairline outline that never takes the pointer - and the look is scoped to the BOARD row',
+    Object.values(l136).every(Boolean), JSON.stringify(l136));
+  const mut136 = css.replace('border:1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius:0; opacity:1;', 'border:1px solid currentColor; border-radius:0; opacity:.4;');
+  ok('S3 [#136 successor] (mutant): the old 40% starter turns the pin RED (the mutation landed)', mut136 !== css && !look136(mut136).starter, '');
 }
 
 // every element that has any area above the canvas's top edge (the header strip and whatever overlays it), as a sorted descriptor list - selecting a card must not add to it

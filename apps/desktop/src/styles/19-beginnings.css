@@ -31,18 +31,23 @@
 .wz-beginnings.wz-beginnings--faded{ opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s; }
 /* BOARD CLICK-TO-CREATE - the ghost that follows the pointer while a card is being sized (functional default; the look follows the mockup). Never takes the pointer. */
 .board-create-ghost{ position:absolute; box-sizing:border-box; border:1px solid var(--accent-door); background:none; opacity:.7; pointer-events:none; z-index:50; border-radius:0; }
-/* the empty board's starters: a thin square outline at about 40% opacity, lifted by hover and focus, fading on the first press (--faded); the board row only; the outline takes currentColor, so it reads on whatever paper the theme lays [beginnings §4] */
+/* the empty board's starters: a thin square outline at about 40%, lifted to full by hover and focus, fading on the first press (--faded); the board row only; the outline takes currentColor [beginnings §4]
+   #136 (Fable, Nov 25): the 40% is the OUTLINE's alone. At 40% opacity the words and icons read 1.4 to 2.6:1 on every theme's Board; they are drawn solid now */
 .wz-beginnings[data-beginnings='board'] .wz-beginning{
-  border:1px solid currentColor; border-radius:0; opacity:.4; padding:12px 18px;
-  transition:color .18s ease, opacity .18s ease;
+  border:1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius:0; opacity:1; padding:12px 18px;
+  transition:color .18s ease, border-color .18s ease;
 }
 .wz-beginnings[data-beginnings='board'] .wz-beginning:hover,
-.wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ opacity:.9; }
-/* #136 - MACHINA'S LIGHT BOARD: at 40% the starters read 1.4 to 1.8:1. There the words and icons are drawn solid (the door's steel, over 4.5:1 on the white paper, in either room) and only the thin outline
-   stays at 40%; hover and focus still lift the outline to full and take brass (board-starters-contrast.mjs) [beginnings §4] */
-:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning{ opacity:1; border-color:color-mix(in srgb, currentColor 40%, transparent); }
+.wz-beginnings[data-beginnings='board'] .wz-beginning:focus-visible{ border-color:currentColor; }
+/* the resting words where the door token misses the theme's Board ground (board-starters-contrast.mjs): Machina by page tone, Flux on its dark Board in both */
 :root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:not(:hover):not(:focus-visible):not(:active){ color:#3F6183; }
-:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:is(:hover, :focus-visible){ border-color:currentColor; }
+:root[data-theme='machina'][data-page='dark'] .wz-beginnings[data-beginnings='board'] .wz-beginning:not(:hover):not(:focus-visible):not(:active){ color:#8FA3B8; }
+:root[data-theme='flux'] .wz-beginnings[data-beginnings='board'] .wz-beginning:not(:hover):not(:focus-visible):not(:active){ color:#57D0F5; }
+/* brass read about 2:1 on a light Board (Arbor's, and Machina's light page): a deeper brass there, deeper again on the press */
+:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:is(:hover, :focus-visible),
+:root[data-arbor2][data-theme='plateau'] .wz-beginnings[data-beginnings='board'] .wz-beginning:is(:hover, :focus-visible){ color:#A84E00; }
+:root[data-theme='machina'][data-page='light'] .wz-beginnings[data-beginnings='board'] .wz-beginning:active,
+:root[data-arbor2][data-theme='plateau'] .wz-beginnings[data-beginnings='board'] .wz-beginning:active{ color:#8A3F00; }
 
 @media (prefers-reduced-motion:reduce){ .wz-beginning{ transition:none; } }
 
