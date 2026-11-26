@@ -1,0 +1,12 @@
+/* QUICK PRESET (PRESETS-B item 14, Nov 25; reorg/DocKindMenu.tsx; the words are PROPOSED). The top row of the PARTS menu's Presets list opens this small form IN PLACE, inside the drawer's own menu (the page never moves). Theme-neutral: only the tokens the menu's own
+   rows already wear (--text-hi, --text-low, --ink-border-strong, --font-ui), no colour of its own, square, no shadow, no motion. */
+.reorg-dockind-quick{ box-sizing:border-box; min-width:0; max-width:100%; display:flex; flex-direction:column; gap:6px; padding:6px 12px 8px 0; font-family:var(--font-ui); font-size:12px; color:var(--text-hi); }
+.reorg-dockind-quick-label{ color:var(--text-hi); }
+.reorg-dockind-quick-field{ box-sizing:border-box; width:100%; min-height:4.6em; resize:vertical; padding:6px 8px; font:inherit; color:var(--text-hi); background:transparent; border:1px solid var(--ink-border-strong); border-radius:0; box-shadow:none; }
+.reorg-dockind-quick-field::placeholder{ color:var(--text-low); opacity:1; }
+.reorg-dockind-quick-field:focus-visible{ outline:2px solid currentColor; outline-offset:1px; }
+.reorg-dockind-quick-note{ color:var(--text-low); font-size:11px; }
+.reorg-dockind-quick-act{ display:flex; flex-wrap:wrap; gap:6px; }
+.reorg-dockind-quick-act button{ padding:4px 8px; font:inherit; color:var(--text-hi); background:none; border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer; }
+.reorg-dockind-quick-act button:disabled{ color:var(--text-low); cursor:default; }
+.reorg-dockind-quick-act button:focus-visible{ outline:2px solid currentColor; outline-offset:1px; }
