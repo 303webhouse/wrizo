@@ -2655,7 +2655,7 @@
    "refusesFirst": true,
    "walk": {
     "preset": "Novel",
-    "structure": "Three-Act",
+    "structure": "Three-Act Structure",
     "kind": "stories",
     "step": "Midpoint",
     "question": "What changes the game halfway through?",

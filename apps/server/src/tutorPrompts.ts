@@ -196,7 +196,7 @@ Speak to the writer as "you", never as "she" or "her".
 - Asked to use her own story or argument as the example: say no in one sentence, to the
   writer. Pattern: "The aid's examples come from published works, not from your story."
 - About 90 words. End with one question she can answer, then the "Read:" line, in this
-  form: "Read: Climax (Three-Act), your note for this step". Name only what was sent.`;
+  form: "Read: Climax (Three-Act Structure), your note for this step". Name only what was sent.`;
 
 // THE FOUR QUESTIONS (the spec: "from a template, never from the AI"). The app draws them; the one she presses is sent as her own words. PRESETS-B copies this.
 export type WalkKind = 'stories' | 'essays' | 'arguments' | 'papers' | 'scripts';
@@ -218,17 +218,52 @@ const pluralStep = (name: string): string => {
   if (/(ss|x|z|ch|sh)$/i.test(name)) return `${name}es`;
   return /s$/i.test(name) ? name : `${name}s`;
 };
+// 27 step names read badly under the rule ("Show me Road Backs", "Theme Stateds"), so they have their own wording (Fable, Nov 26: TUTOR-B's table; the Wrizors may change words later). Each: what "What does ___ do"
+// takes, and what "Show me ___" takes. Keyed by the row's own name, lower case and without "The": a row she renames is not here and follows the rule. A Map, so no name of hers can reach an object's own word.
+export const WALK_STEP_FORMS: ReadonlyMap<string, readonly [string, string]> = new Map<string, readonly [string, string]>([
+  ['question at issue', ['the Question at Issue', 'questions at issue']],
+  ['call to adventure', ['the Call to Adventure', 'Calls to Adventure']],
+  ['refusal of the call', ['the Refusal of the Call', 'Refusals of the Call']],
+  ['meeting the mentor', ['Meeting the Mentor', 'scenes of Meeting the Mentor']],
+  ['crossing the threshold', ['Crossing the Threshold', 'scenes of Crossing the Threshold']],
+  ['approach to the inmost cave', ['the Approach to the Inmost Cave', 'Approaches to the Inmost Cave']],
+  ['road back', ['the Road Back', 'examples of the Road Back']],
+  ['return with the elixir', ['the Return with the Elixir', 'Returns with the Elixir']],
+  ['you', ['the "You" step', '"You" steps']],
+  ['go', ['the "Go" step', '"Go" steps']],
+  ['return or fall', ['the Return or Fall', 'examples of the Return or Fall']],
+  ['catastrophe or resolution', ['the Catastrophe or Resolution', 'Catastrophes or Resolutions']],
+  ['theme stated', ['the Theme Stated beat', 'Theme Stated beats']],
+  ['break into two', ['the Break into Two', 'Breaks into Two']],
+  ['break into three', ['the Break into Three', 'Breaks into Three']],
+  ['bad guys close in', ['the "Bad Guys Close In" beat', '"Bad Guys Close In" beats']],
+  ['all is lost', ['the All Is Lost moment', 'All Is Lost moments']],
+  ['dark night of the soul', ['the Dark Night of the Soul', 'Dark Nights of the Soul']],
+  ["where they're right", ['"Where They\'re Right"', '"Where They\'re Right" parts']],
+  ['establish the territory', ['the "Establish the Territory" move', '"Establish the Territory" moves']],
+  ['establish the niche', ['the "Establish the Niche" move', '"Establish the Niche" moves']],
+  ['occupy the niche', ['the "Occupy the Niche" move', '"Occupy the Niche" moves']],
+  ['most important', ['the "Most Important" part', '"Most Important" parts']],
+  ['next', ['the "Next" part', '"Next" parts']],
+  ['support 1', ['Support 1', 'supporting points']],
+  ['support 2', ['Support 2', 'supporting points']],
+  ['support 3', ['Support 3', 'supporting points']],
+]);
+const stepForm = (name: string): readonly [string, string] | undefined => WALK_STEP_FORMS.get(bareStep(name).toLowerCase().replace(/’/g, "'"));
 export interface WalkQuestionInput { step: string; structure: string; kind: WalkKind; next?: string; previous?: string }
 export function walkQuestions({ step, structure, kind, next, previous }: WalkQuestionInput): string[] {
   const name = bareStep(step);
-  const many = isPluralStep(name);
+  const form = stepForm(step);
+  const many = !form && isPluralStep(name);
   const article = /^the\s+/i.test(step.trim()) ? 'the ' : many ? '' : /^[aeiou]/i.test(name) ? 'an ' : 'a ';
+  const subject = form ? form[0] : `${article}${name}`;
   const other = next || previous;   // the last step is compared with the one before it
+  const compared = other ? (stepForm(other)?.[0] ?? `the ${bareStep(other)}`) : '';
   return [
-    `What ${many ? 'do' : 'does'} ${article}${name} do in ${structure}?`,
-    `Show me ${pluralStep(name)} in well-known ${kind}`,
-    ...(other ? [`How ${many ? 'are' : 'is'} ${article}${name} different from the ${bareStep(other)}?`] : []),
-    `Ask me questions about my ${name}`,
+    `What ${many ? 'do' : 'does'} ${subject} do in ${structure}?`,
+    `Show me ${form ? form[1] : pluralStep(name)} in well-known ${kind}`,
+    ...(other ? [`How ${many ? 'are' : 'is'} ${subject} different from ${compared}?`] : []),
+    `Ask me questions about my ${form ? form[0].replace(/^the /, '') : name}`,
   ];
 }
 

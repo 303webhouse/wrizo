@@ -939,7 +939,7 @@
    "replies": [
     {
      "variant": null,
-     "reply": "The aid does not use your story as an example.\nWhat does the find under the floor change about what she wants?\nRead: Midpoint (Three-Act), your note for this step",
+     "reply": "The aid does not use your story as an example.\nWhat does the find under the floor change about what she wants?\nRead: Midpoint (Three-Act Structure), your note for this step",
      "usage": {
       "input": 0,
       "output": 0
@@ -959,7 +959,7 @@
    "replies": [
     {
      "variant": null,
-     "reply": "A Midpoint changes what the goal means.\nExample: The ledger under the kiln floor turns a sale into a question.\nWhat does she want now?\nRead: Midpoint (Three-Act), your note for this step",
+     "reply": "A Midpoint changes what the goal means.\nExample: The ledger under the kiln floor turns a sale into a question.\nWhat does she want now?\nRead: Midpoint (Three-Act Structure), your note for this step",
      "usage": {
       "input": 0,
       "output": 0
@@ -978,7 +978,7 @@
    "replies": [
     {
      "variant": null,
-     "reply": "Not her story as the example.\nWhat does she find, and what can she now do?\nRead: Midpoint (Three-Act), your note for this step",
+     "reply": "Not her story as the example.\nWhat does she find, and what can she now do?\nRead: Midpoint (Three-Act Structure), your note for this step",
      "usage": {
       "input": 0,
       "output": 0
