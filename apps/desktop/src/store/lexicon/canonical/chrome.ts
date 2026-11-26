@@ -1462,4 +1462,9 @@ export const CANONICAL_CHROME = {
   mobileSignIn: 'Sign In',
   mobileDocNoBoard: 'This Doc has no Board yet',
   mobileLeaveUnfiled: 'Leave It Unfiled',
+  mobileDoc: 'Doc',
+  mobileBoard: 'Board',
+  mobileCard: 'Card',
+  mobileTitleHint: 'A title (optional)',
+  mobileTitle: 'Title',
 } satisfies Partial<Record<DeskTermId, string>>;

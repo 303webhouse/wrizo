@@ -18,6 +18,7 @@ import { whoIsHere, type Who } from './session';
 import { sendWaiting, waitingNotes, writeNote } from './sendNote';
 import { ACCOUNT_POINTER_KEY, type WaitingNote, type NoteTarget } from './noteQueue';
 import { findMobileBoard } from './mobileBoard';
+import { noteText } from './noteText';
 import { allBoardLines, assetsView, boardName, docLines, docView, findLines, pinnedLines, placesFor, planView, projectContents, projectLines, unfiledLines, type AssetList, type Line } from './shelf';
 
 type T = (term: DeskTermId) => string;
@@ -142,8 +143,12 @@ export function Companion(): ReactNode {
 function Back({ t }: { t: T }): ReactNode {
   return <button type="button" className="mc-back" onClick={() => (window.history.length > 1 ? window.history.back() : go('desk'))}>{t('mobileBack')}</button>;
 }
-function Rows({ rows, to }: { rows: Array<{ id: string; name: string }>; to: (id: string) => string[] }): ReactNode {
-  return <ul className="mc-list">{rows.map((r) => <li key={r.id}><button type="button" className="mc-row" data-row={r.id} onClick={() => go(...to(r.id))}>{r.name}</button></li>)}</ul>;
+/** A row's words: its name, and under it what it is, where a list holds more than one kind (the test version's labels). */
+function Named({ name, kind }: { name: string; kind?: string }): ReactNode {
+  return <><span className="mc-name">{name}</span>{kind && <span className="mc-where">{kind}</span>}</>;
+}
+function Rows({ rows, to, kind }: { rows: Array<{ id: string; name: string }>; to: (id: string) => string[]; kind?: string }): ReactNode {
+  return <ul className="mc-list">{rows.map((r) => <li key={r.id}><button type="button" className="mc-row" data-row={r.id} onClick={() => go(...to(r.id))}><Named name={r.name} kind={kind} /></button></li>)}</ul>;
 }
 const toDoc = (id: string) => ['doc', id, 'read'];
 const toBoard = (id: string) => ['board', id, 'wall'];
@@ -157,8 +162,8 @@ function Desk({ t, words, waiting, rail }: { t: T; words: Words; waiting: Waitin
   const mobile = findMobileBoard();
   const pinned = pinnedLines(rail, words.notebook, words.root);
   const recent = [
-    ...docLines(words.untitled).map((d) => ({ ...d, to: toDoc(d.id) })),
-    ...allBoardLines(words.untitled).filter((b) => b.id !== mobile).map((b) => ({ ...b, to: toBoard(b.id) })),
+    ...docLines(words.untitled).map((d) => ({ ...d, to: toDoc(d.id), kind: t('mobileDoc') })),
+    ...allBoardLines(words.untitled).filter((b) => b.id !== mobile).map((b) => ({ ...b, to: toBoard(b.id), kind: t('mobileBoard') })),
   ].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 8);
   return (
     <>
@@ -172,8 +177,8 @@ function Desk({ t, words, waiting, rail }: { t: T; words: Words; waiting: Waitin
       {pinned.length > 0 && <Section title={t('mobilePinned')}><Rows rows={pinned} to={toProject} /></Section>}
       <Section title={t('mobileRecent')}>
         <ul className="mc-list">
-          {recent.map((r) => <li key={r.id}><button type="button" className="mc-row" data-row={r.id} onClick={() => go(...r.to)}>{r.name}</button></li>)}
-          {mobile && <li><button type="button" className="mc-row" data-mobile-board onClick={() => go('board', mobile, 'wall')}>{t('mobileMobile')}</button></li>}
+          {recent.map((r) => <li key={r.id}><button type="button" className="mc-row" data-row={r.id} onClick={() => go(...r.to)}><Named name={r.name} kind={r.kind} /></button></li>)}
+          {mobile && <li><button type="button" className="mc-row" data-mobile-board onClick={() => go('board', mobile, 'wall')}><Named name={t('mobileMobile')} kind={t('mobileBoard')} /></button></li>}
         </ul>
         {recent.length === 0 && !mobile && <p className="mc-dim">{t('mobileNothingHere')}</p>}
       </Section>
@@ -235,12 +240,13 @@ function ProjectScreen({ t, words, id }: { t: T; words: Words; id: string }): Re
 
 function Find({ t, words, q }: { t: T; words: Words; q: string }): ReactNode {
   const hits = useMemo(() => findLines(q, words.untitled), [q, words.untitled]);
+  const kinds: Record<'doc' | 'board' | 'card', DeskTermId> = { doc: 'mobileDoc', board: 'mobileBoard', card: 'mobileCard' };
   return (
     <>
       <Back t={t} />
       <h1 className="mc-h">{t('mobileFind')}: {q}</h1>
       <ul className="mc-list">{hits.map((h) => (
-        <li key={h.key}><button type="button" className="mc-row" onClick={() => go(...h.to)}>{h.label}{h.where && <span className="mc-where">{h.where}</span>}</button></li>
+        <li key={h.key}><button type="button" className="mc-row" onClick={() => go(...h.to)}><Named name={h.label} kind={[t(kinds[h.kind]), h.where].filter(Boolean).join(' · ')} /></button></li>
       ))}</ul>
       {hits.length === 0 && <p className="mc-dim">{t('mobileNoResults')}</p>}
     </>
@@ -309,9 +315,9 @@ function Assets({ t, words, doc, part }: { t: T; words: Words; doc: string; part
   const filters: Array<['all' | 'cards' | 'boards', DeskTermId]> = [['all', 'mobileAll'], ['cards', 'mobileCards'], ['boards', 'mobileBoards']];
   const list = (a: AssetList): ReactNode => (
     <>
-      {show !== 'cards' && <Rows rows={a.boards} to={toBoard} />}
-      {show !== 'boards' && <ul className="mc-list">{a.cards.map((c) => <li key={c.key}><button type="button" className="mc-row mc-asset" onClick={() => go('card', c.boardId, c.boxId)}>{c.name}</button></li>)}</ul>}
-      {show === 'all' && <Rows rows={a.pages} to={toDoc} />}
+      {show !== 'cards' && <Rows rows={a.boards} to={toBoard} kind={t('mobileBoard')} />}
+      {show !== 'boards' && <ul className="mc-list">{a.cards.map((c) => <li key={c.key}><button type="button" className="mc-row mc-asset" onClick={() => go('card', c.boardId, c.boxId)}><Named name={c.name} kind={t('mobileCard')} /></button></li>)}</ul>}
+      {show === 'all' && <Rows rows={a.pages} to={toDoc} kind={t('mobileDoc')} />}
     </>
   );
   const count = (a: AssetList): number => (show !== 'cards' ? a.boards.length : 0) + (show !== 'boards' ? a.cards.length : 0) + (show === 'all' ? a.pages.length : 0);
@@ -370,6 +376,8 @@ let lastPlace: NoteTarget | null = null;   // kept in memory only: nothing new i
 
 function AddSheet({ t, words, defaultBoard, onClose, onSent }: { t: T; words: Words; defaultBoard: string | null; onClose: () => void; onSent: () => void }): ReactNode {
   const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
+  const body = useRef<HTMLTextAreaElement | null>(null);
   const [place, setPlace] = useState<NoteTarget>(defaultBoard ? { kind: 'board', id: defaultBoard } : lastPlace && (lastPlace.kind !== 'board' || getJournalEntry(lastPlace.id)) ? lastPlace : { kind: 'unfiled' });
   const [choosing, setChoosing] = useState(false);
   const [notKept, setNotKept] = useState(false);
@@ -387,17 +395,20 @@ function AddSheet({ t, words, defaultBoard, onClose, onSent }: { t: T; words: Wo
   };
   const nameOf = (id: string) => boardName(getJournalEntry(id), words.untitled);
   const placeName = place.kind !== 'board' || place.id === mobile ? t('mobileMobile') : nameOf(place.id);
+  const note = noteText(title, text);
   const send = () => {
-    if (!text.trim() || sent.current) return;
+    if (!note.trim() || sent.current) return;
     sent.current = true;   // two taps on Send are one note
-    if (writeNote(text, place)) { lastPlace = place.kind === 'board' && place.id !== mobile ? place : null; onSent(); } else { sent.current = false; setNotKept(true); }   // not kept: her words stay on the screen
+    if (writeNote(note, place)) { lastPlace = place.kind === 'board' && place.id !== mobile ? place : null; onSent(); } else { sent.current = false; setNotKept(true); }   // not kept: her words stay on the screen
   };
   const boardRow = (id: string) => <li key={id}><button type="button" className="mc-row" data-place={id} aria-pressed={place.kind === 'board' && place.id === id} onClick={() => choose({ kind: 'board', id })}>{nameOf(id)}</button></li>;
   return (
     <div className="mc-sheet" role="dialog" aria-modal="true" aria-label={t('mobileNote')} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
       <div className="mc-sheet-in">
         <label className="mc-label" htmlFor="mc-note">{t('mobileNote')}</label>
-        <textarea id="mc-note" className="mc-text" rows={5} value={text} onChange={(e) => setText(e.target.value)} autoFocus aria-label={t('mobileNoteLabel')} />
+        <input id="mc-title" type="text" className="mc-title" value={title} placeholder={t('mobileTitleHint')} aria-label={t('mobileTitle')} enterKeyHint="next" autoComplete="off"
+          onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); body.current?.focus(); } }} />
+        <textarea ref={body} id="mc-note" className="mc-text" rows={5} value={text} onChange={(e) => setText(e.target.value)} autoFocus aria-label={t('mobileNoteLabel')} />
         <div className="mc-sendto">
           <span>{t('mobileSendTo')}: <strong data-send-to>{placeName}</strong></span>
           <button type="button" className="mc-link" data-change onClick={() => { setInDoc(null); setChoosing((c) => !c); }}>{t('mobileChange')}</button>
@@ -431,7 +442,7 @@ function AddSheet({ t, words, defaultBoard, onClose, onSent }: { t: T; words: Wo
         {notKept && <p role="alert">{t('mobileNotKept')}</p>}
         <div className="mc-actions">
           <button type="button" className="mc-btn" data-sheet-back onClick={onClose}>{t('mobileBack')}</button>
-          <button type="button" className="mc-btn mc-primary" data-send disabled={!text.trim()} onClick={send}>{t('mobileSend')}</button>
+          <button type="button" className="mc-btn mc-primary" data-send disabled={!note.trim()} onClick={send}>{t('mobileSend')}</button>
         </div>
       </div>
     </div>

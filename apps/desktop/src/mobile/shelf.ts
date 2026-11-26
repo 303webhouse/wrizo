@@ -85,7 +85,7 @@ export function pinnedLines(rail: unknown, notebook: string, root: string): Proj
 
 const cardLine = (b: Box): string => (b.kind === 'text' ? b.text ?? '' : b.kind === 'page-pin' && b.entryId ? titleOfText(getJournalEntry(b.entryId)?.text) : '');
 
-export interface Found { key: string; label: string; where: string; to: string[] }
+export interface Found { key: string; kind: 'doc' | 'board' | 'card'; label: string; where: string; to: string[] }
 /** Find reaches a word across her Docs (names and every Part) and her cards (on any Board, a plan face too). Never anything deleted, never a system Board. */
 export function findLines(q: string, untitled: string): Found[] {
   const needle = q.trim().toLowerCase();
@@ -101,14 +101,14 @@ export function findLines(q: string, untitled: string): Found[] {
     const name = docLine(row, untitled).name;
     const inParts = row.parts.filter((p) => has(p.text));
     // a Doc found by its name alone is listed once; one found in its words is listed by those Parts (a loose page is named by its own first line, so it would otherwise be listed twice)
-    if (inParts.length === 0 && has(name)) out.push({ key: 'd' + row.lead.id, label: name, where: '', to: ['doc', row.lead.id, 'read', row.lead.id] });
-    for (const p of inParts) out.push({ key: 'p' + p.id, label: name, where: snippet(p.text), to: ['doc', row.lead.id, 'read', p.id] });
+    if (inParts.length === 0 && has(name)) out.push({ key: 'd' + row.lead.id, kind: 'doc', label: name, where: '', to: ['doc', row.lead.id, 'read', row.lead.id] });
+    for (const p of inParts) out.push({ key: 'p' + p.id, kind: 'doc', label: name, where: snippet(p.text), to: ['doc', row.lead.id, 'read', p.id] });
   }
   for (const e of getJournalEntries()) {
     if (e.pageType !== 'board' || !live(e) || e.origin === 'system' || getSystemKind(e)) continue;
     const name = boardName(e, untitled);
-    if (!isPairedPlanBoard(e.id) && has(e.text)) out.push({ key: 'b' + e.id, label: name, where: '', to: ['board', e.id, 'wall'] });
-    for (const c of liveBoxes(e.boxes)) if (c.kind === 'text' && has(c.text)) out.push({ key: 'c' + e.id + c.id, label: snippet(c.text ?? ''), where: isPairedPlanBoard(e.id) ? '' : name, to: ['card', e.id, c.id] });
+    if (!isPairedPlanBoard(e.id) && has(e.text)) out.push({ key: 'b' + e.id, kind: 'board', label: name, where: '', to: ['board', e.id, 'wall'] });
+    for (const c of liveBoxes(e.boxes)) if (c.kind === 'text' && has(c.text)) out.push({ key: 'c' + e.id + c.id, kind: 'card', label: snippet(c.text ?? ''), where: isPairedPlanBoard(e.id) ? '' : name, to: ['card', e.id, c.id] });
   }
   return out.slice(0, 80);
 }

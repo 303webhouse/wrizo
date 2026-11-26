@@ -893,5 +893,10 @@ export type DeskTermId =
   | 'mobileSignIn'
   | 'mobileDocNoBoard'
   | 'mobileLeaveUnfiled'
+  | 'mobileDoc'
+  | 'mobileBoard'
+  | 'mobileCard'
+  | 'mobileTitleHint'
+  | 'mobileTitle'
   | 'helpWhyFeatureStoryInvestigative';
 

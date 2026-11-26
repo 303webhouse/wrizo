@@ -44,6 +44,8 @@ ul.mc-list > li > .mc-card { margin-bottom: 8px; }
 .mc-sheet { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); display: flex; align-items: flex-end; z-index: 10; }
 .mc-sheet-in { background: var(--mc-bg); width: 100%; box-sizing: border-box; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 14px 14px 0 0; max-height: 90dvh; overflow-y: auto; }
 .mc-label { display: block; font-weight: 600; margin-bottom: 6px; }
+.mc-name { display: block; }
+.mc-title { width: 100%; box-sizing: border-box; min-height: 48px; margin-bottom: 8px; font: inherit; color: inherit; background: var(--mc-card); border: 1px solid var(--mc-line); border-radius: 8px; padding: 0 10px; }
 .mc-text { width: 100%; box-sizing: border-box; font: inherit; color: inherit; background: var(--mc-card); border: 1px solid var(--mc-line); border-radius: 8px; padding: 10px; }
 .mc-sendto { display: flex; align-items: center; justify-content: space-between; min-height: 48px; }
 .mc-actions { display: flex; justify-content: flex-end; }
