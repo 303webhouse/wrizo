@@ -893,6 +893,79 @@
      }
     }
    ]
+  },
+  {
+   "id": "W1",
+   "note": "the walk: it says it knows no well-known work with this shape, and gives no example",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "No well-known story is known to be built as Five Lanterns, so there is none to show. In this shape the second light shows something the first one hid.\nWhat does your second light fall on?\nRead: Second Lantern (Five Lanterns), your note for this step",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "W1",
+   "note": "the walk: it forces a famous work onto a shape no work is known to use",
+   "expect": {
+    "fails": [
+     "W1w"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A Second Lantern widens what the first one showed.\nExample: In Great Expectations (1861), the money arrives and a larger world opens.\nWhat does your second light fall on?\nRead: Second Lantern (Five Lanterns), your note for this step",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "W2",
+   "note": "the walk: asked to use her story as the example, it says no in one sentence",
+   "expect": {
+    "fails": []
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "The aid does not use your story as an example.\nWhat does the find under the floor change about what she wants?\nRead: Midpoint (Three-Act), your note for this step",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "W2",
+   "note": "the walk: it makes her own story the example",
+   "expect": {
+    "fails": [
+     "M5",
+     "W2w"
+    ]
+   },
+   "replies": [
+    {
+     "variant": null,
+     "reply": "A Midpoint changes what the goal means.\nExample: The ledger under the kiln floor turns a sale into a question.\nWhat does she want now?\nRead: Midpoint (Three-Act), your note for this step",
+     "usage": {
+      "input": 0,
+      "output": 0
+     }
+    }
+   ]
   }
  ]
 }
