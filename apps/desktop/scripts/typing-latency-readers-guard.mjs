@@ -15,6 +15,11 @@ const SRC = join(here, '..', 'src');
 
 // [file, a substring of the reading line, the surface, why it is not a save/sync/count/copy/export/Tutor read]
 const CLASSIFIED = [
+  // the Guide's walk (PRESETS-B, Nov 26): its note field is a small plain-text editor of its own, over the page, with no rows and no hidden markers (the board card's case)
+  ['reorg/walk/GuideWalk.tsx', "out += n.textContent ?? '';", 'the walk note (no rows)',
+    'fieldText: the walk field\'s own text, the ONE read of it; it IS what is saved into the Plan card (that field is its own model); never the page, a row, or hidden marks'],
+  ['reorg/walk/GuideWalk.tsx', 'const len = n.textContent?.length ?? 0;', 'the walk note (no rows)',
+    'selectIn: a caret offset inside the same field; a length, never a saved text'],
   ['store/lineRows.ts', "readEditorPlainText(el.innerText, null).plain;", 'page rows (editing)',
     'editorPlainText FALLBACK: runs only while the rows map is stale (an IME composition, between a native edit and its re-render); feeds the 211 controller and the strip\'s lit buttons, never a save'],
   ['store/lineRows.ts', 'row.textContent === mid[0]', 'page rows (editing)',
