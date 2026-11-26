@@ -149,6 +149,17 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     let typedSinceMount = false;
     const onTyped = () => { typedSinceMount = true; };   // (named for the first use; any act of hers ends the opening: see the listeners below)
     const opening = () => !typedSinceMount;
+    // #134 (Fable, Nov 26): A TYPED KEY BRINGS THE LINE BACK. With the writing line outside the window, her typed key lands it at the hold in one cut, the opening's own step. SCROLLING ALONE NEVER
+    // MOVES IT: only a typed key sets this, and band() reads it once. A hardware Backspace reaches the editor as a keydown only, a soft keyboard as beforeinput only: both are heard.
+    let keyed = false;
+    const TYPED_INPUT = /^(insert(Text|CompositionText|ReplacementText|Paragraph|LineBreak)|delete(Content|Word|SoftLine|HardLine))/;
+    const inEditor = (e: Event) => !!(e.target as Element | null)?.closest?.(editorSelector);
+    const onTypedKey = (e: KeyboardEvent) => {
+      // a character, Enter or Backspace: never a shortcut, never a key that moves the view
+      if (e.ctrlKey || e.metaKey || e.altKey || !(e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace')) return;
+      if (inEditor(e)) { keyed = true; schedule(); }
+    };
+    const onTypedInput = (e: Event) => { if (TYPED_INPUT.test((e as InputEvent).inputType || '') && inEditor(e)) { keyed = true; schedule(); } };
     // the KEYBOARD's way of moving the view (Ctrl+Home, Home/End, PageUp/PageDown, ArrowUp/Down) is the writer's scroll too. It must be named: the browser
     // moves the box with no wheel/touch/press, and a key that lands the box at the very top (Ctrl+Home, a PageUp from within a page of it, an arrow run up
     // to line 1) is exactly the drop to 0 that takenOver() excuses as the editor's re-render clamp - the glide would carry on and drag the writer back down.
@@ -320,6 +331,26 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
         ? (holdEl.getBoundingClientRect().top + holdEl.getBoundingClientRect().height * zoom!.anchor - box.top) / sc + lineHeight()
         : box.clientHeight * holdBandValue;
 
+      if (keyed) {
+        keyed = false;
+        // #134: outside the window = below the foot of what she can see (the window, the stage, the scroller), or above its head
+        const seen = useWindowScroll ? null : container.getBoundingClientRect();
+        const stage = useWindowScroll ? null : container.closest('.desk-frame-stage')?.getBoundingClientRect() ?? null;
+        const head = Math.max(0, seen?.top ?? 0, stage?.top ?? 0);
+        const foot = Math.min(window.innerHeight, seen?.bottom ?? Infinity, stage?.bottom ?? Infinity);
+        if (caretBottom > foot + 1 || caretBottom - (lineHeight() * sc) / 2 < head) {
+          stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
+          const maxTopKey = useWindowScroll ? Infinity : Math.max(0, container.scrollHeight - container.clientHeight);
+          const toKey = Math.max(0, Math.min(box.scrollTop + (within - thresholdPx), maxTopKey));
+          if (trace) trace.push({ d: 'key-cut', from: Math.round(box.scrollTop), to: Math.round(toKey) });
+          box.setScrollTop(toKey, false);
+          engaged = true;
+          prevDocCaretBottom = docCaretBottom;
+          setScrolled();
+          return;
+        }
+      }
+
       if (opening() && within - thresholdPx > 1) {
         // #113: the opening landing. The line is below the hold: land it AT the hold now, never past what the box can scroll to, and owe nothing (what the box cannot scroll can never be paid).
         stopGlide(); glideTarget = null; glideFrom = null; owedSince = null;
@@ -421,6 +452,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
     mo.observe(container, { childList: true, subtree: true, characterData: true });
     container.addEventListener('input', schedule);
     container.addEventListener('beforeinput', onTyped, true);
+    container.addEventListener('keydown', onTypedKey, true);
+    container.addEventListener('beforeinput', onTypedInput, true);
     container.addEventListener('focusin', schedule);   // a stray focus() scrolls a tall editable to its top: while she has done nothing yet, the next frame lands the writing line again
     const scrollListenTarget: Window | HTMLElement = useWindowScroll ? window : container;
     scrollListenTarget.addEventListener('scroll', setScrolled, { passive: true });
@@ -446,6 +479,8 @@ export function useTypewriterFade({ enabled, containerRef, editorSelector, useWi
       mo.disconnect();
       container.removeEventListener('input', schedule);
       container.removeEventListener('beforeinput', onTyped, true);
+      container.removeEventListener('keydown', onTypedKey, true);
+      container.removeEventListener('beforeinput', onTypedInput, true);
       container.removeEventListener('focusin', schedule);
       for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) container.removeEventListener(ev, onTyped, true);
       scrollListenTarget.removeEventListener('scroll', setScrolled);
