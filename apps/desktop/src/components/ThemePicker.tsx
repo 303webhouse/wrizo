@@ -56,7 +56,7 @@ function ArborGrow() {
   );
 }
 
-// Machina - the run. Twenty units like the theme's own Run strip, six done at rest, the brass notch on the first unfinished one; on hover/focus the strip RUNS to its close once (the units fill, the notch travels to the end, "RUN CLOSED"). Not a flash - no budget; the still frame holds the closed Run.
+// Machina - the run. Twenty units like the theme's own Run strip, six done at rest, the brass notch on the first unfinished one; on hover/focus the strip RUNS to its close once (the units fill, the notch travels to the end, the strip turns brass, "RUN CLOSED"). Not a flash - no budget; the still frame holds the closed Run.
 const MACHINA_PLATE_UNITS = 20;
 const MACHINA_PLATE_DONE = 6;
 function MachinaPlate() {

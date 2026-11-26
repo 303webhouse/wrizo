@@ -566,7 +566,7 @@
 .wz-theme-plate-check[data-done='true'] > i{ background:#FF9800; border-color:#FF9800; }
 
 /* Machina: its chrome, light or dark, in either cast. The faces load on the card's first hover/focus (ThemePicker.tsx) - until then the fallback stack. The wordmark's brass square never stands alone on light.
-   The plate is the Run strip: twenty units, six done, the notch on the first unfinished one; hover/focus RUNS it to its close once. */
+   The plate is the Run strip: twenty units, six done, the notch on the first unfinished one; hover/focus RUNS it to its close once, and the strip turns brass. */
 .wz-theme-card-machina{ --mt-ground:#23272B; --mt-ink:#E6E8EA; --mt-dim:#3A4047; --mt-on:#9AA1A8; }
 .wz-theme-card-machina[data-tone='light']{ --mt-ground:#F4F5F6; --mt-ink:#3A4047; --mt-dim:#D2D6DA; --mt-on:#5E666E; }
 .wz-theme-card-machina[data-cast='neutral']{ --mt-ground:#242220; --mt-ink:#E6E2DB; --mt-dim:#3B3834; --mt-on:#A09A91; }
@@ -581,7 +581,9 @@
 .wz-theme-plate-notch{ position:absolute; top:0; width:3px; height:16px; background:#FF9800; left:calc(6 / 20 * 100% - 1px); transition:left .9s linear; }
 .wz-theme-card-machina[data-tone='light'] .wz-theme-plate-notch{ box-shadow:-1px 0 0 #23272B, 1px 0 0 #23272B; }
 .wz-theme-plate-closed{ position:absolute; left:0; right:0; bottom:11%; font-family:'IBM Plex Mono', ui-monospace, monospace; font-weight:600; font-size:9px; line-height:1; letter-spacing:.16em; text-transform:uppercase; color:var(--mt-ink); opacity:0; }
-.wz-theme-card-machina:not(.locked):hover .wz-theme-plate-run > i, .wz-theme-card-machina:focus-visible .wz-theme-plate-run > i{ background:var(--mt-on); }
+.wz-theme-card-machina:not(.locked):hover .wz-theme-plate-run > i, .wz-theme-card-machina:focus-visible .wz-theme-plate-run > i{ background:var(--mt-on); animation:wz-tile-close .2s ease .95s forwards; }
+/* at the close the whole strip turns brass, as the real Run does (one change, once) */
+@keyframes wz-tile-close{ to{ background:#FF9800; } }
 .wz-theme-card-machina:not(.locked):hover .wz-theme-plate-notch, .wz-theme-card-machina:focus-visible .wz-theme-plate-notch{ left:calc(100% - 3px); }
 .wz-theme-card-machina:not(.locked):hover .wz-theme-plate-closed, .wz-theme-card-machina:focus-visible .wz-theme-plate-closed{ opacity:1; transition:opacity .25s ease .9s; }
 
@@ -600,14 +602,14 @@
   .wz-theme-plate-grow{ opacity:1; }
   .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
   .wz-theme-plate-grow circle{ opacity:1; transition:none; }
-  .wz-theme-card .wz-theme-plate-run > i{ background:var(--mt-on); transition:none; }
+  .wz-theme-card .wz-theme-plate-run > i{ background:#FF9800; transition:none; animation:none; }
   .wz-theme-card .wz-theme-plate-notch{ left:calc(100% - 3px); transition:none; }
   .wz-theme-card .wz-theme-plate-closed{ opacity:1; transition:none; }
 }
 .wz-theme-picker[data-still='true'] .wz-theme-plate-grow{ opacity:1; }
 .wz-theme-picker[data-still='true'] .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }
 .wz-theme-picker[data-still='true'] .wz-theme-plate-grow circle{ opacity:1; transition:none; }
-.wz-theme-picker[data-still='true'] .wz-theme-plate-run > i{ background:var(--mt-on); transition:none; }
+.wz-theme-picker[data-still='true'] .wz-theme-plate-run > i, .wz-theme-picker[data-still='true'] .wz-theme-card .wz-theme-plate-run > i{ background:#FF9800; transition:none; animation:none; }
 .wz-theme-picker[data-still='true'] .wz-theme-plate-notch{ left:calc(100% - 3px); transition:none; }
 .wz-theme-picker[data-still='true'] .wz-theme-plate-closed{ opacity:1; transition:none; }
 /* the theme choice is a choice, not a where-you-are state: a brass outline, theme-invariant [ink-options §32] */

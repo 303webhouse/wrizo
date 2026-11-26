@@ -19,6 +19,11 @@ export const railRoom = (pageLeft: number, anchorLeft: number): number | null =>
   return Number.isFinite(room) && room > 0 ? room : null;
 };
 
+// THE THEME POP-OUT KEEPS ITS WIDTH (Fable, Nov 26): its two columns of tiles cannot be read narrower than this. Where the wide page of Free Write or Wire In leaves less, it keeps its 300 px and lies
+// over the page while it is open; the page never moves. Every other pop-out, and this one wherever there is room, still stops at the page's edge.
+const THEME_FLOOR = 260;
+export const popoutRoom = (category: string, room: number | null): number | null => (category === 'theme' && room !== null && room < THEME_FLOOR ? null : room);
+
 export const useRailRoom: (on: boolean, open: string | null) => void = REORG
   ? (on, open) => {
     const theme = useTheme();
@@ -28,7 +33,7 @@ export const useRailRoom: (on: boolean, open: string | null) => void = REORG
       if (!on || !measured || !open || !anchor) return undefined;
       const set = () => {
         const page = liveQuery<HTMLElement>('.mode-page');
-        const room = page ? railRoom(page.getBoundingClientRect().left, anchor.getBoundingClientRect().left) : null;
+        const room = page ? popoutRoom(open, railRoom(page.getBoundingClientRect().left, anchor.getBoundingClientRect().left)) : null;
         if (room === null) anchor.style.removeProperty(VAR); else anchor.style.setProperty(VAR, `${room}px`);
       };
       set();
