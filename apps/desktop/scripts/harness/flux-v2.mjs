@@ -136,6 +136,8 @@ const KEEP = {
   // THE DOC'S KIND MENU (INK's build, ARBOR's restyle, Nov 20; POLISH found them red in LX2b, Nov 21): read only under ?reorg=1 in Machina (src/reorg/DocKindMenu.tsx); Flux never
   // renders the kind menu (INK confirms, Nov 21: reorgDocPageSetup's one reader is DocKindMenu.tsx; reorgSpecialTitle has no reader at all). Each names Machina's printed page.
   reorgDocPageSetup: 'the reorg kind menu, Machina only: never rendered in Flux', reorgSpecialTitle: 'declared with the kind menu but read by nothing in src (the menu names its Special Parts from reorg/docKinds.ts): never rendered in any theme',
+  // THE GUIDE (train L10; PREPARED by chat 1 for Fable's word, question 10): its answer 'A page or two' IS shown in Flux; "page" there is a length of her writing, not the thing Flux renames.
+  guideAnsStoryPage: 'story craft prose: the Guide\'s answer for a length of writing ("A page or two")',
 };
 const FORBID = /\b(boards?|pages?|links?|grafts?|grafted|shelf|schematics?|drawers?|journals?|settings|themes?|tutor|sections?|binder)\b/i;
 function deskIdsFromSource() {
