@@ -1,12 +1,13 @@
 // #136 - MACHINA'S LIGHT BOARD: THE EMPTY BOARD'S STARTERS CAN BE READ (Fable, Nov 25: New Card / Presets / Attach Docs drawn very faint; words 4.5:1, icons 3:1).
 // The starters are drawn at 40% opacity (19-beginnings.css), and bg2.mjs reads the colour alone, so it never saw what the eye sees. Here each starter's colour is laid over the Board's own
 // ground AT ITS OPACITY (every ancestor's too), and the contrast is read from that. At rest, the pointer away.
-// Machina (the live redesign): the page tone (light, dark) x the room (Day, Night) x the cast (cool, neutral). A LIGHT BOARD is one whose ground is light; only those are judged:
-//   W  every starter's words reach 4.5:1        I  every starter's icon reaches 3:1
-//   P  premise: at least one light Board was read, with its three starters
+// EVERY BOARD (Fable, Nov 25, 10:50 pm, FIX Q2: "fix the faint starters on every other Board too ... brass on hover: fix it too"): Machina page tone x room x cast, Arbor page tone x room
+// (Day, Night), Flux page tone. All are judged, light ground or dark:
+//   W  every starter's words reach 4.5:1        I  every starter's icon reaches 3:1        (at rest, the pointer away)
+//   HW the starter under the pointer still reads: words 4.5:1, icon 3:1
 //   H  the pointer on a starter still lifts it
+//   P  premise: every arm showed its three starters, on light grounds and on dark ones
 //   MUT the judge goes RED on 40% of a mid colour on a light ground
-// Arbor and Flux (light and dark page) are READ AND PRINTED, never judged.
 // Run: node scripts/harness/board-starters-contrast.mjs (from apps/desktop; Actions or the box).
 process.env.WS_ARBOR2 = 'default';
 process.env.WS_MACHINA2 = 'default';
@@ -50,38 +51,41 @@ try { await withHarness(async (app) => {
 
   const arms = [];
   for (const page of ['light', 'dark']) for (const room of ['light', 'dark']) for (const cast of ['cool', 'neutral']) arms.push({ theme: 'machina', page, room, cast });
-  for (const theme of ['plateau', 'flux']) for (const page of ['light', 'dark']) arms.push({ theme, page, room: null, cast: null });
-  let lightBoards = 0;
+  for (const page of ['light', 'dark']) for (const room of ['light', 'dark']) arms.push({ theme: 'plateau', page, room, cast: null });
+  for (const page of ['light', 'dark']) arms.push({ theme: 'flux', page, room: null, cast: null });
+  let lightBoards = 0, darkBoards = 0, shown = 0;
+  const look = "(() => { const b = document.querySelector('.wz-beginnings[data-beginnings=\\\"board\\\"] .wz-beginning'); const c = getComputedStyle(b); return [c.color, c.borderTopColor, c.opacity].join('|'); })()";
   for (const arm of arms) {
-    const tag = arm.theme === 'machina' ? `machina page ${arm.page} room ${arm.room} ${arm.cast}` : `${arm.theme} page ${arm.page}`;
+    const tag = [arm.theme, 'page ' + arm.page, arm.room && 'room ' + arm.room, arm.cast].filter(Boolean).join(' ');
     await ev("location.hash = '#/'; true"); await sleep(250);
     await ev(`localStorage.setItem('wrizo-theme', ${J(arm.theme)}); localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: ${J(arm.page)}, fade: 'on' })); history.replaceState(null, '', '/#/'); true`);
     await app.reload();
     await soft("!document.querySelector('.wz-splash')");
-    if (arm.room) await ev(`document.documentElement.setAttribute('data-room', ${J(arm.room)}); document.documentElement.setAttribute('data-cast', ${J(arm.cast)}); true`);
+    if (arm.room) await ev(`document.documentElement.setAttribute('data-room', ${J(arm.room)}); true`);
+    if (arm.cast) await ev(`document.documentElement.setAttribute('data-cast', ${J(arm.cast)}); true`);
     await ev("location.hash = '#/page/bsc-board'; true");
     const up = await soft("document.querySelectorAll('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning').length > 0", 10000);
     await app.mouseMove(4, 4);
-    await sleep(700);
+    await sleep(900);
     const read = up ? await ev(READ) : [];
-    const at = await ev("({ theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-machina2-room') })");
+    const at = await ev("({ page: document.documentElement.getAttribute('data-page'), room: document.documentElement.getAttribute('data-machina2-room') || document.documentElement.getAttribute('data-arbor2-room') })");
     const got = read.map(judge);
     const light = read.length > 0 && lightGround(read[0].bg);
-    const detail = J({ at, light, bg: read[0] && read[0].bg.map(Math.round), from: read[0] && read[0].from, image: read[0] && read[0].image, starters: got });
-    if (arm.theme !== 'machina' || !light) { console.log(`INFO ${tag}: ${detail}`); continue; }
-    lightBoards += 1;
-    ok(`W ${tag}: every starter's words reach 4.5:1 on this light Board`, got.length >= 3 && got.every((g) => g.words >= 4.5), detail);
-    ok(`I ${tag}: every starter's icon reaches 3:1 on this light Board`, got.length >= 3 && got.every((g) => g.icon >= 3), detail);
-    // the lift is kept: the pointer on a starter changes what is drawn
-    const look = "(() => { const b = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning'); const c = getComputedStyle(b); return [c.color, c.borderTopColor, c.opacity].join('|'); })()";
+    const detail = J({ at, light, bg: read[0] && read[0].bg.map(Math.round), image: read[0] && read[0].image, starters: got });
+    if (got.length >= 3) { shown += 1; if (light) lightBoards += 1; else darkBoards += 1; }
+    ok(`W ${tag}: every starter's words reach 4.5:1`, got.length >= 3 && got.every((g) => g.words >= 4.5), detail);
+    ok(`I ${tag}: every starter's icon reaches 3:1`, got.length >= 3 && got.every((g) => g.icon >= 3), detail);
+    if (!up) continue;
     const rest = await ev(look);
     const box = await ev("(() => { const r = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning').getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
-    await app.mouseMove(box.x, box.y); await sleep(500);
+    await app.mouseMove(box.x, box.y); await sleep(600);
     const hover = await ev(look);
+    const under = (await ev(READ)).map(judge)[0];
     await app.mouseMove(4, 4);
+    ok(`HW ${tag}: the starter under the pointer still reads (words 4.5:1, icon 3:1)`, !!under && under.words >= 4.5 && under.icon >= 3, J(under));
     ok(`H ${tag}: the pointer on a starter still lifts it`, hover !== rest, J({ rest, hover }));
   }
-  ok(`P (premise): light Machina Boards were read (${lightBoards})`, lightBoards >= 1);
+  ok(`P (premise): all ${arms.length} arms showed three starters (${shown}), light grounds ${lightBoards}, dark ${darkBoards}`, shown === arms.length && lightBoards >= 1 && darkBoards >= 1);
   ok('MUT: the judge goes RED on 40% of a mid colour over a light ground', judge({ word: 'x', color: [63, 97, 131, 1], icon: [63, 97, 131, 1], op: 0.4, bg: [233, 234, 235] }).words < 4.5 && judge({ word: 'x', color: [40, 40, 40, 1], icon: [40, 40, 40, 1], op: 1, bg: [233, 234, 235] }).words >= 4.5);
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); ok('HARNESS ' + String(e && e.message || e).slice(0, 300), false); }
 
