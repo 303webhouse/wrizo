@@ -8,9 +8,10 @@
   const shown = () => all(TOOLS).filter((el) => el.getClientRects().length > 0);
   const label = (el) => (el.getAttribute('data-ink-row') || el.getAttribute('data-recent-tip') || el.getAttribute('aria-label') || el.textContent.trim() || el.className).slice(0, 28) + ' .' + String(el.className).split(' ').filter((c) => c.startsWith('wz-') || c.startsWith('reorg-') || c === 'ink-undo' || c.startsWith('mode-swatch')).join('.');
 
-  const measure = async (state, out, sheetSel) => {
+  // `only`: an open list covers what is under it, as a menu does, so while it is open only its own items are measured
+  const measure = async (state, out, sheetSel, only) => {
     const panel = q('.wz-sliver-panel');
-    for (const el of shown()) {
+    for (const el of shown().filter((e) => !only || e.closest(only))) {
       const key = label(el);
       // a finger first scrolls it into view: to the drawer's foot, clear of the face that stays at the top
       el.scrollIntoView({ block: 'end', inline: 'nearest' });
@@ -26,7 +27,8 @@
       if (panel && panel.contains(el)) { const p = panel.getBoundingClientRect(); if (r.left < p.left - 1 || r.right > p.right + 1) out.wide.push(`${state}: ${key} outside the drawer ${r.left.toFixed(0)}-${r.right.toFixed(0)} of ${p.left.toFixed(0)}-${p.right.toFixed(0)}`); }
     }
     if (panel) {
-      if (panel.scrollWidth > panel.clientWidth + 1) out.wide.push(`${state}: drawer scrolls sideways ${panel.scrollWidth}>${panel.clientWidth}`);
+      // the drawer's own scrollWidth is not read: Flux's drawer reports more than it shows with a mouse too (it clips sideways); each tool is held inside the drawer above
+      panel.scrollLeft = 0;
       const sheet = q(sheetSel);
       const ph = panel.getBoundingClientRect().height, sh = sheet ? sheet.getBoundingClientRect().height : 0;
       if (!sheet || ph > sh + 1) out.tall.push(`${state}: drawer ${ph.toFixed(0)} against sheet ${sh.toFixed(0)}`);
@@ -44,7 +46,7 @@
     await v.setStudio(true);
     await measure('studio', out, sheetSel);
     await press('.wz-ink-brush');
-    await measure('brush list', out, sheetSel);
+    await measure('brush list', out, sheetSel, '.wz-ink-recent');
     await press('.wz-ink-brush');
     await v.openRow('brushes');
     await measure('brushes', out, sheetSel);

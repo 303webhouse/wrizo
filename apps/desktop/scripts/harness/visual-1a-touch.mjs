@@ -2,7 +2,7 @@
 // Real layout under CDP touch emulation, in Machina, Arbor and Flux, on a Page in BUILD and on a Board; the live defaults, as visual-1a3.mjs asks for them.
 //   T0      the emulated touch screen answers (pointer: coarse)
 //   S1..    every INK tool - the face, Studio, its rows, the brush list, Brushes, Colour with its own-colour field, and the Undo arrow on the sheet - is at least 44 x 44
-//   R1..    and every one of them can be reached: not under the sticky face, not cut off sideways, the drawer never wider than itself and never taller than the sheet
+//   R1..    and every one of them can be reached: not under the sticky face, not cut off sideways, the drawer never taller than the sheet
 //   F1      the Retry button, when the drawing code did not arrive, is as big
 //   M1      with a mouse the tab is what it was
 // Run: node scripts/harness/visual-1a-touch.mjs   (from apps/desktop; dist-web built; needs a box turn on the PC)
@@ -52,7 +52,7 @@ await withHarness(async (app) => {
     await sleep(900);
     const r = await run(app, `return window.__vit.walk(${JSON.stringify(surface)});`);
     ok(`S${n}: every INK tool is at least 44 x 44 on a touch screen ${tag}`, r.seen >= 20 && r.undo && r.small.length === 0, { seen: r.seen, undo: r.undo, small: r.small.slice(0, 12) });
-    ok(`R${n}: and every one can be reached, with the drawer no wider than itself and no taller than the sheet ${tag}`, r.unreached.length === 0 && r.wide.length === 0 && r.tall.length === 0, { unreached: r.unreached.slice(0, 8), wide: r.wide.slice(0, 4), tall: r.tall.slice(0, 4) });
+    ok(`R${n}: and every one can be reached, none cut off sideways, the drawer no taller than the sheet ${tag}`, r.unreached.length === 0 && r.wide.length === 0 && r.tall.length === 0, { unreached: r.unreached.slice(0, 8), wide: r.wide.slice(0, 4), tall: r.tall.slice(0, 4) });
     await touch(app, false);
   }
 

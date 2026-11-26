@@ -80,3 +80,10 @@
 /* the ink code did not arrive: one plain line and a Retry, never an empty tab */
 .wz-ink-fail{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; font-size:12px; line-height:1.5; color:var(--text-mid); }
 .wz-ink-retry{ border-color:var(--ink-border-strong); }
+
+/* VISUAL 1a - TOUCH SCREENS ONLY (Fable, Nov 26: the kit's §9, "every tool at least 44 px on a touch screen"). With a mouse nothing here applies. Bigger tools need more lines, so the face's two lines wrap instead of squeezing. */
+@media (pointer: coarse){
+  .wz-ink-tab.wz-ink-tab :is(button, input), .wz-ink-fail .wz-ink-retry, .ink-undo{ min-width:44px; min-height:44px; }
+  .wz-ink-face-line--brush, .wz-ink-face-line--ink .wz-sliver-inks{ flex-wrap:wrap; }
+  .wz-ink-face-line--ink .wz-sliver-inks{ justify-content:flex-start; }
+}
