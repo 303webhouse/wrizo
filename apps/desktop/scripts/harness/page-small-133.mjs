@@ -8,10 +8,13 @@
 //   C   no opener that is on screen stands under, or across the border of, an open panel - its own included; an open panel's opener takes a press
 //   Y   typing lands: words typed at the end of the page are stored, and no word is lost
 //   MS  (mutant, 1366) the page forced to scale 1 - S must go red.   MT (mutant, 1366) the pop-out forced 480 px wide - T must go red.
+// THE PRODUCT'S OWN LOOKS: the driver pins the older themes and the reorg off for files that do not ask, so this one asks (WS_REORG, WS_ARBOR2,
+// WS_MACHINA2, WS_FLUX3), before the driver loads, and checks it got them.
 // Needs a box turn or an Actions runner.  Run: node scripts/harness/page-small-133.mjs   (from apps/desktop, dist-web built)
-import { withHarness } from '../runtime-verify.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+Object.assign(process.env, { WS_REORG: '1', WS_ARBOR2: 'default', WS_MACHINA2: 'default', WS_FLUX3: 'default' });
+const { withHarness } = await import('../runtime-verify.mjs');
 
 const SHOTS = process.env.WS_133_SHOTS || null;
 const snap = async (app, name) => { if (!SHOTS) return; mkdirSync(SHOTS, { recursive: true }); writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(await app.screenshot(), 'base64')); };
@@ -20,7 +23,7 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const J = (v) => JSON.stringify(v);
 
-const THEMES = [{ id: 'plateau', name: 'Arbor' }, { id: 'flux', name: 'Flux' }, { id: 'machina', name: 'Machina' }];
+const THEMES = [{ id: 'plateau', name: 'Arbor', mark: 'data-arbor2' }, { id: 'flux', name: 'Flux', mark: 'data-flux3' }, { id: 'machina', name: 'Machina', mark: 'data-machina2' }];
 const SIZES = [[1366, 768], [1536, 864], [1920, 1080]];
 const SMALL_W = 1600;
 const PARA = 'The quick brown fox jumps over the lazy dog while the tide comes in and the lamplight wavers on the water. '.repeat(26);
@@ -77,6 +80,7 @@ await withHarness(async (app) => {
     await app.reload();
     await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
     await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
+    ok(`${th.name} (premise): the product's own look is on (${th.mark}), with the reorg`, await app.evalJs(`document.documentElement.hasAttribute('${th.mark}') && !window.__wrizoReorgOff`));
     for (const [w, h] of SIZES) {
       const at = `${th.name} ${w}x${h}`;
       const id = `p133-${th.id}-${w}`;

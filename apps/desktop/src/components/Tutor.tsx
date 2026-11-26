@@ -427,20 +427,23 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
-      // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps its own 320 floor and lies over the page's edge
+      // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps up to its 320 floor and lies over the page's margin, never its text
       const small = pageKind === 'prose' && onePanelAt(window.innerWidth);
       const over = small && geoMargin < TUTOR_TAB_PX + 320 * ck;
       const panel = over ? document.querySelector('.wz-tutor-panel') : null;
       const box = panel?.getBoundingClientRect();
       const travels = document.documentElement.hasAttribute('data-wz2-drawer-edge');
-      // the outer edge holds still (the drawer is anchored there); the inner edge is worked from the width set below, which the box does not show yet
-      setOverTravelPx(box ? Math.round((travels ? box.right : box.right - 320 * ck - TUTOR_TAB_PX) - paper.getBoundingClientRect().right) : null);
+      // the outer edge holds still (the drawer is anchored there); the width is what reaches back to the page's text and no further (never under DRAWER_MIN), and the inner edge is worked from it
+      const paperBox = paper.getBoundingClientRect();
+      const padRight = box ? (parseFloat(getComputedStyle(paper).paddingRight) || 0) * ((paper as HTMLElement).offsetWidth ? paperBox.width / (paper as HTMLElement).offsetWidth : 1) : 0;
+      const overW = box ? Math.min(320 * ck, Math.max(DRAWER_MIN, box.right - (paperBox.right - padRight) - (travels ? 0 : TUTOR_TAB_PX) - 1)) : 320 * ck;
+      setOverTravelPx(box ? Math.round((travels ? box.right : box.right - overW - TUTOR_TAB_PX) - paperBox.right) : null);
       if (geoMargin >= (small ? TUTOR_TAB_PX + 320 * ck : DRAWER_MIN)) {
         const drawerW = Math.min(geoMargin, TUTOR_TAB_PX + openW);
         setPanelWidthPx(Math.round(drawerW - TUTOR_TAB_PX));
         setPanelOffsetPx(Math.max(0, Math.round(geoMargin - drawerW)));
       } else {
-        setPanelWidthPx(Math.round(small ? 320 * ck : openW));
+        setPanelWidthPx(Math.round(small ? overW : openW));
         setPanelOffsetPx(0);
       }
     };

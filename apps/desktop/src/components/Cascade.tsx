@@ -233,7 +233,9 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   useEffect(() => registerDrawer('cascade', () => setState(REST)), []);
 
   // the open/close announcement is an effect keyed on one derived truth (a category chosen and not docked), so every path announces and a setState updater stays pure [Cascade §5]
-  const cascadeOccupiesBand = !!state.category && !state.docked;
+  // #133: on the prose page at 1600 and narrower a docked survey is a side panel too, so opening the Front or Back menu closes it [Cascade §5]
+  const onlyOne = onePanelAt(window.innerWidth) && !!cascadeStage()?.classList.contains('desk-frame-stage--prose');
+  const cascadeOccupiesBand = !!state.category && (!state.docked || onlyOne);
   useEffect(() => {
     if (cascadeOccupiesBand) requestOpen('cascade');
     else noteClosed('cascade');
@@ -267,9 +269,7 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   const closePanel = () => {
     setState((s) => {
       if (!s.category) return s;
-      // #133: a docked survey is a second panel, so the prose page has none at 1600 and narrower
-      const onlyOne = onePanelAt(window.innerWidth) && !!cascadeStage()?.classList.contains('desk-frame-stage--prose');
-      if (s.survey && !onlyOne && availableCascadeMargin() >= DOCK_FLOOR_PX) return { ...s, docked: true };
+      if (s.survey && availableCascadeMargin() >= DOCK_FLOOR_PX) return { ...s, docked: true };
       return REST; // nothing to dock, or the dock affordance is unavailable below the floor
     });
   };
