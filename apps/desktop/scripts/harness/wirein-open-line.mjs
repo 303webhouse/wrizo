@@ -45,7 +45,7 @@ const READ = `(() => {
     trace: trace.slice(0, 3).concat(trace.length > 3 ? trace.slice(-5) : []), steps: trace.length };
 })()`;
 // WOL_ONLY: a short diagnostic run reads one kind of page
-const ONLY = 'hint';
+const ONLY = 'loose';
 const onScreen = (g) => !!g && g.top != null && g.top >= 0 && g.bottom <= g.vh;
 
 try { await withHarness(async (app) => {
@@ -104,6 +104,16 @@ try { await withHarness(async (app) => {
       ok(`O5 ${tag}: she presses on the page 150 ms after it appears: the writing line is inside the window`, onScreen(e.after), J({ lineBefore: e.before && e.before.bottom, ...e.after }));
       // polish10-hint's own steps (the reads this bug came from): 900 ms, the caret put at the end by the fixture (a focus that may scroll), then typing
       const f = await early(900, async () => { await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()"); await app.typeKeys(' and on'); });
+      // SHE SCROLLS UP TO READ, THEN WRITES ON: the page opened and settled, the wheel taken far up, then keys
+      await ev("location.hash = '#/'; true"); await soft("!!document.querySelector('.wz-arrival')"); await sleep(500);
+      await ev(`location.hash = '#/page/${id}'; true`); await arrive();
+      await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
+      await app.cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: Math.round(arm.w / 2), y: Math.round(arm.h * 0.4), deltaX: 0, deltaY: -1200, pointerType: 'mouse' });
+      await sleep(900); await settle();
+      const g0 = await ev(READ);
+      await app.typeKeys(' and on'); await sleep(900); await settle();
+      const g1 = await ev(READ);
+      ok(`O7 ${tag}: she scrolled up (the line left the window: ${g0 && g0.top}px of ${g0 && g0.vh}) and typed: the words land and the writing line is back inside the window`, !!g0 && !!g1 && !onScreen(g0) && g1.chars >= g0.chars + 6 && onScreen(g1), J({ before: g0 && g0.top, ...g1 }));
       ok(`O6 ${tag}: polish10-hint's steps (a fixture focus and caret at 900 ms, then typing): the writing line is inside the window`, typed(f) && onScreen(f.after), J({ lineBefore: f.before && f.before.bottom, ...f.after }));
     }
   }
