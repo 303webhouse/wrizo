@@ -986,6 +986,7 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .wz-glitch-switch-dot{ width:6px; height:6px; border-radius:50%; border:1px solid currentColor; box-sizing:border-box; }
 .wz-glitch-switch[aria-checked='true']{ color:#00C2FF; border-color:#00C2FF; }
 .wz-glitch-switch[aria-checked='true'] .wz-glitch-switch-dot{ background:currentColor; }
-.wz-glitch-switch--slot{ visibility:hidden; }
-.wz-glitch-switch--live{ position:absolute; z-index:3; margin:0; }
+/* the lane stands behind the writing column: while it holds the switch its layer is lifted over the column (the lane never overlaps the page; drawers stay above) - not in
+   Wire In, whose edge and pop share that layer */
+.desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) > .desk-frame-rhizome-anchor:has(.wz-glitch-switch){ z-index:3; }
 .wz-glitch-switch:focus-visible{ outline:1px solid var(--text-hi); outline-offset:1px; }
