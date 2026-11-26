@@ -207,6 +207,19 @@ async function main() {
     }
   }
 
+  // WQ-TITLE (Fable, Nov 26: the note's title field, from the test version): her title is the Card's FIRST LINE (the desk reads a card's first line as its name); nothing new is saved
+  {
+    const N = load('mobile/noteText.ts', {});
+    if (N.missing || N.error || typeof N.M.noteText !== 'function') ok('WQ-TITLE a title is the first line of the Card; with none her words are untouched byte for byte', false, 'src/mobile/noteText.ts: ' + (N.missing ? 'the module does not exist yet' : N.error || 'no noteText'));
+    else {
+      const t = N.M.noteText;
+      const body = '  two lines,\n\nkept as typed  ';
+      const got = [t('Lamp signals', body), t('', body), t('   ', body), t(' Only a title ', ''), t('A\ntitle', 'x'), t('', '')];
+      ok('WQ-TITLE a title is the first line of the Card; with none her words are untouched byte for byte',
+        got[0] === 'Lamp signals\n' + body && got[1] === body && got[2] === body && got[3] === 'Only a title' && got[4] === 'A title\nx' && got[5] === '', JSON.stringify(got));
+    }
+  }
+
   // WQ-HERS, WQ-ONLY
   if (qwhy) { ok('WQ-HERS sign-out leaves nothing in storage; another account never sees or sends her waiting note', false, 'noteQueue.ts: ' + qwhy); ok('WQ-ONLY only her own unsent notes are kept, and nothing but notes', false, 'noteQueue.ts: ' + qwhy); }
   else {

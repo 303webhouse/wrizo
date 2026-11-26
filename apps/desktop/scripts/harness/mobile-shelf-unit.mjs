@@ -105,6 +105,11 @@ scenario('SH-FIND Find reaches Parts, loose pages and cards, never anything dele
   const a = at('limestone'), b = at('persimmon'), c = at('timetables'), d = at('quince'), e = at('vermilion'), f = at('salt road');
   return [a.length === 1 && a[0].to[0] === 'doc' && a[0].to[3] === p1 && b.length === 1 && b[0].to[0] === 'doc' && c.length === 1 && c[0].to[0] === 'card' && d.length === 1 && e.length === 0 && f.some((x) => x.to[0] === 'doc'), [a, b, c, d, e, f].map((x) => x.length).join()];
 });
+scenario('SH-KIND what Find lists says what each thing is: a Doc, a Board or a Card', () => {
+  const k = (q) => h.findLines(q, 'Untitled').map((x) => x.kind).join();
+  const got = [k('limestone'), k('salt road'), k('research wall'), k('quince')];
+  return [got.join('|') === 'doc|doc|board|card', JSON.stringify(got)];
+});
 scenario('SH-PLAN one list; a written Part ticks its row and names it; a row with none says so; a hidden row is out', () => {
   const rows = h.planView(p2, 'Untitled');
   const dep = rows.find((r) => r.title === 'Departure'), arr = rows.find((r) => r.title === 'Arrival');

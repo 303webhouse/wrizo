@@ -156,6 +156,37 @@ try {
     await goto('#/doc/part-1/read/part-1');
     ok('READ her marks are drawn, never shown as marks', await js("!!document.querySelector('.mc-page strong') && !!document.querySelector('.mc-page h1') && !document.querySelector('.mc-page').innerText.includes('**')"));
     ok('PLUS the + has no word and has its spoken name', await js("document.querySelector('.mc-plus').textContent.trim() === '+' && document.querySelector('.mc-plus').getAttribute('aria-label') === 'Add a note, photo, sketch or recording'"));
+    // KIND (Fable, Nov 26): where Docs, Boards and Cards share a list, each row says which it is, in the test version's words
+    const rowsSay = () => js("[...document.querySelectorAll('.mc-main .mc-row')].map((r) => (r.querySelector('.mc-name')?.textContent ?? r.textContent) + ' = ' + (r.querySelector('.mc-where')?.textContent ?? ''))");
+    await goto('#/desk');
+    const recent = await rowsSay();
+    ok('KIND Desk: a Doc row says Doc, a Board row says Board', recent.includes('The Salt Road = Doc') && recent.includes('Harbour research = Board'), JSON.stringify(recent));
+    await goto('#/find/limestone');
+    const found = await rowsSay();
+    ok("KIND Find: a Part's hit says Doc, a card's says Card and its Board", found.some((r) => r.startsWith('The Salt Road = Doc · ')) && found.includes('Limestone was shipped as ballast = Card · Harbour research'), JSON.stringify(found));
+    await goto('#/doc/part-1/assets/part-1');
+    const assets = await rowsSay();
+    ok('KIND Assets: cards and Boards say which they are', assets.includes('Departure = Card') && assets.includes('Harbour research = Board'), JSON.stringify(assets));
+
+    // TITLE (Fable, Nov 26): the test version's optional title; it is the Card's first line
+    await goto('#/desk'); await click('.mc-plus');
+    const field = await js("(() => { const i = document.querySelector('#mc-title'); return i ? [i.placeholder, i.getAttribute('aria-label'), document.activeElement && document.activeElement.id] : null; })()");
+    ok('TITLE the note has the optional title field, and the caret still starts in the note', !!field && field[0] === 'A title (optional)' && field[1] === 'Title' && field[2] === 'mc-note', JSON.stringify(field));
+    const send = async (title, body) => {
+      await goto('#/desk'); if (!(await js("!!document.querySelector('.mc-sheet')"))) await click('.mc-plus');
+      if (title && (await js("!!document.querySelector('#mc-title')"))) await app.setText(title, '#mc-title');
+      if (body) await type(body);
+      await click('[data-send]'); await sleep(400);
+      await until("!document.querySelector('[data-waiting]')", 'the note to be sent', 30000);
+    };
+    await send('Lamp signals', 'two flashes, then dark');
+    ok('TITLE a titled note lands as one Card: the title, then her words', cardsWithText('Lamp signals\ntwo flashes, then dark').length === 1, JSON.stringify(boards().flatMap((b) => (b.boxes || []).map((x) => x.text)).filter((x) => /flashes|Lamp signals/.test(x))));
+    await send('Only a title here', '');
+    ok('TITLE a title alone is a note', cardsWithText('Only a title here').length === 1);
+    await send('', 'no title, just this');
+    ok('TITLE with no title her words are stored as typed', cardsWithText('no title, just this').length === 1);
+    await js("document.querySelector('[data-sheet-back]')?.click()");
+
     await goto('#/desk'); await click('.mc-plus');
     ok('SENDTO from Desk it reads Mobile; she is never made to file first', await js("document.querySelector('[data-send-to]').textContent === 'Mobile' && document.querySelector('[data-send]').disabled === true"));
     await click('[data-sheet-back]');
@@ -189,6 +220,7 @@ try {
     ok('TWICE the same note is taken as already sent', await until(`!localStorage.getItem(${JSON.stringify(kept[0])})`, 'the repeat to clear', 30000));
     ok('TWICE one note sent twice makes one Card', cardsWithText('from the train, no signal').length === 1, `copies=${cardsWithText('from the train, no signal').length}`);
     await goto('#/desk');
+    ok('KIND the Mobile row says Board', await until("document.querySelector('[data-mobile-board] .mc-where')?.textContent === 'Board'", 'the kind on the Mobile row', 3000));
     ok('MOBILE Desk shows the Mobile Board', await until("document.querySelector('[data-mobile-board]')", 'the Mobile row'));
     await click('[data-mobile-board]'); await look('17-mobile-board', '390x844', true);
 
