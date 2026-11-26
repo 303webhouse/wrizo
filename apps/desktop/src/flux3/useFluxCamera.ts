@@ -60,15 +60,18 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
     };
     const unsub = subscribeBoardScale(paint);
 
-    // (cx, cy) - client coordinates - in the frame's own, and the board point standing there now
-    const inFrame = (cx: number, cy: number) => { const wr = wrap.getBoundingClientRect(); return { px: cx - wr.left - wrap.clientLeft, py: cy - wr.top - wrap.clientTop }; };
-    const pointAt = (cx: number, cy: number) => { const { px, py } = inFrame(cx, cy), s = getBoardScale(); return { bx: (wrap.scrollLeft + px - offL) / s, by: (wrap.scrollTop + py - offT) / s }; };
-    // set the scale, holding the board point under (cx, cy) where it is; `held` is that point when the caller already has it (a glide)
+    // the board point standing under (cx, cy) - client coordinates - now
+    const pointAt = (cx: number, cy: number) => {
+      const wr = wrap.getBoundingClientRect(), s = getBoardScale();
+      return { bx: (wrap.scrollLeft + cx - wr.left - wrap.clientLeft - offL) / s, by: (wrap.scrollTop + cy - wr.top - wrap.clientTop - offT) / s };
+    };
+    // set the scale, holding the board point under (cx, cy) - client coordinates - where it is; `held` is that point when the caller already has it (a glide)
     const zoomTo = (target: number, cx: number, cy: number, held?: { bx: number; by: number }) => {
       const s1 = getBoardScale(), s2 = clampScale(target, limits());
       if (s2 === s1) return;
-      const { px, py } = inFrame(cx, cy);
-      const { bx, by } = held ?? pointAt(cx, cy);
+      const wr = wrap.getBoundingClientRect();
+      const px = cx - wr.left - wrap.clientLeft, py = cy - wr.top - wrap.clientTop;
+      const bx = held ? held.bx : (wrap.scrollLeft + px - offL) / s1, by = held ? held.by : (wrap.scrollTop + py - offT) / s1;
       setBoardScale(s2);   // paint() runs, and with it the layer's view (subscribers run in order)
       wrap.scrollLeft = bx * s2 + offL - px;
       wrap.scrollTop = by * s2 + offT - py;
