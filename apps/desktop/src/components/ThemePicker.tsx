@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useTheme, setTheme, type ThemeId } from '../store/theme';
 import { useThemePrefs, setThemePrefs } from '../store/themePrefs';
 import { useThemeUnlockStatus, isThemeOpen, wordsToUnlock } from '../store/themeUnlock';
+import { subscribeSyncStatus } from '../store/sync';
 import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
 import { createFluxCardGlitchController, FLUX_CARD_GLITCH_MS } from '../store/fluxCardGlitch';
 import { ensureThemeFonts } from '../store/themeFonts';
@@ -95,7 +96,7 @@ const THEME_CARDS: ThemeCardDef[] = [
 export function ThemePicker() {
   const current = useTheme();
   const prefs = useThemePrefs();
-  const status = useThemeUnlockStatus();
+  const status = useThemeUnlockStatus(subscribeSyncStatus);
   const ambianceDial = useAmbianceDial();
   // note (d): the still frame applies to reduced motion AND Ambiance 0 — the first is an OS/CSS
   // fact the existing @media rule already sees; Ambiance is pure JS state, so it needs this
