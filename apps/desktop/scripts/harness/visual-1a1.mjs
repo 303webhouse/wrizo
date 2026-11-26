@@ -50,7 +50,7 @@ await withHarness(async (app) => {
   await app.penStroke('.wz-ink-sheet', [{ x: 0.2, y: 0.12 }, { x: 0.4, y: 0.14 }, { x: 0.6, y: 0.12 }]);
   await sleep(700);
   const after = await run(app, `await window.__vi.flush(); const s = window.__vi.strokesOf(${JSON.stringify(id)}); return { n: s.length, last: s[s.length - 1] && { tip: s[s.length - 1].tip, nib: s[s.length - 1].nib, ink: s[s.length - 1].ink, eraser: s[s.length - 1].eraser || false } };`);
-  ok('T1: a trusted pen stroke after the face\'s picks is stored with the marker, the broad size and oxblood', after.n === before + 1 && after.last.tip === 'marker' && after.last.nib === 'broad' && after.last.ink === 'oxblood' && after.last.eraser === false, { before, after });
+  ok('T1: a trusted pen stroke after the face\'s picks is stored with what is in her hand (the marker, the Regular size F12 ends on, oxblood)', after.n === before + 1 && after.last.tip === 'marker' && after.last.nib === 'regular' && after.last.ink === 'oxblood' && after.last.eraser === false, { before, after });
 
   // ---- the saved ink: a reload loads the painter alone, and paints ----
   await reboot(app);
@@ -62,7 +62,7 @@ await withHarness(async (app) => {
   await run(app, "await window.__vi.instrument('text');");
   await app.evalJs("document.querySelector('.forward-only-editor').focus()");
   await app.typeKeys('The coat was on the train.');
-  await sleep(900);
+  await sleep(2800);   // past the page autosave (pageEditor/usePageAutosave.ts, 2000 ms): wrizoFlushNow writes the cache, not what the editor has not saved yet
   const typed = await run(app, `await window.__vi.flush(); const list = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]'); return (list.find((e) => e.id === ${JSON.stringify(id)}) || {}).text;`);
   ok('T2: after INK, typing lands and every word is stored', String(typed || '').includes('The coat was on the train.'), { typed });
 
