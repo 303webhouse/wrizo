@@ -100,11 +100,13 @@ await withHarness(async (app) => {
     return before;
   };
   const away = () => app.mouseMove(1100, 500);
+  // one scenario that throws is one red check with its reason; the others still run
+  const part = async (name, fn) => { try { await fn(); } catch (e) { ok(`${name}: threw`, false, String((e && e.message) || e).slice(0, 220)); } };
   const hover = async (k) => { const p = await vt(`centre(${J(k)})`); await app.mouseMove(p.x, p.y); };
 
   // ---------------------------------------------------------------- H, C, M1, F1, A2: the picker as it opens, in each theme
   for (const theme of ['plateau', 'machina', 'flux']) {
-    for (const [width, height, tall] of [[1366, 768, 150], [1536, 864, 180]]) {
+    for (const [width, height, tall] of [[1366, 768, 150], [1536, 864, 180]]) await part(`H ${theme} ${width}`, async () => {
       await open({ theme, width, height });
       const l = await vt('layout()');
       const xs = [...new Set(l.rects.map((r) => Math.round(r.x)))], ys = l.rects.map((r) => Math.round(r.y));
@@ -121,11 +123,11 @@ await withHarness(async (app) => {
             !!c && c.disabled && c.locked && /grayscale/.test(c.filter) && c.band === 'Not yet available' && c.bandSeen && c.bandFilter === 'none' && c.panelColour && c.contrast >= 4.5 && c.label === `${who}: not yet available` && c.pics >= 4, c);
         }
       }
-    }
+    });
   }
 
   // ---------------------------------------------------------------- C2, C3, P, N: nothing happens on the two later tiles; the page never moves; nothing saved
-  {
+  await part('C P N', async () => {
     const before = await open({ theme: 'machina' });
     const rects = [await vt('editor()')];
     const store0 = await vt('store()');
@@ -143,10 +145,10 @@ await withHarness(async (app) => {
     ok('P1: the page never moves: opening the picker and playing every tile leaves the writing where it was', !!before && rects.every((r) => r === before), { before, rects });
     const store1 = await vt('store()');
     ok('N1: nothing is saved by hovering or by pressing a tile that can’t open', store0 === store1, { same: store0 === store1 });
-  }
+  });
 
   // ---------------------------------------------------------------- A, M, F: the homages (all three open, Machina current)
-  {
+  await part('A M F B', async () => {
     await open({ theme: 'machina' });
     await away(); await sleep(1500);
     const a0 = await vt('arbor()');
@@ -174,7 +176,7 @@ await withHarness(async (app) => {
     ok('F2: on hover CHECKPOINT fills one letter at a time', steps && new Set(seen).size >= 9 && seen.at(-1) === 10, seen);
     await sleep(500);
     const end = await vt('flux()');
-    ok('F3: at the end every unit turns orange and reads CHECKPOINT', end.on === 10 && end.text.toUpperCase() === 'CHECKPOINT' && end.done === 'true' && end.colours.length === 1 && end.colours[0] === 'rgb(255, 152, 0)', end);
+    ok('F3: at the end every unit turns orange and reads CHECKPOINT', !!end && end.on === 10 && end.text.toUpperCase() === 'CHECKPOINT' && end.done === 'true' && end.colours.length === 1 && end.colours[0] === 'rgb(255, 152, 0)', end);
     const log = await vt('log()');
     const code = /^[01#%&$@/\\<>=+*]$/;
     ok('F4: the newest letter glitches to code with a 2 px colour split, then resolves', log.glitches.length >= 5 && log.glitches.every((g) => code.test(g.ch) && g.i === g.on - 1 && /(^|[ ,])-?2px 0px/.test(g.shadow)), { n: log.glitches.length, first: log.glitches.slice(0, 3) });
@@ -184,11 +186,11 @@ await withHarness(async (app) => {
     ok('B1: the flash law: no letter glitches without the budget’s leave, and never more than 3 a second', asked >= 1 && log.glitches.length <= asked && worst <= 3, { glitches: log.glitches.length, asked, worst });
     await away(); await sleep(600);
     const rest = await vt('flux()');
-    ok('F5: she moves away and the tile is at rest again', rest.on === 0 && rest.done !== 'true', rest);
-  }
+    ok('F5: she moves away and the tile is at rest again', !!rest && rest.on === 0 && rest.done !== 'true', rest);
+  });
 
   // ---------------------------------------------------------------- L: locked built themes (Arbor current; 450 words written)
-  {
+  await part('L', async () => {
     await open({ theme: 'plateau', unlock: FEW });
     const m = await vt("note('machina')"), f = await vt("note('flux')");
     ok('L1: a locked theme is grey, says the words still needed, and can’t be clicked', f.disabled && f.locked && /grayscale/.test(f.filter) && f.note === '550 more words to open Flux' && m.disabled && m.locked, { m, f });
@@ -196,11 +198,11 @@ await withHarness(async (app) => {
     const r = await vt('run()');
     await hover('flux'); await sleep(1500);
     const x = await vt('flux()');
-    ok('L2: a locked tile does not play', r.filled === 6 && r.closed.opacity === 0 && x.on === 0, { r, x });
-  }
+    ok('L2: a locked tile does not play', r.filled === 6 && !!r.closed && r.closed.opacity === 0 && !!x && x.on === 0, { r, x });
+  });
 
   // ---------------------------------------------------------------- O: each tile in its theme's look
-  {
+  await part('O', async () => {
     await open({ theme: 'plateau', room: 'dark' });
     const night = { a: await vt("tone('arbor')"), m: await vt("tone('machina')"), f: await vt("tone('flux')") };
     ok('O1: by night: Arbor walnut with cream lettering; Machina dark; Flux dark glass', night.a.tone === 'dark' && night.a.lum < 0.06 && night.a.wm === 'rgb(239, 228, 203)' && night.m.tone === 'dark' && night.m.lum < 0.06 && night.f.lum < 0.06, night);
@@ -213,10 +215,10 @@ await withHarness(async (app) => {
     await sleep(500);
     const dark = await vt("tone('machina')");
     ok('O3: Machina’s tile is light by day, and dark as soon as she picks a dark page', light.tone === 'light' && light.lum > 0.7 && dark.tone === 'dark' && dark.lum < 0.06, { light, dark });
-  }
+  });
 
   // ---------------------------------------------------------------- S: still frames
-  for (const still of ['reduced motion', 'Ambiance 0']) {
+  for (const still of ['reduced motion', 'Ambiance 0']) await part(`S ${still}`, async () => {
     if (still === 'reduced motion') await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await open({ theme: 'machina', dial: still === 'Ambiance 0' ? 0 : null });
     await away(); await vt('watch()'); await sleep(1500);
@@ -225,13 +227,17 @@ await withHarness(async (app) => {
     const f2 = await vt('flux()'), log = await vt('log()');
     ok(`S1 [${still}]: Arbor holds its end frame: the rhizome grown, knots and all`, !!a && a.opacity === 1 && a.grown === a.n && a.knotsSeen === a.knots, a);
     ok(`S2 [${still}]: Machina holds its end frame: the Run full, the notch at the end, "RUN CLOSED"`, m.filled === 20 && m.notch > 0.95 && !!m.closed && m.closed.opacity === 1, m);
-    ok(`S3 [${still}]: Flux holds its end frame, all orange, and never glitches`, f.on === 10 && f.done === 'true' && f2.on === 10 && f2.done === 'true' && log.glitches.length === 0 && log.flashes.length === 0, { f, f2, glitches: log.glitches.length, flashes: log.flashes.length });
+    ok(`S3 [${still}]: Flux holds its end frame, all orange, and never glitches`, !!f && !!f2 && f.on === 10 && f.done === 'true' && f2.on === 10 && f2.done === 'true' && log.glitches.length === 0 && log.flashes.length === 0, { f, f2, glitches: log.glitches.length, flashes: log.flashes.length });
     if (still === 'reduced motion') await app.emulateMedia([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
-  }
+  });
   return checks;
 });
 
 const pass = checks.length > 0 && checks.every((c) => c.pass);
 for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pass ? '' : '  ' + c.detail.slice(0, 600)}`);
-console.log(pass ? `\nVISUAL 2 TILES VERIFY: PASS (${checks.length} checks)` : `\nVISUAL 2 TILES VERIFY: FAIL - ${checks.filter((c) => !c.pass).length}/${checks.length} failed`);
+// the suite prints only this line, so it names what failed and gives the first reason (a throw before anything else)
+const bad = checks.filter((c) => !c.pass);
+const why = bad.find((c) => c.name.endsWith(': threw')) || bad[0];
+const codes = [...new Set(bad.map((c) => c.name.split(/[ :]/)[0]))].join(' ');
+console.log(pass ? `\nVISUAL 2 TILES VERIFY: PASS (${checks.length} checks)` : `\nVISUAL 2 TILES VERIFY: FAIL - ${bad.length}/${checks.length} failed: ${codes} | ${why ? `${why.name.slice(0, 40)} ${why.detail.slice(0, 220)}`.replace(/\s+/g, ' ') : 'no checks ran'}`);
 process.exit(pass ? 0 : 1);
