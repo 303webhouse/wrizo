@@ -60,13 +60,15 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
     };
     const unsub = subscribeBoardScale(paint);
 
-    // set the scale, holding the board point under (cx, cy) - client coordinates - where it is
-    const zoomTo = (target: number, cx: number, cy: number) => {
+    // (cx, cy) - client coordinates - in the frame's own, and the board point standing there now
+    const inFrame = (cx: number, cy: number) => { const wr = wrap.getBoundingClientRect(); return { px: cx - wr.left - wrap.clientLeft, py: cy - wr.top - wrap.clientTop }; };
+    const pointAt = (cx: number, cy: number) => { const { px, py } = inFrame(cx, cy), s = getBoardScale(); return { bx: (wrap.scrollLeft + px - offL) / s, by: (wrap.scrollTop + py - offT) / s }; };
+    // set the scale, holding the board point under (cx, cy) where it is; `held` is that point when the caller already has it (a glide)
+    const zoomTo = (target: number, cx: number, cy: number, held?: { bx: number; by: number }) => {
       const s1 = getBoardScale(), s2 = clampScale(target, limits());
       if (s2 === s1) return;
-      const wr = wrap.getBoundingClientRect();
-      const px = cx - wr.left - wrap.clientLeft, py = cy - wr.top - wrap.clientTop;
-      const bx = (wrap.scrollLeft + px - offL) / s1, by = (wrap.scrollTop + py - offT) / s1;
+      const { px, py } = inFrame(cx, cy);
+      const { bx, by } = held ?? pointAt(cx, cy);
       setBoardScale(s2);   // paint() runs, and with it the layer's view (subscribers run in order)
       wrap.scrollLeft = bx * s2 + offL - px;
       wrap.scrollTop = by * s2 + offT - py;
@@ -81,9 +83,15 @@ export function useFluxCamera({ wrapRef, canvasRef, boardId, active, motion }: O
       if (to === from) return;
       if (!motionRef.current || reduced()) { zoomTo(to, cx, cy); return; }
       const t0 = performance.now();
+      // THE HELD POINT IS TAKEN ONCE, at the glide's start: each frame used to work it out again from the ROUNDED scroll, and the roundings piled up (0.8 to 3.3 board
+      // px). A scroll found away from where the last frame left it is her own pan: the point is taken again from there.
+      let held = pointAt(cx, cy);
+      let left = { x: wrap.scrollLeft, y: wrap.scrollTop };
       const step = (now: number) => {
         const t = Math.min(1, (now - t0) / GLIDE_MS), e = 1 - Math.pow(1 - t, 3);
-        zoomTo(t >= 1 ? to : from * Math.pow(to / from, e), cx, cy);
+        if (Math.abs(wrap.scrollLeft - left.x) > 1 || Math.abs(wrap.scrollTop - left.y) > 1) held = pointAt(cx, cy);
+        zoomTo(t >= 1 ? to : from * Math.pow(to / from, e), cx, cy, held);
+        left = { x: wrap.scrollLeft, y: wrap.scrollTop };
         raf = t >= 1 ? 0 : requestAnimationFrame(step);
       };
       raf = requestAnimationFrame(step);
