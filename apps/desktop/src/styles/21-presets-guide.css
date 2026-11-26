@@ -11,7 +11,7 @@
 .guide-answers{ margin-top:18px; display:flex; flex-wrap:wrap; gap:10px; }
 .guide-foot{ margin-top:22px; gap:18px; justify-content:flex-start; flex-wrap:wrap; }
 .guide-foot .guide-close{ margin-left:auto; }
-.guide-else, .guide-close, .guide-back{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:4px 0; }
+.guide-panel .guide-else, .guide-panel .guide-close, .guide-panel .guide-back{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:4px 0; }
 .guide-said{ margin:10px 0 0; font-size:13px; line-height:1.45; }
 .guide-card{ margin-top:14px; padding:14px 16px; }
 .guide-card-name{ font-size:19px; font-weight:600; line-height:1.25; }
@@ -19,8 +19,9 @@
 .guide-card-line{ margin:0; font-size:15px; line-height:1.5; }
 .guide-card-act{ margin-top:12px; }
 .guide-why{ min-width:26px; height:26px; line-height:24px; text-align:center; font-weight:600; font-size:14px; border-radius:50% !important; box-shadow:inset 0 0 0 1px currentColor; }
-.guide-start{ display:inline-block; padding:8px 20px; font-size:14px; font-weight:600; box-shadow:inset 0 0 0 1.5px currentColor; }
-.guide-start-small{ padding:5px 14px; font-size:13px; }
+/* two classes: the shared `.help-panel button` reset (21-help-me-choose.css) outranks one */
+.guide-panel .guide-start{ display:inline-block; padding:8px 20px; font-size:14px; font-weight:600; box-shadow:inset 0 0 0 1.5px currentColor; }
+.guide-panel .guide-start-small{ padding:5px 14px; font-size:13px; }
 .guide-or{ margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:14px; }
 .guide-or-word{ font-style:italic; }
 .guide-note{ margin-top:6px; }

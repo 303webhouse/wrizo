@@ -9,6 +9,9 @@
 //   STYLE     only a school paper and research ask a style, and a style is MLA, APA or Chicago or none
 //   PANEL     the panel imports no store write (persistence, docKindActs, presetGuideActs) and keeps no storage; Back and Close call nothing but its own state and `onClose`; Start is the host's `onStart`
 //   LEX       every word the panel and the module use is a `guide*` lexicon key that is in the canonical words (no string of the Guide's own)
+//   HIDDEN    "The stage" and "Audio or video" are not shown until Stage Play and Podcast are in the app (no stand-in); when they are, each answer is back with Treatment as its alternative
+//   DOOR      the cascade's Docs panel shows New doc as Blank, Screenplay, Research, Guide, Board, More; the Guide opens only behind a press; its keys never reach the cascade (which shuts on any key from outside itself); a pick becomes a new Doc of its kind
+//   DRESS     every Guide button rule that sets its padding or font outranks the shared `.help-panel button` reset (two classes or more), so Start is drawn with its room
 //   ACT       presetGuideActs.ts runs applyPreset, then applyStyleGuide, then the one live Plan loader (planPresetLoad.ts), and BackPlan.tsx uses that same loader
 // Run: node scripts/harness/reorg-guide-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
@@ -29,7 +32,7 @@ function load(src, deps = {}) {
 const SRC = {
   guide: rd('reorg/presetGuide.ts'), kinds: rd('reorg/docKinds.ts'), plan: rd('reorg/backMenu/planPresets.ts'),
   panel: rd('reorg/GuidePanel.tsx'), acts: rd('reorg/presetGuideActs.ts'), loader: rd('reorg/backMenu/planPresetLoad.ts'), backplan: rd('reorg/backMenu/BackPlan.tsx'),
-  chrome: rd('store/lexicon/canonical/chrome.ts'), terms: rd('store/lexicon/terms.ts'),
+  chrome: rd('store/lexicon/canonical/chrome.ts'), terms: rd('store/lexicon/terms.ts'), docs: rd('reorg/panels/DocsPanel.tsx'), css: rd('styles/21-presets-guide.css'),
 };
 
 // THE APP TODAY, read from the source text (not through the module under test): the preset ids in docKinds.ts, the structure ids in planPresets.ts
@@ -100,8 +103,6 @@ function suite(src) {
       // CHANGED: the landing was not in the app, so its alternative is the landing (with no alternative)
       'story/book/puzzle': ['novel', 'seven', null, null],
       'story/book/two': ['novel', 'three', null, null],
-      'script/stage': ['treatment', null, null, null],
-      'script/audio': ['treatment', null, null, null],
       'paper/analysis/no': ['class-essay', null, null, null],
       'paper/comparison/chicago': ['class-essay', null, 'chicago', null],
       'paper/not-sure/apa': ['class-essay', null, 'apa', null],
@@ -125,6 +126,39 @@ function suite(src) {
     const soFarOk = soFar === 'person,puzzle,two,nothing';   // Kishotenketsu (image) and Braid (pieces) have neither landing nor alternative in the app: left out
     const poemSkipped = m.walk(['poem'], m.LIVE, tree).kind === 'landing' && m.walk(['grant'], m.LIVE, tree).kind === 'landing';
     return { pass: bad.length === 0 && droppedOk && soFarOk && poemSkipped, detail: J({ bad: bad.slice(0, 5), droppedOk, soFar, poemSkipped }) };
+  });
+  t('HIDDEN', () => {
+    const m = g();
+    const ids = (live) => (m.guideTree(live).answers.find((a) => a.id === 'script')?.next.answers ?? []).map((a) => a.id);
+    const now = ids(m.LIVE);
+    const later = { presets: new Set([...m.LIVE.presets, 'stage-play', 'podcast-episode']), structures: m.LIVE.structures };
+    const then = ids(later);
+    const tree = m.guideTree(later);
+    const back = ['stage', 'audio'].map((id) => { const s = m.walk(['script', id], later, tree); return s.kind === 'landing' ? [s.landing.pick.preset, s.landing.alt?.preset ?? null] : null; });
+    return { pass: !now.includes('stage') && !now.includes('audio') && now.length >= 2 && then.includes('stage') && then.includes('audio') && J(back) === J([['stage-play', 'treatment'], ['podcast-episode', 'treatment']]), detail: J({ now, then, back }) };
+  });
+  t('DOOR', () => {
+    const d = src.docs.replace(/\/\/.*$/gm, '');
+    const list = d.slice(d.indexOf('const kinds'), d.indexOf('];', d.indexOf('const kinds')));
+    const order = [...list.matchAll(/\{ id: '([a-z-]+)'/g)].map((m) => m[1]).join();
+    const behindPress = /useState\(false\)/.test(d) && /\{guideOpen && <GuidePanel\b/.test(d) && !/setGuideOpen\(true\)[^}]*useEffect/.test(d) && (d.match(/setGuideOpen\(true\)/g) ?? []).length === 1;
+    const keysHeld = /className="help-backdrop guide-backdrop"[^>]*onKeyDown=\{hold\}/.test(src.panel) && /const hold = [\s\S]{0,80}?e\.stopPropagation\(\)/.test(src.panel) && /tabIndex=\{-1\}/.test(src.panel);
+    const born = /newGuideDoc\(/.test(d) && /export function newGuideDoc\(/.test(src.acts) && /birth\(/.test(src.acts) && /startGuide\(/.test(src.acts.slice(src.acts.indexOf('function newGuideDoc')));
+    const blank = /if \(!pick\.preset && !pick\.structure\) \{ go\(\{\}\); return; \}/.test(d);
+    return { pass: order === 'blank,screenplay,research-paper,guide,board,more' && behindPress && keysHeld && born && blank, detail: J({ order, behindPress, keysHeld, born, blank }) };
+  });
+  t('DRESS', () => {
+    const rules = [...src.css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+    const lost = [];
+    for (const [, sel, body] of rules) {
+      if (!/(^|;)\s*(padding|font|font-size|font-weight)\s*:/.test(body)) continue;
+      for (const one of sel.split(',').map((x) => x.trim())) {
+        const last = one.split(/\s+/).pop();
+        if (!/^\.guide-(start|start-small|else|close|back|ans)\b/.test(last)) continue;
+        if ((one.match(/\.[a-z-]+/g) ?? []).length < 2) lost.push(one);
+      }
+    }
+    return { pass: rules.length > 40 && lost.length === 0, detail: J({ rules: rules.length, lost }) };
   });
   t('ALT', () => {
     const m = g(), bad = [];
@@ -193,6 +227,11 @@ const MUTANTS = [
   ['the style question is asked of a work memo', 'STYLE', (s) => ({ ...s, guide: sub(s.guide, "const work = settle(question('work-after', 'guideQWork', rowAnswers(WORK, live)));", "const work = settle(question('work-after', 'guideQWork', styled(WORK, STYLE_SCHOOL, 'work-style', 'guideQStyleSchool', live)));") })],
   ['the panel writes the store on Close', 'PANEL', (s) => ({ ...s, panel: sub(s.panel, "import { createPortal } from 'react-dom';", "import { createPortal } from 'react-dom';\nimport { flushNow } from '../store/persistence';") })],
   ['a word of the Guide is a string in the panel', 'LEX', (s) => ({ ...s, panel: sub(s.panel, '{t(\'guideStart\')}</button></div>\n          </div>\n        )}', '>Start</button></div>\n          </div>\n        )}') })],
+  ['the stage lands on Treatment again', 'HIDDEN', (s) => ({ ...s, guide: sub(s.guide, 'if (!r.only && r.alt', 'if (r.alt') })],
+  ['the Guide row comes after Board', 'DOOR', (s) => ({ ...s, docs: sub(s.docs, "{ id: 'guide',", "{ id: 'zz-guide',") })],
+  ['the panel lets its keys through to the cascade', 'DOOR', (s) => ({ ...s, panel: sub(s.panel, 'onKeyDown={hold}', '') })],
+  ['Blank from the Guide makes a Doc of its own', 'DOOR', (s) => ({ ...s, docs: sub(s.docs, 'if (!pick.preset && !pick.structure) { go({}); return; }', '') })],
+  ['Start loses its padding to the shared button reset', 'DRESS', (s) => ({ ...s, css: sub(s.css, '.guide-panel .guide-start{', '.guide-start{') })],
   ['Start loads the Plan before the preset', 'ACT', (s) => ({ ...s, acts: sub(s.acts, '  if (p.preset) {', '  if (structure) loadPlanPreset(entryId, structure, t);\n  if (p.preset) {') })],
 ];
 

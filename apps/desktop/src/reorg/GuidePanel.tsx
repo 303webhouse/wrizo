@@ -90,6 +90,18 @@ export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps)
     return out;
   };
 
+  // HER KEYS STAY IN THE PANEL. A door that lives in a pop-out (the Docs panel) would be shut by any key heard from outside it (Cascade.tsx shuts on a keydown that did not start inside itself), taking the Guide with it: so nothing leaves this panel,
+  // and Tab goes round inside it (it is a modal: the page behind is not hers to type on until it closes). Esc is the capture listener's above.
+  const hold = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
+    if (e.key !== 'Tab') return;
+    const items = [...(rootRef.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? [])];
+    if (!items.length) return;
+    const at = items.indexOf(document.activeElement as HTMLElement);
+    const to = e.shiftKey ? (at <= 0 ? items.length - 1 : -1) : (at < 0 || at === items.length - 1 ? 0 : -1);
+    if (to >= 0) { e.preventDefault(); items[to].focus(); }
+  };
+
   // ---- the three bodies
   let body;
   if (note && landing) {
@@ -176,8 +188,8 @@ export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps)
   }
 
   return createPortal(
-    <div className="help-backdrop guide-backdrop" role="presentation" onClick={onClose}>
-      <div ref={rootRef} className={`help-panel help-${variant} guide-panel`} role="dialog" aria-modal="true" aria-label={t('guideDialogLabel')} data-guide="" data-guide-theme={variant} data-still={still ? 'true' : 'false'} onClick={(e) => e.stopPropagation()}>
+    <div className="help-backdrop guide-backdrop" role="presentation" onClick={onClose} onKeyDown={hold}>
+      <div ref={rootRef} tabIndex={-1} className={`help-panel help-${variant} guide-panel`} role="dialog" aria-modal="true" aria-label={t('guideDialogLabel')} data-guide="" data-guide-theme={variant} data-still={still ? 'true' : 'false'} onClick={(e) => e.stopPropagation()}>
         {variant === 'diagnostic' && <><i className="help-br a" /><i className="help-br b" /><i className="help-br c" /><i className="help-br d" /></>}
         <div className="guide-sr" role="status" aria-live="polite">{srLine}</div>
         {body}

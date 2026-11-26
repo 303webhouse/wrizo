@@ -1274,6 +1274,7 @@ export const CANONICAL_CHROME = {
 
   // THE GUIDE (PRESETS-B, Nov 25; guide-brief-nov24.md, finding-presets.md section 4): the questions and answers as written, the same in every theme; the chrome words are the plain word in every theme until the Wrizors give a theme's own.
   // chrome
+  guideRow: 'Guide',
   guideDialogLabel: 'Guide',
   guideKicker: 'Guide',
   guideStepOf: '{n} of {total}',

@@ -752,6 +752,7 @@ export type DeskTermId =
   | 'helpWhyFeatureStoryTrend'
   | 'helpWhyFeatureStoryInvestigative'
   // THE GUIDE (PRESETS-B, Nov 25)
+  | 'guideRow'
   | 'guideDialogLabel'
   | 'guideKicker'
   | 'guideStepOf'

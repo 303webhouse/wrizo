@@ -47,16 +47,18 @@ export const BLANK: GuidePick = { preset: null, structure: null, style: null };
 
 // ---------------------------------------------------------------- the table (PRESETS' finding-presets.md section 4, as the brief copies it)
 
-interface Row { id: string; word: GuideTermId; preset: string; alt?: string }
+interface Row { id: string; word: GuideTermId; preset: string; alt?: string; only?: true }
 const row = (id: string, word: GuideTermId, preset: string, alt?: string): Row => ({ id, word, preset, ...(alt ? { alt } : {}) });
+// HIDDEN UNTIL IT SHIPS (Fable, Nov 25): a row that takes no stand-in. A playwright landed on Treatment is misled, so "The stage" and "Audio or video" are not shown until their own preset is in the app; then each is back, with its alternative.
+const ownOnly = (r: Row): Row => ({ ...r, only: true });
 
 const SCRIPT: readonly Row[] = [
   row('film', 'guideAnsFilm', 'screenplay-feature', 'treatment'),
   row('tv-half', 'guideAnsTvHalf', 'tv-half-hour', 'treatment'),
   row('tv-hour', 'guideAnsTvHour', 'tv-hour', 'treatment'),
   row('short', 'guideAnsShort', 'short-film', 'treatment'),
-  row('stage', 'guideAnsStage', 'stage-play', 'treatment'),
-  row('audio', 'guideAnsAudio', 'podcast-episode', 'treatment'),
+  ownOnly(row('stage', 'guideAnsStage', 'stage-play', 'treatment')),
+  ownOnly(row('audio', 'guideAnsAudio', 'podcast-episode', 'treatment')),
 ];
 const POEM: readonly Row[] = [row('one', 'guideAnsPoemOne', 'poem', 'sequence'), row('group', 'guideAnsPoemGroup', 'poetry-collection', 'sequence')];
 const ESSAY_BOOK = row('book', 'guideAnsEssayBook', 'memoir', 'memoir-in-essays');
@@ -129,9 +131,9 @@ const STYLE_RESEARCH: readonly { id: string; word: GuideTermId; style: GuideStyl
 // ---------------------------------------------------------------- pruning
 
 /** A row's landing against the app: itself; else its alternative as the landing (with no alternative); else nothing. */
-export function resolveRow(r: { preset: string; alt?: string }, live: GuideLive): { preset: string; alt: string | null } | null {
+export function resolveRow(r: { preset: string; alt?: string; only?: boolean }, live: GuideLive): { preset: string; alt: string | null } | null {
   if (live.presets.has(r.preset)) return { preset: r.preset, alt: r.alt && r.alt !== r.preset && live.presets.has(r.alt) ? r.alt : null };
-  if (r.alt && live.presets.has(r.alt)) return { preset: r.alt, alt: null };
+  if (!r.only && r.alt && live.presets.has(r.alt)) return { preset: r.alt, alt: null };
   return null;
 }
 /** A structure against the app, the same way (null is "no Plan", always fine). */
