@@ -271,8 +271,9 @@ await withHarness(async (app) => {
   const half = sp.railRight + (sp.win - sp.railRight) / 2;
   const sideMid = sp.page ? sp.page[0] + sp.page[2] / 2 : 0;
   const wantMid = sp.railRight + 16 + (aLeft - 5 - (sp.railRight + 16)) / 2;
+  // #133: the bigger page's own side needs more than half the room at 1366 - the "or" this check's name already allows, now in its condition
   ok(`SP1: Open beside on a linked Block opens it on the RIGHT: its side ends 16 px short of the window (${sp.win}) and starts at half the room right of the rail (${Math.round(half)}) or where the page's own side needs it, with a grip on its edge`,
-    !!sp.asset && Math.abs(aRight - (sp.win - 16)) <= 1 && aLeft >= half - 1 && aLeft <= half + 41 && (await app.evalJs("!!document.querySelector('.wz-split-asset [role=separator]')")), JSON.stringify(sp));
+    !!sp.asset && Math.abs(aRight - (sp.win - 16)) <= 1 && aLeft >= half - 1 && aLeft <= Math.max(half, sp.railRight + 16 + (sp.page ? sp.page[2] : 0) + 5) + 41 && (await app.evalJs("!!document.querySelector('.wz-split-asset [role=separator]')")), JSON.stringify(sp));
   ok('SP2: the page keeps its size and its top and sits in the middle of its own side (a shift, nothing else); the stage is marked',
     !!sp.page && !!pageBefore && sp.page[1] === pageBefore[1] && sp.page[2] === pageBefore[2] && sp.page[3] === pageBefore[3] && Math.abs(sideMid - wantMid) <= 1.5 && sp.stageMark === 'true', JSON.stringify({ before: pageBefore, page: sp.page, sideMid, wantMid }));
   ok("SP3: both menus are off in a split (hidden, not closed): the Tutor's and the Tools' anchors are not visible", sp.tutorGrip === 'hidden' && sp.sliverGrip === 'hidden', JSON.stringify({ t: sp.tutorGrip, s: sp.sliverGrip }));

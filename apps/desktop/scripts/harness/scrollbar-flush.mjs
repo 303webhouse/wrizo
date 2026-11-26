@@ -98,7 +98,7 @@ const measure = (app) => app.evalJs(`(() => {
   const sr = scroll.getBoundingClientRect();
   const pr = page.getBoundingClientRect();
   return {
-    gapFromPageEdge: pr.right - sr.right,
+    gapFromPageEdge: (pr.right - sr.right) / (page.offsetWidth ? pr.width / page.offsetWidth : 1),   // #133 (Nick, Nov 25): the page is painted at more than scale 1 at these widths, so painted lengths are read back in page units
     pageBorderRight: parseFloat(getComputedStyle(page).borderRightWidth) || 0,
     scrollbarWidth: scroll.offsetWidth - scroll.clientWidth,
     scrollbarWidthProp: getComputedStyle(scroll).scrollbarWidth,
@@ -106,7 +106,7 @@ const measure = (app) => app.evalJs(`(() => {
     inkOnPaperLow: getComputedStyle(document.documentElement).getPropertyValue('--ink-on-paper-low').trim(),
     scrollHeight: scroll.scrollHeight,
     clientHeight: scroll.clientHeight,
-    pageHeight: page.getBoundingClientRect().height,
+    pageHeight: page.getBoundingClientRect().height / (page.offsetWidth ? pr.width / page.offsetWidth : 1),
     // the applied scale is read from the page's OWN computed transform (matrix(a, ...)), never from the variable the rule reads - an independent measurement
     appliedScale: (() => { const t = getComputedStyle(page).transform; return !t || t === 'none' ? 1 : new DOMMatrixReadOnly(t).a; })(),
     thumbColor: getComputedStyle(scroll, '::-webkit-scrollbar-thumb').backgroundColor,

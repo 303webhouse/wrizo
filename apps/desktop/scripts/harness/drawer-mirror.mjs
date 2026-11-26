@@ -94,6 +94,7 @@ const pred4 = (gs) => gs.every((g) => !!g && sameRect(gs[0].page, g.page));
 // right margin, never its text; its tab leaves the page's edge and stands against the drawer. The originals below still run above 1600.
 const SMALL_W = 1600;
 const overTab = (g) => !!g && !!g.tTab && !!g.tPanel && (near(g.tTab.right, g.tPanel.left, 2) || near(g.tTab.left, g.tPanel.right, 2));
+const overTools = (g) => !!g && !!g.sTab && !!g.sPanel && (near(g.sTab.right, g.sPanel.left, 2) || near(g.sTab.left, g.sPanel.right, 2));
 const pred2over = (g) => !!g && !!g.page && !!g.stage && overTab(g) && g.tPanel.width >= 200 && g.tPanel.left >= g.page.right - g.page.width / 8.5 - 1 && g.tPanel.right <= g.stage.right + 1;
 // Wire In successor read (Flux, Nov 12): the stored per-page Typewriter value no longer zooms a Flux page - not zoomed, room for both drawers on each side
 const fluxNoZoom = (g) => !!g && !!g.page && !!g.stage && g.zoom === false && (g.page.left - g.stage.left) >= DRAWER_MIN && (g.stage.right - g.page.right) >= DRAWER_MIN;
@@ -148,17 +149,24 @@ await withHarness(async (app) => {
       } else ok(`${tag} 3: there is room for both (${Math.round(roomL)} / ${Math.round(roomR)}px beside the page, >= ${DRAWER_MIN}) and BOTH stand open`,
         both && !!g2 && g2.sOpen && g2.tOpen, J({ roomL, roomR, sOpen: g2 && g2.sOpen, tOpen: g2 && g2.tOpen }));
       // (1) the tabs: Tools' tab across its open, the Tutor's across its own
-      ok(`${tag} 1 (Tools): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g1 && g1.sOpen && pred1(g0, g1, 'tools'), J({ shut: g0 && [g0.sTab, g0.sArrow], open: g1 && [g1.sTab, g1.sArrow] }));
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133b: the Front menu keeps its width over the page's margin), the original verbatim:
+      // ok(`${tag} 1 (Tools): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g1 && g1.sOpen && pred1(g0, g1, 'tools'), J({ shut: g0 && [g0.sTab, g0.sArrow], open: g1 && [g1.sTab, g1.sArrow] }));
+        ok(`${tag} 1-133 (Tools): opening the Tools flips its arrow; its tab stands against the drawer, off the page's text, at the same height`, !!g1 && g1.sOpen && g0.sArrow !== g1.sArrow && near(g0.sTab.top, g1.sTab.top) && overTools(g1), J({ shut: g0 && [g0.sTab, g0.sArrow], open: g1 && [g1.sTab, g1.sPanel, g1.sArrow] }));
+      } else ok(`${tag} 1 (Tools): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g1 && g1.sOpen && pred1(g0, g1, 'tools'), J({ shut: g0 && [g0.sTab, g0.sArrow], open: g1 && [g1.sTab, g1.sArrow] }));
       if (w <= SMALL_W) {
         // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
       // ok(`${tag} 1 (Tutor): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g2 && g2.tOpen && pred1(g1, g2, 'tutor'), J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tArrow] }));
         ok(`${tag} 1-133 (Tutor): over the page the tab goes with its drawer - it stands against the drawer, at the same height, its arrow flipped`, !!g2 && g2.tOpen && overTab(g2) && near(g1.tTab.top, g2.tTab.top) && g1.tArrow !== g2.tArrow, J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tPanel, g2.tArrow] }));
       } else ok(`${tag} 1 (Tutor): the tab's rect is unchanged by opening its drawer - only its arrow flips`, !!g2 && g2.tOpen && pred1(g1, g2, 'tutor'), J({ shut: g1 && [g1.tTab, g1.tArrow], open: g2 && [g2.tTab, g2.tArrow] }));
       // (2) the open drawers meet the page
-      // #133: at 1600 and narrower the Tools has closed by g2, so the same predicate reads it open (g1)
-      const toolsOpen = w <= SMALL_W ? g1 : g2;
-      ok(`${tag} 2 (Tools): the open drawer's page-side edge is the page's left edge - its tab on the page's edge, its panel against its tab`, pred2(toolsOpen, 'tools'),
-        J({ page: toolsOpen && toolsOpen.page, tab: toolsOpen && toolsOpen.sTab, panel: toolsOpen && toolsOpen.sPanel }));
+      if (w <= SMALL_W) {
+        // SUPERSEDED at 1600 and narrower (#133b), the original verbatim (read at g1, where the Tools stands):
+      // ok(`${tag} 2 (Tools): the open drawer's page-side edge is the page's left edge - its tab on the page's edge, its panel against its tab`, pred2(toolsOpen, 'tools'),
+      // J({ page: toolsOpen && toolsOpen.page, tab: toolsOpen && toolsOpen.sTab, panel: toolsOpen && toolsOpen.sPanel }));
+        ok(`${tag} 2-133 (Tools): the open drawer lies over the page's left margin at most, never its text, its tab against it`, overTools(g1) && g1.sPanel.right <= g1.page.left + g1.page.width / 8.5 + 1, J({ page: g1 && g1.page, tab: g1 && g1.sTab, panel: g1 && g1.sPanel }));
+      } else ok(`${tag} 2 (Tools): the open drawer's page-side edge is the page's left edge - its tab on the page's edge, its panel against its tab`, pred2(g2, 'tools'),
+        J({ page: g2 && g2.page, tab: g2 && g2.sTab, panel: g2 && g2.sPanel }));
       if (w <= SMALL_W) {
         // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
       // ok(`${tag} 2 (Tutor): the open drawer's page-side edge is the page's right edge - its tab on the page's edge, its panel against its tab (the mirror)`, pred2(g2, 'tutor'),

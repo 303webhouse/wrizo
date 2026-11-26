@@ -778,3 +778,9 @@ Page". It now keeps its earlier width (Arbor 264 px, Flux 184, Machina 200 by th
 page's left margin, stopping 4 px short of its text and never narrower than its own box. The room to the text is measured
 by Sliver.tsx (--wz-front-room): a percentage in the stylesheet's own overlap term resolves against the wrong box where it is used. In Arbor and Machina its tab stays on the rail
 side; elsewhere the drawer grows past the tab, so the open tab moves out with it. The Typewriter zoom keeps §12.
+
+## desk-frame §25
+
+#133 (Fable, Nov 25, 7:30 pm, item 4: with Back open at 1536 Flux's drawer stood over "… 0 CONNECTIONS"). Flux's page header carries a
+readout at each end of the page's top (Doc address at the left, counts at the right). At 1600 and narrower a panel lying over that end
+of the page puts its readout out of sight while it stands there; the box stays, nothing moves.

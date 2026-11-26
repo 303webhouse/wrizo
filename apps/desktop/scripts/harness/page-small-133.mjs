@@ -6,8 +6,9 @@
 //   ONE at 1600 and narrower one side panel stands at a time (each opening closes the last); at 1920 the Front and Back menus stand together
 //   T   no open panel covers the page's text column
 //   C   no opener that is on screen stands under, or across the border of, an open panel - its own included; an open panel's opener takes a press
-//   F   at 1600 and narrower the open Front menu is as wide as it was before #133 (Arbor 264, Flux 184, Machina 184 at 1366 and 209 at 1536 px):
-//       it lies over the page's margin rather than narrowing (the regression the final frames showed; Fable's order: "over the page's edge, never resizing")
+//   W   (Fable, Nov 25, 7:30: "no panel is narrower than before") at 1600 and narrower each panel is as wide as it was on the source before #133,
+//       or, where that would stand on the text, as wide as reaches the text (4 px short of it; 8 px allowed)
+//   H   no open panel stands over a readout of the page's header (Flux: "… 0 CONNECTIONS")
 //   Y   typing lands: words typed at the end of the page are stored, and no word is lost
 //   MS  (mutant, 1366) the page forced to scale 1 - S must go red.   MT (mutant, 1366) the pop-out forced 480 px wide - T must go red.
 // THE PRODUCT'S OWN LOOKS: the driver pins the older themes and the reorg off for files that do not ask, so this one asks (WS_REORG, WS_ARBOR2,
@@ -28,8 +29,12 @@ const J = (v) => JSON.stringify(v);
 const THEMES = [{ id: 'plateau', name: 'Arbor', mark: 'data-arbor2' }, { id: 'flux', name: 'Flux', mark: 'data-flux3' }, { id: 'machina', name: 'Machina', mark: 'data-machina2' }];
 const SIZES = [[1366, 768], [1536, 864], [1920, 1080]];
 const SMALL_W = 1600;
-// the Front menu's widths measured on train-l8-1, the source before #133
-const FRONT_W = { plateau: { 1366: 264, 1536: 264 }, flux: { 1366: 184, 1536: 184 }, machina: { 1366: 184, 1536: 209 } };
+// the panels' widths measured on train-l8-1, the source before #133 (1366 / 1536)
+const BEFORE = {
+  plateau: { pop: [269, 300], front: [264, 264], back: [317, 402] },
+  flux: { pop: [269, 300], front: [184, 184], back: [317, 402] },
+  machina: { pop: [300, 300], front: [184, 209], back: [317, 402] },
+};
 const PARA = 'The quick brown fox jumps over the lazy dog while the tide comes in and the lamplight wavers on the water. '.repeat(26);
 
 // the page side: boxes as [left, top, right, bottom], null when not drawn
@@ -46,7 +51,8 @@ const PROBE = `(() => {
   const backOpen = document.querySelector('.wz-tutor-grip')?.getAttribute('aria-expanded') === 'true';
   const panels = { pop: seen(popEl), front: frontOpen ? seen(document.querySelector('.wz-sliver-panel')) : null, back: backOpen ? seen(document.querySelector('.wz-tutor-panel')) : null };
   const dead = [['front', '.wz-sliver-grip'], ['back', '.wz-tutor-grip']].filter(([o, sel]) => { if (!panels[o]) return false; const g = document.querySelector(sel); const b = g.getBoundingClientRect(); const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !hit || !g.contains(hit); }).map(([o]) => o);
-  return { dead, page: [pb.left, pb.top, pb.width, pb.height].map(Math.round), share: Math.round((pb.width / sb.width) * 1000) / 1000, text, panels,
+  const heads = [...document.querySelectorAll('.flux3-dochead > *')].map((e) => seen(e)).filter(Boolean);
+  return { heads, dead, page: [pb.left, pb.top, pb.width, pb.height].map(Math.round), share: Math.round((pb.width / sb.width) * 1000) / 1000, text, panels,
     stands: Object.keys(panels).filter((k) => panels[k]), openers: { front: seen(document.querySelector('.wz-sliver-grip')), back: seen(document.querySelector('.wz-tutor-grip')) } };
 })()`;
 const across = (a, b) => !!a && !!b && a[0] < b[2] - 1 && b[0] < a[2] - 1 && a[1] < b[3] - 1 && b[1] < a[3] - 1;
@@ -106,9 +112,17 @@ await withHarness(async (app) => {
       ok(`${at} C: no opener across a panel, and each open panel's opener takes a press`, Object.values(seq).every((s) => crossed(s).length === 0), J(Object.values(seq).flatMap(crossed)));
 
       if (w <= SMALL_W) {
-        const f = seq.front.panels.front; const width = f ? f[2] - f[0] : 0;
-        ok(`${at} F: the open Front menu is as wide as before #133 (${FRONT_W[th.id][w]} px)`, width >= FRONT_W[th.id][w] - 1.5, `width ${width}`);
+        const at133 = w === 1366 ? 0 : 1;
+        const narrow = [];
+        for (const what of ['pop', 'front', 'back']) {
+          const st = seq[what]; const p = st.panels[what]; if (!p) { narrow.push(`${what} not open`); continue; }
+          const width = p[2] - p[0]; const room = what === 'back' ? p[2] - st.text[2] : st.text[0] - p[0];
+          const want = Math.min(BEFORE[th.id][what][at133], room - 8);
+          if (width < want - 1.5) narrow.push(`${what} ${width} < ${want} (before ${BEFORE[th.id][what][at133]}, room ${room})`);
+        }
+        ok(`${at} W: no panel is narrower than before`, narrow.length === 0, narrow.join('; '));
       }
+      ok(`${at} H: no open panel stands over a header readout`, Object.values(seq).every((st) => Object.values(st.panels).every((p) => st.heads.every((h) => !across(p, h)))), J(Object.fromEntries(Object.entries(seq).map(([k, st]) => [k, st.heads.length]))));
 
       if (w === 1366) {
         await openPage(app, id);

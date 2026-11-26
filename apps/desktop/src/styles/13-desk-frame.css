@@ -554,6 +554,11 @@
   .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:0; right:auto; width:var(--wz-front-w); }
   .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px - var(--wz-front-w)); }
 }
+/* #133: Flux's page header has a readout at each end of the page's top; a panel lying over that end would stand on it, so the readout is out of sight while it does (nothing moves) [desk-frame §25] */
+@media (max-width:1600px){
+  .desk-frame-stage--prose:has(.wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true'])) .flux3-dochead-n{ visibility:hidden; }
+  .desk-frame-stage--prose:has(.wz-cascade-panel[data-visible='true']:not([data-leaving]), .wz-cascade-survey[data-docked='true'], .wz-sliver[data-open='true']) .flux3-dochead-id{ visibility:hidden; }
+}
 /* #133: the Back menu's tab leaves the page's edge with a drawer that lies over it (Tutor.tsx writes --wz-over-travel); Arbor and Machina name their own rule [desk-frame §23] */
 .desk-frame-stage--prose .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see

@@ -37,7 +37,7 @@ import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { onePanelAt } from '../store/pageScale';
+import { fitScaleFor, onePanelAt, PAGE_W_BASE } from '../store/pageScale';
 import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
@@ -439,7 +439,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // the outer edge holds still (the drawer is anchored there); the width is what reaches back to the page's text and no further (never under DRAWER_MIN), and the inner edge is worked from it
       const paperBox = paper.getBoundingClientRect();
       const padRight = box ? (parseFloat(getComputedStyle(paper).paddingRight) || 0) * ((paper as HTMLElement).offsetWidth ? paperBox.width / (paper as HTMLElement).offsetWidth : 1) : 0;
-      const overW = box ? Math.min(320 * ck, Math.max(DRAWER_MIN, box.right - (paperBox.right - padRight) - (travels ? 0 : TUTOR_TAB_PX) - 1)) : 320 * ck;
+      // never narrower than it was before the page grew (the margin beside the letter-fit page, up to the open width), as far as the text allows
+      const sb = stage.getBoundingClientRect();
+      const was = Math.min(openW, (sb.width - PAGE_W_BASE * fitScaleFor(sb.width, sb.height, 0)) / 2 - TUTOR_TAB_PX);
+      const overW = box ? Math.min(Math.max(320 * ck, was), Math.max(DRAWER_MIN, box.right - (paperBox.right - padRight) - (travels ? 0 : TUTOR_TAB_PX) - 1)) : 320 * ck;
       setOverTravelPx(box ? Math.round((travels ? box.right : box.right - overW - TUTOR_TAB_PX) - paperBox.right) : null);
       if (geoMargin >= (small ? TUTOR_TAB_PX + 320 * ck : DRAWER_MIN)) {
         const drawerW = Math.min(geoMargin, TUTOR_TAB_PX + openW);

@@ -62,8 +62,8 @@ const pageEditor = (): HTMLElement | null => liveQuery<HTMLElement>('.forward-on
 registerLiveSite('split.trip.scroll', pageScroll);
 registerLiveSite('split.trip.editor', pageEditor);
 
-/** Put the page's scroll and caret back from the trip's copy of its way back. Re-asserted over the first ~350 ms, as the way back's own restore
- *  is (the page's first frames can move its own scroll box), and no longer once she presses, types or scrolls. */
+/** Put the page's scroll and caret back from the trip's copy of its way back. Re-asserted over the first ~1.2 s (#133: a page that settles its own
+ *  height after it opens can still be resting its caret in view past 350 ms), and no longer once she presses, types or scrolls. */
 export function restoreTripPage(wb: WayBackSession | null): () => void {
   if (!wb) return () => {};
   const apply = () => {
@@ -74,7 +74,7 @@ export function restoreTripPage(wb: WayBackSession | null): () => void {
     if (sc && typeof wb.scrollY === 'number') sc.scrollTop = wb.scrollY;
   };
   const raf = requestAnimationFrame(apply);
-  const timers = [80, 200, 350].map((ms) => window.setTimeout(apply, ms));
+  const timers = [80, 200, 350, 700, 1150].map((ms) => window.setTimeout(apply, ms));
   const types = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
   const stop = () => { timers.forEach((t) => window.clearTimeout(t)); types.forEach((ty) => window.removeEventListener(ty, stop, true)); };
   types.forEach((ty) => window.addEventListener(ty, stop, true));
