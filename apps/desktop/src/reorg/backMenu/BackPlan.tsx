@@ -18,6 +18,9 @@ import { loadPlanPreset } from './planPresetLoad';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow, titleOfText } from './planOps';
 import { usePublishing, useIncludePlan, setIncludePlan } from '../publishPick';
 import { setDocSetting } from '../docSettings';
+import { openWalk } from '../walk/walkDoor';
+import { walkSteps } from '../walk/stepModel';
+import { splitOutlineText } from '../../store/outlineRow';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina). An ordered outline of this Page's own board: numbered rows, indented
 // as the board's Plan view indents them, each with Up, Down, Indent, Outdent and "Remove from the plan" (a keyboard path for every move, no drag
@@ -69,6 +72,9 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
 
   // the one write door: the board's LIVE cards through the store's own write boundary for a board (saveBoardBoxes: the tombstones and markers stored with the board are carried back, so
   // nothing a writer deleted is brought back and nothing is stripped), so it syncs like every other edit of a board
+  // THE GUIDE'S WALK (reorg/walk/): offered while the Plan has a step to walk
+  const canWalk = useMemo(() => walkSteps(snap.cards, hidden, () => false).length > 0, [snap.cards, hidden]);
+  const isSkipped = (boxId: string): boolean => { const b = snap.cards.find((c) => c.id === boxId); return !!b?.planSkipped && !splitOutlineText(b.text).body.trim() && !partOfRow(snap.boardId, boxId, docOfPage(pageId))?.written; };
   const writeBoxes = (next: Box[] | null): void => {
     if (!next || !snap.boardId) return;
     saveBoardBoxes(snap.boardId, next);
@@ -148,6 +154,9 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
           <span>{rows.length === 0 ? t('reorgPlanIncludeNone') : t('reorgPlanInclude')}</span>
         </label>
       )}
+      {canWalk && (
+        <button type="button" className="wz-back-plan-btn wz-back-plan-walk" data-plan-walk="" onClick={() => { flushNow(); openWalk(pageId); }}>{t('guideWalkOpenPlan')}</button>
+      )}
       {rows.length === 0 && groups.length === 0 ? (
         <div className="wz-back-quiet" data-back-plan-empty="">{t('reorgPlanEmpty')}</div>
       ) : rows.length === 0 ? null : (
@@ -190,6 +199,7 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
                 <button type="button" className="wz-back-plan-btn" data-plan-outdent="" disabled={!r.canOutdent} aria-label={`${t('reorgPlanOutdent')}: ${r.number}`} title={t('reorgPlanOutdent')} onClick={() => act((b) => outdentPlanRow(b, r.boxId))}>←</button>
                 <button type="button" className="wz-back-plan-btn wz-links-x wz-graft-x" data-plan-remove="" aria-label={`${t('reorgPlanRemove')}: ${r.number}`} title={t('reorgPlanRemove')} onClick={() => remove(r.boxId, r.title)}>×</button>
               </span>
+              {isSkipped(r.boxId) && <span className="wz-back-plan-skipped" data-plan-skipped="">{t('guideWalkStateSkipped')}</span>}
               {r.hint && !r.underIds.some((id) => partOfRow(snap.boardId, id, docNow)?.written) && <span className="wz-back-plan-hint" data-plan-hint="">{r.hint}</span>}
             </li>
           ))}
