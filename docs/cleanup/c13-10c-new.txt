@@ -963,3 +963,17 @@ guideAnsGameDesign=The design
 guideAnsGameWorld=The world
 guideAnsGameQuest=A quest
 guideAnsGameBranching=A branching story
+# train L11: the drawing tools and #133 (declared by chat 1 at the cut)
+inkBrush=Brush
+inkSizeSmaller=Smaller
+inkSizeLarger=Larger
+inkStudio=Studio
+inkGroupDraw=Draw
+inkRowBrushes=Brushes
+inkRowColour=Colour
+inkSize=Size
+inkSeeThrough=See-through
+inkLastColour=Last colour
+inkDrawOnBoard=Draw on a Board
+inkLoadFail=The drawing tools did not load.
+inkRetry=Retry
