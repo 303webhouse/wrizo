@@ -287,7 +287,12 @@
     const col = c.getContext('2d').getImageData(Math.round(mx * r.width * dpr), Math.round((oy + my * r.width) * dpr) - 3, 1, 7).data;
     let best = 0;
     for (let i = 4; i < col.length; i += 4) if (col[i + 3] > col[best + 3]) best = i;
-    return [...col.slice(best, best + 4)];
+    const out = [...col.slice(best, best + 4)];
+    // how much of the column the line covers, in pixels: a thin line split between two rows covers neither fully, but their sum is its width
+    let sum = 0;
+    for (let i = 0; i < col.length; i += 4) sum += col[i + 3];
+    Object.defineProperty(out, 'covered', { value: sum / 255 / dpr });
+    return out;
   };
   const near = (a, b, by = 6) => !!a && a.length === b.length && a.every((v, i) => Math.abs(v - b[i]) <= by);
   const rgb = (css) => { const c = document.createElement('canvas'); c.width = c.height = 1; const x = c.getContext('2d'); x.fillStyle = css; x.fillRect(0, 0, 1, 1); return [...x.getImageData(0, 0, 1, 1).data]; };
@@ -309,7 +314,8 @@
   const oldPaints = (id) => {
     const want = rgb(token('--ink-stroke') || token('--ink-on-paper') || '#1A1206');
     const px = [pixel(id, 0), pixel(id, 1)];
-    return [{ name: 'R8: an old stroke still paints as before, and unknown values in the new fields paint as the default (solid, the desk ink)', pass: px.every((p) => !!p && p[3] > 200 && near(p.slice(0, 3), want.slice(0, 3), 24)), detail: J({ px, want, stored: strokesOf(id).length }) }];
+    const covered = px.map((p) => (p ? Math.round(p.covered * 100) / 100 : null));
+    return [{ name: 'R8: an old stroke still paints as before, and unknown values in the new fields paint as the default (solid, the desk ink, the pen\x27s own 1.4 px)', pass: px.every((p) => !!p && p[3] > 120 && near(p.slice(0, 3), want.slice(0, 3), 24)) && covered.every((c) => c > 1.1 && c < 1.8), detail: J({ px, covered, want, stored: strokesOf(id).length }) }];
   };
 
   const LOADS = { painter: /\/InkStratum[.\-]/, tab: /\/InkTab[.\-]/, capture: /\/inkCapture[.\-]/ };
