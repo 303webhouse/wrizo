@@ -6,6 +6,7 @@
 //   D1      the door opens this Doc's Board with INK out; Back restores her caret and the Board stands beside the page WITH her drawing on it
 //   B1-B8   the Board, in Machina, Arbor and Flux (stroke stored in the Board's strokes, no card made, painted, never taller than the Board, whole and unobstructed)
 //   B9      a reload keeps the Board's drawing and paints it, with only the painter loaded
+//   L1-L2   a Board whose entry goes away (deleted for good elsewhere) and then arrives while it is on screen never stops the page
 // Run: node scripts/harness/visual-1a3.mjs   (from apps/desktop; dist-web built; needs a box turn on the PC)
 import fs from 'node:fs';
 // the live defaults, asked for before the driver reads them
@@ -209,6 +210,19 @@ await withHarness(async (app) => {
   await sleep(900);
   ok('O2: Retry brings the tab in and the next stroke is drawn and stored', (await stored(app, lost)).strokes === 1, await stored(app, lost));
   await app.cdp('Network.setCacheDisabled', { cacheDisabled: false });
+
+  // ---- a Board whose entry is away for a render and then arrives (Chat 1, Nov 25: a hook sat below the Board's early return, and React stopped the whole page). The way a writer gets there: a Board just
+  // made on /page/new (that surface keeps the Board mounted without a row), deleted for good on another device while she has it open; the pull arrives. ----
+  await boot(app);
+  const made = await run(app, "location.hash = '#/page/new?kind=board'; await window.__vi.sleep(2500); [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'New Card').click(); await window.__vi.sleep(3000); const id = location.hash.replace('#/page/', ''); window.__late = window.__vi3.entry(id); return { id, born: !!window.__late };");
+  const onScreen = () => run(app, "return { app: document.getElementById('root').childElementCount, board: !!document.querySelector('.board-canvas') };");
+  const later = (n) => `new Date(Date.parse(window.__late.updatedAt) + ${n}000).toISOString()`;
+  await run(app, `window.wrizoApplyRemoteBoard({ ...window.__late, text: '', boxes: [], deletedAt: ${later(1)}, purgedAt: ${later(1)}, updatedAt: ${later(1)} }); await window.__vi.sleep(1800);`);
+  const away = await onScreen();
+  ok('L1: a Board deleted for good elsewhere while it is on screen draws nothing, and the app stays up', made.born && away.app > 0 && !away.board, { made, away });
+  await run(app, `window.wrizoApplyRemoteBoard({ ...window.__late, updatedAt: ${later(2)} }); await window.__vi.sleep(1800);`);
+  const entryBack = await onScreen();
+  ok('L2: when the entry arrives after that paint, the Board draws', entryBack.app > 0 && entryBack.board, entryBack);
 
   // ---- the Board, three themes ----
   for (const theme of ['machina', 'plateau', 'flux']) {
