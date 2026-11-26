@@ -14,9 +14,10 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LIMIT = 0.65;
 
-// the camera's own centre (useFluxCamera centre()), and the board point standing there
-const AT = `(() => { const w = document.querySelector('.board-canvas-wrap'), cv = document.querySelector('.board-canvas'); if (!w || !cv) return null; const wr = w.getBoundingClientRect(), c = cv.getBoundingClientRect();
-  const x = wr.left + w.clientLeft + w.clientWidth / 2, y = wr.top + w.clientTop + w.clientHeight / 2; const s = c.width / cv.offsetWidth;
+// the camera's own centre (useFluxCamera centre()) - or the screen point given - and the board point standing there. AFTER A NOTCH THE SAME SCREEN POINT IS
+// READ: zooming in can add a scrollbar, which moves the frame's centre by half its width while the camera holds the point it took at the notch's start.
+const AT = (at) => `(() => { const w = document.querySelector('.board-canvas-wrap'), cv = document.querySelector('.board-canvas'); if (!w || !cv) return null; const wr = w.getBoundingClientRect(), c = cv.getBoundingClientRect();
+  const x = ${at ? at.x : 'wr.left + w.clientLeft + w.clientWidth / 2'}, y = ${at ? at.y : 'wr.top + w.clientTop + w.clientHeight / 2'}; const s = c.width / cv.offsetWidth;
   return { x, y, s, bx: (x - c.left) / s, by: (y - c.top) / s, sl: w.scrollLeft, st: w.scrollTop }; })()`;
 
 await withHarness(async (app) => {
@@ -44,16 +45,16 @@ await withHarness(async (app) => {
     await app.waitFor("!!document.querySelector('.board-canvas .board-box[data-box-id=\"g-0\"]')", { label: `the board in ${name}`, timeout: 15000 }).catch(() => {});
     await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 }).catch(() => {});
     await sleep(1500);
-    const first = await ev(AT);
+    const first = await ev(AT());
     if (first) await app.mouseMove(first.x, first.y);
 
     const runs = [];
     for (let i = 0; i < 8; i += 1) {
       await key('0'); await sleep(500);
       await ev(`(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = ${37 * i + 11}; w.scrollLeft = 0; })()`); await sleep(150);
-      const a = await ev(AT);
+      const a = await ev(AT());
       await key('='); await sleep(600);
-      const b = await ev(AT);
+      const b = await ev(AT(a));
       runs.push({ from: a && a.s, to: b && b.s, drift: a && b ? +Math.hypot(b.bx - a.bx, b.by - a.by).toFixed(2) : null, a, b });
     }
     const zoomed = runs.every((r) => r.from && Math.abs(r.from - 1) < 0.004 && Math.abs(r.to - 1.25) < 0.004);
@@ -61,21 +62,21 @@ await withHarness(async (app) => {
     const drifts = runs.map((r) => r.drift);
     ok(`${name} D: a gliding notch holds the centre's board point within one rounding (${LIMIT} board px) in all eight`, zoomed && drifts.every((d) => d !== null && d <= LIMIT), drifts);
 
-    // P: a pan while the notch glides stays
+    // P: a pan while the notch glides stays. Started at x1.25, where the frame already scrolls both ways, so the pan has room (the notch glides to x1.5625)
     await key('0'); await sleep(500);
-    await ev("(() => { const w = document.querySelector('.board-canvas-wrap'); w.scrollTop = 100; w.scrollLeft = 0; })()"); await sleep(150);
-    const p0 = await ev(AT);
+    await key('='); await sleep(600);
+    const p0 = await ev(AT());
     await key('=');
     await sleep(45);
     await ev("(() => { document.querySelector('.board-canvas-wrap').scrollLeft += 60; })()");
     await sleep(600);
-    const p1 = await ev(AT);
+    const p1 = await ev(AT(p0));
     const moved = p0 && p1 ? +(p1.bx - p0.bx).toFixed(2) : null;
-    ok(`${name} P: a 60 px pan made while the notch glides is kept (the centre moves about 48 board px)`, moved !== null && moved > 36 && moved < 60, { moved, p0, p1 });
+    ok(`${name} P: a 60 px pan made while the notch glides is kept (the held point moves 38 to 48 board px)`, moved !== null && moved > 30 && moved < 52, { moved, p0, p1 });
 
     if (theme === 'machina') {
       await ev("(() => { document.querySelector('.board-canvas-wrap').scrollLeft += 2; })()"); await sleep(200);
-      const m = await ev(AT);
+      const m = await ev(AT(p1));
       const d = m && p1 ? +Math.hypot(m.bx - p1.bx, m.by - p1.by).toFixed(2) : null;
       ok('MUT a 2 px nudge of the scroll turns D\'s reading red', d !== null && d > LIMIT, { d });
     }
