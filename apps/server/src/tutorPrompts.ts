@@ -229,9 +229,9 @@ export const wrapSelection = (text: string): string => `<selected-stretch>\n${te
 // and line breaks are flattened: no note can close this block early or start a line that looks like another turn.
 // H2 (Nov 25): the aid has no way to change a note (only she can, in her notes list; the server writes one only on her yes), so when she says "forget that ..." it must NOT answer as if it had. This one fact about the
 // app is the server's own sentence, AFTER the closing tag (never inside a note, which is her material), and it names no note and holds nothing of hers. The kit's prompt blocks are untouched (NA4 / tutor-prompts.mjs).
-// #131 (Nov 25): deepseek-v4-flash thinks by default, and in the live run the thinking used up the 700-token cap: 19 of 100 replies stopped at exactly 700, 13 of them with no text at all. Thinking is off for a typed ask,
-// so the cap is reply text. The route and the live eval send this ONE value. (Quoted in the order's report; the cap itself, env.tutorMaxTokens, is unchanged.)
-export const CHAT_THINKING = { type: 'disabled' as const };
+// #131 (Nov 25): deepseek-v4-flash thinks by default, and the thinking counts against max_tokens: under the old cap of 700, 19 of 100 live replies stopped at the cap, 13 of them with no text at all. Thinking stays ON (turned off,
+// the replies followed the rules less: run 45725238321), and the cap is large enough for the thinking and the reply together (Fable, Nov 25, 5:08 pm). The route and the live eval send this ONE value; no env setting lowers it.
+export const CHAT_MAX_TOKENS = 3000;
 
 export const NOTES_CANNOT_CHANGE = 'The aid cannot add, change or remove a note. Only she can, in her notes list. If she asks for a note to be forgotten or removed, say plainly that the aid cannot do it and that she can delete it in her notes list. Never say a note was removed, forgotten or deleted.';
 export const wrapNotes = (lines: string[]): string => `<notes-on-file>\n${lines.map((l) => l.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim()).join('\n')}\n</notes-on-file>\n${NOTES_CANNOT_CHANGE}`;

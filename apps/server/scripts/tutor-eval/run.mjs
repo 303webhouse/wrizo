@@ -7,7 +7,7 @@
 //        Real model calls under a HARD CAP (live.mjs). Run as the Actions job .github/workflows/tutor-eval-live.yml; the keys are repository secrets Nick adds himself:
 //          TUTOR_EVAL_API_KEY          the key for the model whose replies are tested (the same kind of key as the server's TUTOR_API_KEY)
 //          TUTOR_EVAL_GRADER_API_KEY   the key for the second reader (optional: without it the live run records the replies and runs the machine checks only; the graded questions stay "pending")
-//        Not secrets, and optional: TUTOR_EVAL_BASE_URL, TUTOR_EVAL_MODEL, TUTOR_EVAL_GRADER_BASE_URL, TUTOR_EVAL_GRADER_MODEL, TUTOR_EVAL_MAX_TOKENS.
+//        Not secrets, and optional: TUTOR_EVAL_BASE_URL, TUTOR_EVAL_MODEL, TUTOR_EVAL_GRADER_BASE_URL, TUTOR_EVAL_GRADER_MODEL. A reply's token cap is the route's own (tutorPrompts.ts).
 //   --list prints what the runner will run and what it will not (and why).
 //
 // A case passes when every machine check passes AND every listed second-reader question gets the answer the case wants (checks.mjs). One wrong answer fails it; no partial credit, no overall score.

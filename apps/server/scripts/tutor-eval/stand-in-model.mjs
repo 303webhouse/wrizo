@@ -15,6 +15,7 @@ export async function startStandInModel() {
       const { text = null, stop = 'end_turn', thought = false } = typeof item === 'string' ? { text: item } : item;
       const content = [...(thought ? [{ type: 'thinking', thinking: 'Weighing the question.', signature: 'x' }] : []), ...(text === null ? [] : [{ type: 'text', text }])];
       res.setHeader('content-type', 'application/json');
+      res.setHeader('connection', 'close');   // a check that builds a fresh module blocks for seconds; a socket kept alive across that could be dead when next used
       res.end(JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', model: 'stand-in', content, stop_reason: stop, stop_sequence: null, usage: state.usage }));
     });
   });

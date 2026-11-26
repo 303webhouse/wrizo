@@ -58,6 +58,12 @@ export interface GuardVerdict {
   flagged: string[];
 }
 
+// NEVER AN EMPTY OR A CUT-OFF ANSWER (Fable, Nov 25, 5:08 pm). A reply with no text, or one the model stopped at the token cap, fails the guard like a bad word does: asked again once, then the fallback line. It is a
+// separate function because it reads how the call ENDED, not the words; the test runner records stop reasons and counts these itself.
+export function unfinishedReply(text: string, stopReason: string | null | undefined): boolean {
+  return !text.trim() || stopReason === 'max_tokens';
+}
+
 export function guardReply(reply: string): GuardVerdict {
   const t = textTheChecksRead(reply);
   const failed: string[] = [];

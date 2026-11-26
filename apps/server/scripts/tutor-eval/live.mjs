@@ -36,7 +36,6 @@ export function makeClients(env) {
     reply, grader,
     replyModel: env.TUTOR_EVAL_MODEL || 'deepseek-v4-flash',
     graderModel: env.TUTOR_EVAL_GRADER_MODEL || 'claude-fable-5-2',
-    maxTokens: Number(env.TUTOR_EVAL_MAX_TOKENS) || 700,
   };
 }
 
@@ -47,11 +46,14 @@ export async function liveReply({ clients, cap, prompts, c, variant, draftText }
   if (c.notes && c.notes.length) messages.push({ role: 'user', content: prompts.wrapNotes(c.notes) });   // her notes on file, first of the wire turns (tutor.ts, item 7 step 2)
   if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
   messages.push({ role: 'user', content: c.says });
-  const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), clients.maxTokens);
-  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: clients.maxTokens, thinking: prompts.CHAT_THINKING, system, messages });
+  const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), prompts.CHAT_MAX_TOKENS);
+  const t0 = Date.now();
+  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: prompts.CHAT_MAX_TOKENS, system, messages });
   cap.settle(est, r.usage);
-  return { variant: variant ?? null, reply: textOf(r), stop: r.stop_reason ?? null, usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } };
+  return { variant: variant ?? null, reply: textOf(r), ...howItEnded(r, t0) };
 }
+// why it stopped, whether it thought first, how long it took, what it cost: enough to tell a cut-off or an empty reply from a short one
+const howItEnded = (r, t0) => ({ stop: r.stop_reason ?? null, thought: r.content.some((b) => b.type === 'thinking'), ms: Date.now() - t0, usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } });
 
 export async function liveGrade({ clients, cap, c, draftText, replies, questions }) {
   const system = graderSystemPrompt();

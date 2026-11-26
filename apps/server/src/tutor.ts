@@ -5,8 +5,8 @@ import { requireAuth } from './auth';
 import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
-import { guardReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_THINKING } from './tutorPrompts';
+import { guardReply, unfinishedReply, FALLBACK_LINE } from './tutorGuard';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_MAX_TOKENS } from './tutorPrompts';
 import { notesForAsk } from './tutorNotes';
 import { sqlNotesStore } from './tutorNotesRoutes';
 
@@ -18,7 +18,7 @@ import { sqlNotesStore } from './tutorNotesRoutes';
 // send), no retry loop (the client below constructs the Anthropic client
 // with maxRetries: 0 — one attempt, fail fast, surface a plain error
 // rather than silently retrying/looping), and a hard per-request
-// max_tokens cap (env.tutorMaxTokens). Offline/unconfigured is a
+// max_tokens cap (CHAT_MAX_TOKENS, tutorPrompts.ts). Offline/unconfigured is a
 // first-class response shape, not an error path the client has to guess
 // at — see the `configured: false` branch below.
 //
@@ -278,8 +278,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   try {
     const ask = () => client().messages.create({
       model: env.tutorModel,
-      max_tokens: env.tutorMaxTokens,
-      thinking: CHAT_THINKING,
+      max_tokens: CHAT_MAX_TOKENS,
       system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
     });
@@ -299,7 +298,9 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     // THE SAFETY MESSAGE (R12, Fable Nov 23, 6:14 pm): BASE tells the model to reply with one fixed marker only when she says she herself is in danger. A reply that holds the marker (alone or with other text) is NEVER guarded
     // or asked for again; at the very end it is replaced whole by Nick's exact words (tutorPrompts.ts SAFETY_MESSAGE), which the model never writes and the guard never reads. If the first reply fails the guard and the retry
     // holds the marker, she gets the words too.
-    if (!holdsSafetyMarker(text) && !guardReply(text).ok) {
+    // NEVER AN EMPTY OR A CUT-OFF ANSWER (Fable, Nov 25): a reply with no text, or one stopped at the token cap, fails the same way (tutorGuard.ts unfinishedReply). A marker reply is still never asked for again.
+    const failsGuard = (r: Anthropic.Message, t: string): boolean => !holdsSafetyMarker(t) && (unfinishedReply(t, r.stop_reason) || !guardReply(t).ok);
+    if (failsGuard(response, text)) {
       const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
       if (retryAllowed) {
         response = await ask();
@@ -307,7 +308,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
         inputTokens += response.usage.input_tokens;
         outputTokens += response.usage.output_tokens;
       }
-      if (!retryAllowed || (!holdsSafetyMarker(text) && !guardReply(text).ok)) text = FALLBACK_LINE;
+      if (!retryAllowed || failsGuard(response, text)) text = FALLBACK_LINE;
     }
     text = withSafetyMessage(text);
     // TU2 S2 — usage threaded through now (not consumed until S5's session

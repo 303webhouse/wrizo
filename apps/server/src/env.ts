@@ -51,13 +51,9 @@ export const env = {
   // claim exactly. Re-check before deploy only if DeepSeek's docs have
   // since renamed the id again; this was not a guess.
   tutorModel: process.env.TUTOR_MODEL || 'deepseek-v4-flash',
-  // Hard per-request token cap (the brief's own "hard per-request token
-  // cap, no retry loops" requirement) — small on purpose: the Tutor's
-  // register is a question or a short observation, never a composed
-  // passage (A13), so it never needs a long response. Raised from TU1's
-  // 512 to 700 at TU2 S1 to give the new provider/model pairing a little
-  // more headroom; still deliberately short.
-  tutorMaxTokens: Number(process.env.TUTOR_MAX_TOKENS) || 700,
+  // The hard per-request token cap is no longer set here: it is the route's own
+  // (tutorPrompts.ts CHAT_MAX_TOKENS), so no env value can lower it back to
+  // where the model's thinking left no room for a reply (#131).
   // ITEM 224 — sign-up by invite code, until launch. A comma-separated list
   // of codes Nick sets in Railway (never committed — the var itself is the
   // secret, same posture as every other env-only credential in this file).
