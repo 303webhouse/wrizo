@@ -6,6 +6,8 @@
 //   ONE at 1600 and narrower one side panel stands at a time (each opening closes the last); at 1920 the Front and Back menus stand together
 //   T   no open panel covers the page's text column
 //   C   no opener that is on screen stands under, or across the border of, an open panel - its own included; an open panel's opener takes a press
+//   F   at 1600 and narrower the open Front menu is as wide as it was before #133 (Arbor 264, Flux 184, Machina 184 at 1366 and 209 at 1536 px):
+//       it lies over the page's margin rather than narrowing (the regression the final frames showed; Fable's order: "over the page's edge, never resizing")
 //   Y   typing lands: words typed at the end of the page are stored, and no word is lost
 //   MS  (mutant, 1366) the page forced to scale 1 - S must go red.   MT (mutant, 1366) the pop-out forced 480 px wide - T must go red.
 // THE PRODUCT'S OWN LOOKS: the driver pins the older themes and the reorg off for files that do not ask, so this one asks (WS_REORG, WS_ARBOR2,
@@ -26,6 +28,8 @@ const J = (v) => JSON.stringify(v);
 const THEMES = [{ id: 'plateau', name: 'Arbor', mark: 'data-arbor2' }, { id: 'flux', name: 'Flux', mark: 'data-flux3' }, { id: 'machina', name: 'Machina', mark: 'data-machina2' }];
 const SIZES = [[1366, 768], [1536, 864], [1920, 1080]];
 const SMALL_W = 1600;
+// the Front menu's widths measured on train-l8-1, the source before #133
+const FRONT_W = { plateau: { 1366: 264, 1536: 264 }, flux: { 1366: 184, 1536: 184 }, machina: { 1366: 184, 1536: 209 } };
 const PARA = 'The quick brown fox jumps over the lazy dog while the tide comes in and the lamplight wavers on the water. '.repeat(26);
 
 // the page side: boxes as [left, top, right, bottom], null when not drawn
@@ -100,6 +104,11 @@ await withHarness(async (app) => {
       else ok(`${at} ONE: above ${SMALL_W} the Front and Back menus stand together`, seq.back.stands.includes('front') && seq.back.stands.includes('back'), J(seq.back.stands));
       ok(`${at} T: no open panel covers the page's text`, Object.values(seq).every((s) => coversText(s).length === 0), J(Object.fromEntries(Object.entries(seq).map(([k, s]) => [k, coversText(s)]))));
       ok(`${at} C: no opener across a panel, and each open panel's opener takes a press`, Object.values(seq).every((s) => crossed(s).length === 0), J(Object.values(seq).flatMap(crossed)));
+
+      if (w <= SMALL_W) {
+        const f = seq.front.panels.front; const width = f ? f[2] - f[0] : 0;
+        ok(`${at} F: the open Front menu is as wide as before #133 (${FRONT_W[th.id][w]} px)`, width >= FRONT_W[th.id][w] - 1.5, `width ${width}`);
+      }
 
       if (w === 1366) {
         await openPage(app, id);
