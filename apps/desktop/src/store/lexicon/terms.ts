@@ -207,6 +207,12 @@ export type DeskTermId =
   | 'tutorBibleTitle' | 'tutorBibleEmpty'
   | 'tutorBibleAddPlaceholder' | 'tutorBibleAdd'
   | 'tutorBibleEdit' | 'tutorBibleDelete' | 'tutorBibleSave' | 'tutorBibleCancel'
+  // TUTOR item 7 step 1 — the Tutor's notes on file (components/TutorNotes.tsx): section words, the four kinds, her yes/no on a proposal, the one wipe confirm.
+  | 'tutorNotesTitle' | 'tutorNotesNote' | 'tutorNotesEmpty' | 'tutorNotesLoading' | 'tutorNotesError' | 'tutorNotesFailed'
+  | 'tutorNotesAddPlaceholder' | 'tutorNotesKindLabel'
+  | 'tutorNotesKindTendency' | 'tutorNotesKindInterest' | 'tutorNotesKindBlocker' | 'tutorNotesKindGoal'
+  | 'tutorNotesProposed' | 'tutorNotesYes' | 'tutorNotesNo'
+  | 'tutorNotesWipe' | 'tutorNotesWipeAsk' | 'tutorNotesWipeYes'
   | 'tutorConversationTitle' | 'tutorConversationPlaceholder' | 'tutorConversationSend'
   | 'tutorConversationEmpty' | 'tutorConversationSending'
   | 'tutorConversationOffline' | 'tutorConversationError'

@@ -522,7 +522,7 @@ await withHarness(async (app) => {
     ok('S5: the wire carries the spur as an ordinary turn of the conversation — the model is answering a prompt it can actually see, on the writer\'s own Send and never before it',
       wireTexts[0] === drawnText && wireTexts[1] === 'Taking that one.', JSON.stringify(wireTexts));
     ok('S5: no new wire KEY is added by any of this — the body is still exactly { messages, delta?, bible? }',
-      body !== null && Object.keys(body).every(k => ['messages', 'delta', 'bible'].includes(k)), JSON.stringify(Object.keys(body ?? {})));
+      body !== null && Object.keys(body).every(k => ['messages', 'delta', 'bible', 'theme'].includes(k)), JSON.stringify(Object.keys(body ?? {}))); // TUTOR-B call 2: 'theme' is the theme's NAME, never her words
 
     const settled = await rosterState(app);
     ok('S5: the standing draw is spent by the send — it is a real message now, so nothing is rendered twice',
