@@ -221,13 +221,16 @@ try {
     const keysBefore = await waitingKeys();
     A.offline = false;
     await size(1280, 800); await open('/');
-    await until("[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Sign out')", 'the desk sign-out button');
-    await app.injectHelpers(); await app.click('Sign out');
+    // on a writing page the desk keeps Sign out in its corner menu; elsewhere it stands in the header
+    const signOut = "[...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Sign out')";
+    await until(`${signOut} || document.querySelector('[aria-label="Desk menu"]')`, 'the desk sign-out button or its menu');
+    if (!(await js(`!!(${signOut})`))) await js(`document.querySelector('[aria-label="Desk menu"]').click()`);
+    await until(signOut, 'the desk sign-out button');
+    await js(`(${signOut}).click()`);
     ok('OUT a waiting note is gone after sign-out at the desk', await until("Object.keys(localStorage).every((k) => !k.startsWith('wrizo.mobile.'))", 'the wipe') && keysBefore.some((k) => k.startsWith('wrizo.mobile.waiting.')), JSON.stringify(await waitingKeys()));
     await size(390, 844); await open('/m/');
     ok('OUT signed out, the companion shows only Sign In', await until("document.querySelector('a.mc-btn') && !document.querySelector('.mc-bar')", 'the sign-in door'));
-    await look18();
-    async function look18() { writeFileSync(path.join(FRAMES, 'MOBILE-B-frame-18-signed-out.jpg'), Buffer.from((await app.cdp('Page.captureScreenshot', { format: 'jpeg', quality: 82 })).data, 'base64')); }
+    writeFileSync(path.join(FRAMES, 'MOBILE-B-frame-18-signed-out.jpg'), Buffer.from((await app.cdp('Page.captureScreenshot', { format: 'jpeg', quality: 82 })).data, 'base64'));
     ok('OUT nothing of it ever reached the account', cardsWithText('written, never sent, then signed out').length === 0);
 
     // another account on the same phone: what waited under hers is wiped, never sent
