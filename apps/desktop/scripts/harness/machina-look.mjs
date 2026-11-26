@@ -26,6 +26,7 @@
 //   M3  (mutant) a command line box put into the page (LANDED): L6's read goes red
 //   M4  (mutant) the nameplate hidden (LANDED): L10's read goes red
 //   M5c (mutant) the open Tools panel moved 40 px (LANDED, the gap moves by 40): L15d's read goes red
+//       (PARKED Nov 26 with L15d, superseded by Nick's margin rule: SUCCESSOR L15e - over the margin, never over the text - mutants M5e)
 // Seeding goes through the seams (wrizoCreateJournalPage, origin and source carried); the theme through the product's store key read at boot.
 import { withHarness } from '../runtime-verify.mjs';
 
@@ -174,11 +175,26 @@ await withHarness(async (app) => {
   if (at15) { await app.mouseMove(at15.x, at15.y); await app.mouseDown(at15.x, at15.y); await app.mouseUp(at15.x, at15.y); }
   await waitSoft(app, "(() => { const l = document.querySelector('.wz-sliver-panel .wz-drawer-slide'); return !!document.querySelector(\".wz-sliver[data-open='true']\") && (!l || getComputedStyle(l).transform === 'none'); })()", { label: 'tools at rest', timeout: 3000 }); await sleep(300);
   const d15d = await app.evalJs(D15C);
-  ok(`L15d on a Draft page (zoomed ${zoom15}), the open Tools drawer stands flush against the page (panel to page ${d15d && d15d.gap}) and its tab rides the drawer's outer edge (tab to panel ${d15d && d15d.tabGap})`, zoom15 === false && l15cOk(d15d), J({ zoom15, d15d }));
-  await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.setProperty('translate', '-40px 0'); return !!p; })()"); await sleep(100);
-  const m5c = await app.evalJs(D15C);
-  await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.removeProperty('translate'); return !!p; })()"); await sleep(100);
-  ok(`M5c (mutant): the open panel moved 40 px (LANDED: gap ${d15d && d15d.gap} -> ${m5c && m5c.gap}) - L15d's read goes RED`, !!m5c && !!d15d && m5c.gap != null && d15d.gap != null && Math.abs(m5c.gap - d15d.gap - 40) <= 1 && !l15cOk(m5c), J(m5c));
+  // PARKED Nov 26 (SUPERSEDED, train-l11-2's pair and re-run 45874676674: panel to page -21.2 at 1400. Fable, Nov 25 8:30 pm and Nov 26 12:20 pm; Nick's rule:
+  // at 1600 and narrower a panel may lie over the page's MARGIN, never over its text - #133 keeps the Tools drawer's width there). Original, verbatim, with its mutant:
+  // ok(`L15d on a Draft page (zoomed ${zoom15}), the open Tools drawer stands flush against the page (panel to page ${d15d && d15d.gap}) and its tab rides the drawer's outer edge (tab to panel ${d15d && d15d.tabGap})`, zoom15 === false && l15cOk(d15d), J({ zoom15, d15d }));
+  // await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.setProperty('translate', '-40px 0'); return !!p; })()"); await sleep(100);
+  // const m5c = await app.evalJs(D15C);
+  // await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.removeProperty('translate'); return !!p; })()"); await sleep(100);
+  // ok(`M5c (mutant): the open panel moved 40 px (LANDED: gap ${d15d && d15d.gap} -> ${m5c && m5c.gap}) - L15d's read goes RED`, !!m5c && !!d15d && m5c.gap != null && d15d.gap != null && Math.abs(m5c.gap - d15d.gap - 40) <= 1 && !l15cOk(m5c), J(m5c));
+  // SUCCESSOR L15e: the same reading and premise; the drawer stands at the page's left edge or over its margin - never short of the page, never over its text
+  // (the text's left = the page's left padding, as painted) - and its tab still rides the drawer's outer edge. M5e moves the panel 40 px off the page and 80 px onto the text.
+  const TEXTL = "(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); if (!p || !p.offsetWidth) return null; const b = p.getBoundingClientRect(); return +(b.left + parseFloat(getComputedStyle(p).paddingLeft) * (b.width / p.offsetWidth)).toFixed(2); })()";
+  const textL = await app.evalJs(TEXTL);
+  const l15eOk = (d) => !!d && d.open && !!d.page && !!d.panel && textL != null && textL > d.page.l && d.panel.r >= d.page.l - 1 && d.panel.r <= textL + 0.5 && Math.abs(d.tabGap) <= 1 && d.panel.w > 100;
+  ok(`L15e [successor of L15d] on a Draft page (zoomed ${zoom15}), the open Tools drawer stands at the page's left edge or over its margin, never its text (panel's right ${d15d && d15d.panel && d15d.panel.r}, page ${d15d && d15d.page && d15d.page.l}, text ${textL}) and its tab rides the drawer's outer edge (tab to panel ${d15d && d15d.tabGap})`, zoom15 === false && l15eOk(d15d), J({ zoom15, textL, d15d }));
+  const planted = {};
+  for (const [k, move] of [['off', -40], ['onText', 80]]) {
+    await app.evalJs(`(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.setProperty('translate', '${move}px 0'); return !!p; })()`); await sleep(100);
+    planted[k] = await app.evalJs(D15C);
+    await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); if (p) p.style.removeProperty('translate'); return !!p; })()"); await sleep(100);
+  }
+  ok(`M5e (mutants): the panel moved 40 px off the page, and 80 px onto the text, each turns L15e's read RED (right edge ${planted.off && planted.off.panel && planted.off.panel.r} and ${planted.onText && planted.onText.panel && planted.onText.panel.r})`, !!planted.off && !!planted.onText && !!d15d && Math.abs(planted.off.panel.r - d15d.panel.r + 40) <= 1 && Math.abs(planted.onText.panel.r - d15d.panel.r - 80) <= 1 && !l15eOk(planted.off) && !l15eOk(planted.onText), J(planted));
   await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'); if (g) g.click(); return !!g; })()"); await sleep(900);
   const out6 = await app.evalJs(OUTREAD);
   ok(`L6 look only: with both drawers open, none of the features ruled out is on the page (${J(out6)})`, Array.isArray(out6) && out6.length === 0, J(out6));

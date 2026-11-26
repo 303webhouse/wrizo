@@ -3,7 +3,10 @@
 // selection never scrolls anything: the new line sat below the sheet, clipped, with no caret to see. revealCaret() is the one place that closes that:
 // after the app places a collapsed caret, the scroller moves just far enough for the caret's line to lie inside the sheet (and the window), and not one
 // pixel more. The Typewriter keeps its own resting place for the line (useTypewriterFade) and is left alone.
+import { paintScaleOf } from './paintScale';
+
 const PAD = 12;   // px of the sheet left between the line and its edge, so the line is not glued to the edge it was scrolled to
+// The rects below are SCREEN px; the scroller moves in the page's own px. Every distance is divided by the painted scale before it scrolls (store/paintScale.ts, #133).
 
 function scrollerOf(el: HTMLElement): HTMLElement | null {
   for (let p: HTMLElement | null = el.parentElement; p && p !== document.body; p = p.parentElement) {
@@ -44,7 +47,7 @@ export function revealCaret(el: HTMLElement): void {
     let delta = 0;
     if (line.bottom > bottom) delta = line.bottom - bottom;
     else if (line.top < top) delta = line.top - top;
-    if (delta) scroller.scrollBy({ top: delta, behavior: 'instant' as ScrollBehavior });
+    if (delta) scroller.scrollBy({ top: delta / paintScaleOf(scroller), behavior: 'instant' as ScrollBehavior });
   } catch { /* a caret that cannot be revealed stays where it is: never an error into the writer's key */ }
 }
 
@@ -72,9 +75,10 @@ function snapFirstRow(el: HTMLElement, scroller: HTMLElement): boolean {
     let first: DOMRect | null = null;
     for (const r of Array.from(el.querySelectorAll<HTMLElement>('.wz-row'))) { const q = r.getBoundingClientRect(); if (q.height > 0 && q.bottom > clip + 1) { first = q; break; } }
     if (!first || first.top >= clip - 0.5) return moved;
-    const downBy = first.bottom - clip;
+    const k = paintScaleOf(scroller);
+    const downBy = (first.bottom - clip) / k;
     const room = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
-    const by = downBy <= room + 0.5 ? downBy : first.top - clip;
+    const by = downBy <= room + 0.5 ? downBy : (first.top - clip) / k;
     if (Math.abs(by) < 0.5) return moved;
     scroller.scrollBy({ top: by, behavior: 'instant' as ScrollBehavior });
     moved = true;
@@ -94,9 +98,10 @@ function restOnce(el: HTMLElement): void {
     // how far from the TOP the page must scroll for the caret's line to show: the scroller may carry a place over from the stage she left (Free Write's landing, the opening cut), so the line's distance below the bottom is added
     // to where the scroller already is. (It was measured as if the scroller sat at 0, and a caret already in view sent the page to the top: page-open-scroll SC3 and flux3-s4b-l4 CLEAR on the J2 tree.) A page that already
     // shows its caret rests on the smallest whole line that still shows it.
-    const need = Math.max(0, scroller.scrollTop + line.bottom - bottom);
+    const k = paintScaleOf(scroller);
+    const need = Math.max(0, scroller.scrollTop + (line.bottom - bottom) / k);
     const max = scroller.scrollHeight - scroller.clientHeight;
-    const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => r.getBoundingClientRect().top - box.top + scroller.scrollTop);
+    const offsets = [...el.querySelectorAll<HTMLElement>('.wz-row')].map((r) => (r.getBoundingClientRect().top - box.top) / k + scroller.scrollTop);
     const to = restingScroll(need, max, offsets);
     if (to !== scroller.scrollTop) scroller.scrollTo({ top: to, behavior: 'instant' as ScrollBehavior });
     snapFirstRow(el, scroller);

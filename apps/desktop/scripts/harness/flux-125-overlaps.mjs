@@ -74,8 +74,15 @@ const CENSUS = `(() => {
     const c = cross(a.b, b.b); if (!c) continue;
     const pa = a.el.closest('.wz-tutor-panel, .wz-sliver-panel'); if (pa && pa === b.el.closest('.wz-tutor-panel, .wz-sliver-panel')) { inMenu.push([a.name, b.name, c]); continue; }
     overlaps.push({ kind: 'control', a: a.name, ab: box(a.b), b: b.name, bb: box(b.b), by: c }); }
-  if (pr) for (const a of ctl) { if (page.contains(a.el)) continue; const c = cross(a.b, pr); if (c) overlaps.push({ kind: 'page', a: a.name, ab: box(a.b), b: 'the page', bb: box(pr), by: c }); }
-  for (const m of marks) if (m.shown) for (const a of ctl) { const c = cross(a.b, m.b); if (c) overlaps.push({ kind: 'mark', a: a.name, ab: box(a.b), b: m.name, bb: box(m.b), by: c }); }
+  // #133 (Fable, Nov 25, 8:30 pm, A; Nick: "opens over the page's edge"): at 1600 and narrower an OPEN side panel may lie over the page's MARGIN,
+  // never over its text, a header readout or another control. A page or corner-mark crossing by such a panel's own control (its opener included) is
+  // marked margin133; the page's text is its padding box, painted. Every other kind of crossing, and every wider window, is judged as before.
+  const text133 = (() => { if (!page || !pr) return null; const cs = getComputedStyle(page); const k = page.offsetWidth ? pr.width / page.offsetWidth : 1; const l = pr.left + parseFloat(cs.paddingLeft) * k, r = pr.right - parseFloat(cs.paddingRight) * k; return { left: l, right: r, top: pr.top, bottom: pr.bottom }; })();
+  const heads133 = [...document.querySelectorAll('.flux3-dochead > *')].map((e) => { const s = getComputedStyle(e); const b = e.getBoundingClientRect(); return s.visibility === 'visible' && b.width > 1 ? b : null; }).filter(Boolean);
+  const open133 = [document.querySelector('.wz-sliver[data-open=true]') && '.desk-frame-sliver-anchor', document.querySelector('.wz-tutor-grip[aria-expanded=true]') && '.desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor', document.querySelector('.wz-cascade-panel[data-visible=true]') && '.desk-frame-cascade-anchor'].filter(Boolean).join(', ');
+  const margin133 = (a) => innerWidth <= 1600 && !!open133 && !!a.el.closest(open133) && !!text133 && !cross(a.b, text133) && !heads133.some((h) => cross(a.b, h));
+  if (pr) for (const a of ctl) { if (page.contains(a.el)) continue; const c = cross(a.b, pr); if (c) overlaps.push({ kind: 'page', a: a.name, ab: box(a.b), b: 'the page', bb: box(pr), by: c, margin133: margin133(a) }); }
+  for (const m of marks) if (m.shown) for (const a of ctl) { const c = cross(a.b, m.b); if (c) overlaps.push({ kind: 'mark', a: a.name, ab: box(a.b), b: m.name, bb: box(m.b), by: c, margin133: margin133(a) }); }
   // #129 (Fable, 11:31 am: the rule now covers A PANEL BORDER, every theme): an open hand's panel (its drawn box, border included); a control outside it
   // whose box crosses it lies on its border or over it. Touching the border is not crossing (more than 0.5 px each way)
   const panels = [...document.querySelectorAll(".wz-tutor-panel[data-open='true'], .wz-sliver-panel[data-open='true']")].map((p) => ({ el: p, b: drawn(p) })).filter((p) => p.b);
@@ -143,7 +150,9 @@ await withHarness(async (app) => {
         if (S === 'R') counts.push([arm, c.controls.length, c.marks.filter((m) => m.shown).length, !!c.page, await ev("document.querySelectorAll('.flux3-port').length")]);
         console.log(`DIAG 125 [${arm} ${state}] page ${q(c.page)} marks ${q(c.marks)}`);
         console.log(`DIAG 125 [${arm} ${state}] controls ${c.controls.length}: ${q(c.controls)} | under an opaque sheet ${c.under.length}: ${q(c.under)} | inside one menu ${c.inMenu.length}: ${q(c.inMenu)}`);
-        ok(`O${w}${V}${S} [${arm}, ${state}] no drawn control crosses another control, the page, or a corner mark (${c.overlaps.length} crossing)`, c.overlaps.length === 0, c.overlaps);
+        // SUPERSEDED at 1600 and narrower (#133 A: over the page or a corner mark only an open panel's own controls, in the page's margin, never its text or a header readout), the original verbatim:
+        // ok(`O${w}${V}${S} [${arm}, ${state}] no drawn control crosses another control, the page, or a corner mark (${c.overlaps.length} crossing)`, c.overlaps.length === 0, c.overlaps);
+        ok(`O${w}${V}${S} [${arm}, ${state}] [#133 A: over the page or a corner mark only an open panel's own controls, in the page's margin, never its text or a header readout] no drawn control crosses another control, the page, or a corner mark (${c.overlaps.filter((o) => !o.margin133).length} crossing)`, c.overlaps.every((o) => o.margin133), c.overlaps.filter((o) => !o.margin133));
         ok(`H${w}${V}${S} [${arm}, ${state}] every drawn control can be pressed: the element at its centre is the control or inside it (${c.covered.length} covered)`, c.covered.length === 0, c.covered);
         // CM is PENDING Fable's ruling (Nov 24): the only controls inside 8 px of a mark are the hands' opener tabs (5 px below the top-left mark), and
         // their place is Nick's own rule ("the opener tabs keep today's shape, place and arrow flip", flux-v3.css; flux3-s3.mjs HANDS). Read and printed

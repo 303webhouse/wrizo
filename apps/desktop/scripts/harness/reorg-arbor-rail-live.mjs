@@ -165,7 +165,7 @@ await withHarness(async (app) => {
   // ---- A10: the open pop-out against the page's left opener ----
   const EDGE = "(() => { const p = document.querySelector('.wz-cascade-panel[data-category]'); const g = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); if (!p || !g) return { panel: !!p, grip: !!g };\n" +
     "  const pr = p.getBoundingClientRect(), gr = g.getBoundingClientRect(); const cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2; const hit = document.elementFromPoint(cx, cy);\n" +
-    "  return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)) }; })()";
+    "  return { right: Math.round(pr.right * 10) / 10, width: Math.round(pr.width * 10) / 10, gripLeft: Math.round(gr.left * 10) / 10, hit: !!hit && (hit === g || g.contains(hit)), textLeft: (() => { const m = document.querySelector('.desk-frame-stage .mode-page'); if (!m) return null; const r = m.getBoundingClientRect(); return r.left + parseFloat(getComputedStyle(m).paddingLeft) * (r.width / m.offsetWidth); })(), gripHidden: getComputedStyle(g).visibility === 'hidden' }; })()";
   const edge1366 = await app.evalJs(EDGE);
   // ---- A12: the uncoloured box (nothing chosen yet in this run) ----
   const plain = await app.evalJs("[...document.querySelectorAll('[data-reorg-rail] .wz-reorg-box:not([data-box-picture]), .wz-cascade-panel .wz-reorg-box:not([data-box-picture])')].map((b) => [getComputedStyle(b).backgroundColor, getComputedStyle(b).color])");
@@ -219,10 +219,15 @@ await withHarness(async (app) => {
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700); await app.mouseMove(1500, 500); await sleep(300);
   const edge1920 = await app.evalJs(EDGE);
   await app.emulateDpr(1, 1366, 768);
-  const a10 = (a, b) => !!a && !!b && a.right !== undefined && a.right <= a.gripLeft + 0.5 && a.hit === true && b.right !== undefined && Math.abs(b.width - 300) <= 1 && b.right <= b.gripLeft + 0.5;
-  ok('A10 at 1366 the opened DRAWERS pop-out ends before the page\'s left opener and the opener takes a press; at 1920 it keeps its 300 px', a10(edge1366, edge1920), { edge1366, edge1920 });
-  const over = edge1366 && edge1366.gripLeft !== undefined ? { ...edge1366, right: edge1366.gripLeft + 10, hit: false } : null;
-  ok('MUT-A10 the 1366 reading with the pop-out 10 px past the opener turns A10\'s test red', !!over && a10(edge1366, edge1920) !== a10(over, edge1920) && !a10(over, edge1920), over);
+  // SUPERSEDED at 1366 (#133, Nick, Nov 25; docs/rulings/css-desk-frame.md §22: the pop-out lies over the page's margin and its opener is hidden under it), the original verbatim:
+  // const a10 = (a, b) => !!a && !!b && a.right !== undefined && a.right <= a.gripLeft + 0.5 && a.hit === true && b.right !== undefined && Math.abs(b.width - 300) <= 1 && b.right <= b.gripLeft + 0.5;
+  // ok('A10 at 1366 the opened DRAWERS pop-out ends before the page\'s left opener and the opener takes a press; at 1920 it keeps its 300 px', a10(edge1366, edge1920), { edge1366, edge1920 });
+  // const over = edge1366 && edge1366.gripLeft !== undefined ? { ...edge1366, right: edge1366.gripLeft + 10, hit: false } : null;
+  // ok('MUT-A10 the 1366 reading with the pop-out 10 px past the opener turns A10\'s test red', !!over && a10(edge1366, edge1920) !== a10(over, edge1920) && !a10(over, edge1920), over);
+  const a10 = (a, b) => !!a && !!b && a.right !== undefined && a.right <= a.textLeft + 0.5 && a.width >= 200 && a.gripHidden === true && b.right !== undefined && Math.abs(b.width - 300) <= 1 && b.right <= b.gripLeft + 0.5;
+  ok('A10-133 at 1366 the opened DRAWERS pop-out lies over the page\'s margin, never its text, and the left opener is hidden while it is open; at 1920 it keeps its 300 px', a10(edge1366, edge1920), { edge1366, edge1920 });
+  const over = edge1366 && edge1366.textLeft !== undefined ? { ...edge1366, right: edge1366.textLeft + 10 } : null;
+  ok('MUT-A10-133 the 1366 reading with the pop-out 10 px into the page\'s text turns A10-133\'s test red', !!over && a10(edge1366, edge1920) !== a10(over, edge1920) && !a10(over, edge1920), over);
   await visit(app, '/?reorg=1&arbor2room=day');
   const noDoor = await app.evalJs("!!document.querySelector('[data-reorg-rail]')");
   await visit(app, '/?reorg=1&arbor2=0');

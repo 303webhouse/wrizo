@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { onePanelAt } from '../store/pageScale';
 import { CascadeSurvey } from './CascadeSurvey';
 import { PlaceBlock } from './PlaceBlock';
 import { usePlace } from '../store/usePlace';
@@ -232,7 +233,9 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   useEffect(() => registerDrawer('cascade', () => setState(REST)), []);
 
   // the open/close announcement is an effect keyed on one derived truth (a category chosen and not docked), so every path announces and a setState updater stays pure [Cascade §5]
-  const cascadeOccupiesBand = !!state.category && !state.docked;
+  // #133: on the prose page at 1600 and narrower a docked survey is a side panel too, so opening the Front or Back menu closes it [Cascade §5]
+  const onlyOne = onePanelAt(window.innerWidth) && !!cascadeStage()?.classList.contains('desk-frame-stage--prose');
+  const cascadeOccupiesBand = !!state.category && (!state.docked || onlyOne);
   useEffect(() => {
     if (cascadeOccupiesBand) requestOpen('cascade');
     else noteClosed('cascade');

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { rangeFromPlainOffsets } from '../../store/caretOffset';
 import { findAll } from './searchFind';
+import { paintScaleOf } from '../../store/paintScale';
 
 // THE FOUND WORDS ON THE PAGE, while the search is over the Doc she is in (the prototype marks each one; #F6ECBE): a PAINT LAYER, the CSS Custom
 // Highlight API, so no letter's box changes and her words never re-wrap; nothing is written into the editor. A range lives in the editor's text
@@ -66,7 +67,7 @@ export function useSearchMarks(q: string, curAt: number | null): void {
         const box = cur.getBoundingClientRect();
         if (scroller && box.height) {
           const s = scroller.getBoundingClientRect();
-          if (box.top < s.top + 40 || box.bottom > s.bottom - 40) scroller.scrollTop += box.top - (s.top + s.height / 3);
+          if (box.top < s.top + 40 || box.bottom > s.bottom - 40) scroller.scrollTop += (box.top - (s.top + s.height / 3)) / paintScaleOf(scroller);   // screen px to the page's px (#133)
         }
       }
       mo = new MutationObserver(() => { draw(); });
