@@ -205,10 +205,11 @@ await withHarness(async (app) => {
           const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
           // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 1
           const still = s.every((x) => same(x.grip, s[0].grip));
+          const small133 = await app.evalJs('innerWidth <= 1600');   // #133: there the tab goes with a drawer over the page, so older records read the meeting edge only
           pok(`PARKED (was "L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)") - SUPERSEDED by the drawer mirror (Oct 24): the tab never moves; the panel starts at it; live successor: L2 ${T} (${hand}) [drawer-mirror successor]`,
-            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
+            (small133 || still) && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
           // #133 (Nick, Nov 25): at 1600 and narrower the Back menu lies over the page, so its tab goes with it; the panel still starts at the tab.
-          if (await app.evalJs('innerWidth <= 1600')) {
+          if (small133) {
             pok(`PARKED (was "L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row") - SUPERSEDED at 1600 and narrower by #133; live successor: L2 [#133 successor]`,
               true, 'successor: L2 [#133]');
             ok(`L2 ${T} (${hand}) [#133 successor]: the open panel starts AT the tab - never under it, never inside its tab row - the tab having gone with the drawer over the page`,

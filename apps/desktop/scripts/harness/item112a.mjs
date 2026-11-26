@@ -506,7 +506,8 @@ await withHarness(async (app) => {
     } else {
       // ARCHIVED PARK (#13 step 14): archive/item112a.mjs.parked.md record 5
       pok(`PARKED (was "S4 (§7.4 @ ${w}x${h}): PRE-EXISTING ANCHOR DEVIATION, PINNED — the Desk hand overhangs the paper's left edge by 29.7px at the frame's own minimum width ...") - page-size rulings a-b: the letter page is 620px, so the same overhang reads -32; live successor: S4 [page-size successor] PRE-EXISTING ANCHOR DEVIATION, RE-PINNED`,
-        deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ deskDelta, pin: PAGE_SIZE_PIN }));
+        // #133: the condition follows today's truth - over the painted page's margin at most
+        !!geo.dock && !!geo.sheet && geo.dock.r - geo.sheet.l >= -0.9 && geo.dock.r - geo.sheet.l <= geo.sheet.w / 8.5, JSON.stringify({ deskDelta, pin: PAGE_SIZE_PIN, geo }));
       // SUPERSEDED (#133), the original verbatim:
       // ok(`S4 (§7.4 @ ${w}x${h}) [page-size successor]: PRE-EXISTING ANCHOR DEVIATION, RE-PINNED on the letter page — the Desk hand overhangs the paper's left edge by ${-PAGE_SIZE_PIN}px at the frame's own minimum width (the 29.7px of main @ 89c5955, plus the 2.3px the 620px letter page adds on each side). A regression guard, still surfaced to the desk for 117/119`,
       // deskDelta != null && Math.abs(deskDelta - PAGE_SIZE_PIN) <= 1.0, JSON.stringify({ geo, deskDelta, pin: PAGE_SIZE_PIN, was: -29.7 }));
@@ -609,7 +610,8 @@ await withHarness(async (app) => {
       && gapA != null && gapB != null && Math.abs(gapA) <= station && Math.abs(gapB) <= station
       && Math.abs(fromLeftB - fromLeftA) > 20 && Math.abs(fromRightB - fromRightA) > 20;
     pok('PARKED (was "S4 (§7.4): THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 133px and the dock holds station on its edge (within 30px at both) ...") - page-size rulings a-b: the re-pinned overhang is 32px; live successor: S4 (§7.4) [page-size successor]',
-      anchored, JSON.stringify({ paperTravel, gapA, gapB, station }));
+      // #133: the condition follows today's truth - the station is held on the painted page
+      [a, b].every((x) => !!x && x.dockR != null && x.sheetL != null && x.dockR - x.sheetL >= -0.9 && x.dockR - x.sheetL <= x.sheetW / 8.5), JSON.stringify({ paperTravel, gapA, gapB, station, anchored }));
     // SUPERSEDED (#133: the station is held on the painted page, which now grows with the window), the original verbatim:
     // ok(`S4 (§7.4) [page-size successor]: THE DESK HAND IS PAPER-ANCHORED, NOT SCREEN-ANCHORED — across the two reference widths the paper travels 100px+ and the dock holds station on its edge (within the re-pinned ${station}px at both), while NEITHER viewport offset stays constant`,
     // anchored, JSON.stringify({ anchorTrack, paperTravel, gapA, gapB, station, fromLeftA, fromLeftB, fromRightA, fromRightB }));

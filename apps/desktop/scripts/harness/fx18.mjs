@@ -178,7 +178,7 @@ await withHarness(async (app) => {
       fx18Parks.push({ s: s.name, w, margin, panel, paper });
       if (margin != null && margin >= FLOOR) {
         // #133 (Nick, Nov 25; docs/rulings/css-desk-frame.md §23): at 1600 and narrower the panel lies over the page's right margin, never its text.
-        if (w <= 1600) {
+        if (w <= 1600 && s.name === 'Page') {
           // SUPERSEDED at 1600 and narrower, the original verbatim:
           // ok(`S2 WIDE LAW [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px >= ${FLOOR}): the OPEN panel OCCUPIES the margin (narrowed to it if need be) and NEVER covers the painted paper, stays wholly in the room, grip reachable`,
           // !!panel && !!paper && panel.l >= paper.r - 2 && inRoom && grip === true,
@@ -193,7 +193,7 @@ await withHarness(async (app) => {
           !!sliverPanel && !!panel && sliverPanel.r <= panel.l + 1,
           JSON.stringify({ sliverPanel, tutorPanel: panel }));
       } else {
-        if (w <= 1600) {
+        if (w <= 1600 && s.name === 'Page') {
           // SUPERSEDED at 1600 and narrower (#133), the original verbatim:
           // ok(`S2 DEGRADATION [page-size successor] (${s.name} @ ${w}x${h}, margin ${margin}px < ${FLOOR}): the OPEN panel OVERLAYS the paper at natural open-w (~${ow.toFixed(0)}px), stays in the room, grip STAYS reachable atop it`,
           // !!panel && !!paper && panel.l < paper.r - 2 && Math.abs(panel.w - ow) < 2 && inRoom && grip === true,
