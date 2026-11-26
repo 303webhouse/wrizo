@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadServer, swap, findHandler, callRoute, SERVER } from '../../../server/scripts/tutor-eval/load-server.mjs';
 import { startStandInModel } from '../../../server/scripts/tutor-eval/stand-in-model.mjs';
-import { withDepartures, SAFETY_MARKER, KIT_SAFETY_CLAUSE } from '../../../server/scripts/tutor-eval/kit-departures.mjs';
+import { withDepartures, SAFETY_MARKER, KIT_SAFETY_CLAUSE, KIT_LENGTH_RULE, SHIPPED_LENGTH_RULE } from '../../../server/scripts/tutor-eval/kit-departures.mjs';
 
 // THE ONE DELIBERATE DEPARTURE FROM THE KIT (Fable, Nov 23, 6:14 pm) is a named edit in apps/server/scripts/tutor-eval/kit-departures.mjs: the SAFETY bullet's "reply only with the fixed safety message supplied by Wrizo"
 // becomes "reply with this one marker only" (the server swaps the marker for Nick's exact words; see tutor-safety-marker.mjs). Everything else, CONTEXT included, is the kit's v0.5 text exactly.
@@ -136,8 +136,19 @@ ok(sr2.body && sr2.body.prompt === 'Write about the sea.', 'TP6 a model line tha
 // ---- TP7 ----
 ok(ORACLE.hatEditor.includes('her words → corrected words') && P.buildSystemPrompt && P.buildSystemPrompt({ hat: 'editor' }).includes('Write each correction as: her words → corrected words.'), 'TP7 the Editor hat carries the v0.3 line: each correction is written "her words → corrected words"');
 
+// ---- TP10: the length line (M3) ----
+ok(sysChat.includes('\nLENGTH\n' + SHIPPED_LENGTH_RULE + ' Plain words. No lists longer than five.\n') && !sysChat.includes(KIT_LENGTH_RULE), 'TP10 the length rule sent is the tighter one: aim for 90, never more than 120 counting every line but the Read line, keep what matters most, 200 to explain a concept', sysChat.slice(sysChat.indexOf('\nLENGTH\n'), sysChat.indexOf('\nLENGTH\n') + 260));
+
 // ---- mutants ----
 {
+  try {
+    const m7 = loadServer({ mutate: { 'tutorPrompts.ts': (s) => { const src = s.replace(/\r\n/g, '\n'); if (!src.includes(SHIPPED_LENGTH_RULE)) throw new Error('mutant anchor missing: the length rule'); return src.replace(SHIPPED_LENGTH_RULE, () => KIT_LENGTH_RULE); } } });
+    const h7 = findHandler(m7.load('tutor.ts').tutorRouter, '/tutor/chat');
+    model.reset(); model.say('x?\nRead: Part 1.');
+    await callRoute(h7, { messages: [{ role: 'writer', text: 'Hi' }] }, 'u-m7');
+    ok(String((model.requests[0] || {}).system || '').includes(KIT_LENGTH_RULE), 'MUT7 the kit\'s looser length line put back: TP10 goes RED');
+    m7.cleanup();
+  } catch (e) { ok(false, 'MUT7 could not be built', String(e.message)); }
   const m1 = loadServer({ mutate: { 'tutorPrompts.ts': swap(ORACLE.hatTutor.split('\n')[0], 'HAT · BLANK') } });
   const h1 = findHandler(m1.load('tutor.ts').tutorRouter, '/tutor/chat');
   model.reset(); model.say('x?\nRead: Part 1.');
