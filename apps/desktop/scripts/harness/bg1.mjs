@@ -424,8 +424,11 @@ await withHarness(async (app) => {
   const noOpacity = (s) => ({ font: s.font, size: s.size, color: s.color });
   // ARCHIVED PARK (#13 step 14): archive/bg1.mjs.parked.md record 13
   bg1f.grammar = { pageStyle, boardStyle };
-  ok('S3 [12f successor]: the row is the board\'s alone now - a blank page renders no door, and the board starters still rest at opacity 0.4',
-    pageStyle === null && !!boardStyle && boardStyle.opacity === '0.4', JSON.stringify({ pageStyle, boardStyle }));
+  // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the 40% is the outline's alone; the words and icons are solid. The original, verbatim:
+  //  ok('S3 [12f successor]: the row is the board\'s alone now - a blank page renders no door, and the board starters still rest at opacity 0.4',
+  //    pageStyle === null && !!boardStyle && boardStyle.opacity === '0.4', JSON.stringify({ pageStyle, boardStyle }));
+  ok('S3 [#136 successor]: the row is the board\'s alone - a blank page renders no door, and the board starters rest solid (opacity 1)',
+    pageStyle === null && !!boardStyle && boardStyle.opacity === '1', JSON.stringify({ pageStyle, boardStyle }));
   {
     const fp = await app.evalJs("(() => { const c = document.querySelector('.board-canvas'); const r = c.getBoundingClientRect(); for (let y = r.top + 60; y < Math.min(r.bottom, innerHeight - 150); y += 30) for (let x = r.left + 60; x < r.right - 60; x += 30) if (document.elementFromPoint(x, y) === c) return { x: Math.round(x), y: Math.round(y) }; return null; })()");
     if (!fp) ok('S3 [faint-starters successor]: a point on the empty board canvas exists to press', false, 'none');

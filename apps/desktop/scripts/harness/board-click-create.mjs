@@ -219,7 +219,9 @@ await withHarness(async (app) => {
   await seedBoard(app);
   const s0 = await app.evalJs("(() => { const e = document.querySelector('.wz-beginnings[data-beginnings=\"board\"]'); return e ? { opacity: getComputedStyle(e).opacity, visibility: getComputedStyle(e).visibility } : null; })()");
   const door0 = await app.evalJs("(() => { const b = document.querySelector('.wz-beginnings[data-beginnings=\"board\"] .wz-beginning'); if (!b) return null; const cs = getComputedStyle(b); return { opacity: cs.opacity, border: cs.borderTopWidth + ' ' + cs.borderTopStyle, radius: cs.borderTopLeftRadius }; })()");
-  ok('C7b: at rest each starter is a thin SQUARE outline at about 40% opacity (1px solid, no radius, opacity 0.4)', !!door0 && door0.opacity === '0.4' && door0.border === '1px solid' && door0.radius === '0px', JSON.stringify(door0));
+  // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the 40% is the outline's alone; the words and icons are solid. The original, verbatim:
+  //  ok('C7b: at rest each starter is a thin SQUARE outline at about 40% opacity (1px solid, no radius, opacity 0.4)', !!door0 && door0.opacity === '0.4' && door0.border === '1px solid' && door0.radius === '0px', JSON.stringify(door0));
+  ok('C7b [#136 successor]: at rest each starter is solid inside a thin SQUARE outline (1px solid, no radius, opacity 1; the outline is drawn at about 40%)', !!door0 && door0.opacity === '1' && door0.border === '1px solid' && door0.radius === '0px', JSON.stringify(door0));
   const sp = await emptyPoint(app);
   await app.mouseMove(sp.x, sp.y); await app.mouseDown(sp.x, sp.y); await sleep(700);   // HELD: the fade is about the first PRESS, not the release
   const s1 = await app.evalJs("(() => { const e = document.querySelector('.wz-beginnings[data-beginnings=\"board\"]'); return e ? { opacity: getComputedStyle(e).opacity, visibility: getComputedStyle(e).visibility, faded: e.dataset.faded } : null; })()");
