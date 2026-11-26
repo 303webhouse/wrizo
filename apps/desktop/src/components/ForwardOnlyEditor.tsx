@@ -7,7 +7,7 @@ import { formatShortcutAction, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, EOF_GUARD, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
-import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
+import { classifyEditKind, createTextUndoStack, registerUndoStack, takeCarriedUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { openCaret, revealCaret } from '../store/caretInView';
 import { planHost, runElementHtml, type RunHtml } from './freeWriteHost';
@@ -275,7 +275,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // itself so PageEditor.tsx's applyRailFormat (a Bold/Italic rail
       // click, which lives OUTSIDE this closure, in the parent component)
       // can record an atomic step into the SAME stack a keystroke would.
-      const undoStack = createTextUndoStack({ text: initialText, caret: initialText.length });
+      // #82: a mount that follows words arriving from another window takes the history PageEditor carried across (rebased through them) instead of starting an empty one
+      const undoStack = takeCarriedUndoStack(initialText) ?? createTextUndoStack({ text: initialText, caret: initialText.length });
       registerUndoStack(el, undoStack);
       // Classified at beforeinput (before the DOM mutates — the SAME
       // discipline `justTypedSpace` above already uses), consumed by the
