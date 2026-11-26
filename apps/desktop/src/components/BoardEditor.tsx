@@ -794,6 +794,16 @@ export function BoardEditor({ id }: { id: string }) {
   // the rename state lives with the other hooks, above the early return: hooks below `if (!initialEntry) return null` would change the hook count between renders [BoardEditor §46]
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+  // VISUAL 1a.3: the drawer follows the Board's own saved height (Fable): the visible Board is the wrap, whatever she has re-sized it to (the observer hears every change of it). Above the early return, as every hook is
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (inkNow !== 'ink' || !wrap || typeof ResizeObserver === 'undefined') return;
+    const read = () => setBoardSheetH(wrap.offsetHeight);
+    const ro = new ResizeObserver(read);
+    ro.observe(wrap);
+    read();
+    return () => ro.disconnect();
+  }, [inkNow, !!initialEntry]);
 
   if (!initialEntry) return null;
 
@@ -841,16 +851,6 @@ export function BoardEditor({ id }: { id: string }) {
     availHeightPx != null ? availHeightPx - WRAP_BORDER_PX : VIEWPORT_MIN_PX,
   );
   const canvasHeightPx = canvasOverrideH != null ? Math.max(canvasOverrideH, contentMinHeightPx) : contentMinHeightPx;
-  // VISUAL 1a.3: the drawer follows the Board's own saved height (Fable): the visible Board is the wrap, whatever she has re-sized it to
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (inkNow !== 'ink' || !wrap || typeof ResizeObserver === 'undefined') return;
-    const read = () => setBoardSheetH(wrap.offsetHeight);
-    const ro = new ResizeObserver(read);
-    ro.observe(wrap);
-    read();
-    return () => ro.disconnect();
-  }, [inkNow, canvasHeightPx]);
   // B1 — a system Board never has a project (S1), so the pre-B1 fallback
   // ('/journal') would send BOTH system Boards' own "Done" to the SAME
   // place — harmlessly circular for the Journal Board itself, but genuinely
