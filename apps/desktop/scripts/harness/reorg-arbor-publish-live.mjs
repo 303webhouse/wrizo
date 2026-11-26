@@ -63,7 +63,7 @@ await withHarness(async (app) => {
   await app.evalJs("window.__apEditor = document.querySelector('.forward-only-editor'); null");
   const closed0 = await app.evalJs(PAGE);
   await sheetOpen(app);
-  const fit = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'), p = document.querySelector('.mode-page'); if (!s || !p) return null; const a = s.getBoundingClientRect(), b = p.getBoundingClientRect(); const mid = document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2); return { d: [a.left - b.left, a.top - b.top, a.width - b.width, a.height - b.height].map((v) => Math.round(v * 10) / 10), onTop: !!mid && !!mid.closest('[data-reorg-pub]') }; })()");
+  const fit = await app.evalJs("(() => { const s = document.querySelector('[data-reorg-pub]'), p = document.querySelector('.mode-page'); if (!s || !p) return null; const a = s.getBoundingClientRect(), b = p.getBoundingClientRect(); const mid = document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2); return { d: [a.left - b.left, a.top - b.top, a.width - b.width, a.height - b.height].map((v) => Math.round((v / (() => { const p = document.querySelector('.mode-page'); return p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; })()) * 10) / 10), onTop: !!mid && !!mid.closest('[data-reorg-pub]') }; })()");
   ok('AP1 the sheet is the page\'s own paper, laid exactly over it: its rect is the paper\'s, and the sheet is what stands at its centre', !!fit && fit.d.every((v) => Math.abs(v) <= 2) && fit.d[0] === fit.d[1] && fit.d[2] === fit.d[3] && fit.d[2] === -2 * fit.d[0] && fit.onTop === true, fit);
 
   await app.evalJs("document.querySelector('[data-reorg-pub]').focus(); null"); await sleep(300);

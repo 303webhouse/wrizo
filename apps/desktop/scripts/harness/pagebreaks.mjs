@@ -98,6 +98,9 @@ const judgePair = (M, pages, head, geo) => {
     if (p.sides.length !== 2 || !L || !Rt || !L.stem || !Rt.stem || !L.arm || !Rt.arm) return { pass: false, why: `pair at ${p.at}: sides ${p.sides.map((x) => x.side)}` };
     if (Math.abs(L.stem.y - Rt.stem.y) > 0.01 || Math.abs(L.arm.y - Rt.arm.y) > 0.01) return { pass: false, why: `pair at ${p.at}: left and right not on one line` };
     if (geo) {
+      // #133: the sizes a call names were written for one scale (14 px at 1, 15 at the old 1920, 22 zoomed); the marks grow with the page, so what is
+      // owed is the base mark at THIS page's scale. The base stroke is the named stroke at the named scale (2, Machina 1).
+      { const s = M.s || 1; const base = Math.max(1, Math.round(geo.stroke / (geo.stem / 14))); geo = { ...geo, stem: Math.round(14 * s), arm: Math.round(8 * s), stroke: Math.max(1, Math.round(base * s)), tip: Math.round(12 * s) }; }
       const r = (v) => Math.round(v * 100) / 100;
       const g = { stemH: r(L.stem.h), stemW: r(L.stem.w), armW: r(L.arm.w), armH: r(L.arm.h), tipL: r(M.colL - (L.arm.x + L.arm.w)), tipR: r(Rt.arm.x - M.colR) };
       const near = (a, b) => Math.abs(a - b) <= 0.6;   // the column edge is fractional; the marks snap to whole px

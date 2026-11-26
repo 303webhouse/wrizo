@@ -1,4 +1,4 @@
-// the page scale, pure: the prose page is a US Letter sheet; it always lays out at scale 1 and is painted by a transform, so lines break the same at any scale; the scale comes from the stage alone, never an open panel [pageScale §1]
+// the page scale, pure: the prose page is a US Letter sheet; it always lays out at scale 1 and is painted by a transform, so lines break the same at any scale; the scale comes from the window and its stage, never an open panel [pageScale §1] [pageScale §5]
 export const LETTER_W_IN = 8.5;
 export const LETTER_H_IN = 11;
 export const PAGE_W_BASE = 620;                              // px at scale 1
@@ -18,13 +18,31 @@ export const ZOOM_CLEAR = 8;
 // the middle of the visible page; the band's stops are drawn from this same anchor (--tw-anchor) [pageScale §3]
 export const ZOOM_ANCHOR = 0.5;                              // the writing line's hold, as a fraction of the page column's height (Cursor's --anchor)
 
-/** The base page scale for a stage of this size, with the page's top this far below the stage's top. Never below 1. */
-export function pageScaleFor(stageW: number, stageH: number, pageTop: number): number {
+// #133 - the page on a small screen: at SMALL_W and narrower it takes SMALL_SHARE of the stage's width; from LARGE_W it is the letter fit; between, it eases [pageScale §5]
+export const SMALL_W = 1600;
+export const LARGE_W = 2560;
+export const SMALL_SHARE = 0.62;
+/** One side panel at a time in a window this narrow (the page leaves no room for two). */
+export const onePanelAt = (winW: number): boolean => winW > 0 && winW <= SMALL_W;
+
+/** The largest scale at which the whole letter page fits this stage between its two drawers, with the page's top this far below the stage's top. Never below 1. */
+export function fitScaleFor(stageW: number, stageH: number, pageTop: number): number {
   if (!(stageW > 0) || !(stageH > 0)) return 1;
   const byHeight = (stageH - Math.max(0, pageTop) - PAGE_FENCE) / PAGE_H_BASE;
   const byWidth = (stageW - 2 * DRAWER_RESERVE) / PAGE_W_BASE;
   const k = Math.min(byHeight, byWidth);
   return Number.isFinite(k) && k > 1 ? k : 1;
+}
+
+/** The base page scale: by width on a small screen, the letter fit on a wide one, never smaller than the letter fit [pageScale §5]. */
+export function pageScaleFor(stageW: number, stageH: number, pageTop: number, winW = 0): number {
+  const today = fitScaleFor(stageW, stageH, pageTop);
+  if (!(winW > 0) || winW >= LARGE_W || !(stageW > 0) || !(stageH > 0)) return today;
+  const t = Math.max(0, Math.min(1, (winW - SMALL_W) / (LARGE_W - SMALL_W)));
+  const ease = t * t * (3 - 2 * t);
+  const small = (SMALL_SHARE * stageW) / PAGE_W_BASE;
+  const eased = small + (today - small) * ease;
+  return Math.max(today, eased);
 }
 
 // the page's LAYOUT height at base scale k: the letter height, or less where the stage cannot hold the painted page (the text scrolls inside) [pageScale §4]
@@ -35,11 +53,14 @@ export function pageLayoutHeightFor(stageH: number, pageTop: number, k: number):
 }
 
 /** The zoom for a page of base scale `k` on a stage this wide: ~1.6, or less where 1.6 would not fit (panels tucked). Never below 1.
- *  `sideInset`: how far chrome already stands over the stage's side (the strip) - the page keeps ZOOM_CLEAR beyond it. */
-export function zoomFor(stageW: number, k: number, sideInset = 0): number {
+ *  `sideInset`: how far chrome already stands over the stage's side (the strip) - the page keeps ZOOM_CLEAR beyond it.
+ *  `fitK`: the letter fit, where `k` has grown past it (#133): the zoomed page stays the size it was from the letter fit, unless the
+ *  normal page is already larger, so the zoom is never smaller than either [pageScale §5]. */
+export function zoomFor(stageW: number, k: number, sideInset = 0, fitK = k): number {
   if (!(stageW > 0) || !(k > 0)) return ZOOM;
   const gutter = Math.max(ZOOM_GUTTER, 2 * (Math.max(0, sideInset) + ZOOM_CLEAR));
-  const fit = (stageW - gutter) / (PAGE_W_BASE * k);
-  const z = Math.min(ZOOM, fit);
+  const from = fitK > 0 ? fitK : k;
+  const fromZoom = Math.max(1, Math.min(ZOOM, (stageW - gutter) / (PAGE_W_BASE * from)));
+  const z = (fromZoom * from) / k;
   return Number.isFinite(z) && z > 1 ? z : 1;
 }

@@ -755,3 +755,32 @@ From `apps/desktop/src/styles/13-desk-frame.css`, line 1359 at `25112784` (the c
    button is as wide as its label (and grows to share the row); when the two cannot sit side by side at the drawer's width, the second
    wraps under the first, each then the full width. No ellipsis. */
 ```
+
+## desk-frame §22
+
+#133 (pageScale §5). At 1600 and narrower a rail pop-out lies over the page's left margin, in every theme, and never over its text
+(reorg/railRoom.ts caps it at the text's left edge; never under 200 px). The Front menu's opener stands on the page's left edge, so
+while a pop-out is open that opener is hidden: no control stands under a panel's border. This replaces, at these widths only, the
+Wrizors' rail note (arbor-reorg-pass-1.md section 4: stop the pop-out short of the opener).
+
+## desk-frame §23
+
+#133. At these widths the margin right of the page is thinner than the Back menu's 320 px floor, so the drawer keeps 320 (times the
+chrome scale) and lies over the page's right margin. Its opener cannot stay on the page's edge, under the drawer: in Arbor and Machina it
+travels to the drawer's outer edge, as always; elsewhere it stands just off the drawer's inner edge. Tutor.tsx writes the distance as
+--wz-over-travel.
+
+## desk-frame §24
+
+#133 (the regression the final frames showed, Nov 25; Fable's order: a panel opens "over the page's edge, never resizing"). At 1600 and
+narrower the bigger page left less room on its left and the Front menu narrowed to fit: Machina cut "Screenplay", "Outline" and "Title
+Page". It now keeps its earlier width (Arbor 264 px, Flux 184, Machina 200 by the chrome scale less its 16 px tab) and lies over the
+page's left margin, stopping 4 px short of its text and never narrower than its own box. The room to the text is measured
+by Sliver.tsx (--wz-front-room): a percentage in the stylesheet's own overlap term resolves against the wrong box where it is used. In Arbor and Machina its tab stays on the rail
+side; elsewhere the drawer grows past the tab, so the open tab moves out with it. The Typewriter zoom keeps §12.
+
+## desk-frame §25
+
+#133 (Fable, Nov 25, 7:30 pm, item 4: with Back open at 1536 Flux's drawer stood over "… 0 CONNECTIONS"). Flux's page header carries a
+readout at each end of the page's top (Doc address at the left, counts at the right). At 1600 and narrower a panel lying over that end
+of the page puts its readout out of sight while it stands there; the box stays, nothing moves.
