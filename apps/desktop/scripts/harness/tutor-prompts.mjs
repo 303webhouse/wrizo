@@ -152,6 +152,9 @@ const spelt = [
   JSON.stringify(walkQ({ step: 'The Issue', structure: 'Rogerian', kind: 'arguments', next: 'The Question' })) === JSON.stringify(['What does the Issue do in Rogerian?', 'Show me Issues in well-known arguments', 'How is the Issue different from the Question?', 'Ask me questions about my Issue']),
 ];
 ok(spelt.every(Boolean), 'TP11 the template spells a step\'s name properly: its plural, "an" before a vowel, and no doubled "the"', spelt.join());
+const grounds = walkQ({ step: 'Grounds', structure: 'Toulmin', kind: 'arguments', next: 'Warrant' });
+ok(JSON.stringify(grounds) === JSON.stringify(['What do Grounds do in Toulmin?', 'Show me Grounds in well-known arguments', 'How are Grounds different from the Warrant?', 'Ask me questions about my Grounds']) && walkQ({ step: 'Crisis', structure: 'Three-Act', kind: 'stories' })[0] === 'What does a Crisis do in Three-Act?', 'TP11 a step whose name is already plural gets plural grammar (never "an Objections"); "Crisis" stays one', JSON.stringify(grounds));
+ok(walkQ({ step: 'Abstract (write me last)', structure: 'IMRaD', kind: 'papers' })[1] === 'Show me Abstracts in well-known papers', 'TP11 a note in brackets after a step\'s name is not part of the name', walkQ({ step: 'Abstract (write me last)', structure: 'IMRaD', kind: 'papers' })[1]);
 ok(walkQ({ step: 'Resolution', structure: 'Three-Act', kind: 'stories', previous: 'Climax' })[2] === 'How is a Resolution different from the Climax?' && walkQ({ step: 'Resolution', structure: 'Three-Act', kind: 'stories' }).length === 3, 'TP11 the last step is compared with the one before it; with no neighbour that question is left out');
 const PRESETS = ['stasis', 'hero', 'three', 'circle', 'seven', 'freytag', 'beats', 'scene', 'toulmin', 'rogerian', 'oration', 'cars', 'imrad', 'answer', 'inverted'];
 const KINDS = ['stories', 'essays', 'arguments', 'papers', 'scripts'];
