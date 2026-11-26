@@ -361,7 +361,8 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
                     aria-label={`${s.number}. ${s.title || t('reorgUntitled')}: ${stateWord(s)}`} title={s.title} onClick={() => goTo(s.id)} />
                 ))}
               </div>
-              {g.act && <div className="wz-walk-pipact">{g.act}</div>}
+              {/* under the marks, the heading's short name ("Act Three"); the list shows it whole */}
+              {g.act && <div className="wz-walk-pipact" title={g.act}>{g.act.split(':')[0]}</div>}
             </div>
           ))}
         </div>
@@ -398,7 +399,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
               <button type="button" ref={moreRef} className="wz-walk-more" data-walk-more="" aria-haspopup="true" aria-expanded={menu} aria-label={t('guideWalkMore')} onClick={() => setMenu((m) => !m)}>⋯</button>
               {menu && (
                 <div className="wz-walk-menu" data-walk-menu="" role="group" aria-label={t('guideWalkMore')}>
-                  <button type="button" autoFocus data-walk-act="rename" onClick={() => { setMenu(false); setRenaming(true); }}>{t('reorgPlanRename')}</button>
+                  <button type="button" autoFocus data-walk-act="rename" onClick={() => { setMenu(false); setRenaming(true); }}>{t('guideWalkRename')}</button>
                   <button type="button" data-walk-act="add" onClick={() => { setMenu(false); newStep((b, id) => addStepAfter(b, step.id, t('guideWalkNewStep'), () => id)); }}>{t('guideWalkAddAfter')}</button>
                   {stepCard && !isScene(stepCard) && <button type="button" data-walk-act="scenes" onClick={() => { setMenu(false); setScenesFor(step.id); }}>{t('kidDoor_scene')}</button>}
                   <button type="button" data-walk-act="up" onClick={() => { setMenu(false); write((b) => movePlanRow(b, step.id, -1)); }}>{t('reorgPlanUp')}</button>

@@ -1357,6 +1357,7 @@ export const CANONICAL_CHROME = {
   guideWalkOpenPlan: 'Walk the Plan ›',
   guideWalkContinue: 'Continue Your Guide',
   guideWalkContinueLine: '{n} of {total}',
+  guideWalkRename: 'Rename',
   guideWalkLocked: 'Plan and Assets are locked while you walk. Close the Guide to use them.',
   guideWalkForget: 'Remove from Continue your Guide',
   guideDialogLabel: 'Guide',
