@@ -141,21 +141,38 @@ ok(sysChat.includes('\nLENGTH\n' + SHIPPED_LENGTH_RULE + ' Plain words. No lists
 
 // ---- TP11 to TP13: the Guide's walk (guide-walk-spec.md section 3.8) ----
 const walkQ = (o) => (typeof P.walkQuestions === 'function' ? P.walkQuestions(o) : []);
-const mid = { step: 'Midpoint', structure: 'Three-Act', kind: 'stories', next: 'Crisis', previous: 'Rising Complications' };
-ok(JSON.stringify(walkQ(mid)) === JSON.stringify(['What does a Midpoint do in Three-Act?', 'Show me Midpoints in well-known stories', 'How is a Midpoint different from the Crisis?', 'Ask me questions about my Midpoint']), 'TP11 the four questions are the spec\'s own, from a template and never from the AI (the frame\'s Midpoint, word for word)', JSON.stringify(walkQ(mid)));
+const mid = { step: 'Midpoint', structure: 'Three-Act Structure', kind: 'stories', next: 'Crisis', previous: 'Rising Complications' };
+ok(JSON.stringify(walkQ(mid)) === JSON.stringify(['What does a Midpoint do in Three-Act Structure?', 'Show me Midpoints in well-known stories', 'How is a Midpoint different from the Crisis?', 'Ask me questions about my Midpoint']), 'TP11 the four questions are the spec\'s own, from a template and never from the AI (the frame\'s Midpoint, word for word)', JSON.stringify(walkQ(mid)));
 const spelt = [
-  walkQ({ step: 'Crisis', structure: 'Three-Act', kind: 'stories', next: 'Second Turning Point' })[1] === 'Show me Crises in well-known stories',
-  walkQ({ step: 'Opening', structure: 'Three-Act', kind: 'stories', next: 'Inciting Incident' })[0] === 'What does an Opening do in Three-Act?',
+  walkQ({ step: 'Crisis', structure: 'Three-Act Structure', kind: 'stories', next: 'Second Turning Point' })[1] === 'Show me Crises in well-known stories',
+  walkQ({ step: 'Opening', structure: 'Three-Act Structure', kind: 'stories', next: 'Inciting Incident' })[0] === 'What does an Opening do in Three-Act Structure?',
   walkQ({ step: 'Policy', structure: 'Stasis Theory', kind: 'arguments', next: 'Objections' })[1] === 'Show me Policies in well-known arguments',
   walkQ({ step: 'Grounds', structure: 'Toulmin', kind: 'arguments', next: 'Warrant' })[1] === 'Show me Grounds in well-known arguments',
-  walkQ({ step: 'Climax', structure: 'Three-Act', kind: 'stories', next: 'Resolution' })[1] === 'Show me Climaxes in well-known stories',
+  walkQ({ step: 'Climax', structure: 'Three-Act Structure', kind: 'stories', next: 'Resolution' })[1] === 'Show me Climaxes in well-known stories',
   JSON.stringify(walkQ({ step: 'The Issue', structure: 'Rogerian', kind: 'arguments', next: 'The Question' })) === JSON.stringify(['What does the Issue do in Rogerian?', 'Show me Issues in well-known arguments', 'How is the Issue different from the Question?', 'Ask me questions about my Issue']),
 ];
 ok(spelt.every(Boolean), 'TP11 the template spells a step\'s name properly: its plural, "an" before a vowel, and no doubled "the"', spelt.join());
 const grounds = walkQ({ step: 'Grounds', structure: 'Toulmin', kind: 'arguments', next: 'Warrant' });
-ok(JSON.stringify(grounds) === JSON.stringify(['What do Grounds do in Toulmin?', 'Show me Grounds in well-known arguments', 'How are Grounds different from the Warrant?', 'Ask me questions about my Grounds']) && walkQ({ step: 'Crisis', structure: 'Three-Act', kind: 'stories' })[0] === 'What does a Crisis do in Three-Act?', 'TP11 a step whose name is already plural gets plural grammar (never "an Objections"); "Crisis" stays one', JSON.stringify(grounds));
+ok(JSON.stringify(grounds) === JSON.stringify(['What do Grounds do in Toulmin?', 'Show me Grounds in well-known arguments', 'How are Grounds different from the Warrant?', 'Ask me questions about my Grounds']) && walkQ({ step: 'Crisis', structure: 'Three-Act Structure', kind: 'stories' })[0] === 'What does a Crisis do in Three-Act Structure?', 'TP11 a step whose name is already plural gets plural grammar (never "an Objections"); "Crisis" stays one', JSON.stringify(grounds));
 ok(walkQ({ step: 'Abstract (write me last)', structure: 'IMRaD', kind: 'papers' })[1] === 'Show me Abstracts in well-known papers', 'TP11 a note in brackets after a step\'s name is not part of the name', walkQ({ step: 'Abstract (write me last)', structure: 'IMRaD', kind: 'papers' })[1]);
-ok(walkQ({ step: 'Resolution', structure: 'Three-Act', kind: 'stories', previous: 'Climax' })[2] === 'How is a Resolution different from the Climax?' && walkQ({ step: 'Resolution', structure: 'Three-Act', kind: 'stories' }).length === 3, 'TP11 the last step is compared with the one before it; with no neighbour that question is left out');
+ok(walkQ({ step: 'Resolution', structure: 'Three-Act Structure', kind: 'stories', previous: 'Climax' })[2] === 'How is a Resolution different from the Climax?' && walkQ({ step: 'Resolution', structure: 'Three-Act Structure', kind: 'stories' }).length === 3, 'TP11 the last step is compared with the one before it; with no neighbour that question is left out');
+// TP15 (Nov 26, Fable: yes to the table): 27 step names that read badly under the rule have their own wording; a row she renames falls back to the rule
+const TABLE = [
+  ['The Question at Issue', 'the Question at Issue', 'questions at issue'], ['The Call to Adventure', 'the Call to Adventure', 'Calls to Adventure'], ['Refusal of the Call', 'the Refusal of the Call', 'Refusals of the Call'],
+  ['Meeting the Mentor', 'Meeting the Mentor', 'scenes of Meeting the Mentor'], ['Crossing the Threshold', 'Crossing the Threshold', 'scenes of Crossing the Threshold'], ['Approach to the Inmost Cave', 'the Approach to the Inmost Cave', 'Approaches to the Inmost Cave'],
+  ['The Road Back', 'the Road Back', 'examples of the Road Back'], ['Return with the Elixir', 'the Return with the Elixir', 'Returns with the Elixir'], ['You', 'the "You" step', '"You" steps'], ['Go', 'the "Go" step', '"Go" steps'],
+  ['Return or Fall', 'the Return or Fall', 'examples of the Return or Fall'], ['Catastrophe or Resolution', 'the Catastrophe or Resolution', 'Catastrophes or Resolutions'], ['Theme Stated', 'the Theme Stated beat', 'Theme Stated beats'],
+  ['Break into Two', 'the Break into Two', 'Breaks into Two'], ['Break into Three', 'the Break into Three', 'Breaks into Three'], ['Bad Guys Close In', 'the "Bad Guys Close In" beat', '"Bad Guys Close In" beats'],
+  ['All Is Lost', 'the All Is Lost moment', 'All Is Lost moments'], ['Dark Night of the Soul', 'the Dark Night of the Soul', 'Dark Nights of the Soul'], ["Where They're Right", '"Where They\'re Right"', '"Where They\'re Right" parts'],
+  ['Establish the Territory', 'the "Establish the Territory" move', '"Establish the Territory" moves'], ['Establish the Niche', 'the "Establish the Niche" move', '"Establish the Niche" moves'], ['Occupy the Niche', 'the "Occupy the Niche" move', '"Occupy the Niche" moves'],
+  ['Most Important', 'the "Most Important" part', '"Most Important" parts'], ['Next', 'the "Next" part', '"Next" parts'], ['Support 1', 'Support 1', 'supporting points'], ['Support 2', 'Support 2', 'supporting points'], ['Support 3', 'Support 3', 'supporting points'],
+];
+const wrongRows = TABLE.filter(([row, one, many]) => { const q = walkQ({ step: row, structure: 'X', kind: 'stories' }); return q[0] !== `What does ${one} do in X?` || q[1] !== `Show me ${many} in well-known stories` || q[2] !== `Ask me questions about my ${one.replace(/^the /, '')}`; }).map(([row]) => row);
+ok(TABLE.length === 27 && wrongRows.length === 0, 'TP15 each of the 27 step names asks with its own wording', wrongRows.join(' | '));
+ok(walkQ({ step: 'Refusal of the Call', structure: 'X', kind: 'stories', next: 'Meeting the Mentor' })[2] === 'How is the Refusal of the Call different from Meeting the Mentor?' && walkQ({ step: 'Midpoint', structure: 'X', kind: 'stories', next: 'The Road Back' })[2] === 'How is a Midpoint different from the Road Back?', 'TP15 and the comparing question uses that wording for both steps');
+ok(walkQ({ step: 'Meeting the Mentor again', structure: 'X', kind: 'stories' })[1] === 'Show me Meeting the Mentor agains in well-known stories' && walkQ({ step: 'constructor', structure: 'X', kind: 'stories' })[1] === 'Show me constructors in well-known stories', 'TP15 a name that is not in the table (renamed, or an object\'s own word) falls back to the rule');
+const W2case = JSON.parse(fs.readFileSync(path.join(SERVER, 'scripts', 'tutor-eval', 'cases.json'), 'utf8')).cases.find((c) => c.id === 'W2');
+ok(W2case.walk.structure === 'Three-Act Structure' && P.buildSystemPrompt({ task: 'walk' }).includes('"Read: Climax (Three-Act Structure), your note for this step"'), 'TP15 the walk\'s case and its "Read:" sample name the structure as the app shows it', W2case.walk.structure);
 const PRESETS = ['stasis', 'hero', 'three', 'circle', 'seven', 'freytag', 'beats', 'scene', 'toulmin', 'rogerian', 'oration', 'cars', 'imrad', 'answer', 'inverted'];
 const KINDS = ['stories', 'essays', 'arguments', 'papers', 'scripts'];
 const kindOf = P.WALK_KINDS || {};
