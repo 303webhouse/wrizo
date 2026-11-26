@@ -407,7 +407,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
                   style={{ position: 'absolute', left: box.x * W, top: box.y * W, width: box.w * W, height: box.h * W, zIndex: box.z }}>
                   {box.kind === 'ink' ? <BoardInkBox box={box} pageWidthPx={W} />
                     : box.kind === 'page-pin' ? <BoardPinBox box={box} />
-                    : <BoardTextBox boxId={box.id} initialText={box.text ?? ''} measureRef={noop} sourceEntryId={box.sourceEntryId}
+                    : <BoardTextBox boxId={box.id} initialText={box.text ?? ''} textMarks={box.textMarks} measureRef={noop} sourceEntryId={box.sourceEntryId}
                         typeStyle={cardTypeStyle(box.fontFace, box.fontSize)} prompt={promptToShow(box)} />}
                   {editable && selected === box.id && box.kind === 'text' && !box.groupId && !(fresh && fresh.id === box.id) && <div className="wz-split-handle" data-split-resize="" aria-hidden="true" />}
                 </div>
