@@ -3,6 +3,9 @@ import type { DeskTermId } from '../terms';
 
 export const FLUX_OVERRIDES = {
   flux: {
+    modeNoticeOn: 'GLITCH MODE ENABLED',
+    modeNoticeOff: 'GLITCH MODE OFF',
+    modeNoticeWhere: 'the GLITCH switch below the page',
     // W4 - RUN DIAGNOSTIC: the terminal dress of Help me choose (frame 09). The questions and answers are NOT overridden - deck content.
     helpDoor: 'RUN DIAGNOSTIC',
     helpDialogLabel: 'Diagnostic',

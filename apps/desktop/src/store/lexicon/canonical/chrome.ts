@@ -1427,4 +1427,11 @@ export const CANONICAL_CHROME = {
   guideAnsGameWorld: 'The world',
   guideAnsGameQuest: 'A quest',
   guideAnsGameBranching: 'A branching story',
+  modeNoticeOn: 'The Rhizome is on',
+  modeNoticeTurnOff: 'Turn off',
+  modeNoticeOff: 'The Rhizome is off',
+  modeNoticeBack: 'Turn it back on: {where}.',
+  modeNoticeWhere: 'the ⋯ menu › Progress style',
+  fluxGlitchSwitch: 'GLITCH',
+  fluxGlitchSwitchName: 'Glitch mode',
 } satisfies Partial<Record<DeskTermId, string>>;

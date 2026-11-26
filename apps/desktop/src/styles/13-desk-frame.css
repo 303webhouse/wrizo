@@ -971,3 +971,19 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
    121 removes the member itself, so the rule had nothing left to style. Its
    lexicon keys (railInkTool/railInkToolInert) go with it. */
 
+/* THE "MODE ON" NOTICE (components/ModeNotice.tsx; the flourish spec §2): fixed on <body>, placed by the component (under the meter, else the lower right clear of
+   the page); a plain line that never animates, in each theme's own dress. FLUX'S GLITCH SWITCH (§4.1, flux3/FluxGlitchSwitch.tsx) beside the page count: its box is no
+   taller than the count's line, so the lane keeps its height. */
+.wz-mode-notice{ position:fixed; z-index:70; display:flex; flex-wrap:wrap; align-items:center; column-gap:8px; row-gap:2px; box-sizing:border-box; max-width:min(560px, calc(100vw - 16px)); padding:5px 10px; font-size:12px; line-height:1.4; background:var(--paper); color:var(--ink-on-paper, var(--text-hi)); border:1px solid var(--ink-border-strong); }
+.wz-mode-notice button{ font:inherit; cursor:pointer; padding:1px 8px; background:transparent; color:inherit; border:1px solid currentColor; }
+[data-theme='plateau'] .wz-mode-notice{ background:#F6EFDF; color:#2B1D12; border-color:#8A7455; }
+:root[data-theme='plateau'][data-arbor2-room='night'] .wz-mode-notice{ background:#2E2118; color:#F2E9DA; border-color:#6B5540; }
+:root[data-theme='plateau'] .wz-mode-notice button{ background:#56632E; color:#F6EFDF; border-color:#56632E; border-radius:3px; }
+:root[data-theme='flux'] .wz-mode-notice{ background:#0B141A; color:#D7F6FF; border:1px solid #00C2FF; text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-mono); font-size:11px; }
+:root[data-theme='flux'] .wz-mode-notice button{ text-transform:uppercase; letter-spacing:.08em; color:#00C2FF; border-color:#00C2FF; }
+:root[data-theme='machina'] .wz-mode-notice{ background:#1E262E; color:#E6E8EA; border-color:#46525E; border-radius:0; font-family:var(--font-mono); }
+.wz-glitch-switch{ pointer-events:auto; display:inline-flex; align-items:center; gap:5px; height:15px; margin:0 0 0 10px; padding:0 6px; vertical-align:middle; cursor:pointer; background:transparent; color:var(--text-mid); border:1px solid var(--ink-border-strong); font-family:var(--font-mono); font-size:9.5px; line-height:13px; letter-spacing:.14em; }
+.wz-glitch-switch-dot{ width:6px; height:6px; border-radius:50%; border:1px solid currentColor; box-sizing:border-box; }
+.wz-glitch-switch[aria-checked='true']{ color:#00C2FF; border-color:#00C2FF; }
+.wz-glitch-switch[aria-checked='true'] .wz-glitch-switch-dot{ background:currentColor; }
+.wz-glitch-switch:focus-visible{ outline:1px solid var(--text-hi); outline-offset:1px; }

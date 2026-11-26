@@ -858,5 +858,5 @@ export type DeskTermId =
   | 'guideAnsGameWorld'
   | 'guideAnsGameQuest'
   | 'guideAnsGameBranching'
-  | 'helpWhyFeatureStoryInvestigative';
+  | 'helpWhyFeatureStoryInvestigative' | 'modeNoticeOn' | 'modeNoticeTurnOff' | 'modeNoticeOff' | 'modeNoticeBack' | 'modeNoticeWhere' | 'fluxGlitchSwitch' | 'fluxGlitchSwitchName';
 

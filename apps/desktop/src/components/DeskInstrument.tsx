@@ -5,6 +5,9 @@ import { GlitchMeter } from './GlitchMeter';
 import { RunStrip, useRunStripActive } from './RunStrip';
 import { PageCount } from './PageCount';
 import { PlainTracker } from './PlainTracker';
+// the flourish spec: the "mode on" notice (§2, every theme) and Flux's GLITCH switch beside the page count (§4.1)
+import { ModeNotice } from './ModeNotice';
+import { FluxGlitchSwitch } from '../flux3/FluxGlitchSwitch';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
 // (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
@@ -49,6 +52,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
       {glitch && <FluxBurstEdge unitCount={unitCount} />}   {/* Wire In's own: self-gated on Flux and a running Wire In, no flag */}
       {glitch && <FluxCheckpointPop unitCount={unitCount} />}   {/* likewise: the CHECKPOINT letters and the pop */}
       {plain ? <PlainTracker text={text} /> : <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />}
+      {glitch && <ModeNotice />}   {/* writing pages only, as the meters are */}
     </>
   );
 }
@@ -71,6 +75,8 @@ function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; ent
   // PAGE BREAKS (spec draft 3, section 3): the count is shown in all three themes - after the word count (Arbor, Flux), right of the Run's count
   // (Machina, drawn by RunStrip), and where neither is drawn, alone, centred under the page
   const count = <PageCount entryId={entryId} />;
+  // Flux's GLITCH switch stands beside the count wherever the lane counts words (the flourish spec §4.1)
+  const glitchSwitch = FLUX3 && theme === 'flux' && settings.instrumentsOn && settings.progress === 'words' ? <FluxGlitchSwitch /> : null;
   const alone = <div className="desk-frame-instrument wz-pagecount-alone" data-style="count">{count}</div>;
   if (settings.progress !== 'words') return runShown ? null : alone;
   // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
@@ -79,7 +85,7 @@ function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; ent
     return (
       <div className="desk-frame-instrument" data-style={settings.progressStyle}>
         <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
-        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={count} />
+        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={<>{count}{glitchSwitch}</>} />
       </div>
     );
   }
@@ -99,7 +105,7 @@ function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; ent
           labelAfter={<><span className="wz-pagecount-sep" aria-hidden="true"> · </span>{count}</>}
         />
       )}
-      {!(settings.progressStyle === 'bar' && theme !== 'machina') && !runShown && <div className="wz-pagecount-alone-inline">{count}</div>}
+      {!(settings.progressStyle === 'bar' && theme !== 'machina') && !runShown && <div className="wz-pagecount-alone-inline">{count}{glitchSwitch}</div>}
     </div>
   );
 }

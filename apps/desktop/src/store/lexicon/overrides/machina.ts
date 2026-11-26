@@ -3,6 +3,10 @@ import type { DeskTermId } from '../terms';
 
 export const MACHINA_OVERRIDES = {
   machina: {
+    modeNoticeOn: 'Run Strip On',
+    modeNoticeTurnOff: 'Turn Off',
+    modeNoticeOff: 'Run Strip Off',
+    modeNoticeWhere: 'Docs › Session › Use Theme Progress Tracker',
     linksKindPage: 'Doc',   // the theme's own page / card words [deskLexicon §71]
     linksKindCard: 'Block',
     // W4 - Intake: Machina's plain, square panel of Help me choose (no mockup yet).
