@@ -44,6 +44,7 @@ ok(set.filter((c) => c.kind === 'reply' || c.kind === 'safety').every((c) => typ
 // ---- RN2 ----
 const mods = run.loadModules();
 const NOTES_RULE = mods.prompts.NOTES_CANNOT_CHANGE; // read now: mods.cleanup() below takes the loaded modules away
+const SPRINT_SYSTEM = mods.prompts.SPRINT_RULES ? mods.prompts.buildSprintSystemPrompt(mods.prompts.SPRINT_RULES) : null;
 const oracle = withDepartures(JSON.parse(fs.readFileSync(path.join(EVAL, 'prompts-v0.5.json'), 'utf8')).blocks); // the kit's words with the two departures Fable ruled on Nov 23 (kit-departures.mjs)
 const dflt = [oracle.base, oracle.hatTutor, oracle.voiceArbor, oracle.taskAsk, oracle.context].join('\n\n');
 ok(mods.prompts.buildSystemPrompt() === dflt && mods.prompts.buildSystemPrompt(mods.prompts.CHAT_PROMPT_DEFAULT) === dflt, 'RN2 the prompt builder the runner loads gives the string /tutor/chat sends');
@@ -210,6 +211,16 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   const out3 = path.join(tmpdir, 'false-alarm.json');
   const r3 = await runCli(['--live', '--only', 'A1', '--no-grader', '--out', out3, '--max-calls', '10'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
   ok(r3.status === 1 && /S0/.test(r3.stdout), 'RN9 a plain writing case that gets the marker fails as a false alarm (S0)', String(r3.stdout).slice(-200));
+}
+{
+  // RN10: SPRINT's one prompt, live (Fable, Nov 25): a FULL run (what the Actions job does) ends with five calls as the route made them before (80) and five as it makes them now, and the whole run fits the 120 calls
+  model.reset(); model.say('Write about the last door you walked through.');
+  const out = path.join(tmpdir, 'full.json');
+  await runCli(['--live', '--no-grader', '--out', out, '--max-calls', '120', '--max-tokens', '600000'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const rec = fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : null;
+  const sprint = model.requests.filter((q) => q.system === SPRINT_SYSTEM);
+  ok(rec && sprint.length === 10 && sprint.map((q) => q.max_tokens).join() === [80, 80, 80, 80, 80, 3000, 3000, 3000, 3000, 3000].join() && sprint.every((q) => q.thinking === undefined && q.messages.length === 1 && q.messages[0].content === 'Give one writing prompt.'), 'RN10 a full run asks SPRINT\'s prompt as the route does: the same system prompt and ask, five at the old cap of 80, five at 3000', `calls=${sprint.length} ${sprint.map((q) => q.max_tokens).join()}`);
+  ok(rec && Array.isArray(rec.sprint) && rec.sprint.length === 10 && rec.sprint.every((s) => s.stop === 'end_turn' && typeof s.reply === 'string' && Number.isFinite(s.ms)) && rec.notRun.length === 0 && rec.cap.calls <= 120, 'RN10 what each returned is recorded, and the whole run fits in 120 calls', JSON.stringify(rec && { calls: rec.cap.calls, notRun: rec.notRun.length, sprint: rec.sprint && rec.sprint.length }));
 }
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
