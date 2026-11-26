@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { liveQuery, registerLiveSite } from './liveDom';
+import { onePanelAt } from './pageScale';
 
 // the two-drawer law: coexistence is a decision about both drawers, so it lives in one store (the useSyncExternalStore pub-sub shape); measuring here is a policy, not an anchor [menusDrawers §1]
 
@@ -97,6 +98,23 @@ export function registerDrawer(id: DrawerId, close: () => void): () => void {
   return () => { if (closers.get(id) === close) closers.delete(id); };
 }
 
+// #133 - on a small screen the page takes most of the width, so one side panel stands at a time: a rail pop-out, the Front menu or the Back menu. Prose page only: the board and the screenplay keep their own sizing [menusDrawers §11]
+const onePanel = (): boolean => typeof window !== 'undefined' && onePanelAt(window.innerWidth) && !!menusStage()?.classList.contains('desk-frame-stage--prose');
+function closeOthers(keep: DrawerId): DrawerId | null {
+  let closed: DrawerId | null = null;
+  for (const other of [...stands]) {
+    if (other === keep) continue;
+    stands.delete(other); closers.get(other)?.(); closed = other;
+  }
+  return closed;
+}
+// a window made narrow with two open keeps the latest
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', () => {
+    if (stands.size > 1 && onePanel()) { closeOthers(openDrawer && stands.has(openDrawer) ? openDrawer : [...stands][stands.size - 1]); notify(); }
+  });
+}
+
 /**
  * Announce that `id` is opening. If the other drawer stands and the band
  * cannot hold both, the other is closed through its own path. Returns the
@@ -104,7 +122,7 @@ export function registerDrawer(id: DrawerId, close: () => void): () => void {
  */
 export function requestOpen(id: DrawerId): DrawerId | null {
   // the rival yields only where the page and both hands do not fit; the guard's text is exact: one-drawer.mjs's mutants anchor on it [menusDrawers §8]
-  let yielded: DrawerId | null = null;
+  let yielded: DrawerId | null = onePanel() ? closeOthers(id) : null;
   if (id === 'tools' || id === 'tutor') {
     const rival: DrawerId = id === 'tools' ? 'tutor' : 'tools';
     if (stands.has(rival) && !canHoldBoth()) { stands.delete(rival); closers.get(rival)?.(); yielded = rival; }
