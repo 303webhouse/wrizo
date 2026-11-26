@@ -44,7 +44,9 @@ export async function liveReply({ clients, cap, prompts, c, variant, draftText }
   const system = prompts.buildSystemPrompt({ hat: c.hat, voice: variant ?? c.voice, task: c.task });
   const messages = [];
   if (c.notes && c.notes.length) messages.push({ role: 'user', content: prompts.wrapNotes(c.notes) });   // her notes on file, first of the wire turns (tutor.ts, item 7 step 2)
-  if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
+  // a walk case (c.walk) sends her step in ONE <walk-step> turn; its draft is her note for that step, never a page delta
+  if (c.walk) messages.push({ role: 'user', content: prompts.wrapWalkStep({ ...c.walk, note: draftText ?? '' }) });
+  else if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
   messages.push({ role: 'user', content: c.says });
   const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), prompts.CHAT_MAX_TOKENS);
   const t0 = Date.now();

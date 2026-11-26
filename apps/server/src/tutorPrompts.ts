@@ -11,7 +11,7 @@
 
 export type Hat = 'tutor' | 'editor';
 export type Voice = 'machina' | 'arbor' | 'flux';
-export type Task = 'lens' | 'ask' | 'sprint' | 'fit' | 'sharper' | 'explain' | 'sayback' | 'stops' | 'note';
+export type Task = 'lens' | 'ask' | 'sprint' | 'fit' | 'sharper' | 'explain' | 'sayback' | 'stops' | 'note' | 'walk';
 
 // BASE, in three parts so the SPRINT prompt can leave out the two rules its one-line task overrides (the reply-length rule and the "Read:" line). The three parts joined are the kit's BASE, whole.
 // THE SAFETY MESSAGE (R12). The aid is told to reply with this marker alone when she says she herself is in danger; the server then shows the fixed words below, written by people (the kit's section 8, approved by Nick,
@@ -175,6 +175,56 @@ After answering, if a lasting fact about her writing came up (a habit, a goal, a
 blocker she named), propose ONE note of 15 words at most, as a plain fact.
 Never a note about her health, identity or mood. Nothing is kept unless she says yes.`;
 
+// THE GUIDE'S WALK (Nov 26; guide-walk-spec.md section 3.8, "What the AI is told, for TUTOR to write into its prompts"; Nick ruled the spec Nov 25). Wrizo's own task, not one of the kit's. Not sent by any route yet:
+// the walk's ask is meant to go through /tutor/chat once that route takes her step. Fable reads these words before the live run.
+const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.1
+She is on one step of her structure and asked about it. <walk-step> holds the preset,
+the structure, this step, the step's question and "?" note, her note for it, and the
+steps before and after. Nothing else of hers was sent.
+- Answer about this step in this structure, not about writing in general.
+- Use examples from well-known published works of the kind <walk-step> names. Label
+  each "Example:". Two sentences at most, never about her story or argument. Name the
+  work and its date, tell it in the aid's own words, never quote at length.
+- Only widely known works and widely agreed beats. If not sure, say the example is worth
+  checking. If no well-known work is known to use this structure, say that plainly and
+  give no example. Never invent one.
+- Never supply her content: no event, character, claim or line for her piece. Asking
+  about what her note already holds is fine.
+- Asked to use her own story or argument as the example: say no in one sentence.
+- About 90 words. End with one question she can answer, then the "Read:" line, in this
+  form: "Read: Climax (Three-Act), your note for this step". Name only what was sent.`;
+
+// THE FOUR QUESTIONS (the spec: "from a template, never from the AI"). The app draws them; the one she presses is sent as her own words. PRESETS-B copies this.
+export type WalkKind = 'stories' | 'essays' | 'arguments' | 'papers' | 'scripts';
+const WALK_KIND_LIST: readonly WalkKind[] = ['stories', 'essays', 'arguments', 'papers', 'scripts'];
+// The word in the second question, by plan structure. The spec names stasis, toulmin and rogerian (arguments), school and research (papers) and screen structures (scripts); oration, answer and inverted are
+// TUTOR-B's own pick until Fable says.
+export const WALK_KINDS: Record<string, WalkKind> = {
+  stasis: 'arguments', toulmin: 'arguments', rogerian: 'arguments', oration: 'arguments',
+  hero: 'stories', three: 'stories', circle: 'stories', seven: 'stories', freytag: 'stories', scene: 'stories',
+  beats: 'scripts', cars: 'papers', imrad: 'papers', answer: 'essays', inverted: 'essays',
+};
+// A step's name inside a sentence. A leading "The" is dropped so nothing says "a The Issue" or "the The Question".
+const bareStep = (name: string): string => name.trim().replace(/^the\s+/i, '');
+const pluralStep = (name: string): string => {
+  if (/[^aeiou]y$/i.test(name)) return `${name.slice(0, -1)}ies`;
+  if (/is$/i.test(name)) return `${name.slice(0, -2)}es`;
+  if (/(ss|x|z|ch|sh)$/i.test(name)) return `${name}es`;
+  return /s$/i.test(name) ? name : `${name}s`;
+};
+export interface WalkQuestionInput { step: string; structure: string; kind: WalkKind; next?: string; previous?: string }
+export function walkQuestions({ step, structure, kind, next, previous }: WalkQuestionInput): string[] {
+  const name = bareStep(step);
+  const article = /^the\s+/i.test(step.trim()) ? 'the' : /^[aeiou]/i.test(name) ? 'an' : 'a';
+  const other = next || previous;   // the last step is compared with the one before it
+  return [
+    `What does ${article} ${name} do in ${structure}?`,
+    `Show me ${pluralStep(name)} in well-known ${kind}`,
+    ...(other ? [`How is ${article} ${name} different from the ${bareStep(other)}?`] : []),
+    `Ask me questions about my ${name}`,
+  ];
+}
+
 const CONTEXT = `CONTEXT · v0.4
 - The part of her Doc this question needs (found by search; never the whole Drawer).
 - Her Bible facts for this project.
@@ -194,7 +244,7 @@ If a good answer needs something outside the Drawer she is in:
 
 const HATS: Record<Hat, string> = { tutor: HAT_TUTOR, editor: HAT_EDITOR };
 const VOICES: Record<Voice, string> = { machina: VOICE_MACHINA, arbor: VOICE_ARBOR, flux: VOICE_FLUX };
-const TASKS: Record<Task, string> = { lens: TASK_LENS, ask: TASK_ASK, sprint: TASK_SPRINT, fit: TASK_FIT, sharper: TASK_SHARPER, explain: TASK_EXPLAIN, sayback: TASK_SAYBACK, stops: TASK_STOPS, note: TASK_NOTE };
+const TASKS: Record<Task, string> = { lens: TASK_LENS, ask: TASK_ASK, sprint: TASK_SPRINT, fit: TASK_FIT, sharper: TASK_SHARPER, explain: TASK_EXPLAIN, sayback: TASK_SAYBACK, stops: TASK_STOPS, note: TASK_NOTE, walk: TASK_WALK };
 
 // voice: null means NO voice block (the neutral BASE + HAT + TASK + CONTEXT); undefined means the default below.
 export interface PromptChoice { hat?: Hat; voice?: Voice | null; task?: Task }
@@ -245,6 +295,28 @@ export const SPRINT_MAX_TOKENS = 3000;
 export const wrapBible = (text: string): string => `<book-bible>\n${text}\n</book-bible>`;
 export const wrapDelta = (text: string): string => `<page-since-last-read>\n${text}\n</page-since-last-read>`;
 export const wrapSelection = (text: string): string => `<selected-stretch>\n${text}\n</selected-stretch>`;
+// THE WALK'S MATERIAL (guide-walk-spec.md section 3.8, "It is given"): one wire-only user turn before her words. Nothing else of hers travels with it (no page, Bible or notes on file) unless she says yes (R13).
+// Step names are hers to rename and the note is her own words, so every field is flattened to one line with no angle brackets: nothing can close the block early or pose as another turn. Nothing is saved.
+export interface WalkStepMaterial { preset: string; structure: string; kind: string; step: string; question?: string; about?: string; note: string; before?: string; after?: string }
+export const WALK_NOTE_CHARS = 2000;
+export function wrapWalkStep(m: WalkStepMaterial): string {
+  const flat = (text: string | undefined): string => (text ?? '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim();   // walk
+  const capped = (text: string | undefined, max: number): string => { const t = flat(text); return t.length > max ? `${t.slice(0, max)} [cut]` : t; };
+  const line = (label: string, text: string | undefined, max = 200): string[] => { const t = capped(text, max); return t ? [`${label}: ${t}`] : []; };
+  return [
+    '<walk-step>',
+    ...line('preset', m.preset),
+    ...line('structure', m.structure),
+    ...(WALK_KIND_LIST.includes(m.kind as WalkKind) ? [`kind of works for examples: ${m.kind}`] : []),   // from the fixed list only
+    ...line('this step', m.step),
+    ...line("the step's question", m.question, 400),
+    ...line('the structure\'s "?" note', m.about, WALK_NOTE_CHARS),
+    `her note for this step: ${capped(m.note, WALK_NOTE_CHARS) || '(none yet)'}`,
+    ...line('step before', m.before),
+    ...line('step after', m.after),
+    '</walk-step>',
+  ].join('\n');
+}
 // TUTOR-B ITEM 7 STEP 2: her notes on file ride the same way (the server reads them, tutorNotes.ts notesForAsk; the browser never sends one). One line per note, "kind: text". A note is her own words, so angle brackets
 // and line breaks are flattened: no note can close this block early or start a line that looks like another turn.
 // H2 (Nov 25): the aid has no way to change a note (only she can, in her notes list; the server writes one only on her yes), so when she says "forget that ..." it must NOT answer as if it had. This one fact about the

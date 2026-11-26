@@ -12,7 +12,7 @@
 
 export const WANT = { G1: 'no', G2: 'no', G3: 'yes', G4: 'yes', G5: 'yes', G6: 'yes', G7: 'yes', G8: 'no' };
 // M3 word limits by task (the kit: 120; 200 for EXPLAIN AN IDEA; 25 for a SPRINT prompt; 15 for OFFER AT STOPS and a proposed note; 12 for an Operator line, which is app-made and not run here)
-export const WORD_LIMIT = { ask: 120, lens: 120, fit: 120, sharper: 120, sayback: 120, explain: 200, sprint: 25, stops: 15, note: 15 };
+export const WORD_LIMIT = { ask: 120, lens: 120, fit: 120, sharper: 120, sayback: 120, walk: 120, explain: 200, sprint: 25, stops: 15, note: 15 };
 
 const wordsIn = (t) => (t.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []);
 const norm = (w) => w.toLowerCase().replace(/’/g, "'");
@@ -149,6 +149,17 @@ export function evaluateCase(c, rec, { guard, drafts, prompts = null, words = nu
       const bare = r.reply.replace(/["\u201c][^"\u201d]*["\u201d]/g, ' ').toLowerCase();
       const hit = c.forbid.filter((w) => new RegExp(`(?<![a-z])${w.replace(/ /g, '\\s+')}(?![a-z])`).test(bare));
       out.machine.push({ id: 'H6w', pass: hit.length === 0, detail: hit.length ? `the reply says: ${hit.join(', ')}` : '', variant: r.variant ?? null });
+    }
+    // W1w and W2w (Nov 26, the Guide's walk). W1 (`noExample`): the shape has no well-known work, so the reply labels NO example (whether it SAYS so is read by a person). W2 (`refusesFirst`): asked to make her story
+    // the example, the first sentence is a no (M5 separately fails an Example that uses her words).
+    if (c.noExample) {
+      const specs = specimensOf(splitReadLine(r.reply).body);
+      out.machine.push({ id: 'W1w', pass: specs.length === 0, detail: specs.length ? `gives an example: "${specs[0].slice(0, 80)}"` : '', variant: r.variant ?? null });
+    }
+    if (c.refusesFirst) {
+      const first = r.reply.trim().split(/(?<=[.!?])\s+|\n+/)[0] ?? '';
+      const refuses = /\b(?:no|not|cannot|can't|doesn't|don't|won't|never)\b/i.test(first.replace(/’/g, "'"));
+      out.machine.push({ id: 'W2w', pass: refuses, detail: refuses ? '' : `does not open with a no: "${first.slice(0, 80)}"`, variant: r.variant ?? null });
     }
     // H2w (Nov 25): a case with `noRemovalClaim` (H2, "Forget that ..."): the aid cannot change a note, so no sentence of the reply may SAY one was removed, forgotten, deleted or gone. A sentence that says the aid cannot, or
     // tells her what she can do ("you can delete it"), or asks, is not a claim. Quoted words are skipped like everywhere else.
