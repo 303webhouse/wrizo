@@ -6,7 +6,7 @@
 //   TP4  the client cannot reach the prompt: a body that names a `system`, `hat`, `voice` or `task` changes nothing
 //   TP9  the one departure from the kit (the safety MARKER) and the kit's v0.4 CONTEXT: BASE tells the model to reply with the one marker (never "the fixed safety message supplied by Wrizo"), in every prompt that carries BASE; CONTEXT holds the kit's three lines (sees only what is shown / not a request / may suggest a note, cannot write to the Bible)
 //   TP8  the voice follows the theme the client sends: machina, arbor and flux each get their own voice block (the kit's words); anything else (unknown word, other case, wrong type, absent) gets the neutral BASE; the theme text never enters the prompt
-//   TP5  today's routes, budgets and shapes stand: the thread, bible, delta and selection still splice before her last message in the same order and wrapping; max_tokens is still the env cap; the reply shape is unchanged
+//   TP5  today's routes, budgets and shapes stand: the thread, bible, delta and selection still splice before her last message in the same order and wrapping; the cap is the route's own 3000 and no thinking setting is sent (thinking on); the reply shape is unchanged
 //   TP6  SPRINT: the Consultant's prompt is BASE (without the reply-length and Read-line rules, which the one-line task overrides) + the Machina voice + the SPRINT task + the rules already on the server; the "one short sentence" cleaning still applies
 //   TP7  the Editor's v0.3 line is in the Editor hat: each correction is written "her words → corrected words"
 //   MUT5 the CONTEXT lines dropped: TP9 goes RED
@@ -115,8 +115,8 @@ const wire = (model.requests[0] || {}).messages || [];
 const shape = wire.map((m) => `${m.role}:${(/^<[a-z-]+>/.exec(String(m.content)) || [String(m.content)])[0]}`);
 ok(JSON.stringify(shape) === JSON.stringify(['user:one', 'assistant:two', 'user:<book-bible>', 'user:<page-since-last-read>', 'user:<selected-stretch>', 'user:three']),
   'TP5 the thread, bible, delta and selection splice before her last message in the same order and wrapping as before', JSON.stringify(shape));
-ok((model.requests[0] || {}).max_tokens === 700, 'TP5 max_tokens is still the env cap', String((model.requests[0] || {}).max_tokens));
-ok(JSON.stringify((model.requests[0] || {}).thinking) === '{"type":"disabled"}', 'TP5 thinking is off: the whole cap is reply text (with it on, live replies spent the 700 on thinking and came back cut off or empty)', JSON.stringify((model.requests[0] || {}).thinking));
+ok((model.requests[0] || {}).max_tokens === 3000, 'TP5 a typed ask is capped at 3000, set by the route: an env TUTOR_MAX_TOKENS of 700 (set above) does not lower it', String((model.requests[0] || {}).max_tokens));
+ok((model.requests[0] || {}).thinking === undefined, 'TP5 no thinking setting is sent: thinking is on, the model\'s own default (with it off the live replies followed the rules less)', JSON.stringify((model.requests[0] || {}).thinking));
 ok(full.status === 200 && full.body && full.body.configured === true && full.body.reply === 'A reader may stop here.\nRead: Part 1.' && full.body.usage && full.body.usage.inputTokens === 10 && full.body.model, 'TP5 the reply shape is unchanged: { configured, reply, usage, model }', JSON.stringify(full.body));
 
 // ---- TP6: sprint ----
@@ -165,12 +165,14 @@ ok(ORACLE.hatEditor.includes('her words → corrected words') && P.buildSystemPr
   await callRoute(h5, { messages: [{ role: 'writer', text: 'Hi' }] }, 'u-m5');
   ok(!String((model.requests[0] || {}).system || '').includes(CTX_LINES[0]), 'MUT5 the CONTEXT lines dropped: TP9 goes RED');
   m5.cleanup();
-  const m6 = loadServer({ mutate: { 'tutor.ts': swap('thinking: CHAT_THINKING,', '') } });
-  const h6 = findHandler(m6.load('tutor.ts').tutorRouter, '/tutor/chat');
-  model.reset(); model.say('x?\nRead: Part 1.');
-  await callRoute(h6, { messages: [{ role: 'writer', text: 'Hi' }] }, 'u-m6');
-  ok(model.requests.length === 1 && (model.requests[0] || {}).thinking === undefined, 'MUT6 the thinking setting dropped: TP5 goes RED');
-  m6.cleanup();
+  try {
+    const m6 = loadServer({ mutate: { 'tutor.ts': swap('max_tokens: CHAT_MAX_TOKENS,', 'max_tokens: 700,') } });
+    const h6 = findHandler(m6.load('tutor.ts').tutorRouter, '/tutor/chat');
+    model.reset(); model.say('x?\nRead: Part 1.');
+    await callRoute(h6, { messages: [{ role: 'writer', text: 'Hi' }] }, 'u-m6');
+    ok(model.requests.length === 1 && (model.requests[0] || {}).max_tokens === 700, 'MUT6 the old 700 cap put back: TP5 goes RED');
+    m6.cleanup();
+  } catch (e) { ok(false, 'MUT6 could not be built', String(e.message)); }
   const m3 = loadServer({ mutate: { 'tutor.ts': swap('const prompt = cleanSprintPrompt(text);', 'const prompt = text;') } });
   const h3 = findHandler(m3.load('tutor.ts').tutorRouter, '/tutor/sprint-prompt');
   model.reset(); model.say('"Write about the sea."\nRead: nothing.');

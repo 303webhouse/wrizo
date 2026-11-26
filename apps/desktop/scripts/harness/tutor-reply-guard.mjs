@@ -9,7 +9,9 @@
 //   RG7  a clean first reply never spends a second unit; a clean SPRINT line is one model call, today's cleaning
 //   RG8  the SPRINT route is guarded with the same guard (Fable, Nov 23, call 3): a line that says "I"/"we" or flatters is asked for again once; the second, clean line is the one she gets; failing twice is the route's existing plain failure (502, so the client gives her a line from its local deck), never the chat fallback line; the retry is paid from the same two budgets and never passes a cap
 //   RG9  the safety message and the guard (Fable, Nov 23, 6:14 pm): a reply that holds the marker is never guarded or asked for again, however it is worded around it (one model call, no budget spent on a retry), and she sees the fixed words; the fixed words themselves pass the guard; a first reply that fails the guard whose retry holds the marker gets the words too
-//   MUT1 the guard removed: RG2/RG3 go RED   MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED   MUT4 the sprint guard removed: RG8 goes RED   MUT5 the sprint retry not paid for: RG8 goes RED   MUT6 the marker not exempt from the guard: RG9 goes RED
+//   RG10 never an empty or a cut-off answer (Fable, Nov 25): a reply with no text, or one stopped at the token cap (stop_reason max_tokens), fails the guard like a bad word: asked again once from the same two budgets, then the fallback line; a marker reply is still never asked for again
+//   MUT7 the empty-reply rule removed: RG10 goes RED   MUT8 the stopped-at-the-cap rule removed: RG10 goes RED
+//   MUT1 the guard removed: RG2/RG3 go RED  MUT2 the retry not paid for (a free second call): RG5 goes RED   MUT3 the fallback line swapped for the bad reply: RG3 goes RED   MUT4 the sprint guard removed: RG8 goes RED   MUT5 the sprint retry not paid for: RG8 goes RED   MUT6 the marker not exempt from the guard: RG9 goes RED
 // RED on main (5487be6b), where nothing guards a reply. Run (from apps/desktop): node scripts/harness/tutor-reply-guard.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -212,7 +214,52 @@ const mk6 = await callRoute(r.chat, BODY, 'u-rg9d');
 ok(mk6.body && mk6.body.reply === FALLBACK, 'RG9 and two failing replies with no marker still give the fallback line, as before');
 done(r);
 
+// ---- RG10: never an empty or a cut-off answer (Fable, Nov 25, 5:08 pm) ----
+const NOTHING = { text: null, stop: 'max_tokens', thought: true };   // what the live run got 13 times: thinking used the whole cap, no text at all
+const CUT = { text: 'A reader may lose the thread at the second', stop: 'max_tokens', thought: true };   // passes the word guard; stopped at the cap
+const unfinished = [['thinking only, stopped at the cap', NOTHING], ['an empty text that ended on its own', ''], ['only spaces and newlines', ' \n \n'], ['text cut off at the cap', CUT]];
+r = fresh();
+const notAsked = []; const notShown = [];
+for (const [i, [name, first]] of unfinished.entries()) {
+  model.reset(); model.say(first, GOOD);
+  const x = await callRoute(r.chat, BODY, 'u-rg10-' + i);
+  if (model.requests.length !== 2) notAsked.push(name);
+  if (!(x.status === 200 && x.body && x.body.reply === GOOD && x.body.usage.inputTokens === 20)) notShown.push(`${name}: ${JSON.stringify(x.body && x.body.reply)}`);
+}
+ok(notAsked.length === 0 && notShown.length === 0, 'RG10 a reply with no text, or one the model stopped at the token cap, FAILS the guard: asked again once, she sees the second reply, both calls counted', [...notAsked, ...notShown].join(' | '));
+const twice = [];
+for (const [i, [name, bad1]] of unfinished.entries()) {
+  model.reset(); model.say(bad1, bad1);
+  const x = await callRoute(r.chat, BODY, 'u-rg10b-' + i);
+  if (!(x.status === 200 && x.body && x.body.reply === FALLBACK && model.requests.length === 2)) twice.push(`${name}: calls=${model.requests.length} ${JSON.stringify(x.body && x.body.reply)}`);
+}
+ok(twice.length === 0, 'RG10 unfinished twice: she sees exactly the fallback line after exactly two calls, never an empty or a cut-off answer', twice.join(' | '));
+model.reset(); model.say(bad('I'), NOTHING);
+const mixed = await callRoute(r.chat, BODY, 'u-rg10-mixed');
+ok(mixed.body && mixed.body.reply === FALLBACK && model.requests.length === 2, 'RG10 a first reply that fails the word guard and an empty second one: the fallback line', JSON.stringify(mixed.body && mixed.body.reply));
+model.reset(); model.say({ text: MARK, stop: 'max_tokens' }, GOOD);
+const mkCut = await callRoute(r.chat, BODY, 'u-rg10-mark');
+ok(mkCut.body && mkCut.body.reply === WORDS && model.requests.length === 1, 'RG10 safety as it was: a reply that holds the marker is never asked for again, even one stopped at the cap, and she sees the fixed words', `calls=${model.requests.length}`);
+done(r);
+r = fresh({}, 1, 5000);
+model.reset(); model.say(NOTHING, GOOD);
+const noUnit = await callRoute(r.chat, BODY, 'u-rg10-unit');
+ok(noUnit.body && noUnit.body.reply === FALLBACK && model.requests.length === 1, 'RG10 with no unit left to ask again, an empty reply still never reaches her: the fallback line, one call', `calls=${model.requests.length} ${JSON.stringify(noUnit.body)}`);
+done(r);
+
 // ---- mutants ----
+for (const [name, find, put, first] of [
+  ['MUT7 the empty-reply rule removed: RG10 goes RED', '!text.trim() ||', '', ''],
+  ['MUT8 the stopped-at-the-cap rule removed: RG10 goes RED', "stopReason === 'max_tokens'", 'false', CUT],
+]) {
+  try {
+    const m = loadServerMut({ 'tutorGuard.ts': swap(find, put) });
+    model.reset(); model.say(first, GOOD);
+    const x = await callRoute(m.chat, BODY, 'u-' + name.slice(0, 4));
+    ok(model.requests.length === 1 && !(x.body && x.body.reply === GOOD), name, `calls=${model.requests.length} ${JSON.stringify(x.body && x.body.reply)}`);
+    done(m);
+  } catch (e) { ok(false, name, String(e.message)); }
+}
 {
   const m1 = loadServerMut({ 'tutor.ts': (s) => s.replace(/!guardReply\([^)]*\)\.ok/g, 'false') });
   model.reset(); model.say(bad('I'), GOOD);
@@ -243,11 +290,13 @@ done(r);
   const v = await callRoute(m5.sprint, { seen: [] }, 'u-m5');
   ok(model.requests.length === 2 && v.body && v.body.prompt === SPRINT_GOOD, 'MUT5 the sprint retry not paid for: RG8 goes RED (a second call is made on the last unit)', 'calls=' + model.requests.length);
   done(m5);
-  const m6 = loadServerMut({ 'tutor.ts': swap('if (!holdsSafetyMarker(text) && !guardReply(text).ok) {', 'if (!guardReply(text).ok) {') });
-  model.reset(); model.say('Great job. I think you should talk to someone. ' + MARK + ' We are here.', GOOD);
-  const u = await callRoute(m6.chat, BODY, 'u-m6');
-  ok(model.requests.length === 2, 'MUT6 the marker not exempt from the guard: RG9 goes RED (a marker reply with "I" around it is asked for again)', 'calls=' + model.requests.length);
-  done(m6);
+  try {
+    const m6 = loadServerMut({ 'tutor.ts': swap('!holdsSafetyMarker(t) && (', '(') });
+    model.reset(); model.say('Great job. I think you should talk to someone. ' + MARK + ' We are here.', GOOD);
+    const u = await callRoute(m6.chat, BODY, 'u-m6');
+    ok(model.requests.length === 2, 'MUT6 the marker not exempt from the guard: RG9 goes RED (a marker reply with "I" around it is asked for again)', 'calls=' + model.requests.length);
+    done(m6);
+  } catch (e) { ok(false, 'MUT6 could not be built', String(e.message)); }
 }
 function loadServerMut(mutate, daily = 500) {
   setEnv(daily, 5000);
