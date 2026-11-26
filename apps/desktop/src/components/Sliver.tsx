@@ -221,20 +221,22 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
   }, [open]);
 
   // VISUAL 1a.3: her own closing of the drawer (grip, Ctrl+/, Esc) is marked, so another panel taking its place can be told apart from it
-  const byHandRef = useRef(false);
-  const toggleOpen = () => { byHandRef.current = true; setOpen(o => !o); };
+  // 'words': her caret was live in the words when she closed it, so it is left alone; 'away': it was elsewhere, so the page puts it back where she left it. Read BEFORE anything moves the focus
+  const byHandRef = useRef<'words' | 'away' | null>(null);
+  const markByHand = () => { byHandRef.current = document.activeElement?.classList.contains('forward-only-editor') ? 'words' : 'away'; };
+  const toggleOpen = () => { markByHand(); setOpen(o => !o); };
   const wasOpenRef = useRef(open);
   useEffect(() => {
     const was = wasOpenRef.current;
     wasOpenRef.current = open;
     const byHand = byHandRef.current;
-    byHandRef.current = false;
+    byHandRef.current = null;
     if (!was || open) return;
     // the drawer closed, by her own hand or by another panel taking its place: in BUILD, EDIT and on a Board the pen goes down with it (Fable, Nov 25: "keys must never go nowhere"), or the page
     // would stay in ink with its menu gone. Her own close also gives her caret back; another panel keeps the focus it took. Free Write is as it was.
     if ((content.kind === 'draft' || content.kind === 'revise' || content.kind === 'board') && content.instrument?.value === 'ink') {
       content.instrument.onChange('text');
-      if (byHand) content.instrument.onPenDown?.();
+      if (byHand === 'away') content.instrument.onPenDown?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -250,7 +252,7 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
       if (e.key !== 'Escape' || e.defaultPrevented) return;
       const root = rootRef.current;
       const inDrawer = !!root && !!document.activeElement && root.contains(document.activeElement);
-      byHandRef.current = true;
+      markByHand();
       setOpen(false);
       if (inDrawer) (document.querySelector<HTMLElement>('.forward-only-editor') ?? root?.querySelector<HTMLElement>('.wz-sliver-grip'))?.focus({ preventScroll: true });
     };

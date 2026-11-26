@@ -252,10 +252,13 @@ function PageEditorView({ id }: { id: string }) {
   useEffect(() => {
     if (!pageInk || instrumentNow !== 'ink') return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || (e.key.length !== 1 && e.key !== 'Enter')) return;
+      // typing: a character, Enter, or an accent's dead key. AltGr reports Ctrl+Alt on Windows and is typing; any other Ctrl, Cmd or Alt chord is a shortcut
+      const altGr = e.getModifierState?.('AltGraph');
+      if (e.defaultPrevented || e.metaKey || (!altGr && (e.ctrlKey || e.altKey)) || (e.key.length !== 1 && e.key !== 'Enter' && e.key !== 'Dead')) return;
       const a = document.activeElement as HTMLElement | null;
       const inWords = !!a?.classList.contains('forward-only-editor');
       if (!inWords && a && (a.matches('input, textarea, select') || a.isContentEditable)) return;
+      if (a?.closest('[role="dialog"], [role="alertdialog"], [aria-modal="true"], .wz-split-asset')) return;   // a dialog, or the Board beside the page, keeps its own keys
       if ((e.key === ' ' || e.key === 'Enter') && a?.matches('button, a, [role="button"], [role="tab"], [role="radio"]')) return;
       setInstrument('text');
       if (!inWords) penDownToPage();

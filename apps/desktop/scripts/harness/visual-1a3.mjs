@@ -71,7 +71,7 @@ await withHarness(async (app) => {
   const own = await run(app, "return await window.__vi3.buildPage('machina', 'One two three four.');");
   await sleep(1500);
   await run(app, 'window.__vi3.caretAt(8); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();');
-  await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
+  await app.evalJs("(() => { const g = document.querySelector('.wz-sliver-grip'); g.focus(); g.click(); })()");   // a real mouse press leaves the focus on the grip
   await sleep(900);
   await app.typeKeys('XYZ ');
   await sleep(2800);
@@ -94,6 +94,16 @@ await withHarness(async (app) => {
   await sleep(2800);
   const withTab = { ...(await stored(app, own)), ...(await run(app, 'return window.__vi3.shown();')) };
   ok('K3: with the drawer open and the pen down, a typed letter puts the pen down and lands in her words', withTab.text === 'One two XYZ QRS kthree four.' && withTab.paper !== 'ink', withTab);
+  add(await run(app, 'return await window.__vi3.keyRules();'));
+  await run(app, 'await window.__vi.openDrawer(); await window.__vi3.tab("text"); window.__vi3.caretAt(8); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();');
+  await app.evalJs("[...document.querySelectorAll('.wz-drawer-tab')].find((b) => /ink/i.test(b.textContent)).focus()");   // where a real click on the tab leaves her focus
+  await app.key('Escape');
+  await sleep(900);
+  const shutByEsc = await run(app, 'return window.__vi3.shown();');
+  await app.typeKeys('EE ');
+  await sleep(2800);
+  const byEsc = await stored(app, own);
+  ok('K9: closed by Escape with the pen down, then typed: every character is stored, at the caret she left', shutByEsc.open === false && shutByEsc.paper !== 'ink' && byEsc.text === 'One two EE XYZ QRS kthree four.', { shutByEsc, byEsc });
 
   // ---- real keys: draw, type, the door, the Board, back, type ----
   await boot(app);

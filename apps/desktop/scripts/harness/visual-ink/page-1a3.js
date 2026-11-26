@@ -221,5 +221,51 @@
     return { stored: s.ink, painted: col, lum: col ? Math.round(lumOf(col) * 100) / 100 : null, swatchLum: sw ? Math.round(lumOf(getComputedStyle(sw).backgroundColor) * 100) / 100 : null };
   };
 
-  window.__vi3 = { caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
+  /** K-checks: which keys the pen-down typing rule takes. Expects a BUILD page in ink with the drawer open. The key events are made here (their routing is what is under test). */
+  const keyRules = async () => {
+    const out = [];
+    const ok = (name, pass, detail) => out.push({ name, pass: !!pass, detail: typeof detail === 'string' ? detail : J(detail) });
+    const press = (init, altGraph) => {
+      const e = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+      if (altGraph) Object.defineProperty(e, 'getModifierState', { value: (k) => k === 'AltGraph' });
+      (document.activeElement || document.body).dispatchEvent(e);
+    };
+    const toInk = async () => { if (paper() !== 'ink') { await v().openDrawer(); await tab('text'); await inkOnPaper(); } if (document.activeElement) document.activeElement.blur(); };
+    const d = document.createElement('div');
+    d.setAttribute('role', 'dialog');
+    d.innerHTML = '<button type="button">Keep</button>';
+    document.body.appendChild(d);
+    await toInk();
+    d.querySelector('button').focus();
+    press({ key: 'k' });
+    await sleep(400);
+    ok('K4: a letter typed inside a dialog stays there - the pen-down rule never pulls the focus out of a dialog or the Board beside the page', document.activeElement === d.querySelector('button') && paper() === 'ink', { paper: paper(), focus: document.activeElement && document.activeElement.tagName });
+    d.remove();
+    await toInk();
+    press({ key: '€', ctrlKey: true, altKey: true }, true);
+    await sleep(400);
+    ok('K5: an AltGr character (Ctrl+Alt on Windows) counts as typing: the pen goes down', paper() !== 'ink', { paper: paper() });
+    await toInk();
+    press({ key: 'Dead' });
+    await sleep(400);
+    ok('K6: an accent\'s dead key counts as typing too', paper() !== 'ink', { paper: paper() });
+    await toInk();
+    press({ key: 's', ctrlKey: true });
+    await sleep(400);
+    ok('K7: a real shortcut (Ctrl+S) is not typing: the pen stays down', paper() === 'ink', { paper: paper() });
+    // she went back into the words with the pen still down (Tab, say) and placed her caret: closing the drawer must leave it exactly there
+    await toInk();
+    await v().openDrawer();
+    caretAt(8);
+    await sleep(300);
+    const ed = q('.forward-only-editor');
+    const at = () => { const s = getSelection(); if (!s.rangeCount || !ed.contains(s.anchorNode)) return null; const r = document.createRange(); r.selectNodeContents(ed); r.setEnd(s.anchorNode, s.anchorOffset); return r.toString().length; };
+    const before = { inWords: document.activeElement === ed, caret: at(), paper: paper() };
+    press({ key: 'Escape' });
+    await sleep(700);
+    ok('K8: back in the words with the pen still down, closing the drawer puts the pen down and leaves her caret where she has it', before.inWords && before.caret === 8 && before.paper === 'ink' && paper() !== 'ink' && at() === 8, { before, after: at(), paper: paper() });
+    return out;
+  };
+
+  window.__vi3 = { keyRules, caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
 })();
