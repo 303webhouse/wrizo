@@ -577,8 +577,15 @@ await withHarness(async (app) => {
   const bornOf = (hash) => app.evalJs(`(() => { const m = /^#\\/page\\/([^/?]+)$/.exec(${q(hash)}); if (!m || m[1] === 'new') return null;
     const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === m[1]); return e ? { projectId: e.projectId ?? null, pageType: e.pageType ?? null, script: !!e.script } : { missing: m[1] }; })()`);
   const bornScreen = await bornOf(routes.screenplay), bornResearch = await bornOf(routes['research-paper']);
-  ok('D1 [successor]: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds, each through today\'s own route into Top Drawer\'s set: Blank, Board and More kinds as unborn pages there (a preset, a new board, the library); Screenplay and Research paper as today\'s preset and deck, which make their page at once IN that set (a screenplay page; the research-paper deck\'s board)',
-    !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'board', 'more']) && d0.kinds[3][1] === 'Board'
+  // SUPERSEDED (PRESETS-B, Nov 25; Fable 3:25 pm: the Guide's door is New doc's row after the kinds and before Board): the list gains 'guide'
+  // and Board moves one down. The successor before this one, verbatim:
+  // ok('D1 [successor]: NEW DOC - Blank, Screenplay, Research paper, Board, More kinds, each through today\'s own route into Top Drawer\'s set: Blank, Board and More kinds as unborn pages there (a preset, a new board, the library); Screenplay and Research paper as today\'s preset and deck, which make their page at once IN that set (a screenplay page; the research-paper deck\'s board)',
+  //   !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'board', 'more']) && d0.kinds[3][1] === 'Board'
+  //   && routes.blank === `#/page/new?binder=${S}` && routes.board === `#/page/new?kind=board&binder=${S}` && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`
+  //   && !!bornScreen && bornScreen.projectId === S && bornScreen.pageType !== 'board' && !!bornResearch && bornResearch.projectId === S && bornResearch.pageType === 'board',
+  //   JSON.stringify({ kinds: d0 && d0.kinds, routes, bornScreen, bornResearch }));
+  ok('D1 [successor 2]: NEW DOC - Blank, Screenplay, Research paper, Guide, Board, More kinds; the Guide opens its own panel (its check is reorg-guide-unit.mjs) and the rest go each through today\'s own route into Top Drawer\'s set: Blank, Board and More kinds as unborn pages there (a preset, a new board, the library); Screenplay and Research paper as today\'s preset and deck, which make their page at once IN that set (a screenplay page; the research-paper deck\'s board)',
+    !!d0 && JSON.stringify(d0.kinds.map((k) => k[0])) === JSON.stringify(['blank', 'screenplay', 'research-paper', 'guide', 'board', 'more']) && d0.kinds[3][1] === 'Guide' && d0.kinds[4][1] === 'Board'
     && routes.blank === `#/page/new?binder=${S}` && routes.board === `#/page/new?kind=board&binder=${S}` && routes.more === `#/page/new?kind=board&binder=${S}&deck=library`
     && !!bornScreen && bornScreen.projectId === S && bornScreen.pageType !== 'board' && !!bornResearch && bornResearch.projectId === S && bornResearch.pageType === 'board',
     JSON.stringify({ kinds: d0 && d0.kinds, routes, bornScreen, bornResearch }));
