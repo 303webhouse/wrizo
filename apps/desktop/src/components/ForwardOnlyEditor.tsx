@@ -10,6 +10,7 @@ import { applyEmDash, findEmDashTrigger } from '../store/emDash';
 import { classifyEditKind, createTextUndoStack, registerUndoStack, unregisterUndoStack, type EditKind } from '../store/textUndo';
 import { placeCaret } from '../store/hiddenMarksDom';
 import { openCaret, revealCaret } from '../store/caretInView';
+import { planHost, runElementHtml, type RunHtml } from './freeWriteHost';
 import { rowsVerticalKey, clearVerticalGoal } from '../store/rowsVertical';
 import { escapeTyped } from '../store/hiddenMarks';
 import { copyPayload, pasteEdit, putOnClipboard, readEnvelope, WRIZO_MIME } from '../store/clipboardFormat';
@@ -790,9 +791,10 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
   // rebuilt the whole page's decorated string (the profile's 'redecorate: string build', 4.5 / 10 ms at 20k / 50k) for React to compare
   // and discard - the page itself is written by the rows (store/lineRows.ts), never by this string after mount.
   const freeHtml = useMemo(() => (freeEdit ? decorateMarkdownForCard(initialText, null) : ''), [freeEdit, initialText]);
-  const committedHtml = useMemo(() => (freeEdit || content.length === 0 ? '' : content.map(run => run.struck
-    ? `<span class="fo-run fo-struck">${typedHtml(run.text)}</span>`
-    : `<span class="fo-run">${decorateMarkdownForCard(run.text, null)}</span>`).join('')), [freeEdit, content]);
+  // THE RUNS' HTML AS PARTS (bug #110 / #101): each committed run's inner html and whether it is struck; the committed string is these, wrapped and joined. Kept as parts so a word added at the end of the last run can be
+  // appended to the host (freeWriteHost.ts) instead of the whole page being written again.
+  const runsHtml = useMemo<RunHtml[]>(() => (freeEdit || content.length === 0 ? [] : content.map((run) => ({ struck: run.struck, inner: run.struck ? typedHtml(run.text) : decorateMarkdownForCard(run.text, null) }))), [freeEdit, content]);
+  const committedHtml = useMemo(() => runsHtml.map(runElementHtml).join(''), [runsHtml]);
   const html = freeEdit
     // ITEM 122 — first paint collapses its markers too, with a NULL caret:
     // nothing is adjacent to nothing before the writer has placed one, and a
@@ -809,8 +811,37 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
       // FREE WRITE PER-KEY (Fable Nov 19: #85's remainder): the committed runs' html is built when the runs CHANGE (a committed word, a strike), not on every letter, and the host's html holds an EMPTY word span: a letter writes only that span (the layout effect below), so the page's own nodes are never replaced by a letter. At 50 000 words a letter cost ~49 ms (the whole editable replaced, then the caret put back over it) against ~16 ms at 500.
       : `${committedHtml}<span class="fo-word"></span>`;
   // #70: a page whose last character is a newline (Enter just pressed) draws no line for it, so the caret stayed at the end of the line above until the next letter; the guard (Draft's own) gives that line a character to hold the caret
+  // Free Write's html as it was at the mount: React sets the host from it once (a change to it would make React write the whole host); every later change is the effect above
+  // (reset while the page is free-edit, so a switch back to Free Write hands React the html of THAT render, not one from the mount)
+  const firstHtml = useRef<string | null>(null);
+  if (freeEdit) firstHtml.current = null;
+  else if (firstHtml.current === null) firstHtml.current = html;
+  // whether the host holds the active word's span: a page that mounts EMPTY has html '' (no span), and React is never handed another, so the first letter has nowhere to land until the host is written (the rework of #110: the first word read back empty)
+  const spanOnHost = useRef(false);
   const wordHtml = word === '' && content[content.length - 1]?.text.endsWith('\n') ? `<span class="md-eof-guard" aria-hidden="true">${EOF_GUARD}</span>` : typedHtml(word);
   const wordWritten = useRef<{ el: Element | null; html: string }>({ el: null, html: '' });
+  // FREE WRITE'S HOST IS WRITTEN HERE, not by React after the first paint (bug #110 / #101): React is handed the mount's html once and never sets the host again; this effect puts a change on the page. A word added at the end of the
+  // last run, or a run added after unchanged ones, is APPENDED (planHost): the page's nodes and their layout stay, so a Space or an Enter no longer rewrites 254 KB at 50,000 words and re-anchors the caret over it. Anything
+  // else (a strike, an edit in the middle, an empty page) writes the whole host as it always did.
+  const writtenRuns = useRef<RunHtml[] | null>(null);
+  useLayoutEffect(() => {
+    if (freeEdit) { writtenRuns.current = null; return; }
+    const host = hostRef.current;
+    if (!host) return;
+    if (writtenRuns.current === null) { writtenRuns.current = runsHtml; spanOnHost.current = html !== ''; return; }   // the first paint was React's, from the same html
+    // the page was born empty and has its first letter (or run): the host is written once, whole, so the word span exists for the letter to land in
+    if (!spanOnHost.current && !isEmpty) { host.innerHTML = html; writtenRuns.current = runsHtml; spanOnHost.current = true; return; }
+    if (writtenRuns.current === runsHtml) return;   // a LETTER: the committed runs are the very array already on the page (the word span is the other effect's); nothing here costs it a read (Chat 1's box turn: letters +2.6 ms at 20k, +4.8 ms at 50k with the first form)
+    const plan = isEmpty ? { kind: 'full' as const } : planHost(writtenRuns.current, runsHtml);
+    const wordEl = host.lastElementChild && host.lastElementChild.classList.contains('fo-word') ? host.lastElementChild : null;
+    const lastRunEl = wordEl && wordEl.previousElementSibling && wordEl.previousElementSibling.classList.contains('fo-run') ? wordEl.previousElementSibling : null;
+    if (plan.kind === 'same') { writtenRuns.current = runsHtml; return; }
+    if (plan.kind === 'tail' && wordEl && lastRunEl) { lastRunEl.insertAdjacentHTML('beforeend', plan.suffix); writtenRuns.current = runsHtml; return; }
+    if (plan.kind === 'newrun' && wordEl) { wordEl.insertAdjacentHTML('beforebegin', runElementHtml(plan.run)); writtenRuns.current = runsHtml; return; }
+    host.innerHTML = html;
+    writtenRuns.current = runsHtml;
+    spanOnHost.current = html !== '';
+  });
   // the active word's span is written here, only when its html (or the span itself, after the host's html was set again) changed: the same "React skips an unchanged string" rule the whole-host string had, for an unrelated parent re-render mid-composition
   useLayoutEffect(() => {
     if (freeEdit) return;
@@ -839,7 +870,7 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
         onFocus={onFocus}
         onBlur={onBlur}
         style={{ flex: 1, minHeight: 0, outline: 'none', whiteSpace: 'pre-wrap', cursor: 'text', ...(penColor ? { color: penColor, caretColor: penColor } : null) }}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: freeEdit ? html : (firstHtml.current ?? '') }}
       />
       {isEmpty && placeholder && (
         <div className="fo-placeholder" aria-hidden="true">{placeholder}</div>
