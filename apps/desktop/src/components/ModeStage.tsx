@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore } from 'react';
+import { setFlourishOff, useFlourish } from '../store/flourish';
 import type { ReactNode, RefObject } from 'react';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { DrawerNote } from './DrawerNote';
@@ -716,6 +717,7 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
   const progressOpts = progressOptions(hasMilestones, deskLex('progressDrawer'));
   // MACHINA has ONE progress instrument (Run), so the style choice is not offered under it.
   const showProgressStyle = !!framed && settings.progress === 'words' && !machina;
+  const flourish = useFlourish(settingsTheme);   // Bar or the theme's flourish: her on/off for it (store/flourish.ts)
   return (
     <div className="mode-settings" role="menu">
       <h4>settings</h4>
@@ -726,9 +728,9 @@ export function SettingsPanel({ settings, hasMilestones, framed, typewriterAvail
       {showProgressStyle && (
         <Seg
           label={deskLex('progressStyleLabel')}
-          value={settings.progressStyle}
+          value={flourish ? 'rhizome' : 'bar'}
           opts={[['bar', deskLex('progressStyleBar')], ['rhizome', deskLex('progressStyleRhizome')]]}
-          onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })}
+          onPick={v => setFlourishOff(settingsTheme, v === 'bar')}
         />
       )}
       <Seg label={deskLex('timerLabel')} value={settings.timer ? 'on' : 'off'} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />

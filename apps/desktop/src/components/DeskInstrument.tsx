@@ -8,6 +8,7 @@ import { PlainTracker } from './PlainTracker';
 // the flourish spec: the "mode on" notice (§2, every theme) and Flux's GLITCH switch beside the page count (§4.1)
 import { ModeNotice } from './ModeNotice';
 import { FluxGlitchSwitch } from '../flux3/FluxGlitchSwitch';
+import { useFlourish } from '../store/flourish';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
 // (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
@@ -36,6 +37,10 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   // Wire In's edge and checkpoint are Flux's sprint, not its tracker, and stay. With the switch on (the default) every line below is as before.
   const settings = useWritingSettings();
   const plain = settings.instrumentsOn && settings.themeTracker === false;
+  // Machina with its flourish (the Run) off shows the plain row, as with its tracker off (store/flourish.ts)
+  const laneTheme = useTheme();
+  const runWanted = useFlourish('machina');
+  const runQuiet = settings.instrumentsOn && laneTheme === 'machina' && !runWanted;
   const runOn = useRunStripActive(text);
   // Both children self-gate on the settings (RhizomeField already did, and
   // still does, verbatim) — rendered as SIBLINGS rather than as a ternary so
@@ -51,7 +56,7 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
       {FLUX3 && glitch && !jacked && <FluxRoomGround />}   {/* Jacked In is the whole window (the corridor covers the room): the room's ground and its drifting points are not drawn behind it */}
       {glitch && <FluxBurstEdge unitCount={unitCount} />}   {/* Wire In's own: self-gated on Flux and a running Wire In, no flag */}
       {glitch && <FluxCheckpointPop unitCount={unitCount} />}   {/* likewise: the CHECKPOINT letters and the pop */}
-      {plain ? <PlainTracker text={text} /> : <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />}
+      {plain || runQuiet ? <PlainTracker text={text} /> : <DeskGoalLane unitCount={unitCount} entryId={seedKey} runShown={glitch && runOn} />}
       {glitch && <ModeNotice />}   {/* writing pages only, as the meters are */}
     </>
   );
@@ -66,8 +71,11 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
 // brief names the bar-and-rhizome PAIR, and giving the other three metrics a
 // framed home is a different question from the one SV15 answered.
 function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; entryId: string; runShown: boolean }) {
-  const settings = useWritingSettings();
+  const saved = useWritingSettings();
   const theme = useTheme();
+  // Arbor's lane follows its flourish (the Rhizome on until she turns it off), not the shared style; Flux's still reads the style until Glitch v2 (store/flourish.ts)
+  const arborRhizome = useFlourish('plateau');
+  const settings = theme === 'plateau' ? { ...saved, progressStyle: arborRhizome ? 'rhizome' as const : 'bar' as const } : saved;
   // The SAME pure hook the bar itself calls, on the SAME unit the host
   // already computes — the M2 precedent (RhizomeField.tsx's own header) for
   // "one celebration grammar, two consumers", not a second timing engine.

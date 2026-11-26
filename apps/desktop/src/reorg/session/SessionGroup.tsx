@@ -3,6 +3,8 @@ import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
 import { DEFAULT_GOAL_LINES, setWritingGoal, useWritingGoal, type GoalUnit } from '../../store/writingGoal';
 import type { PageStage } from '../pageStage';
+import { setThemeTracker, themeTrackerOn, useFlourish } from '../../store/flourish';
+import { useTheme } from '../../store/theme';
 
 // THE SESSION, SHARED (Fable, Nov 22, 1:40 am; the Arbor spec section 7: "the session as the LAST item of the rail's DOCS menu (Arbor: PAGES): theme tracker ·
 // goal · timer · progress, from the settings already on main"). One group for every theme's docs menu: Machina's DOCS renders it
@@ -35,6 +37,8 @@ export function SessionGroup({ stage }: { stage: PageStage }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const goal = useWritingGoal();
+  const theme = useTheme();
+  useFlourish('machina');   // the tracker row also says whether Machina's Run is hers (store/flourish.ts)
   const [open, setOpen] = useState(false);
   const [unit, setUnit] = useState<GoalUnit>(() => goal?.unit ?? 'lines');
   const [draft, setDraft] = useState(() => String(goal?.n ?? DEFAULT_GOAL_LINES));
@@ -66,7 +70,7 @@ export function SessionGroup({ stage }: { stage: PageStage }) {
           </div>
         );
         if (row === 'timer') return <SessionToggle key={row} row="timer" label={t('reorgSessionTimer')} on={settings.timer} onPick={(on) => setWritingSettings({ timer: on })} t={t} />;
-        if (row === 'tracker') return <SessionToggle key={row} row="tracker" label={t('plainTrackerSwitch')} on={settings.themeTracker !== false} onPick={(on) => setWritingSettings({ themeTracker: on })} t={t} />;
+        if (row === 'tracker') return <SessionToggle key={row} row="tracker" label={t('plainTrackerSwitch')} on={themeTrackerOn(theme, settings.themeTracker)} onPick={(on) => setThemeTracker(theme, on)} t={t} />;
         return <SessionToggle key={row} row="progress" label={t('reorgSessionProgress')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />;
       })}
     </section>

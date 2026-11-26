@@ -1,11 +1,12 @@
-// THE "MODE ON" NOTICE (the flourish spec draft 2 §2, ruled by Nick Nov 26): when a theme opens with its flourish on (Arbor's Rhizome, Flux's Glitch, Machina's
-// Run), one quiet status line stands under the meter - or, where there is no room, in the window's lower right, clear of the page. It never covers the page or the
-// caret, never takes focus (its button keeps hers on press), never animates, and leaves after 6 s or on her first key. Turn off flips the theme's existing switch
-// and says where to turn it back on. It is drawn on <body>, so it can never move the page. Nothing new is saved.
+// THE "MODE ON" NOTICE (the flourish spec draft 2 §2 and §7, ruled by Nick Nov 26): when a theme opens with its flourish on (Arbor's Rhizome, Flux's Glitch,
+// Machina's Run), one quiet status line stands under the meter - or, where there is no room, in the window's lower right, clear of the page. It never covers the page or the
+// caret, never takes focus (its button keeps hers on press), never animates, and leaves after 6 s or on her first key. Turn off turns off that theme's flourish
+// only (store/flourish.ts), says where to turn it back on, and names Distraction Free. It is drawn on <body>, so it can never move the page.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, type ThemeId } from '../store/theme';
-import { setWritingSettings, useWritingSettings, type WritingSettings } from '../store/writingSettings';
+import { useWritingSettings, type WritingSettings } from '../store/writingSettings';
+import { flourishPinned, flourishWanted, setFlourishOff } from '../store/flourish';
 import { useWritingGoal } from '../store/writingGoal';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { takeOpening } from '../store/modeNotice';
@@ -13,13 +14,10 @@ import { takeOpening } from '../store/modeNotice';
 const ON_MS = 6000;    // the notice
 const OFF_MS = 8000;   // the line after Turn off: a sentence longer to read
 
-// is the theme's own flourish drawn right now: Progress counting words with the theme's tracker on, then each theme's own switch (Arbor and Machina draw theirs only
-// toward a goal)
+// is the theme's own flourish drawn right now: hers still on, Progress counting words with the theme's tracker on (Arbor and Machina draw theirs only toward a goal)
 function flourishOn(theme: ThemeId, s: WritingSettings, goalN: number): boolean {
-  if (!s.instrumentsOn || s.progress !== 'words' || s.themeTracker === false) return false;
-  if (theme === 'flux') return s.progressStyle === 'rhizome';
-  if (theme === 'plateau') return s.progressStyle === 'rhizome' && goalN > 0;
-  return theme === 'machina' && goalN > 0;
+  if (flourishPinned() || !flourishWanted(theme) || !s.instrumentsOn || s.progress !== 'words' || s.themeTracker === false) return false;
+  return theme === 'flux' || goalN > 0;
 }
 
 const METER = '.desk-frame-instrument, .machina2-run, .wz-plain-tracker, .wz-glitch-switch';
@@ -93,8 +91,7 @@ export function ModeNotice() {
 
   if (!kind) return null;
   const turnOff = () => {
-    if (theme === 'machina') setWritingSettings({ themeTracker: false });
-    else setWritingSettings({ progressStyle: 'bar' });
+    setFlourishOff(theme, true);
     setKind('off');
   };
   return createPortal(
@@ -107,7 +104,7 @@ export function ModeNotice() {
           <button type="button" data-mode-notice-off onMouseDown={(e) => e.preventDefault()} onClick={turnOff}>{t('modeNoticeTurnOff')}</button>
         </>
       ) : (
-        <span>{`${t('modeNoticeOff')}. ${t('modeNoticeBack').replace('{where}', t('modeNoticeWhere'))}`}</span>
+        <span>{`${t('modeNoticeOff')}. ${t('modeNoticeBack').replace('{where}', t('modeNoticeWhere'))} ${t('modeNoticeQuiet')}`}</span>
       )}
     </div>,
     document.body,

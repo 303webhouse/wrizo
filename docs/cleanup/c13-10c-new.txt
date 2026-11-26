@@ -995,5 +995,6 @@ modeNoticeBack=Turn it back on: {where}.
 modeNoticeWhere=the ⋯ menu › Progress style
 modeNoticeWhere@flux=the GLITCH switch below the page
 modeNoticeWhere@machina=Docs › Session › Use Theme Progress Tracker
+modeNoticeQuiet=Distraction Free turns off every flourish.
 fluxGlitchSwitch=GLITCH
 fluxGlitchSwitchName=Glitch mode

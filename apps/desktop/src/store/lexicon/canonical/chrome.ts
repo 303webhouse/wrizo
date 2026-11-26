@@ -1432,6 +1432,7 @@ export const CANONICAL_CHROME = {
   modeNoticeOff: 'The Rhizome is off',
   modeNoticeBack: 'Turn it back on: {where}.',
   modeNoticeWhere: 'the ⋯ menu › Progress style',
+  modeNoticeQuiet: 'Distraction Free turns off every flourish.',
   fluxGlitchSwitch: 'GLITCH',
   fluxGlitchSwitchName: 'Glitch mode',
 } satisfies Partial<Record<DeskTermId, string>>;
