@@ -752,7 +752,6 @@ export type DeskTermId =
   | 'helpWhyGrant'
   | 'helpWhyFeatureStoryProfile'
   | 'helpWhyFeatureStoryTrend'
-  | 'helpWhyFeatureStoryInvestigative'
   // THE GUIDE (PRESETS-B, Nov 25)
   | 'guideRow'
   | 'guideDialogLabel'
@@ -852,5 +851,6 @@ export type DeskTermId =
   | 'guideAnsGameDesign'
   | 'guideAnsGameWorld'
   | 'guideAnsGameQuest'
-  | 'guideAnsGameBranching';
+  | 'guideAnsGameBranching'
+  | 'helpWhyFeatureStoryInvestigative';
 
