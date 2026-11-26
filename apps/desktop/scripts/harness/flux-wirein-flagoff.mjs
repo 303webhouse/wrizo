@@ -59,8 +59,11 @@ const MUTANTS = {
   togglesBack: [/(:root\[data-wirein\]\[data-theme=flux\] \.typewriter-toggle)\{display:none!important\}/g, '$1{display:inline-flex}', 'css'],
   chromeStays: [/\[data-flux3-jacked\] :is\(\.desk-rail/g, '[data-flux3-jackedx] :is(.desk-rail', 'css'],
   idleHidden: [/(\.flux3-nudge)\{(transform:translate\(-50%,-50%\))/g, '$1{display:none;$2', 'css'],
-  idleSoon: [/=4e3(?=,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=2e3', 'js'],
-  idleLate: [/=4e3(?=,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=6e3', 'js'],
+  // [SUPERSEDED, #124 (Nov 25): FluxNudge's own constants (PLACE_MS, HALF, GAP) now stand between the wait and isTyping in the bundle, so these matched 0. Plain number constants are allowed between. The originals, verbatim:
+  //   idleSoon: [/=4e3(?=,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=2e3', 'js'],
+  //   idleLate: [/=4e3(?=,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=6e3', 'js'],  ]
+  idleSoon: [/=4e3(?=(?:,[\w$]+=\d+)*,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=2e3', 'js'],
+  idleLate: [/=4e3(?=(?:,[\w$]+=\d+)*,[\w$]+=[\w$]+=>[\w$]+\.key\.length===1)/g, '=6e3', 'js'],
   idleOff: [/[\w$]+\(\)\.idle==="off"/g, '!0', 'js'],
 };
 const countOf = (re, text) => { re.lastIndex = 0; let n = 0; while (re.exec(text)) n += 1; re.lastIndex = 0; return n; };
