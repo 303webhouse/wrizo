@@ -226,7 +226,7 @@ const MUTANTS = [
   ['the game question is shown (a preset not in the app)', 'ROWS', (s) => ({ ...s, guide: sub(s.guide, "row('idea', 'guideAnsGameIdea', 'game-pitch', 'game-design-document')", "row('idea', 'guideAnsGameIdea', 'game-pitch', 'game-design-document'), row('idea2', 'guideAnsGameIdea', 'memo')") })],
   ['the style question is asked of a work memo', 'STYLE', (s) => ({ ...s, guide: sub(s.guide, "const work = settle(question('work-after', 'guideQWork', rowAnswers(WORK, live)));", "const work = settle(question('work-after', 'guideQWork', styled(WORK, STYLE_SCHOOL, 'work-style', 'guideQStyleSchool', live)));") })],
   ['the panel writes the store on Close', 'PANEL', (s) => ({ ...s, panel: sub(s.panel, "import { createPortal } from 'react-dom';", "import { createPortal } from 'react-dom';\nimport { flushNow } from '../store/persistence';") })],
-  ['a word of the Guide is a string in the panel', 'LEX', (s) => ({ ...s, panel: sub(s.panel, '{t(\'guideStart\')}</button></div>\n          </div>\n        )}', '>Start</button></div>\n          </div>\n        )}') })],
+  ['a word of the Guide is a string in the panel', 'LEX', (s) => ({ ...s, panel: sub(s.panel, "{t('guideStartWriting')}</button>", 'Start writing</button>') })],
   ['the stage lands on Treatment again', 'HIDDEN', (s) => ({ ...s, guide: sub(s.guide, 'if (!r.only && r.alt', 'if (r.alt') })],
   ['the Guide row comes after Board', 'DOOR', (s) => ({ ...s, docs: sub(s.docs, "{ id: 'guide',", "{ id: 'zz-guide',") })],
   ['the panel lets its keys through to the cascade', 'DOOR', (s) => ({ ...s, panel: sub(s.panel, 'onKeyDown={hold}', '') })],

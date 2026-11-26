@@ -46,6 +46,7 @@ import { StaleClientBanner } from './components/StaleClientBanner';
 import { isSignedOutHere, markSignedOutHere, clearSignedOutHere, SIGNED_OUT_KEY } from './store/signedOutHere';
 import { clearLastPlace } from './store/lastPlace';
 import { SyncIndicator, FullscreenToggle } from './components/ChromeControls';
+import { WalkHost } from './reorg/walk/WalkHost';
 
 // B1 S5 — the old Journal module surface (pages/Journal.tsx, the list/home
 // experience) RETIRES here, the same day its replacement ships
@@ -407,6 +408,8 @@ export function App() {
         <Route path="/page/:id" element={<PageEditor />} />
         </Routes>
         </AppMain>
+        {/* the Guide's walk and its way-back chip: beside the routes, never around them (reorg/walk/WalkHost.tsx) */}
+        <WalkHost />
       </HashRouter>
     </WritingSessionProvider>
   );
