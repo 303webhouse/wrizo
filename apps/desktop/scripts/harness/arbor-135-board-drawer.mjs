@@ -67,6 +67,16 @@ await withHarness(async (app) => {
     ok(`${at} S: the drawer is not squeezed (264 px, nothing past its edge)`, s.width >= 263 && s.past <= 1, { width: s.width, past: s.past, panel: s.panel });
     ok(`${at} C: no control of the Board under the drawer or its tab, and each takes a press`, s.under.length === 0 && s.dead.length === 0, { under: s.under, dead: s.dead, panel: s.panel, zoom: s.zoom });
     ok(`${at} B: opening the drawer never moves or resizes the Board`, JSON.stringify(s.board) === JSON.stringify(rest.board), { rest: rest.board, open: s.board });
+    // where the drawing tab exists (VISUAL's, on a Board), it is the same drawer: the same reading with it chosen
+    if (await app.evalJs("!!document.querySelector('#wz-sliver-tab-ink')")) {
+      await app.evalJs("document.querySelector('#wz-sliver-tab-ink').click()");
+      await sleep(1500);
+      const ink = await app.evalJs(PROBE);
+      await snap(app, `board-ink-${w}`);
+      ok(`${at} INK: the drawing tab is as wide, nothing past its edge, no control of the Board under it`, ink.open && ink.width >= 263 && ink.past <= 1 && ink.under.length === 0 && ink.dead.length === 0, ink);
+      await app.evalJs("document.querySelector('#wz-sliver-tab-format')?.click()");
+      await sleep(600);
+    } else console.log(`DIAG ${at}: no drawing tab on this tree`);
     if (w === 1536) {
       await app.evalJs("(() => { const p = document.querySelector('.wz-sliver-panel'); p.style.setProperty('height', '100%', 'important'); p.style.setProperty('width', '264px', 'important'); p.style.setProperty('left', '16px', 'important'); p.style.setProperty('right', 'auto', 'important'); })()");
       await sleep(400);
