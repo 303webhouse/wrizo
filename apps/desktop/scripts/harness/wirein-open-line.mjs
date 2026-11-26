@@ -104,7 +104,9 @@ try { await withHarness(async (app) => {
     const b1 = await read();
     ok(`O9 ${tag}: Backspace alone, with the line outside the window, brings it back`, !!b0 && !onScreen(b0) && onScreen(b1), J({ before: b0 && b0.top, after: b1 && b1.top, vh: b1 && b1.vh }));
 
+    // a fresh open, so this case stands on its own: the line at the hold, then a small scroll
     await settle();
+    await open(null);
     await wheel(-90);
     const s0 = await read();
     await type('q'); await sleep(600); await settle();
