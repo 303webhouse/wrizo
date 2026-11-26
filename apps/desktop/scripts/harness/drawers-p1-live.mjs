@@ -196,7 +196,12 @@ await withHarness(async (app) => {
         // the open panel's own left edge, Tutor.tsx's own measured value,
         // not a guessed one.
         if (hand === 'left') {
-          ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+          // #133b (Fable, Nov 25: the Front menu keeps its width, over the page's margin): at 1600 and narrower a drawer that grows past its tab takes the tab out with it.
+          if (await app.evalJs('innerWidth <= 1600')) {
+            pok(`PARKED (was "L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)") - SUPERSEDED at 1600 and narrower by #133b; live successor: L2 [#133b successor]`, true, 'successor: L2 [#133b]');
+            ok(`L2 ${T} (${hand}) [#133b successor]: while the drawer opens the tab keeps its height and size and only ever goes outward with it`,
+              s.every((x, n) => x.grip[1] === s[0].grip[1] && x.grip[2] === s[0].grip[2] && x.grip[3] === s[0].grip[3] && (n === 0 || x.grip[0] >= s[n - 1].grip[0] - 0.5)), JSON.stringify(s.map((x) => x.grip).filter((g, k, a) => k === 0 || !same(g, a[0])).slice(0, 3)));
+          } else ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
         } else {
           // ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
           const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX
@@ -205,9 +210,16 @@ await withHarness(async (app) => {
           const gap = Math.round((last.panelLeft - gripRight) * 100) / 100;
           // ARCHIVED PARK (#13 step 14): archive/drawers-p1-live.mjs.parked.md record 1
           const still = s.every((x) => same(x.grip, s[0].grip));
+          const small133 = await app.evalJs('innerWidth <= 1600');   // #133: there the tab goes with a drawer over the page, so older records read the meeting edge only
           pok(`PARKED (was "L2 ${T} (${hand}) [tutor-drawer-arrow successor]: the tab's rect MOVES while the drawer opens, settling 16px outside the open panel's own left edge (never inside its tab row)") - SUPERSEDED by the drawer mirror (Oct 24): the tab never moves; the panel starts at it; live successor: L2 ${T} (${hand}) [drawer-mirror successor]`,
-            still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
-          ok(`L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row`,
+            (small133 || still) && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, still }));
+          // #133 (Nick, Nov 25): at 1600 and narrower the Back menu lies over the page, so its tab goes with it; the panel still starts at the tab.
+          if (small133) {
+            pok(`PARKED (was "L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row") - SUPERSEDED at 1600 and narrower by #133; live successor: L2 [#133 successor]`,
+              true, 'successor: L2 [#133]');
+            ok(`L2 ${T} (${hand}) [#133 successor]: the open panel starts AT the tab - never under it, never inside its tab row - the tab having gone with the drawer over the page`,
+              Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap }));
+          } else ok(`L2 ${T} (${hand}) [drawer-mirror successor]: the tab's rect never changes while the drawer opens (only its glyph), and the open panel starts AT the tab - never under it, never inside its tab row`,
             still && Math.abs(gap) < 1.5, JSON.stringify({ gripRight, panelLeft: last.panelLeft, gap, moved: s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3) }));
         }
         const glyphs = [...new Set(s.map((x) => x.glyph))];
@@ -357,15 +369,19 @@ await withHarness(async (app) => {
         const room = await roomForBoth(app);
         ok(`L7 ${T} @${w} [measured] (premise): the page and the stage are measurable with both drawers shut`, !!room, JSON.stringify(room));
         if (!room) return;
-        const rule = room.both ? 'BOTH stand (the band holds the page and both drawers at their minimum)' : 'the other CLOSES (no room for both at their minimum)';
+        // #133 (Nick, Nov 25): all three widths are 1600 or narrower, where one side panel stands whatever the room.
+        const was = room.both ? 'BOTH stand (the band holds the page and both drawers at their minimum)' : 'the other CLOSES (no room for both at their minimum)';
+        pok(`PARKED (was "L7 ${T} @${w} successor [measured]: opening the RIGHT drawer while the left is open - ${was}") - SUPERSEDED by #133: one side panel at a time at 1600 and narrower`, true, 'successor: L7 [#133]');
+        pok(`PARKED (was "L7 ${T} @${w} successor [measured]: and opening the LEFT drawer while the right is open - the same rule, symmetric: ${was}") - SUPERSEDED by #133`, true, 'successor: L7 [#133], the symmetric half');
+        const rule = 'the other CLOSES (one side panel at a time at 1600 and narrower)';
         await ensureLeft(app, true);
         await toggleRight(app); await sleep(900);
         const a = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w} successor [measured]: opening the RIGHT drawer while the left is open - ${rule}`, a.right === true && a.left === room.both, JSON.stringify({ a, room }));
+        ok(`L7 ${T} @${w} [#133 successor]: opening the RIGHT drawer while the left is open - ${rule}`, a.right === true && a.left === false, JSON.stringify({ a, room }));
         await ensureLeft(app, false); await ensureRight(app, true);
         await toggleLeft(app); await sleep(900);
         const b = { left: await leftOpen(app), right: await rightOpen(app) };
-        ok(`L7 ${T} @${w} successor [measured]: and opening the LEFT drawer while the right is open - the same rule, symmetric: ${rule}`, b.left === true && b.right === room.both, JSON.stringify({ b, room }));
+        ok(`L7 ${T} @${w} [#133 successor]: and opening the LEFT drawer while the right is open - the same rule, symmetric: ${rule}`, b.left === true && b.right === false, JSON.stringify({ b, room }));
       });
     }
 

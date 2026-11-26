@@ -5,6 +5,7 @@ import { subscribe } from '../store/persistence';
 import { beforeExport } from './beforeExportRules';
 import { publicationAttach, publicationFacts, publicationSignature, unattachedPlanRows } from './publishing';
 import { useAttached, usePickOff } from './publishPick';
+import { paintScaleOf } from '../store/paintScale';
 
 // BEFORE YOU EXPORT (reorg-plan-v2, INK queue item 4; the stage menus, F4; Nick, Nov 20, 1:20 pm: FINALIZE keeps the Back menu, and Before You Export stays there). A tab of the Back menu that exists only while the
 // publishing sheet is open (Tutor.tsx). It READS what the sheet is showing (the Parts, and which are ticked out: publishPick.ts) and says, in plain lines, what would stop the export (no Part ticked) and what is
@@ -18,7 +19,7 @@ function jumpTo(partId: string): void {
   const sc = document.querySelector('[data-reorg-pub] [data-pub-scroll]') as HTMLElement | null;
   const el = sc?.querySelector(`[data-pub-part="${partId}"]`) as HTMLElement | null;
   if (!sc || !el) return;
-  sc.scrollTop += el.getBoundingClientRect().top - sc.getBoundingClientRect().top - 12;
+  sc.scrollTop += (el.getBoundingClientRect().top - sc.getBoundingClientRect().top) / paintScaleOf(sc) - 12;   // the sheet stands inside the painted page (#133)
 }
 
 export function BeforeExport({ entry, onShowPlan }: { entry: JournalEntry; onShowPlan?: () => void }) {

@@ -50,3 +50,19 @@ From `apps/desktop/src/store/pageScale.ts`, line 45 at `e2898deb` (the comment t
 /** The page's LAYOUT height at base scale `k`: the letter height, or less where the stage cannot hold the painted page (ruling d - capped to the
  *  stage, the text scrolls inside). Painted, it is this x k. */
 ```
+
+## pageScale §5
+
+#133 (Nick, Nov 25, 2:24 pm, relayed by Fable in orders-nov25.md; POLISH). Nick, on a 17" 4K laptop (a window of about 1536 x 864):
+"the writing surface seems too small. I think we need it to be bigger in proportion to the available screen real estate than on my large
+32" monitor, even if that means that part of the page is always below the screen edge or the rail and Front menus can't remain open at
+the same time." This changes ruling c (§1) on screens narrower than 2560.
+
+- The page scales by the window's width. At 1600 and narrower it takes 62% of the stage's width (`SMALL_SHARE`); from 2560 it is the
+  letter fit of ruling c; between, it eases (smoothstep). It is never smaller than the letter fit.
+- The page still lays out at scale 1 and is painted by a transform, so no line breaks anywhere else. Where it is taller than the stage,
+  the sheet is capped to the stage and the text scrolls inside it, as before (ruling d).
+- The Typewriter zoom is not scaled up on top: the zoomed page keeps the size it had from the letter fit, or the normal page's where that
+  is larger.
+- At 1600 and narrower one side panel stands at a time (menusDrawers §11). Panel widths and openers: desk-frame §22, §23.
+- Prose page only. The board and the screenplay page keep their own sizing.
