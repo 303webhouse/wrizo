@@ -52,7 +52,9 @@ await withHarness(async (app) => {
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
   for (const id of ['fn-1', 'fn-2']) await ev(`window.wrizoCreateJournalPage(${J({ id, text: 'The lamp burned low over the harbour.', createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: 'page' })}); localStorage.setItem('wrizo-mode-page-${id}', 'drafting'); window.wrizoFlushNow()`);
 
-  const settings = (patch) => `(() => { const s = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(s, ${J({ instrumentsOn: true, progress: 'words' })}, ${J(patch)}); localStorage.setItem('wrizo-writing-settings', JSON.stringify(s)); localStorage.setItem('wrizo-writing-goal-lines', JSON.stringify({ n: 500, unit: 'words' })); })()`;
+  const settings = (patch) => `(() => { const s = JSON.parse(localStorage.getItem('wrizo-writing-settings') || '{}'); Object.assign(s, ${J({ instrumentsOn: true, progress: 'words' })}, ${J(patch)}); localStorage.setItem('wrizo-writing-settings', JSON.stringify(s)); localStorage.setItem('wrizo-writing-goal-lines', JSON.stringify({ n: 500, unit: 'words' }));
+    // the saved copy of the writing settings (store/writingPref.ts) is applied over the device's at start-up: an earlier Turn off would return, so it is forgotten with each seeding
+    const p = JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}'); delete p.writing; localStorage.setItem('wrizo-reorg-prefs', JSON.stringify(p)); })()`;
   // THE THEME OPENS: the app starts in it, on a writing page, her caret in the page
   const openIn = async (theme, patch, w = 1366, h = 768) => {
     await app.emulateDpr(1, w, h);
@@ -104,7 +106,6 @@ await withHarness(async (app) => {
     await ev("location.hash = '#/page/fn-2'"); await sleep(1500);
     const second = await S();
     await ev("window.wrizoTheme.set('" + (th.id === 'plateau' ? 'machina' : 'plateau') + "')"); await sleep(800);
-    await ev(settings(th.onSet));
     await ev(`window.wrizoTheme.set('${th.id}')`); await sleep(1500);
     const again = await S();
     ok(`${th.name} N6: once per opening - another page shows nothing, and the theme chosen again shows it again`, !second.notice && !!again.notice && again.text.includes(th.on), { second: second.text, again: again.text });
