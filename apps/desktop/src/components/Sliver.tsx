@@ -22,7 +22,7 @@ import { TemplateSketch, type TemplateKey } from './TemplateSketch';
 import { useForwardLock, setForwardLock } from '../store/forwardLock';
 import type { FormatAction, StructureKind } from '../store/draftFormat';
 import type { PageKindSetting, StyleGuide } from '../types';
-import type { InkPen } from './InkStratum';
+import type { InkOpts } from './ink/InkTab';
 import { TIP_ICONS } from './ink/inkIcons';
 import { InkTabSlot } from './ink/InkTabSlot';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
@@ -87,11 +87,17 @@ export const CAPTURE_ITEMS = ['Spark deck', 'Fragments', 'Send → Drawer'] as c
 // the format's). `form` is the arm's own call: Free Write is the smallest form (no number); Draft and Revise are the full.
 export type SliverType = TypeControlProps;
 
+/** VISUAL 1a.3 - a surface that can be drawn on: its text/ink choice, and the INK tab's controls while it is in ink. A host without an ink layer passes neither. */
+export interface SliverInk {
+  instrument?: { value: LeftTab; onChange: (next: LeftTab) => void };
+  inkOptions?: InkOpts;
+}
+
 export type SliverContent =
   | { kind: 'empty' }
   // ITEM 207 - Revise's drawer has been an empty drawer since 112-A ("112-C fills it with 83's Type section"); this arm is
   // that tenant and nothing else. It replaces `{ kind: 'empty' }` for Revise so the drawer can carry the Type control.
-  | { kind: 'revise'; type?: SliverType }
+  | ({ kind: 'revise'; type?: SliverType } & SliverInk)
   | {
       kind: 'freewrite';
       // PHASE 1 - the TEXT | INK choice, shown as the drawer's tab row. Present only where the host has an instrument (PageEditor's Free
@@ -108,20 +114,11 @@ export type SliverContent =
       // the zone is ABSENT FROM THE DOM ENTIRELY — not hidden, not greyed. The
       // analog law is the reason and G3 is the precedent: a typewriter has no
       // nibs, and a greyed control for a capability the surface does not have
-      // right now is a locked door wearing paint.
-      inkOptions?: {
-        pen: InkPen;
-        // One handler for all three groups: a partial pen, merged by the host.
-        // Three separate callbacks would let tip, nib and ink drift into three
-        // independently-shaped seams for one object the writer thinks of as
-        // "the pen I am holding."
-        onPick: (next: Partial<InkPen>) => void;
-        eraserArmed: boolean;
-        onToggleEraser: () => void;
-      };
+      // right now is a locked door wearing paint. (VISUAL 1a: the zone is the INK tab, ink/InkTab.tsx.)
+      inkOptions?: InkOpts;
       captureItems: readonly string[];
     }
-  | {
+  | (SliverInk & {
       kind: 'draft';
       // this page's own id and emptiness, so formatLocked and the foot's toggle ask typewriterForPage, never the shared mirror [Sliver §2]
       pageId: string;
@@ -148,7 +145,7 @@ export type SliverContent =
       onPickStyleGuide?: (next: StyleGuide) => void;
       // the Templates picker's rows: the host decides what a press does (empty page: in place; a page with words: a new page); `selected` draws the current template chosen [Sliver §5]
       templates?: { key: TemplateKey; label: string; selected?: boolean; onApply: () => void }[];
-    }
+    })
   // AB4 S5 — the Board's own hand tool(s). FX4 S6 — the Connect toggle
   // RETIRES (replaced by BoardEditor.tsx's own handle-drag thread gesture:
   // double-click the selected card's resize handle, drag, release inside a
@@ -157,7 +154,7 @@ export type SliverContent =
   // every framed surface already carries — this union member only ever
   // governs SliverToolsBody's own per-mode section, same as
   // 'freewrite'/'draft' above.
-  | {
+  | (SliverInk & {
       kind: 'board';
       // B1 S3 — both optional now: on a system Board, BoardEditor.tsx
       // passes neither at all — "the sliver's Add action must be absent on
@@ -178,7 +175,7 @@ export type SliverContent =
       // options. Same absent-not-disabled law: BoardEditor.tsx passes this
       // only on an ordinary (non-system) Board.
       onAddFromDeck?: () => void;
-    };
+    });
 
 export interface SliverProps {
   content: SliverContent;
@@ -196,13 +193,17 @@ export interface SliverProps {
   // THE REORG'S FRONT MENU (reorg/frontTabs.ts): the open page, passed by a writing host only while ?reorg=1 is on in Machina; absent, the
   // drawer is byte-for-byte today's
   front?: { entry: JournalEntry; host?: PartsHost; /** the publishing view is open (FINALIZE): TEXT and INK are greyed and PARTS only orders and ticks */ publishing?: boolean };
+  /** VISUAL 1a.3 - open on mount (a Board reached by "Draw on a Board") */
+  startOpen?: boolean;
+  /** VISUAL 1a.3 - a Board's own height: while the INK tab is out, the drawer is never taller than the sheet it opens from */
+  sheetHeight?: number;
 }
 
-export function Sliver({ content, goalText, hasMilestones, front }: SliverProps) {
+export function Sliver({ content, goalText, hasMilestones, front, startOpen, sheetHeight }: SliverProps) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const target = useWritingGoal();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!startOpen);
   const rootRef = useRef<HTMLDivElement>(null);
   // ARBOR v2 MOCKUP (?arbor2=1, Arbor only): the Tools drawer's cloth tabs (src/arbor2/drawerTabs.ts). In-session state; off the flag
   // or on another theme this is unused and the drawer is byte-for-byte today's.
@@ -278,6 +279,9 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   // PHASE 1 - the left drawer's tab row (TEXT | INK). Only Free Write with an instrument has one; every other surface passes undefined and
   // shows no row. The labels are the theme's own words (the same lexicon terms the band's switch uses).
   const leftTabs = leftTabsFor(content.kind as DrawerKind, content.kind === 'freewrite' && !!content.instrument);
+  // VISUAL 1a.3: the instrument of whatever surface this is. A Board's first tab is its own tools, under the theme's word for a Board
+  const ink = content.kind === 'empty' ? undefined : content.instrument;
+  const boardInk = content.kind === 'board' ? content.instrument : undefined;
   const sideTabs = leftTabs.length > 1 && content.kind === 'freewrite' && content.instrument
     ? {
         items: [{ id: 'text' as const, label: t('inkModeText') }, { id: 'ink' as const, label: t('inkModeInk') }],
@@ -285,11 +289,18 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         onChange: content.instrument.onChange,
         label: t('inkInstrument'),
       }
+    : boardInk
+    ? {
+        items: [{ id: 'text' as const, label: t('railBoard') }, { id: 'ink' as const, label: t('inkModeInk') }],
+        value: boardInk.value,
+        onChange: boardInk.onChange,
+        label: t('inkInstrument'),
+      }
     : undefined;
   // ARBOR v2 MOCKUP - Format · Presets · Ink (r5, spec §9c: the r4 Font tab folds into Format, the main tab). The ink tab IS the instrument (picking it, or leaving it, calls the host's own
   // instrument switch exactly as TEXT | INK does), so the page's mode and the tab can never disagree.
   const arborKind = content.kind as DrawerKind;
-  const arborInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
+  const arborInstrument = content.kind === 'freewrite' || content.kind === 'board' ? content.instrument : undefined;
   const arborList = arbor2 ? arborToolTabs(arborKind, !!arborInstrument) : [];
   const arborTab: ArborToolTab | undefined = !arbor2 ? undefined
     : arborInstrument?.value === 'ink' ? 'ink'
@@ -297,7 +308,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
   const ARBOR_WORD: Record<ArborToolTab, DeskTermId> = { format: 'railFormat', presets: 'sectionsPresets', ink: 'inkModeInk' };
   const arborTabs: DrawerTabsConfig<ArborToolTab> | undefined = arbor2 && arborList.length > 1 && arborTab
     ? {
-        items: arborList.map((id) => ({ id, label: t(ARBOR_WORD[id]) })),
+        items: arborList.map((id) => ({ id, label: t(id === 'format' && content.kind === 'board' ? 'railBoard' : ARBOR_WORD[id]) })),
         value: arborTab,
         onChange: (v: ArborToolTab) => {
           setArborPick(v);
@@ -309,7 +320,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
 
   // THE REORG'S FRONT MENU - TEXT · INK · PARTS (the prototype's frontMenu). As Arbor's tabs, the INK tab IS the instrument: picking it, or
   // leaving it, calls the host's own instrument switch, so the page's mode and the tab never disagree.
-  const frontInstrument = content.kind === 'freewrite' ? content.instrument : undefined;
+  const frontInstrument = ink;   // VISUAL 1a.3: BUILD and EDIT pass one too (the INK tab of the stage table)
   const frontList = reorgFront ? frontTabsFor(content.kind as DrawerKind, !!frontInstrument) : [];
   const frontTab: FrontTab | undefined = !frontList.length ? undefined
     : front?.publishing ? 'parts'
@@ -346,10 +357,14 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         {content.kind === 'freewrite' && content.instrument?.value === 'ink' && (
           <span className="wz-sliver-grip-mark" data-instrument="ink" aria-hidden="true">{TIP_ICONS.pen}</span>
         )}
+        {content.kind !== 'freewrite' && ink?.value === 'ink' && (
+          <span className="wz-sliver-grip-mark" data-instrument="ink" aria-hidden="true">{TIP_ICONS.pen}</span>
+        )}
       </button>
 
       {/* data-popout-hold rides the PANEL, not the tray: a faded ancestor caps every child's opacity, and the tray may not leave the drawer; with no pop-out open it reads 'false' and nothing changes [Sliver §12] */}
-      <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}>
+      <div className="wz-sliver-panel chrome-fade desk-dissolve" ref={(el) => setDrawerInert(el, !open)} aria-hidden={!open} data-open={open ? 'true' : 'false'} data-popout-hold={popoutHold ? 'true' : 'false'}
+        style={sheetHeight && boardInk?.value === 'ink' ? { maxHeight: sheetHeight } : undefined}>
         {/* PHASE 1 - the sliding layer: the panel above is the clip and the scroller; <SideDrawer> is what slides in from behind the tab,
             with the TEXT | INK tab row when this surface has an instrument. The goal foot and the instruments row ride every tab. */}
         <SideDrawer side="left" idPrefix="wz-sliver" tabs={(frontTabs ?? arborTabs ?? sideTabs) as DrawerTabsConfig<string> | undefined} foot={(<>
@@ -483,7 +498,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   const formatLocked = content.kind !== 'draft';
   // PHASE 1 - store/drawerSet.ts is the one statement of what each surface and tab may show. The host still decides whether a section
   // has data (a screenplay passes no type member); this decides whether it may appear here at all.
-  const tab: LeftTab = content.kind === 'freewrite' && content.instrument ? content.instrument.value : 'text';
+  const tab: LeftTab = content.instrument ? content.instrument.value : 'text';
   const allowed = (section: Parameters<typeof sectionAllowed>[2]): boolean => (frontTab ? frontSectionAllowed(content.kind as DrawerKind, frontTab, section, frontKindHead(theme))
     : arborTab ? arborSectionAllowed(content.kind as DrawerKind, arborTab, section) : sectionAllowed(content.kind as DrawerKind, tab, section));
   // THE REORG'S FRONT MENU: the PARTS tab is the Parts list and the tools its stage offers (the stage table: Free Write is SPRINT, Draft BUILD,
@@ -499,7 +514,7 @@ function SliverToolsBody({ content, arborTab, frontTab, frontEntry, frontHost, f
   return (
     <div className="wz-sliver-body">
       {/* the ink zone is real ink (the stratum's tips and colours), not text colour; absent in TEXT, never greyed [Sliver §19] */}
-      {content.kind === 'freewrite' && content.inkOptions && allowed('ink') && <InkTabSlot opts={content.inkOptions} />}
+      {content.inkOptions && allowed('ink') && <InkTabSlot opts={content.inkOptions} />}
 
       {/* Free Write offers no styling: B/I/U are absent, not disabled (the typewriter does not decorate); Draft's roster below is untouched and shares the styling keys [Sliver §20] */}
 

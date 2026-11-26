@@ -18,6 +18,8 @@ export interface InkOpts {
   onPick: (next: Partial<InkPen>) => void;
   eraserArmed: boolean;
   onToggleEraser: () => void;
+  /** VISUAL 1a.3 - a Page in BUILD and EDIT only: the quiet door at Studio's foot, to this Doc's Board. Absent everywhere else. */
+  onDrawOnBoard?: () => void;
 }
 
 type Row = 'brushes' | 'colour';
@@ -261,6 +263,13 @@ export function InkTab({ opts }: { opts: InkOpts }) {
                   </div>
                 )}
             </div>
+          )}
+
+          {/* one quiet door at the foot (Nick, "as drawn"): the Board is the drawing room. It folds away with the rows */}
+          {row === null && opts.onDrawOnBoard && (
+            <button type="button" className="wz-ink-door" onClick={opts.onDrawOnBoard}>
+              <span>{t('inkDrawOnBoard')}</span><span aria-hidden="true">&rarr;</span>
+            </button>
           )}
         </div>
       )}

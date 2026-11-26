@@ -56,6 +56,14 @@ export function inkOriginY(sheet: HTMLElement, rect?: DOMRect): number {
   return pt * (sheet.offsetWidth > 0 ? r.width / sheet.offsetWidth : 1);
 }
 
+// VISUAL 1a.3: what the painter measures. A page paints in the sheet's painted px (as it always has). A sheet marked data-ink-paint="layout" (a Board, which can be zoomed by a transform)
+// paints in its own layout px, so its lines magnify with it as its cards do, and a zoom never asks for a giant canvas. Pointer positions are still read from the painted box: they are ratios.
+export function paintBox(sheet: HTMLElement, rect?: DOMRect): { width: number; height: number; scale: number } {
+  const r = rect ?? sheet.getBoundingClientRect();
+  if (sheet.dataset.inkPaint === 'layout') return { width: sheet.offsetWidth, height: sheet.offsetHeight, scale: 1 };
+  return { width: r.width, height: r.height, scale: sheet.offsetWidth > 0 ? r.width / sheet.offsetWidth : 1 };
+}
+
 // Paint all committed strokes. Denormalizes by the sheet's current width, so a
 // page drawn at one width keeps its ink in place when the text reflows at
 // another. Called on mount, on every stroke-set change, and from the
@@ -69,15 +77,15 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   // #101: a page with NO ink has nothing to paint, and sizing the canvas to the page is the expensive part: width x height of the whole sheet (40,000+ px tall on a long page), thrown away and allocated again from the ResizeObserver every
   // time the page grows by a line - every Enter - which the browser's profile showed as 23-85 ms per Enter in `setTransform`. With no strokes the canvas is one pixel (the CSS box stretches it; it is blank either way) and is not touched again. `will-change: transform` keeps it a composited layer of its own, as the page-sized canvas always was: without that layer, the native caret is not painted on a Typewriter (zoomed) page in the audit's screenshots (the reader proof's controls of wa-red-62 and wa-red-70 caught it), and with it they pass.
   if (strokes.length === 0) { canvas.style.willChange = 'transform'; if (canvas.width !== 1 || canvas.height !== 1) { canvas.width = 1; canvas.height = 1; } if (canvas.style.height !== '100%') canvas.style.height = '100%'; painted.delete(canvas); return; }
-  const rect = sheet.getBoundingClientRect();
+  const rect = paintBox(sheet);
   const dpr = window.devicePixelRatio || 1;
-  const oy = inkOriginY(sheet, rect);
+  const oy = inkOriginY(sheet);
   const color = inkColor();
   // the backing store reaches the LOWEST stroke (not the page's foot: 739 x 22 400 at 5 000 words, 739 x 50 458 at 12 000, allocated and cleared on every Enter): below the ink there is nothing to hold. An erase adds nothing below the ink it rubs out.
   let low = 0;
   for (const st of strokes) { if (st.eraser) continue; for (const p of st.points) if (p.y > low) low = p.y; }
   // ... and never less than the paper's visible foot (#111): the scroller's visible height, so a stroke drawn anywhere on the paper she sees shows whole
-  const scale = sheet.offsetWidth > 0 ? rect.width / sheet.offsetWidth : 1;
+  const scale = rect.scale;
   const scroller = sheet.closest('.mode-scroll') as HTMLElement | null;
   const visible = scroller ? scroller.clientHeight * scale : 0;
   const need = Math.ceil(Math.max(oy + low * rect.width + INK_PAD, visible));

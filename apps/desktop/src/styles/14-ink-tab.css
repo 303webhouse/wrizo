@@ -60,3 +60,16 @@
 .wz-ink-custom-open{ align-self:flex-start; background:none; border:0; padding:4px 6px; color:inherit; font:inherit; font-size:12px; cursor:pointer; }
 .wz-ink-custom{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:0 2px; }
 .wz-ink-custom .reorg-colour-hex{ width:82px; }
+
+/* VISUAL 1a.3 - the Page's quiet door, and a Board's drawing layer */
+.wz-ink-door{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px; padding:6px; background:none; border:0; border-top:1px solid var(--ink-border); color:var(--text-mid); font:inherit; font-size:12px; text-align:left; cursor:pointer; }
+.wz-ink-door:hover{ color:inherit; text-decoration:underline; text-underline-offset:3px; }
+[data-theme='flux'] .wz-ink-door{ text-transform:uppercase; letter-spacing:.08em; }
+.wz-board-ink-sheet{ position:absolute; top:0; left:0; width:100%; height:100%; z-index:99999; pointer-events:none; }
+.wz-board-ink-sheet[data-ink='true']{ pointer-events:auto; touch-action:none; cursor:crosshair; }
+.wz-board-ink-sheet .ink-undo{ position:sticky; }
+/* a Board with ink keeps its drawing inside its own frame: the layer never paints over a drawer or the Tutor */
+.board-canvas-wrap:has(.wz-board-ink-sheet){ isolation:isolate; }
+/* where the margin beside a Board is too narrow for the INK tab (Arbor keeps the Board's width), the drawer lies over the Board at its full width, as the Typewriter's drawer does over the page
+   (Nick, Nov 8: where the margin is too narrow, drawers overlay). Only while the INK tab is out. */
+:root[data-theme='plateau'] .desk-frame-stage.desk-frame-stage--board .wz-sliver-panel:has(.wz-ink-tab){ left:16px; right:auto !important; width:max(calc(100% - 16px), 200px); }

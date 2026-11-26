@@ -1,15 +1,35 @@
 import { useEffect, useRef } from 'react';
 import { getJournalEntryIncludingDeleted, getTombstonedBox } from '../../store/persistence';
 import { boardDrawerLine } from '../../store/pageHome';
-import { renderStroke } from '../../store/ink';
+import { inkColor, renderStroke } from '../../store/ink';
 import { decorateMarkdownForCard } from '../../store/draftDecoration';
 import { useLexicon } from '../../store/themeLexicon';
 import { useDeskLexicon } from '../../store/deskLexicon';
-import type { Box } from '../../types';
+import type { Box, Stroke } from '../../types';
 import { notecardExcerpt } from './geometry';
 
 // -- ink box: paints via the shared renderStroke, box-local (already
 // re-normalized at port time so sheetW = the box's own pixel width). -------
+/** VISUAL 1a.3 - a Board's OWN drawing (the row's strokes, normalised by the Board's width as its cards are), painted for a reader that does not draw: the Board beside a page. Layout px,
+ *  so a transform that zooms the canvas magnifies the lines as it magnifies the cards. Takes no pointer. */
+export function BoardOwnInk({ strokes, width, height }: { strokes: Stroke[]; width: number; height: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = Math.max(1, Math.round(height * dpr));
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    const color = inkColor();
+    for (const s of strokes) renderStroke(ctx, s, width, color);
+  }, [strokes, width, height]);
+  return <canvas ref={ref} aria-hidden="true" className="wz-board-own-ink" style={{ position: 'absolute', top: 0, left: 0, width, height, zIndex: 99999, pointerEvents: 'none' }} />;
+}
+
 export function BoardInkBox({ box, pageWidthPx }: { box: Box; pageWidthPx: number }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {

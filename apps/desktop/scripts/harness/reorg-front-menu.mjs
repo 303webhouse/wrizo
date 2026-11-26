@@ -177,7 +177,9 @@ await withHarness(async (app) => {
   for (const s of ['draft', 'freewrite', 'script']) { await open(app, 'machina', false, SURFACES[s]); await openDrawer(app); offSections[s] = await app.evalJs(SECTIONS); }
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
   let tabs = await app.evalJs(TABS);
-  ok('F1 a Draft Part: the tabs read TEXT · PARTS (no INK), TEXT selected', JSON.stringify(tabs.map((x) => x.id)) === '["text","parts"]' && tabs[0].on && !tabs[1].on, tabs);
+  // SUPERSEDED (Nov 25, VISUAL 1a.3: BUILD and EDIT have an INK tab, the stage table's short set; VISUAL's kit §3, Nick's ruling B), the original, verbatim:
+  // ok('F1 a Draft Part: the tabs read TEXT · PARTS (no INK), TEXT selected', JSON.stringify(tabs.map((x) => x.id)) === '["text","parts"]' && tabs[0].on && !tabs[1].on, tabs);
+  ok('F1 [VISUAL 1a.3 successor] a Draft Part: the tabs read TEXT · INK · PARTS, TEXT selected', JSON.stringify(tabs.map((x) => x.id)) === '["text","ink","parts"]' && tabs[0].on && !tabs[1].on && !tabs[2].on, tabs);
   const onSections = {};
   onSections.draft = { sec: await app.evalJs(SECTIONS), setup: await app.evalJs(SETUP) };
   await open(app, 'machina', true, 'tr-l-1'); await openDrawer(app);

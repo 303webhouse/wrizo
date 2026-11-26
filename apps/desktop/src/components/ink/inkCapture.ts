@@ -1,7 +1,7 @@
 import type { MutableRefObject } from 'react';
 import { inkColor, nearestNib, nibWidth, renderStroke } from '../../store/ink';
 import type { Stroke, StrokePoint } from '../../types';
-import { inkOriginY, paintCommitted, syncCanvas, type InkPen } from '../InkStratum';
+import { inkOriginY, paintBox, paintCommitted, syncCanvas, type InkPen } from '../InkStratum';
 
 // VISUAL 1a.1 - THE INPUT THAT MAKES STROKES, moved here verbatim from InkStratum's `edit` effect so it is fetched on the first INK open and never before. InkStratum attaches it
 // while its permission is `edit`; everything it touches is handed in, and the returned function detaches every listener.
@@ -67,27 +67,29 @@ export function attachCapture(h: CaptureHost): () => void {
     const rect = captureRectRef.current;
     if (!stroke || !rect) return;
     const oy = inkOriginY(sheet, rect);   // measured from the text [InkStratum §8]
+    const box = paintBox(sheet, rect);
     if (stroke.eraser) {
       const ctx = committedRef.current?.getContext('2d');
-      if (ctx) { ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, rect.width, inkColor()); ctx.restore(); }
+      if (ctx) { ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, box.width, inkColor()); ctx.restore(); }
       return;
     }
     const canvas = activeRef.current;
     const ctx = canvas?.getContext('2d');
     if (!ctx) return;
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, box.width, box.height);
     // A marker's `multiply` overlap (I5) is only visible against ink already
     // on the COMMITTED canvas; the live preview draws on its own transparent
     // canvas, so the crossing darkens on commit rather than mid-stroke. The
     // Journal's two-canvas split is what buys the flicker-free preview, and
     // that tradeoff is worth one frame of a marker looking slightly light.
-    ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, rect.width, inkColor()); ctx.restore();
+    ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, box.width, inkColor()); ctx.restore();
   };
   const clearActive = () => {
     const canvas = activeRef.current;
     const rect = captureRectRef.current;
     if (!canvas || !rect) return;
-    canvas.getContext('2d')?.clearRect(0, 0, rect.width, rect.height);
+    const box = paintBox(sheet, rect);
+    canvas.getContext('2d')?.clearRect(0, 0, box.width, box.height);
   };
 
   const onDown = (e: PointerEvent) => {
@@ -114,7 +116,7 @@ export function attachCapture(h: CaptureHost): () => void {
     sheet.style.setProperty('-webkit-user-select', 'none');
     captureRectRef.current = sheet.getBoundingClientRect();
     const ac = activeRef.current;
-    if (ac) syncCanvas(ac, captureRectRef.current.width, captureRectRef.current.height);
+    if (ac) { const box = paintBox(sheet, captureRectRef.current); syncCanvas(ac, box.width, box.height); }
     drawingRef.current = true;
     activeId = e.pointerId;   // only THIS pointer may drive or end the stroke
     // the toggle is the guaranteed path; the eraser tip (buttons bit 32) is a bonus; the barrel button is left unread [InkStratum §9]
