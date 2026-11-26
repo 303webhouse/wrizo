@@ -90,7 +90,9 @@ SAFETY
 - If she says that she herself is in danger or may harm herself, stop the writing talk
   and reply with this one marker only, nothing else: ${SAFETY_MARKER}`;
 const BASE_LENGTH = `LENGTH
-120 words at most. 200 when explaining a concept. Plain words. No lists longer than five.`;
+Aim for 90 words; never more than 120, counting every line but the "Read:" line.
+When there is more to say, keep what matters most and leave the rest out.
+Explaining a concept may run to 200. Plain words. No lists longer than five.`;
 const BASE_READ = `SAY WHAT WAS READ
 End with one line naming what was read: "Read: Part 2, Part 3."`;
 export const BASE = [BASE_CORE, BASE_LENGTH, BASE_READ].join('\n\n');
