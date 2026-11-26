@@ -1,0 +1,102 @@
+/* ============================================================================================================================================================
+   THE GUIDE AS A WALK (PRESETS-B, Nov 25; reorg/walk/; the Wrizors' guide-walk frames). One card OVER the page (placed from the page's own rectangle: nothing here moves or sizes the page), the steps list to its left,
+   and the way-back chip above the page. Every colour is the live theme's own token, so each theme and both tones follow; only Arbor's two cloths are named. No motion. Square edges.
+   Every button rule is two classes deep: a one-class rule loses to a theme's own button dress.
+   ============================================================================================================================================================ */
+.wz-walk{ position:fixed; inset:0; z-index:220; font-family:var(--font-ui); color:var(--text-hi); --walk-go:var(--text-hi); --walk-go-ink:var(--chrome-surface); --walk-done:var(--accent-rest); }
+.wz-walk *{ box-sizing:border-box; transition:none !important; animation:none !important; }
+.wz-walk .wz-walk-side, .wz-walk .wz-walk-card{ position:fixed; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); display:flex; flex-direction:column; min-height:0; }
+.wz-walk .wz-walk-side{ border-right:0; }
+.wz-walk .wz-walk-card{ box-shadow:0 0 0 100vmax rgba(0,0,0,.28); z-index:1; }
+.wz-walk .wz-walk-side{ z-index:2; }
+.wz-walk button{ font:inherit; color:inherit; background:none; border:0; border-radius:0; cursor:pointer; padding:0; text-align:left; }
+.wz-walk button:disabled{ opacity:.4; cursor:default; }
+.wz-walk button:focus-visible, .wz-walk .wz-walk-field:focus-visible, .wz-walk .wz-walk-rename:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+.wz-walk .wz-walk-small{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); }
+.wz-walk .wz-walk-actname{ font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); }
+
+/* the steps list, and the format tab */
+.wz-walk .wz-walk-tabs{ display:flex; border-bottom:1px solid var(--ink-border-strong); flex:none; }
+.wz-walk .wz-walk-tabs button{ flex:1; text-align:center; padding:9px 4px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); border-bottom:2px solid transparent; }
+.wz-walk .wz-walk-tabs button[aria-selected='true']{ color:var(--text-hi); border-bottom-color:var(--accent-rest); }
+.wz-walk .wz-walk-list, .wz-walk .wz-walk-format{ flex:1; min-height:0; overflow:auto; padding:10px 0; }
+.wz-walk .wz-walk-list > .wz-walk-small, .wz-walk .wz-walk-format > .wz-walk-small{ padding:0 12px 4px; }
+.wz-walk .wz-walk-list .wz-walk-actname{ padding:10px 12px 4px; }
+.wz-walk .wz-walk-list .wz-walk-row{ display:flex; gap:10px; align-items:baseline; width:100%; padding:6px 12px; font-size:13px; border-left:3px solid transparent; }
+.wz-walk .wz-walk-list .wz-walk-row:hover{ background:var(--ink-800); }
+.wz-walk .wz-walk-list .wz-walk-row[aria-current='step']{ border-left-color:var(--brass); background:var(--ink-800); font-weight:600; }
+.wz-walk .wz-walk-num{ width:18px; flex:none; text-align:right; color:var(--text-mid); font-size:11px; }
+.wz-walk .wz-walk-rowname{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-walk .wz-walk-row[data-state='skipped'] .wz-walk-rowname{ text-decoration:underline dashed; text-underline-offset:3px; }
+.wz-walk .wz-walk-row[data-state='empty'] .wz-walk-rowname{ color:var(--text-mid); }
+.wz-walk .wz-walk-list .wz-walk-addend{ padding:10px 12px; font-size:12px; color:var(--text-mid); }
+.wz-walk .wz-walk-marks-row{ display:flex; gap:6px; padding:6px 12px; }
+.wz-walk .wz-walk-marks-row button{ width:32px; height:30px; text-align:center; border:1px solid var(--ink-border-strong); }
+.wz-walk .wz-walk-marks-row button[data-walk-mark='b']{ font-weight:700; }
+.wz-walk .wz-walk-marks-row button[data-walk-mark='i']{ font-style:italic; }
+.wz-walk .wz-walk-marks-row button[data-walk-mark='u']{ text-decoration:underline; }
+.wz-walk .wz-walk-marks-row button[data-walk-mark='s']{ text-decoration:line-through; }
+.wz-walk .wz-walk-marks-row button[aria-pressed='true']{ background:var(--walk-go); color:var(--walk-go-ink); border-color:var(--walk-go); }
+
+/* the card */
+.wz-walk .wz-walk-head{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:9px 18px; border-bottom:1px solid var(--ink-border-strong); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mid); flex:none; }
+.wz-walk .wz-walk-head span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wz-walk .wz-walk-head .wz-walk-x{ font-size:18px; width:24px; height:24px; text-align:center; }
+.wz-walk .wz-walk-trail{ display:flex; gap:22px; padding:14px 22px 4px; flex:none; }
+.wz-walk .wz-walk-trailgroup{ flex-basis:0; min-width:0; text-align:center; }
+.wz-walk .wz-walk-pips{ display:flex; justify-content:space-between; align-items:center; position:relative; min-height:16px; }
+.wz-walk .wz-walk-pips::before{ content:''; position:absolute; left:6px; right:6px; top:50%; border-top:1px solid var(--ink-border-strong); }
+.wz-walk .wz-walk-pips .wz-walk-pip{ position:relative; width:11px; height:11px; border:1.5px solid var(--text-mid); background:var(--chrome-surface); border-radius:50%; }
+.wz-walk .wz-walk-pips .wz-walk-pip[data-state='noted']{ background:var(--walk-done); border-color:var(--walk-done); }
+.wz-walk .wz-walk-pips .wz-walk-pip[data-state='skipped']::after{ content:''; position:absolute; left:0; right:0; top:50%; margin-top:-.75px; border-top:1.5px solid var(--text-mid); }
+.wz-walk .wz-walk-pips .wz-walk-pip[aria-current='step']{ box-shadow:0 0 0 2px var(--chrome-surface), 0 0 0 3.5px var(--brass); }
+.wz-walk .wz-walk-pipact{ font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-mid); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wz-walk .wz-walk-body{ flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:8px; padding:12px 22px; }
+.wz-walk .wz-walk-titlerow{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.wz-walk .wz-walk-title{ font-size:21px; font-weight:600; line-height:1.25; color:var(--text-hi); }
+.wz-walk .wz-walk-rename{ flex:1; min-width:0; font:inherit; font-size:19px; font-weight:600; color:var(--text-hi); background:var(--ink-800); border:1px solid var(--ink-border-strong); padding:3px 8px; }
+.wz-walk .wz-walk-titlerow .wz-walk-more{ width:28px; height:26px; text-align:center; flex:none; }
+.wz-walk .wz-walk-menu{ position:absolute; right:0; top:30px; z-index:3; min-width:200px; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); box-shadow:0 8px 24px rgba(0,0,0,.35); padding:4px 0; }
+.wz-walk .wz-walk-menu button{ display:block; width:100%; padding:7px 14px; font-size:13px; }
+.wz-walk .wz-walk-menu button:hover{ background:var(--ink-800); }
+.wz-walk .wz-walk-menu .wz-walk-drop{ border-top:1px solid var(--ink-border-strong); }
+.wz-walk .wz-walk-menu .wz-walk-drop span{ display:block; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mid); }
+.wz-walk .wz-walk-hint{ font-style:italic; font-size:13.5px; line-height:1.45; color:var(--text-mid); }
+.wz-walk .wz-walk-field{ flex:1 0 120px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; padding:14px 16px; background:var(--ink-800); border:1px solid var(--ink-border); font-family:var(--font-prose); font-size:16px; line-height:1.55; color:var(--text-hi); caret-color:var(--text-hi); user-select:text; }
+.wz-walk .wz-walk-field:empty::before{ content:attr(data-placeholder); font-style:italic; color:var(--text-mid); pointer-events:none; }
+.wz-walk .wz-walk-under{ display:flex; justify-content:space-between; align-items:center; gap:12px; flex:none; }
+.wz-walk .wz-walk-under .wz-walk-link{ font-size:13px; text-decoration:underline; text-underline-offset:3px; }
+.wz-walk .wz-walk-endacts{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; margin:8px 0 6px; }
+.wz-walk .wz-walk-undo{ display:flex; gap:14px; justify-content:space-between; align-items:center; padding:8px 22px; border-top:1px solid var(--ink-border-strong); font-size:12.5px; flex:none; }
+.wz-walk .wz-walk-undo button{ text-decoration:underline; }
+.wz-walk .wz-walk-foot{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 22px; flex:none; }
+.wz-walk .wz-walk-foot button, .wz-walk .wz-walk-endacts button{ padding:7px 14px; font-size:13px; }
+.wz-walk .wz-walk-foot .wz-walk-quiet, .wz-walk .wz-walk-endacts .wz-walk-quiet{ border:1px solid var(--ink-border-strong); }
+.wz-walk .wz-walk-foot .wz-walk-primary, .wz-walk .wz-walk-endacts .wz-walk-primary{ background:var(--walk-go); color:var(--walk-go-ink); font-weight:600; }
+
+/* each theme's own mark shapes (the frames), and Arbor's olive for the way forward */
+:root[data-theme='plateau'] .wz-walk{ --walk-go:#56632E; --walk-go-ink:#EFE4CB; --walk-done:#8C9A55; }
+:root[data-theme='plateau'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:50% 0 50% 0; }
+:root[data-theme='flux'] .wz-walk{ --walk-go:var(--line-active); --walk-done:var(--line-active); }
+:root[data-theme='flux'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; }
+:root[data-theme='machina'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; width:8px; height:14px; }
+
+/* the way back, above the page */
+.wz-walk-chip{ position:fixed; z-index:60; font-family:var(--font-ui); font-size:12px; font-weight:600; padding:5px 12px; color:var(--text-hi); background:var(--chrome-surface); border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer; white-space:nowrap; }
+.wz-walk-chip:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+
+/* the Plan tab's door and mark; DOCS' Continue your Guide */
+.wz-back-plan .wz-back-plan-walk{ align-self:flex-end; margin:0 0 8px auto; display:block; width:auto; padding:5px 10px; border:1px solid var(--ink-border-strong); }
+.wz-back-plan .wz-back-plan-skipped{ font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); }
+.wz-reorg-docs .wz-reorg-continue{ display:flex; align-items:center; }
+.wz-reorg-docs .wz-reorg-continue .wz-reorg-list-open{ flex:1; min-width:0; }
+.wz-reorg-docs .wz-reorg-continue .wz-reorg-continue-x{ flex:none; width:28px; height:28px; background:none; border:0; color:var(--text-mid); cursor:pointer; font-size:15px; }
+
+/* Step 0's walk-ahead marks and the two ways to start (GuidePanel.tsx) */
+.guide-panel .guide-ahead{ margin-top:10px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+.guide-panel .guide-ahead-row{ display:flex; gap:18px; margin-top:6px; }
+.guide-panel .guide-ahead-group{ flex-basis:0; text-align:center; min-width:0; white-space:nowrap; }
+.guide-panel .guide-ahead-pips{ display:flex; justify-content:space-between; margin-bottom:4px; }
+.guide-panel .guide-ahead-pips i{ width:8px; height:8px; border:1.5px solid currentColor; border-radius:50%; }
+.guide-panel .guide-card-act{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.guide-panel .guide-card-enter{ font-size:11px; font-style:italic; }

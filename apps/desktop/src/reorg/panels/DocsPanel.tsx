@@ -9,6 +9,9 @@ import { routeForEntry } from '../../store/routeForEntry';
 import { GuidePanel } from '../GuidePanel';
 import { newGuideDoc } from '../presetGuideActs';
 import type { GuidePick } from '../presetGuide';
+import { openWalk } from '../walk/walkDoor';
+import { walksToContinue } from '../walk/walkData';
+import { setDocSetting } from '../docSettings';
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
@@ -82,7 +85,7 @@ function Toggle({ id, label, on, onPick, t }: { id: string; label: string; on: b
   );
 }
 
-export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeContext) {
+export function DocsPanel({ subject, navigate, travelFromCascade, closeCascade }: CascadeContext) {
   const { t } = useDeskLexicon();
   const lex = useLexicon();
   const nameOf = useProjectName();
@@ -115,7 +118,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
     navigate(unbornHref({ ...b, ...extra }));
   };
   const [guideOpen, setGuideOpen] = useState(false);
-  const startFromGuide = (pick: GuidePick) => {
+  const startFromGuide = (pick: GuidePick, guided = false) => {
     setGuideOpen(false);
     if (!pick.preset && !pick.structure) { go({}); return; }
     const b = base();
@@ -125,7 +128,11 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
     // a departure she can walk back from in one tap, when what she left is a page that exists
     const from = getJournalEntry(subject.entry.id);
     navigate(routeForEntry(made), from?.text.trim() ? { state: { fromBoardId: from.id, fromBoardTitle: firstLine(from.text).slice(0, 60) } } : undefined);
+    if (guided) openWalk(made.id);
   };
+  // CONTINUE YOUR GUIDE (the walk's frames, state K): every Doc with a saved place; its x takes the place off (the Plan and every word stay)
+  const [, setForgot] = useState(0);
+  const toContinue = walksToContinue();
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
@@ -136,6 +143,23 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
   ];
   return (
     <div className="wz-cascade-panel-body wz-reorg-docs">
+      {toContinue.length > 0 && (
+        <section className="wz-reorg-group" data-reorg-group="guide" aria-label={t('guideWalkContinue')}>
+          <div className="wz-reorg-group-head">{t('guideWalkContinue')}</div>
+          <ul className="wz-reorg-rows">
+            {toContinue.map((w) => (
+              <li key={w.pageId} className="wz-reorg-list-row wz-reorg-continue" data-continue={w.pageId}>
+                <button type="button" className="wz-reorg-list-open wz-reorg-two-line" onClick={() => { closeCascade?.(); openWalk(w.pageId); }}>
+                  <span className="wz-reorg-list-title">{[w.doc, w.step.title].filter(Boolean).join(' · ')}</span>
+                  <span className="wz-reorg-row-meta">{fill(fill(t('guideWalkContinueLine'), 'n', w.step.number), 'total', w.total)}</span>
+                </button>
+                <button type="button" className="wz-reorg-continue-x" data-continue-forget="" aria-label={t('guideWalkForget')} title={t('guideWalkForget')}
+                  onClick={() => { setDocSetting(w.pageId, { walk: null }); setForgot((n) => n + 1); }}>×</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className="wz-reorg-group" data-reorg-group="new" aria-label={t('reorgNewDocHeading')}>
         <div className="wz-reorg-group-head">{t('reorgNewDocHeading')}</div>
         <ul className="wz-reorg-rows">
@@ -147,7 +171,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
             </li>
           ))}
         </ul>
-        {guideOpen && <GuidePanel onStart={startFromGuide} onClose={() => setGuideOpen(false)} />}
+        {guideOpen && <GuidePanel onStart={(p) => startFromGuide(p)} onStartGuided={(p) => startFromGuide(p, true)} onClose={() => setGuideOpen(false)} />}
       </section>
       <section className="wz-reorg-group" data-reorg-group="recent" aria-label={t('reorgRecent')}>
         <div className="wz-reorg-group-head wz-reorg-recent-head">
