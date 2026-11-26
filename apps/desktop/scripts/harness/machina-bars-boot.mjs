@@ -26,6 +26,11 @@ const WATCH = `(() => {
 // dark: every channel low (Machina's bar is #1E262E cool, #201E1B neutral)
 const dark = (bg) => { const m = /rgba?\((\d+), (\d+), (\d+)/.exec(bg || ''); return !!m && +m[1] < 80 && +m[2] < 80 && +m[3] < 80 && !/, 0\)$/.test(bg); };
 const good = (r) => !!r && r.look === true && dark(r.bg);
+// every bar that is drawn: what it is PAINTED on (its own ground, or the first one under it)
+const ALL = `(() => { const out = {}; for (const sel of '${BARS}'.split(', ')) { const el = [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().height > 0); if (!el) continue;
+  let n = el, bg = 'rgba(0, 0, 0, 0)'; while (n) { bg = getComputedStyle(n).backgroundColor; if (!/, 0\\)$/.test(bg) && bg !== 'transparent') break; n = n.parentElement; }
+  out[sel] = bg; } return { look: document.documentElement.hasAttribute('data-machina2'), theme: document.documentElement.getAttribute('data-theme'), page: document.documentElement.getAttribute('data-page'), bars: out }; })()`;
+const allDark = (r) => !!r && Object.keys(r.bars).length > 0 && Object.values(r.bars).every(dark);
 
 await withHarness(async (app) => {
   await app.emulateDpr(1, 1366, 768);
@@ -50,6 +55,8 @@ await withHarness(async (app) => {
   await sleep(4000);
   const later = await app.evalJs(`(() => { const el = document.querySelector('${BARS}'); return el ? { look: document.documentElement.hasAttribute('data-machina2'), bg: getComputedStyle(el).backgroundColor } : null; })()`);
   ok('B2 settled, the look is on and the bar is dark', good(later), J(later));
+  const settled = await app.evalJs(ALL);
+  ok('B2b settled, EVERY drawn bar is painted dark', allDark(settled), J(settled));
   ok('MUT the same first sight with a light bar turns B1\'s judge red', !good({ ...(later || {}), bg: 'rgb(244, 245, 246)' }) && good(later), J(later));
 
   // B3: the chunk refused - the app must still draw
@@ -60,7 +67,23 @@ await withHarness(async (app) => {
   try { await app.waitFor("!!document.querySelector('.desk-frame-stage .mode-page')", { label: 'the page without the look', timeout: 20000 }); } catch { drew = false; }
   const noLook = await app.evalJs("document.documentElement.hasAttribute('data-machina2')");
   ok('B3 with the look\'s chunk refused the app still draws her page', drew, J({ drew, look: noLook }));
+  await sleep(1500);
+  console.log(`DIAG bars without the look (page light): ${J(await app.evalJs(ALL))}`);
   await app.cdp('Network.setBlockedURLs', { urls: [] });
+
+  // B4: a switch to Machina while the app is open (she boots in Arbor), on a slowed network
+  await app.evalJs("localStorage.setItem('wrizo-theme', 'plateau')");
+  await app.reload();
+  await app.waitFor("!!document.querySelector('.desk-frame-stage .mode-page') && !document.querySelector('.wz-splash')", { label: 'the page in Arbor', timeout: 30000 });
+  await sleep(1500);
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 1500, downloadThroughput: -1, uploadThroughput: -1 });
+  await app.evalJs("window.wrizoTheme.set('machina'); null");
+  await sleep(150);
+  const flip = await app.evalJs(ALL);
+  await sleep(7000);
+  const flipped = await app.evalJs(ALL);
+  ok('B4a after a switch to Machina, settled, the look is on and every drawn bar is dark', flipped.look === true && allDark(flipped), J(flipped));
+  ok('B4b the moment after the switch every drawn bar is already painted as it settles', JSON.stringify(flip.bars) === JSON.stringify(flipped.bars), J({ first: flip, settled: flipped }));
 });
 const passed = checks.filter((c) => c.pass).length;
 console.log(passed === checks.length ? `\nMACHINA-BARS-BOOT VERIFY: PASS (${checks.length} checks)` : `\nMACHINA-BARS-BOOT VERIFY: FAIL - ${checks.length - passed}/${checks.length} failed`);
