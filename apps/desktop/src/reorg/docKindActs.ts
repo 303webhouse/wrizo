@@ -7,8 +7,8 @@ import { serializeScriptDoc } from '../store/scriptText';
 import { ensureDoc, newPart, partsOfDoc, renamePart, setPartTemplate } from './parts';
 import { setDocSetting, styleGuideOf } from './docSettings';
 import {
-  PRESETS, followStyle, pageSetupFor, placeSpecial, planPreset, specialName, specialOf, specialTemplate,
-  type DocStyle, type PageSetupPatch, type SpecialKind,
+  PRESETS, followStyle, pageSetupFor, parseQuickNames, placeSpecial, planPreset, quickPreset, specialName, specialOf, specialTemplate,
+  type DocStyle, type PageSetupPatch, type Preset, type SpecialKind,
 } from './docKinds';
 
 // THE DOC'S KIND MENU, ITS ACTS (Fable, Nov 20, 4:15 pm; the approved draft claude/wrizors/kind-menu-presets-draft.md). The menu (reorg/DocKindMenu.tsx, ARBOR's shell) calls these three; each is built on the Parts layer (parts.ts) and the Doc's own
@@ -80,10 +80,30 @@ export type PresetResult = { ok: true; made: string[]; reused: string | null } |
  * and nothing of hers moves or changes. A screenplay preset is for a Screenplay Doc and a standard one for any other; the other way round is refused.
  */
 export function applyPreset(entryId: string, presetId: string): PresetResult {
+  const preset = PRESETS.find(p => p.id === presetId);
+  if (!getJournalEntry(entryId)) return { ok: false, reason: 'unknown' };
+  if (!preset) return { ok: false, reason: 'unknown-preset' };
+  return applyPresetOf(entryId, preset);
+}
+
+/**
+ * QUICK PRESET (PRESETS-B item 14, Nov 25): her own list of Part names, added exactly as a preset's are (the same act below: empty Parts, named; in an empty Doc they become the Doc, in a Doc with words they go after hers). The list is her words typed
+ * into the one field and is NOT kept: no preset is stored, no name is remembered, and nothing is written but the Parts. The kind follows the Doc (a Screenplay Doc gets screenplay Parts). An empty list writes nothing.
+ */
+export function applyQuickPreset(entryId: string, text: string): PresetResult {
   const e = getJournalEntry(entryId);
   if (!e) return { ok: false, reason: 'unknown' };
-  const preset = PRESETS.find(p => p.id === presetId);
-  if (!preset) return { ok: false, reason: 'unknown-preset' };
+  const names = parseQuickNames(text);
+  if (!names.length) return { ok: true, made: [], reused: null };
+  const doc = ensureDoc(entryId);
+  if (!doc.ok) return { ok: false, reason: 'no-doc' };
+  const isScreenplay = getProject(doc.docId)?.kind === 'screenplay' || e.pageType === 'script' || e.pageSettings?.kind === 'screenplay';
+  return applyPresetOf(entryId, quickPreset(names, isScreenplay ? 'screenplay' : 'standard'));
+}
+
+function applyPresetOf(entryId: string, preset: Preset): PresetResult {
+  const e = getJournalEntry(entryId);
+  if (!e) return { ok: false, reason: 'unknown' };
   const doc = ensureDoc(entryId);
   if (!doc.ok) return { ok: false, reason: 'no-doc' };
   const isScreenplay = getProject(doc.docId)?.kind === 'screenplay' || e.pageType === 'script' || e.pageSettings?.kind === 'screenplay';

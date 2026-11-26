@@ -35,6 +35,7 @@ import { apiMe, apiLogout, type AuthUser } from './store/api';
 import { setCurrentUser } from './store/currentUser';
 import { installBeforeUnloadGuard } from './store/beforeUnloadGuard';
 import { startSync, stopSync, syncOnce, clearLastSyncAt, getRejectedRecords } from './store/sync';
+import { forgetThemeUnlock } from './store/themeUnlock';
 import { useDeskFrameMounted } from './store/deskFrameActive';
 import { useFirstRunGateActive } from './store/firstRunGateActive';
 import { onLogoutRequested } from './store/logoutRequest';
@@ -314,6 +315,7 @@ export function App() {
       stopSync();
       clearLastSyncAt();
       resetLocalData();
+      forgetThemeUnlock();   // #132: one account's open themes are never shown to the next
       setCurrentUser(null);
       setAuthState('anon');
     } finally {
@@ -342,6 +344,7 @@ export function App() {
         stopSync();
         clearLastSyncAt();
         resetLocalData();
+        forgetThemeUnlock();
         setCurrentUser(null);
         setAuthState('anon');
       } catch { /* a listener never breaks the app */ }

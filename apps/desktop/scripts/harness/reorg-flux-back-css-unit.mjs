@@ -191,7 +191,11 @@ const KEYS = ['SCOPED', 'COVER', 'FIELD', 'CHOICE', 'NODE', 'TK6', 'BRASS', 'TAB
 for (const k of KEYS) ok(`${k} on the real 24-reorg-flux.css`, !!base && base[k] && base[k].pass, base && base[k] ? base[k].detail : '24-reorg-flux.css: ' + (baseErr ? String(baseErr.message).slice(0, 160) : 'missing'));
 const PARTS = (() => { try { return globalCssParts(SRCDIR).map((p) => p.name); } catch { return []; } })();
 const at = PARTS.findIndex((p) => /23-reorg-back\.css$/.test(p));
-ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
+// SUPERSEDED (PRESETS-B item 18, Nov 25; L10): an item's own Machina sheet (23-reorg-compare.css, 23-reorg-quick.css) may now stand between the two; what the law is for is unchanged (the Flux dress comes after the
+// Machina reorg sheets it re-dresses, with nothing else between). The original, verbatim:
+// ok('WIRED the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets)', at >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1] || ''), J({ at, next: PARTS[at + 1] }));
+const afterBack = PARTS.slice(at + 1).findIndex((p) => !/23-reorg-(compare|quick)\.css$/.test(p));
+ok('WIRED [successor]: the global stylesheet lists 24-reorg-flux.css right after 23-reorg-back.css (the Machina reorg sheets), only item sheets 23-reorg-compare/quick.css between', at >= 0 && afterBack >= 0 && /24-reorg-flux\.css$/.test(PARTS[at + 1 + afterBack] || ''), J({ at, after: PARTS.slice(at + 1, at + 4) }));
 
 const MUT = [
   ['the fields lose their fill', 'FIELDS', (t) => t.replace('.wz-back-plan-input){ background:#020C10;', () => '.wz-back-plan-input){ background:#132437;')],

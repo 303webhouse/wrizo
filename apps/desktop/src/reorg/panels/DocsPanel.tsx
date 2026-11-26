@@ -4,7 +4,11 @@ import type { JournalEntry } from '../../types';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { useLexicon } from '../../store/themeLexicon';
 import { firstLine } from '../../store/entryText';
-import { getJournalEntries, getSystemKind, isPairedPlanBoard } from '../../store/persistence';
+import { getJournalEntries, getJournalEntry, getSystemKind, isPairedPlanBoard } from '../../store/persistence';
+import { routeForEntry } from '../../store/routeForEntry';
+import { GuidePanel } from '../GuidePanel';
+import { newGuideDoc } from '../presetGuideActs';
+import type { GuidePick } from '../presetGuide';
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
@@ -14,9 +18,12 @@ import { allDocRows, newTargetOf, projectOfEntry, RECENT_DOCS } from '../railDat
 import { useTheme } from '../../store/theme';
 import { useProjectName, useWhereSheIs } from '../ReorgRail';
 
-// DOCS (step 5, frame R7). NEW DOC: Blank, Screenplay, Research paper, More kinds, and Board (Nick's first door for a Board, Nov 14, 11:14 am),
-// each through today's own route into the Project she is in (an unborn page or board in its set, made by the first keystroke): Blank and
-// Screenplay are today's presets; Research paper is today's research-paper deck; More kinds is today's library; Board is today's new board.
+// DOCS (step 5, frame R7). NEW DOC: Blank, Screenplay, Research paper, Guide, Board, More kinds (Nick's first door for a Board, Nov 14, 11:14 am;
+// the Guide's place ruled by Fable, Nov 25: after the kinds and before Board). Each but the Guide goes through today's own route into the Project
+// she is in (an unborn page or board in its set, made by the first keystroke): Blank and Screenplay are today's presets; Research paper is today's
+// research-paper deck; Board is today's new board; More kinds is today's library. THE GUIDE opens its own panel over the dimmed room (GuidePanel.tsx;
+// never by itself, writing nothing); its Start makes a new Doc in the same place (presetGuideActs.ts newGuideDoc) and opens its first Part, with the
+// return chip; its Blank is the Blank row.
 // In Unfiled writing they land loose, as today. RECENT: her most recently changed Docs, anywhere, each with its Project and its words.
 // LONG (Fable, Nov 20, 12:15 pm and 1:27 pm): up to 25 of them in a box five rows tall that scrolls past the fifth (a thin scrollbar), with a
 // sort: Changed (newest first, the default), Name (A to Z, numbers as numbers), Words (most first); a tie keeps the newest first. The sort is
@@ -107,10 +114,23 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
     if (!b) return;
     navigate(unbornHref({ ...b, ...extra }));
   };
+  const [guideOpen, setGuideOpen] = useState(false);
+  const startFromGuide = (pick: GuidePick) => {
+    setGuideOpen(false);
+    if (!pick.preset && !pick.structure) { go({}); return; }
+    const b = base();
+    if (!b) return;
+    const made = getJournalEntry(newGuideDoc(pick, b, t));
+    if (!made) return;
+    // a departure she can walk back from in one tap, when what she left is a page that exists
+    const from = getJournalEntry(subject.entry.id);
+    navigate(routeForEntry(made), from?.text.trim() ? { state: { fromBoardId: from.id, fromBoardTitle: firstLine(from.text).slice(0, 60) } } : undefined);
+  };
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
     { id: 'research-paper', label: t('reorgKindResearch'), act: () => go({ kind: 'board', deck: 'research-paper' }) },
+    { id: 'guide', label: t('guideRow'), act: () => setGuideOpen(true) },
     { id: 'board', label: lex.t('board'), act: () => go({ kind: 'board' }) },
     { id: 'more', label: t('reorgKindMore'), act: () => go({ kind: 'board', deck: 'library' }), more: true },
   ];
@@ -127,6 +147,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade }: CascadeConte
             </li>
           ))}
         </ul>
+        {guideOpen && <GuidePanel onStart={startFromGuide} onClose={() => setGuideOpen(false)} />}
       </section>
       <section className="wz-reorg-group" data-reorg-group="recent" aria-label={t('reorgRecent')}>
         <div className="wz-reorg-group-head wz-reorg-recent-head">

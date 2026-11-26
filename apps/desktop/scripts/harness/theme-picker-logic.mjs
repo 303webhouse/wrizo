@@ -150,6 +150,26 @@ try {
       parsed === null, JSON.stringify(parsed));
   }
 
+  // #132 (Fable, Nov 25) — the last status the server gave is kept for the session (memory only, nothing saved): a failed read shows the cards as they last were, and sign-out or a 401 forgets it
+  {
+    const realFetch = globalThis.fetch;
+    const good = async () => ({ ok: true, status: 200, json: async () => ({ wordsWritten: 1500, themesOpened: {}, thresholds: { flux: 1000 }, open: { flux: true } }) });
+    const down = async () => { throw new TypeError('offline'); };
+    const read = async (impl) => { globalThis.fetch = impl; try { return typeof themeUnlock.readThemeUnlock === 'function' ? await themeUnlock.readThemeUnlock() : 'no readThemeUnlock'; } finally { globalThis.fetch = realFetch; } };
+    const first = await read(down);
+    const ok1 = await read(good);
+    const kept = await read(down);
+    const kept500 = await read(async () => ({ ok: false, status: 500 }));
+    ok('R1: with nothing read yet, a failed read gives null; after a good one, a failed read (offline, or a 500) gives the last status',
+      first === null && ok1?.open?.flux === true && kept?.open?.flux === true && kept500?.open?.flux === true, JSON.stringify({ first, kept, kept500 }));
+    const out = await read(async () => ({ ok: false, status: 401 }));
+    ok('R2: a 401 (signed out) forgets it', out === null, JSON.stringify(out));
+    await read(good);
+    if (typeof themeUnlock.forgetThemeUnlock === 'function') themeUnlock.forgetThemeUnlock();
+    const gone = await read(down);
+    ok('R3: sign-out (forgetThemeUnlock) forgets it: the next account never sees it', gone === null, JSON.stringify(gone));
+  }
+
   // T10-T13 — the Flux card's own rate-limited hover glitch (note e)
   flashBudget.__resetFlashBudget();
   {

@@ -195,6 +195,103 @@ await withHarness(async (app) => {
       }
     }
   }
+
+  // ---- #124 (Nick; orders-nov25, Nov 25): NO HINT IS DRAWN OVER TEXT, at 1366, 1920 and 2560 ----
+  // Flux's Free Write is Wire In, which has a second quiet line: the idle line (.flux3-nudge, FluxNudge.tsx). It was placed once, when it appeared. Here it is
+  // read settled, after she scrolls the page under it, with no caret on the page, with the "keep writing" hint also up, and on a one-sentence page.
+  //   I0 (premise) the state named was reached
+  //   I1..I5 the idle line meets no line of text on screen (and not the "keep writing" hint's words), and stands inside the window
+  //   W the "keep writing" hint at 1920 and 2560 in Arbor and Machina meets no line of text (1366 is H1 above)
+  const WIDTHS = [[1366, 768], [1920, 1080], [2560, 1440]];
+  // the lines she can SEE: each text node's line boxes; Wire In's veil is a clip that keeps the editor's last two lines (flux-wirein.css), so a box above it is not seen
+  const SEEN = `(() => {
+    const ed = document.querySelector('.forward-only-editor'); if (!ed) return null;
+    const er = ed.getBoundingClientRect(); const k = ed.offsetHeight ? er.height / ed.offsetHeight : 1; const cs = getComputedStyle(ed);
+    const clipTop = cs.clipPath && cs.clipPath !== 'none' ? er.bottom - 2 * (parseFloat(cs.lineHeight) || 0) * k : -1e9;
+    const rectsOf = (root) => { const out = []; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let t;
+      while ((t = w.nextNode())) { if (!t.data.trim()) continue; const r = document.createRange(); r.selectNodeContents(t); for (const q of r.getClientRects()) if (q.height >= 4) out.push({ left: q.left, top: q.top, right: q.right, bottom: q.bottom }); }
+      return out; };
+    const lines = rectsOf(ed).filter((q) => (q.top + q.bottom) / 2 >= clipTop && q.bottom > 0 && q.top < innerHeight);
+    const meets = (a, b) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    const n = document.querySelector('.flux3-nudge'); const nr = n ? n.getBoundingClientRect() : null;
+    const h = document.querySelector('.fo-nudge'); const hintRects = h ? rectsOf(h) : [];
+    const last = lines.reduce((m, q) => (!m || q.bottom > m.bottom ? q : m), null);
+    return { shown: !!n, nudge: nr ? { left: Math.round(nr.left), top: Math.round(nr.top), right: Math.round(nr.right), bottom: Math.round(nr.bottom) } : null,
+      hint: !!h, caret: !!document.querySelector('.flux-block-caret'), lines: lines.length, lastBottom: last ? Math.round(last.bottom) : null,
+      hitText: nr ? lines.filter((q) => meets(nr, q)).length : 0, hitHint: nr ? hintRects.filter((q) => meets(nr, q)).length : 0,
+      hintOverText: hintRects.reduce((m, q) => m + lines.filter((l) => meets(q, l)).length, 0),
+      onScreen: !nr || (nr.left >= 0 && nr.right <= innerWidth && nr.top >= 0 && nr.bottom <= innerHeight), vw: innerWidth, vh: innerHeight };
+  })()`;
+  const seen = () => app.evalJs(SEEN);
+  const clear = (g) => !!g && g.hitText === 0 && g.hitHint === 0 && g.onScreen;
+  const waitIdle = () => waitSoft(app, "!!document.querySelector('.flux3-nudge')", { label: 'the idle line', timeout: 16000 });
+  const toEnd = () => app.evalJs("(() => { const e = document.querySelector('.forward-only-editor'); e.focus(); const r = document.createRange(); r.selectNodeContents(e); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()");
+  const fresh = async (themeId, id, text) => {
+    await app.evalJs("location.hash = '#/'"); await sleep(300);
+    await app.evalJs(`window.wrizoCreateJournalPage(${J({ id, text, createdAt: new Date().toISOString(), origin: null, source: 'page' })})`);
+    await app.evalJs(`localStorage.setItem('wrizo-mode-page-${id}', 'journal'); localStorage.setItem('wrizo-theme', '${themeId}')`);
+    await app.evalJs('window.wrizoFlushNow()'); await sleep(300);
+    await app.reload();
+    await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
+    return openPage(app, id);
+  };
+
+  for (const [w, h] of WIDTHS) {
+    await app.emulateDpr(1, w, h);
+    const tag = `Flux Wire In ${w}`;
+    if (!(await fresh('flux', `p124-long-${w}`, PARA))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
+    // she writes at the end, the hold settled; a page seeded long is not always carried to its end, so the fixture does what her own scrolling does (raiseHint's step). held: the line was on screen without it
+    const write = async () => { await toEnd(); await app.typeKeys(' and on'); await sleep(300); await settle(app);
+      const first = await app.evalJs(CARET_SEEN); const held = !!first && first.seen;
+      if (!held) { await app.evalJs("(() => { const ed = document.querySelector('.forward-only-editor'); const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let last = null, n; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (last && last.parentElement) { const r = document.createRange(); r.selectNodeContents(last); const q = [...r.getClientRects()].pop(); const s = document.querySelector('.mode-scroll'); if (q && s) s.scrollTop += q.top - innerHeight * 0.5; } return true; })()"); await sleep(300); await settle(app); }
+      const now = await app.evalJs(CARET_SEEN); return { held, seen: !!now && now.seen }; };
+
+    const wrote = await write();
+    await waitIdle();
+    const a = await seen();
+    ok(`${tag} I1: settled at the end of a long page, the idle line meets no text`, wrote.seen && !!a && a.shown && a.lines >= 1 && clear(a), J({ wrote, ...a }));
+
+    // she scrolls the page under the line: neither a key nor a pointer move, so the line stays up
+    await app.cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: Math.round(w / 2), y: Math.round(h * 0.35), deltaX: 0, deltaY: -90, pointerType: 'mouse' });
+    await sleep(450);
+    const b = await seen();
+    const moved = !!a && !!b && a.lastBottom != null && b.lastBottom != null ? b.lastBottom - a.lastBottom : null;
+    ok(`${tag} I2: after she scrolls the page under it (the text moved ${moved}px), the idle line meets no text`, moved != null && moved >= 20 && clear(b), J({ moved, ...b }));
+
+    // no caret on the page (she clicked away): the line has no block caret to measure from
+    const again = await write();
+    await app.evalJs("(() => { document.activeElement && document.activeElement.blur(); getSelection().removeAllRanges(); return true; })()");
+    await waitIdle();
+    const c = await seen();
+    ok(`${tag} I3: with no caret on the page, the idle line meets no text`, again.seen && !!c && c.shown && !c.caret && c.lines >= 1 && clear(c), J({ wrote: again, ...c }));
+
+    // both quiet lines up: Backspace past the runway raises "keep writing", then she is still
+    await write();
+    const pre = {};
+    const presses = await raiseHint(app, pre);
+    await waitIdle();
+    const d = await seen();
+    ok(`${tag} I4: with the "keep writing" hint up (after ${presses} presses), the idle line meets no text and not the hint's words, and the hint meets no text`,
+      presses != null && !!d && d.shown && d.hint && clear(d) && d.hintOverText === 0, J(d));
+
+    if (!(await fresh('flux', `p124-short-${w}`, 'The rope was already there.'))) { ok(`${tag} fixture: the short page opened`, false, ''); continue; }
+    await toEnd();
+    await waitIdle();
+    const e = await seen();
+    ok(`${tag} I5: on a one-sentence page, the idle line meets no text`, !!e && e.shown && e.lines >= 1 && clear(e), J(e));
+  }
+
+  for (const [w, h] of WIDTHS.slice(1)) {
+    await app.emulateDpr(1, w, h);
+    for (const th of THEMES.filter((t) => t.id !== 'flux')) {
+      const tag = `${th.name} ${w}`;
+      if (!(await fresh(th.id, `p124-${th.id}-${w}`, PARA))) { ok(`${tag} fixture: the page opened`, false, ''); continue; }
+      const pre = {};
+      const presses = await raiseHint(app, pre);
+      const g = await app.evalJs(PROBE);
+      ok(`${tag} W: the "keep writing" hint (after ${presses} presses) meets no line of text on screen and stands on screen`, presses != null && !!g && g.lines >= 3 && g.hit === 0 && onScreen(g), J({ nudge: g && g.nudge, hit: g && g.hit, writing: g && g.writing }));
+    }
+  }
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'}  ${c.name}${c.detail ? `  [${String(c.detail).slice(0, 600)}]` : ''}`);

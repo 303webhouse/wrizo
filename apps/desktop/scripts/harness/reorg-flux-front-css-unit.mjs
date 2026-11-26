@@ -183,7 +183,11 @@ function suite(front, tags, sliver, ftabs, words) {
     const wordOf = (k) => { const m = new RegExp('^\\s*' + k + ":\\s*(?:'((?:[^'\\\\]|\\\\.)*)'|\"([^\"]*)\")", 'm').exec(words); return m ? (m[1] ?? m[2]).replace(/\\'/g, "'") : null; };
     const wrong = Object.entries(want).filter(([k, v]) => wordOf(k) !== v).map(([k]) => k);
     const keys = new Set(); for (const s of READERS) for (const m of s.matchAll(/['"`](reorg[A-Z][A-Za-z0-9]*)['"`]/g)) keys.add(m[1]);
-    const part = [...keys].filter((k) => { const c = new RegExp('^\\s*' + k + ":\\s*(['\"`])(.*?)\\1", 'm').exec(CANON); return c && /\bParts?\b/.test(c[2].replace(/\{part\}/g, '')) && wordOf(k) === null; });
+    // SUPERSEDED (PRESETS-B item 14, Nov 25; L10): Quick Preset's six words are PROPOSED and have no Flux word yet (Flux shows "Parts" in that small form where its other menus say "Tracks": a known gap, sent to Fable
+    // and the Wrizors, to be closed when Flux's words come). Exactly these six are excused, by name, so any other word is still caught. The original, verbatim:
+    // const part = [...keys].filter((k) => { const c = new RegExp('^\\s*' + k + ":\\s*(['\"`])(.*?)\\1", 'm').exec(CANON); return c && /\bParts?\b/.test(c[2].replace(/\{part\}/g, '')) && wordOf(k) === null; });
+    const NO_FLUX_WORD_YET = ['reorgQuickPresetLabel', 'reorgQuickPresetHint', 'reorgQuickPresetMax', 'reorgQuickPresetOne', 'reorgQuickPresetMany', 'reorgQuickPresetAdd'];
+    const part = [...keys].filter((k) => { const c = new RegExp('^\\s*' + k + ":\\s*(['\"`])(.*?)\\1", 'm').exec(CANON); return c && /\bParts?\b/.test(c[2].replace(/\{part\}/g, '')) && wordOf(k) === null && !NO_FLUX_WORD_YET.includes(k); });
     return { pass: wrong.length === 0 && part.length === 0 && keys.size > 60, detail: J({ wrong, part, keys: keys.size }) };
   });
   t('ROOM', () => {

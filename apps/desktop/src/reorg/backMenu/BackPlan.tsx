@@ -14,7 +14,7 @@ import { docOfPage, partOfRow, toPartHref } from './planPart';
 import { connectedBoardIds } from './planConnected';
 import type { PlanPreset } from './planPresets';
 import { PresetsMenu } from './PresetsMenu';
-import { presetBoxes } from './planPresetOps';
+import { loadPlanPreset } from './planPresetLoad';
 import { addPlanRow, indentPlanRow, movePlanRow, outdentPlanRow, planRows, renamePlanRow, titleOfText } from './planOps';
 import { usePublishing, useIncludePlan, setIncludePlan } from '../publishPick';
 import { setDocSetting } from '../docSettings';
@@ -99,11 +99,8 @@ function BackPlanImpl({ entry }: { entry: JournalEntry }) {
   // PRESETS (planPresets.ts): a starting shape appended to the Plan as ordinary rows. The page's board is born the first time something is put on it, as the add field does. The Acts of a grouped preset start folded
   // closed (the Hero's Journey's twelve steps stay under three Acts, so the Plan stays short); a fold is a look, never stored.
   const fill = (preset: PlanPreset): void => {
-    const board = snap.boardId ? getJournalEntry(snap.boardId) : getOrCreatePlanBoard(pageId);
-    if (!board) return;
-    const made = presetBoxes(liveBoxes(board.boxes), preset, (k) => t(k), generateId);
-    saveBoardBoxes(board.id, made.next);
-    if (made.leaders.length) setFolded((was) => new Set([...was, ...made.leaders]));
+    const made = loadPlanPreset(pageId, preset, (k) => t(k));   // the one loader (planPresetLoad.ts): the Guide's Start uses it too
+    if (made && made.leaders.length) setFolded((was) => new Set([...was, ...made.leaders]));
   };
   const toggleFold = (id: string): void => setFolded((was) => { const n = new Set(was); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   // rows below a folded row are not drawn (depth is the board's own indent); a folded row keeps its place and its number
