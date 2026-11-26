@@ -2,7 +2,7 @@
 // Flux, Wire In, SIGNED IN (a fake server in the page, as free-write-signed-in.mjs), a short page (one paragraph) and a long one (5,000+ words), 1536 x 864 at device scale 1 and 2.5.
 // A burst of 66 keys at about 10 a second. A reader in the page looks once a frame: how many letters the page shows, and how many of them the block caret stands after.
 //   For each key: the frame its letter is on the page, and the frame the block stands after it. MEASURED and printed: both delays in ms (median, worst), the frames between them, the most letters the block was behind.
-//   K1  the block stands after each letter within 2 frames of the letter being drawn
+//   K1  the block is painted WITH its letter: the same frame for at least half the letters, never more than 1 frame after
 //   K2  the block is never more than 2 letters behind the text
 //   K3  every key typed is on the page (typing lands)
 //   MUT the judge goes RED on a block that follows only at the end
@@ -75,9 +75,12 @@ const READER = `(() => {
     let dx = null, dy = null;
     if (text && block) { const n = text.nodes[text.nodes.length - 1]; let k = n.data.length - 1; while (k > 0 && n.data[k] === '\u200b') k -= 1; range.setStart(n, k); range.setEnd(n, k + 1); const q = [...range.getClientRects()].pop(); const b = block.getBoundingClientRect(); if (q) { dx = Math.round(b.left - q.right); dy = Math.round(b.top - q.top); } }
     L.frames.push({ t, n: text ? text.total : 0, behind, block: !!block, dx, dy, s: Math.round(document.querySelector('.mode-scroll')?.scrollTop ?? 0) });
-    requestAnimationFrame(tick);
   };
-  requestAnimationFrame(tick);
+  // read what is about to be PAINTED: a ResizeObserver answers after every frame callback of the frame, and before its paint
+  const probe = document.createElement('div'); probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(probe);
+  new ResizeObserver(() => tick()).observe(probe);
+  let flip = false; const beat = () => { if (!L.on) return; flip = !flip; probe.style.width = flip ? '2px' : '1px'; requestAnimationFrame(beat); };
+  requestAnimationFrame(beat);
   return true;
 })()`;
 
@@ -96,7 +99,7 @@ const read = (start, keys, frames) => {
   return { keys: per.length, never: per.filter((p) => p.caret === null).length, textMs: { median: med(nums('text')), worst: max(nums('text')) }, caretMs: { median: med(nums('caret')), worst: max(nums('caret')) },
     gapFrames: { median: med(nums('gap')), worst: max(nums('gap')) }, behindLetters: typing.reduce((m, s) => Math.max(m, s.behind), 0), noBlockFrames: frames.filter((s) => !s.block).length, frames: frames.length };
 };
-const K1 = (r) => !!r && r.never === 0 && r.gapFrames.worst !== null && r.gapFrames.worst <= 2;
+const K1 = (r) => !!r && r.never === 0 && r.gapFrames.worst !== null && r.gapFrames.median === 0 && r.gapFrames.worst <= 1;
 const K2 = (r) => !!r && r.behindLetters <= 2;
 
 try { await withHarness(async (app) => {
@@ -136,13 +139,14 @@ try { await withHarness(async (app) => {
     const frameMs = raw.frames.length > 1 ? Math.round((raw.frames[raw.frames.length - 1].t - raw.frames[0].t) / (raw.frames.length - 1)) : null;
     console.log(`ODD ${tag}: ${odd.length} frames with the block more than 2 letters off; one frame is ${frameMs} ms; ` + J(odd.slice(0, 8).map((x) => ({ n: x.n, behind: x.behind, dx: x.dx, dy: x.dy, scroll: x.s, sinceKey: Math.round(x.t - Math.max(...raw.keys.map((k) => k.t).filter((k) => k <= x.t), 0)) }))));
     console.log(`MEASURE ${tag}: ${J({ ...where, ...r, selectionchanges: raw.sel, behindAtRest: rest })}`);
-    ok(`K1 ${tag}: the block stands after each letter within 2 frames of it being drawn`, where.jacked && K1(r), J({ gapFrames: r.gapFrames, caretMs: r.caretMs, textMs: r.textMs, never: r.never }));
+    ok(`K1 ${tag}: the block is painted with its letter (the same frame; never more than 1 after)`, where.jacked && K1(r), J({ gapFrames: r.gapFrames, caretMs: r.caretMs, textMs: r.textMs, never: r.never }));
     ok(`K2 ${tag}: the block is never more than 2 letters behind the text`, where.block && K2(r), J({ behindLetters: r.behindLetters, behindAtRest: rest }));
     ok(`K3 ${tag}: every key typed is on the page`, raw.end - start === BURST.length, J({ typed: BURST.length, shown: raw.end - start }));
   }
   const late = read(0, [{ t: 0 }, { t: 100 }], [{ t: 10, n: 1, behind: 1, block: true }, { t: 110, n: 2, behind: 2, block: true }, { t: 400, n: 2, behind: 2, block: true }, { t: 900, n: 2, behind: 0, block: true }]);
   const live = read(0, [{ t: 0 }, { t: 100 }], [{ t: 16, n: 1, behind: 0, block: true }, { t: 116, n: 2, behind: 0, block: true }]);
-  ok('MUT: the judges go RED on a block that follows only at the end, and pass one that keeps up', !K1(late) && K1(live) && K2(live), J({ late: late.gapFrames }));
+  const oneLate = read(0, [{ t: 0 }, { t: 100 }], [{ t: 16, n: 1, behind: 1, block: true }, { t: 33, n: 1, behind: 0, block: true }, { t: 116, n: 2, behind: 1, block: true }, { t: 133, n: 2, behind: 0, block: true }]);
+  ok('MUT: the judges go RED on a block that follows only at the end, and pass one that keeps up', !K1(late) && !K1(oneLate) && K1(live) && K2(live), J({ late: late.gapFrames, oneLate: oneLate.gapFrames }));
 }); } catch (e) { console.log('HARNESS ERROR', e && e.stack || e); ok('HARNESS ' + String(e && e.message || e).slice(0, 300), false); }
 
 const bad = checks.filter((c) => !c.pass).length;
