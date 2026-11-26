@@ -72,6 +72,26 @@ try { await withHarness(async (app) => {
       await sleep(600); await settle();
       const c = await ev(READ);
       ok(`O3 ${tag}: she types: the words land and the writing line is inside the window`, !!c && !!b && c.chars >= b.chars + 6 && onScreen(c), J(c));
+
+      // EARLY ACTS: she does something before the page has finished opening. Each from the Desk again
+      const early = async (wait, act) => {
+        await ev("location.hash = '#/'; true"); await soft("!!document.querySelector('.wz-arrival')"); await sleep(500);
+        await ev(`window.__wzTwTrace.length = 0; location.hash = '#/page/${id}'; true`);
+        await soft("!!document.querySelector('.forward-only-editor')");
+        await sleep(wait);
+        const before = await ev(READ);
+        await act();
+        await sleep(2000); await settle();
+        return { before, after: await ev(READ) };
+      };
+      const typed = (r) => !!r.after && !!r.before && r.after.chars >= r.before.chars + 6;
+      const d = await early(150, async () => { await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true"); await app.typeKeys(' and on'); });
+      ok(`O4 ${tag}: she types 150 ms after the page appears: the words land and the writing line is inside the window`, typed(d) && onScreen(d.after), J({ lineBefore: d.before && d.before.bottom, ...d.after }));
+      const e = await early(150, async () => { const x = Math.round(arm.w / 2), y = Math.round(arm.h * 0.4); await app.mouseMove(x, y); await app.mouseDown(x, y); await app.mouseUp(x, y); });
+      ok(`O5 ${tag}: she presses on the page 150 ms after it appears: the writing line is inside the window`, onScreen(e.after), J({ lineBefore: e.before && e.before.bottom, ...e.after }));
+      // polish10-hint's own steps (the reads this bug came from): 900 ms, the caret put at the end by the fixture (a focus that may scroll), then typing
+      const f = await early(900, async () => { await ev("(() => { const ed = document.querySelector('.forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()"); await app.typeKeys(' and on'); });
+      ok(`O6 ${tag}: polish10-hint's steps (a fixture focus and caret at 900 ms, then typing): the writing line is inside the window`, typed(f) && onScreen(f.after), J({ lineBefore: f.before && f.before.bottom, ...f.after }));
     }
   }
   ok('MUT: the judge goes RED on a line below the window', !onScreen({ top: 900, bottom: 940, vh: 768 }) && onScreen({ top: 400, bottom: 440, vh: 768 }));
