@@ -186,6 +186,12 @@
    ========================================================================================================================================== */
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
 :root[data-machina2][data-theme='machina'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
+/* #133: Machina's Front menu keeps its width (200 px by the chrome scale, less its tab) over the page's margin; its tab stays on the drawer's rail side [desk-frame §24] */
+@media (max-width:1600px){
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor{ --wz-front-over-w:calc(200px * var(--wz-chrome-k, 1) - 16px); }
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:16px; right:auto; }
+  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
+}
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }

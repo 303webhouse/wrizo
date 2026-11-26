@@ -546,6 +546,13 @@
   .desk-frame-stage--prose .wz-cascade-survey[data-docked='true']{ max-width:var(--wz-rail-room, 300px); }
   .desk-frame-stage--prose .wz-cascade-panel[data-category]:not([data-visible='false']){ max-width:var(--wz-rail-room, 300px); }
 }
+/* #133: the Front menu keeps the width it had before the page grew (--wz-front-over-w, each theme's own), lying over the page's left margin, never its text (4 px short of it: --wz-front-room, measured by Sliver.tsx) and never narrower than its own box. Not in the Typewriter zoom (§12 is that one). Here the panel grows rightward past its tab, so the open tab moves with it [desk-frame §24] */
+@media (max-width:1600px){
+  .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor{ --wz-front-over-w:184px; }
+  .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver{ --wz-front-w:max(calc(100% - 16px), min(var(--wz-front-over-w), var(--wz-front-room, 0px))); }
+  .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:0; right:auto; width:var(--wz-front-w); }
+  .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px - var(--wz-front-w)); }
+}
 /* #133: the Back menu's tab leaves the page's edge with a drawer that lies over it (Tutor.tsx writes --wz-over-travel); Arbor and Machina name their own rule [desk-frame §23] */
 .desk-frame-stage--prose .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* SC1 S4 — the exact mirror of `.desk-frame-sliver-anchor--screenplay` (see

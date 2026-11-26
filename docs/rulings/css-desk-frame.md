@@ -769,3 +769,12 @@ Wrizors' rail note (arbor-reorg-pass-1.md section 4: stop the pop-out short of t
 chrome scale) and lies over the page's right margin. Its opener cannot stay on the page's edge, under the drawer: in Arbor and Machina it
 travels to the drawer's outer edge, as always; elsewhere it stands just off the drawer's inner edge. Tutor.tsx writes the distance as
 --wz-over-travel.
+
+## desk-frame §24
+
+#133 (the regression the final frames showed, Nov 25; Fable's order: a panel opens "over the page's edge, never resizing"). At 1600 and
+narrower the bigger page left less room on its left and the Front menu narrowed to fit: Machina cut "Screenplay", "Outline" and "Title
+Page". It now keeps its earlier width (Arbor 264 px, Flux 184, Machina 200 by the chrome scale less its 16 px tab) and lies over the
+page's left margin, stopping 4 px short of its text and never narrower than its own box. The room to the text is measured
+by Sliver.tsx (--wz-front-room): a percentage in the stylesheet's own overlap term resolves against the wrong box where it is used. In Arbor and Machina its tab stays on the rail
+side; elsewhere the drawer grows past the tab, so the open tab moves out with it. The Typewriter zoom keeps §12.

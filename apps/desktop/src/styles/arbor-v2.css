@@ -626,6 +626,12 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
 :root[data-arbor2][data-theme='plateau'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
+/* #133: Arbor's Front menu keeps its 264 px over the page's margin; its tab stays on the drawer's rail side [desk-frame §24] */
+@media (max-width:1600px){
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor{ --wz-front-over-w:264px; }
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:16px; right:auto; }
+  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
+}
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
