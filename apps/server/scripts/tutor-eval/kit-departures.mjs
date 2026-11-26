@@ -12,9 +12,18 @@ export const SHIPPED_SAFETY_CLAUSE = `and reply with this one marker only, nothi
 export const KIT_QUOTE_RULE = 'Quote at most 8 of her words to locate a place.';
 export const SHIPPED_QUOTE_RULE = 'Quote at most 8 of her words in a row to locate a place,\n   with or without quotation marks. For a longer sentence, quote only part of it.';
 
+//   THE THIRD (TUTOR-B, Nov 25, M3): with thinking on, 13 of the live run's replies ran 122 to 180 words against "120 words at most". The server ships a tighter line: a number to aim for, what the 120 counts
+//   (the check counts every line but the "Read:" line), and what to do when there is more to say. The limits themselves (120, and 200 for explaining a concept) are the kit's.
+export const KIT_LENGTH_RULE = '120 words at most. 200 when explaining a concept.';
+export const SHIPPED_LENGTH_RULE = 'Aim for 90 words; never more than 120, counting every line but the "Read:" line.\nWhen there is more to say, keep what matters most and leave the rest out.\nExplaining a concept may run to 200.';
+
 // the kit's blocks with the departures applied; throws if the kit's text no longer holds a place they edit
 export function withDepartures(blocks) {
-  if (!blocks.base.includes(KIT_SAFETY_CLAUSE)) throw new Error('the kit text no longer holds the place the departure edits');
-  if (!blocks.base.includes(KIT_QUOTE_RULE)) throw new Error('the kit text no longer holds the place the departure edits');
-  return { ...blocks, base: blocks.base.replace(KIT_SAFETY_CLAUSE, () => SHIPPED_SAFETY_CLAUSE).replace(KIT_QUOTE_RULE, () => SHIPPED_QUOTE_RULE) };
+  const edits = [[KIT_SAFETY_CLAUSE, SHIPPED_SAFETY_CLAUSE], [KIT_QUOTE_RULE, SHIPPED_QUOTE_RULE], [KIT_LENGTH_RULE, SHIPPED_LENGTH_RULE]];
+  let base = blocks.base;
+  for (const [kit, shipped] of edits) {
+    if (!base.includes(kit)) throw new Error('the kit text no longer holds the place the departure edits');
+    base = base.replace(kit, () => shipped);
+  }
+  return { ...blocks, base };
 }
