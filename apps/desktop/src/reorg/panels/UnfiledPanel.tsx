@@ -20,7 +20,7 @@ import { useTheme } from '../../store/theme';
 const fill = (s: string, k: string, v: string | number): string => s.replace(`{${k}}`, String(v));
 
 function titleOf(e: JournalEntry, t: (k: DeskTermId) => string): string {
-  if (!e.text.trim()) return (e.strokes?.length ?? 0) > 0 ? t('reorgSketch') : e.pageType === 'board' ? t('reorgUntitledBoard') : t('reorgUntitled');
+  if (!e.text.trim()) return e.pageType !== 'board' && (e.strokes?.length ?? 0) > 0 ? t('reorgSketch') : e.pageType === 'board' ? t('reorgUntitledBoard') : t('reorgUntitled');
   return firstLine(e.text).slice(0, 60);
 }
 
