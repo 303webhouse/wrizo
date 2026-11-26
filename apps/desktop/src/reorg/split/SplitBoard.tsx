@@ -3,6 +3,7 @@ import type { Box, JournalEntry, StoredFace } from '../../types';
 import { useDeskLexicon } from '../../store/deskLexicon';
 import { generateId, getJournalEntry, getJournalEntryIncludingDeleted, getSystemKind, saveBoardBoxes, stashDeletedBoxes } from '../../store/persistence';
 import { liveBoxes } from '../../store/boxTombstones';
+import { withCardText } from '../../store/textMarks';
 import { homeViewOf, kindOf, viewsOf, type BoardView } from '../../store/boardKind';
 import { cardTypeStyle, ensureFaceLoaded } from '../../store/fontRoster';
 import { promptToShow } from '../../store/guided';
@@ -102,7 +103,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
     p.changed = false;
     const all = storedLive();
     if (!all.some((b) => b.id === p.id && b.text !== p.text)) return;
-    write(all.map((b) => (b.id === p.id ? { ...b, text: p.text } : b)));
+    write(all.map((b) => (b.id === p.id ? withCardText(b, p.text) : b)));
   };
   const flushRef = useRef(flushText);
   flushRef.current = flushText;
@@ -118,7 +119,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
       if (!text.trim()) return;
       const before = storedLive();
       pushUndo(before);
-      write([...before, { ...f, text }]);
+      write([...before, withCardText(f, text)]);
       madeRef.current = f.id;
       freshRef.current = null;
       setFresh(null);
@@ -357,7 +358,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
   const pending = textRef.current;
   const drawn = boxes.filter((b) => DRAWN.has(b.kind)).concat(fresh ? [fresh] : []).map((b) => {
     let x = b;
-    if (pending && pending.id === b.id) x = { ...x, text: pending.text };
+    if (pending && pending.id === b.id) x = withCardText(x, pending.text);
     if (ghost && ghost.kind === 'move' && ghost.ids.includes(b.id)) x = { ...x, x: b.x + ghost.dx, y: b.y + ghost.dy };
     if (ghost && ghost.kind === 'resize' && ghost.box === b.id) x = { ...x, w: ghost.w, h: ghost.h };
     return x;
