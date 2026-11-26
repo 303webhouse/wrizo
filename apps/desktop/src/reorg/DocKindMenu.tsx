@@ -3,8 +3,8 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { JournalEntry, StyleGuide } from '../types';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { flushNow, subscribe } from '../store/persistence';
-import { applyPreset, applyStyleGuide, addSpecialPart } from './docKindActs';
-import { PRESETS, STYLES, specialName, type DocStyle, type PresetGroup, type SpecialKind } from './docKinds';
+import { applyPreset, applyQuickPreset, applyStyleGuide, addSpecialPart } from './docKindActs';
+import { PRESETS, QUICK_MAX, STYLES, parseQuickNames, specialName, type DocStyle, type PresetGroup, type SpecialKind } from './docKinds';
 import { PRESET_NOTES } from './presetNotes';
 import { PresetNoteButton } from './PresetNote';
 import { styleGuideOf } from './docSettings';
@@ -39,12 +39,16 @@ export function DocKindMenu({ entry, host, beforeWrite }: { entry: JournalEntry;
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [sub, setSub] = useState<Item | null>(null);
+  // QUICK PRESET (item 14): the one field's text lives here and nowhere else (never stored); it is gone when the Presets list closes
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickText, setQuickText] = useState('');
   const wrap = useRef<HTMLDivElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
   const screenplay = entry.pageType === 'script' || entry.pageSettings?.kind === 'screenplay';
   const kindWord = t(screenplay ? 'reorgDocKindScreenplay' : 'reorgDocKindStandard');
   const close = (focus: boolean) => { setOpen(false); setSub(null); if (focus) toggle.current?.focus(); };
 
+  useEffect(() => { if (!open || sub !== 'presets') { setQuickOpen(false); setQuickText(''); } }, [open, sub]);
   useEffect(() => {
     if (!open) return;
     const press = (e: PointerEvent) => { if (wrap.current && !wrap.current.contains(e.target as Node)) { setOpen(false); setSub(null); } };
@@ -103,6 +107,26 @@ export function DocKindMenu({ entry, host, beforeWrite }: { entry: JournalEntry;
               )}
               {sub === it && it === 'presets' && (
                 <div className="reorg-dockind-sub" data-doc-sub="presets">
+                  {/* QUICK PRESET (PRESETS-B item 14; words PROPOSED): the top of the list. Her own Part names, one per line, added the way a preset's are; the list is not kept. */}
+                  <button type="button" data-quick-preset="" aria-expanded={quickOpen ? 'true' : 'false'} onClick={() => setQuickOpen((o) => !o)}>{t('reorgQuickPreset')}</button>
+                  {quickOpen && (() => {
+                    const names = parseQuickNames(quickText);
+                    const add = () => { if (names.length) act(() => { applyQuickPreset(entry.id, quickText); }); };
+                    return (
+                      <div className="reorg-dockind-quick" data-quick-form="" role="group" aria-label={t('reorgQuickPreset')}>
+                        <label className="reorg-dockind-quick-label" htmlFor="reorg-quick-names">{t('reorgQuickPresetLabel')}</label>
+                        <textarea id="reorg-quick-names" className="reorg-dockind-quick-field" data-quick-names="" rows={4} autoFocus value={quickText} placeholder={t('reorgQuickPresetPlaceholder')}
+                          onChange={(e) => setQuickText(e.target.value)}
+                          onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); add(); } }} />
+                        <div className="reorg-dockind-quick-note" data-quick-note="">{t('reorgQuickPresetHint')}</div>
+                        <div className="reorg-dockind-quick-note" data-quick-count="" aria-live="polite">{names.length === QUICK_MAX ? t('reorgQuickPresetMax').replace('{n}', String(QUICK_MAX)) : t(names.length === 1 ? 'reorgQuickPresetOne' : 'reorgQuickPresetMany').replace('{n}', String(names.length))}</div>
+                        <div className="reorg-dockind-quick-act">
+                          <button type="button" data-quick-add="" disabled={names.length === 0} onClick={add}>{t('reorgQuickPresetAdd')}</button>
+                          <button type="button" data-quick-cancel="" onClick={() => setQuickOpen(false)}>{t('reorgQuickPresetCancel')}</button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {GROUPS.filter((g) => PRESETS.some((p) => p.group === g && (p.kind === 'screenplay') === screenplay)).map((g) => (
                     <div key={g} className="reorg-dockind-group" data-preset-group={g} role="group" aria-label={t(GROUP_WORD[g])}>
                       <div className="reorg-dockind-grouphead">{t(GROUP_WORD[g])}</div>
