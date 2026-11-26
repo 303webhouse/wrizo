@@ -16,6 +16,7 @@
 //   DROP      any step may be dropped (a noted one too), its scenes with it, to the Trash, with Undo
 //   TABS      Plan and Assets stand greyed beside the card: locked as the app locks a tab (aria-disabled, data-locked, out of the Tab order, a line saying why)
 //   THEMES    the spec's §8 words, Arbor, Flux and Machina (Machina's are the canonical ones)
+//   CHROME    Machina's walk wears its LIGHT chrome (Fable, Nov 25, 9:30 pm: the Wrizors' frames), the very values of machina-v2.css's light room, in both casts
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -28,7 +29,7 @@ const ts = require('typescript');
 const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
-const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts'];
+const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts', 'styles/21-guide-walk.css', 'styles/machina-v2.css'];
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
 // the board is read as the join (the module and every file in components/board/), as c13-10g-readers asks of any script that reads it
 SOURCES['components/BoardEditor.tsx'] = srcText(SRC, 'components/BoardEditor.tsx').split('\r\n').join('\n');
@@ -217,6 +218,21 @@ function suite(src) {
     const bad = Object.entries(TABLE).flatMap(([k, [m, ar, fl]]) => { const got = [word(canon, k), word(a, k), word(f, k)]; return J(got) === J([m, ar, fl]) ? [] : [[k, got]]; });
     return { pass: bad.length === 0, detail: J(bad.slice(0, 4)) };
   });
+  t('CHROME', () => {
+    const rules = (css) => new Map([...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => [m[1].trim(), new Map([...m[2].matchAll(/(--[a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})/g)].map((x) => [x[1], x[2].toUpperCase()]))]));
+    const room = rules(src['styles/machina-v2.css']), walk = rules(src['styles/21-guide-walk.css']);
+    const bad = [];
+    for (const [theirs, mine] of [
+      [":root[data-machina2][data-theme='machina'][data-machina2-room='light']", ":root[data-theme='machina'] .wz-walk"],
+      [":root[data-machina2][data-theme='machina'][data-cast='neutral'][data-machina2-room='light']", ":root[data-theme='machina'][data-cast='neutral'] .wz-walk"],
+    ]) {
+      const a = room.get(theirs), b = walk.get(mine);
+      if (!a || !b) { bad.push([mine, 'missing', !!a, !!b]); continue; }
+      for (const k of ['--chrome-surface', '--ink-900', '--ink-800', '--ink-border', '--ink-border-strong', '--text-hi', '--text-mid', '--text-low']) if (!a.get(k) || a.get(k) !== b.get(k)) bad.push([mine, k, a.get(k), b.get(k)]);
+      if (b.get('--accent-rest') !== a.get('--text-hi')) bad.push([mine, '--accent-rest', a.get('--text-hi'), b.get('--accent-rest')]);
+    }
+    return { pass: bad.length === 0, detail: J(bad.slice(0, 5)) };
+  });
   return R;
 }
 
@@ -239,6 +255,7 @@ const MUTANTS = [
 ];
 
 MUTANTS.push(
+  ['Machina\'s walk keeps the dark chrome', 'CHROME', sub('styles/21-guide-walk.css', '--chrome-surface:#F4F5F6;', '--chrome-surface:#23272B;')],
   ['a step with scenes turns into a heading', 'SCENES', sub(S, '&& !scened', '')],
   ['scenes may be nested twice', 'SCENES', sub(O, 'if (!parent || isScene(parent)) return boxes;', 'if (!parent) return boxes;')],
   ['any two shared names pick a structure', 'WHICH', sub('reorg/walk/structureOfPlan.ts', 'ENOUGH = 0.6', 'ENOUGH = 0.01')],
