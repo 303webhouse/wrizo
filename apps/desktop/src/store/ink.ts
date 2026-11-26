@@ -80,6 +80,16 @@ function token(name: string, fallback: string): string {
 
 const DEFAULT_INK_HEX = '#1A1206';
 
+// VISUAL (Fable, Nov 25: a stand-in until the Wrizors give light ink values) - a sheet is DARK when its own text colour is light, whatever the theme or the page tone made it; then the default ink is
+// that text colour. Read per sheet (the page tone never darkens a Board, so the root cannot answer). Nothing is saved: a stroke still says 'walnut'.
+export function darkSheetInk(sheet: Element | null): string | null {
+  if (!sheet || typeof getComputedStyle === 'undefined') return null;
+  const v = getComputedStyle(sheet).getPropertyValue('--ink-on-paper').trim();
+  const hex = /^#([0-9a-f]{6})$/i.exec(v);
+  const rgb = hex ? [0, 2, 4].map((i) => parseInt(hex[1].slice(i, i + 2), 16)) : (/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/i.exec(v)?.slice(1).map(Number) ?? null);
+  return rgb && (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255 > 0.5 ? v : null;
+}
+
 // the default pen reads the ink-stroke token, then the text ink, then a hard default; unchanged, so no old page moves a pixel [ink §2]
 export function inkColor(): string {
   if (typeof getComputedStyle === 'undefined') return '#1A1206';
@@ -99,9 +109,11 @@ export function inkColorOf(ink: StrokeInk): string {
 // build recognises, otherwise the theme's default pen (`fallback`, which every
 // caller supplies as inkColor()). An unrecognised name falls to the default
 // rather than to transparent — see the read-boundary note above.
-export function strokeColor(stroke: Stroke, fallback: string): string {
+export function strokeColor(stroke: Stroke, fallback: string, darkInk?: string | null): string {
   const hex = hexOf(stroke);
   if (hex) return hex;
+  // on a dark sheet the default ink (walnut, or none named) paints in the page's text colour (darkSheetInk below)
+  if (darkInk && (stroke.ink === undefined || stroke.ink === INKS[0] || !INKS.includes(stroke.ink as StrokeInk))) return darkInk;
   return INKS.includes(stroke.ink as StrokeInk) ? inkColorOf(stroke.ink as StrokeInk) : fallback;
 }
 
@@ -356,12 +368,13 @@ export function renderStroke(
   sheetW: number,
   color: string,
   lineWidth: number = strokeWidth(stroke),
+  darkInk?: string | null,
 ): void {
   const pts = stroke.points;
   if (!pts || pts.length === 0) return;
   ctx.save();
   // the stroke's own ink when it named one; an erase skips this (destination-out: only alpha matters) [ink §5]
-  const paint = stroke.eraser ? color : strokeColor(stroke, color);
+  const paint = stroke.eraser ? color : strokeColor(stroke, color, darkInk);
   const tip = tipOf(stroke);
   if (stroke.eraser) ctx.globalCompositeOperation = 'destination-out';
   ctx.lineJoin = 'round';
@@ -463,7 +476,7 @@ export function renderThumbnail(canvas: HTMLCanvasElement, strokes: Stroke[], si
   // Alpha and composite come along for free — they are renderStroke's, not a
   // second copy of the profile table living out here.
   for (const stroke of strokes) {
-    const lw = Math.max(0.4, (strokeWidth(stroke) / INK_LINE_WIDTH) * (1.3 / scale));
+    const lw = Math.max(0.4 / scale, (strokeWidth(stroke) / INK_LINE_WIDTH) * (1.3 / scale));   // the floor in screen px, not in units where the sheet is 1
     renderStroke(ctx, stroke, 1, ink, lw);
   }
   ctx.restore();

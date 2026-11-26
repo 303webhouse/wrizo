@@ -1615,7 +1615,7 @@ export function BoardEditor({ id }: { id: string }) {
     ? {
         instrument: { value: inkNow, onChange: setBoardInstrument },
         inkOptions: inkNow === 'ink'
-          ? { pen: boardPen, onPick: (n: Partial<InkPen>) => setBoardPen((p) => ({ ...p, ...n })), eraserArmed: boardEraser, onToggleEraser: () => setBoardEraser((a) => !a) }
+          ? { pen: boardPen, onPick: (n: Partial<InkPen>) => setBoardPen((p) => ({ ...p, ...n })), eraserArmed: boardEraser, onToggleEraser: () => setBoardEraser((a) => !a), sheet: () => boardInkRef.current ?? canvasRef.current }
           : undefined,
       }
     : {};

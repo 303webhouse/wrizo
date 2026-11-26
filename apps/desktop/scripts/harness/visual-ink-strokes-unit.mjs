@@ -5,6 +5,8 @@
 //   SIZE    `size` is the line's width in px, any size; out of range or not a number falls back to the nib
 //   HEX     `hex` (#RRGGBB) is the line's colour; anything else falls back to the named ink, then the default
 //   ALPHA   `alpha` thins the tip's own alpha (0.05 to 1); anything else is 1. The pencil's grain pass thins with it. An erase ignores all three
+//   DARK    on a dark sheet (her text is light) the default ink - walnut, or none - paints in the page's text colour; her own colour and the other desk inks are untouched; light sheets are as before
+//   THUMB   a thumbnail's floor is in screen px, so her relative weights show instead of every line becoming a blob
 //   HIT     a wide stroke is grabbed from as far away as it looks (hit-testing uses the same width)
 // Each law has a mutant (a text rewrite of ink.ts) that must land and turn its own check red.
 // Run: node scripts/harness/visual-ink-strokes-unit.mjs   (from apps/desktop; browserless: needs no box turn)
@@ -70,6 +72,24 @@ function suite(src) {
     const got = [I.strokeAt(wide, at.x, at.y, 1000), I.strokeAt(thin, at.x, at.y, 1000)];
     R.HIT = { pass: got[0] === 0 && got[1] === null, detail: J(got) };
   }
+  {
+    const sheet = (v) => { globalThis.getComputedStyle = () => ({ getPropertyValue: (n) => (n === '--ink-on-paper' ? v : '') }); const got = I.darkSheetInk ? I.darkSheetInk({}) : 'missing'; delete globalThis.getComputedStyle; return got; };
+    const reads = [sheet('#E8E8E5'), sheet(' #2B2014 '), sheet('rgb(232, 246, 250)'), sheet(''), I.darkSheetInk ? I.darkSheetInk(null) : 'missing'];
+    const on = (extra) => { const r = recorder(); I.renderStroke(r.ctx, { points: LINE, ...extra }, 1000, '#111111', undefined, '#E8E8E5'); return r.passes[0].strokeStyle; };
+    const got = [on({}), on({ ink: 'walnut' }), on({ ink: 'sea' }), on({ hex: '#2F7D4F' }), on({ ink: 'walnut', nib: 'broad' })];
+    R.DARK = { pass: J(reads) === J(['#E8E8E5', null, 'rgb(232, 246, 250)', null, null]) && J(got) === J(['#E8E8E5', '#E8E8E5', '#1A1206', '#2F7D4F', '#E8E8E5']), detail: J({ reads, got }) };
+  }
+  {
+    const widths = [];
+    let scale = 1;
+    const base = recorder();
+    const ctx = { ...base.ctx, setTransform() {}, clearRect() {}, translate() {}, save() {}, restore() {}, scale(x) { scale = x; }, stroke() { widths.push(this.lineWidth * scale); } };
+    globalThis.window = { devicePixelRatio: 1 };
+    I.renderThumbnail({ getContext: () => ctx }, [{ points: LINE, size: 2.8 }, { points: LINE.map((p) => ({ x: p.x, y: p.y + 0.2 })), size: 14 }], 100, '#111111');
+    delete globalThis.window;
+    const px = widths.map((w) => Math.round(w * 100) / 100);
+    R.THUMB = { pass: px.length === 2 && Math.abs(px[0] - 2.6) < 0.05 && Math.abs(px[1] - 13) < 0.05, detail: J(px) };
+  }
   return R;
 }
 
@@ -81,6 +101,8 @@ for (const [k, v] of Object.entries(real)) ok(k, v.pass, v.detail);
 const MUTANTS = [
   ['SIZE', 'return sizeOf(stroke) ?? NIB_WIDTHS', 'return NIB_WIDTHS'],
   ['HEX', 'const hex = hexOf(stroke);', 'const hex: string | null = null;'],
+  ['DARK', 'if (darkInk && ', 'if (false && '],
+  ['THUMB', '0.4 / scale', '0.4'],
   ['ALPHA', 'ctx.globalAlpha = TIP_ALPHA[tip] * alphaOf(stroke);', 'ctx.globalAlpha = TIP_ALPHA[tip];'],
 ];
 for (const [key, from, to] of MUTANTS) {

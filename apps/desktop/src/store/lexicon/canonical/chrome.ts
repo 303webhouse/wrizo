@@ -139,6 +139,8 @@ export const CANONICAL_CHROME = {
   inkSeeThrough: 'See-through',
   inkLastColour: 'Last colour',
   inkDrawOnBoard: 'Draw on a Board',
+  inkLoadFail: 'The drawing tools did not load.',
+  inkRetry: 'Retry',
   drawerPage: 'Pages', // ITEM word-diet, pages-rename bucket (a)
   // describePageHome's words, in the lexicon; pageHomeProject interpolates the place name [deskLexicon §30]
   pageHomeLoose: 'Unfiled',

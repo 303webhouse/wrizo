@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ERASER_WIDTH, clampDelta, groupBox, inkColor, renderStroke, strokeGroupAt, translateGroup } from '../store/ink';
+import { ERASER_WIDTH, clampDelta, darkSheetInk, groupBox, inkColor, renderStroke, strokeGroupAt, translateGroup } from '../store/ink';
 import type { Stroke, StrokeInk, StrokeNib, StrokeTip } from '../types';
+import { useInkKit } from './ink/inkKit';
 
 // the ink stratum renders in every mode; mode decides permission (edit in INK, inert in TEXT, movable in Draft and Revise); the sheet is the scroller's content wrapper, so ink scrolls with the text; routing lives on the sheet, never a pointer-events flip [InkStratum §1]
 
@@ -80,7 +81,8 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   const rect = paintBox(sheet);
   const dpr = window.devicePixelRatio || 1;
   const oy = inkOriginY(sheet);
-  const color = inkColor();
+  const dark = darkSheetInk(sheet);
+  const color = dark ?? inkColor();   // what the default ink paints as here (also what a repeat paint compares)
   // the backing store reaches the LOWEST stroke (not the page's foot: 739 x 22 400 at 5 000 words, 739 x 50 458 at 12 000, allocated and cleared on every Enter): below the ink there is nothing to hold. An erase adds nothing below the ink it rubs out.
   let low = 0;
   for (const st of strokes) { if (st.eraser) continue; for (const p of st.points) if (p.y > low) low = p.y; }
@@ -99,7 +101,7 @@ export function paintCommitted(canvas: HTMLCanvasElement | null, sheet: HTMLElem
   canvas.style.height = (cssH / (scale || 1)) + 'px';
   ctx.clearRect(0, 0, rect.width, cssH);
   ctx.save(); ctx.translate(0, oy);   // measured from the text [InkStratum §3]
-  for (const st of strokes) renderStroke(ctx, st, rect.width, color);
+  for (const st of strokes) renderStroke(ctx, st, rect.width, inkColor(), undefined, dark);
   ctx.restore();
   painted.set(canvas, { strokes, w: rect.width, dpr, oy, color, cssH });
 }
@@ -168,6 +170,14 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     return () => ro.disconnect();
   }, [sheetRef]);
 
+  // the page tone or the theme can change under a drawing: paint it again in this sheet's colours
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined') return;
+    const mo = new MutationObserver(() => paintCommitted(committedRef.current, sheetRef.current, strokesRef.current));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-page', 'data-theme', 'data-arbor2-room', 'data-machina2-room', 'data-cast'] });
+    return () => mo.disconnect();
+  }, [sheetRef]);
+
   // ITEM 126 B4 — a mode switch must not leave a group armed: the writer who
   // returns to Draft should find the page at rest, not mid-gesture.
   useEffect(() => { setArmed(null); }, [permission]);
@@ -178,6 +188,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
     if ((!eraserArmed || permission !== 'edit') && ringRef.current) ringRef.current.style.display = 'none';
   }, [eraserArmed, permission]);
 
+  const kit = useInkKit();
   // capture attaches only under `edit`; capture-phase on the sheet, an ancestor, so it runs before ForwardOnlyEditor's pen seal and stops it only while the page is inking [InkStratum §5]
   // VISUAL 1a.1: the listeners themselves live in ink/inkCapture.ts, fetched on the first INK open (a failed fetch tries again at the next one)
   useEffect(() => {
@@ -194,7 +205,7 @@ export function InkStratum({ permission, sheetRef, strokes, onCommit, pen, erase
       })
       .catch(() => { /* the next INK open tries again */ });
     return () => { gone = true; detach?.(); };
-  }, [permission, sheetRef]);
+  }, [permission, sheetRef, kit]);
 
   // the move attaches only under `movable` (Draft and Revise), never "whenever not drawing", which would reach Free Write's TEXT half; it listens on the sheet so the text keeps every click [InkStratum §12]
   useEffect(() => {

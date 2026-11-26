@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react';
-import { inkColor, nearestNib, nibWidth, renderStroke } from '../../store/ink';
+import { darkSheetInk, inkColor, nearestNib, nibWidth, renderStroke } from '../../store/ink';
 import type { Stroke, StrokePoint } from '../../types';
 import { inkOriginY, paintBox, paintCommitted, syncCanvas, type InkPen } from '../InkStratum';
 
@@ -82,7 +82,7 @@ export function attachCapture(h: CaptureHost): () => void {
     // canvas, so the crossing darkens on commit rather than mid-stroke. The
     // Journal's two-canvas split is what buys the flicker-free preview, and
     // that tradeoff is worth one frame of a marker looking slightly light.
-    ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, box.width, inkColor()); ctx.restore();
+    ctx.save(); ctx.translate(0, oy); renderStroke(ctx, stroke, box.width, inkColor(), undefined, darkSheetInk(sheet)); ctx.restore();
   };
   const clearActive = () => {
     const canvas = activeRef.current;

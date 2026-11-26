@@ -20,7 +20,7 @@ export type DeskTermId =
   | 'inkNibFine' | 'inkNibRegular' | 'inkNibBroad'
   | 'inkEraser' | 'inkWalnut' | 'inkIron' | 'inkOxblood' | 'inkSea'
   // VISUAL 1a.1: the INK tab's face and Studio (ink/InkTab.tsx); plain words in all three themes until Nick and the Wrizors choose (VISUAL's ruling log, Nov 23)
-  | 'inkBrush' | 'inkSizeSmaller' | 'inkSizeLarger' | 'inkStudio' | 'inkGroupDraw' | 'inkRowBrushes' | 'inkRowColour' | 'inkSize' | 'inkSeeThrough' | 'inkLastColour' | 'inkDrawOnBoard'
+  | 'inkBrush' | 'inkSizeSmaller' | 'inkSizeLarger' | 'inkStudio' | 'inkGroupDraw' | 'inkRowBrushes' | 'inkRowColour' | 'inkSize' | 'inkSeeThrough' | 'inkLastColour' | 'inkDrawOnBoard' | 'inkLoadFail' | 'inkRetry'
   // CD1 S2/S6 — the sliver's goal block (components/Sliver.tsx's foot). The
   // sliver's own keyboard shortcut (Ctrl/Cmd+/, SLIVER_SHORTCUT_LABEL in
   // that file) is a chord constant, not user-facing prose, so it does NOT

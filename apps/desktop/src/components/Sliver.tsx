@@ -89,7 +89,7 @@ export type SliverType = TypeControlProps;
 
 /** VISUAL 1a.3 - a surface that can be drawn on: its text/ink choice, and the INK tab's controls while it is in ink. A host without an ink layer passes neither. */
 export interface SliverInk {
-  instrument?: { value: LeftTab; onChange: (next: LeftTab) => void };
+  instrument?: { value: LeftTab; onChange: (next: LeftTab) => void; /** she closed the drawer herself with the pen down: give her caret back */ onPenDown?: () => void };
   inkOptions?: InkOpts;
 }
 
@@ -229,9 +229,13 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
     wasOpenRef.current = open;
     const byHand = byHandRef.current;
     byHandRef.current = false;
-    if (!was || open || byHand) return;
-    // another panel took the drawer's place: in BUILD, EDIT and on a Board the pen goes down with it, or the page would stay in ink with its menu gone and her typing would go nowhere. Free Write is as it was.
-    if ((content.kind === 'draft' || content.kind === 'revise' || content.kind === 'board') && content.instrument?.value === 'ink') content.instrument.onChange('text');
+    if (!was || open) return;
+    // the drawer closed, by her own hand or by another panel taking its place: in BUILD, EDIT and on a Board the pen goes down with it (Fable, Nov 25: "keys must never go nowhere"), or the page
+    // would stay in ink with its menu gone. Her own close also gives her caret back; another panel keeps the focus it took. Free Write is as it was.
+    if ((content.kind === 'draft' || content.kind === 'revise' || content.kind === 'board') && content.instrument?.value === 'ink') {
+      content.instrument.onChange('text');
+      if (byHand) content.instrument.onPenDown?.();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

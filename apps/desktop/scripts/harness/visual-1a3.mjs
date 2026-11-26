@@ -66,6 +66,35 @@ await withHarness(async (app) => {
   const narrow = await run(app, "return await window.__vi3.buildPage('machina', 'Words.');");
   add(await run(app, `return await window.__vi3.yields(${JSON.stringify(narrow)});`));
 
+  // ---- she closes the drawer herself with the pen down, then types (Fable, Nov 25, 6:35 pm: "keys must never go nowhere: typing lands, always") ----
+  await boot(app);
+  const own = await run(app, "return await window.__vi3.buildPage('machina', 'One two three four.');");
+  await sleep(1500);
+  await run(app, 'window.__vi3.caretAt(8); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();');
+  await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
+  await sleep(900);
+  await app.typeKeys('XYZ ');
+  await sleep(2800);
+  const byGrip = await stored(app, own);
+  ok('K1: closed by the grip with the pen down, then typed with real keys: every character is stored, at the caret she left', byGrip.text === 'One two XYZ three four.', byGrip);
+  await app.evalJs("document.querySelector('.wz-sliver-grip').click()");
+  await sleep(900);
+  await run(app, 'await window.__vi3.inkOnPaper();');
+  await app.keyCombo('/');
+  await sleep(900);
+  const shutByKeys = await run(app, 'return window.__vi3.shown();');
+  await app.typeKeys('QRS ');
+  await sleep(2800);
+  const byKeys = await stored(app, own);
+  ok('K2: closed by Ctrl+/ with the pen down, then typed: the pen is down and every character is stored', shutByKeys.open === false && shutByKeys.paper !== 'ink' && byKeys.text === 'One two XYZ QRS three four.', { shutByKeys, byKeys });
+  await app.keyCombo('/');
+  await sleep(900);
+  await run(app, 'await window.__vi3.inkOnPaper();');
+  await app.typeKeys('k');
+  await sleep(2800);
+  const withTab = { ...(await stored(app, own)), ...(await run(app, 'return window.__vi3.shown();')) };
+  ok('K3: with the drawer open and the pen down, a typed letter puts the pen down and lands in her words', withTab.text === 'One two XYZ QRS kthree four.' && withTab.paper !== 'ink', withTab);
+
   // ---- real keys: draw, type, the door, the Board, back, type ----
   await boot(app);
   const id = await run(app, "return await window.__vi3.buildPage('machina', 'Her first line.');");
@@ -93,6 +122,36 @@ await withHarness(async (app) => {
   const b = await stored(app, id);
   ok('T2: and typing lands at her caret - not one word missing', b.text === 'Her first line. And the second. Third, after the Board.', b);
   ok('T3: the Board kept the drawing', (await stored(app, bid)).strokes === 1, await stored(app, bid));
+
+  // ---- a dark sheet: the default ink is the page's text colour (a stand-in, Fable Nov 25); nothing saved changes ----
+  for (const theme of ['machina', 'flux']) {
+    await boot(app);
+    const dark = await run(app, `window.wrizoThemePrefs.set({ page: 'dark' }); const id = await window.__vi3.buildPage(${JSON.stringify(theme)}, 'Words.'); window.wrizoThemePrefs.set({ page: 'dark' }); await window.__vi.sleep(2200); await window.__vi3.inkOnPaper(); return id;`);
+    await app.penStroke('.wz-ink-sheet', [{ x: 0.3, y: 0.5 }, { x: 0.6, y: 0.5 }]);
+    await sleep(900);
+    const page = await run(app, `return window.__vi3.sheetInk(${JSON.stringify(dark)}, '.ink-committed');`);
+    ok(`N1 [${theme}]: on a dark page the default ink paints light, the walnut chip matches, and the stroke still says walnut`, page.stored === 'walnut' && page.lum > 0.6 && page.swatchLum > 0.6, page);
+    await run(app, "window.wrizoThemePrefs.set({ page: 'light' }); await window.__vi.sleep(900);");
+    const relit = await run(app, "return window.__vi3.painted('.ink-committed');");
+    ok(`N2 [${theme}]: turning the page light paints the same stroke dark again, without a reload`, /rgb\(\s*2\d, 1\d, \d\)/.test(String(relit)), relit);
+  }
+
+  // ---- the ink code does not arrive: one line and a Retry, never an empty tab ----
+  await boot(app);
+  const lost = await run(app, "return await window.__vi3.buildPage('machina', 'Words.');");
+  await app.cdp('Network.enable');
+  await app.cdp('Network.setCacheDisabled', { cacheDisabled: true });
+  await app.cdp('Network.setBlockedURLs', { urls: ['*InkTab-*'] });
+  await run(app, "await window.__vi3.tab('ink'); await window.__vi.sleep(2500);");
+  const failed = await run(app, "return { line: (document.querySelector('.wz-ink-fail') || {}).innerText || '', face: !!document.querySelector('.wz-ink-face'), retry: !!document.querySelector('.wz-ink-retry') };");
+  ok('O1: when the drawing code cannot be fetched the tab says so in one line and offers Retry', /did not load/.test(failed.line) && failed.retry && !failed.face, failed);
+  await app.cdp('Network.setBlockedURLs', { urls: [] });
+  await app.evalJs("document.querySelector('.wz-ink-retry').click()");
+  await run(app, "await window.__vi3.until(() => !!document.querySelector('.wz-ink-face')); await window.__vi.sleep(1200);");
+  await app.penStroke('.wz-ink-sheet', [{ x: 0.3, y: 0.5 }, { x: 0.6, y: 0.5 }]);
+  await sleep(900);
+  ok('O2: Retry brings the tab in and the next stroke is drawn and stored', (await stored(app, lost)).strokes === 1, await stored(app, lost));
+  await app.cdp('Network.setCacheDisabled', { cacheDisabled: false });
 
   // ---- the Board, three themes ----
   for (const theme of ['machina', 'plateau', 'flux']) {

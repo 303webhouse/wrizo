@@ -73,3 +73,7 @@
 /* where the margin beside a Board is too narrow for the INK tab (Arbor keeps the Board's width), the drawer lies over the Board at its full width, as the Typewriter's drawer does over the page
    (Nick, Nov 8: where the margin is too narrow, drawers overlay). Only while the INK tab is out. */
 :root[data-theme='plateau'] .desk-frame-stage.desk-frame-stage--board .wz-sliver-panel:has(.wz-ink-tab){ left:16px; right:auto !important; width:max(calc(100% - 16px), 200px); }
+
+/* the ink code did not arrive: one plain line and a Retry, never an empty tab */
+.wz-ink-fail{ display:flex; flex-direction:column; align-items:flex-start; gap:8px; font-size:12px; line-height:1.5; color:var(--text-mid); }
+.wz-ink-retry{ border-color:var(--ink-border-strong); }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { InkStratum, InkStratumProps } from '../InkStratum';
+import { useInkKit } from './inkKit';
 
 // VISUAL 1a.1 - WHAT LOADS (Fable, Nov 25): the painter (InkStratum) loads where a page has saved ink; the stroke input loads on the first INK open (InkStratum asks for it); a page with
 // no ink and no open INK loads neither. This is the part in the first download: until the painter is needed it draws the stratum's own blank layers, so the sheet's DOM is as it always was.
@@ -14,6 +15,7 @@ export function InkLayer(props: InkStratumProps) {
   const [needed, setNeeded] = useState(wanted);
   if (wanted && !needed) setNeeded(true);
   const [Painter, setPainter] = useState<typeof InkStratum | null>(() => loaded);
+  const kit = useInkKit();   // a Retry in the tab tries the painter again too
 
   // INK opened: fetch the stroke input ALONGSIDE the painter, not after it, so the gap before her first stroke can be drawn is one request, not two
   useEffect(() => {
@@ -27,7 +29,7 @@ export function InkLayer(props: InkStratumProps) {
       .then((m) => { loaded = m.InkStratum; if (alive) setPainter(() => m.InkStratum); })
       .catch(() => { /* tried again when the permission changes */ });
     return () => { alive = false; };
-  }, [needed, Painter, props.permission]);
+  }, [needed, Painter, props.permission, kit]);
 
   if (needed && Painter) return <Painter {...props} />;
   return (

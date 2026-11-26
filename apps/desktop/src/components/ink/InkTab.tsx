@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
-import { INKS, NIBS, SIZE_MAX, SIZE_MIN, TIPS, nibWidth } from '../../store/ink';
+import { INKS, NIBS, SIZE_MAX, SIZE_MIN, TIPS, darkSheetInk, nibWidth } from '../../store/ink';
 import { isHexColour } from '../../reorg/parts';
 import { customVars, inkOn } from '../../reorg/colourScheme';
 import type { StrokeInk, StrokeNib, StrokeTip } from '../../types';
@@ -20,6 +20,8 @@ export interface InkOpts {
   onToggleEraser: () => void;
   /** VISUAL 1a.3 - a Page in BUILD and EDIT only: the quiet door at Studio's foot, to this Doc's Board. Absent everywhere else. */
   onDrawOnBoard?: () => void;
+  /** the sheet she is drawing on, so a chip shows the colour the stroke will have there (a dark sheet's default ink) */
+  sheet?: () => Element | null;
 }
 
 type Row = 'brushes' | 'colour';
@@ -81,6 +83,8 @@ export function InkTab({ opts }: { opts: InkOpts }) {
   const lineRef = useRef<HTMLDivElement>(null);
   const brushRef = useRef<HTMLButtonElement>(null);
   const { pen } = opts;
+  const dark = darkSheetInk(opts.sheet?.() ?? null);
+  const chip = (ink: StrokeInk) => (dark && ink === INKS[0] ? dark : `var(--ink-${ink})`);   // the chip and the stroke never disagree
   const list = brushList(pen.tip, recent);
 
   // each brush keeps its own size and see-through while she is here: the one in her hand is remembered as she leaves it, and the one she picks comes back as she left it
@@ -158,7 +162,7 @@ export function InkTab({ opts }: { opts: InkOpts }) {
                 role="radio"
                 /* The swatch paints from the THEME TOKEN, never a literal — the same var() the renderer resolves, so the chip and the stroke can never disagree about what "oxblood" means. */
                 className={`mode-swatch wz-ink-swatch${!pen.hex && pen.ink === ink ? ' active' : ''}`}
-                style={{ background: `var(--ink-${ink})` }}
+                style={{ background: chip(ink) }}
                 aria-checked={!pen.hex && pen.ink === ink}
                 aria-label={t(INK_TERM[ink])}
                 title={t(INK_TERM[ink])}
@@ -245,7 +249,7 @@ export function InkTab({ opts }: { opts: InkOpts }) {
               <div className="wz-ink-colours" role="radiogroup" aria-label={t('inkRowColour')}>
                 {INKS.map((ink) => (
                   <button key={ink} type="button" role="radio" className="wz-ink-colour" aria-checked={!pen.hex && pen.ink === ink} aria-label={t(INK_TERM[ink])} onClick={() => pickInk(ink)}>
-                    <span className="wz-ink-colour-dot" style={{ background: `var(--ink-${ink})` }} aria-hidden="true" />
+                    <span className="wz-ink-colour-dot" style={{ background: chip(ink) }} aria-hidden="true" />
                     <span>{t(INK_TERM[ink])}</span>
                   </button>
                 ))}

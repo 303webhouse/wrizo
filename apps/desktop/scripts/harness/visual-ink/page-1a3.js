@@ -85,11 +85,20 @@
     await tab('ink');
     await until(() => !!q('.wz-ink-face'));
     await sleep(400);
+    // PARKED - SUPERSEDED by Fable, Nov 25, 6:35 pm ("when she closes the drawer herself, the pen goes down too. Keys must never go nowhere"). The original, verbatim:
+    //   grip().click();
+    //   await sleep(700);
+    //   ok('P11: closing the drawer herself keeps the pen (as Free Write), the grip showing it', !open() && paper() === 'ink' && !!q('.wz-sliver-grip-mark[data-instrument="ink"]'), { open: open(), paper: paper() });
+    //   grip().click();
+    //   await sleep(700);
     grip().click();
     await sleep(700);
-    ok('P11: closing the drawer herself keeps the pen (as Free Write), the grip showing it', !open() && paper() === 'ink' && !!q('.wz-sliver-grip-mark[data-instrument="ink"]'), { open: open(), paper: paper() });
+    ok('P11 successor: closing the drawer herself puts the pen down too - no ink on the paper, no pen on the grip, and her caret is back in her words', !open() && paper() !== 'ink' && !q('.wz-sliver-grip-mark[data-instrument="ink"]') && !!document.activeElement && document.activeElement.classList.contains('forward-only-editor'), { open: open(), paper: paper(), focus: document.activeElement && document.activeElement.className });
     grip().click();
     await sleep(700);
+    await tab('ink');
+    await until(() => !!q('.wz-ink-face'));
+    await sleep(300);
     const docs = all('.desk-frame-strip button').find((b) => b.textContent.trim() === 'Docs');
     if (docs) docs.click();
     await sleep(1200);
@@ -185,5 +194,32 @@
 
   const readBoard = (boardId) => { const e = entry(boardId); return { strokes: (e && e.strokes || []).length, boxes: (e && e.boxes || []).length, painted: (() => { const c = q('.wz-board-ink-sheet .ink-committed'); return c ? [c.width, c.height] : null; })() }; };
 
-  window.__vi3 = { yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
+  /** Put the caret after the words' `n`th character, as a writer's click would. */
+  const caretAt = (n) => {
+    const ed = q('.forward-only-editor');
+    ed.focus();
+    const walk = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+    let left = n, node = walk.nextNode();
+    while (node && left > node.length) { left -= node.length; node = walk.nextNode(); }
+    const r = document.createRange();
+    if (node) r.setStart(node, left); else { r.selectNodeContents(ed); r.collapse(false); }
+    r.collapse(true);
+    getSelection().removeAllRanges();
+    getSelection().addRange(r);
+  };
+  const inkOnPaper = async () => { await tab('ink'); await until(() => !!q('.wz-ink-face')); await sleep(600); };
+  const shown = () => ({ paper: paper(), open: !!q('.wz-sliver-grip') && q('.wz-sliver-grip').getAttribute('aria-expanded') === 'true', focus: !!document.activeElement && document.activeElement.classList.contains('forward-only-editor') });
+
+  /** D-checks: the dark stand-in. Expects a BUILD page open on INK under Page: Dark. */
+  const lumOf = (css) => { const c = document.createElement('canvas'); c.width = c.height = 1; const g = c.getContext('2d'); g.fillStyle = css; g.fillRect(0, 0, 1, 1); const [r, gg, b] = g.getImageData(0, 0, 1, 1).data; return (0.2126 * r + 0.7152 * gg + 0.0722 * b) / 255; };
+  const painted = (selector) => { const c = q(selector); if (!c || c.width < 2) return null; const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let best = -1; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { best = i; break; } return best < 0 ? null : `rgb(${d[best]}, ${d[best + 1]}, ${d[best + 2]})`; };
+  const sheetInk = (id, selector) => {
+    const e = entry(id);
+    const s = (e && e.strokes && e.strokes[0]) || {};
+    const col = painted(selector);
+    const sw = q('.wz-ink-swatch[aria-label="Walnut"]');
+    return { stored: s.ink, painted: col, lum: col ? Math.round(lumOf(col) * 100) / 100 : null, swatchLum: sw ? Math.round(lumOf(getComputedStyle(sw).backgroundColor) * 100) / 100 : null };
+  };
+
+  window.__vi3 = { caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
 })();

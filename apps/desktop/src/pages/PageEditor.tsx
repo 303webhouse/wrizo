@@ -228,6 +228,7 @@ function PageEditorView({ id }: { id: string }) {
   const [inkPen, setInkPen] = useState<InkPen>(INK_DEFAULT_PEN);
   const [eraserArmed, setEraserArmed] = useState(false);
   const inkSheetRef = useRef<HTMLDivElement>(null);
+  const inkCaretRef = useRef<number | null>(null);   // VISUAL 1a.3: where her caret was when she left the words (read at blur, never on a keystroke)
 
   // what this mode lets the writer do to the page's ink, derived from mode and instrument, never stored: Free Write is `edit` in INK and `inert` in TEXT; Draft and Revise are `movable`. The ternary reaches `movable` only past `mode === 'journal'`, so Free Write can never acquire it by accident. [PageEditor §3]
   // VISUAL 1a.3: BUILD and EDIT have an INK tab in the reorg's Front menu. In the reorg SPRINT draws no menu, so it is never in ink (she could not get out), and the publishing view is words only
@@ -238,6 +239,31 @@ function PageEditorView({ id }: { id: string }) {
     instrumentNow === 'ink' ? 'edit' : mode === 'journal' ? 'inert' : 'movable';
   // VISUAL 1a.3: another stage, the publishing view or another page puts the pen down, so typing always comes back with her
   useEffect(() => { if (reorgFrontOn) setInstrument('text'); }, [mode, publishing, id, reorgFrontOn, framed]);
+  useEffect(() => { inkCaretRef.current = null; }, [mode, id]);
+  // her caret back in her words, where she left it (the end, if she had none)
+  const penDownToPage = () => {
+    const el = editorRef.current;
+    if (!el || !el.isConnected) return;
+    el.focus({ preventScroll: true });
+    setCaretOffset(el, inkCaretRef.current ?? editorPlainText(el).length, { preventScroll: true });
+  };
+  // VISUAL 1a.3 - TYPING LANDS, ALWAYS (Fable, Nov 25). In BUILD and EDIT with the pen down, a typed character puts the pen down and goes into her words (the focus moves before the key's own
+  // default act, so that very character lands). Fields keep their keys; a focused button keeps Space and Enter. Attached only while the pen is down, so nothing is on the typing path.
+  useEffect(() => {
+    if (!pageInk || instrumentNow !== 'ink') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || (e.key.length !== 1 && e.key !== 'Enter')) return;
+      const a = document.activeElement as HTMLElement | null;
+      const inWords = !!a?.classList.contains('forward-only-editor');
+      if (!inWords && a && (a.matches('input, textarea, select') || a.isContentEditable)) return;
+      if ((e.key === ' ' || e.key === 'Enter') && a?.matches('button, a, [role="button"], [role="tab"], [role="radio"]')) return;
+      setInstrument('text');
+      if (!inWords) penDownToPage();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageInk, instrumentNow]);
 
   // persist strokes, merging the LIVE text so a pending typed run is never clobbered (Free Write's text autosave is debounced). An unborn page has no row and a stroke is content: the row is written WITH the ink in one synchronous act (`birthWith`), never created empty first; an ink-only page is not empty. [PageEditor §4]
   const persistStrokes = (next: Stroke[]) => {
@@ -881,7 +907,7 @@ function PageEditorView({ id }: { id: string }) {
         onLensKey={applyLensKey}
         onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
         onFocus={() => setFocused(true)}
-        onBlur={() => { setFocused(false); flush(); }}
+        onBlur={() => { if (editorRef.current) inkCaretRef.current = getCaretOffset(editorRef.current) ?? inkCaretRef.current; setFocused(false); flush(); }}
         placeholder=""
         ariaLabel="Page writing surface"
         ariaDescribedBy={ESC_HINT_ID}
@@ -1143,9 +1169,10 @@ function PageEditorView({ id }: { id: string }) {
     eraserArmed,
     onToggleEraser: () => setEraserArmed(a => !a),
     onDrawOnBoard: mode === 'journal' ? undefined : openDrawOnBoard,
+    sheet: () => inkSheetRef.current,
   };
   const pageInkTab = pageInk
-    ? { instrument: { value: instrumentNow, onChange: setInstrument }, inkOptions: instrumentNow === 'ink' ? inkZone : undefined }
+    ? { instrument: { value: instrumentNow, onChange: setInstrument, onPenDown: penDownToPage }, inkOptions: instrumentNow === 'ink' ? inkZone : undefined }
     : {};
   const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
