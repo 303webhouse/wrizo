@@ -91,6 +91,11 @@
 :root[data-theme='flux'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; }
 :root[data-theme='machina'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; width:8px; height:14px; }
 
+/* MACHINA'S WALK WEARS ITS LIGHT CHROME (Fable, Nov 25, 9:30 pm: the Wrizors' frames draw it light; Flux's follows its skin and Arbor's its room, which the tokens already do): the LIGHT ROOM's own values from machina-v2.css,
+   set on the walk alone, in both casts. Nothing new: no colour that file does not already use. */
+:root[data-theme='machina'] .wz-walk{ --chrome-surface:#F4F5F6; --ink-900:#F4F5F6; --ink-800:#E6E8EA; --ink-border:#D2D6DA; --ink-border-strong:#9AA1A8; --text-hi:#3A4047; --text-mid:#3A4047; --text-low:#5E666E; --accent-rest:#3A4047; --help:#3F6183; --accent-door:#3F6183; }
+:root[data-theme='machina'][data-cast='neutral'] .wz-walk{ --chrome-surface:#F5F3EF; --ink-900:#F5F3EF; --ink-800:#E9E6E1; --ink-border:#D6D1C9; --ink-border-strong:#A09A91; --text-hi:#3B3833; --text-mid:#3B3833; --text-low:#5F5A53; --accent-rest:#3B3833; --help:#3F6183; --accent-door:#3F6183; }
+
 /* the way back, above the page */
 .wz-walk-chip{ position:fixed; z-index:60; font-family:var(--font-ui); font-size:12px; font-weight:600; padding:5px 12px; color:var(--text-hi); background:var(--chrome-surface); border:1px solid var(--ink-border-strong); border-radius:0; cursor:pointer; white-space:nowrap; }
 .wz-walk-chip:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
