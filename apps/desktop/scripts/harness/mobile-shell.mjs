@@ -29,7 +29,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---- the stand-in account ----------------------------------------------------------------------------------------------------------------------------------
 const COLLECTIONS = ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers'];
-const A = { who: 'main', offline: false, tick: 0, rows: Object.fromEntries(COLLECTIONS.map((c) => [c, new Map()])), rail: null };
+const A = { who: 'main', offline: false, asked: 0, wholeReads: 0, tick: 0, rows: Object.fromEntries(COLLECTIONS.map((c) => [c, new Map()])), rail: null };
 const stamp = () => new Date(Date.now() + (A.tick++ % 50)).toISOString();
 const put = (coll, row) => A.rows[coll].set(row.id, { row: JSON.parse(JSON.stringify(row)), at: stamp() });
 const rows = (coll) => [...A.rows[coll].values()].map((v) => v.row);
@@ -66,11 +66,13 @@ function serve() {
     if (p.startsWith('/auth/')) return A.who ? send(res, 200, { id: A.who, email: '', name: A.who }) : send(res, 401, { error: 'unauthorized' });
     if (p === '/api/sync') {
       const b = JSON.parse(body || '{}');
+      if (!b.lastSyncAt && b.pull !== false) A.wholeReads += 1;
       for (const c of COLLECTIONS) for (const r of b.push?.[c] ?? []) { const have = A.rows[c].get(r.id); if (!have || r.updatedAt > have.row.updatedAt) put(c, r); }
       const since = b.lastSyncAt;
       const pull = Object.fromEntries(COLLECTIONS.map((c) => [c, [...A.rows[c].values()].filter((v) => !since || v.at > since).map((v) => v.row)]));
       return send(res, 200, { serverTime: stamp(), pull: b.pull === false ? {} : pull, rejected: [] });
     }
+    if (p.startsWith('/api/card-held/')) { A.asked += 1; const id = p.slice('/api/card-held/'.length); return A.who ? send(res, 200, { held: rows('journalEntries').some((r) => (r.boxes || []).some((x) => x.id === id)) }) : send(res, 401, { error: 'unauthorized' }); }
     if (p === '/api/rail') return req.method === 'GET' ? send(res, 200, { rail: A.rail }) : send(res, 200, { rail: A.rail });
     if (p.startsWith('/api/')) return send(res, 404, { error: 'not found' });
     let file = path.join(DIST, p);
@@ -185,6 +187,12 @@ try {
     ok('TITLE a title alone is a note', cardsWithText('Only a title here').length === 1);
     await send('', 'no title, just this');
     ok('TITLE with no title her words are stored as typed', cardsWithText('no title, just this').length === 1);
+    await js("document.querySelector('[data-sheet-back]')?.click()");
+
+    // ASK (Fable, Nov 26): a send asks the account yes or no; it does not download it
+    await sleep(1500); A.wholeReads = 0; A.asked = 0;
+    await send('', 'asked, not downloaded');
+    ok('ASK a sent note downloads nothing of the whole account; the account is asked yes or no', cardsWithText('asked, not downloaded').length === 1 && A.wholeReads === 0 && A.asked >= 1, `whole-account downloads=${A.wholeReads} asked=${A.asked} copies=${cardsWithText('asked, not downloaded').length}`);
     await js("document.querySelector('[data-sheet-back]')?.click()");
 
     await goto('#/desk'); await click('.mc-plus');

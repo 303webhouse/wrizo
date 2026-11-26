@@ -16,6 +16,11 @@
 //   MB-STALE     the push failed, then the desk changed the Board: the resend still lands the Card on the account and keeps the desk's change
 //   MB-DENIED    the account never took it: the send rejects, so the note keeps waiting
 //   MB-OTHER     the phone's session is now another account: nothing of the note is sent
+// THE ONE QUESTION (Fable, Nov 26): GET /api/card-held/<id> answers { held } for her own account, so a sent note no longer downloads the whole account.
+//   MB-ASK           once the phone has synced, a note is sent with no whole-account download; the account is asked yes or no
+//   MB-ASK-THEIRS    a Mobile Board made at the desk since the phone's last sync is still the one used
+//   MB-ASK-NOANSWER  the account cannot be asked (404, or an answer that is not yes or no): the note keeps waiting and nothing is written
+//   MB-LOSTACK-GONE  the account took the note, the answer was lost, she deleted the Board: the resend adds nothing and the NEXT note does not bring it back
 // Browserless. Run: node scripts/harness/mobile-board-unit.mjs   (from apps/desktop)
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -52,7 +57,7 @@ const bundled = await build({
 // ---- the stand-in account ----------------------------------------------------------------------------------------------------------------------------------
 const COLLECTIONS = ['projects', 'storyPlans', 'sessions', 'drafts', 'journalEntries', 'drawers'];
 function makeAccount() {
-  const S = { who: 'main', offline: false, failPush: false, dropAfterPush: false, ignorePush: false, tick: 0, rows: Object.fromEntries(COLLECTIONS.map((c) => [c, new Map()])), pushes: [] };
+  const S = { who: 'main', asked: 0, wholeReads: 0, answer: null, offline: false, failPush: false, dropAfterPush: false, ignorePush: false, tick: 0, rows: Object.fromEntries(COLLECTIONS.map((c) => [c, new Map()])), pushes: [] };
   const stamp = () => new Date(Date.UTC(2026, 10, 26, 12, 0, 0, S.tick++)).toISOString();
   const json = (status, body) => ({ ok: status >= 200 && status < 300, status, json: async () => clone(body), headers: { get: () => null } });
   S.put = (coll, row) => { S.rows[coll].set(row.id, { row: clone(row), at: stamp() }); };
@@ -62,8 +67,14 @@ function makeAccount() {
   S.fetch = async (url, opts = {}) => {
     if (S.offline) throw new TypeError('no signal');
     if (String(url) === '/auth/me') return S.who ? json(200, { id: S.who, email: '' }) : json(401, {});
+    if (String(url).startsWith('/api/card-held/')) {
+      S.asked += 1;
+      if (S.answer) return json(S.answer.status, S.answer.body);
+      return json(200, { held: S.cardsWithId(decodeURIComponent(String(url).slice('/api/card-held/'.length))).length > 0 });
+    }
     if (String(url) !== '/api/sync') return json(404, {});
     const body = JSON.parse(opts.body);
+    if (!body.lastSyncAt && body.pull !== false) S.wholeReads += 1;
     const pushing = COLLECTIONS.some((c) => (body.push?.[c] ?? []).length);
     if (pushing && S.failPush) throw new TypeError('signal dropped before the push arrived');
     for (const c of COLLECTIONS) for (const r of body.push?.[c] ?? []) {
@@ -268,6 +279,52 @@ await scenario('MB-OTHER the session is now another account: nothing of the note
   const a = makeAccount(); const m = await phone(a); a.who = 'sample';
   const r = await sends(m, note('n-1', 'main only'));
   return [r.startsWith('waits') && a.pushes.length === 0 && a.boards().length === 0, `${r}; pushes=${a.pushes.length}`];
+});
+
+await scenario('MB-ASK a note is sent without downloading the account; the account is asked yes or no', async () => {
+  const a = makeAccount(); const m = await phone(a);
+  await sends(m, note('n-0', 'the phone has now synced'));
+  a.wholeReads = 0; a.asked = 0;
+  const r = await sends(m, note('n-1', 'x'));
+  return [r === 'sent' && a.wholeReads === 0 && a.asked >= 1 && a.cardsWithId('n-1').length === 1, `${r}; whole-account downloads=${a.wholeReads} asked=${a.asked}`];
+});
+
+await scenario('MB-ASK-THEIRS a Mobile Board made at the desk since the last sync is still the one used', async () => {
+  const a = makeAccount(); a.put('journalEntries', board('b-x', 'Chapter notes'));
+  const m = await phone(a);
+  await sends(m, note('n-0', 'x', { kind: 'board', id: 'b-x' }));
+  await wait(5);
+  a.put('journalEntries', board('b-desk', 'Mobile'));
+  const r = await sends(m, note('n-1', 'x'));
+  return [r === 'sent' && named(a, 'Mobile').length === 1 && a.cardsWithId('n-1')[0]?.board.id === 'b-desk', `${r}; Mobile boards=${named(a, 'Mobile').length} landed on ${a.cardsWithId('n-1')[0]?.board.id}`];
+});
+
+await scenario('MB-ASK-NOANSWER the account cannot be asked (404, or no yes or no): the note waits and nothing is written', async () => {
+  const out = [];
+  for (const answer of [{ status: 404, body: { error: 'Not found' } }, { status: 200, body: {} }]) {
+    const a = makeAccount(); const m = await phone(a); a.answer = answer;
+    const r = await sends(m, note('n-1', 'x'));
+    out.push([r.startsWith('waits') && a.boards().length === 0 && m.store.getJournalEntries().length === 0, `${answer.status} ${JSON.stringify(answer.body)} -> ${r}; boards=${a.boards().length}`]);
+  }
+  return [out.every((o) => o[0]), out.map((o) => o[1]).join(' | ')];
+});
+
+await scenario('MB-LOSTACK-GONE answer lost, then she deleted the Board: the resend adds nothing and the next note leaves it deleted', async () => {
+  const a = makeAccount(); a.put('journalEntries', board('b-x', 'Chapter notes'));
+  const m = await phone(a);
+  await sends(m, note('n-0', 'x', { kind: 'board', id: 'b-x' }));
+  await wait(5);
+  a.dropAfterPush = true;
+  await sends(m, note('n-1', 'x', { kind: 'board', id: 'b-x' }));
+  await wait(5);
+  const now = new Date().toISOString();
+  a.put('journalEntries', { ...a.get('b-x'), deletedAt: now, updatedAt: now });
+  await wait(5);
+  const r1 = await sends(m, note('n-1', 'x', { kind: 'board', id: 'b-x' }));
+  await wait(5);
+  const r2 = await sends(m, note('n-2', 'x', { kind: 'board', id: 'b-x' }));
+  const where = a.cardsWithId('n-2').map((c) => c.board.text).join();
+  return [r1 === 'sent' && r2 === 'sent' && a.cardsWithId('n-1').length === 1 && !!a.get('b-x').deletedAt && where === 'Mobile', `resend: ${r1}; next: ${r2}; deleted Board still deleted=${!!a.get('b-x').deletedAt}; next note on: ${where}`];
 });
 
 const bad = checks.filter((c) => !c.pass);
