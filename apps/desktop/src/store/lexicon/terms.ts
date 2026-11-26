@@ -806,6 +806,7 @@ export type DeskTermId =
   | 'guideWalkOpenPlan'
   | 'guideWalkContinue'
   | 'guideWalkContinueLine'
+  | 'guideWalkRename'
   | 'guideWalkLocked'
   | 'guideWalkForget'
   | 'guideDialogLabel'
