@@ -1,5 +1,6 @@
 // TUTOR-B · a stand-in language model on localhost (an Anthropic-format endpoint), so a check reads what the route SENDS and controls what comes BACK.
 // It never leaves the machine and needs no key. `say(...texts)` queues replies in order (the last one repeats); `requests` holds every body it received.
+// A queued item is the reply's text, or { text, stop, thought } for a reply that stopped some other way: `stop` is its stop_reason, `thought` puts a thinking block first, and text null sends no text block at all.
 import http from 'node:http';
 
 export async function startStandInModel() {
@@ -9,10 +10,13 @@ export async function startStandInModel() {
     req.on('data', (c) => { b += c; });
     req.on('end', () => {
       try { state.requests.push(JSON.parse(b)); } catch { state.requests.push(null); }
-      const text = state.queue.length ? state.queue.shift() : state.last;
-      if (!state.queue.length) state.last = text;
+      const item = state.queue.length ? state.queue.shift() : state.last;
+      if (!state.queue.length) state.last = item;
+      const { text = null, stop = 'end_turn', thought = false } = typeof item === 'string' ? { text: item } : item;
+      const content = [...(thought ? [{ type: 'thinking', thinking: 'Weighing the question.', signature: 'x' }] : []), ...(text === null ? [] : [{ type: 'text', text }])];
       res.setHeader('content-type', 'application/json');
-      res.end(JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', model: 'stand-in', content: [{ type: 'text', text }], stop_reason: 'end_turn', stop_sequence: null, usage: state.usage }));
+      res.setHeader('connection', 'close');   // a check that builds a fresh module blocks for seconds; a socket kept alive across that could be dead when next used
+      res.end(JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', model: 'stand-in', content, stop_reason: stop, stop_sequence: null, usage: state.usage }));
     });
   });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));

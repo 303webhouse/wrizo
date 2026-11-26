@@ -559,7 +559,7 @@ await withHarness(async (app) => {
       stagedByStretch.value === ASKS[3], JSON.stringify({ staged: stagedByStretch.value, required: ASKS[3] }));
     await sendComposer(app);
     const td4 = await lastTutorBody(app);
-    const keys = Object.keys(td4 || {}).sort();
+    const keys = Object.keys(td4 || {}).filter(k => k !== 'theme').sort(); // TUTOR-B call 2: the theme's NAME rides with every ask; it is not her words and not a page
     const serialized = JSON.stringify(td4 || {});
 
     ok('S4 (THE BUTTON LAW, per-press and mechanical): TD4\'s wire carries the SELECTED STRETCH, byte-exact — exactly what its own button names',

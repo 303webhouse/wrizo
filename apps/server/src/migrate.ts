@@ -334,4 +334,20 @@ export async function runMigrations(): Promise<void> {
         themes_opened = jsonb_build_object('plateau', true)
     where words_written is null
   `);
+  // THE TUTOR'S NOTES ON FILE (TUTOR item 7, Memory step 1; Fable's ruled shape, Nov 23, 10:44 pm): its own table, one row per note. Same idempotent boot path as drawers
+  // and box_pictures (no migration file). Kept only on her yes (the only writer is POST /api/tutor/notes), and a delete is a real delete: there is no deleted_at here, so
+  // nothing can hide a "wiped" note. on delete cascade: a writer's notes go with the account. kind and source are checked by the table itself, not only by the route.
+  // Never in /sync, never read for another writer (tutorNotesRoutes.ts scopes every statement by user_id).
+  await pool.query(
+    `create table if not exists tutor_notes (
+       id uuid primary key default gen_random_uuid(),
+       user_id uuid not null references users(id) on delete cascade,
+       kind text not null check (kind in ('tendency', 'interest', 'blocker', 'goal')),
+       text text not null check (char_length(text) between 1 and 400),
+       source text not null check (source in ('proposed', 'interview', 'own')),
+       created_at timestamptz not null default now(),
+       updated_at timestamptz not null default now()
+     )`,
+  );
+  await pool.query(`create index if not exists tutor_notes_user_created on tutor_notes (user_id, created_at)`);
 }

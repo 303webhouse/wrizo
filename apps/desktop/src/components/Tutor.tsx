@@ -11,6 +11,7 @@ import { computeStructureFacts, computeFragmentItems } from '../store/tutorLense
 import { estimateTurnCostUSD, formatEstimatedUSD } from '../store/tutorCostEstimates';
 import { addTutorSessionCost } from '../store/tutorMeter';
 import { useBibleFacts, getBibleFacts, addFact, editFact, deleteFact, FACT_TEXT_CAP } from '../store/tutorBible';
+import { TutorNotes } from './TutorNotes';
 import type { EditorMode } from './ForwardOnlyEditor';
 import { FREE_WRITE_POOLS, DRAW_CEILING, REFILL_WORDS, drawFrom, recentMemoryFor, type FreeWritePresetId } from '../store/tutorFreeWriteDeck';
 import { useMonotonicWordCount } from './FirstRunGate';
@@ -1114,6 +1115,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 </div>
               </div>
             )}
+
+            {/* the Tutor's notes on file (item 7): her own list on her account, kept only on her yes; renders nothing when signed out. A tool in the panel's own track: it never touches the page. */}
+            <TutorNotes open={open} />
             </div>
 
             {/* TU2 S5 — the session meter's own quiet foot line. Absent

@@ -16,7 +16,7 @@ const ts = svRequire('typescript');
 let n = 0;
 // files: the src files to bring in (default: the Tutor route and everything it imports)
 // mutate: { 'tutor.ts': (src) => newSrc }  (the anchor must be found, or it throws: a mutant that matched nothing proves nothing)
-export function loadServer({ files = ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorPrompts.ts', 'tutorGuard.ts', 'tutor.ts'], mutate = {} } = {}) {
+export function loadServer({ files = ['env.ts', 'asyncHandler.ts', 'logSafe.ts', 'tutorPrompts.ts', 'tutorGuard.ts', 'tutorNoteFilter.ts', 'tutorNotes.ts', 'tutorNotesRoutes.ts', 'tutor.ts'], mutate = {} } = {}) {
   const tmp = path.join(SERVER, `.tutor-eval-scratch-${process.pid}-${n++}`);
   fs.rmSync(tmp, { recursive: true, force: true });
   fs.mkdirSync(tmp, { recursive: true });
@@ -28,6 +28,8 @@ export function loadServer({ files = ['env.ts', 'asyncHandler.ts', 'logSafe.ts',
     const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, esModuleInterop: true } }).outputText;
     fs.writeFileSync(path.join(tmp, rel.replace(/\.ts$/, '.js')), out);
   }
+  // the ask now reads her notes on file (item 7 step 2): a stand-in database that holds none, unless the check brings its own db.js or the real db.ts
+  if (!files.includes('db.ts')) fs.writeFileSync(path.join(tmp, 'db.js'), 'exports.pool = { query: async () => ({ rows: [], rowCount: 0 }) };' + String.fromCharCode(13, 10));
   fs.writeFileSync(path.join(tmp, 'auth.js'), 'exports.requireAuth = (req, res, next) => next();\r\n');
   fs.writeFileSync(path.join(tmp, 'rateLimit.js'), 'exports.rateLimit = () => (req, res, next) => next();\r\n');
   const load = (name) => svRequire(path.join(tmp, name.replace(/\.ts$/, '.js')));

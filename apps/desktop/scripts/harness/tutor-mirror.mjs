@@ -34,6 +34,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 
 const checks = [];
 const ok = (name, pass, detail = '') => checks.push({ name, pass, detail });
@@ -45,6 +46,11 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..', '..', '..');
 const TS = resolve(REPO, 'apps/server/src/tutor.ts');
 const MD = resolve(REPO, 'docs/wrizo-alpha/tutor-rules.md');
+// TUTOR-B ITEM 1 — THE NEW SHAPE, taught here as the file's own comment above demanded ("THIS check must be taught the new shape, loudly"). The Tutor's words are no longer one template literal in tutor.ts:
+// they are the kit's blocks in apps/server/src/tutorPrompts.ts (BASE + HAT + VOICE + TASK + CONTEXT), and the chat route sends buildSystemPrompt(CHAT_PROMPT_DEFAULT). So the record now holds THAT
+// string, built by the real builder (transpiled here, no import of the server's runtime). The claim is unchanged: the two copies say the same thing.
+const PROMPTS = resolve(REPO, 'apps/server/src/tutorPrompts.ts');
+const SERVER_PKG = resolve(REPO, 'apps/server/package.json');
 
 // LINE ENDINGS ARE NORMALISED BEFORE ANYTHING IS COMPARED, and that is not a
 // loosening of "byte-for-byte" — it is what makes the claim checkable at all.
@@ -72,9 +78,21 @@ ok('both halves of the mirror are on disk where the law says they are (apps/serv
 if (tsSrc !== null && mdSrc !== null) {
   // The constant is a single template literal. Matched non-greedily so a later
   // backtick elsewhere in the file cannot swallow the rest of the source.
-  const m = /const SYSTEM_PROMPT\s*=\s*`([\s\S]*?)`;/.exec(tsSrc);
-  ok('SYSTEM_PROMPT is still a single template literal this check can read — if the constant is ever refactored into pieces, THIS check must be taught the new shape, loudly, rather than silently passing on nothing',
-    !!m, m ? `${m[1].length} chars` : 'no `const SYSTEM_PROMPT = `...`;` match');
+  let built = null;
+  let buildErr = '';
+  try {
+    const ts = createRequire(SERVER_PKG)('typescript');
+    const js = ts.transpileModule(read(PROMPTS) ?? '', { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+    const mod = { exports: {} };
+    new Function('module', 'exports', js)(mod, mod.exports);
+    built = mod.exports.buildSystemPrompt();
+  } catch (e) { buildErr = String((e && e.message) || e).slice(0, 160); }
+  const m = built === null ? null : [null, built];
+  ok('the chat prompt is built by tutorPrompts.ts buildSystemPrompt() — this check reads the string the real builder returns, rather than a literal in tutor.ts that no longer exists',
+    !!m, m ? `${built.length} chars` : `could not build: ${buildErr}`);
+  // the route sends the builder's Tutor hat and typed-question task, with the voice picked from the theme (voiceForTheme: the Arbor voice is the record's; no theme drops the voice block)
+  ok('and tutor.ts really sends that builder (Tutor hat, typed-question task, the voice from voiceForTheme), so the record is the string it sends for the Arbor theme',
+    /system:\s*buildSystemPrompt\(\{\s*hat:\s*'tutor',\s*voice:\s*voiceForTheme\(req\.body\.theme\),\s*task:\s*'ask'\s*\}\)/.test(tsSrc), '');
 
   // The mirror's body is everything after the `---` that closes its header.
   // The header explains the law; the body IS the prompt.

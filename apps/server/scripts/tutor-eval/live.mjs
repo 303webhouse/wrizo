@@ -36,7 +36,6 @@ export function makeClients(env) {
     reply, grader,
     replyModel: env.TUTOR_EVAL_MODEL || 'deepseek-v4-flash',
     graderModel: env.TUTOR_EVAL_GRADER_MODEL || 'claude-fable-5-2',
-    maxTokens: Number(env.TUTOR_EVAL_MAX_TOKENS) || 700,
   };
 }
 
@@ -44,13 +43,27 @@ export function makeClients(env) {
 export async function liveReply({ clients, cap, prompts, c, variant, draftText }) {
   const system = prompts.buildSystemPrompt({ hat: c.hat, voice: variant ?? c.voice, task: c.task });
   const messages = [];
+  if (c.notes && c.notes.length) messages.push({ role: 'user', content: prompts.wrapNotes(c.notes) });   // her notes on file, first of the wire turns (tutor.ts, item 7 step 2)
   if (draftText) messages.push({ role: 'user', content: prompts.wrapDelta(draftText) });
   messages.push({ role: 'user', content: c.says });
-  const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), clients.maxTokens);
-  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: clients.maxTokens, system, messages });
+  const est = cap.reserve(system.length + messages.reduce((n, m) => n + m.content.length, 0), prompts.CHAT_MAX_TOKENS);
+  const t0 = Date.now();
+  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: prompts.CHAT_MAX_TOKENS, system, messages });
   cap.settle(est, r.usage);
-  return { variant: variant ?? null, reply: textOf(r), usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } };
+  return { variant: variant ?? null, reply: textOf(r), ...howItEnded(r, t0) };
 }
+// SPRINT's one prompt, built the way the route builds it (nothing of hers is in it), at the cap named: the old 80, or the route's own now
+export async function liveSprint({ clients, cap, prompts, maxTokens }) {
+  const system = prompts.buildSprintSystemPrompt(prompts.SPRINT_RULES);
+  const content = prompts.sprintAsk([]);
+  const est = cap.reserve(system.length + content.length, maxTokens);
+  const t0 = Date.now();
+  const r = await clients.reply.messages.create({ model: clients.replyModel, max_tokens: maxTokens, system, messages: [{ role: 'user', content }] });
+  cap.settle(est, r.usage);
+  return { maxTokens, reply: textOf(r), ...howItEnded(r, t0) };
+}
+// why it stopped, whether it thought first, how long it took, what it cost: enough to tell a cut-off or an empty reply from a short one
+const howItEnded = (r, t0) => ({ stop: r.stop_reason ?? null, thought: r.content.some((b) => b.type === 'thinking'), ms: Date.now() - t0, usage: { input: r.usage.input_tokens, output: r.usage.output_tokens } });
 
 export async function liveGrade({ clients, cap, c, draftText, replies, questions }) {
   const system = graderSystemPrompt();
