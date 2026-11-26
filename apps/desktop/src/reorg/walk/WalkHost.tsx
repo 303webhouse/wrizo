@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../../store/deskLexicon';
+import { useTheme } from '../../store/theme';
 import { flushNow, getJournalEntry, subscribe } from '../../store/persistence';
 import { routeForEntry } from '../../store/routeForEntry';
 import { walkPlaceOf } from '../docSettings';
@@ -20,6 +21,7 @@ const sameDoc = (a: string, b: string): boolean => a === b || (!!docOfPage(a) &&
 
 function WalkChip({ pageId, onOpen }: { pageId: string; onOpen: () => void }) {
   const { t } = useDeskLexicon();
+  const flux = useTheme() === 'flux';
   const label = useSyncExternalStore(subscribe, () => {
     const steps = stepsOfPage(pageId);
     const id = placeIn(steps, walkPlaceOf(pageId));
@@ -39,9 +41,10 @@ function WalkChip({ pageId, onOpen }: { pageId: string; onOpen: () => void }) {
   }, []);
   if (!label || !at) return null;
   const [n, total, title] = label.split('\u0001');
+  const num = (v: string) => (flux ? v.padStart(2, '0') : v);
   return (
     <button type="button" className="wz-walk-chip" data-walk-chip="" style={at} onClick={onOpen}>
-      {t('guideWalkChip').replace('{step}', title || t('reorgUntitled')).replace('{n}', n).replace('{total}', total)} ›
+      {t('guideWalkChip').replace('{step}', title || t('reorgUntitled')).replace('{n}', num(n)).replace('{total}', num(total))} ›
     </button>
   );
 }

@@ -11,6 +11,11 @@
 //   SAVED     `walk` is written through the Doc-settings guard, and never copied into the defaults for new pages
 //   HELD      while the walk is open the app behind it is inert (so no key lands on the page), and leaving lifts it and puts her caret back
 //   BACK      the way-back chip stands on any page of the Doc, a Part still to be born included
+//   SCENES    "Add scenes…" puts child cards (with the old Walk's question) one level under a step; the step stays a step, its scenes walk right after it, an Act stays a heading; a step added after a scene is a scene
+//   WHICH     the Plan's structure is worked out from its rows' names (nothing saved), so a step's "?" can show that structure's own note
+//   DROP      any step may be dropped (a noted one too), its scenes with it, to the Trash, with Undo
+//   TABS      Plan and Assets stand greyed beside the card: locked as the app locks a tab (aria-disabled, data-locked, out of the Tab order, a line saying why)
+//   THEMES    the spec's §8 words, Arbor, Flux and Machina (Machina's are the canonical ones)
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,7 +27,7 @@ const ts = require('typescript');
 const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
-const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx'];
+const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts'];
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
 
 /** A tiny loader: the real modules, their relative imports resolved from src (with `src` overriding a file's text). */
@@ -152,6 +157,61 @@ function suite(src) {
     const got = { born: /pageOfPath\(pathname\)/.test(h), unborn: /pathname === '\/page\/new' \? new URLSearchParams\(search\)\.get\('binder'\)/.test(h) && /newInDoc === docOfPage\(left\)/.test(h) };
     return { pass: got.born && got.unborn, detail: J(got) };
   });
+  t('SCENES', () => {
+    const O = load('reorg/walk/stepOps.ts');
+    const S = load('reorg/walk/stepModel.ts');
+    let n = 0;
+    const made = O.addScenesUnder(plan(), 's1', 2, { title: 'Scene', question: 'Who wants what?', newId: () => 'c' + (++n) });
+    const kids = made.filter((b) => b.parentId === 's1');
+    const view = S.walkSteps(made, new Set(), () => false).map((s) => [s.id, s.act, s.under ?? '', s.state, s.hint]);
+    const again = O.addScenesUnder(made, 'c1', 2, { title: 'Scene', question: 'q', newId: () => 'z' });
+    const after = O.addStepAfter(made, 'c1', 'New step', () => 'c9').find((b) => b.id === 'c9');
+    const flat = [card('x', 'One', { seq: 0, planHint: 'h' }), card('y', 'Two', { seq: 1, planHint: 'h' })];
+    const flatView = S.walkSteps(O.addScenesUnder(flat, 'x', 1, { title: 'Scene', question: 'q', newId: () => 'k' }), new Set(), () => false).map((s) => s.id);
+    const want = [['s1', 'Act One', '', 'noted', ''], ['c1', 'Act One', 'Opening', 'empty', 'Who wants what?'], ['c2', 'Act One', 'Opening', 'empty', 'Who wants what?'], ['s2', 'Act One', '', 'empty', 'What knocks life off course?'], ['s3', 'Act Two', '', 'empty', '']];
+    return { pass: kids.length === 2 && kids[0].text === 'Scene 1\n' && kids[1].text === 'Scene 2\n' && J(view) === J(want) && again === made && after.parentId === 's1' && after.prompt === 'Who wants what?' && J(flatView) === J(['x', 'k', 'y']), detail: J({ view, flatView, after, same: again === made }) };
+  });
+  t('WHICH', () => {
+    const W = load('reorg/walk/structureOfPlan.ts');
+    const P = load('reorg/backMenu/planPresets.ts').PLAN_PRESETS;
+    const word = (k) => k;
+    const cards = (id) => P.find((p) => p.id === id).rows.map((r, i) => card('r' + i, word(r.title), { seq: i }));
+    const got = [W.structureOfPlan(cards('circle'), word)?.id, W.structureOfPlan(cards('three'), word)?.id, W.structureOfPlan(cards('circle').slice(0, -1).concat(card('mine', 'My own', { seq: 20 })), word)?.id, W.structureOfPlan(plan(), word) ?? null];
+    // a Plan of her own that happens to share one name with a structure is not that structure
+    const one = W.structureOfPlan([cards('circle')[0], card('m1', 'Mine', { seq: 1 }), card('m2', 'Also mine', { seq: 2 })], word) ?? null;
+    return { pass: J(got) === J(['circle', 'three', 'circle', null]) && one === null, detail: J({ got, one: one?.id ?? null }) };
+  });
+  t('DROP', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'];
+    const got = { any: /const canDrop = !!step;/.test(w), scenes: /stashDeletedBoxes\(plan\.boardId, \[step\.id, \.\.\.scenesOf\(step\.id\)\]\)/.test(w), undo: /dropped\.ids\.forEach\(\(id\) => restoreDeletedBox\(dropped\.boardId, id\)\)/.test(w) };
+    return { pass: Object.values(got).every(Boolean), detail: J(got) };
+  });
+  t('TABS', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'];
+    const locked = w.match(/<button[^>]*data-locked="true"[^>]*>/g) ?? [];
+    const ok = locked.length === 1 && /aria-disabled="true"/.test(locked[0]) && /tabIndex=\{-1\}/.test(locked[0]) && /aria-describedby="wz-walk-locked-note"/.test(locked[0]) && /id="wz-walk-locked-note"/.test(w) && /\['reorgBackPlan', 'drawerLinks'\]/.test(w) && !/data-locked="true"[^>]*onClick/.test(w);
+    return { pass: ok, detail: J(locked) };
+  });
+  t('THEMES', () => {
+    const canon = src['store/lexicon/canonical/chrome.ts'], a = src['store/lexicon/overrides/arborReorg.ts'], f = src['store/lexicon/overrides/fluxReorg.ts'];
+    const word = (text, k) => { const m = new RegExp('^\\s*' + k + ":\\s*(?:'((?:[^'\\\\]|\\\\.)*)'|\"([^\"]*)\")", 'm').exec(text); return m ? (m[1] ?? m[2]).replace(/\\'/g, "'") : null; };
+    const TABLE = {
+      guideWalkHead: ['Guide · Walk', 'The Guide', 'GUIDE // WALK'],
+      guideWalkStepOf: ['Step {n} of {total}', 'step {n} of {total}', 'STEP {n}/{total}'],
+      guideWalkKept: ['Saved in Plan', 'kept in your plan', 'SAVED TO SPINE'],
+      guideWalkStateNoted: ['Noted', 'noted', 'NOTED'], guideWalkStateSkipped: ['Skipped', 'skipped', 'SKIPPED'], guideWalkStateEmpty: ['Empty', 'empty', 'NO INPUT'],
+      guideWalkContinue: ['Continue Your Guide', 'Continue your Guide', 'Resume guide'],
+      guideWalkNotSkipped: ['Not Skipped', 'Not skipped', 'CLEAR SKIP'],
+      guideWalkPlaceholder: ['Note this step in your own words…', 'Jot it down in your own words…', 'Type the beat in your own words…'],
+      guideWalkWrite: ['Write This Part →', 'Write this section →', 'Write this track →'],
+      guideWalkOpenPlan: ['Walk the Plan ›', 'Walk the plan ›', 'Walk the spine ›'],
+      guideWalkChip: ['Guide · {step} · {n} of {total}', 'The Guide · {step} · {n} of {total}', 'GUIDE · {step} · {n}/{total}'],
+      guideStartGuided: ['Start Guided', 'Start guided', 'START GUIDED'], guideStartWriting: ['Start Writing', 'Start writing', 'Start writing'],
+      guideWalkFormatHead: ['Format · Your Note on This Step', 'Format · your note on this step', "MARKUP · THIS STEP'S NOTE"],
+    };
+    const bad = Object.entries(TABLE).flatMap(([k, [m, ar, fl]]) => { const got = [word(canon, k), word(a, k), word(f, k)]; return J(got) === J([m, ar, fl]) ? [] : [[k, got]]; });
+    return { pass: bad.length === 0, detail: J(bad.slice(0, 4)) };
+  });
   return R;
 }
 
@@ -174,6 +234,12 @@ const MUTANTS = [
 ];
 
 MUTANTS.push(
+  ['a step with scenes turns into a heading', 'SCENES', sub(S, '&& !scened', '')],
+  ['scenes may be nested twice', 'SCENES', sub(O, 'if (!parent || isScene(parent)) return boxes;', 'if (!parent) return boxes;')],
+  ['any two shared names pick a structure', 'WHICH', sub('reorg/walk/structureOfPlan.ts', 'ENOUGH = 0.6', 'ENOUGH = 0.01')],
+  ['a noted step cannot be dropped', 'DROP', sub('reorg/walk/GuideWalk.tsx', 'const canDrop = !!step;', "const canDrop = !!step && step.state !== 'noted';")],
+  ['a locked tab is in the Tab order', 'TABS', sub('reorg/walk/GuideWalk.tsx', 'data-locked="true" tabIndex={-1}', 'data-locked="true" tabIndex={0}')],
+  ['a Flux word falls back to Machina\'s', 'THEMES', sub('store/lexicon/overrides/fluxReorg.ts', "guideWalkKept: 'SAVED TO SPINE',", '')],
   ['the page behind the walk is left live', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.setAttribute('inert', '');", '')],
   ['leaving forgets to lift it', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.removeAttribute('inert');", '')],
   ['the chip is lost on a new Part', 'BACK', sub('reorg/walk/WalkHost.tsx', ' || (newInDoc && newInDoc === docOfPage(left))', '')],
