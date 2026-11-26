@@ -204,8 +204,10 @@ export const WALK_KINDS: Record<string, WalkKind> = {
   hero: 'stories', three: 'stories', circle: 'stories', seven: 'stories', freytag: 'stories', scene: 'stories',
   beats: 'scripts', cars: 'papers', imrad: 'papers', answer: 'essays', inverted: 'essays',
 };
-// A step's name inside a sentence. A leading "The" is dropped so nothing says "a The Issue" or "the The Question".
-const bareStep = (name: string): string => name.trim().replace(/^the\s+/i, '');
+// A step's name inside a sentence. A leading "The" is dropped so nothing says "a The Issue" or "the The Question", and so is a bracketed note after it ("Abstract (write me last)").
+const bareStep = (name: string): string => name.trim().replace(/\s*\([^)]*\)$/, '').replace(/^the\s+/i, '');
+// a name that is already plural ("Grounds", "Methods"); "Crisis", "Status" and "Process" are one each
+const isPluralStep = (name: string): boolean => /s$/i.test(name) && !/(ss|is|us)$/i.test(name);
 const pluralStep = (name: string): string => {
   if (/[^aeiou]y$/i.test(name)) return `${name.slice(0, -1)}ies`;
   if (/is$/i.test(name)) return `${name.slice(0, -2)}es`;
@@ -215,12 +217,13 @@ const pluralStep = (name: string): string => {
 export interface WalkQuestionInput { step: string; structure: string; kind: WalkKind; next?: string; previous?: string }
 export function walkQuestions({ step, structure, kind, next, previous }: WalkQuestionInput): string[] {
   const name = bareStep(step);
-  const article = /^the\s+/i.test(step.trim()) ? 'the' : /^[aeiou]/i.test(name) ? 'an' : 'a';
+  const many = isPluralStep(name);
+  const article = /^the\s+/i.test(step.trim()) ? 'the ' : many ? '' : /^[aeiou]/i.test(name) ? 'an ' : 'a ';
   const other = next || previous;   // the last step is compared with the one before it
   return [
-    `What does ${article} ${name} do in ${structure}?`,
+    `What ${many ? 'do' : 'does'} ${article}${name} do in ${structure}?`,
     `Show me ${pluralStep(name)} in well-known ${kind}`,
-    ...(other ? [`How is ${article} ${name} different from the ${bareStep(other)}?`] : []),
+    ...(other ? [`How ${many ? 'are' : 'is'} ${article}${name} different from the ${bareStep(other)}?`] : []),
     `Ask me questions about my ${name}`,
   ];
 }
