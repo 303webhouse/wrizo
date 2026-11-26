@@ -67,7 +67,8 @@
 [data-theme='flux'] .wz-ink-door{ text-transform:uppercase; letter-spacing:.08em; }
 .wz-board-ink-sheet{ position:absolute; top:0; left:0; width:100%; height:100%; z-index:99999; pointer-events:none; }
 .wz-board-ink-sheet[data-ink='true']{ pointer-events:auto; touch-action:none; cursor:crosshair; }
-.wz-board-ink-sheet .ink-undo{ position:sticky; }
+/* a Board is often wider than its window and scrolls: the Undo arrow keeps to the corner she can see. `position` is set on the element, hence the !important (its own top and right become the sticky offsets) */
+.wz-board-ink-sheet > .ink-undo{ position:sticky !important; display:block; width:max-content; margin:4px 4px 0 auto; }
 /* the Page's Undo arrow stands in the right margin, off her words (Fable, Nov 25: the no-overlap rule). `right` is set on the element, hence the !important */
 .wz-ink-sheet > .ink-undo{ left:calc(100% + 6px); right:auto !important; }
 /* a Board with ink keeps its drawing inside its own frame: the layer never paints over a drawer or the Tutor */

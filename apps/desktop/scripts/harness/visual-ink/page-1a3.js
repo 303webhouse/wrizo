@@ -277,5 +277,21 @@
     return { pass: b.width > 0 && b.left >= t.right - 0.5 && b.right <= p.right + 0.5 && got.sideways <= 0 && got.pressable, why: got };
   };
 
-  window.__vi3 = { undoClear, keyRules,caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
+  /** U-checks: the same arrow on a Board, which scrolls when it is wider than the window. Expects a Board with a stroke just drawn. */
+  const undoOnBoard = () => {
+    const u = q('.wz-board-ink-sheet .ink-undo'), wrap = q('.board-canvas-wrap');
+    if (!u || !wrap) return { pass: false, why: { undo: !!u, wrap: !!wrap } };
+    const seen = () => {
+      const b = u.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+      const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+      return { arrow: [Math.round(b.left), Math.round(b.top), Math.round(b.right)], board: [Math.round(w.left), Math.round(w.top), Math.round(w.left + wrap.clientWidth)], ok: b.width > 0 && b.left >= w.left && b.right <= Math.min(w.left + wrap.clientWidth, innerWidth) + 0.5 && b.top >= w.top - 0.5 && hit === u };
+    };
+    const atStart = seen();
+    wrap.scrollLeft = wrap.scrollWidth; wrap.scrollTop = wrap.scrollHeight;
+    const atEnd = seen();
+    wrap.scrollLeft = 0; wrap.scrollTop = 0;
+    return { pass: atStart.ok && atEnd.ok, why: { atStart, atEnd, scrolls: wrap.scrollWidth > wrap.clientWidth } };
+  };
+
+  window.__vi3 = { undoOnBoard, undoClear, keyRules, caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
 })();

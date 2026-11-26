@@ -139,6 +139,15 @@ await withHarness(async (app) => {
     ok(`U1: the Undo arrow stands in the page's margin, off her words, pressable, with no sideways scroll (${theme}, ${stageName === 'revise' ? 'EDIT' : 'BUILD'}, ${width})`, got.pass, got.why);
   }
 
+  for (const theme of ['machina', 'plateau', 'flux']) {
+    await boot(app);
+    await run(app, `window.wrizoTheme.set(${JSON.stringify(theme)});`);
+    await newBoard(app, 'Undo board');
+    const got = await run(app, `await window.__vi.openDrawer(); await window.__vi3.tab('ink'); await window.__vi3.until(() => !!document.querySelector('.wz-board-ink-sheet')); await window.__vi.sleep(900);
+      await window.__vi3.drawOnBoard(); await window.__vi.sleep(900); return window.__vi3.undoOnBoard();`);
+    ok(`U2: on a Board the Undo arrow keeps to the corner she can see, however the Board is scrolled, and can be pressed (${theme}, 1366)`, got.pass, got.why);
+  }
+
   // ---- real keys: draw, type, the door, the Board, back, type ----
   await boot(app);
   const id = await run(app, "return await window.__vi3.buildPage('machina', 'Her first line.');");
