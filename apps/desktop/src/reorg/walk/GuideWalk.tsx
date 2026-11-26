@@ -9,8 +9,12 @@ import { keyMaySteps } from '../../store/walk';
 import { markedHtml, rangeHas, type MarkKey, MARK_KEYS } from '../../store/textMarks';
 import { setDocSetting, walkPlaceOf } from '../docSettings';
 import { movePlanRow, renamePlanRow } from '../backMenu/planOps';
-import { addStepAfter, addStepAtEnd, setStepNote, setStepSkipped, toggleStepMark } from './stepOps';
-import { placeAfterDrop, placeIn, walkSummary, type WalkStep } from './stepModel';
+import { addScenesUnder, addStepAfter, addStepAtEnd, setStepNote, setStepSkipped, toggleStepMark } from './stepOps';
+import { isScene, placeIn, walkSummary, type WalkStep } from './stepModel';
+import { structureOfPlan } from './structureOfPlan';
+import { STRUCTURE_NOTES } from '../presetNotes';
+import { PresetNoteButton } from '../PresetNote';
+import { ScenesPopover } from '../../components/ScenesPopover';
 import { docNameOf, planOfPage, stepsOfPage, type PlanOfPage } from './walkData';
 import { walkPageRect } from './pageRect';
 
@@ -74,14 +78,16 @@ function selectIn(el: HTMLElement, start: number, end: number): void {
 
 interface Rect { left: number; top: number; width: number; height: number }
 const SIDE = 222;
+/** the greyed tabs' strip, at the card's right */
+const TABS = 32;
 /** The card over the page: 40 px wider than it, the same top; the steps list stands to its left. Nothing of the page changes. */
 function useWalkPlace(): { card: Rect; side: Rect } {
   const place = () => {
     const page = walkPageRect();
     const vw = window.innerWidth, vh = window.innerHeight;
-    const width = Math.min((page?.width ?? 620) + 40, vw - SIDE - 24);
+    const width = Math.min((page?.width ?? 620) + 40, vw - SIDE - TABS - 24);
     let left = page ? page.left - 20 : (vw - width) / 2;
-    left = Math.max(SIDE + 8, Math.min(left, vw - width - 8));
+    left = Math.max(SIDE + 8, Math.min(left, vw - width - TABS - 8));
     const top = Math.max(64, Math.min(page?.top ?? 96, 140));
     const height = Math.max(360, Math.min(page?.height ?? vh, vh - top - 16));
     return { card: { left, top, width, height }, side: { left: left - SIDE, top, width: SIDE, height } };
@@ -120,7 +126,9 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
   const [tab, setTab] = useState<'steps' | 'format'>('steps');
   const [menu, setMenu] = useState(false);
   const [renaming, setRenaming] = useState(false);
-  const [dropped, setDropped] = useState<{ boardId: string; boxId: string; title: string } | null>(null);
+  const [dropped, setDropped] = useState<{ boardId: string; boxId: string; ids: string[]; title: string } | null>(null);
+  const [scenesFor, setScenesFor] = useState<string | null>(null);
+  const moreRef = useRef<HTMLButtonElement>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const shownRef = useRef<string>('');
@@ -163,7 +171,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
     else rootRef.current?.querySelector<HTMLElement>('[data-walk-primary], [data-walk-done]')?.focus();
   };
   useEffect(() => {
-    setMenu(false); setRenaming(false);
+    setMenu(false); setRenaming(false); setScenesFor(null);
     enter();
   }, [step?.id, ended]);
   // HER KEYS ARE THE WALK'S while it is open. Everything behind the card is made INERT (the app's root; the walk itself is drawn outside it): nothing there can take the focus or a key, not even an editor that takes its
@@ -239,18 +247,23 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
     goTo(id);
     window.setTimeout(() => setRenaming(true), 0);
   };
+  const scenesOf = (stepId: string): string[] => liveBoxes(plan.board?.boxes).filter((b) => b.parentId === stepId && isScene(b)).map((b) => b.id);
+  // DROP (Fable, Nov 25, 8:30 pm: a noted step too): to the Trash as a board's own delete sends a card there, its scenes with it, one Undo for all of it
   const drop = () => {
-    if (!step || !plan.boardId || step.note.trim() || step.state === 'noted') return;
-    const next = placeAfterDrop(steps, step.id);
+    if (!step || !plan.boardId) return;
+    const going = new Set([step.id, ...scenesOf(step.id)]);
+    // the next step that stays, or the one before when it was the last
+    const next = (steps.slice(index + 1).find((s) => !going.has(s.id)) ?? steps.slice(0, index).reverse().find((s) => !going.has(s.id)))?.id ?? null;
     flushNow();
-    if (!stashDeletedBoxes(plan.boardId, [step.id]).length) return;
-    setDropped({ boardId: plan.boardId, boxId: step.id, title: step.title });
+    const ids = stashDeletedBoxes(plan.boardId, [step.id, ...scenesOf(step.id)]);
+    if (!ids.length) return;
+    setDropped({ boardId: plan.boardId, boxId: step.id, ids, title: step.title });
     setMenu(false);
     if (next) setCurrent(next); else setEnded(true);
   };
   const undoDrop = () => {
     if (!dropped) return;
-    restoreDeletedBox(dropped.boardId, dropped.boxId);
+    dropped.ids.forEach((id) => restoreDeletedBox(dropped.boardId, id));
     goTo(dropped.boxId);
     setDropped(null);
   };
@@ -261,12 +274,12 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
     const inField = !!field && field.contains(e.target as Node);
     if (e.key === 'Escape') {
       e.preventDefault();
-      if (menu) setMenu(false); else if (renaming) setRenaming(false); else onLeave();
+      if (scenesFor) setScenesFor(null); else if (menu) setMenu(false); else if (renaming) setRenaming(false); else onLeave();
       return;
     }
     if ((e.ctrlKey || e.metaKey) && !e.altKey && (MARK_KEYS as readonly string[]).includes(e.key.toLowerCase())) { e.preventDefault(); if (inField) mark(e.key.toLowerCase() as MarkKey); return; }
     if (e.key === 'Tab') {
-      const items = [...(rootRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input, [contenteditable]') ?? [])];
+      const items = [...(rootRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]):not([tabindex="-1"]), input, [contenteditable]') ?? [])];
       const here = items.indexOf(document.activeElement as HTMLElement);
       const to = e.shiftKey ? (here <= 0 ? items.length - 1 : -1) : (here < 0 || here === items.length - 1 ? 0 : -1);
       if (to >= 0) { e.preventDefault(); items[to]?.focus(); }
@@ -285,12 +298,18 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
     const last = groups[groups.length - 1];
     if (last && last.act === s.act) last.steps.push(s); else groups.push({ act: s.act, steps: [s] });
   }
+  // Flux counts in two figures ("STEP 05/09"); the others as they are
+  const num = (n: number) => (theme === 'flux' ? String(n).padStart(2, '0') : String(n));
+  const planCards = liveBoxes(plan.board?.boxes);
+  const structure = structureOfPlan(planCards, t);
+  const note = structure ? STRUCTURE_NOTES[structure.id] : undefined;
+  const stepCard = step ? planCards.find((b) => b.id === step.id) : undefined;
   const fill = (key: DeskTermId, values: Record<string, string | number>) => Object.entries(values).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), t(key));
   const stateWord = (s: WalkStep) => t(s.state === 'noted' ? 'guideWalkStateNoted' : s.state === 'skipped' ? 'guideWalkStateSkipped' : 'guideWalkStateEmpty');
   const names = (list: WalkStep[]) => list.map((s) => s.title || t('reorgUntitled')).join(', ');
   const box = (r: Rect): CSSProperties => ({ left: r.left, top: r.top, width: r.width, height: r.height });
   const firstEmpty = steps.find((s) => s.id === summary.next);
-  const canDrop = !!step && step.state !== 'noted' && !step.note.trim();
+  const canDrop = !!step;
   const has = (k: MarkKey) => { const el = fieldRef.current; const sel = el ? fieldSelection(el) : null; return !!step && !!sel && rangeHas(step.marks, sel.start, sel.end, k); };
 
   return createPortal(
@@ -312,13 +331,13 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
           </div>
         ) : (
           <div className="wz-walk-list" data-walk-list="">
-            <div className="wz-walk-small">{fill('guideWalkNotedOf', { n: summary.noted, total: summary.total })}</div>
+            <div className="wz-walk-small">{fill('guideWalkNotedOf', { n: num(summary.noted), total: num(summary.total) })}</div>
             {summary.skipped.length > 0 && <div className="wz-walk-small">{fill('guideWalkSkippedCount', { n: summary.skipped.length })}</div>}
             {groups.map((g, gi) => (
               <div key={gi} role="group" aria-label={g.act || undefined}>
                 {g.act && <div className="wz-walk-actname">{g.act}</div>}
                 {g.steps.map((s) => (
-                  <button key={s.id} type="button" className="wz-walk-row" data-walk-row={s.id} data-state={s.state} aria-current={!ended && s.id === step?.id ? 'step' : undefined} onClick={() => goTo(s.id)}>
+                  <button key={s.id} type="button" className="wz-walk-row" data-walk-row={s.id} data-scene={s.under !== undefined ? '' : undefined} data-state={s.state} aria-current={!ended && s.id === step?.id ? 'step' : undefined} onClick={() => goTo(s.id)}>
                     <span className="wz-walk-num">{s.number}</span><span className="wz-walk-rowname">{s.title || t('reorgUntitled')}</span>
                   </button>
                 ))}
@@ -351,7 +370,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
         ) : ended ? (
           <div className="wz-walk-body" data-walk-end="">
             <div className="wz-walk-actname">{t('guideWalkEndHead')}</div>
-            <h2 className="wz-walk-title">{fill('guideWalkEndNoted', { n: summary.noted, total: summary.total })}</h2>
+            <h2 className="wz-walk-title">{fill('guideWalkEndNoted', { n: num(summary.noted), total: num(summary.total) })}</h2>
             {summary.skipped.length > 0 && <p className="wz-walk-hint" data-walk-end-skipped="">{fill('guideWalkEndSkipped', { list: names(summary.skipped) })}</p>}
             {summary.empty.length > 0 && <p className="wz-walk-hint" data-walk-end-empty="">{fill('guideWalkEndEmpty', { list: names(summary.empty) })}</p>}
             <div className="wz-walk-endacts">
@@ -362,7 +381,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
           </div>
         ) : (
           <div className="wz-walk-body" data-walk-step={step.id}>
-            <div className="wz-walk-actname">{step.act}</div>
+            <div className="wz-walk-actname">{[step.act, step.under].filter(Boolean).join(' · ')}</div>
             <div className="wz-walk-titlerow">
               {renaming ? (
                 <input className="wz-walk-rename" data-walk-rename="" autoFocus defaultValue={step.title} aria-label={t('reorgPlanRename')}
@@ -370,13 +389,18 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
                   onBlur={(e) => { const v = e.target.value.trim(); if (v) write((b) => renamePlanRow(b, step.id, v)); setRenaming(false); }} />
               ) : (
-                <h2 className="wz-walk-title" data-walk-title="">{step.title || t('reorgUntitled')}</h2>
+                <div className="wz-walk-titlewrap">
+                  <h2 className="wz-walk-title" data-walk-title="">{step.title || t('reorgUntitled')}</h2>
+                  {/* the structure's own "?" note, opened in place and never a hover tip */}
+                  {structure && note && <PresetNoteButton key={step.id} id={structure.id} name={t(structure.name)} note={note} />}
+                </div>
               )}
-              <button type="button" className="wz-walk-more" data-walk-more="" aria-haspopup="true" aria-expanded={menu} aria-label={t('guideWalkMore')} onClick={() => setMenu((m) => !m)}>⋯</button>
+              <button type="button" ref={moreRef} className="wz-walk-more" data-walk-more="" aria-haspopup="true" aria-expanded={menu} aria-label={t('guideWalkMore')} onClick={() => setMenu((m) => !m)}>⋯</button>
               {menu && (
                 <div className="wz-walk-menu" data-walk-menu="" role="group" aria-label={t('guideWalkMore')}>
                   <button type="button" autoFocus data-walk-act="rename" onClick={() => { setMenu(false); setRenaming(true); }}>{t('reorgPlanRename')}</button>
                   <button type="button" data-walk-act="add" onClick={() => { setMenu(false); newStep((b, id) => addStepAfter(b, step.id, t('guideWalkNewStep'), () => id)); }}>{t('guideWalkAddAfter')}</button>
+                  {stepCard && !isScene(stepCard) && <button type="button" data-walk-act="scenes" onClick={() => { setMenu(false); setScenesFor(step.id); }}>{t('kidDoor_scene')}</button>}
                   <button type="button" data-walk-act="up" onClick={() => { setMenu(false); write((b) => movePlanRow(b, step.id, -1)); }}>{t('reorgPlanUp')}</button>
                   <button type="button" data-walk-act="down" onClick={() => { setMenu(false); write((b) => movePlanRow(b, step.id, 1)); }}>{t('reorgPlanDown')}</button>
                   {step.state === 'skipped' && <button type="button" data-walk-act="unskip" onClick={() => { setMenu(false); write((b) => setStepSkipped(b, step.id, false)); }}>{t('guideWalkNotSkipped')}</button>}
@@ -384,6 +408,16 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
                 </div>
               )}
             </div>
+            {scenesFor === step.id && (
+              <ScenesPopover kicker={t('kidKicker').replace('{plural}', t('kidPlural_scene'))} question={t('kidHowMany').replace('{plural}', t('kidPlural_scene'))} note={t('kidNote').replace('{step}', step.title)}
+                addLabel={t('kidAdd')} anchor={moreRef.current} onClose={() => setScenesFor(null)}
+                onAdd={(n) => {
+                  setScenesFor(null);
+                  const ids: string[] = [];
+                  write((b) => addScenesUnder(b, step.id, n, { title: t('kidTitle_scene'), question: t('kidQ_scene'), newId: () => { const id = generateId(); ids.push(id); return id; } }));
+                  if (ids.length) goTo(ids[0]);
+                }} />
+            )}
             {step.hint && <p className="wz-walk-hint" id="wz-walk-hint">{step.hint}</p>}
             {/* plain text only: her formatting is the card's marks (store/textMarks.ts), never markup in the text */}
             <div key={step.id} ref={(el) => { fieldRef.current = el; if (el && shownRef.current !== step.id) redraw(true); }} className="wz-walk-field" data-walk-field="" contentEditable={'plaintext-only' as unknown as boolean} suppressContentEditableWarning
@@ -403,12 +437,19 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
         )}
         <footer className="wz-walk-foot">
           <button type="button" className="wz-walk-quiet" data-walk-back="" disabled={!ended && index <= 0} onClick={back}>‹ {t('guideBack')}</button>
-          <span className="wz-walk-small" aria-live="polite">{!ended && step ? fill('guideWalkStepOf', { n: index + 1, total: steps.length }) : ''}</span>
+          <span className="wz-walk-small" aria-live="polite">{!ended && step ? fill('guideWalkStepOf', { n: num(index + 1), total: num(steps.length) }) : ''}</span>
           {ended || !step
             ? <button type="button" className="wz-walk-quiet" data-walk-done="" onClick={onDone}>{t('guideClose')}</button>
             : <button type="button" className="wz-walk-primary" data-walk-next="" onClick={forward}>{t(step.state === 'noted' ? 'guideWalkNext' : 'guideWalkSkip')} ›</button>}
         </footer>
       </section>
+      {/* the Back menu's other tabs, greyed: locked while she walks, by the app's own rule for a locked tab */}
+      <div className="wz-walk-back" role="tablist" aria-orientation="vertical" aria-label={t('guideWalkLocked')} style={{ left: at.card.left + at.card.width, top: at.card.top + 44 }}>
+        {(['reorgBackPlan', 'drawerLinks'] as const).map((k) => (
+          <button key={k} type="button" role="tab" aria-selected="false" aria-disabled="true" data-locked="true" tabIndex={-1} aria-describedby="wz-walk-locked-note" data-walk-locked={k}>{t(k)}</button>
+        ))}
+        <span id="wz-walk-locked-note" className="wz-walk-sr">{t('guideWalkLocked')}</span>
+      </div>
     </div>,
     document.body,
   );
