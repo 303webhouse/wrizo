@@ -19,14 +19,20 @@ export async function whoIsHere(): Promise<Who> {
       setCurrentUser(user);
       return { state: 'authed', user, online: true };
     }
-    // the account answered: not signed in. Whatever waited under another account is not hers to keep.
-    return { state: 'anon' };
+    // the account answered "not signed in"
+    if (res.status === 401 || res.status === 403) return { state: 'anon' };
+    // any other answer (the server is down, a hotel's sign-in page in the way) says nothing about who she is: treated as no signal, so she can still write a note that waits
+    return fromPhone(s);
   } catch {
-    // no signal: the phone's own record of whose it is
-    const id = s && !isSignedOutHere() ? s.getItem(ACCOUNT_POINTER_KEY) : null;
-    if (!id) return { state: 'anon' };
-    const user: AuthUser = { id, email: '' };
-    setCurrentUser(user);
-    return { state: 'authed', user, online: false };
+    return fromPhone(s);
   }
+}
+
+/** No signal: the phone's own record of whose it is. */
+function fromPhone(s: Storage | null): Who {
+  const id = s && !isSignedOutHere() ? s.getItem(ACCOUNT_POINTER_KEY) : null;
+  if (!id) return { state: 'anon' };
+  const user: AuthUser = { id, email: '' };
+  setCurrentUser(user);
+  return { state: 'authed', user, online: false };
 }

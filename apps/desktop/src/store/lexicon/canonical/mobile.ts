@@ -36,7 +36,7 @@ export const CANONICAL_MOBILE = {
   mobileNoteLabel: 'Your note',
   mobileNothingHere: 'Nothing here yet.',
   mobileNoResults: 'Nothing found.',
-  mobileNoPlace: 'Choose a place first.',
+  mobileNotKept: 'This phone could not keep your note. It is still here.',
   mobileSignIn: 'Sign In',
   // a Doc chosen as the place whose own connected Boards are none (Fable, Nov 24, in her words); and leaving the note unfiled
   mobileDocNoBoard: 'This Doc has no Board yet',

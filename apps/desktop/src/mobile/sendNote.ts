@@ -1,8 +1,11 @@
-// MOBILE slice 1 - the phone's own queue, wired to the real store. A waiting note is SENT when its Card is on the Board in her own cache (addNote: the id is the note's, so a second send adds nothing) AND the account has taken it
-// (a sync that leaves the Board clean). A send that cannot say both rejects, and the note stays waiting. Nothing here runs on the desk: it is imported only by the companion's own entry.
-import { getDirtyRecords } from '../store/persistence';
-import { syncOnce } from '../store/sync';
+// MOBILE slice 1 - the phone's own queue, wired to the real store. A note counts as SENT only when THE ACCOUNT SAYS IT HOLDS ITS CARD: the account is asked before anything is written and again after the push.
+// The phone's own copy is not proof: the server keeps whichever copy of a Board is newer and drops an older push without a word, so a Board can read "synced" here and not hold the Card there.
+// Nothing here runs on the desk: it is imported only by the companion's own entry.
+import { applyRemoteRecords, getJournalEntry, saveJournalEntry } from '../store/persistence';
+import { getSyncStatus, syncOnce } from '../store/sync';
+import { apiSync, type SyncResponse } from '../store/api';
 import { getCurrentUser } from '../store/currentUser';
+import { isSignedOutHere } from '../store/signedOutHere';
 import { deliverNote } from './addNote';
 import { UNFILED_HOME } from './mobileBoard';
 import { createNoteQueue, wipeAllWaiting, type QueueStorage, type WaitingNote, type NoteTarget } from './noteQueue';
@@ -16,28 +19,64 @@ export function queueForSignedIn() {
   return s && user ? createNoteQueue({ storage: s, account: user.id }) : null;
 }
 
-/** Send one note: its Card into her cache (never twice; a note whose Board is gone goes where an unfiled phone note goes), then one sync; resolves only when the Board it landed on is clean on the account. */
-export async function sendOne(note: WaitingNote): Promise<void> {
-  const d = deliverNote(note, UNFILED_HOME);
-  if (d.result === 'held') throw new Error('no place to send it yet');   // stays waiting; the notes behind it still go
-  await syncOnce();
-  const dirty = getDirtyRecords().journalEntries ?? [];
-  if (dirty.some((e: { id: string }) => e.id === d.boardId)) throw new Error('not taken yet');
+/** The phone's session is still the account that wrote the note (another window may have signed out and another account in since). Rejects with no signal. */
+async function stillHers(account: string): Promise<void> {
+  if (isSignedOutHere()) throw new Error('signed out');
+  const res = await fetch('/auth/me', { credentials: 'include' });
+  if (!res.ok) throw new Error('not signed in');
+  if (((await res.json()) as { id?: string }).id !== account) throw new Error('another account');
 }
 
-/** Write a note (kept at once), then try to send it. Returns the note, still waiting if the signal is not there. */
-export async function writeNote(text: string, to: NoteTarget): Promise<WaitingNote | null> {
+/** Does anything the account sent back hold a Card with this id, on any Board (live, deleted, or a Card deleted in place)? Then the note has arrived, and is never added again. */
+const holds = (r: SyncResponse, id: string): boolean => (r.pull.journalEntries ?? []).some((e) => (e.boxes ?? []).some((b) => b.id === id));
+
+/** Send one note. Rejects (and so leaves the note waiting) unless the account holds its Card at the end. */
+export async function sendOne(note: WaitingNote): Promise<void> {
+  await stillHers(note.account);
+  await syncOnce();                                               // anything of hers still unsent goes first
+  const truth = await apiSync({ lastSyncAt: null, push: {} });    // what the account holds NOW; throws with no signal, and then NOTHING is written on the phone
+  if (holds(truth, note.id)) return;                              // taken on an earlier try whose answer was lost
+  if (getSyncStatus() !== 'synced') throw new Error('not up to date yet');
+  if (isSignedOutHere()) throw new Error('signed out');
+  // The phone's copy takes the account's, so "which Board is Mobile" and "is that Board gone" are read from today's truth. This matters after a push that failed: the sync keeps this device's unsent copy over
+  // the account's while it is unsent, so a Board deleted or changed at the desk meanwhile is taken here, before anything is saved over it (a Card already on the phone's copy is merged in, never dropped).
+  applyRemoteRecords(truth.pull);
+  const d = deliverNote(note, UNFILED_HOME);
+  if (d.result === 'held') throw new Error('no place to send it yet');   // stays waiting; the notes behind it still go
+  if (d.result === 'already') {
+    // the phone holds the Card and the account does not (a push that failed or was dropped as older): save the Board again so this push is the newer one
+    const board = getJournalEntry(d.boardId);
+    if (board) saveJournalEntry(board);
+  }
+  await syncOnce();
+  const after = await apiSync({ lastSyncAt: truth.serverTime, push: {} });
+  if (!holds(after, note.id)) throw new Error('not taken yet');
+}
+
+/** Write a note (kept on the phone at once), then try to send it. Null: it could NOT be kept (no account or no storage), and the caller must keep her words on the screen. */
+export function writeNote(text: string, to: NoteTarget): WaitingNote | null {
   const q = queueForSignedIn();
   if (!q) return null;
-  const note = q.make(text, to);
-  if (note) void q.flush(sendOne);
+  let note: WaitingNote | null;
+  try { note = q.make(text, to); } catch { return null; }   // storage full or refused
+  if (note) void sendWaiting();
   return note;
 }
 
-/** Try every waiting note again (the signal came back, or she opened the companion). */
+// ONE run at a time for the whole companion (each call of createNoteQueue has its own guard, so it is kept here): a note written while a run is out is picked up by the run that follows it.
+let running: Promise<unknown> | null = null;
+let again = false;
+
+/** Try every waiting note again (she wrote one, the signal came back, or she opened the companion). */
 export function sendWaiting(): Promise<unknown> {
+  if (running) { again = true; return running; }
   const q = queueForSignedIn();
-  return q ? q.flush(sendOne) : Promise.resolve();
+  if (!q) return Promise.resolve();
+  running = q.flush(sendOne).finally(() => {
+    running = null;
+    if (again) { again = false; void sendWaiting(); }
+  });
+  return running;
 }
 
 export function waitingNotes(): WaitingNote[] {

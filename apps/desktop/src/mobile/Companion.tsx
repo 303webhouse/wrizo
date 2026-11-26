@@ -16,6 +16,7 @@ import { whoIsHere, type Who } from './session';
 import { sendWaiting, waitingNotes, writeNote } from './sendNote';
 import type { WaitingNote, NoteTarget } from './noteQueue';
 import { placesOfDoc } from './docBoards';
+import { findMobileBoard } from './mobileBoard';
 
 type T = (term: DeskTermId) => string;
 type Route =
@@ -109,14 +110,16 @@ export function Companion(): ReactNode {
   );
 }
 
-// ---- Desk: Recent Docs and Boards (Pinned and the Mobile Board wait: pins load with the account's rail, and the Mobile Board waits on Nick's word on its marker) ----
+// ---- Desk: the Mobile Board, then Recent Docs and Boards ----
 function Desk({ t, waiting }: { t: T; waiting: WaitingNote[] }): ReactNode {
   const docs = getProjects().slice().sort(byRecent).slice(0, 5);
-  const boards = allBoards().slice(0, 5);
+  const mobile = findMobileBoard();
+  const boards = allBoards().filter((b) => b.id !== mobile).slice(0, 5);
   return (
     <>
       <h1 className="mc-h">{t('mobileDesk')}</h1>
       {waiting.length > 0 && <WaitingList t={t} notes={waiting} />}
+      {mobile && <ul className="mc-list"><li><button type="button" className="mc-row" data-mobile-board onClick={() => go('board', mobile, 'wall')}>{t('mobileMobile')}</button></li></ul>}
       <h2 className="mc-h2">{t('mobileRecent')}</h2>
       <ul className="mc-list">
         {docs.map((d) => <li key={d.id}><button type="button" className="mc-row" onClick={() => go('doc', d.id, 'read')}>{d.title || '—'}</button></li>)}
@@ -259,11 +262,14 @@ function Board({ t, route, waiting }: { t: T; route: Extract<Route, { at: 'board
 // ---- The + : a Note to a Board, in two taps (type, Send). Send To is filled in: the Board she is on; otherwise she Changes it. ----
 function AddSheet({ t, defaultBoard, onClose, onSent }: { t: T; defaultBoard: string | null; onClose: () => void; onSent: () => void }): ReactNode {
   const [text, setText] = useState('');
-  const [place, setPlace] = useState<NoteTarget | null>(defaultBoard ? { kind: 'board', id: defaultBoard } : null);
-  const [choosing, setChoosing] = useState(!defaultBoard);
+  // Send To is always filled in (she is never made to file a thing before she can save it): the Board she is on, otherwise Mobile
+  const [place, setPlace] = useState<NoteTarget>(defaultBoard ? { kind: 'board', id: defaultBoard } : { kind: 'unfiled' });
+  const [choosing, setChoosing] = useState(false);
+  const [notKept, setNotKept] = useState(false);
   // choosing a Doc: its own connected Boards (one lands at once; several are listed; none says so). Never a Mobile Board made for a Doc.
   const [inDoc, setInDoc] = useState<string | null>(null);
-  const boards = allBoards();
+  const mobile = findMobileBoard();
+  const boards = allBoards().filter((b) => b.id !== mobile);
   const docs = getProjects().slice().sort(byRecent);
   const docPlaces = inDoc ? placesOfDoc(inDoc) : null;
   const pickBoard = (id: string) => { setPlace({ kind: 'board', id }); setInDoc(null); setChoosing(false); };
@@ -271,23 +277,24 @@ function AddSheet({ t, defaultBoard, onClose, onSent }: { t: T; defaultBoard: st
     const p = placesOfDoc(id);
     if (p.kind === 'one') pickBoard(p.board.id); else setInDoc(id);
   };
-  const placeName = !place ? '' : place.kind === 'unfiled' ? t('mobileUnfiled') : titleOf(getJournalEntry(place.id) ?? ({ text: '' } as JournalEntry));
+  const placeName = place.kind === 'unfiled' || place.id === mobile ? t('mobileMobile') : titleOf(getJournalEntry(place.id) ?? ({ text: '' } as JournalEntry));
   const send = () => {
-    if (!place || !text.trim()) return;
-    void writeNote(text, place).then(onSent);
+    if (!text.trim()) return;
+    if (writeNote(text, place)) onSent(); else setNotKept(true);   // not kept: her words stay on the screen
   };
-  const boardRow = (id: string) => <li key={id}><button type="button" className="mc-row" aria-pressed={place?.kind === 'board' && place.id === id} onClick={() => pickBoard(id)}>{titleOf(getJournalEntry(id) ?? ({ text: '' } as JournalEntry))}</button></li>;
+  const boardRow = (id: string) => <li key={id}><button type="button" className="mc-row" aria-pressed={place.kind === 'board' && place.id === id} onClick={() => pickBoard(id)}>{titleOf(getJournalEntry(id) ?? ({ text: '' } as JournalEntry))}</button></li>;
   return (
     <div className="mc-sheet" role="dialog" aria-modal="true" aria-label={t('mobileNote')}>
       <div className="mc-sheet-in">
         <label className="mc-label" htmlFor="mc-note">{t('mobileNote')}</label>
         <textarea id="mc-note" className="mc-text" rows={5} value={text} onChange={(e) => setText(e.target.value)} autoFocus aria-label={t('mobileNoteLabel')} />
         <div className="mc-sendto">
-          <span>{t('mobileSendTo')}: <strong>{place ? placeName : t('mobileNoPlace')}</strong></span>
+          <span>{t('mobileSendTo')}: <strong>{placeName}</strong></span>
           <button type="button" className="mc-link" onClick={() => setChoosing((c) => !c)}>{t('mobileChange')}</button>
         </div>
         {choosing && !inDoc && (
           <div className="mc-pick">
+            <ul className="mc-list"><li><button type="button" className="mc-row" aria-pressed={place.kind === 'unfiled'} onClick={() => { setPlace({ kind: 'unfiled' }); setChoosing(false); }}>{t('mobileMobile')}</button></li></ul>
             <h2 className="mc-h2">{t('mobileDocs')}</h2>
             <ul className="mc-list">{docs.map((d) => <li key={d.id}><button type="button" className="mc-row" onClick={() => pickDoc(d.id)}>{d.title || '—'}</button></li>)}</ul>
             <h2 className="mc-h2">{t('mobileBoards')}</h2>
@@ -311,9 +318,10 @@ function AddSheet({ t, defaultBoard, onClose, onSent }: { t: T; defaultBoard: st
             )}
           </div>
         )}
+        {notKept && <p role="alert">{t('mobileNotKept')}</p>}
         <div className="mc-actions">
           <button type="button" className="mc-btn" onClick={onClose}>{t('mobileBack')}</button>
-          <button type="button" className="mc-btn mc-primary" disabled={!place || !text.trim()} onClick={send}>{t('mobileSend')}</button>
+          <button type="button" className="mc-btn mc-primary" disabled={!text.trim()} onClick={send}>{t('mobileSend')}</button>
         </div>
       </div>
     </div>

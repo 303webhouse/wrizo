@@ -35,6 +35,7 @@ function makeBoards() {
   const iso = () => new Date(Date.UTC(2026, 10, 23, 0, 0, S.clock++)).toISOString();
   const api = {
     getJournalEntry: (id) => { const r = S.rows.find((x) => x.id === id && !x.deletedAt); return r ? clone(r) : null; },
+    getJournalEntries: () => S.rows.filter((x) => !x.deletedAt).map(clone),   // Nov 26: deliverNote also asks whether the note is already on any live Board
     saveJournalEntry: (e) => { const row = clone(e); row.updatedAt = iso(); const i = S.rows.findIndex((x) => x.id === row.id); if (i >= 0) S.rows[i] = row; else S.rows.push(row); },
     generateId: () => 'g' + (S.clock++),
     getSystemKind: () => undefined,

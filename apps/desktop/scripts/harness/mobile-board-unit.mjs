@@ -39,6 +39,7 @@ const bundled = await build({
       "export * as user from './store/currentUser';",
       "export * as send from './mobile/sendNote';",
       "export * as rail from './reorg/railData';",
+      "export * as sync from './store/sync';",
     ].join('\n'),
     resolveDir: SRC, loader: 'ts',
   },
@@ -81,6 +82,7 @@ function makeAccount() {
 
 // ---- a phone: fresh storage, a fresh copy of the modules -----------------------------------------------------------------------------------------------------
 let nonce = 0;
+const phones = [];   // each pretend phone's sync is stopped after its scenario: its retry timer reads the globals at call time and would otherwise push into the next one's account
 async function phone(account) {
   nonce += 1;
   const map = new Map();
@@ -89,11 +91,13 @@ async function phone(account) {
   globalThis.document = { visibilityState: 'visible', addEventListener() {}, removeEventListener() {}, querySelectorAll: () => [], querySelector: () => null, documentElement: { getAttribute: () => null, setAttribute() {} } };
   globalThis.location = { protocol: 'https:', origin: 'https://app.test', href: 'https://app.test/m/', search: '', hash: '' };
   globalThis.localStorage = storage;
+  storage.setItem('writer-studio-journal-resync-v1', '1');   // a phone she has signed in on: the app's one-time journal backfill (sync.ts) has already run
   Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 Chrome/128', onLine: true }, configurable: true, writable: true });
   globalThis.fetch = account.fetch;
   const src = `/* phone ${nonce} */\n` + bundled.outputFiles[0].text;
   const m = await import('data:text/javascript;base64,' + Buffer.from(src).toString('base64'));
   m.user.setCurrentUser({ id: 'main', email: '' });
+  phones.push(m);
   return m;
 }
 
@@ -105,6 +109,7 @@ const named = (account, name) => account.boards().filter((b) => b.text === name 
 
 async function scenario(name, fn) {
   try { const [pass, detail] = await fn(); ok(name, pass, detail); } catch (e) { ok(name, false, 'the check threw: ' + (e && e.message || e)); }
+  finally { while (phones.length) phones.pop().sync.stopSync(); }
 }
 
 await scenario('MB-NEW no Mobile Board: the note makes one in Unfiled, with only the keys a loose Board born at the desk carries', async () => {
@@ -222,6 +227,34 @@ await scenario('MB-STALE the push failed, then the desk changed the Board: the r
   const r2 = await sends(m, note('n-1', 'from the phone', { kind: 'board', id: 'b-x' }));
   const ids = a.get('b-x').boxes.map((b) => b.id).sort().join();
   return [r1.startsWith('waits') && r2 === 'sent' && ids === 'desk-card,n-1', `first: ${r1}; resend: ${r2}; cards on the account: ${ids}`];
+});
+
+await scenario('MB-STALE-GONE the push failed, then she deleted that Board: it stays deleted and the note goes to Mobile', async () => {
+  const a = makeAccount(); a.put('journalEntries', board('b-x', 'Chapter notes'));
+  const m = await phone(a);
+  a.failPush = true;
+  await sends(m, note('n-1', 'x', { kind: 'board', id: 'b-x' }));
+  a.failPush = false;
+  await wait(5);
+  const now = new Date().toISOString();
+  a.put('journalEntries', { ...a.get('b-x'), deletedAt: now, updatedAt: now });
+  await wait(5);
+  const r = await sends(m, note('n-1', 'x', { kind: 'board', id: 'b-x' }));
+  const where = a.cardsWithId('n-1').map((c) => c.board.text).join();
+  return [r === 'sent' && !!a.get('b-x').deletedAt && where === 'Mobile', `${r}; deleted Board still deleted=${!!a.get('b-x').deletedAt}; Card on: ${where}`];
+});
+
+await scenario('MB-STALE-RENAME the push failed, then she renamed that Board: her name stays and there is one Card', async () => {
+  const a = makeAccount(); a.put('journalEntries', board('b-desk', 'Mobile'));
+  const m = await phone(a);
+  a.failPush = true;
+  await sends(m, note('n-1', 'x'));
+  a.failPush = false;
+  await wait(5);
+  a.put('journalEntries', { ...a.get('b-desk'), text: 'Kitchen', updatedAt: new Date().toISOString() });
+  await wait(5);
+  const r = await sends(m, note('n-1', 'x'));
+  return [r === 'sent' && a.get('b-desk').text === 'Kitchen' && a.cardsWithId('n-1').length === 1 && a.boards().length === 1, `${r}; name=${a.get('b-desk').text}; copies=${a.cardsWithId('n-1').length}; boards=${a.boards().length}`];
 });
 
 await scenario('MB-DENIED the account never took it: the note keeps waiting', async () => {

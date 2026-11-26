@@ -1,9 +1,9 @@
 // MOBILE slice 1, item 2 - ADD: NOTE, the receiving end. A typed note becomes an ordinary text Card on a Board, and the Card's id IS the note's id (made on the phone, see noteQueue.ts).
-// "A note is never added twice": any box already on the Board with that id - live, deleted (a tombstone) or deleted for good (a marker) - means the note has arrived before, so nothing is added and a Card she
+// An unfiled note goes to the Mobile Board (mobileBoard.ts). "A note is never added twice": any box already on the Board with that id - live, deleted (a tombstone) or deleted for good (a marker) - means the note has arrived before, so nothing is added and a Card she
 // deleted is never brought back by a second arrival. Sync already merges a Board's boxes per box id, so two devices and a resent note agree on the one Card.
 // Nothing else on the Board is touched: the new Card goes below the lowest live one, with its own updatedAt (the per-box merge key).
 import type { Box } from '../types';
-import { getJournalEntry, saveJournalEntry } from '../store/persistence';
+import { getJournalEntries, getJournalEntry, saveJournalEntry } from '../store/persistence';
 import { liveBoxes } from '../store/boxTombstones';
 import type { NoteTarget } from './noteQueue';
 
@@ -19,8 +19,16 @@ const GAP = 0.02;
 export interface UnfiledHome { find(): string | null; make(): string | null }
 export type Delivery = { result: 'added' | 'already'; boardId: string; rerouted: boolean } | { result: 'held' };
 
-/** Deliver a note to its place. A note whose Board is gone (or that was sent with no place) goes where an unfiled phone note goes (Fable, Nov 24), and is never lost: with no home to go to yet it is HELD, and the caller leaves it waiting. */
+/** The live Board on this phone that already has a box with this id (a live Card, or one deleted in place), or null. */
+function boardHolding(id: string): string | null {
+  return getJournalEntries().find((e) => e.pageType === 'board' && !e.deletedAt && !e.purgedAt && (e.boxes ?? []).some((b) => b.id === id))?.id ?? null;
+}
+
+/** Deliver a note to its place. A note whose Board is gone (or that was sent with no place) goes where an unfiled phone note goes (Fable, Nov 24), and is never lost: with no home to go to yet it is HELD, and the caller leaves it waiting.
+ *  A note already on ANY live Board is not added again, wherever it was meant to go (the Mobile Board may have been renamed between two tries). */
 export function deliverNote(note: NoteToAdd, home: UnfiledHome | null): Delivery {
+  const has = boardHolding(note.id);
+  if (has) return { result: 'already', boardId: has, rerouted: note.to.kind !== 'board' || note.to.id !== has };
   if (note.to.kind === 'board') {
     const r = addNote(note);
     if (r !== 'no-place') return { result: r, boardId: note.to.id, rerouted: false };
