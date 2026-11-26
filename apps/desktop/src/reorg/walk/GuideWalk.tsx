@@ -190,6 +190,9 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
       window.setTimeout(() => {
         const back = had?.isConnected && had !== document.body ? had : document.querySelector<HTMLElement>('.mode-pagecol [contenteditable="true"], .mode-pagecol textarea');
         if (!back) return;
+        // THE DRAWING PEN IS DOWN under the walk (VISUAL 1a.3): her words keep her own place for her (PageEditor's "typing lands" rule puts the pen down at her next key, where SHE left the caret). A caret put here
+        // would take that key to the end of her words instead.
+        if (back.isContentEditable && document.querySelector('.mode-page[data-instrument="ink"]')) return;
         back.focus();
         if (!back.isContentEditable) return;
         const range = caret && back.contains(caret.startContainer) ? caret : document.createRange();

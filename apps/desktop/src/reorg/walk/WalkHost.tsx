@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../../store/deskLexicon';
 import { useTheme } from '../../store/theme';
@@ -29,10 +29,22 @@ function WalkChip({ pageId, onOpen }: { pageId: string; onOpen: () => void }) {
     return step ? `${step.number}\u0001${steps.length}\u0001${step.title}` : '';
   });
   const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  const chipRef = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
     const place = () => {
       const page = walkPageRect();
-      const next = page ? { left: Math.round(page.left), top: Math.round(Math.max(4, page.top - 34)) } : null;
+      let next: { left: number; top: number } | null = null;
+      if (page) {
+        const top = Math.round(Math.max(4, page.top - 34));
+        let left = Math.round(page.left);
+        // NEVER ON A CONTROL: Arbor's drawer wears folder tabs above it that reach over the page's margin, so the chip stands past any tab in its place (read left to right)
+        const width = chipRef.current?.offsetWidth || 240, height = chipRef.current?.offsetHeight || 28;
+        for (const tab of document.querySelectorAll('[id^="wz-sliver-tab-"]')) {
+          const r = tab.getBoundingClientRect();
+          if (r.width > 0 && r.top < top + height && r.bottom > top && r.left < left + width && r.right > left && getComputedStyle(tab).visibility !== 'hidden') left = Math.round(r.right) + 8;
+        }
+        next = { left, top };
+      }
       setAt((was) => (JSON.stringify(was) === JSON.stringify(next) ? was : next));
     };
     place();
@@ -43,7 +55,7 @@ function WalkChip({ pageId, onOpen }: { pageId: string; onOpen: () => void }) {
   const [n, total, title] = label.split('\u0001');
   const num = (v: string) => (flux ? v.padStart(2, '0') : v);
   return (
-    <button type="button" className="wz-walk-chip" data-walk-chip="" style={at} onClick={onOpen}>
+    <button type="button" ref={chipRef} className="wz-walk-chip" data-walk-chip="" style={at} onClick={onOpen}>
       {t('guideWalkChip').replace('{step}', title || t('reorgUntitled')).replace('{n}', num(n)).replace('{total}', num(total))} ›
     </button>
   );
