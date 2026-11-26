@@ -49,7 +49,9 @@ const JOIN = ['harness/board-click-create.mjs', 'harness/card-resize-axis.mjs', 
   // Flux reorg piece 1 (Nov 21): the theme gate's census reads the BoardEditor site as the join (srcText)
   'harness/reorg-theme-gate-unit.mjs',
   // the switch-over (POLISH, Nov 21, 9:40 pm ruling): R2's census reads the BoardEditor site (the Plan presets' reorgFor) as the join (srcText)
-  'harness/reorg-switchover.mjs'];
+  'harness/reorg-switchover.mjs',
+  // the Guide's walk (PRESETS-B, Nov 26): its SITES law reads the board's card-text edit as the join (srcText)
+  'harness/reorg-guide-walk-unit.mjs'];
 const BARE = [];   // none: a bare read of the module is half the board now
 // names the file in code but reads no text of it: a browser check's own words, a comment-free label, or a tool that reads by revision
 const NOT_A_READER = ['harness/b2.mjs', 'harness/fx7.mjs', 'c13/c13-9-ts-comments.mjs', 'global-css.mjs', 'c13/c13-10g-readers.mjs',

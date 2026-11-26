@@ -21,6 +21,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { srcText } from '../global-css.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -29,6 +30,8 @@ const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
 const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts'];
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
+// the board is read as the join (the module and every file in components/board/), as c13-10g-readers asks of any script that reads it
+SOURCES['components/BoardEditor.tsx'] = srcText(SRC, 'components/BoardEditor.tsx').split('\r\n').join('\n');
 
 /** A tiny loader: the real modules, their relative imports resolved from src (with `src` overriding a file's text). */
 function loader(src) {
@@ -194,7 +197,9 @@ function suite(src) {
   });
   t('THEMES', () => {
     const canon = src['store/lexicon/canonical/chrome.ts'], a = src['store/lexicon/overrides/arborReorg.ts'], f = src['store/lexicon/overrides/fluxReorg.ts'];
-    const word = (text, k) => { const m = new RegExp('^\\s*' + k + ":\\s*(?:'((?:[^'\\\\]|\\\\.)*)'|\"([^\"]*)\")", 'm').exec(text); return m ? (m[1] ?? m[2]).replace(/\\'/g, "'") : null; };
+    const table = (text) => new Map([...text.matchAll(/^\s*([A-Za-z0-9]+):\s*(?:'((?:[^'\\]|\\.)*)'|"([^"]*)")/gm)].map((m) => [m[1], (m[2] ?? m[3]).replace(/\\'/g, "'")]));
+    const words = new Map([[canon, table(canon)], [a, table(a)], [f, table(f)]]);
+    const word = (text, k) => words.get(text).get(k) ?? null;
     const TABLE = {
       guideWalkHead: ['Guide · Walk', 'The Guide', 'GUIDE // WALK'],
       guideWalkStepOf: ['Step {n} of {total}', 'step {n} of {total}', 'STEP {n}/{total}'],

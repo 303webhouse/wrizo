@@ -30,7 +30,8 @@
 + /** A Doc-level asset (Nick ruled A, Nov 20, 11:55 pm): connected to the whole Doc, not to a Part. `at` is when it was connected. Listed under the Assets tab's
 +  *  head; dragged into a Part it also becomes that Part's own PageLink (graftTo) and stays here. Read and written only through reorg/docSettings.ts. */
 + export interface DocAsset { entryId: string; boxId?: string; at: string }
-+ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean; /** the Doc's assets she ticked to go out, as docSettings.ts attachKey writes them; absent = none */ attach?: string[] }; assets?: DocAsset[]; /** colour B (Nick, Nov 21 4:53 pm): this Doc's colour scheme for its slots; absent = Default (each theme draws its own version) */ colourScheme?: 'default' | 'muted' | 'vivid' };
+# SUPERSEDED (PRESETS-B walk, Nov 26): the line below gained `walk` and is declared again in the walk's block. The original, verbatim:
+# + export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean; /** the Doc's assets she ticked to go out, as docSettings.ts attachKey writes them; absent = none */ attach?: string[] }; assets?: DocAsset[]; /** colour B (Nick, Nov 21 4:53 pm): this Doc's colour scheme for its slots; absent = Default (each theme draws its own version) */ colourScheme?: 'default' | 'muted' | 'vivid' };
 +   // THE DOC'S OWN SETTINGS (Fable, Nov 20, Nick ruled: a Doc-wide setting lives in the Doc's own record, never in whichever Part is first). ONE additive nullable jsonb column on `projects`
 +   // (`doc_settings`), the exact `tutor` recipe above: absent on every Doc that never chose (never null, never {}), so a project that never chose syncs byte-identically to today. A made Doc (a set the
 +   // writer made) only: a loose page is its own Doc and keeps the one key that already exists on a page (pageSettings.styleGuide). Read and written only through reorg/docSettings.ts.
@@ -41,3 +42,15 @@
 +   size?: number;    // the line's width in px
 +   hex?: string;     // her own colour, #RRGGBB
 +   alpha?: number;   // see-through: 0.05 to 1; absent = solid
+# THE GUIDE'S WALK (PRESETS-B, Nov 25-26; Fable's placements, Nick ruled both saved-data questions yes): Box.planSkipped and Box.textMarks (inside the boxes jsonb), TextMark,
+# DocSettings.walk and PageSettings.walk (inside their jsonb). All optional; no column, no migration.
++ /** A stretch of a card's text drawn bold, italic, underlined or struck (store/textMarks.ts). */
++ export interface TextMark { start: number; end: number; b?: true; i?: true; u?: true; s?: true }
++   // THE GUIDE WALK (PRESETS-B, Nov 25; Fable's placement, Nick ruled both saved-data questions yes). Two additive optional fields inside the board's `boxes` jsonb (zero schema), both ABSENT on every card that never used them.
++   // planSkipped: set only by Skip on an empty step; cleared when the row gains a note, and by "Not skipped" (the key is removed). Never counted, never celebrated.
++   planSkipped?: true;
++   // textMarks: bold, italic, underline, strike as ranges of offsets into `text`, which stays PLAIN (store/textMarks.ts keeps them on their words through every edit).
++   textMarks?: TextMark[];
++   // THE GUIDE WALK (Nov 25): a LOOSE page is its own Doc, so her place in the walk is kept here (a made Doc keeps it in docSettings). Absent = not walking. A fact about THIS page, never dress.
++   walk?: { stepId: string };
++ export type DocSettings = { styleGuide?: StyleGuide; export?: { format?: 'md' | 'txt' | 'html'; /** the "Include the Plan" tick on the publishing view, remembered per Doc; absent = off */ includePlan?: boolean; /** the Doc's assets she ticked to go out, as docSettings.ts attachKey writes them; absent = none */ attach?: string[] }; assets?: DocAsset[]; /** colour B (Nick, Nov 21 4:53 pm): this Doc's colour scheme for its slots; absent = Default (each theme draws its own version) */ colourScheme?: 'default' | 'muted' | 'vivid'; /** her place in the Guide's walk (Nov 25): the Plan row she is on; absent = not walking. A loose page keeps it in its pageSettings, as styleGuide does */ walk?: { stepId: string } };
