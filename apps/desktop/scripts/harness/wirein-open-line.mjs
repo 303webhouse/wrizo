@@ -17,13 +17,20 @@ const J = (v) => JSON.stringify(v);
 const PARA = (i) => `Paragraph ${i} of the draft: she kept going, and the river ran under the window of the room where she had left her coat, and word${i} stayed.`;
 // the page's kinds: a loose page (Free Write is its own default); a Journal entry and a legacy page with no origin (both carry the page's furniture above her words; Free Write is the stored choice)
 const LONG = Array.from({ length: 40 }, (_, i) => PARA(i)).join(String.fromCharCode(10, 10));
+const SENTENCES = [
+  'The rope was already there, and the well took the bucket back colder still.',
+  'Whatever is worth carrying is already with you, and the rest the wind can have.',
+  'We left the map on the stone and walked until the light went thin over the ridge.',
+];
+const HINT_PARA = (() => { let t = ''; let i = 0; while (t.length < 2600) { t += (t ? ' ' : '') + SENTENCES[i % SENTENCES.length]; i += 1; } return t; })();
 const SEEDS = {
+  hint: { text: HINT_PARA, origin: null, mode: 'journal' },
   loose: { text: LONG, origin: 'loose', mode: null },
   journal: { text: LONG, origin: 'journal', mode: 'journal' },
   legacy: { text: LONG, origin: null, mode: 'journal' },
 };
 const ARMS = [
-  { theme: 'flux', w: 1366, h: 768, seeds: ['loose', 'journal', 'legacy'] }, { theme: 'flux', w: 1920, h: 1080, seeds: ['loose'] }, { theme: 'flux', w: 2560, h: 1440, seeds: ['loose'] },
+  { theme: 'flux', w: 1366, h: 768, seeds: ['hint', 'loose', 'journal', 'legacy'] }, { theme: 'flux', w: 1920, h: 1080, seeds: ['hint', 'loose'] }, { theme: 'flux', w: 2560, h: 1440, seeds: ['loose'] },
   { theme: 'plateau', w: 1366, h: 768, seeds: ['loose', 'journal', 'legacy'] }, { theme: 'machina', w: 1366, h: 768, seeds: ['loose'] },
 ];
 // the last line of her words and the window; the judge: the whole line inside it
@@ -37,6 +44,8 @@ const READ = `(() => {
     focused: document.activeElement === ed, chars: ed.textContent.replace(/\\u200b/g, '').length,
     trace: trace.slice(0, 3).concat(trace.length > 3 ? trace.slice(-5) : []), steps: trace.length };
 })()`;
+// WOL_ONLY: a short diagnostic run reads one kind of page
+const ONLY = 'hint';
 const onScreen = (g) => !!g && g.top != null && g.top >= 0 && g.bottom <= g.vh;
 
 try { await withHarness(async (app) => {
@@ -54,7 +63,7 @@ try { await withHarness(async (app) => {
   const arrive = async () => { await soft("!!document.querySelector('.forward-only-editor')"); await soft("!document.querySelector('.wz-splash')"); await sleep(4600); await settle(); return ev(READ); };
 
   for (const arm of ARMS) {
-    for (const shape of arm.seeds) {
+    for (const shape of arm.seeds.filter((k) => !ONLY || k === ONLY)) {
       const { text, origin, mode } = SEEDS[shape];
       const tag = `${arm.theme} ${arm.w} ${shape}`;
       const id = `wol-${arm.theme}-${arm.w}-${shape}`;
