@@ -59,6 +59,23 @@ await withHarness(async (app) => {
   ok('B2b settled, EVERY drawn bar is painted dark', allDark(settled), J(settled));
   ok('MUT the same first sight with a light bar turns B1\'s judge red', !good({ ...(later || {}), bg: 'rgb(244, 245, 246)' }) && good(later), J(later));
 
+  // B5: the other screens, settled - which of their bars (if any) is painted light
+  await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  await app.evalJs("window.wrizoCreateJournalPage({ id: 'mb-board', text: 'A board', pageType: 'board', boxes: [], createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: 'page' }); window.wrizoCreateJournalPage({ id: 'mb-script', text: 'INT. ROOM - DAY', pageType: 'script', createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: 'page' }); window.wrizoFlushNow()");
+  for (const room of ['light', 'dark']) {
+    await app.evalJs(`localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: '${room}', fade: 'on' }))`);
+    for (const [name, hash] of [['Desk', '#/'], ['Drawers', '#/drawers'], ['Shelf', '#/shelf'], ['Board', '#/page/mb-board'], ['Script', '#/page/mb-script'], ['Journal', '#/journal'], ['Trash', '#/trash'], ['New project', '#/project/new']]) {
+      await app.evalJs(`location.hash = '${hash}'`);
+      await app.reload();
+      await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
+      await sleep(1500);
+      const r = await app.evalJs(ALL);
+      if (!Object.keys(r.bars).length) { console.log(`DIAG ${name} (${room}): no bar drawn`); continue; }
+      ok(`B5 ${name}, page ${room}: every drawn bar is dark`, r.look === true && allDark(r), J(r));
+    }
+  }
+  await app.evalJs("localStorage.setItem('wrizo-theme-prefs', JSON.stringify({ voice: 'serif', page: 'light', fade: 'on' })); location.hash = '#/page/mb-1'");
+
   // B3: the chunk refused - the app must still draw
   await app.cdp('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
   await app.cdp('Network.setBlockedURLs', { urls: ['*mount-*.js', '*mount-*.css'] });
