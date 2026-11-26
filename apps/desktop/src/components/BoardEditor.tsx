@@ -80,6 +80,7 @@ import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/
 import type { JournalEntry, Box, Project, StoredFace, Stroke } from '../types';
 import type { InkPen } from './InkStratum';
 import { InkLayer } from './ink/InkLayer';
+import { useReorgPiece } from '../reorg/themeGate';
 import { boardInkWanted, clearBoardInk } from './ink/boardInkIntent';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { TypeControl } from './TypeControl';
@@ -231,7 +232,8 @@ export function BoardEditor({ id }: { id: string }) {
   const [startedInInk] = useState(() => boardInkWanted(id));
   useEffect(() => { clearBoardInk(id); }, [id]);
   const [boardInstrument, setBoardInstrument] = useState<'text' | 'ink'>(startedInInk ? 'ink' : 'text');
-  const canInk = framed && !isSystemBoard && boardMode === 'open';
+  const reorgFrontOn = useReorgPiece('front');   // the switch off (tests only), a Board's drawer stays exactly as it was
+  const canInk = reorgFrontOn && framed && !isSystemBoard && boardMode === 'open';
   const inkNow: 'text' | 'ink' = canInk ? boardInstrument : 'text';
   useEffect(() => { if (!canInk) setBoardInstrument('text'); }, [canInk]);
   useEffect(() => { if (inkNow === 'ink') setSelectedId(null); }, [inkNow]);   // no card stays selected under the pen (Delete would remove it)

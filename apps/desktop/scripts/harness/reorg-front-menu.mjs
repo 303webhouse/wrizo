@@ -227,8 +227,11 @@ await withHarness(async (app) => {
   await open(app, 'machina', true, 'tr-g-b'); await openDrawer(app);
   const boardOn = await app.evalJs(`(() => ({ tabs: document.querySelectorAll('.wz-sliver [role="tab"]').length, parts: !!document.querySelector('.wz-sliver [data-reorg-parts]'), setup: !!document.querySelector('.wz-sliver .wz-page-setup'), sections: ${SECTIONS} }))()`);
   const boardOff = golden && golden.sections ? golden.sections['machina.board'] : null;
-  ok('F5 a Board in Machina, switch ON, keeps today\'s drawer: no tab row, no Parts list, no Page setup, one section as off (the reorg names it Board)',
-    boardOn.tabs === 0 && !boardOn.parts && !boardOn.setup && Array.isArray(boardOn.sections) && boardOn.sections.length === 1 && Array.isArray(boardOff) && boardOff.length === 1, { boardOn, boardOff });
+  // SUPERSEDED (Nov 25, VISUAL 1a.3: INK joins BUILD, EDIT and a Board, VISUAL's kit §3), the original, verbatim:
+  // ok('F5 a Board in Machina, switch ON, keeps today\'s drawer: no tab row, no Parts list, no Page setup, one section as off (the reorg names it Board)',
+  //   boardOn.tabs === 0 && !boardOn.parts && !boardOn.setup && Array.isArray(boardOn.sections) && boardOn.sections.length === 1 && Array.isArray(boardOff) && boardOff.length === 1, { boardOn, boardOff });
+  ok("F5 [VISUAL 1a.3 successor] a Board in Machina, switch ON: its own tools and INK are its two tabs (Board first, open); no Parts list, no Page setup, one section as off (the reorg names it Board)",
+    boardOn.tabs === 2 && !boardOn.parts && !boardOn.setup && Array.isArray(boardOn.sections) && boardOn.sections.length === 1 && Array.isArray(boardOff) && boardOff.length === 1, { boardOn, boardOff });
 
   // ---- PARTS ---------------------------------------------------------------------------------------------------------------------------
   await open(app, 'machina', true, 'tr-g-2'); await openDrawer(app);
