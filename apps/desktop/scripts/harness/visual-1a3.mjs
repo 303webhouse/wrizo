@@ -1,5 +1,5 @@
-// VISUAL 1a.3 - INK WHERE THE PLAN SAYS (VISUAL's kit §3): a Board gets the whole tab; a Page in BUILD and EDIT the short set and the "Draw on a Board" door. The live defaults (?reorg=1 on top of
-// the driver's pin, which turns the reorg off unless asked). Page side: visual-ink/page.js and page-1a3.js. Browserless: visual-1a3-unit.mjs.
+// VISUAL 1a.3 - INK WHERE THE PLAN SAYS (VISUAL's kit §3): a Board gets the whole tab; a Page in BUILD and EDIT the short set and the "Draw on a Board" door. The live defaults: this file lifts
+// the driver's pins (reorg off, the old Arbor, Machina and Flux) before it loads the driver, because the surfaces it tests exist only in the reorg and the redesigns. Page side: visual-ink/page.js and page-1a3.js. Browserless: visual-1a3-unit.mjs.
 //   C1-C2   a Page and a Board where she never opens INK load none of the ink code, and the Board gets no drawing layer
 //   P1-P9   the Page: the INK tab in BUILD and EDIT only, only built rows, the door at Studio's foot, a stroke stored with her words untouched, every stage change puts the pen down
 //   T1-T3   REAL KEYS: typing lands after drawing in BUILD, after the Board and back, and not one word is missing
@@ -8,7 +8,12 @@
 //   B9      a reload keeps the Board's drawing and paints it, with only the painter loaded
 // Run: node scripts/harness/visual-1a3.mjs   (from apps/desktop; dist-web built; needs a box turn on the PC)
 import fs from 'node:fs';
-import { withHarness } from '../runtime-verify.mjs';
+// the live defaults, asked for before the driver reads them
+process.env.WS_REORG = '1';
+process.env.WS_ARBOR2 = 'default';
+process.env.WS_MACHINA2 = 'default';
+process.env.WS_FLUX3 = 'default';
+const { withHarness } = await import('../runtime-verify.mjs');
 
 const PAGE = fs.readFileSync(new URL('./visual-ink/page.js', import.meta.url), 'utf8');
 const PAGE3 = fs.readFileSync(new URL('./visual-ink/page-1a3.js', import.meta.url), 'utf8');
@@ -19,7 +24,7 @@ const run = (app, js) => app.evalJs(`(async () => { ${js} })()`);
 const add = (list, tag = '') => { for (const c of list) ok(`${c.name}${tag}`, c.pass, c.detail); };
 
 const boot = async (app, width = 1366, height = 768) => {
-  await app.goto('/?reorg=1');
+  await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
