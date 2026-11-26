@@ -72,7 +72,7 @@ function printEval(ev) {
 
 // ---- the live run ----
 async function liveRun(args) {
-  const { makeCap, makeClients, liveReply, liveGrade, CapReached, safeError } = await import('./live.mjs');
+  const { makeCap, makeClients, liveReply, liveSprint, liveGrade, CapReached, safeError } = await import('./live.mjs');
   const env = process.env;
   if (!env.TUTOR_EVAL_API_KEY) { console.error('TUTOR_EVAL_API_KEY is not set. The live run waits for Nick to add that repository secret. Nothing was called.'); process.exit(3); }
   const num = (v, d, hi) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.min(n, hi) : d; };
@@ -82,7 +82,7 @@ async function liveRun(args) {
   const { guard, prompts, cleanup } = loadModules();
   const only = args.only ? new Set(args.only.split(',')) : null;
   const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (!only || only.has(c.id)));
-  const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.5', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [] };
+  const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.5', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [], sprint: [] };
   console.log(`LIVE RUN: ${todo.length} cases, reply model ${clients.replyModel}, second reader ${useGrader ? clients.graderModel : 'off'}, cap ${cap.state.maxCalls} calls / ${cap.state.maxTokens} tokens`);
   let stop = false;
   const runOne = async (c) => {
@@ -106,6 +106,19 @@ async function liveRun(args) {
   // three at a time; the cap is taken before each call, so the pool can never pass it
   const queue = todo.slice();
   await Promise.all(Array.from({ length: 3 }, async () => { while (queue.length) await runOne(queue.shift()); }));
+  // SPRINT's one prompt (Fable, Nov 25: show what it really returns live): a FULL run ends with five calls as the route made them before (a cap of 80) and five as it makes them now. LAST, so they never take room from the cases.
+  if (!only && !stop) {
+    for (const maxTokens of [80, 80, 80, 80, 80, ...Array(5).fill(prompts.SPRINT_MAX_TOKENS)]) {
+      try {
+        const s = await liveSprint({ clients, cap, prompts, maxTokens });
+        out.sprint.push(s);
+        console.log(`SPRINT cap ${maxTokens}: stop ${s.stop}, thought ${s.thought}, ${s.reply.length} characters, ${s.usage.output} tokens out, ${s.ms} ms`);
+      } catch (e) {
+        out.notRun.push({ id: `SPRINT ${maxTokens}`, why: e instanceof CapReached ? 'cap reached' : `call failed (${safeError(e)})` });
+        if (e instanceof CapReached) break;
+      }
+    }
+  }
   out.entries.sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }));
   out.cap = { ...cap.state };
   cleanup();

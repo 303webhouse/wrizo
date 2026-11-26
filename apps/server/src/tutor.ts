@@ -6,7 +6,7 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, unfinishedReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_MAX_TOKENS } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_MAX_TOKENS, SPRINT_RULES, SPRINT_MAX_TOKENS, sprintAsk } from './tutorPrompts';
 import { notesForAsk } from './tutorNotes';
 import { sqlNotesStore } from './tutorNotesRoutes';
 
@@ -340,24 +340,12 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
 // SPRINT'S PROMPTS FROM THE CONSULTANT (Fable, Nov 21, 12:35 am, FIX's queue item 6; Nick's F1, machina-stage-menus-decide.md: in SPRINT the Consultant gives ONE prompt to get her writing and keep her writing and "never
 // starts a back-and-forth"). A second route beside /tutor/chat, under the same auth, the same per-account rate limit and the SAME two daily budgets. It is not a chat: the body carries NOTHING OF HER PAGE and no
 // conversation, only the prompts already shown this session (`seen`, so the Consultant does not repeat itself), and the answer is ONE cleaned line, or a plain failure the client answers from its local deck.
-// The strict rules are the system prompt below and the cleaning after it: whatever the model says, only a single short sentence leaves this route.
+// The strict rules are the system prompt (tutorPrompts.ts SPRINT_RULES) and the cleaning below: whatever the model says, only a single short sentence leaves this route.
 // The rules that already lived on the server for this route; the kit's SPRINT task says so ("the rules already live on the server"). buildSprintSystemPrompt puts BASE, the Machina voice and the SPRINT task ahead of them.
-const SPRINT_RULES = `
-You are the Consultant inside Wrizo's SPRINT stage, where the writer is free-writing against the clock. Your only job is to give the writer exactly one short writing prompt that gets them writing again.
-
-Absolute rules:
-- Reply with exactly one prompt: a single sentence of at most 25 words, plain text, with no quotation marks, no numbering, no markdown, no preface and no sign-off.
-- Keep it short and concrete: a scene, an object, a sound, a moment, a place to begin from. It points; it never starts the writing.
-- Never ask a question back to the writer about their work, and never invite a reply. There is no follow-up and no conversation: whatever arrives next, you give exactly one prompt.
-- Do not judge, evaluate or comment on anything the writer has written. You have not seen it, and you must never claim to have.
-- Never write or compose prose, dialogue or description for the writer's work. The prompt points; it never writes.
-- Do not repeat or paraphrase a prompt you are told was already given.
-`;
 const SPRINT_SYSTEM_PROMPT = buildSprintSystemPrompt(SPRINT_RULES);
 const MAX_SEEN = 3;
 const MAX_SEEN_CHARS = 300;
 const MAX_SPRINT_PROMPT_CHARS = 200;
-const SPRINT_MAX_TOKENS = 80;
 
 // the body is `{ seen? }` and NOTHING ELSE: a key that could carry her words (delta, messages, selection, bible) makes the whole body invalid
 function isSprintBody(body: unknown): body is { seen?: string[] } {
@@ -401,9 +389,7 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
     return;
   }
   const seen: string[] = req.body.seen ?? [];
-  const ask = seen.length > 0
-    ? `Prompts already given this session (do not repeat or paraphrase them):\n${seen.map((x) => `- ${x}`).join('\n')}\n\nGive one new writing prompt.`
-    : 'Give one writing prompt.';
+  const ask = sprintAsk(seen);
   try {
     const askModel = () => client().messages.create({
       model: env.tutorModel,
@@ -416,16 +402,20 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
       .map((b) => b.text)
       .join('\n')
       .trim();
-    const text = textOf(await askModel());
+    const first = await askModel();
+    const text = textOf(first);
+    const unfinished = unfinishedReply(text, first.stop_reason);   // no text, or stopped at the cap: half a line can read like a whole one
     const prompt = cleanSprintPrompt(text);
-    let line = holdsSafetyMarker(text) ? null : prompt;   // the marker is for the chat route (her words ride only there); in SPRINT a reply that holds it is no writing prompt: the same plain failure, the client's local deck answers
+    let line = holdsSafetyMarker(text) || unfinished ? null : prompt;   // the marker is for the chat route (her words ride only there); in SPRINT a reply that holds it is no writing prompt: the same plain failure, the client's local deck answers
     // TUTOR-B — THE REPLY GUARD, on this route too (Fable, Nov 23, call 3): the SAME guard (tutorGuard.ts) reads the one cleaned line that would leave. A line that says "I", "we" and the rest of the kit's M1 list, or
-    // flatters (M2), is asked for again ONCE, paid from the same two daily budgets as any other call (both refuse at their cap and never count past it). If the second one fails too, or no unit is left to ask with,
-    // nothing is sent: the route answers its existing plain failure and the client gives her a prompt from its local deck. The chat route's fallback line is never used here, because it is not a writing prompt.
-    if (line && !guardReply(line).ok) {
+    // flatters (M2), is asked for again ONCE, paid from the same two daily budgets as any other call (both refuse at their cap and never count past it). An empty or cut-off reply is asked for again the same way
+    // (Fable, Nov 25). If the second one fails too, or no unit is left to ask with, nothing is sent: the route answers its existing plain failure and the client gives her a prompt from its local deck. The chat
+    // route's fallback line is never used here, because it is not a writing prompt.
+    if (!holdsSafetyMarker(text) && (unfinished || (line && !guardReply(line).ok))) {
       const retryAllowed = consumeTutorBudget(req.session.userId!) && consumeGlobalTutorBudget();
-      const retryText = retryAllowed ? textOf(await askModel()) : null;
-      line = retryText !== null && !holdsSafetyMarker(retryText) ? cleanSprintPrompt(retryText) : null;
+      const again = retryAllowed ? await askModel() : null;
+      const retryText = again ? textOf(again) : '';
+      line = again && !holdsSafetyMarker(retryText) && !unfinishedReply(retryText, again.stop_reason) ? cleanSprintPrompt(retryText) : null;
       if (line && !guardReply(line).ok) line = null;
     }
     if (!line) {

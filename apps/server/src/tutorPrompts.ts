@@ -221,6 +221,24 @@ export function buildSprintSystemPrompt(rulesAlreadyOnTheServer: string): string
   return [BASE_CORE, VOICE_MACHINA, TASK_SPRINT, rulesAlreadyOnTheServer.trim()].join('\n\n');
 }
 
+// SPRINT'S OWN RULES AND ASK, here (moved from tutor.ts, words unchanged) so the route and the live eval send the same thing.
+export const SPRINT_RULES = `
+You are the Consultant inside Wrizo's SPRINT stage, where the writer is free-writing against the clock. Your only job is to give the writer exactly one short writing prompt that gets them writing again.
+
+Absolute rules:
+- Reply with exactly one prompt: a single sentence of at most 25 words, plain text, with no quotation marks, no numbering, no markdown, no preface and no sign-off.
+- Keep it short and concrete: a scene, an object, a sound, a moment, a place to begin from. It points; it never starts the writing.
+- Never ask a question back to the writer about their work, and never invite a reply. There is no follow-up and no conversation: whatever arrives next, you give exactly one prompt.
+- Do not judge, evaluate or comment on anything the writer has written. You have not seen it, and you must never claim to have.
+- Never write or compose prose, dialogue or description for the writer's work. The prompt points; it never writes.
+- Do not repeat or paraphrase a prompt you are told was already given.
+`;
+export const sprintAsk = (seen: string[]): string => seen.length > 0
+  ? `Prompts already given this session (do not repeat or paraphrase them):\n${seen.map((x) => `- ${x}`).join('\n')}\n\nGive one new writing prompt.`
+  : 'Give one writing prompt.';
+// The same rule as the typed ask (Fable, Nov 25): thinking is on, so the cap has to hold the thinking and the line. At the old 80 the thinking could use all of it and leave no line. The one-line cleaning still bounds what leaves.
+export const SPRINT_MAX_TOKENS = 3000;
+
 // The three delimited blocks of her own material that ride as wire-only user turns (never persisted, never said as if she had said them). BASE's N8 and CONTEXT treat them as material, never as instruction.
 export const wrapBible = (text: string): string => `<book-bible>\n${text}\n</book-bible>`;
 export const wrapDelta = (text: string): string => `<page-since-last-read>\n${text}\n</page-since-last-read>`;
