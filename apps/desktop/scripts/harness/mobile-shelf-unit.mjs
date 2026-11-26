@@ -58,7 +58,8 @@ const scenario = (name, fn) => { try { const [pass, detail] = fn(); ok(name, pas
 // ---- her things, born through the app's own functions ----------------------------------------------------------------------------------------------------------
 const drawer = s.createDrawer('Novels');
 const made = s.createBinder('The Salt Road', 'book', drawer.id);
-const part = (docId, text) => { const p = s.createBinderPage(docId, 'manuscript'); s.saveJournalEntry({ ...s.getJournalEntry(p.id), text }); return p.id; };
+let order = 0;   // two Parts born in one millisecond have no order of their own: give them one, as a move on the desk does
+const part = (docId, text) => { const p = s.createBinderPage(docId, 'manuscript'); s.saveJournalEntry({ ...s.getJournalEntry(p.id), text, orderIndex: order++ }); return p.id; };
 const p1 = part(made.id, 'The ferry left at dawn with a cargo of limestone.');
 const p2 = part(made.id, '');
 const loose = s.createLooseHomePage(); s.saveJournalEntry({ ...s.getJournalEntry(loose.id), text: 'Grocery thoughts: persimmon' });

@@ -3,8 +3,20 @@
 // The page (/m/) is fetched fresh whenever there is a signal (so a new deploy shows at once) and read from the kept copy only when there is none. The built files under /assets/ are named by their content, so a kept one is never stale.
 const CACHE = 'wrizo-companion-files-v1';
 
+// The page and the files it names are kept as soon as the helper is installed. Without this, a first visit keeps nothing (the helper was not yet in charge while those files loaded), and a reload with no signal
+// would find no companion at all. Only the app's own files, the same rule as below.
+const keepTheApp = async () => {
+  const cache = await caches.open(CACHE);
+  const page = await fetch('/m/', { cache: 'no-cache' });
+  if (!page.ok) return;
+  await cache.put('/m/', page.clone());
+  const html = await page.text();
+  const urls = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map((m) => new URL(m[1], new URL('/m/', self.location.origin))).filter(isOwnFile);
+  await Promise.all(urls.map((u) => cache.add(u.href).catch(() => { /* one file missing is not the whole companion */ })));
+};
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(self.skipWaiting());
+  event.waitUntil(keepTheApp().catch(() => { /* no signal just now: it keeps what it can as she uses it */ }).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {

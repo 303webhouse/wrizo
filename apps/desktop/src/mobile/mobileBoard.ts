@@ -4,12 +4,11 @@
 import { generateId, saveJournalEntry } from '../store/persistence';
 import { fullBoardName } from '../store/entryText';
 import { unfiledMembers } from '../reorg/railData';
-import { CANONICAL_MOBILE } from '../store/lexicon/canonical/mobile';
 import type { JournalEntry } from '../types';
 import type { UnfiledHome } from './addNote';
 
 /** The Board's name as it is saved: one word for every theme, so a change of theme never makes a second Board. */
-export const MOBILE_BOARD_NAME: string = CANONICAL_MOBILE.mobileMobile;
+export const MOBILE_BOARD_NAME = 'Mobile';
 
 export function findMobileBoard(): string | null {
   const mine = unfiledMembers()

@@ -5,7 +5,6 @@ import { CANONICAL_CHROME } from './lexicon/canonical/chrome';
 import { CANONICAL_DECKS } from './lexicon/canonical/decks';
 import { CANONICAL_SETTINGS } from './lexicon/canonical/settings';
 import { CANONICAL_HELP } from './lexicon/canonical/help';
-import { CANONICAL_MOBILE } from './lexicon/canonical/mobile';
 import { FLUX_OVERRIDES } from './lexicon/overrides/fluxReorg';
 import { MACHINA_OVERRIDES } from './lexicon/overrides/machinaAndArbor';
 
@@ -16,7 +15,6 @@ const CANONICAL: Record<DeskTermId, string> = {
   ...CANONICAL_DECKS,
   ...CANONICAL_SETTINGS,
   ...CANONICAL_HELP,
-  ...CANONICAL_MOBILE,
 };
 
 // Flux registers its own capture-module name (the app's other live theme
