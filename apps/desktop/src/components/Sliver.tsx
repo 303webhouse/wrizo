@@ -222,19 +222,20 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
 
   const toggleOpen = () => setOpen(o => !o);
 
-  // #133: the room from the drawer's left edge to the page's TEXT, published for the rule that keeps the Front menu's width over the page's margin (desk-frame §24). A read only; measured on each opening, on a resize and when the page or the drawer's box changes, never on a keystroke
+  // #133: the room from the drawer's left edge to the page's TEXT, published for the rule that keeps the Front menu's width over the page's margin (desk-frame §24). Written on the drawer's anchor, never on the drawer itself (reorg-front-menu compares the drawer's DOM exactly). A read only; measured on each opening, on a resize and when the page or the drawer's box changes, never on a keystroke
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root) return undefined;
+    const anchor = root?.parentElement?.closest<HTMLElement>('.desk-frame-sliver-anchor');
+    if (!root || !anchor) return undefined;
     let frame = 0;
     const measure = () => {
       frame = 0;
       const panel = root.querySelector<HTMLElement>('.wz-sliver-panel');
       const page = liveQuery<HTMLElement>('.mode-page');
-      if (!panel || !page || !page.offsetWidth) { root.style.removeProperty('--wz-front-room'); return; }
+      if (!panel || !page || !page.offsetWidth) { anchor.style.removeProperty('--wz-front-room'); return; }
       const box = page.getBoundingClientRect();
       const textLeft = box.left + (parseFloat(getComputedStyle(page).paddingLeft) || 0) * (box.width / page.offsetWidth);
-      root.style.setProperty('--wz-front-room', `${Math.floor(textLeft - panel.getBoundingClientRect().left - 4)}px`);
+      anchor.style.setProperty('--wz-front-room', `${Math.floor(textLeft - panel.getBoundingClientRect().left - 4)}px`);
     };
     const later = () => { if (!frame) frame = requestAnimationFrame(measure); };
     measure();

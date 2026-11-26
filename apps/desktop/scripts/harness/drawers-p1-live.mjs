@@ -196,7 +196,12 @@ await withHarness(async (app) => {
         // the open panel's own left edge, Tutor.tsx's own measured value,
         // not a guessed one.
         if (hand === 'left') {
-          ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
+          // #133b (Fable, Nov 25: the Front menu keeps its width, over the page's margin): at 1600 and narrower a drawer that grows past its tab takes the tab out with it.
+          if (await app.evalJs('innerWidth <= 1600')) {
+            pok(`PARKED (was "L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)") - SUPERSEDED at 1600 and narrower by #133b; live successor: L2 [#133b successor]`, true, 'successor: L2 [#133b]');
+            ok(`L2 ${T} (${hand}) [#133b successor]: while the drawer opens the tab keeps its height and size and only ever goes outward with it`,
+              s.every((x, n) => x.grip[1] === s[0].grip[1] && x.grip[2] === s[0].grip[2] && x.grip[3] === s[0].grip[3] && (n === 0 || x.grip[0] >= s[n - 1].grip[0] - 0.5)), JSON.stringify(s.map((x) => x.grip).filter((g, k, a) => k === 0 || !same(g, a[0])).slice(0, 3)));
+          } else ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
         } else {
           // ok(`L2 ${T} (${hand}): the tab's rect never changes while the drawer opens (only its glyph)`, s.every((x) => same(x.grip, s[0].grip)), JSON.stringify(s.map((x) => x.grip).filter((g, i, a) => i === 0 || !same(g, a[0])).slice(0, 3)));
           const GRIP_GUTTER_PX = 16; // Tutor.tsx's own GRIP_GUTTER_PX

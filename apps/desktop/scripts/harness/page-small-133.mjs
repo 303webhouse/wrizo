@@ -116,7 +116,7 @@ await withHarness(async (app) => {
         const narrow = [];
         for (const what of ['pop', 'front', 'back']) {
           const st = seq[what]; const p = st.panels[what]; if (!p) { narrow.push(`${what} not open`); continue; }
-          const width = p[2] - p[0]; const room = what === 'back' ? p[2] - st.text[2] : st.text[0] - p[0];
+          const width = p[2] - p[0]; const room = what === 'back' ? p[2] - st.text[2] - (th.id === 'flux' ? 16 : 0) : st.text[0] - p[0];   // Flux's Back tab stands at the drawer's inner edge, inside that room
           const want = Math.min(BEFORE[th.id][what][at133], room - 8);
           if (width < want - 1.5) narrow.push(`${what} ${width} < ${want} (before ${BEFORE[th.id][what][at133]}, room ${room})`);
         }
