@@ -10,7 +10,8 @@ import { GuidePanel } from '../GuidePanel';
 import { newGuideDoc } from '../presetGuideActs';
 import type { GuidePick } from '../presetGuide';
 import { openWalk } from '../walk/walkDoor';
-import { walksToContinue } from '../walk/walkData';
+import { planOfPage, walksToContinue } from '../walk/walkData';
+import { structureOfPlan } from '../walk/structureOfPlan';
 import { setDocSetting } from '../docSettings';
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
@@ -133,6 +134,13 @@ export function DocsPanel({ subject, navigate, travelFromCascade, closeCascade }
   // CONTINUE YOUR GUIDE (the walk's frames, state K): every Doc with a saved place; its x takes the place off (the Plan and every word stay)
   const [, setForgot] = useState(0);
   const toContinue = walksToContinue();
+  // the row's second line: the count; in Flux the structure's name before it, and two figures ("Three-Act · step 05/09")
+  const continueLine = (w: (typeof toContinue)[number]): string => {
+    const num = (n: number) => (flux ? String(n).padStart(2, '0') : String(n));
+    const line = fill(fill(t('guideWalkContinueLine'), 'n', num(w.step.number)), 'total', num(w.total));
+    const structure = flux ? structureOfPlan(planOfPage(w.pageId).board?.boxes, t) : null;
+    return structure ? `${t(structure.name)} · ${line}` : line;
+  };
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
     { id: 'blank', label: t('reorgKindBlank'), act: () => go({}) },
     { id: 'screenplay', label: t('reorgKindScreenplay'), act: () => go({ structure: 'screenplay' }) },
@@ -151,7 +159,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade, closeCascade }
               <li key={w.pageId} className="wz-reorg-list-row wz-reorg-continue" data-continue={w.pageId}>
                 <button type="button" className="wz-reorg-list-open wz-reorg-two-line" onClick={() => { closeCascade?.(); openWalk(w.pageId); }}>
                   <span className="wz-reorg-list-title">{[w.doc, w.step.title].filter(Boolean).join(' · ')}</span>
-                  <span className="wz-reorg-row-meta">{fill(fill(t('guideWalkContinueLine'), 'n', w.step.number), 'total', w.total)}</span>
+                  <span className="wz-reorg-row-meta">{continueLine(w)} ›</span>
                 </button>
                 <button type="button" className="wz-reorg-continue-x" data-continue-forget="" aria-label={t('guideWalkForget')} title={t('guideWalkForget')}
                   onClick={() => { setDocSetting(w.pageId, { walk: null }); setForgot((n) => n + 1); }}>×</button>
