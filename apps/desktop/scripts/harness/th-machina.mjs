@@ -286,8 +286,11 @@ await withHarness(async (app) => {
   await sleep(300);
   const pkA = await cardRead();
   const mA = pkA.find((c) => c.name === 'Machina');
-  ok('PK1: under Arbor the picker lists Arbor, Machina, Flux in the arc\'s order; the Machina card draws its 20-unit Run plate and notch, and (no unlock data reachable) reads LOCKED with no guessed count',
-    pkA.map((c) => c.name).join(',') === 'Arbor,Machina,Flux' && !!mA && mA.locked && mA.disabled && mA.note === null && mA.units === 20 && mA.notch, JSON.stringify(pkA));
+  // SUPERSEDED (VISUAL 2 (flourish-spec §3, Nov 26): the picker shows five tiles - Nomad and Volant stand there, grey and shut). The original, verbatim:
+  // ok('PK1: under Arbor the picker lists Arbor, Machina, Flux in the arc\'s order; the Machina card draws its 20-unit Run plate and notch, and (no unlock data reachable) reads LOCKED with no guessed count',
+  //   pkA.map((c) => c.name).join(',') === 'Arbor,Machina,Flux' && !!mA && mA.locked && mA.disabled && mA.note === null && mA.units === 20 && mA.notch, JSON.stringify(pkA));
+  ok('PK1 [tiles successor]: under Arbor the picker lists Arbor, Machina, Flux, Nomad, Volant in order; the Machina card draws its 20-unit Run plate and notch, and (no unlock data reachable) reads LOCKED with no guessed count',
+    pkA.map((c) => c.name).join(',') === 'Arbor,Machina,Flux,Nomad,Volant' && !!mA && mA.locked && mA.disabled && mA.note === null && mA.units === 20 && mA.notch, JSON.stringify(pkA));
   await frame(app, 'picker-arbor');
   await boot(app, { theme: 'machina', goal: 10 });
   await openPage(app, 'ma-pk2', words(5));

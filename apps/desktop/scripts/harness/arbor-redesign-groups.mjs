@@ -2,7 +2,7 @@
 // group the 69 by what a writer does ... and give each group at least one green check ON the redesign; fix anything broken for a writer"; the full
 // triage is bug #105). Every read here is ON the redesign as it ships (no query: its own default), signed in (the double's default):
 //   G1 FRONT DOOR: the splash's Write door opens a page, and a key typed there lands in it
-//   G2 THEME PICKER: the rail's Themes item opens the picker: Arbor, Flux and Machina shown, Arbor the current choice (pressed, not locked)
+//   G2 THEME PICKER: the rail's Themes item opens the picker: Arbor, Flux and Machina shown (and, since VISUAL 2, Nomad and Volant, shut), Arbor the current choice (pressed, not locked)
 //   G3 PAGE TEMPLATES: Tools -> the Presets cloth tab lists Blank, Screenplay, Outline, Title Page, Bibliography; pressing Screenplay on an empty page
 //      makes it a screenplay (the editor carries data-template="screenplay")
 //   G4 FONT-SIZE BOX: Tools -> Format: the size box reads the page's size; typing 15 + Enter sizes the page to 15 pt (20 px), and Larger takes it to 16
@@ -71,7 +71,9 @@ await withHarness(async (app) => {
   await waitSoft(app, "!!document.querySelector('.wz-theme-cards')", { label: 'the picker', timeout: 5000 });
   const cards = await app.evalJs("[...document.querySelectorAll('.wz-theme-card')].map((c) => ({ name: (c.querySelector('.wz-theme-wm')?.textContent || '').trim(), pressed: c.getAttribute('aria-pressed'), locked: c.classList.contains('locked') }))");
   const arbor = (cards || []).find((c) => c.name === 'Arbor');
-  ok(`G2 THEME PICKER: the rail's Themes item opens the picker (pressed ${opened}): ${J((cards || []).map((c) => c.name))}, Arbor the current choice`, opened && (cards || []).length === 3 && ['Arbor', 'Flux', 'Machina'].every((n) => cards.some((c) => c.name === n)) && !!arbor && arbor.pressed === 'true' && !arbor.locked, J(cards));
+  // SUPERSEDED (VISUAL 2 (flourish-spec §3, Nov 26): the picker shows five tiles - Nomad and Volant stand there, grey and shut). The original, verbatim:
+  // ok(`G2 THEME PICKER: the rail's Themes item opens the picker (pressed ${opened}): ${J((cards || []).map((c) => c.name))}, Arbor the current choice`, opened && (cards || []).length === 3 && ['Arbor', 'Flux', 'Machina'].every((n) => cards.some((c) => c.name === n)) && !!arbor && arbor.pressed === 'true' && !arbor.locked, J(cards));
+  ok(`G2 THEME PICKER [tiles successor]: the rail's Themes item opens the picker (pressed ${opened}): ${J((cards || []).map((c) => c.name))}, Arbor the current choice`, opened && (cards || []).length === 5 && ['Arbor', 'Flux', 'Machina', 'Nomad', 'Volant'].every((n) => cards.some((c) => c.name === n)) && !!arbor && arbor.pressed === 'true' && !arbor.locked, J(cards));
   await app.key('Escape'); await sleep(400);
 
   // G3 PAGE TEMPLATES (Presets) - on an empty page

@@ -215,13 +215,18 @@ await withHarness(async (app) => {
     const NEW_DECKS = ['relationship-map', 'timeline', 'literature-map', 'narrow-my-question', 'pitch-story', 'logic-model', 'interview-notes', 'memory-map'];
     const withoutNewDecks = (html) => NEW_DECKS.reduce((h, id) => h.replace(new RegExp('<button type="button" class="wz-sections-preset" data-preset="' + id + '"><span>[^<]*</span></button>'), ''), String(html));
     const liveOf = (k) => (k === 'plan' && got[k] != null && NEW_DECKS.every((id) => String(got[k]).split('data-preset="' + id + '"').length === 2) ? withoutNewDecks(got[k]) : (got[k] ?? 'null'));
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // SUPERSEDED (VISUAL 2, flourish-spec §3, Nov 26: the theme pop-out's cards are five new tiles - intended product DOM; the check cuts the cards block out of both and holds EVERYTHING else to the golden byte for byte; O1b reads the new tiles). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    const noCards = (k, html) => (k === 'theme' ? String(html).split('<div class="wz-theme-cards">')[0] : html);
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => noCards(k, liveOf(k)) !== noCards(k, ruled(k, golden.surfaces[theme][k])));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);
     const got = await captureSurfaces(app);
     const bad = diffOf(got, theme);
     ok(`O1 [${theme}]: switch OFF - the strip and its ${CATEGORIES.length} pop-outs are main's DOM exactly`, golden && bad.length === 0 && Object.keys(golden.surfaces[theme] || {}).length === CATEGORIES.length + 1, bad.join(','));
+    const tiles = [...String(got.theme).matchAll(/class="wz-theme-card wz-theme-card-([a-z]+)/g)].map((m) => m[1]).join(',');
+    ok(`O1b [${theme}]: the theme pop-out holds the five tiles, in order`, tiles === 'arbor,machina,flux,nomad,volant', tiles);
     for (const k of bad.slice(0, 2)) console.log(`DIFF ${theme}.${k} ${Buffer.from(String(got[k]), 'utf8').toString('base64')}`);
     if (theme !== 'machina') {
       await openPage(app, theme, true);

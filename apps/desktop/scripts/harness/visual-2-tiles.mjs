@@ -68,7 +68,7 @@ const PAGE = `(() => {
       window.__vtObs?.disconnect(); window.__vtObs = new MutationObserver(() => { const now = new Set(); c.querySelectorAll('.wz-theme-plate-check i').forEach((u, i) => { if (u.getAttribute('data-glitch') !== 'true') return; now.add(i); if (!was.has(i)) window.__vtGlitches.push({ i, t: performance.now(), ch: u.textContent, shadow: getComputedStyle(u).textShadow, on: [...c.querySelectorAll('.wz-theme-plate-check i[data-on=true]')].length }); }); was = now; });
       window.__vtObs.observe(c, { subtree: true, attributes: true, childList: true, characterData: true }); return true; },
     log: () => ({ glitches: window.__vtGlitches, flashes: window.__wzFlashLog }),
-    editor: () => { const e = q('.forward-only-editor'); return e ? J(rect(e)) : null; },
+    paper: () => { const e = [...document.querySelectorAll('.mode-page')].find((x) => x.getBoundingClientRect().width > 0); return e ? J(rect(e)) : null; },
     store: () => J([localStorage, sessionStorage].map((s) => Object.keys(s).sort().map((k) => [k, s.getItem(k)]))),
     centre: (k) => { const r = rect(card(k)); return { x: r.x + r.w / 2, y: r.y + r.h * 0.3 }; },
   };
@@ -92,8 +92,12 @@ await withHarness(async (app) => {
     await ev(`document.documentElement.setAttribute('data-room', ${J(room)}); const p = window.wrizoCreateJournalPage({ origin: 'loose', source: 'page', text: 'The coat stayed on the seat.' }); window.wrizoFlushNow(); location.hash = '#/page/' + p.id; true`);
     await app.waitFor("!!document.querySelector('.forward-only-editor')", { label: 'the page', timeout: 20000 });
     await sleep(1200);
+    // Draft / Build: there Arbor's and Flux's pop-outs have their normal width (in Free Write and Wire In the wide page leaves them 83 px at 1366 - reorg/railRoom.ts, older than these tiles; reported to Fable)
+    if (await ev("document.documentElement.hasAttribute('data-flux3-jacked')")) { await app.key('Escape'); await sleep(900); }
+    await ev("[...document.querySelectorAll('button')].find((b) => /^(draft|build|text)$/i.test(b.textContent.trim()) && b.getBoundingClientRect().width > 0)?.click(); true");
+    await sleep(1500);
     await ev(PAGE);
-    const before = await vt('editor()');
+    const before = await vt('paper()');
     await ev("document.querySelector('[data-category=\"theme\"]')?.click(); true");
     await soft("!!document.querySelector('.wz-theme-cards')");
     await sleep(900);
@@ -129,7 +133,7 @@ await withHarness(async (app) => {
   // ---------------------------------------------------------------- C2, C3, P, N: nothing happens on the two later tiles; the page never moves; nothing saved
   await part('C P N', async () => {
     const before = await open({ theme: 'machina' });
-    const rects = [await vt('editor()')];
+    const rects = [await vt('paper()')];
     const store0 = await vt('store()');
     for (const k of ['nomad', 'volant']) {
       await away(); await sleep(300);
@@ -140,9 +144,9 @@ await withHarness(async (app) => {
       await ev(`document.querySelector('.wz-theme-card-${k}')?.click(); true`); await sleep(300);
     }
     ok('C3: clicking Nomad and Volant opens nothing', (await ev("document.documentElement.getAttribute('data-theme')")) === 'machina' && (await ev("document.querySelectorAll('.wz-theme-card').length")) === 5);
-    for (const k of ['arbor', 'machina', 'flux']) { await hover(k); await sleep(900); rects.push(await vt('editor()')); }
+    for (const k of ['arbor', 'machina', 'flux']) { await hover(k); await sleep(900); rects.push(await vt('paper()')); }
     await away(); await sleep(500);
-    ok('P1: the page never moves: opening the picker and playing every tile leaves the writing where it was', !!before && rects.every((r) => r === before), { before, rects });
+    ok('P1: the page never moves: opening the picker and playing every tile leaves the paper where it was', !!before && rects.every((r) => r === before), { before, rects });
     const store1 = await vt('store()');
     ok('N1: nothing is saved by hovering or by pressing a tile that can’t open', store0 === store1, { same: store0 === store1 });
   });

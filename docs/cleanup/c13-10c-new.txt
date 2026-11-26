@@ -1,6 +1,11 @@
 # c13-10c-lexicon: the keys a step ADDED after the split (TOOLS, Nov 5; Fable: "declare them so it's green"). One `key=word` per line.
 # Each is held to: absent at the base (01ae2fbc), in the table now, and reading <word> in EVERY theme reading. Its entry line, its token in the
 # union, and the note that introduced it are set aside by the inline read. A key leaves this file in the commit that gives it a theme override.
+# VISUAL 2 - the theme picker's tiles (flourish-spec §3, §6)
+themeNotYet=Not yet available
+themeNomadNotYet=Nomad: not yet available
+themeVolantNotYet=Volant: not yet available
+themeRunClosed=Run closed
 # FLUX3 S1 (INK) - the Schema's node records and readouts, behind ?flux3=1
 flux3LinkOne=connection
 flux3LinkMany=connections

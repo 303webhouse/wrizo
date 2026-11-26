@@ -401,8 +401,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (Machina's build, Oct 23): this check said "exactly two theme cards render (Arbor, Flux)"; Machina joined with its own card, in the arc's order. Original quoted verbatim in the
   // PARKED record at the foot of this file; live successor: the check below.
   themeCardNames.names = themeCards.map((c) => c.name).join(',');
-  ok('S3 (theme-picker successor) [Machina successor]: exactly three theme cards render (Arbor, Machina, Flux) - the built themes; absent, not grayed',
-    themeCards.length === 3 && themeCards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(themeCards));
+  // SUPERSEDED (VISUAL 2 (flourish-spec §3, Nov 26): the picker shows five tiles - Nomad and Volant stand there, grey and shut). The original, verbatim:
+  // ok('S3 (theme-picker successor) [Machina successor]: exactly three theme cards render (Arbor, Machina, Flux) - the built themes; absent, not grayed',
+  //   themeCards.length === 3 && themeCards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(themeCards));
+  ok('S3 (theme-picker successor) [tiles successor]: five tiles render (Arbor, Machina, Flux, Nomad, Volant); the last two are shut',
+    themeCards.length === 5 && themeCards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux,Nomad,Volant' && themeCards.slice(3).every((c) => c.locked && c.disabled), JSON.stringify(themeCards));
   const arborCard = themeCards.find((c) => c.name === 'Arbor');
   ok('S3 (theme-picker successor): Arbor (the fixture\'s current theme) reads unlocked - not .locked, not disabled, aria-pressed="true"',
     arborCard?.locked === false && arborCard?.disabled === false && arborCard?.pressed === 'true', JSON.stringify(arborCard));
@@ -1043,7 +1046,9 @@ if (process.env.HARNESS_PARKED === '1') {
   pok('PARKED (was "S3 (successor to ab3.mjs\'s own keystroke-dissolve check, Page-panel-specific): typing while the Page panel is open dissolves it too, same engine" read at 150 ms) - the same settle race as S2\'s; live successor: S3 [settle successor]',
     !!cd2S2.s3settled && cd2S2.s3settled.gone === true, JSON.stringify({ s3at150: cd2S2.s3at150, s3settled: cd2S2.s3settled }));
   pok('PARKED (was "S3 (theme-picker successor): exactly two theme cards render (Arbor, Flux) - absent, not grayed") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card; live successor: S3 [Machina successor]',
-    themeCardNames.names === 'Arbor,Machina,Flux', String(themeCardNames.names));
+    String(themeCardNames.names).startsWith('Arbor,Machina,Flux'), String(themeCardNames.names));
+  pok('PARKED (was "S3 (theme-picker successor) [Machina successor]: exactly three theme cards render; absent, not grayed") - VISUAL 2 (flourish-spec §3): Nomad and Volant stand there, shut; live successor: S3 [tiles successor]',
+    themeCardNames.names === 'Arbor,Machina,Flux,Nomad,Volant', String(themeCardNames.names));
   // DISPLAY PASS (aa11f58) - TWO parks: the CD3 canon (b) Y-position checks at 1100 and 2200, superseded when the smaller mode tabs
   // moved the paper a further 2px. Records byte-frozen; probes re-verify the new truth (12px) from the default section's own reads.
   // PAGE-SIZE'S PARK AUDIT (Oct 24) - FIVE parks: S1/S5's gate-floor claim (the column is no longer the paper) and the four CD3 canon (b) byte-identity
