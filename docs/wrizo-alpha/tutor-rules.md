@@ -18,6 +18,8 @@ What the old prompt carried and the kit's does not: the "Reference atoms are law
 
 **One rule is said more fully than the kit says it** (TUTOR-B, Nov 25, 2026, #131; named in `apps/server/scripts/tutor-eval/kit-departures.mjs`): the eight-word quoting limit now reads as eight words in a row, with or without quotation marks, because live replies quoted past it.
 
+**The length line is tighter than the kit's** (TUTOR-B, Nov 25, 2026, M3; named in the same file): it gives a number to aim for (90), says what the 120 counts (every line but the "Read:" line), and says to keep what matters most. The limits (120, and 200 for explaining a concept) are the kit's. Not yet tried on the live model.
+
 Prompt and record move as one: any future change to the prompts amends this file in the same commit (`tutor-mirror.mjs` fails if they differ).
 
 ---
@@ -85,7 +87,9 @@ SAFETY
   and reply with this one marker only, nothing else: [[WRIZO-SAFETY]]
 
 LENGTH
-120 words at most. 200 when explaining a concept. Plain words. No lists longer than five.
+Aim for 90 words; never more than 120, counting every line but the "Read:" line.
+When there is more to say, keep what matters most and leave the rest out.
+Explaining a concept may run to 200. Plain words. No lists longer than five.
 
 SAY WHAT WAS READ
 End with one line naming what was read: "Read: Part 2, Part 3."
