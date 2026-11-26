@@ -105,6 +105,16 @@ await withHarness(async (app) => {
   const byEsc = await stored(app, own);
   ok('K9: closed by Escape with the pen down, then typed: every character is stored, at the caret she left', shutByEsc.open === false && shutByEsc.paper !== 'ink' && byEsc.text === 'One two EE XYZ QRS kthree four.', { shutByEsc, byEsc });
 
+  // ---- the Undo arrow stands off her words (the no-overlap rule) ----
+  for (const [theme, stageName, width, height] of [['machina', 'draft', 1366, 768], ['plateau', 'revise', 1366, 768], ['flux', 'draft', 1366, 768], ['flux', 'draft', 1100, 700]]) {
+    await boot(app, width, height);
+    const got = await run(app, `await window.__vi3.buildPage(${JSON.stringify(theme)}, 'The morning light came in low across the table, and she began to write while the kettle ticked. '.repeat(4)); await window.__vi.sleep(1500);
+      if (${JSON.stringify(stageName)} === 'revise') { await window.__vi3.stage('revise'); await window.__vi.sleep(900); }
+      await window.__vi.openDrawer(); await window.__vi3.tab('ink'); await window.__vi3.until(() => !!document.querySelector('.wz-ink-face')); await window.__vi.sleep(900);
+      await window.__vi.draw([{ x: 0.2, y: 0.6 }, { x: 0.5, y: 0.65 }]); await window.__vi.sleep(900); return window.__vi3.undoClear();`);
+    ok(`U1: the Undo arrow stands in the page's margin, off her words, pressable, with no sideways scroll (${theme}, ${stageName === 'revise' ? 'EDIT' : 'BUILD'}, ${width})`, got.pass, got.why);
+  }
+
   // ---- real keys: draw, type, the door, the Board, back, type ----
   await boot(app);
   const id = await run(app, "return await window.__vi3.buildPage('machina', 'Her first line.');");

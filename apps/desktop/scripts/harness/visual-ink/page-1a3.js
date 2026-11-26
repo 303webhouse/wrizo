@@ -267,5 +267,15 @@
     return out;
   };
 
-  window.__vi3 = { keyRules, caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
+  /** U-checks (Fable, Nov 25, 8:30 pm: the no-overlap rule): the one-level Undo arrow after a stroke on a Page. Expects a Page with a stroke just drawn. */
+  const undoClear = () => {
+    const u = q('.wz-ink-sheet > .ink-undo'), ed = q('.forward-only-editor'), paperEl = q('.mode-page'), sc = q('.mode-scroll');
+    if (!u || !ed || !paperEl || !sc) return { pass: false, why: { undo: !!u, ed: !!ed, paper: !!paperEl, scroll: !!sc } };
+    const b = u.getBoundingClientRect(), t = ed.getBoundingClientRect(), p = paperEl.getBoundingClientRect();
+    const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+    const got = { arrow: [Math.round(b.left), Math.round(b.right)], words: [Math.round(t.left), Math.round(t.right)], paperRight: Math.round(p.right), sideways: sc.scrollWidth - sc.clientWidth, pressable: hit === u };
+    return { pass: b.width > 0 && b.left >= t.right - 0.5 && b.right <= p.right + 0.5 && got.sideways <= 0 && got.pressable, why: got };
+  };
+
+  window.__vi3 = { undoClear, keyRules,caretAt, inkOnPaper, shown, sheetInk, painted, yields, beside, drawOnBoard, back, buildPage, pageSet, boardSet, throughTheDoor, readBoard, cold, tabs, tab, stage, paper, entry, until };
 })();
