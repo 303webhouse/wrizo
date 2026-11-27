@@ -186,9 +186,11 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
     return () => {
       timers.forEach((id) => window.clearTimeout(id));
       app?.removeAttribute('inert');
-      // her caret comes back where it was. When nothing had it (Start guided: the walk arrived with the page), the page's own editor takes it, the caret after her words, so what she types next lands.
+      // LEAVING GIVES HER THE PAGE, never the button that opened the walk: with the focus left on it, her first space presses it again and what she types after goes into a step's note. A field she was writing in
+      // takes her back; otherwise the page's own editor does, at her caret, or after her words when her selection has gone elsewhere.
       window.setTimeout(() => {
-        const back = had?.isConnected && had !== document.body ? had : document.querySelector<HTMLElement>('.mode-pagecol [contenteditable="true"], .mode-pagecol textarea');
+        const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');
+        const back = wrote ? had : document.querySelector<HTMLElement>('.mode-pagecol [contenteditable="true"], .mode-pagecol textarea');
         if (!back) return;
         // THE DRAWING PEN IS DOWN under the walk (VISUAL 1a.3): her words keep her own place for her (PageEditor's "typing lands" rule puts the pen down at her next key, where SHE left the caret). A caret put here
         // would take that key to the end of her words instead.
