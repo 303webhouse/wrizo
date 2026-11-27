@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { setTheme, type ThemeId } from '../store/theme';
 import { OFFERED_TERRITORIES, FUTURE_TERRITORIES } from '../store/themeTerritories';
+import { distractionFreeMarked } from '../store/ambianceDial';
 
 // the unlock ceremony, the one accepted visible locked door; orange fires only the instant a territory is chosen; focus moves in and Tab is contained, so aria-modal is true; no Escape - the rite resolves in a choice [UnlockCeremony §1]
 function reducedMotion(): boolean {
+  if (distractionFreeMarked()) return true;
   return typeof window !== 'undefined'
     && typeof window.matchMedia === 'function'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

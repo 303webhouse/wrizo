@@ -3,6 +3,10 @@ import type { DeskTermId } from '../terms';
 
 export const FLUX_OVERRIDES = {
   flux: {
+    modeNoticeOn: 'GLITCH MODE ENABLED',
+    modeNoticeOff: 'GLITCH MODE OFF',
+    modeNoticeWhere: 'the GLITCH switch below the Doc',
+    sessionQuietHint: 'Turns off every flourish, meter and moving background, in every skin.',
     // W4 - RUN DIAGNOSTIC: the terminal dress of Help me choose (frame 09). The questions and answers are NOT overridden - deck content.
     helpDoor: 'RUN DIAGNOSTIC',
     helpDialogLabel: 'Diagnostic',
@@ -195,6 +199,8 @@ export const FLUX_OVERRIDES = {
     flipEmpty: 'NO SIGNAL',
     deckFact: 'LOAD {n}/{m}',
     pageOfPages: 'PG {n}/{m}',
+    quietWords: '{n} WORDS',
+    quietWord: '1 WORD',
     walkReadoutPlan: 'Circuit',   // Flux's boards are Circuits [deskLexicon §69]
     gapsLead: 'NO SIGNAL:',
     deckStack: 'STACK',

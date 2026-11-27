@@ -8,6 +8,7 @@ import { isArbor2 } from '../arbor2/flag';
 import { lifeOf, effective, lifePlan, tipOf, segKey, setCurrentRhizome, subscribeLife } from '../arbor2/rhizomeLife';   // ARBOR v2 mockup, r5 §8b: only under ?arbor2=1
 import { ArborVines, type Room } from '../arbor2/vines';   // ARBOR v2 mockup r19: the rhizome drawn as vines (Arbor's presentation; the growth is this file's)
 import { liveQueryAll, registerLiveSite } from '../store/liveDom';
+import { useFlourish } from '../store/flourish';
 
 // the goal rhizome: shoots grow out of existing stems, flash brass at the goal and leave a seed; drawn behind the page and clipped from the rail, strip, header and open menus; ambient, framed stage only [RhizomeField §1]
 const SESSION_START = Date.now(); // the pattern is session-scoped (M2 S2)
@@ -132,7 +133,9 @@ export function RhizomeField({ text, seedKey, paperRef }: {
   const goal = useWritingGoal();
   // the rhizome is Arbor's only: under any other theme this field draws nothing [RhizomeField §3]
   const theme = useTheme();
-  const active = settings.progress === 'words' && settings.progressStyle === 'rhizome' && goal != null && goal.n > 0 && theme === 'plateau';
+  // on until she turns Arbor's flourish off (store/flourish.ts; Nick, Nov 26)
+  const wanted = useFlourish('plateau');
+  const active = settings.progress === 'words' && wanted && goal != null && goal.n > 0 && theme === 'plateau';
   const count = goal ? goalCount(text, goal) : 0;
   const n = goal?.n ?? 0;
   const lap = n > 0 ? Math.floor(count / n) : 0;

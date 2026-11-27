@@ -5,6 +5,11 @@ export const CANONICAL_SETTINGS = {
   progressStyleLabel: 'Progress style',
   progressStyleBar: 'Bar',
   progressStyleRhizome: 'Rhizome',
+  // GLITCH v2 (the flourish spec §1.5): Docs › Session's rows for Flux, and their one-line hints
+  sessionMeterStyle: 'Meter style',
+  sessionGlitchHint: 'Glitch: the CHECKPOINT meter, and glitches while you are still.',
+  sessionBarHint: 'Bar: a plain meter. No glitches.',
+  sessionFlickerHint: 'The glitches while you are still: words and the screen.',
   progressDrawer: 'Drawer',   // the Progress row's label for the stored 'project' metric (no theme overrides it yet) [ModeStage §22]
 
   // the Recede-depth explanation lives here, behind the shared "?"; the Settings panel carries no standing text [deskLexicon §57]
