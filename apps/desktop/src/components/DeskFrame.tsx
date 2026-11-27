@@ -229,7 +229,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
         const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : root.hasAttribute('data-machina2') ? 200 * ck - 16 : 184 * ck) : DRAWER_MIN;   // Machina's: 200 by the chrome scale, less its tab
         const backW = small ? 320 * ck : DRAWER_MIN;
-        const y = pageYieldFor(centre, painted, front ? railRight + frontW + 16 : null, back ? s.right - backW - 16 : null);
+        const y = pageYieldFor(centre, painted, front ? railRight + frontW + 16 : null, back ? s.right - backW - (wired ? 33 : 16) : null);   // Wire In's tab stands 16 px off its panel (Tutor.tsx)
         shift = y.shift; painted = y.k;
         if (zoomed) zoom = y.k / kRest; else k = y.k;
         if (front && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);

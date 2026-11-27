@@ -425,11 +425,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       // §3b item 4 (reorg/chromeScale.ts): under the reorg's chrome scale the drawer opens k times as wide (its words are k times as large); k is 1 everywhere else
       const ck = chromeK();
       const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
-      const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
+      // #138 Q1: Flux's Wire In (the zoomed page with the reorg's Back menu): its tab stands 16 px off the panel (the corridor's connector), so that much less is the drawer's
+      const wired = pageKind === 'prose' && back && document.documentElement.hasAttribute('data-flux3-jacked') && !!liveQuery('.mode-pagecol[data-zoom="true"]');
+      const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right - (wired ? 16 : 0);
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
       // #138: on a writing page at 1600 and narrower the page yields to the open drawer (DeskFrame), and the drawer takes ALL the room beside it, never over the page.
-      // (Wider windows, the zoom, Boards and the other surfaces keep their older measure.)
-      const beside = pageKind === 'prose' && onePanelAt(window.innerWidth) && !liveQuery('.mode-pagecol[data-zoom="true"]');
+      // (Wider windows, the zoom - but Flux's Wire In, above - Boards and the other surfaces keep their older measure.)
+      const beside = pageKind === 'prose' && onePanelAt(window.innerWidth) && (wired || !liveQuery('.mode-pagecol[data-zoom="true"]'));
       if (beside || geoMargin >= DRAWER_MIN) {
         const drawerW = beside ? Math.max(geoMargin, TUTOR_TAB_PX + DRAWER_MIN) : Math.min(geoMargin, TUTOR_TAB_PX + openW);
         setPanelWidthPx(beside ? Math.floor(drawerW - TUTOR_TAB_PX) : Math.round(drawerW - TUTOR_TAB_PX));   // beside the page, never a rounded pixel onto it
@@ -445,7 +447,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     document.addEventListener('wz-board-moved', measure);    // the board narrows after the drawer opens [Tutor §23]
     window.addEventListener('wz-chrome-scale', measure);     // §3b item 4: the chrome scale arrived or changed
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); window.removeEventListener('wz-chrome-scale', measure); };
-  }, [open, docked, pageKind, linkDock]);
+  }, [open, docked, pageKind, linkDock, back]);
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
