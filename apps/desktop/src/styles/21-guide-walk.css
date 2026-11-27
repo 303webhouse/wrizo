@@ -91,6 +91,31 @@
 :root[data-theme='flux'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; }
 :root[data-theme='machina'] .wz-walk .wz-walk-pips .wz-walk-pip{ border-radius:0; width:8px; height:14px; }
 
+/* the AI's tab, lit and pressable, below the locked two */
+.wz-walk .wz-walk-back button.wz-walk-aitab{ color:var(--text-mid); border-style:solid; opacity:1; cursor:pointer; }
+.wz-walk .wz-walk-back button.wz-walk-aitab[aria-selected='true']{ color:var(--text-hi); border-left:2px solid var(--accent-rest); }
+
+/* THE AI PANEL (WalkAi.tsx, spec section 3.8): the page's Back menu with the AI alone, in the walk's own surface. The lens is the live one's classes, redrawn two classes deep over the walk's button reset. */
+.wz-walk .wz-walk-ai{ position:fixed; background:var(--chrome-surface); border:1px solid var(--ink-border-strong); border-left:0; display:flex; flex-direction:column; gap:8px; min-height:0; padding:9px 12px 12px; z-index:2; }
+.wz-walk .wz-walk-ai .wz-walk-ai-head{ flex:none; }
+.wz-walk .wz-walk-ai .wz-walk-ai-scroll{ flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:8px; }
+.wz-walk .wz-walk-ai .wz-walk-ai-scroll > *{ flex:none; }
+.wz-walk .wz-walk-ai .wz-lens{ margin:0; }
+.wz-walk .wz-walk-ai button.wz-lens-head{ padding:0 8px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.wz-walk .wz-walk-ai button.wz-lens-prompt{ padding:6px 8px; border:1px solid var(--ink-border-strong); font-size:12.5px; line-height:1.35; color:var(--text-mid); }
+.wz-walk .wz-walk-ai button.wz-lens-prompt:hover:not(:disabled), .wz-walk .wz-walk-ai button.wz-lens-prompt:focus-visible{ color:var(--text-hi); border-color:var(--text-low); }
+.wz-walk .wz-walk-ai button.wz-lens-prompt[aria-disabled='true']{ opacity:.5; cursor:default; }
+.wz-walk .wz-walk-ai .wz-walk-ai-thread{ display:flex; flex-direction:column; gap:8px; }
+.wz-walk .wz-walk-ai .wz-walk-ai-empty, .wz-walk .wz-walk-ai .wz-walk-ai-asked{ margin:0; font-size:12px; line-height:1.4; color:var(--text-mid); overflow-wrap:anywhere; }
+/* the answer, in the live field's dress */
+.wz-walk .wz-walk-ai .wz-walk-ai-reply{ white-space:pre-wrap; overflow-wrap:anywhere; padding:10px 12px; background:var(--ink-800); border:1px solid var(--ink-border); font-family:var(--font-prose); font-size:14px; line-height:1.5; color:var(--text-hi); user-select:text; }
+.wz-walk .wz-walk-ai .wz-walk-ai-note{ margin:0; font-size:13px; line-height:1.45; color:var(--text-mid); }
+.wz-walk .wz-walk-ai button.wz-walk-ai-retry{ text-decoration:underline; text-underline-offset:3px; text-transform:none; }
+.wz-walk .wz-walk-ai .wz-walk-ai-row{ display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:6px; flex:none; }
+.wz-walk .wz-walk-ai .wz-walk-ai-input{ flex:1 1 120px; min-width:0; font:inherit; font-size:12.5px; color:var(--text-hi); background:var(--ink-800); border:1px solid var(--ink-border-strong); border-radius:0; padding:7px 8px; }
+.wz-walk .wz-walk-ai .wz-walk-ai-input:focus-visible{ outline:2px solid var(--accent-rest); outline-offset:1px; }
+.wz-walk .wz-walk-ai button.wz-walk-ai-send{ flex:none; padding:7px 8px; font-size:12px; border:1px solid var(--ink-border-strong); }
+
 /* MACHINA'S WALK WEARS ITS LIGHT CHROME (Fable, Nov 25, 9:30 pm: the Wrizors' frames draw it light; Flux's follows its skin and Arbor's its room, which the tokens already do): the LIGHT ROOM's own values from machina-v2.css,
    set on the walk alone, in both casts. Nothing new: no colour that file does not already use. */
 :root[data-theme='machina'] .wz-walk{ --chrome-surface:#F4F5F6; --ink-900:#F4F5F6; --ink-800:#E6E8EA; --ink-border:#D2D6DA; --ink-border-strong:#9AA1A8; --text-hi:#3A4047; --text-mid:#3A4047; --text-low:#5E666E; --accent-rest:#3A4047; --help:#3F6183; --accent-door:#3F6183; }

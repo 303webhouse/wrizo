@@ -1379,6 +1379,11 @@ export const CANONICAL_CHROME = {
   guideWalkRename: 'Rename',
   guideWalkLocked: 'Plan and Assets are locked while you walk. Close the Guide to use them.',
   guideWalkForget: 'Remove from Continue your Guide',
+  // the walk's AI panel (guide-walk-spec.md section 8). What travels is PROPOSED wording, for the Wrizors
+  guideWalkAskHint: 'Ask about this step…',
+  guideWalkAsked: 'You asked:',
+  guideWalkAskTravels: 'An ask sends the structure’s name and "?" note, this step and its question, your note on it, the names of the steps beside it, and what you ask here. Nothing else of yours goes.',
+  guideWalkAskTravelsLabel: 'What travels when you ask',
   guideDialogLabel: 'Guide',
   guideKicker: 'Guide',
   guideStepOf: '{n} of {total}',

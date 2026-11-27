@@ -124,6 +124,8 @@ export const FLUX_REORG_WORDS = {
   guideWalkContinue: 'Resume guide',
   guideWalkContinueLine: 'step {n}/{total}',
   guideWalkStays: 'Every step stays in your spine. Come back any time from it.',
+  guideWalkAskHint: 'Query this step…',
+  guideWalkAsked: 'QUERY:',
   reorgColourThisPart: 'This track',
   reorgSchemeLine: 'Changes every Track\'s colours in this Doc.',
   reorgColourHex: 'Hex colour',
