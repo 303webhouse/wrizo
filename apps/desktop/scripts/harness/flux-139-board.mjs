@@ -26,10 +26,12 @@ const PROBE = `(() => {
   const q = (s) => document.querySelector(s);
   const frontOpen = q('.wz-sliver')?.getAttribute('data-open') === 'true'; const backOpen = q('.wz-tutor-grip')?.getAttribute('aria-expanded') === 'true';
   const strip = q('.desk-frame-strip');
+  // the arrow as she sees it: a mirrored glyph reads the other way
+  const arrow = (s) => { const g = q(s); if (!g) return null; const t = g.textContent; return getComputedStyle(g).transform.startsWith('matrix(-1') ? ({ '‹': '›', '›': '‹' })[t] ?? t : t; };
   return { frontOpen, backOpen, vw: document.documentElement.clientWidth, rail: strip ? strip.getBoundingClientRect().right : 0,
     board: box(q('.board-canvas-wrap')), cards: [...document.querySelectorAll('.board-canvas [data-box-id], .board-canvas .board-box')].map(box),
-    front: frontOpen ? box(q('.wz-sliver-panel')) : null, frontGrip: box(q('.wz-sliver-grip')), frontArrow: q('.wz-sliver-grip-glyph')?.textContent ?? null,
-    back: backOpen ? box(q('.wz-tutor-panel')) : null, backGrip: box(q('.wz-tutor-grip')), backArrow: q('.wz-tutor-grip-glyph')?.textContent ?? null,
+    front: frontOpen ? box(q('.wz-sliver-panel')) : null, frontGrip: box(q('.wz-sliver-grip')), frontArrow: arrow('.wz-sliver-grip-glyph'),
+    back: backOpen ? box(q('.wz-tutor-panel')) : null, backGrip: box(q('.wz-tutor-grip')), backArrow: arrow('.wz-tutor-grip-glyph'),
     controls: [box(q('.flux3-tele')), box(q('.flux3-tele-zoom')), box(q('.board-canvas-resize-handle'))] };
 })()`;
 const cross = (a, b) => !!a && !!b && a[0] < b[2] - 0.5 && b[0] < a[2] - 0.5 && a[1] < b[3] - 0.5 && b[1] < a[3] - 0.5;

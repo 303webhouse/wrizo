@@ -466,7 +466,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
     // THE FLUX CORRIDOR (Wire In is the Typewriter zoom; the reorg's Back menu keeps its opener there, spec section 5): the page's half is widened, so the CSS formula's grip lands inside the opened panel; it is measured from the panel here, as a board's is
-    if (!open || (pageKind !== 'board' && !back) || (pageKind === 'board' && BOARD_TAB_RIDES_EDGE && !inward)) { setGripLeftPx(null); return; }
+    if (!open || (pageKind !== 'board' && !back) || (pageKind === 'board' && BOARD_TAB_RIDES_EDGE)) { setGripLeftPx(null); return; }
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {
@@ -475,13 +475,27 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       if (!stage || !panel || (pageKind !== 'board' && !document.documentElement.hasAttribute('data-flux3-jacked'))) { setGripLeftPx(null); return; }
       const stageRect = stage.getBoundingClientRect();
       const panelRect = panel.getBoundingClientRect();
-      setGripLeftPx(Math.round(panelRect.left - (inward ? 0 : GRIP_GUTTER_PX) - GRIP_WIDTH_PX - stageRect.left));
+      setGripLeftPx(Math.round(panelRect.left - GRIP_GUTTER_PX - GRIP_WIDTH_PX - stageRect.left));
     };
     measure();
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
-  }, [open, docked, pageKind, panelWidthPx, back, sprint, inward]);
+  }, [open, docked, pageKind, panelWidthPx, back, sprint]);
+
+  // #139: on a Flux Board the menu lies over the Board, so its tab goes to the panel's inner side (after the effect above, which leaves a board's tab on its edge)
+  useEffect(() => {
+    if (!inward || !open) return;
+    const measure = () => {
+      const stage = tutorStage();
+      const panel = document.querySelector('.wz-tutor-panel');
+      if (stage && panel) setGripLeftPx(Math.round(panel.getBoundingClientRect().left - 16 - stage.getBoundingClientRect().left));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    document.addEventListener('wz-board-moved', measure);
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-board-moved', measure); setGripLeftPx(null); };
+  }, [open, docked, inward, panelWidthPx]);
 
   // the disclosure modal no longer opens (its text sits behind a "?" by the Ask box); showDisclosure stays declared and is never set, so the guards that read it are dormant [Tutor §25]
   const handleGripClick = () => {
@@ -886,7 +900,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
               outward); open → '‹' (points left/inward, toward the panel that slides out).
               The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', inward ? !open : open)}</span>
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', open)}</span>
         </button>
       </div>
 

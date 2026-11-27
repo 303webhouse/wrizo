@@ -45,8 +45,16 @@ export function useBoardBox({ wrapRef }: {
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
-    window.addEventListener('resize', apply);   // #139: a wider window may leave the stage's size alone (it has a ceiling) and still move the window's edge
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); };
+    // #139: this Board is placed from the rail and the window, so those are watched too. The rail has no width at the first measure, and a wider window may leave
+    // the stage's size alone (it has a ceiling) and still move the window's edge
+    let frame = 0;
+    if (inward) {
+      const rail = document.querySelector('.desk-frame-strip');
+      if (rail) ro.observe(rail);
+      frame = requestAnimationFrame(() => { frame = requestAnimationFrame(apply); });
+      window.addEventListener('resize', apply);
+    }
+    return () => { ro.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('resize', apply); };
   }, [hands.tools, hands.tutor, inward]);
   return { boardBox };
 }

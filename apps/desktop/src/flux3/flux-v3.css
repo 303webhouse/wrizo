@@ -312,3 +312,5 @@
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver-panel > *{ zoom:var(--wz-chrome-k, 1); }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-tutor-panel-anchor--board{ right:var(--board-r); height:calc(100% - 28px); }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board :is(.desk-frame-sliver-anchor--board .wz-sliver-panel, .desk-frame-tutor-panel-anchor--board .wz-tutor-panel)[data-open='true']{ background:var(--f3-room-ground, var(--desk-ground)); }
+/* the arrows point the way the menu will travel: inward while closed, outward on the closing tab */
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board :is(.desk-frame-sliver-anchor--board .wz-sliver-grip-glyph, .desk-frame-tutor-anchor--board .wz-tutor-grip-glyph){ display:inline-block; transform:scaleX(-1); }

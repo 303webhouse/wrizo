@@ -25,7 +25,6 @@ import type { PageKindSetting, StyleGuide } from '../types';
 import type { InkPen } from './InkStratum';
 import { INKS, NIBS, TIPS } from '../store/ink';
 import { drawerArrow, setDrawerInert } from '../store/drawerShell';
-import { menusOpenInward } from '../store/menusDrawers';
 import { leftTabsFor, sectionAllowed, type DrawerKind, type LeftTab } from '../store/drawerSet';
 import { SideDrawer, type DrawerTabsConfig } from './SideDrawer';
 import { isArbor2 } from '../arbor2/flag';
@@ -368,7 +367,7 @@ export function Sliver({ content, goalText, hasMilestones, front }: SliverProps)
         title={`${open ? t('sliverClose') : t('sliverOpen')} (${SLIVER_SHORTCUT_LABEL})`}
         onClick={toggleOpen}
       >
-        <span className="wz-sliver-grip-glyph" aria-hidden="true">{drawerArrow('left', menusOpenInward(sliverTheme, content.kind) ? !open : open)}</span>
+        <span className="wz-sliver-grip-glyph" aria-hidden="true">{drawerArrow('left', open)}</span>
         {/* with the drawer shut, the arrow tab carries a tiny pen while the page is in INK: a state in the tab's olive, never brass; absent in TEXT [Sliver §11] */}
         {content.kind === 'freewrite' && content.instrument?.value === 'ink' && (
           <span className="wz-sliver-grip-mark" data-instrument="ink" aria-hidden="true">{TIP_ICONS.pen}</span>
