@@ -115,6 +115,36 @@
     "gulls",
     "rail"
    ]
+  },
+  "DRAFT-WALK-NOTE": {
+   "about": "DRAFT-WALK-NOTE · her note on one step of a walk (guide-walk-spec.md section 3.8, frame B)",
+   "text": "She finds her mother's ledger under the kiln floor, and the sale was never",
+   "subjectWords": [
+    "ledger",
+    "kiln",
+    "orchard",
+    "Maren"
+   ]
+  },
+  "DRAFT-WALK-ARGUMENT": {
+   "about": "DRAFT-WALK-ARGUMENT · her note on one step of a walk through an argument",
+   "text": "Night buses should stay: shift workers at the cannery have no other way home after the last run.",
+   "subjectWords": [
+    "bus",
+    "buses",
+    "cannery",
+    "shift"
+   ]
+  },
+  "DRAFT-WALK-PAPER": {
+   "about": "DRAFT-WALK-PAPER · her note on one step of a walk through a paper",
+   "text": "Counted snails on forty marked tiles at the north pier, every second low tide for six weeks.",
+   "subjectWords": [
+    "snails",
+    "tiles",
+    "pier",
+    "tide"
+   ]
   }
  }
 }

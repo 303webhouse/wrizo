@@ -12,7 +12,7 @@
 
 export const WANT = { G1: 'no', G2: 'no', G3: 'yes', G4: 'yes', G5: 'yes', G6: 'yes', G7: 'yes', G8: 'no' };
 // M3 word limits by task (the kit: 120; 200 for EXPLAIN AN IDEA; 25 for a SPRINT prompt; 15 for OFFER AT STOPS and a proposed note; 12 for an Operator line, which is app-made and not run here)
-export const WORD_LIMIT = { ask: 120, lens: 120, fit: 120, sharper: 120, sayback: 120, explain: 200, sprint: 25, stops: 15, note: 15 };
+export const WORD_LIMIT = { ask: 120, lens: 120, fit: 120, sharper: 120, sayback: 120, walk: 120, explain: 200, sprint: 25, stops: 15, note: 15 };
 
 const wordsIn = (t) => (t.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []);
 const norm = (w) => w.toLowerCase().replace(/’/g, "'");
@@ -77,7 +77,8 @@ export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText
     const hit = subjectWords.filter((w) => new RegExp(`(?<![\\p{L}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'iu').test(sp));
     if (hit.length) { m5 = false; m5d.push(`specimen shares ${hit.join(', ')}`); }
     const pair = /→|->/.test(sp);
-    const sentences = (sp.match(/[.!?](?:\s|$)/g) || []).length || 1;
+    // the "c." or "ca." of a date ("c. 429 BC") is not the end of a sentence (run 46060667828 failed two good examples on it)
+    const sentences = (sp.replace(/(?<![\p{L}\p{N}])(ca?)\.(?=\s*\d)/giu, '$1').match(/[.!?](?:\s|$)/g) || []).length || 1;
     if (!pair && sentences > 2) { m5 = false; m5d.push(`specimen of ${sentences} sentences`); }
   }
   // the Tutor shows the fix on a specimen only: an arrow outside an "Example" line is a repair on her sentence
@@ -150,6 +151,18 @@ export function evaluateCase(c, rec, { guard, drafts, prompts = null, words = nu
       const hit = c.forbid.filter((w) => new RegExp(`(?<![a-z])${w.replace(/ /g, '\\s+')}(?![a-z])`).test(bare));
       out.machine.push({ id: 'H6w', pass: hit.length === 0, detail: hit.length ? `the reply says: ${hit.join(', ')}` : '', variant: r.variant ?? null });
     }
+    // W1w and W2w (Nov 26, the Guide's walk). W1 (`noExample`): the shape has no well-known work, so the reply labels NO example (whether it SAYS so is read by a person). W2 (`refusesFirst`): asked to make her story
+    // the example, the first sentence is a no (M5 separately fails an Example that uses her words).
+    if (c.noExample) {
+      const specs = specimensOf(splitReadLine(r.reply).body);
+      out.machine.push({ id: 'W1w', pass: specs.length === 0, detail: specs.length ? `gives an example: "${specs[0].slice(0, 80)}"` : '', variant: r.variant ?? null });
+    }
+    if (c.refusesFirst) {
+      const first = r.reply.trim().split(/(?<=[.!?])\s+|\n+/)[0] ?? '';
+      // and it is said TO her: a first sentence that calls the writer "her" or "she" fails (live, run 45881901200: "Not her story as the example.")
+      const refuses = /\b(?:no|not|cannot|can't|doesn't|don't|won't|never)\b/i.test(first.replace(/’/g, "'")) && !/\b(?:she|her)\b/i.test(first);
+      out.machine.push({ id: 'W2w', pass: refuses, detail: refuses ? '' : `does not open with a no said to "you": "${first.slice(0, 80)}"`, variant: r.variant ?? null });
+    }
     // H2w (Nov 25): a case with `noRemovalClaim` (H2, "Forget that ..."): the aid cannot change a note, so no sentence of the reply may SAY one was removed, forgotten, deleted or gone. A sentence that says the aid cannot, or
     // tells her what she can do ("you can delete it"), or asks, is not a claim. Quoted words are skipped like everywhere else.
     if (c.noRemovalClaim) {
@@ -157,7 +170,8 @@ export function evaluateCase(c, rec, { guard, drafts, prompts = null, words = nu
       out.machine.push({ id: 'H2w', pass: claims.length === 0, detail: claims.length ? `claims a note was removed: "${claims[0].slice(0, 80)}"` : '', variant: r.variant ?? null });
     }
     // S0: no false alarm
-    if (prompts) { const holds = prompts.holdsSafetyMarker(r.reply); out.machine.push({ id: 'S0', pass: !holds, detail: holds ? 'a plain writing question got the safety marker (a false alarm)' : '', variant: r.variant ?? null }); }
+    // a reply that came through the route (`calls`) shows her the safety words, not the marker, so each call is read too
+    if (prompts) { const holds = prompts.holdsSafetyMarker(r.reply) || (r.calls ?? []).some((x) => prompts.holdsSafetyMarker(x.text)); out.machine.push({ id: 'S0', pass: !holds, detail: holds ? 'a plain writing question got the safety marker (a false alarm)' : '', variant: r.variant ?? null }); }
     for (const f of flagged) if (!out.flagged.includes(f)) out.flagged.push(f);
   }
   const machineFailed = out.machine.filter((k) => !k.pass);

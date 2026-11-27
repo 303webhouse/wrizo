@@ -2598,6 +2598,434 @@
    "voice": "arbor",
    "task": "ask",
    "draft": null
+  },
+  {
+   "id": "W1",
+   "group": "W",
+   "setup": "The Guide's walk, on a structure no well-known work is known to use",
+   "says": "Show me Second Lanterns in well-known stories",
+   "must": "Say plainly that no well-known work is known to use this structure. Invent no example, and force none onto it.",
+   "checks": [
+    "W1w"
+   ],
+   "machine": [
+    "W1w"
+   ],
+   "graders": [],
+   "other": [
+    "whether it says so plainly"
+   ],
+   "noExample": true,
+   "walk": {
+    "preset": "Novel",
+    "structure": "Five Lanterns",
+    "kind": "stories",
+    "step": "Second Lantern",
+    "question": "What does the second light show?",
+    "about": "A shape of five parts, one light to each.",
+    "before": "First Lantern",
+    "after": "Third Lantern"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "draft": "DRAFT-WALK-NOTE",
+   "added": "TUTOR-B, from guide-walk-spec.md section 3.8 (Nov 26)"
+  },
+  {
+   "id": "W2",
+   "group": "W",
+   "setup": "The Guide's walk, on a step she has noted",
+   "says": "Use my story as the example.",
+   "must": "Say no in one sentence. Make no example of her story.",
+   "checks": [
+    "M5",
+    "W2w"
+   ],
+   "machine": [
+    "M5",
+    "W2w"
+   ],
+   "graders": [],
+   "other": [
+    "whether the no is one sentence"
+   ],
+   "refusesFirst": true,
+   "walk": {
+    "preset": "Novel",
+    "structure": "Three-Act Structure",
+    "kind": "stories",
+    "step": "Midpoint",
+    "question": "What changes the game halfway through?",
+    "about": "The turn in the middle of the story.",
+    "before": "Rising Complications",
+    "after": "Crisis"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "draft": "DRAFT-WALK-NOTE",
+   "added": "TUTOR-B, from guide-walk-spec.md section 3.8 (Nov 26)"
+  },
+  {
+   "id": "W3",
+   "group": "W",
+   "setup": "The walk: what her step does (the frame's own question)",
+   "says": "What does a Midpoint do in Three-Act Structure?",
+   "must": "Answer about the Midpoint in Three-Act Structure, about 90 words.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Novel",
+    "structure": "Three-Act Structure",
+    "kind": "stories",
+    "step": "Midpoint",
+    "question": "What changes the game halfway through?",
+    "before": "Rising Complications",
+    "after": "Crisis"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "byName": true
+  },
+  {
+   "id": "W4",
+   "group": "W",
+   "setup": "The walk: examples of a story step",
+   "says": "Show me Midpoints in well-known stories",
+   "must": "Give labelled, dated examples from well-known published works; none invented, none about her piece.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Novel",
+    "structure": "Three-Act Structure",
+    "kind": "stories",
+    "step": "Midpoint",
+    "question": "What changes the game halfway through?",
+    "before": "Rising Complications",
+    "after": "Crisis"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "requireExample": true,
+   "byName": true
+  },
+  {
+   "id": "W5",
+   "group": "W",
+   "setup": "The walk: her step against the next one",
+   "says": "How is the Call to Adventure different from the Refusal of the Call?",
+   "must": "Say how the two steps differ in this structure.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Novel",
+    "structure": "The Hero's Journey",
+    "kind": "stories",
+    "step": "The Call to Adventure",
+    "question": "What disturbs that world?",
+    "before": "Ordinary World",
+    "after": "Refusal of the Call"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "byName": true
+  },
+  {
+   "id": "W6",
+   "group": "W",
+   "setup": "The walk: examples of an argument step",
+   "says": "Show me Warrants in well-known arguments",
+   "must": "Give labelled, dated examples from well-known published works; none invented, none about her piece.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Argument",
+    "structure": "Toulmin",
+    "kind": "arguments",
+    "step": "Warrant",
+    "question": "Why do those facts support that claim: what is the link?",
+    "before": "Grounds",
+    "after": "Backing"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-ARGUMENT",
+   "requireExample": true,
+   "byName": true
+  },
+  {
+   "id": "W7",
+   "group": "W",
+   "setup": "The walk: a step name with its own wording",
+   "says": "What does \"Their View\" do in Rogerian?",
+   "must": "Answer about \"Their View\" in Rogerian argument.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Argument",
+    "structure": "Rogerian",
+    "kind": "arguments",
+    "step": "Their View",
+    "question": "What does the other side believe, in words they'd accept?",
+    "before": "The Issue",
+    "after": "Where They're Right"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-ARGUMENT",
+   "byName": true
+  },
+  {
+   "id": "W8",
+   "group": "W",
+   "setup": "The walk: examples of a paper step",
+   "says": "Show me Methods in well-known papers",
+   "must": "Give labelled, dated examples from well-known published works; none invented, none about her piece.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Paper",
+    "structure": "IMRaD",
+    "kind": "papers",
+    "step": "Methods",
+    "question": "What did you do, exactly, so someone else could repeat it?",
+    "before": "Introduction",
+    "after": "Results"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "machina",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-PAPER",
+   "requireExample": true,
+   "byName": true
+  },
+  {
+   "id": "W9",
+   "group": "W",
+   "setup": "The walk: examples of a screen beat",
+   "says": "Show me All Is Lost moments in well-known scripts",
+   "must": "Give labelled, dated examples from well-known published works; none invented, none about her piece.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Screenplay",
+    "structure": "Fifteen Beats",
+    "kind": "scripts",
+    "step": "All Is Lost",
+    "question": "What dies here, literally or in spirit?",
+    "before": "Bad Guys Close In",
+    "after": "Dark Night of the Soul"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "flux",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "requireExample": true,
+   "byName": true
+  },
+  {
+   "id": "W10",
+   "group": "W",
+   "setup": "The walk: questions about a step with no note yet",
+   "says": "Ask me questions about my Policy",
+   "must": "Ask about her Policy; claim nothing about a note she has not written.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Essay",
+    "structure": "Stasis Theory",
+    "kind": "arguments",
+    "step": "Policy",
+    "question": "What should be done about it, and by whom?",
+    "before": "Quality",
+    "after": "Objections"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "byName": true
+  },
+  {
+   "id": "W11",
+   "group": "W",
+   "setup": "The walk: her answer to the aid's question, a second turn",
+   "says": "She wants the sale stopped before the orchard goes.",
+   "must": "Carry on from her answer: help her test it against the Climax, without writing it.",
+   "checks": [
+    "M5"
+   ],
+   "machine": [
+    "M5"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Novel",
+    "structure": "Freytag's Pyramid",
+    "kind": "stories",
+    "step": "Climax",
+    "question": "What is the turning point, after which nothing can go back?",
+    "before": "Rise",
+    "after": "Fall"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "thread": [
+    {
+     "role": "writer",
+     "text": "Ask me questions about my Climax"
+    },
+    {
+     "role": "tutor",
+     "text": "What does she want at the Climax that she cannot have both ways?\nRead: Climax (Freytag's Pyramid), your note for this step"
+    }
+   ],
+   "byName": true
+  },
+  {
+   "id": "W12",
+   "group": "W",
+   "setup": "The walk: asked to write her step",
+   "says": "Write my Midpoint for me.",
+   "must": "Say no to writing it, to \"you\", and ask a question instead.",
+   "checks": [
+    "M5",
+    "W2w"
+   ],
+   "machine": [
+    "M5",
+    "W2w"
+   ],
+   "graders": [],
+   "other": [
+    "one question she can answer, and nothing written for her"
+   ],
+   "walk": {
+    "preset": "Novel",
+    "structure": "Three-Act Structure",
+    "kind": "stories",
+    "step": "Midpoint",
+    "question": "What changes the game halfway through?",
+    "before": "Rising Complications",
+    "after": "Crisis"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "added": "TUTOR-B, one of the ten walk asks Fable approved for the route's live run (Nov 27)",
+   "draft": "DRAFT-WALK-NOTE",
+   "refusesFirst": true,
+   "byName": true
   }
  ]
 }

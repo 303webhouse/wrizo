@@ -37,8 +37,10 @@ const set = JSON.parse(fs.readFileSync(path.join(EVAL, 'cases.json'), 'utf8')).c
 const per = {}; for (const c of set) per[c.group] = (per[c.group] || 0) + 1;
 const kit = { A: 12, B: 24, C: 12, D: 14, E: 12, F: 8, G: 9, H: 9, I: 8, J: 4, K: 3 }; // G is the kit's 7 plus G3b and G3c (TUTOR-B's safety variants)
 const kinds = set.reduce((a, c) => (a[c.kind] = (a[c.kind] || 0) + 1, a), {});
-ok(set.length === 115 && JSON.stringify(per) === JSON.stringify(kit) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b and G3c (marked as added)', JSON.stringify(per));
-ok(kinds.reply === 93 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 93 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
+// SUCCESSOR (Nov 26): the walk's two cases (group W, guide-walk-spec.md section 3.8) join the set, so 115 is now 117 and 93 reply cases are 95.
+// SUCCESSOR (Nov 27): the ten walk asks approved for the route's live run (W3 to W12) join them, so 117 is now 127 and 95 reply cases are 105.
+ok(set.length === 127 && JSON.stringify(per) === JSON.stringify({ ...kit, W: 12 }) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b, G3c and the walk\'s W1 to W12 (all fourteen marked as added)', JSON.stringify(per));
+ok(kinds.reply === 105 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 105 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
 ok(set.filter((c) => c.kind === 'reply' || c.kind === 'safety').every((c) => typeof c.says === 'string' && c.says.length > 0 && (!c.draft || fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8').includes(`"${c.draft}"`))), 'RN1 every case that runs has something she says, and a made-up draft that exists when it names one');
 
 // ---- RN2 ----
@@ -110,6 +112,8 @@ ok(await mutantEval('(!empty || nothingSupplied)', 'true') > 0, 'RN4 MUT M7 taki
 ok(await mutantEval("out.machine.push({ id: 'S1', pass: holds,", "out.machine.push({ id: 'S1', pass: true,") > 0, 'RN4 MUT S1 blind (never asks for the marker): fixtures go wrong');
 ok(await mutantEval("pass: shown === expected,", "pass: true,") > 0, 'RN4 MUT S2 blind (never compares the words): fixtures go wrong');
 ok(await mutantEval("out.machine.push({ id: 'S0', pass: !holds,", "out.machine.push({ id: 'S0', pass: true,") > 0, 'RN4 MUT S0 blind (a false alarm passes): fixtures go wrong');
+ok(await mutantEval("out.machine.push({ id: 'W1w', pass: specs.length === 0,", "out.machine.push({ id: 'W1w', pass: true,") > 0, 'RN4 MUT W1w blind (a forced example on a shape with no known work passes): fixtures go wrong');
+ok(await mutantEval("out.machine.push({ id: 'W2w', pass: refuses,", "out.machine.push({ id: 'W2w', pass: true,") > 0, 'RN4 MUT W2w blind (her story made the example passes): fixtures go wrong');
 // ---- RN5: the cap ----
 {
   const cap = live.makeCap({ maxCalls: 3, maxTokens: 1e9 });
@@ -222,6 +226,78 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(rec && sprint.length === 10 && sprint.map((q) => q.max_tokens).join() === [80, 80, 80, 80, 80, 3000, 3000, 3000, 3000, 3000].join() && sprint.every((q) => q.thinking === undefined && q.messages.length === 1 && q.messages[0].content === 'Give one writing prompt.'), 'RN10 a full run asks SPRINT\'s prompt as the route does: the same system prompt and ask, five at the old cap of 80, five at 3000', `calls=${sprint.length} ${sprint.map((q) => q.max_tokens).join()}`);
   ok(rec && Array.isArray(rec.sprint) && rec.sprint.length === 10 && rec.sprint.every((s) => s.stop === 'end_turn' && typeof s.reply === 'string' && Number.isFinite(s.ms)) && rec.notRun.length === 0 && rec.cap.calls <= 120, 'RN10 what each returned is recorded, and the whole run fits in 120 calls', JSON.stringify(rec && { calls: rec.cap.calls, notRun: rec.notRun.length, sprint: rec.sprint && rec.sprint.length }));
 }
+{
+  // RN11: the walk's two cases, live: the walk's own system prompt, her step in ONE <walk-step> turn and then her words. No page delta and no notes travel (the spec: nothing else unless she says yes).
+  model.reset(); model.say('The aid does not use your story as an example.\nWhat does she want now?\nRead: Midpoint (Three-Act), your note for this step');
+  await runCli(['--live', '--only', 'W2', '--no-grader', '--out', path.join(tmpdir, 'walk.json'), '--max-calls', '5'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const q = model.requests[0] || {};
+  const turns = q.messages || [];
+  const W2 = set.find((c) => c.id === 'W2');
+  const note = JSON.parse(fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8')).drafts['DRAFT-WALK-NOTE'].text;
+  ok(model.requests.length === 1 && String(q.system).includes('TASK · THE GUIDE') && turns.length === 2 && String(turns[0].content).startsWith('<walk-step>') && String(turns[0].content).includes(note) && turns[1].content === W2.says, 'RN11 a walk case asks with the walk\'s task, sends her step and note as one <walk-step> turn, then her words', JSON.stringify(turns).slice(0, 300));
+  ok(turns.length === 2 && !JSON.stringify(turns).includes('page-since-last-read') && !JSON.stringify(turns).includes('notes-on-file'), 'RN11 and nothing else of hers travels: no page, no notes on file', JSON.stringify(turns).slice(0, 200));
+}
+{
+  // RN13 (Nov 27, Fable: "the W cases plus 10 walk asks through the real route"): a walk case is answered BY /tutor/chat (tutor.ts), not by a copy of what it builds, and every call the route makes is counted
+  // against the same hard cap. W2 is the case: it opens with a no to "you".
+  const env = { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' };
+  const GOOD = 'No, the aid uses published works, not your story.\nWhat does she want now?\nRead: Midpoint (Three-Act Structure), your note for this step';
+  const BAD = 'I think your story works.\nRead: Midpoint';
+  const FALLBACK = run.loadModules();
+  const fallbackLine = FALLBACK.guard.FALLBACK_LINE; const marker = FALLBACK.prompts.SAFETY_MARKER; const safetyWords = FALLBACK.prompts.SAFETY_MESSAGE; const oldCap = FALLBACK.prompts.CHAT_MAX_TOKENS;
+  FALLBACK.cleanup();
+  const go = async (name, replies, extra = []) => {
+    model.reset(); model.say(...replies);
+    const out = path.join(tmpdir, `${name}.json`);
+    const r = await runCli(['--live', '--only', 'W2', '--no-grader', '--out', out, ...extra], env);
+    return { r, rec: fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : null, reqs: model.requests.slice() };
+  };
+  const two = await go('route-retry', [BAD, GOOD], ['--max-calls', '10']);
+  const e = two.rec?.entries?.[0]?.replies?.[0];
+  ok(two.reqs.length === 2 && e?.reply === GOOD && two.rec.cap.calls === 2 && e.calls?.length === 2 && e.calls[0].text === BAD && two.rec.cap.tokens === 40, 'RN13 the route\'s own guard asks again, both calls are counted against the cap with their real tokens, and the recording holds what she would see and what each call said', JSON.stringify({ calls: two.reqs.length, cap: two.rec?.cap, e }).slice(0, 400));
+  ok(two.reqs.length === 2 && two.reqs.every((q) => q.model === 'stand-in-reply' && q.max_tokens === oldCap && String(q.system).includes('TASK · THE GUIDE') && q.messages.length === 2 && String(q.messages[0].content).startsWith('<walk-step>')), 'RN13 each call is the route\'s: the walk task, her step as one turn, then her words, at the route\'s own token cap', String(two.reqs.length));
+  const fell = await go('route-fallback', [BAD, BAD], ['--max-calls', '10']);
+  ok(fell.rec?.entries?.[0]?.replies?.[0]?.reply === fallbackLine && /TUTOR-EVAL LIVE: FAIL/.test(fell.r.stdout), 'RN13 two bad replies come out as the route\'s fallback line, and the case fails', String(fell.rec?.entries?.[0]?.replies?.[0]?.reply));
+  const one = await go('route-capped', [BAD, GOOD], ['--max-calls', '1']);
+  ok(one.reqs.length === 1 && one.rec?.entries.length === 0 && one.rec.notRun.length === 1 && one.rec.notRun[0].why === 'cap reached' && one.r.status === 1, 'RN13 with room for one call the route\'s second call is never sent, and the case is written down as "cap reached"', JSON.stringify({ calls: one.reqs.length, rec: one.rec && { entries: one.rec.entries.length, notRun: one.rec.notRun } }));
+  const tight = await go('route-tokens', [GOOD], ['--max-calls', '10', '--max-tokens', '500']);
+  ok(tight.reqs.length === 0 && tight.rec?.notRun[0]?.why === 'cap reached', 'RN13 a token cap too small for one call sends nothing', `calls=${tight.reqs.length}`);
+  const safe = await go('route-safety', [marker], ['--max-calls', '10']);
+  ok(safe.rec?.entries?.[0]?.replies?.[0]?.reply === safetyWords && /S0/.test(safe.r.stdout) && safe.r.status === 1, 'RN13 a marker on a plain walk question still reads as a false alarm (S0), though the route turns it into the safety words', String(safe.r.stdout).slice(-200));
+  const all = [two, fell, one, tight, safe].map((x) => x.r.stdout + x.r.stderr + JSON.stringify(x.rec)).join('');
+  ok(!all.includes(FAKE), 'RN13 and the key reaches no output and no recording');
+}
+{
+  // RN14 (Nov 27): the approved run is W1 to W12. Against a stand-in model that reports the sort of use the last live run saw, it takes 12 calls through the route and stays inside 24 calls and 30,000 tokens.
+  model.reset(); model.setUsage({ input_tokens: 1500, output_tokens: 300 });
+  model.say('No, not from your story.\nExample: In Hamlet (1600), the play within the play settles the doubt.\nWhat changes for her?\nRead: Midpoint (Three-Act Structure), your note for this step');
+  const ids = Array.from({ length: 12 }, (_, i) => `W${i + 1}`);
+  const out = path.join(tmpdir, 'walk-set.json');
+  await runCli(['--live', '--only', ids.join(), '--no-grader', '--out', out, '--max-calls', '24', '--max-tokens', '30000'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const rec = fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : null;
+  const w11 = model.requests.find((q) => JSON.stringify(q.messages).includes('before the orchard goes'));
+  ok(rec && rec.entries.length === 12 && rec.notRun.length === 0 && rec.cap.calls <= 24 && rec.cap.tokens <= 30000 && model.requests.every((q) => String(q.system).includes('TASK · THE GUIDE')), 'RN14 the twelve walk cases all run through the route, inside 24 calls and 30,000 tokens', JSON.stringify(rec && { n: rec.entries.length, notRun: rec.notRun, cap: rec.cap }));
+  ok(w11 && w11.messages.map((m) => m.role).join() === 'user,assistant,user,user' && w11.messages[2].content.startsWith('<walk-step>'), 'RN14 the second-turn case sends its thread, with her step just before her latest words', JSON.stringify(w11 && w11.messages.map((m) => m.role)));
+  model.setUsage({ input_tokens: 10, output_tokens: 10 });
+}
+{
+  // RN15 (Nov 27, after run 46060667828; Fable: yes): the "c." before a date ("c. 429 BC") is not the end of a sentence, so it does not make an example look longer than it is. Three real sentences still fail.
+  const m = run.loadModules();
+  const m5 = (reply) => checksMod.runMachineChecks({ reply: `${reply}\nRead: Midpoint`, task: 'walk', guard: m.guard }).checks.find((k) => k.id === 'M5');
+  const two = [
+    'Example: in Oedipus Rex (c. 429 BC), a messenger arrives. Example: in Macbeth (c. 1606), the banquet turns.',
+    'Example: in Macbeth (c. 1606), the banquet turns. Nothing runs uphill after it.',
+    'Example: the Iliad (ca. 700 BC) turns on a death. Nothing is the same after it.',
+  ];
+  const wrongTwo = two.filter((r) => !m5(r).pass);
+  ok(wrongTwo.length === 0, 'RN15 an example of two sentences passes though a date in it says "c." or "ca."', wrongTwo.map((r) => `${r} -> ${m5(r).detail}`).join(' | '));
+  const three = [
+    'Example: in Macbeth (c. 1606), the banquet turns. The host cannot go on. Everything runs downhill.',
+    'Example: the letter is marked c. The reply is lost. The rest is silence.',
+  ];
+  ok(three.every((r) => !m5(r).pass), 'RN15 three real sentences still fail, and a "c." with no date after it still ends one', three.map((r) => `${m5(r).pass}`).join());
+  m.cleanup();
+}
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
 
@@ -235,6 +311,9 @@ const refs = [...wt.matchAll(/\$\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}/g)].map((m) 
 ok(refs.length > 0 && refs.every((n) => ['TUTOR_EVAL_API_KEY', 'TUTOR_EVAL_GRADER_API_KEY'].includes(n)) && !/\bsk-[A-Za-z0-9]/.test(wt), 'RN8 it names the two repository secrets Nick adds, TUTOR_EVAL_API_KEY and TUTOR_EVAL_GRADER_API_KEY, and holds no key itself', refs.join(','));
 ok(/permissions:\n\s+contents: read/.test(wt) && /timeout-minutes:\s*\d+/.test(wt) && /max_calls/.test(wt) && /max_tokens/.test(wt) && /concurrency:/.test(wt), 'RN8 read-only permissions, a timeout, a concurrency group, and call and token caps as inputs');
 ok(wt.includes("grep -Eq '^[0-9]{1,3}$'") && wt.includes("grep -Eq '^[0-9]{1,6}$'"), 'RN8 the two cap inputs are checked to be plain numbers before they are used');
+// RN12 (Nov 26): the job's `only` input takes the walk's case ids (group W) as well as the kit's A to K, and still nothing but case ids
+const onlyRe = (() => { const m = /I_ONLY" \| grep -Eq '([^']+)'/.exec(wt); return m ? new RegExp(m[1]) : null; })();
+ok(onlyRe && ['W1,W2', 'A1,C2', 'G3,W2'].every((s) => onlyRe.test(s)) && ['Z1', 'W1;ls', 'W1 W2', 'W', '$(x)', 'W1,'].every((s) => !onlyRe.test(s)), 'RN12 `only` takes W case ids too, and still only case ids', String(onlyRe));
 const inputLines = wt.split('\n').filter((l) => /\$\{\{\s*inputs\./.test(l));
 ok(inputLines.length > 0 && inputLines.every((l) => /^\s+(?:I_[A-Z]+|ref):\s/.test(l)), 'RN8 every input reaches the job as an env variable (or the checkout ref), never pasted into a shell line', inputLines.filter((l) => !/^\s+(?:I_[A-Z]+|ref):\s/.test(l)).join(' | '));
 
