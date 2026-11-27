@@ -9,6 +9,7 @@
 //      and its arrow points inward (the way the menu will travel)
 //   C  the Board's own controls (the readings strip with its zoom button, the canvas's resize handle) are not under a menu or its tab
 //   Z  closed again, the Board and both tabs are as before
+//   H  the header bar ends where the Board ends (Fable, Nov 26, Q2: "widen the header bar to match the Board")
 //   U  Arbor's and Machina's Boards are not widened (Flux first)
 //   MUT the Front menu pushed 40 px off the Board's edge turns A's reading red
 // Run: node scripts/harness/flux-139-board.mjs   (from apps/desktop, dist-web built)
@@ -29,7 +30,7 @@ const PROBE = `(() => {
   // the arrow as she sees it: a mirrored glyph reads the other way
   const arrow = (s) => { const g = q(s); if (!g) return null; const t = g.textContent; return getComputedStyle(g).transform.startsWith('matrix(-1') ? ({ '‹': '›', '›': '‹' })[t] ?? t : t; };
   return { frontOpen, backOpen, vw: document.documentElement.clientWidth, rail: strip ? strip.getBoundingClientRect().right : 0,
-    board: box(q('.board-canvas-wrap')), cards: [...document.querySelectorAll('.board-canvas [data-box-id], .board-canvas .board-box')].map(box),
+    head: box(q('.chrome-top')), board: box(q('.board-canvas-wrap')), cards: [...document.querySelectorAll('.board-canvas [data-box-id], .board-canvas .board-box')].map(box),
     front: frontOpen ? box(q('.wz-sliver-panel')) : null, frontGrip: box(q('.wz-sliver-grip')), frontArrow: arrow('.wz-sliver-grip-glyph'),
     back: backOpen ? box(q('.wz-tutor-panel')) : null, backGrip: box(q('.wz-tutor-grip')), backArrow: arrow('.wz-tutor-grip-glyph'),
     controls: [box(q('.flux3-tele')), box(q('.flux3-tele-zoom')), box(q('.board-canvas-resize-handle'))] };
@@ -70,6 +71,7 @@ await withHarness(async (app) => {
       ok(`${at} (premise): a Board with two cards and its readings strip, both menus closed`, !!rest.board && rest.cards.length >= 2 && !!rest.controls[0] && !rest.frontOpen && !rest.backOpen, rest);
       if (!rest.board) continue;
       ok(`${at} W: the Board takes the screen`, rest.board[0] - rest.rail <= 24 && rest.vw - rest.board[2] <= 24 && rest.board[0] >= rest.rail && rest.board[2] <= rest.vw, { board: rest.board, rail: rest.rail, vw: rest.vw });
+      ok(`${at} H: the header bar ends where the Board ends`, !!rest.head && Math.abs(rest.head[2] - rest.board[2]) <= 1.5, { head: rest.head, board: rest.board });
       for (const side of ['front', 'back']) {
         const out = side === 'front' ? rest.frontGrip : rest.backGrip;
         ok(`${at} ${side} T closed: the opening tab stands outside the Board and points inward`, !!out && !cross(out, rest.board) && rest[`${side}Arrow`] === IN[side], { grip: out, board: rest.board, arrow: rest[`${side}Arrow`] });
