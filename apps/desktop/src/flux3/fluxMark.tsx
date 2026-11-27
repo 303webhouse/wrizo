@@ -6,6 +6,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { tryFlash } from '../store/flashBudget';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
+import { useDistractionFree } from './useDistractionFree';
 import { useWritingSettings } from '../store/writingSettings';
 import { useJacked } from './jackIn';
 
@@ -122,8 +123,9 @@ const REST = [...WORD], CLEAN = [false, false, false, false];
 
 /** One glitch for every `periodMs` of stillness. `shiftable`: the in-app clock takes the harness's window.__f3MarkIdleShift (seconds). */
 export function useMarkIdle(root: RefObject<Element | null>, periodMs: number, on: boolean, shiftable = false): void {
+  const quiet = useDistractionFree();   // Distraction Free (the flourish spec §7.2): the mark never glitches
   useEffect(() => {
-    if (!on || prefersReducedMotion()) return undefined;
+    if (!on || quiet || prefersReducedMotion()) return undefined;
     let lastAct = performance.now(), lastGlitch = lastAct, last: GlitchMode | '' = '', live: { mode: GlitchMode; t0: number; letter: number } | null = null, raf = 0;
     const markEl = () => root.current?.querySelector('[data-flux-mark]') ?? null;
     const frame = () => {
@@ -154,7 +156,7 @@ export function useMarkIdle(root: RefObject<Element | null>, periodMs: number, o
       const mark = markEl();
       if (mark) paintFluxMark(mark, REST, CLEAN, true, null);
     };
-  }, [root, periodMs, on, shiftable]);
+  }, [root, periodMs, on, shiftable, quiet]);
 }
 
 function SmallMark({ height, svgRef }: { height: number; svgRef?: RefObject<SVGSVGElement | null> }) {
@@ -174,8 +176,9 @@ export function FluxAppMark() {
   const settings = useWritingSettings();
   const dial = useAmbianceDial();
   const jacked = useJacked();
+  const quiet = useDistractionFree();
   useMarkIdle(ref, 60000, settings.flicker && dial > 0 && !jacked, true);
-  return <span ref={ref} className="flux5-mark" data-flux-appmark=""><SmallMark height={22} /></span>;
+  return <span ref={ref} className="flux5-mark" data-flux-appmark="" data-still={quiet ? '' : undefined}><SmallMark height={22} /></span>;
 }
 
 /** The picker card's mark: still, the same drawing. */

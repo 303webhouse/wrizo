@@ -14,6 +14,8 @@
 // both). The electron rests the moment her cursor is in the page: the focus-in sets data-flux-writing on the root and a CSS rule pauses and hides it (no script per key, and no :has()). scripts/harness/flux3-current.mjs
 // proves each of these, and the typing cost on the box.
 import { effectiveAmbianceDial } from '../store/ambianceDial';
+import { subscribePrefs } from '../reorg/prefsSaved';
+import { distractionFree } from '../store/flourish';
 import { SPARK_MS, SPARK_PX, pathLength, sparkLayers, stagePaths, type Pt, type Rect } from './fluxCurrentPath';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -27,7 +29,7 @@ const state = { runs: 0, last: null as Last | null };
 /** the layer draws only in the Flux theme under the flag, and never at Ambiance 0 or under reduced motion (the effective dial is 0 in both) */
 function active(): boolean {
   const root = document.documentElement;
-  return root.hasAttribute('data-flux3') && root.getAttribute('data-theme') === 'flux' && effectiveAmbianceDial() > 0;
+  return root.hasAttribute('data-flux3') && root.getAttribute('data-theme') === 'flux' && effectiveAmbianceDial() > 0 && !distractionFree();
 }
 
 const rectOf = (el: Element | null): Rect | null => {
@@ -138,6 +140,9 @@ function hideHand(s: Side): void {
   h.mo.disconnect();
   h.panel.removeAttribute('data-flux-hand');
 }
+
+// DISTRACTION FREE switched on while a menu is open (Session lives in a menu): its line and electron go at once, and any spark in flight with them (the flourish spec §7.2)
+subscribePrefs(() => { if (!distractionFree()) return; (['left', 'right'] as Side[]).forEach(hideHand); clearSparks(); });
 
 // ---- the electron rests while she is in her page ---------------------------------------------------------------------------------------------------
 

@@ -1123,3 +1123,8 @@ mobileCard@flux=Node
 mobileCards@flux=Nodes
 mobileAddCard@flux=Add node
 mobileDocNoBoard@flux=This Doc has no Circuit yet
+# GLITCH v2 (FIX, Nov 26): Docs › Session's rows for Flux (src/reorg/session/SessionGroup.tsx)
+sessionMeterStyle=Meter style
+sessionGlitchHint=Glitch: the CHECKPOINT meter, and glitches while you are still.
+sessionBarHint=Bar: a plain meter. No glitches.
+sessionFlickerHint=The glitches while you are still: words and the screen.
