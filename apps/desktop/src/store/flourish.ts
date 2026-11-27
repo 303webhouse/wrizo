@@ -62,7 +62,7 @@ export function useDistractionFree(): boolean {
 
 // <html data-distraction-free> while it is on: the sheets and the shared stillness reader (store/ambianceDial.ts) read it there
 if (typeof document !== 'undefined') {
-  const mark = (): void => { document.documentElement.toggleAttribute('data-distraction-free', distractionFree()); };
+  const mark = (): void => { document.documentElement?.toggleAttribute?.('data-distraction-free', distractionFree()); };
   mark();
   subscribePrefs(mark);
 }

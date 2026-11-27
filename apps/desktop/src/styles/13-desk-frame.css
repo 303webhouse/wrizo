@@ -1016,3 +1016,12 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 .wz-session-quiet-hint{ flex:1 0 100%; font-size:.86em; opacity:.85; }
 [data-session-quieted='true']{ opacity:.45; }
 .wz-mode-notice-also{ flex:1 0 100%; opacity:.85; }
+/* DISTRACTION FREE (the flourish spec §7.2): menus simply appear, marks stand still, nothing off the page moves. 1 ms rather than none, so what waits for an
+   animation's or a transition's end still hears it. Never the page, her words or the caret; the top bar and rail keep their own fade away while she types */
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page, .mode-page *, .chrome-fade, .desk-dissolve, .mode-dissolve, .chrome-handle, .brand-mark, .desk-frame-strip, .chrome-top),
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::before,
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::after{ animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; }
+/* every meter and bar, with the goal, the running timer, and the goal's glow and flash (the one count line stays: components/QuietCount.tsx) */
+:root[data-distraction-free] :is(.wz-goal-glow, .desk-frame-goalflare, .deck-celebration, .wz-sliver-goal, .mode-incentive-row :is(.mode-ptrack, .mode-pmetric, .mode-timer)){ display:none !important; }
+/* Arbor: no pergola shadows, beams or leaves, in the room or on the page; the room keeps its colour by day and by night */
+:root[data-distraction-free] :is(.arbor2-pergola, .arbor2-pagesh, .arbor2-sun){ display:none !important; }

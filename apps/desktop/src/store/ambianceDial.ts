@@ -37,7 +37,7 @@ export function setAmbianceDial(v: number): void {
 }
 
 // Distraction Free stills what reduced motion stills (the flourish spec §7.2). Read from <html>, where store/flourish.ts marks it: no import cycle.
-export const distractionFreeMarked = (): boolean => typeof document !== 'undefined' && document.documentElement.hasAttribute('data-distraction-free');
+export const distractionFreeMarked = (): boolean => typeof document !== 'undefined' && document.documentElement?.hasAttribute?.('data-distraction-free') === true;   // (the browserless checks stand in a bare document)
 
 export function prefersReducedMotion(): boolean {
   return distractionFreeMarked() || (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
