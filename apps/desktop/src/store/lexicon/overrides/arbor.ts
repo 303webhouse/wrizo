@@ -42,6 +42,8 @@ export const ARBOR_CANVAS_WORDS: Partial<Record<DeskTermId, string>> = {
   placesBoardsZoneLabel: 'Canvases this page can join',
   placesBoardsEmpty: 'No canvases yet.',
   helpGrafts: 'Grafts join pages, cards and canvases.',
+  // THE PHONE COMPANION (MOBILE-B): Arbor's desk calls a Part a Section
+  mobileNoPart: 'No Section yet',
 };
 
 /** True when Arbor reads "Canvas": the redesign's own switch (off only under the test-only ?arbor2=0). Read once at load. */

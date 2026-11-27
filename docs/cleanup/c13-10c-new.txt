@@ -1043,3 +1043,4 @@ mobileCard@flux=Node
 mobileCards@flux=Nodes
 mobileAddCard@flux=Add node
 mobileDocNoBoard@flux=This Doc has no Circuit yet
+mobileNoPart@flux=No Track yet

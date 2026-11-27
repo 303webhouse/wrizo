@@ -243,5 +243,6 @@ export const FLUX_OVERRIDES = {
     mobileCards: 'Nodes',
     mobileAddCard: 'Add node',
     mobileDocNoBoard: 'This Doc has no Circuit yet',
+    mobileNoPart: 'No Track yet',   // the desk's word for a Part
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;
