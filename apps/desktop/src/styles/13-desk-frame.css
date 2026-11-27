@@ -172,7 +172,7 @@
 /* the page lays out at scale 1 always and is painted at --wz-k by a transform (below), so every line breaks where it does at 1366; the anchors read the painted width (--wz-anchor-w, --wz-page-half), the zoomed width while zoomed [desk-frame §7] */
 .desk-frame-stage--prose{
   --wz-letter-in: 72.941px;
-  --wz-pt: calc(var(--wz-letter-in) / 54.70588);
+  --wz-pt: calc(var(--wz-letter-in) / 54.70588 / 1.456);   /* #143: her type is laid out for the 1.456 page scale (store/pageScale.ts TYPE_SCALE), so a point paints as a CSS point there and her lines break the same on every screen */
   --wz-page-w: calc(var(--wz-letter-in) * 8.5);
   --wz-page-h: calc(var(--wz-letter-in) * 11);
   --wz-k: 1;
@@ -184,7 +184,7 @@
 }
 .desk-frame-stage--prose .mode-pagecol{
   width:var(--wz-page-w); max-width:100%; min-width:0;
-  font-size:calc(12 * var(--wz-pt));
+  font-size:calc(12 * var(--wz-letter-in) / 54.70588);   /* the column's own furniture keeps its size (#143 shrinks only her type) */
   height:100%;   /* a definite height, so the letter-tall page shrinks to the stage instead of growing the column past it [desk-frame §8] */
 }
 /* SC1 S1/S4 — the screenplay column STOPS sharing prose's measure. FX1 S2 put

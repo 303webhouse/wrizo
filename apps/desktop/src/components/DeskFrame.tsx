@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor, zoomForType } from '../store/pageScale';
 import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
@@ -234,9 +234,14 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
+      // #143: zoomed further so her smaller-laid type reads as large as before; in Flux's Wire In only her words must clear the rail, elsewhere the whole page
+      const was = zoomFor(s.width, kRest, inset, fit);
+      const words = stage.querySelector<HTMLElement>('.forward-only-editor');
+      const share = document.documentElement.getAttribute('data-theme') === 'flux' ? (words && page?.offsetWidth ? words.offsetWidth / page.offsetWidth : 6.5 / 8.5) : 1;
+      const zoom = zoomForType(was, kRest, s.width, inset, share);
+      stage.style.setProperty('--wz-zoom', zoom.toFixed(4));
       // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
-      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
+      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit * (zoom / was)).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
