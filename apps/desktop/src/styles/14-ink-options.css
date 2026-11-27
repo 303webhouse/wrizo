@@ -593,6 +593,25 @@
 .wz-theme-card-volant .wz-theme-plate{ background-color:#F6F7F8; }
 .wz-theme-wm-volant{ position:relative; color:#2F353C; line-height:0; }
 
+/* THE NARROW ROOM (#142: a rail pop-out takes the room it is given; on the zoomed page of Free Write and Wire In that can be 200 px). Two across would cut the names, so: one column of short tiles, all five in
+   sight; the name sits higher and each tile's moving part keeps its own strip below it. The Page and Room rows may wrap. */
+.wz-cascade-panel:has(.wz-theme-cards){ container:wz-theme-pop / inline-size; }
+@container wz-theme-pop (max-width:250px){
+  .wz-theme-picker-field, .wz-theme-picker .mode-crow{ flex-wrap:wrap; }
+  .wz-theme-cards{ grid-template-columns:minmax(0, 1fr); gap:4px; }
+  /* 80 tall in a 768 window; shorter in a shorter one, so Machina’s wrapped Room row does not push the fifth tile out of sight */
+  .wz-theme-cards .wz-theme-card{ height:clamp(64px, calc((100vh - 360px) / 5), 80px); }
+  .wz-theme-card .wz-theme-wm-arbor{ font-size:28px; }
+  .wz-theme-card .wz-theme-wm-flux{ font-size:22px; }
+  .wz-theme-card .wz-theme-wm-nomad{ font-size:26px; }
+  .wz-theme-card-machina .wz-theme-nameblock, .wz-theme-card-flux .wz-theme-nameblock, .wz-theme-card.locked .wz-theme-nameblock{ bottom:22px; }
+  .wz-theme-card .wz-theme-band{ padding-top:2px; padding-bottom:2px; }
+  .wz-theme-card .wz-theme-plate-run{ bottom:15px; height:12px; }
+  .wz-theme-card .wz-theme-plate-notch{ height:12px; }
+  .wz-theme-card .wz-theme-plate-closed{ bottom:4px; }
+  .wz-theme-card .wz-theme-plate-check{ bottom:11px; }
+}
+
 /* note (d): the still frame applies to reduced motion AND Ambiance 0 — the OS/media fact below,
    and ThemePicker.tsx's own `data-still` attribute (the dial is pure JS state no @media rule can
    see; same combination as GlitchMeter.tsx's own `prefersReducedMotion() || getAmbianceDial() ===
