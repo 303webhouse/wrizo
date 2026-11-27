@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useDeskLexicon, type DeskTermId } from '../../store/deskLexicon';
 import { setWritingSettings, useWritingSettings } from '../../store/writingSettings';
 import { DEFAULT_GOAL_LINES, setWritingGoal, useWritingGoal, type GoalUnit } from '../../store/writingGoal';
 import type { PageStage } from '../pageStage';
+import { setFlourishOff, setThemeTracker, themeTrackerOn, useFlourish } from '../../store/flourish';
+import { useTheme } from '../../store/theme';
 
 // THE SESSION, SHARED (Fable, Nov 22, 1:40 am; the Arbor spec section 7: "the session as the LAST item of the rail's DOCS menu (Arbor: PAGES): theme tracker ·
 // goal · timer · progress, from the settings already on main"). One group for every theme's docs menu: Machina's DOCS renders it
@@ -30,11 +32,42 @@ function SessionToggle({ row, label, on, onPick, t }: { row: string; label: stri
   );
 }
 
+// GLITCH v2 (the flourish spec §1.5, build notes): under the tracker's switch, the theme's meter style - Flux "Meter style · Bar | Glitch" and its Flicker; Arbor "Progress style · Bar | Rhizome".
+// The style is her flourish on or off (store/flourish.ts); Flicker is today's saved switch. Machina keeps its tracker switch alone.
+function FlourishRows({ t }: { t: (k: DeskTermId) => string }) {
+  const theme = useTheme();
+  const settings = useWritingSettings();
+  const flux = useFlourish('flux');
+  const arbor = useFlourish('plateau');
+  if (theme !== 'flux' && theme !== 'plateau') return null;
+  const on = theme === 'flux' ? flux : arbor;
+  return (
+    <>
+      <div className="wz-reorg-default" data-session-row="meterstyle">
+        <span className="wz-reorg-default-label" id="wz-reorg-session-meterstyle">{theme === 'flux' ? t('sessionMeterStyle') : t('progressStyleLabel')}</span>
+        <span className="wz-reorg-toggle" role="group" aria-labelledby="wz-reorg-session-meterstyle">
+          <button type="button" data-pick="bar" aria-pressed={!on} onClick={() => setFlourishOff(theme, true)}>{t('progressStyleBar')}</button>
+          <button type="button" data-pick="flourish" aria-pressed={on} onClick={() => setFlourishOff(theme, false)}>{t('progressStyleRhizome')}</button>
+        </span>
+      </div>
+      {theme === 'flux' && (
+        <>
+          <p className="wz-reorg-session-hint" data-session-hint="meterstyle">{on ? t('sessionGlitchHint') : t('sessionBarHint')}</p>
+          <SessionToggle row="flicker" label={t('footMenuFlicker')} on={settings.flicker} onPick={(v) => setWritingSettings({ flicker: v })} t={t} />
+          <p className="wz-reorg-session-hint" data-session-hint="flicker">{t('sessionFlickerHint')}</p>
+        </>
+      )}
+    </>
+  );
+}
+
 /** The Session: the last item of the rail's docs menu (Machina's DOCS; Arbor's PAGES mounts the same group, ARBOR dresses it), closed each time it mounts. */
 export function SessionGroup({ stage }: { stage: PageStage }) {
   const { t } = useDeskLexicon();
   const settings = useWritingSettings();
   const goal = useWritingGoal();
+  const theme = useTheme();
+  useFlourish('machina');   // the tracker row also says whether Machina's Run is hers (store/flourish.ts)
   const [open, setOpen] = useState(false);
   const [unit, setUnit] = useState<GoalUnit>(() => goal?.unit ?? 'lines');
   const [draft, setDraft] = useState(() => String(goal?.n ?? DEFAULT_GOAL_LINES));
@@ -66,7 +99,7 @@ export function SessionGroup({ stage }: { stage: PageStage }) {
           </div>
         );
         if (row === 'timer') return <SessionToggle key={row} row="timer" label={t('reorgSessionTimer')} on={settings.timer} onPick={(on) => setWritingSettings({ timer: on })} t={t} />;
-        if (row === 'tracker') return <SessionToggle key={row} row="tracker" label={t('plainTrackerSwitch')} on={settings.themeTracker !== false} onPick={(on) => setWritingSettings({ themeTracker: on })} t={t} />;
+        if (row === 'tracker') return <Fragment key={row}><SessionToggle row="tracker" label={t('plainTrackerSwitch')} on={themeTrackerOn(theme, settings.themeTracker)} onPick={(on) => setThemeTracker(theme, on)} t={t} /><FlourishRows t={t} /></Fragment>;
         return <SessionToggle key={row} row="progress" label={t('reorgSessionProgress')} on={settings.instrumentsOn} onPick={(on) => setWritingSettings({ instrumentsOn: on })} t={t} />;
       })}
     </section>

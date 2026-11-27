@@ -11,6 +11,8 @@ import { useTheme } from '../store/theme';
 import { FLUX3 } from '../flux3/flag';
 import { FluxIdleGlitch } from '../flux3/FluxIdleGlitch';
 import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
+import { FluxPlainMeter } from '../flux3/FluxPlainMeter';
+import { flourishPinned, useFlourish } from '../store/flourish';
 import { FluxDoc } from '../flux3/FluxDoc';
 import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 // FLUX3 S4 - a mount point only: Jacked In's burst edge, which drains with this lane's own lap (src/flux3/FluxBurstEdge.tsx)
@@ -71,15 +73,21 @@ function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; ent
   // PAGE BREAKS (spec draft 3, section 3): the count is shown in all three themes - after the word count (Arbor, Flux), right of the Run's count
   // (Machina, drawn by RunStrip), and where neither is drawn, alone, centred under the page
   const count = <PageCount entryId={entryId} />;
+  const fluxFlourish = useFlourish('flux');
   const alone = <div className="desk-frame-instrument wz-pagecount-alone" data-style="count">{count}</div>;
   if (settings.progress !== 'words') return runShown ? null : alone;
   // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
   // below stays exactly as it is for every other case (th-machina-source M19 reads its gate)
-  if (FLUX3 && theme === 'flux' && settings.progressStyle === 'bar') {
+  // GLITCH v2 (the flourish spec §1.5, §7): Flux's lane follows its flourish, never the shared style - on, the CHECKPOINT meter; off or Distraction Free, the plain meter
+  // (older checks run pinned to the style-decided lane: store/flourish.ts flourishPinned)
+  if (FLUX3 && theme === 'flux' && (!flourishPinned() || settings.progressStyle === 'bar')) {
+    const checkpoint = flourishPinned() || fluxFlourish;
     return (
-      <div className="desk-frame-instrument" data-style={settings.progressStyle}>
+      <div className="desk-frame-instrument" data-style={checkpoint ? 'bar' : 'plain'}>
         <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
-        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={count} />
+        {checkpoint
+          ? <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={count} />
+          : <FluxPlainMeter frac={frac} celebrating={celebrating} label={`${unitCount} word${unitCount === 1 ? '' : 's'}`} pageCount={count} />}
       </div>
     );
   }

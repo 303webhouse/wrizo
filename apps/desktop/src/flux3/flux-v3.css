@@ -153,7 +153,15 @@
 :root[data-flux3][data-theme='flux'] .flux3-glitchbar-count{ font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--f3-room-quiet); }
 
 /* ---- the idle glitch (FluxIdleGlitch.tsx): a layer on <body>, over the words it covers; it takes no pointer and can never be selected ---- */
-:root[data-flux3][data-theme='flux'] .flux3-idle-layer{ position:fixed; inset:0; pointer-events:none; user-select:none; z-index:5; }
+:root[data-flux3][data-theme='flux'] .flux3-idle-layer{ position:fixed; inset:0; pointer-events:none; user-select:none; z-index:55; }   /* GLITCH v2: above the chrome it glitches, below the block caret (60) */
+/* GLITCH v2 - the screen band (flux3/glitchScreen.ts): the overlay that slips what is behind it, left and right of the page, and the two 1 px fringes (cyan at its top, pale steel at its foot, 55%) */
+:root[data-flux3][data-theme='flux'] .flux3-glitch-band{ position:absolute; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-glitch-fringe-top{ position:absolute; pointer-events:none; background:rgba(0, 194, 255, .55); }
+:root[data-flux3][data-theme='flux'] .flux3-glitch-fringe-foot{ position:absolute; pointer-events:none; background:rgba(126, 180, 196, .55); }
+/* GLITCH v2 - the plain meter (the flourish off, or Distraction Free): a 4 px cyan fill on its track */
+:root[data-flux3][data-theme='flux'] .flux3-plainmeter{ display:flex; align-items:center; justify-content:center; gap:14px; pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plainmeter-track{ width:min(340px, 36vw); height:4px; background:#5F8F95; }
+:root[data-flux3][data-theme='flux'] .flux3-plainmeter-fill{ display:block; height:100%; background:#00C2FF; }
 :root[data-flux3][data-theme='flux'] .flux3-idle-word{ position:absolute; overflow:hidden; white-space:pre; pointer-events:none; user-select:none; }
 
 /* ---- the hands as lines (piece 5; Nick's rule: the opener tabs keep today's shape, place and arrow flip - colour and line only; FIX reviews
