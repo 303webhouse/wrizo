@@ -8,7 +8,8 @@ import { PlainTracker } from './PlainTracker';
 // the flourish spec: the "mode on" notice (§2, every theme) and Flux's GLITCH switch beside the page count (§4.1)
 import { ModeNotice } from './ModeNotice';
 import { FluxGlitchSwitch } from '../flux3/FluxGlitchSwitch';
-import { useFlourish } from '../store/flourish';
+import { useDistractionFree, useFlourish } from '../store/flourish';
+import { QuietCount } from './QuietCount';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
 // (gutter + ports) stands beside the page (src/flux3/); without the flag every line below renders exactly as before
@@ -42,6 +43,18 @@ export function DeskInstrument({ unitCount, text, seedKey, paperRef, glitch = fa
   const runWanted = useFlourish('machina');
   const runQuiet = settings.instrumentsOn && laneTheme === 'machina' && !runWanted;
   const runOn = useRunStripActive(text);
+  // DISTRACTION FREE (the flourish spec §7.2, §7.3): no meter, flourish, reward or notice - one still count line. Flux's page frame (still readouts) and room
+  // ground stay mounted; what they do while it is on is theirs
+  const quiet = useDistractionFree();
+  if (quiet) {
+    return (
+      <>
+        {FLUX3 && glitch && <FluxDoc paperRef={paperRef} entryId={seedKey} />}
+        {FLUX3 && glitch && !jacked && <FluxRoomGround />}
+        <QuietCount text={text} entryId={seedKey} />
+      </>
+    );
+  }
   // Both children self-gate on the settings (RhizomeField already did, and
   // still does, verbatim) — rendered as SIBLINGS rather than as a ternary so
   // the rhizome's own mount lifecycle is byte-identical to pre-M4: toggling

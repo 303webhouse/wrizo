@@ -858,5 +858,5 @@ export type DeskTermId =
   | 'guideAnsGameWorld'
   | 'guideAnsGameQuest'
   | 'guideAnsGameBranching'
-  | 'helpWhyFeatureStoryInvestigative' | 'modeNoticeOn' | 'modeNoticeTurnOff' | 'modeNoticeOff' | 'modeNoticeBack' | 'modeNoticeWhere' | 'modeNoticeQuiet' | 'sessionQuiet' | 'sessionQuietHint' | 'sessionQuietOn' | 'fluxGlitchSwitch' | 'fluxGlitchSwitchName';
+  | 'helpWhyFeatureStoryInvestigative' | 'modeNoticeOn' | 'modeNoticeTurnOff' | 'modeNoticeOff' | 'modeNoticeBack' | 'modeNoticeWhere' | 'modeNoticeQuiet' | 'sessionQuiet' | 'sessionQuietHint' | 'sessionQuietOn' | 'quietWords' | 'quietWord' | 'fluxGlitchSwitch' | 'fluxGlitchSwitchName';
 

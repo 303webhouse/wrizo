@@ -1436,6 +1436,8 @@ export const CANONICAL_CHROME = {
   sessionQuiet: 'Distraction free',
   sessionQuietHint: 'Turns off every flourish, meter and moving background, in every theme.',
   sessionQuietOn: 'Distraction free is on.',
+  quietWords: '{n} words',
+  quietWord: '1 word',
   fluxGlitchSwitch: 'GLITCH',
   fluxGlitchSwitchName: 'Glitch mode',
 } satisfies Partial<Record<DeskTermId, string>>;
