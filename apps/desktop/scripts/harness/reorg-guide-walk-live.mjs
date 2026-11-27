@@ -1,7 +1,7 @@
 // THE WALK AND THE DRAWING TOOLS, TRIED TOGETHER (PRESETS-B, Nov 26; Fable 12:20 pm). A page in BUILD with a Plan; she draws, walks the Plan over her drawing, draws on the same Plan board, and walks again with that Board
 // beside her page. Real keys and a real pen where the keys or the pen are what is under test. The live defaults, in Machina, Arbor and Flux. Page side: visual-ink/page.js, page-1a3.js, guide-walk/page.js. Browserless:
 // reorg-guide-walk-unit.mjs.
-//   G1  the walk opens over a page with a drawing, the caret in her note, the page's rect unmoved, the app behind inert
+//   G1  the walk opens over a page with a drawing, the caret in her note, the page's rect as it stood at the walk's door (the Back menu open: #138), the app behind inert
 //   G2  with the pen down behind it, what she types goes into her note and nowhere else
 //   G3  a pen laid where the drawing sheet is draws nothing while the walk is over it
 //   G4  after Escape, the walk stays shut and her next keys land where SHE left the caret (at 1536 opening the Back menu has already put the pen away: one panel at a time, #133)
@@ -55,10 +55,14 @@ async function walkAndInk(app, theme) {
   await sleep(900);
   await run(app, "await window.__vi3.tab('text'); await window.__vi.sleep(600); window.__vi3.caretAt(4); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();");
   const before = await read(`({ walk: window.__gw.walk(), strokes: window.__gw.strokes(${id}) })`);
+  // SUCCESSOR (Nov 27, #138): the walk's button is in the Back menu, and an open menu now takes its room from the page. So the page is measured AT THE
+  // DOOR, that menu open, and the walk itself must move it nowhere. Parked: J(over.page) === J(before.walk.page) (before any menu was opened).
+  await run(app, 'await window.__gw.toDoor(); await window.__vi.sleep(700);');
+  const atDoor = await read('window.__gw.walk()');
   const opened = await read('await window.__gw.openWalk()');
   const over = await read('window.__gw.walk()');
-  ok('G1: the walk opens over the page with her drawing - the caret in her note, the page unmoved, the app behind inert' + tag,
-    before.strokes === 1 && opened && over.open && over.inField && over.inert && J(over.page) === J(before.walk.page), { before, over });
+  ok('G1: the walk opens over the page with her drawing - the caret in her note, the page unmoved from where it stood at the walk\'s door, the app behind inert' + tag,
+    before.strokes === 1 && !atDoor.open && !!atDoor.page && opened && over.open && over.inField && over.inert && J(over.page) === J(atDoor.page), { before, atDoor, over });
 
   await app.typeKeys('one two');
   await sleep(900);
