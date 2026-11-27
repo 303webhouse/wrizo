@@ -29,7 +29,7 @@ const FLUX_REORG = process.env.WS_KL_FLUX_REORG === '1';
 // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 const THEMES = FLUX_REORG ? [['flux', '']] : [['machina', ''], ['flux', '?flux3=0']];   // the live themes (the classic Plateau, ?arbor2=0, is test-only since the redesign is on by default in Arbor)
 
-const CATS = ['toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
+const CATS = ['disabled-by-default-devtools.timeline.stack', 'toplevel', 'devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.invalidationTracking'];
 const KEYTYPES = new Set(['keydown', 'keypress', 'textInput', 'beforeinput', 'input']);
 const analyse = (raw) => {
   const evs = raw.slice().sort((a, b) => a.ts - b.ts);
@@ -67,7 +67,8 @@ const analyse = (raw) => {
   for (const e of evs) { if (e.ts <= lastFlush || e.ts > K || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; const k = e.name.replace('InvalidationTracking', '') + ' | ' + (d.reason || d.changedClass || d.changedAttribute || d.changedPseudo || '?') + ' | ' + String(d.nodeName || '').slice(0, 50); pending[k] = (pending[k] || 0) + 1; }
   const ids = new Set(); for (const e of evs) { if (e.ts < K - 2000 || !big || e.ts > big.end || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; if (d.nodeId) ids.add(d.nodeId); }
   const full = {}; for (const e of evs) { if (e.ts < start || !big || e.ts > big.end || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; if (e.ts <= lastFlush) continue; const k = e.name.replace('InvalidationTracking', '') + '|' + (d.reason || d.changedAttribute || d.changedClass || d.changedPseudo || '?') + (d.extraData ? '(' + String(d.extraData).slice(0, 30) + ')' : '') + '|' + String(d.nodeName || '').slice(0, 44); full[k] = (full[k] || 0) + 1; }
-  return { full: Object.entries(full), pre: pre.slice(-6), pending: Object.entries(pending).slice(0, 12), invalidated: ids.size, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
+  const ctl = evs.filter((e) => /InvalidationTracking/.test(e.name) && e.args && e.args.data && e.args.data.reason === 'Control').slice(0, 4).map((e) => ({ name: e.name, at: r1((e.ts - K) / 1000), nodeId: e.args.data.nodeId, node: e.args.data.nodeName, extra: e.args.data.extraData, stack: (e.args.data.stackTrace || (e.args.beginData && e.args.beginData.stackTrace) || []).slice(0, 5).map((f) => f.functionName + ' ' + String(f.url).split('/').pop() + ':' + f.lineNumber + ':' + f.columnNumber) }));
+  return { ctl, full: Object.entries(full), pre: pre.slice(-6), pending: Object.entries(pending).slice(0, 12), invalidated: ids.size, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
 };
 const traceKey = async (app, key = 'a', flush = false) => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
@@ -156,6 +157,9 @@ await withHarness(async (app) => {
     const after = await app.evalJs(FADE_STATE);
     const reach = theme === 'flux' ? await app.evalJs(FADE_REACH) : null;
     const colMut = (await app.evalJs('window.__klMut || null')) || [];
+    if (tr && tr.ctl) for (const c of tr.ctl) { try { const { node } = await app.cdp('DOM.describeNode', { backendNodeId: c.nodeId }); const { object } = await app.cdp('DOM.resolveNode', { backendNodeId: c.nodeId });
+      const r = await app.cdp('Runtime.callFunctionOn', { objectId: object.objectId, returnByValue: true, functionDeclaration: "function(){ const chain = []; for (let n = this; n; n = n.parentNode || n.host) { chain.push(n.nodeType === 11 ? '#shadow(' + (n.host && n.host.tagName) + ')' : (n.nodeName + (n.id ? '#' + n.id : '') + (n.className && typeof n.className === 'string' ? '.' + n.className.split(' ').slice(0,3).join('.') : ''))); if (chain.length > 8) break; } return { chain, attrs: this.attributes ? [...this.attributes].map((a) => a.name + '=' + a.value.slice(0, 60)) : [], kids: this.querySelectorAll ? this.querySelectorAll('*').length : -1, connected: this.isConnected }; }" });
+      c.is = { desc: node.nodeName, shadow: node.isInSelectorsAPI, ...(r.result && r.result.value) }; } catch (e) { c.is = String(e && e.message || e).slice(0, 120); } }
     const m = { theme, before, after, tr, colMut, reach, state };
     console.log(`KL-COLMUT ${mutate ? 'mut-' + mutate + '-' : ''}${theme}: ` + JSON.stringify(colMut));
     const { invalidations, top, ...trShort } = tr || {};
@@ -170,6 +174,7 @@ await withHarness(async (app) => {
       const m = await measure('machina', '', { flush });
       const t = m.tr || {};
       console.log(`DIAG ${flush ? 'flushed' : 'plain  '} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
+      if (t.ctl && t.ctl.length) console.log(`DIAGCTL ${t.keyEls} ` + JSON.stringify(t.ctl));
       if (i === 0 || t.keyEls > 220) console.log(`DIAGFULL ${t.keyEls} ` + JSON.stringify({ full: t.full, roots: m.state.roots, store: m.state.store, now: m.state.now }));
       ok(`DIAG ${flush ? 'flushed' : 'plain'} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
     }
