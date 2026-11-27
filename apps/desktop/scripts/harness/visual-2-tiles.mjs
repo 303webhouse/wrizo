@@ -100,6 +100,7 @@ await withHarness(async (app) => {
     }
     await ev(PAGE);
     const before = await vt('paper()');
+    if (stage === 'wired') return before;   // #147 successor: the page as she has it, nothing pressed
     await ev("document.querySelector('[data-category=\"theme\"]')?.click(); true");
     await soft("!!document.querySelector('.wz-theme-cards')");
     await sleep(900);
@@ -244,14 +245,33 @@ await withHarness(async (app) => {
     const cut = cards.filter((c) => { const w = r(c.querySelector('.wz-theme-wm')), a = r(c); return w.left < a.left + 1 || w.right > a.right - 1 || w.top < a.top || w.bottom > a.bottom; }).map((c) => c.querySelector('.wz-theme-wm').textContent);
     const under = cards.filter((c) => { const band = c.querySelector('.wz-theme-band'); return band && r(c.querySelector('.wz-theme-wm')).bottom > r(band).top + 0.5; }).length;
     return { panel: Math.round(p.width), wide: el.scrollWidth - el.clientWidth, cols: new Set(cards.map((c) => Math.round(r(c).x))).size, tiles: cards.map((c) => Math.round(r(c).width) + 'x' + Math.round(r(c).height)).join(' '), seen: cards.filter((c) => r(c).bottom <= p.bottom + 0.5).length, cut, under }; })()`);
-  for (const [theme, width, height] of [['plateau', 1366, 768], ['machina', 1366, 768], ['flux', 1366, 768], ['plateau', 1280, 720], ['machina', 1280, 720], ['flux', 1280, 720], ['plateau', 1536, 864], ['machina', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
+  // SUPERSEDED for the three FLUX rows (#147, Nick, Nov 27: "Wire In should not have any menus available"; Fable, Nov 27, 1:52 pm: "no picker in Wire In"). Arbor's and Machina's rows run unchanged below. The original loop, verbatim:
+  // for (const [theme, width, height] of [['plateau', 1366, 768], ['machina', 1366, 768], ['flux', 1366, 768], ['plateau', 1280, 720], ['machina', 1280, 720], ['flux', 1280, 720], ['plateau', 1536, 864], ['machina', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
+  //   const before = await open({ theme, width, height, stage: 'default' });
+  //   const f = await fit();
+  //   const after = await vt('paper()');
+  //   const where = `${theme === 'flux' ? 'Flux, Wire In' : theme === 'machina' ? 'Machina, Free Write' : 'Arbor, Free Write'} ${width}`;
+  //   const narrow = f.panel < 260;
+  //   ok(`W1 [${where}]: the picker fits its ${narrow ? 'narrow ' : ''}room: ${narrow ? 'one column' : 'two across'}, every name whole and clear of the band, all five in sight, nothing sideways, the paper not moved`,
+  //     f.cols === (narrow ? 1 : 2) && f.cut.length === 0 && f.under === 0 && f.seen === 5 && f.wide <= 1 && !!before && before === after, { ...f, same: before === after });
+  // });
+  for (const [theme, width, height] of [['plateau', 1366, 768], ['machina', 1366, 768], ['plateau', 1280, 720], ['machina', 1280, 720], ['plateau', 1536, 864], ['machina', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
     const before = await open({ theme, width, height, stage: 'default' });
     const f = await fit();
     const after = await vt('paper()');
-    const where = `${theme === 'flux' ? 'Flux, Wire In' : theme === 'machina' ? 'Machina, Free Write' : 'Arbor, Free Write'} ${width}`;
+    const where = `${theme === 'machina' ? 'Machina, Free Write' : 'Arbor, Free Write'} ${width}`;
     const narrow = f.panel < 260;
     ok(`W1 [${where}]: the picker fits its ${narrow ? 'narrow ' : ''}room: ${narrow ? 'one column' : 'two across'}, every name whole and clear of the band, all five in sight, nothing sideways, the paper not moved`,
       f.cols === (narrow ? 1 : 2) && f.cut.length === 0 && f.under === 0 && f.seen === 5 && f.wide <= 1 && !!before && before === after, { ...f, same: before === after });
+  });
+  // [#147 successor] Flux's new page opens in Wire In: the rail that carries the Theme button is not drawn and takes no press there
+  for (const [width, height] of [[1366, 768], [1280, 720], [1536, 864]]) await part(`W flux ${width}`, async () => {
+    await open({ theme: 'flux', width, height, stage: 'wired' });
+    await away(); await sleep(900);
+    const r = await ev(`(() => { const b = document.querySelector('[data-category="theme"]'); const jacked = document.documentElement.hasAttribute('data-flux3-jacked'); if (!b) return { jacked, button: false, pressable: false, picker: !!document.querySelector('.wz-theme-cards') };
+      const q = b.getBoundingClientRect(); const hit = q.width ? document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2) : null; let op = 1; for (let n = b; n && n !== document.documentElement; n = n.parentElement) op = Math.min(op, Number(getComputedStyle(n).opacity));
+      return { jacked, button: true, opacity: op, pressable: !!hit && (hit === b || b.contains(hit)), picker: !!document.querySelector('.wz-theme-cards') }; })()`);
+    ok(`W1 [Flux, Wire In ${width}] [#147 successor]: no picker in Wire In - the Theme button is not drawn, takes no press, and no picker stands`, r.jacked === true && r.pressable === false && r.picker === false && (!r.button || r.opacity < 0.05), r);
   });
   await part('W3', async () => {
     await open({ theme: 'machina', width: 1280, height: 720, stage: 'default' });
