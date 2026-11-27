@@ -1,6 +1,6 @@
 // #142 (Nick, Nov 26, 11:17 pm, via Fable: "A pop-out from the left rail (the theme picker, Docs, the others) never covers the page surface, margins included: it
 // uses the room beside the page, and the page yields from that side as for the Front menu"). THE REAL APP in each theme's own look, a Draft page,
-// 1366x768, 1536x864 and 1920x1080. Every button on the rail is pressed; what comes out is read once it has come to rest.
+// 1280x800 (where the two layers cannot both stand), 1366x768, 1536x864 and 1920x1080. Every button on the rail is pressed; what comes out is read once it has come to rest.
 //   C  no pop-out (nor its second layer) covers the page: each ends at or before the page's left edge
 //   W  each is at least 200 px wide
 //   L  the page's lines are not re-laid: its layout width is as at rest
@@ -17,7 +17,7 @@ const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); c
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const J = (v) => JSON.stringify(v);
 const THEMES = ['plateau', 'flux', 'machina'];
-const SIZES = [[1366, 768], [1536, 864], [1920, 1080]];
+const SIZES = [[1280, 800], [1366, 768], [1536, 864], [1920, 1080]];
 
 const PROBE = `(() => {
   const box = (e) => { const b = e.getBoundingClientRect(); return [b.left, b.top, b.right, b.bottom].map((n) => Math.round(n * 10) / 10); };
@@ -94,7 +94,7 @@ await withHarness(async (app) => {
         if (after.layers.length || J(after.page) !== J(rest.page)) notBack.push({ out: label, page: [rest.page, after.page], still: after.layers.map((l) => l.kind) });
       }
       ok(`${at} (premise): every rail button has a handle, and the pop-outs opened (${outs.length}, ${second} with a second layer, ${alone} of those alone)`, handles.every(Boolean) && new Set(handles).size === handles.length && outs.length >= 5, { handles, outs });
-      ok(`${at} E: where the second layer stands alone, Escape brings the first back`, noWayBack.length === 0 && (w !== 1366 || alone >= 1), { alone, noWayBack });
+      ok(`${at} E: where the second layer stands alone, Escape brings the first back`, noWayBack.length === 0 && (w !== 1280 || second === 0 || alone >= 1), { second, alone, noWayBack });
       ok(`${at} C: no pop-out covers the page`, covered.length === 0, covered.slice(0, 6));
       ok(`${at} W: each is at least 200 px wide`, narrow.length === 0, narrow.slice(0, 4));
       ok(`${at} L: the page's lines are not re-laid`, relaid.length === 0, relaid.slice(0, 4));
