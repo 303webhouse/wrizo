@@ -6,6 +6,8 @@ import { useTheme } from '../../store/theme';
 import { flushNow, generateId, getJournalEntry, restoreDeletedBox, saveBoardBoxes, stashDeletedBoxes, subscribe } from '../../store/persistence';
 import { liveBoxes } from '../../store/boxTombstones';
 import { keyMaySteps } from '../../store/walk';
+import { liveQuery } from '../../store/liveDom';
+import { CARET_HOME } from '../../store/caretPlaced';
 import { markedHtml, rangeHas, type MarkKey, MARK_KEYS } from '../../store/textMarks';
 import { setDocSetting, walkPlaceOf } from '../docSettings';
 import { movePlanRow, renamePlanRow } from '../backMenu/planOps';
@@ -187,14 +189,21 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
       timers.forEach((id) => window.clearTimeout(id));
       app?.removeAttribute('inert');
       // LEAVING GIVES HER THE PAGE, never the button that opened the walk: with the focus left on it, her first space presses it again and what she types after goes into a step's note. A field she was writing in
-      // takes her back; otherwise the page's own editor does, at her caret, or after her words when her selection has gone elsewhere.
+      // takes her back; otherwise the page's own editor does, at her caret: her selection if it is still in the words, else the place the page editor kept for her.
       window.setTimeout(() => {
         const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');
-        const back = wrote ? had : document.querySelector<HTMLElement>('.mode-pagecol [contenteditable="true"], .mode-pagecol textarea');
+        const back = wrote ? had : liveQuery<HTMLElement>('.mode-pagecol [contenteditable="true"], .mode-pagecol textarea');
         if (!back) return;
         // THE DRAWING PEN IS DOWN under the walk (VISUAL 1a.3): her words keep her own place for her (PageEditor's "typing lands" rule puts the pen down at her next key, where SHE left the caret). A caret put here
         // would take that key to the end of her words instead.
-        if (back.isContentEditable && document.querySelector('.mode-page[data-instrument="ink"]')) return;
+        // (the LIVE page: its hidden measuring copy can still say "ink" after the pen has gone)
+        if (back.isContentEditable && liveQuery('.mode-page[data-instrument="ink"]')) return;
+        // her selection has gone elsewhere (taking the pen up takes it away): the page editor knows where she left her words, and takes her there
+        if (!wrote && back.isContentEditable && !(caret && back.contains(caret.startContainer))) {
+          const home = new Event(CARET_HOME, { cancelable: true });
+          window.dispatchEvent(home);
+          if (home.defaultPrevented) return;
+        }
         back.focus();
         if (!back.isContentEditable) return;
         const range = caret && back.contains(caret.startContainer) ? caret : document.createRange();

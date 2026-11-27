@@ -91,7 +91,7 @@ import { useExternalPageText } from './pageEditor/useExternalPageText';
 import { announceKeptBoth, noteMerge } from '../store/mergeNotice';
 import { mapCaretThrough, mergeText } from '../store/textMerge';
 import { throughArrival } from '../store/undoRebase';
-import { CARET_PLACED } from '../store/caretPlaced';
+import { CARET_HOME, CARET_PLACED } from '../store/caretPlaced';
 
 /** W5 - the glow for a page born from a step: a STABLE ref callback (one function for the module), so a re-render never re-fires it; celebrateReturnChip itself is once-per-element. */
 const glowStepChip = (el: HTMLElement | null): void => { if (el) celebrateReturnChip(el); };
@@ -249,6 +249,13 @@ function PageEditorView({ id }: { id: string }) {
     el.focus({ preventScroll: true });
     setCaretOffset(el, inkCaretRef.current ?? editorPlainText(el).length, { preventScroll: true });
   };
+  // the same way back for whoever covered the page and has left (the Guide walk): asked for by an event, nothing on the typing path
+  useEffect(() => {
+    const home = (e: Event) => { if (!editorRef.current?.isConnected) return; e.preventDefault(); penDownToPage(); };
+    window.addEventListener(CARET_HOME, home);
+    return () => window.removeEventListener(CARET_HOME, home);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // VISUAL 1a.3 - TYPING LANDS, ALWAYS (Fable, Nov 25). In BUILD and EDIT with the pen down, a typed character puts the pen down and goes into her words (the focus moves before the key's own
   // default act, so that very character lands). Fields keep their keys; a focused button keeps Space and Enter. Attached only while the pen is down, so nothing is on the typing path.
   useEffect(() => {

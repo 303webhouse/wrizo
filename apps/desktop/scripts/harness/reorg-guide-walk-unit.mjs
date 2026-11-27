@@ -247,7 +247,7 @@ function suite(src) {
   });
   t('DOOR', () => {
     const w = src['reorg/walk/GuideWalk.tsx'];
-    const got = { wrote: w.includes("const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');"), back: w.includes('const back = wrote ? had : document.querySelector<HTMLElement>(') };
+    const got = { wrote: w.includes("const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');"), back: w.includes('const back = wrote ? had : liveQuery<HTMLElement>(') };
     return { pass: Object.values(got).every(Boolean), detail: J(got) };
   });
   t('LIVE', () => {
