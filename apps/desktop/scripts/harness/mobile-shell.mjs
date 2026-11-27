@@ -155,6 +155,17 @@ try {
     await tour('390x844', true);
     const plan = await (async () => { await goto('#/doc/part-1/plan/part-1'); return text(); })();
     ok('PLAN a written Part is ticked and named; a row with no Part says so', plan.includes('✓') && plan.includes('No Part yet'), plan.replace(/\n+/g, ' / ').slice(0, 200));
+    // PLANTAB (Fable, Nov 26, 10:15 pm): the Doc's Plan tab says what the desk's own Plan tab says in her theme
+    const tabSays = async (theme) => {
+      await js(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)})`); await reload();
+      await until(`document.documentElement.getAttribute('data-theme') === ${JSON.stringify(theme)} && document.querySelector('[data-view="plan"]')`, `the Doc's tabs in ${theme}`);
+      return js(`document.querySelector('[data-view="plan"]')?.textContent ?? ''`);
+    };
+    const inFlux = await tabSays('flux');
+    ok("PLANTAB in Flux the Plan tab says the desk's word, Spine", inFlux === 'Spine', inFlux);
+    const inArbor = await tabSays('plateau');
+    ok('PLANTAB in Arbor it still says Plan', inArbor === 'Plan', inArbor);
+
     await goto('#/doc/part-1/read/part-1');
     ok('READ her marks are drawn, never shown as marks', await js("!!document.querySelector('.mc-page strong') && !!document.querySelector('.mc-page h1') && !document.querySelector('.mc-page').innerText.includes('**')"));
     ok('PLUS the + has no word and has its spoken name', await js("document.querySelector('.mc-plus').textContent.trim() === '+' && document.querySelector('.mc-plus').getAttribute('aria-label') === 'Add a note, photo, sketch or recording'"));
