@@ -566,7 +566,8 @@ export type DeskTermId =
   // SettingsPanel/Sliver.tsx's InstrumentsPanel hardcode their OWN terse
   // option strings inline (the FX3 S5 precedent, left as-is — this ticket
   // adds a new control, it does not retrofit its neighbors).
-  | 'sessionMeterStyle' | 'sessionGlitchHint' | 'sessionBarHint' | 'sessionFlickerHint'   // GLITCH v2: Docs › Session's rows for Flux
+  // GLITCH v2: Docs › Session's rows for Flux
+  | 'sessionMeterStyle' | 'sessionGlitchHint' | 'sessionBarHint' | 'sessionFlickerHint'
   | 'progressStyleLabel' | 'progressStyleBar' | 'progressStyleRhizome' | 'progressDrawer'
   // the Recede-depth and Timer rows' own words, out of inline strings so a theme can name them [deskLexicon §18]
   | 'timerLabel'
