@@ -136,6 +136,13 @@ try { await withHarness(async (app) => {
   await clickEl('[data-reorg-group="session"] [data-session-fold]'); await sleep(400);
   const rows = await ev("({ rows: [...document.querySelectorAll('[data-reorg-group=\"session\"] [data-session-row]')].map((e) => e.getAttribute('data-session-row')), text: document.querySelector('[data-reorg-group=\"session\"]')?.textContent || '' })");
   await shot('session-1366');
+  // the hint lines are small print inside the menu (the first frames showed them in page-size type, spilling out of it)
+  const hints = await ev(`(() => { const lum = (s) => { const v = (s.match(/[\\d.]+/g) || []).slice(0, 3).map(Number).map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+    const solid = (e) => { for (; e; e = e.parentElement) { const c = getComputedStyle(e).backgroundColor, p = c.match(/[\\d.]+/g) || []; if (p.length < 4 || Number(p[3]) > 0.9) return c; } return 'rgb(0,0,0)'; };
+    const row = document.querySelector('[data-session-row="meterstyle"]').getBoundingClientRect();
+    return [...document.querySelectorAll('[data-session-hint]')].map((h) => { const s = getComputedStyle(h), r = document.createRange(); r.selectNodeContents(h); const t = r.getBoundingClientRect(); const a = lum(s.color), b = lum(solid(h));
+      return { size: parseFloat(s.fontSize), left: Math.round(t.left - row.left), right: Math.round(row.right - t.right), contrast: Math.round(100 * (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) / 100 }; }); })()`);
+  ok('DOCS the two hint lines are small print inside the menu (13 px at most, 10 px clear of both sides, 4.5:1)', hints.length === 2 && hints.every((h) => h.size <= 13 && h.left >= 10 && h.right >= 10 && h.contrast >= 4.5), J(hints));
   await clickEl('[data-session-row="meterstyle"] [data-pick="bar"]'); await sleep(500);
   const wrote = await ev("({ off: (JSON.parse(localStorage.getItem('wrizo-reorg-prefs') || '{}').flourishOff || {}).flux, plain: !!document.querySelector('[data-plain-meter]') })");
   ok('DOCS Session has Meter style and Flicker, in that order under the tracker, with their lines; Bar writes flourishOff.flux and the plain meter shows',
