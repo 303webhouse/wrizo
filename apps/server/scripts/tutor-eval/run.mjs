@@ -81,7 +81,8 @@ async function liveRun(args) {
   const useGrader = !args.noGrader && !!clients.grader;
   const { guard, prompts, cleanup } = loadModules();
   const only = args.only ? new Set(args.only.split(',')) : null;
-  const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (!only || only.has(c.id)));
+  // a case marked `byName` (the walk's W3 to W12) runs only when `only` names it, so a full run stays the size it was and keeps inside its 120 calls
+  const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (only ? only.has(c.id) : !c.byName));
   const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.5', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [], sprint: [] };
   console.log(`LIVE RUN: ${todo.length} cases, reply model ${clients.replyModel}, second reader ${useGrader ? clients.graderModel : 'off'}, cap ${cap.state.maxCalls} calls / ${cap.state.maxTokens} tokens`);
   let stop = false;
