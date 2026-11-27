@@ -311,6 +311,9 @@
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver:not([data-open='true']) .wz-sliver-grip{ left:-16px; right:auto; }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver-panel > *{ zoom:var(--wz-chrome-k, 1); }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-tutor-panel-anchor--board{ right:var(--board-r); height:calc(100% - 28px); }
+/* the closed Back tab stands just past the Board's right edge. The shared formula (13-desk-frame.css) goes wrong once the Board reaches past its stage, as it does on a
+   wide window. While the menu is open Tutor.tsx places it inline, which wins */
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-tutor-anchor--board{ left:calc(100% - var(--board-r)); right:auto; width:16px; }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board :is(.desk-frame-sliver-anchor--board .wz-sliver-panel, .desk-frame-tutor-panel-anchor--board .wz-tutor-panel)[data-open='true']{ background:var(--f3-room-ground, var(--desk-ground)); }
 /* the arrows point the way the menu will travel: inward while closed, outward on the closing tab */
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board :is(.desk-frame-sliver-anchor--board .wz-sliver-grip-glyph, .desk-frame-tutor-anchor--board .wz-tutor-grip-glyph){ display:inline-block; transform:scaleX(-1); }

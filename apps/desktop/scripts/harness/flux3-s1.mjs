@@ -223,7 +223,11 @@ try { await withHarness(async (app) => {
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Schema S1', pageType: 'board', boxes, createdAt: at, origin: null, source: null })})`);
   await sleep(500);
 
-  const open = async (flagOn, tone, view = [1920, 1080]) => {
+  // SUPERSEDED by #139 (Nick, Nov 26): the redesign's Board is wider and her cards scale with its width, so at 1080 high the bottom row stands below the fold, where the
+  // motion checks cannot reach it. The original line, verbatim:
+  // const open = async (flagOn, tone, view = [1920, 1080]) => {
+  // successor: a window tall enough to show every seeded card; the geometry cells (G) still set their own widths and heights
+  const open = async (flagOn, tone, view = [1920, 1800]) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); })()`);
     // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
     await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/?flux3=0')} + '#/page/${BOARD}')`);
