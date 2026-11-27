@@ -37,7 +37,7 @@ import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
-import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { requestOpen, noteClosed, registerDrawer, menusOpenInward } from '../store/menusDrawers';
 import { fitScaleFor, onePanelAt, PAGE_W_BASE } from '../store/pageScale';
 import { DRAWER_MIN } from '../store/menusDrawers';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -165,6 +165,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
+  const inward = menusOpenInward(tutorTheme, pageKind);   // #139: on a Flux Board the menu opens over the Board, its tab on the inner side
   const back = reorgFor(tutorTheme) && themeHas('back', tutorTheme) && pageKind !== 'board';   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
   const splitOn = reorgFor(tutorTheme) && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
@@ -465,7 +466,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
     // THE FLUX CORRIDOR (Wire In is the Typewriter zoom; the reorg's Back menu keeps its opener there, spec section 5): the page's half is widened, so the CSS formula's grip lands inside the opened panel; it is measured from the panel here, as a board's is
-    if (!open || (pageKind !== 'board' && !back) || (pageKind === 'board' && BOARD_TAB_RIDES_EDGE)) { setGripLeftPx(null); return; }
+    if (!open || (pageKind !== 'board' && !back) || (pageKind === 'board' && BOARD_TAB_RIDES_EDGE && !inward)) { setGripLeftPx(null); return; }
     const GRIP_GUTTER_PX = 16;
     const GRIP_WIDTH_PX = 16; // .wz-tutor-grip{ width:16px }
     const measure = () => {
@@ -474,13 +475,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       if (!stage || !panel || (pageKind !== 'board' && !document.documentElement.hasAttribute('data-flux3-jacked'))) { setGripLeftPx(null); return; }
       const stageRect = stage.getBoundingClientRect();
       const panelRect = panel.getBoundingClientRect();
-      setGripLeftPx(Math.round(panelRect.left - GRIP_GUTTER_PX - GRIP_WIDTH_PX - stageRect.left));
+      setGripLeftPx(Math.round(panelRect.left - (inward ? 0 : GRIP_GUTTER_PX) - GRIP_WIDTH_PX - stageRect.left));
     };
     measure();
     window.addEventListener('resize', measure);
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
-  }, [open, docked, pageKind, panelWidthPx, back, sprint]);
+  }, [open, docked, pageKind, panelWidthPx, back, sprint, inward]);
 
   // the disclosure modal no longer opens (its text sits behind a "?" by the Ask box); showDisclosure stays declared and is never set, so the guards that read it are dormant [Tutor §25]
   const handleGripClick = () => {
@@ -885,7 +886,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           {/* FX18 S1 (SV25): the RIGHT drawer mirrors the left. Closed → '›' (points right/
               outward); open → '‹' (points left/inward, toward the panel that slides out).
               The mirror of Sliver.tsx's left grip; that literal is left untouched. */}
-          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', open)}</span>
+          <span className="wz-tutor-grip-glyph" aria-hidden="true">{drawerArrow('right', inward ? !open : open)}</span>
         </button>
       </div>
 

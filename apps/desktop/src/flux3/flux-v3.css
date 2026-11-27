@@ -302,3 +302,13 @@
   :root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
   :root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:none; }
 }
+
+/* #139 - a Flux Board takes the screen (components/board/useBoardBox.ts) and its menus open inward over it: each menu's outer edge on the Board's edge, above the
+   Board's readings strip, the closing tab on the inner side. Closed, the tabs stand outside the Board, in the lanes it leaves. */
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board{ --sliver-anchor-w:calc(200px * var(--wz-chrome-k, 1)); left:var(--board-l); right:auto; width:var(--sliver-anchor-w); max-width:none; height:calc(100% - 28px); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver{ pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board :is(.wz-sliver-grip, .wz-sliver[data-open='true'] .wz-sliver-panel){ pointer-events:auto; }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver:not([data-open='true']) .wz-sliver-grip{ left:-16px; right:auto; }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver-panel > *{ zoom:var(--wz-chrome-k, 1); }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-tutor-panel-anchor--board{ right:var(--board-r); height:calc(100% - 28px); }
+:root[data-flux3][data-theme='flux'] .desk-frame-stage--board :is(.desk-frame-sliver-anchor--board .wz-sliver-panel, .desk-frame-tutor-panel-anchor--board .wz-tutor-panel)[data-open='true']{ background:var(--f3-room-ground, var(--desk-ground)); }

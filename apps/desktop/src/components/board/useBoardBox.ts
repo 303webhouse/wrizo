@@ -1,5 +1,6 @@
 import { useState, useLayoutEffect, type MutableRefObject } from 'react';
-import { useStandingHands, DRAWER_MIN } from '../../store/menusDrawers';
+import { useStandingHands, menusOpenInward, DRAWER_MIN } from '../../store/menusDrawers';
+import { useTheme } from '../../store/theme';
 import { isArbor2 } from '../../arbor2/flag';
 
 export function useBoardBox({ wrapRef }: {
@@ -7,6 +8,7 @@ export function useBoardBox({ wrapRef }: {
 }) {
   // drawers never cover a board's cards: the board area narrows to the room beside the open drawers while the canvas keeps its natural width (the board scrolls); the CSS reads --board-l / --board-r [BoardEditor §28]
   const hands = useStandingHands();
+  const inward = menusOpenInward(useTheme(), 'board');
   const [boardBox, setBoardBox] = useState<{ l: number; w: number; r: number; natural: number } | null>(null);
   useLayoutEffect(() => {
     const stage = wrapRef.current?.closest('.desk-frame-stage') as HTMLElement | null;
@@ -25,17 +27,26 @@ export function useBoardBox({ wrapRef }: {
       const keep = isArbor2();
       const l = keep ? m : Math.max(m, hands.tools ? DRAWER_MIN + intrusion : 0);
       const r = keep ? m : Math.max(m, hands.tutor ? 16 + openW : 0);
-      const w = Math.max(240, W - l - r);
-      stage.style.setProperty('--board-l', `${l}px`);
-      stage.style.setProperty('--board-r', `${r}px`);
+      let w = Math.max(240, W - l - r);
+      let box = { l, r, natural };
+      // #139: the Board runs from the rail to the window's edge, past the stage's own padding, less a lane each side for the closed menus' tabs; it never moves for a menu
+      if (inward) {
+        const LANE = 20;
+        const from = Math.max(strip?.right ?? 0, 0) + LANE, to = document.documentElement.clientWidth - LANE;
+        w = Math.max(240, to - from);
+        box = { l: from - s.left, r: s.right - to, natural: w };
+      }
+      stage.style.setProperty('--board-l', `${box.l}px`);
+      stage.style.setProperty('--board-r', `${box.r}px`);
       stage.style.setProperty('--board-strip', `${intrusion}px`);
-      setBoardBox((prev) => (prev && prev.l === l && prev.r === r && prev.w === w && prev.natural === natural ? prev : { l, w, r, natural }));
+      setBoardBox((prev) => (prev && prev.l === box.l && prev.r === box.r && prev.w === w && prev.natural === box.natural ? prev : { ...box, w }));
       document.dispatchEvent(new Event('wz-board-moved'));   // the Tutor re-measures its panel against the board's new edge
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
-    return () => ro.disconnect();
-  }, [hands.tools, hands.tutor]);
+    window.addEventListener('resize', apply);   // #139: a wider window may leave the stage's size alone (it has a ceiling) and still move the window's edge
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); };
+  }, [hands.tools, hands.tutor, inward]);
   return { boardBox };
 }
