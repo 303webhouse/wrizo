@@ -4,7 +4,7 @@
 //   G1  the walk opens over a page with a drawing, the caret in her note, the page's rect unmoved, the app behind inert
 //   G2  with the pen down behind it, what she types goes into her note and nowhere else
 //   G3  a pen laid where the drawing sheet is draws nothing while the walk is over it
-//   G4  after Escape, with the pen still down: her next keys land where SHE left the caret (VISUAL's typing rule), not at the end
+//   G4  after Escape, the walk stays shut and her next keys land where SHE left the caret (at 1536 opening the Back menu has already put the pen away: one panel at a time, #133)
 //   G5  the way-back chip lies over none of the page's controls, the INK tab open
 //   G6  "Draw on a Board" opens the very board she walks; a stroke there leaves every card byte for byte
 //   G7  Back: the Board stands beside the page with her drawing; the chip is pressable and clear
@@ -13,6 +13,7 @@
 //   G10 Skip keeps the drawing; on the Board's canvas the card draws its bold
 //   G11 drawing again there keeps every card byte for byte (note, marks, skip)
 //   G12 a reload keeps both
+//   G13 at 1920 both menus stand and the pen stays down under the walk: after Escape her next keys still land where SHE left the caret (VISUAL's typing rule)
 // Run: node scripts/harness/reorg-guide-walk-live.mjs   (from apps/desktop; dist-web built; needs a box turn on the PC)
 import fs from 'node:fs';
 // the live defaults, asked for before the driver reads them
@@ -31,12 +32,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const run = (app, js) => app.evalJs(`(async () => { ${js} })()`);
 
 const inject = async (app) => { for (const p of PAGES) await app.evalJs(p); };
-const boot = async (app) => {
+const boot = async (app, width = 1536, height = 864) => {
   await app.goto('/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1')");
   await app.reload();
   await app.waitFor("!!document.querySelector('.wz-arrival')", { label: 'Desk before fixture' });
-  await app.emulateDpr(1, 1536, 864);
+  await app.emulateDpr(1, width, height);
   await inject(app);
 };
 
@@ -48,7 +49,7 @@ async function walkAndInk(app, theme) {
   const read = (js) => run(app, `return ${js};`);
 
   // ---- she draws; then back to her words, her caret left after "The ", and the pen taken up again ----
-  // (a real stroke on the paper moves her caret to the end by itself, walk or no walk: VISUAL's, reported to Fable on Nov 26. The caret is placed AFTER the stroke so that G4 measures the walk and nothing else.)
+  // (the caret is placed AFTER the stroke, so G4 measures the walk and nothing else)
   await run(app, 'await window.__vi.sleep(900); await window.__vi3.inkOnPaper();');
   await app.penStroke('.wz-ink-sheet', [{ x: 0.2, y: 0.45 }, { x: 0.45, y: 0.48 }, { x: 0.7, y: 0.45 }]);
   await sleep(900);
@@ -76,9 +77,9 @@ async function walkAndInk(app, theme) {
   const left = await read('window.__gw.walk()');
   await app.typeKeys('big ');
   await sleep(2800);
-  const landed = await read(`({ words: window.__gw.words(${id}), strokes: window.__gw.strokes(${id}), paper: window.__vi3.paper(), note: window.__gw.card(${board}, 'gw-a').text })`);
-  ok('G4: after Escape with the pen still down, her next keys land where she left her caret, the pen goes down, and no word is lost' + tag,
-    !left.open && !left.inert && !!left.chip && landed.words === 'The big train was late and the coat stayed on the seat.' && landed.strokes === 1 && landed.paper !== 'ink' && landed.note === 'Opening\none two', { left, landed });
+  const landed = await read(`({ words: window.__gw.words(${id}), strokes: window.__gw.strokes(${id}), paper: window.__vi3.paper(), note: window.__gw.card(${board}, 'gw-a').text, open: window.__gw.walk().open })`);
+  ok('G4: after Escape the walk stays shut, her next keys land where she left her caret, the pen is away, and no word is lost' + tag,
+    !left.open && !left.inert && !!left.chip && !landed.open && landed.words === 'The big train was late and the coat stayed on the seat.' && landed.strokes === 1 && landed.paper !== 'ink' && landed.note === 'Opening\none two', { left, landed });
 
   await run(app, "await window.__vi.openDrawer(); await window.__vi3.tab('ink'); await window.__vi.sleep(900);");
   const clear = await read('window.__gw.chipClear()');
@@ -140,10 +141,31 @@ async function walkAndInk(app, theme) {
   ok('G12: a reload keeps the drawing and every card, bold drawn and ink painted' + tag, kept.strokes === 2 && kept.same && !!kept.canvas && J(kept.canvas.bold) === J(['the']) && kept.painted > 20, kept);
 }
 
+// the wide screen: both menus stand, so the pen is still down when the walk closes
+async function walkWide(app, theme) {
+  const tag = ` [${theme}]`;
+  await boot(app, 1920, 1080);
+  const s = await run(app, `return await window.__gw.setup(${J(theme)}, ${J(WORDS)});`);
+  const id = J(s.id), board = J(s.board);
+  const read = (js) => run(app, `return ${js};`);
+  await run(app, "await window.__vi.sleep(900); await window.__vi3.inkOnPaper(); await window.__vi3.tab('text'); await window.__vi.sleep(600); window.__vi3.caretAt(4); await window.__vi.sleep(300); await window.__vi3.inkOnPaper();");
+  const opened = await read('await window.__gw.openWalk()');
+  const over = await read('window.__gw.walk()');
+  await app.key('Escape');
+  await sleep(1200);
+  await app.typeKeys('big ');
+  await sleep(2800);
+  const landed = await read(`({ words: window.__gw.words(${id}), paper: window.__vi3.paper(), note: window.__gw.card(${board}, 'gw-a').text, open: window.__gw.walk().open })`);
+  ok('G13: at 1920, the pen down under the walk - after Escape her next keys land where she left her caret and the pen goes up' + tag,
+    opened && over.open && over.paper === 'ink' && !landed.open && landed.words === 'The big train was late and the coat stayed on the seat.' && landed.paper !== 'ink' && landed.note === 'Opening', { over, landed });
+}
+
 await withHarness(async (app) => {
   for (const theme of ['machina', 'plateau', 'flux']) {
     try { await walkAndInk(app, theme); }
     catch (e) { ok(`RUN [${theme}]: the walk and the drawing tools ran to the end`, false, String(e && e.message).slice(0, 900)); }
+    try { await walkWide(app, theme); }
+    catch (e) { ok(`RUN [${theme}]: the wide-screen walk ran to the end`, false, String(e && e.message).slice(0, 900)); }
   }
   return checks;
 });

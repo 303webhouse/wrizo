@@ -20,6 +20,7 @@
 //   PEN       leaving while the page is under the drawing pen puts no caret in her words, so VISUAL's typing rule lands her next key where SHE left off (the browser half: reorg-guide-walk-live.mjs)
 //   BESIDE    the split Board beside the page draws a marked card's marks too
 //   CHIP      the way-back chip stands past any folder tab that reaches over the page's margin (Arbor's drawer), never on one
+//   DOOR      leaving gives her the page (or the field she was writing in), never the button that opened the walk: left on it, her first space presses it again and the rest goes into a step's note
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -242,6 +243,11 @@ function suite(src) {
     const focus = w.indexOf('back.focus();');
     return { pass: skip > 0 && focus > skip, detail: J({ skip, focus }) };
   });
+  t('DOOR', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'];
+    const got = { wrote: w.includes("const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');"), back: w.includes('const back = wrote ? had : document.querySelector<HTMLElement>(') };
+    return { pass: Object.values(got).every(Boolean), detail: J(got) };
+  });
   t('BESIDE', () => {
     const tag = /<BoardTextBox boxId=\{box\.id\}[\s\S]{0,300}?\/>/.exec(src['reorg/split/SplitBoard.tsx'])?.[0] ?? '';
     return { pass: tag.includes('textMarks={box.textMarks}'), detail: J(tag) };
@@ -283,6 +289,7 @@ MUTANTS.push(
   ['the page behind the walk is left live', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.setAttribute('inert', '');", '')],
   ['leaving forgets to lift it', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.removeAttribute('inert');", '')],
   ['leaving puts a caret in the words under the pen', 'PEN', sub('reorg/walk/GuideWalk.tsx', `if (back.isContentEditable && document.querySelector('.mode-page[data-instrument="ink"]')) return;`, '')],
+  ['leaving hands the focus back to the button that opened the walk', 'DOOR', sub('reorg/walk/GuideWalk.tsx', 'const back = wrote ? had :', 'const back = had?.isConnected ? had :')],
   ['the Board beside the page drops the marks', 'BESIDE', sub('reorg/split/SplitBoard.tsx', 'textMarks={box.textMarks}', '')],
   ['the chip stays on a folder tab', 'CHIP', sub('reorg/walk/WalkHost.tsx', 'left = Math.round(r.right) + 8', 'left = left')],
   ['the chip is lost on a new Part', 'BACK', sub('reorg/walk/WalkHost.tsx', ' || (newInDoc && newInDoc === docOfPage(left))', '')],
