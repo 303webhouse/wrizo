@@ -171,6 +171,8 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
     let rate = 0;
     let vel = 0;             // how fast the speed itself is changing (per second), so a ramp has no corners
     let driving = false;     // she is writing and the speed follows her
+    let began = 0;           // the first key of this run of writing
+    let filled = false;      // the pace has been read over a full window
     let fast = false;
     let settle = 0;
     // the slow-down in hand: when it began, the frames' own time then, how far it goes (in that time), from what speed, and its two parts
@@ -234,13 +236,16 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
       const writing = run > 0 && now - keys[keys.length - 1] < PACE.quietMs;
       if (!writing) driving = false;
       else if (!driving && run >= PACE.startKeys && now - keys[keys.length - run] >= PACE.startMs) {
-        driving = true; pace = 0; vel = 0;
+        driving = true; pace = 0; vel = 0; filled = false;
+        began = keys[keys.length - run];
         window.clearTimeout(settle); settle = 0; plan = null;
       }
       if (driving) {
-        // her pace now: over the window, or over as much of it as she has been writing
-        const heard = keys.length / (Math.min(PACE.windowMs, Math.max(1500, now - keys[0])) / 1000);
-        if (!pace || Math.abs(heard - pace) >= Math.max(PACE.stepKps, pace * PACE.stepShare)) pace = heard;
+        // her pace now: the 4 s average; just after a start from nothing (no older keys in the window), over as long as she has been writing
+        const full = keys[0] < began || now - began >= PACE.windowMs;
+        const heard = keys.length / ((full ? PACE.windowMs : Math.max(1500, now - began)) / 1000);
+        // the first full window is taken as it is (the early figure is a guess); after that only a clear step moves it
+        if (!pace || (full && !filled) || Math.abs(heard - pace) >= Math.max(PACE.stepKps, pace * PACE.stepShare)) { pace = heard; filled = full; }
         const to = rateFor(pace), w = PACE.followPerSec, dt = PACE.tickMs / 1000;
         const off = rate - to, b = vel + w * off, fall = Math.exp(-w * dt);
         const eased = to + (off + b * dt) * fall;

@@ -8,6 +8,7 @@
 //   D3  one ramp down: from the first drop to rest takes at least 1.8 s with no plateau, and it is at rest 2.5 to 6.5 s after her last key
 //   D4  it comes to rest on a slot (the video's picture) without a jump: the final correction is under 40 ms of its 1.1 s step
 //   R   she writes again during the slow-down: it goes on slowing for about a second, never stops, then ramps back up
+//   S   her steady speed is the one her pace gave before (keys a second / 12 x 5), within 0.25 (red on the first build of round two, which ran 0.3 fast: run 46032563996)
 //   B   every single change of speed is at most 0.5, and it is set at most 4 times a second
 //   K   nothing on the key path: the key handler only stamps the time (read from the source)
 //   MUT the judges go RED on a stepped trace, on one that lurches before stopping, and on one that jumps
@@ -124,10 +125,15 @@ try { await withHarness(async (app) => {
   await sleep(9000);
 
   const all = await read();
+  const all0 = all;
   const s = settings(all.rates);
   const steady = (() => { const v = within(s, a.first + 7000, a.last).map(([, r]) => r); v.push(at(s, a.first + 7000)); return v.reduce((m, x) => m + x, 0) / v.length; })();
   const up = judgeUp(s, a.first, steady);
   console.log(`MEASURE steady ${r2(steady)}; up ${J(up)}`);
+  // her steady speed is the one her pace has always given (#140: keys a second / 12 x 5): round two changes how it gets there, not where
+  const steadyKeys = all0.keys.filter((t) => t > a.first + 7000 && t <= a.last).length / ((a.last - a.first - 7000) / 1000);
+  const expected = (steadyKeys / 12) * 5;
+  ok(`S her steady speed is as before (${r2(steady)} at ${r2(steadyKeys)} keys a second; the pace gives ${r2(expected)})`, Math.abs(steady - expected) <= 0.25, '');
   ok(`U1 from rest it waits, then moves (${r2(up.moving)} ms after her first key)`, U1(up), J(up));
   ok(`U2 one ramp up (${r2(up.to90)} ms to 90%, ${up.dips} dips, longest gap ${r2(up.gap)} ms)`, U2(up), J(within(s, a.first, a.first + 6000).map(([t, r]) => [Math.round(t - a.first), r2(r)])));
 
