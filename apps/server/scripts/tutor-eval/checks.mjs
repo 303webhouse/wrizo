@@ -77,7 +77,8 @@ export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText
     const hit = subjectWords.filter((w) => new RegExp(`(?<![\\p{L}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'iu').test(sp));
     if (hit.length) { m5 = false; m5d.push(`specimen shares ${hit.join(', ')}`); }
     const pair = /→|->/.test(sp);
-    const sentences = (sp.match(/[.!?](?:\s|$)/g) || []).length || 1;
+    // the "c." or "ca." of a date ("c. 429 BC") is not the end of a sentence (run 46060667828 failed two good examples on it)
+    const sentences = (sp.replace(/(?<![\p{L}\p{N}])(ca?)\.(?=\s*\d)/giu, '$1').match(/[.!?](?:\s|$)/g) || []).length || 1;
     if (!pair && sentences > 2) { m5 = false; m5d.push(`specimen of ${sentences} sentences`); }
   }
   // the Tutor shows the fix on a specimen only: an arrow outside an "Example" line is a repair on her sentence
