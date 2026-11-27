@@ -137,4 +137,5 @@ scenario('SH-READONLY nothing above wrote anything', () => [snapshot() === befor
 const bad = checks.filter((c) => !c.pass);
 for (const c of checks) console.log((c.pass ? 'PASS ' : 'FAIL ') + c.name + (c.detail ? '  [' + c.detail + ']' : ''));
 console.log(`\n${checks.length - bad.length}/${checks.length} pass`);
+console.log(`MOBILE-SHELF VERIFY: ${bad.length ? 'FAIL' : 'PASS'} (${checks.length} checks)`);
 process.exit(bad.length ? 1 : 0);

@@ -247,6 +247,7 @@ async function main() {
   const bad = checks.filter((c) => !c.pass);
   for (const c of checks) console.log((c.pass ? 'PASS ' : 'FAIL ') + c.name + (c.detail ? '  [' + c.detail + ']' : ''));
   console.log(`\n${checks.length - bad.length}/${checks.length} pass`);
+  console.log(`MOBILE-NOTES VERIFY: ${bad.length ? 'FAIL' : 'PASS'} (${checks.length} checks)`);
   process.exit(bad.length ? 1 : 0);
 }
 main().catch((e) => { console.log('FAIL the check itself did not finish: ' + (e && e.message || e)); process.exit(1); });

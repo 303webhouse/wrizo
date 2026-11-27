@@ -330,4 +330,5 @@ await scenario('MB-LOSTACK-GONE answer lost, then she deleted the Board: the res
 const bad = checks.filter((c) => !c.pass);
 for (const c of checks) console.log((c.pass ? 'PASS ' : 'FAIL ') + c.name + (c.detail ? '  [' + c.detail + ']' : ''));
 console.log(`\n${checks.length - bad.length}/${checks.length} pass`);
+console.log(`MOBILE-BOARD VERIFY: ${bad.length ? 'FAIL' : 'PASS'} (${checks.length} checks)`);
 process.exit(bad.length ? 1 : 0);
