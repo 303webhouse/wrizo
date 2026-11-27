@@ -164,8 +164,12 @@ await withHarness(async (app) => {
     tokens.door === '#4F5730' && tokens.rest === '#96a05a', JSON.stringify(tokens));
 
   // ARCHIVED PARK (#13 step 14): archive/bg2.mjs.parked.md record 2
-  ok('S1 [faint-starters successor]: the BOARD starters rest at opacity 0.4 (a thin square outline, faint by Nick\'s ruling) - the colour the eye sees is the olive value at 40%, and the value itself is unchanged (asserted by the colour checks around this one)',
-    parseFloat(m.opacity) === 0.4, m.opacity);
+  // SUPERSEDED (#136, Fable, Nov 25, 10:50 pm: fix the faint starters on every Board): the starters' words and icons are solid; only the outline stays at about 40%. The original, verbatim:
+  //  ok('S1 [faint-starters successor]: the BOARD starters rest at opacity 0.4 (a thin square outline, faint by Nick\'s ruling) - the colour the eye sees is the olive value at 40%, and the value itself is unchanged (asserted by the colour checks around this one)',
+  //    parseFloat(m.opacity) === 0.4, m.opacity);
+  const edge136 = await app.evalJs("getComputedStyle(document.querySelector('.wz-beginnings[data-beginnings=board] .wz-beginning')).borderTopColor");
+  ok(`S1 [#136 successor]: the BOARD starters are solid (opacity ${m.opacity}) inside a thin outline at about 40% (${edge136}), so the words read at the olive value itself`,
+    parseFloat(m.opacity) === 1 && /0\.4\)?$/.test(String(edge136)), String(edge136));
 
   // --- rest / hover / press, under a TRUSTED pointer -------------------------
   const doorBox = await app.evalJs(`(() => { const b = document.querySelector('[data-beginning="newCard"]').getBoundingClientRect();
