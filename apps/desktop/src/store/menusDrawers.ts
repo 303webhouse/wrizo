@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { liveQuery, registerLiveSite } from './liveDom';
 import { onePanelAt } from './pageScale';
+import { FLUX3 } from '../flux3/flag';
 
 // the two-drawer law: coexistence is a decision about both drawers, so it lives in one store (the useSyncExternalStore pub-sub shape); measuring here is a policy, not an anchor [menusDrawers §1]
 
@@ -76,6 +77,8 @@ export function canCoexist(): boolean {
 
 // the page's two hands, measured: both stand where there is DRAWER_MIN of desk on each side of the paper, else the later closes the other; the page never moves, so it reads the same open or shut; a failed measurement says yes [menusDrawers §6]
 export const DRAWER_MIN = 200;   // a drawer's narrowest open width, px - page-size.mjs and the drawer harnesses read the same number
+// #139 (Nick, Nov 26): a Flux Board takes the screen and its menus open inward over it, each outer edge on the Board's edge. Flux's Boards first.
+export const menusOpenInward = (theme: string, pageKind: string): boolean => FLUX3 && theme === 'flux' && pageKind === 'board';
 export function canHoldBoth(): boolean {
   if (typeof document === 'undefined') return true;
   const paper = menusPaper();

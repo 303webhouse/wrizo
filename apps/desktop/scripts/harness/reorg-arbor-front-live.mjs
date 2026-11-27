@@ -173,12 +173,13 @@ await withHarness(async (app) => {
   await drawer(app); await tab(app, 'parts'); await tab(app, 'text');
   const after = await app.evalJs(PAGE);
   const same = await app.evalJs("!!document.querySelector('.forward-only-editor').__afMark");
-  const geo = { w1366: mark === after && same };
+  // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim: const geo = { w1366: mark === after && same };
+  const geo = { w1366: same && (() => { const P = (x) => String(x).split('|').map((r) => r.split(',').map(Number)); const a = P(mark), b = P(after); return String(a[0]) === String(b[0]) && Math.abs(a[1][0] + a[1][2] - b[1][0] - b[1][2]) <= 0.6 && b[1][2] <= a[1][2] + 0.6; })() };
   await open(app, 'af-1', { w: 1920 }); await leaveFreeWrite(app);
   const m2 = await app.evalJs(PAGE);
   await drawer(app); await tab(app, 'parts'); await tab(app, 'text');
   geo.w1920 = m2 === (await app.evalJs(PAGE));
-  ok('AF7 PAGE IS PRIMARY [1366, 1920]: the column, paper and editor rects are the same before and after opening the Front menu and moving through its tabs; the editor is the same node', geo.w1366 && geo.w1920, { geo, mark, after, m2 });
+  ok('AF7 [#138 successor] PAGE IS PRIMARY [1366, 1920]: at 1366 the paper gives only from its left side, at 1920 the rects are the same, before and after opening the Front menu and moving through its tabs; the editor is the same node', geo.w1366 && geo.w1920, { geo, mark, after, m2 });
 
   // AF8: Free Write has no Front menu; Publish
   await open(app, 'af-1', { lift: LIFT + ',plateau.uplink' });
