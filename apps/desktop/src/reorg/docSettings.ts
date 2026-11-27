@@ -19,7 +19,7 @@ const EXPORT_FORMATS = ['md', 'txt', 'html'] as const;
 const isExportFormat = (v: unknown): v is 'md' | 'txt' | 'html' => typeof v === 'string' && (EXPORT_FORMATS as readonly string[]).includes(v);
 
 /** What a write may carry. `null` (or 'none' for the style guide) clears the key; absent leaves it alone. */
-export interface DocSettingsPatch { styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null; attach?: string[] | null } | null; colourScheme?: ColourScheme }
+export interface DocSettingsPatch { /** her place in the Guide's walk; null takes the key off */ walk?: { stepId: string } | null; styleGuide?: StyleGuide | 'none' | null; export?: { format?: 'md' | 'txt' | 'html'; includePlan?: boolean | null; attach?: string[] | null } | null; colourScheme?: ColourScheme }
 
 /** The key an asset of the Doc is ticked under for export (item 5b): its entry's id, then "|", then the card's id when it is one card of a board ("page-1|", "board-1|c1"). */
 export const attachKey = (a: { entryId: string; boxId?: string }): string => a.entryId + '|' + (a.boxId ?? '');
@@ -59,6 +59,25 @@ export function styleGuideOf(entryId: string): StyleGuide | null {
 }
 
 const isClear = (v: unknown): boolean => v === null || v === 'none';
+const isWalkPlace = (v: unknown): v is { stepId: string } => !!v && typeof (v as { stepId?: unknown }).stepId === 'string' && !!(v as { stepId: string }).stepId;
+
+function writeLooseWalk(e: JournalEntry, place: { stepId: string } | null): boolean {
+  const cur = e.pageSettings?.walk?.stepId ?? null;
+  if (cur === (place?.stepId ?? null)) return false;
+  const base = { ...(e.pageSettings ?? getUserPageDefaults() ?? PAGE_SETTINGS_FALLBACK) } as Record<string, unknown>;
+  if (place) base.walk = { stepId: place.stepId }; else delete base.walk;
+  saveJournalEntry({ ...e, pageSettings: base as unknown as JournalEntry['pageSettings'] });
+  return true;
+}
+
+/** Her place in the walk for the Doc this page belongs to (a loose page's own), or null. */
+export function walkPlaceOf(entryId: string): string | null {
+  const e = getJournalEntry(entryId);
+  if (!e) return null;
+  const set = madeDocOf(e);
+  const v: unknown = set ? set.docSettings?.walk : e.pageSettings?.walk;
+  return isWalkPlace(v) ? v.stepId : null;
+}
 
 /** Write the Doc's settings for the Doc this Part belongs to. Returns whether anything was written: a refused value (nothing written), a Part with no such Doc, or the same value again, is false. */
 export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean {
@@ -72,11 +91,14 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
   // the assets she attaches (item 5b, Fable, Nov 21: remembered per Doc, beside the format and the Plan tick): a list of the keys she ticked; null or an empty list takes the key off; anything else is refused
   if ('export' in patch && patch.export && patch.export.attach !== undefined && patch.export.attach !== null && !isAttachList(patch.export.attach)) return false;
   if ('colourScheme' in patch && !isColourScheme(patch.colourScheme)) return false;
+  if ('walk' in patch && patch.walk !== null && !isWalkPlace(patch.walk)) return false;
   const set = madeDocOf(e);
   if (!set) {
     // a loose page is its own Doc: its style guide is the key a page already has; it has no export setting and no scheme of its own
     if (patch.export !== undefined && patch.export !== null) return false;
     if ('colourScheme' in patch) return false;
+    // a loose page keeps its walk place in its own pageSettings, as its style guide is kept
+    if ('walk' in patch) return writeLooseWalk(e, patch.walk ?? null);
     if (!('styleGuide' in patch)) return false;
     const cur = e.pageSettings?.styleGuide;
     const next = isClear(patch.styleGuide) ? undefined : (patch.styleGuide as StyleGuide);
@@ -100,6 +122,7 @@ export function setDocSetting(entryId: string, patch: DocSettingsPatch): boolean
     }
   }
   if ('colourScheme' in patch && isColourScheme(patch.colourScheme)) next.colourScheme = patch.colourScheme;
+  if ('walk' in patch) { if (patch.walk) next.walk = { stepId: patch.walk.stepId }; else delete next.walk; }
   if (JSON.stringify(next) === JSON.stringify(cur)) return false;
   const row = { ...set } as Project & Record<string, unknown>;
   // the last key removed leaves {} on the record, never absence and never null: the server keeps what it has for a push that carries none (an older device), so a clear must say so

@@ -4584,3 +4584,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Caught on the way:** the orders named `f5b21fec`, which MOBILE-B had since reported would switch off the stale-tab guard; Fable owns it. A lane's newest report entry is read before its sha is cut. A new check ends with a verdict line the pair reads.
 **Not tried:** the companion on a real phone. That is Nick's next try.
 **Open:** L14 the walk (`presets-b/guide-walk-l12`), then the flourishes; MOBILE-B's Flux Plan word and the companion's own stale-tab guard; #141. Evidence: `docs/evidence/box-logs/deploy-train-l13-57d1a34e/`.
+
+## (329) TRAIN L14 IS LIVE: `git 1f9cc8a31 (train-l14-3) · railway c8841733-81b2-4154-8136-420e93e0334b`, bundle `index-CxmIKu1s`, smoke PASS 6/6, served JS and CSS identical to the tested build — 2026-11-27 18:37Z / Nov 27, 11:37 am MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-CxmIKu1s`; JS 1492987 B md5 `65ebf70b66b1`; CSS `index-zhP_IGuw.css` 538103 B md5 `70744237e606`; `GET /m/` signed out 200; `smoke-login.mjs` PASS 6/6. Roll-back point: train L13, `git 57d1a34e · railway f442bb49`.**
+**What is in it:** the guide walk (PRESETS-B); POLISH #138 (at 1600 px or less an open Front or Back menu narrows the page from its side instead of covering it) with its mend; #139 (Flux Boards run the window's width, the menus open inward).
+**Caught on the way:** the full pair on `ddf528909` showed a stale walk check (G1) and a real #138 fault on touch (`visual-1a-touch`: the sheet ended short and the Undo arrow was under 44 px). Both mended before the deploy. The final tip had the two targeted files, not a second full pair.
+**Not tried:** the walk and the wider Boards by Nick on the live site. That is the next try.
+**Open:** L15 (Glitch v2, tunnel round two, Distraction Free and the notice; one branch from FIX and POLISH); #142; MOBILE-B's Flux words (`mobile/4-plan-word`). Evidence: `docs/evidence/box-logs/deploy-train-l14-1f9cc8a3/`.
