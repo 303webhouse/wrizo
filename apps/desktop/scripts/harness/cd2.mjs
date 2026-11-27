@@ -643,7 +643,10 @@ await withHarness(async (app) => {
   // Page's own editor). FX14 unroutes the JournalEntry host (/journal/:id ->
   // /page/:id redirect), so the dock fixture now opens on THE Page. The dock's
   // own behavior is unchanged; only the host surface moved. Not a park.
-  await freshDesk(app, LAPTOP_W, 900);
+  // SUPERSEDED (#142, Nick Nov 26: no rail pop-out covers the page; Fable, Nov 27, Q1: where both layers cannot stand, the second takes the first's place until closed -
+  // at 1280 there is no panel beside the survey to close, so the dock is read where both stand), the original verbatim:
+  // await freshDesk(app, LAPTOP_W, 900);
+  await freshDesk(app, 1920, 900);
   await app.evalJs(`(() => {
     const now = new Date().toISOString();
     window.wrizoCreateJournalPage({ id: 'cd2-dock-a', text: 'Dock fixture A', createdAt: now, origin: null });
