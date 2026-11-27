@@ -262,10 +262,17 @@ await withHarness(async (app) => {
     const chk = await ev("(() => { const c = document.querySelector('.wz-theme-card-flux'), r = (e) => e.getBoundingClientRect(), a = r(c), w = r(c.querySelector('.wz-theme-wm')), u = [...c.querySelectorAll('.wz-theme-plate-check i')].map(r); return { narrow: a.width > 150 && a.height < 100, nameClear: u.every((i) => w.bottom <= i.top + 0.5), inside: u.every((i) => i.left >= a.left && i.right <= a.right && i.bottom <= a.bottom + 0.5), n: u.length }; })()");
     ok('W4 [narrow]: Flux’s CHECKPOINT sits under the name, inside the short tile', chk.narrow && chk.nameClear && chk.inside && chk.n === 10, chk);
   });
+  // SUPERSEDED (#142: the pop-out's room now runs to the page itself, 4 px short of it, and the page gives way; the older measure stopped it at the page's left opener tab). The original, verbatim:
+  // await part('W2', async () => {
+  // await open({ theme: 'plateau' });
+  // const g = await ev("(() => { const p = document.querySelector('.wz-cascade-panel').getBoundingClientRect(), grip = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); return { right: p.right, width: p.width, grip: grip ? grip.getBoundingClientRect().left : null }; })()");
+  // ok('W2: in Draft at 1366, where there is room for the tiles, the pop-out still stops before the page’s left opener, as before', g.grip != null && g.right <= g.grip + 0.5 && g.width >= 260, g);
+  // });
   await part('W2', async () => {
     await open({ theme: 'plateau' });
-    const g = await ev("(() => { const p = document.querySelector('.wz-cascade-panel').getBoundingClientRect(), grip = [...document.querySelectorAll('.wz-sliver-grip')].find((e) => e.getBoundingClientRect().width > 0); return { right: p.right, width: p.width, grip: grip ? grip.getBoundingClientRect().left : null }; })()");
-    ok('W2: in Draft at 1366, where there is room for the tiles, the pop-out still stops before the page’s left opener, as before', g.grip != null && g.right <= g.grip + 0.5 && g.width >= 260, g);
+    const g = await ev("(() => { const p = document.querySelector('.wz-cascade-panel').getBoundingClientRect(), page = [...document.querySelectorAll('.mode-page')].find((e) => e.getBoundingClientRect().width > 0); return { right: p.right, width: p.width, page: page ? page.getBoundingClientRect().left : null }; })()");
+    const f = await fit();
+    ok('W2 [successor, #142]: in Draft at 1366 the page gives way: the pop-out has room for two tiles across, every name whole, and stops before the page', g.page != null && g.right <= g.page + 0.5 && g.width >= 260 && f.cols === 2 && f.cut.length === 0, { ...g, cols: f.cols, cut: f.cut });
   });
 
   // ---------------------------------------------------------------- S: still frames
