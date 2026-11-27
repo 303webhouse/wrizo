@@ -1,6 +1,6 @@
 // #138 (Nick, Nov 26: "the Back menu opens over the page surface again... it shouldn't overlap the page surface"; Fable's order, 5:05 pm). An open Front or
 // Back menu never covers the page surface, margins included; where they don't fit, the page is a little narrower while the menu is open (only what that menu
-// needs, from its side), and the menu takes all the room beside it. THE REAL PAGE in each theme's own look, Draft and Revise, 1366, 1536 and 1920:
+// needs, from its side), and the menu takes all the room beside it. THE REAL PAGE in each theme's own look, Draft (1366, 1536, 1920), Revise and Free Write (1366):
 //   O   open: neither the menu nor its tab touches the page
 //   R   open: the menu reaches the page (no unused room beyond 24 px between them), and is never narrower than at rest's standard (Front: Arbor 264,
 //       Flux/Machina 184; Back 317 - 8px allowed)
@@ -44,7 +44,7 @@ await withHarness(async (app) => {
   await ev("localStorage.clear(); sessionStorage.clear(); localStorage.setItem('wrizo-first-run-complete','1'); localStorage.setItem('wrizo-splash-hold','50'); localStorage.setItem('wrizo-tutor-disclosure-seen','1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version','4')");
   await app.reload();
   await app.waitFor("typeof window.wrizoCreateJournalPage === 'function'", { label: 'the seams' });
-  for (const [id, mode] of [['p138-d', 'drafting'], ['p138-r', 'revise']]) await ev(`window.wrizoCreateJournalPage(${J({ id, text: PARA, createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: 'page' })}); localStorage.setItem('wrizo-mode-page-${id}', '${mode}'); window.wrizoFlushNow()`);
+  for (const [id, mode] of [['p138-d', 'drafting'], ['p138-r', 'revise'], ['p138-f', 'journal']]) awaitev(`window.wrizoCreateJournalPage(${J({ id, text: PARA, createdAt: '2026-04-01T00:00:00.000Z', origin: null, source: 'page' })}); localStorage.setItem('wrizo-mode-page-${id}', '${mode}'); window.wrizoFlushNow()`);
 
   for (const th of THEMES) {
     await ev("location.hash = '#/'");
@@ -52,7 +52,7 @@ await withHarness(async (app) => {
     await app.reload();
     await app.waitFor("!document.querySelector('.wz-splash')", { label: 'splash gone', timeout: 15000 });
     for (const [w, h] of [[1366, 768], [1536, 864], [1920, 1080]]) {
-      for (const [id, mode] of w === 1366 ? [['p138-d', 'Draft'], ['p138-r', 'Revise']] : [['p138-d', 'Draft']]) {
+      for (const [id, mode] of w === 1366 ? [['p138-d', 'Draft'], ['p138-r', 'Revise'], ['p138-f', 'Free Write']] : [['p138-d', 'Draft']]) {
         const at = `${th.name} ${w} ${mode}`;
         await app.emulateDpr(1, w, h);
         await ev("location.hash = '#/'"); await sleep(300);
