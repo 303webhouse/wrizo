@@ -40,6 +40,8 @@ export const useRailRoom: (on: boolean, open: string | null) => void = REORG
       const anchor = document.querySelector<HTMLElement>('.desk-frame-cascade-anchor');
       if (!on || !open || !anchor) return undefined;
       const set = () => {
+        // #142: on the writing page DeskFrame gives the pop-out its room (the page gives way); this measure stays for the zoomed page and the other surfaces
+        if (anchor.closest('.desk-frame-stage--prose') && !anchor.parentElement?.querySelector('.mode-pagecol[data-zoom="true"]')) return;
         const over = onePanelAt(window.innerWidth);
         const page = over || measured ? liveQuery<HTMLElement>('.mode-page') : null;
         const left = anchor.getBoundingClientRect().left;
@@ -48,7 +50,7 @@ export const useRailRoom: (on: boolean, open: string | null) => void = REORG
       };
       set();
       window.addEventListener('resize', set);
-      return () => { window.removeEventListener('resize', set); anchor.style.removeProperty(VAR); };
+      return () => { window.removeEventListener('resize', set); if (!anchor.closest('.desk-frame-stage--prose')) anchor.style.removeProperty(VAR); };
     }, [on, measured, open]);
   }
   : () => undefined;

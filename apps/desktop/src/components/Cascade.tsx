@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode, useLayoutEffect } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
@@ -357,6 +357,8 @@ export function useCascade({ subject, project, navigate }: CascadeProps): { stri
   }, [state.category]);
   const view = state.category !== null ? state : leaving;
   const isLeaving = state.category === null && !!leaving;
+  // #142: the page gives way to a pop-out as it does to a menu (DeskFrame): told once its layers are drawn, changed or gone
+  useLayoutEffect(() => { document.dispatchEvent(new Event('wz-rail-popout')); }, [view?.category, view?.survey, view?.docked, isLeaving]);
 
   const layers = view === null || view.category === null ? null : (
     <>
