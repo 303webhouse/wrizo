@@ -157,9 +157,13 @@ await withHarness(async (app) => {
           const during1 = await rectOf(app, '.mode-page');
           await sleep(500);
           const after = await rectOf(app, '.mode-page');
-          if (!same(R0, during0) || !same(R0, during1) || !same(R0, after)) bad.push({ label, R0, during0, during1, after });
+          // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+          // if (!same(R0, during0) || !same(R0, during1) || !same(R0, after)) bad.push({ label, R0, during0, during1, after });
+          const gave138 = (a, b) => !!a && !!b && Math.abs(a[1] - b[1]) <= 0.6 && (Math.abs(a[0] - b[0]) <= 0.6 || Math.abs(a[0] + a[2] - b[0] - b[2]) <= 0.6) && b[2] <= a[2] + 0.6;
+          const small138 = await app.evalJs('innerWidth <= 1600');
+          if ([during0, during1, after].some((r) => (small138 ? !gave138(R0, r) : !same(R0, r)))) bad.push({ label, R0, during0, during1, after });
         }
-        ok(`L1 ${T} (${kind}): the paper's rect is IDENTICAL before, during and after every open, close and tab change of either drawer, and of the hand-over from one to the other`, bad.length === 0, JSON.stringify(bad).slice(0, 400));
+        ok(`L1 [#138 successor] ${T} (${kind}): through every open, close, tab change and hand-over the paper keeps its top and one side and is never wider than at rest (above 1600, identical)`, bad.length === 0, JSON.stringify(bad).slice(0, 400));
         const sameNode = await app.evalJs("window.__ed === document.querySelector('.forward-only-editor') && !!window.__ed");
         ok(`L1 ${T} (${kind}): and the editor node is the SAME node throughout (never unmounted)`, sameNode === true, String(sameNode));
       });

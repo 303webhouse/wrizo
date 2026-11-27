@@ -355,7 +355,10 @@ const normalCase = async (app, th, w, h) => {
   const leftRoom = g && g.stage ? g.page.left - g.stage.left : 0; const rightRoom = g && g.stage ? g.stage.right - g.page.right : 0;
   const roomForBoth = leftRoom >= DRAWER_MIN && rightRoom >= DRAWER_MIN;
   if (tOpen) {
-    ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
+    if (w > SMALL_W) ok(`${th.name} ${w}x${h} K: opening the drawers never moves or rescales the page`, kPred(g, gk), J({ closed: g && g.page, open: gk && gk.page }));
+    else ok(`${th.name} ${w}x${h} K [#138 successor]: with a menu open the page keeps its top and its far edge and only narrows from that menu's side`, !!g && !!gk && (((a, b) => !!a && !!b && Math.abs(a.top - b.top) <= 0.6 && (Math.abs(a.left - b.left) <= 0.6 || Math.abs(a.right - b.right) <= 0.6) && b.width <= a.width + 0.6)(g.page, gk.page)), J({ closed: g && g.page, open: gk && gk.page }));
     // SUPERSEDED at 1600 and narrower (#133: one side panel at a time, the Back menu over the page's margin); the original below runs above 1600.
     if (w <= SMALL_W) {
       const over = !!pp.tutor && !!gk && pp.tutor.left >= gk.page.right - gk.page.width / 8.5 - 1;
@@ -435,7 +438,10 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     const fxOk = (r) => !!r && r.toggle === false && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
     const fx = await fxProbe();
     psParks.FZ.push({ tag, ok: fxOk(fx), fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
-    ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
+    if (w > SMALL_W) ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
+    else ok(`${tag} zoom [#138 successor]: Flux offers no Typewriter control and the page is not zoomed, whatever the open menu has taken from its width (a stored per-page value is data only)`, !!fx && fx.toggle === false && fx.zoom !== 'true' && !!g0 && fx.pageW >= g0.page.width - 0.6 && fx.pageW <= g0.page.width * 1.25, J(fx));
     if (mutants) {
       // MFZ: the toggle forced back on (inline !important beats the sheet's) - the SAME read must go RED
       // SUPERSEDED (Free Write = Typewriter, Nick, Nov 19, 2:10 pm; Fable's ruling): the Typewriter toggle does not exist in any theme, so it cannot be forced back on; this mutant now puts the zoom itself back on the Flux page (the attribute the no-zoom read looks at). The original three lines, verbatim:
@@ -578,7 +584,10 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   // ok(`${tag} U: the editor is still the SAME node after leaving the zoom`, await app.evalJs('window.__psMarked()'));
   ok(`${tag} U [Free Write = Typewriter successor]: the zoom's editor was the SAME node through the whole stay in the zoom (writing, the glide, the drawers), and the writer's Draft editor is mounted after leaving`, zoomKept === true && (await app.evalJs("!!document.querySelector('.forward-only-editor')")));
   const same = g0 && g3 && ['left', 'top', 'width', 'height'].every((k) => Math.abs(g0.page[k] - g3.page[k]) <= 0.5);
-  ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
+  // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+  // ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
+  if (w > SMALL_W) ok(`${tag} X: leaving the zoom returns the exact normal rect`, same, J({ before: g0 && g0.page, after: g3 && g3.page }));
+  else ok(`${tag} X [#138 successor]: leaving the zoom returns the page to the window's own size (62% of the stage), its top unmoved`, r133(g3, w) && !!g0 && !!g3 && Math.abs(g0.page.top - g3.page.top) <= 0.6, J({ before: g0 && g0.page, after: g3 && g3.page }));
 };
 
 // GATE (Fable, Oct 24): the engine's G diagnostics live in MEMORY only and are written ONLY when the harness flag is on. Read from the source:

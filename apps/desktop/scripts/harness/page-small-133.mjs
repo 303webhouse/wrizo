@@ -105,7 +105,10 @@ await withHarness(async (app) => {
       const seq = {};
       for (const what of ['pop', 'front', 'back']) { const did = await open(app, what); seq[what] = { did, ...(await state(app)) }; await snap(app, `${th.id}-${w}-${what}`); }
       ok(`${at} (premise): each panel opened by its own opener`, ['pop', 'front', 'back'].every((k) => seq[k].did && seq[k].panels[k]), J(Object.fromEntries(Object.entries(seq).map(([k, s]) => [k, s.stands]))));
-      ok(`${at} R: opening the panels never moves or resizes the page`, Object.values(seq).every((s) => same(s.page, rest.page)), J({ rest: rest.page, back: seq.back.page }));
+      // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+      // ok(`${at} R: opening the panels never moves or resizes the page`, Object.values(seq).every((s) => same(s.page, rest.page)), J({ rest: rest.page, back: seq.back.page }));
+      if (w > SMALL_W) ok(`${at} R: opening the panels never moves or resizes the page`, Object.values(seq).every((s) => same(s.page, rest.page)), J({ rest: rest.page, back: seq.back.page }));
+      else ok(`${at} R [#138 successor]: a rail pop-out never moves the page; the Front and Back menus take their room from it from their own side only`, same(seq.pop.page, rest.page) && ['front', 'back'].every((k) => { const gave138 = (a, b) => !!a && !!b && Math.abs(a[1] - b[1]) <= 0.6 && (Math.abs(a[0] - b[0]) <= 0.6 || Math.abs(a[0] + a[2] - b[0] - b[2]) <= 0.6) && b[2] <= a[2] + 0.6; return gave138(rest.page, seq[k].page) && Math.abs(k === 'front' ? rest.page[0] + rest.page[2] - seq[k].page[0] - seq[k].page[2] : rest.page[0] - seq[k].page[0]) <= 1; }), J({ rest: rest.page, pop: seq.pop.page, front: seq.front.page, back: seq.back.page }));
       if (w <= SMALL_W) ok(`${at} ONE: one side panel at a time`, ['pop', 'front', 'back'].every((k) => seq[k].stands.length === 1 && seq[k].stands[0] === k), J(Object.values(seq).map((s) => s.stands)));
       else ok(`${at} ONE: above ${SMALL_W} the Front and Back menus stand together`, seq.back.stands.includes('front') && seq.back.stands.includes('back'), J(seq.back.stands));
       ok(`${at} T: no open panel covers the page's text`, Object.values(seq).every((s) => coversText(s).length === 0), J(Object.fromEntries(Object.entries(seq).map(([k, s]) => [k, coversText(s)]))));
@@ -117,10 +120,11 @@ await withHarness(async (app) => {
         for (const what of ['pop', 'front', 'back']) {
           const st = seq[what]; const p = st.panels[what]; if (!p) { narrow.push(`${what} not open`); continue; }
           const width = p[2] - p[0]; const room = what === 'back' ? p[2] - st.text[2] - (th.id === 'flux' ? 16 : 0) : st.text[0] - p[0];   // Flux's Back tab stands at the drawer's inner edge, inside that room
-          const want = Math.min(BEFORE[th.id][what][at133], room - 8);
+          // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay); the Back menu stands at its 320 px (the page gives only that), the original verbatim: const want = Math.min(BEFORE[th.id][what][at133], room - 8);
+          const want = Math.min(what === 'back' ? 317 : BEFORE[th.id][what][at133], room - 8);
           if (width < want - 1.5) narrow.push(`${what} ${width} < ${want} (before ${BEFORE[th.id][what][at133]}, room ${room})`);
         }
-        ok(`${at} W: no panel is narrower than before`, narrow.length === 0, narrow.join('; '));
+        ok(`${at} W [#138 successor]: the pop-out and Front are no narrower than before; the Back menu is its 320 px`, narrow.length === 0, narrow.join('; '));
       }
       ok(`${at} H: no open panel stands over a header readout`, Object.values(seq).every((st) => Object.values(st.panels).every((p) => st.heads.every((h) => !across(p, h)))), J(Object.fromEntries(Object.entries(seq).map(([k, st]) => [k, st.heads.length]))));
 
