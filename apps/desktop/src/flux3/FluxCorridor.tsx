@@ -22,6 +22,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
+import { useDistractionFree } from './useDistractionFree';
 import { tryFlash } from '../store/flashBudget';
 import { useWritingGoal } from '../store/writingGoal';
 import { useWritingSettings } from '../store/writingSettings';
@@ -98,7 +99,8 @@ interface Props { scrollRef: RefObject<HTMLDivElement | null>; unitCount: number
 
 export function FluxCorridor({ scrollRef, unitCount }: Props) {
   const dial = useAmbianceDial();
-  const still = prefersReducedMotion() || dial === 0;
+  const quiet = useDistractionFree();   // Distraction Free (the flourish spec §7.2): a still, dark room - the box keeps its ground and draws nothing in it
+  const still = prefersReducedMotion() || dial === 0 || quiet;
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const goal = useWritingGoal();
   const settings = useWritingSettings();
@@ -229,7 +231,7 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
     return { '--a': a.toFixed(4), '--b': b.toFixed(4), '--o0': (n < 0 ? alphaAt(0) : alphaAt(n + 1)).toFixed(3), '--o1': (n < 0 ? 0 : alphaAt(n)).toFixed(3), '--bw': `${(1 / mid).toFixed(2)}px`, '--os': (n < 0 ? 0 : alphaAt(n)).toFixed(3) };
   };
   return createPortal(
-    <>
+    quiet ? null : <>
       <svg className="flux3-cor-rails" viewBox={`0 0 ${VBW} ${VBH}`} preserveAspectRatio="none" aria-hidden="true">
         <path className="flux3-cor-fan" d={rails} />
         <path className="flux3-cor-ribs" d={ribs} />

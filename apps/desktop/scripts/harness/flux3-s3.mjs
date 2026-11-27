@@ -173,8 +173,11 @@ const MUTANTS = {
   // caret: [/(\w+)&&(\w+)\.height\?\[(\w+)\.top-2,(\w+)\.bottom\+2\]:null/g, 'null'],
   // pause: [/performance\.now\(\)-(\w+)<(\w+)\)return;(\w+)=(\w+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
   // follow: [/(Math\.abs\(parseFloat\((\w+)\.height\)-(\w+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
-  rate: [/=45,([\w$]+)=180,([\w$]+)=900,/g, '=45,$1=180,$2=0,'],
-  stop: [/\(\)=>\{([\w$]+)=performance\.now\(\),([\w$]+)\.size&&([\w$]+)\(\)\}/g, '()=>{$1=performance.now()}'],
+  // SUPERSEDED (Nov 26, Glitch v2: the gate constants are gone - the ramp is a table, flux3/glitchRamp.ts - and activity also resets the beat count). Originals verbatim:
+  // rate: [/=45,([\w$]+)=180,([\w$]+)=900,/g, '=45,$1=180,$2=0,'],
+  // stop: [/\(\)=>\{([\w$]+)=performance\.now\(\),([\w$]+)\.size&&([\w$]+)\(\)\}/g, '()=>{$1=performance.now()}'],
+  rate: [/everyMs:2600,/g, 'everyMs:0,'],   // the first stage's spacing
+  stop: [/\(\)=>\{([\w$]+)=performance\.now\(\),([\w$]+)=0,\(([\w$]+)\.size\|\|([\w$]+)\)&&([\w$]+)\(\)\}/g, '()=>{$1=performance.now(),$2=0}'],
   caret: [/([\w$]+)&&([\w$]+)\.height\?\[([\w$]+)\.top-2,([\w$]+)\.bottom\+2\]:null/g, 'null'],
   pause: [/performance\.now\(\)-([\w$]+)<([\w$]+)\)return;([\w$]+)=([\w$]+)\.current\.shift\(\)/g, 'performance.now()-$1<0)return;$3=$4.current.shift()'],
   follow: [/(Math\.abs\(parseFloat\(([\w$]+)\.height\)-([\w$]+)\.height\)\))>\.25&&/g, '$1>1e9&&'],
@@ -395,11 +398,15 @@ try { await withHarness(async (app) => {
     if (r) await click(r.x, r.y);
     await sleep(300);
   };
-  const testIdle = async ({ watchMs = 8000, stop = true } = {}) => {
+  // SUPERSEDED (Nov 26, Glitch v2, the flourish spec §1: the idle glitch is a ramp - 30 s one word on her page, from 2 min the chrome's words too). Original verbatim:
+  //   const testIdle = async ({ watchMs = 8000, stop = true } = {}) => {
+  //     await ev('window.__f3.watchIdle(); window.__f3IdleShift = 400');
+  // The successor reads the FIRST stage (told 40 s), where every original claim still holds: her words only, one change in and one out per beat. The later stages are read by glitch-v2.mjs (S3, LAW).
+  const testIdle = async ({ watchMs = 13000, stop = true, shift = 40 } = {}) => {
     await open(true, 'dark', [1920, 1080], { id: IDLEPAGE });
     await caretOnFirst();
     const s0 = await st();
-    await ev('window.__f3.watchIdle(); window.__f3IdleShift = 400');
+    await ev(`window.__f3.watchIdle(); window.__f3IdleShift = ${shift}`);
     await sleep(watchMs);
     const s1 = await st();
     const log = await ev('window.__f3.idle');
@@ -423,7 +430,7 @@ try { await withHarness(async (app) => {
     return { adds: adds.length, onCaret, band, maxPerSec: maxIn1s(changes), textSame: s0.text === s1.text, selSame: same(s0.sel, s1.sel), countSame: s0.glitchbar && s1.glitchbar && s0.glitchbar.count === s1.glitchbar.count, stopMs, strays };
   };
   const Id = await testIdle();
-  ok(`IDLE words glitch and resolve (${Id.adds} in 8 s) while the page's text, selection and word count never change`, Id.adds >= 4 && Id.textSame && Id.selSame && Id.countSame, JSON.stringify(Id));
+  ok(`IDLE words glitch and resolve (${Id.adds} in 13 s at the first stage) while the page's text, selection and word count never change`, Id.adds >= 4 && Id.textSame && Id.selSame && Id.countSame, JSON.stringify(Id));
   ok('IDLE every glitched word is one of HER words (the editor\'s text), never the page\'s chrome (its readouts, its hint line)', Id.adds >= 4 && Id.strays.length === 0, JSON.stringify(Id));
   ok('IDLE never a word on the caret\'s line', Id.band && Id.onCaret === 0 && Id.adds >= 4, JSON.stringify(Id));
   ok(`IDLE at most 3 changes in any 1 s (appearances and resolutions: ${Id.maxPerSec})`, Id.maxPerSec <= 3 && Id.adds >= 4, JSON.stringify(Id));
@@ -433,7 +440,8 @@ try { await withHarness(async (app) => {
   const testPlace = async (view) => {
     await open(true, 'dark', view, { id: IDLEPAGE });
     await caretOnFirst();
-    await ev('window.__f3IdleShift = 400');
+    // SUPERSEDED (Nov 26, Glitch v2): was `await ev('window.__f3IdleShift = 400');` - at 400 s a beat may cover a chrome word, which this check cannot find in the editor
+    await ev('window.__f3IdleShift = 40');
     const appeared = await ev(`new Promise((res) => { const L = document.querySelector('[data-flux3-idle]'); if (!L) { res(false); return; }
       const mo = new MutationObserver(() => { if (L.querySelector('.flux3-idle-word')) { mo.disconnect(); res(true); } });
       mo.observe(L, { childList: true }); setTimeout(() => { mo.disconnect(); res(false); }, 8000); })`);
@@ -562,7 +570,8 @@ try { await withHarness(async (app) => {
   const mF = await withMutant('follow', () => testPlace([1920, 1080]));
   ok('MUT-FOLLOW-ANCHOR the follow mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mF.landed === 1, JSON.stringify({ landed: mF.landed }));
   ok('MUT-FOLLOW (landed) the glyphs left where the word first stood: PLACE fails (off the word once the page moves)', mF.landed === 1 && !mF.pass && mF.p1 && mF.p1.off > 1, JSON.stringify(mF));
-  const mC = await withMutant('caret', () => testIdle({ watchMs: 9000, stop: false }));
+  // SUPERSEDED (Nov 26, Glitch v2): was `testIdle({ watchMs: 9000, stop: false })` - the first stage gives one word per 2.6 s, so the watch is longer
+  const mC = await withMutant('caret', () => testIdle({ watchMs: 24000, stop: false }));
   ok('MUT-CARET-ANCHOR the caret mutant\'s anchor matched exactly once in the served bundle (a miss is a fault of the instrument, not a verdict on the product)', mC.landed === 1, JSON.stringify({ landed: mC.landed }));
   ok('MUT-CARET (landed) the caret\'s line not avoided: IDLE fails (a word on the caret\'s line)', mC.landed === 1 && mC.onCaret > 0, JSON.stringify(mC));
 

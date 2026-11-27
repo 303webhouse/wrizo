@@ -921,15 +921,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
               <TypewriterFields pageId={pageId} pageEmpty={pageEmpty} />
             </section>
           )}
-          {/* the Flicker switch is Flux's only: a switch with nothing to switch would teach the writer it does something [Sliver §32] */}
-          {theme === 'flux' && (
-            <section className="wz-foot-settings-block">
-              <h4>{t('footMenuFlicker')}</h4>
-              <Seg label={t('footMenuFlicker')} value={settings.flicker ? 'on' : 'off'}
-                opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-                onPick={v => setWritingSettings({ flicker: v === 'on' })} />
-            </section>
-          )}
+          {/* GLITCH v2 (Fable, Nov 26, Q4): Flux's Flicker switch moved to Docs › Session (reorg/session/SessionGroup.tsx) */}
           {session && (
           <section className="wz-foot-settings-block">
             <h4>{t('footMenuProgress')}</h4>

@@ -8,7 +8,7 @@ import { PlainTracker } from './PlainTracker';
 // the flourish spec: the "mode on" notice (§2, every theme) and Flux's GLITCH switch beside the page count (§4.1)
 import { ModeNotice } from './ModeNotice';
 import { FluxGlitchSwitch } from '../flux3/FluxGlitchSwitch';
-import { useDistractionFree, useFlourish } from '../store/flourish';
+import { flourishPinned, useDistractionFree, useFlourish } from '../store/flourish';
 import { QuietCount } from './QuietCount';
 import { useTheme } from '../store/theme';
 // FLUX3 S3 - mount points only: under ?flux3=1 the idle glitch takes GlitchMeter's place, the Glitch bar the bar style's, and the doc's frame
@@ -16,6 +16,7 @@ import { useTheme } from '../store/theme';
 import { FLUX3 } from '../flux3/flag';
 import { FluxIdleGlitch } from '../flux3/FluxIdleGlitch';
 import { FluxGlitchBar } from '../flux3/FluxGlitchBar';
+import { FluxPlainMeter } from '../flux3/FluxPlainMeter';
 import { FluxDoc } from '../flux3/FluxDoc';
 import { FluxRoomGround } from '../flux3/FluxRoomGround';   // S4b L1: the circuit ground across the room (a box behind the framed host's content)
 // FLUX3 S4 - a mount point only: Jacked In's burst edge, which drains with this lane's own lap (src/flux3/FluxBurstEdge.tsx)
@@ -98,15 +99,21 @@ function DeskGoalLane({ unitCount, entryId, runShown }: { unitCount: number; ent
   const count = <PageCount entryId={entryId} />;
   // Flux's GLITCH switch stands beside the count wherever the lane counts words (the flourish spec §4.1)
   const glitchSwitch = FLUX3 && theme === 'flux' && settings.instrumentsOn && settings.progress === 'words' ? <FluxGlitchSwitch /> : null;
+  const fluxFlourish = useFlourish('flux');
   const alone = <div className="desk-frame-instrument wz-pagecount-alone" data-style="count">{count}</div>;
   if (settings.progress !== 'words') return runShown ? null : alone;
   // FLUX3 S3 - under ?flux3=1 in Flux, the bar style's lane carries the Glitch bar instead of the bar (ruling A); its own return, so the lane
   // below stays exactly as it is for every other case (th-machina-source M19 reads its gate)
-  if (FLUX3 && theme === 'flux' && settings.progressStyle === 'bar') {
+  // GLITCH v2 (the flourish spec §1.5, §7): Flux's lane follows its flourish, never the shared style - on, the CHECKPOINT meter; off or Distraction Free, the plain meter
+  // (older checks run pinned to the style-decided lane: store/flourish.ts flourishPinned)
+  if (FLUX3 && theme === 'flux' && (!flourishPinned() || settings.progressStyle === 'bar')) {
+    const checkpoint = flourishPinned() || fluxFlourish;
     return (
-      <div className="desk-frame-instrument" data-style={settings.progressStyle}>
+      <div className="desk-frame-instrument" data-style={checkpoint ? 'bar' : 'plain'}>
         <div className={`desk-frame-goalflare${celebrating ? ' lit' : ''}`} aria-hidden="true" />
-        <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={<>{count}{glitchSwitch}</>} />
+        {checkpoint
+          ? <FluxGlitchBar unitCount={unitCount} frac={frac} celebrating={celebrating} pageCount={<>{count}{glitchSwitch}</>} />
+          : <FluxPlainMeter frac={frac} celebrating={celebrating} label={`${unitCount} word${unitCount === 1 ? '' : 's'}`} pageCount={<>{count}{glitchSwitch}</>} />}
       </div>
     );
   }
