@@ -23,6 +23,7 @@
 //   DOOR      leaving gives her the page (or the field she was writing in), never the button that opened the walk: left on it, her first space presses it again and the rest goes into a step's note
 //   LIVE      leaving reads the live page, never its hidden measuring copy (a copy taken under the pen still says "ink")
 //   HOME      when her selection has gone elsewhere (the pen takes it away), the page editor takes her back to where she left her words
+//   TEXT      #146: the Guide's "Write this" door, and no other, opens the Part in Draft (Flux's Text), never Free Write (Wire In), a Part she left in Free Write included (the browser half: reorg-walk-write-live.mjs)
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,6 +37,7 @@ const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 
 const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
 const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts', 'styles/21-guide-walk.css', 'styles/machina-v2.css', 'pages/PageEditor.tsx'];
+for (const f of ['reorg/walk/WalkHost.tsx', 'reorg/backMenu/planPart.ts', 'reorg/backMenu/BackPlan.tsx', 'store/unbornPage.ts', 'reorg/pageStage.ts', 'pages/PageEditor.tsx']) if (!FILES.includes(f)) FILES.push(f);
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
 // the board is read as the join (the module and every file in components/board/), as c13-10g-readers asks of any script that reads it
 SOURCES['components/BoardEditor.tsx'] = srcText(SRC, 'components/BoardEditor.tsx').split('\r\n').join('\n');
@@ -269,6 +271,19 @@ function suite(src) {
     const got = { tabs: h.includes(`document.querySelectorAll('[id^="wz-sliver-tab-"]')`), past: h.includes('left = Math.round(r.right) + 8'), shown: h.includes("getComputedStyle(tab).visibility !== 'hidden'") };
     return { pass: Object.values(got).every(Boolean), detail: J(got) };
   });
+  t('TEXT', () => {
+    const h = src['reorg/walk/WalkHost.tsx'], pp = src['reorg/backMenu/planPart.ts'], u = src['store/unbornPage.ts'], st = src['reorg/pageStage.ts'], pe = src['pages/PageEditor.tsx'], bp = src['reorg/backMenu/BackPlan.tsx'];
+    const got = {
+      old: h.includes('openInText(have.id);') && h.indexOf('openInText(have.id);') < h.indexOf('navigate(routeForEntry(e)); return;'),
+      fresh: h.includes("=== 'script' ? 'screenplay' : null, true));") && pp.includes('inText = false): string {') && pp.includes('openText: inText'),
+      address: u.includes("if (d.openText) q.set('in', 'text');") && u.includes("openText: q.get('in') === 'text',"),
+      born: /if \(d\.openText && born\.pageType !== 'script'\) \{ try \{ localStorage\.setItem\(`wrizo-mode-page-\$\{born\.id\}`, 'drafting'\)/.test(u),
+      editor: pe.includes("!unborn?.descriptor.openText && (entry?.pageType === 'manuscript'") && pe.includes('window.addEventListener(OPEN_IN_TEXT, onText);'),
+      mark: st.includes("localStorage.setItem(`wrizo-mode-page-${pageId}`, 'drafting')") && st.includes('window.dispatchEvent(new CustomEvent(OPEN_IN_TEXT, { detail: pageId }));'),
+      planTabAsItWas: bp.includes("=== 'script' ? 'screenplay' : null));"),
+    };
+    return { pass: Object.values(got).every(Boolean), detail: J(got) };
+  });
   return R;
 }
 
@@ -307,6 +322,10 @@ MUTANTS.push(
   ['the page does not answer', 'HOME', sub('pages/PageEditor.tsx', 'e.preventDefault(); penDownToPage();', 'e.preventDefault();')],
   ['the Board beside the page drops the marks', 'BESIDE', sub('reorg/split/SplitBoard.tsx', 'textMarks={box.textMarks}', '')],
   ['the chip stays on a folder tab', 'CHIP', sub('reorg/walk/WalkHost.tsx', 'left = Math.round(r.right) + 8', 'left = left')],
+  ['an old Part is left in Free Write', 'TEXT', sub('reorg/walk/WalkHost.tsx', 'openInText(have.id);', '')],
+  ['a new Part is sent the way the Plan tab sends one','TEXT', sub('reorg/walk/WalkHost.tsx', "null, true));", "null));")],
+  ['a new Part forgets Text after a reload', 'TEXT', sub('store/unbornPage.ts', "if (d.openText && born.pageType !== 'script')", "if (false)")],
+  ['the editor opens the door in Free Write', 'TEXT', sub('pages/PageEditor.tsx', '!unborn?.descriptor.openText && (', '(')],
   ['the chip is lost on a new Part', 'BACK', sub('reorg/walk/WalkHost.tsx', ' || (newInDoc && newInDoc === docOfPage(left))', '')],
 );
 

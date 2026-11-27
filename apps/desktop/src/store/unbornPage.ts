@@ -42,6 +42,8 @@ export interface UnbornDescriptor {
   // W2 - "WRITE THIS": the card on a board this page is being written FOR. It rides the address (`gb` board, `gc` card) like `pin` and `deck`, so a reload keeps the door's meaning with no storage, and nothing is
   // written until `birth` (the first keystroke): then the page and its graft to that card are one act. Null for every other door.
   graft: { boardId: string; boxId: string } | null;
+  // #146 - the Guide's "Write this" asks for the page in Draft (`in=text`), not the Free Write a "Write this" door opens by rule. False for every other door.
+  openText: boolean;
   // "-> PART" FROM A PLAN ROW (reorg/backMenu/planPart.ts): the same door aimed at the Doc. The name the Part is born with (the row's title; '' when the row has none, null for every other door). It rides the address (`pn`) like `gb` and `gc`, nothing
   // is written until birth, and a page born WITH a name is a Part of a Doc, so birth() leaves its stage alone (the "Write this" page opens in Free Write; a Part is a section of the Doc, not a sprint).
   partName: string | null;
@@ -95,6 +97,7 @@ export function readDescriptor(search: string): UnbornDescriptor {
     deck: rawDeck && rawDeck.trim() ? rawDeck.trim() : null,
     deckAnswers: cleanDeckAnswers(q.get('da')),
     graft: q.get('gb')?.trim() && q.get('gc')?.trim() ? { boardId: q.get('gb')!.trim(), boxId: q.get('gc')!.trim() } : null,
+    openText: q.get('in') === 'text',
     partName: q.has('pn') ? (q.get('pn') ?? '').replace(/\s+/g, ' ').trim().slice(0, 120) : null,
     landing: rawDeck && rawDeck.trim() ? landingFromToken(q.get('land')) : null,
     asset: q.get('ap')?.trim() ? { part: q.get('ap')!.trim() } : q.get('ad')?.trim() ? { doc: q.get('ad')!.trim() } : null,
@@ -112,6 +115,7 @@ export function unbornHref(d: Partial<UnbornDescriptor> = {}): string {
   if (d.deck) q.set('deck', d.deck);
   if (d.deck && d.deckAnswers) q.set('da', d.deckAnswers);
   if (d.graft) { q.set('gb', d.graft.boardId); q.set('gc', d.graft.boxId); }
+  if (d.openText) q.set('in', 'text');
   if (d.partName !== null && d.partName !== undefined) q.set('pn', d.partName);
   if (d.deck && d.landing) q.set('land', landingToken(d.landing));
   if (d.asset) { if ('part' in d.asset) q.set('ap', d.asset.part); else q.set('ad', d.asset.doc); }
@@ -190,6 +194,8 @@ export function birth(
     if (board && liveBoxes(board.boxes ?? []).some(b => b.id === d.graft!.boxId)) graftTo({ entryId: d.graft.boardId, boxId: d.graft.boxId }, { entryId: born.id });
     if (d.partName === null || d.partName === undefined) { try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'journal'); } catch { /* blocked: the page opens in its default posture */ } }
   }
+  // #146: a page the Guide opened in Draft stays there past a reload (a loose page with no mark would open in Free Write)
+  if (d.openText && born.pageType !== 'script') { try { localStorage.setItem(`wrizo-mode-page-${born.id}`, 'drafting'); } catch { /* blocked: the page opens in its default posture */ } }
   // THE ASSETS "+": the Part's own link, or the Doc's asset; a Part or Doc gone since the door was pressed connects nothing (the page stands on its own)
   if (d.asset) {
     if ('part' in d.asset) { if (getJournalEntry(d.asset.part)) graftTo({ entryId: d.asset.part }, { entryId: born.id }); }

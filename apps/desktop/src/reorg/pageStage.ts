@@ -6,6 +6,14 @@ import type { JournalEntry } from '../types';
 // Draft (components/ScriptEditor.tsx). Read at render: nothing here is stored or watched.
 export type PageStage = 'sprint' | 'build' | 'edit';
 
+/** #146 (Nick, Nov 27): the Guide's "Write this" sends her to a Part in TEXT (Draft), never Free Write (Flux's Wire In); she can go there from Draft if she wants. The page's own stage mark is set before it opens;
+ *  the event is for the one case where that page is already on screen. Nothing new is stored. */
+export const OPEN_IN_TEXT = 'wz-open-in-text';
+export function openInText(pageId: string): void {
+  try { localStorage.setItem(`wrizo-mode-page-${pageId}`, 'drafting'); } catch { /* blocked: the page opens in its default posture */ }
+  window.dispatchEvent(new CustomEvent(OPEN_IN_TEXT, { detail: pageId }));
+}
+
 export function pageStageOf(entry: JournalEntry): PageStage {
   if (entry.pageType === 'script') return 'build';
   let saved: string | null = null;

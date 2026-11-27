@@ -12,6 +12,7 @@ import { forgetWalk, leaveWalk, openWalk, useWalkDoor } from './walkDoor';
 import { placeIn } from './stepModel';
 import { stepsOfPage } from './walkData';
 import { walkPageRect } from './pageRect';
+import { openInText } from '../pageStage';
 
 // WHERE THE WALK STANDS (PRESETS-B, Nov 25): one host, inside the router, beside the routes (never around them: it can neither move nor unmount a page). It draws the walk over the page it belongs to, and, once she
 // has left it, the chip above her page that brings her back in one tap ("The Guide · Midpoint · 5 of 9 ›"), on any page of that Doc.
@@ -84,14 +85,15 @@ export function WalkHost() {
     let into = docOfPage(open);
     const have = partOfRow(boardId, step.id, into);
     leaveWalk();
-    if (have) { const e = getJournalEntry(have.id); if (e) navigate(routeForEntry(e)); return; }
+    // #146: the Guide always sends her to Draft (Flux's Text), a Part she left in Free Write included
+    if (have) { openInText(have.id); const e = getJournalEntry(have.id); if (e) navigate(routeForEntry(e)); return; }
     if (!into) {
       const made = ensureDoc(open);
       if (!made.ok) return;
       into = made.docId;
       flushNow();
     }
-    navigate(toPartHref(into, boardId, step.id, step.title, getJournalEntry(open)?.pageType === 'script' ? 'screenplay' : null));
+    navigate(toPartHref(into, boardId, step.id, step.title, getJournalEntry(open)?.pageType === 'script' ? 'screenplay' : null, true));
   };
 
   if (open && here === open) return <GuideWalk key={open} pageId={open} onLeave={leaveWalk} onDone={forgetWalk} onWrite={write} />;
