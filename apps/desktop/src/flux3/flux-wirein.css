@@ -16,7 +16,7 @@
 :root[data-wirein][data-theme='flux'] .flux3-compile.decompile,
 :root[data-wirein][data-theme='flux'] .flux3-compile-fade.decompile{ opacity:0; transition:opacity 420ms ease-out; }
 /* the burst edge: the lap's remainder as a lime line across the top of the window, drawn by a transform; no transition (a step per word) */
-:root[data-wirein][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; top:0; height:2px; z-index:70; pointer-events:none;
+:root[data-wirein][data-theme='flux'] .flux3-burst{ position:fixed; left:0; right:0; bottom:0; height:2px;   /* #148: at the screen's foot */ z-index:70; pointer-events:none;
   background:color-mix(in srgb, var(--f3-cyan) 14%, transparent); }
 :root[data-wirein][data-theme='flux'] .flux3-burst > i{ position:absolute; inset:0; background:var(--f3-lime); transform-origin:0 50%; }
 /* JACKED IN's dark tone (the spec's draft 13 §6: "Dark #FF9800"; the Wrizors' carry, Nov 8: the shared orange at .82 rendered #D98307 over the
@@ -56,6 +56,9 @@
    2px lime line on <body>) and the page stay. */
 :root[data-wirein][data-theme='flux'][data-flux3-jacked] :is(.desk-rail, .desk-frame-strip, .desk-frame-corkboard, .desk-frame-sliver-anchor,
   .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor, .desk-frame-meter, .flux3-glitchbar, .chrome-fade, .desk-dissolve, .chrome-handle){ opacity:0 !important; pointer-events:none !important; transition:opacity .6s ease; }
+/* #147: WIRE IN HAS NO MENUS (Nick, Nov 27) - neither the Front nor the Back menu, nor their tabs; Sliver.tsx and Tutor.tsx keep them shut. The Guide's chip shows only while the X does (#148). */
+:root[data-wirein][data-theme='flux'][data-flux3-jacked] :is(.desk-frame-sliver-anchor, .desk-frame-tutor-anchor, .desk-frame-tutor-panel-anchor){ display:none !important; }
+:root[data-wirein][data-theme='flux'][data-flux3-jacked]:not([data-flux3-x]) .wz-walk-chip{ visibility:hidden !important; }
 /* THE CORRIDOR (src/flux3/FluxCorridor.tsx). The WHOLE WINDOW (fixed; the room, the sheet and the strips show nowhere around it), behind the page (first in .mode-stage), no pointer. Every
    animation is transform or opacity (the compositor's); its speed is the animations' playbackRate, set at most four times a second from her pace, and 0 when she stops. */
 :root[data-wirein][data-theme='flux'] .flux3-corridor{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict; background:var(--f3-term-ground);
@@ -132,3 +135,15 @@
 /* Jacked In is a MODE (draft 21 §6): the Typewriter's on/off toggles are not offered in Flux under the flag, in either mode (the lines that draw them stay main's: a theme changes only the skin) */
 :root[data-wirein][data-theme='flux'] .wz-sliver-mode-btn[data-mode-toggle='typewriter'],
 :root[data-wirein][data-theme='flux'] .typewriter-toggle{ display:none !important; }
+
+/* #148: the prompt button stands beside the X, in the X's look; its card stands above them, off her writing lines */
+:root[data-wirein][data-theme='flux'] .flux3-leave-x.flux3-prompt-btn{ right:76px; }
+:root[data-wirein][data-theme='flux'] .flux3-prompt-btn path{ stroke-linejoin:round; }
+:root[data-wirein][data-theme='flux'] .flux3-prompt-card{ position:fixed; right:24px; bottom:84px; z-index:70; width:300px; max-width:calc(100vw - 48px); display:flex; gap:10px; align-items:flex-start; padding:14px 10px 14px 16px; box-sizing:border-box; background:#0B1822; border:1px solid #1D4A52; color:#E8F6FA; font-family:var(--font-ui); font-size:14px; line-height:1.5; }
+:root[data-wirein][data-theme='flux'] .flux3-prompt-card p{ margin:0; flex:1; }
+:root[data-wirein][data-theme='flux'] .flux3-prompt-card button{ flex:none; width:28px; height:28px; padding:0; background:none; border:0; color:#8F9B9E; font-size:18px; line-height:1; cursor:pointer; }
+:root[data-wirein][data-theme='flux'] .flux3-prompt-card button:hover, :root[data-wirein][data-theme='flux'] .flux3-prompt-card button:focus-visible{ color:var(--f3-cyan); outline:1px solid var(--f3-cyan); }
+/* #147: the B I U bar over selected words */
+:root[data-wirein][data-theme='flux'] .flux3-selbar{ position:fixed; z-index:71; display:flex; width:116px; height:36px; box-sizing:border-box; background:#0B1822; border:1px solid #1D4A52; }
+:root[data-wirein][data-theme='flux'] .flux3-selbar button{ flex:1; padding:0; background:none; border:0; color:#E8F6FA; font-family:var(--font-ui); font-size:15px; cursor:pointer; }
+:root[data-wirein][data-theme='flux'] .flux3-selbar button:hover, :root[data-wirein][data-theme='flux'] .flux3-selbar button:focus-visible{ color:var(--f3-cyan); outline:1px solid var(--f3-cyan); outline-offset:-2px; }

@@ -34,7 +34,7 @@ try { await withHarness(async (app) => {
   const ev = (js) => app.evalJs(js);
   const seen = (sel) => ev(`(${SEEN})(${J(sel)})`);
   const soft = async (expr, timeout = 12000) => { try { await app.waitFor(expr, { label: expr.slice(0, 60), timeout }); return true; } catch { return false; } };
-  const stored = () => ev(`(() => { window.wrizoFlushNow(); const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === '${ID}'); return e ? e.text : null; })()`);
+  const stored = async () => { await sleep(2500); return ev(`(() => { window.wrizoFlushNow(); const e = JSON.parse(localStorage.getItem('writer-studio-journal-entries') || '[]').find((x) => x.id === '${ID}'); return e ? e.text : null; })()`); };
   const page = () => ev("(() => { const p = document.querySelector('.mode-page').getBoundingClientRect(); return [Math.round(p.left), Math.round(p.top), Math.round(p.width), Math.round(p.height)]; })()");
   const words = () => ev("document.querySelector('.forward-only-editor').textContent");
   const move = async (x, y) => { await app.mouseMove(x, y); await app.mouseMove(x + 6, y + 4); await sleep(450); };

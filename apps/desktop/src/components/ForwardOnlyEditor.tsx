@@ -2,8 +2,10 @@ import { forwardRef, useEffect, useLayoutEffect, useMemo, useReducer, useRef, us
 import { createPortal } from 'react-dom';
 import type { Run } from '../types';
 import { append, derivedText, eraseTail, isBoundary, seedContent, strikeStep } from '../store/forwardOnly';
+import { markSelection } from '../store/wireInFormat';
+import { WIRE_FORMAT_EVENT, getJacked } from '../flux3/jackIn';
 import { notePasteBlocked, shadowAllows, extractIncomingText } from '../store/voiceWall';
-import { formatShortcutAction, type FormatAction } from '../store/draftFormat';
+import { applyFormat, formatShortcutAction, type FormatAction } from '../store/draftFormat';
 import { decorateEditorFor, decorateMarkdownForCard, EOF_GUARD, readEditorPlainText, revealAtCaret } from '../store/draftDecoration';
 import { getCaretOffset as getPlainOffset, setCaretOffset as setPlainOffset } from '../store/caretOffset';
 import { applyEmDash, findEmDashTrigger } from '../store/emDash';
@@ -173,6 +175,26 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     onForwardRef.current?.();
     changed();
   };
+
+  // #147 - WIRE IN'S BOLD, ITALIC AND UNDERLINE, on a selection only (store/wireInFormat.ts): marks go into the words she selected, nothing is typed over, struck letters are left as they are, and the same words stay selected
+  const pendingSel = useRef<{ s: number; e: number } | null>(null);
+  const formatSelected = (action: FormatAction): boolean => {
+    const host = hostRef.current;
+    if (!host || composingRef.current) return false;
+    const o = liveSelection(host);
+    if (!o || o.s === o.e) return false;
+    const content = wordRef.current ? append(contentRef.current, wordRef.current) : contentRef.current;
+    const r = markSelection(content, o.s, o.e, action, applyFormat);
+    if (!r) return false;
+    contentRef.current = r.content;
+    wordRef.current = '';
+    pendingSel.current = { s: r.start, e: r.end };
+    writerMovedRef.current = true;   // the selection is hers: the end-anchor leaves it (#33)
+    changed();
+    return true;
+  };
+  const formatRef = useRef(formatSelected);
+  formatRef.current = formatSelected;
 
   // what the writer types, pastes or composes is literal: its formatting characters are escaped (escapeTyped); the rail's own insertion is a tool and calls handleInput directly [ForwardOnlyEditor §1]
   const handleTyped = (data: string) => {
@@ -566,6 +588,8 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.isComposing) return; // don't intercept keys mid-composition
+      // #147: in Wire In Ctrl/Cmd+B/I/U mark the selected words (and the browser's own bold never runs here, selection or none)
+      if ((e.ctrlKey || e.metaKey) && getJacked()) { const mark = formatShortcutAction(e); if (mark) { e.preventDefault(); formatRef.current(mark); return; } }
       // Hardware keyboard backspace fires keydown; preventDefault here stops the
       // native edit, so beforeinput won't also fire (no double). Soft keyboards
       // that skip keydown are caught by the beforeinput delete branch above.
@@ -618,7 +642,11 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     el.addEventListener('drop', blockPaste);
     el.addEventListener('cut', block);
     el.addEventListener('copy', onCopyFree);
+    // #147: the selection bar's press (flux3/FluxSelectionBar.tsx)
+    const onBarFormat = (e: Event) => { const action = (e as CustomEvent<{ action?: FormatAction }>).detail?.action; if (action && getJacked()) formatRef.current(action); };
+    window.addEventListener(WIRE_FORMAT_EVENT, onBarFormat);
     return () => {
+      window.removeEventListener(WIRE_FORMAT_EVENT, onBarFormat);
       el.removeEventListener('copy', onCopyFree);
       el.removeEventListener('beforeinput', onBeforeInput as EventListener);
       el.removeEventListener('keydown', onKeyDown);
@@ -847,6 +875,14 @@ export const ForwardOnlyEditor = forwardRef<HTMLDivElement, Props>(function Forw
     writtenRuns.current = runsHtml;
     spanOnHost.current = html !== '';
   });
+  // #147: after a mark the page is written again; the same words are selected once it is
+  useLayoutEffect(() => {
+    const want = pendingSel.current;
+    const host = hostRef.current;
+    if (!want || !host || freeEdit) return;
+    pendingSel.current = null;
+    selectDerived(host, want.s, want.e);
+  });
   // the active word's span is written here, only when its html (or the span itself, after the host's html was set again) changed: the same "React skips an unchanged string" rule the whole-host string had, for an unrelated parent re-render mid-composition
   useLayoutEffect(() => {
     if (freeEdit) return;
@@ -921,6 +957,29 @@ function liveSelection(el: HTMLElement): { s: number; e: number } | null {
     e += live(t, upTo(t, R.endContainer, R.endOffset));
   }
   return { s, e };
+}
+
+// select [s, e) counted as liveSelection counts: struck letters and the end-of-file guard are not counted
+function selectDerived(el: HTMLElement, s: number, e: number): void {
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const at: { node: Text; offset: number }[] = [];
+  let seen = 0;
+  let want = s;
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+    const t = n as Text;
+    if (t.parentElement && t.parentElement.closest('.fo-struck')) continue;
+    for (let i = 0; i <= t.data.length; i += 1) {
+      if (at.length < 2 && seen === want && (at.length === 1 || i < t.data.length)) { at.push({ node: t, offset: i }); want = e; }
+      if (i < t.data.length && t.data[i] !== EOF_GUARD) seen += 1;
+    }
+  }
+  const sel = window.getSelection();
+  if (!sel || at.length < 2) return;
+  const r = document.createRange();
+  r.setStart(at[0].node, at[0].offset);
+  r.setEnd(at[1].node, at[1].offset);
+  sel.removeAllRanges();
+  sel.addRange(r);
 }
 
 function typedHtml(text: string): string {

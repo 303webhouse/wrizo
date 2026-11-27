@@ -21,6 +21,14 @@ export function fluxJackMode(theme: string): boolean { return theme === 'flux'; 
 /** FluxJackedIn asks its host page to leave Jacked In for BUILD on the same doc (an Esc tap, F9); the page editor owns the mode. */
 export const LEAVE_JACK_EVENT = 'flux3-leave-jack';
 
+/** #147: the selection bar asks the page to mark the selected words. */
+export const WIRE_FORMAT_EVENT = 'flux3-wire-format';
+/** #148: the prompt button beside the X asks the Operator's tab (components/Tutor.tsx) for one writing prompt. */
+export const WIRE_PROMPT_EVENT = 'flux3-wire-prompt';
+/** #148: the X is showing (set on <html>, so the Guide chip shows only when it does). */
+export const X_SHOWN_ATTR = 'data-flux3-x';
+export const X_STILL_MS = 4000;   // the X fades after this long with the pointer still
+
 /** THE KEY THAT LEAVES, in one place. The handler (FluxJackedIn) and the exit line (FluxJackedHints) both read these, so the line names the key that actually leaves and stays true if the key changes.
  *  Escape is the primary (a TAP: a key held under ESC_TAP_MS); F9 is the backup for browsers that cannot lock Escape while full screen (a held Escape exits full screen there). */
 export const LEAVE_KEY = 'Escape';

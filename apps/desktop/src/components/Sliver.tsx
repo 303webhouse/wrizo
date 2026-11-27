@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useJacked } from '../flux3/jackIn';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
@@ -246,6 +247,9 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
   // Register this drawer's own close path, so an exclusion handoff shuts it
   // exactly the way the writer's own click would.
   useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
+  // #147: Wire In has no menus - however this one was asked open, it is shut before it is painted
+  const wired = useJacked();
+  useLayoutEffect(() => { if (wired && open) setOpen(false); }, [wired, open]);
 
   // Esc closes the open drawer unless a control inside handled it; focus returns to the PAGE's editor (her caret where it was) when it was in the drawer, and stays on the page otherwise; a page with no editor (a Board) gets the tab [Sliver §8, bug-list #49: the focus used to stay on the tab and the next key went nowhere]
   useEffect(() => {
@@ -266,6 +270,7 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== '/' || !(e.ctrlKey || e.metaKey)) return;
       e.preventDefault();
+      if (wired) return;   // #147: nothing in Wire In
       toggleOpen();
     };
     window.addEventListener('keydown', onKey);
