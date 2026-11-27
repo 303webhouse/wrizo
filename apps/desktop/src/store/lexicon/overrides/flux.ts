@@ -235,5 +235,12 @@ export const FLUX_OVERRIDES = {
     authSignIn: 'Log in',
     cascadeSettingsSignOut: 'Log out',   // the sheet (S5): the sign-in form's button and the settings row say Log in / Log out in Flux
     authPanelTag: 'N.01 · INPUT',
+    // THE PHONE COMPANION (MOBILE-B): the theme's own words for a board (Circuit) and a card (node), as the lines above give them
+    mobileBoard: 'Circuit',
+    mobileBoards: 'Circuits',
+    mobileCard: 'Node',
+    mobileCards: 'Nodes',
+    mobileAddCard: 'Add node',
+    mobileDocNoBoard: 'This Doc has no Circuit yet',
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;
