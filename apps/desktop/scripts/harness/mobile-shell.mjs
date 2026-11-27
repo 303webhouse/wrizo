@@ -154,17 +154,21 @@ try {
     };
     await tour('390x844', true);
     const plan = await (async () => { await goto('#/doc/part-1/plan/part-1'); return text(); })();
-    ok('PLAN a written Part is ticked and named; a row with no Part says so', plan.includes('✓') && plan.includes('No Part yet'), plan.replace(/\n+/g, ' / ').slice(0, 200));
-    // PLANTAB (Fable, Nov 26, 10:15 pm): the Doc's Plan tab says what the desk's own Plan tab says in her theme
-    const tabSays = async (theme) => {
+    // SUPERSEDED (Fable, Nov 27, 9:55 am: the Part words follow the desk, and Arbor's desk says Section). The original, verbatim:
+    // ok('PLAN a written Part is ticked and named; a row with no Part says so', plan.includes('✓') && plan.includes('No Part yet'), plan.replace(/\n+/g, ' / ').slice(0, 200));
+    ok('PLAN a written Part is ticked and named; a row with no Part says so', plan.includes('✓') && plan.includes('No Section yet'), plan.replace(/\n+/g, ' / ').slice(0, 200));
+    // DESKWORDS (Fable, Nov 26, 10:15 pm, and Nov 27, 9:55 am): the Doc's Plan and Assets tabs, and a row with no Part, say what the desk says in her theme
+    const docSays = async (theme) => {
       await js(`localStorage.setItem('wrizo-theme', ${JSON.stringify(theme)})`); await reload();
-      await until(`document.documentElement.getAttribute('data-theme') === ${JSON.stringify(theme)} && document.querySelector('[data-view="plan"]')`, `the Doc's tabs in ${theme}`);
-      return js(`document.querySelector('[data-view="plan"]')?.textContent ?? ''`);
+      await until(`document.documentElement.getAttribute('data-theme') === ${JSON.stringify(theme)} && document.querySelector('.mc-plan .mc-where')`, `the Doc's Plan in ${theme}`);
+      return js(`['[data-view="plan"]', '[data-view="assets"]', '.mc-plan .mc-where'].map((s) => document.querySelector(s)?.textContent ?? '').join(' · ')`);
     };
-    const inFlux = await tabSays('flux');
-    ok("PLANTAB in Flux the Plan tab says the desk's word, Spine", inFlux === 'Spine', inFlux);
-    const inArbor = await tabSays('plateau');
-    ok('PLANTAB in Arbor it still says Plan', inArbor === 'Plan', inArbor);
+    const inFlux = await docSays('flux');
+    ok("DESKWORDS in Flux: Spine, Inputs, No Track yet", inFlux === 'Spine · Inputs · No Track yet', inFlux);
+    const inMachina = await docSays('machina');
+    ok('DESKWORDS in Machina: Plan, Assets, No Part yet', inMachina === 'Plan · Assets · No Part yet', inMachina);
+    const inArbor = await docSays('plateau');
+    ok('DESKWORDS in Arbor: Plan, Grafts, No Section yet', inArbor === 'Plan · Grafts · No Section yet', inArbor);
 
     await goto('#/doc/part-1/read/part-1');
     ok('READ her marks are drawn, never shown as marks', await js("!!document.querySelector('.mc-page strong') && !!document.querySelector('.mc-page h1') && !document.querySelector('.mc-page').innerText.includes('**')"));
