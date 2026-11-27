@@ -189,8 +189,12 @@ await withHarness(async (app) => {
         !!g3 && !!g4 && !g4.sOpen && !g4.tOpen && sameRect(g2.tTab, g3.tTab) && sameRect(g3.sTab, g4.sTab) && g4.sArrow === g0.sArrow && g4.tArrow === g0.tArrow,
         J({ tTab: [g2 && g2.tTab, g3 && g3.tTab], sTab: [g3 && g3.sTab, g4 && g4.sTab], arrows: [g4 && g4.sArrow, g4 && g4.tArrow] }));
       // (4) the page, through all of it
-      ok(`${tag} 4: the page's rect is unchanged through every open and close (shut, Tools open, both open, Tutor shut, both shut)`, pred4([g0, g1, g2, g3, g4]),
-        J([g0, g1, g2, g3, g4].map((g) => g && g.page)));
+      // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+      // ok(`${tag} 4: the page's rect is unchanged through every open and close (shut, Tools open, both open, Tutor shut, both shut)`, pred4([g0, g1, g2, g3, g4]),
+      // J([g0, g1, g2, g3, g4].map((g) => g && g.page)));
+      const gave138 = (a, b) => !!a && !!b && Math.abs(a.top - b.top) <= 0.6 && (Math.abs(a.left - b.left) <= 0.6 || Math.abs(a.right - b.right) <= 0.6) && b.width <= a.width + 0.6;
+      ok(`${tag} 4 [#138 successor]: every state keeps the page's top and one side, never wider than shut, and shut again it is exactly as before`,
+        w > 1600 ? pred4([g0, g1, g2, g3, g4]) : [g1, g2, g3].every((g) => !!g && gave138(g0.page, g.page)) && !!g4 && sameRect(g0.page, g4.page), J([g0, g1, g2, g3, g4].map((g) => g && g.page)));
 
       // (5) Esc, from a control inside each drawer, closes it and gives the focus back to its tab
       for (const which of ['tools', 'tutor']) {
@@ -312,8 +316,11 @@ await withHarness(async (app) => {
         // !!zs && !!zt && pred1(zs, zt, 'tutor') && !!z0 && sameRect(z0.page, zt.page), J({ shut: zs && zs.tTab, open: zt && zt.tTab, page0: z0 && z0.page, pageOpen: zt && zt.page }));
         ok(`FX-WI 3-133 (${th.name} 1366x768, stored Typewriter 'on' is inert): the page is NOT zoomed, and opening the Tutor after the Tools leaves the Tutor alone`,
           fluxNoZoom(z0) && !!zs && zs.sOpen && !!zt && zt.tOpen && !zt.sOpen, J({ zoom: z0 && z0.zoom, zl, zr, toolsOpened: zs && zs.sOpen, after: zt && { sOpen: zt.sOpen, tOpen: zt.tOpen } }));
-        ok(`FX-WI 1-133 (${th.name} 1366x768): the Tutor tab goes with its drawer over the page, which has not moved`,
-          !!zs && !!zt && overTab(zt) && !!z0 && sameRect(z0.page, zt.page), J({ tab: zt && zt.tTab, panel: zt && zt.tPanel, page0: z0 && z0.page, pageOpen: zt && zt.page }));
+        // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+        // ok(`FX-WI 1-133 (${th.name} 1366x768): the Tutor tab goes with its drawer over the page, which has not moved`,
+        // !!zs && !!zt && overTab(zt) && !!z0 && sameRect(z0.page, zt.page), J({ tab: zt && zt.tTab, panel: zt && zt.tPanel, page0: z0 && z0.page, pageOpen: zt && zt.page }));
+        ok(`FX-WI 1-138 (${th.name} 1366x768): the Tutor tab stands by its drawer off the page, which gave only from its right side`,
+          !!zs && !!zt && overTab(zt) && !!z0 && !!zt.tTab && !!zt.page && zt.tTab.left >= zt.page.right - 1 && Math.abs(zt.page.left - z0.page.left) <= 0.6 && Math.abs(zt.page.top - z0.page.top) <= 0.6, J({ tab: zt && zt.tTab, panel: zt && zt.tPanel, page0: z0 && z0.page, pageOpen: zt && zt.page }));
         // MUTANT for FX-WI 3 (the old behaviour comes back: the page zoomed 1.6x, data-zoom on) - the SAME fluxNoZoom read goes red; asserted LANDED
         await setOpen(app, 'tutor', false); await setOpen(app, 'tools', false);
         const zPrev = await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom')");

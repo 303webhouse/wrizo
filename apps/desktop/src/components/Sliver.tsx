@@ -243,31 +243,6 @@ export function Sliver({ content, goalText, hasMilestones, front, startOpen, she
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // #133: the room from the drawer's left edge to the page's TEXT, published for the rule that keeps the Front menu's width over the page's margin (desk-frame §24). Written on the drawer's anchor, never on the drawer itself (reorg-front-menu compares the drawer's DOM exactly). A read only; measured on each opening, on a resize and when the page or the drawer's box changes, never on a keystroke
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    const anchor = root?.parentElement?.closest<HTMLElement>('.desk-frame-sliver-anchor');
-    if (!root || !anchor) return undefined;
-    let frame = 0;
-    const measure = () => {
-      frame = 0;
-      const panel = root.querySelector<HTMLElement>('.wz-sliver-panel');
-      const page = liveQuery<HTMLElement>('.mode-page');
-      if (!panel || !page || !page.offsetWidth) { anchor.style.removeProperty('--wz-front-room'); return; }
-      const box = page.getBoundingClientRect();
-      const textLeft = box.left + (parseFloat(getComputedStyle(page).paddingLeft) || 0) * (box.width / page.offsetWidth);
-      anchor.style.setProperty('--wz-front-room', `${Math.floor(textLeft - panel.getBoundingClientRect().left - 4)}px`);
-    };
-    const later = () => { if (!frame) frame = requestAnimationFrame(measure); };
-    measure();
-    const boxes = new ResizeObserver(later);
-    boxes.observe(root);
-    const page = liveQuery<HTMLElement>('.mode-page');
-    if (page) boxes.observe(page);
-    window.addEventListener('resize', later);
-    return () => { boxes.disconnect(); window.removeEventListener('resize', later); if (frame) cancelAnimationFrame(frame); };
-  }, [open]);
-
   // Register this drawer's own close path, so an exclusion handoff shuts it
   // exactly the way the writer's own click would.
   useEffect(() => registerDrawer('tools', () => setOpen(false)), []);
