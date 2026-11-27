@@ -219,7 +219,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         const railRight = strip && strip.width > 0 ? Math.max(strip.right, s.left) : s.left;
         // each menu with its 16 px tab. At 1600 and narrower: the Front menu's own width (Arbor 264, others 184, by the chrome scale), the Back menu's 320.
         // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
-        const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : 184 * ck) : DRAWER_MIN;
+        const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : root.hasAttribute('data-machina2') ? 200 * ck - 16 : 184 * ck) : DRAWER_MIN;   // Machina's: 200 by the chrome scale, less its tab
         const backW = small ? 320 * ck : DRAWER_MIN;
         const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - backW - 16 : null);
         k = y.k; shift = y.shift;

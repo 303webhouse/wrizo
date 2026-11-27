@@ -437,7 +437,9 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
     // const fxOk = (r) => !!r && r.toggle && r.display === 'none' && r.w === 0 && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
     const fxOk = (r) => !!r && r.toggle === false && r.zoom !== 'true' && !!g0 && Math.abs(r.pageW - g0.page.width) <= 0.5;
     const fx = await fxProbe();
-    psParks.FZ.push({ tag, ok: fxOk(fx), fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
+    // #138: the parked record re-verifies today's truth - not zoomed, whatever an open menu has taken from the page's width. The original line, verbatim:
+    // psParks.FZ.push({ tag, ok: fxOk(fx), fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
+    psParks.FZ.push({ tag, ok: w > SMALL_W ? fxOk(fx) : !!fx && fx.toggle === false && fx.zoom !== 'true' && !!g0 && fx.pageW >= g0.page.width - 0.6 && fx.pageW <= g0.page.width * 1.25, fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 });
     // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
     // ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
     if (w > SMALL_W) ok(`${tag} zoom [Wire In successor]: Flux offers no Typewriter control (the toggle is display:none, no box) and the page is not zoomed - it keeps its normal width (a stored per-page value is data only)`, fxOk(fx), J({ fx, normalW: g0 && Math.round(g0.page.width * 10) / 10 }));
