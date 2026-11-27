@@ -2,7 +2,7 @@
 // A SIGNED-IN session without a server: the page's own fetch is answered in the page (a new-document script, in every arm alike):
 //   /auth/me  -> a signed-in user;   /api/sync -> a fake server that keeps every row pushed to it and answers every sync with its copy of them (FWS_ECHO=stamped: only rows stamped after the caller's lastSyncAt, as the real one);
 //   /api/prefs, /api/rail, /api/page-defaults, /api/proofing, /api/theme-unlock -> 404 (the app treats them as absent).
-// Per arm (theme x seed, 1366 wide): the same page as free-write-real-page.mjs (saved text, three ink strokes), 20 keys 90 ms apart and, at the 10th key, a sync round (the 'online' event: the page is pushed and its echo comes back
+// Per arm (theme x seed x width, 1366 x 768 and 2560 x 1440; FWS_VIEWS=1366 narrows it): the same page as free-write-real-page.mjs (saved text, three ink strokes), 20 keys 90 ms apart and, at the 10th key, a sync round (the 'online' event: the page is pushed and its echo comes back
 // while she is mid-word, as the 20 s timer does); then a second round of 20 keys with a sync at every 5th key.
 //   SI0  premises: signed in (the app asked /auth/me and synced at least once), the theme as asked, the page has ink, Wire In up in Flux only
 //   SI1  every key lands (the editor's words are the saved words + all 40 keys, once)
@@ -26,6 +26,8 @@ const SEEDS = {
   page: ['A Title For The Page', ...Array.from({ length: 40 }, (_, i) => PARA(i))].join(String.fromCharCode(10, 10)) + String.fromCharCode(10),
 };
 const SEED_NAMES = (process.env.FWS_SEEDS || 'line,page').split(',');
+const WIDTHS = (process.env.FWS_VIEWS || '1366,2560').split(',').map(Number);
+const SIZES = { 1366: [1366, 768], 2560: [2560, 1440] };
 const KEYS1 = 'abc def ghi jkl mnop', KEYS2 = 'qrs tuv wxy zab cdef';
 const INK = [
   { points: [{ x: 0.12, y: 0.10 }, { x: 0.30, y: 0.14 }, { x: 0.48, y: 0.11 }, { x: 0.60, y: 0.17 }] },
@@ -75,8 +77,9 @@ try { await withHarness(async (app) => {
   let first = true;
   for (const sn of SEED_NAMES) {
     const SEED = SEEDS[sn];
-    for (const theme of THEMES) {
-      const tag = `${theme} ${sn}`;
+    for (const theme of THEMES) for (const w of WIDTHS) {
+      const tag = `${theme} ${w} ${sn}`;
+      await app.emulateDpr(1, ...SIZES[w]);
       await hashTo('#/');
       await sleep(400);
       if (first) { await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: ID, text: SEED, strokes: INK, createdAt: new Date().toISOString(), origin: 'loose', source: 'page' })}); window.wrizoFlushNow(); true`); first = false; }

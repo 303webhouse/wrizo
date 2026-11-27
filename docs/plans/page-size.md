@@ -257,3 +257,9 @@ Lane 3 ran 43 files on both legs: 61 reds on the default leg. Every one has a di
   - fx5 S1 (c): after a manual scroll-up, one typed line moved the box two lines (lane 2 moved it one).
 - **Found, not built: the Cascade's twin.** `availableCascadeMargin` (Cascade.tsx) reads the column too, so its dock floor is wrong in the zoom.
   No check covers it yet. A check comes first, then the same one-line fix.
+
+## 11. #133, Nov 25: bigger on small screens (supersedes ruling c below 2560)
+
+Nick's laptop showed the page at the 620 px floor, about 40% of the width. The law is now in `docs/rulings/store-pageScale.md` §5:
+by width below 2560 (62% of the stage at 1600 and narrower), one side panel at a time at 1600 and narrower. Rows R, Z and N of section 4
+describe the law before this; `page-small-133-source.mjs` and `page-small-133.mjs` carry the new one.

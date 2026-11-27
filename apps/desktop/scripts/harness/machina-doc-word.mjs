@@ -2,6 +2,7 @@
 // The word lives in the lexicon alone (themeLexicon's page noun + overrides/machina.ts). This check reads the REAL modules (esbuild bundle, the c13-10c recipe) and holds:
 //   D1  CENSUS: no Machina reading of any desk term names a page "File" or "Files" (any case): every hit is one the allowlist names, and the allowlist is exactly
 //       { placesNewDrawer, helpPublish }: "File" is the VERB in the first ("File to a new project..."), and in the second a file is the EXPORT ("Share a page as a link or a file"), not the page
+//       SUCCESSOR (L9): plus { tutorNotesTitle, tutorNotesEmpty, tutorNotesProposed }: "on file" is the Tutor's own record of notes, not a page. The mutants below read ALLOW's length.
 //   D2  the exceptions are alive: placesNewDrawer still reads "File to a new project..." under Machina (the verb is kept; a quiet rename to "Doc to..." would be a wrong word), and each allowlisted
 //       key still holds the word (a stale exception is red: take it out)
 //   D3  the noun: themeLexicon's page noun under Machina is Doc / Docs; Arbor's is still Pages and Flux's still Doc / Docs; Machina's other nouns (Project, Folder, Plan, Block,
@@ -48,7 +49,9 @@ const nounsNow = Object.fromEntries(['drawer', 'binder', 'board', 'box', 'journa
 // ---- the census, a pure function over a table of Machina readings and an allowlist
 const FILE_WORD = /\bfiles?\b/i;
 const census = (table, allow) => Object.entries(table).filter(([k, v]) => typeof v === 'string' && FILE_WORD.test(v) && !allow.includes(k)).map(([k, v]) => `${k}: ${v}`);
-const ALLOW = ['placesNewDrawer', 'helpPublish'];        // placesNewDrawer: "File" is the verb; helpPublish: a file is the export, not the page
+// SUPERSEDED (L9, the Tutor's notes on file: three new lines say "on file", meaning the Tutor's own record, not a page); original, verbatim:
+//   const ALLOW = ['placesNewDrawer', 'helpPublish'];        // placesNewDrawer: "File" is the verb; helpPublish: a file is the export, not the page
+const ALLOW = ['placesNewDrawer', 'helpPublish', 'tutorNotesTitle', 'tutorNotesEmpty', 'tutorNotesProposed'];        // placesNewDrawer: "File" is the verb; helpPublish: a file is the export, not the page; tutorNotes*: "on file" = kept by the Tutor, not a page
 const nounOk = (f) => f.machina.page.one === 'Doc' && f.machina.page.many === 'Docs' && f.plateau.page.one === 'Pages' && f.flux.page.one === 'Doc' && f.flux.page.many === 'Docs';
 
 const left = census(machina, ALLOW);

@@ -117,7 +117,8 @@ await withHarness(async (app) => {
     const ed = document.querySelector('${ED}'); const id = ed.getAttribute('aria-describedby'); const h = id ? document.getElementById(id) : null;
     if (!h) return { id, missing: true };
     const r = h.getBoundingClientRect(); const cs = getComputedStyle(h);
-    return { id, text: h.textContent, w: r.width, h: r.height, position: cs.position, clip: cs.clipPath, ariaHidden: h.closest('[aria-hidden="true"]') !== null, count: document.querySelectorAll('#' + id).length };
+    const s = (() => { const p = document.querySelector('.mode-page'); return p && p.offsetWidth ? p.getBoundingClientRect().width / p.offsetWidth : 1; })();   // #133 (Nick, Nov 25): the page is painted at more than scale 1 at these widths, so painted sizes are read back in page units
+    return { id, text: h.textContent, w: Math.round((r.width / s) * 100) / 100, h: Math.round((r.height / s) * 100) / 100, position: cs.position, clip: cs.clipPath, ariaHidden: h.closest('[aria-hidden="true"]') !== null, count: document.querySelectorAll('#' + id).length };
   })()`);
   ok('S6 the writing surface is DESCRIBED BY a hint that reads "Press Escape to leave the page" (one element, in the accessibility tree)', !hint.missing && hint.text === 'Press Escape to leave the page' && hint.count === 1 && hint.ariaHidden === false, JSON.stringify(hint));
   ok('S6 the hint is never drawn and is out of flow (1px, clipped, absolute) - it cannot move or resize the page', !hint.missing && hint.w <= 1 && hint.h <= 1 && hint.position === 'absolute', JSON.stringify(hint));
