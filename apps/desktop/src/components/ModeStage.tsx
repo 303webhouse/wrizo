@@ -413,6 +413,8 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
   const focusEditor = () => (scrollRef.current?.querySelector('.forward-only-editor') as HTMLElement | null)?.focus({ preventScroll: true });
   // a press on the paper off the text: below the last line, the caret goes to the end; beside a line, to the nearest spot on that line (caret-from-point, read at press time, applied next frame); on the text, the browser's own [ModeStage §14]
   const onPaperPress = (e: React.MouseEvent<HTMLDivElement>) => {
+    // VISUAL 1a: in BUILD and EDIT with the drawing pen down, a press on the paper is the pen's. A stroke ends in a click here, which must not move her caret or give the words the focus: her next key brings her back where she left it (PageEditor)
+    if (instrument === 'ink' && mode !== 'journal') return;
     const scroll = scrollRef.current;
     const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
     if (!scroll || !ed) return;

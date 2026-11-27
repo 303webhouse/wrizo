@@ -4570,3 +4570,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **What is in it:** #110 (Free Write's host is updated by appending), #82 (her undo history is kept when words arrive from another window), #117 (a caret the app places is left where it is), and the line-back (a typed key brings the writing line back). Client only.
 **Nick tries it live:** a green run does not prove "typing does nothing, text flashes" is gone; his own page does. Roll back at his "it broke".
 **Open:** #141 (`keyflip-live` reads high now and then; `return-caret-probe` needs a verdict line or to leave the pair list). Next: L12. Evidence: `docs/evidence/box-logs/deploy-train-fw4-2d41ae85/`.
+
+## (327) TRAIN L12 IS LIVE: `git 51969b40 (train-l12-2) · railway 6904f6c6-a51e-4a0c-9667-364ad721342a`, bundle `index-CcRcK6kV`, smoke PASS 6/6, served JS and CSS identical to the tested build — 2026-11-27 04:50Z / Nov 26, 9:50 pm MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-CcRcK6kV`; JS 1457579 B md5 `a3c5477d778a`; CSS `index-C1icEUxw.css` 526821 B md5 `103c08fc36b3`; `smoke-login.mjs` PASS 6/6; signed-out Tutor call answers 401 in under a second. Roll-back point: train FW, `git 2d41ae85 · railway a7ce607e`.**
+**What is in it:** VISUAL-B 1a, the INK tab (with the pen-keeps-her-caret mend and 44 px tools on touch screens); FIX #136 (every Board's starter buttons can be read); TUTOR-B (a 60-second limit on each model call, and a tighter length line); FIX #140 (Wire In's tunnel follows her pace, not each key).
+**Known and accepted on the way out:** Nick's notes of Nov 26, 7 pm on the tunnel (a longer wait, one smooth ramp up and down, no lurch at the stop) came after #140 was built; it ships as built and a second round follows his words (Q18).
+**The upload command timed out** after Railway had the upload; the deployment built and its served bytes are the tested ones. Do not upload twice without reading `railway deployment list`.
+**Open:** L13 (the camera fix, MOBILE-B `f5b21fec`, #135; the touch sizes already went with L12), then L14 the walk. Evidence: `docs/evidence/box-logs/deploy-train-l12-51969b40/`.

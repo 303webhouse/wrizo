@@ -288,7 +288,9 @@ const CSS_MUT = [
   // { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR4'] },
   // SUPERSEDED (Nov 23, OR5 is parked: its successor is OR6), kept verbatim:
   // { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR5'] },
-  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR6'] },
+  // SUPERSEDED (VISUAL 1a, OR6 is parked: its successor is OR7), kept verbatim:
+  // { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR6'] },
+  { name: 'selection falls back to brass orange', edit: (c) => c.replace("--choice: #00C2FF;", "--choice: #FF9800;"), red: ['TK2', 'OR7'] },
   { name: 'a segmented control goes back to pointing at brass', edit: (c) => c.replace(".mode-seg button.on{ background:none; color:var(--choice); box-shadow:inset 0 0 0 1px var(--choice); }", ".mode-seg button.on{ background:none; color:var(--brass); box-shadow:inset 0 0 0 1px var(--brass); }"), red: ['SEL1'] },
   { name: 'Flux overrides the locked brass', edit: (c) => c.replace("  --choice: #00C2FF;" + String.fromCharCode(10), "  --choice: #00C2FF;" + String.fromCharCode(10) + "  --brass: #00C2FF;" + String.fromCharCode(10)), red: ['TK2'] },
   // SUPERSEDED (Nov 21, OR2 is parked: its successor is OR3), kept verbatim:
@@ -299,12 +301,16 @@ const CSS_MUT = [
   // { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR4'] },
   // SUPERSEDED (Nov 23, OR5 is parked: its successor is OR6), kept verbatim:
   // { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR5'] },
-  { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR6'] },
+  // SUPERSEDED (VISUAL 1a, OR6 is parked: its successor is OR7), kept verbatim:
+  // { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR6'] },
+  { name: 'orange leaks onto the active rail item', edit: (c) => `${c}\n[data-theme='flux'] .wz-strip-item.active{ color:var(--orange); border-left-color:var(--orange); }\n`, red: ['OR7'] },
   // SUPERSEDED (Nov 23, OR4 is parked: its successor is OR5), kept verbatim:
   // { name: 'orange leaks onto a tab that is not the chosen one', edit: (c) => `${c}\n[data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab::before{ background:var(--orange); }\n`, red: ['OR4'] },
   // SUPERSEDED (Nov 23, OR5 is parked: its successor is OR6), kept verbatim:
   // { name: 'orange leaks onto a tab that is not the chosen one', edit: (c) => `${c}\n[data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab::before{ background:var(--orange); }\n`, red: ['OR5'] },
-  { name: 'orange leaks onto a tab that is not the chosen one', edit: (c) => `${c}\n[data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab::before{ background:var(--orange); }\n`, red: ['OR6'] },
+  // SUPERSEDED (VISUAL 1a, OR6 is parked: its successor is OR7), kept verbatim:
+  // { name: 'orange leaks onto a tab that is not the chosen one', edit: (c) => `${c}\n[data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab::before{ background:var(--orange); }\n`, red: ['OR6'] },
+  { name: 'orange leaks onto a tab that is not the chosen one', edit: (c) => `${c}\n[data-theme='flux'] .wz-drawer-slide--right .wz-drawer-tab::before{ background:var(--orange); }\n`, red: ['OR7'] },
   { name: 'the dark page text loses contrast', edit: (c) => c.replace('--ink-on-paper: #E8F6FA;', '--ink-on-paper: #6E8A93;'), red: ['CT1'] },
   { name: 'a label tier drops under 4.5:1', edit: (c) => c.replace('--ink-on-paper-low: #57D0F5;', '--ink-on-paper-low: #1D4A52;'), red: ['CT2'] },
   { name: 'the chromatic offset turns red', edit: (c) => c.replace(/--flux-offset:\s*[^;]+;/, '--flux-offset: 0.5px 0 0 rgba(255, 40, 40, .4);'), red: ['CH1'] },
@@ -500,7 +506,12 @@ function cssChecks(css) {
   // OR6 [successor] - OR5 with those five bars added to the allowed homes (nothing else loosened)
   const FRONT_MARKS = [/\.wz-drawer-slide--left \.wz-drawer-tab\[data-on='true'\]::before$/, /\.reorg-parts-row\.is-here::before$/, /\.reorg-colour-swatch\[aria-checked='true'\]::before$/, /\.reorg-colour-scheme\[aria-checked='true'\]::before$/, /\.reorg-colour-custom:has\(\.reorg-colour-hex:focus\)::before$/];
   const badFront = rules(css).filter((x) => /data-theme='flux'|data-theme="flux"/.test(x.sel) && ORANGE_RE.test(x.body.replace(/--orange\s*:[^;]+;/g, '')) && ![...ORANGE_OK, /\[data-lit='true'\]/, ...REORG_BARS, ...OPEN_TAB_BAR, ...TOP_BAR_MARKS, ...FRONT_MARKS].some((re) => re.test(x.sel))).map((x) => x.sel.slice(0, 90));
-  keep('OR6', badFront.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badFront.join(' | '));
+  // SUPERSEDED (VISUAL 1a, VISUAL's ink-tab-plan §6, Flux: the open row of the INK tab carries the brass bar on its edge), kept verbatim:
+  // keep('OR6', badFront.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badFront.join(' | '));
+  // OR7 [successor] - OR6 with that one rule added to the allowed homes (nothing else loosened)
+  const INK_MARKS = [/^\[data-theme='flux'\] \.wz-ink-row\[aria-expanded='true'\]$/];
+  const badInk = badFront.filter((sel) => !INK_MARKS.some((re) => re.test(sel.trim())));
+  keep('OR7', badInk.length === 0 && /--choice:\s*#00C2FF/i.test(B.root), badInk.join(' | '));
   // CT - contrast, computed from the tokens
   const ground = hex(T('ink-950') || '#000000');
   const chrome = rgbaOver(T('chrome-surface') || '#000', ground);

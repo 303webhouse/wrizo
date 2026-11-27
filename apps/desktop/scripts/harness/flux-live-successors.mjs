@@ -185,12 +185,24 @@ await withHarness(async (app) => {
     const TAB = "(() => { const on = document.querySelector('.wz-sliver-panel [role=tab][aria-selected=true]'); return { on: on && on.id, focused: document.activeElement === on }; })()";
     await ev("document.getElementById('wz-sliver-tab-text')?.focus(); null");
     const a = await ev(TAB);
+    // SUPERSEDED (VISUAL 1a.3: BUILD's Front menu has an INK tab between TEXT and PARTS, so one arrow now reaches INK), kept verbatim:
+    // await key('ArrowRight', 'ArrowRight', 39);
+    // const b = await ev(TAB);
+    // await key('ArrowLeft', 'ArrowLeft', 37);
+    // const c = await ev(TAB);
+    // const after = await ev(PAGE_RECT);
+    // ok('SL-TABS-KEYS the Front menu\'s tabs move by the arrow keys, report their state and take the focus, and the page keeps its rect', !!a && a.on === 'wz-sliver-tab-text' && b.on === 'wz-sliver-tab-parts' && b.focused && c.on === 'wz-sliver-tab-text' && c.focused && before === after, { a, b, c, before, after });
     await key('ArrowRight', 'ArrowRight', 39);
     const b = await ev(TAB);
+    await key('ArrowRight', 'ArrowRight', 39);
+    const b2 = await ev(TAB);
+    await key('ArrowLeft', 'ArrowLeft', 37);
+    const b3 = await ev(TAB);
     await key('ArrowLeft', 'ArrowLeft', 37);
     const c = await ev(TAB);
     const after = await ev(PAGE_RECT);
-    ok('SL-TABS-KEYS the Front menu\'s tabs move by the arrow keys, report their state and take the focus, and the page keeps its rect', !!a && a.on === 'wz-sliver-tab-text' && b.on === 'wz-sliver-tab-parts' && b.focused && c.on === 'wz-sliver-tab-text' && c.focused && before === after, { a, b, c, before, after });
+    const at = (s, id) => !!s && s.on === 'wz-sliver-tab-' + id;
+    ok('SL-TABS-KEYS the Front menu\'s tabs (TEXT, INK, PARTS) move by the arrow keys, one at a time, report their state and take the focus, and the page keeps its rect', at(a, 'text') && at(b, 'ink') && b.focused && at(b2, 'parts') && b2.focused && at(b3, 'ink') && b3.focused && at(c, 'text') && c.focused && before === after, { a, b, b2, b3, c, before, after });
     await ev("document.querySelector('.wz-sliver-grip')?.click(); null");
   });
   await section(['SL-VIEWS', 'MUT-SL-VIEWS'], async () => {
