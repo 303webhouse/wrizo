@@ -298,6 +298,26 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(three.every((r) => !m5(r).pass), 'RN15 three real sentences still fail, and a "c." with no date after it still ends one', three.map((r) => `${m5(r).pass}`).join());
   m.cleanup();
 }
+{
+  // RN16 (Nov 27, after run 46070096427; Fable: yes): a bare "Title (date)." at the start of an example joins the sentence after it. A long sentence that merely ends in a date is still a sentence.
+  const m = run.loadModules();
+  const m5 = (reply) => checksMod.runMachineChecks({ reply: `${reply}\nRead: Midpoint`, task: 'walk', guard: m.guard }).checks.find((k) => k.id === 'M5');
+  const two = [
+    'Example: The Shawshank Redemption (1994). The warden has the witness shot. The legal way out is gone.',
+    'Example: *Pride and Prejudice* (1813). Darcy proposes and is refused. From there she reads the past again.',
+    'Example: Beowulf (c. 1000). The hero grows old. The last fight costs him everything.',
+    "Example: Martin Luther King Jr.'s \"Letter from Birmingham Jail\" (1963). It answers the critics. It then makes its own case.",
+  ];
+  const wrongTwo = two.filter((r) => !m5(r).pass);
+  ok(wrongTwo.length === 0, 'RN16 an example that opens with a bare "Title (date)." and two sentences passes', wrongTwo.map((r) => `${r.slice(9, 50)} -> ${m5(r).detail}`).join(' | '));
+  const three = [
+    'Example: The Shawshank Redemption (1994). The warden has the witness shot. The proof dies. The way out is gone.',
+    'Example: in the film the warden has the one witness shot and so the proof of innocence is lost (1994). The way out is gone. Nothing is left.',
+    'Example: the witness is shot. The film is Shawshank (1994). The way out is gone.',
+  ];
+  ok(three.every((r) => !m5(r).pass), 'RN16 a title and three sentences still fail, and so do three real sentences that happen to carry a date', three.map((r) => `${m5(r).pass}`).join());
+  m.cleanup();
+}
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
 
