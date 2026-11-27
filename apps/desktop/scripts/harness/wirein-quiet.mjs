@@ -138,7 +138,7 @@ try { await withHarness(async (app) => {
   const pageA = await page();
   const wordsA = await words();
   const pressedP = await press('[data-flux3-prompt]');
-  await soft("(document.querySelector('[data-flux3-prompt-card] [data-prompt-text]')?.textContent || '').trim().length > 0");
+  await soft("(document.querySelector('[data-flux3-prompt-card] [data-prompt-text]')?.textContent || '').trim().length > 8", 20000);   // the card says '…' until the prompt arrives
   const card = await ev("(() => { const c = document.querySelector('[data-flux3-prompt-card]'); return c ? { text: (c.querySelector('[data-prompt-text]')?.textContent || '').trim(), n: document.querySelectorAll('[data-flux3-prompt-card]').length } : null; })()");
   const cardBox = await seen('[data-flux3-prompt-card]');
   ok('P1 the prompt button stands beside the X and shows with it; a press gives one prompt', p0 === null && !!pb && !!xb && Math.abs((pb[1] + pb[3]) / 2 - (xb[1] + xb[3]) / 2) <= 6 && pb[2] <= xb[0] + 2 && xb[0] - pb[2] <= 32 && pressedP && !!card && card.n === 1 && card.text.length > 8 && !!cardBox && cardBox[2] <= 1366 && cardBox[3] <= 768, J({ p0, p1, pb, xb, card, cardBox }));
