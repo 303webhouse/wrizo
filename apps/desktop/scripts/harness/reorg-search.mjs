@@ -150,8 +150,17 @@ await withHarness(async (app) => {
     q(d1.groups.map((g) => [g[0], g[1]])) === q([['t-1', '2'], ['t-3', '1']]) && q(d1.hits.map((h) => [h[0], h[1]])) === q([['t-1', 4], ['t-1', 24], ['t-3', 2]]) && d1.count === '3 in this Doc', d1);
   const m2 = await app.evalJs(MARKS);
   const pageOpen = await app.evalJs(PAGE), textOpen = await app.evalJs(EDTEXT);
-  ok('D2: the two found words of Part 1 are marked on the page, the first as the one she is on; the page\'s rect is the one it had with the search shut, and no letter moved',
-    !!m2 && q(m2.all) === q(['toll', 'Toll']) && q(m2.cur) === q(['toll']) && d1.hits[0] && d1.hits[0][2] === true && pageOpen === pageShut && textOpen === textShut,
+  // SUPERSEDED (#138, Nick, Nov 26: an open menu never covers the page): the search stands in the Back menu, so at 1366 the page gives way to it, from the right,
+  // without re-laying its lines. The original lines, verbatim:
+  // ok('D2: the two found words of Part 1 are marked on the page, the first as the one she is on; the page\'s rect is the one it had with the search shut, and no letter moved',
+  // !!m2 && q(m2.all) === q(['toll', 'Toll']) && q(m2.cur) === q(['toll']) && d1.hits[0] && d1.hits[0][2] === true && pageOpen === pageShut && textOpen === textShut,
+  // { m2, pageShut, pageOpen, same: textOpen === textShut });
+  // successor: the column's own layout is as it was (no line re-laid), the painted page keeps its left edge, top and height and is no wider, and no letter moved
+  const rects = (t) => String(t).split(' | ').map((x) => x.split(',').map(Number));
+  const [colA, pgA] = rects(pageShut), [colB, pgB] = rects(pageOpen);
+  const gaveWay = !!pgA && !!pgB && colA.every((v, i) => Math.abs(v - colB[i]) <= 0.5) && [0, 1, 3].every((i) => Math.abs(pgA[i] - pgB[i]) <= 0.5) && pgB[2] <= pgA[2] + 0.5;
+  ok('D2: the two found words of Part 1 are marked on the page, the first as the one she is on; the page gives way to the menu from the right only (#138), and no letter moved',
+    !!m2 && q(m2.all) === q(['toll', 'Toll']) && q(m2.cur) === q(['toll']) && d1.hits[0] && d1.hits[0][2] === true && gaveWay && textOpen === textShut,
     { m2, pageShut, pageOpen, same: textOpen === textShut });
 
   await key(app, 'Enter');
