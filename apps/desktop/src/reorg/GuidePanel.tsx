@@ -4,6 +4,7 @@ import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme } from '../store/theme';
 import { PRESET_NOTES, STRUCTURE_NOTES, type PresetNote } from './presetNotes';
 import { guideTree, walk, factsOf, kindOf, BLANK, NOT_SURE, type GuideAnswer, type GuideLanding, type GuidePick } from './presetGuide';
+import { PLAN_PRESETS } from './backMenu/planPresets';
 
 // THE GUIDE, ITS PANEL (PRESETS-B, Nov 25; the brief guide-brief-nov24.md). Its own small panel over the dimmed room: three questions at most, one press each, Back at every step, Esc closes; it ends on one preset, one alternative and "or just start Blank".
 // The LOGIC is presetGuide.ts (a fixed table: no model, the same answers give the same result); this file is the dress and the press-by-press flow, on the Help me choose panel's own dresses (Arbor's librarian, Machina's intake, Flux's diagnostic: the
@@ -12,6 +13,8 @@ import { guideTree, walk, factsOf, kindOf, BLANK, NOT_SURE, type GuideAnswer, ty
 export interface GuidePanelProps {
   /** Start: do this pick (the host makes the Doc and calls startGuide: presetGuideActs.ts). The pick's `kind` is `kindOf(pick)`. Blank is `BLANK`. */
   onStart: (pick: GuidePick) => void;
+  /** Start guided: the same Start, then the walk over its Plan at step 1 (reorg/walk/). Offered only for a pick that has a Plan; absent, there is only Start. */
+  onStartGuided?: (pick: GuidePick) => void;
   onClose: () => void;
   /** The door that opened this panel: focus returns to it on close. */
   returnFocusTo?: HTMLElement | null;
@@ -24,7 +27,31 @@ const NOTE_LINES: readonly { part: 'line' | 'does' | 'eg' | 'names' | 'must' | '
 // a *starred* span in a note's word is italic (a book's title in a credit), as PresetNote.tsx draws it
 const emph = (s: string) => s.split(/(\*[^*]+\*)/).map((p, i) => (/^\*[^*]+\*$/.test(p) ? <em key={i}>{p.slice(1, -1)}</em> : p));
 
-export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps) {
+// THE WALK AHEAD (the Wrizors' frame, state A): the Plan's steps as marks under their headings, before anything is made
+function WalkAhead({ structure, t }: { structure: string; t: (k: DeskTermId) => string }) {
+  const rows = PLAN_PRESETS.find((p) => p.id === structure)?.rows ?? [];
+  const groups: { name: string; steps: number }[] = [];
+  rows.forEach((r, i) => {
+    if (!r.depth && rows[i + 1]?.depth) { groups.push({ name: t(r.title), steps: 0 }); return; }
+    if (!groups.length || (!r.depth && groups[groups.length - 1].name)) groups.push({ name: '', steps: 0 });
+    groups[groups.length - 1].steps += 1;
+  });
+  return (
+    <div className="guide-ahead" data-guide-ahead="">
+      <div className="guide-ahead-head">{t('guideWalkAhead')}</div>
+      <div className="guide-ahead-row" aria-hidden="true">
+        {groups.map((g, i) => (
+          <div key={i} className="guide-ahead-group" style={{ flexGrow: g.steps }}>
+            <div className="guide-ahead-pips">{Array.from({ length: g.steps }, (_, k) => <i key={k} />)}</div>
+            {g.name && <div>{g.name}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function GuidePanel({ onStart, onStartGuided, onClose, returnFocusTo }: GuidePanelProps) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
   const variant: Variant = theme === 'plateau' ? 'librarian' : theme === 'flux' ? 'diagnostic' : 'intake';
@@ -129,6 +156,8 @@ export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps)
     const rows = f.planRows === 1 ? t('guidePlanRowsOne') : t('guidePlanRowsMany');
     const facts = [f.parts ? parts.replace('{n}', String(f.parts)) : '', f.planRows ? rows.replace('{n}', String(f.planRows)) : ''].filter(Boolean).join(' · ');
     const altName = landing.alt ? nameOf(landing.alt) : '';
+    const writing = () => onStart(landing.pick);
+    const guided = !!onStartGuided && !!landing.pick.structure;
     body = (
       <div className="help-step guide-step" key={landing.blank ? 'blank' : 'landing'} data-still="true" data-guide-view="landing">
         <div className="help-kicker">{t('guideKicker')}</div>
@@ -145,7 +174,18 @@ export function GuidePanel({ onStart, onClose, returnFocusTo }: GuidePanelProps)
               <span>{facts}</span>
               {hasNote && <button type="button" className="guide-why" data-guide-why aria-label={t('reorgPreNoteLabel').replace('{name}', nameOf(landing.pick))} onClick={() => setNote('pick')}>?</button>}
             </div>
-            <div className="guide-card-act"><button type="button" className="guide-start" data-guide-start data-guide-kind={kindOf(landing.pick)} onClick={() => onStart(landing.pick)}>{t('guideStart')}</button></div>
+            {guided && <WalkAhead structure={landing.pick.structure as string} t={t} />}
+            <div className="guide-card-act">
+              {guided ? (
+                <>
+                  <button type="button" className="guide-start" data-guide-start data-guide-guided data-guide-kind={kindOf(landing.pick)} onClick={() => onStartGuided?.(landing.pick)}>{t('guideStartGuided')}</button>
+                  <button type="button" className="guide-start guide-start-small" data-guide-start-writing onClick={writing}>{t('guideStartWriting')}</button>
+                  <span className="guide-card-enter">{t('guideEnterGuided')}</span>
+                </>
+              ) : (
+                <button type="button" className="guide-start" data-guide-start data-guide-kind={kindOf(landing.pick)} onClick={writing}>{t('guideStart')}</button>
+              )}
+            </div>
           </div>
         )}
         {landing.alt && (

@@ -21,3 +21,11 @@
 .wz-pagecount-alone{ display:flex; justify-content:center; }
 .wz-pagecount-alone-inline{ display:flex; justify-content:center; margin-top:2px; }
 .flux3-glitchbar .wz-pagecount{ margin-left:10px; }
+/* Distraction Free's one line (components/QuietCount.tsx): her words and her page, still, in the page count's own colour */
+.wz-quiet-count{ white-space:nowrap; font-variant-numeric:tabular-nums; }
+.wz-quiet-count .wz-pagecount-sep:last-child{ display:none; }
+:root[data-theme='plateau'] .wz-quiet-words{ color:#6B5F4E; }
+:root[data-theme='plateau'][data-page='dark'] .wz-quiet-words{ color:#B9AA8C; }
+:root[data-theme='flux'] .wz-quiet-words{ color:#7EB4C4; }
+:root[data-theme='machina'] .wz-quiet-words{ color:#878E9C; font-family:'IBM Plex Mono', var(--font-mono, monospace); }
+:root[data-machina2][data-theme='machina'][data-machina2-room='light'] .wz-quiet-words{ color:var(--text-low); }

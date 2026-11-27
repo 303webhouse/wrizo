@@ -16,6 +16,7 @@
 // jumps the timeline to its end; Enter asks for Write too. Nothing is stored; window.wrizoArborFront is the proofs' read-only view.
 import { useEffect, useLayoutEffect, useReducer, useRef, useState, type CSSProperties } from 'react';
 import { LOGO_STROKES, LOGO_WRITE_S } from './logoWrite';
+import { distractionFreeMarked } from '../store/ambianceDial';
 
 const CW = 3374, CH = 2699;
 export const TOP_LOGO = { x: 543, y: 534, w: 540, h: 240 };          // 1366: the logo box at (470, 232), 100.5 x 44.7
@@ -41,7 +42,7 @@ const subs = new Set<() => void>();
 const tell = () => subs.forEach((f) => f());
 let timers: number[] = [];
 let onShown: (() => void) | null = null;
-const reducedNow = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedNow = () => distractionFreeMarked() || (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const plan = (from: number) => {
   seq.logoStart = from + AFTER_SKETCH;
   seq.logoDone = seq.logoStart + LOGO_WRITE_S * 1000;
