@@ -260,7 +260,7 @@ function Doc({ t, words, route }: { t: T; words: Words; route: Extract<Route, { 
   const part = doc?.parts.find((p) => p.id === route.part) ?? doc?.parts.find((p) => p.id === route.id) ?? doc?.parts[0];
   useEffect(() => { strip.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' }); }, [part?.id]);
   if (!doc || !part) return <><Back t={t} /><p className="mc-dim">{t('mobileNothingHere')}</p></>;
-  const views: Array<[View, DeskTermId]> = [['read', 'mobileRead'], ['plan', 'mobilePlan'], ['assets', 'mobileAssets']];
+  const views: Array<[View, DeskTermId]> = [['read', 'mobileRead'], ['plan', 'reorgBackPlan'], ['assets', 'mobileAssets']];   // the Plan tab's word is the desk's own (Flux: Spine)
   return (
     <>
       <Back t={t} />
