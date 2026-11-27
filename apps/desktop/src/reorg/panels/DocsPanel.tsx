@@ -12,6 +12,7 @@ import type { GuidePick } from '../presetGuide';
 import { openWalk } from '../walk/walkDoor';
 import { planOfPage, walksToContinue } from '../walk/walkData';
 import { structureOfPlan } from '../walk/structureOfPlan';
+import { liveBoxes } from '../../store/boxTombstones';
 import { setDocSetting } from '../docSettings';
 import { unbornHref, type UnbornDescriptor } from '../../store/unbornPage';
 import { wordCount } from '../../store/wordCount';
@@ -138,7 +139,7 @@ export function DocsPanel({ subject, navigate, travelFromCascade, closeCascade }
   const continueLine = (w: (typeof toContinue)[number]): string => {
     const num = (n: number) => (flux ? String(n).padStart(2, '0') : String(n));
     const line = fill(fill(t('guideWalkContinueLine'), 'n', num(w.step.number)), 'total', num(w.total));
-    const structure = flux ? structureOfPlan(planOfPage(w.pageId).board?.boxes, t) : null;
+    const structure = flux ? structureOfPlan(liveBoxes(planOfPage(w.pageId).board?.boxes), t) : null;
     return structure ? `${t(structure.name)} · ${line}` : line;
   };
   const kinds: { id: string; label: string; act: () => void; more?: boolean }[] = [
