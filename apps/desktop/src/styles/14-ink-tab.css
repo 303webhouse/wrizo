@@ -84,6 +84,8 @@
 /* VISUAL 1a - TOUCH SCREENS ONLY (Fable, Nov 26: the kit's §9, "every tool at least 44 px on a touch screen"). With a mouse nothing here applies. Bigger tools need more lines, so the face's two lines wrap instead of squeezing. */
 @media (pointer: coarse){
   .wz-ink-tab.wz-ink-tab :is(button, input), .wz-ink-fail .wz-ink-retry, .ink-undo{ min-width:44px; min-height:44px; }
+  /* #138: the Undo arrow stands on the sheet, which is painted smaller while a menu is open (--wz-k under 1): it is sized so that painted it is still 44 */
+  .wz-ink-sheet > .ink-undo{ min-width:max(44px, calc(44px / var(--wz-k, 1))); min-height:max(44px, calc(44px / var(--wz-k, 1))); }
   .wz-ink-face-line--brush, .wz-ink-face-line--ink .wz-sliver-inks{ flex-wrap:wrap; }
   .wz-ink-face-line--ink .wz-sliver-inks{ justify-content:flex-start; }
 }
