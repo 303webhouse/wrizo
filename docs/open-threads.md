@@ -4577,3 +4577,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Known and accepted on the way out:** Nick's notes of Nov 26, 7 pm on the tunnel (a longer wait, one smooth ramp up and down, no lurch at the stop) came after #140 was built; it ships as built and a second round follows his words (Q18).
 **The upload command timed out** after Railway had the upload; the deployment built and its served bytes are the tested ones. Do not upload twice without reading `railway deployment list`.
 **Open:** L13 (the camera fix, MOBILE-B `f5b21fec`, #135; the touch sizes already went with L12), then L14 the walk. Evidence: `docs/evidence/box-logs/deploy-train-l12-51969b40/`.
+
+## (328) TRAIN L13 IS LIVE: `git 57d1a34e (train-l13-2) · railway f442bb49-9d1e-4e5a-94dd-818cba18098f`, bundle `index-B9vu5App`, smoke PASS 6/6, served JS and CSS identical to the tested build — 2026-11-27 06:16Z / Nov 26, 11:16 pm MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-B9vu5App`; JS 1459294 B md5 `89c40934284a`; CSS `index-C1icEUxw.css` 526821 B md5 `103c08fc36b3`; `GET /m/` signed out 200, the companion's page; `smoke-login.mjs` PASS 6/6. Roll-back point: train L12, `git 51969b40 · railway 6904f6c6`.**
+**What is in it:** the phone companion at `/m/` (MOBILE-B slice 1, its repairs, and `GET /api/card-held/:id`); POLISH's camera glide hold (a zoom notch keeps its point); POLISH #135 (Arbor's Board tool drawer keeps its width).
+**Caught on the way:** the orders named `f5b21fec`, which MOBILE-B had since reported would switch off the stale-tab guard; Fable owns it. A lane's newest report entry is read before its sha is cut. A new check ends with a verdict line the pair reads.
+**Not tried:** the companion on a real phone. That is Nick's next try.
+**Open:** L14 the walk (`presets-b/guide-walk-l12`), then the flourishes; MOBILE-B's Flux Plan word and the companion's own stale-tab guard; #141. Evidence: `docs/evidence/box-logs/deploy-train-l13-57d1a34e/`.
