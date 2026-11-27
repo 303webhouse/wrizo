@@ -3,6 +3,7 @@ import { useDeskLexicon } from '../store/deskLexicon';
 import { decorateMarkdownForCard } from '../store/draftDecoration';
 import { firstLine } from '../store/entryText';
 import { walkStep, swipePlan, getWalkPos, setWalkPos, type SwipePlan } from '../store/walk';
+import { distractionFreeMarked } from '../store/ambianceDial';
 import type { JournalEntry } from '../types';
 
 // W1 - THE JOURNAL AS A BOOK (brief docs/guided-paths/w1-walk-brief.md; frames 04-flip, 04-thumbnails). A Book has two views, not four: FLIP - one page at a time with the Walk's own top-corner chevrons and the same
@@ -27,7 +28,7 @@ export function BookFlip({ boardId, pages, onOpen, receded }: { boardId: string;
   const go = useCallback((dir: 1 | -1, to?: number) => {
     const next = to ?? walkStep(pages.length, cur, dir);
     if (next === cur || !page) return;
-    const reduced = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduced = distractionFreeMarked() || (typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     const plan = swipePlan(next > cur ? 1 : -1, reduced);
     if (timer.current !== null) window.clearTimeout(timer.current);
     if (plan.kind === 'slide') {

@@ -35,7 +35,7 @@ const ROUND_AFTER_ACT_MS = 1000;
 const CAS_TRIES = 3;
 const FACT_RE = /^[a-z][A-Za-z0-9]{0,31}$/;
 /** The facts saved whatever the reorg's switch (Fable, Nov 19, 11:20 pm: the room; Nov 20, 12:15 pm: the session's writing settings; 5:15 pm: the writing goal): account data in every theme. */
-export const SWITCHLESS: ReadonlySet<string> = new Set(['room']).add('writing').add('goal');
+export const SWITCHLESS: ReadonlySet<string> = new Set(['room']).add('writing').add('goal').add('flourishOff').add('distractionFree');   // the flourish spec §7 (store/flourish.ts)
 const allowed = (name: string): boolean => reorgInMachina() || SWITCHLESS.has(name);
 
 // ---- the merge (pure) ---------------------------------------------------------------------------------------------------

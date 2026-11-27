@@ -3,6 +3,7 @@ import type { ThemeId } from '../store/theme';
 import { isArbor2 } from '../arbor2/flag';
 import { FLUX3 } from '../flux3/flag';
 import { FluxFive } from '../flux3/FluxFive';
+import { distractionFree } from '../store/flourish';   // asked of the store itself: the splash may stand before anything else has loaded it
 
 // per-theme drawn-on-open splash: only connectors and stage outlines turn brass, never the letters; the glow's drop-shadow values are this file's own (the brief says only "a short glow") [SplashMark §1]
 
@@ -20,6 +21,7 @@ const GLOW_REST = 'drop-shadow(0 0 5px rgba(255,152,0,.35))';
  *  checked once per mount, not subscribed, since nobody flips the OS setting
  *  mid-splash. */
 export function prefersReducedMotion(): boolean {
+  if (distractionFree()) return true;   // the splash shows its finished, still frame (the flourish spec §7.2)
   return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }

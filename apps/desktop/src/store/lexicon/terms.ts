@@ -947,5 +947,5 @@ export type DeskTermId =
   | 'mobileCard'
   | 'mobileTitleHint'
   | 'mobileTitle'
-  | 'helpWhyFeatureStoryInvestigative';
+  | 'helpWhyFeatureStoryInvestigative' | 'modeNoticeOn' | 'modeNoticeTurnOff' | 'modeNoticeOff' | 'modeNoticeBack' | 'modeNoticeWhere' | 'modeNoticeQuiet' | 'sessionQuiet' | 'sessionQuietHint' | 'sessionQuietOn' | 'quietWords' | 'quietWord' | 'fluxGlitchSwitch' | 'fluxGlitchSwitchName';
 
