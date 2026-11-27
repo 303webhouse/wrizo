@@ -1021,6 +1021,8 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 :root[data-distraction-free] *:not(.flux-block-caret, .mode-page, .mode-page *, .chrome-fade, .desk-dissolve, .mode-dissolve, .chrome-handle, .brand-mark, .desk-frame-strip, .chrome-top),
 :root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::before,
 :root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::after{ animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; }
+/* the two menus are named: their panels also carry the fade-while-typing classes the rule above leaves alone */
+:root[data-distraction-free] :is(.wz-sliver-panel, .wz-tutor-panel){ transition-duration:1ms !important; }
 /* every meter and bar, with the goal, the running timer, and the goal's glow and flash (the one count line stays: components/QuietCount.tsx) */
 :root[data-distraction-free] :is(.wz-goal-glow, .desk-frame-goalflare, .deck-celebration, .wz-sliver-goal, .mode-incentive-row :is(.mode-ptrack, .mode-pmetric, .mode-timer)){ display:none !important; }
 /* Arbor: no pergola shadows, beams or leaves, in the room or on the page; the room keeps its colour by day and by night */
