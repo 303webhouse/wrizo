@@ -21,6 +21,8 @@
 //   BESIDE    the split Board beside the page draws a marked card's marks too
 //   CHIP      the way-back chip stands past any folder tab that reaches over the page's margin (Arbor's drawer), never on one
 //   DOOR      leaving gives her the page (or the field she was writing in), never the button that opened the walk: left on it, her first space presses it again and the rest goes into a step's note
+//   LIVE      leaving reads the live page, never its hidden measuring copy (a copy taken under the pen still says "ink")
+//   HOME      when her selection has gone elsewhere (the pen takes it away), the page editor takes her back to where she left her words
 // Run: node scripts/harness/reorg-guide-walk-unit.mjs   (from apps/desktop; browserless: needs no box turn)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -33,7 +35,7 @@ const ts = require('typescript');
 const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'src');
 const J = (v) => JSON.stringify(v);
 const read = (p) => { try { return fs.readFileSync(path.join(SRC, p), 'utf8').split('\r\n').join('\n'); } catch { return ''; } };
-const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts', 'styles/21-guide-walk.css', 'styles/machina-v2.css'];
+const FILES = ['store/textMarks.ts', 'reorg/walk/stepModel.ts', 'reorg/walk/stepOps.ts', 'reorg/backMenu/planOps.ts', 'components/BoardEditor.tsx', 'reorg/split/SplitBoard.tsx', 'reorg/docSettings.ts', 'store/pageDefaults.ts', 'components/board/BoardBoxes.tsx', 'reorg/walk/GuideWalk.tsx', 'reorg/walk/WalkHost.tsx', 'reorg/walk/structureOfPlan.ts', 'store/lexicon/canonical/chrome.ts', 'store/lexicon/overrides/arborReorg.ts', 'store/lexicon/overrides/fluxReorg.ts', 'styles/21-guide-walk.css', 'styles/machina-v2.css', 'pages/PageEditor.tsx'];
 const SOURCES = Object.fromEntries(FILES.map((f) => [f, read(f)]));
 // the board is read as the join (the module and every file in components/board/), as c13-10g-readers asks of any script that reads it
 SOURCES['components/BoardEditor.tsx'] = srcText(SRC, 'components/BoardEditor.tsx').split('\r\n').join('\n');
@@ -239,13 +241,23 @@ function suite(src) {
   });
   t('PEN', () => {
     const w = src['reorg/walk/GuideWalk.tsx'];
-    const skip = w.indexOf(`if (back.isContentEditable && document.querySelector('.mode-page[data-instrument="ink"]')) return;`);
+    const skip = w.indexOf(`if (back.isContentEditable && liveQuery('.mode-page[data-instrument="ink"]')) return;`);
     const focus = w.indexOf('back.focus();');
     return { pass: skip > 0 && focus > skip, detail: J({ skip, focus }) };
   });
   t('DOOR', () => {
     const w = src['reorg/walk/GuideWalk.tsx'];
     const got = { wrote: w.includes("const wrote = !!had?.isConnected && (had.isContentEditable || had.tagName === 'TEXTAREA');"), back: w.includes('const back = wrote ? had : document.querySelector<HTMLElement>(') };
+    return { pass: Object.values(got).every(Boolean), detail: J(got) };
+  });
+  t('LIVE', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'];
+    const got = { pen: w.includes(`liveQuery('.mode-page[data-instrument="ink"]')`), bare: !w.includes(`document.querySelector('.mode-page`) && !w.includes(`document.querySelector<HTMLElement>('.mode-page`) };
+    return { pass: got.pen && got.bare, detail: J(got) };
+  });
+  t('HOME', () => {
+    const w = src['reorg/walk/GuideWalk.tsx'], pe = src['pages/PageEditor.tsx'];
+    const got = { asks: w.includes('const home = new Event(CARET_HOME, { cancelable: true });') && w.includes('window.dispatchEvent(home);') && w.includes('if (home.defaultPrevented) return;'), hears: pe.includes('window.addEventListener(CARET_HOME, home);'), answers: pe.includes('e.preventDefault(); penDownToPage();') };
     return { pass: Object.values(got).every(Boolean), detail: J(got) };
   });
   t('BESIDE', () => {
@@ -288,8 +300,11 @@ MUTANTS.push(
   ['a Flux word falls back to Machina\'s', 'THEMES', sub('store/lexicon/overrides/fluxReorg.ts', "guideWalkKept: 'SAVED TO SPINE',", '')],
   ['the page behind the walk is left live', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.setAttribute('inert', '');", '')],
   ['leaving forgets to lift it', 'HELD', sub('reorg/walk/GuideWalk.tsx', "app?.removeAttribute('inert');", '')],
-  ['leaving puts a caret in the words under the pen', 'PEN', sub('reorg/walk/GuideWalk.tsx', `if (back.isContentEditable && document.querySelector('.mode-page[data-instrument="ink"]')) return;`, '')],
+  ['leaving puts a caret in the words under the pen', 'PEN', sub('reorg/walk/GuideWalk.tsx', `if (back.isContentEditable && liveQuery('.mode-page[data-instrument="ink"]')) return;`, '')],
   ['leaving hands the focus back to the button that opened the walk', 'DOOR', sub('reorg/walk/GuideWalk.tsx', 'const back = wrote ? had :', 'const back = had?.isConnected ? had :')],
+  ['leaving reads the measuring copy for the pen', 'LIVE', sub('reorg/walk/GuideWalk.tsx', `liveQuery('.mode-page[data-instrument="ink"]')`, `document.querySelector('.mode-page[data-instrument="ink"]')`)],
+  ['the walk never asks the page for her place', 'HOME', sub('reorg/walk/GuideWalk.tsx', 'window.dispatchEvent(home);', '')],
+  ['the page does not answer', 'HOME', sub('pages/PageEditor.tsx', 'e.preventDefault(); penDownToPage();', 'e.preventDefault();')],
   ['the Board beside the page drops the marks', 'BESIDE', sub('reorg/split/SplitBoard.tsx', 'textMarks={box.textMarks}', '')],
   ['the chip stays on a folder tab', 'CHIP', sub('reorg/walk/WalkHost.tsx', 'left = Math.round(r.right) + 8', 'left = left')],
   ['the chip is lost on a new Part', 'BACK', sub('reorg/walk/WalkHost.tsx', ' || (newInDoc && newInDoc === docOfPage(left))', '')],
