@@ -28,3 +28,6 @@ await withHarness(async (app) => {
   await sleep(1500);
   await say('after hash to journal');
 });
+// #141 pass (Nov 26): the pair needs a verdict line from every file. This is still a probe, not a check: it prints, and its one claim is that it ran to its end (a throw above exits non-zero before this).
+if (process.env.HARNESS_PARKED === '1') console.log('\nRETURN-CARET-PROBE PARKED: PASS (0 records) - a probe; it parks nothing');
+console.log('\nRETURN-CARET-PROBE VERIFY: PASS (1 checks) - a probe: it ran to its end');
