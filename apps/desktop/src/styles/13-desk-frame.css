@@ -994,3 +994,38 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 /* #138: the yielded page is narrower, not shorter. Painted smaller, it needs a taller layout box (--wz-page-hl) than its column holds; a column that shrank it
    back left the sheet ending above where it did, and the drawer standing past it (visual-1a-touch R7) */
 .desk-frame-stage--prose[data-yield] .mode-page{ flex-shrink:0; }
+/* THE "MODE ON" NOTICE (components/ModeNotice.tsx; the flourish spec §2): fixed on <body>, placed by the component (under the meter, else the lower right clear of
+   the page); a plain line that never animates, in each theme's own dress. FLUX'S GLITCH SWITCH (§4.1, flux3/FluxGlitchSwitch.tsx) beside the page count: its box is no
+   taller than the count's line, so the lane keeps its height. */
+.wz-mode-notice{ position:fixed; z-index:70; display:flex; flex-wrap:wrap; align-items:center; column-gap:8px; row-gap:2px; box-sizing:border-box; max-width:min(560px, calc(100vw - 16px)); padding:5px 10px; font-size:12px; line-height:1.4; background:var(--paper); color:var(--ink-on-paper, var(--text-hi)); border:1px solid var(--ink-border-strong); }
+.wz-mode-notice button{ font:inherit; cursor:pointer; padding:1px 8px; background:transparent; color:inherit; border:1px solid currentColor; }
+[data-theme='plateau'] .wz-mode-notice{ background:#F6EFDF; color:#2B1D12; border-color:#8A7455; }
+:root[data-theme='plateau'][data-arbor2-room='night'] .wz-mode-notice{ background:#2E2118; color:#F2E9DA; border-color:#6B5540; }
+:root[data-theme='plateau'] .wz-mode-notice button{ background:#56632E; color:#F6EFDF; border-color:#56632E; border-radius:3px; }
+:root[data-theme='flux'] .wz-mode-notice{ background:#0B141A; color:#D7F6FF; border:1px solid #00C2FF; text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-mono); font-size:11px; }
+:root[data-theme='flux'] .wz-mode-notice button{ text-transform:uppercase; letter-spacing:.08em; color:#00C2FF; border-color:#00C2FF; }
+:root[data-theme='machina'] .wz-mode-notice{ background:#1E262E; color:#E6E8EA; border-color:#46525E; border-radius:0; font-family:var(--font-mono); }
+.wz-glitch-switch{ pointer-events:auto; display:inline-flex; align-items:center; gap:5px; height:15px; margin:0 0 0 10px; padding:0 6px; vertical-align:middle; cursor:pointer; background:transparent; color:var(--text-mid); border:1px solid var(--ink-border-strong); font-family:var(--font-mono); font-size:9.5px; line-height:13px; letter-spacing:.14em; }
+.wz-glitch-switch-dot{ width:6px; height:6px; border-radius:50%; border:1px solid currentColor; box-sizing:border-box; }
+.wz-glitch-switch[aria-checked='true']{ color:#00C2FF; border-color:#00C2FF; }
+.wz-glitch-switch[aria-checked='true'] .wz-glitch-switch-dot{ background:currentColor; }
+/* the lane stands behind the writing column: while it holds the switch its layer is lifted over the column (the lane never overlaps the page; drawers stay above) - not in
+   Wire In, whose edge and pop share that layer */
+.desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) > .desk-frame-rhizome-anchor:has(.wz-glitch-switch){ z-index:3; }
+.wz-glitch-switch:focus-visible{ outline:1px solid var(--text-hi); outline-offset:1px; }
+/* the flourish spec 7: Distraction free, Session's first row, with its line under it; the rows it quiets are greyed; the notice's second line */
+.wz-reorg-default.wz-session-quiet{ display:flex; flex-wrap:wrap; }
+.wz-session-quiet-hint{ flex:1 0 100%; font-size:.86em; opacity:.85; }
+[data-session-quieted='true']{ opacity:.45; }
+.wz-mode-notice-also{ flex:1 0 100%; opacity:.85; }
+/* DISTRACTION FREE (the flourish spec §7.2): menus simply appear, marks stand still, nothing off the page moves. 1 ms rather than none, so what waits for an
+   animation's or a transition's end still hears it. Never the page, her words or the caret; the top bar and rail keep their own fade away while she types */
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page, .mode-page *, .chrome-fade, .desk-dissolve, .mode-dissolve, .chrome-handle, .brand-mark, .desk-frame-strip, .chrome-top),
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::before,
+:root[data-distraction-free] *:not(.flux-block-caret, .mode-page *)::after{ animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; }
+/* the two menus are named: their panels also carry the fade-while-typing classes the rule above leaves alone */
+:root[data-distraction-free] :is(.wz-sliver-panel, .wz-tutor-panel){ transition-duration:1ms !important; }
+/* every meter and bar, with the goal, the running timer, and the goal's glow and flash (the one count line stays: components/QuietCount.tsx) */
+:root[data-distraction-free] :is(.wz-goal-glow, .desk-frame-goalflare, .deck-celebration, .wz-sliver-goal, .mode-incentive-row :is(.mode-ptrack, .mode-pmetric, .mode-timer)){ display:none !important; }
+/* Arbor: no pergola shadows, beams or leaves, in the room or on the page; the room keeps its colour by day and by night */
+:root[data-distraction-free] :is(.arbor2-pergola, .arbor2-pagesh, .arbor2-sun){ display:none !important; }

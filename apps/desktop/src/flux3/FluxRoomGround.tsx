@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { useTheme } from '../store/theme';
 import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { GRID, TONES, circuit, rnd, type Pt } from './flux3-layer';
+import { useDistractionFree } from './useDistractionFree';
 
 export const MAX_POINTS = 3;
 const DPR_CAP = 2;
@@ -87,7 +88,8 @@ const lengthOf = (pts: Pt[]): number => {
 export function FluxRoomGround() {
   const flux = useTheme() === 'flux';
   const dial = useAmbianceDial();
-  const on = flux && dial > 0;
+  const quiet = useDistractionFree();   // Distraction Free (the flourish spec §7.2): no ground and no current - the room is the flat navy it was before this layer
+  const on = flux && dial > 0 && !quiet;
 
   useEffect(() => {
     if (!on) return undefined;

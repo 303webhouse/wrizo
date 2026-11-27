@@ -499,7 +499,10 @@ mutant('the Goal number stays editable while Progress Tracking is off [plain-tra
 // mutant('the Goal number stays editable while Progress Tracking is off', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
 // mutant('the Goal number stays editable while Progress Tracking is off [plain-tracker successor]', 'sliver', (t) => mutate(t, 'aria-label={t(\'goalLabel\')} disabled={off}', "aria-label={t('goalLabel')}"), 'greyedPP');
 // [plain-tracker] the fifth row's own mutant, read on the Free Write successor
-mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'}"), 'greyedFW5');
+// SUPERSEDED (the flourish spec §7: Machina's tracker row reads on only while the Run is hers too, so the row asks themeTrackerOn): the anchor's value expression
+// moves with it. The original, verbatim:
+// mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'}"), 'greyedFW5');
+mutant('the Use Theme Progress Tracker row stays usable while Progress Tracking is off', 'sliver', (t) => mutate(t, "<Seg label={t('plainTrackerSwitch')} value={themeTrackerOn(theme, settings.themeTracker) ? 'on' : 'off'} disabled={off}", "<Seg label={t('plainTrackerSwitch')} value={themeTrackerOn(theme, settings.themeTracker) ? 'on' : 'off'}"), 'greyedFW5');
 mutant('Seg ignores disabled', 'stage', (t) => mutate(t, "className={value === v ? 'on' : ''} disabled={disabled} onClick", "className={value === v ? 'on' : ''} onClick"), 'seg');
 mutant('the Format fieldset is not disabled', 'sliver', (t) => mutate(t, '<fieldset className="wz-sliver-fieldset" disabled={formatLocked}', '<fieldset className="wz-sliver-fieldset"'), 'format');
 // `const settings = useWritingSettings();` appears several times in this file (every

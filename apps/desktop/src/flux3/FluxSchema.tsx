@@ -22,6 +22,7 @@ import { nodeHex } from './FluxNodeRecord';
 import { FluxStack } from './FluxStack';
 import { useStackView } from './stackView';
 import { getBoardScale, subscribeBoardScale, useBoardScale, zoomFigure, zoomHome } from './boardZoom';
+import { useDistractionFree } from './useDistractionFree';
 import { useFluxCamera } from './useFluxCamera';
 
 interface Props {
@@ -87,7 +88,8 @@ function Schema({ wrapRef, canvasRef, boxes, nodes, connections, selectedId, pag
   }, [wrapRef, canvasRef]);   // ref objects: stable, so the layer is made once per board frame
 
   // S2: under the Stack the circuit stays faint and STILL behind the nodes (the layer's still frame; it dims in flux-v3.css)
-  useEffect(() => { layerRef.current?.setOptions({ tone: page, motion: dial > 0 && !stack.on }); }, [page, dial, stack.on]);
+  const quiet = useDistractionFree();   // Distraction Free (the flourish spec §7.2): the board's current and electrons stand still
+  useEffect(() => { layerRef.current?.setOptions({ tone: page, motion: dial > 0 && !stack.on && !quiet }); }, [page, dial, stack.on, quiet]);
 
   // the scene in board pixels (a card's x, y, w and h are fractions of the page width on both axes); handed over only when it changed,
   // so a render that moved nothing never makes the layer lay its routes out again

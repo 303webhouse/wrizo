@@ -63,6 +63,9 @@ function noLandingIndex(body) {
   // was written against: window.__wrizoReorgOff (read by src/reorg/flag.ts) unless WS_REORG=1. A file that asks with ?reorg=1 in its URL still
   // gets it (the URL wins), and ?reorg=0 is off either way. Read per request, so a file may flip WS_REORG between loads (reorg-switchover.mjs).
   if (process.env.WS_REORG !== '1') flags += 'window.__wrizoReorgOff=true;';
+  // THE FLOURISH DEFAULT (Nick, Nov 26: each theme's flourish is on until she turns it off): a file that does not ask keeps the style-decided lane it was written
+  // against (window.__wrizoFlourishPin, read by src/store/flourish.ts) unless WS_FLOURISH=1 (scripts/harness/flourish-notice.mjs).
+  if (process.env.WS_FLOURISH !== '1') flags += 'window.__wrizoFlourishPin=true;';
   if (!flags) return body;
   return Buffer.from(String(body).replace('<head>', `<head><script>${flags}</script>`));
 }
