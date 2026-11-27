@@ -3,6 +3,7 @@ import { boardStructure, flattenLane, isCardBox, withParent, withSeqOrder, type 
 import { liveBoxes } from '../../store/boxTombstones';
 import { outlineNumber, outlineTitleEdit, splitOutlineText } from '../../store/outlineRow';
 import { withoutFontMarks } from '../../store/markRuns';
+import { withCardText } from '../../store/textMarks';
 
 // THE BACK MENU'S PLAN TAB (the reorg, phase 4.3, behind ?reorg=1 in Machina; reorg-plan.md section 9): "an ordered outline of the assets marked as
 // Plan. Rows can be dragged, indented and renamed." The Plan IS the Page's own board's ordered view (Machina calls the Outline view "Plan"), so it
@@ -64,7 +65,7 @@ export function planRows(boxes: readonly Box[] | undefined | null, hidden: Reado
 }
 
 /** The sibling groups of the tree, as ordered id lists keyed by parent ('' = the lane's top level, one key per lane). */
-function siblingsOf(boxes: Box[], id: string): { ids: string[]; parent: string | undefined; lane: string } | null {
+export function siblingsOf(boxes: Box[], id: string): { ids: string[]; parent: string | undefined; lane: string } | null {
   for (const lane of boardStructure(liveBoxes(boxes)).lanes) {
     const find = (nodes: OutlineNode[], parent: string | undefined): { ids: string[]; parent: string | undefined; lane: string } | null => {
       if (nodes.some((n) => n.boxId === id)) return { ids: nodes.map((n) => n.boxId), parent, lane: lane.id };
@@ -78,7 +79,7 @@ function siblingsOf(boxes: Box[], id: string): { ids: string[]; parent: string |
 }
 
 // every box that differs from its old self is stamped, so the newer act wins a sync merge (mergeBoxLists picks the greater changedAt per box)
-function stamped(before: Box[], after: Box[]): Box[] {
+export function stamped(before: Box[], after: Box[]): Box[] {
   const was = new Map(before.map((b) => [b.id, b]));
   const now = stampNow();
   // a card that only had its object rebuilt (a re-seq to the number it already had) keeps its own stamp: only a real change claims the merge
@@ -138,7 +139,7 @@ export function renamePlanRow(boxes: Box[], id: string, typed: string): Box[] | 
   const next = outlineTitleEdit(b.text, typed);
   if (next === null) return null;
   const now = stampNow();
-  return boxes.map((x) => (x.id === id ? { ...x, text: next, updatedAt: now } : x));
+  return boxes.map((x) => (x.id === id ? { ...withCardText(x, next), updatedAt: now } : x));
 }
 
 /** Add a card to the end of the Plan's top level: a text card the board's own Open view also shows (placed below the lowest card, as a new card is). */

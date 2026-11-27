@@ -256,7 +256,10 @@ function suite(M, read, doc) {
 
   // NT1 - THE PLACEHOLDER IS NEVER THE WRITER'S WORDS: the question lives in `prompt` (never in `text`), and no module outside a short allow-list reads `.prompt` - every reader of the writer's words
   // (export, copy, the word count, the Tutor's page text, sync) reads `text`. An allow-list that grows is a decision, made here.
-  const ALLOW = new Set(['components/BoardEditor.tsx', 'store/guided.ts', 'decks/engine.ts', 'decks/guided.ts', 'decks/types.ts', 'types/index.ts']);
+  // PARKED (PRESETS-B, Nov 26): the allow-list before the Guide walk, kept verbatim:
+  // const ALLOW = new Set(['components/BoardEditor.tsx', 'store/guided.ts', 'decks/engine.ts', 'decks/guided.ts', 'decks/types.ts', 'types/index.ts']);
+  // SUCCESSOR: reorg/walk/stepModel.ts reads a scene's question to show it as the grey hint under that step (GuideWalk draws it in .wz-walk-hint); it never goes into a card's text, her note or her words.
+  const ALLOW = new Set(['components/BoardEditor.tsx', 'store/guided.ts', 'decks/engine.ts', 'decks/guided.ts', 'decks/types.ts', 'types/index.ts', 'reorg/walk/stepModel.ts']);
   const walk = (dir) => fs.readdirSync(path.join(SRC, dir), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name).split('\\').join('/')]));
   const readers = walk('.').filter((f) => /\.(ts|tsx)$/.test(f) && !ALLOW.has(f)).filter((f) => /\b(?:box|b|card|popupBox|x|c)\??\.prompt\b/.test(read(f)));
   const textHasPrompt = guidedCards.every((b) => !b.text.includes(b.prompt));

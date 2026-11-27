@@ -100,6 +100,8 @@ export interface PageSettings {
   level?: number;                                         // 0 to 2: how far under the Part above it sits (Act, then Scene); the reader clamps it
   color?: string;                                         // a token name from reorg/parts.ts PART_COLORS, never a hex
   lengthLimit?: { unit: 'words' | 'characters'; max: number };   // the writer's own ceiling for this Part
+  // THE GUIDE WALK (Nov 25): a LOOSE page is its own Doc, so her place in the walk is kept here (a made Doc keeps it in docSettings). Absent = not walking. A fact about THIS page, never dress.
+  walk?: { stepId: string };
 }
 
 export type PageTemplate = 'outline' | 'title' | 'bibliography';
