@@ -45,7 +45,6 @@ export function pageScaleFor(stageW: number, stageH: number, pageTop: number, wi
   return Math.max(today, eased);
 }
 
-// the page's LAYOUT height at base scale k: the letter height, or less where the stage cannot hold the painted page (the text scrolls inside) [pageScale §4]
 // #138 (Nick, Nov 26: an open menu never covers the page surface, margins included): the page yields only what the open menu needs, from that menu's side only -
 // its other edge and its top stay. `centre` is the page's centre at rest; `leftLimit` / `rightLimit` are the nearest the page may come to each side (null: no menu
 // there). It is a change of painted scale and a sideways shift, never a re-lay of the lines. Never under YIELD_FLOOR.
@@ -62,6 +61,7 @@ export function pageYieldFor(centre: number, k: number, leftLimit: number | null
   return { k: yk, shift: mid - centre };
 }
 
+// the page's LAYOUT height at base scale k: the letter height, or less where the stage cannot hold the painted page (the text scrolls inside) [pageScale §4]
 export function pageLayoutHeightFor(stageH: number, pageTop: number, k: number): number {
   if (!(stageH > 0) || !(k > 0)) return PAGE_H_BASE;
   const room = (stageH - Math.max(0, pageTop) - PAGE_FENCE) / k;
