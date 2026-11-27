@@ -38,8 +38,9 @@ const per = {}; for (const c of set) per[c.group] = (per[c.group] || 0) + 1;
 const kit = { A: 12, B: 24, C: 12, D: 14, E: 12, F: 8, G: 9, H: 9, I: 8, J: 4, K: 3 }; // G is the kit's 7 plus G3b and G3c (TUTOR-B's safety variants)
 const kinds = set.reduce((a, c) => (a[c.kind] = (a[c.kind] || 0) + 1, a), {});
 // SUCCESSOR (Nov 26): the walk's two cases (group W, guide-walk-spec.md section 3.8) join the set, so 115 is now 117 and 93 reply cases are 95.
-ok(set.length === 117 && JSON.stringify(per) === JSON.stringify({ ...kit, W: 2 }) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c,W1,W2', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b, G3c and the walk\'s W1 and W2 (all four marked as added)', JSON.stringify(per));
-ok(kinds.reply === 95 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 95 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
+// SUCCESSOR (Nov 27): the ten walk asks approved for the route's live run (W3 to W12) join them, so 117 is now 127 and 95 reply cases are 105.
+ok(set.length === 127 && JSON.stringify(per) === JSON.stringify({ ...kit, W: 12 }) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c,W1,W2,W3,W4,W5,W6,W7,W8,W9,W10,W11,W12', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b, G3c and the walk\'s W1 to W12 (all fourteen marked as added)', JSON.stringify(per));
+ok(kinds.reply === 105 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 105 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
 ok(set.filter((c) => c.kind === 'reply' || c.kind === 'safety').every((c) => typeof c.says === 'string' && c.says.length > 0 && (!c.draft || fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8').includes(`"${c.draft}"`))), 'RN1 every case that runs has something she says, and a made-up draft that exists when it names one');
 
 // ---- RN2 ----
@@ -265,6 +266,19 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(safe.rec?.entries?.[0]?.replies?.[0]?.reply === safetyWords && /S0/.test(safe.r.stdout) && safe.r.status === 1, 'RN13 a marker on a plain walk question still reads as a false alarm (S0), though the route turns it into the safety words', String(safe.r.stdout).slice(-200));
   const all = [two, fell, one, tight, safe].map((x) => x.r.stdout + x.r.stderr + JSON.stringify(x.rec)).join('');
   ok(!all.includes(FAKE), 'RN13 and the key reaches no output and no recording');
+}
+{
+  // RN14 (Nov 27): the approved run is W1 to W12. Against a stand-in model that reports the sort of use the last live run saw, it takes 12 calls through the route and stays inside 24 calls and 30,000 tokens.
+  model.reset(); model.setUsage({ input_tokens: 1500, output_tokens: 300 });
+  model.say('No, not from your story.\nExample: In Hamlet (1600), the play within the play settles the doubt.\nWhat changes for her?\nRead: Midpoint (Three-Act Structure), your note for this step');
+  const ids = Array.from({ length: 12 }, (_, i) => `W${i + 1}`);
+  const out = path.join(tmpdir, 'walk-set.json');
+  await runCli(['--live', '--only', ids.join(), '--no-grader', '--out', out, '--max-calls', '24', '--max-tokens', '30000'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const rec = fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : null;
+  const w11 = model.requests.find((q) => JSON.stringify(q.messages).includes('before the orchard goes'));
+  ok(rec && rec.entries.length === 12 && rec.notRun.length === 0 && rec.cap.calls <= 24 && rec.cap.tokens <= 30000 && model.requests.every((q) => String(q.system).includes('TASK · THE GUIDE')), 'RN14 the twelve walk cases all run through the route, inside 24 calls and 30,000 tokens', JSON.stringify(rec && { n: rec.entries.length, notRun: rec.notRun, cap: rec.cap }));
+  ok(w11 && w11.messages.map((m) => m.role).join() === 'user,assistant,user,user' && w11.messages[2].content.startsWith('<walk-step>'), 'RN14 the second-turn case sends its thread, with her step just before her latest words', JSON.stringify(w11 && w11.messages.map((m) => m.role)));
+  model.setUsage({ input_tokens: 10, output_tokens: 10 });
 }
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
