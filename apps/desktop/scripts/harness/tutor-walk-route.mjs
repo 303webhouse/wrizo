@@ -106,7 +106,7 @@ async function run(mutate) {
 
     const bare = { structure: 'Three-Act Structure', kind: 'stories', step: 'Midpoint', note: '' };
     const y = await send(b, body(bare));
-    need('WR7', y.r.status === 200 && textOf(y.msgs[0] || {}).includes('her note for this step: (none yet)') && !/preset:|step before:|step after:/.test(textOf(y.msgs[0] || {})), textOf(y.msgs[0] || {}));
+    need('WR7', y.r.status === 200 && textOf(y.msgs[0] || {}).includes("the writer's note for this step: (none yet)") && !/preset:|step before:|step after:/.test(textOf(y.msgs[0] || {})), textOf(y.msgs[0] || {}));
 
     const thread = [{ role: 'writer', text: 'Ask me questions about my Midpoint' }, { role: 'tutor', text: 'What does she want?' }, { role: 'writer', text: 'Her brother back.' }];
     const t = await send(b, body(STEP, { messages: thread }));
