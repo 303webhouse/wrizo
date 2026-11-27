@@ -92,7 +92,9 @@ if (tsSrc !== null && mdSrc !== null) {
     !!m, m ? `${built.length} chars` : `could not build: ${buildErr}`);
   // the route sends the builder's Tutor hat and typed-question task, with the voice picked from the theme (voiceForTheme: the Arbor voice is the record's; no theme drops the voice block)
   ok('and tutor.ts really sends that builder (Tutor hat, typed-question task, the voice from voiceForTheme), so the record is the string it sends for the Arbor theme',
-    /system:\s*buildSystemPrompt\(\{\s*hat:\s*'tutor',\s*voice:\s*voiceForTheme\(req\.body\.theme\),\s*task:\s*'ask'\s*\}\)/.test(tsSrc), '');
+    // SUCCESSOR (Nov 27, the Guide's walk): the one call now picks the walk's task when the body carries `walk`, so the typed question's task is still 'ask'. The line it replaces, verbatim:
+    //   /system:\s*buildSystemPrompt\(\{\s*hat:\s*'tutor',\s*voice:\s*voiceForTheme\(req\.body\.theme\),\s*task:\s*'ask'\s*\}\)/.test(tsSrc), '');
+    /system:\s*buildSystemPrompt\(\{\s*hat:\s*'tutor',\s*voice:\s*voiceForTheme\(req\.body\.theme\),\s*task:\s*walk \? 'walk' : 'ask'\s*\}\)/.test(tsSrc), '');
 
   // The mirror's body is everything after the `---` that closes its header.
   // The header explains the law; the body IS the prompt.
