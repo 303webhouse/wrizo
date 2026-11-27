@@ -148,7 +148,13 @@ await withHarness(async (app) => {
     ok('C3: clicking Nomad and Volant opens nothing', (await ev("document.documentElement.getAttribute('data-theme')")) === 'machina' && (await ev("document.querySelectorAll('.wz-theme-card').length")) === 5);
     for (const k of ['arbor', 'machina', 'flux']) { await hover(k); await sleep(900); rects.push(await vt('paper()')); }
     await away(); await sleep(500);
-    ok('P1: the page never moves: opening the picker and playing every tile leaves the paper where it was', !!before && rects.every((r) => r === before), { before, rects });
+    // SUPERSEDED (#142, Nick, Nov 26: a rail pop-out never covers the page; in Draft the page gives way from the rail's side while it is open). The original, verbatim:
+    // ok('P1: the page never moves: opening the picker and playing every tile leaves the paper where it was', !!before && rects.every((r) => r === before), { before, rects });
+    const open1 = JSON.parse(rects[0] || 'null'), was = JSON.parse(before || 'null');
+    await ev("document.querySelector('[data-category=\"theme\"]')?.click(); true"); await sleep(1200);
+    const closed = await vt('paper()');
+    ok('P1 [successor, #142]: opening the picker the page gives way only from the rail’s side, holds still while every tile plays, and is back where it was once the picker is closed',
+      !!was && !!open1 && open1.x >= was.x - 0.5 && Math.abs(open1.y - was.y) <= 0.5 && Math.abs(open1.h - was.h) <= 0.5 && Math.abs(open1.r - was.r) <= 1 && rects.every((r) => r === rects[0]) && closed === before, { before, rects, closed });
     const store1 = await vt('store()');
     ok('N1: nothing is saved by hovering or by pressing a tile that can’t open', store0 === store1, { same: store0 === store1 });
   });
@@ -286,5 +292,6 @@ for (const c of checks) console.log(`${c.pass ? 'ok  ' : 'FAIL'} ${c.name}${c.pa
 const bad = checks.filter((c) => !c.pass);
 const why = bad.find((c) => c.name.endsWith(': threw')) || bad[0];
 const codes = [...new Set(bad.map((c) => c.name.split(/[ :]/)[0]))].join(' ');
-console.log(pass ? `\nVISUAL 2 TILES VERIFY: PASS (${checks.length} checks)` : `\nVISUAL 2 TILES VERIFY: FAIL - ${bad.length}/${checks.length} failed: ${codes} | ${why ? `${why.name.slice(0, 40)} ${why.detail.slice(0, 220)}`.replace(/\s+/g, ' ') : 'no checks ran'}`);
+const reasons = [...new Map(bad.map((c) => [c.name.split(/[ :]/)[0], c])).values()].map((c) => `${c.name.slice(0, 40)} ${c.detail.slice(0, 200)}`).join(' || ').replace(/\s+/g, ' ');
+console.log(pass ? `\nVISUAL 2 TILES VERIFY: PASS (${checks.length} checks)` : `\nVISUAL 2 TILES VERIFY: FAIL - ${bad.length}/${checks.length} failed: ${codes} | ${why ? reasons : 'no checks ran'}`);
 process.exit(pass ? 0 : 1);
