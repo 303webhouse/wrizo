@@ -41,7 +41,9 @@ try { await withHarness(async (app) => {
   // the screen box of a word as drawn (the last one on the page that reads it)
   const wordBox = (w) => ev(`(() => { const ed = document.querySelector('.forward-only-editor'); const t = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let found = null;
     for (let n = t.nextNode(); n; n = t.nextNode()) { const i = n.data.lastIndexOf(${J(w)}); if (i >= 0) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + ${w.length}); const b = r.getBoundingClientRect(); if (b.width > 0) found = [b.left, b.top, b.right, b.bottom]; } } return found; })()`);
-  const drag = async (w) => { const b = await wordBox(w); if (!b) return false; const y = (b[1] + b[3]) / 2; await app.mouseMove(b[0] + 1, y); await app.mouseDown(b[0] + 1, y); await app.mouseMove((b[0] + b[2]) / 2, y); await app.mouseMove(b[2] - 1, y); await app.mouseUp(b[2] - 1, y); await sleep(300); return true; };
+  // a move with the button held (the driver's mouseMove says no button, which drags nothing)
+  const held = (x, y) => app.cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y, button: 'left', buttons: 1, pointerType: 'mouse' });
+  const drag = async (w) => { const b = await wordBox(w); if (!b) return false; const y = (b[1] + b[3]) / 2; await app.mouseMove(b[0] + 1, y); await app.mouseDown(b[0] + 1, y); await held((b[0] + b[2]) / 2, y); await held(b[2] - 1, y); await app.mouseUp(b[2] - 1, y); await sleep(300); return true; };
   const selected = () => ev('String(getSelection())');
   const chord = async (key, code, vk, mods = 2) => { await app.cdp('Input.dispatchKeyEvent', { type: 'rawKeyDown', key, code, windowsVirtualKeyCode: vk, modifiers: mods }); await app.cdp('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: vk, modifiers: mods }); await sleep(400); };
 
