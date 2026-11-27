@@ -6,9 +6,10 @@
 //     Its line strength follows its depth (LINE_CONTRAST: nearest 2.85:1, the next two 1.85 and 1.65, the far five 1.3 to 1.2, against the ground #020C10).
 //   - A STEP, NOT A RUN. Each frame element moves ONE slot a cycle (from the next slot's size to its own) and the cycle repeats: the picture at the end of a cycle is the picture at its start (the
 //     nearest frame leaves, a new one fades in at the far end), so the corridor flows without a seam. One transform + one opacity per frame, the compositor's.
-//   - PACE DRIVES IT (Nick's named exception, Jacked In only). A key does ONE thing here: it stamps its time into an array. Every 250 ms (4 Hz, never faster) one tick reads the keys of the last
-//     PACE.windowMs, smooths them into a single number, and sets the animations' own playbackRate (updatePlaybackRate keeps every frame where it stands). No per-frame JS, no canvas, no layout.
-//   - WHEN SHE STOPS the pace eases to zero over ~1.5 s and the corridor HOLDS STILL: it finishes the step it is in at the base speed (a second at most) and stops EXACTLY on a slot, so the picture
+//   - PACE DRIVES IT (Nick's named exception, Jacked In only). A key does ONE thing here: it stamps its time into an array. Every 250 ms (4 Hz, never faster) one tick averages the keys of the last
+//     PACE.windowMs and sets the animations' own playbackRate (updatePlaybackRate keeps every frame where it stands). No per-frame JS, no canvas, no layout.
+//     #140 (Nick, Nov 2026: "too herky jerky"): the speed FOLLOWS HER PACE, NOT EACH KEY. It changes only when the average has moved by a clear step, and eases there over PACE.easeMs.
+//   - WHEN SHE STOPS the average falls over those 4 s, the speed steps down with it, and the corridor HOLDS STILL: it finishes the step it is in, no faster than the base speed, and stops EXACTLY on a slot, so the picture
 //     at rest is the video's (the eight frames at their depths). Nothing moves while she thinks. The animations START PAUSED (css: animation-play-state, [data-run] runs them), so one that begins
 //     after the pace effect ran (flux-v3.css is a dynamic import) is never left running.
 //   - AT SPEED a lime frame shows (never a score), asked of the flash budget like every flash.
@@ -28,11 +29,14 @@ import { useGoalProgress, WORD_GOAL } from '../components/WritingIncentives';
 
 export const PACE = {
   tickMs: 250,       // the speed is set at most this often (4 Hz)
-  windowMs: 700,     // the keys it counts: those of the last 0.7 s
-  ease: 0.5,         // each tick moves the smoothed pace halfway to the keys' own rate (a stop reads ~0 in ~1.5 s)
+  windowMs: 4000,    // her pace is the AVERAGE of the last 4 s (#140: 0.7 s moved the speed on almost every key)
+  stepKps: 1.5,      // the speed follows only a clear step of that average: this many keys a second,
+  stepShare: 0.4,    // or this share of the pace it is following, whichever is more
+  easeMs: 1200,      // and eases to the new speed over this
+  maxStep: 0.45,     // never more than this much playbackRate in one tick, however far it has to go
   maxKps: 12,        // a fast typist's characters a second: the rate stops rising here
   limeKps: 8,        // at or above this (smoothed), the lime frame shows
-  stillBelow: 0.15,  // under this smoothed pace the corridor holds (playbackRate 0)
+  stillBelow: 0.15,  // under this average the corridor holds (playbackRate 0): no key in the whole window
 };
 export const POP_MS = 300;   // the brass tint's length
 export const GLOW_HOLD_MS = 2000;     // after a goal the glow holds at full while CHECKPOINT shows
@@ -154,8 +158,9 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
     if (!box || still) return undefined;
     const keys: number[] = [];
     const onKey = (e: KeyboardEvent) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') keys.push(performance.now()); };
-    let pace = 0;
+    let pace = 0;            // the pace the speed is following: it moves only on a clear step
     let rate = 0;
+    let from = 0, to = 0, since = 0;   // the ease in hand
     let fast = false;
     let settle = 0;
     // the FRAMES' animations only (CSSAnimation). The glow's opacity TRANSITION lives in the same box: stopping every animation at rest froze it mid-ease (the harness read its target at 0.40 and its
@@ -165,27 +170,33 @@ export function FluxCorridor({ scrollRef, unitCount }: Props) {
       settle = 0;
       const dur = STEP_S * 1000;
       anims().forEach((a) => { if (typeof a.currentTime === 'number' && a.effect && a.effect.getTiming().iterations === Infinity) a.currentTime = Math.round(a.currentTime / dur) * dur; a.updatePlaybackRate(0); });
-      rate = 0;
+      rate = 0; from = 0; to = 0;
       box.removeAttribute('data-run');
     };
     const tick = () => {
       const now = performance.now();
       while (keys.length && now - keys[0] > PACE.windowMs) keys.shift();
-      pace += (keys.length / (PACE.windowMs / 1000) - pace) * PACE.ease;
-      const next = rateFor(pace);
-      if (next > 0) {
+      const average = keys.length / (PACE.windowMs / 1000);
+      const moved = Math.abs(average - pace) >= Math.max(PACE.stepKps, pace * PACE.stepShare);
+      const woke = pace < PACE.stillBelow && average >= PACE.stillBelow;
+      const stopped = pace >= PACE.stillBelow && average < PACE.stillBelow;
+      if (moved || woke || stopped) { pace = average; from = rate; to = rateFor(pace); since = now; }
+      if (to > 0) {
         if (settle) { window.clearTimeout(settle); settle = 0; }
+        const eased = from + (to - from) * Math.min(1, (now - since + PACE.tickMs) / PACE.easeMs);
+        const next = rate + Math.max(-PACE.maxStep, Math.min(PACE.maxStep, eased - rate));
         if (Math.abs(next - rate) >= 0.02 || !box.hasAttribute('data-run')) { rate = next; box.setAttribute('data-run', ''); anims().forEach((a) => a.updatePlaybackRate(rate)); }
       } else if (rate > 0 && !settle) {
-        // she stopped: finish the step in hand at the base speed, then hold on the slot
+        // she stopped: finish the step in hand, no faster than the base speed, then hold on the slot
         const loop = anims().find((a) => a.effect && a.effect.getTiming().iterations === Infinity);
         const dur = STEP_S * 1000;
         const t = loop && typeof loop.currentTime === 'number' ? loop.currentTime : 0;
         const rem = dur - (t % dur);
+        const finish = Math.min(SETTLE_RATE, Math.max(rate, 0.5));
         if (rem < 40 || rem > dur - 40) stopOnSlot();
-        else { rate = SETTLE_RATE; anims().forEach((a) => a.updatePlaybackRate(rate)); settle = window.setTimeout(stopOnSlot, rem / SETTLE_RATE); }
+        else { rate = finish; anims().forEach((a) => a.updatePlaybackRate(rate)); settle = window.setTimeout(stopOnSlot, rem / finish); }
       }
-      const f = fast ? pace >= PACE.limeKps * 0.75 : pace >= PACE.limeKps;
+      const f = fast ? average >= PACE.limeKps * 0.75 : average >= PACE.limeKps;
       if (f !== fast && (!f || tryFlash('f3-corridor'))) { fast = f; if (f) box.setAttribute('data-fast', ''); else box.removeAttribute('data-fast'); }
     };
     document.addEventListener('keydown', onKey, { capture: true, passive: true });
