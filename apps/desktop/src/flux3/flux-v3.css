@@ -305,6 +305,8 @@
 
 /* #139 - a Flux Board takes the screen (components/board/useBoardBox.ts) and its menus open inward over it: each menu's outer edge on the Board's edge, above the
    Board's readings strip, the closing tab on the inner side. Closed, the tabs stand outside the Board, in the lanes it leaves. */
+/* the header bar ends where the Board ends: the host keeps 40 px from the window's edge, the Board 20 (useBoardBox.ts's lane) */
+:root[data-flux3][data-theme='flux'] .desk-frame-host:has(.desk-frame-stage--board) > .chrome-top{ margin-right:-20px; }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board{ --sliver-anchor-w:calc(200px * var(--wz-chrome-k, 1)); left:var(--board-l); right:auto; width:var(--sliver-anchor-w); max-width:none; height:calc(100% - 28px); pointer-events:none; }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board .wz-sliver{ pointer-events:none; }
 :root[data-flux3][data-theme='flux'] .desk-frame-stage--board .desk-frame-sliver-anchor--board :is(.wz-sliver-grip, .wz-sliver[data-open='true'] .wz-sliver-panel){ pointer-events:auto; }
