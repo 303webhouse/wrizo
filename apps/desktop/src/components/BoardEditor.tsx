@@ -18,7 +18,7 @@ import {
   purgeEntry, emptyTrash, getDeletedEntries, getTrashedCards,
   getPairedPageId, pairBoardWithPage,
   setPinDisplayed, toggleEntryLink, isCardLinkedToEntry, livePinFor, getLinkPeersByCard, addPageLink,
-  boardNestChain, pinAspectFor } from '../store/persistence';
+  boardNestChain, pinAspectFor, saveJournalEntry } from '../store/persistence';
 import { SURVEY_DRAG_TYPE } from './CascadeSurvey';
 import { useBoardMode, lastShownBeforeWalk } from '../store/boardMode';
 import { StoryboardProjection, OutlineProjection } from './BoardProjection';
@@ -77,7 +77,12 @@ import { usePlace } from '../store/usePlace';
 import { materializeDeck } from '../decks/engine';
 import type { DeckDefinition, DeckAnswers } from '../decks/types';
 import { armStartHere, getStartHereCardId, noteDealtCardEdited } from '../store/deckHint';
-import type { JournalEntry, Box, Project, StoredFace } from '../types';
+import type { JournalEntry, Box, Project, StoredFace, Stroke } from '../types';
+import type { InkPen } from './InkStratum';
+import { InkLayer } from './ink/InkLayer';
+import { useReorgPiece } from '../reorg/themeGate';
+import { boardInkWanted, clearBoardInk } from './ink/boardInkIntent';
+import { INK_DEFAULT_PEN } from '../store/ink';
 import { TypeControl } from './TypeControl';
 import { cardTypeStyle, ensureFaceLoaded } from '../store/fontRoster';
 import { SIZE_DEFAULT } from '../store/fontSize';
@@ -213,13 +218,30 @@ export function BoardEditor({ id }: { id: string }) {
   const planPresets = reorgFor(theme) && themeHas('back', theme) && !isSystemBoard;   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
   const planRowHint = (b: Box): string => (b.planHint && !partOfRow(id, b.id, docOfPage(id))?.written ? b.planHint : '');
   const offeredViews: BoardView[] = isSystemBoard && boardKind !== 'book' ? ['open'] : viewsFor(boardKind, narrowBoard, deckBoard);
-  const boardMode: BoardView = offeredViews.includes(boardModeRaw) ? boardModeRaw : offeredViews.includes(homeView) ? homeView : offeredViews[0];
-  const setBoardMode = (m: BoardView) => setBoardModeRaw(m, boardMode);
+  // VISUAL 1a.3: a Board reached by "Draw on a Board" opens on its canvas for this visit (her kept "shown as" is not written)
+  const [inkArrival, setInkArrival] = useState(() => boardInkWanted(id));
+  const boardMode: BoardView = inkArrival && offeredViews.includes('open') ? 'open' : offeredViews.includes(boardModeRaw) ? boardModeRaw : offeredViews.includes(homeView) ? homeView : offeredViews[0];
+  const setBoardMode = (m: BoardView) => { setInkArrival(false); setBoardModeRaw(m, boardMode); };
   // a card added in the Walk: the Walk lands on it
   const [placeFor, setPlaceFor] = useState<{ box: Box; el: HTMLElement } | null>(null);   // W2 "Place a page...": the card and the door it was pressed on (the picker anchors under it)
   const [, setPlacedTick] = useState(0);   // a page was placed: the rail's leaf for the card is read again
   const [walkJumpId, setWalkJumpId] = useState<string | null>(null);   // LIVE boxes only: a deleted card is a tombstone in storage, carried through every save by saveBoardBoxes
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // VISUAL 1a.3 - DRAWING ON A BOARD. The ink is the Board row's own `strokes` (the field a page's ink already uses: no new field, no migration), normalised by the Board's width as its cards are.
+  // The pen is in hand only on the canvas view of an ordinary, framed Board; any other view puts it down. Session only, like a page's.
+  const [startedInInk] = useState(() => boardInkWanted(id));
+  useEffect(() => { clearBoardInk(id); }, [id]);
+  const [boardInstrument, setBoardInstrument] = useState<'text' | 'ink'>(startedInInk ? 'ink' : 'text');
+  const reorgFrontOn = useReorgPiece('front');   // the switch off (tests only), a Board's drawer stays exactly as it was
+  const canInk = reorgFrontOn && framed && !isSystemBoard && boardMode === 'open';
+  const inkNow: 'text' | 'ink' = canInk ? boardInstrument : 'text';
+  useEffect(() => { if (!canInk) setBoardInstrument('text'); }, [canInk]);
+  useEffect(() => { if (inkNow === 'ink') setSelectedId(null); }, [inkNow]);   // no card stays selected under the pen (Delete would remove it)
+  const [boardStrokes, setBoardStrokes] = useState<Stroke[]>(() => initialEntry?.strokes ?? []);
+  const [boardPen, setBoardPen] = useState<InkPen>(INK_DEFAULT_PEN);
+  const [boardEraser, setBoardEraser] = useState(false);
+  const boardInkRef = useRef<HTMLDivElement>(null);
+  const [boardSheetH, setBoardSheetH] = useState(0);
   // FX4 S5 — the card popup (inline contenteditable editing RETIRES whole):
   // the id of the text card currently open in BoardCardPopup, or null. The
   // board itself blurs+dims behind it (the mockup's own treatment) while
@@ -772,6 +794,16 @@ export function BoardEditor({ id }: { id: string }) {
   // the rename state lives with the other hooks, above the early return: hooks below `if (!initialEntry) return null` would change the hook count between renders [BoardEditor §46]
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+  // VISUAL 1a.3: the drawer follows the Board's own saved height (Fable): the visible Board is the wrap, whatever she has re-sized it to (the observer hears every change of it). Above the early return, as every hook is
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (inkNow !== 'ink' || !wrap || typeof ResizeObserver === 'undefined') return;
+    const read = () => setBoardSheetH(wrap.offsetHeight);
+    const ro = new ResizeObserver(read);
+    ro.observe(wrap);
+    read();
+    return () => ro.disconnect();
+  }, [inkNow, !!initialEntry]);
 
   if (!initialEntry) return null;
 
@@ -1037,6 +1069,18 @@ export function BoardEditor({ id }: { id: string }) {
     });
   };
 
+  // a stroke is saved on the Board's row, over its latest cards; an unborn Board is born with the cards in the room and the stroke together (an erase alone births nothing)
+  const persistBoardStrokes = (next: Stroke[]) => {
+    setBoardStrokes(next);
+    if (unbornRef.current) {
+      if (next.length === 0) return;
+      lastSavedRef.current = boxesRef.current;
+      unbornRef.current.birthWith({ boxes: boxesRef.current, strokes: next });
+      return;
+    }
+    const latest = getJournalEntry(id);
+    if (latest) saveJournalEntry({ ...latest, strokes: next });
+  };
   const boardCanvas = (
     <div style={{ position: 'relative' }}>
       {/* CONNECTOR-B: the connector's arm and its tip, in a VIEWPORT overlay so the arm can reach the rail's thumbnails (the board canvas clips); client coordinates, placed imperatively by the pointer effect */}
@@ -1311,6 +1355,13 @@ export function BoardEditor({ id }: { id: string }) {
             </div>
           );
         })}
+        {/* VISUAL 1a.3 - the drawing over the Board: nothing at all until this Board has ink or the INK tab is out. In ink it takes the pointer, and nothing reaches the cards or the canvas under it */}
+        {!isSystemBoard && (boardStrokes.length > 0 || inkNow === 'ink') && (
+          <div ref={boardInkRef} className="wz-board-ink-sheet" data-ink={inkNow === 'ink' ? 'true' : 'false'} data-ink-paint="layout"
+            onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+            <InkLayer permission={inkNow === 'ink' ? 'edit' : 'inert'} sheetRef={boardInkRef} strokes={boardStrokes} onCommit={persistBoardStrokes} pen={boardPen} eraserArmed={boardEraser} />
+          </div>
+        )}
       </div>
       </div>
       {/* FX4 S4 — the board canvas's own quiet bottom-right resize handle,
@@ -1560,10 +1611,18 @@ export function BoardEditor({ id }: { id: string }) {
           rowHint={planPresets ? planRowHint : undefined}
           beginnings={<BeginningsRow surface="projection" doors={beginningDoors} />} />;
 
+  const boardInkTab = canInk
+    ? {
+        instrument: { value: inkNow, onChange: setBoardInstrument },
+        inkOptions: inkNow === 'ink'
+          ? { pen: boardPen, onPick: (n: Partial<InkPen>) => setBoardPen((p) => ({ ...p, ...n })), eraserArmed: boardEraser, onToggleEraser: () => setBoardEraser((a) => !a), sheet: () => boardInkRef.current ?? canvasRef.current }
+          : undefined,
+      }
+    : {};
   const sliverContent: SliverContent = isSystemBoard
     ? { kind: 'board' }
     : {
-        kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true),
+        ...boardInkTab, kind: 'board', onAddCard, onAddPageCard, onAddExistingPage: () => setExistingPageOpen(true),
         onAddFromDeck,
       };
 
@@ -1655,7 +1714,7 @@ export function BoardEditor({ id }: { id: string }) {
           pageKind="board"
           strip={cascade.strip}
           cascadeLayers={cascade.layers}
-          sliver={<Sliver content={sliverContent} goalText="" />}
+          sliver={<Sliver content={sliverContent} goalText="" startOpen={startedInInk} sheetHeight={boardSheetH || undefined} />}
           // TU2 S4 — "Presence on Boards": the same room, following the same
           // prop pattern every other framed host already uses (entry/
           // project/pageText/pageKind — see PageEditor.tsx/JournalEntry.tsx/

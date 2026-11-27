@@ -20,8 +20,9 @@ export const frontKindHead = (theme: string | null | undefined): boolean => them
 
 // (the Wrizors' pass 6, NIT 2; Nick's 1A: the kind shows at SECTIONS' head and is not changed in one click once the page is made, so in Arbor FORMAT's Pages Kind row retires with the Presets)
 /** The sections a tab shows: drawerSet's own, unchanged, but in Arbor (retirePresets) the ready-made starts (templates) are not on FORMAT: they live in SECTIONS' head menu, the kind menu, as Arbor's Presets tab retires into it. PARTS shows none of them (the Parts list is the tab). */
+// VISUAL 1a.3: the last line also gives BUILD and EDIT their INK tab (the ink zone alone), a Front-menu tab only: the classic drawer's table gives Draft and Revise no ink
 export function frontSectionAllowed(kind: DrawerKind, tab: FrontTab, section: DrawerSection, retirePresets = false): boolean {
   if (tab === 'parts') return false;
   if (retirePresets && (section === 'templates' || section === 'pageKind')) return false;
-  return sectionsFor(kind, tab).includes(section);
+  return sectionsFor(kind, tab).includes(section) || (tab === 'ink' && section === 'ink' && (kind === 'draft' || kind === 'revise'));
 }
