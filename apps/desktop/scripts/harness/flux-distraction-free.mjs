@@ -147,7 +147,7 @@ try { await withHarness(async (app) => {
   // ---- Wire In --------------------------------------------------------------------------------------------------------------------------------------
   const type = () => ev("(() => { for (let i = 0; i < 12; i++) setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true })), i * 100); return true; })()");
   const corridor = () => ev("(() => { const c = document.querySelector('.flux3-corridor'); return c ? { frames: c.querySelectorAll('.flux3-cor-frame').length, rails: c.querySelectorAll('.flux3-cor-rails').length, glow: c.querySelectorAll('.flux3-cor-glow').length, ground: getComputedStyle(c).backgroundColor } : null; })()");
-  await open({ mode: 'freewrite' });
+  await open({ mode: 'journal' });
   await soft("!!document.querySelector('.flux3-corridor .flux3-cor-frame')");
   const w0 = await corridor();
   await df(true);
