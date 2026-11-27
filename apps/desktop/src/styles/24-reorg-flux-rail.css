@@ -149,6 +149,8 @@
 
 /* FLUX'S OWN: each place opens a node-dress panel (spec section 2); data-category is only set under the reorg (Cascade.tsx) */
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]{ background:#04141A; border-color:#7EB4C4; }
+/* the theme tiles' bands are drawn in the panel's own colour (flourish-spec §3), which here is not --desk-ground */
+:root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category] :is(.wz-theme-note, .wz-theme-band){ background:#04141A; }
 /* the pop-out stops before the page's left opener, and keeps its 300 px where there is room (reorg/railRoom.ts publishes the room) */
 :root[data-flux3][data-theme='flux'] .wz-cascade-panel[data-category]:not([data-visible='false']){ width:min(300px, var(--wz-rail-room, 300px)); max-width:min(300px, var(--wz-rail-room, 300px)); }
 /* the Wrizors' pass 1. REAL 1: every scrollbar in a pop-out draws its thumb in the field edge (5.2:1 on the panel) */

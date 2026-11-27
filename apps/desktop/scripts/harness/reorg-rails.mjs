@@ -229,14 +229,24 @@ await withHarness(async (app) => {
     // SUPERSEDED (#142: the anchor now says what room a pop-out has; here it is the full 300 px, so nothing is drawn differently. Exactly that one attribute, at exactly
     // those values, is taken out of the live DOM and everything else is held byte for byte), the original verbatim:
     // return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // const unroomed = (h) => String(h).replace(/^<div class="desk-frame-cascade-anchor" style="--wz-rail-room: 300px; --wz-second-room: 300px;">/, '<div class="desk-frame-cascade-anchor">');
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => unroomed(liveOf(k)) !== ruled(k, golden.surfaces[theme][k]));
+    // SUPERSEDED (VISUAL 2, flourish-spec §3, Nov 26: the theme pop-out's cards are five new tiles - intended product DOM; the check cuts the cards block out of both and holds EVERYTHING else to the golden byte for byte; O1b reads the new tiles). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // const noCards = (k, html) => (k === 'theme' ? String(html).split('<div class="wz-theme-cards">')[0] : html);
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => noCards(k, liveOf(k)) !== noCards(k, ruled(k, golden.surfaces[theme][k])));
+    // SUCCESSOR of both (#142 and VISUAL 2 together): the anchor's room attribute is taken out, and so is the cards block.
     const unroomed = (h) => String(h).replace(/^<div class="desk-frame-cascade-anchor" style="--wz-rail-room: 300px; --wz-second-room: 300px;">/, '<div class="desk-frame-cascade-anchor">');
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => unroomed(liveOf(k)) !== ruled(k, golden.surfaces[theme][k]));
+    const noCards = (k, html) => (k === 'theme' ? String(html).split('<div class="wz-theme-cards">')[0] : html);
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => noCards(k, unroomed(liveOf(k))) !== noCards(k, ruled(k, golden.surfaces[theme][k])));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);
     const got = await captureSurfaces(app);
     const bad = diffOf(got, theme);
     ok(`O1 [${theme}]: switch OFF - the strip and its ${CATEGORIES.length} pop-outs are main's DOM exactly`, golden && bad.length === 0 && Object.keys(golden.surfaces[theme] || {}).length === CATEGORIES.length + 1, bad.join(','));
+    const tiles = [...String(got.theme).matchAll(/class="wz-theme-card wz-theme-card-([a-z]+)/g)].map((m) => m[1]).join(',');
+    ok(`O1b [${theme}]: the theme pop-out holds the five tiles, in order`, tiles === 'arbor,machina,flux,nomad,volant', tiles);
     for (const k of bad.slice(0, 2)) console.log(`DIFF ${theme}.${k} ${Buffer.from(String(got[k]), 'utf8').toString('base64')}`);
     if (theme !== 'machina') {
       await openPage(app, theme, true);
