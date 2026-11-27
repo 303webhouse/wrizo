@@ -67,6 +67,7 @@ await withHarness(async (app) => {
           ok(`${at} ${side} (premise): it opened`, opened && !!panel, { panel, page: s.page });
           if (!panel) continue;
           ok(`${at} ${side} O: neither the menu nor its tab touches the page`, !cross(panel, s.page) && !cross(grip, s.page), { panel, grip, page: s.page });
+          ok(`${at} ${side} B: the open tab stands beside its menu, not on it`, !!grip && !cross(grip, panel), { grip, panel });
           const gap = side === 'front' ? s.page[0] - panel[2] : panel[0] - s.page[2];
           const width = panel[2] - panel[0];
           const std = side === 'front' ? th.front : BACK;

@@ -435,7 +435,7 @@
   /* Same canonical-half-width formula .desk-frame-sliver-anchor already
      uses (FX3 S2 taught it to scale with --paper-scale; this anchor reads
      the identical formula so it drifts in lockstep, not independently). */
-  --cascade-paper-half: var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch));   /* PAGE-SIZE */
+  --cascade-paper-half: var(--wz-page-half-l, var(--wz-page-half, min(calc(380px * var(--paper-scale)), 30ch)));   /* PAGE-SIZE; #138 */
   /* The margin available between the strip's own right edge and the
      paper's own left edge, WITHIN this stage box — the mirror twin of
      .desk-frame-sliver-anchor's own --sliver-margin (that comment block
