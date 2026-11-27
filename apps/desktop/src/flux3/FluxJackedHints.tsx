@@ -65,7 +65,7 @@ function LeaveX() {
   return createPortal(
     <>
       {/* #148: one writing prompt, on her press only (the press stays hers: her caret stays on the page) */}
-      <button ref={ask} type="button" className="flux3-leave-x flux3-prompt-btn" data-flux3-prompt="" tabIndex={-1} aria-label={t('tutorFreeWritePrompt')} title={t('tutorFreeWritePrompt')}
+      <button ref={ask} type="button" className="flux3-prompt-btn" data-flux3-prompt="" tabIndex={-1} aria-label={t('tutorFreeWritePrompt')} title={t('tutorFreeWritePrompt')}
         onMouseDown={(e) => e.preventDefault()} onClick={() => window.dispatchEvent(new CustomEvent(WIRE_PROMPT_EVENT))}>
         <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" focusable="false"><circle cx="20" cy="20" r="19" /><path d="M12 14 H28 V25 H20 L15 29 V25 H12 Z M16 18 H24 M16 21 H22" fill="none" /></svg>
       </button>
