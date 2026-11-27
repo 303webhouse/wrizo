@@ -38,6 +38,7 @@ import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { cascadeExitMs } from './Cascade';
 import { DRAWER_MIN, menusOpenInward } from '../store/menusDrawers';
 import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -416,7 +417,10 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     // the open geometry, so the drawer slides back from where it stood and its tab, on its outer edge, travels with it (it snapped to the
     // pre-open width first: 37 px apart at half the close, run 41336050132). The next open measures again.
     if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
-    if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
+    // #144: while it fades the closing drawer keeps its open size and place; it goes back to rest only once gone. (Snapped back at once, it was wider than the
+    // room beside the page and was drawn over it.)
+    if (!open) { const gone = window.setTimeout(() => { setPanelWidthPx(null); setPanelOffsetPx(0); }, cascadeExitMs()); return () => window.clearTimeout(gone); }
+    if (docked && !linkDock) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = tutorStage();
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
