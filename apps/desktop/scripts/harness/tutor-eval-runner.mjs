@@ -280,6 +280,24 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(w11 && w11.messages.map((m) => m.role).join() === 'user,assistant,user,user' && w11.messages[2].content.startsWith('<walk-step>'), 'RN14 the second-turn case sends its thread, with her step just before her latest words', JSON.stringify(w11 && w11.messages.map((m) => m.role)));
   model.setUsage({ input_tokens: 10, output_tokens: 10 });
 }
+{
+  // RN15 (Nov 27, after run 46060667828; Fable: yes): the "c." before a date ("c. 429 BC") is not the end of a sentence, so it does not make an example look longer than it is. Three real sentences still fail.
+  const m = run.loadModules();
+  const m5 = (reply) => checksMod.runMachineChecks({ reply: `${reply}\nRead: Midpoint`, task: 'walk', guard: m.guard }).checks.find((k) => k.id === 'M5');
+  const two = [
+    'Example: in Oedipus Rex (c. 429 BC), a messenger arrives. Example: in Macbeth (c. 1606), the banquet turns.',
+    'Example: in Macbeth (c. 1606), the banquet turns. Nothing runs uphill after it.',
+    'Example: the Iliad (ca. 700 BC) turns on a death. Nothing is the same after it.',
+  ];
+  const wrongTwo = two.filter((r) => !m5(r).pass);
+  ok(wrongTwo.length === 0, 'RN15 an example of two sentences passes though a date in it says "c." or "ca."', wrongTwo.map((r) => `${r} -> ${m5(r).detail}`).join(' | '));
+  const three = [
+    'Example: in Macbeth (c. 1606), the banquet turns. The host cannot go on. Everything runs downhill.',
+    'Example: the letter is marked c. The reply is lost. The rest is silence.',
+  ];
+  ok(three.every((r) => !m5(r).pass), 'RN15 three real sentences still fail, and a "c." with no date after it still ends one', three.map((r) => `${m5(r).pass}`).join());
+  m.cleanup();
+}
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
 
