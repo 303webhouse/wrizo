@@ -1,0 +1,10 @@
+Train L15 deploy, Nov 27 2026, 4:12 pm to 4:14 pm MT (23:12:46Z to 23:14:18Z), from the laptop.
+git cdae5ee0d = main 539a05cc9 + FIX l15-flux-stack-2 5d8d51d8 (POLISH Distraction Free and notice 7c0b99408, Glitch v2 de219d5ca, tunnel round two e9ba3b7a1, fix-141-keyflip f0ef686c2) + the Session keys' comment on its own line (c13-10c) + Distraction Free's Arbor rule moved to arbor-v2.css (arbor2-1). Without the Wire In yield 5b6024ed. Railway deployment af4b9651-7ae7-4384-b2e0-a826ae45a58c.
+The commit cdae5ee0d is titled "TRIAL (not cleared)": it was cleared afterwards (Fable, Nov 27 3:58 pm, Q27).
+Word: Fable, Nov 27 2:55 pm (deploy on green; Q26 B) and 3:58 pm (Q27: take cdae5ee0d and deploy); orders file.
+The full pair: 46069991509 on 7bfc7b760 (train-l15-1). 555/558 OK each leg. Not OK: arbor2-1 F1 (1 of 36, both legs: the Distraction Free rule in an always-loaded sheet), flux-v2-part2 and polish10-14-frames (always allowed). Chat 1 read pair-merged with Nick's yes.
+After the pair: two changes, 4a142f3f7 (one comment moved) and cdae5ee0d (2 CSS lines). On cdae5ee0d: run 46077712541 (arbor2-1, distraction-free, -motion, -live) SUCCESS both legs; browserless 46077715291 SUCCESS; no second full pair (Fable's 20-line rule).
+Laptop on cdae5ee0d: frozen install, tsc desktop and server, build:web, c13-standing 11/11; 148 browser-free files, all exit 0 but six that stop for want of a box turn (arbor-keyflip-reorg, flux-keyflip-reorg, flux-v2 PART 2, flux3-s4c-flagoff, reorg-front-menu-capture, rhizome-latency-mutant). wa-red-* and reorg-parts-unit were left out of that pass.
+After: /healthz 200 build index-orVEXreb; served index-orVEXreb.js 1507841 B md5 553efbf1c5ea and index-CD2Srf74.css 542032 B md5 6074d5402297, byte-identical to the tested build:web; the desk's bundle is still index-*; smoke-login PASS 6/6; boot log: listening, no error.
+Client only (no server file differs from L14). No database change.
+Roll-back target: train L14, git 1f9cc8a31, railway c8841733-81b2-4154-8136-420e93e0334b.
