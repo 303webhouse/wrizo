@@ -1091,3 +1091,8 @@ mobileCard@flux=Node
 mobileCards@flux=Nodes
 mobileAddCard@flux=Add node
 mobileDocNoBoard@flux=This Doc has no Circuit yet
+# the walk's AI panel (PRESETS-B, Nov 27; guide-walk-spec.md section 8; the 'what travels' words are PROPOSED)
+guideWalkAskHint=Ask about this step…
+guideWalkAsked=You asked:
+guideWalkAskTravels=An ask sends the structure’s name and "?" note, this step and its question, your note on it, the names of the steps beside it, and what you ask here. Nothing else of yours goes.
+guideWalkAskTravelsLabel=What travels when you ask
