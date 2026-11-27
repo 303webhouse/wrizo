@@ -7,6 +7,9 @@ export const MACHINA_OVERRIDES = {
     modeNoticeTurnOff: 'Turn Off',
     modeNoticeOff: 'Run Strip Off',
     modeNoticeWhere: 'Docs › Session › Use Theme Progress Tracker',
+    modeNoticeQuiet: 'Or turn on Distraction Free in Session.',
+    sessionQuiet: 'Distraction Free',
+    sessionQuietOn: 'Distraction Free is on.',
     linksKindPage: 'Doc',   // the theme's own page / card words [deskLexicon §71]
     linksKindCard: 'Block',
     // W4 - Intake: Machina's plain, square panel of Help me choose (no mockup yet).

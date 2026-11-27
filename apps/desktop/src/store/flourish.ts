@@ -19,6 +19,8 @@ export const DISTRACTION_FACT = 'distractionFree';
 export const flourishPinned = (): boolean => typeof window !== 'undefined' && (window as unknown as { __wrizoFlourishPin?: boolean }).__wrizoFlourishPin === true;
 
 export function distractionFree(): boolean { return !flourishPinned() && getPref(DISTRACTION_FACT)?.on === true; }
+/** Her switch (Session's first row). Off is saved too, so it wins over an older "on" from another device. */
+export function setDistractionFree(on: boolean): void { if (!flourishPinned()) setPref(DISTRACTION_FACT, { on }); }
 
 /** Is this theme's flourish wanted (hers on, and not Distraction Free)? Whether it is DRAWN also depends on Progress and a goal. */
 export function flourishWanted(theme: ThemeId): boolean {
@@ -53,6 +55,17 @@ const subscribe = (fn: () => void): (() => void) => {
   const a = subscribePrefs(fn), b = subscribeWritingSettings(fn);
   return () => { a(); b(); };
 };
+
+export function useDistractionFree(): boolean {
+  return useSyncExternalStore(subscribe, distractionFree);
+}
+
+// <html data-distraction-free> while it is on: the sheets and the shared stillness reader (store/ambianceDial.ts) read it there
+if (typeof document !== 'undefined') {
+  const mark = (): void => { document.documentElement.toggleAttribute('data-distraction-free', distractionFree()); };
+  mark();
+  subscribePrefs(mark);
+}
 
 export function useFlourish(theme: ThemeId): boolean {
   return useSyncExternalStore(subscribe, () => flourishWanted(theme));

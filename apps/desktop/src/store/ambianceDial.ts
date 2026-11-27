@@ -36,9 +36,12 @@ export function setAmbianceDial(v: number): void {
   subs.forEach(fn => fn(current));
 }
 
+// Distraction Free stills what reduced motion stills (the flourish spec §7.2). Read from <html>, where store/flourish.ts marks it: no import cycle.
+export const distractionFreeMarked = (): boolean => typeof document !== 'undefined' && document.documentElement.hasAttribute('data-distraction-free');
+
 export function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return distractionFreeMarked() || (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
 // The value schedulers must actually read — the stored dial, zeroed whenever

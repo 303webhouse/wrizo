@@ -102,9 +102,10 @@ export function ModeNotice() {
           <span aria-hidden="true">·</span>
           {/* mousedown is prevented so her focus and caret stay in the page */}
           <button type="button" data-mode-notice-off onMouseDown={(e) => e.preventDefault()} onClick={turnOff}>{t('modeNoticeTurnOff')}</button>
+          <span className="wz-mode-notice-also">{t('modeNoticeQuiet')}</span>
         </>
       ) : (
-        <span>{`${t('modeNoticeOff')}. ${t('modeNoticeBack').replace('{where}', t('modeNoticeWhere'))} ${t('modeNoticeQuiet')}`}</span>
+        <span>{`${t('modeNoticeOff')}. ${t('modeNoticeBack').replace('{where}', t('modeNoticeWhere'))}`}</span>
       )}
     </div>,
     document.body,

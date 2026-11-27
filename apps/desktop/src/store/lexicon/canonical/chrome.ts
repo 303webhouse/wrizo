@@ -1432,7 +1432,10 @@ export const CANONICAL_CHROME = {
   modeNoticeOff: 'The Rhizome is off',
   modeNoticeBack: 'Turn it back on: {where}.',
   modeNoticeWhere: 'the ⋯ menu › Progress style',
-  modeNoticeQuiet: 'Distraction Free turns off every flourish.',
+  modeNoticeQuiet: 'Or turn on Distraction free in Session.',
+  sessionQuiet: 'Distraction free',
+  sessionQuietHint: 'Turns off every flourish, meter and moving background, in every theme.',
+  sessionQuietOn: 'Distraction free is on.',
   fluxGlitchSwitch: 'GLITCH',
   fluxGlitchSwitchName: 'Glitch mode',
 } satisfies Partial<Record<DeskTermId, string>>;

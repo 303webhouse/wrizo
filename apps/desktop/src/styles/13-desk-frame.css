@@ -1011,3 +1011,8 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
    Wire In, whose edge and pop share that layer */
 .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) > .desk-frame-rhizome-anchor:has(.wz-glitch-switch){ z-index:3; }
 .wz-glitch-switch:focus-visible{ outline:1px solid var(--text-hi); outline-offset:1px; }
+/* the flourish spec 7: Distraction free, Session's first row, with its line under it; the rows it quiets are greyed; the notice's second line */
+.wz-reorg-default.wz-session-quiet{ display:flex; flex-wrap:wrap; }
+.wz-session-quiet-hint{ flex:1 0 100%; font-size:.86em; opacity:.85; }
+[data-session-quieted='true']{ opacity:.45; }
+.wz-mode-notice-also{ flex:1 0 100%; opacity:.85; }

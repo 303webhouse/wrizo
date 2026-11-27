@@ -5,12 +5,12 @@
 //   F   by default each theme draws its flourish (the style still saying Bar); turned off, it does not: Arbor's bar, Machina's plain row
 //   K   one theme's off leaves the other themes' and her other saved preferences as they are; Machina's "Use Theme Progress Tracker" brings the Run back
 //   DF  Distraction Free: no flourish drawn and no notice, in every theme
-//   N1  a theme that opens with its flourish on shows ONE quiet status line under the meter, in the theme's words, with its Turn off
+//   N1  a theme that opens with its flourish on shows ONE quiet status line under the meter, in the theme's words, with its Turn off, and names Distraction Free (§7.1)
 //   N2  it covers neither the page nor the page count, stands inside the window, never moves the page (coming or going), and does not animate
 //       (no flash, nothing to still under reduced motion or Ambiance 0)
 //   N3  it never takes focus; typing lands while it stands; her first key takes it away
 //   N4  with no key it leaves by itself after about 6 s
-//   N5  Turn off turns off that theme's flourish only (flourishOff.<theme>), keeps her focus, says where to turn it back on and names Distraction Free,
+//   N5  Turn off turns off that theme's flourish only (flourishOff.<theme>), keeps her focus, and says where to turn it back on,
 //       and that line leaves by itself
 //   N6  once per opening: another page shows nothing; switching the theme away and back shows it again
 //   N7  a theme that opens with its flourish off shows nothing
@@ -85,7 +85,7 @@ await withHarness(async (app) => {
     await openIn(th.id);
     const s = await S();
     ok(`${th.name} F1: by default the flourish is drawn (the older style still says Bar)`, th.drawn(s), { rhizome: s.rhizome, bar: s.bar, run: s.run, plain: s.plain, checked: s.checked });
-    ok(`${th.name} N1: opening with the flourish on shows one status line in the theme's words, with ${th.turn}`, !!s.notice && s.kind === 'on' && s.role === 'status' && s.text.includes(th.on) && s.button === th.turn, s);
+    ok(`${th.name} N1: opening with the flourish on shows one status line in the theme's words, with ${th.turn}`, !!s.notice && s.kind === 'on' && s.role === 'status' && s.text.includes(th.on) && s.button === th.turn && /Or turn on Distraction [Ff]ree in Session\./.test(s.text), s);
     ok(`${th.name} N2: it covers neither the page nor the count, stands in the window, and does not animate`, clear(s) && (s.anim === 'none' || s.anim === null), { notice: s.notice, page: s.page, count: s.count, anim: s.anim });
     if (th.id === 'plateau') {
       await ev("(() => { const n = document.querySelector('[data-mode-notice]'); const p = document.querySelector('.desk-frame-stage .mode-page').getBoundingClientRect(); if (n) { n.style.setProperty('top', (p.top + 40) + 'px', 'important'); n.style.setProperty('left', (p.left + 40) + 'px', 'important'); n.style.setProperty('bottom', 'auto', 'important'); n.style.setProperty('right', 'auto', 'important'); n.style.setProperty('transform', 'none', 'important'); } })()");
@@ -109,7 +109,7 @@ await withHarness(async (app) => {
     if (pressAt) { await app.mouseMove(pressAt.x, pressAt.y); await app.mouseDown(pressAt.x, pressAt.y); await app.mouseUp(pressAt.x, pressAt.y); }
     await sleep(600);
     const off = await S();
-    ok(`${th.name} N5a: ${th.turn} turns off this theme's flourish only, keeps her focus, says it is off and where to turn it back on, and names Distraction Free`, J(off.off) === J({ plateau: th.id === 'plateau', flux: th.id === 'flux', machina: th.id === 'machina' }) && off.inEditor && off.kind === 'off' && off.text.includes(th.off) && /Turn it back on: .+\. Distraction Free /.test(off.text), { off: off.off, kind: off.kind, text: off.text, inEditor: off.inEditor });
+    ok(`${th.name} N5a: ${th.turn} turns off this theme's flourish only, keeps her focus, says it is off and where to turn it back on`, J(off.off) === J({ plateau: th.id === 'plateau', flux: th.id === 'flux', machina: th.id === 'machina' }) && off.inEditor && off.kind === 'off' && off.text.includes(th.off) && /Turn it back on: .+\./.test(off.text), { off: off.off, kind: off.kind, text: off.text, inEditor: off.inEditor });
     ok(`${th.name} F2: turned off, it is no longer drawn`, th.quiet(off), { rhizome: off.rhizome, bar: off.bar, run: off.run, plain: off.plain, checked: off.checked });
     ok(`${th.name} K1: her other saved preference (the split) is untouched by the write`, off.split === 0.4, { split: off.split });
     ok(`${th.name} N5b: that line covers neither the page nor the count`, clear(off), { notice: off.notice, page: off.page });
