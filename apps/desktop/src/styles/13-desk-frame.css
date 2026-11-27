@@ -989,3 +989,5 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 :root[data-wz2-drawer-edge][data-theme] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver .wz-sliver-panel{ right:0; }
 :root[data-wz2-drawer-edge][data-theme] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:var(--wz-front-yield); }
 
+/* #138: the lane under the page shifts with it, so it never runs under the menu (or a docked reader) the page gave way to */
+.desk-frame-stage--prose[data-yield] > .desk-frame-rhizome-anchor .desk-frame-instrument{ translate:var(--wz-page-shift, 0px) 0; }
