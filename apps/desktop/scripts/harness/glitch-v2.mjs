@@ -8,7 +8,7 @@
 //   SLIP  the band really shifts the chrome under it (the pixels of the rail change while it is up, and come back)
 //   CLEAR a pointer move, and a wheel, take everything away at once
 //   FLICK Flicker off: no glitches, the CHECKPOINT meter stays
-//   OFF   flourishOff.flux: a plain meter (4 px, cyan on its track), no glitches · DF the same under Distraction Free
+//   OFF   flourishOff.flux: a plain meter (4 px, cyan on its track), no glitches · DF no CHECKPOINT and no glitches under Distraction Free
 //   STILL reduced motion, and Ambiance 0: nothing glitches
 //   WIRE  nothing in Wire In
 //   DOCS  Docs › Session has Meter style and Flicker with their lines, and pressing Bar writes flourishOff.flux; the ⋯ panel has no Flicker
@@ -29,7 +29,8 @@ const TEXT = Array.from({ length: 12 }, (_, i) => `Paragraph ${i} keeps going al
 // the layer's life, read in the page: each word and band as it comes, and when the layer empties
 const WATCH = `(() => {
   const L = document.querySelector('[data-flux3-idle]'); window.__gv = { log: [] }; if (!L) return false;
-  new MutationObserver((ms) => { const t = performance.now(); for (const m of ms) { m.addedNodes.forEach((n) => { if (n.classList && n.tagName !== 'svg') window.__gv.log.push([t, 'add', n.className, n.dataset.word || '']); }); m.removedNodes.forEach((n) => { if (n.classList) window.__gv.log.push([t, 'rm', n.className]); }); } }).observe(L, { childList: true });
+  if (window.__gvMo) window.__gvMo.disconnect();
+  (window.__gvMo = new MutationObserver((ms) => { const t = performance.now(); for (const m of ms) { m.addedNodes.forEach((n) => { if (n.classList && n.tagName !== 'svg') window.__gv.log.push([t, 'add', n.className, n.dataset.word || '']); }); m.removedNodes.forEach((n) => { if (n.classList) window.__gv.log.push([t, 'rm', n.className]); }); } })).observe(L, { childList: true });
   return true;
 })()`;
 // beats from the log: pieces added within 40 ms of each other
@@ -121,7 +122,8 @@ try { await withHarness(async (app) => {
   ok('OFF flourishOff.flux: a plain meter (4 px, cyan on its track), no glitches', !off.checkpoint && off.plain && off.adds === 0 && !off.layer && !!off.track && off.track[0] === 4 && off.track[1] === 'rgb(95, 143, 149)' && off.track[2] === 'rgb(0, 194, 255)', J(off));
   await shot('plain-meter-1366');
   const df = await quiet({ df: true });
-  ok('DF Distraction Free: the plain meter, no glitches', !df.checkpoint && df.plain && df.adds === 0 && !df.layer, J(df));
+  // whether ANY meter shows under Distraction Free is POLISH's part (the flourish spec §7.2, "every progress meter"): this reads the glitches and CHECKPOINT only
+  ok('DF Distraction Free: no CHECKPOINT meter, no glitches', !df.checkpoint && df.adds === 0 && !df.layer, J(df));
   const rm = await quiet({ reduced: true });
   const a0 = await quiet({ dial: 0 });
   ok('STILL reduced motion and Ambiance 0: nothing glitches', rm.adds === 0 && a0.adds === 0 && rm.checkpoint, J({ rm, a0 }));
