@@ -145,19 +145,23 @@ try { await withHarness(async (app) => {
   ok('BACK off again: the hologram may move', holo2 === null, J({ holo2 }));
 
   // ---- Wire In --------------------------------------------------------------------------------------------------------------------------------------
-  const type = () => ev("(() => { for (let i = 0; i < 12; i++) setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true })), i * 100); return true; })()");
+  // SUPERSEDED (#140 round two, Fable, Nov 27: the tunnel waits for 1 s of writing before it rises, so 0.9 s of keys moves nothing - the "runs as she types" read went red on the L15 stack, and the "nothing running with it
+  // on" read would have passed for that reason alone). The originals, verbatim:
+  //  const type = () => ev("(() => { for (let i = 0; i < 12; i++) setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true })), i * 100); return true; })()");
+  //  await type(); await sleep(900);   (before both reads below)
+  const type = () => ev("(() => { for (let i = 0; i < 30; i++) setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true })), i * 100); return true; })()");   // 3 s of keys, read while they still come
   const corridor = () => ev("(() => { const c = document.querySelector('.flux3-corridor'); return c ? { frames: c.querySelectorAll('.flux3-cor-frame').length, rails: c.querySelectorAll('.flux3-cor-rails').length, glow: c.querySelectorAll('.flux3-cor-glow').length, ground: getComputedStyle(c).backgroundColor } : null; })()");
   await open({ mode: 'journal' });
   await soft("!!document.querySelector('.flux3-corridor .flux3-cor-frame')");
   const w0 = await corridor();
   await df(true);
-  await type(); await sleep(900);
+  await type(); await sleep(2200);
   const w1 = await corridor();
   const run4 = await running();
   ok('WIRE with it off the corridor stands; with it on a still, dark room: no frames, rails or glow, and nothing running as she types', w0 && w0.frames >= 8 && w1 && w1.frames === 0 && w1.rails === 0 && w1.glow === 0 && w1.ground === 'rgb(2, 12, 16)' && run4.length === 0, J({ w0, w1, run4 }));
   await sleep(600);
   await df(false); await sleep(700);
-  await type(); await sleep(900);
+  await type(); await sleep(2200);
   const w2 = await corridor();
   const run5 = await running();
   ok('BACK off again: the corridor returns and runs as she types', w2 && w2.frames >= 8 && w2.rails === 1 && run5.some((n) => n.startsWith('corridor')), J({ w2, run5: run5.slice(0, 3) }));
