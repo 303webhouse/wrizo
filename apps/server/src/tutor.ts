@@ -6,7 +6,7 @@ import { rateLimit } from './rateLimit';
 import { asyncHandler } from './asyncHandler';
 import { logError } from './logSafe';
 import { guardReply, unfinishedReply, FALLBACK_LINE } from './tutorGuard';
-import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, CHAT_MAX_TOKENS, SPRINT_RULES, SPRINT_MAX_TOKENS, sprintAsk } from './tutorPrompts';
+import { buildSystemPrompt, buildSprintSystemPrompt, voiceForTheme, withSafetyMessage, holdsSafetyMarker, wrapBible, wrapDelta, wrapSelection, wrapNotes, wrapWalkStep, WALK_KIND_LIST, CHAT_MAX_TOKENS, SPRINT_RULES, SPRINT_MAX_TOKENS, sprintAsk, type WalkStepMaterial } from './tutorPrompts';
 import { notesForAsk } from './tutorNotes';
 import { sqlNotesStore } from './tutorNotesRoutes';
 
@@ -43,6 +43,9 @@ import { sqlNotesStore } from './tutorNotesRoutes';
 // since the Tutor's cursor last advanced (never assembled ambiently,
 // only at send time; see Tutor.tsx). Still exactly two top-level things,
 // still nothing else — messages plus the one delimited delta.
+//
+// THE GUIDE'S WALK (guide-walk-spec.md section 3.8; Fable, Nov 27) is the same route with one more key, `walk`: her step. A walk's ask is `{ messages, theme?, walk }` and nothing else, so the page, the Bible and
+// the selection cannot ride with it, and her notes on file are not read (R13: nothing else unless she says yes). Like every ask here it leaves only on her press: the last turn must be hers.
 
 export const tutorRouter = Router();
 
@@ -96,7 +99,24 @@ interface InboundMessage {
   text: string;
 }
 
-function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string; theme?: unknown } {
+// The walk's body, and each field's backstop in characters. wrapWalkStep cuts far lower (a name to 200, her note to 2,000, marked as cut), so these only stop what no step could be.
+const WALK_BODY_KEYS = ['messages', 'theme', 'walk'];
+const WALK_FIELD_CAPS: Record<keyof WalkStepMaterial, number> = { preset: 2000, structure: 2000, kind: 20, step: 2000, question: 4000, about: 4000, note: 17000, before: 2000, after: 2000 };
+
+// `structure`, `kind`, `step` and `note` are always sent (the note may be empty); the other five may be left out. A key that is not one of the nine refuses the whole body.
+function isWalkStep(walk: unknown): boolean {
+  if (!walk || typeof walk !== 'object' || Array.isArray(walk)) return false;
+  const fields = walk as Record<string, unknown>;
+  const known = Object.keys(fields).every((k) => Object.prototype.hasOwnProperty.call(WALK_FIELD_CAPS, k)
+    && typeof fields[k] === 'string' && (fields[k] as string).length <= WALK_FIELD_CAPS[k as keyof WalkStepMaterial]);
+  return known
+    && typeof fields.structure === 'string' && fields.structure.length > 0
+    && typeof fields.step === 'string' && fields.step.length > 0
+    && typeof fields.note === 'string'
+    && (WALK_KIND_LIST as readonly unknown[]).includes(fields.kind);
+}
+
+function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta?: string; bible?: string; selection?: string; theme?: unknown; walk?: Partial<WalkStepMaterial> } {
   if (!body || typeof body !== 'object') return false;
   const { messages, delta, bible, selection } = body as { messages?: unknown; delta?: unknown; bible?: unknown; selection?: unknown };
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return false;
@@ -106,6 +126,12 @@ function isValidBody(body: unknown): body is { messages: InboundMessage[]; delta
     && typeof m.text === 'string' && m.text.length > 0 && m.text.length <= MAX_MESSAGE_CHARS,
   );
   if (!messagesValid) return false;
+  // A body that names `walk` at all is a walk's ask or nothing: a bad one is refused, never answered as an ordinary ask (which would carry her notes on file).
+  if ('walk' in body) {
+    if (Object.keys(body).some((k) => !WALK_BODY_KEYS.includes(k))) return false;
+    if (!isWalkStep((body as { walk?: unknown }).walk)) return false;
+    if (messages[messages.length - 1].role !== 'writer') return false;   // walk: the aid never speaks first (R9)
+  }
   // delta is optional — true silence (the brief's own words) when there is
   // no new writing since the cursor means the field is simply absent, not
   // an empty string standing in for "nothing."
@@ -227,7 +253,8 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
   // TUTOR-B ITEM 7 STEP 2 — her notes on file (the facts she said yes to, tutorNotes.ts) splice as ONE wire-only user turn, FIRST of the four: the most stable context goes furthest from her words. Read by the
   // session's own id, never a value from the request; delimited, never persisted, never said as if she had said them; the system prompt does not change (CONTEXT already says her notes are material). They carry
   // across Drawers: a writer's notes are hers, not a Drawer's. With none (or a read that fails) nothing is sent and the ask is exactly what it was.
-  const noteLines = await readNotesForAsk(req.session.userId!);
+  const walk: Partial<WalkStepMaterial> | undefined = req.body.walk;
+  const noteLines = walk ? [] : await readNotesForAsk(req.session.userId!);
   if (noteLines.length > 0) {
     messages.splice(messages.length - 1, 0, { role: 'user' as const, content: wrapNotes(noteLines) });
   }
@@ -280,11 +307,16 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
     });
   }
 
+  // THE WALK'S STEP: one wire-only turn just before her latest words, and the only thing of hers beside them (the checks above refused everything else).
+  if (walk) {
+    messages.splice(messages.length - 1, 0, { role: 'user' as const, content: wrapWalkStep({ ...(walk as WalkStepMaterial), preset: walk.preset ?? '' }) });
+  }
+
   try {
     const ask = () => client().messages.create({
       model: env.tutorModel,
       max_tokens: CHAT_MAX_TOKENS,
-      system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
+      system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: walk ? 'walk' : 'ask' }),
       messages,
     }, { signal: AbortSignal.timeout(MODEL_CALL_MS) });   // chat
     const textOf = (r: Anthropic.Message): string => r.content

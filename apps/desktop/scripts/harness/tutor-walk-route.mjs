@@ -58,9 +58,11 @@ const body = (walk = STEP, over = {}) => ({ messages: [{ role: 'writer', text: A
 const ANSWER = 'A Midpoint turns the question over.\nWhat does the ledger change?\nRead: Midpoint (Three-Act Structure), your note for this step';
 const textOf = (m) => (typeof m.content === 'string' ? m.content : (m.content || []).map((p) => p.text || '').join(''));
 
+let threw = null;   // a mutant that only crashes the route proves nothing
 const send = async (b, payload, userId = 'u-a', replies = [ANSWER]) => {
   model.reset(); model.say(...replies); reads.length = 0;
   const r = await callRoute(b.handler, payload, userId);
+  if (r.thrown) threw = r.thrown;
   const sent = model.requests[0] || null;
   return { r, sent, calls: model.requests.length, msgs: sent ? sent.messages : [], system: sent ? String(sent.system || '') : '', all: JSON.stringify(model.requests), reads: reads.length };
 };
@@ -79,7 +81,7 @@ async function run(mutate) {
 
     const x = await send(b, body());
     need('WR2', x.msgs.length === 2 && x.msgs.every((m) => m.role === 'user') && textOf(x.msgs[0]) === b.P.wrapWalkStep(STEP) && textOf(x.msgs[1]) === ASKED, JSON.stringify(x.msgs));
-    need('WR2', x.r.body.configured === true && x.r.body.reply === ANSWER && x.r.body.usage?.inputTokens === 10 && typeof x.r.body.model === 'string', JSON.stringify(x.r.body));
+    need('WR2', x.r.body?.configured === true && x.r.body.reply === ANSWER && x.r.body.usage?.inputTokens === 10 && typeof x.r.body.model === 'string', JSON.stringify(x.r.body));
     need('WR3', x.reads === 0 && !x.all.includes('NOTE-ON-FILE-SENTINEL') && !x.all.includes('<notes-on-file>'), `reads=${x.reads}`);
 
     for (const key of ['delta', 'bible', 'selection']) need('WR4', await refused(b, body(STEP, { [key]: 'Her page words.' })), key);
@@ -174,16 +176,17 @@ async function budgetAndOff() {
 // ---- mutants ----
 const mutant = async (name, id, from, to) => {
   try {
+    threw = null;
     const w = await run({ 'tutor.ts': swap(from, to) });
-    ok(w.some((x) => x.startsWith(`${id} `)), `${name}: ${id} goes RED`);
+    ok(threw === null && w.some((x) => x.startsWith(`${id} `)), `${name}: ${id} goes RED`, threw ?? '');
   } catch (e) { ok(false, `${name} could not be built`, String(e.message)); }
 };
 await mutant('MUT1 her notes sent on a walk', 'WR3', 'walk ? [] : await readNotesForAsk', 'await readNotesForAsk');
 await mutant('MUT2 the ordinary task on a walk', 'WR1', "task: walk ? 'walk' : 'ask'", "task: 'ask'");
 await mutant('MUT3 delta let through on a walk', 'WR4', "const WALK_BODY_KEYS = ['messages', 'theme', 'walk'];", "const WALK_BODY_KEYS = ['messages', 'theme', 'walk', 'delta'];");
 await mutant('MUT4 the block after her words', 'WR2', 'messages.splice(messages.length - 1, 0, { role: \'user\' as const, content: wrapWalkStep', 'messages.push({ role: \'user\' as const, content: wrapWalkStep');
-await mutant('MUT5 the aid may speak first', 'WR8', "if (messages[messages.length - 1].role !== 'writer') return false;   // walk", '');
-await mutant('MUT6 a bad walk answered as an ordinary ask', 'WR9', "if ('walk' in body) {", "if (walk && typeof walk === 'object' && !Array.isArray(walk)) {");
+await mutant('MUT5 the aid may speak first', 'WR8', "if (messages[messages.length - 1].role !== 'writer') return false;   // walk: the aid never speaks first (R9)", '');
+await mutant('MUT6 a bad walk answered as an ordinary ask', 'WR9', "if ('walk' in body) {", "if ((body as { walk?: unknown }).walk) {");
 
 await model.close();
 console.log(fails === 0 ? `TUTOR-WALK-ROUTE VERIFY: PASS (${checks} checks)` : `TUTOR-WALK-ROUTE VERIFY: FAIL - ${fails}/${checks} failed`);

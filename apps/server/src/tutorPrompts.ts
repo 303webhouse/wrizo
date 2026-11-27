@@ -175,8 +175,8 @@ After answering, if a lasting fact about her writing came up (a habit, a goal, a
 blocker she named), propose ONE note of 15 words at most, as a plain fact.
 Never a note about her health, identity or mood. Nothing is kept unless she says yes.`;
 
-// THE GUIDE'S WALK (Nov 26; guide-walk-spec.md section 3.8, "What the AI is told, for TUTOR to write into its prompts"; Nick ruled the spec Nov 25). Wrizo's own task, not one of the kit's. Not sent by any route yet:
-// the walk's ask is meant to go through /tutor/chat once that route takes her step. Fable reads these words before the live run.
+// THE GUIDE'S WALK (Nov 26; guide-walk-spec.md section 3.8, "What the AI is told, for TUTOR to write into its prompts"; Nick ruled the spec Nov 25). Wrizo's own task, not one of the kit's. Sent by /tutor/chat
+// when the body carries her step (tutor.ts, the `walk` key). Fable read these words before the live run.
 const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.2
 She is on one step of her structure and asked about it. <walk-step> holds the preset,
 the structure, this step, the step's question and "?" note, her note for it, and the
@@ -200,7 +200,7 @@ Speak to the writer as "you", never as "she" or "her".
 
 // THE FOUR QUESTIONS (the spec: "from a template, never from the AI"). The app draws them; the one she presses is sent as her own words. PRESETS-B copies this.
 export type WalkKind = 'stories' | 'essays' | 'arguments' | 'papers' | 'scripts';
-const WALK_KIND_LIST: readonly WalkKind[] = ['stories', 'essays', 'arguments', 'papers', 'scripts'];
+export const WALK_KIND_LIST: readonly WalkKind[] = ['stories', 'essays', 'arguments', 'papers', 'scripts'];
 // The word in the second question, by plan structure. The spec names stasis, toulmin and rogerian (arguments), school and research (papers) and screen structures (scripts); oration, answer and inverted are
 // TUTOR-B's own pick until Fable says.
 export const WALK_KINDS: Record<string, WalkKind> = {
