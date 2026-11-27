@@ -151,8 +151,9 @@ await withHarness(async (app) => {
     before.arborLeft = arborLeft;
     await app.evalJs(COL_OBS);
     const state = await app.evalJs(`({ anims: document.getAnimations().filter((a) => a.playState !== 'finished').map((a) => (a.animationName || a.transitionProperty || 'script') + '@' + String(a.effect && a.effect.target && (a.effect.target.className.baseVal ?? a.effect.target.className)).split(' ')[0] + ':' + a.playState), sheets: document.styleSheets.length, fonts: document.fonts.status, now: new Date().toString().slice(0, 33), roots: [document.documentElement, document.body, document.getElementById('root')].map((e) => [...e.attributes].map((a) => a.name + '=' + a.value.slice(0, 80)).join(' ')), store: Object.keys(localStorage).sort().map((k) => k + '=' + String(localStorage.getItem(k)).slice(0, 90)), els: document.querySelectorAll('*').length, hidden: [...document.querySelectorAll('*')].filter((e) => getComputedStyle(e).display === 'none').length, focus: String(document.activeElement && document.activeElement.className).slice(0, 40) })`);
-    // PRIMED: the caret put at the end of the editor the way the editor itself does it, then styles settled, before the trace
-    if (flush) { await app.evalJs("(() => { const el = document.querySelector('.forward-only-editor'); const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()"); await sleep(600); }
+    if (flush === 'noinputs') { await app.evalJs("(() => { document.querySelectorAll('.wz-type-num, .wz-tutor-convo-input').forEach((e) => e.remove()); document.body.offsetHeight; return true; })()"); await sleep(500); }
+    if (flush === 'hideinputs') { await app.evalJs("(() => { document.querySelectorAll('.wz-type-num, .wz-tutor-convo-input').forEach((e) => { e.style.display = 'none'; }); document.body.offsetHeight; return true; })()"); await sleep(500); }
+    if (flush === 'noaddrange') { await app.evalJs("(() => { Selection.prototype.addRange = function () {}; Selection.prototype.removeAllRanges = function () {}; return true; })()"); }
     const tr = await traceKey(app, 'a', flush);
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
@@ -170,14 +171,14 @@ await withHarness(async (app) => {
     return m;
   };
 
-  for (let i = 0; i < 2; i += 1) {
-    for (const flush of [false, true]) {
+  for (let i = 0; i < 1; i += 1) {
+    for (const flush of ['plain', 'noinputs', 'hideinputs', 'noaddrange']) {
       const m = await measure('machina', '', { flush });
       const t = m.tr || {};
-      console.log(`DIAG ${flush ? 'primed ' : 'plain  '} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
+      console.log(`DIAG ${flush} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
       if (t.ctl && t.ctl.length) console.log(`DIAGCTL ${t.keyEls} ` + JSON.stringify(t.ctl));
       if (i === 0 || t.keyEls > 220) console.log(`DIAGFULL ${t.keyEls} ` + JSON.stringify({ full: t.full, roots: m.state.roots, store: m.state.store, now: m.state.now }));
-      ok(`DIAG ${flush ? 'primed' : 'plain'} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
+      ok(`DIAG ${flush} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
     }
   }
 });
