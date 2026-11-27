@@ -55,6 +55,17 @@ const EDGE = 'rgb(29, 74, 82)', ORANGE = 'rgb(255, 152, 0)', CYAN = 'rgb(0, 194,
 const SIGNALS = [['#00C2FF', '01', 'Cyan'], ['#B7FF3C', '02', 'Lime'], ['#FF2E97', '03', 'Pink'], ['#E7F4F1', '04', 'Ice'], ['#7FA8A0', '05', 'Teal'], ['#3A8FA5', '06', 'Deep cyan']];
 const GROUND = "const ground = (e) => { for (let x = e; x; x = x.parentElement) { const c = getComputedStyle(x).backgroundColor; if (c && !/rgba\\([^)]*,\\s*0\\)$/.test(c) && c !== 'transparent') return c; } return null; };";
 const PAGE = "(() => ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => { const p = document.querySelector(s); if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); }).join('|'))()";
+// #142: the page gave way to a rail pop-out: from the left only (same top, height and right edge, no wider), its column's layout untouched and its words scaled with the
+// paper, never re-laid
+const gaveRail = (rest, now) => {
+  const parts = (s) => String(s || '').split('|').map((r) => r.trim().split(',').map(Number)), a = parts(rest), b = parts(now), near = (x, y) => Math.abs(x - y) <= 0.5;
+  if (!rest || !now || a.length !== b.length) return false;
+  const [p, P] = a.length === 1 ? [a[0], b[0]] : [a[1], b[1]];
+  const paper = near(p[1], P[1]) && near(p[3], P[3]) && near(p[0] + p[2], P[0] + P[2]) && P[0] >= p[0] - 0.5;
+  if (a.length === 1) return paper;
+  const e = a[2], E = b[2];
+  return paper && a[0].join() === b[0].join() && E[0] >= P[0] - 0.5 && E[0] + E[2] <= P[0] + P[2] + 0.5 && Math.abs(E[2] / e[2] - P[2] / p[2]) <= 0.005;
+};
 const DOORS = `(() => { const r = document.querySelector('[data-reorg-rail]'); if (!r) return null; const read = (b) => { const s = getComputedStyle(b), l = b.querySelector('.wz-strip-label'), ls = l ? getComputedStyle(l) : null, o = b.querySelector('.wz-strip-readout');
     return { cat: b.getAttribute('data-category'), word: (l ? l.textContent : b.textContent || '').trim().toUpperCase(), bg: s.backgroundColor, top: s.borderTopWidth + ' ' + s.borderTopColor, left: s.borderLeftWidth, leftColor: s.borderLeftColor, size: ls && ls.fontSize, tt: ls && ls.textTransform, reading: o ? o.textContent.trim() : null, hint: b.getAttribute('title') }; };
   return { doors: [...r.querySelectorAll('.wz-reorg-doors .wz-strip-item')].map(read), foot: [...r.querySelectorAll('.wz-strip-foot .wz-strip-item')].map(read) }; })()`;
@@ -158,7 +169,9 @@ await withHarness(async (app) => {
   ok('R9 Box settings offers the six signals 01 to 06 (named on hover) beside Custom…; pressing 02 draws her box in lime, its letters 4.5:1 or better', !!bs && JSON.stringify(bs.swatches) === JSON.stringify(SIGNALS) && /^Custom/.test(bs.own) && !!limeBox && contrast(limeBox[1], limeBox[0]) >= 4.5, { bs, boxes });
   await app.evalJs(door('reorg-projects')); await sleep(600);
   const page2 = await app.evalJs(PAGE);
-  ok('R7 the page\'s rect (column, paper, editor) is the same with a door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
+  // SUPERSEDED (#142, Nick Nov 26: no rail pop-out covers the page - the page gives way from the rail's side), the original verbatim:
+  // ok('R7 the page\'s rect (column, paper, editor) is the same with a door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
+  ok('R7 [#142 successor]: with a rail door open the page\'s rect (column, paper, editor) gives way from the rail\'s side only, and closed it stands where it stood', !!page0 && gaveRail(page0, page1) && page2 === page0, [page0, page1, page2]);
 
   // ---- the Session and Recent in DOCS ----
   await app.evalJs(door('reorg-docs')); await sleep(700);

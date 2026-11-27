@@ -2,9 +2,8 @@ import { tryFlash } from './flashBudget';
 
 // the Flux card's hover glitch is a FLASH and asks the global budget; a pulse inside the last granted pulse's window is refused, so hovers never stack [fluxCardGlitch §1]
 export const FLUX_CARD_GLITCH_KIND = 'theme-picker-flux';
-// Matches index.css's own wz-theme-glitch keyframes duration (.45s) — the pulse the controller
-// gates is exactly as long as the animation it's gating.
-export const FLUX_CARD_GLITCH_MS = 450;
+// How long one CHECKPOINT letter shows code on the Flux tile (ThemePicker.tsx) before it resolves: shorter than the 400 ms between letters.
+export const FLUX_CARD_GLITCH_MS = 200;
 
 const clock = (): number => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 

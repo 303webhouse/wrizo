@@ -105,6 +105,17 @@ const scaledSame = (w, off, on, g) => {
 };
 const shiftRects = (s, dl, dt) => rectsOf(s).map((r) => (r === '-' ? r : r.split(',').map(Number).map((x, j) => Math.round((x + (j === 0 ? dl : j === 1 ? dt : 0)) * 10) / 10).join(','))).join(' | ');
 const PAGE = "(() => { const els = ['.mode-pagecol', '.mode-page', '.forward-only-editor'].map((s) => document.querySelector(s)); if (!els[1] && !els[0]) return null; return els.map((p) => { if (!p) return '-'; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((x) => Math.round(x * 10) / 10).join(','); }).join(' | '); })()";
+// #142: the page gave way to a rail pop-out: from the left only (same top, height and right edge, no wider), its column's layout untouched and its words scaled with the
+// paper, never re-laid
+const gaveRail = (rest, now) => {
+  const parts = (s) => String(s || '').split('|').map((r) => r.trim().split(',').map(Number)), a = parts(rest), b = parts(now), near = (x, y) => Math.abs(x - y) <= 0.5;
+  if (!rest || !now || a.length !== b.length) return false;
+  const [p, P] = a.length === 1 ? [a[0], b[0]] : [a[1], b[1]];
+  const paper = near(p[1], P[1]) && near(p[3], P[3]) && near(p[0] + p[2], P[0] + P[2]) && P[0] >= p[0] - 0.5;
+  if (a.length === 1) return paper;
+  const e = a[2], E = b[2];
+  return paper && a[0].join() === b[0].join() && E[0] >= P[0] - 0.5 && E[0] + E[2] <= P[0] + P[2] + 0.5 && Math.abs(E[2] / e[2] - P[2] / p[2]) <= 0.005;
+};
 const STORE = "JSON.stringify([localStorage, sessionStorage].map((s) => Object.keys(s).sort().map((k) => [k, s.getItem(k)])))";
 const q = (s) => JSON.stringify(s);
 
@@ -215,13 +226,27 @@ await withHarness(async (app) => {
     const NEW_DECKS = ['relationship-map', 'timeline', 'literature-map', 'narrow-my-question', 'pitch-story', 'logic-model', 'interview-notes', 'memory-map'];
     const withoutNewDecks = (html) => NEW_DECKS.reduce((h, id) => h.replace(new RegExp('<button type="button" class="wz-sections-preset" data-preset="' + id + '"><span>[^<]*</span></button>'), ''), String(html));
     const liveOf = (k) => (k === 'plan' && got[k] != null && NEW_DECKS.every((id) => String(got[k]).split('data-preset="' + id + '"').length === 2) ? withoutNewDecks(got[k]) : (got[k] ?? 'null'));
-    return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // SUPERSEDED (#142: the anchor now says what room a pop-out has; here it is the full 300 px, so nothing is drawn differently. Exactly that one attribute, at exactly
+    // those values, is taken out of the live DOM and everything else is held byte for byte), the original verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // const unroomed = (h) => String(h).replace(/^<div class="desk-frame-cascade-anchor" style="--wz-rail-room: 300px; --wz-second-room: 300px;">/, '<div class="desk-frame-cascade-anchor">');
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => unroomed(liveOf(k)) !== ruled(k, golden.surfaces[theme][k]));
+    // SUPERSEDED (VISUAL 2, flourish-spec §3, Nov 26: the theme pop-out's cards are five new tiles - intended product DOM; the check cuts the cards block out of both and holds EVERYTHING else to the golden byte for byte; O1b reads the new tiles). The original, verbatim:
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => liveOf(k) !== ruled(k, golden.surfaces[theme][k]));
+    // const noCards = (k, html) => (k === 'theme' ? String(html).split('<div class="wz-theme-cards">')[0] : html);
+    // return Object.keys(golden.surfaces[theme] || {}).filter((k) => noCards(k, liveOf(k)) !== noCards(k, ruled(k, golden.surfaces[theme][k])));
+    // SUCCESSOR of both (#142 and VISUAL 2 together): the anchor's room attribute is taken out, and so is the cards block.
+    const unroomed = (h) => String(h).replace(/^<div class="desk-frame-cascade-anchor" style="--wz-rail-room: 300px; --wz-second-room: 300px;">/, '<div class="desk-frame-cascade-anchor">');
+    const noCards = (k, html) => (k === 'theme' ? String(html).split('<div class="wz-theme-cards">')[0] : html);
+    return Object.keys(golden.surfaces[theme] || {}).filter((k) => noCards(k, unroomed(liveOf(k))) !== noCards(k, ruled(k, golden.surfaces[theme][k])));
   };
   for (const theme of THEMES) {
     await openPage(app, theme, false);
     const got = await captureSurfaces(app);
     const bad = diffOf(got, theme);
     ok(`O1 [${theme}]: switch OFF - the strip and its ${CATEGORIES.length} pop-outs are main's DOM exactly`, golden && bad.length === 0 && Object.keys(golden.surfaces[theme] || {}).length === CATEGORIES.length + 1, bad.join(','));
+    const tiles = [...String(got.theme).matchAll(/class="wz-theme-card wz-theme-card-([a-z]+)/g)].map((m) => m[1]).join(',');
+    ok(`O1b [${theme}]: the theme pop-out holds the five tiles, in order`, tiles === 'arbor,machina,flux,nomad,volant', tiles);
     for (const k of bad.slice(0, 2)) console.log(`DIFF ${theme}.${k} ${Buffer.from(String(got[k]), 'utf8').toString('base64')}`);
     if (theme !== 'machina') {
       await openPage(app, theme, true);
@@ -749,6 +774,7 @@ await withHarness(async (app) => {
     await app.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(600);
     const closed = await app.evalJs(PAGE);
     const same = await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1");
+    scaleKeep[w].open = open;
     // SUPERSEDED (step 3 and 4 add two states; the original, verbatim):
     // ok(`G1 [${w}]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, and closed (${off}); the editor is the same node throughout`,
     //   !!off && [rest, open, pinsBoxes, pinsList, closed].every((r) => r === off) && same, JSON.stringify({ off, rest, open, pinsBoxes, pinsList, closed, same }));
@@ -758,8 +784,12 @@ await withHarness(async (app) => {
     // ok(`G1 [${w}] [successor]: the page's rect is the same switch off, on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${off}); the editor is the same node throughout`,
     //   !!off && [rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === off) && same && boxOpen !== null,
     //   JSON.stringify({ off, rest, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
-    ok(`G1 [${w}] [scale successor]: the page's rect is the same on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${rest}); against the switch off (${off}) the same at 1366, lower by the bar's growth alone above (${g} px); the editor is the same node throughout`,
-      !!rest && [open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === rest) && scaledSame(w, off, rest, g) && same && boxOpen !== null,
+    // SUPERSEDED (#142, Nick Nov 26: no rail pop-out covers the page - open, the page may give way from the rail's side; closed it is as at rest), the original verbatim:
+    // ok(`G1 [${w}] [scale successor]: the page's rect is the same on at rest, PROJECTS open, pins as boxes, as a list, Box settings open, a Project's list open, and closed (${rest}); against the switch off (${off}) the same at 1366, lower by the bar's growth alone above (${g} px); the editor is the same node throughout`,
+    // !!rest && [open, pinsBoxes, pinsList, boxOpen, listOpen, closed].every((r) => r === rest) && scaledSame(w, off, rest, g) && same && boxOpen !== null,
+    // JSON.stringify({ off, rest, g, barOff, barOn, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
+    ok(`G1 [${w}] [#142 successor]: with PROJECTS open, pins as boxes, as a list, Box settings open and a Project's list open the page is as at rest or has given way from the rail's side only, and closed it is as at rest (${rest}); against the switch off (${off}) the same at 1366, lower by the bar's growth alone above (${g} px); the editor is the same node throughout`,
+      !!rest && [open, pinsBoxes, pinsList, boxOpen, listOpen].every((r) => r === rest || gaveRail(rest, r)) && closed === rest && scaledSame(w, off, rest, g) && same && boxOpen !== null,
       JSON.stringify({ off, rest, g, barOff, barOn, open, pinsBoxes, pinsList, boxOpen, listOpen, closed, same }));
     // G2 (steps 5 and 6): DOCS open, UNFILED open
     await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
@@ -775,10 +805,18 @@ await withHarness(async (app) => {
     // ok(`G2 [${w}]: the page's rect is the same with DOCS open and with UNFILED open (${off}); the editor is still the same node`,
     //   !!off && docsDrawn && unfDrawn && docsOpen === off && unfOpen === off && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
     //   JSON.stringify({ off, docsOpen, unfOpen, docsDrawn, unfDrawn }));
-    ok(`G2 [${w}] [scale successor]: the page's rect is the same with DOCS open and with UNFILED open as at rest (${rest}), and at rest it is the switch off's (${off}) at 1366, lower by the bar's growth alone above (${g} px); the editor is still the same node`,
-      !!rest && docsDrawn && unfDrawn && docsOpen === rest && unfOpen === rest && scaledSame(w, off, rest, g) && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+    // SUPERSEDED (#142, Nick Nov 26: no rail pop-out covers the page - open, the page may give way from the rail's side; closed it is as at rest), the original verbatim:
+    // ok(`G2 [${w}] [scale successor]: the page's rect is the same with DOCS open and with UNFILED open as at rest (${rest}), and at rest it is the switch off's (${off}) at 1366, lower by the bar's growth alone above (${g} px); the editor is still the same node`,
+    // !!rest && docsDrawn && unfDrawn && docsOpen === rest && unfOpen === rest && scaledSame(w, off, rest, g) && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
+    // JSON.stringify({ off, rest, g, docsOpen, unfOpen, docsDrawn, unfDrawn }));
+    ok(`G2 [${w}] [#142 successor]: with DOCS open and with UNFILED open the page is as at rest or has given way from the rail's side only, and at rest it is the switch off's (${off}) at 1366, lower by the bar's growth alone above (${g} px); the editor is still the same node`,
+      !!rest && docsDrawn && unfDrawn && [docsOpen, unfOpen].every((r) => r === rest || gaveRail(rest, r)) && scaledSame(w, off, rest, g) && (await app.evalJs("document.querySelector('.forward-only-editor')?.__reorgRails === 1")),
       JSON.stringify({ off, rest, g, docsOpen, unfOpen, docsDrawn, unfDrawn }));
   }
+  // MUT-G-RAIL: the 1366 reading with PROJECTS open is a page that gave way; the same reading pushed 40 px sideways is not
+  { const s = scaleKeep[1366] || {}; const pushed = s.open ? shiftRects(s.open, 40, 0) : null;
+    ok('MUT-G-RAIL the 1366 reading with PROJECTS open passes the #142 successor as a page that gave way, and the same reading pushed 40 px sideways fails it',
+      !!s.rest && s.open !== s.rest && gaveRail(s.rest, s.open) && !gaveRail(s.rest, pushed), JSON.stringify({ rest: s.rest, open: s.open, pushed })); }
   // MUT-G-SCALE: the 1920 reading passes; pushed 40 px sideways (a drawer displacing the page), or 30 px lower than the bar grew, it fails
   { const s = scaleKeep[1920] || {}; const pushed = s.rest ? shiftRects(s.rest, 40, 0) : null; const sunk = s.rest ? shiftRects(s.rest, 0, 30) : null;
     ok('MUT-G-SCALE the 1920 reading passes the scale successor, and the same reading pushed 40 px sideways, or 30 px lower than the bar grew, fails it',
