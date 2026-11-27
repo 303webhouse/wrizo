@@ -13,6 +13,7 @@ inkSize=Size
 inkSeeThrough=See-through
 inkLastColour=Last colour
 inkDrawOnBoard=Draw on a Board
+inkDrawOnBoard@flux=Draw on a Circuit
 inkLoadFail=The drawing tools did not load.
 inkRetry=Retry
 # FLUX3 S1 (INK) - the Schema's node records and readouts, behind ?flux3=1
