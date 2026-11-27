@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, pageLayoutHeightFor, pageScaleFor, zoomFor } from '../store/pageScale';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
+import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
+import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
 
@@ -183,6 +185,12 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
 
   // the prose page's scale from the window and its stage, never a panel (store/pageScale.ts): it lays out at scale 1 and is painted at k by a transform, so line breaks never move; measured on resize in a layout effect, never a container query [DeskFrame §3]
   const stageRef = useRef<HTMLDivElement>(null);
+  const hands = useStandingHands();   // #138: an open Front or Back menu takes its room from the page, never from over it
+  const yielded = useRef('');
+  // a menu that closes because she typed (the Back menu's vanishing law) must not resize the page under her keys: the size holds until the pointer moves or a menu opens
+  const held = useRef(false);
+  const gave = useRef(false);   // the page is standing at a size a menu gave it
+  const typed = useRef(0);
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (pageKind !== 'prose' || !stage) return;
@@ -191,26 +199,65 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const page = stage.querySelector<HTMLElement>('.mode-page');
       const col = page?.parentElement;
       const top = page && col ? col.getBoundingClientRect().top - s.top + page.offsetTop : 0;
-      const k = pageScaleFor(s.width, s.height, top, window.innerWidth);
+      const kRest = pageScaleFor(s.width, s.height, top, window.innerWidth);
       // the strip is fixed at the window's left and stands over the stage's edge: the zoomed page keeps clear of it (pageScale.ts ZOOM_CLEAR)
       const strip = rootRef.current?.querySelector<HTMLElement>('.desk-frame-strip')?.getBoundingClientRect();
       const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
+      // #138: with a menu open the page yields from that side only (pageScale.ts pageYieldFor); the zoom hides the openers, so it never yields there
+      let k = kRest, shift = 0, frontRoom: number | null = null;
+      const small = onePanelAt(window.innerWidth);
+      const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
+      const open = !zoomed && (hands.tools || hands.tutor);
+      if (open || zoomed) held.current = false;
+      else if (gave.current && performance.now() - typed.current < 400) held.current = true;
+      if (held.current) return;
+      if (open && col) {
+        const cr = col.getBoundingClientRect();
+        const centre = cr.left + cr.width / 2;
+        const ck = chromeK();
+        const root = document.documentElement;
+        const railRight = strip && strip.width > 0 ? Math.max(strip.right, s.left) : s.left;
+        // each menu with its 16 px tab. At 1600 and narrower: the Front menu's own width (Arbor 264, others 184, by the chrome scale), the Back menu's 320.
+        // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
+        const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : root.hasAttribute('data-machina2') ? 200 * ck - 16 : 184 * ck) : DRAWER_MIN;   // Machina's: 200 by the chrome scale, less its tab
+        const backW = small ? 320 * ck : DRAWER_MIN;
+        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - backW - 16 : null);
+        k = y.k; shift = y.shift;
+        if (hands.tools && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
+      }
       stage.style.setProperty('--wz-k', k.toFixed(4));
+      stage.style.setProperty('--wz-page-shift', `${shift.toFixed(2)}px`);
+      const half = (PAGE_W_BASE * k) / 2;
+      if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
+      else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
+      if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
+      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
+      if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, k, inset, fit).toFixed(4));
+      stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
       // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
       stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
+      // a painted size change fires no observer: what measured the old edges (the drawers, the readouts) is told once
+      gave.current = sides !== '';
+      const key = `${k.toFixed(4)} ${shift.toFixed(2)} ${sides}`;
+      if (key !== yielded.current) { yielded.current = key; document.dispatchEvent(new Event('wz-board-moved')); window.dispatchEvent(new Event('resize')); }
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
+    const onType = (e: KeyboardEvent) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') typed.current = performance.now(); };
+    const release = () => { typed.current = 0; if (!held.current) return; held.current = false; apply(); };   // her pointer ends the typing's claim
+    document.addEventListener('keydown', onType, true);
+    document.addEventListener('pointermove', release, true);
+    document.addEventListener('pointerdown', release, true);
     // the window's width is part of the law, and a stage may keep its size while the window changes
     window.addEventListener('resize', apply);
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); };
-  }, [pageKind]);
+    document.addEventListener('wz-zoom-changed', apply);
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
+  }, [pageKind, hands.tools, hands.tutor]);
 
   return (
     <div ref={rootRef} className="desk-frame" data-writing={dissolved ? 'true' : 'false'}>

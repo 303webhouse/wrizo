@@ -186,18 +186,10 @@
    ========================================================================================================================================== */
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
 :root[data-machina2][data-theme='machina'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
-/* #133: Machina's Front menu keeps its width (200 px by the chrome scale, less its tab) over the page's margin; its tab stays on the drawer's rail side [desk-frame §24] */
-@media (max-width:1600px){
-  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor{ --wz-front-over-w:calc(200px * var(--wz-chrome-k, 1) - 16px); }
-  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:16px; right:auto; }
-  :root[data-machina2][data-theme='machina'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
-}
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-machina2][data-theme='machina'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
 :root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--machina2-drawer-r, 0px); }
-/* #133: a drawer lying over the page's edge starts inside the page, so its tab travels to the drawer's own outer edge */
-:root[data-machina2][data-theme='machina'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* REDUCED MOTION: the openers cut, they never travel (fix after runs 41588188108 / 41588256216 - the reduced-motion repeat's second miss, a real
    bug: main's floor makes every transition 0.01 ms, which still STARTS one, and its first frame shows the shut position; the read caught that
    frame). The position leaves the transition list, so the tab stands where it settles in the frame the drawer opens. */

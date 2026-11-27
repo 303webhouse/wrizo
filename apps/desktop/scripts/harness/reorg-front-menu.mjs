@@ -278,8 +278,12 @@ await withHarness(async (app) => {
     const same = await app.evalJs("document.querySelector('.forward-only-editor') === window.__fmEditor");
     geo[w] = { closed, text, partsTab, same };
   }
-  ok('G1 [1366, 1920, 2000] the page\'s rect is the same with the Front menu closed and open on each tab; the editor is the same node',
-    Object.values(geo).every((g) => g.closed && g.closed === g.text && g.text === g.partsTab && g.same), geo);
+  // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+  // ok('G1 [1366, 1920, 2000] the page\'s rect is the same with the Front menu closed and open on each tab; the editor is the same node',
+  // Object.values(geo).every((g) => g.closed && g.closed === g.text && g.text === g.partsTab && g.same), geo);
+  const P138 = (x) => String(x).split('|').map((r) => r.split(',').map(Number));
+  ok('G1 [#138 successor] [1366, 1920, 2000] open, the column stands and the paper keeps its right edge (1366: narrower from the left; wider windows: identical), alike on each tab; the editor is the same node',
+    Object.entries(geo).every(([w, g]) => g.closed && g.text === g.partsTab && g.same && (Number(w) > 1600 ? g.closed === g.text : (() => { const a = P138(g.closed), b = P138(g.text); return String(a[0]) === String(b[0]) && Math.abs(a[1][0] + a[1][2] - b[1][0] - b[1][2]) <= 0.6 && b[1][2] <= a[1][2] + 0.6; })())), geo);
 });
 
 if (!CAPTURE) {

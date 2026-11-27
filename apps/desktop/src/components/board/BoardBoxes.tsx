@@ -5,7 +5,8 @@ import { darkSheetInk, inkColor, renderStroke } from '../../store/ink';
 import { decorateMarkdownForCard } from '../../store/draftDecoration';
 import { useLexicon } from '../../store/themeLexicon';
 import { useDeskLexicon } from '../../store/deskLexicon';
-import type { Box, Stroke } from '../../types';
+import { markedHtml } from '../../store/textMarks';
+import type { Box, Stroke, TextMark } from '../../types';
 import { notecardExcerpt } from './geometry';
 
 // -- ink box: paints via the shared renderStroke, box-local (already
@@ -100,10 +101,12 @@ export function BoardPinBox({ box }: { box: Box }) {
 
 // a read-only face (a double-click opens BoardCardPopup); a ported card (sourceEntryId) shows the bounded excerpt, so its full stored text cannot inflate the reflow floor [BoardEditor §7]
 export function BoardTextBox({
-  boxId, initialText, measureRef, sourceEntryId, typeStyle, prompt,
+  boxId, initialText, measureRef, sourceEntryId, typeStyle, prompt, textMarks,
 }: {
   boxId: string;
   initialText: string;
+  // the Guide walk's bold, italic, underline and strike (store/textMarks.ts): ABSENT on every card that never had them, which then draws exactly as before
+  textMarks?: TextMark[];
   measureRef: (id: string, el: HTMLDivElement | null) => void;
   sourceEntryId?: string;
   // W3 - a dealt step's QUESTION, shown only while the card has no body (store/guided.ts promptToShow decides). It rides as an ATTRIBUTE and is painted by a CSS pseudo-element
@@ -131,7 +134,8 @@ export function BoardTextBox({
       className="board-text"
       style={typeStyle}
       data-prompt={prompt ?? undefined}
-      dangerouslySetInnerHTML={{ __html: decorateMarkdownForCard(initialText, null) }}
+      data-marked={textMarks?.length ? '' : undefined}
+      dangerouslySetInnerHTML={{ __html: textMarks?.length ? markedHtml(initialText, textMarks) : decorateMarkdownForCard(initialText, null) }}
     />
   );
 }

@@ -1,0 +1,10 @@
+Train L13 deploy, Nov 26 2026, 11:15 pm to 11:16 pm MT (Nov 27 06:15:06Z to 06:16:15Z), from the laptop.
+git 57d1a34e = train-l13-2 = main 8555adf6 + POLISH camera polish/camera-glide-hold 7055786d + POLISH #135 234e8d81 + MOBILE-B mobile/3-holds 764cfffd (companion, repairs, card-held route) + one verdict line in each of mobile-board-unit, mobile-notes-unit, mobile-shelf-unit (test files only). No conflicts. Railway deployment f442bb49-9d1e-4e5a-94dd-818cba18098f.
+Not f5b21fec: it renamed the desk's bundle to main-* and switched off the stale-tab guard (MOBILE-B's own report).
+Word: Fable, Nov 26 10:15 pm (Q20: A, 764cfffd cleared) and 11:15 pm (Q21: A, verdict lines, then deploy); relayed by Nick in chat 1.
+Checks before, on 35ec0f62 (product identical to 57d1a34e): browserless 45943090078 SUCCESS; full pair 45943093486 (540/546 each leg). Non-OKs, all "no verdict", both legs: flux-v2-part2 and polish10-14-frames (always allowed), return-caret-probe (same output as in FW's pair), and the three companion unit files, whose full output reads 20/20, 12/12, 10/10 pass. OK in the pair: mobile-shell (34), mobile-holds-pg-ci (card-held on real Postgres, 14), mobile-build-unit, b101, box-tombstones, keyflip-live (12).
+On 57d1a34e: run 45950277031, the three files CLEAN on both legs (MOBILE-BOARD 20, MOBILE-NOTES 12, MOBILE-SHELF 10); browserless 45950280400 SUCCESS.
+Laptop gates on 35ec0f62 all exit 0: frozen install, tsc desktop and server, seed-guard, hooks-order, hooks-order-ast, th-machina-source, machina-doc-word, free-write-host-unit, tutor-call-limit, tutor-prompts, mobile-build-unit, build:web, c13-standing (11).
+After: /healthz 200 build index-B9vu5App; served index-B9vu5App.js 1459294 B md5 89c40934284a and index-C1icEUxw.css 526821 B md5 103c08fc36b3, byte-identical to the tested build:web; the desk's bundle is still index-*; smoke-login PASS 6/6; boot log: listening, no error.
+Client and server (cardHeldRoutes.ts, its mount in index.ts). No database change.
+Roll-back target: train L12, git 51969b40, railway 6904f6c6-a51e-4a0c-9667-364ad721342a.

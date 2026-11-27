@@ -626,18 +626,10 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ right:0; }
 :root[data-arbor2][data-theme='plateau'] .wz-sliver-grip{ transition:color .15s, background-color .15s, border-color .15s, right var(--drawer-dur) var(--drawer-ease); }
-/* #133: Arbor's Front menu keeps its 264 px over the page's margin; its tab stays on the drawer's rail side [desk-frame §24] */
-@media (max-width:1600px){
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor{ --wz-front-over-w:264px; }
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{ left:16px; right:auto; }
-  :root[data-arbor2][data-theme='plateau'] .desk-frame-stage--prose:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
-}
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:calc(100% - 16px); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-panel{ position:relative; left:-16px; }
 :root[data-arbor2][data-theme='plateau'] .wz-tutor-grip{ transition:color .15s, background-color .15s, border-color .15s, left var(--drawer-dur) var(--drawer-ease); }
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip:is([data-open='true'], [data-docked='true']){ left:var(--arbor2-drawer-r, 0px); }
-/* #133: a drawer lying over the page's edge starts inside the page, so its tab travels to the drawer's own outer edge, not the drawer's width */
-:root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true']){ left:var(--wz-over-travel); }
 /* REDUCED MOTION: the openers cut, they never travel (fix after runs 41588188108 / 41588256216 - the reduced-motion repeat's second miss, a real
    bug: main's floor makes every transition 0.01 ms, which still STARTS one, and its first frame shows the shut position; the read caught that
    frame). The position leaves the transition list, so the tab stands where it settles in the frame the drawer opens. */
@@ -686,6 +678,16 @@
    ========================================================================================================================================== */
 :root[data-arbor2][data-theme='plateau'] .desk-frame-stage:not(:has(.mode-pagecol[data-zoom='true'])) .desk-frame-sliver-anchor:is(.desk-frame-sliver-anchor--prose, .desk-frame-sliver-anchor--screenplay){
   --sliver-anchor-w: max(0px, min(280px, calc(var(--arbor2-drawer-room, 288px) - 8px + var(--sliver-overflow)))); }
+/* #135: ARBOR'S BOARD DRAWER IS NEVER SQUEEZED. The Board keeps its rect (r22), so the room beside it can be thinner than the drawer (49 px at 1366, 134 at 1536):
+   the Tools drawer keeps Arbor's 264 px and lies over the Board's left edge by what is missing, and stops above the Board's zoom row so it never covers a
+   control of the Board. With room enough its right edge stays on the Board's edge. Placed from the LEFT (--board-l - --board-strip is the room, written by
+   components/board/useBoardBox.ts); the open tab rides the drawer's outer edge; the closed tab and the anchor are untouched. */
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage.desk-frame-stage--board:not(:has(.mode-pagecol[data-zoom='true'])) { --wz-board-room: calc(var(--board-l, 280px) - var(--board-strip, 0px)); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage.desk-frame-stage--board:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver-panel{
+  left:calc(100% - max(0px, min(var(--wz-board-room) - 16px, 264px))); right:auto; width:264px;
+  height:calc(100% - max(0px, min(60px, (280px - var(--wz-board-room)) * 100))); }
+:root[data-arbor2][data-theme='plateau'] .desk-frame-stage.desk-frame-stage--board:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{
+  right:max(0px, min(var(--wz-board-room) - 16px, 264px)); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabbar{ top:63px; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .wz-drawer-slide--right .wz-drawer-tabnotes{ top:0; }   /* r16: the notes column sits INSIDE the cloths' box (DrawerTabs.tsx), so it already starts where they do; r13's 63 px counted twice and hung the Grafts '?' beside Send (r16-help) */
 :root[data-arbor2][data-theme='plateau'][data-arbor2-room='night'] :is(.wz-sliver-panel, .wz-tutor-panel){ --desk-ground:#2E2118; }
@@ -811,8 +813,6 @@
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--arbor2-drawer-r, 0px); opacity:1; visibility:visible;
   transition:left var(--drawer-dur) var(--drawer-ease), opacity var(--drawer-dur) ease, visibility 0s; }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tabs{ flex-direction:column; align-items:flex-start; }
-/* #133: the tabs ride with the opener on a drawer lying over the page's edge */
-:root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .desk-frame-tutor-anchor:has(.wz-tutor-grip[data-over='true']:is([data-open='true'], [data-docked='true'])) .arbor2-c2--right{ left:var(--wz-over-travel); }
 :root[data-arbor2][data-theme='plateau']:not([data-arbor2-off~='tabs']) .arbor2-c2--right .wz-drawer-tab{ writing-mode:vertical-rl; width:25px; height:98px; clip-path:path('M0 0 L20.6 8.4 Q25 10 25 14 L25 84 Q25 88 20.6 89.6 L0 98 Z'); }
 /* #129: the same for the Back menu's tabs down its right edge: 106 px slots (the 98 px tab with 4 px above and below, the active 106 px tab filling
    it), 2 px apart; the active tab stands ON the panel's edge, not 3 px into it. (Was: margin-top -10px; active margin -4px 0 -4px -3px, after a tab
