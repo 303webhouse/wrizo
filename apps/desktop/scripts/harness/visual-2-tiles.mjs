@@ -223,13 +223,38 @@ await withHarness(async (app) => {
     ok('O3: Machina’s tile is light by day, and dark as soon as she picks a dark page', light.tone === 'light' && light.lum > 0.7 && dark.tone === 'dark' && dark.lum < 0.06, { light, dark });
   });
 
-  // ---------------------------------------------------------------- W: Free Write and Wire In, where the wide page used to leave the pop-out 83 px (Fable, Nov 26: it keeps 300 there, over the page; the page never moves)
-  for (const [theme, width, height] of [['plateau', 1366, 768], ['flux', 1366, 768], ['plateau', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
+  // SUPERSEDED (Fable, Nov 26 11:20 pm: the tiles’ 300 px Theme pop-out over the page is superseded; the pop-out takes the room #142 gives it, and the picker fits that room). The original W1, verbatim:
+  // // ---------------------------------------------------------------- W: Free Write and Wire In, where the wide page used to leave the pop-out 83 px (Fable, Nov 26: it keeps 300 there, over the page; the page never moves)
+  // for (const [theme, width, height] of [['plateau', 1366, 768], ['flux', 1366, 768], ['plateau', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
+  // const before = await open({ theme, width, height, stage: 'default' });
+  // const l = await vt('layout()');
+  // const after = await vt('paper()');
+  // ok(`W1 [${theme === 'flux' ? 'Flux, Wire In' : 'Arbor, Free Write'} ${width}]: the Theme pop-out keeps its 300 px, the tiles read, all five show, and the paper has not moved`,
+  // Math.abs(l.panel.w - 300) <= 1 && l.rects.length === 5 && l.rects.every((r) => r.w >= 120 && r.b <= l.panel.b + 0.5) && !!before && before === after, { panel: l.panel.w, tiles: l.rects.map((r) => Math.round(r.w)), same: before === after });
+  // });
+  // ---------------------------------------------------------------- W: the picker fits the room the pop-out is given (#142). Under 260 px: one column of short tiles, every name whole, all five in sight
+  const fit = () => ev(`(() => { const p = document.querySelector('.wz-cascade-panel').getBoundingClientRect(), el = document.querySelector('.wz-cascade-panel'), cards = [...document.querySelectorAll('.wz-theme-card')];
+    const r = (e) => e.getBoundingClientRect();
+    const cut = cards.filter((c) => { const w = r(c.querySelector('.wz-theme-wm')), a = r(c); return w.left < a.left + 1 || w.right > a.right - 1 || w.top < a.top || w.bottom > a.bottom; }).map((c) => c.querySelector('.wz-theme-wm').textContent);
+    const under = cards.filter((c) => { const band = c.querySelector('.wz-theme-band'); return band && r(c.querySelector('.wz-theme-wm')).bottom > r(band).top + 0.5; }).length;
+    return { panel: Math.round(p.width), wide: el.scrollWidth - el.clientWidth, cols: new Set(cards.map((c) => Math.round(r(c).x))).size, tiles: cards.map((c) => Math.round(r(c).width) + 'x' + Math.round(r(c).height)).join(' '), seen: cards.filter((c) => r(c).bottom <= p.bottom + 0.5).length, cut, under }; })()`);
+  for (const [theme, width, height] of [['plateau', 1366, 768], ['machina', 1366, 768], ['flux', 1366, 768], ['plateau', 1280, 720], ['machina', 1280, 720], ['flux', 1280, 720], ['plateau', 1536, 864], ['machina', 1536, 864], ['flux', 1536, 864]]) await part(`W ${theme} ${width}`, async () => {
     const before = await open({ theme, width, height, stage: 'default' });
-    const l = await vt('layout()');
+    const f = await fit();
     const after = await vt('paper()');
-    ok(`W1 [${theme === 'flux' ? 'Flux, Wire In' : 'Arbor, Free Write'} ${width}]: the Theme pop-out keeps its 300 px, the tiles read, all five show, and the paper has not moved`,
-      Math.abs(l.panel.w - 300) <= 1 && l.rects.length === 5 && l.rects.every((r) => r.w >= 120 && r.b <= l.panel.b + 0.5) && !!before && before === after, { panel: l.panel.w, tiles: l.rects.map((r) => Math.round(r.w)), same: before === after });
+    const where = `${theme === 'flux' ? 'Flux, Wire In' : theme === 'machina' ? 'Machina, Free Write' : 'Arbor, Free Write'} ${width}`;
+    const narrow = f.panel < 260;
+    ok(`W1 [${where}]: the picker fits its ${narrow ? 'narrow ' : ''}room: ${narrow ? 'one column' : 'two across'}, every name whole and clear of the band, all five in sight, nothing sideways, the paper not moved`,
+      f.cols === (narrow ? 1 : 2) && f.cut.length === 0 && f.under === 0 && f.seen === 5 && f.wide <= 1 && !!before && before === after, { ...f, same: before === after });
+  });
+  await part('W3', async () => {
+    await open({ theme: 'machina', width: 1280, height: 720, stage: 'default' });
+    await hover('machina'); await sleep(2600);
+    const run = await ev("(() => { const c = document.querySelector('.wz-theme-card-machina'), r = (e) => e.getBoundingClientRect(), a = r(c), w = r(c.querySelector('.wz-theme-wm')), s = r(c.querySelector('.wz-theme-plate-run')), x = r(c.querySelector('.wz-theme-plate-closed')); return { narrow: a.width > 150 && a.height < 100, nameClear: w.bottom <= s.top + 0.5, stripOverClosed: s.bottom <= x.top + 1, inside: x.bottom <= a.bottom + 0.5, closed: Number(getComputedStyle(c.querySelector('.wz-theme-plate-closed')).opacity) }; })()");
+    ok('W3 [narrow]: Machina’s Run still closes under the pointer: name, strip and "RUN CLOSED" each in their own place inside the short tile', run.narrow && run.nameClear && run.stripOverClosed && run.inside && run.closed === 1, run);
+    await hover('flux'); await sleep(3200);
+    const chk = await ev("(() => { const c = document.querySelector('.wz-theme-card-flux'), r = (e) => e.getBoundingClientRect(), a = r(c), w = r(c.querySelector('.wz-theme-wm')), u = [...c.querySelectorAll('.wz-theme-plate-check i')].map(r); return { narrow: a.width > 150 && a.height < 100, nameClear: u.every((i) => w.bottom <= i.top + 0.5), inside: u.every((i) => i.left >= a.left && i.right <= a.right && i.bottom <= a.bottom + 0.5), n: u.length }; })()");
+    ok('W4 [narrow]: Flux’s CHECKPOINT sits under the name, inside the short tile', chk.narrow && chk.nameClear && chk.inside && chk.n === 10, chk);
   });
   await part('W2', async () => {
     await open({ theme: 'plateau' });
