@@ -34,6 +34,7 @@ const session = async (app, w) => {
   const click = (sel) => app.evalJs(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) return false; e.click(); return true; })()`);
   await click('[data-reorg-rail] [data-category="reorg-docs"]'); await sleep(600);
   await click('[data-reorg-group="session"] [data-session-fold]'); await sleep(600);
+  await app.evalJs("(() => { const e = document.querySelector('[data-session-hint=\"flicker\"]'); if (e) e.scrollIntoView({ block: 'end' }); return !!e; })()"); await sleep(400);
 };
 
 const set = (w) => {
