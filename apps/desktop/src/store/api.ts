@@ -167,6 +167,19 @@ function tutorThemeName(): 'arbor' | 'flux' | 'machina' | undefined {
   return t === 'plateau' ? 'arbor' : t === 'flux' || t === 'machina' ? t : undefined;
 }
 
+// THE WALK'S ASK (PRESETS-B, Nov 27; TUTOR-B's contract): the same route with one more key, `walk`, her step, and nothing else beside the thread and the theme's name (no page, no Bible; the server reads no notes on
+// file for it). THE ROUTE MUST BE LIVE FIRST: a server without it ignores `walk` and answers as an ordinary ask, with her notes on file.
+export async function apiTutorWalk(messages: { role: 'writer' | 'tutor'; text: string }[], walk: Record<string, string>): Promise<TutorChatResult> {
+  try {
+    const res = await postJson('/api/tutor/chat', { messages, theme: tutorThemeName(), walk });
+    if (!res.ok) return { ok: false, configured: true };
+    const data = (await res.json()) as { configured: boolean; reply?: string };
+    return data.configured ? { ok: true, configured: true, reply: data.reply ?? '' } : { ok: true, configured: false };
+  } catch {
+    return { ok: false, configured: true };
+  }
+}
+
 // TU2 S2 / TU5 S4 — `delta` and `bible` are BOTH optional and, when present,
 // already fully assembled by Tutor.tsx (delta: sliced from the persisted
 // cursor, tail-capped, honesty line baked in if truncated; bible: the project's

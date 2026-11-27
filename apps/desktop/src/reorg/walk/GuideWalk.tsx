@@ -19,10 +19,12 @@ import { PresetNoteButton } from '../PresetNote';
 import { ScenesPopover } from '../../components/ScenesPopover';
 import { docNameOf, planOfPage, stepsOfPage, type PlanOfPage } from './walkData';
 import { walkPageRect } from './pageRect';
+import { WalkAi } from './WalkAi';
 
 // THE GUIDE AS A WALK (PRESETS-B, Nov 25; Fable 7:10 pm; the Wrizors' guide-walk frames): one step of her Plan at a time, in a card OVER the page. PAGE IS PRIMARY: the page is never moved or unmounted; the card is
 // placed from the page's own rectangle (40 px wider than the page). THE PLAN IS THE PROGRESS: every step, note, mark and skip is a card of the page's own Plan board, written through the board's own save, the
 // moment it is made (no word waits on a timer). Her place is the one other saved thing (docSettings walk.stepId), cleared at the end card.
+// THE AI ALONE of the page's Back menu stands at the card's right (WalkAi.tsx, spec section 3.8), for a Plan made from a structure; it speaks only on her press.
 // Her keys stay in the walk. Left/Right step only where the old Walk's rule lets them (outside the note, or on an empty one); PageUp/PageDown always; Escape leaves, and the chip brings her back.
 
 let planMemo: (PlanOfPage & { pageId: string }) | null = null;
@@ -80,19 +82,22 @@ function selectIn(el: HTMLElement, start: number, end: number): void {
 
 interface Rect { left: number; top: number; width: number; height: number }
 const SIDE = 222;
-/** the greyed tabs' strip, at the card's right */
+/** the Back menu's tabs, at the walk's right */
 const TABS = 32;
-/** The card over the page: 40 px wider than it, the same top; the steps list stands to its left. Nothing of the page changes. */
-function useWalkPlace(): { card: Rect; side: Rect } {
+/** the AI panel opens by itself on a window this wide or wider; on a narrower one its tab opens it */
+const AI_ROOM = 1280;
+/** The card over the page: 40 px wider than it, the same top; the steps list stands to its left, the AI panel (when open) to its right, and the card gives up width to it only where there is no room. Nothing of the page changes. */
+function useWalkPlace(withAi: boolean): { card: Rect; side: Rect; ai: Rect } {
   const place = () => {
     const page = walkPageRect();
     const vw = window.innerWidth, vh = window.innerHeight;
-    const width = Math.min((page?.width ?? 620) + 40, vw - SIDE - TABS - 24);
+    const ai = withAi ? (vw < 1440 ? 232 : 264) : 0;
+    const width = Math.min((page?.width ?? 620) + 40, vw - SIDE - ai - TABS - 24);
     let left = page ? page.left - 20 : (vw - width) / 2;
-    left = Math.max(SIDE + 8, Math.min(left, vw - width - TABS - 8));
+    left = Math.max(SIDE + 8, Math.min(left, vw - width - ai - TABS - 8));
     const top = Math.max(64, Math.min(page?.top ?? 96, 140));
     const height = Math.max(360, Math.min(page?.height ?? vh, vh - top - 16));
-    return { card: { left, top, width, height }, side: { left: left - SIDE, top, width: SIDE, height } };
+    return { card: { left, top, width, height }, side: { left: left - SIDE, top, width: SIDE, height }, ai: { left: left + width, top, width: ai, height } };
   };
   const [at, setAt] = useState(place);
   useLayoutEffect(() => {
@@ -101,7 +106,7 @@ function useWalkPlace(): { card: Rect; side: Rect } {
     window.addEventListener('resize', again);
     const id = window.setInterval(again, 250);   // the page settles after it mounts, and its scale follows the window
     return () => { window.removeEventListener('resize', again); window.clearInterval(id); };
-  }, []);
+  }, [withAi]);
   return at;
 }
 
@@ -134,7 +139,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
   const fieldRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const shownRef = useRef<string>('');
-  const at = useWalkPlace();
+  const [aiShown, setAiShown] = useState(() => window.innerWidth >= AI_ROOM);
 
   const step: WalkStep | undefined = steps.find((s) => s.id === current) ?? steps.find((s) => s.id === placeIn(steps, null));
   const index = step ? steps.indexOf(step) : -1;
@@ -299,6 +304,7 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
       if (to >= 0) { e.preventDefault(); items[to]?.focus(); }
       return;
     }
+    if ((e.target as HTMLElement).closest('[data-walk-ai]')) return;   // in the AI panel her arrows and Page keys are the box's own, never a step
     if (renaming || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
     const dir = e.key === 'ArrowRight' || e.key === 'PageDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'PageUp' ? -1 : 0;
     if (!dir || !keyMaySteps(e.key, { inEditor: inField, empty: !field || !fieldText(field) })) return;
@@ -317,6 +323,10 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
   const planCards = liveBoxes(plan.board?.boxes);
   const structure = structureOfPlan(planCards, t);
   const note = structure ? STRUCTURE_NOTES[structure.id] : undefined;
+  // the AI is offered for a Plan made from a structure (the route needs its name and kind); a Plan of her own names has none
+  const aiHere = !!(structure && step && step.title);
+  const aiOpen = aiHere && aiShown;
+  const at = useWalkPlace(aiOpen);
   const stepCard = step ? planCards.find((b) => b.id === step.id) : undefined;
   const fill = (key: DeskTermId, values: Record<string, string | number>) => Object.entries(values).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), t(key));
   const stateWord = (s: WalkStep) => t(s.state === 'noted' ? 'guideWalkStateNoted' : s.state === 'skipped' ? 'guideWalkStateSkipped' : 'guideWalkStateEmpty');
@@ -458,11 +468,13 @@ export function GuideWalk({ pageId, onLeave, onDone, onWrite }: GuideWalkProps) 
             : <button type="button" className="wz-walk-primary" data-walk-next="" onClick={forward}>{t(step.state === 'noted' ? 'guideWalkNext' : 'guideWalkSkip')} ›</button>}
         </footer>
       </section>
-      {/* the Back menu's other tabs, greyed: locked while she walks, by the app's own rule for a locked tab */}
-      <div className="wz-walk-back" role="tablist" aria-orientation="vertical" aria-label={t('guideWalkLocked')} style={{ left: at.card.left + at.card.width, top: at.card.top + 44 }}>
+      {aiOpen && structure && step && <WalkAi pageId={pageId} step={step} steps={steps} structure={structure} note={note} stepOf={fill('guideWalkStepOf', { n: num(index + 1), total: num(steps.length) })} style={box(at.ai)} />}
+      {/* the Back menu's tabs: the others greyed, locked while she walks, by the app's own rule for a locked tab; the AI's lit, and pressing it shuts or opens its panel */}
+      <div className="wz-walk-back" role="tablist" aria-orientation="vertical" aria-label={t('reorgBackTabsLabel')} style={{ left: at.card.left + at.card.width + at.ai.width, top: at.card.top + 44 }}>
         {(['reorgBackPlan', 'drawerLinks'] as const).map((k) => (
           <button key={k} type="button" role="tab" aria-selected="false" aria-disabled="true" data-locked="true" tabIndex={-1} aria-describedby="wz-walk-locked-note" data-walk-locked={k}>{t(k)}</button>
         ))}
+        {aiHere && <button type="button" role="tab" aria-selected={aiOpen} className="wz-walk-aitab" data-walk-ai-tab="" onClick={() => setAiShown((v) => !v)}>{t('tutorTabTutor')}</button>}
         <span id="wz-walk-locked-note" className="wz-walk-sr">{t('guideWalkLocked')}</span>
       </div>
     </div>,

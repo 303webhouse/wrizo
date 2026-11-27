@@ -5,6 +5,7 @@
 //   WIRE    the ask is { messages, theme, walk } and no other key
 //   THREAD  one thread a step: her question last, the reply after it; another step's thread never travels; a failure keeps her question and Try again replays it; one ask at a time; "not configured" = AI off
 //   SILENT  it never speaks first: nothing asks but a press
+//   FOCUS   a press leaves her in the box, never nowhere
 //   NOSAVE  the ask saves nothing
 //   KEYS    inside the panel her arrows and Page keys are the box's, never a step
 //   PLAN    no known structure (a Plan of her own names), no AI offered
@@ -85,7 +86,8 @@ await law('FOUR: the client\'s copy is the server\'s, for every preset row (wher
   const m = { exports: {} };
   new Function('require', 'module', 'exports', ts.transpileModule(server, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText)(() => ({}), m, m.exports);
   const mine = load(ASK);
-  const words = Object.fromEntries([...read('store/lexicon/canonical/chrome.ts').matchAll(/^\s*(reorgPre[A-Za-z0-9]+):\s*(["'])((?:\\.|(?!\2).)*)\2,/gm)].map((x) => [x[1], x[3].replace(/\\(.)/g, '$1')]));
+  const canon = fs.readdirSync(path.join(SRC, 'store/lexicon/canonical')).map((f) => read('store/lexicon/canonical/' + f)).join(String.fromCharCode(10));
+  const words = Object.fromEntries([...canon.matchAll(/^\s*((?:reorgPre|deck)[A-Za-z0-9]+):\s*(["'])((?:\\.|(?!\2).)*)\2,/gm)].map((x) => [x[1], x[3].replace(/\\(.)/g, '$1')]));
   const off = [];
   let n = 0;
   for (const p of load(PRESETS).PLAN_PRESETS) {
@@ -174,6 +176,12 @@ await law('SILENT: nothing asks but a press', (load, file) => {
   const spoken = effects.filter((e) => /askWalk|retryWalk|apiTutorWalk|ask\(/.test(e));
   return (spoken.length === 0 && /onClick=\{\(\) => ask\(q\)\}/.test(code)) || J(spoken);
 }, [PANEL, 'const end = endRef.current;', 'ask(questions[0]); const end = endRef.current;']);
+
+await law('FOCUS: a press never leaves her focus nowhere: it goes to the box, and no button she presses is disabled under her', (load, file) => {
+  const code = file(PANEL);
+  const asks = code.slice(code.indexOf('const ask = (text: string) => {'), code.indexOf('void askWalk('));
+  return (/offRef\.current\?\.focus/.test(code) && /toBox\(\);/.test(asks) && /toBox\(\); void retryWalk/.test(code) && !/data-walk-ask=\{q\} disabled/.test(code)) || 'a press can drop her focus';
+}, [PANEL, 'toBox(); void retryWalk', 'void retryWalk']);
 
 await law('NOSAVE: the ask writes nothing of hers anywhere', (load, file) => {
   const both = file(THREADS) + file(PANEL) + file(ASK);
