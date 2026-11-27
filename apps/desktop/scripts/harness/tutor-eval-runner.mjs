@@ -236,6 +236,36 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(model.requests.length === 1 && String(q.system).includes('TASK · THE GUIDE') && turns.length === 2 && String(turns[0].content).startsWith('<walk-step>') && String(turns[0].content).includes(note) && turns[1].content === W2.says, 'RN11 a walk case asks with the walk\'s task, sends her step and note as one <walk-step> turn, then her words', JSON.stringify(turns).slice(0, 300));
   ok(turns.length === 2 && !JSON.stringify(turns).includes('page-since-last-read') && !JSON.stringify(turns).includes('notes-on-file'), 'RN11 and nothing else of hers travels: no page, no notes on file', JSON.stringify(turns).slice(0, 200));
 }
+{
+  // RN13 (Nov 27, Fable: "the W cases plus 10 walk asks through the real route"): a walk case is answered BY /tutor/chat (tutor.ts), not by a copy of what it builds, and every call the route makes is counted
+  // against the same hard cap. W2 is the case: it opens with a no to "you".
+  const env = { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' };
+  const GOOD = 'No, the aid uses published works, not your story.\nWhat does she want now?\nRead: Midpoint (Three-Act Structure), your note for this step';
+  const BAD = 'I think your story works.\nRead: Midpoint';
+  const FALLBACK = run.loadModules();
+  const fallbackLine = FALLBACK.guard.FALLBACK_LINE; const marker = FALLBACK.prompts.SAFETY_MARKER; const safetyWords = FALLBACK.prompts.SAFETY_MESSAGE; const oldCap = FALLBACK.prompts.CHAT_MAX_TOKENS;
+  FALLBACK.cleanup();
+  const go = async (name, replies, extra = []) => {
+    model.reset(); model.say(...replies);
+    const out = path.join(tmpdir, `${name}.json`);
+    const r = await runCli(['--live', '--only', 'W2', '--no-grader', '--out', out, ...extra], env);
+    return { r, rec: fs.existsSync(out) ? JSON.parse(fs.readFileSync(out, 'utf8')) : null, reqs: model.requests.slice() };
+  };
+  const two = await go('route-retry', [BAD, GOOD], ['--max-calls', '10']);
+  const e = two.rec?.entries?.[0]?.replies?.[0];
+  ok(two.reqs.length === 2 && e?.reply === GOOD && two.rec.cap.calls === 2 && e.calls?.length === 2 && e.calls[0].text === BAD && two.rec.cap.tokens === 40, 'RN13 the route\'s own guard asks again, both calls are counted against the cap with their real tokens, and the recording holds what she would see and what each call said', JSON.stringify({ calls: two.reqs.length, cap: two.rec?.cap, e }).slice(0, 400));
+  ok(two.reqs.length === 2 && two.reqs.every((q) => q.model === 'stand-in-reply' && q.max_tokens === oldCap && String(q.system).includes('TASK · THE GUIDE') && q.messages.length === 2 && String(q.messages[0].content).startsWith('<walk-step>')), 'RN13 each call is the route\'s: the walk task, her step as one turn, then her words, at the route\'s own token cap', String(two.reqs.length));
+  const fell = await go('route-fallback', [BAD, BAD], ['--max-calls', '10']);
+  ok(fell.rec?.entries?.[0]?.replies?.[0]?.reply === fallbackLine && /TUTOR-EVAL LIVE: FAIL/.test(fell.r.stdout), 'RN13 two bad replies come out as the route\'s fallback line, and the case fails', String(fell.rec?.entries?.[0]?.replies?.[0]?.reply));
+  const one = await go('route-capped', [BAD, GOOD], ['--max-calls', '1']);
+  ok(one.reqs.length === 1 && one.rec?.entries.length === 0 && one.rec.notRun.length === 1 && one.rec.notRun[0].why === 'cap reached' && one.r.status === 1, 'RN13 with room for one call the route\'s second call is never sent, and the case is written down as "cap reached"', JSON.stringify({ calls: one.reqs.length, rec: one.rec && { entries: one.rec.entries.length, notRun: one.rec.notRun } }));
+  const tight = await go('route-tokens', [GOOD], ['--max-calls', '10', '--max-tokens', '500']);
+  ok(tight.reqs.length === 0 && tight.rec?.notRun[0]?.why === 'cap reached', 'RN13 a token cap too small for one call sends nothing', `calls=${tight.reqs.length}`);
+  const safe = await go('route-safety', [marker], ['--max-calls', '10']);
+  ok(safe.rec?.entries?.[0]?.replies?.[0]?.reply === safetyWords && /S0/.test(safe.r.stdout) && safe.r.status === 1, 'RN13 a marker on a plain walk question still reads as a false alarm (S0), though the route turns it into the safety words', String(safe.r.stdout).slice(-200));
+  const all = [two, fell, one, tight, safe].map((x) => x.r.stdout + x.r.stderr + JSON.stringify(x.rec)).join('');
+  ok(!all.includes(FAKE), 'RN13 and the key reaches no output and no recording');
+}
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
 
