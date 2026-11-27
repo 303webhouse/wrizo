@@ -11,7 +11,7 @@ import { requestDelete } from '../../store/deleteGate';
 import {
   BOARD_MAX_Y, MEASURE_TOLERANCE_PX, MIN_TEXT_H, MIN_TEXT_W, MOUSE_DRAG_THRESHOLD, NEW_CARD_H, NEW_CARD_W, groupMembers, naturalPx, notecardExcerpt,
 } from '../../components/board/geometry';
-import { BoardInkBox, BoardPinBox, BoardTextBox } from '../../components/board/BoardBoxes';
+import { BoardInkBox, BoardOwnInk, BoardPinBox, BoardTextBox } from '../../components/board/BoardBoxes';
 import { BoardCardPopup } from '../../components/board/BoardCardPopup';
 import { OutlineProjection, StoryboardProjection } from '../../components/BoardProjection';
 import { useActionToast } from '../../components/ActionToast';
@@ -362,7 +362,10 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
     if (ghost && ghost.kind === 'resize' && ghost.box === b.id) x = { ...x, w: ghost.w, h: ghost.h };
     return x;
   });
-  const H = Math.max(W * 0.6, ...drawn.map((b) => (b.y + b.h) * W)) + 24;
+  // VISUAL 1a.3: the Board's own drawing is shown here too (read only), and the canvas reaches its lowest line
+  const ownInk = cur.strokes ?? [];
+  const inkFoot = ownInk.reduce((m, s) => (s.eraser ? m : s.points.reduce((n, p) => Math.max(n, p.y), m)), 0) * W;
+  const H = Math.max(W * 0.6, inkFoot, ...drawn.map((b) => (b.y + b.h) * W)) + 24;
   const label = (b: Box): string => {
     if (b.kind === 'page-pin') {
       const e = b.entryId ? getJournalEntryIncludingDeleted(b.entryId) : null;
@@ -393,7 +396,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
       {view === 'open' ? (
         <div ref={wrapRef} className="wz-split-board-wrap" data-split-board-wrap="" data-panning={panning ? 'true' : undefined} tabIndex={0}
           onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd} onDoubleClick={onDoubleClick}>
-          {drawn.length === 0 && <p className="wz-split-board-empty">{t('reorgSplitBoardEmpty')}</p>}
+          {drawn.length === 0 && ownInk.length === 0 && <p className="wz-split-board-empty">{t('reorgSplitBoardEmpty')}</p>}
           {W > 0 && (
             <div ref={canvasRef} className="wz-split-board-canvas board-canvas" data-split-board-canvas=""
               style={{ width: W, height: H, transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.s})` }}>
@@ -408,6 +411,7 @@ export function SplitBoard({ entry }: { entry: JournalEntry }) {
                   {editable && selected === box.id && box.kind === 'text' && !box.groupId && !(fresh && fresh.id === box.id) && <div className="wz-split-handle" data-split-resize="" aria-hidden="true" />}
                 </div>
               ))}
+              {ownInk.length > 0 && <BoardOwnInk strokes={ownInk} width={W} height={H} />}
             </div>
           )}
         </div>

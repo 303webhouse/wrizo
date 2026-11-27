@@ -179,7 +179,9 @@ try { await withHarness(async (app) => {
   await type(CYCLE + CYCLE, 40);   // ~25 keys a second: a fast typist
   const t1 = await ev('performance.now()');
   const fast = await ev('window.__f4.rates.slice()');
-  await sleep(3800);   // she stops: the pace eases to zero in ~1.5 s, and the step in hand is finished (a second at most) so the corridor holds ON A SLOT
+  // SUPERSEDED (#140, Nick via Fable, Nov 26: the speed averages her pace over 4 s, so a stop takes longer to reach rest). The original, verbatim:
+  //  await sleep(3800);   // she stops: the pace eases to zero in ~1.5 s, and the step in hand is finished (a second at most) so the corridor holds ON A SLOT
+  await sleep(7500);   // she stops: the 4 s average empties, the speed steps down, and the step in hand is finished so the corridor holds ON A SLOT
   const later = await ev('window.__f4.rates.slice()');
   const lastRate = later.length ? later[later.length - 1][1] : null;
   // the updates come in bursts (one tick calls updatePlaybackRate on every animation), so count the TICKS: distinct times 200 ms apart or more

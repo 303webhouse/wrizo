@@ -32,6 +32,7 @@ export const FLUX_OVERRIDES = {
     ctxDeleteBoard: 'Delete circuit',
     linksKindPage: 'Doc',
     linksKindBoard: 'Circuit',
+    inkDrawOnBoard: 'Draw on a Circuit',   // the Page's INK door, in Flux's word for a Board
     plainTrackerSwitch: 'Use Skin Progress Tracker',   // the plain Progress Tracker's switch: Flux's word for a theme is Skin (cascadeThemeTitle)
     linksKindCard: 'Node',   // the theme's own card word [deskLexicon §62]
     // Round 2: the card footer's own connecting phrase ("— grafted to: <label>"
@@ -235,5 +236,12 @@ export const FLUX_OVERRIDES = {
     authSignIn: 'Log in',
     cascadeSettingsSignOut: 'Log out',   // the sheet (S5): the sign-in form's button and the settings row say Log in / Log out in Flux
     authPanelTag: 'N.01 · INPUT',
+    // THE PHONE COMPANION (MOBILE-B): the theme's own words for a board (Circuit) and a card (node), as the lines above give them
+    mobileBoard: 'Circuit',
+    mobileBoards: 'Circuits',
+    mobileCard: 'Node',
+    mobileCards: 'Nodes',
+    mobileAddCard: 'Add node',
+    mobileDocNoBoard: 'This Doc has no Circuit yet',
   },
 } satisfies Partial<Record<ThemeId, Partial<Record<DeskTermId, string>>>>;

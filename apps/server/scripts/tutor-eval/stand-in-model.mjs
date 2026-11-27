@@ -12,11 +12,16 @@ export async function startStandInModel() {
       try { state.requests.push(JSON.parse(b)); } catch { state.requests.push(null); }
       const item = state.queue.length ? state.queue.shift() : state.last;
       if (!state.queue.length) state.last = item;
-      const { text = null, stop = 'end_turn', thought = false } = typeof item === 'string' ? { text: item } : item;
+      const { text = null, stop = 'end_turn', thought = false, stallHead = 0, stallBody = 0 } = typeof item === 'string' ? { text: item } : item;
       const content = [...(thought ? [{ type: 'thinking', thinking: 'Weighing the question.', signature: 'x' }] : []), ...(text === null ? [] : [{ type: 'text', text }])];
       res.setHeader('content-type', 'application/json');
       res.setHeader('connection', 'close');   // a check that builds a fresh module blocks for seconds; a socket kept alive across that could be dead when next used
-      res.end(JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', model: 'stand-in', content, stop_reason: stop, stop_sequence: null, usage: state.usage }));
+      const body = JSON.stringify({ id: 'msg_1', type: 'message', role: 'assistant', model: 'stand-in', content, stop_reason: stop, stop_sequence: null, usage: state.usage });
+      // a stalled model: `stallHead` sends nothing at all for that long; `stallBody` sends the headers at once and the body late
+      if (!stallHead && !stallBody) { res.end(body); return; }
+      if (stallBody) res.flushHeaders();
+      const timer = setTimeout(() => res.end(body), stallHead || stallBody);
+      res.on('close', () => clearTimeout(timer));
     });
   });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));

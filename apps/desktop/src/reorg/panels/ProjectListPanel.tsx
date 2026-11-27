@@ -15,7 +15,7 @@ import { useProjectName } from '../ReorgRail';
 // back open on this same list. Nothing here writes, but for today's own lazy set on a New in a Project that has none.
 
 function titleOf(e: JournalEntry, t: (k: 'reorgUntitled' | 'reorgUntitledBoard' | 'reorgSketch') => string): string {
-  if (!e.text.trim()) return (e.strokes?.length ?? 0) > 0 ? t('reorgSketch') : e.pageType === 'board' ? t('reorgUntitledBoard') : t('reorgUntitled');
+  if (!e.text.trim()) return e.pageType !== 'board' && (e.strokes?.length ?? 0) > 0 ? t('reorgSketch') : e.pageType === 'board' ? t('reorgUntitledBoard') : t('reorgUntitled');
   return firstLine(e.text).slice(0, 60);
 }
 

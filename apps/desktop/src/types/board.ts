@@ -50,6 +50,11 @@ export interface Stroke {
   tip?: StrokeTip;
   nib?: StrokeNib;
   ink?: StrokeInk;
+  // VISUAL 1a.2 - richer strokes ([DATA] D1, ruled yes Nov 23): all optional, inside the same jsonb, no migration. A stroke with her own colour carries `hex` and no `ink`; a stroke of any size keeps the
+  // nearest `nib`, so a client that does not know these fields still paints it sensibly (store/ink.ts reads and validates all three at paint time).
+  size?: number;    // the line's width in px
+  hex?: string;     // her own colour, #RRGGBB
+  alpha?: number;   // see-through: 0.05 to 1; absent = solid
 }
 
 // J4 — a Board's positioned content unit (I2/I3 realized): the first

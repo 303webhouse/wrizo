@@ -1,0 +1,13 @@
+smoke-login.mjs on live, after the deploy of 57d1a34e (Nov 26 2026, from the laptop). Status codes only.
+ok   POST /auth/login  -> 200 (expected 200)
+ok   GET  /auth/me  -> 200 (expected 200)
+ok   POST /api/sync (pull only)  -> 200 (expected 200)
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
+
+The companion, signed out:
+GET /m/ -> 200, 669 B md5 271f707c56e7, identical to the tested build (cache-control no-cache)
+GET /m/sw.js, /m/manifest.webmanifest, /assets/m-BMTP8_Js.js, /assets/m-BMz68rHr.css -> 200, each identical to the tested build
+GET /api/card-held/x -> 401
