@@ -358,7 +358,7 @@ export function wrapWalkStep(m: WalkStepMaterial): string {
     ...line('this step', m.step),
     ...line("the step's question", m.question, 400),
     ...line('the structure\'s "?" note', m.about, WALK_NOTE_CHARS),
-    `her note for this step: ${capped(m.note, WALK_NOTE_CHARS) || '(none yet)'}`,
+    `the writer's note for this step: ${capped(m.note, WALK_NOTE_CHARS) || '(none yet)'}`,   // never "her": a reply copied the label (run 46070096427)
     ...line('step before', m.before),
     ...line('step after', m.after),
     '</walk-step>',
