@@ -218,7 +218,7 @@ const pluralStep = (name: string): string => {
   if (/(ss|x|z|ch|sh)$/i.test(name)) return `${name}es`;
   return /s$/i.test(name) ? name : `${name}s`;
 };
-// 27 step names read badly under the rule ("Show me Road Backs", "Theme Stateds"), so they have their own wording (Fable, Nov 26: TUTOR-B's table; the Wrizors may change words later). Each: what "What does ___ do"
+// 29 step names read badly under the rule ("Show me Road Backs", "Theme Stateds"), so they have their own wording (Fable, Nov 26 and 27: TUTOR-B's table; the Wrizors may change words later). Each: what "What does ___ do"
 // takes, and what "Show me ___" takes. Keyed by the row's own name, lower case and without "The": a row she renames is not here and follows the rule. A Map, so no name of hers can reach an object's own word.
 export const WALK_STEP_FORMS: ReadonlyMap<string, readonly [string, string]> = new Map<string, readonly [string, string]>([
   ['question at issue', ['the Question at Issue', 'questions at issue']],
@@ -248,6 +248,8 @@ export const WALK_STEP_FORMS: ReadonlyMap<string, readonly [string, string]> = n
   ['support 1', ['Support 1', 'supporting points']],
   ['support 2', ['Support 2', 'supporting points']],
   ['support 3', ['Support 3', 'supporting points']],
+  ['their view', ['"Their View"', '"Their View" parts']],
+  ['your view', ['"Your View"', '"Your View" parts']],
 ]);
 const stepForm = (name: string): readonly [string, string] | undefined => WALK_STEP_FORMS.get(bareStep(name).toLowerCase().replace(/’/g, "'"));
 export interface WalkQuestionInput { step: string; structure: string; kind: WalkKind; next?: string; previous?: string }
