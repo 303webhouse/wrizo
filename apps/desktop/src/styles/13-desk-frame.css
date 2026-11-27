@@ -991,6 +991,9 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 
 /* #138: the lane under the page shifts with it, so it never runs under the menu (or a docked reader) the page gave way to */
 .desk-frame-stage--prose[data-yield] > .desk-frame-rhizome-anchor .desk-frame-instrument{ translate:var(--wz-page-shift, 0px) 0; }
+/* #138: the yielded page is narrower, not shorter. Painted smaller, it needs a taller layout box (--wz-page-hl) than its column holds; a column that shrank it
+   back left the sheet ending above where it did, and the drawer standing past it (visual-1a-touch R7) */
+.desk-frame-stage--prose[data-yield] .mode-page{ flex-shrink:0; }
 /* #142: A POP-OUT FROM THE RAIL NEVER COVERS THE PAGE: the page gives way (DeskFrame), and the pop-out takes the room that makes (--wz-rail-room, and
    --wz-second-room for the layer some of them open beside it; where both cannot stand, the second takes the first's place until it is closed) */
 .desk-frame-stage--prose > .desk-frame-cascade-anchor > .wz-cascade-panel:not([data-visible='false']){ max-width:min(300px, var(--wz-rail-room, 300px)); }
