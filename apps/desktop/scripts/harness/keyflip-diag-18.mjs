@@ -73,7 +73,6 @@ const analyse = (raw) => {
 const traceKey = async (app, key = 'a', flush = false) => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
   await sleep(400);
-  if (flush) { await app.evalJs('(() => { for (const e of document.querySelectorAll("*")) getComputedStyle(e).color; return true; })()'); }
   await app.typeKeys(key);
   await sleep(700);
   const done = app.waitEvent('Tracing.tracingComplete', 30000);
@@ -152,6 +151,8 @@ await withHarness(async (app) => {
     before.arborLeft = arborLeft;
     await app.evalJs(COL_OBS);
     const state = await app.evalJs(`({ anims: document.getAnimations().filter((a) => a.playState !== 'finished').map((a) => (a.animationName || a.transitionProperty || 'script') + '@' + String(a.effect && a.effect.target && (a.effect.target.className.baseVal ?? a.effect.target.className)).split(' ')[0] + ':' + a.playState), sheets: document.styleSheets.length, fonts: document.fonts.status, now: new Date().toString().slice(0, 33), roots: [document.documentElement, document.body, document.getElementById('root')].map((e) => [...e.attributes].map((a) => a.name + '=' + a.value.slice(0, 80)).join(' ')), store: Object.keys(localStorage).sort().map((k) => k + '=' + String(localStorage.getItem(k)).slice(0, 90)), els: document.querySelectorAll('*').length, hidden: [...document.querySelectorAll('*')].filter((e) => getComputedStyle(e).display === 'none').length, focus: String(document.activeElement && document.activeElement.className).slice(0, 40) })`);
+    // PRIMED: the caret put at the end of the editor the way the editor itself does it, then styles settled, before the trace
+    if (flush) { await app.evalJs("(() => { const el = document.querySelector('.forward-only-editor'); const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); return true; })()"); await sleep(600); }
     const tr = await traceKey(app, 'a', flush);
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
@@ -170,13 +171,13 @@ await withHarness(async (app) => {
   };
 
   for (let i = 0; i < 2; i += 1) {
-    for (const flush of [false]) {
+    for (const flush of [false, true]) {
       const m = await measure('machina', '', { flush });
       const t = m.tr || {};
-      console.log(`DIAG ${flush ? 'flushed' : 'plain  '} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
+      console.log(`DIAG ${flush ? 'primed ' : 'plain  '} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
       if (t.ctl && t.ctl.length) console.log(`DIAGCTL ${t.keyEls} ` + JSON.stringify(t.ctl));
       if (i === 0 || t.keyEls > 220) console.log(`DIAGFULL ${t.keyEls} ` + JSON.stringify({ full: t.full, roots: m.state.roots, store: m.state.store, now: m.state.now }));
-      ok(`DIAG ${flush ? 'flushed' : 'plain'} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
+      ok(`DIAG ${flush ? 'primed' : 'plain'} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
     }
   }
 });
