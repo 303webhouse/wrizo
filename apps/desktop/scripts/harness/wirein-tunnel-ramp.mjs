@@ -115,7 +115,9 @@ try { await withHarness(async (app) => {
   const c0 = await now();
   await write(8000);
   const cLast = (await read()).keys.slice(-1)[0];
-  await sleep(2200);
+  // she comes back 1.9 s after her last key: early in the slow-down. (Timed from the key, not from the loop's end: the loop ends on a breath of 0.35 to 0.9 s, and a return that late found the tunnel already
+  // at rest on one leg of run 46032563996. A return that comes as it is settling lets it rest a moment and ramp up again.)
+  await sleep(Math.max(0, cLast + 1900 - (await now())));
   const cBack = await now();
   await write(7000);
   const c1 = await now();
@@ -143,7 +145,7 @@ try { await withHarness(async (app) => {
     ok(`D4.${n} at rest on a slot (${r2(off)} ms off), without a jump (largest correction ${r2(Math.max(0, ...snap.map(([, j]) => Math.abs(j))))} ms)`, off != null && off <= 8 && snap.every(([, j]) => Math.abs(j) <= 40), J(snap));
   }
 
-  const rBefore = at(s, cLast);
+  const rBefore = at(s, cLast + 900);   // the speed it holds before it starts to slow
   const resumed = all.keys.find((t) => t >= cBack);
   const dipWindow = within(s, cLast, resumed + 4000);
   const low = Math.min(rBefore, ...dipWindow.map(([, r]) => r));
