@@ -177,7 +177,7 @@ Never a note about her health, identity or mood. Nothing is kept unless she says
 
 // THE GUIDE'S WALK (Nov 26; guide-walk-spec.md section 3.8, "What the AI is told, for TUTOR to write into its prompts"; Nick ruled the spec Nov 25). Wrizo's own task, not one of the kit's. Sent by /tutor/chat
 // when the body carries her step (tutor.ts, the `walk` key). Fable read these words before the live run.
-const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.2
+const TASK_WALK = `TASK · THE GUIDE'S WALK · v0.3
 She is on one step of her structure and asked about it. <walk-step> holds the preset,
 the structure, this step, the step's question and "?" note, her note for it, and the
 steps before and after. Nothing else of hers was sent.
@@ -191,6 +191,9 @@ Speak to the writer as "you", never as "she" or "her".
   Name the work and its date, tell it in the aid's own words, never quote at length.
 - Only widely known works and widely agreed beats. If not sure, say the example is worth
   checking. Never invent one.
+- Give one example you are sure of rather than several; say a beat is worth checking
+  unless you are sure of the plot.
+- When you are answering their reply to your question, start from that reply.
 - Never supply her content: no event, character, claim or line for her piece. Asking
   about what her note already holds is fine.
 - Asked to use her own story or argument as the example: say no in one sentence, to the
