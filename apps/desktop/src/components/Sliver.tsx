@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useJacked } from '../flux3/jackIn';
+import { setFlourishOff, setThemeTracker, themeTrackerOn, useFlourish } from '../store/flourish';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { useTheme, type ThemeId } from '../store/theme';
 import { TypeControl, type TypeControlProps } from './TypeControl';
@@ -925,15 +926,7 @@ function SliverInstrumentRow({ hasMilestones, target, typewriterAvailable = true
               <TypewriterFields pageId={pageId} pageEmpty={pageEmpty} />
             </section>
           )}
-          {/* the Flicker switch is Flux's only: a switch with nothing to switch would teach the writer it does something [Sliver §32] */}
-          {theme === 'flux' && (
-            <section className="wz-foot-settings-block">
-              <h4>{t('footMenuFlicker')}</h4>
-              <Seg label={t('footMenuFlicker')} value={settings.flicker ? 'on' : 'off'}
-                opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]}
-                onPick={v => setWritingSettings({ flicker: v === 'on' })} />
-            </section>
-          )}
+          {/* GLITCH v2 (Fable, Nov 26, Q4): Flux's Flicker switch moved to Docs › Session (reorg/session/SessionGroup.tsx) */}
           {session && (
           <section className="wz-foot-settings-block">
             <h4>{t('footMenuProgress')}</h4>
@@ -999,6 +992,7 @@ function TypewriterFields({ pageId, pageEmpty }: { pageId?: string; pageEmpty?: 
 function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null; hasMilestones?: boolean }) {
   const { t } = useDeskLexicon();
   const theme = useTheme();
+  const flourish = useFlourish(theme);
   const settings = useWritingSettings();
   const [unit, setUnit] = useState<GoalUnit>(() => target?.unit ?? 'lines');
   const [draft, setDraft] = useState(() => String(target?.n ?? DEFAULT_GOAL_LINES));
@@ -1030,15 +1024,16 @@ function ProgressFields({ target, hasMilestones }: { target: WritingGoal | null;
         <span className="wz-tw-unit">{unit === 'words' ? t('goalUnitWords') : t('goalUnitLines')}</span>
       </label>
       <Seg label="Progress" value={settings.progress} disabled={off} opts={progressOpts} onPick={v => setWritingSettings({ progress: v as ProgressMetric })} />
+      {/* Bar or the theme's flourish: her on/off for this theme's flourish (store/flourish.ts) */}
       {settings.progress === 'words' && theme !== 'machina' && (
-        <Seg label={t('progressStyleLabel')} value={settings.progressStyle} disabled={off}
+        <Seg label={t('progressStyleLabel')} value={flourish ? 'rhizome' : 'bar'} disabled={off}
           opts={[['bar', t('progressStyleBar')], ['rhizome', t('progressStyleRhizome')]]}
-          onPick={v => setWritingSettings({ progressStyle: v as ProgressStyle })} />
+          onPick={v => setFlourishOff(theme, v === 'bar')} />
       )}
       <Seg label={t('timerLabel')} value={settings.timer ? 'on' : 'off'} disabled={off} opts={[['on', 'On'], ['off', 'Off']]} onPick={v => setWritingSettings({ timer: v === 'on' })} />
       {/* the session's "Use Theme Progress Tracker" switch: off, every theme shows the plain row under the page (components/PlainTracker.tsx) */}
       <div data-tracker-switch>
-        <Seg label={t('plainTrackerSwitch')} value={settings.themeTracker === false ? 'off' : 'on'} disabled={off} opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]} onPick={v => setWritingSettings({ themeTracker: v === 'on' })} />
+        <Seg label={t('plainTrackerSwitch')} value={themeTrackerOn(theme, settings.themeTracker) ? 'on' : 'off'} disabled={off} opts={[['on', t('pageSetupOn')], ['off', t('pageSetupOff')]]} onPick={v => setThemeTracker(theme, v === 'on')} />
       </div>
     </>
   );

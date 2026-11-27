@@ -3,6 +3,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { useDeskLexicon, type DeskTermId } from '../store/deskLexicon';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { onePanelAt } from '../store/pageScale';
+import { distractionFreeMarked } from '../store/ambianceDial';
 import { CascadeSurvey } from './CascadeSurvey';
 import { PlaceBlock } from './PlaceBlock';
 import { usePlace } from '../store/usePlace';
@@ -172,7 +173,7 @@ function availableCascadeMargin(): number {
 
 /** How long a closing pop-out stays drawn: the Tools strip's own slide (--drawer-dur), or the short fade under reduced motion (--drawer-dur-reduced). Read from the tokens, never restated. */
 function cascadeExitMs(): number {
-  if (typeof document === 'undefined') return 0;
+  if (typeof document === 'undefined' || distractionFreeMarked()) return 0;   // Distraction Free: a closing pop-out is simply gone
   const reduced = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const raw = getComputedStyle(document.documentElement).getPropertyValue(reduced ? '--drawer-dur-reduced' : '--drawer-dur').trim();
   const n = parseFloat(raw);

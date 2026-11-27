@@ -4591,3 +4591,11 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Caught on the way:** the full pair on `ddf528909` showed a stale walk check (G1) and a real #138 fault on touch (`visual-1a-touch`: the sheet ended short and the Undo arrow was under 44 px). Both mended before the deploy. The final tip had the two targeted files, not a second full pair.
 **Not tried:** the walk and the wider Boards by Nick on the live site. That is the next try.
 **Open:** L15 (Glitch v2, tunnel round two, Distraction Free and the notice; one branch from FIX and POLISH); #142; MOBILE-B's Flux words (`mobile/4-plan-word`). Evidence: `docs/evidence/box-logs/deploy-train-l14-1f9cc8a3/`.
+
+## (330) TRAIN L15 IS LIVE: `git cdae5ee0d · railway af4b9651-7ae7-4384-b2e0-a826ae45a58c`, bundle `index-orVEXreb`, smoke PASS 6/6, served assets identical to the tested build — 2026-11-27 23:14Z / Nov 27, 4:14 pm MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-orVEXreb`; JS 1507841 B md5 `553efbf1c5ea`; CSS `index-CD2Srf74.css` 542032 B md5 `6074d5402297`; `GET /m/` signed out 200; `smoke-login.mjs` PASS 6/6. Roll-back point: train L14, `git 1f9cc8a31 · railway c8841733`.**
+**What is in it:** Distraction Free and the mode notice (POLISH); Glitch v2 and the tunnel's second round, #140 (FIX); the keyflip check steadied, #141.
+**Since (329):** Nick tried L14: "L14 works", with a review that became #143 to #148 (orders, Nov 27 1:40 pm).
+**Caught on the way:** `c13-standing` red on the named tip (a comment sharing a line with new keys; neither GitHub browserless nor the pair runs it) and `arbor2-1` F1 red in the pair (a mockup-class rule in an always-loaded sheet). Rules for `.arbor2-*` classes live in `arbor-v2.css` only; a tip that adds wording runs `c13-standing` before it is named.
+**Not tried:** L15 by Nick on the live site. That is the next try.
+**Open:** L16 (the walk's AI panel with TUTOR-B v0.3, and #146); L17 (#142, the tiles, #147 and #148); #143, #144, #145. Evidence: `docs/evidence/box-logs/deploy-train-l15-cdae5ee0/`.

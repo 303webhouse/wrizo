@@ -6,6 +6,7 @@ import { prefersReducedMotion, useAmbianceDial } from '../store/ambianceDial';
 import { useGoalProgress } from './WritingIncentives';
 import { SamePageLine } from './SamePageNotice';
 import { PageCount } from './PageCount';
+import { useFlourish } from '../store/flourish';
 
 // Run, Machina's only progress instrument (not behind the style slot): twenty units, an orange notch on the unit in progress, the whole strip orange at the goal; sparks under NEUTRAL only; fixed counts and angles; a still state under reduced motion [RunStrip §1]
 const UNITS = 20;
@@ -18,7 +19,8 @@ export function useRunStripActive(text: string): boolean {
   const goal = useWritingGoal();
   void text;
   const n = goal?.n ?? 0;
-  return theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0;
+  const wanted = useFlourish('machina');   // on until she turns Machina's flourish off (store/flourish.ts)
+  return theme === 'machina' && settings.instrumentsOn && settings.progress === 'words' && goal != null && n > 0 && wanted;
 }
 
 export function RunStrip({ text }: { text: string }) {
