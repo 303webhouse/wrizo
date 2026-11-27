@@ -22,11 +22,15 @@
   const strokes = (id) => ((entry(id) || {}).strokes || []).length;
   const words = (id) => (entry(id) || {}).text;
 
-  /** The Back menu's PLAN tab, then its "Walk the Plan" door, as she presses them. */
-  const openWalk = async () => {
+  /** The Back menu's PLAN tab, where the walk's door is. */
+  const toDoor = async () => {
     if (q('.wz-tutor-panel')?.getAttribute('data-open') !== 'true') { q('.wz-tutor-grip')?.click(); await sleep(700); }
     q('#wz-tutor-tab-plan')?.click();
     await v3().until(() => !!q('[data-plan-walk]'));
+  };
+  /** The Back menu's PLAN tab, then its "Walk the Plan" door, as she presses them. */
+  const openWalk = async () => {
+    await toDoor();
     const door = q('[data-plan-walk]');
     if (!door) return false;
     door.focus();   // where a real press leaves her focus
@@ -77,5 +81,5 @@
     return el ? { text: el.textContent.replace(/\s+/g, ' ').trim(), bold: [...el.querySelectorAll('.board-text b, .board-text strong')].map((b) => b.textContent) } : null;
   };
 
-  window.__gw = { setup, card, cards, strokes, words, openWalk, walk, selectNote, chipClear, underCard, painted, onCanvas };
+  window.__gw = { setup, card, cards, strokes, words, toDoor, openWalk, walk,selectNote, chipClear, underCard, painted, onCanvas };
 })();
