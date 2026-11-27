@@ -187,6 +187,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   const stageRef = useRef<HTMLDivElement>(null);
   const hands = useStandingHands();   // #138: an open Front or Back menu takes its room from the page, never from over it
   const yielded = useRef('');
+  // a menu that closes because she typed (the Back menu's vanishing law) must not resize the page under her keys: the size holds until the pointer moves or a menu opens
+  const held = useRef(false);
+  const typed = useRef(0);
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (pageKind !== 'prose' || !stage) return;
@@ -203,6 +206,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       let k = kRest, shift = 0, frontRoom: number | null = null;
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
       const open = !zoomed && (hands.tools || hands.tutor);
+      if (open || zoomed) held.current = false;
+      else if (yielded.current.trim().split(' ').length > 2 && performance.now() - typed.current < 400) held.current = true;
+      if (held.current) return;
       if (open && col) {
         const cr = col.getBoundingClientRect();
         const centre = cr.left + cr.width / 2;
@@ -211,7 +217,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         const railRight = strip && strip.width > 0 ? Math.max(strip.right, s.left) : s.left;
         // the Front menu's own width (Arbor 264, others 184, by the chrome scale) with its 16 px tab; the Back menu's 320 with its tab
         const frontW = root.hasAttribute('data-arbor2') ? 264 : 184 * ck;
-        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 17 : null, hands.tutor ? s.right - 320 * ck - 17 : null);
+        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - 320 * ck - 16 : null);
         k = y.k; shift = y.shift;
         if (hands.tools) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
       }
@@ -237,10 +243,15 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
+    const onType = (e: KeyboardEvent) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') typed.current = performance.now(); };
+    const release = () => { if (!held.current) return; held.current = false; typed.current = 0; apply(); };
+    document.addEventListener('keydown', onType, true);
+    document.addEventListener('pointermove', release, true);
+    document.addEventListener('pointerdown', release, true);
     // the window's width is part of the law, and a stage may keep its size while the window changes
     window.addEventListener('resize', apply);
     document.addEventListener('wz-zoom-changed', apply);
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); };
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
   }, [pageKind, hands.tools, hands.tutor]);
 
   return (

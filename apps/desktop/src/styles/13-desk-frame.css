@@ -986,6 +986,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 /* #138: THE OPEN FRONT MENU TAKES ALL THE ROOM BESIDE THE PAGE and never covers it (--wz-front-yield, DeskFrame: the room from the rail to the page's left edge,
    less its tab). Its tab keeps its side: by the page, or - where the theme's tab rides the drawer's outer edge (Arbor, Machina) - past the drawer. */
 .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver .wz-sliver-panel{ left:auto; right:16px; width:var(--wz-front-yield); max-width:none; }
-:root[data-wz2-drawer-edge] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver .wz-sliver-panel{ right:0; }
-:root[data-wz2-drawer-edge] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:var(--wz-front-yield); }
+:root[data-wz2-drawer-edge][data-theme] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver .wz-sliver-panel{ right:0; }
+:root[data-wz2-drawer-edge][data-theme] .desk-frame-stage--prose[data-yield~='l']:not(:has(.mode-pagecol[data-zoom='true'])) .wz-sliver[data-open='true'] .wz-sliver-grip{ right:var(--wz-front-yield); }
 

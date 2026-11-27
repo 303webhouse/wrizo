@@ -54,6 +54,7 @@ export function pageYieldFor(centre: number, k: number, leftLimit: number | null
   const half = (PAGE_W_BASE * k) / 2;
   const left = Math.max(centre - half, leftLimit ?? -Infinity);
   const right = Math.min(centre + half, rightLimit ?? Infinity);
+  if (left <= centre - half && right >= centre + half) return { k, shift: 0 };   // nothing to give: exactly the rest, no rounding
   const yk = Math.max(Math.min(k, YIELD_FLOOR), Math.min(k, (right - left) / PAGE_W_BASE));
   const w = PAGE_W_BASE * yk;
   // where the floor stops the page short of the room asked, the edge away from the one menu still holds
