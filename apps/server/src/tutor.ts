@@ -130,6 +130,11 @@ function client(): Anthropic {
   return new Anthropic({ apiKey: env.tutorApiKey!, baseURL: env.tutorBaseUrl, maxRetries: 0 });
 }
 
+// A 60-SECOND LIMIT ON EACH MODEL CALL (Fable, Nov 26): a live reply came back empty after 607 seconds, and the SDK waits ten minutes by default. It is passed as a signal, not as the SDK's `timeout`, which stops
+// counting once the response's headers arrive: a signal covers the body too. A call cut off this way lands in the route's own catch, so she gets the usual "could not be reached" answer. Per call: an ask the guard
+// repeats has 60 seconds each time.
+export const MODEL_CALL_MS = 60_000;
+
 // ITEM 224 — a per-person daily budget, ON TOP OF rateLimit's existing
 // per-IP window above. INTERIM: in memory, no schema, resets on restart —
 // named as such because it is a stopgap, not the lasting shape (a restart
@@ -281,7 +286,7 @@ tutorRouter.post('/tutor/chat', asyncHandler(async (req: Request, res: Response)
       max_tokens: CHAT_MAX_TOKENS,
       system: buildSystemPrompt({ hat: 'tutor', voice: voiceForTheme(req.body.theme), task: 'ask' }),
       messages,
-    });
+    }, { signal: AbortSignal.timeout(MODEL_CALL_MS) });   // chat
     const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
@@ -396,7 +401,7 @@ tutorRouter.post('/tutor/sprint-prompt', asyncHandler(async (req: Request, res: 
       max_tokens: SPRINT_MAX_TOKENS,
       system: SPRINT_SYSTEM_PROMPT,
       messages: [{ role: 'user' as const, content: ask }],
-    });
+    }, { signal: AbortSignal.timeout(MODEL_CALL_MS) });   // sprint
     const textOf = (r: Anthropic.Message): string => r.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)

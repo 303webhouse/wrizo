@@ -22,7 +22,8 @@ const SECTIONS: Record<DrawerKind, { text: DrawerSection[]; ink: DrawerSection[]
   draft: { text: ['typeface', 'format', 'actions', 'templates', 'pageKind'], ink: [] },
   // Revise: the Typeface and nothing else [drawerSet §3]
   revise: { text: ['typeface'], ink: [] },
-  board: { text: ['boardTools'], ink: [] },
+  // VISUAL 1a.3: a Board gets the INK tab beside its own tools
+  board: { text: ['boardTools'], ink: ['ink'] },
 };
 
 /** The sections a surface shows on a tab, in the order they appear. */

@@ -78,8 +78,11 @@ await withHarness(async (app) => {
 
   // AF1 / AF2
   const tabs = await app.evalJs(TABS);
-  ok('AF1 the tab row reads FORMAT, SECTIONS, in that order (no INK on a Draft page), and the drawer opens on FORMAT',
-    Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'FORMAT,SECTIONS' && tabs.map((x) => x.id).join(',') === 'text,parts' && tabs.map((x) => x.on).join(',') === 'true,false', tabs);
+  // SUPERSEDED (Nov 25, VISUAL 1a.3: BUILD and EDIT have an INK tab, the stage table's short set; VISUAL's kit §3, Nick's ruling B), the original, verbatim:
+  // ok('AF1 the tab row reads FORMAT, SECTIONS, in that order (no INK on a Draft page), and the drawer opens on FORMAT',
+  //   Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'FORMAT,SECTIONS' && tabs.map((x) => x.id).join(',') === 'text,parts' && tabs.map((x) => x.on).join(',') === 'true,false', tabs);
+  ok('AF1 [VISUAL 1a.3 successor] the tab row reads FORMAT, INK, SECTIONS, in that order, and the drawer opens on FORMAT',
+    Array.isArray(tabs) && tabs.map((x) => x.text.toUpperCase()).join(',') === 'FORMAT,INK,SECTIONS' && tabs.map((x) => x.id).join(',') === 'text,ink,parts' && tabs.map((x) => x.on).join(',') === 'true,false,false', tabs);
   const cloth = {};
   for (const id of ['text', 'parts']) {
     await tab(app, id);
@@ -200,8 +203,11 @@ await withHarness(async (app) => {
   // SUPERSEDED (Nov 22, Fable 3:20 pm: all six Arbor cells are on and Arbor is on by default, so the cell is not off without the door): the original AF9, verbatim:
   // ok("AF9 OFF: without the door Arbor's own drawer stands (Format | Presets, no SECTIONS tab); with ?arbor2=0 even the door gives no Front menu",
   // Array.isArray(off) && off.map((x) => x.id).join(',') === 'format,presets' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
-  ok("AF9 ON [successor]: without the door Arbor's Front menu stands (Format | Sections, the SECTIONS tab included: the cell is the table's); with ?arbor2=0 even the door gives no Front menu",
-    Array.isArray(off) && off.map((x) => x.id).join(',') === 'text,parts' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  // SUPERSEDED (Nov 25, VISUAL 1a.3: BUILD and EDIT have an INK tab, the stage table's short set; VISUAL's kit §3, Nick's ruling B), the original, verbatim:
+  // ok("AF9 ON [successor]: without the door Arbor's Front menu stands (Format | Sections, the SECTIONS tab included: the cell is the table's); with ?arbor2=0 even the door gives no Front menu",
+  //   Array.isArray(off) && off.map((x) => x.id).join(',') === 'text,parts' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
+  ok("AF9 ON [VISUAL 1a.3 successor]: without the door Arbor's Front menu stands (Format | Ink | Sections: the cell is the table's); with ?arbor2=0 even the door gives no Front menu",
+    Array.isArray(off) && off.map((x) => x.id).join(',') === 'text,ink,parts' && !!classic && !(classic.tabs || []).includes('parts') && classic.reorg === false, { off, classic });
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1800)}`);

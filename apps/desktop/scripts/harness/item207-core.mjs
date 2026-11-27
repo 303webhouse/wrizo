@@ -208,7 +208,9 @@ ok('MOUNT [C3 successor, guard-tolerant]: the sliver mounts the control on the F
 const pe = src('pages/PageEditor.tsx');
 // ARCHIVED PARK (#13 step 14): archive/item207-core.mjs.parked.md record 8
 const formsNow = {
-  freeWriteSmall: /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
+  // SUPERSEDED (VISUAL 1a.3: the state the drawer reads is named instrumentNow; Free Write still passes the SMALL form, and none in INK), kept verbatim:
+  // freeWriteSmall: /type: instrument === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
+  freeWriteSmall: /type: instrumentNow === 'ink' \? undefined : typeMember\('small'\)/.test(pe),
   draftFullScoped: /kind: 'draft',[\s\S]*?type: typeMember\('full', true\)/.test(pe),
   reviseFullUnscoped: /kind: 'revise', type: typeMember\('full'\)/.test(pe),
 };

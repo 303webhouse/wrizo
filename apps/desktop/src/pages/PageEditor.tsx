@@ -18,7 +18,11 @@ import { ForwardOnlyEditor, type EditorMode } from '../components/ForwardOnlyEdi
 import { useSurfaceSelection } from '../components/useSurfaceSelection';
 import { ModeSwitcher } from '../components/ModeSwitcher';
 import { ModeStage, PEN_INKS } from '../components/ModeStage';
-import { InkStratum, type InkPen, type InkPermission } from '../components/InkStratum';
+import type { InkPen, InkPermission } from '../components/InkStratum';
+import type { InkOpts } from '../components/ink/InkTab';
+import { requestBoardInk } from '../components/ink/boardInkIntent';
+import { startBoardTrip } from '../reorg/split/fullTrip';
+import { InkLayer } from '../components/ink/InkLayer';
 import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
@@ -226,10 +230,45 @@ function PageEditorView({ id }: { id: string }) {
   const [inkPen, setInkPen] = useState<InkPen>(INK_DEFAULT_PEN);
   const [eraserArmed, setEraserArmed] = useState(false);
   const inkSheetRef = useRef<HTMLDivElement>(null);
+  const inkCaretRef = useRef<number | null>(null);   // VISUAL 1a.3: where her caret was when she left the words (read at blur, never on a keystroke)
 
   // what this mode lets the writer do to the page's ink, derived from mode and instrument, never stored: Free Write is `edit` in INK and `inert` in TEXT; Draft and Revise are `movable`. The ternary reaches `movable` only past `mode === 'journal'`, so Free Write can never acquire it by accident. [PageEditor §3]
+  // VISUAL 1a.3: BUILD and EDIT have an INK tab in the reorg's Front menu. In the reorg SPRINT draws no menu, so it is never in ink (she could not get out), and the publishing view is words only
+  const reorgFrontOn = useReorgPiece('front');
+  const pageInk = reorgFrontOn && mode !== 'journal' && framed;   // the Front menu is framed only: a narrowed window has no INK tab, so no pen
+  const instrumentNow: 'text' | 'ink' = (mode === 'journal' ? !reorgTop : pageInk && !publishing) ? instrument : 'text';
   const inkPermission: InkPermission =
-    mode === 'journal' ? (instrument === 'ink' ? 'edit' : 'inert') : 'movable';
+    instrumentNow === 'ink' ? 'edit' : mode === 'journal' ? 'inert' : 'movable';
+  // VISUAL 1a.3: another stage, the publishing view or another page puts the pen down, so typing always comes back with her
+  useEffect(() => { if (reorgFrontOn) setInstrument('text'); }, [mode, publishing, id, reorgFrontOn, framed]);
+  useEffect(() => { inkCaretRef.current = null; }, [mode, id]);
+  // her caret back in her words, where she left it (the end, if she had none)
+  const penDownToPage = () => {
+    const el = editorRef.current;
+    if (!el || !el.isConnected) return;
+    el.focus({ preventScroll: true });
+    setCaretOffset(el, inkCaretRef.current ?? editorPlainText(el).length, { preventScroll: true });
+  };
+  // VISUAL 1a.3 - TYPING LANDS, ALWAYS (Fable, Nov 25). In BUILD and EDIT with the pen down, a typed character puts the pen down and goes into her words (the focus moves before the key's own
+  // default act, so that very character lands). Fields keep their keys; a focused button keeps Space and Enter. Attached only while the pen is down, so nothing is on the typing path.
+  useEffect(() => {
+    if (!pageInk || instrumentNow !== 'ink') return;
+    const onKey = (e: KeyboardEvent) => {
+      // typing: a character, Enter, or an accent's dead key. AltGr reports Ctrl+Alt on Windows and is typing; any other Ctrl, Cmd or Alt chord is a shortcut
+      const altGr = e.getModifierState?.('AltGraph');
+      if (e.defaultPrevented || e.metaKey || (!altGr && (e.ctrlKey || e.altKey)) || (e.key.length !== 1 && e.key !== 'Enter' && e.key !== 'Dead')) return;
+      const a = document.activeElement as HTMLElement | null;
+      const inWords = !!a?.classList.contains('forward-only-editor');
+      if (!inWords && a && (a.matches('input, textarea, select') || a.isContentEditable)) return;
+      if (a?.closest('[role="dialog"], [role="alertdialog"], [aria-modal="true"], .wz-split-asset')) return;   // a dialog, or the Board beside the page, keeps its own keys
+      if ((e.key === ' ' || e.key === 'Enter') && a?.matches('button, a, [role="button"], [role="tab"], [role="radio"]')) return;
+      setInstrument('text');
+      if (!inWords) penDownToPage();
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageInk, instrumentNow]);
 
   // persist strokes, merging the LIVE text so a pending typed run is never clobbered (Free Write's text autosave is debounced). An unborn page has no row and a stroke is content: the row is written WITH the ink in one synchronous act (`birthWith`), never created empty first; an ink-only page is not empty. [PageEditor §4]
   const persistStrokes = (next: Stroke[]) => {
@@ -250,11 +289,11 @@ function PageEditorView({ id }: { id: string }) {
   // "restored but blurred" rule the Journal's own stroke hardening uses, and
   // it keeps a mode flip from stealing focus out from under a click.
   useEffect(() => {
-    if (instrument !== 'ink') return;
+    if (instrumentNow !== 'ink') return;
     const el = inkSheetRef.current?.querySelector<HTMLElement>('.forward-only-editor');
     try { el?.blur(); } catch { /* */ }
     try { window.getSelection()?.removeAllRanges(); } catch { /* */ }
-  }, [instrument]);
+  }, [instrumentNow]);
   const forwardLock = useForwardLock();
   // ITEM 121 I6 (R15) — Free Write's Bold/Italic/Underline bracket state and
   // `applyFreeWriteFormat` are GONE with the STYLING zone that drove them.
@@ -881,7 +920,7 @@ function PageEditorView({ id }: { id: string }) {
         onLensKey={applyLensKey}
         onForward={() => { lastTypedAtRef.current = Date.now(); noteWrite(); warm.release(); noteSessionKeystroke(); }}
         onFocus={() => setFocused(true)}
-        onBlur={() => { setFocused(false); flush(); }}
+        onBlur={() => { if (editorRef.current) inkCaretRef.current = getCaretOffset(editorRef.current) ?? inkCaretRef.current; setFocused(false); flush(); }}
         placeholder=""
         ariaLabel="Page writing surface"
         ariaDescribedBy={ESC_HINT_ID}
@@ -909,7 +948,7 @@ function PageEditorView({ id }: { id: string }) {
       )}
       {/* the ink stratum paints OVER the text (a later sibling: ink under type would be hidden). It renders in every mode, since the ink is the page's, framed only (below 1100px the page keeps its pre-ink terms). Mode varies permission, not presence (`inkPermission`); both canvases stay pointer-events:none and routing belongs to the sheet. [PageEditor §15] */}
       {framed && (
-        <InkStratum
+        <InkLayer
           permission={inkPermission}
           sheetRef={inkSheetRef}
           strokes={strokes}
@@ -1127,6 +1166,27 @@ function PageEditorView({ id }: { id: string }) {
     scope: scoped ? { has: fontSel.has, face: fontSel.face, wholeLabel: dt('typeScopeWholeDocument'), onPickSelection: applyFontAt, size: fontSel.size, onSizeSelection: applySizeAt, holdSelection: holdSizeSelection, releaseSelection: () => { heldSelRef.current = null; } } : undefined,
   });
 
+  // VISUAL 1a.3: the INK tab's controls for this page, and (BUILD, EDIT) the door to this Doc's Board - the Board the PLAN door opens, on its canvas with INK out; the Board's own Back brings her
+  // here with her caret and scroll, and that Board beside the page (the Board trip, reorg/split/fullTrip.ts). The split beside a page only reads, so the drawing happens on the Board itself.
+  const openDrawOnBoard = withBirth((pageId) => {
+    flush(); flushNow();
+    const board = getOrCreatePlanBoard(pageId);
+    if (!board) return;
+    startBoardTrip(pageId, board.id);
+    requestBoardInk(board.id);
+    navigate(`/page/${board.id}`);
+  });
+  const inkZone: InkOpts = {
+    pen: inkPen,
+    onPick: next => setInkPen(p => ({ ...p, ...next })),
+    eraserArmed,
+    onToggleEraser: () => setEraserArmed(a => !a),
+    onDrawOnBoard: mode === 'journal' ? undefined : openDrawOnBoard,
+    sheet: () => inkSheetRef.current,
+  };
+  const pageInkTab = pageInk
+    ? { instrument: { value: instrumentNow, onChange: setInstrument, onPenDown: penDownToPage }, inkOptions: instrumentNow === 'ink' ? inkZone : undefined }
+    : {};
   const sliverContent: SliverContent = !framed
     ? { kind: 'empty' }
     : mode === 'journal'
@@ -1134,22 +1194,15 @@ function PageEditorView({ id }: { id: string }) {
           kind: 'freewrite',
           // PHASE 1 - the drawer's TEXT | INK tab row is the ONE control for this instrument (the band's switch is retired).
           // Display wiring only: nothing here touches the typing path.
-          instrument: { value: instrument, onChange: setInstrument },
+          instrument: { value: instrumentNow, onChange: setInstrument },
           forwardLock: { on: forwardLock, onToggle: setForwardLock },
           // ITEM 207 - the smallest form (a face button and -/+, no number). Absent in INK: a pen page has no typeface.
-          type: instrument === 'ink' ? undefined : typeMember('small'),
+          type: instrumentNow === 'ink' ? undefined : typeMember('small'),
           // ITEM 121 I4 — THE INK OPTIONS, PASSED ONLY IN INK. This `undefined`
           // in TEXT is the whole of "absent, never greyed": the Sliver renders
           // the zone only when the member is present, so in TEXT there is
           // nothing in the DOM to grey out. A typewriter has no nibs.
-          inkOptions: instrument === 'ink'
-            ? {
-                pen: inkPen,
-                onPick: next => setInkPen(p => ({ ...p, ...next })),
-                eraserArmed,
-                onToggleEraser: () => setEraserArmed(a => !a),
-              }
-            : undefined,
+          inkOptions: instrumentNow === 'ink' ? inkZone : undefined,
           // ITEM 121 I6 (R15) — `ink` (the old text-colour swatches) and
           // `format` (STYLING's B/I/U) BOTH LEAVE this arm. See Sliver.tsx's
           // own comments at the two mounts for the full reasoning; the short
@@ -1160,6 +1213,7 @@ function PageEditorView({ id }: { id: string }) {
         }
       : mode === 'drafting'
         ? {
+            ...pageInkTab,
             kind: 'draft',
             // typewriter-scope: THIS page's own id/emptiness, so Sliver's own
             // formatLocked read (SliverToolsBody) can ask typewriterForPage
@@ -1185,7 +1239,7 @@ function PageEditorView({ id }: { id: string }) {
             actions: unborn ? undefined : buildPageActions({ entry, copy: () => { void doCopy('words'); }, addTag, removeTag, patchPageSettings, navigate }),
           }
         // Revise's own drawer, and this branch is load-bearing: without it Revise fell to Draft's branch and got Draft's Structure control and format rail, live-looking but inert (`applyRailFormat` returns outside Draft). Its tenant is the Type control, full form; the drawer's standing furniture (goal block, instruments row) stays on every surface. [PageEditor §31]
-        : { kind: 'revise', type: typeMember('full') };
+        : { ...pageInkTab, kind: 'revise', type: typeMember('full') };
 
   const structureConfirmDialog = structureConfirm && (
     <div className="sprint-modal-backdrop structure-confirm-modal" onClick={() => setStructureConfirm(false)}>
@@ -1416,7 +1470,7 @@ function PageEditorView({ id }: { id: string }) {
                visible ON THE PAGE (the caret sleeps) and not only in the
                switch. Undefined outside Free Write, which keeps the attribute
                off Draft's and Revise's paper entirely. */
-            instrument={mode === 'journal' ? instrument : undefined}
+            instrument={mode === 'journal' ? instrumentNow : instrumentNow === 'ink' ? 'ink' : undefined}
             /* ITEM 126 B2 — the ink's permission, beside (never merged into) the
                instrument: a Draft page is not "in TEXT", it is a word processor
                with ink on it. */
