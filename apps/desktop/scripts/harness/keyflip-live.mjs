@@ -220,7 +220,7 @@ await withHarness(async (app) => {
 }, { label: 'keyflip-live' });
 const red = checks.filter((c) => !c.pass);
 const onlyHigh = red.length > 0 && red.every((c) => /^KL-FLIP-/.test(c.name));
-console.log(`KL-BROWSER ${browser} of ${BROWSERS}: ${checks.filter((c) => /^KL-FLIP-/.test(c.name)).map((c) => c.name.split(' ')[0] + ' ' + ((c.name.match(/printed: ([d, ]+)/) || [])[1] || '?')).join('; ')}${onlyHigh && browser < BROWSERS ? ' - high: reading again in a fresh browser' : ''}`);
+console.log(`KL-BROWSER ${browser} of ${BROWSERS}: ${checks.filter((c) => /^KL-FLIP-/.test(c.name)).map((c) => c.name.split(' ')[0] + ' ' + ((c.name.match(/printed: ([\d, ]+)/) || [])[1] || '?')).join('; ')}${onlyHigh && browser < BROWSERS ? ' - high: reading again in a fresh browser' : ''}`);
 if (!onlyHigh) break;
 }
 
