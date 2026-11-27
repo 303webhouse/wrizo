@@ -63,10 +63,10 @@ const FADE_STATE = `(() => { const de = document.documentElement; const own = (e
 
 // take out every style rule whose selector matches; returns how many went
 const DROP = (re) => `(() => { const re = new RegExp(${JSON.stringify(re)}); let n = 0; const walk = (owner) => { let list; try { list = owner.cssRules; } catch { return; } for (let i = list.length - 1; i >= 0; i -= 1) { const r = list[i]; if (r.selectorText !== undefined) { if (re.test(r.selectorText)) { owner.deleteRule(i); n += 1; } } else if (r.cssRules) walk(r); else if (r.styleSheet) walk(r.styleSheet); } }; for (const s of document.styleSheets) walk(s); return n; })()`;
-const VARIANTS = [['asis', null], ['nohas', ':has\(.*(wz-board-ink-sheet|wz-ink-tab)'], ['noink', 'wz-ink|ink-undo|wz-board-ink'], ['asis2', null]];
+const VARIANTS = [['asis', null], ['nohas', 'has[(].*(wz-board-ink-sheet|wz-ink-tab)'], ['noink', 'wz-ink|ink-undo|wz-board-ink'], ['asis2', null]];
 const out = [];
-let invLine = '', shape = '';
-await withHarness(async (app) => {
+let invLine = '', shape = '', err = '';
+try { await withHarness(async (app) => {
   const go = async (search, hash) => { await app.cdp('Page.navigate', { url: `${app.base}/${search}#${hash}` }); await sleep(250); };
   await go('', '/');
   await app.evalJs("localStorage.clear(); localStorage.setItem('wrizo-first-run-complete', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen', '1'); localStorage.setItem('wrizo-tutor-disclosure-seen-version', '4'); null");
@@ -98,6 +98,6 @@ await withHarness(async (app) => {
       shape = await app.evalJs("(() => { const n = (s) => document.querySelectorAll(s + ' *').length; return `stage=${document.querySelector('.mode-tabs, .desk-mode-tab.active')?.textContent || '?'} sliver=${n('.wz-sliver-panel')} inksheet=${n('.wz-ink-sheet')} canvas=${document.querySelectorAll('canvas').length} mode=${document.querySelector('.mode-page')?.getAttribute('data-ink')}`; })()");
     }
   }
-}, { label: 'visual-kl-diag' });
-console.log(`\nVISUAL KL DIAG VERIFY: FAIL - ${out.join(' | ')} || ${shape} || ${invLine}`);
+}, { label: 'visual-kl-diag' }); } catch (e) { err = ' ERR ' + String((e && e.message) || e).replace(/\s+/g, ' ').slice(0, 300); }
+console.log(`\nVISUAL KL DIAG VERIFY: FAIL - ${out.join(' | ')} || ${shape} || ${invLine}${err}`);
 process.exit(1);
