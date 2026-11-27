@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
-import { useStandingHands } from '../store/menusDrawers';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
+import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -204,6 +204,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
       // #138: with a menu open the page yields from that side only (pageScale.ts pageYieldFor); the zoom hides the openers, so it never yields there
       let k = kRest, shift = 0, frontRoom: number | null = null;
+      const small = onePanelAt(window.innerWidth);
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
       const open = !zoomed && (hands.tools || hands.tutor);
       if (open || zoomed) held.current = false;
@@ -215,11 +216,13 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         const ck = chromeK();
         const root = document.documentElement;
         const railRight = strip && strip.width > 0 ? Math.max(strip.right, s.left) : s.left;
-        // the Front menu's own width (Arbor 264, others 184, by the chrome scale) with its 16 px tab; the Back menu's 320 with its tab
-        const frontW = root.hasAttribute('data-arbor2') ? 264 : 184 * ck;
-        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - 320 * ck - 16 : null);
+        // each menu with its 16 px tab. At 1600 and narrower: the Front menu's own width (Arbor 264, others 184, by the chrome scale), the Back menu's 320.
+        // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
+        const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : 184 * ck) : DRAWER_MIN;
+        const backW = small ? 320 * ck : DRAWER_MIN;
+        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - backW - 16 : null);
         k = y.k; shift = y.shift;
-        if (hands.tools) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
+        if (hands.tools && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
       }
       stage.style.setProperty('--wz-k', k.toFixed(4));
       stage.style.setProperty('--wz-page-shift', `${shift.toFixed(2)}px`);
@@ -227,7 +230,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
       else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
       if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
-      const sides = open ? [hands.tools ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
+      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
       stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
@@ -244,7 +247,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     const ro = new ResizeObserver(apply);
     ro.observe(stage);
     const onType = (e: KeyboardEvent) => { if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace') typed.current = performance.now(); };
-    const release = () => { if (!held.current) return; held.current = false; typed.current = 0; apply(); };
+    const release = () => { typed.current = 0; if (!held.current) return; held.current = false; apply(); };   // her pointer ends the typing's claim
     document.addEventListener('keydown', onType, true);
     document.addEventListener('pointermove', release, true);
     document.addEventListener('pointerdown', release, true);

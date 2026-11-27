@@ -39,6 +39,7 @@ import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
 import { DRAWER_MIN } from '../store/menusDrawers';
+import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
@@ -425,9 +426,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
-      // #138: on a writing page the page yields to the open drawer (DeskFrame), and the drawer takes ALL the room beside it, never over the page. (The zoom,
-      // Boards and the other surfaces keep their older measure.)
-      const beside = pageKind === 'prose' && !liveQuery('.mode-pagecol[data-zoom="true"]');
+      // #138: on a writing page at 1600 and narrower the page yields to the open drawer (DeskFrame), and the drawer takes ALL the room beside it, never over the page.
+      // (Wider windows, the zoom, Boards and the other surfaces keep their older measure.)
+      const beside = pageKind === 'prose' && onePanelAt(window.innerWidth) && !liveQuery('.mode-pagecol[data-zoom="true"]');
       if (beside || geoMargin >= DRAWER_MIN) {
         const drawerW = beside ? Math.max(geoMargin, TUTOR_TAB_PX + DRAWER_MIN) : Math.min(geoMargin, TUTOR_TAB_PX + openW);
         setPanelWidthPx(Math.floor(drawerW - TUTOR_TAB_PX));
