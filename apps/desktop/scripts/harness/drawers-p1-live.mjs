@@ -283,7 +283,12 @@ await withHarness(async (app) => {
       ok(`L5 ${T} Free Write, TEXT: tabs TEXT|INK; Typeface only - no Format, no Actions, no Templates, no page-kind, no ink zone`, same(text.tabs, ['text', 'ink']) && text.typeface === 1 && !text.format && !text.actions && !text.templates && !text.pageKind && !text.ink, JSON.stringify(text));
       await app.evalJs("document.querySelector('#wz-sliver-tab-ink')?.click()"); await sleep(500);
       const ink = await sections(app);
-      ok(`L5 ${T} Free Write, INK: the ink zone is there and the Typeface is not`, ink.ink > 0 && ink.typeface === 0 && !ink.format && !ink.actions && !ink.templates, JSON.stringify(ink));
+      // PARKED - SUPERSEDED by VISUAL 1a.1 (Nov 25): the brush and size groups are folded inside Studio, so INK's tell is the tab's face. The original, verbatim:
+      // ok(`L5 ${T} Free Write, INK: the ink zone is there and the Typeface is not`, ink.ink > 0 && ink.typeface === 0 && !ink.format && !ink.actions && !ink.templates, JSON.stringify(ink));
+      pok(`PARKED (was "L5 ${T} Free Write, INK: the ink zone is there and the Typeface is not") - SUPERSEDED by VISUAL 1a.1 (Nov 25): no brush or size group stands open in INK; live successor: L5 ${T} [VISUAL 1a.1 successor]`,
+        ink.ink === 0, JSON.stringify(ink));
+      const face = await app.evalJs(`(async () => { for (let i = 0; i < 40 && !document.querySelector('.wz-ink-face'); i++) await new Promise((r) => setTimeout(r, 100)); return { face: document.querySelectorAll('.wz-ink-face').length, swatches: document.querySelectorAll('.wz-sliver-inks .wz-ink-swatch').length }; })()`);
+      ok(`L5 ${T} [VISUAL 1a.1 successor] Free Write, INK: the face of the INK tab is there and the Typeface is not`, face.face === 1 && face.swatches === 4 && ink.typeface === 0 && !ink.format && !ink.actions && !ink.templates, JSON.stringify({ ...ink, ...face }));
     });
     await guard(`L5 draft ${T}`, async () => {
       if (!(await open(app, th, 'draft'))) { ok(`L5 ${T} fixture: draft opened`, false); return; }
@@ -516,7 +521,7 @@ if (process.env.HARNESS_PARKED === '1') {
   const parkedPass = parkedChecks.length > 0 && parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
   console.log(parkedPass
-    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 5 (page-size, Oct 23-24, the drawer mirror, Oct 24, and #128, Nov 24: L8's THIN bar, now drawn by ::-webkit-scrollbar): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer; Arbor only now) and L2's right-hand tab move (the tab never moves now), each recorded once per theme, and L8 once per theme; plus Wire In (Nov 12), Flux only: L9's focus / Enter-flips / Space-flips-back on the retired Typewriter toggle (3 records, in place of the Space one there); the older two-drawer law above L7 stays a comment-only park from Oct 12`
+    ? `\nDRAWERS-P1-LIVE PARKED: PASS (${parkedChecks.length} records) - this FILE parks 5 (page-size, Oct 23-24, the drawer mirror, Oct 24, and #128, Nov 24: L8's THIN bar, now drawn by ::-webkit-scrollbar): L7's two Oct 12 one-drawer-at-every-width checks, L9's Space-flips-back (the zoom tucks its drawer; Arbor only now) and L2's right-hand tab move (the tab never moves now), each recorded once per theme, and L8 once per theme; plus Wire In (Nov 12), Flux only: L9's focus / Enter-flips / Space-flips-back on the retired Typewriter toggle (3 records, in place of the Space one there); plus VISUAL 1a.1 (Nov 25): the L5 INK read, once per theme; the older two-drawer law above L7 stays a comment-only park from Oct 12`
     : `\nDRAWERS-P1-LIVE PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed (or none recorded)`);
 }
 const failed = checks.filter((c) => !c.pass);
