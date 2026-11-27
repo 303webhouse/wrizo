@@ -283,7 +283,7 @@
     transparent calc(var(--tw-anchor) + 4.4 * var(--tw-lh, 43.52px)), transparent 100%);
 }
 .desk-frame-stage--prose .mode-pagecol[data-zoom='true'] .mode-page{
-  transform:scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;
+  transform:translateX(var(--wz-page-shift, 0px)) scale(calc(var(--wz-k, 1) * var(--wz-zoom, 1.6))); transform-origin:50% 0;   /* #138 Q1: Wire In's page yields to the Back menu */
   height:var(--wz-page-hl-zoom, var(--wz-page-hl, var(--wz-page-h)));
   box-shadow:none; border-color:transparent;
 }

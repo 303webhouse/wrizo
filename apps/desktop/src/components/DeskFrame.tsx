@@ -191,6 +191,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   const held = useRef(false);
   const gave = useRef(false);   // the page is standing at a size a menu gave it
   const typed = useRef(0);
+  const wasZoomed = useRef(false);
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (pageKind !== 'prose' || !stage) return;
@@ -203,14 +204,21 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       // the strip is fixed at the window's left and stands over the stage's edge: the zoomed page keeps clear of it (pageScale.ts ZOOM_CLEAR)
       const strip = rootRef.current?.querySelector<HTMLElement>('.desk-frame-strip')?.getBoundingClientRect();
       const inset = strip && strip.width > 0 ? strip.right - s.left : 0;
-      // #138: with a menu open the page yields from that side only (pageScale.ts pageYieldFor); the zoom hides the openers, so it never yields there
+      // #138: with a menu open the page yields from that side only (pageScale.ts pageYieldFor). The zoom hides the openers - except in Flux's Wire In, whose Back menu stays: there the
+      // zoomed page yields too (#138 Q1: A), by a smaller zoom and the same shift
       let k = kRest, shift = 0, frontRoom: number | null = null;
       const small = onePanelAt(window.innerWidth);
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
-      const open = !zoomed && (hands.tools || hands.tutor);
-      if (open || zoomed) held.current = false;
+      const wired = zoomed && document.documentElement.hasAttribute('data-flux3-jacked');
+      const front = !zoomed && hands.tools, back = hands.tutor && (!zoomed || wired);
+      const open = front || back;
+      const toggled = zoomed !== wasZoomed.current;   // into or out of the zoom: that is her act, never a menu closing under her keys
+      wasZoomed.current = zoomed;
+      if (open || toggled) held.current = false;
       else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
+      const fit = fitScaleFor(s.width, s.height, top);
+      let zoom = zoomFor(s.width, kRest, inset, fit), painted = zoomed ? kRest * zoom : kRest;   // the scale she sees
       if (open && col) {
         const cr = col.getBoundingClientRect();
         const centre = cr.left + cr.width / 2;
@@ -221,20 +229,20 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
         const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : root.hasAttribute('data-machina2') ? 200 * ck - 16 : 184 * ck) : DRAWER_MIN;   // Machina's: 200 by the chrome scale, less its tab
         const backW = small ? 320 * ck : DRAWER_MIN;
-        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - backW - 16 : null);
-        k = y.k; shift = y.shift;
-        if (hands.tools && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
+        const y = pageYieldFor(centre, painted, front ? railRight + frontW + 16 : null, back ? s.right - backW - (wired ? 33 : 16) : null);   // Wire In's tab stands 16 px off its panel (Tutor.tsx)
+        shift = y.shift; painted = y.k;
+        if (zoomed) zoom = y.k / kRest; else k = y.k;
+        if (front && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
       }
       stage.style.setProperty('--wz-k', k.toFixed(4));
       stage.style.setProperty('--wz-page-shift', `${shift.toFixed(2)}px`);
-      const half = (PAGE_W_BASE * k) / 2;
+      const half = (PAGE_W_BASE * (zoomed ? painted : k)) / 2;
       if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
       else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
       if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
-      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
+      const sides = open ? [front && frontRoom != null ? 'l' : '', back ? 'r' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
-      const fit = fitScaleFor(s.width, s.height, top);
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
+      stage.style.setProperty('--wz-zoom', zoom.toFixed(4));
       // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
       stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
@@ -242,8 +250,8 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
       // a painted size change fires no observer: what measured the old edges (the drawers, the readouts) is told once
       gave.current = sides !== '';
-      const key = `${k.toFixed(4)} ${shift.toFixed(2)} ${sides}`;
-      if (key !== yielded.current) { yielded.current = key; document.dispatchEvent(new Event('wz-board-moved')); window.dispatchEvent(new Event('resize')); }
+      const key = `${k.toFixed(4)} ${shift.toFixed(2)} ${sides} ${zoomed ? zoom.toFixed(4) : ''}`;
+      if (key !== yielded.current) { yielded.current = key; document.dispatchEvent(new Event('wz-board-moved')); window.dispatchEvent(new Event('resize')); if (zoomed) document.dispatchEvent(new Event('wz-caret-moved')); }
     };
     apply();
     const ro = new ResizeObserver(apply);
