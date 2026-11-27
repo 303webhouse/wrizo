@@ -1027,5 +1027,3 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 :root[data-distraction-free] :is(.wz-sliver-panel, .wz-tutor-panel){ transition-duration:1ms !important; }
 /* every meter and bar, with the goal, the running timer, and the goal's glow and flash (the one count line stays: components/QuietCount.tsx) */
 :root[data-distraction-free] :is(.wz-goal-glow, .desk-frame-goalflare, .deck-celebration, .wz-sliver-goal, .mode-incentive-row :is(.mode-ptrack, .mode-pmetric, .mode-timer)){ display:none !important; }
-/* Arbor: no pergola shadows, beams or leaves, in the room or on the page; the room keeps its colour by day and by night */
-:root[data-distraction-free] :is(.arbor2-pergola, .arbor2-pagesh, .arbor2-sun){ display:none !important; }
