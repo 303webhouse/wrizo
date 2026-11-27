@@ -1,0 +1,13 @@
+smoke-login.mjs on live, after the deploy of 51969b40 (Nov 26 2026, from the laptop). Status codes only.
+ok   POST /auth/login  -> 200 (expected 200)
+ok   GET  /auth/me  -> 200 (expected 200)
+ok   POST /api/sync (pull only)  -> 200 (expected 200)
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
+
+Signed-out Tutor calls (no cookie, empty body):
+POST /api/tutor/chat -> 401 in 384 ms
+POST /api/tutor/sprint-prompt -> 401 in 163 ms
+Both are refused at sign-in, so neither reaches the model or the new 60-second limit.
