@@ -51,6 +51,9 @@ export function useBoardBox({ wrapRef }: {
     if (inward) {
       const rail = document.querySelector('.desk-frame-strip');
       if (rail) ro.observe(rail);
+      // the app holds the old side rail's space until just after the first measure; giving it up moves the stage without resizing it
+      const main = stage.closest('.app-main');
+      if (main) ro.observe(main);
       frame = requestAnimationFrame(() => { frame = requestAnimationFrame(apply); });
       window.addEventListener('resize', apply);
     }
