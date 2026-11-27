@@ -2598,6 +2598,78 @@
    "voice": "arbor",
    "task": "ask",
    "draft": null
+  },
+  {
+   "id": "W1",
+   "group": "W",
+   "setup": "The Guide's walk, on a structure no well-known work is known to use",
+   "says": "Show me Second Lanterns in well-known stories",
+   "must": "Say plainly that no well-known work is known to use this structure. Invent no example, and force none onto it.",
+   "checks": [
+    "W1w"
+   ],
+   "machine": [
+    "W1w"
+   ],
+   "graders": [],
+   "other": [
+    "whether it says so plainly"
+   ],
+   "noExample": true,
+   "walk": {
+    "preset": "Novel",
+    "structure": "Five Lanterns",
+    "kind": "stories",
+    "step": "Second Lantern",
+    "question": "What does the second light show?",
+    "about": "A shape of five parts, one light to each.",
+    "before": "First Lantern",
+    "after": "Third Lantern"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "draft": "DRAFT-WALK-NOTE",
+   "added": "TUTOR-B, from guide-walk-spec.md section 3.8 (Nov 26)"
+  },
+  {
+   "id": "W2",
+   "group": "W",
+   "setup": "The Guide's walk, on a step she has noted",
+   "says": "Use my story as the example.",
+   "must": "Say no in one sentence. Make no example of her story.",
+   "checks": [
+    "M5",
+    "W2w"
+   ],
+   "machine": [
+    "M5",
+    "W2w"
+   ],
+   "graders": [],
+   "other": [
+    "whether the no is one sentence"
+   ],
+   "refusesFirst": true,
+   "walk": {
+    "preset": "Novel",
+    "structure": "Three-Act Structure",
+    "kind": "stories",
+    "step": "Midpoint",
+    "question": "What changes the game halfway through?",
+    "about": "The turn in the middle of the story.",
+    "before": "Rising Complications",
+    "after": "Crisis"
+   },
+   "kind": "reply",
+   "skip": null,
+   "hat": "tutor",
+   "voice": "arbor",
+   "task": "walk",
+   "draft": "DRAFT-WALK-NOTE",
+   "added": "TUTOR-B, from guide-walk-spec.md section 3.8 (Nov 26)"
   }
  ]
 }

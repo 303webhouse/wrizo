@@ -37,8 +37,9 @@ const set = JSON.parse(fs.readFileSync(path.join(EVAL, 'cases.json'), 'utf8')).c
 const per = {}; for (const c of set) per[c.group] = (per[c.group] || 0) + 1;
 const kit = { A: 12, B: 24, C: 12, D: 14, E: 12, F: 8, G: 9, H: 9, I: 8, J: 4, K: 3 }; // G is the kit's 7 plus G3b and G3c (TUTOR-B's safety variants)
 const kinds = set.reduce((a, c) => (a[c.kind] = (a[c.kind] || 0) + 1, a), {});
-ok(set.length === 115 && JSON.stringify(per) === JSON.stringify(kit) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b and G3c (marked as added)', JSON.stringify(per));
-ok(kinds.reply === 93 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 93 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
+// SUCCESSOR (Nov 26): the walk's two cases (group W, guide-walk-spec.md section 3.8) join the set, so 115 is now 117 and 93 reply cases are 95.
+ok(set.length === 117 && JSON.stringify(per) === JSON.stringify({ ...kit, W: 2 }) && set.filter((c) => c.added).map((c) => c.id).join() === 'G3b,G3c,W1,W2', 'RN1 the test set is the kit\'s: its 113 cases in groups A to K at the kit\'s sizes, plus G3b, G3c and the walk\'s W1 and W2 (all four marked as added)', JSON.stringify(per));
+ok(kinds.reply === 95 && kinds.safety === 3 && kinds.app === 13 && kinds.skipped === 6 && set.filter((c) => c.kind !== 'reply' && c.kind !== 'safety').every((c) => c.skip && c.skip.length > 10), 'RN1 95 reply cases and 3 safety cases run, 13 test the app, 6 wait for something not built (H3, H7, H8, H9 and two more), and each one not run says why', JSON.stringify(kinds));
 ok(set.filter((c) => c.kind === 'reply' || c.kind === 'safety').every((c) => typeof c.says === 'string' && c.says.length > 0 && (!c.draft || fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8').includes(`"${c.draft}"`))), 'RN1 every case that runs has something she says, and a made-up draft that exists when it names one');
 
 // ---- RN2 ----
@@ -110,6 +111,8 @@ ok(await mutantEval('(!empty || nothingSupplied)', 'true') > 0, 'RN4 MUT M7 taki
 ok(await mutantEval("out.machine.push({ id: 'S1', pass: holds,", "out.machine.push({ id: 'S1', pass: true,") > 0, 'RN4 MUT S1 blind (never asks for the marker): fixtures go wrong');
 ok(await mutantEval("pass: shown === expected,", "pass: true,") > 0, 'RN4 MUT S2 blind (never compares the words): fixtures go wrong');
 ok(await mutantEval("out.machine.push({ id: 'S0', pass: !holds,", "out.machine.push({ id: 'S0', pass: true,") > 0, 'RN4 MUT S0 blind (a false alarm passes): fixtures go wrong');
+ok(await mutantEval("out.machine.push({ id: 'W1w', pass: specs.length === 0,", "out.machine.push({ id: 'W1w', pass: true,") > 0, 'RN4 MUT W1w blind (a forced example on a shape with no known work passes): fixtures go wrong');
+ok(await mutantEval("out.machine.push({ id: 'W2w', pass: refuses,", "out.machine.push({ id: 'W2w', pass: true,") > 0, 'RN4 MUT W2w blind (her story made the example passes): fixtures go wrong');
 // ---- RN5: the cap ----
 {
   const cap = live.makeCap({ maxCalls: 3, maxTokens: 1e9 });
@@ -222,6 +225,17 @@ const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-eval-'));
   ok(rec && sprint.length === 10 && sprint.map((q) => q.max_tokens).join() === [80, 80, 80, 80, 80, 3000, 3000, 3000, 3000, 3000].join() && sprint.every((q) => q.thinking === undefined && q.messages.length === 1 && q.messages[0].content === 'Give one writing prompt.'), 'RN10 a full run asks SPRINT\'s prompt as the route does: the same system prompt and ask, five at the old cap of 80, five at 3000', `calls=${sprint.length} ${sprint.map((q) => q.max_tokens).join()}`);
   ok(rec && Array.isArray(rec.sprint) && rec.sprint.length === 10 && rec.sprint.every((s) => s.stop === 'end_turn' && typeof s.reply === 'string' && Number.isFinite(s.ms)) && rec.notRun.length === 0 && rec.cap.calls <= 120, 'RN10 what each returned is recorded, and the whole run fits in 120 calls', JSON.stringify(rec && { calls: rec.cap.calls, notRun: rec.notRun.length, sprint: rec.sprint && rec.sprint.length }));
 }
+{
+  // RN11: the walk's two cases, live: the walk's own system prompt, her step in ONE <walk-step> turn and then her words. No page delta and no notes travel (the spec: nothing else unless she says yes).
+  model.reset(); model.say('The aid does not use your story as an example.\nWhat does she want now?\nRead: Midpoint (Three-Act), your note for this step');
+  await runCli(['--live', '--only', 'W2', '--no-grader', '--out', path.join(tmpdir, 'walk.json'), '--max-calls', '5'], { TUTOR_EVAL_API_KEY: FAKE, TUTOR_EVAL_BASE_URL: `http://127.0.0.1:${model.port}`, TUTOR_EVAL_MODEL: 'stand-in-reply' });
+  const q = model.requests[0] || {};
+  const turns = q.messages || [];
+  const W2 = set.find((c) => c.id === 'W2');
+  const note = JSON.parse(fs.readFileSync(path.join(EVAL, 'drafts.json'), 'utf8')).drafts['DRAFT-WALK-NOTE'].text;
+  ok(model.requests.length === 1 && String(q.system).includes('TASK · THE GUIDE') && turns.length === 2 && String(turns[0].content).startsWith('<walk-step>') && String(turns[0].content).includes(note) && turns[1].content === W2.says, 'RN11 a walk case asks with the walk\'s task, sends her step and note as one <walk-step> turn, then her words', JSON.stringify(turns).slice(0, 300));
+  ok(turns.length === 2 && !JSON.stringify(turns).includes('page-since-last-read') && !JSON.stringify(turns).includes('notes-on-file'), 'RN11 and nothing else of hers travels: no page, no notes on file', JSON.stringify(turns).slice(0, 200));
+}
 fs.rmSync(tmpdir, { recursive: true, force: true });
 model.close();
 
@@ -235,6 +249,9 @@ const refs = [...wt.matchAll(/\$\{\{\s*secrets\.([A-Z0-9_]+)\s*\}\}/g)].map((m) 
 ok(refs.length > 0 && refs.every((n) => ['TUTOR_EVAL_API_KEY', 'TUTOR_EVAL_GRADER_API_KEY'].includes(n)) && !/\bsk-[A-Za-z0-9]/.test(wt), 'RN8 it names the two repository secrets Nick adds, TUTOR_EVAL_API_KEY and TUTOR_EVAL_GRADER_API_KEY, and holds no key itself', refs.join(','));
 ok(/permissions:\n\s+contents: read/.test(wt) && /timeout-minutes:\s*\d+/.test(wt) && /max_calls/.test(wt) && /max_tokens/.test(wt) && /concurrency:/.test(wt), 'RN8 read-only permissions, a timeout, a concurrency group, and call and token caps as inputs');
 ok(wt.includes("grep -Eq '^[0-9]{1,3}$'") && wt.includes("grep -Eq '^[0-9]{1,6}$'"), 'RN8 the two cap inputs are checked to be plain numbers before they are used');
+// RN12 (Nov 26): the job's `only` input takes the walk's case ids (group W) as well as the kit's A to K, and still nothing but case ids
+const onlyRe = (() => { const m = /I_ONLY" \| grep -Eq '([^']+)'/.exec(wt); return m ? new RegExp(m[1]) : null; })();
+ok(onlyRe && ['W1,W2', 'A1,C2', 'G3,W2'].every((s) => onlyRe.test(s)) && ['Z1', 'W1;ls', 'W1 W2', 'W', '$(x)', 'W1,'].every((s) => !onlyRe.test(s)), 'RN12 `only` takes W case ids too, and still only case ids', String(onlyRe));
 const inputLines = wt.split('\n').filter((l) => /\$\{\{\s*inputs\./.test(l));
 ok(inputLines.length > 0 && inputLines.every((l) => /^\s+(?:I_[A-Z]+|ref):\s/.test(l)), 'RN8 every input reaches the job as an env variable (or the checkout ref), never pasted into a shell line', inputLines.filter((l) => !/^\s+(?:I_[A-Z]+|ref):\s/.test(l)).join(' | '));
 
