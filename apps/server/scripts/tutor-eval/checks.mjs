@@ -78,7 +78,9 @@ export function runMachineChecks({ reply, hat = 'tutor', task = 'ask', draftText
     if (hit.length) { m5 = false; m5d.push(`specimen shares ${hit.join(', ')}`); }
     const pair = /→|->/.test(sp);
     // the "c." or "ca." of a date ("c. 429 BC") is not the end of a sentence (run 46060667828 failed two good examples on it)
-    const sentences = (sp.replace(/(?<![\p{L}\p{N}])(ca?)\.(?=\s*\d)/giu, '$1').match(/[.!?](?:\s|$)/g) || []).length || 1;
+    // and a bare "Title (date)." that opens an example joins the sentence after it (run 46070096427). Bare: ten words at most before the date, none of them ending a sentence.
+    const counted = sp.replace(/(?<![\p{L}\p{N}])(ca?)\.(?=\s*\d)/giu, '$1').replace(/^((?:(?:[^\s.!?]|[.!?](?!\s))+\s+){1,10}\((?:ca?\s*)?\d{3,4}[^)]*\))\./i, '$1');
+    const sentences = (counted.match(/[.!?](?:\s|$)/g) || []).length || 1;
     if (!pair && sentences > 2) { m5 = false; m5d.push(`specimen of ${sentences} sentences`); }
   }
   // the Tutor shows the fix on a specimen only: an arrow outside an "Example" line is a repair on her sentence
