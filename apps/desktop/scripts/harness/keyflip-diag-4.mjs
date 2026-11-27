@@ -66,7 +66,8 @@ const analyse = (raw) => {
   const pending = {};   // invalidations after the last restyle before the key: still waiting when the key lands
   for (const e of evs) { if (e.ts <= lastFlush || e.ts > K || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; const k = e.name.replace('InvalidationTracking', '') + ' | ' + (d.reason || d.changedClass || d.changedAttribute || d.changedPseudo || '?') + ' | ' + String(d.nodeName || '').slice(0, 50); pending[k] = (pending[k] || 0) + 1; }
   const ids = new Set(); for (const e of evs) { if (e.ts < K - 2000 || !big || e.ts > big.end || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; if (d.nodeId) ids.add(d.nodeId); }
-  return { pre: pre.slice(-6), pending: Object.entries(pending).slice(0, 12), invalidated: ids.size, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
+  const full = {}; for (const e of evs) { if (e.ts < start || !big || e.ts > big.end || !/InvalidationTracking/.test(e.name)) continue; const d = (e.args && e.args.data) || {}; if (e.ts <= lastFlush) continue; const k = e.name.replace('InvalidationTracking', '') + '|' + (d.reason || d.changedAttribute || d.changedClass || d.changedPseudo || '?') + (d.extraData ? '(' + String(d.extraData).slice(0, 30) + ')' : '') + '|' + String(d.nodeName || '').slice(0, 44); full[k] = (full[k] || 0) + 1; }
+  return { full: Object.entries(full), pre: pre.slice(-6), pending: Object.entries(pending).slice(0, 12), invalidated: ids.size, restyles: win.length, counted: counted.length, keyEls: big ? els(big) : null, all, top, invalidations: Object.entries(inv).sort((a, b) => b[1] - a[1]).slice(0, 14) };
 };
 const traceKey = async (app, key = 'a', flush = false) => {
   await app.cdp('Tracing.start', { traceConfig: { includedCategories: CATS, recordMode: 'recordContinuously' }, transferMode: 'ReturnAsStream' });
@@ -149,7 +150,7 @@ await withHarness(async (app) => {
     if (arborLeft) console.log(`KL-WARN ${theme}: ${arborLeft} Arbor shade elements are in the page`);
     before.arborLeft = arborLeft;
     await app.evalJs(COL_OBS);
-    const state = await app.evalJs(`({ anims: document.getAnimations().filter((a) => a.playState !== 'finished').map((a) => (a.animationName || a.transitionProperty || 'script') + '@' + String(a.effect && a.effect.target && (a.effect.target.className.baseVal ?? a.effect.target.className)).split(' ')[0] + ':' + a.playState), sheets: document.styleSheets.length, fonts: document.fonts.status, els: document.querySelectorAll('*').length, hidden: [...document.querySelectorAll('*')].filter((e) => getComputedStyle(e).display === 'none').length, focus: String(document.activeElement && document.activeElement.className).slice(0, 40) })`);
+    const state = await app.evalJs(`({ anims: document.getAnimations().filter((a) => a.playState !== 'finished').map((a) => (a.animationName || a.transitionProperty || 'script') + '@' + String(a.effect && a.effect.target && (a.effect.target.className.baseVal ?? a.effect.target.className)).split(' ')[0] + ':' + a.playState), sheets: document.styleSheets.length, fonts: document.fonts.status, now: new Date().toString().slice(0, 33), roots: [document.documentElement, document.body, document.getElementById('root')].map((e) => [...e.attributes].map((a) => a.name + '=' + a.value.slice(0, 80)).join(' ')), store: Object.keys(localStorage).sort().map((k) => k + '=' + String(localStorage.getItem(k)).slice(0, 90)), els: document.querySelectorAll('*').length, hidden: [...document.querySelectorAll('*')].filter((e) => getComputedStyle(e).display === 'none').length, focus: String(document.activeElement && document.activeElement.className).slice(0, 40) })`);
     const tr = await traceKey(app, 'a', flush);
     await sleep(300);
     const after = await app.evalJs(FADE_STATE);
@@ -164,11 +165,12 @@ await withHarness(async (app) => {
     return m;
   };
 
-  for (let i = 0; i < 8; i += 1) {
-    for (const flush of [false, true]) {
+  for (let i = 0; i < 2; i += 1) {
+    for (const flush of [false]) {
       const m = await measure('machina', '', { flush });
       const t = m.tr || {};
       console.log(`DIAG ${flush ? 'flushed' : 'plain  '} ${i} keyEls=${t.keyEls} invalidated=${t.invalidated} ` + JSON.stringify({ pre: t.pre, pending: t.pending, state: m.state, restyles: (t.all || []).slice(0, 8).map((x) => [x.els, x.at]) }));
+      if (i === 0 || t.keyEls > 220) console.log(`DIAGFULL ${t.keyEls} ` + JSON.stringify({ full: t.full, roots: m.state.roots, store: m.state.store, now: m.state.now }));
       ok(`DIAG ${flush ? 'flushed' : 'plain'} ${i} reads at most 220 (${t.keyEls})`, t.keyEls != null && t.keyEls <= 220, '');
     }
   }
