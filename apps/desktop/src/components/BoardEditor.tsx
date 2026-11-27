@@ -1,6 +1,7 @@
 import { FluxBoardFrame, FluxCardCoord } from './FluxReadouts';
 import { ThemeIcon } from './ThemeIcon';
 import { liveBoxes } from '../store/boxTombstones';
+import { withCardText } from '../store/textMarks';
 import { openContextMenu, type ContextMenuItem } from '../store/contextMenu';
 import { requestDelete } from '../store/deleteGate';
 import { publishBoardSnapshot, registerBoardActions } from '../store/boardSelection';
@@ -496,7 +497,7 @@ export function BoardEditor({ id }: { id: string }) {
   const commitText = (boxId: string, text: string) => {
     if (boxesRef.current.some(b => b.id === boxId && b.text !== text)) touchedRef.current.add(boxId);   // BUG 32c: an edit that changed the words - the card is now fitted to them
     if (framed) boardDissolve.noteWrite(); // AB1 S3 — see the hook's mount comment above
-    setBoxes(prev => prev.map(b => (b.id === boxId ? { ...b, text } : b)));
+    setBoxes(prev => prev.map(b => (b.id === boxId ? withCardText(b, text) : b)));
     // B3 S1 — "vanishes the FIRST time the writer edits ANY dealt card's
     // content" (R6, as this brief's own S1 fences it): a genuine text
     // commit is exactly that edit. noteDealtCardEdited itself no-ops
@@ -1263,6 +1264,7 @@ export function BoardEditor({ id }: { id: string }) {
                 <BoardTextBox
                   boxId={box.id}
                   initialText={box.text ?? ''}
+                  textMarks={box.textMarks}
                   measureRef={measureRef}
                   sourceEntryId={box.sourceEntryId}
                   typeStyle={cardTypeStyle(box.fontFace, box.fontSize)}

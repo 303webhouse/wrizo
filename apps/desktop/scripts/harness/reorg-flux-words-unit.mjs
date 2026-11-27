@@ -42,7 +42,9 @@ for (const f of ['chrome', 'settings', 'decks', 'help']) {
     // SUPERSEDED (Nov 23, Flux's rail: spec section 1 sets plainTrackerSwitch to "Use the skin's meter", the one key the table may set besides the reorg* keys, as Arbor's unit allows): the matcher read reorg* keys only. The original, verbatim:
     // const m = /^  (reorg[A-Za-z0-9]*):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
     // JOINED (Nov 23, the Flux live join): the matcher reads the four Operator keys (INK) and plainTrackerSwitch (ARBOR).
-    const m = /^  (reorg[A-Za-z0-9]*|tutorBibleTitle|tutorBibleEmpty|tutorBibleAddPlaceholder|tutorFreeWritePrompt|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
+    // SUPERSEDED (PRESETS-B, Nov 25, 8:30 pm; Fable: the walk spec's own words): the matcher also reads the Guide walk's keys. The original, verbatim:
+    // const m = /^  (reorg[A-Za-z0-9]*|tutorBibleTitle|tutorBibleEmpty|tutorBibleAddPlaceholder|tutorFreeWritePrompt|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);
+    const m = /^  (reorg[A-Za-z0-9]*|guideWalk[A-Za-z]*|guideStartGuided|guideStartWriting|tutorBibleTitle|tutorBibleEmpty|tutorBibleAddPlaceholder|tutorFreeWritePrompt|plainTrackerSwitch):\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*,?\s*(?:\/\/.*)?$/.exec(line);   // [successor]
     if (m) canon.set(m[1], (m[2] ?? m[3] ?? m[4]).replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\u2026/g, '…'));
   }
 }
@@ -127,7 +129,10 @@ function suite(src) {
     // const kept = Object.keys(live).every((k) => merged[k] === live[k]);
     const NAMED = 'plainTrackerSwitch';
     // JOINED (Nov 23, the Flux live join): the Operator keys (INK) and the one named key (ARBOR) are both allowed.
-    const bad = Object.keys(W).filter((k) => k !== NAMED && (!(/^reorg/.test(k) || OPERATOR_WORDS.includes(k)) || !canon.has(k) || k in live));   // [successor]
+    // SUPERSEDED (PRESETS-B, Nov 25, 8:30 pm; Fable: add the walk spec's own words): the walk's keys are guide* keys, named one by one. The original, verbatim:
+    // const bad = Object.keys(W).filter((k) => k !== NAMED && (!(/^reorg/.test(k) || OPERATOR_WORDS.includes(k)) || !canon.has(k) || k in live));   // [successor]
+    const WALK_WORDS = ['guideStartGuided', 'guideStartWriting', 'guideWalkHead', 'guideWalkFormat', 'guideWalkFormatHead', 'guideWalkStepOf', 'guideWalkStateNoted', 'guideWalkStateSkipped', 'guideWalkStateEmpty', 'guideWalkNotSkipped', 'guideWalkPlaceholder', 'guideWalkWrite', 'guideWalkWriteFirst', 'guideWalkKept', 'guideWalkChip', 'guideWalkOpenPlan', 'guideWalkContinue', 'guideWalkContinueLine', 'guideWalkStays'];
+    const bad = Object.keys(W).filter((k) => k !== NAMED && !WALK_WORDS.includes(k) && (!(/^reorg/.test(k) || OPERATOR_WORDS.includes(k)) || !canon.has(k) || k in live));   // [successor]
     const merged = E.FLUX_OVERRIDES.flux;
     const kept = Object.keys(live).every((k) => k === NAMED || merged[k] === live[k]);   // [successor]
     const others = Object.keys(E.FLUX_OVERRIDES).sort().join(',') === Object.keys(LIVE.FLUX_OVERRIDES).sort().join(',');
