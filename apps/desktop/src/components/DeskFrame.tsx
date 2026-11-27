@@ -189,6 +189,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   const yielded = useRef('');
   // a menu that closes because she typed (the Back menu's vanishing law) must not resize the page under her keys: the size holds until the pointer moves or a menu opens
   const held = useRef(false);
+  const gave = useRef(false);   // the page is standing at a size a menu gave it
   const typed = useRef(0);
   useLayoutEffect(() => {
     const stage = stageRef.current;
@@ -208,7 +209,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
       const open = !zoomed && (hands.tools || hands.tutor);
       if (open || zoomed) held.current = false;
-      else if (yielded.current.trim().split(' ').length > 2 && performance.now() - typed.current < 400) held.current = true;
+      else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
       if (open && col) {
         const cr = col.getBoundingClientRect();
@@ -240,6 +241,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
       // a painted size change fires no observer: what measured the old edges (the drawers, the readouts) is told once
+      gave.current = sides !== '';
       const key = `${k.toFixed(4)} ${shift.toFixed(2)} ${sides}`;
       if (key !== yielded.current) { yielded.current = key; document.dispatchEvent(new Event('wz-board-moved')); window.dispatchEvent(new Event('resize')); }
     };
