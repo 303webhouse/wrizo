@@ -340,7 +340,7 @@ function Board({ t, words, route, waiting, onAdd }: { t: T; words: Words; route:
   const isMobile = findMobileBoard() === b.id;
   const mine = waiting.filter((n) => (n.to.kind === 'board' ? n.to.id === b.id : isMobile));
   const stillWaiting = new Set(mine.map((n) => n.id));
-  const cards = cardsOf(b.boxes).filter((c) => !stillWaiting.has(c.id));   // a note still waiting is shown once, with its mark
+  const cards = cardsOf(liveBoxes(b.boxes)).filter((c) => !stillWaiting.has(c.id));   // a note still waiting is shown once, with its mark
   return (
     <>
       <Back t={t} />
@@ -360,7 +360,7 @@ function Board({ t, words, route, waiting, onAdd }: { t: T; words: Words; route:
 }
 
 function Card({ t, board, box }: { t: T; board: string; box: string }): ReactNode {
-  const c = cardsOf(getJournalEntries().find((e) => e.id === board)?.boxes).find((x) => x.id === box);
+  const c = cardsOf(liveBoxes(getJournalEntries().find((e) => e.id === board)?.boxes)).find((x) => x.id === box);
   return (
     <>
       <Back t={t} />
