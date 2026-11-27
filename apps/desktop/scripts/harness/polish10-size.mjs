@@ -25,7 +25,9 @@ const press = (app, expr, what) => trustedDispatch(app, expr, what, { report: ok
 const ED = '.forward-only-editor';
 const CE = '.board-popup-editor';
 const TEXT = 'The ferry was late, so Ada counted gulls instead of minutes.';
-const PT = 4 / 3;   // one point in layout px (page units at scale 1)
+// SUPERSEDED (#143, Nick Nov 27: her type reads at the size the box says - laid out 1.456 times smaller, store/pageScale.ts TYPE_SCALE), the original verbatim:
+// const PT = 4 / 3;   // one point in layout px (page units at scale 1)
+const PT = 4 / 3 / 1.456;   // one point in layout px: laid out for the 1.456 page scale (#143)
 
 const freshDesk = async (app) => {
   await app.emulateDpr(1, 1280, 900);

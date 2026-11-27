@@ -619,14 +619,20 @@ try { await withHarness(async (app) => {
   const veilLines = () => ev("(() => { const ed = document.querySelector('.forward-only-editor'); const rs = []; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) { if (!n.nodeValue.trim()) continue; const r = document.createRange(); r.selectNodeContents(n); for (const q of r.getClientRects()) if (q.width > 1 && q.height > 4) rs.push([q.left, q.top, q.right, q.bottom]); } rs.sort((a, b) => a[1] - b[1]); const lines = []; for (const q of rs) { const last = lines[lines.length - 1]; if (last && Math.abs(q[1] - last.top) < 4) { last.left = Math.min(last.left, q[0]); last.right = Math.max(last.right, q[2]); } else lines.push({ top: q[1], bottom: q[3], left: q[0], right: q[2] }); } return lines.slice(-5).map((l) => ({ top: Math.round(l.top), bottom: Math.round(l.bottom), left: Math.round(l.left), right: Math.round(l.right) })); })()");
   const veilInk = async (lines) => shotEval(`const L = ${JSON.stringify(lines)}; return L.map((l) => { let mx = [0, 0, 0]; for (let y = Math.max(0, l.top); y < Math.min(innerHeight, l.bottom); y += 1) for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > mx[0]) mx = p; } return mx; });`);
   // the writing line (last) reads #E8F6FA (a glyph pixel on a long page reads 213..236 by where the subpixels fall, so the floor is 190: the dim line never passes 168); the line above it #8F9B9E (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
-  const veilOk = (ink) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
+  // SUPERSEDED (#143: Wire In zooms further, so an older line's place can lie over a brighter part of the room than the old 80 allowed - read 83 with the words hidden
+  // correctly; an older line now shows nothing when it reads no brighter than the same place with her words not drawn), the original verbatim:
+  // const veilOk = (ink) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
+  const veilOk = (ink, room = []) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p, i) => p[0] <= Math.max(80, (room[i] ? room[i][0] : 0) + 12));
   // the Typewriter GLIDES a long page after the last key, so the lines' rects and the shot are taken until two reads of the rects agree (the page is standing still), then judged
   const veilRead = async (mutated) => {
     // the page is read once the writing line has stood at the same place for 2 s (8 reads, 250 ms apart): the Typewriter's own band mask (on the page column; the control has it too) dims a line that has not yet reached its anchor, and a long page glides for seconds after the last key
     let lines = [], same = 0, prev = '', steady = false;
     for (let t = 0; t < 60 && !steady; t += 1) { lines = await veilLines(); const k = JSON.stringify(lines); same = k === prev ? same + 1 : 0; prev = k; steady = same >= 8; if (!steady) await sleep(250); }
     const ink = await veilInk(lines);
-    return { lines: lines.length, ink: ink.map((p) => p[0]), steady, ok: steady && veilOk(ink) };
+    await ev("document.querySelector('.forward-only-editor').style.visibility = 'hidden'"); await sleep(150);
+    const room = await veilInk(lines);
+    await ev("document.querySelector('.forward-only-editor').style.visibility = ''"); await sleep(150);
+    return { lines: lines.length, ink: ink.map((p) => p[0]), room: room.map((p) => p[0]), steady, ok: steady && veilOk(ink, room) };
   };
   const VEIL_STYLE = (css) => ev(`(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
   const VEIL_ED = "[data-flux3-jacked] .mode-pagecol[data-zoom='true'] .forward-only-editor";
@@ -738,7 +744,9 @@ try { await withHarness(async (app) => {
   const vid = await jackedOpen('the voice of the page', 'dark');
   const ff = await ev("getComputedStyle(document.querySelector('.forward-only-editor')).fontFamily");
   if (!FLAG) ok(`NEWPAGE-FLAGOFF a page born in Flux WITHOUT the flag keeps today's size (not 14: got ${born}) and today's face (not Crimson Pro: got ${String(ff).slice(0, 40)})`, born !== 14 && !/^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
-  FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  // SUPERSEDED (#143, Nick Nov 27: Flux is born at 12, not 14), the original verbatim:
+  // FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 12 pt (#143) (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 12 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
 
   await doL();
   }

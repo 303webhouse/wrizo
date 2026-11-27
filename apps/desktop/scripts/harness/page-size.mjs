@@ -330,9 +330,13 @@ const normalCase = async (app, th, w, h) => {
     lens.length >= 10 && median(lens) > 0, J({ median: median(lens), lines: lens.length, sample: lens.slice(0, 8) }));
   // (the page lays out at scale 1 and is PAINTED at k - the as-built design - so the computed type is 16px and the painted type is 16 x k)
   const painted = g && g.layoutW > 0 ? g.fontPx * (g.page.width / g.layoutW) : null;
-  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units - laid out at ${FONT_PX}px and painted at ${FONT_PX}px x k (within 1%)`,
-    !!g && k != null && Math.abs(g.fontPx - FONT_PX) < 0.25 && painted != null && Math.abs(painted / (FONT_PX * k) - 1) <= 0.01,
-    J({ fontPx: g && g.fontPx, painted: painted && Math.round(painted * 100) / 100, want: k && Math.round(FONT_PX * k * 100) / 100 }));
+  // SUPERSEDED (#143, Nick Nov 27: her type reads at the size the box says - laid out 1.456 times smaller, store/pageScale.ts TYPE_SCALE), the original verbatim:
+  // ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units - laid out at ${FONT_PX}px and painted at ${FONT_PX}px x k (within 1%)`,
+  // !!g && k != null && Math.abs(g.fontPx - FONT_PX) < 0.25 && painted != null && Math.abs(painted / (FONT_PX * k) - 1) <= 0.01,
+  // J({ fontPx: g && g.fontPx, painted: painted && Math.round(painted * 100) / 100, want: k && Math.round(FONT_PX * k * 100) / 100 }));
+  ok(`${th.name} ${w}x${h} F: the editor's type is 12 pt in page units - [#143 successor] laid out at ${FONT_PX}/1.456 px and painted at that x k (within 1%)`,
+    !!g && k != null && Math.abs(g.fontPx - FONT_PX / 1.456) < 0.25 && painted != null && Math.abs(painted / (FONT_PX / 1.456 * k) - 1) <= 0.01,
+    J({ fontPx: g && g.fontPx, painted: painted && Math.round(painted * 100) / 100, want: k && Math.round(FONT_PX / 1.456 * k * 100) / 100 }));
 
   // K + N: open BOTH panels - the page neither moves nor rescales (the scale comes from the stage), and it sits fully between them
   const panels = async () => app.evalJs(`(() => { const r = (s) => { const el = document.querySelector(s); if (!el) return null; const b = el.getBoundingClientRect(); return b.width ? { left: b.left, right: b.right } : null; };
@@ -468,10 +472,14 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const scale = g0 && g1 ? Math.round((g1.page.width / g0.page.width) * 1000) / 1000 : null;
   // ~1.6x from the base scale, capped to the largest that fits the stage's width with the panels tucked; never overflowing the stage
   const fitsW = !!g1 && !!g1.stage && g1.page.left >= g1.stage.left - 0.5 && g1.page.right <= g1.stage.right + 0.5;
-  const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM) <= ZOOM_TOL || (scale < ZOOM && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
+  // SUPERSEDED (#143: as above, from 2560 the zoom is 1.6 x 1.456 or the largest that fits), the original verbatim:
+  // const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM) <= ZOOM_TOL || (scale < ZOOM && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
+  const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM * 1.456) <= 0.05 || (scale < ZOOM * 1.456 && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
   if (w < LARGE_W) {
     const want = g0 && g0.stage ? z133Want(g0) : null;
-    const z133 = fitsW && want != null && Math.abs(g1.page.width - want) <= 8 && g1.page.width >= g0.page.width - 0.5;
+    // SUPERSEDED (#143: the zoom goes 1.456 times further so the smaller-laid type reads as large as before - or, in Arbor and Machina, as far as the stage allows), the original verbatim:
+    // const z133 = fitsW && want != null && Math.abs(g1.page.width - want) <= 8 && g1.page.width >= g0.page.width - 0.5;
+    const z133 = fitsW && want != null && g1.page.width >= want - 8 && g1.page.width >= g0.page.width - 0.5 && (Math.abs(g1.page.width - want * 1.456) <= 8 || g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK);
     psParks.Z133.push({ tag, scale, pass: z133 });
     ok(`${tag} Z [#133 successor]: the zoomed page keeps the size it had from the letter fit, never smaller than the normal page, and never overflows the stage`, z133,
       J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), want: want && Math.round(want), fitsW }));

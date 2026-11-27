@@ -17,10 +17,11 @@ const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${typeof detail === 'string' ? detail : JSON.stringify(detail)}]` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const J = (v) => JSON.stringify(v);
-const THEMES = [{ id: 'plateau', name: 'Arbor', born: 11 }, { id: 'flux', name: 'Flux', born: 12 }, { id: 'machina', name: 'Machina', born: 11 }];
+// `pts`: what a seeded page with no size reads in that theme (Arbor stamps its 11 on it; the others read the page default, 12)
+const THEMES = [{ id: 'plateau', name: 'Arbor', born: 11, pts: 11 }, { id: 'flux', name: 'Flux', born: 12, pts: 12 }, { id: 'machina', name: 'Machina', born: 11, pts: 12 }];
 const SIZES = [[1366, 768], [1536, 706], [1920, 885]];
 const TEXT = 'The quick brown fox jumps over the lazy dog while the tide comes in and the lamplight wavers on the water. '.repeat(5);
-const LAYOUT = (12 * 4 / 3) / 1.456;
+const layoutFor = (pts) => (pts * 4 / 3) / 1.456;
 
 const PROBE = `(() => {
   const page = document.querySelector('.desk-frame-stage .mode-page'), ed = document.querySelector('.desk-frame-stage .forward-only-editor');
@@ -29,7 +30,8 @@ const PROBE = `(() => {
   const starts = []; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let top = null, at = 0;
   for (let n = w.nextNode(); n; n = w.nextNode()) { for (let i = 0; i < n.data.length && starts.length < 8; i += 1) { const r = document.createRange(); r.setStart(n, i); r.setEnd(n, i + 1); const b = r.getClientRects()[0]; if (!b) continue; if (top === null || b.top > top + 4) { top = b.top; starts.push(at + i); } } at += n.data.length; }
   const caret = document.querySelector('.flux-block-caret'); const c = caret ? caret.getBoundingClientRect() : null;
-  const sel = getSelection(); const rr = sel.rangeCount ? sel.getRangeAt(0).getClientRects()[0] : null;
+  const last = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let t = null; for (let n = last.nextNode(); n; n = last.nextNode()) if (n.data.length) t = n;
+  let rr = null; if (t) { const one = document.createRange(); one.setStart(t, t.data.length - 1); one.setEnd(t, t.data.length); rr = one.getClientRects()[0] || null; }
   const rail = document.querySelector('.desk-frame-strip')?.getBoundingClientRect();
   return { k, font, painted: font * k, starts, caret: c ? { h: c.height, mid: c.top + c.height / 2 } : null, line: rr ? { mid: rr.top + rr.height / 2, h: rr.height } : null,
     pageLeft: page.getBoundingClientRect().left, railRight: rail && rail.width ? rail.right : 0, zoomed: !!document.querySelector('.mode-pagecol[data-zoom="true"]') };
@@ -60,7 +62,8 @@ await withHarness(async (app) => {
       await sleep(700);
       const d = await ev(PROBE);
       seen[w] = d.starts;
-      ok(`${at} P: 12 is laid out at ${LAYOUT.toFixed(2)} px${w === 1536 ? ' and paints at 16' : ''}`, Math.abs(d.font - LAYOUT) <= 0.06 && (w !== 1536 || Math.abs(d.painted - 16) <= 0.6), { font: d.font, painted: +d.painted.toFixed(2), k: +d.k.toFixed(3) });
+      const lay = layoutFor(t.pts), css = t.pts * 4 / 3;
+      ok(`${at} P: ${t.pts} is laid out at ${lay.toFixed(2)} px${w === 1536 ? ` and paints at ${css.toFixed(1)}` : ''}`, Math.abs(d.font - lay) <= 0.06 && (w !== 1536 || Math.abs(d.painted - css) <= 0.6), { font: d.font, painted: +d.painted.toFixed(2), k: +d.k.toFixed(3) });
       if (t.id === 'flux') ok(`${at} C: the block caret is about 1.2 x the painted type, centred on its line`, !!d.caret && Math.abs(d.caret.h - 1.2 * d.painted) <= 0.2 * d.painted && !!d.line && Math.abs(d.caret.mid - d.line.mid) <= 4, { caret: d.caret, line: d.line, painted: +d.painted.toFixed(1) });
       await ev("document.querySelector('.wz-tutor-grip')?.click()"); await sleep(1200);
       const y = await ev(PROBE);

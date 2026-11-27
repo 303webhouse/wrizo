@@ -257,7 +257,9 @@
 }
 /* PAGE-SIZE - a scrollbar arriving or leaving (Typewriter's start offset makes the content taller) narrowed the text column and REFLOWED lines on
    main (red run 143: Arbor 3840, 34 -> 35 lines). The gutter is reserved always, so no scrollbar can ever move a line break. */
-.desk-frame-stage--prose .mode-scroll{ scrollbar-gutter:stable; }
+/* #143: `stable` alone reserves nothing where the bar is drawn by ::-webkit-scrollbar, so a page that stopped scrolling (one a menu made taller) gained 8 px and
+   re-broke its lines (page-143 Y). The bar is therefore always there: its track is clear and it draws no thumb with nothing to scroll */
+.desk-frame-stage--prose .mode-scroll{ scrollbar-gutter:stable; overflow-y:scroll; }
 /* THE ZOOM: the same page transformed by --wz-zoom (1.6, capped to the stage's width), scale never reflow, so its layout box and every line break stay as in the normal view. The column widens to the stage so the band mask spans the zoomed page. THE BAND, in line-heights (--tw-lh) from the anchor at 50% of the column (--tw-lead keeps the .12 stop 56px or more from the top): 0 at the top, .12 / .40 / .72 at 6.6 / 4.2 / 2.2 lines above, full from 0.15 above to 1.45 below, .40 at 2.8 below, 0 from 4.4 below. Text and paper fade into the desk together; this band replaces the scroller's top mask [desk-frame §11] */
 /* while zoomed the Sliver keeps DRAWER_MIN by growing rightward from its anchor, over the zoomed band (a tool overlays, nothing is displaced); never leftward, under the strip; its grip stays on top, so it still closes [desk-frame §12] */
 .desk-frame-stage--prose:has(.mode-pagecol[data-zoom='true']) .wz-sliver-panel{ left:0; right:auto; width:max(calc(100% - 16px), 200px); }
