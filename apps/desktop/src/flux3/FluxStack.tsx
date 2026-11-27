@@ -19,6 +19,7 @@ import type { BoardView } from '../store/boardKind';
 import { boardStructure, flattenLane } from '../store/boardStructure';
 import { useTheme } from '../store/theme';
 import { useAmbianceDial } from '../store/ambianceDial';
+import { useDistractionFree } from './useDistractionFree';
 import { useDeskLexicon } from '../store/deskLexicon';
 import { setStackView, useStackView } from './stackView';
 
@@ -98,7 +99,8 @@ export function FluxStack({ wrapRef, canvasRef, boxes, nodes, startId, zBase }: 
   const view = useStackView();
   const dial = useAmbianceDial();
   const reduced = useReducedMotion();
-  const motion = dial > 0 && !reduced;
+  const quiet = useDistractionFree();   // Distraction Free: the hologram places at once (the flourish spec §7.2)
+  const motion = dial > 0 && !reduced && !quiet;
   const [shown, setShown] = useState(0);
   const veilRef = useRef<HTMLDivElement>(null);
 

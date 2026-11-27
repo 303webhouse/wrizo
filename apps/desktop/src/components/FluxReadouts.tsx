@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { effectiveAmbianceDial, prefersReducedMotion } from '../store/ambianceDial';
+import { distractionFree } from '../store/flourish';
 import { firstLine } from '../store/entryText';
 import { coordReadout, docReadout, hintFor, shouldAcquire, trackReadout, type HintSurface } from '../store/fluxReadouts';
 import { docNumberOf, trackOf } from '../store/place';
@@ -12,7 +13,7 @@ import { SamePageLine } from './SamePageNotice';
 // (DOC nn // title, TRK n/m); and a hint line for the surface. Every string comes from store/fluxReadouts.ts. The whole set carries chrome-fade, so it recedes with the rest of the
 // chrome while the writer types. The brackets close in ONCE when a page is opened (300 ms) - and stay still when motion is reduced or Ambiance is 0.
 function motionAllowed(): boolean {
-  return !prefersReducedMotion() && effectiveAmbianceDial() > 0;
+  return !prefersReducedMotion() && effectiveAmbianceDial() > 0 && !distractionFree();   // Distraction Free: the brackets do not close in (the flourish spec §7.2)
 }
 
 export function FluxReadouts({ entry, surface }: { entry: JournalEntry | null; surface: HintSurface }) {

@@ -305,6 +305,7 @@
 :root[data-flux3][data-theme='flux'] .wz-flux5 [data-flux-door]:not([data-wait]):focus-visible .ring{ opacity:1; }
 :root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
 :root[data-flux3][data-theme='flux'] .flux5-mark [data-flux-cursor]{ animation:flux5-blink 1.05s steps(1) infinite; }
+:root[data-flux3][data-theme='flux'] .flux5-mark[data-still] [data-flux-cursor]{ animation:none; }   /* Distraction Free: the finished, still mark */
 @keyframes flux5-blink{ 0%{ opacity:1; } 50%{ opacity:0; } }
 @media (prefers-reduced-motion:reduce){
   :root[data-flux3][data-theme='flux'] .wz-flux5[data-held] [data-flux-cursor],
