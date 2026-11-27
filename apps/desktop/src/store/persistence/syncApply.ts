@@ -10,6 +10,7 @@ import { announceKeptBoth, noteMerge } from '../mergeNotice';
 import { isSignedOutHere } from '../signedOutHere';
 import { adoptLegacyScratch } from './drafts';
 import { announcePurged, purgedToAnnounce } from './purge';
+import { wipeAllWaiting } from '../../mobile/noteQueue';
 
 // --- Sync integration -----------------------------------------------------
 // Apply records pulled from the server into the cache (W2). Locally-dirty
@@ -237,5 +238,7 @@ export function resetLocalData(): void {
   clearProofingLocal();
   // the reorg's rail (pins, boxes, the list-or-boxes switch) and any picture not yet uploaded go too: they are this account's
   clearRailLocal();
+  // MOBILE (the companion's waiting notes, src/mobile/noteQueue.ts): a note she wrote and has not sent is hers alone and never survives sign-out
+  try { wipeAllWaiting(localStorage); } catch { /* storage unavailable: nothing was kept */ }
   notify();
 }
