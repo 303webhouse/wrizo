@@ -991,3 +991,6 @@ html[data-wz-writing='true'] .chrome-handle{ opacity:0 !important; }   /* still 
 
 /* #138: the lane under the page shifts with it, so it never runs under the menu (or a docked reader) the page gave way to */
 .desk-frame-stage--prose[data-yield] > .desk-frame-rhizome-anchor .desk-frame-instrument{ translate:var(--wz-page-shift, 0px) 0; }
+/* #138: the yielded page is narrower, not shorter. Painted smaller, it needs a taller layout box (--wz-page-hl) than its column holds; a column that shrank it
+   back left the sheet ending above where it did, and the drawer standing past it (visual-1a-touch R7) */
+.desk-frame-stage--prose[data-yield] .mode-page{ flex-shrink:0; }
