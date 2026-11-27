@@ -37,8 +37,7 @@ import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
-import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { cascadeExitMs } from './Cascade';
+import { requestOpen, noteClosed, registerDrawer, fadeLeftMs } from '../store/menusDrawers';
 import { DRAWER_MIN, menusOpenInward } from '../store/menusDrawers';
 import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
@@ -419,7 +418,12 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
     // #144: while it fades the closing drawer keeps its open size and place; it goes back to rest only once gone. (Snapped back at once, it was wider than the
     // room beside the page and was drawn over it.)
-    if (!open) { const gone = window.setTimeout(() => { setPanelWidthPx(null); setPanelOffsetPx(0); }, cascadeExitMs()); return () => window.clearTimeout(gone); }
+    if (!open) {
+      let wait = 0;
+      const gone = () => { const left = fadeLeftMs('.wz-tutor-panel'); if (left > 0) wait = window.setTimeout(gone, left + 20); else { setPanelWidthPx(null); setPanelOffsetPx(0); } };
+      wait = window.setTimeout(gone, 0);
+      return () => window.clearTimeout(wait);
+    }
     if (docked && !linkDock) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = tutorStage();

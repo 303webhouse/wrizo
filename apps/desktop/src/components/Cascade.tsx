@@ -171,7 +171,7 @@ function availableCascadeMargin(): number {
 }
 
 /** How long a closing pop-out stays drawn: the Tools strip's own slide (--drawer-dur), or the short fade under reduced motion (--drawer-dur-reduced). Read from the tokens, never restated. */
-export function cascadeExitMs(): number {
+function cascadeExitMs(): number {
   if (typeof document === 'undefined') return 0;
   const reduced = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const raw = getComputedStyle(document.documentElement).getPropertyValue(reduced ? '--drawer-dur-reduced' : '--drawer-dur').trim();

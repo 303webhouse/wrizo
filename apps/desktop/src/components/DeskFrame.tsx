@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
-import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
-import { cascadeExitMs } from './Cascade';
+import { DRAWER_MIN, fadeLeftMs, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -190,7 +189,6 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   const yielded = useRef('');
   // a menu that closes because she typed (the Back menu's vanishing law) must not resize the page under her keys: the size holds until the pointer moves or a menu opens
   const held = useRef(false);
-  const shutAt = useRef(0);   // #144: when the last menu closed while the page stood aside for it (0: none closing)
   const gave = useRef(false);   // the page is standing at a size a menu gave it
   const typed = useRef(0);
   useLayoutEffect(() => {
@@ -211,16 +209,13 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const small = onePanelAt(window.innerWidth);
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
       const open = !zoomed && (hands.tools || hands.tutor);
-      if (open || zoomed) { held.current = false; shutAt.current = 0; }
-      else if (gave.current) {
-        if (!shutAt.current) shutAt.current = performance.now();
-        if (performance.now() - typed.current < 400) held.current = true;
-      }
+      if (open || zoomed) held.current = false;
+      else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
       // #144: the page comes back only once the closing menu has gone: never ahead of its fade, so it is never drawn under a menu still seen
       window.clearTimeout(fading);
       if (!open && !zoomed && gave.current) {
-        const left = shutAt.current + cascadeExitMs() - performance.now();
+        const left = Math.max(fadeLeftMs('.wz-sliver-panel'), fadeLeftMs('.wz-tutor-panel'));
         if (left > 0) { fading = window.setTimeout(apply, left + 20); return; }
       }
       if (open && col) {
