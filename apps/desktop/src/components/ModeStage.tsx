@@ -418,6 +418,9 @@ export function ModeStage({ mode, words, pageId, surfaceRef, focused, pageTitle,
     const ed = scroll?.querySelector('.forward-only-editor') as HTMLElement | null;
     if (!scroll || !ed) return;
     const target = e.target as HTMLElement | null;
+    // #147: words she has just selected (a drag, a double press) stay selected - Wire In marks them (the selection bar, Ctrl+B/I/U); a plain press has no selection by now and still sends her to the end
+    const held = fluxJack && typewriterRun ? document.getSelection() : null;
+    if (held && !held.isCollapsed && held.anchorNode && ed.contains(held.anchorNode)) return;
     // Typewriter is forward-only: a press anywhere on the page, text included, puts the caret at the END of her text, never mid-page
     if (fluxJack && typewriterRun && target && ed.contains(target)) { ed.focus({ preventScroll: true }); const at = editorPlainText(ed).length; requestAnimationFrame(() => { if (ed.isConnected) setCaretOffset(ed, at, { preventScroll: true }); }); return; }
     if (target && ed.contains(target)) return;
