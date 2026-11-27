@@ -63,7 +63,7 @@ const FADE_STATE = `(() => { const de = document.documentElement; const own = (e
 
 // take out every style rule whose selector matches; returns how many went
 const DROP = (re) => `(() => { const re = new RegExp(${JSON.stringify(re)}); let n = 0; const walk = (owner) => { let list; try { list = owner.cssRules; } catch { return; } for (let i = list.length - 1; i >= 0; i -= 1) { const r = list[i]; if (r.selectorText !== undefined) { if (re.test(r.selectorText)) { owner.deleteRule(i); n += 1; } } else if (r.cssRules) walk(r); else if (r.styleSheet) walk(r.styleSheet); } }; for (const s of document.styleSheets) walk(s); return n; })()`;
-const VARIANTS = [['asis', null], ['nohas', 'has[(].*(wz-board-ink-sheet|wz-ink-tab)'], ['noink', 'wz-ink|ink-undo|wz-board-ink'], ['asis2', null]];
+const VARIANTS = Array.from({ length: 12 }, (_, i) => ['r' + i, null]);
 const out = [];
 let invLine = '', shape = '', err = '';
 try { await withHarness(async (app) => {
@@ -92,12 +92,12 @@ try { await withHarness(async (app) => {
     await app.evalJs("(() => { document.querySelector('.forward-only-editor').focus(); return true; })()");
     const before = await app.evalJs(FADE_STATE);
     const tr = await traceKey(app, 'a');
-    out.push(`${name}${re ? `(-${dropped})` : ''} key=${tr.keyEls} doc=${before.docEls} chrome=${before.chromeEls} col=${before.columnEls}`);
-    if (name === 'asis') {
-      invLine = (tr.invalidations || []).slice(0, 5).map(([k, v]) => `${v}x ${k.replace(/Invalidation\w*/g, '').slice(0, 90)}`).join(' ;; ');
-      shape = await app.evalJs("(() => { const n = (s) => document.querySelectorAll(s + ' *').length; return `stage=${document.querySelector('.mode-tabs, .desk-mode-tab.active')?.textContent || '?'} sliver=${n('.wz-sliver-panel')} inksheet=${n('.wz-ink-sheet')} canvas=${document.querySelectorAll('canvas').length} mode=${document.querySelector('.mode-page')?.getAttribute('data-ink')}`; })()");
+    out.push(tr.keyEls);
+    if (!shape) shape = `doc=${before.docEls} chrome=${before.chromeEls} dropped=${dropped}`;
+    if (tr.keyEls > 220 && !invLine) {
+      invLine = `OVER ${name} doc=${before.docEls} chrome=${before.chromeEls} restyles=${(tr.all || []).map((x) => `${x.els}@${x.at}`).join(',')} inv: ` + (tr.invalidations || []).map(([k, v]) => `${v}x ${k.replace(/Invalidation\w*/g, '').replace(/\s+/g, ' ').slice(0, 80)}`).join(' ;; ');
     }
   }
 }, { label: 'visual-kl-diag' }); } catch (e) { err = ' ERR ' + String((e && e.message) || e).replace(/\s+/g, ' ').slice(0, 300); }
-console.log(`\nVISUAL KL DIAG VERIFY: FAIL - ${out.join(' | ')} || ${shape} || ${invLine}${err}`);
+console.log(`\nVISUAL KL DIAG VERIFY: FAIL - keys=${out.join(',')} ${shape} ${invLine}${err}`);
 process.exit(1);
