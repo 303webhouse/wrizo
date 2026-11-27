@@ -58,6 +58,9 @@ opening any document from any list.
 (the same page transformed ~1.6x: no reflow, no unmount) and leaving returns the exact rect, scroll, caret
 and text. Nothing else may claim it (`docs/page-primacy-canon.md`).
 
+**Exception (Nick, Nov 26, #138):** at 1600 px or less, an open Front or Back menu may narrow the page from its own side so it never covers the page
+surface. The page never moves or resizes while she types.
+
 ## Harness scenarios persist
 Every ticket's verification scenario is a committed artifact, not a throwaway:
 `scripts/harness/<ticket>.mjs` (or the ticket's established harness location),

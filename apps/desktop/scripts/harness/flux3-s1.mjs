@@ -124,6 +124,7 @@ const INSTRUMENT = `(() => {
       layerAria: L ? L.getAttribute('aria-hidden') : null, layerPe: L ? getComputedStyle(L).pointerEvents : null,
       hostOk: !!(L && wrap && L.parentElement === wrap.parentElement), under,
       frame: wrap ? rr(wrap.getBoundingClientRect()) : null,
+      canvas: cv ? rr(cv.getBoundingClientRect()) : null,
       cards: Object.fromEntries(cards.map((c) => [c.dataset.boxId, rr(c.getBoundingClientRect())])),
       texts: Object.fromEntries(cards.map((c) => [c.dataset.boxId, c.textContent])),
       records: document.querySelectorAll('.board-canvas .board-box > .flux3-node').length, nCards: cards.length,
@@ -222,7 +223,11 @@ try { await withHarness(async (app) => {
   await ev(`window.wrizoCreateJournalPage(${JSON.stringify({ id: BOARD, text: 'Schema S1', pageType: 'board', boxes, createdAt: at, origin: null, source: null })})`);
   await sleep(500);
 
-  const open = async (flagOn, tone, view = [1920, 1080]) => {
+  // SUPERSEDED by #139 (Nick, Nov 26): the redesign's Board is wider and her cards scale with its width, so at 1080 high the bottom row stands below the fold, where the
+  // motion checks cannot reach it. The original line, verbatim:
+  // const open = async (flagOn, tone, view = [1920, 1080]) => {
+  // successor: a window tall enough to show every seeded card; the geometry cells (G) still set their own widths and heights
+  const open = async (flagOn, tone, view = [1920, 1800]) => {
     await ev(`(() => { const p = JSON.parse(localStorage.getItem('wrizo-theme-prefs') || '{}'); p.page = ${JSON.stringify(tone)}; localStorage.setItem('wrizo-theme-prefs', JSON.stringify(p)); localStorage.setItem('wrizo-theme', 'flux'); })()`);
     // [the Flux pin, Fable Nov 23 2:30 pm: FLUX3 is on by default, so "off" must be asked with ?flux3=0] was: await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/')} + '#/page/${BOARD}')`);
     await ev(`history.replaceState(null, '', ${JSON.stringify(flagOn ? '/?flux3=1' : '/?flux3=0')} + '#/page/${BOARD}')`);
@@ -270,11 +275,21 @@ try { await withHarness(async (app) => {
     if (!a || !b) continue;
     cells += 1;
     const ids = Object.keys(a.cards);
-    const moved = ids.filter((id) => JSON.stringify(a.cards[id]) !== JSON.stringify(b.cards[id]));
+    // SUPERSEDED by #139 (Nick, Nov 26: the Flux Board takes almost all the screen). The redesign's Board is wider than the plain one on purpose, and her cards are kept
+    // as fractions of its width. The original lines, verbatim:
+    // const moved = ids.filter((id) => JSON.stringify(a.cards[id]) !== JSON.stringify(b.cards[id]));
+    // const retexted = ids.filter((id) => a.texts[id] !== b.texts[id]);
+    // ok(`G [${tone} ${w}] the board frame and all ${ids.length} cards keep their rects with the flag on, and every card its text`,
+    // ids.length === 9 && JSON.stringify(a.frame) === JSON.stringify(b.frame) && moved.length === 0 && retexted.length === 0,
+    // JSON.stringify({ frame: [a.frame, b.frame], moved: moved.map((id) => [id, a.cards[id], b.cards[id]]), retexted }));
+    // successor: the same claim in the Board's own measure - every card stands at the same place and size as a share of the canvas's width, with the same text; the
+    // Board's top and height are unchanged and it is no narrower
+    const share = (s, r) => [(r.x - s.canvas.x) / s.canvas.w, (r.y - s.canvas.y) / s.canvas.w, r.w / s.canvas.w, r.h / s.canvas.w];
+    const moved = a.canvas && b.canvas ? ids.filter((id) => !b.cards[id] || share(a, a.cards[id]).some((v, i) => Math.abs(v - share(b, b.cards[id])[i]) > 0.004)) : ids;
     const retexted = ids.filter((id) => a.texts[id] !== b.texts[id]);
-    ok(`G [${tone} ${w}] the board frame and all ${ids.length} cards keep their rects with the flag on, and every card its text`,
-      ids.length === 9 && JSON.stringify(a.frame) === JSON.stringify(b.frame) && moved.length === 0 && retexted.length === 0,
-      JSON.stringify({ frame: [a.frame, b.frame], moved: moved.map((id) => [id, a.cards[id], b.cards[id]]), retexted }));
+    ok(`G [${tone} ${w}] all ${ids.length} cards keep their share of the Board with the flag on, and every card its text (#139: the Board is no narrower)`,
+      ids.length === 9 && !!a.frame && !!b.frame && Math.abs(a.frame.y - b.frame.y) <= 2 && Math.abs(a.frame.h - b.frame.h) <= 2 && b.frame.w >= a.frame.w - 1 && moved.length === 0 && retexted.length === 0,
+      JSON.stringify({ frame: [a.frame, b.frame], canvas: [a.canvas, b.canvas], moved: moved.map((id) => [id, a.cards[id], b.cards[id]]), retexted }));
   }
   ok(`G coverage: ${cells}/4 cells compared`, cells === 4);
   // H: the readouts are an overlay on the frame's bottom edge; they must never cover the board's own hint (moved to the top edge under the flag)

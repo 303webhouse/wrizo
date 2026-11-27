@@ -151,8 +151,9 @@ await withHarness(async (app) => {
   const m2 = await app.evalJs(PAGE);
   await app.evalJs(press('[data-doc-kind]')); await sleep(300); await tab(app, 'text');
   const a2 = await app.evalJs(PAGE);
-  ok('FF7 PAGE IS PRIMARY [1366, 1920]: the rects hold through the menu, both tabs and the kind menu, and the editor is the same node',
-    before !== '-|-|-' && !before.includes('-|') && before === mid && before === inMenu && before === after && same === true && b2 === m2 && b2 === a2, { before, mid, inMenu, after, same, b2, m2, a2 });
+  // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim of its test: before !== '-|-|-' && !before.includes('-|') && before === mid && before === inMenu && before === after && same === true && b2 === m2 && b2 === a2
+  ok('FF7 [#138 successor] PAGE IS PRIMARY [1366, 1920]: at 1366 the paper gives only from its left side and holds through the menu (1920: the rects hold through) the menu, both tabs and the kind menu, and the editor is the same node',
+    before !== '-|-|-' && !before.includes('-|') && (() => { const P = (x) => String(x).split('|').map((r) => r.split(',').map(Number)); const a = P(before), b = P(mid); return String(a[0]) === String(b[0]) && Math.abs(a[1][0] + a[1][2] - b[1][0] - b[1][2]) <= 0.6 && b[1][2] <= a[1][2] + 0.6; })() && mid === inMenu && mid === after && same === true && b2 === m2 && b2 === a2, { before, mid, inMenu, after, same, b2, m2, a2 });
 
   await open(app, 'ff-1');
   await drawer(app); await tab(app, 'parts');

@@ -7,6 +7,7 @@
 // Arbor, a LONG Draft page (it scrolls, so its bar is real), at 1366x768 and 1920x1080, the normal view; each of the two drawers opened and closed.
 //   S1  through every frame of each toggle the page's rect and scale never change (+-0.5px, +-0.001)
 //   S2  through every frame the page's own bar keeps one width, and the document never shows a bar of its own
+//   (#138: at 1600 and narrower the page gives way to the Back menu, so S1 and S2 read one step and one painted width there)
 // Each reading carries the frames that broke it (and what each read), so a red run is also the diagnosis.
 // Mutant (1366, Tools open): MS2 the document's own bar forced on for the motion - S2 fails.
 // Seeding goes through the app's seams. Needs a box turn. Run: WS_BOX_TURN=<token> node scripts/harness/polish10-scrollbar.mjs (apps/desktop, dist-web built)
@@ -79,8 +80,23 @@ await withHarness(async (app) => {
             && (await app.evalJs("document.querySelector('.mode-pagecol')?.getAttribute('data-zoom') !== 'true'")), J(z && { first: z, frames: S.length }));
         if (!S) continue;
         const pb = pageBreaks(S); const bb = barBreaks(S);
-        ok(`${tag} S1: the page's rect and scale hold through every frame (${pb.length} of ${S.length} frames moved)`, pb.length === 0, J({ first: z, broke: pb.slice(0, 6) }));
-        ok(`${tag} S2: the page's bar keeps one width (${z.bar}px) and the document shows no bar of its own (${bb.length} of ${S.length} frames broke it)`, bb.length === 0, J({ first: z, broke: bb.slice(0, 6) }));
+        // SUPERSEDED for the Back menu at 1600 and narrower (#138, Nick, Nov 26: an open menu never covers the page, so the page gives way to it): there the page
+        // changes size ON PURPOSE. The original two lines still run, verbatim, for every other toggle:
+        // ok(`${tag} S1: the page's rect and scale hold through every frame (${pb.length} of ${S.length} frames moved)`, pb.length === 0, J({ first: z, broke: pb.slice(0, 6) }));
+        // ok(`${tag} S2: the page's bar keeps one width (${z.bar}px) and the document shows no bar of its own (${bb.length} of ${S.length} frames broke it)`, bb.length === 0, J({ first: z, broke: bb.slice(0, 6) }));
+        const yields = w <= 1600 && k === 'tutor';
+        if (!yields) {
+          ok(`${tag} S1: the page's rect and scale hold through every frame (${pb.length} of ${S.length} frames moved)`, pb.length === 0, J({ first: z, broke: pb.slice(0, 6) }));
+          ok(`${tag} S2: the page's bar keeps one width (${z.bar}px) and the document shows no bar of its own (${bb.length} of ${S.length} frames broke it)`, bb.length === 0, J({ first: z, broke: bb.slice(0, 6) }));
+        } else {
+          // successor: ONE step and no flicker - the width changes at most once and never comes back; the left edge, top and height hold
+          const steps = S.filter((s, i) => i > 0 && s.page && S[i - 1].page && Math.abs(s.page.w - S[i - 1].page.w) > 0.5).length;
+          const held = S.every((s) => !!s.page && Math.abs(s.page.l - z.page.l) <= 0.5 && Math.abs(s.page.t - z.page.t) <= 0.5 && Math.abs(s.page.h - z.page.h) <= 0.5);
+          ok(`${tag} S1: the page gives way in one step, with its left edge, top and height held (#138; ${steps} step(s) over ${S.length} frames)`, steps === 1 && held, J({ first: z, last: S[S.length - 1], steps }));
+          // successor: the bar keeps one PAINTED width (its own width times the page's scale), and the document shows no bar of its own
+          const off = S.filter((s) => s.bar == null || s.k == null || Math.abs(s.bar * s.k - z.bar * z.k) > 1.5 || s.docX !== 0 || s.docY !== 0);
+          ok(`${tag} S2: the page's bar keeps one painted width and the document shows no bar of its own (#138; ${off.length} of ${S.length} frames broke it)`, off.length === 0, J({ first: z, broke: off.slice(0, 4) }));
+        }
         if (w === 1366 && k === 'tools' && phase === 'open') {
           // MS2: close it again with the document's own bar forced on for the motion - S2 must fail
           const css = 'html{ overflow-y: scroll !important; }';

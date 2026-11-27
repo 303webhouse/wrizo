@@ -249,7 +249,11 @@ await withHarness(async (app) => {
     for (const id of ['plan', 'links', 'tutor']) { await tab(app, id); rects.push(await app.evalJs(PAGE)); }
     await closeDrawer(app);
     const closedAgain = await app.evalJs(PAGE);
-    ok(`G1 [${w}]: the page's rect is the same with the drawer closed (${closed}) and open on Plan, Assets and Feedback`, !!closed && rects.every((r) => r === closed) && closedAgain === closed, JSON.stringify({ closed, rects, closedAgain }));
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`G1 [${w}]: the page's rect is the same with the drawer closed (${closed}) and open on Plan, Assets and Feedback`, !!closed && rects.every((r) => r === closed) && closedAgain === closed, JSON.stringify({ closed, rects, closedAgain }));
+    const P138 = (x) => String(x).split('|').map((r) => r.split(',').map(Number));
+    if (w > 1600) ok(`G1 [${w}]: the page's rect is the same with the drawer closed (${closed}) and open on Plan, Assets and Feedback`, !!closed && rects.every((r) => r === closed) && closedAgain === closed, JSON.stringify({ closed, rects, closedAgain }));
+    else ok(`G1 [#138 successor] [${w}]: open, the column stands, the paper keeps its left edge and narrows, alike on every tab; closed again it is exactly as before`, !!closed && rects.every((r) => r === rects[0]) && closedAgain === closed && (() => { const a = P138(closed), b = P138(rects[0]); return String(a[0]) === String(b[0]) && Math.abs(a[1][0] - b[1][0]) <= 0.6 && b[1][2] < a[1][2]; })(), JSON.stringify({ closed, rects, closedAgain }));
   }
 
   // ---- SPLIT --------------------------------------------------------------------------------------------------------------------------

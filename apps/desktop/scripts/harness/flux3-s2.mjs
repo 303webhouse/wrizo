@@ -171,6 +171,7 @@ const INSTRUMENT = `(() => {
     const pe = (e, p) => getComputedStyle(e, p);
     return {
       on: !!document.querySelector('.board-storyboard'), order: cards.map((c) => c.dataset.sbCard),
+      frame: document.querySelector('.board-storyboard') ? rr(document.querySelector('.board-storyboard').getBoundingClientRect()) : null,
       lanes: lanes.map((l) => rr(l.getBoundingClientRect())), cards: cards.map((c) => rr(c.getBoundingClientRect())),
       laneDress: lanes.length ? pe(lanes[0], '::before').content : null, cardDress: cards.length ? pe(cards[0], '::before').content : null,
       title: (() => { const t = document.querySelector('.board-storyboard .board-lane-title'); if (!t) return null;
@@ -323,9 +324,17 @@ try { await withHarness(async (app) => {
     const a = seqReads[`off|${tone}|${w}`], b = seqReads[`on|${tone}|${w}`];
     if (!a || !b || !a.on || !b.on) continue;
     seqCells += 1;
-    ok(`SEQ [${tone} ${w}] every lane (${a.lanes.length}) and card (${a.cards.length}) keeps its rect with the flag on, in the same order`,
-      a.cards.length === 9 && a.lanes.length >= 2 && same(a.lanes, b.lanes) && same(a.cards, b.cards) && same(a.order, b.order),
-      JSON.stringify({ lanes: [a.lanes, b.lanes], cards: a.cards.map((r, i) => (same(r, b.cards[i]) ? null : [a.order[i], r, b.cards[i]])).filter(Boolean) }));
+    // SUPERSEDED by #139 (Nick, Nov 26): the redesign's Board is wider than the plain one, so its left edge stands further left. The original lines, verbatim:
+    // ok(`SEQ [${tone} ${w}] every lane (${a.lanes.length}) and card (${a.cards.length}) keeps its rect with the flag on, in the same order`,
+    // a.cards.length === 9 && a.lanes.length >= 2 && same(a.lanes, b.lanes) && same(a.cards, b.cards) && same(a.order, b.order),
+    // JSON.stringify({ lanes: [a.lanes, b.lanes], cards: a.cards.map((r, i) => (same(r, b.cards[i]) ? null : [a.order[i], r, b.cards[i]])).filter(Boolean) }));
+    // successor: every lane and card keeps its size and its place from the view's own top left corner, in the same order, and the view is no narrower
+    const rel = (s) => (r) => [Math.round(r.x - s.frame.x), Math.round(r.y - s.frame.y), Math.round(r.w), Math.round(r.h)];
+    const al = a.frame ? a.lanes.map(rel(a)) : [], bl = b.frame ? b.lanes.map(rel(b)) : [], ac = a.frame ? a.cards.map(rel(a)) : [], bc = b.frame ? b.cards.map(rel(b)) : [];
+    const near = (p, q) => p.length === q.length && p.every((r, i) => r.every((v, j) => Math.abs(v - q[i][j]) <= 1));
+    ok(`SEQ [${tone} ${w}] every lane (${a.lanes.length}) and card (${a.cards.length}) keeps its place in the view with the flag on, in the same order (#139: a wider Board)`,
+      a.cards.length === 9 && a.lanes.length >= 2 && near(al, bl) && near(ac, bc) && same(a.order, b.order) && !!a.frame && !!b.frame && b.frame.w >= a.frame.w - 1,
+      JSON.stringify({ frame: [a.frame, b.frame], lanes: [al, bl], cards: ac.map((r, i) => (same(r, bc[i]) ? null : [a.order[i], r, bc[i]])).filter(Boolean) }));
   }
   ok(`SEQ coverage: ${seqCells}/4 cells compared`, seqCells === 4);
   const sd = seqReads['on|dark|1920'], so = seqReads['off|dark|1920'];
