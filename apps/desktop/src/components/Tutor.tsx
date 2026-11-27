@@ -38,8 +38,8 @@ import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { fitScaleFor, onePanelAt, PAGE_W_BASE } from '../store/pageScale';
-import { DRAWER_MIN } from '../store/menusDrawers';
+import { DRAWER_MIN, menusOpenInward } from '../store/menusDrawers';
+import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
 import { TUTOR_STAGE_EVENT } from '../store/tutorStage';
@@ -165,6 +165,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   // and it opens on ASSETS (Cursor's frames: app.js S.back.tab). FEEDBACK is today's Tutor body, moved whole (rightTab 'tutor'); ASSETS is the links pane
   // (rightTab 'links'); PLAN is new. With the switch off, or in any other theme, `back` is false and nothing below differs from before.
   const tutorTheme = useTheme();
+  const inward = menusOpenInward(tutorTheme, pageKind);   // #139: on a Flux Board the menu opens over the Board, its tab on the inner side
   const back = reorgFor(tutorTheme) && themeHas('back', tutorTheme) && pageKind !== 'board';   // reorgFor: the switch-over's Machina-only default (Fable, Nov 21, 9:40 pm)
   const splitOn = reorgFor(tutorTheme) && themeHas('split', tutorTheme);
   // SPRINT (Free Write, mode 'journal'): the Back menu keeps its handle but only FEEDBACK can be used, and it offers the one writing prompt (reorg/backMenu/SprintFeedback.tsx)
@@ -221,8 +222,6 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
   const [panelWidthPx, setPanelWidthPx] = useState(null);
   // how far the open panel stands in from the stage's edge, so its left edge meets its tab on the page's edge (the Tools drawer's mirror) [Tutor §12]
   const [panelOffsetPx, setPanelOffsetPx] = useState(0);
-  // #133: while the drawer lies over the page's edge, where its tab stands, from that edge: past the drawer's outer edge where the theme's tab travels (Arbor, Machina), else just off its inner edge; null beside the page
-  const [overTravelPx, setOverTravelPx] = useState<number | null>(null);
   // a linked card or page docked beside this page (this device's slot), carried by the Tutor's dock; a dock found on mount docks again [Tutor §13]
   const linkDock = useLinkDock(pageKind === 'board' ? null : entry.id);
   useEffect(() => {
@@ -417,7 +416,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     // the open geometry, so the drawer slides back from where it stood and its tab, on its outer edge, travels with it (it snapped to the
     // pre-open width first: 37 px apart at half the close, run 41336050132). The next open measures again.
     if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
-    if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); if (open) setOverTravelPx(null); return; }
+    if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = tutorStage();
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself
@@ -428,29 +427,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const openW = Math.max(320 * ck, Math.min(0.34 * window.innerWidth, 460 * ck)); // --tutor-panel-open-w
       const geoMargin = stage.getBoundingClientRect().right - paper.getBoundingClientRect().right;
       // a drawer narrows to fit beside the page down to DRAWER_MIN before it overlays; where it fits, tab and panel are anchored to the page's right edge, so the tab never moves [Tutor §22]
-      // #133: beside the bigger page of a small screen the margin is too thin for the drawer, so there it keeps up to its 320 floor and lies over the page's margin, never its text
-      // never in the Typewriter zoom, where the openers are hidden and keep their boxes (desk-frame §12b); never over the publishing view either, whose
-      // buttons run to the page's edges, and never while a link reader is docked (it stays up while she writes, so it stands beside the page): there the
-      // drawer narrows beside the page, as it did
-      const small = pageKind === 'prose' && onePanelAt(window.innerWidth) && !publishing && !docked && !liveQuery('.mode-pagecol[data-zoom="true"]');
-      const over = small && geoMargin < TUTOR_TAB_PX + 320 * ck;
-      const panel = over ? document.querySelector('.wz-tutor-panel') : null;
-      const box = panel?.getBoundingClientRect();
-      const travels = document.documentElement.hasAttribute('data-wz2-drawer-edge');
-      // the outer edge holds still (the drawer is anchored there); the width is what reaches back to the page's text and no further (never under DRAWER_MIN), and the inner edge is worked from it
-      const paperBox = paper.getBoundingClientRect();
-      const padRight = box ? (parseFloat(getComputedStyle(paper).paddingRight) || 0) * ((paper as HTMLElement).offsetWidth ? paperBox.width / (paper as HTMLElement).offsetWidth : 1) : 0;
-      // never narrower than it was before the page grew (the margin beside the letter-fit page, up to the open width), as far as the text allows
-      const sb = stage.getBoundingClientRect();
-      const was = Math.min(openW, (sb.width - PAGE_W_BASE * fitScaleFor(sb.width, sb.height, 0)) / 2 - TUTOR_TAB_PX);
-      const overW = box ? Math.min(Math.max(320 * ck, was), Math.max(DRAWER_MIN, box.right - (paperBox.right - padRight) - (travels ? 0 : TUTOR_TAB_PX) - 1)) : 320 * ck;
-      setOverTravelPx(box ? Math.round((travels ? box.right : box.right - overW - TUTOR_TAB_PX) - paperBox.right) : null);
-      if (geoMargin >= (small ? TUTOR_TAB_PX + 320 * ck : DRAWER_MIN)) {
-        const drawerW = Math.min(geoMargin, TUTOR_TAB_PX + openW);
-        setPanelWidthPx(Math.round(drawerW - TUTOR_TAB_PX));
+      // #138: on a writing page at 1600 and narrower the page yields to the open drawer (DeskFrame), and the drawer takes ALL the room beside it, never over the page.
+      // (Wider windows, the zoom, Boards and the other surfaces keep their older measure.)
+      const beside = pageKind === 'prose' && onePanelAt(window.innerWidth) && !liveQuery('.mode-pagecol[data-zoom="true"]');
+      if (beside || geoMargin >= DRAWER_MIN) {
+        const drawerW = beside ? Math.max(geoMargin, TUTOR_TAB_PX + DRAWER_MIN) : Math.min(geoMargin, TUTOR_TAB_PX + openW);
+        setPanelWidthPx(beside ? Math.floor(drawerW - TUTOR_TAB_PX) : Math.round(drawerW - TUTOR_TAB_PX));   // beside the page, never a rounded pixel onto it
         setPanelOffsetPx(Math.max(0, Math.round(geoMargin - drawerW)));
       } else {
-        setPanelWidthPx(Math.round(small ? overW : openW));
+        setPanelWidthPx(Math.round(openW));
         setPanelOffsetPx(0);
       }
     };
@@ -460,7 +445,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     document.addEventListener('wz-board-moved', measure);    // the board narrows after the drawer opens [Tutor §23]
     window.addEventListener('wz-chrome-scale', measure);     // §3b item 4: the chrome scale arrived or changed
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); document.removeEventListener('wz-board-moved', measure); window.removeEventListener('wz-chrome-scale', measure); };
-  }, [open, docked, pageKind, linkDock, publishing]);
+  }, [open, docked, pageKind, linkDock]);
 
   // on a writing surface the tab never moves (the CSS formula places it); the board narrows beside the drawer too, so this effect is inert, kept as the record of the move [Tutor §24]
   useEffect(() => {
@@ -481,6 +466,20 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     document.addEventListener('wz-zoom-changed', measure);   // PAGE-SIZE - the painted page's edge moves when the zoom toggles
     return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-zoom-changed', measure); };
   }, [open, docked, pageKind, panelWidthPx, back, sprint]);
+
+  // #139: on a Flux Board the menu lies over the Board, so its tab goes to the panel's inner side (after the effect above, which leaves a board's tab on its edge)
+  useEffect(() => {
+    if (!inward || !open) return;
+    const measure = () => {
+      const stage = tutorStage();
+      const panel = document.querySelector('.wz-tutor-panel');
+      if (stage && panel) setGripLeftPx(Math.round(panel.getBoundingClientRect().left - 16 - stage.getBoundingClientRect().left));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    document.addEventListener('wz-board-moved', measure);
+    return () => { window.removeEventListener('resize', measure); document.removeEventListener('wz-board-moved', measure); setGripLeftPx(null); };
+  }, [open, docked, inward, panelWidthPx]);
 
   // the disclosure modal no longer opens (its text sits behind a "?" by the Ask box); showDisclosure stays declared and is never set, so the guards that read it are dormant [Tutor §25]
   const handleGripClick = () => {
@@ -868,12 +867,11 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     <>
       {/* THE REORG'S SPLIT SCREEN (behind ?reorg=1, Machina, a prose page): an asset opened beside the page from the Assets tab; renders nothing until one is */}
       {back && splitOn && pageKind === 'prose' && <SplitHost pageId={entry.id} />}
-      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined} style={{ ...(gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : null), ...(overTravelPx != null ? { ['--wz-over-travel' as string]: `${overTravelPx}px` } : null) }}>
+      <div className={`desk-frame-tutor-anchor desk-frame-tutor-anchor--${pageKind} wz-tutor-zone`} data-back={back ? 'true' : undefined} style={gripLeftPx != null ? { left: `${gripLeftPx}px`, right: 'auto' } : undefined}>
         <button
           type="button"
           className="wz-tutor-grip"
           data-open={open ? 'true' : 'false'}
-          data-over={overTravelPx != null ? 'true' : undefined}
           data-docked={docked ? 'true' : 'false'}
           data-back={back ? 'true' : undefined}
           data-sprint={sprint ? 'true' : undefined}

@@ -434,17 +434,27 @@ await withHarness(async (app) => {
       && Math.abs(a.textL - b.textL) < 0.5 && Math.abs(a.textR - b.textR) < 0.5
       && Math.abs(a.textW - b.textW) < 0.5;
 
-    ok(`S3 (§7.3 @ ${w}x${h}): opening the DESK hand does not move the paper — sheet rect AND rendered text column both unchanged. The measure is the constant`,
-      same(closed, deskOpen), JSON.stringify({ closed, deskOpen }));
-    ok(`S3 (§7.3 @ ${w}x${h}): opening the COUNSEL hand does not move the paper — the same two boxes, unchanged`,
-      same(closed, counselOpen), JSON.stringify({ closed, counselOpen }));
+    const give = (a, b, side) => !!a && !!b && b.paperR - b.paperL <= a.paperR - a.paperL + 0.6 && (side === 'desk' ? Math.abs(a.paperR - b.paperR) <= 0.6 && b.paperL >= a.paperL - 0.6 : Math.abs(a.paperL - b.paperL) <= 0.6 && b.paperR <= a.paperR + 0.6);
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`S3 (§7.3 @ ${w}x${h}): opening the DESK hand does not move the paper — sheet rect AND rendered text column both unchanged. The measure is the constant`,
+    // same(closed, deskOpen), JSON.stringify({ closed, deskOpen }));
+    ok(`S3 [#138 successor] (§7.3 @ ${w}x${h}): opening the DESK hand takes its room from the paper's left side only (above 1600, nothing moves)`,
+      w > 1600 ? same(closed, deskOpen) : give(closed, deskOpen, 'desk'), JSON.stringify({ closed, deskOpen }));
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`S3 (§7.3 @ ${w}x${h}): opening the COUNSEL hand does not move the paper — the same two boxes, unchanged`,
+    // same(closed, counselOpen), JSON.stringify({ closed, counselOpen }));
+    ok(`S3 [#138 successor] (§7.3 @ ${w}x${h}): opening the COUNSEL hand takes its room from the paper's right side only (above 1600, nothing moves)`,
+      w > 1600 ? same(closed, counselOpen) : give(closed, counselOpen, 'counsel'), JSON.stringify({ closed, counselOpen }));
     // ARCHIVED PARK (#13 step 14): archive/item112a.mjs.parked.md record 4
     pok(`PARKED (was, VERBATIM: "S3 successor (§7.3 @ ${w}x${h}): and with the hands TAKING TURNS (the second opening closes the first - one drawer at a time) the paper is STILL where it was with both shut - chrome never reflows the writer's line") - SUPERSEDED by page-size (Fable, Oct 23)`,
       true, 'successor: S3 successor [measured] - both hands stand where there is room, else they take turns; the paper never moves either way');
     const both3 = !!room3 && room3.both;
     if (room3 && room3.roomy && !room3.both) pok(`PARKED (was "S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, BOTH hands stand (the band holds the page and both at their minimum) - and the paper is STILL where it was with both shut - chrome never reflows the writer's line") - SUPERSEDED at 1600 and narrower by #133 (one side panel at a time)`, true, 'successor: the same check, its take-turns branch');
-    ok(`S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, ${both3 ? 'BOTH hands stand (the band holds the page and both at their minimum)' : 'the hands TAKE TURNS (no room for both at their minimum)'} - and the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
-      !!room3 && same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === (both3 ? 'true' : 'false'), JSON.stringify({ closed, bothOpen, drawers, room3 }));
+    // SUPERSEDED at 1600 and narrower (#138, Nick Nov 26: an open menu never covers the page - the page gives from that menu's side only, its top and far edge stay), the original verbatim:
+    // ok(`S3 successor [measured] (§7.3 @ ${w}x${h}): with the second hand opened, ${both3 ? 'BOTH hands stand (the band holds the page and both at their minimum)' : 'the hands TAKE TURNS (no room for both at their minimum)'} - and the paper is STILL where it was with both shut - chrome never reflows the writer's line`,
+    // !!room3 && same(closed, bothOpen) && drawers.sliverOpen === 'true' && drawers.tutorOpen === (both3 ? 'true' : 'false'), JSON.stringify({ closed, bothOpen, drawers, room3 }));
+    ok(`S3 successor [#138] (§7.3 @ ${w}x${h}): with the second hand opened, ${both3 ? 'both hands stand' : 'the hands take turns'}, and the paper gave only from the standing hand's side (above 1600, nothing)`,
+      !!room3 && (w > 1600 ? same(closed, bothOpen) : give(closed, bothOpen, both3 ? 'desk' : 'counsel') || give(closed, bothOpen, 'desk') || (both3 && bothOpen.paperL >= closed.paperL - 0.6 && bothOpen.paperR <= closed.paperR + 0.6)) && drawers.sliverOpen === 'true' && drawers.tutorOpen === (both3 ? 'true' : 'false'), JSON.stringify({ closed, bothOpen, drawers, room3 }));
 
     // CONTROL — the measurement must prove it was measuring something real. A
     // collapsed or unrendered sheet would satisfy every equality above trivially.

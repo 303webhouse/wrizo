@@ -110,6 +110,10 @@ themes' later names) changes the page's rect ON PURPOSE - the same page, transfo
 and leaving it returns the exact normal rect, scroll, caret and text. It is a writing posture the writer chooses, not a tool that displaces the
 page; nothing else may claim it. (Checked by `scripts/harness/page-size.mjs` Z, B, U, X.)
 
+**Exception (Nick, Nov 26, #138):** at 1600 px or less, an open Front or Back menu may narrow the page from its own side so it never covers the page
+surface. The page never moves or resizes while she types.
+(Checked by `scripts/harness/page-138.mjs`.)
+
 ## Opposition note (Marketing, for the record)
 
 An overlay drawer demos flashier; the chip demos quieter. The principle *is*
