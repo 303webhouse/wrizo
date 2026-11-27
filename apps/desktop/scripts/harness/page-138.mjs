@@ -93,6 +93,7 @@ await withHarness(async (app) => {
             await sleep(300);
           }
           // close: by its own tab
+          await app.mouseMove(8, 8); await app.mouseMove(20, 40); await sleep(600);   // while she writes the controls are away: her pointer brings them back first
           const stillOpen = await ev(side === 'front' ? "document.querySelector('.wz-sliver')?.getAttribute('data-open') === 'true'" : "document.querySelector('.wz-tutor-grip')?.getAttribute('aria-expanded') === 'true'");
           if (stillOpen) await press(GRIP[side]);
           await app.mouseMove(8, 8);   // a menu that closed because she typed holds the page's size until the pointer moves

@@ -431,7 +431,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
       const beside = pageKind === 'prose' && onePanelAt(window.innerWidth) && !liveQuery('.mode-pagecol[data-zoom="true"]');
       if (beside || geoMargin >= DRAWER_MIN) {
         const drawerW = beside ? Math.max(geoMargin, TUTOR_TAB_PX + DRAWER_MIN) : Math.min(geoMargin, TUTOR_TAB_PX + openW);
-        setPanelWidthPx(Math.floor(drawerW - TUTOR_TAB_PX));
+        setPanelWidthPx(beside ? Math.floor(drawerW - TUTOR_TAB_PX) : Math.round(drawerW - TUTOR_TAB_PX));   // beside the page, never a rounded pixel onto it
         setPanelOffsetPx(Math.max(0, Math.round(geoMargin - drawerW)));
       } else {
         setPanelWidthPx(Math.round(openW));
