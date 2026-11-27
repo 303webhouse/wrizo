@@ -27,6 +27,7 @@ import { INK_DEFAULT_PEN } from '../store/ink';
 import { useWarmStart } from '../components/useWarmStart';
 import { useSessionLog } from '../components/useSessionLog';
 import { UnbornProvider, useUnborn } from '../components/UnbornSurface';
+import { OPEN_IN_TEXT } from '../reorg/pageStage';
 import { unbornHref } from '../store/unbornPage';
 import { TEMPLATE_ORDER, type TemplateKey } from '../components/TemplateSketch';
 import { outlineNextRowPrefix, outlineShift } from '../store/outlineText';
@@ -186,7 +187,8 @@ function PageEditorView({ id }: { id: string }) {
     const saved = localStorage.getItem(modeKey);
     if (saved === 'journal' || saved === 'drafting' || saved === 'revise') return saved;
     // W2: a page opened by "Write this" is written FOR a card, in Free Write (birth() leaves the device its own `journal` mark, so a reload agrees)
-    return entry?.pageType === 'manuscript' || entry?.origin === 'loose' || unborn?.descriptor.graft ? 'journal' : 'drafting';
+    // #146: the Guide's "Write this" asks for Draft (`openText`), against the Free Write rule below
+    return !unborn?.descriptor.openText && (entry?.pageType === 'manuscript' || entry?.origin === 'loose' || unborn?.descriptor.graft) ? 'journal' : 'drafting';
   });
 
   // ITEM 84, TD4 — the selected stretch, read HERE (this surface's owner) and
@@ -499,6 +501,12 @@ function PageEditorView({ id }: { id: string }) {
   // her text. The event comes from src/flux3/FluxJackedIn.tsx; nothing else sends it, so every other theme is untouched.
   const switchModeRef = useRef(switchMode);
   switchModeRef.current = switchMode;
+  // #146: the Guide sends her here to write (reorg/pageStage.ts openInText): a page already on screen in Free Write leaves it for Draft
+  useEffect(() => {
+    const onText = (e: Event) => { if ((e as CustomEvent).detail === id) switchModeRef.current('drafting'); };
+    window.addEventListener(OPEN_IN_TEXT, onText);
+    return () => window.removeEventListener(OPEN_IN_TEXT, onText);
+  }, [id]);
   const caretToEndRef = useRef(false);
   useEffect(() => {
     const onLeave = () => { caretToEndRef.current = true; switchModeRef.current('drafting'); };
