@@ -4613,3 +4613,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Caught on the way:** a run dispatched with a train tip as its `ref` cancels that train's running shard (the workflow's concurrency group). Never dispatch with a train tip as `ref` while its pair runs.
 **Not tried:** L16 and L17 by Nick on the live site.
 **Open:** L18 (#143, #144, #145 as one tip from POLISH; FIX's Wire In Tab line). Evidence: `docs/evidence/box-logs/deploy-train-l17-0f60a2a1/`.
+
+## (333) TRAIN L18a IS LIVE: `git d7ff4bea1 (train-l18-2) · railway 98bb9a64-8e79-4047-9390-1cff65809521`, bundle `index-DNzmvE7l`, smoke PASS 6/6, served assets identical to the tested build — 2026-11-28 09:12Z / Nov 28, 2:12 am MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-DNzmvE7l`; JS 1530491 B md5 `c4d85356b012`; CSS `index-D9lhlM9s.css` 551877 B md5 `e42fb18e269b`; `GET /m/` signed out 200; `smoke-login.mjs` PASS 6/6. Roll-back point: train L17, `git 0f60a2a1d · railway 1de4ba2f`.**
+**What is in it:** #144 (the page returns after a menu has faded), #145 (the + and the connection squares under the page's right end; an opened box beside the page), FIX's line taking Search and the Glitch switch out of Wire In's Tab order.
+**Not in it:** #143 (type size and caret). The first L18 (`train-l18-1`, with #143) was not deployed: pair 46112830936 was red in 20 files; POLISH split #143 off.
+**Not tried:** L16, L17 and L18a by Nick on the live site.
+**Open:** L18b (#143 with 120 px a side in Arbor and Machina Free Write, Fable Q1 B); L19 (FIX: Distraction Free stops the signal blocks in Wire In). Evidence: `docs/evidence/box-logs/deploy-train-l18a-d7ff4bea/`.
