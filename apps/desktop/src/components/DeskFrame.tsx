@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor, zoomForType } from '../store/pageScale';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor, zoomForType, ZOOM_DOCK_SIDE } from '../store/pageScale';
 import { DRAWER_MIN, fadeLeftMs, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
@@ -274,8 +274,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       // #143: zoomed further so her smaller-laid type reads as large as before; in Flux's Wire In only her words must clear the rail, elsewhere the whole page
       const was = zoomFor(s.width, kRest, inset, fit);
       const words = stage.querySelector<HTMLElement>('.forward-only-editor');
-      const share = document.documentElement.getAttribute('data-theme') === 'flux' ? (words && page?.offsetWidth ? words.offsetWidth / page.offsetWidth : 6.5 / 8.5) : 1;
-      const zoom = zoomForType(was, kRest, s.width, inset, share);
+      const flux = document.documentElement.getAttribute('data-theme') === 'flux';
+      const share = flux ? (words && page?.offsetWidth ? words.offsetWidth / page.offsetWidth : 6.5 / 8.5) : 1;
+      const zoom = zoomForType(was, kRest, s.width, inset, share, flux ? 0 : ZOOM_DOCK_SIDE);
       stage.style.setProperty('--wz-zoom', zoom.toFixed(4));
       // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
       stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit * (zoom / was)).toFixed(2)}px`);

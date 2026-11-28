@@ -66,9 +66,11 @@ export function pageYieldFor(centre: number, k: number, leftLimit: number | null
 // #143: her type is laid out TYPE_SCALE times smaller, so the Typewriter zooms that much more to keep today's size on screen. Where the whole page must stay clear
 // of the rail it goes only as far as that allows (`share` 1); Flux's Wire In keeps today's size, the paper's blank margins passing under the rail, her words never
 // (`share`: the text column's part of the paper). Never less than the zoom as it was.
-export function zoomForType(zoom: number, k: number, stageW: number, sideInset: number, share: number): number {
+// Outside Flux it also keeps `side` px of desk each side (ZOOM_DOCK_SIDE: Fable, Nov 28, Q1 B - the rail's survey still docks beside the zoomed page), her type then painting a little smaller.
+export const ZOOM_DOCK_SIDE = 121;   // the docking floor (Cascade.tsx DOCK_FLOOR_PX, 120), and one for rounding
+export function zoomForType(zoom: number, k: number, stageW: number, sideInset: number, share: number, side = 0): number {
   if (!(stageW > 0) || !(k > 0)) return zoom;
-  const gutter = Math.max(ZOOM_GUTTER, 2 * (Math.max(0, sideInset) + ZOOM_CLEAR));
+  const gutter = Math.max(ZOOM_GUTTER, 2 * (Math.max(0, sideInset) + ZOOM_CLEAR), 2 * side);
   const most = (stageW - gutter) / (PAGE_W_BASE * share * k);
   const z = Math.max(zoom, Math.min(zoom * TYPE_SCALE, most));
   return Number.isFinite(z) && z > 1 ? z : 1;
