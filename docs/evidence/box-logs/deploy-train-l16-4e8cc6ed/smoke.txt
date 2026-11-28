@@ -1,0 +1,12 @@
+smoke-login.mjs on live, after the deploy of 4e8cc6ed1 (Nov 27 2026, from the laptop). Status codes only.
+ok   POST /auth/login  -> 200 (expected 200)
+ok   GET  /auth/me  -> 200 (expected 200)
+ok   POST /api/sync (pull only)  -> 200 (expected 200)
+ok   POST /auth/logout  -> 204 (expected 204)
+ok   GET  /auth/me (after logout, jar)  -> 401 (expected 401)
+ok   GET  /auth/me (pre-logout cookie replayed)  -> 401 (expected 401)
+SMOKE: PASS (6/6)
+
+Signed out: POST /api/tutor/chat -> 401; POST /api/tutor/sprint-prompt -> 401; GET /api/card-held/x -> 401; GET /m/ -> 200, identical to the tested build.
+Every built js and css asset fetched from live: 44 identical to the tested build, none different.
+No live AI call was made.

@@ -1,0 +1,3 @@
+Boot log of deployment 61b9e196 (the server lines, all of them):
+Starting Container
+Writer Studio server listening on :8080

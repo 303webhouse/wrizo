@@ -4599,3 +4599,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Caught on the way:** `c13-standing` red on the named tip (a comment sharing a line with new keys; neither GitHub browserless nor the pair runs it) and `arbor2-1` F1 red in the pair (a mockup-class rule in an always-loaded sheet). Rules for `.arbor2-*` classes live in `arbor-v2.css` only; a tip that adds wording runs `c13-standing` before it is named.
 **Not tried:** L15 by Nick on the live site. That is the next try.
 **Open:** L16 (the walk's AI panel with TUTOR-B v0.3, and #146); L17 (#142, the tiles, #147 and #148); #143, #144, #145. Evidence: `docs/evidence/box-logs/deploy-train-l15-cdae5ee0/`.
+
+## (331) TRAIN L16 IS LIVE: `git 4e8cc6ed1 (train-l16-1) · railway 61b9e196-c083-4cc2-80ab-1564bd5efcdc`, bundle `index-BrbXS5D0`, smoke PASS 6/6, served assets identical to the tested build — 2026-11-28 00:37Z / Nov 27, 5:37 pm MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-BrbXS5D0`; JS 1517623 B md5 `0b1671840fa7`; CSS `index-k1EQ44B7.css` 544600 B md5 `3a21e160f29d`; `GET /m/` signed out 200; signed-out Tutor calls 401; `smoke-login.mjs` PASS 6/6. Roll-back point: train L15, `git cdae5ee0d · railway af4b9651` (route and panel go together).**
+**What is in it:** the walk's AI panel (PRESETS-B) and its route with prompts v0.3 and the writer's note (TUTOR-B); #146, the Guide opens a Part in Text.
+**Since (330):** Nick tried L15: "L15 works". Nick gave a standing yes: each lane may download its own Actions run reports.
+**Not tried:** L16 by Nick on the live site, and no live AI call was made after the deploy. That is the next try.
+**Open:** L17 (#142, the tiles, #147, #148); #143, #144, #145. Evidence: `docs/evidence/box-logs/deploy-train-l16-4e8cc6ed/`.
