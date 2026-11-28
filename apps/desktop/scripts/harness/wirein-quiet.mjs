@@ -68,6 +68,9 @@ try { await withHarness(async (app) => {
   // M3 (Fable, Nov 27, #147 Q1: A): the hidden rail's buttons are out of the Tab order too
   const railTakes = await ev("(() => { const b = [...document.querySelectorAll('.desk-frame-strip button, .desk-rail button')]; return { buttons: b.length, take: b.filter((e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }).length }; })()");
   ok('M3 no button of the hidden rail takes focus in Wire In', railTakes.buttons > 0 && railTakes.take === 0, J(railTakes));
+  // M4 (Fable, Nov 27, #147 Q3: A): Search (it opens in the Back menu, which Wire In keeps shut) and the Glitch switch leave the Tab order too; the mode tabs stay, as her way out
+  const q3 = await ev("(() => { const take = (e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }; const all = (s) => [...document.querySelectorAll(s)]; return { search: all('.reorg-search-door input').length, searchTake: all('.reorg-search-door input').filter(take).length, glitch: all('[data-glitch-switch]').length, glitchTake: all('[data-glitch-switch]').filter(take).length, tabs: all('.desk-mode-tab').length, tabsTake: all('.desk-mode-tab').filter(take).length }; })()");
+  ok('M4 Search and the Glitch switch take no focus in Wire In; the mode tabs still do', q3.search > 0 && q3.searchTake === 0 && q3.glitchTake === 0 && q3.tabs > 0 && q3.tabsTake > 0, J(q3));
 
   await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
   await chord('/', 'Slash', 191);
