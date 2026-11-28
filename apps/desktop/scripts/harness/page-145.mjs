@@ -19,7 +19,8 @@ const PROBE = `(() => {
   const R = (e) => { if (!e) return null; const b = e.getBoundingClientRect(); return [b.left, b.top, b.right, b.bottom].map((n) => Math.round(n * 10) / 10); };
   const page = document.querySelector('.desk-frame-stage .mode-page'), plus = document.querySelector('[data-flux3-plus]'), ports = [...document.querySelectorAll('.flux3-port')];
   const count = [...document.querySelectorAll('.desk-frame-instrument *')].filter((e) => !e.children.length && e.textContent.trim() && e.getBoundingClientRect().width > 0).map(R);
-  const meter = [...document.querySelectorAll('.desk-frame-instrument :is(.flux3-glitchbar, .mode-progress, .wz-glitch-switch, [data-plain-tracker])')].filter((e) => e.getBoundingClientRect().width > 0).map(R);
+  const pw = page.getBoundingClientRect().width;   // the lane's rows are as wide as the page: only what is drawn in them is read
+  const meter = [...document.querySelectorAll('.desk-frame-instrument *')].filter((e) => { const b = e.getBoundingClientRect(); const cs = getComputedStyle(e); return b.width > 0 && b.height > 0 && b.width < pw * 0.5 && cs.visibility !== 'hidden' && (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || parseFloat(cs.borderLeftWidth) > 0); }).map(R);
   const hit = (e) => { const b = e.getBoundingClientRect(); const h = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!h && (h === e || e.contains(h)) && getComputedStyle(e).visibility !== 'hidden'; };
   return { page: R(page), plus: R(plus), ports: ports.map(R), lane: count.concat(meter), seen: !!plus && hit(plus) && ports.every(hit),
     box: R(document.querySelector('[data-flux3-port-box], [data-flux3-plus-box]')), vw: innerWidth, vh: innerHeight };
