@@ -75,6 +75,7 @@ const SIZES = [[1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]];
 const FIT_SLACK = 96;       // "a small margin": the page's height is within this of the stage's when it is the largest that fits
 const ZOOM_FIT_SLACK = 100; // a zoom capped below 1.6 fills the stage's width to within this (the product keeps a 96px gutter, store/pageScale.ts ZOOM_GUTTER; + sub-pixel)
 const RAIL_FIT = 170;   // #143: a zoom stopped by the rail's clearance leaves up to 2 x (the rail's reach + 8) of the stage free (store/pageScale.ts zoomForType)
+const DOCK_FIT = 244;   // #143, Q1 B (Fable, Nov 28): outside Flux the zoom keeps 121 px of desk each side (store/pageScale.ts ZOOM_DOCK_SIDE), so it may leave up to 2 x 121 of the stage free, and rounding
 // a drawer's narrowest open width (Fable, Oct 23 - drawers narrow to a minimum, scrolling inside). 200 is today's Tools drawer open
 // width (menusDrawers.ts CLOSED_TOOLS_W); the build names ONE token for it and this number must equal that token.
 const DRAWER_MIN = 200;
@@ -475,12 +476,16 @@ const zoomCase = async (app, th, w, h, { kind = 'draft', glide = false, mutants 
   const fitsW = !!g1 && !!g1.stage && g1.page.left >= g1.stage.left - 0.5 && g1.page.right <= g1.stage.right + 0.5;
   // SUPERSEDED (#143: as above, from 2560 the zoom is 1.6 x 1.456 or the largest that fits), the original verbatim:
   // const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM) <= ZOOM_TOL || (scale < ZOOM && g1.stage.width - g1.page.width <= ZOOM_FIT_SLACK));
-  const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM * 1.456) <= 0.05 || (scale < ZOOM * 1.456 && g1.stage.width - g1.page.width <= RAIL_FIT));
+  // SUCCESSOR (#143, Q1 B): Arbor and Machina keep the docking room beside the zoomed page, so it stops DOCK_FIT short of the stage, not RAIL_FIT. The original, verbatim:
+  // const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM * 1.456) <= 0.05 || (scale < ZOOM * 1.456 && g1.stage.width - g1.page.width <= RAIL_FIT));
+  const zPred = scale != null && fitsW && (Math.abs(scale - ZOOM * 1.456) <= 0.05 || (scale < ZOOM * 1.456 && g1.stage.width - g1.page.width <= DOCK_FIT));
   if (w < LARGE_W) {
     const want = g0 && g0.stage ? z133Want(g0) : null;
     // SUPERSEDED (#143: the zoom goes 1.456 times further so the smaller-laid type reads as large as before - or, in Arbor and Machina, as far as the stage allows), the original verbatim:
     // const z133 = fitsW && want != null && Math.abs(g1.page.width - want) <= 8 && g1.page.width >= g0.page.width - 0.5;
-    const z133 = fitsW && want != null && g1.page.width >= want - 8 && g1.page.width >= g0.page.width - 0.5 && (Math.abs(g1.page.width - want * 1.456) <= 8 || g1.stage.width - g1.page.width <= RAIL_FIT);
+    // SUCCESSOR (#143, Q1 B): Arbor and Machina keep the docking room beside the zoomed page, so it stops DOCK_FIT short of the stage, not RAIL_FIT. The original, verbatim:
+    // const z133 = fitsW && want != null && g1.page.width >= want - 8 && g1.page.width >= g0.page.width - 0.5 && (Math.abs(g1.page.width - want * 1.456) <= 8 || g1.stage.width - g1.page.width <= RAIL_FIT);
+    const z133 = fitsW && want != null && g1.page.width >= want - 8 && g1.page.width >= g0.page.width - 0.5 && (Math.abs(g1.page.width - want * 1.456) <= 8 || g1.stage.width - g1.page.width <= DOCK_FIT);
     psParks.Z133.push({ tag, scale, pass: z133 });
     ok(`${tag} Z [#133 successor]: the zoomed page keeps the size it had from the letter fit, never smaller than the normal page, and never overflows the stage`, z133,
       J({ normal: g0 && Math.round(g0.page.width), zoom: g1 && Math.round(g1.page.width), want: want && Math.round(want), fitsW }));

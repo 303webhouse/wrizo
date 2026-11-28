@@ -527,7 +527,9 @@ if (process.env.HARNESS_PARKED === '1') {
   {
     const o = fx3Ps.s2;
     pok('PARKED (was "S2 @ 1920px: the sliver anchor stays flush with the SCALED paper\'s left edge (no drift introduced by the scale token)") — page-size: the paper is the painted .mode-page, not the column; live successor: S2 @ 1920px [page-size successor]',
-      !!o && o.pageLeft != null && Math.abs(o.anchorRight - o.pageLeft) < 1, JSON.stringify(o));
+      // SUCCESSOR (#143): the anchor may stand over the paper's blank one-inch margin, as the live successor reads. The original, verbatim:
+      // !!o && o.pageLeft != null && Math.abs(o.anchorRight - o.pageLeft) < 1, JSON.stringify(o));
+      !!o && o.pageLeft != null && o.anchorRight > o.pageLeft - 1 && o.anchorRight < o.pageLeft + (o.pageRight - o.pageLeft) / 8.5, JSON.stringify(o));
     pok('PARKED (was "S2 @ 1920px: the goal-glow anchor stays flush with the SCALED paper\'s box on both edges") — page-size: the paper is the painted .mode-page, not the column; live successor: S2 @ 1920px [page-size successor]',
       !!o && o.pageLeft != null && Math.abs(o.glowLeft - o.pageLeft) < 1 && Math.abs(o.glowRight - o.pageRight) < 1, JSON.stringify(o));
   }
