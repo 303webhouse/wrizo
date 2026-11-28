@@ -100,9 +100,13 @@ try { await withHarness(async (app) => {
   // ok('OPEN pressed, the + draws a line down into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
   // !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
   // && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.t >= so.plus.b - 1 && so.box.rect.t >= so.line.t, so);
-  ok('OPEN [#145 successor] pressed, the + draws a line up into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
+  // SUPERSEDED (Fable, Nov 27, 6:25 pm: an opened box never lies over the page, so it opens in the lane to the page's right), the version above verbatim:
+  // ok('OPEN [#145 successor] pressed, the + draws a line up into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
+  // !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
+  // && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.b <= so.plus.t + 1 && so.box.rect.b <= so.line.t + 1, so);
+  ok('OPEN [#145 successor 2] pressed, the + draws a line across into a box beside the page: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
     !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
-      && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.b <= so.plus.t + 1 && so.box.rect.b <= so.line.t + 1, so);
+      && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.l >= so.plus.r - 1 && so.box.rect.l >= so.line.r - 1 && so.box.rect.l >= so.page.r - 0.5, so);
   await press('[data-flux3-plus-box] [data-port-act="link"]'); await sleep(600);
   const sp = await state();
   ok('PICK Connect another opens the same picker the ports open (GraftPicker)', !!sp && sp.picker, sp);
