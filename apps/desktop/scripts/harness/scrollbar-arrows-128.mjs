@@ -170,6 +170,13 @@ try {
         await sleep(theme === 'flux' ? 4300 : 1500);   // Wire In's entry line (3 s + 0.6 s fade) has gone
         R.loose = { jacked: await app.evalJs("document.documentElement.hasAttribute('data-flux3-jacked')") };
         R.scrollers.push(...await testAll(app, 'loose', (s) => s.what === 'page'));
+        // #143: the loose page's own wheel, at the window's middle (its zoomed scroller may reach past the window), upward from wherever the writing line holds it
+        const topNow = "(document.querySelector('.desk-frame-stage .mode-scroll')?.scrollTop ?? null)";
+        const before = await app.evalJs(topNow);
+        await app.cdp('Input.dispatchMouseEvent', { type: 'mouseWheel', x: Math.round(w / 2), y: await app.evalJs('Math.round(innerHeight / 2)'), deltaX: 0, deltaY: -200, pointerType: 'mouse' });
+        await sleep(600);
+        const after = await app.evalJs(topNow);
+        R.looseWheel = before === null || after === null ? null : before - after;
         read[theme][w] = R;
         console.log(`SB128 READ ${theme} ${w}: ${R.scrollers.length} scroller(s); opened ${q(R.opened)}; wheel ${R.wheel}; ` + R.scrollers.map((s) => `[${s.scope}/${s.what} ${s.cls} bar ${s.bar} k ${s.k} sw ${s.sw} sc '${s.sc}' h ${s.h} room ${s.room}${s.tiny ? ' TINY' : ''} hit ${s.hitTop}/${s.hitFoot}${s.over ? ' over ' + s.over : ''}${s.covers && s.covers.length ? ' COVERED BY ' + s.covers.join(' + ') : ''} foot ${s.dFoot} (${s.kind.foot}) top ${s.dTop} (${s.kind.top})]`).join(' '));
         if (w === 1920) {
@@ -196,7 +203,10 @@ const cells = THEMES.flatMap((t) => SIZES.map(([w]) => ({ t, w, R: read[t] && re
 //   ok(`P1 at every theme x size the page's scroller was found with a bar and both press points hit it: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
 //     p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, found: R && R.scrollers.map((s) => ({ what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
 const pressed = (s) => s.what === 'page' && (s.hitTop || s.hitFoot);
-const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && pressed(s)) && (t !== 'flux' || (R.loose && R.loose.jacked))));
+// SUPERSEDED (#143, Fable's Q5 B, Nov 27: Wire In's zoom keeps the type at today's size, so its page paints 1.456 times larger and runs past the window; the ends of its
+// bar - drawn with no thumb there - can then lie off screen. In Wire In the bar is asked for and the wheel must move the page; elsewhere a press as before), the original verbatim:
+// const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && pressed(s)) && (t !== 'flux' || (R.loose && R.loose.jacked))));
+const p1bad = cells.filter(({ t, R }) => !(R && R.scrollers.some((s) => s.scope === 'rest' && pressed(s)) && R.scrollers.some((s) => s.scope === 'loose' && (pressed(s) || (t === 'flux' && R.looseWheel > 0))) && (t !== 'flux' || (R.loose && R.loose.jacked))));
 ok(`P1-B at every theme x size the page's scroller (her Part, and a loose page: Wire In in Flux) was found with a bar and pressed at one end or both: ${cells.length - p1bad.length}/${cells.length}; scrollers tested ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.length) || 0), 0)}, press points covered by something else ${cells.reduce((n, c) => n + ((c.R && c.R.scrollers.filter((s) => !s.hitTop || !s.hitFoot).length) || 0), 0)}`,
   p1bad.length === 0, p1bad.map(({ t, w, R }) => ({ t, w, loose: R && R.loose, found: R && R.scrollers.map((s) => ({ scope: s.scope, what: s.what, cls: s.cls, hit: [s.hitTop, s.hitFoot] })) })));
 // SUPERSEDED (the fix run 45468457970 on 1230334b, before this file's first green): A judged a press by half the scroller's height, but a short scroller's

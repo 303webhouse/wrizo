@@ -558,7 +558,9 @@ ok('P6 the Root substitution is render-time only: PlaceBlock and the pop-out nam
 const sliverSrc = rd('components/Sliver.tsx'), modeStageSrc = rd('components/ModeStage.tsx');
 const boardSrc = rd('components/BoardEditor.tsx');
 const caretSrc = rd('components/FluxBlockCaret.tsx');
-ok('P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio', /caretWidth\(height\)/.test(caretSrc) && !/0\.48/.test(caretSrc), '');
+// SUPERSEDED (#143: the block is as tall as the type, so its width is read from that height), the original verbatim:
+// ok('P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio', /caretWidth\(height\)/.test(caretSrc) && !/0\.48/.test(caretSrc), '');
+ok('P10 the block caret takes its width from caretWidth (the slim caret), not an inline ratio', /caretWidth\(tall\)/.test(caretSrc) && !/0\.48/.test(caretSrc), '');
 ok('P9 the board wears the Flux frame (grid ring + brackets) through FluxBoardFrame, and the rail\'s place block reads the rack readout in Flux', /<FluxBoardFrame/.test(boardSrc) && /export function FluxBoardFrame/.test(readoutsSrc) && /rackReadout\(/.test(placeBlock), '');
 // ARCHIVED PARK (#13 step 14): archive/flux-v2.mjs.parked.md record 1
 ok('P8 [polish #10 item 23 successor] the Timer row names itself through the lexicon on both surfaces - no inline word - and the Recede-depth row is rendered on neither (Nick: removed)', /timerLabel/.test(sliverSrc) && /timerLabel/.test(modeStageSrc) && !/label="Timer"/.test(sliverSrc + modeStageSrc) && !/<Seg label=\{<>\{(?:t|deskLex)\('fadeDepthLabel'\)/.test(sliverSrc + modeStageSrc), '');

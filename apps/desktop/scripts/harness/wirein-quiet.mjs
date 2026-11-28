@@ -68,6 +68,11 @@ try { await withHarness(async (app) => {
   // M3 (Fable, Nov 27, #147 Q1: A): the hidden rail's buttons are out of the Tab order too
   const railTakes = await ev("(() => { const b = [...document.querySelectorAll('.desk-frame-strip button, .desk-rail button')]; return { buttons: b.length, take: b.filter((e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }).length }; })()");
   ok('M3 no button of the hidden rail takes focus in Wire In', railTakes.buttons > 0 && railTakes.take === 0, J(railTakes));
+  // M4 (Fable, Nov 27, #147 Q3: A): Search (it opens in the Back menu, which Wire In keeps shut) and the Glitch switch leave the Tab order too; the mode tabs stay, as her way out
+  // (a focus() on the search field cannot be read: focusing it opens the search, which moves the focus on. A hidden element is out of the Tab order, so that is what is read; the switch is read on a stand-in of its class,
+  // since the driver pins the flourish and draws none. Red on the first build of this read: run 46108570070 passed on today's code.)
+  const q3 = await ev("(() => { const b = document.createElement('button'); b.className = 'wz-glitch-switch'; document.body.appendChild(b); const hid = (e) => !!e && getComputedStyle(e).visibility === 'hidden'; const search = document.querySelector('.reorg-search-door input'); const tabs = [...document.querySelectorAll('.desk-mode-tab')]; const take = tabs.filter((e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }).length; const out = { search: hid(search), glitch: hid(b), tabs: tabs.length, tabsTake: take }; b.remove(); return out; })()");
+  ok('M4 Search and the Glitch switch are out of the Tab order in Wire In (hidden); the mode tabs still take focus', q3.search === true && q3.glitch === true && q3.tabs > 0 && q3.tabsTake > 0, J(q3));
 
   await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
   await chord('/', 'Slash', 191);

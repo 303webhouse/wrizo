@@ -166,7 +166,9 @@ const INSTRUMENT = `(() => {
 const MUTANTS = {
   // PARKED, SUPERSEDED (Nov 12; train 3's bundle names the last constant $G, which \w does not match, so this landed 0 times: an instrument fault that follows the bundle's identifier names). Original verbatim:
   //   gutterwork: [/=700,(\w+)=72,(\w+)=26,(\w+)=24/g, '=0,$1=72,$2=26,$3=24'],
-  gutterwork: [/=700,([\w$]+)=72,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=72,$2=26,$3=24'],
+  // SUPERSEDED (#145: the ports' own top constant is gone with the move, so the run of constants is one shorter), the original verbatim:
+  // gutterwork: [/=700,([\w$]+)=72,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=72,$2=26,$3=24'],
+  gutterwork: [/=700,([\w$]+)=26,([\w$]+)=24/g, '=0,$1=26,$2=24'],
   // PARKED, SUPERSEDED (Nov 12, the gutterwork fault: a minifier name may contain $, which \w does not match, so an anchor can land 0 times on a later build). The five originals, verbatim:
   // rate: [/=45,(\w+)=180,(\w+)=900,/g, '=45,$1=180,$2=0,'],
   // stop: [/\(\)=>\{(\w+)=performance\.now\(\),(\w+)\.size&&(\w+)\(\)\}/g, '()=>{$1=performance.now()}'],
@@ -324,9 +326,13 @@ try { await withHarness(async (app) => {
   //     P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x < pageRight && p.r.x + p.r.w > pageRight),
   //     JSON.stringify({ ports: P && P.list, pageRight }));
   // live successor PORTS-BEYOND: the same ports, each wholly beyond the page's right edge and within 40 px of it (flux-125-overlaps.mjs reads the rule itself)
-  ok('PORTS-BEYOND (successor of "PORTS ... straddling the page\'s right edge", SUPERSEDED Nov 24 by #125) one per link, named for it, each wholly beyond the page\'s right edge and within 40 px of it',
-    P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x >= pageRight && p.r.x < pageRight + 40),
-    JSON.stringify({ ports: P && P.list, pageRight }));
+  // SUPERSEDED (#145, Nick Nov 27, home B: the + and the squares stand in one row under the page's right end, their boxes opening upward), the original verbatim:
+  // ok('PORTS-BEYOND (successor of "PORTS ... straddling the page\'s right edge", SUPERSEDED Nov 24 by #125) one per link, named for it, each wholly beyond the page\'s right edge and within 40 px of it',
+  // P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.x >= pageRight && p.r.x < pageRight + 40),
+  // JSON.stringify({ ports: P && P.list, pageRight }));
+  ok('PORTS-UNDER [#145 successor] one per link, named for it, each under the page\'s foot, in its right half and not past its right edge',
+    P && P.list.length === 2 && P.list.some((p) => /Linked card/.test(p.label)) && P.list.some((p) => /Other page/.test(p.label)) && P.list.every((p) => p.r.y >= on0.page.y + on0.page.h - 0.5 && p.r.x >= on0.page.x + on0.page.w / 2 && p.r.x + p.r.w <= pageRight + 1),
+    JSON.stringify({ ports: P && P.list, page: on0.page }));
   const bx = reads['on|dark|1920'].withBox;
   ok('PORTS a press draws the box: the item\'s name, Dock, Connect another, Disconnect',
     bx && bx.box && /Linked card|Other page/.test(bx.box.head) && ['dock', 'link', 'unlink'].every((a) => bx.box.acts.includes(a)), JSON.stringify(bx && bx.box));

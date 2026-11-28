@@ -6,13 +6,13 @@
 //   - THE GUTTER (ruling D): one row per paragraph (the editor's own rows, .wz-row; a blank line is no block), beside the paragraph's first line,
 //     just outside the page's left edge: block number · words. Read from the DOM only when she pauses (a mutation only restarts a timer), on
 //     resize and on scroll: zero work while keys land. It hides while the page is zoomed (the Typewriter). Under an open TOOLS hand.
-//   - THE PORTS (ruling C): one square port per linked item at the page's right edge (#125: just beyond it, clear of the page and its Part arrows), from the page's grafts (store/grafts.ts graftsOf: the same
+//   - THE PORTS (ruling C): one square port per linked item under the page's right end, in a row beside the + (#145, Nick Nov 27: beside the page they stood where the Back menu opens), from the page's grafts (store/grafts.ts graftsOf: the same
 //     list the Grafts pane shows; nothing new is stored). A press draws the line into a box: the item's kind and name; Dock (a card or page, the
 //     pane's own dock); Connect another (the pane's own graft picker); Disconnect (the pane's own remove, through the same confirm; it never
 //     deletes). Flux's words are the connect register (flux-v2 LX2b forbids "link" in Flux strings).
 //     No "Open as hologram" (C), and no "Go to the Schema": a board has no return chip back to a page, so it would be a departure without a
 //     return (page primacy, law 3) - handed up.
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../store/theme';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -22,13 +22,13 @@ import { graftsOf, type GraftRow } from '../store/grafts';
 import { getJournalEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { setLinkDock } from '../store/linkDock';
+import { closeDrawer } from '../store/menusDrawers';
 import { GraftPicker } from '../components/GraftPicker';
 import { nodeHex } from './FluxNodeRecord';
 import { liveBoxes } from '../store/boxTombstones';
 
 /** A typing pause: the gutter is measured again this long after the last change to the text. */
 export const GUTTER_PAUSE_MS = 700;
-const PORT_TOP = 72;    // clear of the hands' grips (16..50 px down the page's edges)
 const PORT_STEP = 26;
 const GUTTER_GAP = 24;  // the gutter's right edge stands this far off the page's left edge (clear of the left grip)
 
@@ -45,10 +45,7 @@ export function FluxDoc(props: Props) {
 }
 
 interface GutterRow { n: number; words: number; y: number }
-/** #125 (Nov 24, Fable's rule: no control overlaps another control, the page, or its corner marks): `edge` is the page's right edge or, where the
- *  page's own Part arrows (reorg/PartMoves.tsx, centred on its scrollbar) reach past it, their right edge; the ports stand PORT_CLEAR beyond it. */
-interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean; textTop: number; edge: number }
-const PORT_CLEAR = 4;
+interface Frame { left: number; right: number; top: number; height: number; zoomed: boolean; textTop: number }
 /** S4b L4: the header keeps this far clear of the first place text can show, and is not drawn at all when the page's top padding leaves less room than HEAD_MIN. */
 const HEAD_GAP = 3;
 const HEAD_MIN = 14;
@@ -63,7 +60,6 @@ function Doc({ paperRef, entryId }: Props) {
   const [totals, setTotals] = useState<Totals>({ blocks: 0, words: 0 });
   const [, setTick] = useState(0);
   const measures = useRef(0);
-  const backOpen = useBackOpen();   // #125: the + and the ports step down while the Back menu is open
 
   // the column the page stands in: the overlay's positioned parent (it does not clip, and it stands under the hands)
   useEffect(() => { setHost(paperRef.current?.parentElement ?? null); }, [paperRef]);
@@ -107,10 +103,8 @@ function Doc({ paperRef, entryId }: Props) {
       const r = el.getBoundingClientRect();
       if (r.height > 0) textTop = Math.min(textTop, r.top);
     }
-    let edge = pr.right;
-    for (const a of Array.from(page.querySelectorAll<HTMLElement>('.reorg-part-arrow'))) { const r = a.getBoundingClientRect(); if (r.width > 0) edge = Math.max(edge, r.right); }
     setFrame({ left: pr.left - hr.left, right: pr.right - hr.left, top: pr.top - hr.top, height: pr.height, zoomed: host.dataset.zoom === 'true',
-      textTop: textTop - hr.top, edge: edge - hr.left });
+      textTop: textTop - hr.top });
   }, [paperRef, host]);
 
   useEffect(() => {
@@ -129,7 +123,9 @@ function Doc({ paperRef, entryId }: Props) {
     ro?.observe(page);
     ro?.observe(host);
     later();
+    document.addEventListener('wz-board-moved', soon);   // #145: the row stands under the page, so it follows the page when a menu narrows it
     return () => {
+      document.removeEventListener('wz-board-moved', soon);
       window.clearTimeout(timer);
       cancelAnimationFrame(raf);
       mo.disconnect();
@@ -146,7 +142,7 @@ function Doc({ paperRef, entryId }: Props) {
   if (frame.zoomed) return createPortal(mark, host);
   const g = graftsOf({ entryId });
   const ports: GraftRow[] = [...g.Cards, ...g.Boards, ...g.Pages, ...g.Sources];
-  const room = Math.max(0, Math.floor((frame.height - PORT_TOP - 24) / PORT_STEP));
+  const room = Math.max(1, Math.floor(((frame.right - frame.left) * ROW_SHARE) / PORT_STEP));   // the row keeps to the page's right end, clear of the centred count
   const shown = ports.slice(0, room);
   const hidden = ports.length - shown.length;
   // the header's height: from the glass's top edge down to HEAD_GAP above where text first shows; with less room than HEAD_MIN it is not drawn (it never covers a line)
@@ -175,46 +171,40 @@ function Doc({ paperRef, entryId }: Props) {
           </span>
         ))}
       </div>
-      <Ports ports={shown} hidden={hidden} entryId={entryId} x={frame.edge + PORT_CLEAR} y={frame.top + PORT_TOP} backOpen={backOpen} />
-      <PlusCorner entryId={entryId} connections={ports.length} x={frame.right + PLUS_GAP} y={frame.top - 1} backOpen={backOpen} />
+      <Ports ports={shown} hidden={hidden} entryId={entryId} x={frame.right - PLUS_SIZE - ROW_GAP} y={frame.top + frame.height + ROW_DOWN + (PLUS_SIZE - PORT_SIZE) / 2} />
+      <PlusCorner entryId={entryId} connections={ports.length} x={frame.right - PLUS_SIZE} y={frame.top + frame.height + ROW_DOWN} />
     </>,
     host,
   );
 }
 
-/** S4b N5: the + stands this far beyond the page's right edge (clear of the right hand's grip, which hugs the edge 16 px wide). */
-const PLUS_GAP = 20;
-const PLUS_LINE = 40;   // the line it draws down the page's side into its box
+/** #145 (Nick, Nov 27, home B): the + and the squares stand in one row under the page's right end, ROW_DOWN below its foot; their boxes open upward. */
+const PLUS_SIZE = 32, PORT_SIZE = 14, ROW_DOWN = 6, ROW_GAP = 8;
+const ROW_SHARE = 0.2;   // how much of the page's width the squares may take before the rest are counted as +N
+/** #145 (Fable, Nov 27: an opened box never lies over the page): a box stands in the lane to the page's right, rising from the row; BOX_GAP off the page's edge. */
+const BOX_GAP = 8;
+const BOX_FROM_PORTS = PLUS_SIZE + ROW_GAP + BOX_GAP;   // from the squares' own anchor
+
+/** A box standing open beside the page: the Back menu gives that lane up, and the page gives way if the lane is too narrow (DeskFrame, told as for a rail pop-out). */
+function useBesidePage(open: boolean): void {
+  useLayoutEffect(() => { if (open) closeDrawer('tutor'); }, [open]);
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    document.dispatchEvent(new Event('wz-rail-popout'));
+    return () => { window.setTimeout(() => document.dispatchEvent(new Event('wz-rail-popout')), 0); };   // gone from the page: it comes back
+  }, [open]);
+}
 
 // S4b N5 - THE + AT THE PAGE'S TOP CORNER (the mockup's .plus: "Its menu draws a line down the page's side and opens into a box"). It REUSES the port box: the same box
 // dress, the same Connect another (the Grafts pane's own picker, GraftPicker, with this page as its subject). It adds no action and writes nothing of its own: a
 // connection made in the picker is the picker's. Esc or a press elsewhere closes it. A chrome overlay in the page's column, beyond the page: no rect moves.
-/** #125: is the Back menu (the right hand's drawer, Tutor.tsx's .wz-tutor-panel) open? Watches that one element's data-open attribute: nothing
- *  else, so her typing never wakes it. The panel is looked up when the Doc's frame mounts, with up to 120 frames' retry (the hands mount beside it). */
-function useBackOpen(): boolean {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    let mo: MutationObserver | null = null, raf = 0, tries = 0;
-    const find = () => {
-      const panel = document.querySelector<HTMLElement>('.wz-tutor-panel');
-      if (!panel) { if (tries++ < 120) raf = requestAnimationFrame(find); return; }
-      const read = () => setOpen(panel.getAttribute('data-open') === 'true');
-      read();
-      mo = new MutationObserver(read);
-      mo.observe(panel, { attributes: true, attributeFilter: ['data-open'] });
-    };
-    find();
-    return () => { cancelAnimationFrame(raf); mo?.disconnect(); };
-  }, []);
-  return open;
-}
-
-function PlusCorner({ entryId, connections, x, y, backOpen }: { entryId: string; connections: number; x: number; y: number; backOpen: boolean }) {
+function PlusCorner({ entryId, connections, x, y }: { entryId: string; connections: number; x: number; y: number }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState(false);
   const [picking, setPicking] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLButtonElement>(null);
+  useBesidePage(open);
   useEffect(() => {
     if (!open || picking) return;
     const away = (e: PointerEvent) => { if (!(e.target instanceof Node) || !wrapRef.current?.contains(e.target)) setOpen(false); };
@@ -224,13 +214,13 @@ function PlusCorner({ entryId, connections, x, y, backOpen }: { entryId: string;
     return () => { document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', esc); };
   }, [open, picking]);
   return (
-    <div ref={wrapRef} className="flux3-plus-wrap chrome-fade" data-back-open={backOpen ? 'true' : undefined} style={{ left: x, top: y }}>
+    <div ref={wrapRef} className="flux3-plus-wrap chrome-fade" style={{ left: x, top: y }}>
       <button type="button" className="flux3-plus" data-flux3-plus="" aria-expanded={open} aria-label={t('flux3PortConnectAnother')} title={t('flux3PortConnectAnother')}
         onClick={() => { setPicking(false); setOpen((o) => !o); }} />
       {open && (
         <>
-          <i className="flux3-plus-line" data-flux3-plus-line="" aria-hidden="true" style={{ height: PLUS_LINE }} />
-          <div className="flux3-port-box flux3-plus-box" data-flux3-plus-box="" style={{ top: 32 + PLUS_LINE }}>
+          <i className="flux3-plus-line" data-flux3-plus-line="" aria-hidden="true" />
+          <div className="flux3-port-box flux3-plus-box" data-flux3-plus-box="">
             <div className="flux3-port-head" data-flux3-plus-head="">
               <span className="flux3-port-kind">{t('linksKindPage')}</span> · {connections} {connections === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
             </div>
@@ -265,12 +255,13 @@ function PortPreview({ row, kind, kindWord }: { row: GraftRow; kind: 'card' | 'b
   );
 }
 
-function Ports({ ports, hidden, entryId, x, y, backOpen }: { ports: GraftRow[]; hidden: number; entryId: string; x: number; y: number; backOpen: boolean }) {
+function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: number; entryId: string; x: number; y: number }) {
   const { t } = useDeskLexicon();
   const [open, setOpen] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLButtonElement>(null);
+  useBesidePage(!!open);
   const kindOf = (r: GraftRow) => (r.group === 'Cards' ? 'card' : r.group === 'Boards' ? 'board' : 'page');
   const kindWord = (k: string) => (k === 'page' ? t('linksKindPage') : k === 'board' ? t('linksKindBoard') : t('linksKindCard'));
 
@@ -287,18 +278,19 @@ function Ports({ ports, hidden, entryId, x, y, backOpen }: { ports: GraftRow[]; 
 
   const at = ports.findIndex((p) => p.key === open);
   const row = at >= 0 ? ports[at] : null;
+  const along = (i: number) => -(ports.length - i) * PORT_STEP;   // in reading order, the last one nearest the +
   return (
-    <div className="flux3-ports chrome-fade" data-flux3-ports="" data-back-open={backOpen ? 'true' : undefined} style={{ left: x, top: y }}>
+    <div className="flux3-ports chrome-fade" data-flux3-ports="" style={{ left: x, top: y }}>
       {ports.map((p, i) => (
         <button key={p.key} type="button" className="flux3-port" data-port-kind={kindOf(p)} data-port-key={p.key} aria-expanded={open === p.key}
-          aria-label={`${kindWord(kindOf(p))}: ${p.title}`} title={`${kindWord(kindOf(p))}: ${p.title}`} style={{ top: i * PORT_STEP }}
+          aria-label={`${kindWord(kindOf(p))}: ${p.title}`} title={`${kindWord(kindOf(p))}: ${p.title}`} style={{ left: along(i), top: 0 }}
           onClick={() => { setPicking(false); setOpen((o) => (o === p.key ? null : p.key)); }} />
       ))}
-      {hidden > 0 && <span className="flux3-port-more" aria-hidden="true" style={{ top: ports.length * PORT_STEP }}>+{hidden}</span>}
+      {hidden > 0 && <span className="flux3-port-more" aria-hidden="true" style={{ left: along(-1), top: 0 }}>+{hidden}</span>}
       {row && (
         <>
-          <i className="flux3-port-line" aria-hidden="true" style={{ top: at * PORT_STEP }} />
-          <div ref={boxRef} className="flux3-port-box" data-flux3-port-box="" style={{ top: at * PORT_STEP - 8 }}>
+          <i className="flux3-port-line" aria-hidden="true" style={{ left: along(at) + PORT_SIZE, width: BOX_FROM_PORTS - along(at) - PORT_SIZE }} />
+          <div ref={boxRef} className="flux3-port-box" data-flux3-port-box="">
             <div className="flux3-port-head"><span className="flux3-port-kind">{kindWord(kindOf(row))}</span> {row.title}</div>
             <PortPreview row={row} kind={kindOf(row)} kindWord={kindWord(kindOf(row))} />
             {kindOf(row) !== 'board' && (

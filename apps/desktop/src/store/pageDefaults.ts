@@ -44,8 +44,8 @@ function dressOnly(v: PageSettings | null): PageSettings | null {
 
 // a page BORN now is born at 11 pt; a page that already exists keeps reading PAGE_SIZE_DEFAULT (12) through its absent size, so nothing is rewritten and no field is new; the writer's own default dress comes first, with its own size if it set one, else the app's floor (PAGE_SETTINGS_FALLBACK) [pageDefaults §3]
 export const NEW_PAGE_SIZE = 11;
-// FLUX3 (draft 21 §3, Nick Nov 9): in Flux under ?flux3=1 a page is born at 14 pt (the screen is meant to feel closer, in-the-zone); other themes stay at 11; pages already written keep their size
-export const FLUX_NEW_PAGE_SIZE = 14;
+// FLUX3 (draft 21 §3, Nick Nov 9) had Flux born at 14; Nick, Nov 27 (#143: "much too big for normal writing"): Flux is born at 12; other themes stay at 11; pages already written keep their size
+export const FLUX_NEW_PAGE_SIZE = 12;
 // the theme is read off the document (data-theme), as the flag is read off the URL: this file imports no react and no theme store
 export function newPageSize(): number { return FLUX3 && typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'flux' ? FLUX_NEW_PAGE_SIZE : NEW_PAGE_SIZE; }
 export function bornPageSettings(): PageSettings {

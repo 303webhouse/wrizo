@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor } from '../store/pageScale';
-import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor, zoomForType } from '../store/pageScale';
+import { DRAWER_MIN, fadeLeftMs, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -167,6 +167,7 @@ export interface DeskFrameProps {
 // #142: the rail's pop-out and its second layer at their own widths (styles: .wz-cascade-panel 300, .wz-cascade-survey 360), the seam between them, the least
 // the second may be beside the first, and the gap kept before the page
 const POPOUT_W = 300, SECOND_W = 360, POPOUT_SEAM = 10, SECOND_LEAST = 200, RAIL_GAP = 4;
+const NOTE_ROOM = 12;   // #145: a box beside the page, with its 8 px off the page's edge and 4 kept at the stage's
 
 export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, rhizome, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
@@ -198,6 +199,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (pageKind !== 'prose' || !stage) return;
+    let fading = 0;
     const apply = () => {
       const s = stage.getBoundingClientRect();
       const page = stage.querySelector<HTMLElement>('.mode-page');
@@ -216,11 +218,19 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const pop = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-panel:not([data-visible="false"])') ?? null;
       const second = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-survey') ?? null;
       const out = !zoomed && (!!pop || !!second);
-      const open = !zoomed && (hands.tools || hands.tutor || out);
+      // #145: a box open beside the page (the Doc's + or a connection's square) takes its room from the page too, from the right
+      const note = zoomed ? null : stage.querySelector<HTMLElement>('[data-flux3-port-box], [data-flux3-plus-box]');
+      const open = !zoomed && (hands.tools || hands.tutor || out || !!note);
       let from: number | null = null, beside = 0, one = false;   // the pop-out's left edge; the width the pop-out keeps beside its second layer
       if (open || zoomed) held.current = false;
       else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
+      // #144: the page comes back only once the closing menu has gone: never ahead of its fade, so it is never drawn under a menu still seen
+      window.clearTimeout(fading);
+      if (!open && !zoomed && gave.current) {
+        const left = Math.max(fadeLeftMs('.wz-sliver-panel'), fadeLeftMs('.wz-tutor-panel'));
+        if (left > 0) { fading = window.setTimeout(apply, left + 20); return; }
+      }
       if (open && col) {
         const cr = col.getBoundingClientRect();
         const centre = cr.left + cr.width / 2;
@@ -240,7 +250,8 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
           popLimit = from + (second ? beside + Math.min(SECOND_W, most - beside) : Math.min(POPOUT_W, most)) + RAIL_GAP;
         }
         const leftLimit = Math.max(hands.tools ? railRight + frontW + 16 : -Infinity, popLimit ?? -Infinity);
-        const y = pageYieldFor(centre, kRest, leftLimit === -Infinity ? null : leftLimit, hands.tutor ? s.right - backW - 16 : null);
+        const rightLimit = Math.min(hands.tutor ? s.right - backW - 16 : Infinity, note ? s.right - note.offsetWidth - NOTE_ROOM : Infinity);
+        const y = pageYieldFor(centre, kRest, leftLimit === -Infinity ? null : leftLimit, rightLimit === Infinity ? null : rightLimit);
         k = y.k; shift = y.shift;
         if (from != null && rail) {
           const room = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - RAIL_GAP - from);
@@ -257,12 +268,17 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
       else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
       if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
-      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : '', from != null ? 'p' : ''].filter(Boolean).join(' ') : '';
+      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : '', from != null ? 'p' : '', note ? 'b' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
-      stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
+      // #143: zoomed further so her smaller-laid type reads as large as before; in Flux's Wire In only her words must clear the rail, elsewhere the whole page
+      const was = zoomFor(s.width, kRest, inset, fit);
+      const words = stage.querySelector<HTMLElement>('.forward-only-editor');
+      const share = document.documentElement.getAttribute('data-theme') === 'flux' ? (words && page?.offsetWidth ? words.offsetWidth / page.offsetWidth : 6.5 / 8.5) : 1;
+      const zoom = zoomForType(was, kRest, s.width, inset, share);
+      stage.style.setProperty('--wz-zoom', zoom.toFixed(4));
       // the zoomed sheet stays today's: its layout height is the letter fit's, so painted it is as tall as before the page grew (#133)
-      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit).toFixed(2)}px`);
+      stage.style.setProperty('--wz-page-hl-zoom', `${pageLayoutHeightFor(s.height, top, fit * (zoom / was)).toFixed(2)}px`);
       stage.style.setProperty('--wz-page-hl', `${pageLayoutHeightFor(s.height, top, k).toFixed(2)}px`);
       // where the painted page ends, from the stage's top: the page's drawers stop there, never running past the paper [DeskFrame §4]
       stage.style.setProperty('--wz-page-foot', `${(top + pageLayoutHeightFor(s.height, top, k) * k).toFixed(2)}px`);
@@ -283,7 +299,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     window.addEventListener('resize', apply);
     document.addEventListener('wz-zoom-changed', apply);
     document.addEventListener('wz-rail-popout', apply);   // #142
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('wz-rail-popout', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
+    return () => { window.clearTimeout(fading); ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('wz-rail-popout', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
   }, [pageKind, hands.tools, hands.tutor]);
 
   return (

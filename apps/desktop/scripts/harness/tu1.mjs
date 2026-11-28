@@ -200,7 +200,10 @@ await withHarness(async (app) => {
       panelOpen.right <= width + 0.5, JSON.stringify({ panelRight: panelOpen.right, width }));
 
     await app.evalJs("document.querySelector('.wz-tutor-dock-btn').click()");
-    await sleep(250);
+    // SUPERSEDED (#144: where there is no room to dock, this press closes the menu, and a closing menu now keeps its size until its fade ends - about half a second - so
+    // the width is read once it has gone), the original verbatim:
+    // await sleep(250);
+    await sleep(900);
     const panelDocked = await rectOf(app, '.wz-tutor-panel');
     const paperDocked = await rectOf(app, '.mode-pagecol');
     ok(`S6 geometry @${width}: paper rect unchanged, open -> docked`,
@@ -229,6 +232,11 @@ await withHarness(async (app) => {
   // typing, the Escape ladder, grip-click-while-docked undocks.
   // ==========================================================================
   await freshProsePage(app, 1400, 900);
+  // #143 successor: the new Doc opens in Free Write, whose zoom now nearly fills the stage (it keeps the smaller-laid type at its old size), so the dock press finds under
+  // 120 px beside the page and closes instead (read: 80 px at 1400). Free Write hides both openers, so a writer docks from Draft: this block now reads there. As it stood,
+  // the page was opened and the checks below ran without the next two lines.
+  await app.evalJs("localStorage.setItem('wrizo-mode-page-' + location.hash.split('/').pop(), 'drafting'); window.wrizoFlushNow && window.wrizoFlushNow()");
+  await app.reload(); await app.waitFor("!!document.querySelector('.forward-only-editor') && !document.querySelector('.mode-pagecol[data-zoom=\"true\"]')", { label: 'the Doc in Draft', timeout: 15000 }); await sleep(600);
   await openTutor(app);
   ok('A15: an undocked open panel exists before the probe keystroke',
     (await app.evalJs("document.querySelector('.wz-tutor-panel').dataset.open")) === 'true');
