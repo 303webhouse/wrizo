@@ -58,7 +58,7 @@ await withHarness(async (app) => {
       await app.emulateDpr(1, w, h);
       const open = async (id) => { await ev("location.hash = '#/'"); await sleep(300); await ev(`location.hash = '#/page/${id}'`); await app.waitFor("!!document.querySelector('.desk-frame-stage .forward-only-editor')", { label: id, timeout: 15000 }); await app.mouseMove(w / 2, 20); await sleep(1800); };
       await open(`p143-${t.id}-d`);
-      await ev("(() => { const ed = document.querySelector('.desk-frame-stage .forward-only-editor'); ed.focus(); const r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.dispatchEvent(new Event('selectionchange')); })()");
+      await ev("(() => { const ed = document.querySelector('.desk-frame-stage .forward-only-editor'); ed.focus(); let t = null; const tw = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); for (let n = tw.nextNode(); n; n = tw.nextNode()) if (n.data.length) t = n; const r = document.createRange(); r.setStart(t, t.data.length); r.collapse(true); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.dispatchEvent(new Event('selectionchange')); })()");
       await sleep(700);
       const d = await ev(PROBE);
       seen[w] = d.starts;
