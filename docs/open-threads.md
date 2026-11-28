@@ -4606,3 +4606,10 @@ Evidence: `docs/evidence/box-logs/arbor-turn4-82f4bed2/` (the turn log with the 
 **Since (330):** Nick tried L15: "L15 works". Nick gave a standing yes: each lane may download its own Actions run reports.
 **Not tried:** L16 by Nick on the live site, and no live AI call was made after the deploy. That is the next try.
 **Open:** L17 (#142, the tiles, #147, #148); #143, #144, #145. Evidence: `docs/evidence/box-logs/deploy-train-l16-4e8cc6ed/`.
+
+## (332) TRAIN L17 IS LIVE: `git 0f60a2a1d (train-l17-2) · railway 1de4ba2f-94bf-4766-9fa9-7f2c3108a2d1`, bundle `index-C4vtxnVa`, smoke PASS 6/6, served assets identical to the tested build — 2026-11-28 04:35Z / Nov 27, 9:35 pm MT (chat 1)
+**Healthz + bundle + smoke for Fable: `/healthz` 200, build `index-C4vtxnVa`; JS 1529877 B md5 `d0a74b7b7101`; CSS `index-DxZCTpLf.css` 551675 B md5 `3780cf66754d`; `GET /m/` signed out 200; `smoke-login.mjs` PASS 6/6. Roll-back point: train L16, `git 4e8cc6ed1 · railway 61b9e196`.**
+**What is in it:** #147 (no menus in Wire In) and #148 (its bar at the foot, the X on a pointer move, the prompt button); the theme tiles (VISUAL-B); #142 (rail pop-outs never cover the page).
+**Caught on the way:** a run dispatched with a train tip as its `ref` cancels that train's running shard (the workflow's concurrency group). Never dispatch with a train tip as `ref` while its pair runs.
+**Not tried:** L16 and L17 by Nick on the live site.
+**Open:** L18 (#143, #144, #145 as one tip from POLISH; FIX's Wire In Tab line). Evidence: `docs/evidence/box-logs/deploy-train-l17-0f60a2a1/`.

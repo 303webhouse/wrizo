@@ -168,6 +168,8 @@ await withHarness(async (app) => {
         const modeKey = born[0] ? await q(`localStorage.getItem('wrizo-mode-page-${born[0].id}')`) : null;
         ok(`${T}: T4 and it will reopen in Free Write`, modeKey === 'journal', String(modeKey));
         if (born[0]) {
+          // SUPERSEDED for FLUX (#147: Wire In has no Back menu): T5 and T6 are read after Unplug, on the same page in Draft, where the menu stands. The originals read them while wired in.
+          if (theme === 'flux') await unplug();
           await q("document.querySelector('.wz-tutor-grip')?.getAttribute('data-open') !== 'true' && document.querySelector('.wz-tutor-grip')?.click()"); await sleep(700);
           await q("document.querySelector('#wz-tutor-tab-links')?.click()"); await sleep(600);
           const grow = await q("[...document.querySelectorAll('.wz-links-pane [data-graft-entry=\"w2-deck\"] .wz-graft-title')].map((n) => n.textContent)");

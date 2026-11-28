@@ -74,6 +74,8 @@ await withHarness(async (app) => {
     await frame(app, '.wz-sliver .wz-type', `size-freewrite-${name.toLowerCase()}.png`);
     // ==== T - TYPING (Free Write, whole page) ====
     if (fw && fw.inputs === 1) {
+      // SUPERSEDED for FLUX (#147, Nick, Nov 27: Wire In has no menus, so its size box cannot be typed into there): Flux's typing reads run on a Draft page, where the same box stands. The original typed on the Free Write page opened above.
+      if (theme === 'flux') { await openPage(app, 'sb-dr-flux', 'drafting'); await openDrawer(app); }
       const base = await edPx(app);
       await typeInto(app, '.wz-sliver .wz-type', '15');
       const at15 = await edPx(app);
