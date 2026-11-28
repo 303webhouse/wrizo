@@ -161,38 +161,53 @@ await withHarness(async (app) => {
   const fieldOk = (x) => !!x && x.bg === 'rgb(2, 12, 16)' && x.edge === 'rgb(95, 143, 149)' && x.w === '1px' && x.hint === 'rgb(126, 180, 196)';
   ok('FB14 the Operator\u2019s fields are in field dress (#020C10, a 1 px #5F8F95 edge) with #7EB4C4 hints', !!fields && fieldOk(fields.ask) && fieldOk(fields.bible), fields);
 
+  // SUPERSEDED (#147, Nick, Nov 27: "Wire In should not have any menus available"; Fable's order: no menu tabs and no way to open either menu). FB6, FB11, FB12, FB13, FB15, FB16 and MUT-FB16 read the Back menu
+  // IN Wire In, which no longer has one. The originals, verbatim:
+  // await open(app, 'fb-1');
+  // const mode = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
+  // await sleep(900);
+  // await drawer(app);
+  // const wire = await app.evalJs(TABS);
+  // const note = await app.evalJs("(() => { const n = document.querySelector('.wz-sprint-note, [data-sprint-note]'); return n ? (n.textContent || '').trim() : [...document.querySelectorAll('.wz-tutor-panel *')].map((e) => (e.children.length === 0 ? (e.textContent || '').trim() : '')).find((x) => /wired in/i.test(x)) || null; })()");
+  // ok('FB6 Wire In: Spine and Inputs are locked and the note reads "Wired in: the Operator sends prompts only." in Flux\'s words; the Operator is the one in use',
+  //   mode === true && Array.isArray(wire) && wire.find((x) => x.id === 'plan')?.locked === true && wire.find((x) => x.id === 'links')?.locked === true && wire.find((x) => x.id === 'tutor')?.on === true && note === 'Wired in: the Operator sends prompts only.', { mode, wire, note });
+  // // FB11 (spec section 5, Nick Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Wrizors' Wire In frame: the Corridor hid every hand): jacked in, the Back menu's opener and its opened panel are SEEN and can be pressed (the grip is what a pointer hits at its centre); the left hand, the rail and the Glitch bar stay off
+  // const corridor = await app.evalJs("(() => { const op = (s) => { const e = document.querySelector(s); return e ? getComputedStyle(e).opacity : null; }; const g = document.querySelector('.wz-tutor-grip'); let hit = null; if (g) { const r = g.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); hit = !!e && (e === g || g.contains(e)); } const gc = g ? getComputedStyle(g) : null; return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), anchor: op('.desk-frame-tutor-anchor'), panel: op('.desk-frame-tutor-panel-anchor'), hit, vis: gc && gc.visibility, pe: gc && gc.pointerEvents, left: op('.desk-frame-sliver-anchor'), rail: op('.desk-rail') }; })()");
+  // ok('FB11 Wire In (the Corridor): the opener of the Back menu and its opened panel are drawn and can be pressed; the left hand and the rail stay off', !!corridor && corridor.jacked === true && corridor.anchor === '1' && corridor.panel === '1' && corridor.hit === true && (corridor.left === null || corridor.left === '0') && (corridor.rail === null || corridor.rail === '0'), corridor);
+  // // FB12 (the frames of Nov 23): opened in the Corridor, the grip stands at the panel's own left edge (16 px of gutter), never inside its tab row; and it is on the screen
+  // const gripAt = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'), p = document.querySelector('.wz-tutor-panel'); if (!g || !p) return null; const gr = g.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { gripLeft: Math.round(gr.left), gripRight: Math.round(gr.right), panelLeft: Math.round(pr.left), vw: window.innerWidth }; })()");
+  // ok('FB12 Wire In (the Corridor): the opened Back menu\'s grip stands at the panel\'s left edge, clear of its tab row', !!gripAt && gripAt.gripRight <= gripAt.panelLeft + 1 && gripAt.gripLeft >= 0 && gripAt.gripRight <= gripAt.vw, gripAt);
+  // // FB13 (the Wrizors' pass 2, REAL 1): in Wire In the opened panel ends above her line (its foot is capped), so it never covers what she is writing
+  // const cover = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (!last) return null; const r = document.createRange(); r.selectNodeContents(last); const rects = [...r.getClientRects()]; if (!rects.length) return null; return { panelBottom: Math.round(p.getBoundingClientRect().bottom), lineTop: Math.round(Math.min(...rects.map((x) => x.top))) }; })()");
+  // ok('FB13 Wire In (the Corridor): the opened Back menu ends above her line', !!cover && cover.panelBottom <= cover.lineTop, cover);
+  // // FB15 (the frames after pass 2: the first cap hid the action): in Wire In the Writing prompt button is wholly inside the opened panel (not scrolled out of view)
+  // const act = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'); if (!p) return null; const b = [...p.querySelectorAll('button')].find((x) => /writing prompt/i.test(x.textContent || '')); if (!b) return { found: false }; const pr = p.getBoundingClientRect(), br = b.getBoundingClientRect(); return { found: true, inside: br.top >= pr.top - 1 && br.bottom <= pr.bottom + 1, btnBottom: Math.round(br.bottom), panelBottom: Math.round(pr.bottom) }; })()");
+  // ok('FB15 Wire In (the Corridor): the Writing prompt button is wholly inside the opened panel', !!act && act.found === true && act.inside === true, act);
+  // // FB16 (Nov 23, found reading flux3-s4c's CARET on live Flux): the Back menu's panel anchor fills the stage; drawn in Wire In, it must not take the press meant for her page
+  // const PRESS = "(() => { const p = document.querySelector('.mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); const x = Math.round(Math.max(r.left + 40, 8)), y = Math.round(Math.min(Math.max(r.top + 60, 120), innerHeight - 80)); const e = document.elementFromPoint(x, y); return { x, y, onPage: !!e && !!e.closest('.mode-page'), hit: e ? String(e.className || e.tagName).slice(0, 70) : null, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; })()";
+  // const pressOpen = await app.evalJs(PRESS);
+  // await app.evalJs("document.querySelector('.wz-tutor-grip').click(); null");
+  // await sleep(500);
+  // const pressShut = await app.evalJs(PRESS);
+  // await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'fb16-mut'; s.textContent = ':root[data-flux3][data-theme=flux][data-wirein][data-flux3-jacked] .desk-frame-tutor-panel-anchor[data-back=\"true\"]{ pointer-events:auto !important; }'; document.head.appendChild(s); return true; })()");
+  // const pressMut = await app.evalJs(PRESS);
+  // await app.evalJs("document.getElementById('fb16-mut').remove(); document.querySelector('.wz-tutor-grip').click(); null");
+  // await sleep(500);
+  // ok('FB16 Wire In (the Corridor): a press on her page lands on her page, with the Back menu open and shut', !!pressOpen && !!pressShut && pressOpen.jacked === true && pressOpen.onPage && pressShut.onPage, { pressOpen, pressShut });
+  // ok('MUT-FB16 the panel anchor taking the pointer again: the same read goes red (the mutant LANDED on the anchor)', !!pressMut && !pressMut.onPage && /tutor-panel-anchor/.test(pressMut.hit || ''), pressMut);
   await open(app, 'fb-1');
   const mode = await app.evalJs("(() => { const el = [...document.querySelectorAll('button, a, [role=tab]')].find((b) => /^\\s*wire in\\s*$/i.test(b.textContent || '')); if (!el) return false; el.click(); return true; })()");
   await sleep(900);
-  await drawer(app);
-  const wire = await app.evalJs(TABS);
-  const note = await app.evalJs("(() => { const n = document.querySelector('.wz-sprint-note, [data-sprint-note]'); return n ? (n.textContent || '').trim() : [...document.querySelectorAll('.wz-tutor-panel *')].map((e) => (e.children.length === 0 ? (e.textContent || '').trim() : '')).find((x) => /wired in/i.test(x)) || null; })()");
-  ok('FB6 Wire In: Spine and Inputs are locked and the note reads "Wired in: the Operator sends prompts only." in Flux\'s words; the Operator is the one in use',
-    mode === true && Array.isArray(wire) && wire.find((x) => x.id === 'plan')?.locked === true && wire.find((x) => x.id === 'links')?.locked === true && wire.find((x) => x.id === 'tutor')?.on === true && note === 'Wired in: the Operator sends prompts only.', { mode, wire, note });
-  // FB11 (spec section 5, Nick Nov 20, 1:20 pm: SPRINT keeps the Back menu's handle; the Wrizors' Wire In frame: the Corridor hid every hand): jacked in, the Back menu's opener and its opened panel are SEEN and can be pressed (the grip is what a pointer hits at its centre); the left hand, the rail and the Glitch bar stay off
-  const corridor = await app.evalJs("(() => { const op = (s) => { const e = document.querySelector(s); return e ? getComputedStyle(e).opacity : null; }; const g = document.querySelector('.wz-tutor-grip'); let hit = null; if (g) { const r = g.getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); hit = !!e && (e === g || g.contains(e)); } const gc = g ? getComputedStyle(g) : null; return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), anchor: op('.desk-frame-tutor-anchor'), panel: op('.desk-frame-tutor-panel-anchor'), hit, vis: gc && gc.visibility, pe: gc && gc.pointerEvents, left: op('.desk-frame-sliver-anchor'), rail: op('.desk-rail') }; })()");
-  ok('FB11 Wire In (the Corridor): the opener of the Back menu and its opened panel are drawn and can be pressed; the left hand and the rail stay off', !!corridor && corridor.jacked === true && corridor.anchor === '1' && corridor.panel === '1' && corridor.hit === true && (corridor.left === null || corridor.left === '0') && (corridor.rail === null || corridor.rail === '0'), corridor);
-  // FB12 (the frames of Nov 23): opened in the Corridor, the grip stands at the panel's own left edge (16 px of gutter), never inside its tab row; and it is on the screen
-  const gripAt = await app.evalJs("(() => { const g = document.querySelector('.wz-tutor-grip'), p = document.querySelector('.wz-tutor-panel'); if (!g || !p) return null; const gr = g.getBoundingClientRect(), pr = p.getBoundingClientRect(); return { gripLeft: Math.round(gr.left), gripRight: Math.round(gr.right), panelLeft: Math.round(pr.left), vw: window.innerWidth }; })()");
-  ok('FB12 Wire In (the Corridor): the opened Back menu\'s grip stands at the panel\'s left edge, clear of its tab row', !!gripAt && gripAt.gripRight <= gripAt.panelLeft + 1 && gripAt.gripLeft >= 0 && gripAt.gripRight <= gripAt.vw, gripAt);
-  // FB13 (the Wrizors' pass 2, REAL 1): in Wire In the opened panel ends above her line (its foot is capped), so it never covers what she is writing
-  const cover = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'), ed = document.querySelector('.forward-only-editor'); if (!p || !ed) return null; const w = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT); let n, last = null; while ((n = w.nextNode())) if (n.data.trim()) last = n; if (!last) return null; const r = document.createRange(); r.selectNodeContents(last); const rects = [...r.getClientRects()]; if (!rects.length) return null; return { panelBottom: Math.round(p.getBoundingClientRect().bottom), lineTop: Math.round(Math.min(...rects.map((x) => x.top))) }; })()");
-  ok('FB13 Wire In (the Corridor): the opened Back menu ends above her line', !!cover && cover.panelBottom <= cover.lineTop, cover);
-  // FB15 (the frames after pass 2: the first cap hid the action): in Wire In the Writing prompt button is wholly inside the opened panel (not scrolled out of view)
-  const act = await app.evalJs("(() => { const p = document.querySelector('.wz-tutor-panel'); if (!p) return null; const b = [...p.querySelectorAll('button')].find((x) => /writing prompt/i.test(x.textContent || '')); if (!b) return { found: false }; const pr = p.getBoundingClientRect(), br = b.getBoundingClientRect(); return { found: true, inside: br.top >= pr.top - 1 && br.bottom <= pr.bottom + 1, btnBottom: Math.round(br.bottom), panelBottom: Math.round(pr.bottom) }; })()");
-  ok('FB15 Wire In (the Corridor): the Writing prompt button is wholly inside the opened panel', !!act && act.found === true && act.inside === true, act);
-  // FB16 (Nov 23, found reading flux3-s4c's CARET on live Flux): the Back menu's panel anchor fills the stage; drawn in Wire In, it must not take the press meant for her page
-  const PRESS = "(() => { const p = document.querySelector('.mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); const x = Math.round(Math.max(r.left + 40, 8)), y = Math.round(Math.min(Math.max(r.top + 60, 120), innerHeight - 80)); const e = document.elementFromPoint(x, y); return { x, y, onPage: !!e && !!e.closest('.mode-page'), hit: e ? String(e.className || e.tagName).slice(0, 70) : null, jacked: document.documentElement.hasAttribute('data-flux3-jacked') }; })()";
-  const pressOpen = await app.evalJs(PRESS);
-  await app.evalJs("document.querySelector('.wz-tutor-grip').click(); null");
-  await sleep(500);
-  const pressShut = await app.evalJs(PRESS);
-  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'fb16-mut'; s.textContent = ':root[data-flux3][data-theme=flux][data-wirein][data-flux3-jacked] .desk-frame-tutor-panel-anchor[data-back=\"true\"]{ pointer-events:auto !important; }'; document.head.appendChild(s); return true; })()");
-  const pressMut = await app.evalJs(PRESS);
-  await app.evalJs("document.getElementById('fb16-mut').remove(); document.querySelector('.wz-tutor-grip').click(); null");
-  await sleep(500);
-  ok('FB16 Wire In (the Corridor): a press on her page lands on her page, with the Back menu open and shut', !!pressOpen && !!pressShut && pressOpen.jacked === true && pressOpen.onPage && pressShut.onPage, { pressOpen, pressShut });
-  ok('MUT-FB16 the panel anchor taking the pointer again: the same read goes red (the mutant LANDED on the anchor)', !!pressMut && !pressMut.onPage && /tutor-panel-anchor/.test(pressMut.hit || ''), pressMut);
+  await app.evalJs("document.querySelector('.wz-tutor-grip')?.click(); null");
+  await sleep(700);
+  const NONE = "(() => { const a = document.querySelector('.desk-frame-tutor-anchor'); const g = document.querySelector('.wz-tutor-grip'); const p = document.querySelector('.mode-page'); const r = p.getBoundingClientRect(); const e = document.elementFromPoint(Math.round(Math.max(r.left + 40, 8)), Math.round(Math.min(Math.max(r.top + 60, 120), innerHeight - 80))); return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), drawn: !!a && getComputedStyle(a).display !== 'none', open: g ? g.getAttribute('aria-expanded') === 'true' : false, onPage: !!e && !!e.closest('.mode-page') }; })()";
+  const none = await app.evalJs(NONE);
+  const noMenu = (x) => !!x && x.jacked === true && x.drawn === false && x.open === false && x.onPage === true;
+  ok('FB6 [#147 successor] Wire In draws no Back menu: no tab, a press on its tab\'s button opens nothing, and a press on her page lands on her page', mode === true && noMenu(none), { mode, none });
+  await app.evalJs("(() => { const s = document.createElement('style'); s.id = 'fb6-mut'; s.textContent = ':root:root:root:root .desk-frame-tutor-anchor{ display:block !important; }'; document.head.appendChild(s); return true; })()");
+  const mut = await app.evalJs(NONE);
+  await app.evalJs("document.getElementById('fb6-mut').remove(); null");
+  ok('MUT-FB6 with the tab\'s anchor forced back the same read goes red (the mutant LANDED)', !!mut && mut.drawn === true && !noMenu(mut), mut);
 
   await open(app, 'fb-1', { lift: '', reorg: 0 });
   await drawer(app);
@@ -207,7 +222,8 @@ await withHarness(async (app) => {
 });
 
 for (const c of checks) console.log(`${c.pass ? 'PASS' : 'FAIL'} ${c.name}${c.pass ? '' : '\n     ' + String(c.detail).slice(0, 1500)}`);
-const EXPECTED = 20;   // + FB17 and its mutant. Was: const EXPECTED = 18;   // 16 + FB16 and its mutant (Nov 23)
+// SUPERSEDED (#147): const EXPECTED = 20;   // seven Wire In rows parked above, two successors
+const EXPECTED = 15;   // was 20 = 18 + FB17 and its mutant. Was: const EXPECTED = 18;   // 16 + FB16 and its mutant (Nov 23)
 const pass = checks.length === EXPECTED && checks.every((c) => c.pass);
 console.log(pass
   ? `\nREORG-FLUX-BACK-LIVE VERIFY: PASS (${checks.length} checks)`

@@ -1,5 +1,7 @@
 import { liveBoxes } from '../store/boxTombstones';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useJacked, WIRE_PROMPT_EVENT } from '../flux3/jackIn';
 import { useNavigate } from 'react-router-dom';
 import { useDeskLexicon } from '../store/deskLexicon';
 import type { JournalEntry, Project, Fact } from '../types';
@@ -218,6 +220,9 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     else noteClosed('tutor');
   }, [open]);
   useEffect(() => registerDrawer('tutor', () => setOpen(false)), []);
+  // #147: Wire In has no menus - whatever asked for this one (search, a Part's link, a dock found on mount, a step's help), it is shut before it is painted
+  const wired = useJacked();
+  useLayoutEffect(() => { if (wired && (open || docked)) { setOpen(false); setDocked(false); } }, [wired, open, docked]);
   // the open panel's width, measured: flush to the paper's right edge where a usable panel fits, natural open-w (overlay) below that; null on a board and while docked (CSS owns those) [Tutor §11]
   const [panelWidthPx, setPanelWidthPx] = useState(null);
   // how far the open panel stands in from the stage's edge, so its left edge meets its tab on the page's edge (the Tools drawer's mirror) [Tutor §12]
@@ -683,6 +688,25 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     });
   };
 
+  // #148 - the prompt button beside Wire In's X (flux3/FluxJackedHints.tsx) is this same press; the one prompt stands in a small card of its own, since Wire In draws no menu
+  const [card, setCard] = useState(false);
+  const promptPress = useRef(pressSprint);
+  promptPress.current = pressSprint;
+  useEffect(() => {
+    if (!wired) { setCard(false); return undefined; }
+    const onAsk = () => { setCard(true); promptPress.current(); };
+    window.addEventListener(WIRE_PROMPT_EVENT, onAsk);
+    return () => window.removeEventListener(WIRE_PROMPT_EVENT, onAsk);
+  }, [wired]);
+  const cardText = draw && draw.preset === 'writingPrompt' ? draw.text : null;
+  const promptCard = wired && card && typeof document !== 'undefined' ? createPortal(
+    <div className="flux3-prompt-card" data-flux3-prompt-card="" role="status" aria-live="polite" aria-busy={sprintBusy ? 'true' : undefined}>
+      <p data-prompt-text="">{refillNote === 'writingPrompt' ? t('tutorFreeWriteRefill') : cardText ?? '\u2026'}</p>
+      <button type="button" data-prompt-close="" aria-label={t('tutorClose')} title={t('tutorClose')} onMouseDown={(e) => e.preventDefault()} onClick={() => setCard(false)}>{'\u00d7'}</button>
+    </div>,
+    document.body,
+  ) : null;
+
   // ITEM 84, THE DRAFT ROSTER — THE PRESS. Staging, not sending: the ask lands in
   // the composer as ordinary editable text and NOTHING goes on the wire. As with
   // the deck phase's own press, what matters most is what is NOT here — no fetch,
@@ -1028,6 +1052,13 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
                 {/* what travels when you ask: behind a "?" beside the Ask box, no standing text [Tutor §42] */}
                 <DrawerNote label="What travels when you ask">{t('tutorDisclosureBodyV4')}</DrawerNote>
               </div>
+              {/* #147: her "Prompts from the Operator" switch stands here, since Wire In draws no menu to hold it (Flux only: Wire In is Flux's) */}
+              {back && SPRINT_CONSULTANT && tutorTheme === 'flux' && (
+                <button type="button" role="switch" className="wz-sprint-use" data-sprint-use aria-checked={consultantOn ? 'true' : 'false'} onClick={() => setWritingSettings({ consultant: !consultantOn })}>
+                  <span className="wz-sprint-use-track" aria-hidden="true"><span className="wz-sprint-use-knob" /></span>
+                  <span>{t('reorgSprintUse')}</span>
+                </button>
+              )}
             </div>
 
             {/* FX10 S1 — the lenses now read as sections AROUND the conversation
@@ -1161,7 +1192,7 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
           )}
         </div>
       </div>
-
+      {promptCard}
     </>
   );
 }

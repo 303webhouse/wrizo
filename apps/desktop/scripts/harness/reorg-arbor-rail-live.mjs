@@ -75,6 +75,17 @@ const DOORS = `(() => { const r = document.querySelector('[data-reorg-rail]'); i
   return { doors: [...r.querySelectorAll('.wz-reorg-doors .wz-strip-item')].map(one), foot: [...r.querySelectorAll('.wz-strip-foot .wz-strip-item')].map(one) }; })()`;
 const PANEL = "(() => { const p = document.querySelector('.wz-cascade-panel'); return p ? { cat: p.getAttribute('data-category'), shadow: getComputedStyle(p).boxShadow } : null; })()";
 const PAGE = "(() => { const p = document.querySelector('.mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((n) => Math.round(n * 10) / 10).join(','); })()";
+// #142: the page gave way to a rail pop-out: from the left only (same top, height and right edge, no wider), its column's layout untouched and its words scaled with the
+// paper, never re-laid
+const gaveRail = (rest, now) => {
+  const parts = (s) => String(s || '').split('|').map((r) => r.trim().split(',').map(Number)), a = parts(rest), b = parts(now), near = (x, y) => Math.abs(x - y) <= 0.5;
+  if (!rest || !now || a.length !== b.length) return false;
+  const [p, P] = a.length === 1 ? [a[0], b[0]] : [a[1], b[1]];
+  const paper = near(p[1], P[1]) && near(p[3], P[3]) && near(p[0] + p[2], P[0] + P[2]) && P[0] >= p[0] - 0.5;
+  if (a.length === 1) return paper;
+  const e = a[2], E = b[2];
+  return paper && a[0].join() === b[0].join() && E[0] >= P[0] - 0.5 && E[0] + E[2] <= P[0] + P[2] + 0.5 && Math.abs(E[2] / e[2] - P[2] / p[2]) <= 0.005;
+};
 const RAIL = "!!document.querySelector('[data-reorg-rail]')";
 
 async function visit(app, search, theme = 'plateau') {
@@ -204,7 +215,9 @@ await withHarness(async (app) => {
   ok('MUT-A8 the reading with Machina\'s five (Pale, Grey, Blue, Brass, Orange) turns A8\'s test red', !!five && a8(bs) !== a8(five) && !a8(five), five && five.swatches);
   await app.evalJs("document.querySelector('[data-reorg-rail] [data-category=\"reorg-projects\"]')?.click(); null"); await sleep(700);
   const page2 = await app.evalJs(PAGE);
-  ok('A5 the page\'s rect is the same with a rail door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
+  // SUPERSEDED (#142, Nick Nov 26: no rail pop-out covers the page - the page gives way from the rail's side), the original verbatim:
+  // ok('A5 the page\'s rect is the same with a rail door open and closed', !!page0 && page0 === page1 && page1 === page2, [page0, page1, page2]);
+  ok('A5 [#142 successor]: with a rail door open the page\'s rect gives way from the rail\'s side only, and closed it stands where it stood', !!page0 && gaveRail(page0, page1) && page2 === page0, [page0, page1, page2]);
 
   // ---- Machina is untouched ----
   await visit(app, '/?reorg=1&arbor2=0', 'machina');

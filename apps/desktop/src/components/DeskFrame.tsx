@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, zoomFor } from '../store/pageScale';
+import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor } from '../store/pageScale';
 import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
@@ -164,6 +164,10 @@ export interface DeskFrameProps {
 }
 
 // DeskFrame runs no dissolve engine of its own: the host's useChromeDissolve writes --fade-dur on an ancestor, and the strip and corkboard carry `chrome-fade desk-dissolve` like every other receding track [DeskFrame §2]
+// #142: the rail's pop-out and its second layer at their own widths (styles: .wz-cascade-panel 300, .wz-cascade-survey 360), the seam between them, the least
+// the second may be beside the first, and the gap kept before the page
+const POPOUT_W = 300, SECOND_W = 360, POPOUT_SEAM = 10, SECOND_LEAST = 200, RAIL_GAP = 4;
+
 export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, rhizome, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -207,7 +211,13 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       let k = kRest, shift = 0, frontRoom: number | null = null;
       const small = onePanelAt(window.innerWidth);
       const zoomed = !!stage.querySelector('.mode-pagecol[data-zoom="true"]');
-      const open = !zoomed && (hands.tools || hands.tutor);
+      // #142: a pop-out from the rail takes its room from the page too. Its layers are the rail's own: the pop-out, and the second one some of them open beside it
+      const rail = stage.querySelector<HTMLElement>(':scope > .desk-frame-cascade-anchor');
+      const pop = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-panel:not([data-visible="false"])') ?? null;
+      const second = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-survey') ?? null;
+      const out = !zoomed && (!!pop || !!second);
+      const open = !zoomed && (hands.tools || hands.tutor || out);
+      let from: number | null = null, beside = 0, one = false;   // the pop-out's left edge; the width the pop-out keeps beside its second layer
       if (open || zoomed) held.current = false;
       else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
@@ -221,17 +231,33 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
         // Wider, the menus already fit beside the page (they narrow down to DRAWER_MIN there), so the page keeps its size
         const frontW = small ? (root.hasAttribute('data-arbor2') ? 264 : root.hasAttribute('data-machina2') ? 200 * ck - 16 : 184 * ck) : DRAWER_MIN;   // Machina's: 200 by the chrome scale, less its tab
         const backW = small ? 320 * ck : DRAWER_MIN;
-        const y = pageYieldFor(centre, kRest, hands.tools ? railRight + frontW + 16 : null, hands.tutor ? s.right - backW - 16 : null);
+        let popLimit: number | null = null;
+        if (out && rail) {
+          from = rail.getBoundingClientRect().left;
+          const most = centre + (PAGE_W_BASE * kRest) / 2 - PAGE_W_BASE * Math.min(kRest, YIELD_FLOOR) - RAIL_GAP - from;   // the most the page can give on this side
+          one = !!pop && !!second && most < POPOUT_W + POPOUT_SEAM + SECOND_LEAST;   // no room for both: the second takes the pop-out's place until it is closed
+          beside = second && pop && !one ? POPOUT_W + POPOUT_SEAM : 0;
+          popLimit = from + (second ? beside + Math.min(SECOND_W, most - beside) : Math.min(POPOUT_W, most)) + RAIL_GAP;
+        }
+        const leftLimit = Math.max(hands.tools ? railRight + frontW + 16 : -Infinity, popLimit ?? -Infinity);
+        const y = pageYieldFor(centre, kRest, leftLimit === -Infinity ? null : leftLimit, hands.tutor ? s.right - backW - 16 : null);
         k = y.k; shift = y.shift;
+        if (from != null && rail) {
+          const room = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - RAIL_GAP - from);
+          rail.style.setProperty('--wz-rail-room', `${room}px`);
+          rail.style.setProperty('--wz-second-room', `${room - beside}px`);
+        }
         if (hands.tools && small) frontRoom = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - railRight - 16);
       }
+      rail?.toggleAttribute('data-one-layer', one);
+      if (rail && from == null && rail.style.getPropertyValue('--wz-second-room')) { rail.style.removeProperty('--wz-rail-room'); rail.style.removeProperty('--wz-second-room'); }
       stage.style.setProperty('--wz-k', k.toFixed(4));
       stage.style.setProperty('--wz-page-shift', `${shift.toFixed(2)}px`);
       const half = (PAGE_W_BASE * k) / 2;
       if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
       else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
       if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
-      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : ''].filter(Boolean).join(' ') : '';
+      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : '', from != null ? 'p' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
       stage.style.setProperty('--wz-zoom', zoomFor(s.width, kRest, inset, fit).toFixed(4));
@@ -256,7 +282,8 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     // the window's width is part of the law, and a stage may keep its size while the window changes
     window.addEventListener('resize', apply);
     document.addEventListener('wz-zoom-changed', apply);
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
+    document.addEventListener('wz-rail-popout', apply);   // #142
+    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('wz-rail-popout', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
   }, [pageKind, hands.tools, hands.tutor]);
 
   return (

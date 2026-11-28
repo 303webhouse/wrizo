@@ -131,7 +131,16 @@ await withHarness(async (app) => {
     const T = `[${th.id}]`;
 
     // ===== L1 - PAGE IS PRIMARY ============================================================================================================================
-    for (const kind of ['draft', 'free']) {
+    // SUPERSEDED for FLUX's free-writing page (#147, Nick, Nov 27: Wire In has no menus): its reads in L1, L5, L6 and L9 are gone with its drawers; Arbor's run unchanged. The original loop, verbatim:
+    //    for (const kind of ['draft', 'free']) {
+    if (th.id === 'flux') await guard(`L1 ${T} free [#147]`, async () => {
+      const there = await open(app, th, 'free');
+      await toggleLeft(app); await toggleRight(app); await sleep(500);
+      const r = await app.evalJs("(() => { const gone = (s) => { const e = document.querySelector(s); return !e || getComputedStyle(e).display === 'none'; }; return { l: gone('.desk-frame-sliver-anchor'), r: gone('.desk-frame-tutor-anchor') }; })()");
+      const open1 = { left: await leftOpen(app), right: await rightOpen(app) };
+      ok(`L1 ${T} [#147 successor] Free Write is Wire In: neither drawer is drawn, and neither opens`, there && r.l && r.r && !open1.left && !open1.right, JSON.stringify({ r, open1 }));
+    });
+    for (const kind of th.id === 'flux' ? ['draft'] : ['draft', 'free']) {
       await guard(`L1 ${T} ${kind}`, async () => {
         const there = await open(app, th, kind);
         ok(`L1 ${T} fixture: the ${kind} surface opened`, there, '');
@@ -281,6 +290,7 @@ await withHarness(async (app) => {
       tabs: [...document.querySelectorAll('.wz-sliver-panel [role="tab"]')].map(t => t.id.replace('wz-sliver-tab-', '')),
       disabledOrGrey: document.querySelectorAll('.wz-sliver-body [aria-disabled="true"]:not(.wz-template-btn)').length }))()`);
     await guard(`L5 free ${T}`, async () => {
+      if (th.id === 'flux') return;   // #147: Wire In has no drawer (successor at L1)
       if (!(await open(app, th, 'free'))) { ok(`L5 ${T} fixture: free write opened`, false); return; }
       await ensureLeft(app, true);
       const text = await sections(app);
@@ -328,6 +338,7 @@ await withHarness(async (app) => {
 
     // ===== L6 - BRASS AND OLIVE =============================================================================================================================
     await guard(`L6 ${T}`, async () => {
+      if (th.id === 'flux') return;   // #147: Wire In has no drawer (successor at L1); the colour is read for Arbor
       if (!(await open(app, th, 'free'))) { ok(`L6 ${T} fixture: free write opened`, false); return; }
       await ensureLeft(app, true);
       // the open tab's where-you-are colour is the theme's: olive (--accent-rest) in Arbor; Flux wears its own mid text colour (index.css: [data-theme='flux'] .wz-sliver[data-open='true'] .wz-sliver-grip)
@@ -408,6 +419,7 @@ await withHarness(async (app) => {
 
     // ===== L9 - ARIA AND KEYBOARD ===========================================================================================================================
     await guard(`L9 ${T}`, async () => {
+      if (th.id === 'flux') return;   // #147: Wire In has no drawer (successor at L1); the Links tab's "?" is help-buttons' own read
       if (!(await open(app, th, 'free'))) { ok(`L9 ${T} fixture: free write opened`, false); return; }
       await ensureLeft(app, true);
       const a = await app.evalJs(`(() => { const list = document.querySelector('.wz-sliver-panel [role="tablist"]'); if (!list) return { missing: true };

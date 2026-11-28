@@ -58,8 +58,8 @@ opening any document from any list.
 (the same page transformed ~1.6x: no reflow, no unmount) and leaving returns the exact rect, scroll, caret
 and text. Nothing else may claim it (`docs/page-primacy-canon.md`).
 
-**Exception (Nick, Nov 26, #138):** at 1600 px or less, an open Front or Back menu may narrow the page from its own side so it never covers the page
-surface. The page never moves or resizes while she types.
+**Exception (Nick, Nov 26, #138 and #142):** at 1600 px or less, an open Front or Back menu may narrow the page from its own side so it never covers the page
+surface. At any width the page may yield from the rail's side so no pop-out covers it. The page never moves or resizes while she types.
 
 ## Harness scenarios persist
 Every ticket's verification scenario is a committed artifact, not a throwaway:
