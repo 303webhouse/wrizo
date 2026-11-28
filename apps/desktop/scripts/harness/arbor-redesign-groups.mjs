@@ -90,7 +90,10 @@ await withHarness(async (app) => {
   await openPage('The ferry was late, so Ada counted gulls.');
   await openTools('format');
   const before = await app.evalJs(BOX), born = await app.evalJs(EDITOR);
-  ok(`G5 PAGE SIZE: a page born in Arbor is 11 pt (${born && born.px} px; the size box says ${before && before.value})`, !!born && near(born.px, 14.667, 0.05) && !!before && before.value === '11', J({ born, before }));
+  // SUCCESSOR (#143, Nick, Nov 27: "her type reads at the size the box says"): the page lays a point out 1.456 times smaller (13-desk-frame.css --wz-pt) because the page's own scale and zoom paint it
+  // that much larger, so the computed px is pt x 4/3 / 1.456. The box still says the same numbers. The original, verbatim:
+  // ok(`G5 PAGE SIZE: a page born in Arbor is 11 pt (${born && born.px} px; the size box says ${before && before.value})`, !!born && near(born.px, 14.667, 0.05) && !!before && before.value === '11', J({ born, before }));
+  ok(`G5 PAGE SIZE: a page born in Arbor is 11 pt (${born && born.px} px; the size box says ${before && before.value})`, !!born && near(born.px, 14.667 / 1.456, 0.05) && !!before && before.value === '11', J({ born, before }));
   const setSize = async (n) => {
     const at = await app.evalJs("(() => { const i = document.querySelector('.wz-type .wz-type-num'); if (!i || i.disabled) return null; const r = i.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
     if (!at) return false;
@@ -100,15 +103,21 @@ await withHarness(async (app) => {
   };
   const typed = await setSize(15); const at15 = await app.evalJs(EDITOR), box15 = await app.evalJs(BOX);
   const larger = await press(app, ".wz-type button[aria-label='Larger']"); const at16 = await app.evalJs(EDITOR), box16 = await app.evalJs(BOX);
+  // SUCCESSOR (#143, Nick, Nov 27: "her type reads at the size the box says"): the page lays a point out 1.456 times smaller (13-desk-frame.css --wz-pt) because the page's own scale and zoom paint it
+  // that much larger, so the computed px is pt x 4/3 / 1.456. The box still says the same numbers. The original, verbatim:
+  // ok(`G4 FONT-SIZE BOX: typing 15 + Enter sizes the page to 15 pt (${at15 && at15.px} px, the box ${box15 && box15.value}); Larger takes it to 16 (${at16 && at16.px} px, ${box16 && box16.value})`,
+  // typed && !!at15 && near(at15.px, 20, 0.05) && !!box15 && box15.value === '15' && larger && !!at16 && near(at16.px, 21.333, 0.05) && !!box16 && box16.value === '16', J({ at15, box15, larger, at16, box16 }));
   ok(`G4 FONT-SIZE BOX: typing 15 + Enter sizes the page to 15 pt (${at15 && at15.px} px, the box ${box15 && box15.value}); Larger takes it to 16 (${at16 && at16.px} px, ${box16 && box16.value})`,
-    typed && !!at15 && near(at15.px, 20, 0.05) && !!box15 && box15.value === '15' && larger && !!at16 && near(at16.px, 21.333, 0.05) && !!box16 && box16.value === '16', J({ at15, box15, larger, at16, box16 }));
+    typed && !!at15 && near(at15.px, 20 / 1.456, 0.05) && !!box15 && box15.value === '15' && larger && !!at16 && near(at16.px, 21.333 / 1.456, 0.05) && !!box16 && box16.value === '16', J({ at15, box15, larger, at16, box16 }));
 
   // M2: the size box made inert - G4's read must go red
   await openPage('Inert box page.');
   await openTools('format');
   await app.evalJs("(() => { const i = document.querySelector('.wz-type .wz-type-num'); if (i) i.disabled = true; return !!i; })()");
   const m2typed = await setSize(15); const m2 = await app.evalJs(EDITOR);
-  ok(`M2 (mutant): the size box made inert (LANDED: typed ${m2typed}) - G4's read goes RED (${m2 && m2.px} px)`, !m2typed && !!m2 && !near(m2.px, 20, 0.05), J({ m2typed, m2 }));
+  // SUCCESSOR (#143, as G4 above): the original, verbatim:
+  // ok(`M2 (mutant): the size box made inert (LANDED: typed ${m2typed}) - G4's read goes RED (${m2 && m2.px} px)`, !m2typed && !!m2 && !near(m2.px, 20, 0.05), J({ m2typed, m2 }));
+  ok(`M2 (mutant): the size box made inert (LANDED: typed ${m2typed}) - G4's read goes RED (${m2 && m2.px} px)`, !m2typed && !!m2 && !near(m2.px, 20 / 1.456, 0.05), J({ m2typed, m2 }));
 
   // M1: the Write door taken away - G1's path must go red
   await boot();

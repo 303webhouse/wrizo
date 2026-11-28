@@ -119,7 +119,10 @@ await withHarness(async (app) => {
 
   // ---- THE INDENT LOOK + THREE TABS = THREE LEVELS ----
   await freshDesk(app);
-  const LONG = 'A paragraph long enough that it certainly wraps onto a second and a third line inside the page column, so that we can see where the continuation lines begin.';
+  // SUCCESSOR (#143, Nick, Nov 27): the page lays type out 1.456 times smaller, so the old paragraph no longer reached a third line and the fixture's own sanity check failed. Longer words,
+  // same checks. The original, verbatim:
+  // const LONG = 'A paragraph long enough that it certainly wraps onto a second and a third line inside the page column, so that we can see where the continuation lines begin.';
+  const LONG = 'A paragraph long enough that it certainly wraps onto a second and a third line inside the page column, so that we can see where the continuation lines begin. It then carries on for a good while longer, past the second line and well into a third, with plain words that say nothing new but take up the room across the measure.';
   seed(app, 'n4', LONG);
   await sleep(600);
   await app.reload();

@@ -82,11 +82,17 @@ await withHarness(async (app) => {
     ok(`W [${name}] DRIVER: a real double-click highlights "charlie"`, h1, String(await app.evalJs(SEL)));
     await typeSize(app, '.wz-sliver .wz-type input.wz-type-num', 24);
     const s1 = await app.evalJs(SIZES(E));
-    ok(`W [${name}] DRAFT: with "charlie" highlighted, typing 24 + Enter sizes ONLY "charlie" (24/${Math.round(base * 0.75 * 10) / 10 || '?'} of the page's size) - every other word keeps its size`, only(s1, 'charlie', base, 24 / (base * 0.75)), JSON.stringify(s1));
+    // SUCCESSOR (#143, Nick, Nov 27: "her type reads at the size the box says"): the page lays a point out 1.456 times smaller (13-desk-frame.css --wz-pt), so the page's point size is
+    // computed px x 0.75 x 1.456 (it was computed px x 0.75). The original, verbatim:
+    // ok(`W [${name}] DRAFT: with "charlie" highlighted, typing 24 + Enter sizes ONLY "charlie" (24/${Math.round(base * 0.75 * 10) / 10 || '?'} of the page's size) - every other word keeps its size`, only(s1, 'charlie', base, 24 / (base * 0.75)), JSON.stringify(s1));
+    ok(`W [${name}] DRAFT: with "charlie" highlighted, typing 24 + Enter sizes ONLY "charlie" (24/${Math.round(base * 0.75 * 1.456 * 10) / 10 || '?'} of the page's size) - every other word keeps its size`, only(s1, 'charlie', base, 24 / (base * 0.75 * 1.456)), JSON.stringify(s1));
     const h2 = await highlight(app, E, 'echo');
     await typeSize(app, '.wz-sliver .wz-type input.wz-type-num', 18);
     const s2 = await app.evalJs(SIZES(E));
-    ok(`W [${name}] DRAFT: then "echo" highlighted and 18 typed: "echo" takes 18, "charlie" keeps its 24, the rest stay`, h2 && s2 && Math.abs(s2.echo / base - 18 / (base * 0.75)) < 0.03 && Math.abs(s2.charlie / base - 24 / (base * 0.75)) < 0.03 && ['alpha', 'bravo', 'delta', 'foxtrot'].every((w) => Math.abs(s2[w] - base) < 0.5), JSON.stringify(s2));
+    // SUCCESSOR (#143, Nick, Nov 27: "her type reads at the size the box says"): the page lays a point out 1.456 times smaller (13-desk-frame.css --wz-pt), so the page's point size is
+    // computed px x 0.75 x 1.456 (it was computed px x 0.75). The original, verbatim:
+    // ok(`W [${name}] DRAFT: then "echo" highlighted and 18 typed: "echo" takes 18, "charlie" keeps its 24, the rest stay`, h2 && s2 && Math.abs(s2.echo / base - 18 / (base * 0.75)) < 0.03 && Math.abs(s2.charlie / base - 24 / (base * 0.75)) < 0.03 && ['alpha', 'bravo', 'delta', 'foxtrot'].every((w) => Math.abs(s2[w] - base) < 0.5), JSON.stringify(s2));
+    ok(`W [${name}] DRAFT: then "echo" highlighted and 18 typed: "echo" takes 18, "charlie" keeps its 24, the rest stay`, h2 && s2 && Math.abs(s2.echo / base - 18 / (base * 0.75 * 1.456)) < 0.03 && Math.abs(s2.charlie / base - 24 / (base * 0.75 * 1.456)) < 0.03 && ['alpha', 'bravo', 'delta', 'foxtrot'].every((w) => Math.abs(s2[w] - base) < 0.5), JSON.stringify(s2));
 
     // ==== S - the buttons on a highlight ====
     const h3 = await highlight(app, E, 'bravo');

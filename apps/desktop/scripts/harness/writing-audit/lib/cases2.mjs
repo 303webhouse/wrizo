@@ -50,7 +50,10 @@ export const GROUPS2 = {
     c('V10', 'Up through an empty line (the mirror of V04)', 'abcdefghij\n\nabcdefghij', 18, [K('ArrowUp', { geo: 'up' }), K('ArrowUp', { geo: 'up' })]),
     c('V11', 'Up from an empty row (the caret starts in the empty line)', 'abcdefghij\n\nabcdefghij', 11, [K('ArrowUp', { geo: 'up' })]),
     c('V12', 'Up from an empty row into a wrapped paragraph lands on its last line', `${W}\n\nshort`, W.length + 1, [K('ArrowUp', { geo: 'up' })]),
-    c('V06', 'Home and End on a wrapped line', DOC, 70, [K('Home', { geo: 'home' }), K('End', { geo: 'end' }), K('Home', { geo: 'home' })]),
+    // SUCCESSOR (#143, Nick, Nov 27): the page's line breaks moved, so offset 70 now stands on the paragraph's FIRST visual line, where End lands on the soft wrap itself and is drawn at that line's end (as the browser's own
+    // caret is: this reader expects the start of the next line there). V06 reads Home and End on the wrapped, SECOND line, as it did: offset 120 is on it in all three rooms. The original, verbatim:
+    // c('V06', 'Home and End on a wrapped line', DOC, 70, [K('Home', { geo: 'home' }), K('End', { geo: 'end' }), K('Home', { geo: 'home' })]),
+    c('V06', 'Home and End on a wrapped line', DOC, 120, [K('Home', { geo: 'home' }), K('End', { geo: 'end' }), K('Home', { geo: 'home' })]),
     c('V07', 'Shift+Down twice (the selection grows by lines)', DOC, 5, [K('ArrowDown', { geo: 'down', shift: true }), K('ArrowDown', { geo: 'down', shift: true })]),
     c('V08', 'PageDown, PageDown, PageUp on a 30-line page', LINES30, 0, [K('PageDown', { prop: 'down' }), K('PageDown', { prop: 'down' }), K('PageUp', { prop: 'up' })]),
     c('V09', 'Down onto a line, then type (it lands where the caret is)', 'abcdefghij\nklmnopqrst', 4, [K('ArrowDown', { geo: 'down' }), T('X')]),
