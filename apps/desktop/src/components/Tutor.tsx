@@ -40,7 +40,7 @@ import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
 import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
-import { DRAWER_MIN, menusOpenInward } from '../store/menusDrawers';
+import { DRAWER_MIN, fadeLeftMs, menusOpenInward } from '../store/menusDrawers';
 import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
@@ -421,7 +421,15 @@ export function Tutor({ entry, project, pageText, pageKind, mode, selectionText 
     // the open geometry, so the drawer slides back from where it stood and its tab, on its outer edge, travels with it (it snapped to the
     // pre-open width first: 37 px apart at half the close, run 41336050132). The next open measures again.
     if (!open && document.documentElement.hasAttribute('data-wz2-drawer-edge')) return;
-    if (!open || (docked && !linkDock)) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
+    // #144: while it fades the closing drawer keeps its open size and place; it goes back to rest only once gone. (Snapped back at once, it was wider than the
+    // room beside the page and was drawn over it.)
+    if (!open) {
+      let wait = 0;
+      const gone = () => { const left = fadeLeftMs('.wz-tutor-panel'); if (left > 0) wait = window.setTimeout(gone, left + 20); else { setPanelWidthPx(null); setPanelOffsetPx(0); } };
+      wait = window.setTimeout(gone, 0);
+      return () => window.clearTimeout(wait);
+    }
+    if (docked && !linkDock) { setPanelWidthPx(null); setPanelOffsetPx(0); return; }
     const measure = () => {
       const stage = tutorStage();
       // PAGE-SIZE - the prose page is PAINTED larger than its column by a transform, so the margin is measured from the painted page itself

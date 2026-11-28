@@ -74,13 +74,18 @@ try { await withHarness(async (app) => {
   const state = () => ev('window.__n5.state()');
   const rects = () => ev('window.__n5.rects()');
 
-  const placeOk = (s) => !!s && !!s.plus && s.hit && s.plus.l > s.page.r && Math.abs(s.plus.t - s.page.t) <= 2 && s.plus.w >= 24 && Math.abs(s.plus.w - s.plus.h) < 1
+  // SUPERSEDED (#145, Nick Nov 27, home B: the + and the squares stand in one row under the page's right end, their boxes opening upward), the original verbatim:
+  // const placeOk = (s) => !!s && !!s.plus && s.hit && s.plus.l > s.page.r && Math.abs(s.plus.t - s.page.t) <= 2 && s.plus.w >= 24 && Math.abs(s.plus.w - s.plus.h) < 1
+  // && apart(s.plus, s.grip) && s.ports.every((p) => apart(s.plus, p));
+  const placeOk = (s) => !!s && !!s.plus && s.hit && s.plus.t >= s.page.b - 0.5 && Math.abs(s.plus.r - s.page.r) <= 2 && s.plus.w >= 24 && Math.abs(s.plus.w - s.plus.h) < 1
     && apart(s.plus, s.grip) && s.ports.every((p) => apart(s.plus, p));
   for (const [w, h] of [[1920, 1080], [1366, 768]]) {
     await open('n5-p1', { w, h });
     const s = await state();
     await snap(`n5-rest-${w}`);
-    ok(`PLACE [${w}] one square + just beyond the page's top-right corner, level with its top, clear of the right hand's grip and the ports, and hit-testable`, placeOk(s), { seeded, s });
+    // SUPERSEDED (#145, Nick Nov 27, home B: the + and the squares stand in one row under the page's right end, their boxes opening upward), the original verbatim:
+    // ok(`PLACE [${w}] one square + just beyond the page's top-right corner, level with its top, clear of the right hand's grip and the ports, and hit-testable`, placeOk(s), { seeded, s });
+    ok(`PLACE [${w}] [#145 successor] one square + under the page's right end, clear of the right hand's grip and the ports, and hit-testable`, placeOk(s), { seeded, s });
   }
 
   // ---- OPEN, PICK, CLOSE, RECT (1920) ----------------------------------------------------------------------------------------------------------------------------------------
@@ -91,9 +96,17 @@ try { await withHarness(async (app) => {
   const so = await state();
   const r1 = await rects();
   await snap('n5-open-1920');
-  ok('OPEN pressed, the + draws a line down into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
+  // SUPERSEDED (#145, Nick Nov 27, home B: the + and the squares stand in one row under the page's right end, their boxes opening upward), the original verbatim:
+  // ok('OPEN pressed, the + draws a line down into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
+  // !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
+  // && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.t >= so.plus.b - 1 && so.box.rect.t >= so.line.t, so);
+  // SUPERSEDED (Fable, Nov 27, 6:25 pm: an opened box never lies over the page, so it opens in the lane to the page's right), the version above verbatim:
+  // ok('OPEN [#145 successor] pressed, the + draws a line up into a box: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
+  // !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
+  // && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.b <= so.plus.t + 1 && so.box.rect.b <= so.line.t + 1, so);
+  ok('OPEN [#145 successor 2] pressed, the + draws a line across into a box beside the page: its head names the page and its connections (Doc · 1 connection), and it offers the port box\'s own Connect another',
     !!so && so.expanded === 'true' && !!so.line && !!so.box && /^doc\s*·\s*1 connection$/i.test(String(so.box.head || '').replace(/\s+/g, ' ').trim())
-      && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.t >= so.plus.b - 1 && so.box.rect.t >= so.line.t, so);
+      && so.box.acts.length === 1 && so.box.acts[0][0] === 'link' && so.box.acts[0][1] === 'Connect another' && so.line.l >= so.plus.r - 1 && so.box.rect.l >= so.line.r - 1 && so.box.rect.l >= so.page.r - 0.5, so);
   await press('[data-flux3-plus-box] [data-port-act="link"]'); await sleep(600);
   const sp = await state();
   ok('PICK Connect another opens the same picker the ports open (GraftPicker)', !!sp && sp.picker, sp);
