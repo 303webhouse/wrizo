@@ -623,15 +623,21 @@ try { await withHarness(async (app) => {
   // the writing line (last) reads #E8F6FA (a glyph pixel on a long page reads 213..236 by where the subpixels fall, so the floor is 190: the dim line never passes 168); the line above it #8F9B9E (+-); every older line shows nothing legible (the corridor's brightest line is ~50)
   const veilOk = (ink) => ink.length >= 2 && ink[ink.length - 1][0] >= 190 && ink[ink.length - 2][0] >= 118 && ink[ink.length - 2][0] <= 168 && ink.slice(0, ink.length - 2).every((p) => p[0] <= 80);
   // the Typewriter GLIDES a long page after the last key, so the lines' rects and the shot are taken until two reads of the rects agree (the page is standing still), then judged
-  const veilRead = async (mutated) => {
+  // SUPERSEDED (POLISH, Nov 28: the argument was never used; it now says to leave the room drawn). The original, verbatim:
+  // const veilRead = async (mutated) => {
+  const veilRead = async (keepRoom) => {
     // the page is read once the writing line has stood at the same place for 2 s (8 reads, 250 ms apart): the Typewriter's own band mask (on the page column; the control has it too) dims a line that has not yet reached its anchor, and a long page glides for seconds after the last key
     let lines = [], same = 0, prev = '', steady = false;
     for (let t = 0; t < 60 && !steady; t += 1) { lines = await veilLines(); const k = JSON.stringify(lines); same = k === prev ? same + 1 : 0; prev = k; steady = same >= 8; if (!steady) await sleep(250); }
     // #143: the signal rows the room draws over the hidden lines after a pause are not her words, so they are not drawn for this reading (with the smaller-laid type one
     // now lies where an older line was: it read 89 against the 80 allowed, her words themselves unseen)
     await ev("(() => { if (document.getElementById('veil-rows-off')) return; const s = document.createElement('style'); s.id = 'veil-rows-off'; s.textContent = '.flux3-compile-word{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); await sleep(150);
+    // nor are the room's own lines (the corridor's frames and rails): its lime frame shows at the harness's typing speed and is still moving when this reading comes, and now and then
+    // crosses an older line's place (full pairs 46136290210 and 46141858160: 79-87 against the 80 allowed; a probe read 78 with it, 33 without it, 8 with no corridor lines)
+    if (!keepRoom) { await ev("(() => { if (document.getElementById('veil-room-off')) return; const s = document.createElement('style'); s.id = 'veil-room-off'; s.textContent = '.flux3-cor-frame, .flux3-cor-rails{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); await sleep(100); }
     const ink = await veilInk(lines);
     await ev("document.getElementById('veil-rows-off')?.remove()"); await sleep(100);
+    await ev("document.getElementById('veil-room-off')?.remove()"); await sleep(50);
     return { lines: lines.length, ink: ink.map((p) => p[0]), steady, ok: steady && veilOk(ink) };
   };
   const VEIL_STYLE = (css) => ev(`(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
@@ -672,6 +678,14 @@ try { await withHarness(async (app) => {
       await ev("document.querySelector('.forward-only-editor').style.removeProperty('color')");
       await sleep(120);
       veilReads.back = await veilRead();
+      // a bright line of the room across the oldest line, held still: read with the room left drawn (it must be seen) and the usual way (it must not count)
+      const roomAt = (await veilLines())[0].top + 8;
+      await ev(`(() => { const i = document.createElement('i'); i.id = 'veil-room-line'; i.className = 'flux3-cor-frame'; i.setAttribute('data-kind', 'lime'); i.style.cssText = 'position:fixed;left:0;top:${roomAt}px;width:100vw;height:3px;border:0;background:#B7FF3C;transform:none;opacity:1;visibility:visible;animation:none;z-index:9999;'; document.body.appendChild(i); })()`);
+      await sleep(120);
+      veilReads.roomSeen = await veilRead(true);
+      veilReads.roomLine = await veilRead();
+      await ev("document.getElementById('veil-room-line').remove()");
+      await sleep(120);
     }
   }
   await ev("(() => { const s = document.getElementById('veil-colmask-off'); if (s) s.remove(); })()");
@@ -683,6 +697,9 @@ try { await withHarness(async (app) => {
   ok('MUT-VEIL the look reader goes RED when the clip is gone (an old line stays), the dim is gone (the line above reads bright), the dim is too faint, the dim is too dark, or the clip is a line too tall; the no-box reader goes RED when the old ground-coloured band is put back; the picture AND the colour reader go RED when an inline pen colour is set on the editor; and green again undone',
     veilReads.noClip && !veilReads.noClip.ok && veilReads.noDim && !veilReads.noDim.ok && veilReads.faintDim && !veilReads.faintDim.ok && veilReads.darkDim && !veilReads.darkDim.ok && veilReads.clip3 && !veilReads.clip3.ok && !boxOk(veilReads.boxMut) && veilReads.inlineInk && !veilReads.inlineInk.ok && !inkOk(veilReads.inlineInk) && veilReads.back && veilReads.back.ok,
     JSON.stringify({ noClip: veilReads.noClip, noDim: veilReads.noDim, faintDim: veilReads.faintDim, darkDim: veilReads.darkDim, clip3: veilReads.clip3, boxMut: veilReads.boxMut, inlineInk: veilReads.inlineInk, back: veilReads.back }));
+
+  ok('VEIL-ROOM a bright line of the room across an older line is not read as her words, and the same line IS seen when the room is left drawn',
+    !!veilReads.roomSeen && !veilReads.roomSeen.ok && !!veilReads.roomLine && veilReads.roomLine.ok, JSON.stringify({ roomSeen: veilReads.roomSeen, roomLine: veilReads.roomLine }));
 
   // ---- CARET-N and DIM -----------------------------------------------------------------------------------------------------------------------------------------------------------------
   await jackedOpen('The caret is a block.', 'dark');
