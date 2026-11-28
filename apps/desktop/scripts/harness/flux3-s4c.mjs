@@ -674,6 +674,34 @@ try { await withHarness(async (app) => {
       veilReads.back = await veilRead();
     }
   }
+  // PROBE 2 (never shipped): is it the corridor's own lines that light an older line?
+  {
+    const style = (id, css) => ev(`(() => { const s = document.createElement('style'); s.id = ${JSON.stringify(id)}; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
+    const off = (id) => ev(`document.getElementById(${JSON.stringify(id)})?.remove()`);
+    const older = async (lines) => shotEval(`const L = ${JSON.stringify(lines)}; return L.slice(0, -2).map((l) => { let m = [0, 0, 0], at = [0, 0]; for (let y = Math.max(0, l.top); y < Math.min(innerHeight, l.bottom); y += 1) for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > m[0]) { m = p; at = [x, y]; } } return m.join('/') + '@' + at.join(','); });`);
+    for (let r = 0; r < 6; r += 1) {
+      for (const [name, seedText, typed] of veilCases.slice(1)) {
+        const vid = await fresh(seedText); await open({ id: vid, tone: 'dark' }); await colMaskOff(); await ev('window.__f4.toEnd()'); await type(typed, 22);
+        const typedAt = Date.now();
+        let lines = [], same = 0, prev = '';
+        for (let t = 0; t < 60 && same < 8; t += 1) { lines = await veilLines(); const k = JSON.stringify(lines); same = k === prev ? same + 1 : 0; prev = k; if (same < 8) await sleep(250); }
+        await style('probe-words', '.flux3-compile-word{ visibility:hidden !important; }');
+        for (let t = 0; t < 4; t += 1) {
+          await sleep(150);
+          const room = await ev("(() => { const c = document.querySelector('.flux3-corridor'); if (!c) return null; const a = c.getAnimations({ subtree: true }).find((x) => 'animationName' in x); return { run: c.hasAttribute('data-run'), fast: c.hasAttribute('data-fast'), pop: c.hasAttribute('data-pop'), rate: a ? a.playbackRate : null }; })()");
+          const all = await older(lines);
+          await style('probe-lime', ".flux3-cor-frame[data-kind='lime']{ visibility:hidden !important; }"); await sleep(60);
+          const noLime = await older(lines); await off('probe-lime');
+          await style('probe-room', '.flux3-cor-frame, .flux3-cor-rails{ visibility:hidden !important; }'); await sleep(60);
+          const noRoom = await older(lines); await off('probe-room');
+          console.log('PROBE2 ' + JSON.stringify({ r, name, t, ms: Date.now() - typedAt, room, all, noLime, noRoom }));
+          await sleep(300);
+        }
+        await off('probe-words');
+      }
+    }
+    ok('PROBE2 always red, so the full output is saved', false, 'see PROBE2 lines');
+  }
   await ev("(() => { const s = document.getElementById('veil-colmask-off'); if (s) s.remove(); })()");
   const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath, bgClip: c.webkitBackgroundClip || c.backgroundClip }; })()");
   const boxNow = await boxRead();
