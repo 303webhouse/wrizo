@@ -1123,3 +1123,8 @@ sessionMeterStyle=Meter style
 sessionGlitchHint=Glitch: the CHECKPOINT meter, and glitches while you are still.
 sessionBarHint=Bar: a plain meter. No glitches.
 sessionFlickerHint=The glitches while you are still: words and the screen.
+# the walk's AI panel (PRESETS-B, Nov 27; guide-walk-spec.md section 8; the 'what travels' words are PROPOSED)
+guideWalkAskHint=Ask about this step…
+guideWalkAsked=You asked:
+guideWalkAskTravels=An ask sends the structure’s name and "?" note, this step and its question, your note on it, the names of the steps beside it, and what you ask here. Nothing else of yours goes.
+guideWalkAskTravelsLabel=What travels when you ask

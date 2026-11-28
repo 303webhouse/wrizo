@@ -35,6 +35,6 @@ export function partOfRow(boardId: string | null, boxId: string, docId: string |
 }
 
 /** The address the "-> Part" door opens: a fresh page in the Doc, for this card, named for the row. Nothing is written by following it until her first word, except from a screenplay (SCRIPT #5): the Part is a screenplay too, and a screenplay is born on arrival. */
-export function toPartHref(docId: string, boardId: string, boxId: string, name: string, structure: 'screenplay' | null = null): string {
-  return unbornHref({ binderId: docId, graft: { boardId, boxId }, partName: name, structure });
+export function toPartHref(docId: string, boardId: string, boxId: string, name: string, structure: 'screenplay' | null = null, inText = false): string {
+  return unbornHref({ binderId: docId, graft: { boardId, boxId }, partName: name, structure, openText: inText });
 }

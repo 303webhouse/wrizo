@@ -72,7 +72,7 @@ function printEval(ev) {
 
 // ---- the live run ----
 async function liveRun(args) {
-  const { makeCap, makeClients, liveReply, liveSprint, liveGrade, CapReached, safeError } = await import('./live.mjs');
+  const { makeCap, makeClients, makeRoute, liveRoute, liveReply, liveSprint, liveGrade, CapReached, safeError } = await import('./live.mjs');
   const env = process.env;
   if (!env.TUTOR_EVAL_API_KEY) { console.error('TUTOR_EVAL_API_KEY is not set. The live run waits for Nick to add that repository secret. Nothing was called.'); process.exit(3); }
   const num = (v, d, hi) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.min(n, hi) : d; };
@@ -81,16 +81,19 @@ async function liveRun(args) {
   const useGrader = !args.noGrader && !!clients.grader;
   const { guard, prompts, cleanup } = loadModules();
   const only = args.only ? new Set(args.only.split(',')) : null;
-  const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (!only || only.has(c.id)));
+  // a case marked `byName` (the walk's W3 to W12) runs only when `only` names it, so a full run stays the size it was and keeps inside its 120 calls
+  const todo = CASES.filter((c) => (c.kind === 'reply' || c.kind === 'safety') && (only ? only.has(c.id) : !c.byName));
   const out = { _about: 'A live run of the TUTOR test set. Replies from the real model, the machine checks, and (when a second-reader key was given) its answers. Synthetic cases only.', kind: 'live-run', promptVersion: '0.5', model: clients.replyModel, graderModel: useGrader ? clients.graderModel : null, at: new Date().toISOString(), cap: null, entries: [], notRun: [], sprint: [] };
   console.log(`LIVE RUN: ${todo.length} cases, reply model ${clients.replyModel}, second reader ${useGrader ? clients.graderModel : 'off'}, cap ${cap.state.maxCalls} calls / ${cap.state.maxTokens} tokens`);
   let stop = false;
+  const route = todo.some((c) => c.walk) ? makeRoute({ clients, env }) : null;
   const runOne = async (c) => {
     if (stop) { out.notRun.push({ id: c.id, why: 'cap reached' }); return; }
     try {
       const draftText = c.draft ? DRAFTS[c.draft].text : null;
       const replies = [];
-      for (const v of (c.variants ?? [null])) replies.push(await liveReply({ clients, cap, prompts, c, variant: v, draftText }));
+      if (c.walk) replies.push(await liveRoute({ cap, route, c, draftText }));
+      else for (const v of (c.variants ?? [null])) replies.push(await liveReply({ clients, cap, prompts, c, variant: v, draftText }));
       const entry = { id: c.id, replies };
       if (useGrader) {
         // the machine checks first: the second reader is asked for what the case lists, plus G8 when a word was flagged
@@ -104,8 +107,11 @@ async function liveRun(args) {
     }
   };
   // three at a time; the cap is taken before each call, so the pool can never pass it
-  const queue = todo.slice();
+  const queue = todo.filter((c) => !c.walk);
   await Promise.all(Array.from({ length: 3 }, async () => { while (queue.length) await runOne(queue.shift()); }));
+  // then the walk's cases, one at a time (liveRoute)
+  for (const c of todo.filter((x) => x.walk)) await runOne(c);
+  route?.cleanup();
   // SPRINT's one prompt (Fable, Nov 25: show what it really returns live): a FULL run ends with five calls as the route made them before (a cap of 80) and five as it makes them now. LAST, so they never take room from the cases.
   if (!only && !stop) {
     for (const maxTokens of [80, 80, 80, 80, 80, ...Array(5).fill(prompts.SPRINT_MAX_TOKENS)]) {

@@ -52,7 +52,7 @@ export function findHandler(router, routePath) {
 }
 
 // asyncHandler does not hand its promise back, so the answer is awaited (res.json, or an error passed to next), with a ceiling
-export async function callRoute(handler, body, userId = 'u1') {
+export async function callRoute(handler, body, userId = 'u1', ceilingMs = 8000) {
   const req = { body, session: { userId } };
   const res = { statusCode: 200, body: undefined };
   let finish;
@@ -61,6 +61,8 @@ export async function callRoute(handler, body, userId = 'u1') {
   res.json = (b) => { res.body = b; finish(); return res; };
   let thrown = null;
   handler(req, res, (e) => { if (e) thrown = String((e && e.message) || e).slice(0, 200); finish(); });
-  await Promise.race([done, new Promise((r) => setTimeout(r, 8000))]);
+  let ceiling;
+  await Promise.race([done, new Promise((r) => { ceiling = setTimeout(r, ceilingMs); })]);
+  clearTimeout(ceiling);   // a live run waits for the loop to drain, so no timer may be left behind
   return { status: res.statusCode, body: res.body, thrown };
 }
