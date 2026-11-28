@@ -65,6 +65,10 @@ try { await withHarness(async (app) => {
   const reach = await ev("(() => [...document.querySelectorAll('.wz-sliver-grip, .wz-tutor-grip')].filter((e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }).length)()");
   ok('M1 no menu tab is drawn at rest or after a pointer move, and none takes focus', noTabs(rest) && noTabs(moved) && reach === 0, J({ rest, moved, reach }));
 
+  // M3 (Fable, Nov 27, #147 Q1: A): the hidden rail's buttons are out of the Tab order too
+  const railTakes = await ev("(() => { const b = [...document.querySelectorAll('.desk-frame-strip button, .desk-rail button')]; return { buttons: b.length, take: b.filter((e) => { e.focus(); const got = document.activeElement === e; if (got) e.blur(); return got; }).length }; })()");
+  ok('M3 no button of the hidden rail takes focus in Wire In', railTakes.buttons > 0 && railTakes.take === 0, J(railTakes));
+
   await ev("document.querySelector('.forward-only-editor').focus({ preventScroll: true }); true");
   await chord('/', 'Slash', 191);
   const opened = await ev("!!document.querySelector('.wz-sliver[data-open=\"true\"]')");
