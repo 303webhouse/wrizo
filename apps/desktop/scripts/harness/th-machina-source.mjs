@@ -392,7 +392,10 @@ ok('M20: the Machina card runs its Run-strip plate (20 units) and asks for the t
   /isMachina \? loadMachinaFaces/.test(tp) && /const MACHINA_PLATE_UNITS = 20;/.test(tp) && /isMachina \? <MachinaPlate \/>/.test(tp) && !/^import .*@fontsource/m.test(tp) && /const loadMachinaFaces = \(\) => ensureThemeFonts\('machina'\);/.test(tp), '');
 const syncSrc = readFileSync(join(DESKTOP, '..', 'server', 'src', 'sync.ts'), 'utf8');
 ok('M20: the card is LOCKED by the server\'s own unlock table (machina has a threshold: 100 words) - nothing client-side invents an unlock', /machina: 100,/.test(syncSrc) && /isThemeOpen\(card\.id, status, current\)/.test(tp), '');
-ok('M20: the card art is the card\'s OWN theme in literals (never the ambient tokens) and still frames hold the strip', /\.wz-theme-card-machina \.wz-theme-plate\{ background:linear-gradient\(180deg, #12141A/.test(ccss) && /\.wz-theme-picker\[data-still='true'\] \.wz-theme-plate-run > i/.test(ccss), '');
+// SUPERSEDED (VISUAL 2 (flourish-spec §3): the Machina tile wears its chrome, light or dark, in either cast, instead of one dark gradient). The original, verbatim:
+// ok('M20: the card art is the card\'s OWN theme in literals (never the ambient tokens) and still frames hold the strip', /\.wz-theme-card-machina \.wz-theme-plate\{ background:linear-gradient\(180deg, #12141A/.test(ccss) && /\.wz-theme-picker\[data-still='true'\] \.wz-theme-plate-run > i/.test(ccss), '');
+const m20t = /\.wz-theme-card-machina\{ --mt-ground:#23272B;/.test(ccss) && /\.wz-theme-card-machina\[data-tone='light'\]\{ --mt-ground:#F4F5F6;/.test(ccss) && /\.wz-theme-card-machina \.wz-theme-plate\{ background-color:var\(--mt-ground\); \}/.test(ccss) && /\.wz-theme-picker\[data-still='true'\] \.wz-theme-plate-run > i/.test(ccss);
+ok('M20 [tiles successor]: the card art is the card\'s OWN theme in literals, light and dark (never the ambient tokens), and still frames hold the strip', m20t, '');
 
 // M21 - Oct 24 (Nick, train #7): the Sprint page text, FINALIZE / PLAN at rest, and the Tutor's Free Write words
 // (a) PAGE TEXT >= 13.9:1 in every Machina cast and page tone - computed from the tokens; and the Free Write PEN (the Sprint tab's rail hands the editor a pen ink) can never be the raw dark swatch on a dark page
@@ -506,6 +509,8 @@ if (process.env.HARNESS_PARKED === '1') {
   rec.push({ name: 'PARKED (was "M19: the framed page draws Arbor\'s bar only when the theme is not Machina (DeskInstrument) - the legacy surfaces\' bars (ModeStage / JournalEntry) are untouched") - #13 step 11 deletes JournalEntry.tsx; live successor: M19 [step 11 successor]', pass: m19v2, detail: '' });
   // Nov 23 - ONE park: M13 read Splash.tsx's condition from its first token; Flux's v5 splash put !fluxFive in front of it. Its record re-verifies the successor.
   rec.push({ name: 'PARKED (was "M13: Splash.tsx renders the loading element ONLY for a non-empty line (the status region is absent under Machina, not an empty live region)") - Flux v5 put !fluxFive before the condition; live successor: M13-B', pass: m13b(splash), detail: '' });
+  // VISUAL 2 (Nov 26) - ONE park: M20 read Machina's tile as one dark gradient. Its record re-verifies the successor.
+  rec.push({ name: 'PARKED (was "M20: the card art is the card\'s OWN theme in literals (never the ambient tokens) and still frames hold the strip") - VISUAL 2: the tile is light or dark, by cast; live successor: M20 [tiles successor]', pass: m20t, detail: '' });
   for (const r of rec) console.log(`${r.pass ? 'PASS' : 'FAIL'}  ${r.name}  [${r.detail}]`);
   // ---- PARKED - SUPERSEDED (#13 step 11): the file parks 4 now. Kept VERBATIM.
   //
@@ -513,7 +518,10 @@ if (process.env.HARNESS_PARKED === '1') {
   // ---- PARKED - SUPERSEDED (Nov 23, M13's park): the file parks 5 now. Kept VERBATIM.
   //
   // console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 4 (page-size Oct 23: 3; #13 step 11: M19)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
-  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 5 (page-size Oct 23: 3; #13 step 11: M19; Nov 23: M13)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  // ---- PARKED - SUPERSEDED (Nov 26, M20's park): the file parks 6 now. Kept VERBATIM.
+  //
+  // console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 5 (page-size Oct 23: 3; #13 step 11: M19; Nov 23: M13)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
+  console.log(rec.every((r) => r.pass) ? `\nTH-MACHINA-SOURCE PARKED: PASS (${rec.length} records) - this FILE parks 6 (page-size Oct 23: 3; #13 step 11: M19; Nov 23: M13; Nov 26: M20)` : `\nTH-MACHINA-SOURCE PARKED: FAIL - ${rec.filter((r) => !r.pass).length}/${rec.length}`);
 }
 const bad = checks.filter((c) => !c.pass).length;
 console.log(bad === 0 ? `\nTH-MACHINA-SOURCE VERIFY: PASS (${checks.length} checks)` : `\nTH-MACHINA-SOURCE VERIFY: FAIL - ${bad}/${checks.length}`);

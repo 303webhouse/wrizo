@@ -569,7 +569,9 @@ try { await withHarness(async (app) => {
   const x2b = await readX();
   await app.typeKeys('b'); await sleep(500);
   const x3 = await readX();
-  ok('LEAVE-X typing keeps it at opacity 0; pointer movement shows it; it stays (no timer); a key hides it again', hidden(x1) && shown(x2) && shown(x2b) && hidden(x3), JSON.stringify({ x1, x2, x2b, x3 }));
+  // SUPERSEDED (#148, Nick, Nov 27: the X "then fades after a few seconds of stillness"; the fade itself is read by wirein-quiet X1). The original, verbatim:
+  // ok('LEAVE-X typing keeps it at opacity 0; pointer movement shows it; it stays (no timer); a key hides it again', hidden(x1) && shown(x2) && shown(x2b) && hidden(x3), JSON.stringify({ x1, x2, x2b, x3 }));
+  ok('LEAVE-X [#148 successor] typing keeps it at opacity 0; pointer movement shows it; it is still there 3 still seconds later; a key hides it again', hidden(x1) && shown(x2) && shown(x2b) && hidden(x3), JSON.stringify({ x1, x2, x2b, x3 }));
   await app.mouseMove(1500, 700); await sleep(60); await app.mouseMove(1510, 710); await sleep(500);
   const x4 = await readX();
   const lum3 = lumc(x4 && x4.color);

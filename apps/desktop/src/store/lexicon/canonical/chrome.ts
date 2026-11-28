@@ -255,6 +255,11 @@ export const CANONICAL_CHROME = {
   flux3PortConnectAnother: 'Connect another',
   flux3PortDisconnect: 'Disconnect',
   flux3Checkpoint: 'Checkpoint',
+  // THE THEME PICKER'S TILES (flourish-spec §3): Nomad and Volant are shut; Machina's tile closes its Run
+  themeNotYet: 'Not yet available',
+  themeNomadNotYet: 'Nomad: not yet available',
+  themeVolantNotYet: 'Volant: not yet available',
+  themeRunClosed: 'Run closed',
   // THE REORG'S RAIL - read only under ?reorg=1 in Machina (src/reorg/); the group words are shown in capitals by CSS. {n} is a count, {name} a Project's name
   reorgUnfiled: 'Unfiled',
   reorgAllProjects: 'All projects',

@@ -122,8 +122,11 @@ await withHarness(async (app) => {
   // The original is quoted verbatim in the PARKED record at the foot of this file; the live successor is the check below.
   const cards = await cardState(app);
   parkReads.cards = cards;
-  ok('D1 [Machina successor]: exactly three cards render, in the arc\'s order (Arbor, Machina, Flux) - the built themes, nothing grayed in their place (Nomad / Volant absent)',
-    cards.length === 3 && cards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(cards));
+  // SUPERSEDED (VISUAL 2 (flourish-spec §3, Nov 26): the picker shows five tiles - Nomad and Volant stand there, grey and shut). The original, verbatim:
+  // ok('D1 [Machina successor]: exactly three cards render, in the arc\'s order (Arbor, Machina, Flux) - the built themes, nothing grayed in their place (Nomad / Volant absent)',
+  //   cards.length === 3 && cards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux', JSON.stringify(cards));
+  ok('D1 [tiles successor]: five tiles, in narrative order (Arbor, Machina, Flux, Nomad, Volant), the last two shut',
+    cards.length === 5 && cards.map((c) => c.name).join(',') === 'Arbor,Machina,Flux,Nomad,Volant' && cards.slice(3).every((c) => c.locked && c.disabled), JSON.stringify(cards));
 
   // D2 — the current theme (Arbor) is unlocked
   const arbor = cards.find((c) => c.name === 'Arbor');
@@ -222,16 +225,26 @@ await withHarness(async (app) => {
     const r = el.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   })()`);
+  // SUPERSEDED (VISUAL 2: the Flux tile's hover is now CHECKPOINT filling a letter at a time; the two scanlines and their one pulse are gone). The original, verbatim:
+  // await app.mouseMove(fluxRect.x, fluxRect.y);
+  // await sleep(60);
+  // const fluxTickGlitching = () => app.evalJs("[...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'))?.querySelector('.wz-theme-plate-tick')?.classList.contains('wz-theme-glitching') ?? null");
+  // const glitchingAfterHover = await fluxTickGlitching();
+  // await sleep(600);   // past FLUX_CARD_GLITCH_MS (450ms)
+  // const glitchingAfterPulseEnds = await fluxTickGlitching();
+  // ok('D8: a real pointer move onto the Flux card grants a pulse (wz-theme-glitching added)',
+  //   glitchingAfterHover === true, String(glitchingAfterHover));
+  // ok('D8: the pulse ends on its own after its own duration - one-shot, never an infinite loop',
+  //   glitchingAfterPulseEnds === false, String(glitchingAfterPulseEnds));
   await app.mouseMove(fluxRect.x, fluxRect.y);
-  await sleep(60);
-  const fluxTickGlitching = () => app.evalJs("[...document.querySelectorAll('.wz-theme-card')].find((b) => b.textContent.includes('Flux'))?.querySelector('.wz-theme-plate-tick')?.classList.contains('wz-theme-glitching') ?? null");
-  const glitchingAfterHover = await fluxTickGlitching();
-  await sleep(600);   // past FLUX_CARD_GLITCH_MS (450ms)
-  const glitchingAfterPulseEnds = await fluxTickGlitching();
-  ok('D8: a real pointer move onto the Flux card grants a pulse (wz-theme-glitching added)',
-    glitchingAfterHover === true, String(glitchingAfterHover));
-  ok('D8: the pulse ends on its own after its own duration - one-shot, never an infinite loop',
-    glitchingAfterPulseEnds === false, String(glitchingAfterPulseEnds));
+  await sleep(1300);
+  const fluxFilled = () => app.evalJs("document.querySelectorAll('.wz-theme-card-flux .wz-theme-plate-check > i[data-on=true]').length");
+  const filledOnHover = await fluxFilled();
+  await app.mouseMove(900, 600);
+  await sleep(300);
+  const filledAfterLeaving = await fluxFilled();
+  ok('D8 [tiles successor]: a real pointer move onto the Flux tile starts CHECKPOINT filling', filledOnHover >= 2 && filledOnHover <= 4, String(filledOnHover));
+  ok('D8 [tiles successor]: it stops when she leaves - the tile is at rest again, nothing loops', filledAfterLeaving === 0, String(filledAfterLeaving));
 
   return checks;
 });
@@ -242,15 +255,28 @@ await withHarness(async (app) => {
 {
   // index.css is CRLF - split on \r\n, not \n.
   const reducedBlock = CSS.slice(CSS.indexOf('@media (prefers-reduced-motion:reduce){\r\n  .wz-theme-plate-grow'));
-  ok('D7: the reduced-motion block holds the rhizome grown (opacity 1, no transition) and disables the Flux tick animation',
+  // SUPERSEDED (VISUAL 2: the Flux scanlines are gone, and Machina's still frame is now its END frame). The original, verbatim:
+  // ok('D7: the reduced-motion block holds the rhizome grown (opacity 1, no transition) and disables the Flux tick animation',
+  //   /\.wz-theme-plate-grow\{ opacity:1; \}/.test(reducedBlock)
+  //   && /\.wz-theme-plate-grow path\{ stroke-dashoffset:0; transition:none; \}/.test(reducedBlock)
+  //   && /\.wz-theme-plate-tick\{ animation:none; \}/.test(reducedBlock),
+  //   '');
+  ok('D7 [tiles successor]: the reduced-motion block holds each tile on its end frame: the rhizome grown with its knots, the Run full and closed',
     /\.wz-theme-plate-grow\{ opacity:1; \}/.test(reducedBlock)
     && /\.wz-theme-plate-grow path\{ stroke-dashoffset:0; transition:none; \}/.test(reducedBlock)
-    && /\.wz-theme-plate-tick\{ animation:none; \}/.test(reducedBlock),
+    && /\.wz-theme-plate-grow circle\{ opacity:1; transition:none; \}/.test(reducedBlock)
+    && /\.wz-theme-plate-closed\{ opacity:1; transition:none; \}/.test(reducedBlock),
     '');
-  ok('D7: the SAME still rules exist under the `[data-still="true"]` attribute (Ambiance 0, no @media involved)',
+  // SUPERSEDED (VISUAL 2: the same, under the data-still attribute). The original, verbatim:
+  // ok('D7: the SAME still rules exist under the `[data-still="true"]` attribute (Ambiance 0, no @media involved)',
+  //   CSS.includes("[data-still='true'] .wz-theme-plate-grow{ opacity:1; }")
+  //   && CSS.includes("[data-still='true'] .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }")
+  //   && CSS.includes("[data-still='true'] .wz-theme-plate-tick{ animation:none;"),
+  //   '');
+  ok('D7 [tiles successor]: the SAME still rules exist under the `[data-still="true"]` attribute (Ambiance 0, no @media involved)',
     CSS.includes("[data-still='true'] .wz-theme-plate-grow{ opacity:1; }")
     && CSS.includes("[data-still='true'] .wz-theme-plate-grow path{ stroke-dashoffset:0; transition:none; }")
-    && CSS.includes("[data-still='true'] .wz-theme-plate-tick{ animation:none;"),
+    && CSS.includes("[data-still='true'] .wz-theme-plate-closed{ opacity:1; transition:none; }"),
     '');
   ok('D7: the hover-triggered glitch is no longer a plain CSS `:hover -> infinite` rule (note e moved it to a JS-driven, rate-limited one-shot class)',
     !/:hover \.wz-theme-plate-tick[\s\S]{0,80}animation:wz-theme-glitch[\s\S]{0,20}infinite/.test(CSS),
@@ -279,12 +305,15 @@ if (process.env.HARNESS_PARKED === '1') {
   const pok = (name, pass, detail = '') => parkedChecks.push({ name, pass, detail });
   const names = (parkReads.cards || []).map((c) => c.name).join(',');
   pok('PARKED (was "D1: exactly two cards render (Arbor, Flux) - today\'s only built themes, nothing grayed in their place") - Machina\'s build (Oct 23): Machina joined with its own ThemeId and card, in the arc\'s order; live successor: D1 [Machina successor]',
-    names === 'Arbor,Machina,Flux', names);
+    names.startsWith('Arbor,Machina,Flux'), names);
+  pok('PARKED (was "D1 [Machina successor]: exactly three cards render, Nomad / Volant absent") - VISUAL 2: they stand there, shut; live successor: D1 [tiles successor]', names === 'Arbor,Machina,Flux,Nomad,Volant', names);
+  pok('PARKED (was "D7: the reduced-motion block ... disables the Flux tick animation" and "D7: the SAME still rules ... tick") - VISUAL 2: the tick is gone; live successors: D7 [tiles successor]', !CSS.includes('wz-theme-plate-tick'), '');
+  pok('PARKED (was "D8: a real pointer move onto the Flux card grants a pulse" and "D8: the pulse ends on its own") - VISUAL 2: CHECKPOINT fills instead; live successors: D8 [tiles successor]', !CSS.includes('wz-theme-glitching'), '');
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(parkedChecks, null, 2));
   const parkedPass = parkedChecks.every((c) => c.pass);
   // eslint-disable-next-line no-console
-  console.log(parkedPass ? `\nTHEME-PICKER PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 1: D1's two-card claim` : `\nTHEME-PICKER PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
+  console.log(parkedPass ? `\nTHEME-PICKER PARKED: PASS (${parkedChecks.length} checks) - HARNESS_PARKED=1 armed; this FILE parks 4: D1's two-card and three-card claims, D7's and D8's tick` : `\nTHEME-PICKER PARKED: FAIL - ${parkedChecks.filter((c) => !c.pass).length}/${parkedChecks.length} failed`);
 }
 
 // eslint-disable-next-line no-console
