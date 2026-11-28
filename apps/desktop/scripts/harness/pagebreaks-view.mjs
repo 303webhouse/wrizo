@@ -51,9 +51,14 @@ try { await withHarness(async (app) => {
   await open(50000);
   await app.typeKeys(' x'); await rest();
   const end = await read();
-  ok(`PV1 at 50,000 words (${end.breaks.length} breaks) the marks layer holds at most ${MAX_PAIRS} pairs, not one for every break`, end.breaks.length >= 100 && judgeFew(end.pairs.length), JSON.stringify({ breaks: end.breaks.length, pairs: end.pairs.length }));
+  // SUCCESSOR (#143): a page holds more words, so 50,000 words make 93 breaks (were over 100). The original, verbatim:
+  // ok(`PV1 at 50,000 words (${end.breaks.length} breaks) the marks layer holds at most ${MAX_PAIRS} pairs, not one for every break`, end.breaks.length >= 100 && judgeFew(end.pairs.length), JSON.stringify({ breaks: end.breaks.length, pairs: end.pairs.length }));
+  ok(`PV1 at 50,000 words (${end.breaks.length} breaks) the marks layer holds at most ${MAX_PAIRS} pairs, not one for every break`, end.breaks.length >= 70 && judgeFew(end.pairs.length), JSON.stringify({ breaks: end.breaks.length, pairs: end.pairs.length }));
   const lastTwo = end.breaks.slice(-2);
-  ok('PV2 the breaks nearest the caret (the end of the page) have their pairs', lastTwo.length === 2 && lastTwo.every((b) => end.pairs.includes(b)), JSON.stringify({ lastTwo, pairs: end.pairs.slice(-4) }));
+  // SUCCESSOR (#143): the second-last break stands a full page above the last, and where the new line breaks leave the last page it is outside the view's band. The one nearest the caret must have its pair
+  // (PV5 still holds every break on a short page). The original, verbatim:
+  // ok('PV2 the breaks nearest the caret (the end of the page) have their pairs', lastTwo.length === 2 && lastTwo.every((b) => end.pairs.includes(b)), JSON.stringify({ lastTwo, pairs: end.pairs.slice(-4) }));
+  ok('PV2 the break nearest the caret (the end of the page) has its pair', lastTwo.length === 2 && end.pairs.includes(lastTwo[1]), JSON.stringify({ lastTwo, pairs: end.pairs.slice(-4) }));
   // the keys as space-enter-cost.mjs sends them (the run that named this cost): fourteen of one kind back to back, a rAF + a task to read each, 60 ms between (the scroll rest's redraw lands in the next key's frame)
   const AFTER = "new Promise((res) => { const t0 = performance.now(); requestAnimationFrame(() => setTimeout(() => res(performance.now() - t0), 0)); })";
   const cost = { letter: [], space: [] };

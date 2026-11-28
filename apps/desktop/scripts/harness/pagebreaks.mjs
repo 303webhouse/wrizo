@@ -412,7 +412,10 @@ await withHarness(async (app) => {
       // the dress must move the count wherever it moves the live page's lines (the row's own line height, or the column's width)
       const lh = await app.evalJs(`(() => { const r = document.querySelector('${ED} > .wz-row'); const ed = document.querySelector('${ED}'); return { lh: r ? getComputedStyle(r).lineHeight : null, w: ed.clientWidth }; })()`);
       const moved = lh.lh !== NORMAL_GEO.lh || lh.w !== NORMAL_GEO.w;
-      const j5 = (p, n) => judgeSnips(p, ref) && (!moved || n !== normal);
+      // SUCCESSOR (#143): with the smaller-laid type the narrow-margin page and the normal one both come to 8 pages, so the count alone no longer shows the dress moved them: the breaks must differ.
+      // The original, verbatim:
+      // const j5 = (p, n) => judgeSnips(p, ref) && (!moved || n !== normal);
+      const j5 = (p, n) => judgeSnips(p, ref) && (!moved || n !== normal || JSON.stringify(r.st.breaks) !== JSON.stringify(LIST['pbh-5k'] || []));
       ok(`C5 ${k}: the list = the check's walk on the dressed page (${r.st.total} pages; normal ${normal}; line height ${lh.lh} vs ${NORMAL_GEO.lh}, column ${lh.w} vs ${NORMAL_GEO.w})`, j5(prod, r.st.total), JSON.stringify({ n: prod.length, ref: ref.length, moved }));
       // SUPERSEDED (run 44656197630, its first run): this mutant cannot be told from the product while the LIVE page ignores the Page setup's
       // line spacing - PageEditor.tsx:810 sets lineHeight 1.7 on the editor's wrap, so the dress's line-height on .mode-page never reaches a row

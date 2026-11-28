@@ -42,7 +42,9 @@ await withHarness(async (app) => {
   if (process.env.WS_TW_TRACE === '1') console.log('TW-TRACE: ' + JSON.stringify(await app.evalJs('window.__wzTwTrace')));
   const settleMs = r.lastMove - lastKey;
   // and it ARRIVED: the old engine left this fixture at scrollTop 995 (box and Actions); a glide that finishes early at the wrong place is not a glide that finished
-  pass = settleMs <= GLIDE_CAP_MS && r.end >= 950;
+  // SUCCESSOR (#143): her type is laid out 1.456 times smaller, so the same thirty-eight lines end at 688 (they ended at 995). The original, verbatim:
+  // pass = settleMs <= GLIDE_CAP_MS && r.end >= 950;
+  pass = settleMs <= GLIDE_CAP_MS && r.end >= 950 / 1.456;
   line = `TW-GLIDE: settleMs=${settleMs} (cap ${GLIDE_CAP_MS}) scrollTopEnd=${r.end} frames=${r.frames} fps=${r.fps} steps=${r.steps} trace=${JSON.stringify(r.trace)}`;
 });
 console.log(line);

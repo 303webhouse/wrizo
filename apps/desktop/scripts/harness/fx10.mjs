@@ -641,7 +641,9 @@ await withHarness(async (app) => {
       sliverPE === 'none', sliverPE);
     const sliverRect = await rectOf(app, '.wz-sliver-panel');
     ok('S3 sliver: the dissolved-but-open panel sits well inland from any viewport edge (not a coincidental edge-dwell match)',
-      sliverRect.left > 100 && sliverRect.left < 400, JSON.stringify(sliverRect));
+      // SUCCESSOR (#143): the zoomed page is wider, so the open menu stands at 92 px, just past the rail (was past 100). Still far from any window edge. The original, verbatim:
+      // sliverRect.left > 100 && sliverRect.left < 400, JSON.stringify(sliverRect));
+      sliverRect.left > 60 && sliverRect.left < 400, JSON.stringify(sliverRect));
 
     // A genuine, incremental, TRUSTED pointer trajectory (CDP Input, real
     // isTrusted:true events — runtime-verify.mjs's own app.mouseMove) walking
@@ -738,7 +740,9 @@ await withHarness(async (app) => {
     })()`);
     fx10ParkReads.push({ width, ...info });
     ok(`S4 @${width}px: the scrollbar's own rect (mode-scroll's border-box edge) sits FLUSH against the paper's right edge — zero gap beyond the paper's own 1px border`,
-      info.gap < 2, JSON.stringify(info));
+      // SUCCESSOR (#143): the remainder is the paper's 1px border PAINTED at the page's scale (k, now past 2 at 2200), not 1 screen pixel. The original, verbatim:
+      // info.gap < 2, JSON.stringify(info));
+      info.gap <= Math.max(2, info.k + 0.5), JSON.stringify(info));
     // ORIGINAL (this file's own live S4 check, pre page-size r3): ok(`S4 @${width}px: the text measure is UNCHANGED — mode-scroll's own content-box width still equals mode-page's own content-box width, exactly the equivalence the pre-fix (zero-padding) markup guaranteed by construction`,
     //   Math.abs(info.scrollContentWidth - info.pageContentWidth) < 1, JSON.stringify(info));
     // SUPERSEDED (page-size r3): the rects are PAINTED px (the page is scaled by --wz-k) but the paddings and border they are subtracted by are LAYOUT px, so the raw equivalence only holds at k = 1 (measured: k < 1 at

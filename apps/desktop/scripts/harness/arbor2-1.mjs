@@ -300,7 +300,9 @@ await withHarness(async (app) => { await pinClock(app, 12); try {
         const opaque = (el) => { const c = getComputedStyle(el).backgroundColor; const a = (c.match(/[\\d.]+/g) || []).map(Number); return (a.length === 3 || (a.length === 4 && a[3] > 0.02)) || getComputedStyle(el).backgroundImage !== 'none'; };
         const blockers = (x, y) => { const out = []; let el = document.elementFromPoint(x, y); while (el && el !== document.body && el !== document.documentElement) { if (opaque(el)) out.push(String(el.className).slice(0, 50)); el = el.parentElement; } return out; };
         const bar = document.querySelector('.sprint-nav');
-        return { margin: blockers(Math.max(2, p.left - 60), p.top + 30), bar: bar ? getComputedStyle(bar).backgroundColor : null };
+        // SUCCESSOR (#143): the zoomed page is wider, so 60 px left of it is now the rail. The sample stands between the rail and the page. The original, verbatim:
+        // return { margin: blockers(Math.max(2, p.left - 60), p.top + 30), bar: bar ? getComputedStyle(bar).backgroundColor : null };
+        return { margin: blockers(Math.round((document.querySelector('.desk-frame-strip').getBoundingClientRect().right + p.left) / 2), p.top + 30), bar: bar ? getComputedStyle(bar).backgroundColor : null };
       })()`);
       // PARKED 2026-10-31 (SUPERSEDED, r5, run 41240761804: spec §2b/§9c - the bars are espresso #1B120C in both rooms; r4's night surface was #150F0B).
       // Original, verbatim:
