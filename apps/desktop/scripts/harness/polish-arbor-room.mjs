@@ -32,7 +32,9 @@ const near = (a, b, tol = 0.35) => typeof a === 'number' && Math.abs(a - b) <= t
 
 const ESPRESSO = { i950: 'rgb(10, 5, 3)', i900: 'rgb(21, 15, 11)', i800: 'rgb(31, 23, 17)', border: 'rgb(42, 32, 24)', strong: 'rgb(58, 45, 34)' };
 const BRONZE = 'rgb(143, 122, 76)';
-const PAPER_ON_MAIN = { x: 187, y: 107, w: 992, h: 897.6 }; // the paper at 1366x768, as main paints it
+// SUCCESSOR (#143; Fable, Nov 28, Q1 B): the Free Write page's zoom goes further (121 px of desk kept each side). The room still changes nothing about the page. The original, verbatim:
+// const PAPER_ON_MAIN = { x: 187, y: 107, w: 992, h: 897.6 }; // the paper at 1366x768, as main paints it
+const PAPER_ON_MAIN = { x: 161, y: 107, w: 1044.4, h: 897.6 }; // the paper at 1366x768
 
 const freshWritingPage = async (app, theme) => {
   await app.goto('/');

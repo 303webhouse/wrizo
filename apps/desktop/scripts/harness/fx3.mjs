@@ -169,8 +169,12 @@ await withHarness(async (app) => {
   // ARCHIVED PARK (#13 step 14): archive/fx3.mjs.parked.md record 3
   const painted = await app.evalJs("(() => { const p = document.querySelector('.desk-frame-stage--prose .mode-page'); if (!p) return null; const r = p.getBoundingClientRect(); return { left: r.left, right: r.right }; })()");
   fx3Ps.s2 = { ...anchorAlign, pageLeft: painted && painted.left, pageRight: painted && painted.right };
-  ok('S2 @ 1920px [page-size successor]: the sliver anchor stays flush with the PAINTED paper\'s left edge (no drift introduced by the scale)',
-    !!painted && Math.abs(anchorAlign.anchorRight - painted.left) < 1, JSON.stringify(fx3Ps.s2));
+  // SUCCESSOR (#143): the wider Free Write page leaves less desk than the anchor's own least width, so at 1920x1000 its right end stands over the paper's blank one-inch margin (38 px of it), never
+  // toward her words. Read in the check's pinned look (?arbor2=0). The original, verbatim:
+  // ok('S2 @ 1920px [page-size successor]: the sliver anchor stays flush with the PAINTED paper\'s left edge (no drift introduced by the scale)',
+  // !!painted && Math.abs(anchorAlign.anchorRight - painted.left) < 1, JSON.stringify(fx3Ps.s2));
+  ok('S2 @ 1920px [successor]: the sliver anchor reaches the PAINTED paper and goes no further than its blank margin (an inch of the 8.5)',
+    !!painted && anchorAlign.anchorRight > painted.left - 1 && anchorAlign.anchorRight < painted.left + (painted.right - painted.left) / 8.5, JSON.stringify(fx3Ps.s2));
   ok('S2 @ 1920px [page-size successor]: the goal-glow anchor stays flush with the PAINTED paper\'s box on both edges',
     !!painted && Math.abs(anchorAlign.glowLeft - painted.left) < 1 && Math.abs(anchorAlign.glowRight - painted.right) < 1, JSON.stringify(fx3Ps.s2));
 

@@ -188,16 +188,23 @@ await withHarness(async (app) => {
   // P8 - the page is the same box in every skin at the same window: the paper's size does not depend on which menu is drawn.
   // Arbor's paper as `main` painted it BEFORE this change (measured Oct 27 on the box, red run: docs/evidence/polish-arbor-chrome/red-on-main.txt).
   // (Arbor sits 1 px higher than Flux and Machina on main already - a separate matter - so Arbor is held to ITS OWN old rect, and to the others' size.)
-  const MAIN = { '1366x768': { x: 187, y: 107, w: 992, h: 897.6 }, '1920x1080': { x: 420.4, y: 107, w: 1079.3, h: 1396.7 } };
+  // SUCCESSOR (#143; Fable, Nov 28, Q1 B): the page is a new Doc in Free Write, whose zoom now goes further so that her smaller-laid type reads large, keeping 121 px of desk each side. These are those
+  // rects; the claim is the same (the menus change nothing about the page). The original, verbatim:
+  // const MAIN = { '1366x768': { x: 187, y: 107, w: 992, h: 897.6 }, '1920x1080': { x: 420.4, y: 107, w: 1079.3, h: 1396.7 } };
+  const MAIN = { '1366x768': { x: 161, y: 107, w: 1044.4, h: 897.6 }, '1920x1080': { x: 221, y: 107, w: 1478, h: 1396.8 } };
   for (const k of Object.keys(MAIN)) {
     const p = papers[k], w = MAIN[k];
     ok(`P8 @ ${k}: THE PAGE DOES NOT MOVE OR RESIZE - Arbor's paper is the very rect main painted (${JSON.stringify(w)}); the menus changed, the page did not`,
       !!p && near(p.x, w.x, 0.6) && near(p.y, w.y, 0.6) && near(p.w, w.w, 0.6) && near(p.h, w.h, 0.6), JSON.stringify(p));
   }
   const a = papers['1366x768'], f = papers['flux-1366x768'], mc = papers['machina-1366x768'];
-  ok('P8 @ 1366x768: the paper is the same SIZE in Arbor, Flux and Machina (the page-size law)',
-    !!a && !!f && !!mc && near(a.w, f.w, 0.6) && near(a.h, f.h, 0.6) && near(a.w, mc.w, 0.6) && near(a.h, mc.h, 0.6),
-    JSON.stringify({ arbor: a, flux: f, machina: mc }));
+  // SUCCESSOR (#143, Fable's Q5 B): Flux's Free Write is Wire In, where only her words keep clear and the paper's blank margins may pass the window, so its paper is wider. Arbor and Machina stay alike,
+  // and all three are as tall. The original, verbatim:
+  // ok('P8 @ 1366x768: the paper is the same SIZE in Arbor, Flux and Machina (the page-size law)',
+  // !!a && !!f && !!mc && near(a.w, f.w, 0.6) && near(a.h, f.h, 0.6) && near(a.w, mc.w, 0.6) && near(a.h, mc.h, 0.6),
+  // JSON.stringify({ arbor: a, flux: f, machina: mc }));
+  ok('P8 @ 1366x768: Arbor and Machina paint the same page; Flux (Wire In) paints it as tall and wider',
+    !!a && !!f && !!mc && near(a.w, mc.w, 0.6) && near(a.h, mc.h, 0.6) && near(a.h, f.h, 0.6) && f.w > a.w, JSON.stringify({ arbor: a, flux: f, machina: mc }));
 
   return checks;
 }, { label: 'polish-arbor-chrome' });
