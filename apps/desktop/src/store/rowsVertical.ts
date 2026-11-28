@@ -119,6 +119,8 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
     }
     if (atEdge) { g.reset = true; return false; }
     if (g.reset) { g.reset = false; if (box) { g.x = box.left; g.owned = true; } }
+    // A CUT COLUMN (#62 across rows): a shorter line earlier in the run left the caret short of its column, and the browser, crossing into another row from there, takes up that shorter x. This file takes that step too
+    const cut = !!box && !empty && g.x - box.left > 2;
     if (g.owned) {
       // THE RUN IS OURS from the first step this file took in it: the browser's own goal column is now the caret's drawn column (a glyph's width from the writer's), so every further Up and Down of the run goes line by line at the run's column,
       // through the row's own lines and into the next row (its first line going down, its last going up); at the page's first or last line the browser has the key
@@ -144,8 +146,8 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
         target = p;
       }
     } else if (e.key === 'ArrowDown') {
-      // DOWN FROM AN EMPTY ROW (#62): the browser leaves the caret where it is
-      if (!empty) return false;
+      // DOWN FROM AN EMPTY ROW (#62): the browser leaves the caret where it is. And down from a row's LAST line with the column cut
+      if (!empty && !(cut && box!.top >= Math.max(...own.map((q) => q.top)) - Math.min(...own.map((q) => q.height)) * 0.6)) return false;
       const below = R.rows[w.at + 1];
       if (!below) return false;
       const bl = lineRects(below);
@@ -171,7 +173,7 @@ export function rowsVerticalKey(el: HTMLElement, e: KeyboardEvent): boolean {
       const aboveTop = Math.min(...ar.map((q) => q.top));
       const last = ar.reduce((m, q) => (q.bottom > m.bottom ? q : m), ar[0]);
       // from an EMPTY row the browser drops the run's column whatever the row above is (Down, Down, Up, Up through an empty line landed at column 0): there the row above always gets the column; from a text row only a wrapped one does (#65)
-      if (!empty && last.top - aboveTop < last.height * 0.6) return false;
+      if (!empty && !cut && last.top - aboveTop < last.height * 0.6) return false;
       // a point exactly on the row's left edge hits the row box, not its last line (the browser answers with the row's START, its first line): at the edge the column is nudged one and a half pixels into the text
       const p = pointToCaret(Math.max(g.x, last.left + 1.5), last.top + last.height / 2);
       if (!p || !above.contains(p.node)) return false;
