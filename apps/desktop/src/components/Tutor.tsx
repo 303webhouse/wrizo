@@ -37,8 +37,8 @@ import { SprintFeedback } from '../reorg/backMenu/SprintFeedback';
 import { SearchMenu } from '../reorg/search/SearchMenu';
 import { SearchField } from '../reorg/search/SearchField';
 import { noteWasOpen, restoreAfterSearch, useSearch } from '../reorg/search/searchStore';
-import { requestOpen, noteClosed, registerDrawer, fadeLeftMs } from '../store/menusDrawers';
-import { DRAWER_MIN, menusOpenInward } from '../store/menusDrawers';
+import { requestOpen, noteClosed, registerDrawer } from '../store/menusDrawers';
+import { DRAWER_MIN, fadeLeftMs, menusOpenInward } from '../store/menusDrawers';
 import { onePanelAt } from '../store/pageScale';
 import { getLinkDock, setLinkDock, useLinkDock } from '../store/linkDock';
 import { LinkDockReader } from './LinkDockReader';   // its own line: one-drawer.mjs O6 reads the line above verbatim
