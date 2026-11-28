@@ -158,6 +158,15 @@ await withHarness(async (app) => {
   for (const theme of THEMES) for (const [s, id] of Object.entries(SURFACES)) {
     const want = golden && golden.surfaces[theme] && golden.surfaces[theme][s];
     const wantTw = goldenTw && goldenTw.surfaces[theme] && goldenTw.surfaces[theme][s];
+    // SUPERSEDED for [flux.freewrite] only (#147: Wire In has no Front menu): O1 and O2 compared its drawer with the golden; the golden is kept and every other surface is still compared. The originals are the two ok() lines below, which ran for it too.
+    if (theme === 'flux' && s === 'freewrite') {
+      for (const reorg of [false, true]) {
+        await open(app, theme, reorg, id);
+        const gone = await app.evalJs("(() => { const a = document.querySelector('.desk-frame-sliver-anchor'); return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), drawn: !!a && getComputedStyle(a).display !== 'none' }; })()");
+        ok(`${reorg ? 'O2' : 'O1'} [#147 successor] [flux.freewrite]: Wire In draws no Front menu (switch ${reorg ? 'ON' : 'OFF'})`, gone.jacked === true && gone.drawn === false, JSON.stringify(gone));
+      }
+      continue;
+    }
     await open(app, theme, false, id); await openDrawer(app);
     const h = await app.evalJs(DRAWER());
     // ORIGINAL, SUPERSEDED Nov 20 (Nick, Nov 19: Free Write is ALWAYS the Typewriter and Draft never, so the Typewriter toggle is gone from every drawer: the golden of MAIN's drawer, with the toggle, no longer matches it; reorg-front-menu-off-golden-tw.json is the drawer as it is, and reorg-front-menu-golden-diff.mjs proves the two differ by that toggle alone). The original, verbatim:

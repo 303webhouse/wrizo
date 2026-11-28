@@ -69,6 +69,15 @@ await withHarness(async (app) => {
   // ---- never taller than the sheet, three sizes, three themes ----
   for (const theme of ['machina', 'plateau', 'flux']) {
     for (const [w, h] of SIZES) {
+      // SUPERSEDED for FLUX (#147: Wire In has no menus, so it has no INK tab to measure): H1 and H2 ran for flux here too; Arbor and Machina run unchanged.
+      if (theme === 'flux') {
+        await fresh(app, w, h);
+        await run(app, `await window.__vi.freePage('flux');`);
+        await run(app, 'await window.__vi.sleep(800);');
+        const gone = await app.evalJs("(() => { const a = document.querySelector('.desk-frame-sliver-anchor'); return { jacked: document.documentElement.hasAttribute('data-flux3-jacked'), drawn: !!a && getComputedStyle(a).display !== 'none' }; })()");
+        checks.push({ name: `H [#147 successor] (${w}x${h}) [flux]: Wire In draws no drawer, so no INK tab`, pass: gone.jacked === true && gone.drawn === false, detail: JSON.stringify(gone) });
+        continue;
+      }
       await fresh(app, w, h);
       await run(app, `await window.__vi.freePage(${JSON.stringify(theme)}); await window.__vi.openDrawer(); await window.__vi.instrument('ink'); await window.__vi.sleep(500);`);
       for (const c of await run(app, 'return await window.__vi.height();')) ok(`${c.name} [${theme}]`, c.pass, c.detail);
