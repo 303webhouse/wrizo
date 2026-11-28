@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { fitScaleFor, onePanelAt, pageLayoutHeightFor, pageScaleFor, pageYieldFor, PAGE_W_BASE, YIELD_FLOOR, zoomFor } from '../store/pageScale';
-import { DRAWER_MIN, useStandingHands } from '../store/menusDrawers';
+import { DRAWER_MIN, fadeLeftMs, useStandingHands } from '../store/menusDrawers';
 import { chromeK } from '../reorg/chromeScale';
 import { setDeskFrameMounted } from '../store/deskFrameActive';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -198,6 +198,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
   useLayoutEffect(() => {
     const stage = stageRef.current;
     if (pageKind !== 'prose' || !stage) return;
+    let fading = 0;
     const apply = () => {
       const s = stage.getBoundingClientRect();
       const page = stage.querySelector<HTMLElement>('.mode-page');
@@ -221,6 +222,12 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       if (open || zoomed) held.current = false;
       else if (gave.current && performance.now() - typed.current < 400) held.current = true;
       if (held.current) return;
+      // #144: the page comes back only once the closing menu has gone: never ahead of its fade, so it is never drawn under a menu still seen
+      window.clearTimeout(fading);
+      if (!open && !zoomed && gave.current) {
+        const left = Math.max(fadeLeftMs('.wz-sliver-panel'), fadeLeftMs('.wz-tutor-panel'));
+        if (left > 0) { fading = window.setTimeout(apply, left + 20); return; }
+      }
       if (open && col) {
         const cr = col.getBoundingClientRect();
         const centre = cr.left + cr.width / 2;
@@ -283,7 +290,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
     window.addEventListener('resize', apply);
     document.addEventListener('wz-zoom-changed', apply);
     document.addEventListener('wz-rail-popout', apply);   // #142
-    return () => { ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('wz-rail-popout', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
+    return () => { window.clearTimeout(fading); ro.disconnect(); window.removeEventListener('resize', apply); document.removeEventListener('wz-zoom-changed', apply); document.removeEventListener('wz-rail-popout', apply); document.removeEventListener('keydown', onType, true); document.removeEventListener('pointermove', release, true); document.removeEventListener('pointerdown', release, true); };
   }, [pageKind, hands.tools, hands.tutor]);
 
   return (

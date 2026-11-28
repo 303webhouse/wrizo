@@ -165,6 +165,18 @@ function subscribe(l: () => void): () => void {
 }
 
 // which of the page's two hands stand open (the board narrows beside them); a string snapshot so the store's identity is stable between changes [menusDrawers §10]
+// #144: how much longer a closing menu can still be seen: what is left of its panel's own fade. The fade's length changes with the chrome's state, so it is read
+// from the running transition, never assumed
+export function fadeLeftMs(selector: string): number {
+  const el = typeof document !== 'undefined' ? document.querySelector(selector) : null;
+  let left = 0;
+  for (const a of el?.getAnimations?.() ?? []) {
+    if ((a as unknown as { transitionProperty?: string }).transitionProperty !== 'opacity') continue;
+    left = Math.max(left, Number(a.effect?.getComputedTiming().endTime ?? 0) - Number(a.currentTime ?? 0));
+  }
+  return Math.min(2000, left);
+}
+
 const getHands = (): string => (stands.has('tools') ? 'T' : '') + (stands.has('tutor') ? 'U' : '');
 export function useStandingHands(): { tools: boolean; tutor: boolean } {
   const h = useSyncExternalStore(subscribe, getHands);
