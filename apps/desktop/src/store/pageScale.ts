@@ -4,6 +4,8 @@ export const LETTER_H_IN = 11;
 export const PAGE_W_BASE = 620;                              // px at scale 1
 export const LETTER_IN_BASE = PAGE_W_BASE / LETTER_W_IN;     // 72.94px: one page-inch at scale 1
 export const PAGE_H_BASE = LETTER_IN_BASE * LETTER_H_IN;     // 803.5px
+// #143 (Nick, Nov 27): her type is laid out for this page scale, so there a point paints as a CSS point (13-desk-frame.css --wz-pt holds the same number)
+export const TYPE_SCALE = 1.456;
 export const PAGE_FENCE = 40;                                // the small margin below the page (index.css --fx3-paper-fence)
 // each side, the desk the drawers keep beside the page. 320 (not DRAWER_MIN + the grip, 216): the Sliver's anchor spends part of its side on the
 // strip's gap and its own grip lane, and at wide screens its contents grow with --paper-scale - at 216 a width-bound page (3840) squeezed it to
@@ -59,6 +61,17 @@ export function pageYieldFor(centre: number, k: number, leftLimit: number | null
   // where the floor stops the page short of the room asked, the edge away from the one menu still holds
   const mid = leftLimit != null && rightLimit == null ? centre + half - w / 2 : rightLimit != null && leftLimit == null ? centre - half + w / 2 : (left + right) / 2;
   return { k: yk, shift: mid - centre };
+}
+
+// #143: her type is laid out TYPE_SCALE times smaller, so the Typewriter zooms that much more to keep today's size on screen. Where the whole page must stay clear
+// of the rail it goes only as far as that allows (`share` 1); Flux's Wire In keeps today's size, the paper's blank margins passing under the rail, her words never
+// (`share`: the text column's part of the paper). Never less than the zoom as it was.
+export function zoomForType(zoom: number, k: number, stageW: number, sideInset: number, share: number): number {
+  if (!(stageW > 0) || !(k > 0)) return zoom;
+  const gutter = Math.max(ZOOM_GUTTER, 2 * (Math.max(0, sideInset) + ZOOM_CLEAR));
+  const most = (stageW - gutter) / (PAGE_W_BASE * share * k);
+  const z = Math.max(zoom, Math.min(zoom * TYPE_SCALE, most));
+  return Number.isFinite(z) && z > 1 ? z : 1;
 }
 
 // the page's LAYOUT height at base scale k: the letter height, or less where the stage cannot hold the painted page (the text scrolls inside) [pageScale §4]

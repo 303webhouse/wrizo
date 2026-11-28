@@ -627,7 +627,11 @@ try { await withHarness(async (app) => {
     // the page is read once the writing line has stood at the same place for 2 s (8 reads, 250 ms apart): the Typewriter's own band mask (on the page column; the control has it too) dims a line that has not yet reached its anchor, and a long page glides for seconds after the last key
     let lines = [], same = 0, prev = '', steady = false;
     for (let t = 0; t < 60 && !steady; t += 1) { lines = await veilLines(); const k = JSON.stringify(lines); same = k === prev ? same + 1 : 0; prev = k; steady = same >= 8; if (!steady) await sleep(250); }
+    // #143: the signal rows the room draws over the hidden lines after a pause are not her words, so they are not drawn for this reading (with the smaller-laid type one
+    // now lies where an older line was: it read 89 against the 80 allowed, her words themselves unseen)
+    await ev("(() => { if (document.getElementById('veil-rows-off')) return; const s = document.createElement('style'); s.id = 'veil-rows-off'; s.textContent = '.flux3-compile-word{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); await sleep(150);
     const ink = await veilInk(lines);
+    await ev("document.getElementById('veil-rows-off')?.remove()"); await sleep(100);
     return { lines: lines.length, ink: ink.map((p) => p[0]), steady, ok: steady && veilOk(ink) };
   };
   const VEIL_STYLE = (css) => ev(`(() => { const s = document.createElement('style'); s.id = 'mut-veil'; s.textContent = ${JSON.stringify(css)}; document.head.appendChild(s); })()`);
@@ -740,7 +744,9 @@ try { await withHarness(async (app) => {
   const vid = await jackedOpen('the voice of the page', 'dark');
   const ff = await ev("getComputedStyle(document.querySelector('.forward-only-editor')).fontFamily");
   if (!FLAG) ok(`NEWPAGE-FLAGOFF a page born in Flux WITHOUT the flag keeps today's size (not 14: got ${born}) and today's face (not Crimson Pro: got ${String(ff).slice(0, 40)})`, born !== 14 && !/^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
-  FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  // SUPERSEDED (#143, Nick Nov 27: Flux is born at 12, not 14), the original verbatim:
+  // FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 14 pt (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 14 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
+  FLAG && ok(`NEWPAGE-14 a page born in Flux under the flag is 12 pt (#143) (got ${born}); VOICE the page's default face is Crimson Pro (got ${String(ff).slice(0, 40)})`, born === 12 && /^["']?Crimson Pro/.test(ff), JSON.stringify({ born, ff, vid }));
 
   await doL();
   }

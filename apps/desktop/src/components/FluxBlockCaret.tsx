@@ -53,6 +53,16 @@ export function nWidthPx(surface: HTMLElement, height: number): number | null {
   return w;
 }
 
+// #143 (Fable, Nov 27: the block caret is as tall as the type, about 1.2 x, centred on its line - not the whole line box): the painted size of the type at the caret.
+// The page's paint scale is read once per surface and line height, like the n above, so a key does no measuring.
+const kCache = new WeakMap<HTMLElement, { h: number; k: number }>();
+export function paintedTypePx(host: HTMLElement, surface: HTMLElement, height: number): number {
+  const key = Math.round(height);
+  let hit = kCache.get(surface);
+  if (!hit || hit.h !== key) { hit = { h: key, k: (surface.offsetWidth > 0 ? surface.getBoundingClientRect().width / surface.offsetWidth : 1) || 1 }; kCache.set(surface, hit); }
+  return parseFloat(getComputedStyle(host).fontSize) * hit.k;
+}
+
 export function FluxBlockCaret() {
   const theme = useTheme();
   const [rect, setRect] = useState<Rect | null>(null);
@@ -195,7 +205,10 @@ export function FluxBlockCaret() {
       surface.setAttribute('data-flux-caret-active', 'true');
       const height = r.height || 18;
       const nW = document.documentElement.hasAttribute('data-flux3-jacked') ? nWidthPx(surface, height) : null;
-      const next = { left: r.left, top: r.top, width: nW ?? caretWidth(height), height };
+      const at = sel.anchorNode && sel.anchorNode.nodeType === Node.TEXT_NODE ? sel.anchorNode.parentElement : null;
+      const type = paintedTypePx(at ?? row ?? surface, surface, height);
+      const tall = type > 0 ? Math.min(height, type * 1.2) : height;
+      const next = { left: r.left, top: r.top + (height - tall) / 2, width: nW ?? caretWidth(tall), height: tall };
       // #137: the drawn block is written at once, so it is painted in THIS frame; React's own state follows with the same numbers
       const drawn = caretElRef.current;
       if (drawn) { drawn.style.left = `${next.left}px`; drawn.style.top = `${next.top}px`; drawn.style.width = `${next.width}px`; drawn.style.height = `${next.height}px`; }
