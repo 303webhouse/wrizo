@@ -173,7 +173,7 @@ function subscribe(l: () => void): () => void {
 // #144: how much longer a closing menu can still be seen: what is left of its panel's own fade. The fade's length changes with the chrome's state, so it is read
 // from the running transition, never assumed
 export function fadeLeftMs(selector: string): number {
-  const el = typeof document !== 'undefined' ? document.querySelector(selector) : null;
+  const el = typeof document !== 'undefined' ? liveQuery(selector) : null;
   let left = 0;
   for (const a of el?.getAnimations?.() ?? []) {
     if ((a as unknown as { transitionProperty?: string }).transitionProperty !== 'opacity') continue;
