@@ -130,8 +130,9 @@
 :root[data-flux3][data-theme='flux'] .flux3-port[aria-expanded='true']{ background:var(--f3-room-cyan); }
 :root[data-flux3][data-theme='flux'] .flux3-port:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
 :root[data-flux3][data-theme='flux'] .flux3-port-more{ position:absolute; font-family:var(--font-chromeLabel); font-weight:600; font-size:10px; color:var(--f3-room-quiet); }
-:root[data-flux3][data-theme='flux'] .flux3-port-line{ position:absolute; top:-14px; width:0; height:14px; border-left:1px solid var(--f3-room-cyan); pointer-events:none; }
-:root[data-flux3][data-theme='flux'] .flux3-port-box{ position:absolute; right:0; bottom:14px; width:max-content; min-width:180px; max-width:260px; padding:8px 10px; display:flex; flex-direction:column; gap:5px;
+:root[data-flux3][data-theme='flux'] .flux3-port-line{ position:absolute; top:7px; height:0; border-top:1px solid var(--f3-room-cyan); pointer-events:none; z-index:-1; }
+/* #145: the box rises from the row in the lane to the page's right (48 = the + , the row's gap and the gap off the page; its foot is the row's: -23 from the squares' anchor) */
+:root[data-flux3][data-theme='flux'] .flux3-port-box{ position:absolute; left:48px; bottom:-23px; width:max-content; min-width:180px; max-width:260px; padding:8px 10px; display:flex; flex-direction:column; gap:5px;
   background:var(--f3-room-fill); border:1px solid var(--f3-room-cyan); border-radius:0; box-shadow:none; }
 :root[data-flux3][data-theme='flux'] .flux3-port-head{ font-family:var(--font-chromeLabel); font-weight:600; font-size:11px; letter-spacing:.06em; color:var(--f3-room-text);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -262,8 +263,8 @@
 :root[data-flux3][data-theme='flux'] .flux3-plus:hover,
 :root[data-flux3][data-theme='flux'] .flux3-plus[aria-expanded='true']{ background:var(--f3-room-cyan); color:var(--f3-room-fill); }
 :root[data-flux3][data-theme='flux'] .flux3-plus:focus-visible{ outline:1px solid var(--f3-room-cyan); outline-offset:2px; }
-:root[data-flux3][data-theme='flux'] .flux3-plus-line{ position:absolute; left:15.5px; bottom:32px; width:0; border-left:1px solid var(--f3-room-cyan); pointer-events:none; }
-:root[data-flux3][data-theme='flux'] .flux3-plus-box{ right:0; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-line{ position:absolute; left:32px; top:15.5px; width:8px; height:0; border-top:1px solid var(--f3-room-cyan); pointer-events:none; }
+:root[data-flux3][data-theme='flux'] .flux3-plus-box{ left:40px; bottom:0; }
 /* ---- S4b L6: THE NODE VOICE, the overlay half (flux3-s4b-plan.md L6; Fable, Nov 21, 6:54 pm: the caps titles HELD, S1's cards never move). From the board mockup:
    a preset step's first line in the preset's lime (colour only: the line's box, wrap and the card's height are untouched), and the footer's status theatre
    (FluxNodeRecord data-st: UNRESOLVED // HUMAN, RASTER // HUMAN; under the Ambiance dial only) in the footer's quiet ink where CHECKSUM OK stands for a lit node. ---- */

@@ -12,7 +12,7 @@
 //     deletes). Flux's words are the connect register (flux-v2 LX2b forbids "link" in Flux strings).
 //     No "Open as hologram" (C), and no "Go to the Schema": a board has no return chip back to a page, so it would be a departure without a
 //     return (page primacy, law 3) - handed up.
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../store/theme';
 import { useDeskLexicon } from '../store/deskLexicon';
@@ -22,6 +22,7 @@ import { graftsOf, type GraftRow } from '../store/grafts';
 import { getJournalEntry, removePageLink, subscribe } from '../store/persistence';
 import { requestDelete } from '../store/deleteGate';
 import { setLinkDock } from '../store/linkDock';
+import { closeDrawer } from '../store/menusDrawers';
 import { GraftPicker } from '../components/GraftPicker';
 import { nodeHex } from './FluxNodeRecord';
 import { liveBoxes } from '../store/boxTombstones';
@@ -180,7 +181,19 @@ function Doc({ paperRef, entryId }: Props) {
 /** #145 (Nick, Nov 27, home B): the + and the squares stand in one row under the page's right end, ROW_DOWN below its foot; their boxes open upward. */
 const PLUS_SIZE = 32, PORT_SIZE = 14, ROW_DOWN = 6, ROW_GAP = 8;
 const ROW_SHARE = 0.2;   // how much of the page's width the squares may take before the rest are counted as +N
-const PLUS_LINE = 40;   // the line it draws up from the + into its box
+/** #145 (Fable, Nov 27: an opened box never lies over the page): a box stands in the lane to the page's right, rising from the row; BOX_GAP off the page's edge. */
+const BOX_GAP = 8;
+const BOX_FROM_PORTS = PLUS_SIZE + ROW_GAP + BOX_GAP;   // from the squares' own anchor
+
+/** A box standing open beside the page: the Back menu gives that lane up, and the page gives way if the lane is too narrow (DeskFrame, told as for a rail pop-out). */
+function useBesidePage(open: boolean): void {
+  useLayoutEffect(() => { if (open) closeDrawer('tutor'); }, [open]);
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    document.dispatchEvent(new Event('wz-rail-popout'));
+    return () => { window.setTimeout(() => document.dispatchEvent(new Event('wz-rail-popout')), 0); };   // gone from the page: it comes back
+  }, [open]);
+}
 
 // S4b N5 - THE + AT THE PAGE'S TOP CORNER (the mockup's .plus: "Its menu draws a line down the page's side and opens into a box"). It REUSES the port box: the same box
 // dress, the same Connect another (the Grafts pane's own picker, GraftPicker, with this page as its subject). It adds no action and writes nothing of its own: a
@@ -191,6 +204,7 @@ function PlusCorner({ entryId, connections, x, y }: { entryId: string; connectio
   const [picking, setPicking] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLButtonElement>(null);
+  useBesidePage(open);
   useEffect(() => {
     if (!open || picking) return;
     const away = (e: PointerEvent) => { if (!(e.target instanceof Node) || !wrapRef.current?.contains(e.target)) setOpen(false); };
@@ -205,8 +219,8 @@ function PlusCorner({ entryId, connections, x, y }: { entryId: string; connectio
         onClick={() => { setPicking(false); setOpen((o) => !o); }} />
       {open && (
         <>
-          <i className="flux3-plus-line" data-flux3-plus-line="" aria-hidden="true" style={{ height: PLUS_LINE }} />
-          <div className="flux3-port-box flux3-plus-box" data-flux3-plus-box="" style={{ bottom: PLUS_SIZE + PLUS_LINE }}>
+          <i className="flux3-plus-line" data-flux3-plus-line="" aria-hidden="true" />
+          <div className="flux3-port-box flux3-plus-box" data-flux3-plus-box="">
             <div className="flux3-port-head" data-flux3-plus-head="">
               <span className="flux3-port-kind">{t('linksKindPage')}</span> · {connections} {connections === 1 ? t('flux3LinkOne') : t('flux3LinkMany')}
             </div>
@@ -247,6 +261,7 @@ function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: nu
   const [picking, setPicking] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const linkRef = useRef<HTMLButtonElement>(null);
+  useBesidePage(!!open);
   const kindOf = (r: GraftRow) => (r.group === 'Cards' ? 'card' : r.group === 'Boards' ? 'board' : 'page');
   const kindWord = (k: string) => (k === 'page' ? t('linksKindPage') : k === 'board' ? t('linksKindBoard') : t('linksKindCard'));
 
@@ -274,7 +289,7 @@ function Ports({ ports, hidden, entryId, x, y }: { ports: GraftRow[]; hidden: nu
       {hidden > 0 && <span className="flux3-port-more" aria-hidden="true" style={{ left: along(-1), top: 0 }}>+{hidden}</span>}
       {row && (
         <>
-          <i className="flux3-port-line" aria-hidden="true" style={{ left: along(at) + PORT_SIZE / 2 }} />
+          <i className="flux3-port-line" aria-hidden="true" style={{ left: along(at) + PORT_SIZE, width: BOX_FROM_PORTS - along(at) - PORT_SIZE }} />
           <div ref={boxRef} className="flux3-port-box" data-flux3-port-box="">
             <div className="flux3-port-head"><span className="flux3-port-kind">{kindWord(kindOf(row))}</span> {row.title}</div>
             <PortPreview row={row} kind={kindOf(row)} kindWord={kindWord(kindOf(row))} />
