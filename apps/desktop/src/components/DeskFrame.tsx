@@ -167,6 +167,7 @@ export interface DeskFrameProps {
 // #142: the rail's pop-out and its second layer at their own widths (styles: .wz-cascade-panel 300, .wz-cascade-survey 360), the seam between them, the least
 // the second may be beside the first, and the gap kept before the page
 const POPOUT_W = 300, SECOND_W = 360, POPOUT_SEAM = 10, SECOND_LEAST = 200, RAIL_GAP = 4;
+const NOTE_ROOM = 12;   // #145: a box beside the page, with its 8 px off the page's edge and 4 kept at the stage's
 
 export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalGlow, rhizome, corkboard, meter, dissolved, children }: DeskFrameProps) {
   const { t } = useDeskLexicon();
@@ -217,7 +218,9 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       const pop = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-panel:not([data-visible="false"])') ?? null;
       const second = rail?.querySelector<HTMLElement>(':scope > .wz-cascade-survey') ?? null;
       const out = !zoomed && (!!pop || !!second);
-      const open = !zoomed && (hands.tools || hands.tutor || out);
+      // #145: a box open beside the page (the Doc's + or a connection's square) takes its room from the page too, from the right
+      const note = zoomed ? null : stage.querySelector<HTMLElement>('[data-flux3-port-box], [data-flux3-plus-box]');
+      const open = !zoomed && (hands.tools || hands.tutor || out || !!note);
       let from: number | null = null, beside = 0, one = false;   // the pop-out's left edge; the width the pop-out keeps beside its second layer
       if (open || zoomed) held.current = false;
       else if (gave.current && performance.now() - typed.current < 400) held.current = true;
@@ -247,7 +250,8 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
           popLimit = from + (second ? beside + Math.min(SECOND_W, most - beside) : Math.min(POPOUT_W, most)) + RAIL_GAP;
         }
         const leftLimit = Math.max(hands.tools ? railRight + frontW + 16 : -Infinity, popLimit ?? -Infinity);
-        const y = pageYieldFor(centre, kRest, leftLimit === -Infinity ? null : leftLimit, hands.tutor ? s.right - backW - 16 : null);
+        const rightLimit = Math.min(hands.tutor ? s.right - backW - 16 : Infinity, note ? s.right - note.offsetWidth - NOTE_ROOM : Infinity);
+        const y = pageYieldFor(centre, kRest, leftLimit === -Infinity ? null : leftLimit, rightLimit === Infinity ? null : rightLimit);
         k = y.k; shift = y.shift;
         if (from != null && rail) {
           const room = Math.floor(centre + shift - (PAGE_W_BASE * k) / 2 - RAIL_GAP - from);
@@ -264,7 +268,7 @@ export function DeskFrame({ pageKind, strip, cascadeLayers, sliver, tutor, goalG
       if (open) { stage.style.setProperty('--wz-page-half-l', `${(half - shift).toFixed(2)}px`); stage.style.setProperty('--wz-page-half-r', `${(half + shift).toFixed(2)}px`); }
       else { stage.style.removeProperty('--wz-page-half-l'); stage.style.removeProperty('--wz-page-half-r'); }
       if (frontRoom != null) stage.style.setProperty('--wz-front-yield', `${frontRoom}px`); else stage.style.removeProperty('--wz-front-yield');
-      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : '', from != null ? 'p' : ''].filter(Boolean).join(' ') : '';
+      const sides = open ? [hands.tools && frontRoom != null ? 'l' : '', hands.tutor ? 'r' : '', from != null ? 'p' : '', note ? 'b' : ''].filter(Boolean).join(' ') : '';
       if (sides) stage.setAttribute('data-yield', sides); else stage.removeAttribute('data-yield');
       const fit = fitScaleFor(s.width, s.height, top);
       // #143: zoomed further so her smaller-laid type reads as large as before; in Flux's Wire In only her words must clear the rail, elsewhere the whole page

@@ -159,6 +159,11 @@ export function tuckDrawers(): void {
   }
 }
 
+// #145: a box opened in the lane beside the page takes that lane: a menu standing there is closed through its own path
+export function closeDrawer(id: 'tools' | 'tutor'): void {
+  if (stands.has(id)) closers.get(id)?.();
+}
+
 function subscribe(l: () => void): () => void {
   listeners.add(l);
   return () => { listeners.delete(l); };
