@@ -4,7 +4,8 @@
 //   H   "+" and the squares stand under the page, at its right end: below its foot, none of it on the page, "+" ending at the page's right edge
 //   N   they cross neither the page count and its meter, nor each other
 //   S   with the Back menu open, and with the Front menu open, they are still seen and a press still lands on them
-//   U   a square's box, and the "+" box, open upward and stay inside the window
+//   U   a square's box, and the "+" box, open upward from the row in the lane to the page's right, inside the window, never over the page (Fable, Nov 27, 6:25 pm:
+//       the never-cover rule); where that lane is too narrow the page gives way, as for a menu; pressed with the Back menu open, the Back menu gives the lane up
 // Run: node scripts/harness/page-145.mjs   (from apps/desktop, dist-web built)
 Object.assign(process.env, { WS_REORG: '1', WS_ARBOR2: 'default', WS_MACHINA2: 'default', WS_FLUX3: 'default' });
 const { withHarness } = await import('../runtime-verify.mjs');
@@ -13,7 +14,7 @@ const checks = [];
 const ok = (name, pass, detail = '') => { checks.push({ name, pass: !!pass }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${detail ? `  [${typeof detail === 'string' ? detail : JSON.stringify(detail)}]` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const J = (v) => JSON.stringify(v);
-const SIZES = [[1366, 768], [1536, 706], [1920, 885]];
+const SIZES = [[1280, 800], [1366, 768], [1536, 706], [1920, 885]];
 
 const PROBE = `(() => {
   const R = (e) => { if (!e) return null; const b = e.getBoundingClientRect(); return [b.left, b.top, b.right, b.bottom].map((n) => Math.round(n * 10) / 10); };
@@ -23,7 +24,7 @@ const PROBE = `(() => {
   const meter = [...document.querySelectorAll('.desk-frame-instrument *')].filter((e) => { const b = e.getBoundingClientRect(); const cs = getComputedStyle(e); return b.width > 0 && b.height > 0 && b.width < pw * 0.5 && cs.visibility !== 'hidden' && (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || parseFloat(cs.borderLeftWidth) > 0); }).map(R);
   const hit = (e) => { const b = e.getBoundingClientRect(); const h = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!h && (h === e || e.contains(h)) && getComputedStyle(e).visibility !== 'hidden'; };
   return { page: R(page), plus: R(plus), ports: ports.map(R), lane: count.concat(meter), seen: !!plus && hit(plus) && ports.every(hit),
-    box: R(document.querySelector('[data-flux3-port-box], [data-flux3-plus-box]')), vw: innerWidth, vh: innerHeight };
+    box: R(document.querySelector('[data-flux3-port-box], [data-flux3-plus-box]')), back: document.querySelector('.wz-tutor-grip')?.getAttribute('aria-expanded') === 'true', vw: innerWidth, vh: innerHeight };
 })()`;
 const cross = (a, b) => !!a && !!b && a[0] < b[2] - 0.5 && b[0] < a[2] - 0.5 && a[1] < b[3] - 0.5 && b[1] < a[3] - 0.5;
 
@@ -58,12 +59,25 @@ await withHarness(async (app) => {
       ok(`${at} S: with the ${side} menu open they are still seen and a press lands`, o.seen && [o.plus, ...o.ports].every((b) => b[1] >= o.page[3] - 0.5 && b[2] <= o.page[2] + 1), { seen: o.seen, page: o.page, plus: o.plus, ports: o.ports });
       await press(grip); await sleep(600);
     }
+    {
+      await press('.wz-tutor-grip'); await sleep(600);
+      await press('.flux3-port');
+      const o = await S();
+      ok(`${at} U: pressed with the Back menu open, the Back menu gives the lane up and the box stands clear of the page`, !o.back && !!o.box && !cross(o.box, o.page), { back: o.back, box: o.box, page: o.page });
+      await ev("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(900);
+      await app.mouseMove(w / 2, 20); await sleep(900);
+      const c = await S();
+      ok(`${at} U: closed again, the page stands as it stood`, !c.box && JSON.stringify(c.page) === JSON.stringify(r.page), { rest: r.page, now: c.page });
+    }
     for (const [what, sel] of [["a square's", '.flux3-port'], ['the "+"', '[data-flux3-plus]']]) {
       await app.mouseMove(w / 2, 20); await sleep(300);
       const before = await ev(`document.querySelector(${J(sel)}).getBoundingClientRect().top`);
       await press(sel);
       const o = await S();
-      ok(`${at} U: ${what} box opens upward, inside the window`, !!o.box && o.box[3] <= before + 1 && o.box[0] >= 0 && o.box[1] >= 0 && o.box[2] <= o.vw, { box: o.box, opener: before });
+      // SUPERSEDED (Fable, Nov 27, 6:25 pm: an opened box must not lie over the page), the original verbatim:
+      // ok(`${at} U: ${what} box opens upward, inside the window`, !!o.box && o.box[3] <= before + 1 && o.box[0] >= 0 && o.box[1] >= 0 && o.box[2] <= o.vw, { box: o.box, opener: before });
+      const foot = await ev("document.querySelector('[data-flux3-plus]').getBoundingClientRect().bottom");
+      ok(`${at} U: ${what} box opens upward from the row, beside the page, never over it, inside the window`, !!o.box && !cross(o.box, o.page) && o.box[0] >= o.page[2] - 0.5 && o.box[3] <= foot + 1 && o.box[1] < before && o.box[2] <= o.vw + 0.5 && o.box[1] >= 0, { box: o.box, page: o.page, opener: before, foot });
       await ev("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))"); await sleep(500);
     }
   }
