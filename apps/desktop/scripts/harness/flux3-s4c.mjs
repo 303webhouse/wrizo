@@ -674,6 +674,26 @@ try { await withHarness(async (app) => {
       veilReads.back = await veilRead();
     }
   }
+  // PROBE (never shipped): what lights the older lines of the long page
+  {
+    const out = [];
+    for (let r = 0; r < 4; r += 1) {
+      const vid = await fresh(veilCases[2][1]); await open({ id: vid, tone: 'dark' }); await colMaskOff(); await ev('window.__f4.toEnd()'); await type(veilCases[2][2], 22);
+      await veilRead();
+      for (let t = 0; t < 6; t += 1) {
+        const lines = await veilLines();
+        await ev("(() => { const s = document.createElement('style'); s.id = 'probe-rows-off'; s.textContent = '.flux3-compile-word{ visibility:hidden !important; }'; document.head.appendChild(s); })()"); await sleep(150);
+        const hit = await shotEval(`const L = ${JSON.stringify(lines)}; return L.slice(0, -2).map((l) => { let m = [0, 0, 0], at = [0, 0], n = 0; for (let y = Math.max(0, l.top); y < Math.min(innerHeight, l.bottom); y += 1) for (let x = Math.max(0, l.left); x < Math.min(innerWidth, l.right); x += 1) { const p = px(x, y); if (p[0] > 60) n += 1; if (p[0] > m[0]) { m = p; at = [x, y]; } } const art = []; for (let y = at[1] - 4; y <= at[1] + 4; y += 1) { let row = ''; for (let x = at[0] - 14; x <= at[0] + 14; x += 1) row += (px(x, y)[0] >> 4).toString(16); art.push(row); } return { m, at, n, art }; });`);
+        const worst = hit.length ? hit.reduce((a, b) => (b.m[0] > a.m[0] ? b : a)) : null;
+        const under = worst ? await ev(`(() => { const X = ${worst.at[0]}, Y = ${worst.at[1]}; return [...document.querySelectorAll('body *')].filter((e) => { const q = e.getBoundingClientRect(); if (!(q.left <= X && q.right > X && q.top <= Y && q.bottom > Y)) return false; const c = getComputedStyle(e); return c.visibility === 'visible' && +c.opacity > 0; }).slice(-8).map((e) => { const q = e.getBoundingClientRect(); return e.tagName + '.' + String(e.className.baseVal ?? e.className).slice(0, 40) + ' ' + [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)].join(','); }); })()`) : null;
+        await ev("document.getElementById('probe-rows-off')?.remove()");
+        out.push({ r, t, lines: lines.map((l) => [l.left, l.top, l.right, l.bottom].join(',')), older: hit.map((h) => h.m.join('/') + ' @' + h.at.join(',') + ' n' + h.n), art: worst && worst.art, under });
+        await sleep(900);
+      }
+    }
+    for (const o of out) console.log('PROBE ' + JSON.stringify(o));
+    ok('PROBE always red, so the full output is saved', false, 'see PROBE lines');
+  }
   await ev("(() => { const s = document.getElementById('veil-colmask-off'); if (s) s.remove(); })()");
   const maskNone = await ev("(() => { const e = document.querySelector('.forward-only-editor'); const c = getComputedStyle(e); return { m: c.maskImage, w: c.webkitMaskImage, clip: c.clipPath, bgClip: c.webkitBackgroundClip || c.backgroundClip }; })()");
   const boxNow = await boxRead();
