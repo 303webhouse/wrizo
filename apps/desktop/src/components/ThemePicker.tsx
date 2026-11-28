@@ -160,7 +160,7 @@ function VolantPlate() {
         <path d="M-5 38 L52 -5" />
       </g>
       <circle cx="94" cy="42" r="15" fill="#D5E0EB" stroke="#93A6BA" strokeWidth="1" />
-      <circle cx="89" cy="37" r="4.5" fill="#FFFFFF" />
+      <circle cx="89" cy="37" r="4.5" fill="#FAFAF7" />
     </svg>
   );
 }
