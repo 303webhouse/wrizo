@@ -200,7 +200,10 @@ await withHarness(async (app) => {
       panelOpen.right <= width + 0.5, JSON.stringify({ panelRight: panelOpen.right, width }));
 
     await app.evalJs("document.querySelector('.wz-tutor-dock-btn').click()");
-    await sleep(250);
+    // SUPERSEDED (#144: where there is no room to dock, this press closes the menu, and a closing menu now keeps its size until its fade ends - about half a second - so
+    // the width is read once it has gone), the original verbatim:
+    // await sleep(250);
+    await sleep(900);
     const panelDocked = await rectOf(app, '.wz-tutor-panel');
     const paperDocked = await rectOf(app, '.mode-pagecol');
     ok(`S6 geometry @${width}: paper rect unchanged, open -> docked`,
